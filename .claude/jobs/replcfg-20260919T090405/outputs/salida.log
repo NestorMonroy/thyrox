@@ -1,0 +1,248 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/config/__tests__/pluginIdentifier.test.ts:
+147 |     expect(isOfficialMarketplaceName('agent-skills')).toBe(true)
+148 |   })
+149 | 
+150 |   test('case-insensitive matching (CLAUDE-CODE-PLUGINS → true)', () => {
+151 |     // The check uses `.toLowerCase()`. Verify upstream/uppercase variants.
+152 |     expect(isOfficialMarketplaceName('CLAUDE-CODE-PLUGINS')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/pluginIdentifier.test.ts:152:62)
+(fail) isOfficialMarketplaceName — security boundary > case-insensitive matching (CLAUDE-CODE-PLUGINS → true) [0.31ms]
+151 |     // The check uses `.toLowerCase()`. Verify upstream/uppercase variants.
+152 |     expect(isOfficialMarketplaceName('CLAUDE-CODE-PLUGINS')).toBe(true)
+153 |   })
+154 | 
+155 |   test('mixed case accepted', () => {
+156 |     expect(isOfficialMarketplaceName('Claude-Code-Plugins')).toBe(true)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/pluginIdentifier.test.ts:156:62)
+(fail) isOfficialMarketplaceName — security boundary > mixed case accepted [0.11ms]
+
+src/packages/config/__tests__/settingsValidation.test.ts:
+18 |   validateSettingsFileContent,
+19 | } from '../settings/validation.js'
+20 | 
+21 | describe('validateSettingsFileContent — accepted shapes', () => {
+22 |   test('empty object is valid', () => {
+23 |     expect(validateSettingsFileContent('{}')).toEqual({ isValid: true })
+                                                   ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "isValid": true,
++   "settings": {},
+  }
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:23:47)
+(fail) validateSettingsFileContent — accepted shapes > empty object is valid [0.69ms]
+53 | describe('validateSettingsFileContent — JSON parse errors', () => {
+54 |   test('malformed JSON: missing closing brace', () => {
+55 |     const r = validateSettingsFileContent('{"env":{"DEBUG":"1"')
+56 |     expect(r.isValid).toBe(false)
+57 |     if (!r.isValid) {
+58 |       expect(r.error).toContain('Invalid JSON')
+                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Invalid JSON"
+Received: "JSON inválido: JSON Parse error: Expected '}'"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:58:23)
+(fail) validateSettingsFileContent — JSON parse errors > malformed JSON: missing closing brace [0.27ms]
+62 | 
+63 |   test('malformed JSON: trailing comma', () => {
+64 |     const r = validateSettingsFileContent('{"env":{"X":"1",}}')
+65 |     expect(r.isValid).toBe(false)
+66 |     if (!r.isValid) {
+67 |       expect(r.error).toContain('Invalid JSON')
+                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Invalid JSON"
+Received: "JSON inválido: JSON Parse error: Property name must be a string literal"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:67:23)
+(fail) validateSettingsFileContent — JSON parse errors > malformed JSON: trailing comma [0.14ms]
+75 | 
+76 |   test('non-JSON content (plain text) fails', () => {
+77 |     const r = validateSettingsFileContent('hello world')
+78 |     expect(r.isValid).toBe(false)
+79 |     if (!r.isValid) {
+80 |       expect(r.error).toContain('Invalid JSON')
+                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Invalid JSON"
+Received: "JSON inválido: JSON Parse error: Unexpected identifier \"hello\""
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:80:23)
+(fail) validateSettingsFileContent — JSON parse errors > non-JSON content (plain text) fails [0.10ms]
+100 |   })
+101 | 
+102 |   test('unknown top-level field rejected by strict mode', () => {
+103 |     // Strict() mode rejects unrecognized keys.
+104 |     const r = validateSettingsFileContent('{"unknownField":42}')
+105 |     expect(r.isValid).toBe(false)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:105:23)
+(fail) validateSettingsFileContent — schema violations > unknown top-level field rejected by strict mode [0.28ms]
+108 |     }
+109 |   })
+110 | 
+111 |   test('error includes fullSchema for user help', () => {
+112 |     const r = validateSettingsFileContent('{"unknownField":42}')
+113 |     expect(r.isValid).toBe(false)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:113:23)
+(fail) validateSettingsFileContent — schema violations > error includes fullSchema for user help [0.23ms]
+163 |       permissions: {
+164 |         allow: ['Bash', 'Bash((bad'],
+165 |       },
+166 |     }
+167 |     const warnings = filterInvalidPermissionRules(data, 'settings')
+168 |     expect(warnings).toHaveLength(1)
+                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:168:22)
+(fail) filterInvalidPermissionRules — invalid rule pruning > mismatched parens rule pruned + warning emitted [0.17ms]
+179 |       permissions: {
+180 |         deny: ['Bash', 42 as unknown as string, null],
+181 |       },
+182 |     }
+183 |     const warnings = filterInvalidPermissionRules(data, 'settings')
+184 |     expect(warnings.length).toBe(2) // 42 + null
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:184:29)
+(fail) filterInvalidPermissionRules — invalid rule pruning > non-string entry pruned + special warning [0.13ms]
+192 |       permissions: {
+193 |         ask: ['Bash', 'Bash(()', 'lowercase'],
+194 |       },
+195 |     }
+196 |     const warnings = filterInvalidPermissionRules(data, 'settings')
+197 |     expect(warnings.length).toBeGreaterThanOrEqual(2)
+                                  ^
+error: expect(received).toBeGreaterThanOrEqual(expected)
+
+Expected: >= 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:197:29)
+(fail) filterInvalidPermissionRules — invalid rule pruning > multiple bad rules in same array all pruned [0.12ms]
+200 |   })
+201 | 
+202 |   test('warnings include filePath in `file` field', () => {
+203 |     const data = { permissions: { allow: ['bad rule (with parens'] } }
+204 |     const warnings = filterInvalidPermissionRules(data, '/path/to/.claude/settings.json')
+205 |     expect(warnings[0]?.file).toBe('/path/to/.claude/settings.json')
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "/path/to/.claude/settings.json"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:205:31)
+(fail) filterInvalidPermissionRules — invalid rule pruning > warnings include filePath in `file` field [0.12ms]
+206 |   })
+207 | 
+208 |   test('warning message contains the bad rule string', () => {
+209 |     const data = { permissions: { allow: ['Bash(()'] } }
+210 |     const warnings = filterInvalidPermissionRules(data, 'settings')
+211 |     expect(warnings[0]?.message).toContain('Bash(()')
+                                       ^
+error: Received value must be an array type, or both received and expected values must be strings.
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:211:34)
+(fail) filterInvalidPermissionRules — invalid rule pruning > warning message contains the bad rule string [0.10ms]
+219 |         ask: ['Bash(()'],
+220 |       },
+221 |     }
+222 |     const warnings = filterInvalidPermissionRules(data, 'settings')
+223 |     // 3 separate warnings (one per array).
+224 |     expect(warnings.length).toBe(3)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/settingsValidation.test.ts:224:29)
+(fail) filterInvalidPermissionRules — invalid rule pruning > handles all 3 keys (allow/deny/ask) independently [0.15ms]
+
+src/packages/config/__tests__/argumentSubstitution.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'tryParseShellCommand' not found in module '/home/user/thyrox/src/packages/shell/src/bash/shellQuote.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+src/packages/config/plugin/__tests__/ineffectiveDisables.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getEnabledSettingSources' not found in module '/home/user/thyrox/src/packages/config/settings/constants.ts'.
+      at requestImportModule (2:1)
+-------------------------------
+
+
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts:
+error: Cannot find package 'ajv' from '/home/user/thyrox/src/packages/tool-registry/src/tools/SyntheticOutputTool/SyntheticOutputTool.ts'
+(fail) isBgAgentPanelEnabled — ant F6H alignment > true in an interactive session (panel is the local_agent surface) [14.82ms]
+(fail) isBgAgentPanelEnabled — ant F6H alignment > false in a non-interactive (headless) session — ant !nonInteractive guard [0.51ms]
+(fail) shouldHideTasksFooter — panel-agent exclusion > panel-agent is excluded from the footer when the panel is active [0.51ms]
+(fail) shouldHideTasksFooter — panel-agent exclusion > teammate task keeps the footer logic engaged (not a panel agent) [0.35ms]
+
+src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/config/managedPath' from '/home/user/thyrox/src/packages/tool-registry/src/markdownConfigLoader.ts'
+-------------------------------
+
+
+ 1139 pass
+ 21 fail
+ 3 errors
+ 2506 expect() calls
+Ran 1160 tests across 64 files. [3.40s]
+__BG_EXIT__=1
