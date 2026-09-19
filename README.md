@@ -164,8 +164,11 @@ Lo que falte no se traduce en un `command not found` a mitad de trabajo: cada
 sonda publica una línea `IMPORTANT` que nombra **la herramienta**, **la
 precondición con la ruta de este clon ya resuelta** —copiable tal cual, sin
 declarar nada antes— y qué se puede seguir usando mientras tanto. Un clon
-recién bajado, sin `.venv` ni `node_modules`, reporta `3 ok · 2 error ·
-1 aviso` y exit 1; las mitades shell de `bin/` siguen enteras.
+recién bajado, sin `.venv` ni `node_modules`, sale 1 y publica esos avisos;
+las mitades shell de `bin/` siguen enteras. El reparto exacto lo publica el
+propio comando: transcribirlo aquí sería la cifra de un artefacto vivo, y
+`PROBES` crece — una sonda nueva la dejaría rancia sin que nadie toque este
+archivo.
 
 ### Las constantes del ejemplo, con su nombre correcto
 
