@@ -62,6 +62,8 @@ Uso
 
 from __future__ import annotations
 
+import ast
+import importlib.util
 import io
 import os
 import pathlib
@@ -128,6 +130,58 @@ def _running_under(interpreter: pathlib.Path) -> bool:
     return pathlib.Path(sys.prefix).resolve() == interpreter.parent.parent.resolve()
 
 
+def _declared_extensions() -> list[str]:
+    """Las extensiones que el `conf.py` del consumidor declara.
+
+    Se leen por AST y NO ejecutando el `conf.py`: ejecutarlo tiene efectos
+    (toca rutas, lee el entorno) que un gate no debe disparar para saber que
+    va a necesitar.
+    """
+    conf = FUENTE / 'conf.py'
+    if not conf.is_file():
+        return []
+    try:
+        arbol = ast.parse(conf.read_text(encoding='utf-8'))
+    except SyntaxError:
+        return []
+    for nodo in arbol.body:
+        if not isinstance(nodo, ast.Assign):
+            continue
+        if not any(getattr(t, 'id', None) == 'extensions' for t in nodo.targets):
+            continue
+        if not isinstance(nodo.value, (ast.List, ast.Tuple)):
+            return []
+        return [e.value for e in nodo.value.elts
+                if isinstance(e, ast.Constant) and isinstance(e.value, str)]
+    return []
+
+
+def _missing_extensions() -> list[str]:
+    """Cuales de esas extensiones NO resuelven en el interprete que corre.
+
+    `FUENTE` entra al path porque dos de ellas —`plantuml_cached` y
+    `reporte_directive`— viven ahi: son modulos del propio consumidor, y
+    Sphinx las alcanza porque su `confdir` esta en el path. Medido: sin
+    `FUENTE`, `plantuml_cached` no resuelve ni en el venv del consumidor.
+    """
+    faltan: list[str] = []
+    ruta = str(FUENTE)
+    inyectado = ruta not in sys.path
+    if inyectado:
+        sys.path.insert(0, ruta)
+    try:
+        for nombre in _declared_extensions():
+            try:
+                if importlib.util.find_spec(nombre) is None:
+                    faltan.append(nombre)
+            except (ImportError, ValueError):
+                faltan.append(nombre)
+    finally:
+        if inyectado:
+            sys.path.remove(ruta)
+    return faltan
+
+
 def _reexec_en_venv() -> None:
     """Re-lanzarse con el interprete del CONSUMIDOR si no es el que corre.
 
@@ -151,6 +205,18 @@ def _reexec_en_venv() -> None:
 
     if venv.is_file():
         if _running_under(venv):
+            faltan = _missing_extensions()
+            if faltan:
+                print(
+                    'check-rst-sintaxis: ERROR — el interprete del consumidor '
+                    f'({sys.prefix}) no resuelve {len(faltan)} extension(es) que '
+                    f'su conf.py declara: {", ".join(faltan)}. Corre `make sync` '
+                    f'en {RAIZ}. NO se emite un conteo: un 0 aqui seria un verde '
+                    'falso, y un 1 diria «hay errores de sintaxis» sobre una '
+                    'medicion que no ocurrio.',
+                    file=sys.stderr,
+                )
+                sys.exit(2)
             return
         if os.environ.get('_CHECK_RST_REEXEC') != '1':
             os.environ['_CHECK_RST_REEXEC'] = '1'

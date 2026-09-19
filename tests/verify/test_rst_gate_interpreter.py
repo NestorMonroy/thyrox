@@ -35,6 +35,9 @@ Que cubre cada bloque:
 3. **El discriminador es `sys.prefix`, no la ruta real del ejecutable** — los
    tres interpretes comparten `realpath` (`/usr/bin/python3.11`), asi que
    compararla da «son el mismo» para los tres.
+4. **La precondicion que el guard mide son las EXTENSIONES**, no `import
+   sphinx`: el proveedor no resuelve cuatro de las nueve que el `conf.py` del
+   consumidor declara, y el consumidor resuelve las nueve.
 """
 from __future__ import annotations
 
@@ -133,6 +136,52 @@ def test_la_ruta_real_del_ejecutable_NO_discrimina():
         prefijos.add(out[1])
     assert len(reales) == 1, f'la premisa del bloque cambio: {reales}'
     assert len(prefijos) == 3, f'sys.prefix dejo de discriminar: {prefijos}'
+
+
+def _missing_under(interpreter: pathlib.Path) -> list[str]:
+    """Las extensiones que NO resuelven bajo `interpreter`, medidas por conducta.
+
+    Se importa el gate por ruta y se llama a su helper: el subproceso ejerce
+    el interprete real, no una simulacion de su `sys.path`.
+    """
+    guion = (
+        "import sys, importlib.util as iu;"
+        f"sys.path.insert(0, {str(THYROX_ROOT / 'src')!r});"
+        f"spec = iu.spec_from_file_location('crs', {str(GATE)!r});"
+        "m = iu.module_from_spec(spec); spec.loader.exec_module(m);"
+        "print(repr(m._missing_extensions()))"
+    )
+    r = subprocess.run([str(interpreter), '-c', guion],
+                       cwd=str(CONSUMER), capture_output=True, text=True, check=False)
+    assert r.returncode == 0, f'la sonda murio: {r.stderr[-400:]!r}'
+    return eval(r.stdout.strip())                                # noqa: S307
+
+
+def test_la_precondicion_de_extensiones_discrimina_los_dos_venv():
+    """Bloque 4 — el guard mide si el interprete puede CARGAR el conf.py.
+
+    `import sphinx` es el significante; lo que decide es si las extensiones
+    que el `conf.py` del consumidor declara resuelven. Los dos lados son
+    positivos REALES del repo, no fabricados:
+
+    - proveedor: Sphinx 9.0.4 y **ninguna** de las cuatro de terceros;
+    - consumidor: las nueve resuelven.
+
+    Sin este bloque, un guard que devolviera `[]` siempre pasaria igual — y
+    el gate volveria a morir con `ExtensionError` tras declarar que podia
+    medir (sub-patron D de `metrica-decide-la-conclusion.md`).
+    """
+    declaradas = _missing_under(CONSUMER_PYTHON)
+    assert declaradas == [], (
+        'el venv del consumidor no resuelve lo que su propio conf.py declara; '
+        f'corre `make sync` en {CONSUMER}: {declaradas}')
+
+    faltan = _missing_under(PROVIDER_PYTHON)
+    assert faltan, (
+        'el venv del proveedor resuelve las extensiones del consumidor: la '
+        'premisa del guard cambio y el bloque 1 dejo de discriminar')
+    assert 'sphinx_design' in faltan, (
+        f'la extension del episodio medido ya no falta: {faltan}')
 
 
 def _run_suite() -> int:
