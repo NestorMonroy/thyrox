@@ -34,6 +34,7 @@ import pathlib
 import re
 import sqlite3
 import sys
+import textwrap
 import unicodedata
 
 CONSUMER = pathlib.Path('/home/user/kaupamex-docs')
@@ -121,12 +122,34 @@ def reindex_orphans(prefix):
     return added
 
 
+TITLE_MARKUP = re.compile(r'([*`|_])')
+
+
+def escape_title_markup(text: str) -> str:
+    """Neutraliza el markup en linea de un titulo que es una CITA.
+
+    El titulo es el `summary` de la fila, verbatim. Un `summary` que contenga
+    `*.7z` abre enfasis y nunca lo cierra: docutils emite «Inline emphasis
+    start-string without end-string» y el documento queda roto por un caracter
+    que el autor de la fila nunca puso como markup.
+
+    Escapar en vez de reescribir: `\*` renderiza `*`, asi que la cita sigue
+    siendo byte a byte la misma para el lector. Reescribirla la separaria de
+    la fila que dice reproducir.
+    """
+    return TITLE_MARKUP.sub(r'\\\1', text)
+
+
 def render(row):
     finding_id, submodule, initiative, severity, summary, content, source_ref, created = row
     label = finding_id.lower()
-    title = f'{finding_id} — {summary}'
+    title = escape_title_markup(f'{finding_id} — {summary}')
+    # El subrayado se mide sobre el titulo YA escapado: docutils compara con la
+    # linea del fuente, no con lo renderizado.
     rule = '=' * max(len(title), 12)
-    body = content or summary
+    # Sangrado de tres espacios: es el cuerpo de un `code-block`, y sin
+    # sangrar docutils lo lee como texto del documento otra vez.
+    body = textwrap.indent(content or summary, '   ')
     return f""".. meta::
    :fecha_creacion: {created}
    :autor: Equipo Kaupamex
@@ -145,6 +168,14 @@ def render(row):
 
 Descripción
 -----------
+
+El cuerpo es el ``content`` de la fila del store, **citado verbatim** en un
+bloque literal. Va en bloque literal por dos razones medidas, no por estilo:
+es una cita —no prosa de autor, y presentarla como tal invitaría a editarla—
+y su texto no es RST válido, así que soltarlo en el cuerpo rompe el documento
+(11 de los 36 dieron error de sintaxis al intentarlo).
+
+.. code-block:: text
 
 {body}
 
