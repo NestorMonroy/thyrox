@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Generado por src/session/generate_bin.py — no editar a mano.
-THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+export THYROX_ROOT
 LIB="$THYROX_ROOT/src/lib/toolchain.sh"
 if [ ! -r "$LIB" ]; then
   echo "bin/skills-emit: no alcanza $LIB — el arbol esta incompleto." >&2

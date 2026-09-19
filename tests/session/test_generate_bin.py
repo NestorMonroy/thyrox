@@ -168,6 +168,12 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
 
     wrapper_dir = tree / "bin"
     wrapper_dir.mkdir()
+    # Copia la biblioteca que el guard sourcea al rehusar. Sin ella el
+    # envoltorio cae a su OTRO camino («arbol incompleto») y el caso
+    # mediria el mensaje equivocado — la clase de TASK-THYROX-0235.
+    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "src/lib/toolchain.sh", tree / "src/lib/toolchain.sh")
+
     wrapper = wrapper_dir / "algo"
     wrapper.write_text(gb.wrapper_body(target, tree))
     wrapper.chmod(0o755)
@@ -176,6 +182,14 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
     check("sin .venv, el wrapper de un .py sale 2", r.returncode == 2,
           f"dio {r.returncode}: {r.stdout!r} {r.stderr!r}")
     check("y nombra el remedio (uv sync)", "uv sync" in r.stderr)
+    # El remedio a secas no basta: la forma que el ejecutor fijo NOMBRA
+    # la herramienta dos veces y declara que se continua sin ella. Sin
+    # esta asercion, los 184 envoltorios .py seguirian con un texto
+    # distinto del de los 14 .ts — dos formas en el mismo bin/.
+    check("y emite el aviso degradado IMPORTANT", "IMPORTANT" in r.stderr,
+          r.stderr)
+    check("y el aviso declara la continuacion",
+          "continua sin usar" in r.stderr, r.stderr)
     check("y NO llegó a ejecutar el .py",
           "no debería correr" not in r.stdout)
 
@@ -935,9 +949,76 @@ def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
     # Los cuatro emit.ts son el control de colision sobre el arbol REAL, no
     # sobre un fixture: si el nombre no estuviera cualificado, el plan tendria
     # uno en vez de cuatro.
+    # `rglob` recorre TAMBIEN los node_modules que el linker aislado
+    # crea por paquete —30 medidos—. Una dependencia con un bin/*.ts
+    # con shebang entraria al plan. Hoy son 0, asi que el `>= 14` de
+    # arriba pasaria igual con una fuga: no discrimina, y este si.
+    fugas = [str(p) for p in ts.values() if "node_modules" in p.parts]
+    check("ningun entrypoint TS sale de un node_modules",
+          not fugas, str(fugas))
+
     emits = sorted(n for n in ts if n.endswith("-emit") or n == "emit")
     check("los cuatro emit.ts del arbol real estan los cuatro",
           len(emits) == 4, str(emits))
+
+
+def test_wrapper_exports_root_across_exec(base: pathlib.Path) -> None:
+    """El envoltorio EXPORTA su raiz: `exec` no conserva lo que no se exporta.
+
+    Medido sobre un clon fresco real antes de escribir esto: el preflight
+    publicaba «6 ok · 0 error» en un arbol SIN `.venv` y SIN `node_modules`.
+    El envoltorio fijaba `THYROX_ROOT` y hacia `exec`; el proceso nuevo no
+    heredaba la variable, asi que el guion destino resolvia la raiz por su
+    cuenta y media OTRO arbol — el de desarrollo. Un verde que no distingue
+    «la cadena esta sana» de «mediste el arbol equivocado»: el sub-patron C
+    con el clon como sujeto.
+
+    La forma es `${THYROX_ROOT:-<calculada>}` y no una asignacion a secas,
+    para no romper la precedencia que `reach.sh` declara: una raiz declarada
+    gana sobre el localizador, y sobre esto tambien.
+    """
+    tree = _make_tree(base / "export-raiz")
+    target = tree / "src/session/eco.sh"
+    target.write_text('#!/usr/bin/env bash\necho "RAIZ=$THYROX_ROOT"\n')
+    target.chmod(0o755)
+
+    wrapper_dir = tree / "bin"
+    wrapper_dir.mkdir(exist_ok=True)
+    wrapper = wrapper_dir / "eco"
+    wrapper.write_text(gb.wrapper_body(target, tree, "eco"))
+    wrapper.chmod(0o755)
+
+    entorno = {k: v for k, v in os.environ.items() if k != "THYROX_ROOT"}
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    check("el hijo del exec ve la raiz del envoltorio",
+          f"RAIZ={tree.resolve()}" in r.stdout,
+          f"dio {r.stdout!r} (esperaba {tree.resolve()})")
+
+    # Y la raiz DECLARADA sigue ganando: sin esta mitad el arreglo romperia
+    # la precedencia que reach.sh fija para todo el arbol.
+    #
+    # La raiz declarada es un ALIAS del mismo arbol, no una ruta inventada: el
+    # envoltorio ejecuta "$THYROX_ROOT/<destino>", asi que una raiz que no
+    # contenga el destino hace fallar el exec y la sonda no mediria la
+    # precedencia sino la ausencia del archivo — el sub-patron C dentro del
+    # propio control.
+    #
+    # Y se invoca por la ruta REAL declarando el alias, no al reves: `cd` es
+    # logico y `pwd` imprime el enlace, asi que invocar por el alias hace que
+    # la forma condicional y la incondicional publiquen lo mismo. Medido: el
+    # control no discriminaba bajo su propia anulacion. Invocado por la ruta
+    # real, la calculada es el arbol y la declarada es el alias — y ahi la
+    # anulacion si hace caer esta asercion.
+    alias_root = base / "export-raiz-alias"
+    if not alias_root.exists():
+        alias_root.symlink_to(tree)
+    entorno["THYROX_ROOT"] = str(alias_root)
+    r2 = subprocess.run(["bash", str(wrapper)],
+                        capture_output=True, text=True, cwd="/", env=entorno)
+    check("una raiz declarada gana sobre la calculada",
+          f"RAIZ={alias_root}" in r2.stdout,
+          f"dio {r2.stdout!r} (esperaba {alias_root})")
 
 
 def main() -> int:
@@ -962,6 +1043,7 @@ def main() -> int:
         test_typescript_discriminator_is_shebang_and_parent(base)
         test_typescript_names_resolve_stem_collisions(base)
         test_typescript_wrapper_degrades_without_bun(base)
+        test_wrapper_exports_root_across_exec(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()

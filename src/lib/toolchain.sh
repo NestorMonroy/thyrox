@@ -548,12 +548,20 @@ THYROX_TOOLCHAIN_PYTHON_BIN="${THYROX_TOOLCHAIN_PYTHON_BIN:-}"
 #   medir».
 function thyrox_toolchain_require_sqlite_reader() {
   local interpreter="$THYROX_TOOLCHAIN_PYTHON_BIN"
+  # La precondicion que el aviso publica tiene que ser EJECUTABLE por quien
+  # acaba de clonar, y ese es justo quien NO tiene `THYROX_ROOT` declarada: un
+  # `cd $THYROX_ROOT` literal deja el remedio sin sujeto. Se resuelve como ya
+  # lo hace `provider_python` en su propio mensaje. El literal queda de
+  # respaldo por si la raiz no se puede resolver — ahi el problema es otro y
+  # el aviso no debe inventarse una ruta.
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" \
+    || root='$THYROX_ROOT'
 
   if [[ -z "$interpreter" ]]; then
     interpreter="$(thyrox_toolchain_provider_python 2>/dev/null)" || {
       thyrox_toolchain_degraded_notice \
         "el store de agentes, tareas y hallazgos" \
-        "cd \$THYROX_ROOT && uv sync" >&2
+        "cd $root && uv sync" >&2
       return 2
     }
   fi
@@ -562,7 +570,7 @@ function thyrox_toolchain_require_sqlite_reader() {
     echo "thyrox_toolchain: '$interpreter' no resuelve a un interprete." >&2
     thyrox_toolchain_degraded_notice \
       "el store de agentes, tareas y hallazgos" \
-      "cd \$THYROX_ROOT && uv sync" >&2
+      "cd $root && uv sync" >&2
     return 2
   fi
 
@@ -626,9 +634,13 @@ function thyrox_toolchain_require_bun() {
   # de una instalacion interrumpida.
   if [[ ! -d "$home" ]] || [[ -z "$(ls -A "$home" 2>/dev/null)" ]]; then
     echo "thyrox_toolchain: '$bin' resuelve, y $home esta ausente o vacio." >&2
+    # Misma razon que en `require_sqlite_reader`: la raiz se resuelve para que
+    # el `cd` del remedio tenga sujeto en un clon recien bajado.
+    local root_bun; root_bun="$(thyrox_toolchain_provider_root 2>/dev/null)" \
+      || root_bun='$THYROX_ROOT'
     thyrox_toolchain_degraded_notice \
       "los entrypoints .ts de src/**/bin y el paquete @thyrox/cli" \
-      "cd \$THYROX_ROOT && bun install" >&2
+      "cd $root_bun && bun install" >&2
     return 2
   fi
   return 0

@@ -243,5 +243,26 @@ SALIDA_SUELTA="$(env -u THYROX_ROOT bash "$SUELTO/install.sh" \
 check "control — fuera de todo arbol rehusa" 1 "$?"
 check_contains "y nombra la pieza que falta" "src/paths/reach.py" "$SALIDA_SUELTA"
 
+# --------------------------------------------------------------------------
+# El informe final NOMBRA el preflight de la cadena de herramientas.
+#
+# El defecto que cierra: `install.sh` es el unico punto de entrada en bash puro
+# —`clone_bootstrap` es un `.py` y muere en el guard del interprete antes de
+# que `.venv` exista—, asi que es el unico sitio donde quien acaba de clonar
+# lee algo. Sin esta linea, `bin/` trae 198 envoltorios y el que clona no
+# tiene como saber cuales puede usar hoy: descubre el hueco al primer
+# `command not found`, que es exactamente lo que el aviso degradado existe
+# para evitar.
+#
+# Se mide sobre la ejecucion REAL, no sobre el fuente: un `grep` del guion
+# pasaria con la linea escrita dentro de una rama que nunca se toma.
+# --------------------------------------------------------------------------
+TREE_PRE="$(fake_tree preflight)"
+cp "$INSTALL" "$TREE_PRE/install.sh"
+CONSUMER_PRE="$(fake_consumer preflight)"
+SALIDA_PRE="$(env -u THYROX_ROOT bash "$TREE_PRE/install.sh" "$CONSUMER_PRE" 2>&1)"
+check_contains "el informe final nombra el preflight de la cadena" \
+    "bin/check-toolchain-ready" "$SALIDA_PRE"
+
 printf '\n%d aserciones: %d ok, %d fallidas\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]

@@ -177,4 +177,35 @@ else
   bad "rehusa con bun 1.3.x presente y node_modules poblado"
 fi
 
+
+# --------------------------------------------------------------------------
+# Caso 14 — la precondicion que el aviso publica tiene que ser EJECUTABLE por
+# quien acaba de clonar. Un `cd $THYROX_ROOT && uv sync` literal solo sirve si
+# esa variable ya esta declarada en el shell del lector, y justo el que acaba
+# de clonar es quien no la tiene: el remedio quedaria sin sujeto. La forma
+# correcta es la que su sonda hermana ya ejerce —`provider_python` nombra la
+# ruta resuelta— asi que las dos sondas nuevas la nombran tambien.
+#
+# La asercion mide DOS cosas y las dos hacen falta: que no salga el literal
+# (el defecto) y que salga una ruta absoluta (el remedio). Sin la segunda,
+# vaciar el argumento pasaria el control.
+# --------------------------------------------------------------------------
+vacio2="$(mktemp -d)"
+for par in "sqlite:$(THYROX_TOOLCHAIN_PYTHON_BIN=/no/existe-$$ thyrox_toolchain_require_sqlite_reader 2>&1)" \
+           "bun-ausente:$(THYROX_TOOLCHAIN_BUN_BIN=no-existe-$$ thyrox_toolchain_require_bun 2>&1)" \
+           "bun-sin-modulos:$(THYROX_TOOLCHAIN_NODE_MODULES_HOME="$vacio2" thyrox_toolchain_require_bun 2>&1)"; do
+  nombre="${par%%:*}"; texto="${par#*:}"
+  linea="$(printf '%s\n' "$texto" | grep IMPORTANT || true)"
+  if [[ -z "$linea" ]]; then
+    bad "$nombre no emitio aviso degradado que medir"
+  elif [[ "$linea" == *'$THYROX_ROOT'* ]]; then
+    bad "el aviso de $nombre publica el literal \$THYROX_ROOT, no una ruta"
+  elif [[ "$linea" == *"cd "* && "$linea" != *"cd /"* ]]; then
+    bad "el aviso de $nombre hace cd a una ruta que no es absoluta: '$linea'"
+  else
+    ok "la precondicion de $nombre es ejecutable sin declarar nada"
+  fi
+done
+rmdir "$vacio2" 2>/dev/null || true
+
 thyrox_summary

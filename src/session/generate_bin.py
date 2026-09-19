@@ -416,9 +416,19 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
         return (
             "#!/usr/bin/env bash\n"
             f"{GENERATED_MARKER}\n"
-            'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+            'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+            'export THYROX_ROOT\n'
             'INTERPRETER="$THYROX_ROOT/.venv/bin/python"\n'
             'if [ ! -x "$INTERPRETER" ]; then\n'
+            '  LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
+            '  if [ -r "$LIB" ]; then\n'
+            '    # shellcheck source=/dev/null\n'
+            '    source "$LIB"\n'
+            '    thyrox_toolchain_degraded_notice \\\n'
+            '      "las herramientas Python de bin/, '
+            f'{display_name} entre ellas" \\\n'
+            '      "cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
+            '  fi\n'
             '  echo "bin/'
             f'{display_name}: falta el entorno del proveedor en $INTERPRETER." >&2\n'
             '  echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
@@ -430,7 +440,8 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
     return (
         "#!/usr/bin/env bash\n"
         f"{GENERATED_MARKER}\n"
-        'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+        'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+        'export THYROX_ROOT\n'
         'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
         f'exec "$THYROX_ROOT/{relative_target}" "$@"\n'
     )
@@ -613,6 +624,13 @@ def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Pat
     if not src.is_dir():
         return found
     for entry in sorted(src.rglob("*.ts")):
+        # El linker aislado de bun crea un `node_modules` por paquete
+        # —30 medidos bajo src/packages—, y `rglob` los recorre. Una
+        # dependencia que traiga un `bin/*.ts` con shebang entraria al
+        # plan de ESTE arbol. Hoy son 0, asi que el conteo no lo
+        # delata: es una fuga latente, no una viva.
+        if "node_modules" in entry.parts:
+            continue
         if not entry.is_file() or not is_typescript_entrypoint(entry):
             continue
         name = typescript_bin_name(entry, root)
@@ -648,7 +666,8 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
     return (
         "#!/usr/bin/env bash\n"
         f"{GENERATED_MARKER}\n"
-        'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+        'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+        'export THYROX_ROOT\n'
         'LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
         'if [ ! -r "$LIB" ]; then\n'
         '  echo "bin/'
