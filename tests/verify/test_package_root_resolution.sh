@@ -105,29 +105,41 @@ case "$SAL" in
     *) VISTO=otra ;;
 esac
 #
-# ESTOS DOS SIGUEN ROJOS, y su causa es OTRA que la que este comentario
-# afirmaba. Decia que los errores eran «de MODO ESTRICTO en los 5 paquetes
-# `@ant/*`», y lo llamaba medido. Medido de verdad (TASK-THYROX-0239, censo
-# en `.claude/jobs/typecheck-census-*`): los cinco `@ant` son **61 de 2821**
-# —2.2 %— y **dos de los cinco no aportan ni un error**. La causa real es
-# estructural y no de rigor: los 42 hermanos exponen FUENTE en su `exports`
-# (`./src/index.ts`), asi que el consumidor los recompila enteros bajo SUS
-# opciones y `skipLibCheck` no lo evita —salta los `.d.ts`, no los `.ts`—. De
-# ahi que **76 % de los errores del gate no sean del paquete que mide**.
+# ESTOS DOS SIGUEN ROJOS, y su causa YA NO ES la que este comentario decia.
+# Decia «hasta que los 42 esten repuntados», y eso caduco: 37 lo estan
+# (`src/typescript/emit_declarations.py --repoint`), su `exports` apunta a la
+# declaracion y el consumidor ya no recompila su fuente.
 #
-# El mecanismo que lo cierra es `src/typescript/emit_declarations.py`, y su efecto
-# esta medido por anulacion sobre `storage`: repuntado su `exports` a la
-# declaracion, el typecheck del consumidor pasa de 2821 a 2701 y storage de
-# 103 a 0, con los demas paquetes **exactamente iguales**.
+# Medido 2026-09-19, en cuatro pasos y con la prediccion escrita antes de
+# cada uno:
 #
-# Se dejan ROJOS a proposito hasta que los 42 esten repuntados: un caso
-# desactivado publicaria verde sobre una medicion que nunca ocurre, que es el
-# sub-patron D con esta suite como sujeto.
+#   2821  antes de emitir nada
+#   2656  repunte con la declaracion APLANADA — inerte: el `types` apuntaba a
+#         `dist/index.d.ts` y la ruta real es `outDir` + la relativa al
+#         `rootDir`, o sea `dist/src/index.d.ts`
+#    974  repunte con el rootDir preservado
+#    739  con los dos defectos de repunte inerte cerrados
 #
-# Y el caso de abajo MIDE CON `--strict` desde hoy. Sin el, el gate devuelve 0
-# sobre un arbol rojo —sus dos ultimas lineas lo hacen explicito— asi que la
-# asercion «sale 0 sobre el arbol limpio» no podia fallar por la unica causa
-# que le importa: era verde por construccion, no por el arbol.
+# Los 739 que quedan NO son de ningun paquete repuntado: **416 son propios de
+# cli** y **323 de `agent`**, que rehusa emitir porque su programa escapa a
+# `src/paths`, `src/store` y `src/task` —fuera de su propio paquete, que el
+# ensanche del `rootDir` no puede cubrir—. Los otros cuatro que rehusan
+# (`cli`, `observability`, `skills`, `tools`) no aportan al conteo de este
+# gate por la misma razon estructural.
+#
+# Se dejan ROJOS a proposito: los 416 propios de cli son codigo que no
+# compila, no un artefacto de resolucion. Un caso desactivado publicaria
+# verde sobre una medicion que nunca ocurre, que es el sub-patron D con esta
+# suite como sujeto.
+#
+# CAVEAT que decide si el 739 es durable: `dist/` esta en `.gitignore:44` y
+# tiene 0 archivos versionados, asi que esa cifra es una propiedad de ESTE
+# contenedor. En un clon nuevo no hay declaraciones, todo `types` cae al
+# `default` —fuente— y el conteo vuelve a 2821. Ver H-THYROX-150.
+#
+# Y el caso de abajo MIDE CON `--strict`. Sin el, el gate devuelve 0 sobre un
+# arbol rojo, asi que la asercion «sale 0 sobre el arbol limpio» no podia
+# fallar por la unica causa que le importa: era verde por construccion.
 afirmar "cli-typecheck mide los dos proyectos del paquete" mide "$VISTO"
 afirmar "cli-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
 

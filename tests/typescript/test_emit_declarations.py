@@ -360,6 +360,85 @@ def main():
                  if "dist" not in p.parts and "node_modules" not in p.parts]
         check("y su declaracion no sale de dist/", [], fuera)
 
+    # --- y el repunte apunta a la declaracion que REALMENTE se escribio ----
+    #
+    # EL DEFECTO QUE ESTE PAR CIERRA. `emit_package` ensancha el `rootDir` a
+    # `.` cuando todos los escapes caen dentro del paquete, y tsc escribe en
+    # `dist/src/**`. `repoint_manifest` recomputaba la forma por su cuenta,
+    # obtenia `src` y escribia `./dist/*.d.ts`: un `types` que apunta al
+    # vacio, tsc cae al `default` —que es fuente— y el repunte es INERTE.
+    #
+    # Medido en el arbol real antes de cerrarlo: `permission` aportaba 68 de
+    # los 974 errores del consumidor con su `exports` ya repuntado, porque
+    # `dist/src/components/FallbackPermissionRequest.d.ts` existe y
+    # `dist/components/FallbackPermissionRequest.d.ts` no.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_types_stub(root)
+        pkg = root / "interno"
+        (pkg / "src").mkdir(parents=True)
+        (pkg / "internal").mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/interno", "version": "0.1.0", "private": True,
+            "main": "./src/index.ts", "types": "./src/index.ts",
+            "exports": {".": "./src/index.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "internal" / "helper.ts").write_text(
+            "export const helps = (n: number): number => n + 1\n", encoding="utf8")
+        (pkg / "src" / "index.ts").write_text(
+            "import { helps } from '../internal/helper.ts'\n"
+            "export const use = (n: number): number => helps(n)\n", encoding="utf8")
+        mod.emit_package(pkg)
+        mod.repoint_manifest(pkg)
+        manifest = json.loads((pkg / "package.json").read_text(encoding="utf8"))
+        destinos = [v["types"] for v in manifest["exports"].values()
+                    if isinstance(v, dict)]
+        ausentes = [d for d in destinos if not (pkg / d.lstrip("./")).exists()]
+        check("el repunte tras ensanchar apunta a un archivo que existe",
+              [], ausentes)
+
+    # --- el comodin de raiz declara TODO el paquete como superficie --------
+    #
+    # `config` declara `"./*": "./*.ts"`. Su directorio es `.`, y la rama de
+    # colapso lo filtraba con `d != "."`, asi que el comodin no aportaba nada
+    # al `include`: quedaba en los directorios NOMBRADOS y `plugin/**` no
+    # estaba entre ellos. Cinco archivos de `plugin/` no recibian `.d.ts`.
+    #
+    # Y la cascada es peor que los cinco: un subpath sin declaracion cae al
+    # `default`, que es fuente; un import RELATIVO desde ese `.ts` resuelve
+    # `.ts` antes que `.d.ts` y arrastra a sus vecinos. De los 22 archivos de
+    # `plugin/` que el consumidor compilaba, 17 SI tenian declaracion.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "comodin"
+        pkg.mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/comodin", "version": "0.1.0", "private": True,
+            "exports": {"./*": "./*.ts"},
+        }) + "\n", encoding="utf8")
+        check("un comodin de raiz declara el paquete entero",
+              (".", ["**/*"]), mod._project_shape(pkg))
+
+    # --- el repunte REHUSA cuando su destino no existe ---------------------
+    #
+    # El gate que habria atajado los dos defectos de arriba el dia que se
+    # introdujeron. Sin el, `repoint_manifest` devuelve True habiendo escrito
+    # un `types` al vacio, y el unico sintoma es un conteo del consumidor que
+    # no baja lo que deberia — a cuatro pasos de la causa.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "sindist"
+        (pkg / "src").mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/sindist", "version": "0.1.0", "private": True,
+            "exports": {".": "./src/index.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "src" / "index.ts").write_text("export const x = 1\n", encoding="utf8")
+        antes = (pkg / "package.json").read_text(encoding="utf8")
+        check("sin dist/ el repunte rehusa", False, mod.repoint_manifest(pkg))
+        check("y NO toca el manifiesto", antes,
+              (pkg / "package.json").read_text(encoding="utf8"))
+
     # --- el gate por paquete: mide sin mutar -------------------------------
     #
     # `EmitResult.errors` ya ES el conteo por paquete; lo que faltaba era una

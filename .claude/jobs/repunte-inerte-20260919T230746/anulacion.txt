@@ -1,0 +1,12 @@
+=== ANULACION 1: el comodin de raiz deja de declarar el paquete entero
+  FALLO un comodin de raiz declara el paquete entero
+test_emit_declarations: 38 ok, 1 falla
+
+=== ANULACION 2: resolve_declaration deja de mirar el disco (vuelve a derivar)
+  FALLO el repunte tras ensanchar apunta a un archivo que existe
+  FALLO sin dist/ el repunte rehusa
+  FALLO y NO toca el manifiesto
+test_emit_declarations: 36 ok, 3 falla
+
+=== RESTAURADO:
+test_emit_declarations: 39 ok, 0 falla

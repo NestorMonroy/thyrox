@@ -6,107 +6,107 @@
   "description": "La decision previa a ejecutar una herramienta: reglas, modos y confinamiento, fail-closed. Lo que el bucle LLAMA antes de cada herramienta (permission.ts, T-008/025/026/027). PORTE COMPLETO desde claude-code-nestor-monroy-tools (TASK-DOCS-0201) de: host.ts, errors.ts, contracts.ts, permissionRuleParser.ts, PermissionResult.ts, autoModeDenials.ts, autoModeState.ts, denialTracking.ts, bashClassifier.ts, dangerousPatterns.ts, shellRuleMatching.ts, shadowedRuleDetection.ts, PermissionRule.ts, PermissionMode.ts, PermissionUpdate.ts, index.ts (el barrel, 14 reexports), appStateHooks.ts, testing/index.ts, commands/add-dir/validation.ts y commands/rename/generateSessionName.ts. PORTE PARCIAL DECLARADO \u2014cada archivo dice en su docstring que falta y por que\u2014 de: permissions.ts (11/17), filesystem.ts (15/29), pathValidation.ts (6/11), getNextPermissionMode.ts (1/2, sin auto-mode) y permissionSetup.ts (12/35: el bloque de permisos peligrosos, lineas 101-598 de la fuente; los otros 23 exports esperan banderas de caracteristica, estado de auto mode, arranque desde la linea de comandos y telemetria \u2014 sucesor TASK-THYROX-0004). TRES AVISOS RETIRADOS POR MEDICION: PermissionRule/PermissionMode/PermissionUpdate figuraban como parciales (4/6, 11/13, 6/8) y estan completos (6/6, 14/14, 10/10); allWorkingDirectories y pathInWorkingPath figuraban bloqueados por SandboxManager y no lo tocan. FUERA, RE-MEDIDO 2026-09-17 (H-THYROX-60; banco docs: .claude/workbench/bloqueo-real-de-permission-20260917T191600). El universo son 106 modulos sin test en la fuente \u201461 .ts y 45 .tsx\u2014 mas tres assets .txt que yoloSystemPrompt hace require; aqui hay 63 .ts y 0 .tsx, asi que faltan 69. La cifra anterior decia 24 porque `find -name '*.ts'` no ve los componentes. HOY NINGUNO ES PORTABLE: cada uno importa un archivo que no existe en el arbol, un hermano sin portar, o react. Los dos que salen libres son stubs de tres lineas de la propia fuente. Por bloqueo: react, que 61 de los 69 tocan y NO resuelve desde aqui \u2014convencion invertida respecto a la referencia, que iza a la raiz; la decision es TASK-THYROX-0098\u2014; `provider/user.ts` para yoloSystemPrompt; `agent/sideQuery.ts` para permissionExplainer y classifierStallTracking, que ademas espera `provider/antModels.ts`; `shell/sandbox.ts` para toolPermission/permissionLogging; y el arbol de tool-registry para classifierDecision y yoloClassifier. EL BLOQUEO DE ENLACE ES REAL Y MAS ANCHO DE LO DECLARADO: este paquete enlaza 9 hermanos \u2014agent, app-host, config, local-observability, output, provider, shell, storage, tool-registry\u2014 y los 69 ausentes importan 16. Faltan bridge, command-runtime, ide, mcp-runtime, repl y swarm. Verificado por conducta, no por manifiesto: `bun -e \"import('@thyrox/command-runtime/runtime')\"` desde aqui da `Cannot find module` aunque ese paquete declare el comodin `./*` y su runtime.ts exista. commands/index.ts suma ademas un `import('./permissions.js')` dinamico a un hermano sin portar. UN AVISO RETIRADO POR MEDICION: permissionLogging figuraba bloqueado tambien por app-host/bootstrap/state y agent/eventMetadata, que ya existen; hoy solo lo bloquea shell/sandbox. La raiz \".\" apunta a permission.ts y NO al barrel, que vive en \"./index.js\": el barrel arrastra permissionSetup y con el la cadena de @thyrox/config/settings, y los tres consumidores del specifier raiz quieren entre los tres dos simbolos y un tipo.",
   "exports": {
     ".": {
-      "types": "./dist/src/permission.d.ts",
+      "types": "./dist/permission.d.ts",
       "default": "./src/permission.ts"
     },
     "./host.js": {
-      "types": "./dist/src/host.d.ts",
+      "types": "./dist/host.d.ts",
       "default": "./src/host.ts"
     },
     "./errors.js": {
-      "types": "./dist/src/errors.d.ts",
+      "types": "./dist/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./contracts.js": {
-      "types": "./dist/src/contracts.d.ts",
+      "types": "./dist/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./permissionTypes.js": {
-      "types": "./dist/src/permissionTypes.d.ts",
+      "types": "./dist/permissionTypes.d.ts",
       "default": "./src/permissionTypes.ts"
     },
     "./permissionRuleParser.js": {
-      "types": "./dist/src/permissionRuleParser.d.ts",
+      "types": "./dist/permissionRuleParser.d.ts",
       "default": "./src/permissionRuleParser.ts"
     },
     "./permissions.js": {
-      "types": "./dist/src/permissions.d.ts",
+      "types": "./dist/permissions.d.ts",
       "default": "./src/permissions.ts"
     },
     "./filesystem.js": {
-      "types": "./dist/src/filesystem.d.ts",
+      "types": "./dist/filesystem.d.ts",
       "default": "./src/filesystem.ts"
     },
     "./pathValidation.js": {
-      "types": "./dist/src/pathValidation.d.ts",
+      "types": "./dist/pathValidation.d.ts",
       "default": "./src/pathValidation.ts"
     },
     "./permissionSetup.js": {
-      "types": "./dist/src/permissionSetup.d.ts",
+      "types": "./dist/permissionSetup.d.ts",
       "default": "./src/permissionSetup.ts"
     },
     "./index.js": {
-      "types": "./dist/src/index.d.ts",
+      "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./appStateHooks.js": {
-      "types": "./dist/src/appStateHooks.d.ts",
+      "types": "./dist/appStateHooks.d.ts",
       "default": "./src/appStateHooks.ts"
     },
     "./testing": {
-      "types": "./dist/src/testing/index.d.ts",
+      "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./testing/index.js": {
-      "types": "./dist/src/testing/index.d.ts",
+      "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./commands/add-dir/validation.js": {
-      "types": "./dist/src/commands/add-dir/validation.d.ts",
+      "types": "./dist/commands/add-dir/validation.d.ts",
       "default": "./src/commands/add-dir/validation.ts"
     },
     "./commands/rename/generateSessionName.js": {
-      "types": "./dist/src/commands/rename/generateSessionName.d.ts",
+      "types": "./dist/commands/rename/generateSessionName.d.ts",
       "default": "./src/commands/rename/generateSessionName.ts"
     },
     "./*": {
-      "types": "./dist/src/*.d.ts",
+      "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
     },
     "./*.js": {
-      "types": "./dist/src/*.d.ts",
+      "types": "./dist/*.d.ts",
       "default": "./src/*.ts"
     },
     "./components/ComputerUseApproval/ComputerUseApproval.js": {
-      "types": "./dist/src/components/ComputerUseApproval/ComputerUseApproval.d.ts",
+      "types": "./dist/components/ComputerUseApproval/ComputerUseApproval.d.ts",
       "default": "./src/components/ComputerUseApproval/ComputerUseApproval.tsx"
     },
     "./components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.js": {
-      "types": "./dist/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.d.ts",
+      "types": "./dist/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.d.ts",
       "default": "./src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx"
     },
     "./components/FilePermissionDialog/permissionOptions.js": {
-      "types": "./dist/src/components/FilePermissionDialog/permissionOptions.d.ts",
+      "types": "./dist/components/FilePermissionDialog/permissionOptions.d.ts",
       "default": "./src/components/FilePermissionDialog/permissionOptions.tsx"
     },
     "./components/PermissionDialog.js": {
-      "types": "./dist/src/components/PermissionDialog.d.ts",
+      "types": "./dist/components/PermissionDialog.d.ts",
       "default": "./src/components/PermissionDialog.tsx"
     },
     "./components/PermissionRequest.js": {
-      "types": "./dist/src/components/PermissionRequest.d.ts",
+      "types": "./dist/components/PermissionRequest.d.ts",
       "default": "./src/components/PermissionRequest.tsx"
     },
     "./components/SandboxPermissionRequest.js": {
-      "types": "./dist/src/components/SandboxPermissionRequest.d.ts",
+      "types": "./dist/components/SandboxPermissionRequest.d.ts",
       "default": "./src/components/SandboxPermissionRequest.tsx"
     },
     "./components/WorkerPendingPermission.js": {
-      "types": "./dist/src/components/WorkerPendingPermission.d.ts",
+      "types": "./dist/components/WorkerPendingPermission.d.ts",
       "default": "./src/components/WorkerPendingPermission.tsx"
     },
     "./components/rules/AddWorkspaceDirectory.js": {
-      "types": "./dist/src/components/rules/AddWorkspaceDirectory.d.ts",
+      "types": "./dist/components/rules/AddWorkspaceDirectory.d.ts",
       "default": "./src/components/rules/AddWorkspaceDirectory.tsx"
     }
   },
@@ -140,5 +140,5 @@
     "chalk": "^4.1.2",
     "zod": "^4.3.6"
   },
-  "types": "./dist/src/permission.d.ts"
+  "types": "./dist/permission.d.ts"
 }

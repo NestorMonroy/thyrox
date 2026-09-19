@@ -1,0 +1,1 @@
+emit-config: se recogio LEYENDO el log y su __BG_EXIT__=0; se solto del ledger con 'forget', que es el verbo de abandono. El resultado SI se leyo — el verbo fue el equivocado, no la conducta.

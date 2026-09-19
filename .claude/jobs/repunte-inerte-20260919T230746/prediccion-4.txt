@@ -1,0 +1,2 @@
+--- permission: repoint_manifest -> True
+--- config: repoint_manifest -> True

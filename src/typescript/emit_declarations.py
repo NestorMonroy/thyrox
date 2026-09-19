@@ -316,6 +316,17 @@ def _project_shape(package_dir: Path):
         directorio = entry_directory(destino)
         if directorio and directorio not in directorios:
             directorios.append(directorio)
+    # Un comodin ANCLADO EN LA RAIZ del paquete —`"./*": "./*.ts"`— declara
+    # como superficie todo el paquete, no un directorio. `entry_directory` le
+    # da `""` porque su dirname es vacio, asi que la rama de colapso lo
+    # filtraba y el `include` quedaba en los directorios NOMBRADOS.
+    #
+    # Medido en `config`: sus 7 directorios nombrados no incluyen `plugin/**`
+    # —solo `plugin/core/**`— y cinco archivos de `plugin/` se quedaban sin
+    # `.d.ts`. El consumidor caia a fuente en esos cinco y arrastraba a sus
+    # 17 vecinos por import relativo, que resuelve `.ts` antes que `.d.ts`.
+    if any("*" in d and not entry_directory(d) for d in export_targets(manifest)):
+        return ".", ["**/*"]
     if not directorios:
         return ".", ["*.ts"]
     # El `rootDir` es el ANCESTRO COMUN de los directorios declarados, no el
@@ -536,6 +547,75 @@ def declaration_for(source_entry: str, root_dir: str = "") -> str:
 _declaration_for = declaration_for
 
 
+def _declaration_exists(package_dir: Path, candidate: str,
+                        source_entry: str = None) -> bool:
+    """Si la declaracion que `candidate` nombra existe de verdad en el disco.
+
+    Un `candidate` con comodin no se puede probar con `exists()`: se expande
+    y basta con que la expansion encuentre algo. Cero coincidencias es
+    ausencia, igual que un archivo concreto que no esta.
+    """
+    relativa = candidate.lstrip("./")
+    if "*" not in relativa:
+        return (package_dir / relativa).exists()
+    if source_entry is None:
+        return any(package_dir.glob(relativa))
+    # UNA coincidencia no basta. Un comodin cubre N archivos, y el defecto que
+    # se quiere ver es que ALGUNOS no tengan declaracion: con `any()` el
+    # primero que exista tapa a los demas y el veredicto no discrimina — el
+    # sub-patron D con este gate como sujeto.
+    #
+    # Medido en `config`: de los 22 archivos de `plugin/` que el consumidor
+    # compilaba, 5 no tenian `.d.ts` y 17 si. Un `any()` publicaba verde.
+    fuentes = sorted(package_dir.glob(source_entry.lstrip("./")))
+    if not fuentes:
+        return any(package_dir.glob(relativa))
+    for fuente in fuentes:
+        comodin = str(fuente.relative_to(package_dir))
+        comodin = os.path.splitext(comodin)[0]
+        # El comodin del destino ocupa el mismo sitio que el de la fuente: se
+        # sustituye por lo que la fuente puso ahi, no por el nombre entero.
+        prefijo, _, sufijo = source_entry.lstrip("./").partition("*")
+        sufijo = os.path.splitext(sufijo)[0]
+        if not comodin.startswith(prefijo):
+            continue
+        medio = comodin[len(prefijo):]
+        if sufijo and medio.endswith(sufijo):
+            medio = medio[: -len(sufijo)] if sufijo else medio
+        if not (package_dir / relativa.replace("*", medio, 1)).exists():
+            return False
+    return True
+
+
+def resolve_declaration(package_dir: Path, source_entry: str, root_dir: str):
+    """La declaracion que de verdad se escribio para una entrada de fuente.
+
+    No se DERIVA de la forma del proyecto: se busca en el disco. La forma
+    derivada y la que `emit_package` uso pueden diferir —`emit_package`
+    ensancha el `rootDir` a `.` cuando todos los escapes caen dentro del
+    paquete— y una segunda derivacion no tiene como saberlo.
+
+    Medido en `permission`: su emision aterrizo en `dist/src/**` tras el
+    ensanche, y el repunte derivado escribia `./dist/*.d.ts`. El `types`
+    apuntaba al vacio, tsc caia al `default` —que es fuente— y el paquete
+    aportaba 68 errores al consumidor con su `exports` ya repuntado.
+
+    Devuelve `None` cuando ninguna candidata existe: eso es una ausencia
+    REAL, y quien llama tiene que rehusar en vez de escribir un puntero al
+    vacio.
+    """
+    package_dir = Path(package_dir)
+    candidatas = []
+    for raiz in (root_dir, "."):
+        candidata = declaration_for(source_entry, raiz)
+        if candidata not in candidatas:
+            candidatas.append(candidata)
+    for candidata in candidatas:
+        if _declaration_exists(package_dir, candidata, source_entry):
+            return candidata
+    return None
+
+
 def repoint_manifest(package_dir: Path) -> bool:
     """Apunta CADA entrada de `exports` a su declaracion, conservando la fuente.
 
@@ -568,13 +648,31 @@ def repoint_manifest(package_dir: Path) -> bool:
         exports = {".": exports or manifest.get("main") or "./index.ts"}
 
     repointed = {}
+    ausentes = []
     for subpath, entry in exports.items():
         source_entry = entry.get("default") if isinstance(entry, dict) else entry
         if not isinstance(source_entry, str):
             repointed[subpath] = entry
             continue
-        repointed[subpath] = {"types": declaration_for(source_entry, root_dir),
-                              "default": source_entry}
+        declaracion = resolve_declaration(package_dir, source_entry, root_dir)
+        if declaracion is None:
+            ausentes.append((subpath, declaration_for(source_entry, root_dir)))
+            continue
+        repointed[subpath] = {"types": declaracion, "default": source_entry}
+
+    # Un `types` que apunta al vacio no falla: tsc cae al `default`, que es
+    # fuente, y el repunte queda INERTE sin emitir un byte. El unico sintoma
+    # es un conteo del consumidor que no baja lo que deberia, a cuatro pasos
+    # de la causa. Se rehusa entero y se nombra cada destino ausente.
+    if ausentes:
+        print(f"{package_dir.name}: repunte INERTE — "
+              f"{len(ausentes)} destino(s) de types no existen:", file=sys.stderr)
+        for subpath, candidata in ausentes:
+            print(f"  {subpath} -> {candidata}", file=sys.stderr)
+        print("  Corre la emision antes del repunte: "
+              "emit_declarations <paquete>", file=sys.stderr)
+        return False
+
     manifest["exports"] = repointed
 
     root = repointed.get(".")
