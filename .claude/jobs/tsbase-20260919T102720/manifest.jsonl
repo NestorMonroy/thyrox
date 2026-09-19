@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bun run typecheck 2>&1", "started_at": "2026-09-19T10:27:20+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-19T10:28:57+00:00", "duration_seconds": 97.331905}

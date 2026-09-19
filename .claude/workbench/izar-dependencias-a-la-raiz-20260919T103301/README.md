@@ -31,9 +31,20 @@ medido antes de escribirlo:
 
 | # | Ceguera | Medición |
 |---|---|---|
-| 1 | **`import()` dinámico** invisible: su patrón era `(?:from\|import\|require\()\s*['"]` y entre `import` y la comilla hay un paréntesis | **1693** llamadas `import(...)` en `src/packages`, ninguna vista. De ahí salen `@aws-sdk/*`, `@azure/identity`, `@smithy/*` — que el censo de 90 nunca nombró |
+| 1 | **`import()` dinámico** invisible: su patrón era `(?:from\|import\|require\()\s*['"]` y entre `import` y la comilla hay un paréntesis | **19** nombres de paquete llegan **sólo** por `import()` (383 specifiers externos): `@aws-sdk/*`, `@azure/identity`, `@smithy/*`, `@anthropic-ai/*-sdk`, los tres `@thyrox/*-napi`, `cacache`, `cli-highlight`, `fflate`, `plist`, `selfsigned`, `sharp`, `turndown` — que el censo de 90 nunca nombró. Los publica `probes/remeasure_dynamic_imports.py` |
 | 2 | **Autorreferencia**: un paquete con `exports` puede importarse por su propio nombre | PROVEN por conducta desde `src/packages/agent`: `await import('@thyrox/agent/idTypes')` → `OK — exports: asAgentId,asSessionId,toAgentId`. Son **3** (`agent`, `cli`, `tool-registry`) y no son deuda |
 | 3 | **El izado**: su docstring afirmaba *«sin esa línea el import no resuelve»* | Falso en un workspace. `react` lo importan 8 paquetes sin declararlo y da **0** TS2307, porque la raíz sí lo declara |
+
+> **Corregido 2026-09-19T10:54:49 (:ref:`h-thyrox-129`).** Esta fila decía
+> *«**1693** llamadas `import(...)` en `src/packages`»*, y la cifra llegó sin el
+> comando que la produce. No reproduce: `probes/remeasure_dynamic_imports.py`
+> enumera **doce** lecturas del enunciado y ninguna da 1693 — la más próxima es
+> **1697**, la familia *llamada*, que cuenta todo `import(` incluido el de
+> argumento variable y el de posición de tipo. Esa familia no puede sostener
+> nada sobre dependencias: una llamada sin specifier literal no se reduce a
+> nombre de paquete. Lo que sostiene *«el censo de 90 era una cota inferior»*
+> son **19 nombres**, y la conclusión sobrevive entera — sólo su magnitud era
+> otra. Sub-patrón A con el propio hallazgo que cierra una ceguera como sujeto.
 
 Por la 3, este instrumento **mide la resolución por conducta** (`bun -e "await
 import(X)"` desde el directorio del paquete), no la infiere del manifiesto. Su
@@ -103,11 +114,16 @@ medido aparte abajo.
 
 ## Lo que este banco NO cierra
 
-- **La instalación.** Declarar cierra el hueco de manifiesto; el TS2307 sólo cae
-  cuando el paquete está en `node_modules`. Un `bun install` que traiga
-  `@aws-sdk/*`, `@azure/identity` y `sharp` es de un tamaño que el disco de este
-  contenedor —**1.7 G libres, 96 % usado**, y `git gc` ya murió sin espacio
-  (#372)— no admite a ciegas. El estado del typecheck tras declarar, sin
-  instalar, está en `outputs/`.
+- **La instalación, y el bloqueo está MEDIDO, no supuesto.** Declarar cierra el
+  hueco de manifiesto; el TS2307 sólo cae cuando el paquete está en
+  `node_modules`. `bun install --dry-run` resuelve en 4.73 s y publica **1551
+  paquetes**. El disco no los admite: el propio dry-run bajó el libre de
+  **1.7 G a 1.1 G** al poblar la caché de bun (897 M), y lo único reclamable
+  del árbol son 52 M de logs de job más esa misma caché —que es justo lo que la
+  instalación necesita—. `odoo-tools` (18 G) y `nestormonroy/` (2.3 G) son
+  referencia de **sólo lectura**. Vaciar la caché deja 2.0 G y obliga a volver
+  a descargar, así que tampoco alcanza. Medición completa en
+  `outputs/instalacion-no-cabe.txt`. **No es una decisión de posponer: es un
+  bloqueo del contenedor**, y el manifiesto queda correcto para donde sí quepa.
 - **`@anthropic/ink` vive en `src/packages/@ant/ink/`** — su `name` no coincide
   con su directorio. Es **#518**, no se tocó aquí.

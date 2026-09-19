@@ -6,8 +6,16 @@ este:
 
 1. **`import()` dinamico.** Su `SPECIFIER` era
    ``(?:from|import|require\()\s*['"]`` — entre `import` y la comilla hay un
-   parentesis, asi que `\s*` no casa. Medido: **1693** llamadas `import(...)`
-   en `src/packages`, ninguna vista. El censo de 90 era una cota inferior.
+   parentesis, asi que `\s*` no casa. Medido: **19** nombres de paquete llegan
+   SOLO por `import()` (383 specifiers externos), y ninguno se veia. El censo
+   de 90 era una cota inferior. Las cifras las publica
+   `remeasure_dynamic_imports.py`; no se transcriben aqui.
+
+   CORREGIDO 2026-09-19 (H-THYROX-129): este punto decia «**1693** llamadas
+   `import(...)`» y esa cifra no reproduce — doce lecturas del enunciado dan
+   cero coincidencias, y la mas proxima (1697) cuenta LLAMADAS, no specifiers.
+   Una llamada sin specifier literal no se reduce a nombre de paquete, asi que
+   esa familia no podia sostener la conclusion que se le colgaba.
 
 2. **Autorreferencia.** Un paquete puede importarse a si mismo por su propio
    nombre si declara `exports` — es la regla de Node, y bun la sigue. Medido
