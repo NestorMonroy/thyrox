@@ -1,4 +1,4 @@
-# @claude-code-how-works/stdin-napi
+# @thyrox/stdin-napi
 
 In-process TTY stdin reader for ccb. Opens the terminal fd directly, sets
 raw mode via `termios`, and does a blocking `read()` on a dedicated OS

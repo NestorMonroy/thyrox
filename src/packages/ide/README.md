@@ -1,4 +1,4 @@
-# @claude-code-how-works/ide
+# @thyrox/ide
 
 IDE integration adapters: VS Code / JetBrains terminal-aware behaviors.
 

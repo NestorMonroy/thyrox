@@ -1,4 +1,4 @@
-# @claude-code-how-works/output
+# @thyrox/output
 
 Output formatters, ANSI handling, terminal width truncation, CLI
 highlight, and figures/symbols.

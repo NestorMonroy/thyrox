@@ -1,4 +1,4 @@
-# @claude-code-how-works/repl
+# @thyrox/repl
 
 The interactive Ink/React REPL screen + every UI component, hook, and
 slash-command renderer that REPLView composes.

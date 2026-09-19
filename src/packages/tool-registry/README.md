@@ -1,4 +1,4 @@
-# @claude-code-how-works/tool-registry
+# @thyrox/tool-registry
 
 Built-in tool implementations + the registry that assembles them at boot.
 

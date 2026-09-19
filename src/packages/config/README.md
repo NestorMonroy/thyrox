@@ -1,4 +1,4 @@
-# @claude-code-how-works/config
+# @thyrox/config
 
 Settings, env gates, platform detection, plugin loader, lazy schema
 validation, and a small leaf-utility drawer.

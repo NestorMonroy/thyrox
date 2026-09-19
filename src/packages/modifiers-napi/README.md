@@ -1,4 +1,4 @@
-# @claude-code-how-works/modifiers-napi
+# @thyrox/modifiers-napi
 
 Native macOS keyboard modifier query via `bun:ffi` against the system
 Carbon framework's `CGEventSourceFlagsState`. Used as a fallback for

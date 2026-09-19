@@ -1,4 +1,4 @@
-# @ant/computer-use-input
+# @thyrox/computer-use-input
 
 Mouse/keyboard input simulation (dispatcher + per-platform backend: darwin, win32, linux).
 

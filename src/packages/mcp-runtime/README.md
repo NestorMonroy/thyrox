@@ -1,4 +1,4 @@
-# @claude-code-how-works/mcp-runtime
+# @thyrox/mcp-runtime
 
 Model Context Protocol client/server runtime: connection pool, lifecycle,
 OAuth (simplified), tool aggregation.

@@ -1,4 +1,4 @@
-# @claude-code-how-works/provider
+# @thyrox/provider
 
 Claude API client + adapters for Anthropic, AWS Bedrock, Google Vertex,
 Azure, OpenAI-compatible endpoints, and Gemini.

@@ -1,4 +1,4 @@
-# @claude-code-how-works/app-host
+# @thyrox/app-host
 
 Composition root: bootstrap state, session-global singletons (cwd,
 project root, model overrides, permission mode), command registry

@@ -1,4 +1,4 @@
-# @claude-code-how-works/voice
+# @thyrox/voice
 
 Push-to-talk voice mode: WebSocket STT (Nova 3) streaming, OAuth gate,
 recording state machine.

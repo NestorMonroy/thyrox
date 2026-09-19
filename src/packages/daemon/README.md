@@ -1,4 +1,4 @@
-# @claude-code-how-works/daemon
+# @thyrox/daemon
 
 Long-running supervisor process: worker registry, IPC, lifecycle.
 

@@ -1,4 +1,4 @@
-# @claude-code-how-works/swarm
+# @thyrox/swarm
 
 Multi-agent orchestration: worktree-backed parallel sessions, sub-agent
 lifecycle, agent-to-agent message routing.

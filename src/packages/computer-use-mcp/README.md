@@ -1,4 +1,4 @@
-# @ant/computer-use-mcp
+# @thyrox/computer-use-mcp
 
 MCP server registering screenshot, mouse/keyboard, clipboard, and application-management tools.
 

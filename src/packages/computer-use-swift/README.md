@@ -1,4 +1,4 @@
-# @ant/computer-use-swift
+# @thyrox/computer-use-swift
 
 Screenshot + macOS application management backend (dispatcher + per-platform implementation).
 

@@ -1,4 +1,4 @@
-# @claude-code-how-works/server
+# @thyrox/server
 
 HTTP/WebSocket server endpoints: directConnectManager, RemoteSessionManager,
 SSH session bridge.

@@ -1,4 +1,4 @@
-# @claude-code-how-works/bridge
+# @thyrox/bridge
 
 Remote-control / bridge mode: JWT auth, message transport, permission
 callback bridge.
