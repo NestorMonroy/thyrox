@@ -439,6 +439,100 @@ def main():
         check("y NO toca el manifiesto", antes,
               (pkg / "package.json").read_text(encoding="utf8"))
 
+    # --- los tests del paquete NO son superficie declarada -----------------
+    #
+    # El comodin de raiz declara el paquete entero, y eso arrastra sus
+    # `__tests__`. Medido en `agent` al cerrar el caso anterior: su propio
+    # subio de 463 a 1565 entre los dos baselines congelados, y **151 de los
+    # 158** fallos de `bun:test` viven en un directorio `__tests__`. No es un
+    # defecto de declaracion: son archivos que el `exports` nunca quiso como
+    # superficie y que solo compilan con `@types/bun`.
+    #
+    # Emitir un `.d.ts` de un test es trabajo que nadie consume: ningun
+    # consumidor entra por `@pkg/__tests__/algo`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        write_types_stub(root)
+        pkg = root / "contests"
+        (pkg / "__tests__").mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/contests", "version": "0.1.0", "private": True,
+            "exports": {"./*": "./*.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "util.ts").write_text(
+            "export const dup = (n: number): number => n * 2\n", encoding="utf8")
+        (pkg / "__tests__" / "util.test.ts").write_text(
+            "import { it } from 'bun:test'\n"
+            "import { dup } from '../util.ts'\n"
+            "it('dup', () => { dup(2) })\n", encoding="utf8")
+        (pkg / "algo.spec.ts").write_text(
+            "import { it } from 'bun:test'\n"
+            "it('otro', () => {})\n", encoding="utf8")
+        resultado = mod.emit_package(pkg)
+        check("un paquete con tests emite igual", True, resultado.emitted)
+        emitidas = sorted(str(p.relative_to(pkg / mod.OUTPUT_DIR))
+                          for p in (pkg / mod.OUTPUT_DIR).rglob("*.d.ts"))
+        check("y la declaracion del modulo si sale", True, "util.d.ts" in emitidas)
+        check("pero la del test NO", [], [e for e in emitidas
+                                          if "__tests__" in e or ".spec." in e])
+        check("y el test no aporta errores propios", 0, resultado.own_errors)
+
+    # --- el comodin del `exports` CRUZA `/`, y el glob de Python no --------
+    #
+    # En la especificacion de `exports` de Node, el `*` de `"./*": "./*.ts"`
+    # casa tambien rutas anidadas: `@pkg/plugin/x` resuelve a `./plugin/x.ts`.
+    # El `glob` de Python trata `*` como «sin cruzar `/`», asi que verificar
+    # con el literal mide SOLO el nivel superior.
+    #
+    # Es la ceguera que dejo pasar el defecto real: los 5 archivos de
+    # `config/plugin/` sin `.d.ts` NO eran de nivel superior, y el INERTE que
+    # el gate publico vino de otro archivo. Acerto por otra razon, que es
+    # acertar por casualidad.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "anidado"
+        (pkg / "hondo").mkdir(parents=True)
+        (pkg / mod.OUTPUT_DIR).mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/anidado", "version": "0.1.0", "private": True,
+            "exports": {"./*": "./*.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "raiz.ts").write_text("export const a = 1\n", encoding="utf8")
+        (pkg / "hondo" / "dentro.ts").write_text("export const b = 2\n", encoding="utf8")
+        # La declaracion del de RAIZ existe; la del ANIDADO no.
+        (pkg / mod.OUTPUT_DIR / "raiz.d.ts").write_text(
+            "export declare const a: number\n", encoding="utf8")
+        check("el comodin ve el archivo ANIDADO, no solo el de raiz",
+              False, mod.repoint_manifest(pkg))
+        # Y con la del anidado presente, deja de rehusar.
+        (pkg / mod.OUTPUT_DIR / "hondo").mkdir(parents=True)
+        (pkg / mod.OUTPUT_DIR / "hondo" / "dentro.d.ts").write_text(
+            "export declare const b: number\n", encoding="utf8")
+        check("con las dos declaraciones, repunta", True, mod.repoint_manifest(pkg))
+
+    # --- y un test sin declaracion NO hace rehusar el repunte --------------
+    #
+    # El corolario del `TEST_EXCLUDE`: si la emision salta los tests a
+    # proposito, la verificacion no puede exigirlos. Sin este descuento el
+    # repunte de todo paquete con tests rehusaria para siempre, que es el
+    # mecanismo bloqueandose a si mismo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "contest"
+        (pkg / "__tests__").mkdir(parents=True)
+        (pkg / mod.OUTPUT_DIR).mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/contest", "version": "0.1.0", "private": True,
+            "exports": {"./*": "./*.ts"},
+        }) + "\n", encoding="utf8")
+        (pkg / "raiz.ts").write_text("export const a = 1\n", encoding="utf8")
+        (pkg / "__tests__" / "raiz.test.ts").write_text("export const t = 1\n",
+                                                        encoding="utf8")
+        (pkg / mod.OUTPUT_DIR / "raiz.d.ts").write_text(
+            "export declare const a: number\n", encoding="utf8")
+        check("un test sin declaracion no hace rehusar", True,
+              mod.repoint_manifest(pkg))
+
     # --- el gate por paquete: mide sin mutar -------------------------------
     #
     # `EmitResult.errors` ya ES el conteo por paquete; lo que faltaba era una

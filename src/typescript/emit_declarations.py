@@ -42,6 +42,7 @@ fuente que no compila. Confundir las dos cosas es el sub-patron C.
 """
 from __future__ import annotations
 
+import fnmatch
 import json
 import os
 import re
@@ -248,10 +249,31 @@ def _read_manifest(package_dir: Path) -> dict:
 #: `--check` y una emision concurrentes no se pisen el archivo.
 CHECK_FILE = "tsconfig.check.json"
 
+#: Los tests del propio paquete NO son superficie declarada. Ningun consumidor
+#: entra por `@pkg/__tests__/algo`, asi que su `.d.ts` es trabajo que nadie
+#: consume — y ademas solo compilan con `@types/bun`, que el proyecto de
+#: emision no declara.
+#:
+#: Medido en `agent`: su propio subio de 463 a 1565 al declarar el paquete
+#: entero como superficie, y 151 de los 158 fallos de `bun:test` viven en un
+#: directorio `__tests__`.
+#:
+#: `testing/` NO entra: un modulo de ayuda para tests AJENOS si es superficie
+#: —`config` y `storage` lo exportan— y ninguno de estos patrones lo toca.
+TEST_EXCLUDE = (
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+)
+
 
 def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
     project = package_dir / filename
-    project.write_text(json.dumps({"compilerOptions": options, "include": include},
+    project.write_text(json.dumps({"compilerOptions": options,
+                                   "include": include,
+                                   "exclude": list(TEST_EXCLUDE)},
                                   indent=2) + "\n", encoding="utf8")
     return project
 
@@ -567,11 +589,27 @@ def _declaration_exists(package_dir: Path, candidate: str,
     #
     # Medido en `config`: de los 22 archivos de `plugin/` que el consumidor
     # compilaba, 5 no tenian `.d.ts` y 17 si. Un `any()` publicaba verde.
-    fuentes = sorted(package_dir.glob(source_entry.lstrip("./")))
+    # El `*` de `exports` CRUZA `/` por especificacion: `"./*": "./*.ts"` hace
+    # que `@pkg/plugin/x` resuelva a `./plugin/x.ts`. El `glob` de Python no,
+    # asi que verificar con el literal mediria SOLO el nivel superior — y esa
+    # es la ceguera que dejo pasar los 5 de `config/plugin/`.
+    patron = source_entry.lstrip("./")
+    # `dist/` queda fuera: sus `.d.ts` TERMINAN en `.ts`, asi que el patron
+    # `*.ts` los recoge como si fueran fuente y pide la declaracion de una
+    # declaracion. Es la misma razon por la que `export_targets` lo filtra.
+    fuentes = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
+                     if OUTPUT_DIR not in f.relative_to(package_dir).parts)
     if not fuentes:
         return any(package_dir.glob(relativa))
     for fuente in fuentes:
         comodin = str(fuente.relative_to(package_dir))
+        # Lo que la emision salta a proposito no se puede exigir aqui: sin
+        # este descuento todo paquete con tests rehusaria el repunte para
+        # siempre, que es el mecanismo bloqueandose a si mismo.
+        if any(fnmatch.fnmatch(comodin, patron_test) or
+               fnmatch.fnmatch("/" + comodin, patron_test.lstrip("*"))
+               for patron_test in TEST_EXCLUDE):
+            continue
         comodin = os.path.splitext(comodin)[0]
         # El comodin del destino ocupa el mismo sitio que el de la fuente: se
         # sustituye por lo que la fuente puso ahi, no por el nombre entero.
