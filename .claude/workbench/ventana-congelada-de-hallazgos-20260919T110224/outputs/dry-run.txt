@@ -1,0 +1,39 @@
+36 hallazgo(s) sin .rst — prefijo THYROX
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-29-heavy-roots-no-discrimina-una-raiz-de-369-entradas-gira-y-una-de-861k.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-30-reusar-block-spans-del-gate-hermano-habria-publicado-78-citas-doc.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-58-run-task-pool-no-redirige-tmpdir-y-tests-run-sh-si-el-grifo-de-tmp.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-59-el-conjunto-esperado-del-gate-de-aritmetica-estaba-transcrito-y-rancio.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-60-thyrox-declara-dependencias-por-paquete-y-la-referencia-las-iza-a-la.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-61-24-de-28-paquetes-importan-un-hermano-de-workspace-que-no-tienen.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-THYROX-76-la-condicion-de-cierre-de-task-thyrox-0155-exige-transcripts-que-tmp.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-77-el-extractor-de-corpus-emite-2-de-4-marcadores-toda-build-nace-a.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-78-el-cliente-emite-dos-clases-de-linea-assistant-la-parcial-por-bloque.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-79-bloque-balanceado-devolvia-el-registro-vecino-en-vez-de-rehusar.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-80-los-nueve-7z-del-corpus-archivado-no-estan-versionados-7z-global-en.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-81-main-chain-devuelve-en-los-139-transcripts-de-subagente-toda-su-linea.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-82-corregido-los-368-mib-que-no-vuelven-eran-archivos-vivos-que-el.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-83-un-barrido-de-repunte-de-enlaces-encadeno-su-sustitucion-sobre-su.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/completar-permission-desde-la-referencia/hallazgos/hallazgo-H-THYROX-88-el-cierre-81-de-81-de-permission-media-el-archivo-entero-18-de-los-100.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-101-bg-sh-dir-aisla-el-log-pero-no-el-registro-de-ejecucion-scaffold-run.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-106-el-porte-de-packages-y-tests-desde-ccnmt-esta-completo-0-ausentes-en.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-107-el-appstate-unknown-de-hooks-ts-es-1-de-9-shims-que-la-referencia.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-108-assert-no-writes-tiene-piso-de-1-la-escritura-del-tracer-se-cuenta.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-109-el-servidor-de-proxy-de-thyrox-se-llama-relay-ts-asi-que-un-censo-por.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-110-el-agregado-de-tsc-bajo-mientras-el-modulo-dejaba-de-cargar-cuatro.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-111-el-gate-de-cita-mide-resolucion-y-es-ciego-al-sujeto-un-ordinal-de.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-115-un-control-mio-publicaba-los-40-infractores-como-cifra-y-pasaba-en.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-116-bun-enlaza-los-workspaces-por-paquete-no-en-el-node-modules-de-la-raiz.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-117-dos-tareas-con-titulo-casi-identico-y-planes-opuestos-cite-la-superada.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-118-voice-esta-portado-a-medias-2200-de-3361-lineas-y-sus-dos-hooks.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-119-passthrough-en-settingsschema-oculta-que-voiceenabled-no-esta.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-120-los-seis-bloqueadores-que-el-paquete-voice-declaraba-en-prosa-eran.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-121-el-manifiesto-de-un-paquete-no-es-autoritativo-repl-declaraba-26.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-122-revertir-un-manifiesto-no-anula-una-declaracion-bun-install-no-poda-el.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-123-un-tsx-queda-fuera-del-wildcard-de-exports-js-ts-lleva-la-extension.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-124-un-porte-que-declara-bien-su-parcialidad-puede-tener-la-razon-rancia.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-125-check-cli-typecheck-mide-el-paquete-entero-ante-un-amend-con-indice.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-126-un-artefacto-de-banco-conserva-la-cifra-de-una-version-anterior-del.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-127-un-porte-fiel-de-una-fuente-con-strict-false-puede-fallar-el-typecheck.rst
+  [dry-run] source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-THYROX-128-un-literal-thyrox-entre-comillas-en-posicion-de-argumento-es-dato-no.rst
+
+(dry-run: nada escrito. Repetir con --write)
