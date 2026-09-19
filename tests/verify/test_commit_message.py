@@ -84,5 +84,42 @@ assert_equal("el subject tiene su propio limite", 1,
              len(mod.check_commit_message(subject_largo)))
 
 print()
+print("== el aviso nombra el LOCALE, no una implementacion de awk ==")
+
+# TASK-THYROX-0493. El docstring del modulo ya traia la cuenta correcta desde
+# 2026-09-18 —`awk` resuelve a gawk, y la sobre-cuenta la causa el locale
+# vacio, no el binario— y el mensaje que el modulo IMPRIME seguia culpando a
+# mawk. La correccion aterrizo en el comentario y nunca llego a la salida.
+#
+# Medido 2026-09-19 en este contenedor: `áéí` da 6 en gawk Y en mawk con
+# LANG/LC_ALL sin declarar; bajo LC_ALL=C.UTF-8 gawk da 3 y mawk sigue en 6.
+# O sea que el eje es el locale y mawk es sólo un agravante.
+import contextlib
+import io
+import tempfile
+
+with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as handle:
+    handle.write("Asunto corto\n\n" + "z" * 90 + "\n")
+    overlong_message_path = handle.name
+
+captured = io.StringIO()
+with contextlib.redirect_stderr(captured):
+    mod.main(["commit_message.py", overlong_message_path])
+aviso = captured.getvalue()
+pathlib.Path(overlong_message_path).unlink()
+
+# La asercion mide la ATRIBUCION, no la palabra. Prohibir el literal `mawk`
+# seria medir el significante para concluir sobre el significado: el aviso
+# corregido lo nombra como DATO de la medicion —«gawk da 3 y mawk sigue en
+# 6»—, que es legitimo, y lo que no puede volver a decir es que el awk de
+# esta maquina SEA mawk.
+assert_equal("el aviso ya no afirma que el awk de esta maquina sea mawk",
+             False, "maquina (mawk)" in aviso)
+assert_equal("el aviso nombra el locale, que es la causa medida",
+             True, "locale" in aviso.lower())
+assert_equal("...y sigue nombrando a mawk como dato de la comparacion",
+             True, "mawk" in aviso)
+
+print()
 print(f"== {ok} ok · {failures} fallas ==")
 sys.exit(1 if failures else 0)

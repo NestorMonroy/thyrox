@@ -178,10 +178,17 @@ def main(argv: list[str]) -> int:
           f"{DEFAULT_LIMIT} columnas", file=sys.stderr)
     for number, width, line in problems:
         print(f"  linea {number}: {width} columnas — {line[:60]}…", file=sys.stderr)
-    print("  La medida es COLUMNAS de terminal, no bytes: un `awk` de esta",
+    print("  La medida es COLUMNAS de terminal, no bytes. Un `awk` la",
           file=sys.stderr)
-    print("  maquina (mawk) sobre-reporta toda linea con acentos o em-dash.",
+    print("  sobre-reporta en toda linea con acentos o em-dash, y la causa",
           file=sys.stderr)
+    print("  es el LOCALE, no la implementacion: aqui LANG y LC_ALL estan",
+          file=sys.stderr)
+    print("  sin declarar, asi que gawk tambien cuenta octetos. Medido:",
+          file=sys.stderr)
+    print("  `aei` acentuada da 6 en gawk y en mawk; con LC_ALL=C.UTF-8",
+          file=sys.stderr)
+    print("  gawk da 3 y mawk sigue en 6.", file=sys.stderr)
     return 1
 
 
