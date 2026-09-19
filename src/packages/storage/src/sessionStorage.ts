@@ -5,14 +5,30 @@
  * Adaptación de ccnmt `packages/storage/src/sessionStorage.ts` — 4642 líneas,
  * el archivo más grande del paquete `storage`.
  *
- * PORTE PARCIAL DECLARADO — sólo se portan dos símbolos:
- * `getFirstMeaningfulUserMessageTextContent` y `removeExtraFields`. Son los
- * únicos que el conjunto de tests portado hasta ahora ejerce. El resto del
- * archivo (carga/escritura de transcript JSONL, tombstones, relink de
- * segmentos preservados tras compactación, `updateSessionName`, etc.) queda
- * fuera de este porte: depende de I/O de disco, de `@thyrox/agent`
- * (`Message`, `isCompactBoundaryMessage`) y de otros mecanismos que este
- * paquete no importa todavía (DEC-04) y que ningún test aquí mide.
+ * PORTE PARCIAL DECLARADO, con su cobertura MEDIDA — no transcrita.
+ *
+ * La version anterior de este parrafo afirmaba «solo se portan dos simbolos»
+ * y nombraba `getFirstMeaningfulUserMessageTextContent` y `removeExtraFields`.
+ * Medido por conducta: el archivo exporta SEIS declaraciones propias
+ * —esos dos mas `setBuiltInCommandNamesFn`, `FirstPromptMessage`,
+ * `RemovableFieldsMessage` y `SerializedMessage`— contra 74 de la fuente.
+ * Una cifra que es propiedad de un archivo vivo no se transcribe a prosa; el
+ * comando que la publica es:
+ *
+ *     gawk 'match($0,/^export (async function|function|const|type|interface|class|enum) +([A-Za-z_][A-Za-z0-9_]*)/,m){print m[2]}' <archivo>
+ *
+ * Y su PREMISA declarada —«los unicos que el conjunto de tests portado ejerce»,
+ * «ningun test aqui mide» el resto— tambien caduco: el typecheck del arbol
+ * publica 134 errores TS2305 contra este modulo, de 67 simbolos distintos que
+ * sus consumidores piden. Los consumidores existen; lo que no existia era la
+ * medicion.
+ *
+ * Lo que sigue fuera del porte, ahora con su razon real: la carga y escritura
+ * de transcript JSONL, los tombstones, el relink de segmentos preservados tras
+ * compactacion y `updateSessionName` dependen de I/O de disco y de
+ * `@thyrox/agent` (`Message`, `isCompactBoundaryMessage`), que este paquete no
+ * importa todavia (DEC-04). Son 51 de los 67; los otros 16 los cubren los tres
+ * modulos hermanos, y su fachada esta al final de este archivo.
  *
  * Sustitutos locales (misma razón que en `conversationChain.ts` y
  * `internal/pendingCrossPackageDeps.ts` — DEC-04, sin cross-import
@@ -200,3 +216,57 @@ export function removeExtraFields(
     return serializedMessage
   })
 }
+
+// ---------------------------------------------------------------------------
+// RE-EXPORTS DE LOS TRES HERMANOS — la fuente hace exactamente esto.
+//
+// `ccnmt: packages/storage/src/sessionStorage.ts:179,214,234` declara tres
+// bloques `export {...} from` porque los simbolos se MUDARON a modulos
+// hermanos (#132 en su propio historial) y el archivo quedo como fachada para
+// los consumidores existentes. Sus comentarios lo dicen verbatim: «Predicates
+// moved to ./sessionStoragePredicates.ts», «Path helpers moved to
+// ./sessionPaths.ts (#132). Re-exported here for existing consumers», «Agent +
+// remote-agent metadata I/O moved to ./agentMetadata.ts (#132)».
+//
+// Los tres hermanos YA estan portados en este paquete —y son mas grandes que
+// los de la fuente: 2575/8136/7132 bytes contra 2285/3739/5844—. Lo que
+// faltaba era la fachada, no el contenido: 16 de los 67 simbolos que los
+// consumidores piden a `sessionStorage.js` viven en ellos.
+//
+// El primer instrumento que midio esto concluyo «18 simbolos no estan en la
+// fuente» porque su patron leia la FORMA DE DECLARACION (`export function X`)
+// y no la de re-export. Los 18 estaban; el significante no era el significado.
+export {
+  isChainParticipant,
+  isEphemeralToolProgress,
+  isTranscriptMessage,
+  type PredicateEntry,
+} from './sessionStoragePredicates.js'
+
+export {
+  clearAgentTranscriptSubdir,
+  getAgentTranscriptPath,
+  getOriginalCwd,
+  getProjectDir,
+  getProjectsDir,
+  getSessionId,
+  getSessionProjectDir,
+  getTranscriptPath,
+  getTranscriptPathForSession,
+  MAX_TRANSCRIPT_READ_BYTES,
+  setAgentTranscriptSubdir,
+  setOriginalCwd,
+  setSessionId,
+  setSessionProjectDir,
+} from './sessionPaths.js'
+
+export {
+  type AgentMetadata,
+  deleteRemoteAgentMetadata,
+  listRemoteAgentMetadata,
+  readAgentMetadata,
+  readRemoteAgentMetadata,
+  type RemoteAgentMetadata,
+  writeAgentMetadata,
+  writeRemoteAgentMetadata,
+} from './agentMetadata.js'
