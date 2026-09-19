@@ -61,10 +61,22 @@ BUILTIN = {
     'inspector', 'repl', 'sys', 'trace_events', 'wasi', 'bun',
 }
 
-# Cuatro formas, no tres: `import(` lleva parentesis entre la palabra y la
-# comilla, asi que necesita alternativa propia.
+# Cuatro formas, y cada una con su propia puntuacion obligatoria. El patron
+# anterior era `(?:from|import|require|import)\s*\(?\s*['"]` — sin ancla a la
+# izquierda y con el parentesis OPCIONAL para las cuatro. Medido sobre
+# `src/packages`, eso daba 34 falsos positivos en tres familias:
+#
+#   32  `Buffer.from('q')`   — `from` casa como NOMBRE DE METODO
+#    1  `require "slack"`    — prosa dentro de una cadena; el parentesis era opcional
+#    1  `handle from 'list'` — la palabra inglesa `from` dentro de una cadena
+#
+# La mirada atras `(?<![\w.$])` cierra la primera familia (un punto delante
+# descalifica); exigir el parentesis a `require` cierra la segunda. La tercera
+# NO se cierra aqui: `from` precedido de espacio es indistinguible de un
+# `} from 'x'` legitimo por lexico. La discrimina la resolucion, que es lo que
+# el docstring de este modulo ya declara como señal.
 SPECIFIER = re.compile(
-    r"""(?:from|import|require|import)\s*\(?\s*['"]([^'"\n]+)['"]"""
+    r"""(?<![\w.$])(?:from\s*|import\s*\(\s*|import\s+|require\s*\(\s*)['"]([^'"\n]+)['"]"""
 )
 COMMENT = re.compile(r'^\s*(?:\*|//|/\*)')
 NPM_NAME = re.compile(r'^(?:@[a-z0-9~][a-z0-9._~-]*/)?[a-z0-9~][a-z0-9._~-]*$')
@@ -157,8 +169,15 @@ def main() -> int:
     reference_root = pathlib.Path('/home/user/claude-code-nestor-monroy-tools')
     measure_resolution = '--sin-resolucion' not in sys.argv
 
+    # El alcance `@ant` es opcional: un arbol sin el —un fixture, o un
+    # consumidor que no lo tenga— hacia reventar el recorrido con
+    # FileNotFoundError, y la sonda moria sin emitir una sola cifra.
+    candidatos = list(packages_dir.iterdir())
+    scoped = packages_dir / '@ant'
+    if scoped.is_dir():
+        candidatos += list(scoped.iterdir())
     package_dirs = sorted(
-        d for d in list(packages_dir.iterdir()) + list((packages_dir / '@ant').iterdir())
+        d for d in candidatos
         if d.is_dir() and (d / 'package.json').is_file()
     )
 
@@ -173,6 +192,11 @@ def main() -> int:
     total_undeclared = 0
     unresolved: list[tuple[str, str, int, str]] = []
     resolved: list[tuple[str, str, int, str]] = []
+    # Tercer cubo: con `--sin-resolucion` no hay veredicto que dar. Sin el,
+    # `ok = None` caia en la rama falsa y TODA fila se publicaba bajo
+    # «NO RESUELVE (causa un rojo)» — la bandera no omitia el veredicto, lo
+    # fabricaba.
+    unmeasured: list[tuple[str, str, int, str]] = []
     self_refs: list[tuple[str, str]] = []
     covered_by_root: list[tuple[str, str]] = []
 
@@ -199,7 +223,12 @@ def main() -> int:
             where = reference_declares(reference_root, package_dir.name, name)
             ok = resolves_from(package_dir, name) if measure_resolution else None
             row = (package_dir.name, name, count, where)
-            (resolved if ok else unresolved).append(row)
+            if ok is None:
+                unmeasured.append(row)
+            elif ok:
+                resolved.append(row)
+            else:
+                unresolved.append(row)
 
     print(f'SIN DECLARAR (excluidas autorreferencia y raiz): {total_undeclared}')
     print(f'  cubiertas por la RAIZ del workspace: {len(covered_by_root)} '
@@ -214,6 +243,14 @@ def main() -> int:
     print(f'== RESUELVE YA (hueco formal de manifiesto): {len(resolved)}')
     for package, name, count, where in sorted(resolved, key=lambda r: (-r[2], r[0])):
         print(f'  {package:<24} {name:<38} {count:>4} import(s)  ref:{where}')
+    if not measure_resolution:
+        print()
+        print(f'== SIN MEDIR (--sin-resolucion): {len(unmeasured)}')
+        print('  La resolucion es la señal que separa un nombre de paquete real')
+        print('  de una cadena con forma valida. Sin ella no hay veredicto: estas')
+        print('  filas NO estan clasificadas, ni a favor ni en contra.')
+        for package, name, count, where in sorted(unmeasured, key=lambda r: (-r[2], r[0])):
+            print(f'  {package:<24} {name:<38} {count:>4} import(s)  ref:{where}')
     return 0
 
 
