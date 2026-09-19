@@ -1,0 +1,13 @@
+# Mitad ROJA — persistida al producirse
+# fecha: 2026-09-19T15:53:51
+# comando: bash tests/verify/test-agent-artifacts.sh
+
+FALLA ruta absoluta del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+FALLA ruta absoluta del .md derivado: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+FALLA ruta relativa del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules/zod: exit 2
+OK   guard sin node_modules/zod: nombra la biblioteca y el comando
+
+aserciones: 3 de 6 · fallos: 3
+exit=1

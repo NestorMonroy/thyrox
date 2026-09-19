@@ -49,6 +49,21 @@ if [[ -z "$ARCHIVO_PAQUETE" || -z "$ARCHIVO_AGENTE" ]]; then
     exit 2
 fi
 
+# Un veredicto de gate tiene TRES estados, no dos: `eximido` (fuera de la
+# superficie), `rehuso` (no pudo medir — exit 2, sin conteo) y `medido`.
+# Colapsar los dos ultimos es el sub-patron D de metrica-decide-la-conclusion
+# con esta misma suite como sujeto: hasta hoy el `case` solo buscaba la cadena
+# de exencion, asi que un ERROR con exit 2 caia en la rama por defecto y se
+# publicaba como «MIDE». Medido: el gate rehusaba sobre CADA archivo real del
+# paquete y la suite daba 6 de 6.
+veredicto() {  # $1 = salida combinada, $2 = codigo de salida
+    case "$1" in
+        *"sin cambios en la superficie"*) echo eximido; return ;;
+    esac
+    if [[ "$2" -eq 2 ]]; then echo rehuso; return; fi
+    echo medido
+}
+
 check() {
     total=$((total + 1))
     if [[ "$2" == "$3" ]]; then
@@ -61,45 +76,35 @@ check() {
 
 # CONTROL POSITIVO — ruta ABSOLUTA de la superficie, que es la forma en que el
 # pre-commit entrega sus archivos. El gate tiene que medir, no eximirse.
-SALIDA="$(bash "$GATE" "$ARCHIVO_PAQUETE" 2>&1)"
-case "$SALIDA" in
-    *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
-    *) VEREDICTO=medido ;;
-esac
+SALIDA="$(bash "$GATE" "$ARCHIVO_PAQUETE" 2>&1)"; CODIGO=$?
+VEREDICTO="$(veredicto "$SALIDA" "$CODIGO")"
 check "ruta absoluta del paquete: el gate MIDE" "$VEREDICTO" "medido"
 
 # Ídem para la otra mitad de la superficie: el .md derivado.
-SALIDA="$(bash "$GATE" "$ARCHIVO_AGENTE" 2>&1)"
-case "$SALIDA" in
-    *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
-    *) VEREDICTO=medido ;;
-esac
+SALIDA="$(bash "$GATE" "$ARCHIVO_AGENTE" 2>&1)"; CODIGO=$?
+VEREDICTO="$(veredicto "$SALIDA" "$CODIGO")"
 check "ruta absoluta del .md derivado: el gate MIDE" "$VEREDICTO" "medido"
 
 # La forma relativa tiene que seguir funcionando: es la de la línea de comandos.
-SALIDA="$(cd "$RAIZ" && bash "$GATE" "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"
-case "$SALIDA" in
-    *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
-    *) VEREDICTO=medido ;;
-esac
+SALIDA="$(cd "$RAIZ" && bash "$GATE" "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"; CODIGO=$?
+VEREDICTO="$(veredicto "$SALIDA" "$CODIGO")"
 check "ruta relativa del paquete: el gate MIDE" "$VEREDICTO" "medido"
 
 # CONTROL NEGATIVO — un archivo FUERA de la superficie sí se exime. Sin este
 # caso, un gate que midiera siempre también pasaría los tres de arriba.
-SALIDA="$(cd "$RAIZ" && bash "$GATE" README.md 2>&1)"
-case "$SALIDA" in
-    *"sin cambios en la superficie"*) VEREDICTO=eximido ;;
-    *) VEREDICTO=medido ;;
-esac
+SALIDA="$(cd "$RAIZ" && bash "$GATE" README.md 2>&1)"; CODIGO=$?
+VEREDICTO="$(veredicto "$SALIDA" "$CODIGO")"
 check "archivo fuera de la superficie: el gate SE EXIME" "$VEREDICTO" "eximido"
 
-# GUARD DE PRECONDICIÓN — sin node_modules/zod materializado, el gate rehúsa
-# con exit 2 y nombra la biblioteca y el comando que la instala, en vez de
-# dejar que el --check corra sobre el auto-install ambiguo del runtime de
-# Bun. Control que PUEDE fallar: se fuerza con una copia AISLADA y vacía,
-# nunca con el paquete real — así el guard se ejercita de verdad.
+# GUARD DE PRECONDICIÓN, mitad 1 — sin node_modules/zod en NINGÚN punto de la
+# cadena de resolución, el gate rehúsa con exit 2 y nombra la biblioteca y el
+# comando que la instala, en vez de dejar que el --check corra sobre el
+# auto-install ambiguo del runtime de Bun. Control que PUEDE fallar: se fuerza
+# con una copia AISLADA y vacía, nunca con el paquete real — así el guard se
+# ejercita de verdad. Su premisa es que no hay `node_modules/zod` en /tmp ni
+# en la raíz del sistema; medido al escribirlo.
 PKG_SIN_NODE_MODULES="$(mktemp -d)"
-trap 'rm -rf "$PKG_SIN_NODE_MODULES"' EXIT
+trap 'rm -rf "$PKG_SIN_NODE_MODULES" "${PKG_ZOD_DISTINTA:-}"' EXIT
 SALIDA="$(cd "$RAIZ" && CHECK_AGENT_ARTIFACTS_PKG_DIR="$PKG_SIN_NODE_MODULES" \
     bash "$GATE" --strict "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"
 CODIGO=$?
@@ -109,6 +114,36 @@ case "$SALIDA" in
     *) NOMBRA=no ;;
 esac
 check "guard sin node_modules/zod: nombra la biblioteca y el comando" "$NOMBRA" "si"
+
+# GUARD DE PRECONDICIÓN, mitad 2 — la que discrimina lo que la mitad 1 NO
+# puede ver. Que EXISTA una zod en la cadena sólo prueba que Node hallará
+# alguna; no prueba que sea la que el lockfile fija, que es la propiedad de la
+# que depende la reproducibilidad del --check. Sin este caso, un gate que sólo
+# comprobara existencia pasaría igual que uno que compara versiones.
+#
+# SINTÉTICO, y con su razón: no hay en el árbol ningún punto de resolución con
+# una zod distinta de la fijada —justamente porque el árbol está bien—, así que
+# el control positivo se fabrica. La versión fijada NO se transcribe: se lee
+# del mismo lockfile que el gate consulta.
+ZOD_FIJADA_ESPERADA="$(sed -n 's/^[[:space:]]*"zod": \["zod@\([^"]*\)".*/\1/p' \
+    "$RAIZ/bun.lock" | head -1)"
+if [[ -z "$ZOD_FIJADA_ESPERADA" ]]; then
+    echo "SIN MEDIR: $RAIZ/bun.lock no fija ninguna resolución de zod" >&2
+    exit 2
+fi
+PKG_ZOD_DISTINTA="$(mktemp -d)"
+mkdir -p "$PKG_ZOD_DISTINTA/node_modules/zod" "$PKG_ZOD_DISTINTA/pkg"
+printf '{"name":"zod","version":"9.9.9"}\n' \
+    > "$PKG_ZOD_DISTINTA/node_modules/zod/package.json"
+SALIDA="$(cd "$RAIZ" && CHECK_AGENT_ARTIFACTS_PKG_DIR="$PKG_ZOD_DISTINTA/pkg" \
+    bash "$GATE" --strict "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"
+CODIGO=$?
+check "guard con zod distinta de la fijada: exit 2" "$CODIGO" "2"
+case "$SALIDA" in
+    *"9.9.9"*"$ZOD_FIJADA_ESPERADA"*) NOMBRA=si ;;
+    *) NOMBRA=no ;;
+esac
+check "guard con zod distinta: nombra la instalada y la fijada" "$NOMBRA" "si"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
