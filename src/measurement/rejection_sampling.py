@@ -60,14 +60,29 @@ Medido con este modulo y ``random.Random(21)``, ``n = 300000``:
 decimal y los dos vectores caen dentro de 5 errores estandar de ``q_target``:
 la discrepancia es del generador, no del mecanismo.
 
-**A que se debe exactamente queda DESCONOCIDO, y se declara en vez de
-atribuirse.** Una version anterior de este parrafo culpaba al «MT19937 de
-numpy y el orden de muestreo de ``np.random.choice``». Eso no se puede medir
-aqui —numpy no esta instalado— asi que era una atribucion de memoria disfrazada
-de causa. Lo que SI esta medido es que dos generadores distintos dan digitos
-distintos: ``random.Random(7)`` da ``[0.0999, 0.0999, 0.4009, 0.2990,
-0.1004]``. Condicion de cierre: un entorno con numpy donde se pueda ejecutar
-el brief verbatim.
+**A que se debe ya NO es DESCONOCIDO: esta medido, y la causa es mas
+estrecha que la que se le atribuyo primero.** El DESCONOCIDO que vivia aqui
+fijo su condicion de cierre —«un entorno con numpy donde se pueda ejecutar el
+brief verbatim»— y esa condicion se cumplio: numpy vive en el grupo ``verify``
+de ``pyproject.toml`` y ``tests/measurement/test_rejection_sampling_brief.py``
+lo ejecuta. Dos mediciones, con numpy 2.4.6:
+
+1. el brief verbatim reproduce sus digitos **exactos**:
+   ``[0.0996 0.1002 0.4007 0.3002 0.0994]``;
+2. y ESTE muestreador —residuo perezoso, acumulacion lineal— alimentado por el
+   flujo uniforme de numpy da **los mismos digitos**.
+
+La segunda es la que discrimina, y sin ella la conclusion seria el sub-patron
+C: reproducir el brief prueba que el COMPUESTO reproduce, no cual de sus partes
+causa la diferencia. Con ella, el mecanismo queda identico y **lo unico que
+difiere es el flujo uniforme**.
+
+Eso corrige por segunda vez el mismo parrafo, y en la direccion contraria. La
+version original culpaba al «MT19937 de numpy **y el orden de muestreo de**
+``np.random.choice``»; se retiro por no medible, lo cual era correcto entonces.
+Medida ahora, la primera mitad se sostiene y **la segunda es falsa**: el orden
+de muestreo no interviene — nuestra acumulacion lineal y su ``searchsorted``
+mapean el mismo uniforme al mismo indice.
 
 La invariante que el brief establece de verdad —y la que su control mide— es
 **la frecuencia empirica converge a ``q_target``**. Su tolerancia se deriva
