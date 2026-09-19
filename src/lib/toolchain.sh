@@ -358,3 +358,110 @@ function thyrox_toolchain_require_gawk() {
   return 0
 }
 export -f thyrox_toolchain_require_gawk
+
+# ---------------------------------------------------------------------------
+# Sonda de COHERENCIA entre el proxy declarado y el CA que cada familia lee.
+# ---------------------------------------------------------------------------
+
+# @description Las claves de entorno que declaran un proxy de salida. Son
+# CUATRO y no dos: la minuscula y la MAYUSCULA son cajas distintas, y un
+# operador puede declarar solo una.
+#
+# NO incluye ALL_PROXY: `src/packages/provider/src/proxy.ts::getProxyUrl` no
+# la lee hoy (medido: 0 archivos del arbol la leen), asi que declararla aqui
+# haria que la sonda diera verde sobre una via que el consumidor no consume.
+# Su lectura es TASK-THYROX-0187; esta lista crece cuando aquella cierre.
+declare -ga THYROX_TOOLCHAIN_PROXY_KEYS=(
+  https_proxy HTTPS_PROXY http_proxy HTTP_PROXY
+)
+
+# @description Las familias de consumidor y las claves de CA que cada una lee,
+# como `familia:CLAVE[,CLAVE]`. El eje es la familia porque las tres leen
+# claves DISTINTAS: un entorno puede dejar salir a node y no a python, y una
+# sola clave colapsada daria verde sobre esa asimetria.
+declare -ga THYROX_TOOLCHAIN_CA_FAMILIES=(
+  "node:NODE_EXTRA_CA_CERTS"
+  "python:REQUESTS_CA_BUNDLE,SSL_CERT_FILE"
+  "curl:CURL_CA_BUNDLE"
+)
+
+# @description ¿Hay algun proxy de salida declarado?
+# @noargs
+# @exitcode 0 Al menos una de las cuatro claves trae valor.
+# @exitcode 1 Ninguna.
+function thyrox_toolchain_proxy_declared() {
+  local key
+  for key in "${THYROX_TOOLCHAIN_PROXY_KEYS[@]}"; do
+    [[ -n "${!key:-}" ]] && return 0
+  done
+  return 1
+}
+
+# @description ¿La familia dada tiene un CA que pueda LEER de verdad?
+#
+# Declarar una ruta no es tenerla: se comprueba `-r` sobre el archivo, no que
+# la variable traiga texto. Es la misma distincion significante/significado que
+# el resto del arbol aplica a una cifra — el nombre de un archivo no es el
+# archivo.
+# @arg $1 string La entrada `familia:CLAVE[,CLAVE]`.
+# @exitcode 0 Alguna de sus claves apunta a un archivo legible.
+# @exitcode 1 Ninguna.
+function thyrox_toolchain_family_has_ca() {
+  local entry="${1:-}" keys key
+  keys="${entry#*:}"
+  local IFS=','
+  for key in $keys; do
+    [[ -n "${!key:-}" && -r "${!key}" ]] && return 0
+  done
+  return 1
+}
+
+# @description Sonda de coherencia proxy/CA. Es `aviso`, no `error`, y la
+# razon esta medida: ningun gate de `src/verify/` sale a la red, asi que un
+# entorno incoherente no rompe la verificacion de este arbol — rompe el
+# trabajo del operador cuando salga.
+#
+# Lo que NO hace, y es deliberado: NO abre una conexion. Una sonda de red
+# mediria ademas la disponibilidad del destino y su rojo no separaria «el
+# entorno esta mal declarado» de «el destino esta caido». Mide dos
+# declaraciones del operador y su coherencia entre si.
+#
+# Sin proxy declarado el veredicto es 0, nunca aviso: un aviso que sale
+# siempre se aprende a ignorar, que es como una regla se vuelve ruido.
+# @noargs
+# @exitcode 0 No hay proxy declarado, o lo hay y las tres familias leen un CA.
+# @exitcode 1 Hay proxy declarado y alguna familia no tiene CA legible. AVISA.
+function thyrox_toolchain_probe_proxy() {
+  if ! thyrox_toolchain_proxy_declared; then
+    return 0
+  fi
+
+  local entry family sin_ca=()
+  for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
+    family="${entry%%:*}"
+    thyrox_toolchain_family_has_ca "$entry" || sin_ca+=("$family")
+  done
+
+  if [[ ${#sin_ca[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  # El aviso NOMBRA la familia y su clave: decir solo «falta CA» manda al
+  # operador a averiguar cual de las tres, que es el trabajo que la sonda
+  # acaba de hacer.
+  echo "thyrox_toolchain: hay proxy declarado y ${#sin_ca[@]} familia(s) sin CA legible." >&2
+  for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
+    family="${entry%%:*}"
+    for f in "${sin_ca[@]}"; do
+      [[ "$f" == "$family" ]] && \
+        echo "                  $family -> declarar ${entry#*:}" >&2
+    done
+  done
+  echo "                  Un proxy que intercepta TLS sin CA legible rompe" >&2
+  echo "                  cada salida con un fallo de verificacion. El" >&2
+  echo "                  remedio es la declaracion, no desactivar TLS." >&2
+  return 1
+}
+export -f thyrox_toolchain_proxy_declared
+export -f thyrox_toolchain_family_has_ca
+export -f thyrox_toolchain_probe_proxy

@@ -125,6 +125,7 @@ PROBES=(
   "awk|error|thyrox_toolchain_require_gawk"
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"
+  "proxy|aviso|thyrox_toolchain_probe_proxy"
 )
 
 ERRORS=0; WARNS=0; PASSED=0
