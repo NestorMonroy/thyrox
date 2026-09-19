@@ -32,14 +32,14 @@ equivocada es el sub-patron A. Se re-midio sobre **toda** extension —3424
 archivos, sin filtro— y sigue dando 0. Ese segundo censo es el que sostiene la
 conclusion.
 
-## Consecuencia: la premisa de TASK-THYROX-0477 esta superada
+## Consecuencia: la premisa de TASK-THYROX-0168 esta superada
 
 Esa tarea dice *«Copiar los 1061 ausentes de los 12 paquetes»*. Medido hoy, los
 ausentes de `packages/` son **0**. La cifra era correcta cuando se escribio y
 las olas de porte posteriores la cerraron. No queda nada que copiar ahi.
 
 Lo que queda ausente esta **fuera** de `packages/` y `tests/`, y es
-exactamente el sujeto de TASK-THYROX-0483 (*«Decidir el desenlace de scripts/,
+exactamente el sujeto de TASK-THYROX-0174 (*«Decidir el desenlace de scripts/,
 tests/ y bun-demincer de ccnmt, fuera del alcance packages/»*). Su
 `tests/` ya esta resuelto —0 ausentes—; los otros tres siguen siendo una
 decision, no una copia mecanica:
@@ -60,3 +60,29 @@ la raiz comparada, excluyendo `node_modules`.
 *Ciega a:* un archivo presente con el mismo nombre y **contenido divergente**
 —el censo mide presencia, no igualdad— y a un archivo que en este arbol vive
 bajo otra ruta que la de la referencia.
+
+## CORRECCION — el commit `10d833ca` cita dos ids FABRICADOS
+
+Ese commit, ya publicado, escribe `TASK-THYROX-0477` y `TASK-THYROX-0483`.
+**Ninguno de los dos existe en el store.** Salieron de rellenar a cuatro
+digitos los ordinales de board `#477` y `#483`, que es exactamente la forma
+que `.claude/CLAUDE.md` prohibe: el `NNNN` de la cita durable es la secuencia
+del **store**, no el ordinal del board, asi que rellenarlo fabrica una cita
+que **parece** durable y no resuelve.
+
+Lo detecto el gate `detect_ephemeral_citation` en el propio `git commit`. Aviso
+—no bloquea, por la razon que sus hermanos declaran— asi que el commit aterrizo
+con la cita rota.
+
+Las citas reales, resueltas por **sujeto** y no por numero:
+
+| Ordinal de board | Cita FABRICADA (en `10d833ca`) | Cita REAL |
+|---|---|---|
+| `#477` | ~~TASK-THYROX-0477~~ | **TASK-THYROX-0168** |
+| `#483` | ~~TASK-THYROX-0483~~ | **TASK-THYROX-0174** |
+
+**No se enmienda `10d833ca`**: esta publicado, y `git.md` prohibe reescribir
+historia publicada. La correccion va hacia adelante — este archivo, que es el
+`--source-ref` del hallazgo H-THYROX-106, lleva las citas correctas, y esta
+seccion deja el rastro de cual fue el defecto para que el commit roto siga
+siendo legible.
