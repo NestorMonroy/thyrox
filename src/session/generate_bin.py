@@ -157,6 +157,7 @@ from paths import reach  # noqa: E402
 SOURCE_DIRS: tuple[str, ...] = (
     "src/agents", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
     "src/hooks", "src/lib", "src/paths", "src/peer_mailbox", "src/repo",
+    "src/measurement",
     "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
 )
 
