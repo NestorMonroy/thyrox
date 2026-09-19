@@ -37,8 +37,8 @@ import type {
   ScreenshotResult,
 } from '../index.js'
 
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { sleep } from '@thyrox/config/sleep'
 import { CLI_CU_CAPABILITIES, CLI_HOST_BUNDLE_ID } from './common.js'
 import { validateHwnd } from './win32/shared.js'
 import { loadPlatform } from './platforms/index.js'

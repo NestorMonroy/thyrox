@@ -1,4 +1,4 @@
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { releasePump, retainPump } from './drainRunLoop.js'
 import { requireComputerUseSwift } from './swiftLoader.js'
 

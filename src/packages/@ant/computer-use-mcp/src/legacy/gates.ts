@@ -1,8 +1,8 @@
 import type { CoordinateMode, CuSubGates } from '../types.js'
 
-import { getDynamicConfig_CACHED_MAY_BE_STALE } from '@claude-code-how-works/config/feature-flags'
-import { getSubscriptionType } from '@claude-code-how-works/provider/authAlias.js'
-import { isEnvTruthy } from '@claude-code-how-works/config/env/utils'
+import { getDynamicConfig_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 type ChicagoConfig = CuSubGates & {
   enabled: boolean

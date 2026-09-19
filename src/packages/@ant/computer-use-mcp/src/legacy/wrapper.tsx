@@ -26,11 +26,11 @@ import {
   type ScreenshotDims,
 } from '../index.js'
 import * as React from 'react'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { ComputerUseApproval } from '@claude-code-how-works/permission/components/ComputerUseApproval/ComputerUseApproval.js'
-import type { Tool, ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
-import { getGlobalConfig, saveGlobalConfig } from '@claude-code-how-works/config'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { ComputerUseApproval } from '@thyrox/permission/components/ComputerUseApproval/ComputerUseApproval.js'
+import type { Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   checkComputerUseLock,
   tryAcquireComputerUseLock,
