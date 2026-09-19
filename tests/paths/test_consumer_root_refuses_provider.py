@@ -22,10 +22,19 @@ import sys
 import unittest
 from pathlib import Path
 
-RAIZ = reach.thyrox_root()
-sys.path.insert(0, str(RAIZ / "src"))
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))
 
 from paths import reach  # noqa: E402
+
+RAIZ = reach.thyrox_root()
 
 
 class TestConsumerRootRefusesProvider(unittest.TestCase):

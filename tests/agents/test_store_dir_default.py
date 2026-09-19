@@ -30,8 +30,19 @@ import sys
 import unittest
 from pathlib import Path
 
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))
+
+from paths import reach  # noqa: E402
+
 RAIZ = reach.thyrox_root()
-sys.path.insert(0, str(RAIZ / "src"))
 
 _spec = importlib.util.spec_from_file_location(
     "agent_store_para_el_control", RAIZ / "src" / "agents" / "agent_store.py")
@@ -39,7 +50,6 @@ agent_store = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(agent_store)
 
 from agents import agents_paths  # noqa: E402
-from paths import reach  # noqa: E402
 
 
 def _args(**kw) -> argparse.Namespace:

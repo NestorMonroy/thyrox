@@ -21,16 +21,21 @@ import sys
 import unittest
 from pathlib import Path
 
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_AQUI = Path(__file__).resolve()
+_RAIZ = next((p for p in _AQUI.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _RAIZ is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
+sys.path.insert(0, str(_RAIZ / "src"))
+
+from paths import reach  # noqa: E402
+
 RAIZ = reach.thyrox_root()
-sys.path.insert(0, str(RAIZ / "src"))
 
 from agents import agents_paths  # noqa: E402
-
-# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
-# y la unica que el localizador no puede reemplazar: no se puede pedir
-# `reach.thyrox_root()` antes de que `import reach` funcione.
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from paths import reach  # noqa: E402
 
 #: El hogar decidido. Se escribe una vez aqui y los casos lo citan: si la
 #: decision cambia, cambia en un sitio y los rojos dicen donde mirar.
