@@ -40,7 +40,7 @@
  * librería de UI ausente.
  */
 import { setAppCallbacks } from '@anthropic/ink'
-import { isReaderSupported, startReader } from 'stdin-napi'
+import { isReaderSupported, startReader } from '@thyrox/stdin-napi'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 let installed = false

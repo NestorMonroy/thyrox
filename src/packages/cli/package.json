@@ -57,6 +57,7 @@
     "@thyrox/server": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/skills": "workspace:*",
+    "@thyrox/stdin-napi": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/swarm": "workspace:*",
     "@thyrox/teleport": "workspace:*",

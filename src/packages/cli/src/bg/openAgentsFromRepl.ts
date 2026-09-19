@@ -44,7 +44,7 @@ import type { Message } from '@thyrox/agent/messageShapes.js'
 // imported by REPLView only on the left-arrow press, so pulling stdin-napi in
 // statically here does NOT touch the REPL boot path, and it keeps the
 // pin/unpin exports visible to knip (a dynamic import would read as unused).
-import { pinFd0Raw, unpinFd0Raw } from 'stdin-napi'
+import { pinFd0Raw, unpinFd0Raw } from '@thyrox/stdin-napi'
 
 /**
  * Open FleetView from the REPL, backgrounding the current conversation as a

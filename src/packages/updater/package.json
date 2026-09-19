@@ -33,6 +33,7 @@
     "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "axios": "^1.20.0",

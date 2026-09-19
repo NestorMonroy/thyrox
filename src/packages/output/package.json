@@ -44,6 +44,7 @@
     "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/modifiers-napi": "workspace:*",
     "@thyrox/repl": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",

@@ -181,7 +181,7 @@ export async function runAttach(
     // destroyed by FleetView). The reader owns termios + reads on its own
     // thread, feeding onData with each chunk. redirect_fd0=false: fd 0 is
     // free (Bun no longer reads it), so no dup2 redirect needed.
-    const { startReader } = await import('stdin-napi')
+    const { startReader } = await import('@thyrox/stdin-napi')
     let handle: { stop(): void } | undefined
     try {
       handle = startReader(false, onData)
