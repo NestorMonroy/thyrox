@@ -1,0 +1,7 @@
+COMMAND     PID     USER   FD   TYPE DEVICE  SIZE/OFF NLINK    NODE NAME
+environme    86     root   16w   REG  254,0 165891356     1 1886483 /tmp/claude-code.log
+environme    86     root    1w   REG  254,0  41943040     1 1884161 /tmp/environment-manager.out
+sh           82     root    1w   REG  254,0  41943040     1 1884161 /tmp/environment-manager.out
+python      900     root    3u   REG  254,0  10485760     0 2200001 /home/user/borrado.bin (deleted)
+python      901     root    7u   REG  254,0  10485760     0 2200001 /home/user/borrado.bin (deleted)
+6            81    64321  txt    REG    0,1   5559584     0       2 /memfd:sbx-telemetry-collector (deleted)

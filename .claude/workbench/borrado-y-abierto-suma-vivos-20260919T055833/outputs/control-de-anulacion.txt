@@ -1,0 +1,29 @@
+=== CONTROL DE ANULACION — 2026-09-19T06:01:46
+Cada asercion esta anclada a la cifra que el guion publicaria si se le
+retirara ESA correccion y solo esa. Sin ese anclaje pasaban por la razon
+equivocada: medido, «no suma ningun archivo VIVO» anclada a 263.51
+sobrevivia a retirar el filtro de borrado, porque la cifra cae a 208.21.
+
+--- 0. intacto
+ok=24 fallo=0
+
+--- 1. retirada: solo lo borrado  (esperado: cae la de 208.21)
+  FALLO cuenta el inodo borrado una sola vez
+  FALLO no publica la cifra de 208.21 MiB
+ok=22 fallo=2
+
+--- 2. retirada: deduplicar por inodo  (esperado: cae la de 20.00)
+  FALLO cuenta el inodo borrado una sola vez
+  FALLO no publica la cifra de 20.00 MiB
+ok=22 fallo=2
+
+--- 3. retirada: acotar al dispositivo  (esperado: cae la de 15.30)
+  FALLO cuenta el inodo borrado una sola vez
+  FALLO no publica la cifra de 15.30 MiB
+ok=22 fallo=2
+
+--- 4. restaurado
+ok=24 fallo=0
+
+diff contra el original:
+identico
