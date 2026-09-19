@@ -40,9 +40,10 @@
     "./roots": "./src/roots.ts",
     "./types": "./src/types.ts",
     "./xaaIdpLogin": "./src/xaaIdpLogin.ts",
+    "./testing": "./testing/index.ts",
+    "./MCPConnectionManager.js": "./src/MCPConnectionManager.tsx",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts",
-    "./testing": "./testing/index.ts"
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"

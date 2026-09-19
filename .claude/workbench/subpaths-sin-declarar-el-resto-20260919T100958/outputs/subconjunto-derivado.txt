@@ -1,0 +1,9 @@
+$ bun test src/packages/agent/__tests__ src/packages/provider/src/__tests__ tests/unit/plugin
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts:83:21)
+(fail) inflateModelSetting 6-rule cascade > Rule 6: orphan id (no match) → return value unchanged [0.13ms]
+
+ 3356 pass
+ 44 fail
+ 4 errors
+ 5780 expect() calls
+Ran 3400 tests across 241 files. [21.14s]

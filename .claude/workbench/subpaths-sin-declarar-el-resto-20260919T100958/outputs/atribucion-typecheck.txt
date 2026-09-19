@@ -1,0 +1,22 @@
+antes (tsdoc, HEAD f3a3b058): 5681 ubicaciones
+despues (tssub):              5624 ubicaciones
+
+DESAPARECIERON, por codigo:
+     69 TS2307
+     11 TS7006
+      2 TS7053
+      1 TS7022
+      1 TS2366
+      1 TS18046
+
+APARECIERON, por codigo:
+     14 TS2345
+      3 TS2769
+      3 TS2328
+      3 TS2322
+      2 TS2339
+      1 TS2677
+      1 TS2367
+      1 TS18046
+
+TS2307 NUEVOS (un modulo que dejara de resolver seria regresion): 0

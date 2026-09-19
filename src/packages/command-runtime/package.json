@@ -25,6 +25,11 @@
     "./commands/voice": "./src/commands/voice/index.ts",
     "./commands/workflows": "./src/commands/workflows/index.ts",
     "./testing": "./src/testing/index.ts",
+    "./commands/extra-usage/extra-usage.js": "./src/commands/extra-usage/extra-usage.tsx",
+    "./commands/fast/fast.js": "./src/commands/fast/fast.tsx",
+    "./commands/install/install.js": "./src/commands/install/install.tsx",
+    "./commands/plugin/index.js": "./src/commands/plugin/index.tsx",
+    "./commands/powerup/PowerupBanner.js": "./src/commands/powerup/PowerupBanner.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

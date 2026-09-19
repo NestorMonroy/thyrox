@@ -50,6 +50,8 @@
     "./mailbox": "./src/mailbox/index.ts",
     "./permissions": "./src/permissions/index.ts",
     "./worktree": "./src/worktree/index.ts",
+    "./commands/agents/index.js": "./commands/agents/index.ts",
+    "./commands/branch/index.js": "./commands/branch/index.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

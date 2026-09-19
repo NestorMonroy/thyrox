@@ -1,0 +1,44 @@
+{
+  "agent": [
+    "context.ts"
+  ],
+  "bridge": [
+    "commands/bridge-kick.js"
+  ],
+  "cli": [
+    "bg/daemonAdapter.js",
+    "bg/fleetReplyHelpers.js",
+    "bg/openAgentsFromRepl.js",
+    "bg/ptyFrame.js",
+    "commands/version.js"
+  ],
+  "command-runtime": [
+    "commands/extra-usage/extra-usage.js",
+    "commands/fast/fast.js",
+    "commands/install/install.js",
+    "commands/plugin/index.js",
+    "commands/powerup/PowerupBanner.js"
+  ],
+  "mcp-runtime": [
+    "MCPConnectionManager.js"
+  ],
+  "output": [
+    "render",
+    "render/exportRenderer.js"
+  ],
+  "swarm": [
+    "commands/agents/index.js",
+    "commands/branch/index.js"
+  ],
+  "tool-registry": [
+    "tasks/RemoteAgentTask.js",
+    "teleport.js",
+    "tools/AgentTool/AgentTool.js",
+    "tools/AgentTool/UI.js",
+    "tools/AskUserQuestionTool/AskUserQuestionTool.js",
+    "tools/BashTool/BashTool.js",
+    "tools/BashTool/BashToolResultMessage.js",
+    "tools/PowerShellTool/PowerShellTool.js",
+    "tools/TaskOutputTool/TaskOutputTool.js"
+  ]
+}

@@ -11,10 +11,13 @@
     "./contracts": "./src/contracts.ts",
     "./errors": "./src/errors.ts",
     "./testing": "./testing/index.ts",
+    "./commands/bridge-kick.js": "./commands/bridge-kick.ts",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },
-  "scripts": { "test": "bun test" },
+  "scripts": {
+    "test": "bun test"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",

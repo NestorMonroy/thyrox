@@ -30,6 +30,8 @@
     "./setUtils.js": "./src/setUtils.ts",
     "./fpsTracker.js": "./src/fpsTracker.ts",
     "./xml.js": "./src/xml.ts",
+    "./render": "./src/render/index.ts",
+    "./render/exportRenderer.js": "./src/render/exportRenderer.tsx",
     "./*": "./src/*.ts",
     "./*.js": "./src/*.ts"
   },

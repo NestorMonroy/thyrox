@@ -68,9 +68,18 @@
     "./claudeCodeHints.js": "./src/claudeCodeHints.ts",
     "./generatedFiles.js": "./src/generatedFiles.ts",
     "./tools/testing/TestingPermissionTool": "./src/tools/testing/TestingPermissionTool.tsx",
+    "./task/TaskOutput.js": "./src/task/TaskOutput.ts",
+    "./tasks/RemoteAgentTask.js": "./src/tasks/RemoteAgentTask.tsx",
+    "./teleport.js": "./src/teleport.tsx",
+    "./tools/AgentTool/AgentTool.js": "./src/tools/AgentTool/AgentTool.tsx",
+    "./tools/AgentTool/UI.js": "./src/tools/AgentTool/UI.tsx",
+    "./tools/AskUserQuestionTool/AskUserQuestionTool.js": "./src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx",
+    "./tools/BashTool/BashTool.js": "./src/tools/BashTool/BashTool.tsx",
+    "./tools/BashTool/BashToolResultMessage.js": "./src/tools/BashTool/BashToolResultMessage.tsx",
+    "./tools/PowerShellTool/PowerShellTool.js": "./src/tools/PowerShellTool/PowerShellTool.tsx",
+    "./tools/TaskOutputTool/TaskOutputTool.js": "./src/tools/TaskOutputTool/TaskOutputTool.tsx",
     "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts",
-    "./task/TaskOutput.js": "./src/task/TaskOutput.ts"
+    "./*.js": "./src/*.ts"
   },
   "scripts": {
     "test": "bun test"
