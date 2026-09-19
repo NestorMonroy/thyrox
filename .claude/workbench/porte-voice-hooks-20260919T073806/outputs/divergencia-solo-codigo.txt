@@ -1,0 +1,7 @@
+archivo                                       delta_CODIGO  (0 = mismo codigo)
+src/index.ts                                       0
+src/voiceKeyterms.ts                               2
+src/voiceModeEnabled.ts                            4
+src/voice.ts                                      45
+src/voiceStreamSTT.ts                              0
+src/hooks/__tests__/useVoiceHelpers.behavior.test.ts     0
