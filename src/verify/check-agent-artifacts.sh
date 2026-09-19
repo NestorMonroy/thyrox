@@ -82,7 +82,7 @@ fi
 # shellcheck source=/dev/null
 source "$RAIZ/src/lib/node_resolution.sh"
 
-if ! ZOD_HALLADA="$(resolved_package_dir "$PAQUETE" zod)"; then
+if ! ZOD_FOUND="$(resolved_package_dir "$PAQUETE" zod)"; then
     echo "ERROR — no hay \`node_modules/zod\` en la cadena de resolución de $PAQUETE." >&2
     echo "  Node sube desde el paquete hasta la raíz del workspace; ahí no hay ninguna." >&2
     echo "  Sin ella, el --check corre sobre lo que el runtime de Bun auto-instale" >&2
@@ -96,25 +96,25 @@ fi
 # La versión instalada y la fijada salen cada una de su archivo, nunca de una
 # constante en esta prosa: transcribir aquí un número que vive en un artefacto
 # vivo es lo que `calibration-verified-numbers.md` prohíbe.
-ZOD_INSTALADA="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
-    "$ZOD_HALLADA/package.json" | head -1)"
-ZOD_FIJADA="$(sed -n 's/^[[:space:]]*"zod": \["zod@\([^"]*\)".*/\1/p' \
+ZOD_INSTALLED="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' \
+    "$ZOD_FOUND/package.json" | head -1)"
+ZOD_PINNED="$(sed -n 's/^[[:space:]]*"zod": \["zod@\([^"]*\)".*/\1/p' \
     "$RAIZ/bun.lock" 2>/dev/null | head -1)"
 
-if [[ -z "$ZOD_FIJADA" ]]; then
+if [[ -z "$ZOD_PINNED" ]]; then
     echo "ERROR — \`$RAIZ/bun.lock\` no fija ninguna resolución de \`node_modules/zod\`." >&2
     echo "  Sin la versión fijada no hay contra qué comparar la instalada" >&2
-    echo "  ($ZOD_INSTALADA), así que el verde no sería reproducible." >&2
+    echo "  ($ZOD_INSTALLED), así que el verde no sería reproducible." >&2
     echo "  NO se emite un veredicto: un 0 aquí sería un verde falso." >&2
     echo "  Regenera el lockfile con:" >&2
     echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
     exit 2
 fi
 
-if [[ "$ZOD_INSTALADA" != "$ZOD_FIJADA" ]]; then
+if [[ "$ZOD_INSTALLED" != "$ZOD_PINNED" ]]; then
     echo "ERROR — la \`node_modules/zod\` materializada no es la que fija el lockfile." >&2
-    echo "  instalada: $ZOD_INSTALADA   ($ZOD_HALLADA)" >&2
-    echo "  fijada:    $ZOD_FIJADA   ($RAIZ/bun.lock)" >&2
+    echo "  instalada: $ZOD_INSTALLED   ($ZOD_FOUND)" >&2
+    echo "  fijada:    $ZOD_PINNED   ($RAIZ/bun.lock)" >&2
     echo "  El --check correría sobre un grafo que el lockfile no describe." >&2
     echo "  NO se emite un veredicto: un 0 aquí sería un verde no reproducible." >&2
     echo "  Reconcílialas con:" >&2

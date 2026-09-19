@@ -118,7 +118,7 @@ print(read_manifest(runs[-1]).get('exit_code') if runs else 'sin-run')" "$THYROX
 unset THYROX_BACKGROUND_LOG_DIR
 
 
-echo "== 4-quinquies. `status` SEPARA «no existe» de «murio sin marcador» =="
+echo "== 4-quinquies. 'status' SEPARA «no existe» de «murio sin marcador» =="
 # El sub-patron D aplicado al veredicto de `status`: un `unknown` que cubre los
 # dos casos manda a buscar un log que nunca existio. `wait` ya rehusaba con
 # exit 2 ante un nombre desconocido; `status` lo publicaba como si hubiera

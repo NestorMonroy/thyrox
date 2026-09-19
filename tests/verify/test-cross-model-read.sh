@@ -36,7 +36,7 @@ fi
 # TRES estados, no dos: `eximido` (fuera de la superficie), `rehuso` (exit 2,
 # sin cifra) y `medido`. Colapsar los dos ultimos publica PASS sobre una
 # medicion que nunca ocurrio — el contrato de check_veredicto_de_gate.py.
-veredicto() {  # $1 = salida combinada, $2 = codigo de salida
+verdict() {  # $1 = salida combinada, $2 = codigo de salida
     case "$1" in
         *"sin cambios en la superficie"*) echo eximido; return ;;
     esac
@@ -56,27 +56,39 @@ check() {
 
 # CONTROL POSITIVO — un archivo REAL de la superficie: el gate tiene que MEDIR.
 SALIDA="$(cd "$RAIZ" && bash "$GATE" "$ARCHIVO_PAQUETE" 2>&1)"; CODIGO=$?
-check "archivo real del paquete: el gate MIDE" "$(veredicto "$SALIDA" "$CODIGO")" "medido"
+check "archivo real del paquete: el gate MIDE" "$(verdict "$SALIDA" "$CODIGO")" "medido"
 
 # CONTROL NEGATIVO — fuera de la superficie se exime. Sin el, un gate que
 # midiera siempre pasaria tambien el caso de arriba.
 SALIDA="$(cd "$RAIZ" && bash "$GATE" README.md 2>&1)"; CODIGO=$?
 check "archivo fuera de la superficie: el gate SE EXIME" \
-    "$(veredicto "$SALIDA" "$CODIGO")" "eximido"
+    "$(verdict "$SALIDA" "$CODIGO")" "eximido"
 
 # GUARD DE PRECONDICION — sin node_modules en NINGUN punto de la cadena de
 # resolucion, rehusa con exit 2 y lo nombra. Se fuerza con una copia AISLADA
 # y vacia, nunca con el paquete real, para que el guard se ejercite de verdad.
-PKG_AISLADO="$(mktemp -d)"
-trap 'rm -rf "$PKG_AISLADO"' EXIT
-SALIDA="$(cd "$RAIZ" && CHECK_CROSS_MODEL_READ_PKG_DIR="$PKG_AISLADO" \
+ISOLATED_PKG="$(mktemp -d)"
+trap 'rm -rf "$ISOLATED_PKG"' EXIT
+SALIDA="$(cd "$RAIZ" && CHECK_CROSS_MODEL_READ_PKG_DIR="$ISOLATED_PKG" \
     bash "$GATE" "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"; CODIGO=$?
 check "guard sin node_modules en la cadena: exit 2" "$CODIGO" "2"
 case "$SALIDA" in
-    *"node_modules"*) NOMBRA=si ;;
-    *) NOMBRA=no ;;
+    *"node_modules"*) NAMES=si ;;
+    *) NAMES=no ;;
 esac
-check "guard sin node_modules: nombra lo que falta" "$NOMBRA" "si"
+check "guard sin node_modules: nombra lo que falta" "$NAMES" "si"
+
+# GUARD DEL DUENYO — resolver «algun» node_modules no basta: tiene que ser el
+# de la raiz. Hay dos raices de workspace anidadas con lockfiles que no fijan
+# lo mismo, asi que un node_modules de otra raiz haria correr el gate contra
+# el grafo equivocado. SINTETICO, y con su razon: hoy solo la raiz esta
+# materializada, asi que un duenyo distinto no existe en el arbol y se fabrica.
+PKG_WITH_OWN_NODE_MODULES="$(mktemp -d)"
+trap 'rm -rf "$ISOLATED_PKG" "${PKG_WITH_OWN_NODE_MODULES:-}"' EXIT
+mkdir -p "$PKG_WITH_OWN_NODE_MODULES/node_modules"
+SALIDA="$(cd "$RAIZ" && CHECK_CROSS_MODEL_READ_PKG_DIR="$PKG_WITH_OWN_NODE_MODULES" \
+    bash "$GATE" "${ARCHIVO_PAQUETE#"$RAIZ"/}" 2>&1)"; CODIGO=$?
+check "guard con un duenyo que no es la raiz: exit 2" "$CODIGO" "2"
 
 # SUSTITUCION VIVA EN UN MENSAJE DE ERROR — un backtick sin escapar dentro de
 # comillas dobles ES sustitucion de comando, y la rama de error de un guard
@@ -84,8 +96,8 @@ check "guard sin node_modules: nombra lo que falta" "$NOMBRA" "si"
 # guard dispare. Es la clase de H-THYROX-137 (un heredoc sin comillas ejecuto
 # su propia prosa), aqui con el `echo` de un gate como sujeto. CONTROL REAL:
 # esta linea existio en este archivo y se corrigio en el mismo pase.
-VIVAS="$(grep -c '^[^#]*echo "[^"]*[^\\]`' "$GATE" || true)"
-check "ningun echo del gate lleva sustitucion viva" "$VIVAS" "0"
+LIVE_SUBSTITUTIONS="$(grep -c '^[^#]*echo "[^"]*[^\\]`' "$GATE" || true)"
+check "ningun echo del gate lleva sustitucion viva" "$LIVE_SUBSTITUTIONS" "0"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
