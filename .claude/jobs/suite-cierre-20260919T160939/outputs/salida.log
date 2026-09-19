@@ -1,0 +1,7 @@
+== TypeScript (bun) ==
+bun test v1.3.11 (af24e281)
+
+tests/integration/slash-commands.test.ts:
+error: Cannot find package 'env-paths' from '/home/user/thyrox/src/packages/storage/src/cache-paths.ts'
+(fail) slash command popup e2e > getCommands returns at least built-in commands [52.76ms]
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [0.39ms]
