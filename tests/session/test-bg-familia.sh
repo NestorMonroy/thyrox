@@ -161,9 +161,14 @@ _es "y el trabajo SIGUE VIVO: la democion no lo mata" \
     "$($BG status largo)" "running"
 
 # 5c. el control de ANULACION del caso 5b: sin gracia declarada, el default.
-# La referencia lo fija en 120 s, no en los 1800 que `wait` traia.
-_es "el default de gracia es el de la referencia, no 1800" \
-    "$(sed -n 's/.*_GRACE_DEFAULT=\([0-9]*\).*/\1/p' "$BG" | head -1)" "120"
+# Se le PREGUNTA al mecanismo, no se lee su literal del fuente. La forma
+# anterior hacia `sed` sobre `_GRACE_DEFAULT=\([0-9]*\)` y esperaba 120: media
+# el SIGNIFICANTE, asi que se rompio en cuanto la constante paso a ser
+# parametro del consumidor (`${THYROX_BG_GRACE_SECONDS:-N}`) aunque el
+# mecanismo siguiera intacto. Cual es la ventana y que `wait` NO la hereda lo
+# mide `tests/session/test-bg-grace-window.sh`, que es su sucesor.
+_es "el mecanismo PUBLICA su gracia por defecto, y es un entero positivo" \
+    "$([[ "$($BG grace)" =~ ^[1-9][0-9]*$ ]] && echo si || echo no)" "si"
 echo
 echo "aserciones: $((ok+fallo))  ok: $ok  fallo: $fallo"
 [[ $fallo -eq 0 ]]

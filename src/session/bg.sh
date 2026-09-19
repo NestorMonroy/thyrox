@@ -201,7 +201,19 @@ _MARK='__BG_EXIT__='
 # preferencia: `_references/claude-code-bin/2.1.266/claude_strings.txt` declara
 # `var ggo=120000,hgo=600000` como el default y el maximo de
 # BASH_DEFAULT_TIMEOUT_MS / BASH_MAX_TIMEOUT_MS.
-_GRACE_DEFAULT=120
+# Cuando DESPRENDER: los segundos que `start` espera en primer plano antes de
+# devolver el control. 120 s era cuatro veces la ventana en que un turno sigue
+# sintiendose vivo, asi que el tercer desenlace existia y nadie lo veia: se
+# median dos minutos de bloqueo y se concluia, con razon, que el mecanismo no
+# estaba. La ventana es parametro del CONSUMIDOR (DEC-04), de ahi la clave.
+_GRACE_DEFAULT="${THYROX_BG_GRACE_SECONDS:-25}"
+
+# Cuanto esperar al RECOGER, que es otro fenomeno. Compartian constante, y un
+# nombre unico sobre dos cosas es el sub-patron A con el propio nombre como
+# sujeto: bajar el grace a 25 habria acortado tambien la recogida, que no tiene
+# por que caber en la ventana de un turno — quien llama a `wait` ya decidio
+# esperar.
+_WAIT_DEFAULT=600
 _GRACE_MAX=600
 # El codigo con que `start` anuncia la democion. 124 ya significa «timeout» en
 # coreutils y 125 no lo usa `timeout`. CIEGO A: un trabajo cuyo propio codigo de
@@ -302,8 +314,27 @@ cmd_start() {
     return "$_RC_DEMOTED"
 }
 
+# Extrae `--dir D` de los argumentos y deja el resto en `_ARGS_SIN_DIR`, para
+# que todos los subcomandos admitan la misma grafia que `start`.
+_take_dir_flag() {
+    _ARGS_SIN_DIR=()
+    while (( $# )); do
+        case "$1" in
+            --dir) BG_DIR="${2:-}"; shift 2 ;;
+            *)     _ARGS_SIN_DIR+=("$1"); shift ;;
+        esac
+    done
+}
+
+# La ventana resuelta, para que quien la consulte no tenga que leer la
+# constante del fuente: transcribir un valor que vive en codigo es lo que
+# `calibration-verified-numbers.md` prohibe, y aqui ademas la constante es una
+# expansion de parametro, no un numero.
+cmd_grace() { printf '%s\n' "$_GRACE_DEFAULT"; }
+
 cmd_wait() {
-    local name="$1"; local secs="${2:-$_GRACE_DEFAULT}"
+    _take_dir_flag "$@"; set -- "${_ARGS_SIN_DIR[@]}"
+    local name="$1"; local secs="${2:-$_WAIT_DEFAULT}"
     _paths "$name"
     [[ -f "$PIDF" ]] || { echo "bg.sh wait: no hay tarea '$name'" >&2; exit 2; }
     local pid; pid="$(cat "$PIDF")"
@@ -332,6 +363,7 @@ cmd_wait() {
 }
 
 cmd_status() {
+    _take_dir_flag "$@"; set -- "${_ARGS_SIN_DIR[@]}"
     local name="$1"; _paths "$name"
     # TERCER ESTADO. Sin log resuelto no hay nada que medir: el trabajo nunca
     # se lanzo con este nombre, o su familia desaparecio. Publicar `unknown`
@@ -371,6 +403,7 @@ cmd_marker_pattern() {
 # otro sitio; sin el se asume la ubicacion canonica junto a este archivo, y si
 # tampoco esta ahi se rehusa en vez de inventar una ruta.
 cmd_register() {
+    _take_dir_flag "$@"; set -- "${_ARGS_SIN_DIR[@]}"
     local name="${1:?uso: bg.sh register <nombre>}"
     _paths "$name"
     [[ -f "$PIDF" ]] || {
@@ -386,7 +419,7 @@ cmd_register() {
     bash "$wait_jobs" register "$name" "$LOG" "$pid" --marker "$(cmd_marker_pattern)"
 }
 
-cmd_log() { _paths "$1"; printf '%s\n' "$LOG"; }
+cmd_log() { _take_dir_flag "$@"; _paths "${_ARGS_SIN_DIR[0]}"; printf '%s\n' "$LOG"; }
 
 case "${1:-}" in
     start)          shift; cmd_start "$@" ;;
@@ -394,6 +427,7 @@ case "${1:-}" in
     status)         shift; cmd_status "$@" ;;
     log)            shift; cmd_log "$@" ;;
     marker-pattern) shift; cmd_marker_pattern "$@" ;;
+    grace)          shift; cmd_grace "$@" ;;
     register)       shift; cmd_register "$@" ;;
     *)      sed -n '/^# Uso/,/^# Donde/p;/^# Dónde/,/^# ====/p' "$0" | sed 's/^# \{0,1\}//'
             exit 2 ;;
