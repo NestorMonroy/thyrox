@@ -1,7 +1,7 @@
 import React from 'react'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
 
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { useBlink } from '../hooks/useBlink.js'
 
 type Props = {

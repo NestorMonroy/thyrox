@@ -1,0 +1,47 @@
+=== quien llama resolveEnvProxyUrl / resolveProxyForRequest ===
+/home/user/nestormonroy/omniroute/open-sse/services/tlsClientBase.ts:13:import { resolveProxyForRequest } from "../utils/proxyFetch.ts";
+/home/user/nestormonroy/omniroute/open-sse/services/tlsClientBase.ts:507:  return resolveTlsClientProxyUrl(domain, perCall, resolveProxyForRequest);
+/home/user/nestormonroy/omniroute/open-sse/services/tlsClientProxy.ts:16:  resolveProxyForRequest: ResolveProxyForRequest
+/home/user/nestormonroy/omniroute/open-sse/services/tlsClientProxy.ts:21:    info = resolveProxyForRequest(targetUrl);
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFallback.ts:94:function resolveEnvProxyUrl(targetUrl: string): string | null {
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFallback.ts:206:      const envProxy = resolveEnvProxyUrl(targetUrl);
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:502:function resolveEnvProxyUrl(targetUrl) {
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:527:export function resolveProxyForRequest(targetUrl) {
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:552:  const envProxyUrl = resolveEnvProxyUrl(targetUrl);
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:597:  // Keep an explicit direct sentinel so resolveProxyForRequest cannot re-read
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:779:    resolved = resolveProxyForRequest(targetUrl);
+
+=== hay camino de proxy para websocket? ===
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/sparkdesk/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/copilot-m365-web/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/uc/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/codex-app-server/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/iflytek/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/providers/registry/copilot-web/index.ts
+/home/user/nestormonroy/omniroute/open-sse/config/audioRegistry.ts
+/home/user/nestormonroy/omniroute/open-sse/handlers/uc/ucTts.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/uc.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/codex/appServerConfig.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/cloudflare-playground.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/copilot-web.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/copilot-m365-connection.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/codex.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/copilot-m365-frames.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/copilot-m365-web.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/muse-spark-web.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/uc/constants.ts
+/home/user/nestormonroy/omniroute/open-sse/executors/uc/ws.ts
+/home/user/nestormonroy/omniroute/open-sse/vendor/codex-chatgpt-web/launcher-browser-host.ts
+
+=== proxyFetch: se usa para ws? ===
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyDispatcher.ts:110:  // by the retry-once-with-fresh-socket path in proxyFetch.ts (mirrors the
+/home/user/nestormonroy/omniroute/open-sse/utils/directResponseStartTimeout.ts:64: * layer before proxyFetch ever sees the request). In that case the caller's
+/home/user/nestormonroy/omniroute/open-sse/utils/tlsClient.ts:4:// #12656 — re-exported so proxyFetch.ts (frozen at its file-size cap) can
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:396:const PATCH_STATE_KEY = Symbol.for("omniroute.proxyFetch.state");
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:397:const DIRECT_PROXY_CONTEXT = Symbol.for("omniroute.proxyFetch.direct-context");
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:916:              (dispatcherError as Error & { proxyFetchDetail?: string }).proxyFetchDetail = detail;
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:958:              (nativeError as Error & { proxyFetchDetail?: string }).proxyFetchDetail = detail;
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:1187: * Named export for proxyFetch — identical to the patched globalThis.fetch but
+/home/user/nestormonroy/omniroute/open-sse/utils/proxyFetch.ts:1191:export async function proxyFetch(
+/home/user/nestormonroy/omniroute/open-sse/utils/tlsFirstByteWatchdog.ts:12:// (proxyFetch's existing TLS-fallback catch blocks) can fall back to the
+__BG_EXIT__=0

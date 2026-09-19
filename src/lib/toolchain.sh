@@ -44,6 +44,7 @@ source "$_THYROX_TOOLCHAIN_HERE/reach.sh"
 # fuente de verdad que `calibration-verified-numbers.md` prohibe para una cifra
 # y vale igual para una ruta.
 THYROX_TOOLCHAIN_INTERPRETER_PATH="${THYROX_TOOLCHAIN_INTERPRETER_PATH:-.venv/bin/python}"
+export THYROX_TOOLCHAIN_INTERPRETER_PATH
 
 # @description La raiz del proveedor: la variable declarada, o la que resuelve
 # el localizador. La variable gana porque quien la exporta para UNA invocacion
@@ -135,12 +136,14 @@ export -f thyrox_toolchain_declare
 # control necesita poder apuntar la busqueda a un nombre ausente sin vaciar el
 # PATH, que romperia todo lo demas de la funcion.
 THYROX_TOOLCHAIN_PARALLEL_BIN="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
+export THYROX_TOOLCHAIN_PARALLEL_BIN
 
 # @description El comando que lo instala. Declarado por la misma razon: un
 # control necesita inyectar un instalador que MIENTA —que salga cero sin
 # instalar nada— para comprobar que el exito se prueba re-comprobando el
 # binario y no leyendo el codigo de salida del instalador.
 THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD="${THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD:-sudo apt-get install -y parallel}"
+export THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD
 
 # @description El hogar de estado de GNU parallel: hermano de `.venv`, en la
 # RAIZ del proveedor.
@@ -243,6 +246,7 @@ export -f thyrox_toolchain_require_parallel
 # que los guiones ESCRIBEN, y porque un control necesita poder apuntarlo a un
 # awk concreto sin mutar el sistema.
 THYROX_TOOLCHAIN_AWK_BIN="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
+export THYROX_TOOLCHAIN_AWK_BIN
 
 # @description El comando que instala gawk. Declarado por la misma razon que
 # su hermano de parallel: un control necesita inyectar un instalador que
@@ -358,3 +362,479 @@ function thyrox_toolchain_require_gawk() {
   return 0
 }
 export -f thyrox_toolchain_require_gawk
+
+# ---------------------------------------------------------------------------
+# Sonda de COHERENCIA entre el proxy declarado y el CA que cada familia lee.
+# ---------------------------------------------------------------------------
+
+# @description Las claves de entorno que declaran un proxy de salida. Son
+# SEIS y no tres: la minuscula y la MAYUSCULA son cajas distintas, y un
+# operador puede declarar solo una.
+#
+# ALL_PROXY entro al cerrar TASK-THYROX-0187, no por completitud: hasta
+# entonces `src/packages/provider/src/proxy.ts::getProxyUrl` no la leia
+# (medido: 0 archivos del arbol), asi que declararla habria dado verde sobre
+# una via que el consumidor no consume. Hoy la lee como respaldo de los dos
+# caminos, asi que un entorno que solo la declare SI tiene proxy — y la sonda
+# tiene que verlo para no callar sobre un CA ausente.
+declare -ga THYROX_TOOLCHAIN_PROXY_KEYS=(
+  https_proxy HTTPS_PROXY http_proxy HTTP_PROXY all_proxy ALL_PROXY
+)
+
+# @description Las familias de consumidor y las claves de CA que cada una lee,
+# como `familia:CLAVE[,CLAVE]`. El eje es la familia porque las tres leen
+# claves DISTINTAS: un entorno puede dejar salir a node y no a python, y una
+# sola clave colapsada daria verde sobre esa asimetria.
+declare -ga THYROX_TOOLCHAIN_CA_FAMILIES=(
+  "node:NODE_EXTRA_CA_CERTS"
+  "python:REQUESTS_CA_BUNDLE,SSL_CERT_FILE"
+  "curl:CURL_CA_BUNDLE"
+)
+
+# @description ¿Hay algun proxy de salida declarado?
+# @noargs
+# @exitcode 0 Al menos una de las cuatro claves trae valor.
+# @exitcode 1 Ninguna.
+function thyrox_toolchain_proxy_declared() {
+  local key
+  for key in "${THYROX_TOOLCHAIN_PROXY_KEYS[@]}"; do
+    [[ -n "${!key:-}" ]] && return 0
+  done
+  return 1
+}
+
+# @description ¿La familia dada tiene un CA que pueda LEER de verdad?
+#
+# Declarar una ruta no es tenerla: se comprueba `-r` sobre el archivo, no que
+# la variable traiga texto. Es la misma distincion significante/significado que
+# el resto del arbol aplica a una cifra — el nombre de un archivo no es el
+# archivo.
+# @arg $1 string La entrada `familia:CLAVE[,CLAVE]`.
+# @exitcode 0 Alguna de sus claves apunta a un archivo legible.
+# @exitcode 1 Ninguna.
+function thyrox_toolchain_family_has_ca() {
+  local entry="${1:-}" keys key
+  keys="${entry#*:}"
+  local IFS=','
+  for key in $keys; do
+    [[ -n "${!key:-}" && -r "${!key}" ]] && return 0
+  done
+  return 1
+}
+
+# @description Sonda de coherencia proxy/CA. Es `aviso`, no `error`, y la
+# razon esta medida: ningun gate de `src/verify/` sale a la red, asi que un
+# entorno incoherente no rompe la verificacion de este arbol — rompe el
+# trabajo del operador cuando salga.
+#
+# Lo que NO hace, y es deliberado: NO abre una conexion. Una sonda de red
+# mediria ademas la disponibilidad del destino y su rojo no separaria «el
+# entorno esta mal declarado» de «el destino esta caido». Mide dos
+# declaraciones del operador y su coherencia entre si.
+#
+# Sin proxy declarado el veredicto es 0, nunca aviso: un aviso que sale
+# siempre se aprende a ignorar, que es como una regla se vuelve ruido.
+# @noargs
+# @exitcode 0 No hay proxy declarado, o lo hay y las tres familias leen un CA.
+# @exitcode 1 Hay proxy declarado y alguna familia no tiene CA legible. AVISA.
+function thyrox_toolchain_probe_proxy() {
+  if ! thyrox_toolchain_proxy_declared; then
+    return 0
+  fi
+
+  local entry family missing missing_ca=()
+  for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
+    family="${entry%%:*}"
+    thyrox_toolchain_family_has_ca "$entry" || missing_ca+=("$family")
+  done
+
+  if [[ ${#missing_ca[@]} -eq 0 ]]; then
+    return 0
+  fi
+
+  # El aviso NOMBRA la familia y su clave: decir solo «falta CA» manda al
+  # operador a averiguar cual de las tres, que es el trabajo que la sonda
+  # acaba de hacer.
+  echo "thyrox_toolchain: hay proxy declarado y ${#missing_ca[@]} familia(s) sin CA legible." >&2
+  for entry in "${THYROX_TOOLCHAIN_CA_FAMILIES[@]}"; do
+    family="${entry%%:*}"
+    for missing in "${missing_ca[@]}"; do
+      [[ "$missing" == "$family" ]] && \
+        echo "                  $family -> declarar ${entry#*:}" >&2
+    done
+  done
+  echo "                  Un proxy que intercepta TLS sin CA legible rompe" >&2
+  echo "                  cada salida con un fallo de verificacion. El" >&2
+  echo "                  remedio es la declaracion, no desactivar TLS." >&2
+  return 1
+}
+export -f thyrox_toolchain_proxy_declared
+export -f thyrox_toolchain_family_has_ca
+export -f thyrox_toolchain_probe_proxy
+
+# ---------------------------------------------------------------------------
+# El aviso degradado, y las dos sondas que `check-toolchain-ready` no tenia.
+#
+# El defecto que cierran lo nombro el ejecutor: quien clona el repositorio no
+# tiene como saber QUE herramientas externas usa thyrox ni si las suyas
+# sirven. Antes de esto, `PROBES` declaraba cuatro —awk, parallel, el
+# interprete del proveedor, el proxy— y el arbol dependia ademas de dos que
+# ninguna sonda interrogaba.
+#
+# CUAL de las dos es cual se midio antes de escribirlas, y el resultado
+# invierte lo que el nombre sugiere:
+#
+#   ==============================  ============  ===========================
+#   Candidato                       Consumidores  Veredicto
+#   ==============================  ============  ===========================
+#   CLI `sqlite3`                   0             NO es dependencia
+#   modulo `sqlite3` de Python      55            SI: asi se abre el store
+#   `bun` / `bunx` como comando     55            SI: 14 entrypoints .ts
+#   ==============================  ============  ===========================
+#
+# Por eso la sonda se llama `require_sqlite_reader` y no `require_sqlite3`: el
+# sujeto es la CAPACIDAD DE LEER el store, no un binario con ese nombre. En el
+# contenedor donde se escribio esto el CLI esta AUSENTE y el store se abre sin
+# problema — un guard sobre el CLI habria publicado rojo con el arbol sano,
+# que es el sub-patron C de `metrica-decide-la-conclusion.md`.
+# ---------------------------------------------------------------------------
+
+# @description El aviso de MODO DEGRADADO: nombra la herramienta que no se
+# puede usar, la precondicion que la desbloquea, y declara que lo demas sigue.
+#
+# La forma la fijo el ejecutor verbatim. Sus tres mitades no son adorno:
+#
+#   1. el prefijo `IMPORTANT`, que la hace greppeable en un log;
+#   2. la herramienta nombrada DOS veces —al pedirla y al decir que se sigue
+#      sin ella—, que es lo que un «falta X» pierde;
+#   3. la precondicion, que es el remedio accionable.
+#
+# Sin la tercera mitad el aviso se lee como un rehuse, y el que clona no sabe
+# si puede seguir. Ese es exactamente el desenlace que esta funcion evita: un
+# arbol que degrada y sigue usable, no uno que falla entero.
+# @arg $1 string La herramienta o capacidad que queda fuera.
+# @arg $2 string La precondicion a corregir para recuperarla.
+# @stdout La linea de aviso.
+# @exitcode 2 Falta alguno de los dos argumentos. NO se emite una linea con
+#   huecos: un aviso que dijera «si desea usar  es necesario corregir » es
+#   peor que ninguno, porque parece informacion.
+function thyrox_toolchain_degraded_notice() {
+  local tool="${1:-}" fix="${2:-}"
+  if [[ -z "$tool" || -z "$fix" ]]; then
+    echo "thyrox_toolchain_degraded_notice: faltan <herramienta> y <precondicion>." >&2
+    return 2
+  fi
+  printf 'IMPORTANT si desea usar %s es necesario corregir %s por el momento, continua sin usar %s\n' \
+    "$tool" "$fix" "$tool"
+}
+export -f thyrox_toolchain_degraded_notice
+
+# @description El interprete al que se le pregunta por el lector de SQLite.
+# Declarado, y no compuesto dentro de la funcion, por la misma razon que
+# `THYROX_TOOLCHAIN_AWK_BIN`: un control necesita apuntar la sonda a un
+# interprete ausente sin romper todo lo demas.
+THYROX_TOOLCHAIN_PYTHON_BIN="${THYROX_TOOLCHAIN_PYTHON_BIN:-}"
+export THYROX_TOOLCHAIN_PYTHON_BIN
+
+# @description ¿Se puede LEER el store? El sujeto es la capacidad, no el CLI.
+#
+# El store de thyrox es SQLite y sus 55 consumidores lo abren con el modulo
+# `sqlite3` de la biblioteca estandar de Python. El CLI homonimo tiene CERO
+# invocaciones en el arbol, asi que sondearlo mediria otra cosa.
+#
+# `sqlite3` es stdlib, pero NO siempre esta: un CPython compilado sin
+# `libsqlite3-dev` lo omite, y el import falla en tiempo de ejecucion con el
+# arbol entero instalado. Por eso la sonda IMPORTA el modulo en vez de dar por
+# hecho que existe — mide conducta, no presencia del interprete.
+# @noargs
+# @exitcode 0 El interprete resuelve y su modulo sqlite3 importa.
+# @exitcode 2 No resuelve, o resuelve a un Python sin el modulo. REHUSA sin
+#   emitir conteo: un cero aqui no distinguiria «no hay lector» de «no pude
+#   medir».
+function thyrox_toolchain_require_sqlite_reader() {
+  local interpreter="$THYROX_TOOLCHAIN_PYTHON_BIN"
+  # La precondicion que el aviso publica tiene que ser EJECUTABLE por quien
+  # acaba de clonar, y ese es justo quien NO tiene `THYROX_ROOT` declarada: un
+  # `cd $THYROX_ROOT` literal deja el remedio sin sujeto. Se resuelve como ya
+  # lo hace `provider_python` en su propio mensaje. El literal queda de
+  # respaldo por si la raiz no se puede resolver — ahi el problema es otro y
+  # el aviso no debe inventarse una ruta.
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" \
+    || root='$THYROX_ROOT'
+
+  if [[ -z "$interpreter" ]]; then
+    interpreter="$(thyrox_toolchain_provider_python 2>/dev/null)" || {
+      thyrox_toolchain_degraded_notice \
+        "el store de agentes, tareas y hallazgos" \
+        "cd $root && uv sync" >&2
+      return 2
+    }
+  fi
+
+  if [[ ! -x "$interpreter" ]]; then
+    echo "thyrox_toolchain: '$interpreter' no resuelve a un interprete." >&2
+    thyrox_toolchain_degraded_notice \
+      "el store de agentes, tareas y hallazgos" \
+      "cd $root && uv sync" >&2
+    return 2
+  fi
+
+  # CONDUCTA: el modulo importa. `command -v python` no lo dice.
+  if ! "$interpreter" -c 'import sqlite3' >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$interpreter' resuelve, y su modulo sqlite3 NO importa." >&2
+    echo "                  Es un CPython compilado sin libsqlite3-dev. El CLI" >&2
+    echo "                  'sqlite3' no lo arregla: el arbol no lo invoca." >&2
+    thyrox_toolchain_degraded_notice \
+      "el store de agentes, tareas y hallazgos" \
+      "un Python con el modulo sqlite3" >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_sqlite_reader
+
+# @description El binario de bun. Declarado por la razon de siempre: el
+# control necesita apuntar a un nombre ausente.
+THYROX_TOOLCHAIN_BUN_BIN="${THYROX_TOOLCHAIN_BUN_BIN:-bun}"
+export THYROX_TOOLCHAIN_BUN_BIN
+
+# @description El hogar de dependencias instaladas. Su ausencia es el eje 2 y
+# no se deduce del eje 1: bun puede estar y `bun install` no haberse corrido.
+THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-}"
+export THYROX_TOOLCHAIN_NODE_MODULES_HOME
+
+# @description ¿Se puede correr la mitad TypeScript? DOS ejes, como awk.
+#
+#   1. PRESENCIA — que `bun` resuelva. Su remedio es instalarlo.
+#   2. DEPENDENCIAS — que `node_modules` este materializado. Su remedio es
+#      `bun install`, y NO es el mismo: bun instalado sin dependencias deja
+#      los 14 entrypoints `.ts` igual de muertos.
+#
+# Medir solo el eje 1 es el sub-patron C: el significante (el binario esta)
+# concluyendo sobre el significado (la mitad TypeScript corre).
+#
+# Este rehuse NO bloquea el arbol: las mitades Python y shell de `bin/` no
+# dependen de bun. Por eso su aviso es el degradado y su clase en
+# `check-toolchain-ready` es `aviso`, no `error`.
+# @noargs
+# @exitcode 0 bun resuelve y las dependencias estan.
+# @exitcode 2 Falta alguno de los dos ejes. El aviso nombra cual.
+function thyrox_toolchain_require_bun() {
+  local bin="$THYROX_TOOLCHAIN_BUN_BIN" home="$THYROX_TOOLCHAIN_NODE_MODULES_HOME"
+
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$bin' no resuelve." >&2
+    thyrox_toolchain_degraded_notice \
+      "los entrypoints .ts de src/**/bin y el paquete @thyrox/cli" \
+      "instalar bun (https://bun.sh)" >&2
+    return 2
+  fi
+
+  if [[ -z "$home" ]]; then
+    local root
+    root="$(thyrox_toolchain_provider_root)" || return 2
+    home="$root/node_modules"
+  fi
+
+  # El eje 2. Un directorio VACIO cuenta como ausente: `bun install` lo crea
+  # antes de poblarlo, asi que medir su existencia a secas daria verde a mitad
+  # de una instalacion interrumpida.
+  if [[ ! -d "$home" ]] || [[ -z "$(ls -A "$home" 2>/dev/null)" ]]; then
+    echo "thyrox_toolchain: '$bin' resuelve, y $home esta ausente o vacio." >&2
+    # Misma razon que en `require_sqlite_reader`: la raiz se resuelve para que
+    # el `cd` del remedio tenga sujeto en un clon recien bajado.
+    local root_bun; root_bun="$(thyrox_toolchain_provider_root 2>/dev/null)" \
+      || root_bun='$THYROX_ROOT'
+    thyrox_toolchain_degraded_notice \
+      "los entrypoints .ts de src/**/bin y el paquete @thyrox/cli" \
+      "cd $root_bun && bun install" >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_bun
+
+# ---------------------------------------------------------------------------
+# Los MANIFIESTOS. El eje que las seis sondas anteriores no miran.
+#
+# Las seis miden EFECTO —responde el interprete, esta poblado `node_modules`,
+# compila el awk— y ninguna mira el SIGNIFICANTE que lo declara. Un clon donde
+# `pyproject.toml` falte o este corrupto publica «error · python-proveedor» y
+# manda a correr `uv sync`, que fallara por otra causa y con otro mensaje: el
+# operador persigue el sintoma. Medir el efecto y concluir sobre su causa
+# declarada es el sub-patron C de `metrica-decide-la-conclusion.md`.
+#
+# Las DOS clases no son severidad estetica, y su frontera es la misma que
+# `check-toolchain-ready` ya ejerce:
+#
+#   ERROR  pyproject.toml, package.json, tsconfig.json — DECLARACIONES. Sin
+#          ellas no hay que instalar ni con que compilar; su ausencia no se
+#          repara sola.
+#   AVISO  uv.lock, bun.lock, bunfig.toml — RESOLUCIONES. Se regeneran desde
+#          las declaraciones. Un clon sin `bun.lock` es perfectamente
+#          instalable, y bloquearlo trataria los seis igual.
+#
+# Se mide `-r` y no `-e`: un manifiesto PRESENTE e ILEGIBLE deja el arbol
+# igual de roto, y una sonda de existencia pasa en verde sobre el.
+#
+# Ciega a: que el contenido PARSEE. La sonda mide que el archivo este y se
+# pueda leer, no que su TOML o su JSON sean validos — eso lo dira la
+# herramienta que lo consuma, con su propio mensaje, y duplicarlo aqui seria
+# una segunda fuente de verdad sobre la sintaxis de un formato ajeno.
+# ---------------------------------------------------------------------------
+
+# @description Los manifiestos de clase ERROR, separados por espacio. Se
+# declaran como variable y no dentro de la funcion por la misma razon que
+# `THYROX_TOOLCHAIN_AWK_BIN`: un control necesita variar el universo sin
+# editar el cuerpo.
+THYROX_TOOLCHAIN_MANIFESTS_REQUIRED="${THYROX_TOOLCHAIN_MANIFESTS_REQUIRED:-pyproject.toml package.json tsconfig.json}"
+export THYROX_TOOLCHAIN_MANIFESTS_REQUIRED
+
+# @description Los manifiestos de clase AVISO: resoluciones regenerables.
+THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL="${THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL:-uv.lock bun.lock bunfig.toml}"
+export THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL
+
+# @description La precondicion que regenera cada manifiesto regenerable.
+# @arg $1 string El nombre del manifiesto.
+# @stdout El remedio accionable, sin ruta: quien lo lee ya esta en la raiz.
+function thyrox_toolchain_manifest_remedy() {
+  case "${1:-}" in
+    uv.lock)      printf 'correr uv lock' ;;
+    bun.lock)     printf 'correr bun install' ;;
+    bunfig.toml)  printf 'restaurar bunfig.toml desde el repositorio' ;;
+    *)            printf 'restaurar %s desde el repositorio' "${1:-el manifiesto}" ;;
+  esac
+}
+export -f thyrox_toolchain_manifest_remedy
+
+# @description ¿Estan los manifiestos del arbol, y se pueden leer?
+# @noargs
+# @exitcode 0 Todas las declaraciones estan. Puede haber avisos por una
+#   resolucion ausente, que se nombra igual en vez de pasar en silencio.
+# @exitcode 2 Falta o es ilegible al menos una DECLARACION. REHUSA y la
+#   nombra: el codigo de salida por si solo no dice cual de las tres es, y
+#   mandar a mirar «los manifiestos» no es un remedio.
+#
+#   El rechazo NO emite conteo ni ruta. Sin conteo porque un cero aqui seria
+#   un verde falso; sin ruta porque quien lee el remedio ya esta en la raiz y
+#   una ruta absoluta en el mensaje lo ata a un arbol concreto.
+function thyrox_toolchain_require_manifests() {
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    echo "                  NO se emite conteo." >&2
+    return 2
+  }
+
+  local name broken=0
+
+  for name in $THYROX_TOOLCHAIN_MANIFESTS_REQUIRED; do
+    [[ -r "$root/$name" ]] && continue
+    echo "thyrox_toolchain: manifiesto obligatorio ausente o ilegible: $name" >&2
+    echo "                  Es una DECLARACION: sin ella no hay que instalar" >&2
+    echo "                  ni con que compilar, y no se regenera sola." >&2
+    broken=1
+  done
+
+  for name in $THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL; do
+    [[ -r "$root/$name" ]] && continue
+    # Se nombra aunque no bloquee. Una resolucion ausente que pasara en
+    # silencio deja al que clona sin saber por que su instalacion no es
+    # reproducible.
+    thyrox_toolchain_degraded_notice \
+      "la resolucion reproducible que declara $name" \
+      "$(thyrox_toolchain_manifest_remedy "$name")" >&2
+  done
+
+  (( broken == 0 )) || return 2
+  return 0
+}
+export -f thyrox_toolchain_require_manifests
+
+# @description Normaliza un nombre de paquete Python segun PEP 503: minusculas
+# y toda corrida de `-`, `_` o `.` colapsada a un solo guion medio.
+#
+# Sin esta normalizacion, una comparacion de cadena cruda publica «no
+# declarado» sobre un paquete que SI lo esta: `spacy_lookups_data` y
+# `spacy-lookups-data` son el mismo paquete para `uv` y para el indice. Es el
+# falso positivo que el censo de imports de este arbol produjo, con el propio
+# instrumento como sujeto.
+# @arg $1 string El nombre tal como lo escribio quien pregunta.
+# @stdout El nombre normalizado.
+function thyrox_toolchain_normalize_package_name() {
+  printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[-_.]+/-/g'
+}
+export -f thyrox_toolchain_normalize_package_name
+
+# @description ¿Esta un paquete DECLARADO en la mitad Python del proveedor?
+#
+# Es otra pregunta que «esta instalado», y confundirlas fue un episodio real:
+# se publico «numpy no esta instalado» sin medir que no esta DECLARADO. Solo
+# la segunda explica la primera, y solo la segunda se arregla editando un
+# archivo del arbol.
+#
+# El universo son los arrays de dependencias de `pyproject.toml`: el de
+# `[project]` y los de `[dependency-groups]`. No se mira el entorno: un
+# paquete que este en `.venv` sin declararse es justo el defecto que esta
+# sonda existe para ver.
+# @arg $1 string El nombre del paquete, en cualquiera de sus formas PEP 503.
+# @exitcode 0 Declarado.
+# @exitcode 1 No declarado.
+# @exitcode 2 NO SE PUDO MEDIR: el manifiesto no se puede leer. Responder «no
+#   declarado» aqui no distinguiria «no esta» de «no pude mirar», que es el
+#   sub-patron D con esta sonda como sujeto.
+function thyrox_toolchain_python_package_declared() {
+  local wanted="${1:-}"
+  if [[ -z "$wanted" ]]; then
+    echo "thyrox_toolchain_python_package_declared: falta <paquete>." >&2
+    return 2
+  fi
+
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    return 2
+  }
+
+  local manifest="$root/pyproject.toml"
+  if [[ ! -r "$manifest" ]]; then
+    echo "thyrox_toolchain: no se puede leer $manifest." >&2
+    echo "                  NO se responde «no declarado»: seria confundir" >&2
+    echo "                  la ausencia con la imposibilidad de medir." >&2
+    return 2
+  fi
+
+  wanted="$(thyrox_toolchain_normalize_package_name "$wanted")"
+
+  local declared
+  declared="$(awk '
+    # Cabecera de tabla. Reinicia el estado: un array nunca cruza tablas.
+    /^\[/ { in_group = ($0 ~ /^\[dependency-groups\]/); in_arr = 0; next }
+
+    # Apertura de un array de dependencias. Bajo [dependency-groups] toda
+    # clave lo es; fuera, solo las que terminan en «dependencies».
+    !in_arr && /^[[:space:]]*[A-Za-z0-9_.-]+[[:space:]]*=[[:space:]]*\[/ {
+      key = $0; sub(/[[:space:]]*=.*/, "", key); gsub(/[[:space:]]/, "", key)
+      if (in_group || key ~ /dependencies$/) in_arr = 1
+    }
+
+    in_arr {
+      line = $0
+      while (match(line, /"[^"]+"/)) {
+        spec = substr(line, RSTART + 1, RLENGTH - 2)
+        # El nombre es el prefijo hasta el primer caracter que no le
+        # pertenece: un marcador, un extra o un especificador de version.
+        if (match(spec, /^[A-Za-z0-9._-]+/)) print substr(spec, RSTART, RLENGTH)
+        line = substr(line, RSTART + RLENGTH)
+      }
+      if ($0 ~ /\]/) in_arr = 0
+    }
+  ' "$manifest")"
+
+  local candidate
+  while IFS= read -r candidate; do
+    [[ -n "$candidate" ]] || continue
+    [[ "$(thyrox_toolchain_normalize_package_name "$candidate")" == "$wanted" ]] \
+      && return 0
+  done <<<"$declared"
+  return 1
+}
+export -f thyrox_toolchain_python_package_declared

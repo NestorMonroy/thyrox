@@ -79,9 +79,9 @@ def check(label, expected, obtained):
 #: El payload tal y como el cliente lo despacha. Se conserva con SUS nombres de
 #: clave —no parafraseados— porque la forma es el sujeto de este control:
 #: `2.1.266`, `hook_event_name:"TaskCreated",task_id:e,task_subject:n,…`.
-def payload(evento, ordinal, subject, session):
+def payload(event, ordinal, subject, session):
     return json.dumps({
-        "hook_event_name": evento,
+        "hook_event_name": event,
         "session_id": session,
         "task_id": str(ordinal),
         "task_subject": subject,
@@ -91,7 +91,7 @@ def payload(evento, ordinal, subject, session):
     })
 
 
-def escenario():
+def scenario():
     """Un board de una tarjeta y un store vacio, ambos desechables."""
     tmp = Path(tempfile.mkdtemp(prefix="task-lifecycle-"))
     session = "sesion-de-sonda"
@@ -110,19 +110,19 @@ def escenario():
     return tmp, session, board, store
 
 
-def correr(evento, ordinal, session, board, store, capa="thyrox"):
+def run(event, ordinal, session, board, store, layer="thyrox"):
     return subprocess.run(
         [sys.executable, str(HOOK), "--store", str(store), "--board", str(board),
-         "--capa", capa],
-        input=payload(evento, ordinal, "Sujeto de la sonda", session),
+         "--capa", layer],
+        input=payload(event, ordinal, "Sujeto de la sonda", session),
         capture_output=True, text=True)
 
 
-def citas(store):
+def citations(store):
     conn = sqlite3.connect(store)
-    filas = conn.execute("SELECT citation_id, subject FROM tasks").fetchall()
+    rows = conn.execute("SELECT citation_id, subject FROM tasks").fetchall()
     conn.close()
-    return filas
+    return rows
 
 
 print("test_task_lifecycle:")
@@ -144,21 +144,21 @@ check("`TaskUpdate` NO acuña", False,
 
 print()
 print("== 3. el hook lee el payload del cliente y acuña ==")
-tmp, session, board, store = escenario()
-r = correr("TaskCreated", 7, session, board, store)
+tmp, session, board, store = scenario()
+r = run("TaskCreated", 7, session, board, store)
 check("sale 0", 0, r.returncode)
-filas = citas(store)
-check("acuña exactamente una fila", 1, len(filas))
+rows = citations(store)
+check("acuña exactamente una fila", 1, len(rows))
 check("y su cita es de la capa declarada", True,
-      bool(filas) and filas[0][0].startswith("TASK-THYROX-"))
+      bool(rows) and rows[0][0].startswith("TASK-THYROX-"))
 check("y lleva el sujeto de la tarjeta", "Sujeto de la sonda",
-      filas[0][1] if filas else None)
+      rows[0][1] if rows else None)
 
 print()
 print("== 4. el evento de cierre NO acuña una fila mas ==")
-r2 = correr("TaskCompleted", 7, session, board, store)
+r2 = run("TaskCompleted", 7, session, board, store)
 check("sale 0 igualmente (no es un error)", 0, r2.returncode)
-check("y el store sigue con UNA fila", 1, len(citas(store)))
+check("y el store sigue con UNA fila", 1, len(citations(store)))
 
 print()
 print("== 5. un payload roto no rompe el turno ==")
@@ -178,13 +178,13 @@ print("== 6. el cableado del usuario DECLARA el evento ==")
 # Un mecanismo que no esta en el cableado es capacidad muerta — el defecto
 # exacto que esta tarea lleva abierta desde que se escribio el mecanismo.
 from session import user_wiring  # noqa: E402
-declarado = user_wiring.declared_wiring(root=ROOT)["hooks"]
-check("`TaskCreated` esta declarado", True, "TaskCreated" in declarado)
-check("`TaskCompleted` esta declarado", True, "TaskCompleted" in declarado)
-comandos = [h["command"] for ev in ("TaskCreated", "TaskCompleted")
-            for grupo in declarado.get(ev, []) for h in grupo.get("hooks", [])]
+declared = user_wiring.declared_wiring(root=ROOT)["hooks"]
+check("`TaskCreated` esta declarado", True, "TaskCreated" in declared)
+check("`TaskCompleted` esta declarado", True, "TaskCompleted" in declared)
+commands = [h["command"] for ev in ("TaskCreated", "TaskCompleted")
+            for group in declared.get(ev, []) for h in group.get("hooks", [])]
 check("los dos apuntan al mismo guion", 2,
-      sum(1 for c in comandos if "task_lifecycle.py" in c))
+      sum(1 for c in commands if "task_lifecycle.py" in c))
 
 print()
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")

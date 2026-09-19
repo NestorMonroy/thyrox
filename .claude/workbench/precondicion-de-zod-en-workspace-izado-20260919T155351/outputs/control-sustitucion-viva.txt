@@ -1,0 +1,10 @@
+# Control positivo — se reintroduce la sustitucion viva
+# fecha: 2026-09-19T16:03:17
+
+OK   archivo real del paquete: el gate MIDE
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules en la cadena: exit 2
+OK   guard sin node_modules: nombra lo que falta
+FALLA ningun echo del gate lleva sustitucion viva — esperado '0', obtenido '1'
+
+aserciones: 4 de 5 · fallos: 1

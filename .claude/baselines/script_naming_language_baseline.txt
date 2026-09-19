@@ -73,3 +73,11 @@ tests/verify/test-veredicto-de-gate.sh
 tests/verify/test-verificar-premisa.sh
 tests/verify/test-vocabulario-baseline-resolucion.sh
 tests/verify/test-vocabulario-prosa.sh
+
+# --- 2026-09-19: bloqueado por el freeze de bin/, no deuda heredada ---
+# La familia hallazgo -> finding se renombra ENTERA o no se renombra:
+# dos de sus fuentes tienen envoltorio en bin/, y regenerar bin/ esta
+# bloqueado por directiva. Destino declarado: `finding`.
+src/hallazgo/hallazgo_ids.py
+tests/hallazgo/test_hallazgo_ids.py
+tests/verify/test-hallazgo-submodulo-baseline.sh

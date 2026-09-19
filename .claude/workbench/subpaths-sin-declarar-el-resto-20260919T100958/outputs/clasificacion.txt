@@ -1,0 +1,43 @@
+specifiers distintos medidos: 1158
+sin resolver: 35
+
+== MANIFIESTO: 26
+  @thyrox/agent/context.ts (3 import(s)) -> EXISTE en context.ts
+  @thyrox/bridge/commands/bridge-kick.js (1 import(s)) -> EXISTE en commands/bridge-kick.ts
+  @thyrox/cli/bg/daemonAdapter.js (2 import(s)) -> EXISTE en src/bg/daemonAdapter.ts
+  @thyrox/cli/bg/fleetReplyHelpers.js (2 import(s)) -> EXISTE en src/bg/fleetReplyHelpers.ts
+  @thyrox/cli/bg/openAgentsFromRepl.js (1 import(s)) -> EXISTE en src/bg/openAgentsFromRepl.ts
+  @thyrox/cli/bg/ptyFrame.js (1 import(s)) -> EXISTE en src/bg/ptyFrame.ts
+  @thyrox/cli/commands/version.js (1 import(s)) -> EXISTE en src/commands/version.ts
+  @thyrox/command-runtime/commands/extra-usage/extra-usage.js (1 import(s)) -> EXISTE en src/commands/extra-usage/extra-usage.tsx
+  @thyrox/command-runtime/commands/fast/fast.js (1 import(s)) -> EXISTE en src/commands/fast/fast.tsx
+  @thyrox/command-runtime/commands/install/install.js (1 import(s)) -> EXISTE en src/commands/install/install.tsx
+  @thyrox/command-runtime/commands/plugin/index.js (1 import(s)) -> EXISTE en src/commands/plugin/index.tsx
+  @thyrox/command-runtime/commands/powerup/PowerupBanner.js (1 import(s)) -> EXISTE en src/commands/powerup/PowerupBanner.tsx
+  @thyrox/mcp-runtime/MCPConnectionManager.js (7 import(s)) -> EXISTE en src/MCPConnectionManager.tsx
+  @thyrox/output/render (2 import(s)) -> EXISTE en src/render/index.ts
+  @thyrox/output/render/exportRenderer.js (2 import(s)) -> EXISTE en src/render/exportRenderer.tsx
+  @thyrox/swarm/commands/agents/index.js (1 import(s)) -> EXISTE en commands/agents/index.ts
+  @thyrox/swarm/commands/branch/index.js (1 import(s)) -> EXISTE en commands/branch/index.ts
+  @thyrox/tool-registry/tasks/RemoteAgentTask.js (9 import(s)) -> EXISTE en src/tasks/RemoteAgentTask.tsx
+  @thyrox/tool-registry/teleport.js (8 import(s)) -> EXISTE en src/teleport.tsx
+  @thyrox/tool-registry/tools/AgentTool/AgentTool.js (2 import(s)) -> EXISTE en src/tools/AgentTool/AgentTool.tsx
+  @thyrox/tool-registry/tools/AgentTool/UI.js (1 import(s)) -> EXISTE en src/tools/AgentTool/UI.tsx
+  @thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js (7 import(s)) -> EXISTE en src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx
+  @thyrox/tool-registry/tools/BashTool/BashTool.js (11 import(s)) -> EXISTE en src/tools/BashTool/BashTool.tsx
+  @thyrox/tool-registry/tools/BashTool/BashToolResultMessage.js (1 import(s)) -> EXISTE en src/tools/BashTool/BashToolResultMessage.tsx
+  @thyrox/tool-registry/tools/PowerShellTool/PowerShellTool.js (4 import(s)) -> EXISTE en src/tools/PowerShellTool/PowerShellTool.tsx
+  @thyrox/tool-registry/tools/TaskOutputTool/TaskOutputTool.js (1 import(s)) -> EXISTE en src/tools/TaskOutputTool/TaskOutputTool.tsx
+
+== PUERTO: 9
+  @thyrox/agent/file-history (14 import(s)) -> ningun candidato en disco
+  @thyrox/agent/query-engine (1 import(s)) -> ningun candidato en disco
+  @thyrox/repl/components/deeply/nested/folder/MyComponent.tsx (2 import(s)) -> ningun candidato en disco
+  @thyrox/repl/components/foo.ts (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/REPLTool/REPLTool.js (2 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/SleepTool/SleepTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/SnipTool/SnipTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js (1 import(s)) -> ningun candidato en disco
+
+== DESCONOCIDO: 0

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNotifications } from '../../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import {
   getRateLimitWarning,
   getUsingOverageText,

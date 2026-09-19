@@ -25,9 +25,12 @@
  *
  * LO QUE NO TRAE, con su razón — cada uno es una tarea, no un olvido:
  *
- *   la mitad de PROYECTO (`getCurrentProjectConfig`, `saveCurrentProjectConfig`,
- *       `getProjectPathForConfig`) — depende del binding `getCwd` y del árbol
- *       de git, que es otro subsistema; ningún consumidor de este pase la usa.
+ *   [PORTADA 2026-09-19, al final de este archivo] la mitad de PROYECTO
+ *       (`getCurrentProjectConfig`, `saveCurrentProjectConfig`,
+ *       `getProjectPathForConfig`). Sus dos razones de deferimiento estaban
+ *       rancias al medirlas: los bindings `getOriginalCwd` y
+ *       `findCanonicalGitRoot` ya existían, y 18 archivos en 10 paquetes la
+ *       importan — `repl` no arrancaba por eso.
  *   los accesores del AUTO-UPDATER (`isAutoUpdaterDisabled`,
  *       `shouldSkipPluginAutoupdate`, `formatAutoUpdaterDisabledReason`,
  *       `getAutoUpdaterDisabledReason`) — leen `settings`, no este registro;
@@ -49,11 +52,26 @@
  *
  * La caché, en consecuencia, guarda TAMBIÉN el archivo del que salió: con
  * una sola ranura sin esa clave, un lector de otra ruta recibiría la config
- * de la anterior.
+ * de la anterior. Los dos escritores de la mitad de PROYECTO resuelven ese
+ * archivo con `_getGlobalClaudeFile()` y no admiten override: el registro de
+ * proyecto vive DENTRO del archivo global, bajo la clave `projects`, así que
+ * su ruta no es un parámetro del llamador.
+ *
+ * `ProjectConfig` recupera las tres claves que su `DEFAULT_PROJECT_CONFIG`
+ * siembra —`projectOnboardingSeenCount` (requerida, sin `?`),
+ * `hasClaudeMdExternalIncludesApproved` y
+ * `hasClaudeMdExternalIncludesWarningShown`— con la misma opcionalidad que la
+ * fuente les da en `ccnmt: packages/config/global/config.ts:154-156`. No es
+ * completitud por completitud: siete sitios de `@thyrox/repl` las leen
+ * (`projectOnboardingState.ts`, `ClaudeMdExternalIncludesDialog.tsx`,
+ * `Settings/Config.tsx`). El resto del tipo sigue siendo un porte parcial
+ * declarado — la fuente declara ~15 claves más que ningún consumidor de este
+ * árbol lee todavía.
  */
 import { unwatchFile, watchFile } from 'node:fs'
+import memoize from 'lodash-es/memoize.js'
 import pickBy from 'lodash-es/pickBy.js'
-import { dirname, join, normalize } from 'node:path'
+import { dirname, join, normalize, resolve } from 'node:path'
 import { AccessError, ParseError as ConfigParseError } from '../errors.js'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.js'
 
@@ -185,6 +203,9 @@ export type ProjectConfig = {
   allowedTools?: string[]
   hasTrustDialogAccepted?: boolean
   hasCompletedProjectOnboarding?: boolean
+  projectOnboardingSeenCount: number
+  hasClaudeMdExternalIncludesApproved?: boolean
+  hasClaudeMdExternalIncludesWarningShown?: boolean
   mcpServers?: Record<string, McpServerConfig>
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
@@ -901,3 +922,173 @@ export function _setGlobalConfigCacheForTesting(
 // viaja en este pase pero se porta contra este mismo módulo.
 export { createDefaultGlobalConfig, normalizePathForConfigKey }
 export type { MemoryType }
+
+// ─── La mitad de PROYECTO ────────────────────────────────────────────────
+//
+// Porte de `@claude-code-how-works/config` `global/config.ts:1645-1755`.
+//
+// Llegó en un pase posterior al del registro global, y las dos razones que
+// el encabezado daba para diferirla estaban rancias al medirlas:
+//
+//   «depende del binding `getCwd`»       — `getOriginalCwd` y
+//       `findCanonicalGitRoot` ya estaban declarados en `ConfigHostBindings`
+//       (`contracts.ts:54,62`), el segundo desde antes de este porte.
+//   «ningún consumidor de este pase la usa» — 25 archivos en 10 paquetes la
+//       importan hoy, y `repl` no arrancaba por eso.
+//
+// La clave del registro de proyectos es la RAÍZ DEL REPOSITORIO, no el
+// directorio de trabajo: así dos sesiones abiertas en subdirectorios
+// distintos del mismo repositorio comparten configuración. Fuera de un
+// repositorio cae al `cwd` original resuelto.
+
+/** La forma vacía de una configuración de proyecto. */
+const DEFAULT_PROJECT_CONFIG: ProjectConfig = {
+  allowedTools: [],
+  mcpContextUris: [],
+  mcpServers: {},
+  enabledMcpjsonServers: [],
+  disabledMcpjsonServers: [],
+  hasTrustDialogAccepted: false,
+  projectOnboardingSeenCount: 0,
+  hasClaudeMdExternalIncludesApproved: false,
+  hasClaudeMdExternalIncludesWarningShown: false,
+}
+
+/**
+ * El registro de proyecto que los tests ven. Es MUTABLE a propósito: bajo
+ * `NODE_ENV=test` las dos funciones de abajo cortocircuitan a este objeto,
+ * así que una suite escribe y lee sin tocar el disco ni depender de un
+ * repositorio git.
+ */
+const TEST_PROJECT_CONFIG_FOR_TESTING: ProjectConfig = {
+  ...DEFAULT_PROJECT_CONFIG,
+}
+
+/**
+ * La clave con que el registro global indexa este proyecto.
+ *
+ * Se memoiza porque resolver la raíz del repositorio bifurca un proceso, y
+ * el resultado no cambia durante la vida del proceso. La normalización a
+ * barras hacia delante hace que `C:\Users\…` y `C:/Users/…` caigan en la
+ * misma clave, que es lo único que distingue a esta ruta de un `resolve`.
+ */
+export const getProjectPathForConfig = memoize((): string => {
+  const originalCwd = getConfigHostBindings().getOriginalCwd?.() ?? process.cwd()
+  const gitRoot = getConfigHostBindings().findCanonicalGitRoot?.(originalCwd)
+
+  if (gitRoot) {
+    return normalizePathForConfigKey(gitRoot)
+  }
+
+  // Fuera de un repositorio: la clave es el propio directorio de trabajo.
+  return normalizePathForConfigKey(resolve(originalCwd))
+})
+
+/** La configuración del proyecto en curso, o la forma vacía. */
+export function getCurrentProjectConfig(): ProjectConfig {
+  if (process.env.NODE_ENV === 'test') {
+    return TEST_PROJECT_CONFIG_FOR_TESTING
+  }
+
+  const absolutePath = getProjectPathForConfig()
+  const config = getGlobalConfig()
+
+  if (!config.projects) {
+    return DEFAULT_PROJECT_CONFIG
+  }
+
+  const projectConfig = config.projects[absolutePath] ?? DEFAULT_PROJECT_CONFIG
+  // DIVERGENCIA HEREDADA, declarada en la fuente como «Not sure how this
+  // became a string / TODO: Fix upstream»: hay registros en disco donde
+  // `allowedTools` quedó serializado como cadena. Se repara al leer porque
+  // el consumidor espera un arreglo; retirar esta rama rompería a quien ya
+  // tenga uno de esos registros escrito.
+  if (typeof projectConfig.allowedTools === 'string') {
+    projectConfig.allowedTools =
+      (safeParseJSON(projectConfig.allowedTools) as string[]) ?? []
+  }
+
+  return projectConfig
+}
+
+/**
+ * Aplica `updater` a la configuración del proyecto en curso y la persiste.
+ *
+ * El contrato de «sin cambios» es por IDENTIDAD, no por valor: si `updater`
+ * devuelve el mismo objeto que recibió, no se escribe nada. Eso permite a un
+ * consumidor decidir dentro del propio actualizador sin pagar una escritura.
+ */
+export function saveCurrentProjectConfig(
+  updater: (currentConfig: ProjectConfig) => ProjectConfig,
+): void {
+  if (process.env.NODE_ENV === 'test') {
+    const config = updater(TEST_PROJECT_CONFIG_FOR_TESTING)
+    if (config === TEST_PROJECT_CONFIG_FOR_TESTING) {
+      return
+    }
+    Object.assign(TEST_PROJECT_CONFIG_FOR_TESTING, config)
+    return
+  }
+  const absolutePath = getProjectPathForConfig()
+
+  let written: GlobalConfig | null = null
+  try {
+    const didWrite = saveConfigWithLock(
+      _getGlobalClaudeFile(),
+      createDefaultGlobalConfig,
+      current => {
+        const currentProjectConfig =
+          current.projects?.[absolutePath] ?? DEFAULT_PROJECT_CONFIG
+        const newProjectConfig = updater(currentProjectConfig)
+        if (newProjectConfig === currentProjectConfig) {
+          return current
+        }
+        written = {
+          ...current,
+          projects: {
+            ...current.projects,
+            [absolutePath]: newProjectConfig,
+          },
+        }
+        return written
+      },
+    )
+    if (didWrite && written) {
+      writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
+    }
+  } catch (error) {
+    getConfigHostBindings().logDebug?.(
+      `Failed to save config with lock: ${error}`,
+      { level: 'error' },
+    )
+
+    // Misma ventana de carrera que el respaldo de `saveGlobalConfig`: si la
+    // relectura perdió el estado de autenticación que la caché sí tiene, el
+    // archivo está corrupto o truncado a media escritura. Escribir encima
+    // borraría la autenticación de forma permanente.
+    const config = getConfig(_getGlobalClaudeFile(), createDefaultGlobalConfig)
+    if (wouldLoseAuthState(config)) {
+      getConfigHostBindings().logDebug?.(
+        'saveCurrentProjectConfig fallback: re-read config is missing auth that cache has; refusing to write.',
+        { level: 'error' },
+      )
+      tryGetConfigHostBindings().logEvent?.('tengu_config_auth_loss_prevented', {})
+      return
+    }
+    const currentProjectConfig =
+      config.projects?.[absolutePath] ?? DEFAULT_PROJECT_CONFIG
+    const newProjectConfig = updater(currentProjectConfig)
+    if (newProjectConfig === currentProjectConfig) {
+      return
+    }
+    written = {
+      ...config,
+      projects: {
+        ...config.projects,
+        [absolutePath]: newProjectConfig,
+      },
+    }
+    saveConfig(_getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
+    writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
+  }
+}

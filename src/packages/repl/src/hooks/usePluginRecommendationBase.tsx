@@ -8,7 +8,7 @@ import figures from 'figures'
 import * as React from 'react'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import type { useNotifications } from '../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { logError } from '@thyrox/local-observability/logging'
 import { getPluginById } from '@thyrox/config/plugin/marketplaceManager'
 

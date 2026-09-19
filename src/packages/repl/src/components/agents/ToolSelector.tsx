@@ -21,11 +21,11 @@ import { TodoWriteTool } from '@thyrox/tool-registry/tools/TodoWriteTool/TodoWri
 import { TungstenTool } from '@thyrox/tool-registry/tools/TungstenTool/TungstenTool.js'
 import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
 import { WebSearchTool } from '@thyrox/tool-registry/tools/WebSearchTool/WebSearchTool.js'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
-import { Divider } from '@thyrox/ink'
+import { Divider } from '@anthropic/ink'
 
 type Props = {
   tools: Tools

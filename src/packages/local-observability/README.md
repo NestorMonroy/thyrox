@@ -1,4 +1,4 @@
-# @claude-code-how-works/local-observability
+# @thyrox/local-observability
 
 Logging, telemetry, span tracing, error helpers, and slow-operation
 detection — all writing locally (no external sinks in this fork).

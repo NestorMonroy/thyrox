@@ -18,8 +18,8 @@ import type { Command } from '@thyrox/command-runtime/runtime'
 import { createStatsStore, type StatsStore } from '@thyrox/app-host/context/stats.js'
 import { getSystemContext } from '@thyrox/provider/context.js'
 import { initializeTelemetryAfterTrust } from '@thyrox/app-host/init.js'
-import { isSynchronizedOutputSupported } from '@thyrox/ink'
-import type { RenderOptions, Root, TextProps } from '@thyrox/ink'
+import { isSynchronizedOutputSupported } from '@anthropic/ink'
+import type { RenderOptions, Root, TextProps } from '@anthropic/ink'
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js'
 import { startDeferredPrefetches } from '@thyrox/app-host/main/startup/context.js'
 import {
@@ -107,7 +107,7 @@ export async function exitWithMessage(
     beforeExit?: () => Promise<void>
   },
 ): Promise<never> {
-  const { Text } = await import('@thyrox/ink')
+  const { Text } = await import('@anthropic/ink')
   const color = options?.color
   const exitCode = options?.exitCode ?? 1
   root.render(

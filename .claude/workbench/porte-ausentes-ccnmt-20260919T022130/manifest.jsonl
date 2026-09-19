@@ -1,0 +1,7 @@
+{"ts": "2026-09-19T02:32:09", "tipo": "sujeto", "que": "Censo por ruta de que archivos de ccnmt no tiene thyrox, en todas las extensiones"}
+{"ts": "2026-09-19T02:32:09", "tipo": "conducta", "que": "assert_no_writes sobre el guion de censo: 0 escrituras, 1967 lineas de traza, 4 procesos"}
+{"ts": "2026-09-19T02:32:09", "tipo": "medicion", "que": "packages/ 3424 archivos toda extension -> 0 ausentes; tests/ 117 -> 0 ausentes"}
+{"ts": "2026-09-19T02:32:09", "tipo": "medicion", "que": "Fuera de packages/ y tests/: scripts/ 127, docs/ 161, assets/ 3, bun-demincer/ 37 ausentes"}
+{"ts": "2026-09-19T02:32:09", "tipo": "refutacion", "que": "La premisa de TASK-THYROX-0477 (1061 ausentes de los 12 paquetes) esta superada: hoy son 0"}
+{"ts": "2026-09-19T02:32:09", "tipo": "correccion-propia", "que": "El primer censo midio solo .ts/.tsx y dio 0; se re-midio sobre toda extension antes de concluir (sub-patron A)"}
+{"ts": "2026-09-19T02:34:43", "tipo": "defecto-propio", "que": "El commit 10d833ca, ya publicado, cita TASK-THYROX-0477 y TASK-THYROX-0483: dos ids FABRICADOS por relleno del ordinal de board. Ninguno existe en el store. Las reales, por sujeto, son TASK-THYROX-0168 y TASK-THYROX-0174. Lo detecto detect_ephemeral_citation al commitear (avisa, no bloquea). No se enmienda: historia publicada. Correccion hacia adelante."}

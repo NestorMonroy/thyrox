@@ -1,6 +1,6 @@
 import figures from 'figures'
 import React, { type ReactNode, useEffect, useRef, useState } from 'react'
-import { Ansi, Box, Text, stringWidth, useDeclaredCursor } from '@thyrox/ink'
+import { Ansi, Box, Text, stringWidth, useDeclaredCursor } from '@anthropic/ink'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import type { PastedContent } from '@thyrox/config'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'

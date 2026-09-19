@@ -8,7 +8,7 @@ import {
   updateSettingsForSource,
 } from '@thyrox/config/settings'
 import { Select } from './CustomSelect/index.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import { MCPServerDialogCopy } from './MCPServerDialogCopy.js'
 
 type Props = {

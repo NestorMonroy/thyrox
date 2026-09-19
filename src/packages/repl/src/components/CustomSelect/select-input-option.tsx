@@ -1,16 +1,16 @@
 import React, { type ReactNode, useEffect, useRef, useState } from 'react'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- UP arrow exit not in Attachments bindings
-import { Box, Text, useInput } from '@thyrox/ink'
+import { Box, Text, useInput } from '@anthropic/ink'
 import {
   useKeybinding,
   useKeybindings,
-} from '@thyrox/ink/keybindings'
+} from '@anthropic/ink/keybindings'
 import type { PastedContent } from '@thyrox/config'
 import { getImageFromClipboard } from '../../imagePaste.js'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import { ClickableImageRef } from '../ClickableImageRef.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Byline } from '@thyrox/ink'
+import { Byline } from '@anthropic/ink'
 import TextInput from '../TextInput.js'
 import type { OptionWithDescription } from './select.js'
 import { SelectOption } from './select-option.js'

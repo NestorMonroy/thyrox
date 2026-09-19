@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { DIAMOND_FILLED, DIAMOND_OPEN } from '@thyrox/output/constants/figures.js'
 import { NO_CONTENT_MESSAGE } from '@thyrox/agent/constants/messages.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { extractTag } from '@thyrox/agent/messages.js'
 import { Markdown } from '../Markdown.js'
 import { MessageResponse } from '../MessageResponse.js'

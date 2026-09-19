@@ -1,7 +1,7 @@
 import figures from 'figures'
 import * as React from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text, stringWidth } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text, stringWidth } from '@anthropic/ink'
 import { useAppState } from '../appStateHooks.js'
 import { isInProcessTeammateTask } from '@thyrox/swarm'
 import {
@@ -13,8 +13,8 @@ import { count } from '@thyrox/tool-registry/utils/array.js'
 import { summarizeRecentActivities } from '@thyrox/tool-registry/collapseReadSearch.js'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { isTodoV2Enabled, type Task } from '@thyrox/agent/tasks.js'
-import type { Theme } from '@thyrox/ink'
-import { Text as ThemedText } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
+import { Text as ThemedText } from '@anthropic/ink'
 
 type Props = {
   tasks: Task[]

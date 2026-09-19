@@ -1,0 +1,12 @@
+     18 @thyrox/config
+     15 @thyrox/provider
+     14 @thyrox/tool-registry
+     13 @thyrox/agent
+     12 @thyrox/output
+     10 @thyrox/app-host
+      9 @thyrox/storage
+      8 @thyrox/repl
+      4 @thyrox/mcp-runtime
+      2 @thyrox/local-observability
+      1 @thyrox/headless-sdk
+      1 @thyrox/command-runtime

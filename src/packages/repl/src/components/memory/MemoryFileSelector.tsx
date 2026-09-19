@@ -6,8 +6,8 @@ import * as React from 'react'
 import { use, useEffect, useState } from 'react'
 import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 import { useExitOnCtrlCDWithKeybindings } from '../../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { Box, Text, ListItem } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text, ListItem } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import {
   getAutoMemPath,
   getAgentMemoryDir,

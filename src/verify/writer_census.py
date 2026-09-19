@@ -107,8 +107,8 @@ STRUCTURE_WINDOW = 220
 
 def _has_sql_structure(verb: str, tail: str) -> bool:
     """¿Lo que sigue al nombre tiene forma de SQL, o es prosa?"""
-    familia = "INSERT INTO" if verb.startswith("INSERT") else verb
-    patron = STRUCTURE.get(familia)
+    family = "INSERT INTO" if verb.startswith("INSERT") else verb
+    patron = STRUCTURE.get(family)
     return bool(patron and patron.match(tail[:STRUCTURE_WINDOW]))
 
 
@@ -141,9 +141,9 @@ def _blank_span(lines: list[str], start_row: int, start_col: int,
         if row - 1 >= len(lines):
             break
         line = lines[row - 1]
-        desde = start_col if row == start_row else 0
-        hasta = end_col if row == end_row else len(line)
-        lines[row - 1] = line[:desde] + " " * (hasta - desde) + line[hasta:]
+        since = start_col if row == start_row else 0
+        until = end_col if row == end_row else len(line)
+        lines[row - 1] = line[:since] + " " * (until - since) + line[until:]
 
 
 def _strip_prose_python(text: str) -> str:
@@ -163,23 +163,23 @@ def _strip_prose_python(text: str) -> str:
     except (tokenize.TokenError, IndentationError, SyntaxError):
         pass
     try:
-        arbol = ast.parse(text)
+        tree = ast.parse(text)
     except SyntaxError:
         return "\n".join(lines)
-    for nodo in ast.walk(arbol):
-        if not isinstance(nodo, (ast.Module, ast.ClassDef, ast.FunctionDef,
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef,
                                  ast.AsyncFunctionDef)):
             continue
-        cuerpo = getattr(nodo, "body", [])
-        if not cuerpo:
+        body = getattr(node, "body", [])
+        if not body:
             continue
-        primero = cuerpo[0]
-        if (isinstance(primero, ast.Expr)
-                and isinstance(primero.value, ast.Constant)
-                and isinstance(primero.value.value, str)):
-            _blank_span(lines, primero.lineno, primero.col_offset,
-                        primero.end_lineno or primero.lineno,
-                        primero.end_col_offset or 0)
+        first = body[0]
+        if (isinstance(first, ast.Expr)
+                and isinstance(first.value, ast.Constant)
+                and isinstance(first.value.value, str)):
+            _blank_span(lines, first.lineno, first.col_offset,
+                        first.end_lineno or first.lineno,
+                        first.end_col_offset or 0)
     return "\n".join(lines)
 
 
@@ -297,34 +297,34 @@ def main(argv: list[str]) -> int:
         from paths import reach
         root = reach.thyrox_root()
 
-    resultado = census(root, include_tests=args.include_tests,
+    result = census(root, include_tests=args.include_tests,
                        resolve_constants=not args.no_resolve)
-    if resultado.measured == 0:
+    if result.measured == 0:
         print(f"writer-census REHUSADO — 0 archivos medibles bajo {root}",
               file=sys.stderr)
         print("  No se emite conteo: un 0 aqui no distingue «sin escritores» "
               "de «no pude medir».", file=sys.stderr)
         return 2
 
-    print(f"censo de escritores (alcance medido: {resultado.measured} archivo(s); "
+    print(f"censo de escritores (alcance medido: {result.measured} archivo(s); "
           f"raices {', '.join(SOURCE_ROOTS)})")
-    for table in sorted(resultado.by_table):
-        sitios = resultado.by_table[table]
-        compuestos = sum(1 for _, _, composed in sitios if composed)
-        marca = f"  [{compuestos} por nombre compuesto]" if compuestos else ""
-        print(f"  {table:<24} {len(sitios)} sentencia(s){marca}")
-        for relative, line, composed in sitios:
+    for table in sorted(result.by_table):
+        sites = result.by_table[table]
+        composite = sum(1 for _, _, composed in sites if composed)
+        mark = f"  [{composite} por nombre compuesto]" if composite else ""
+        print(f"  {table:<24} {len(sites)} sentencia(s){mark}")
+        for relative, line, composed in sites:
             print(f"      {relative}:{line}{' (compuesto)' if composed else ''}")
 
     if not args.store:
         return 0
 
-    huerfanas = {t: n for t, n in store_tables(pathlib.Path(args.store)).items()
-                 if n > 0 and t not in resultado.by_table}
-    print(f"\ntablas con filas y SIN escritor: {len(huerfanas)}")
-    for table, filas in sorted(huerfanas.items()):
-        print(f"  {table:<24} {filas} fila(s)")
-    return 1 if huerfanas else 0
+    orphans = {t: n for t, n in store_tables(pathlib.Path(args.store)).items()
+                 if n > 0 and t not in result.by_table}
+    print(f"\ntablas con filas y SIN escritor: {len(orphans)}")
+    for table, rows in sorted(orphans.items()):
+        print(f"  {table:<24} {rows} fila(s)")
+    return 1 if orphans else 0
 
 
 if __name__ == "__main__":

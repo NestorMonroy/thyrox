@@ -14,7 +14,7 @@
  */
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { Message } from '@thyrox/agent/messageShapes'
 import type { ActiveGoal } from '@thyrox/agent/goalStopHook.js'
 import {

@@ -8,7 +8,7 @@ import {
 } from '@thyrox/config/settings'
 import { shouldOfferTerminalSetup } from '../terminalSetup.js'
 import { getDesktopUpsellConfig } from '../components/DesktopUpsell/DesktopUpsellStartup.js'
-import { color } from '@thyrox/ink'
+import { color } from '@anthropic/ink'
 import { shouldShowOverageCreditUpsell } from '../components/LogoV2/OverageCreditUpsell.js'
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
 import { isKairosCronEnabled } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'

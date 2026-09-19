@@ -1,28 +1,19 @@
 /**
- * Porte PARCIAL DECLARADO de `ccnmt: packages/storage/src/pdfUtils.ts`.
- *
- * La fuente exporta cuatro símbolos: `DOCUMENT_EXTENSIONS`,
- * `parsePDFPageRange`, `isPDFSupported`, `isPDFExtension`. Este archivo
- * porta los TRES que `pdfUtils.test.ts` ejercita:
- *
- *   - `DOCUMENT_EXTENSIONS` — portada VERBATIM (el `Set` de una sola
- *     entrada, `'pdf'`).
- *   - `parsePDFPageRange` — portada VERBATIM (las tres formas de rango:
- *     página suelta, cerrado "N-M", abierto "N-").
- *   - `isPDFExtension` — portada VERBATIM.
- *
- * Queda SIN portar, por divergencia de alcance declarada:
- *
- *   - `isPDFSupported` — depende de `getMainLoopModel`
- *     (`@claude-code-how-works/provider/model.js`); el paquete `provider`
- *     no existe en este árbol y ningún test de esta suite lo ejercita.
+ * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/pdfUtils.ts`.
+ * La version anterior portaba 3 de 4 exports, y los suyos eran
+ * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
+ * Divergencia frente a la fuente: ninguna, salvo el alcance
+ * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
+ * Refs: TASK-THYROX-0199.
  */
 
-// Extensiones de documento que se manejan de forma especial.
+import { getMainLoopModel } from '@thyrox/provider/model.js'
+
+// Document extensions that are handled specially
 export const DOCUMENT_EXTENSIONS = new Set(['pdf'])
 
 /**
- * Parsea un string de rango de páginas a números firstPage/lastPage.
+ * Parse a page range string into firstPage/lastPage numbers.
  */
 export function parsePDFPageRange(
   pages: string,
@@ -32,7 +23,7 @@ export function parsePDFPageRange(
     return null
   }
 
-  // Rango abierto "N-"
+  // "N-" open-ended range
   if (trimmed.endsWith('-')) {
     const first = parseInt(trimmed.slice(0, -1), 10)
     if (isNaN(first) || first < 1) {
@@ -50,7 +41,7 @@ export function parsePDFPageRange(
     return { firstPage: page, lastPage: page }
   }
 
-  // Rango: "1-10"
+  // Range: "1-10"
   const first = parseInt(trimmed.slice(0, dashIndex), 10)
   const last = parseInt(trimmed.slice(dashIndex + 1), 10)
   if (isNaN(first) || isNaN(last) || first < 1 || last < 1 || last < first) {
@@ -60,7 +51,14 @@ export function parsePDFPageRange(
 }
 
 /**
- * Verifica si una extensión de archivo es un documento PDF.
+ * Check if PDF reading is supported with the current model.
+ */
+export function isPDFSupported(): boolean {
+  return !getMainLoopModel().toLowerCase().includes('claude-3-haiku')
+}
+
+/**
+ * Check if a file extension is a PDF document.
  */
 export function isPDFExtension(ext: string): boolean {
   const normalized = ext.startsWith('.') ? ext.slice(1) : ext

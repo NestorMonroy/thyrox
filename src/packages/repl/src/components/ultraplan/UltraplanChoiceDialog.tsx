@@ -2,8 +2,8 @@ import * as React from 'react';
 import { join } from 'path';
 import { writeFile } from 'fs/promises';
 import figures from 'figures';
-import { Box, Text, useInput, wrapText } from '@thyrox/ink';
-import { useTerminalSize } from '@thyrox/ink';
+import { Box, Text, useInput, wrapText } from '@anthropic/ink';
+import { useTerminalSize } from '@anthropic/ink';
 import { Select } from '../CustomSelect/select.js';
 import { getInvokedBinaryName } from '@thyrox/config';
 import { PermissionDialog } from '@thyrox/permission/components/PermissionDialog.js';
@@ -96,7 +96,7 @@ export function UltraplanChoiceDialog({
     const halfPage = Math.max(1, Math.floor(visibleHeight / 2));
 
     // Forked Ink adds wheelDown/wheelUp to the Key payload (vendored at
-    // packages/@thyrox/ink); declare here since the public Key type ships
+    // packages/@anthropic/ink); declare here since the public Key type ships
     // without them.
     const key = rawKey as typeof rawKey & { wheelDown?: boolean; wheelUp?: boolean };
 

@@ -28,21 +28,21 @@ def _commit(message):
     return gate.detect({"tool_input": {"command": f'git commit -m "{message}"'}})
 
 
-def _evidencia(content, file_path=".claude/workbench/algo-20260913T000000/README.md"):
+def _evidence(content, file_path=".claude/workbench/algo-20260913T000000/README.md"):
     return gate.detect({"tool_input": {"file_path": file_path, "content": content}})
 
 
 def test_warns_on_a_bare_board_ordinal_in_a_commit_message():
-    aviso = _commit("Fix incomplete exports maps, T-9")
-    assert aviso is not None
-    assert "T-9" in aviso
-    assert "TASK-<CAPA>-NNNN" in aviso
+    warning = _commit("Fix incomplete exports maps, T-9")
+    assert warning is not None
+    assert "T-9" in warning
+    assert "TASK-<CAPA>-NNNN" in warning
 
 
 def test_warns_on_board_hash_form():
-    aviso = _commit("Cierra board #9 y board #10")
-    assert aviso is not None
-    assert "board #9" in aviso and "board #10" in aviso
+    warning = _commit("Cierra board #9 y board #10")
+    assert warning is not None
+    assert "board #9" in warning and "board #10" in warning
 
 
 def test_stays_silent_when_the_durable_citation_is_present_too():
@@ -65,15 +65,15 @@ def test_the_word_anchor_carries_its_own_weight():
 
 
 def test_evidence_surface_fires_on_workbench_and_jobs():
-    assert _evidencia("Board #9 midió 12 paquetes.") is not None
-    assert _evidencia(
+    assert _evidence("Board #9 midió 12 paquetes.") is not None
+    assert _evidence(
         "board #9 midió 12 paquetes.",
         file_path=".claude/jobs/suite-full-t9-20260913T182631/README.md",
     ) is not None
 
 
 def test_stays_silent_outside_the_evidence_path():
-    assert _evidencia("board #9 midió 12 paquetes.", file_path="README.md") is None
+    assert _evidence("board #9 midió 12 paquetes.", file_path="README.md") is None
 
 
 def test_the_evidence_path_anchor_carries_its_own_weight():
@@ -111,16 +111,16 @@ def test_the_dispatcher_registers_it():
 
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

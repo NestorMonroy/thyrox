@@ -12,7 +12,17 @@ import sys
 import tempfile
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
+
+from paths.reach import thyrox_root  # noqa: E402
 
 from session.adopt_background import (  # noqa: E402
     DEFAULT_MARKER, MARKER_VAR, OUTPUT_ROOT_VAR, OUTPUT_SESSION_VAR,
@@ -20,8 +30,12 @@ from session.adopt_background import (  # noqa: E402
 )
 from session.job_ledger import JobLedger  # noqa: E402
 
-MODULE = str(reach.thyrox_root() / "src" / "session"
-             / "adopt_background.py")
+# Se invoca por el ENVOLTORIO de `bin/`, no por la ruta al fuente: el
+# envoltorio exporta `PYTHONPATH`, y el modulo importa `session.job_ledger`
+# a nivel de modulo. Invocado por ruta muere con `ModuleNotFoundError`, que
+# es la precondicion que `trabajo-en-segundo-plano.md` declara — el test
+# media el fallo del atajo, no la conducta del sujeto.
+MODULE = str(thyrox_root(_HERE.parent) / "bin" / "adopt_background")
 OK = FAILED = 0
 
 
@@ -107,14 +121,14 @@ with tempfile.TemporaryDirectory() as d:
 print("== 4. CLI: rehusa antes que adoptar a medias ==")
 with tempfile.TemporaryDirectory() as d:
     proc = subprocess.run(
-        [sys.executable, MODULE, "--ledger", d, "--from-notice"],
+        ["bash", MODULE, "--ledger", d, "--from-notice"],
         input="un anuncio sin sus dos hechos", capture_output=True, text=True)
     check("4.1 sale 2", 2, proc.returncode)
     check("4.2 y NO deja nada anotado", [], sorted(Path(d).glob("*.job")))
     check("4.3 nombrando lo que falta", True, "*.output" in proc.stderr)
 
     proc = subprocess.run(
-        [sys.executable, MODULE, "--ledger", d, "--from-notice"],
+        ["bash", MODULE, "--ledger", d, "--from-notice"],
         input=NOTICE, capture_output=True, text=True)
     check("4.4 con el anuncio real, sale 0", 0, proc.returncode)
     check("4.5 y lo anota", 1, len(sorted(Path(d).glob("*.job"))))
@@ -123,7 +137,7 @@ with tempfile.TemporaryDirectory() as d:
     import os as _os
     entorno = dict(_os.environ, **{MARKER_VAR: "FIN-PROPIO"})
     proc = subprocess.run(
-        [sys.executable, MODULE, "--ledger", d, "--id", "v", "--log",
+        ["bash", MODULE, "--ledger", d, "--id", "v", "--log",
          str(Path(d) / "v.output")],
         capture_output=True, text=True, env=entorno)
     check("4.6 la variable declarada gobierna", True, "FIN-PROPIO" in proc.stdout)
@@ -136,10 +150,9 @@ print("== 5. la ruta se DERIVA de la convencion: es como lo hace la referencia =
 # esta sesion cumple la convencion.
 import os as _os2
 
-# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
-# y la unica que el localizador no puede reemplazar: no se puede pedir
-# `reach.thyrox_root()` antes de que `import reach` funcione.
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+# La raiz ya se resolvio por ascenso arriba (`_RAIZ`); repetir el bootstrap
+# aqui con `parents[N]` era la aritmetica por offset que TASK-THYROX-0228
+# prohibe, y ademas redundante.
 from paths import reach  # noqa: E402
 check("5.1 compone <raiz>/<sesion>/tasks/<id>.output",
       "/r/s7/tasks/j1.output", str(derived_output("j1", "/r", "s7")))

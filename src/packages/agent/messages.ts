@@ -1,4 +1,6 @@
 import { NO_CONTENT_MESSAGE } from './constants/messages.ts'
+import { stripIdeContextTags } from '@thyrox/output/utils/displayTags.js'
+import { escapeRegExp } from '@thyrox/output/utils/stringUtils.js'
 import { SYNTHETIC_MESSAGES } from './messagesConstants.ts'
 
 /**
@@ -34,7 +36,7 @@ export function isEmptyMessageText(text: string): boolean {
   )
 }
 
-import type { AssistantMessage, Message } from './messageShapes.ts'
+import type { AssistantMessage, ContentItem, Message } from './messageShapes.ts'
 
 /**
  * El ultimo mensaje de asistente del historial, o `undefined` si no hay.
@@ -109,15 +111,15 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    `buildYoloRejectionMessage`, `buildClassifierUnavailableMessage`,
  *    `isToolUseRequestMessage`, `isToolUseResultMessage`. Trae consigo el
  *    tipo `ContentBlockParam` (bloque de contenido generico, divergencia
- *    declarada del `ContentBlockParam` del SDK de Anthropic) y dos
- *    ayudantes internos no exportados (`escapeRegExp`,
- *    `AUTO_MODE_REJECTION_PREFIX`).
+ *    declarada del `ContentBlockParam` del SDK de Anthropic) y el
+ *    ayudante interno `AUTO_MODE_REJECTION_PREFIX`. `escapeRegExp` ya NO
+ *    se reimplementa aqui: viene de `@thyrox/output/utils/stringUtils.js`,
+ *    que es de donde la fuente la toma.
  * 7. **4 ayudantes de texto** traidos por `contentTextHelpers.test.ts`:
  *    `extractTextContent`, `getContentText`, `getUserMessageText`,
- *    `textForResubmit`. Trae consigo `stripIdeContextTags` (interno, no
- *    exportado — divergencia declarada del
- *    `@claude-code-how-works/output/utils/displayTags.js` de la fuente,
- *    reproducido verbatim) y reusa `ContentBlockParam` del grupo 6.
+ *    `textForResubmit`. `stripIdeContextTags` viene de
+ *    `@thyrox/output/utils/displayTags.js` — el mismo modulo del que la
+ *    fuente la toma — y reusa `ContentBlockParam` del grupo 6.
  * 8. **2 resolvedores de tool_use_id** traidos por
  *    `getToolUseIDPure.test.ts`: `getToolUseID`, `getToolResultIDs`. Trae
  *    consigo los tipos `NormalizedMessage` (alias de `Message`, igual que
@@ -269,6 +271,7 @@ import {
 import type {
   NormalizedMessage,
   ProgressMessage,
+  SystemCompactBoundaryMessage,
   ToolResultBlockParam,
   ToolUseBlock,
   UserMessage,
@@ -295,23 +298,72 @@ import type {
 export function createUserMessage({
   content,
   isMeta,
+  isVisibleInTranscriptOnly,
+  isVirtual,
+  isCompactSummary,
+  summarizeMetadata,
+  toolUseResult,
+  mcpMeta,
   uuid,
   timestamp,
+  imagePasteIds,
+  sourceToolAssistantUUID,
+  permissionMode,
+  origin,
 }: {
-  content: string | unknown[]
+  content: string | ContentBlockParam[]
   isMeta?: true
-  uuid?: string
+  isVisibleInTranscriptOnly?: true
+  isVirtual?: true
+  isCompactSummary?: true
+  /** Coincide con el tipo `Output` de la herramienta que lo produjo. */
+  toolUseResult?: unknown
+  /** Metadata del protocolo MCP, que se pasa al consumidor del SDK y NUNCA al modelo. */
+  mcpMeta?: {
+    _meta?: Record<string, unknown>
+    structuredContent?: Record<string, unknown>
+  }
+  /**
+   * La fuente lo declara `UUID | string` y castea al construir: el llamador
+   * puede traer un identificador ya formado o una cadena suelta, y el tipo
+   * plantilla de `node:crypto` no la admite sin el cast. Se porta la forma
+   * entera —declaracion y cast— porque la mitad sola no compila.
+   */
+  uuid?: UUID | string
   timestamp?: string
+  imagePasteIds?: number[]
+  /** En un mensaje de `tool_result`: el UUID del assistant con el `tool_use` par. */
+  sourceToolAssistantUUID?: UUID
+  /** Modo de permiso vigente al enviarlo, para restaurar al rebobinar. */
+  permissionMode?: PermissionMode
+  summarizeMetadata?: {
+    messagesSummarized: number
+    userContext?: string
+    direction?: PartialCompactDirection
+  }
+  /** Procedencia del mensaje. `undefined` = humano (teclado). */
+  origin?: MessageOrigin
 }): UserMessage {
   const m: UserMessage = {
     type: 'user',
     message: {
       role: 'user',
+      // Asegura que no se envie un mensaje vacio.
       content: content || NO_CONTENT_MESSAGE,
     },
     isMeta,
-    uuid: uuid || randomUUID(),
+    isVisibleInTranscriptOnly,
+    isVirtual,
+    isCompactSummary,
+    summarizeMetadata,
+    uuid: (uuid as UUID | undefined) || randomUUID(),
     timestamp: timestamp ?? new Date().toISOString(),
+    toolUseResult,
+    mcpMeta,
+    imagePasteIds,
+    sourceToolAssistantUUID,
+    permissionMode,
+    origin,
   }
   return m
 }
@@ -429,17 +481,6 @@ export function deriveUUID(parentUUID: UUID, index: number): UUID {
 }
 
 /**
- * Escapa los caracteres especiales de una expresion regular.
- *
- * DIVERGENCIA DECLARADA: la fuente la importa de
- * `@claude-code-how-works/output/utils/stringUtils.js`, ausente de este
- * arbol. La forma es la estandar (MDN `RegExp` guide).
- */
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
  * Extrae el contenido de la PRIMERA etiqueta `<tagName>...</tagName>` de
  * `html` que este en profundidad de anidamiento cero, contando aperturas y
  * cierres anteriores del mismo nombre en el texto que precede a la
@@ -507,17 +548,16 @@ export function extractTag(html: string, tagName: string): string | null {
  * Un bloque de contenido generico — texto, imagen, tool_use, tool_result u
  * otro.
  *
- * DIVERGENCIA DECLARADA: la fuente tipa esto con `ContentBlockParam` del
- * SDK de Anthropic (`@anthropic-ai/sdk`), ausente de este arbol. Se declara
- * aqui la forma estructural minima —el discriminante `type`, el `text`
- * opcional que consumen los ayudantes de texto, y un indice para el resto
- * de campos— en vez de arrastrar el SDK entero por un tipo.
+ * PREMISA RANCIA RETIRADA (TASK-THYROX-0233): esto era una forma estructural
+ * propia, y su bloqueo declarado decia que el SDK de Anthropic estaba
+ * «ausente de este arbol». Medido, es falso: `@anthropic-ai/sdk` lo declara
+ * el manifiesto de este paquete (^0.124.0) y esta materializado en la raiz
+ * izada del workspace. El sustituto laxo (`type: string` mas indice) no
+ * unificaba con el `MessageContent` de `messageShapes`, que si toma el tipo
+ * del SDK — de ahi el TS2322 al construir un `UserMessage`.
  */
-export type ContentBlockParam = {
-  type: string
-  text?: string
-  [key: string]: unknown
-}
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+export type { ContentBlockParam }
 
 /**
  * Verdadero si `message` TIENE contenido — lo contrario del centinela de
@@ -646,7 +686,7 @@ export function isToolUseResultMessage(
  * cualquier variante de solo lectura via tipado estructural.
  */
 export function extractTextContent(
-  blocks: readonly { readonly type: string; readonly [key: string]: unknown }[],
+  blocks: readonly { readonly type: string }[],
   separator = '',
 ): string {
   return blocks
@@ -681,29 +721,6 @@ export function getUserMessageText(message: Message): string | null {
   return getContentText(
     message.message?.content as string | ReadonlyArray<ContentBlockParam>,
   )
-}
-
-/**
- * Patron de etiquetas de contexto inyectadas por el IDE
- * (`ide_opened_file`, `ide_selection`). Solo estas dos — a diferencia del
- * patron generico de `stripDisplayTags` de la fuente (ausente aqui) — para
- * que `<code>foo</code>` escrito por el usuario sobreviva.
- */
-const IDE_CONTEXT_TAGS_PATTERN =
-  /<(ide_opened_file|ide_selection)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
-
-/**
- * Retira SOLO las etiquetas de contexto inyectadas por el IDE. La usa
- * `textForResubmit` para que el reenvio con flecha-arriba preserve
- * contenido escrito por el usuario, incluido HTML en minusculas, mientras
- * descarta el ruido del IDE.
- *
- * DIVERGENCIA DECLARADA: la fuente la importa de
- * `@claude-code-how-works/output/utils/displayTags.js`, ausente de este
- * arbol. El patron y el comportamiento se reproducen aqui verbatim.
- */
-function stripIdeContextTags(text: string): string {
-  return text.replace(IDE_CONTEXT_TAGS_PATTERN, '').trim()
 }
 
 /**
@@ -806,3 +823,688 @@ export function getToolResultIDs(
     }),
   )
 }
+
+/**
+ * Distingue el marcador de frontera de compactacion del resto de mensajes.
+ *
+ * Porte de `ccnmt: packages/agent/messages.ts:4699`, verbatim en su cuerpo.
+ * Su consumidor es `storage/sessionStorage.ts`, que sin el **no carga**.
+ *
+ * BRECHA DECLARADA de este modulo, medida y no cerrada aqui: la fuente tiene
+ * **108 exports** y este archivo **43**, o sea 66 ausentes. Completarlo arrastra
+ * el subsistema de compactacion entero (`compaction/`, `QueryEngine`), que tiene
+ * su propia tarea — **TASK-THYROX-0212**. Lo que se porta aqui es el unico
+ * simbolo que la cadena de carga exige, no una muestra arbitraria: el criterio
+ * es el import real, no el juicio.
+ *
+ * Metrica: nombres exportados, contando formas de declaracion y re-export.
+ * Ciega a: un export por default, y a si un nombre presente en las dos listas
+ * hace lo mismo en ambas — el censo compara nombres, no cuerpos.
+ *
+ * Refs: TASK-DOCS-0475.
+ */
+export function isCompactBoundaryMessage(
+  message: Message | NormalizedMessage,
+): message is SystemCompactBoundaryMessage {
+  return message?.type === 'system' && message.subtype === 'compact_boundary'
+}
+
+// ===========================================================================
+// TRAMO 1 de TASK-THYROX-0212 — la familia `create*`: 18 exports de los 66
+// que faltaban, mas el unico ayudante interno que invocan.
+// ===========================================================================
+// El orden del porte NO es arbitrario ni por tamano: sale del grafo de
+// dependencia medido entre los 66 ausentes. 42 son HOJAS —no llaman a ningun
+// otro de los 66— y `create*` es la familia mas uniforme de ellas. El cubo
+// con dependencia queda para los tramos siguientes, empezando por los de una
+// sola arista y terminando en `normalizeMessagesForAPI`, que tiene nueve.
+//
+// `baseCreateAssistantMessage` es el UNICO simbolo no exportado que la
+// familia necesita, medido recorriendo los 42 internos de la fuente: la
+// extraccion por frontera de `export` no lo veia, y sin el las dos primeras
+// funciones no compilan. Se porta con ellas y sigue sin exportarse, como en
+// la fuente.
+//
+// La COBERTURA del archivo no se transcribe aqui: es propiedad de un artefacto
+// que crece, y una cifra en prosa caduca sin que nadie toque el comentario. La
+// publica el comando, comparando los dos arboles por simbolo exportado:
+//
+//   cuenta() { awk '/^export (type )?\{/ { l=$0; sub(/.*\{/,"",l); sub(/\}.*/,"",l)
+//       n=split(l,xs,","); for(i=1;i<=n;i++){ gsub(/^[ \t]+|[ \t]+$/,"",xs[i])
+//       if(xs[i]!="") print xs[i] } ; next }
+//     /^export / { if ($2 ~ /^(type|const|class|interface|enum|let|function)$/) n=$3
+//       else if ($2=="async"||$2=="abstract") n=$4; else next
+//       gsub(/[(<:={].*/,"",n); if(n!="") print n }' "$1" | sort -u ; }
+//   comm -13 <(cuenta src/packages/agent/messages.ts) \
+//            <(cuenta "$CCNMT/packages/agent/messages.ts") | wc -l
+//
+// Metrica: simbolos EXPORTADOS por nombre, incluida la re-exportacion entre
+// llaves —que un patron de `^export <palabra>` no ve y aporta dos por lado—.
+// Ciega a: si el cuerpo del simbolo hace lo mismo que el de la fuente; el
+// conteo mide presencia del nombre, no equivalencia de conducta.
+import type { APIError } from '@anthropic-ai/sdk'
+import type {
+  BetaContentBlock,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
+import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { PermissionMode } from './types.ts'
+import { SYNTHETIC_MODEL } from './messagesConstants.ts'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { formatTokens } from '@thyrox/output/formatters'
+import type {
+  MessageOrigin,
+  MessageType,
+  NormalizedAssistantMessage,
+  PartialCompactDirection,
+  StopHookInfo,
+  SystemAPIErrorMessage,
+  SystemAgentsKilledMessage,
+  SystemApiMetricsMessage,
+  SystemAwaySummaryMessage,
+  SystemBridgeStatusMessage,
+  SystemInformationalMessage,
+  SystemLocalCommandMessage,
+  SystemMemorySavedMessage,
+  SystemMessageLevel,
+  SystemMicrocompactBoundaryMessage,
+  SystemPermissionRetryMessage,
+  SystemScheduledTaskFireMessage,
+  SystemStopHookSummaryMessage,
+  SystemTurnDurationMessage,
+  ToolUseSummaryMessage,
+} from './messageShapes.ts'
+function baseCreateAssistantMessage({
+  content,
+  isApiErrorMessage = false,
+  apiError,
+  error,
+  errorDetails,
+  isVirtual,
+  usage = {
+    input_tokens: 0,
+    output_tokens: 0,
+    cache_creation_input_tokens: 0,
+    cache_read_input_tokens: 0,
+    server_tool_use: { web_search_requests: 0, web_fetch_requests: 0 },
+    service_tier: null,
+    cache_creation: {
+      ephemeral_1h_input_tokens: 0,
+      ephemeral_5m_input_tokens: 0,
+    },
+    inference_geo: null,
+    iterations: null, speed: null, output_tokens_details: null,
+    // `fallback_credit` es REQUERIDO en `BetaUsage` del SDK 0.110.0 y la
+    // fuente lo omite, porque su raiz no se lo exige. Se declara nulo, que
+    // es la forma vacia que el propio tipo admite.
+    fallback_credit: null,
+  },
+}: {
+  content: BetaContentBlock[]
+  isApiErrorMessage?: boolean
+  apiError?: AssistantMessage['apiError']
+  error?: SDKAssistantMessageError
+  errorDetails?: string
+  isVirtual?: true
+  usage?: Usage
+}): AssistantMessage {
+  return {
+    type: 'assistant',
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+    message: {
+      id: randomUUID(),
+      container: null,
+      model: SYNTHETIC_MODEL,
+      role: 'assistant',
+      stop_reason: 'stop_sequence',
+      stop_sequence: '',
+      type: 'message',
+      usage,
+      content: content as ContentBlock[],
+      context_management: null,
+    },
+    requestId: undefined,
+    apiError,
+    error,
+    errorDetails,
+    isApiErrorMessage,
+    isVirtual,
+  }
+}
+
+export function createAssistantMessage({
+  content,
+  usage,
+  isVirtual,
+}: {
+  content: string | BetaContentBlock[]
+  usage?: Usage
+  isVirtual?: true
+}): AssistantMessage {
+  return baseCreateAssistantMessage({
+    content:
+      typeof content === 'string'
+        ? [
+            {
+              type: 'text' as const,
+              text: content === '' ? NO_CONTENT_MESSAGE : content,
+            } as BetaContentBlock, // NOTE: citations field is not supported in Bedrock API
+          ]
+        : content,
+    usage,
+    isVirtual,
+  })
+}
+
+export function createAssistantAPIErrorMessage({
+  content,
+  apiError,
+  error,
+  errorDetails,
+}: {
+  content: string
+  apiError?: AssistantMessage['apiError']
+  error?: SDKAssistantMessageError
+  errorDetails?: string
+}): AssistantMessage {
+  return baseCreateAssistantMessage({
+    content: [
+      {
+        type: 'text' as const,
+        text: content === '' ? NO_CONTENT_MESSAGE : content,
+      } as BetaContentBlock, // NOTE: citations field is not supported in Bedrock API
+    ],
+    isApiErrorMessage: true,
+    apiError,
+    error,
+    errorDetails,
+  })
+}
+
+export function createUserInterruptionMessage({
+  toolUse = false,
+}: {
+  toolUse?: boolean
+}): UserMessage {
+  const content = toolUse ? INTERRUPT_MESSAGE_FOR_TOOL_USE : INTERRUPT_MESSAGE
+
+  return createUserMessage({
+    content: [
+      {
+        type: 'text',
+        text: content,
+      },
+    ],
+  })
+}
+
+/**
+ * Creates a new synthetic user caveat message for local commands (eg. bash, slash).
+ * We need to create a new message each time because messages must have unique uuids.
+ */
+
+export function createSystemMessage(
+  content: string,
+  level: SystemMessageLevel,
+  toolUseID?: string,
+  preventContinuation?: boolean,
+): SystemInformationalMessage {
+  return {
+    type: 'system',
+    subtype: 'informational',
+    content,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    toolUseID,
+    level,
+    ...(preventContinuation && { preventContinuation }),
+  }
+}
+
+export function createPermissionRetryMessage(
+  commands: string[],
+): SystemPermissionRetryMessage {
+  return {
+    type: 'system',
+    subtype: 'permission_retry',
+    content: `Allowed ${commands.join(', ')}`,
+    commands,
+    level: 'info',
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createBridgeStatusMessage(
+  url: string,
+  upgradeNudge?: string,
+): SystemBridgeStatusMessage {
+  return {
+    type: 'system',
+    subtype: 'bridge_status',
+    content: `/remote-control is active. Code in CLI or at ${url}`,
+    url,
+    upgradeNudge,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createScheduledTaskFireMessage(
+  content: string,
+): SystemScheduledTaskFireMessage {
+  return {
+    type: 'system',
+    subtype: 'scheduled_task_fire',
+    content,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+export function createStopHookSummaryMessage(
+  hookCount: number,
+  hookInfos: StopHookInfo[],
+  hookErrors: string[],
+  preventedContinuation: boolean,
+  stopReason: string | undefined,
+  hasOutput: boolean,
+  level: SystemMessageLevel,
+  toolUseID?: string,
+  hookLabel?: string,
+  totalDurationMs?: number,
+): SystemStopHookSummaryMessage {
+  return {
+    type: 'system',
+    subtype: 'stop_hook_summary',
+    hookCount,
+    hookInfos,
+    hookErrors,
+    preventedContinuation,
+    stopReason,
+    hasOutput,
+    level,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    toolUseID,
+    hookLabel,
+    totalDurationMs,
+  }
+}
+
+export function createTurnDurationMessage(
+  durationMs: number,
+  budget?: { tokens: number; limit: number; nudges: number },
+  messageCount?: number,
+): SystemTurnDurationMessage {
+  return {
+    type: 'system',
+    subtype: 'turn_duration',
+    durationMs,
+    budgetTokens: budget?.tokens,
+    budgetLimit: budget?.limit,
+    budgetNudges: budget?.nudges,
+    messageCount,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createAwaySummaryMessage(
+  content: string,
+): SystemAwaySummaryMessage {
+  return {
+    type: 'system',
+    subtype: 'away_summary',
+    content,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createMemorySavedMessage(
+  writtenPaths: string[],
+): SystemMemorySavedMessage {
+  return {
+    type: 'system',
+    subtype: 'memory_saved',
+    writtenPaths,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createAgentsKilledMessage(): SystemAgentsKilledMessage {
+  return {
+    type: 'system',
+    subtype: 'agents_killed',
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createApiMetricsMessage(metrics: {
+  ttftMs: number
+  otps: number
+  isP50?: boolean
+  hookDurationMs?: number
+  turnDurationMs?: number
+  toolDurationMs?: number
+  classifierDurationMs?: number
+  toolCount?: number
+  hookCount?: number
+  classifierCount?: number
+  configWriteCount?: number
+}): SystemApiMetricsMessage {
+  return {
+    type: 'system',
+    subtype: 'api_metrics',
+    ttftMs: metrics.ttftMs,
+    otps: metrics.otps,
+    isP50: metrics.isP50,
+    hookDurationMs: metrics.hookDurationMs,
+    turnDurationMs: metrics.turnDurationMs,
+    toolDurationMs: metrics.toolDurationMs,
+    classifierDurationMs: metrics.classifierDurationMs,
+    toolCount: metrics.toolCount,
+    hookCount: metrics.hookCount,
+    classifierCount: metrics.classifierCount,
+    configWriteCount: metrics.configWriteCount,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createCommandInputMessage(
+  content: string,
+): SystemLocalCommandMessage {
+  return {
+    type: 'system',
+    subtype: 'local_command',
+    content,
+    level: 'info',
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    isMeta: false,
+  }
+}
+
+export function createCompactBoundaryMessage(
+  trigger: 'manual' | 'auto',
+  preTokens: number,
+  lastPreCompactMessageUuid?: UUID,
+  userContext?: string,
+  messagesSummarized?: number,
+): SystemCompactBoundaryMessage {
+  return {
+    type: 'system',
+    subtype: 'compact_boundary',
+    content: `Conversation compacted`,
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    level: 'info',
+    compactMetadata: {
+      trigger,
+      preTokens,
+      userContext,
+      messagesSummarized,
+    },
+    ...(lastPreCompactMessageUuid && {
+      logicalParentUuid: lastPreCompactMessageUuid,
+    }),
+  }
+}
+
+export function createMicrocompactBoundaryMessage(
+  trigger: 'auto',
+  preTokens: number,
+  tokensSaved: number,
+  compactedToolIds: string[],
+  clearedAttachmentUUIDs: string[],
+): SystemMicrocompactBoundaryMessage {
+  logForDebugging(
+    `[microcompact] saved ~${formatTokens(tokensSaved)} tokens (cleared ${compactedToolIds.length} tool results)`,
+  )
+  return {
+    type: 'system',
+    subtype: 'microcompact_boundary',
+    content: 'Context microcompacted',
+    isMeta: false,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+    level: 'info',
+    microcompactMetadata: {
+      trigger,
+      preTokens,
+      tokensSaved,
+      compactedToolIds,
+      clearedAttachmentUUIDs,
+    },
+  }
+}
+
+export function createSystemAPIErrorMessage(
+  error: APIError,
+  retryInMs: number,
+  retryAttempt: number,
+  maxRetries: number,
+): SystemAPIErrorMessage {
+  return {
+    type: 'system',
+    subtype: 'api_error',
+    level: 'error',
+    cause: error.cause instanceof Error ? error.cause : undefined,
+    error,
+    retryInMs,
+    retryAttempt,
+    maxRetries,
+    timestamp: new Date().toISOString(),
+    uuid: randomUUID(),
+  }
+}
+
+/**
+ * Checks if a message is a compact boundary marker
+ */
+
+export function createToolUseSummaryMessage(
+  summary: string,
+  precedingToolUseIds: string[],
+): ToolUseSummaryMessage {
+  return {
+    type: 'tool_use_summary' as MessageType,
+    summary,
+    precedingToolUseIds,
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+  }
+}
+
+/**
+ * Defensive validation: ensure tool_use/tool_result pairing is correct.
+ *
+ * Handles both directions:
+ * - Forward: inserts synthetic error tool_result blocks for tool_use blocks missing results
+ * - Reverse: strips orphaned tool_result blocks referencing non-existent tool_use blocks
+ *
+ * Logs when this activates to help identify the root cause.
+ *
+ * Strict mode: when getStrictToolResultPairing() is true (HFI opts in at
+ * startup), any mismatch throws instead of repairing. For training-data
+ * collection, a model response conditioned on synthetic placeholders is
+ * tainted — fail the trajectory rather than waste labeler time on a turn
+ * that will be rejected at submission anyway.
+ */
+
+
+// ===========================================================================
+// TRAMO 2 de TASK-THYROX-0212 — los dos simbolos que desbloquean la suite
+// ===========================================================================
+// El tramo NO se eligio por tamano: se DERIVO de los dos rojos que el
+// subconjunto publicaba. Con `proper-lockfile` materializado, el error real
+// salio a la luz y contradijo la atribucion del tramo 1:
+//
+//   message-pipeline.test.ts -> Export named 'normalizeMessages' not found
+//   messages.test.ts         -> Export named 'prepareUserContent' not found
+//
+// Los dos rojos eran del SUJETO -el porte incompleto-, no premisa rancia.
+// El `Cannot find package 'proper-lockfile'` los enmascaraba: el grafo de
+// modulos moria antes de llegar a preguntar por el export.
+//
+// El cierre transitivo decide el corte, medido sobre la fuente:
+//
+//   normalizeMessages        cierre= 3   falta 1    ~84 lineas
+//   prepareUserContent       cierre= 1   falta 1    ~19 lineas
+//   normalizeMessagesForAPI  cierre=56   faltan 54  ~2766 lineas
+//
+// Los dos primeros entran aqui y cierran `message-pipeline.test.ts` entero
+// -su unico ausente era `normalizeMessages`-. El hub queda para el tramo 3;
+// `messages.test.ts` no puede cerrar antes, porque lo importa.
+export function prepareUserContent({
+  inputString,
+  precedingInputBlocks,
+}: {
+  inputString: string
+  precedingInputBlocks: ContentBlockParam[]
+}): string | ContentBlockParam[] {
+  if (precedingInputBlocks.length === 0) {
+    return inputString
+  }
+
+  return [
+    ...precedingInputBlocks,
+    {
+      text: inputString,
+      type: 'text',
+    },
+  ]
+}
+
+export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
+  // isNewChain tracks whether we need to generate new UUIDs for messages when normalizing.
+  // When a message has multiple content blocks, we split it into multiple messages,
+  // each with a single content block. When this happens, we need to generate new UUIDs
+  // for all subsequent messages to maintain proper ordering and prevent duplicate UUIDs.
+  // This flag is set to true once we encounter a message with multiple content blocks,
+  // and remains true for all subsequent messages in the normalization process.
+  let isNewChain = false
+  return messages.flatMap(message => {
+    switch (message.type) {
+      case 'assistant': {
+        // El `switch` NO estrecha: `Message.type` esta declarado `MessageType`
+        // y no como literal discriminante, asi que TypeScript no deduce el
+        // subtipo por rama. La rama SI lo garantiza, asi que se declara con un
+        // cast en vez de sembrar `?.` en cada uno de los nueve accesos.
+        const am = message as AssistantMessage
+        // `content` sigue opcional dentro de `message` —la fuente lo lee sin
+        // guarda bajo `strict: false`—, y el arreglo se estrecha a `ContentItem[]`
+        // para que `.map` resuelva: una union `A[] | B[]` no ofrece una firma
+        // de `map` compatible, y `ContentItem` es el elemento que
+        // `messageShapes.ts` exporta para exactamente esto.
+        const assistantContent = (Array.isArray(am.message.content)
+          ? am.message.content
+          : []) as ContentItem[]
+        isNewChain = isNewChain || assistantContent.length > 1
+        return assistantContent.map((_, index) => {
+          const uuid = isNewChain
+            ? deriveUUID(am.uuid, index)
+            : am.uuid
+          return {
+            type: 'assistant' as const,
+            timestamp: am.timestamp,
+            message: {
+              ...am.message,
+              content: [_],
+              context_management: am.message.context_management ?? null,
+            },
+            isMeta: am.isMeta,
+            isVirtual: am.isVirtual,
+            requestId: am.requestId,
+            uuid,
+            error: am.error,
+            isApiErrorMessage: am.isApiErrorMessage,
+            advisorModel: am.advisorModel,
+          } as NormalizedAssistantMessage
+        })
+      }
+      case 'attachment':
+        return [message]
+      case 'progress':
+        return [message]
+      case 'system':
+        return [message]
+      case 'user': {
+        // Mismo cast y misma razon que la rama `assistant`. `UserMessage`
+        // declara `message` requerido —DIVERGENCIA declarada en
+        // `messageShapes.ts`, misma clase que `AssistantMessage`— pero su
+        // `content` sigue opcional, asi que se estrecha una sola vez a una
+        // variable local en lugar de en los siete accesos de la rama.
+        const um = message as UserMessage
+        const userContent = (um.message.content ?? []) as string | ContentItem[]
+        if (typeof userContent === 'string') {
+          const uuid = isNewChain ? deriveUUID(um.uuid, 0) : um.uuid
+          return [
+            {
+              ...um,
+              uuid,
+              message: {
+                ...um.message,
+                content: [{ type: 'text', text: userContent }],
+              },
+            } as NormalizedMessage,
+          ]
+        }
+        isNewChain = isNewChain || userContent.length > 1
+        // `imagePasteIds` no esta declarado en `Message`: llega por su firma de
+        // indice, o sea `unknown`. Indexarlo sin estrechar es TS18046 —el mismo
+        // acceso que la fuente hace legalmente bajo `strict: false`—.
+        const imagePasteIds = um.imagePasteIds as number[] | undefined
+        let imageIndex = 0
+        return userContent.map((_, index) => {
+          const isImage = _.type === 'image'
+          // For image content blocks, extract just the ID for this image
+          const imageId =
+            isImage && imagePasteIds ? imagePasteIds[imageIndex] : undefined
+          if (isImage) imageIndex++
+          return {
+            ...createUserMessage({
+              content: [_],
+              toolUseResult: um.toolUseResult,
+              mcpMeta: um.mcpMeta as { _meta?: Record<string, unknown>; structuredContent?: Record<string, unknown> },
+              isMeta: um.isMeta === true ? true : undefined,
+              isVisibleInTranscriptOnly: um.isVisibleInTranscriptOnly === true ? true : undefined,
+              isVirtual: (um.isVirtual as boolean | undefined) === true ? true : undefined,
+              timestamp: um.timestamp as string | undefined,
+              imagePasteIds: imageId !== undefined ? [imageId] : undefined,
+              origin: um.origin as MessageOrigin | undefined,
+            }),
+            uuid: isNewChain ? deriveUUID(um.uuid, index) : um.uuid,
+          } as NormalizedMessage
+        })
+      }
+      // DIVERGENCIA DECLARADA de TOOLCHAIN: la fuente cubre 5 de los 7 miembros
+      // de `MessageType` y deja que `grouped_tool_use` y `collapsed_read_search`
+      // caigan por el borde devolviendo `undefined`, que `strict: false` le
+      // tolera. Aqui el tipo de retorno seria `(Message | undefined)[]`. El
+      // `default` declara el paso a traves, que es la conducta que la fuente ya
+      // tiene de hecho para esos dos casos. Va al FINAL del `switch`, no en
+      // medio: un `default` intercalado es legal y se lee como si cortara las
+      // ramas que le siguen.
+      default:
+        return [message]
+    }
+  })
+}
+

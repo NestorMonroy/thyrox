@@ -60,7 +60,7 @@ from session import bounded_scan  # noqa: E402
 #: La rama del consumidor que se recorre entera. No es ``pm/`` a propósito:
 #: el defecto que este módulo cierra es exactamente mirar sólo el lugar del
 #: dominio.
-GESTION_DIR = pathlib.Path("source") / "gestion"
+MANAGEMENT_DIR = pathlib.Path("source") / "gestion"
 
 #: Los segmentos que hacen canónica a una ubicación: ``pm/<raiz>/iniciativas``.
 PM_SEGMENT = "pm"
@@ -77,7 +77,7 @@ class SurveyTruncatedError(RuntimeError):
     """El recorrido no llegó al final: no hay veredicto que emitir."""
 
 
-class GestionRootError(RuntimeError):
+class ManagementRootError(RuntimeError):
     """El consumidor no tiene ``source/gestion/``: no es un árbol medible."""
 
 
@@ -131,13 +131,13 @@ def submodule_of(relative: pathlib.Path, slug: str) -> str | None:
     este módulo es justamente distinguir el lugar correcto del que no lo es.
     """
     parts = relative.parts
-    marco = GESTION_DIR.parts + (PM_SEGMENT,)
-    if len(parts) < len(marco) + 3 or parts[: len(marco)] != marco:
+    frame = MANAGEMENT_DIR.parts + (PM_SEGMENT,)
+    if len(parts) < len(frame) + 3 or parts[: len(frame)] != frame:
         return None
-    raiz, segmento, nombre = parts[len(marco)], parts[len(marco) + 1], parts[len(marco) + 2]
-    if segmento != INITIATIVES_SEGMENT or nombre != slug:
+    root, segment, name = parts[len(frame)], parts[len(frame) + 1], parts[len(frame) + 2]
+    if segment != INITIATIVES_SEGMENT or name != slug:
         return None
-    return raiz
+    return root
 
 
 def survey_initiative(
@@ -155,34 +155,34 @@ def survey_initiative(
     reusar el recorrido acotado del proveedor vale más que un ``os.walk``
     propio que habría que volver a acotar.
     """
-    raiz_consumidor = pathlib.Path(consumer_root)
-    raiz_gestion = raiz_consumidor / GESTION_DIR
-    resultado = bounded_scan.walk(
-        raiz_gestion, name="*.rst", max_entries=max_entries, deadline=deadline)
+    root_consumer = pathlib.Path(consumer_root)
+    root_management = root_consumer / MANAGEMENT_DIR
+    result = bounded_scan.walk(
+        root_management, name="*.rst", max_entries=max_entries, deadline=deadline)
 
-    if resultado.reason and resultado.reason.startswith("no existe"):
-        raise GestionRootError(resultado.reason)
+    if result.reason and result.reason.startswith("no existe"):
+        raise ManagementRootError(result.reason)
 
-    encontrados: dict[pathlib.Path, Hit] = {}
-    for ruta in resultado.paths:
-        absoluta = pathlib.Path(ruta)
-        relativa = absoluta.relative_to(raiz_consumidor)
-        if slug not in relativa.parts:
+    found: dict[pathlib.Path, Hit] = {}
+    for path in result.paths:
+        absolute = pathlib.Path(path)
+        relative = absolute.relative_to(root_consumer)
+        if slug not in relative.parts:
             continue
         # El hallazgo es el DIRECTORIO del slug, no cada .rst que contiene.
-        corte = relativa.parts.index(slug) + 1
-        directorio = raiz_consumidor / pathlib.Path(*relativa.parts[:corte])
-        if directorio not in encontrados:
-            encontrados[directorio] = Hit(
-                path=directorio,
-                submodule=submodule_of(directorio.relative_to(raiz_consumidor), slug),
+        cut = relative.parts.index(slug) + 1
+        directory = root_consumer / pathlib.Path(*relative.parts[:cut])
+        if directory not in found:
+            found[directory] = Hit(
+                path=directory,
+                submodule=submodule_of(directory.relative_to(root_consumer), slug),
             )
 
     return SurveyResult(
         slug=slug,
-        hits=tuple(encontrados[k] for k in sorted(encontrados)),
-        truncated=not resultado.complete,
-        reason=resultado.reason,
+        hits=tuple(found[k] for k in sorted(found)),
+        truncated=not result.complete,
+        reason=result.reason,
     )
 
 
@@ -199,13 +199,13 @@ def decide_placement(survey: SurveyResult, intended_submodule: str) -> Placement
             f"ausencia — subir max_entries/deadline, o acotar la raíz."
         )
     if not survey.hits:
-        veredicto = ABSENT
+        verdict = ABSENT
     elif any(hit.submodule == intended_submodule for hit in survey.hits):
-        veredicto = IN_PLACE
+        verdict = IN_PLACE
     else:
-        veredicto = ELSEWHERE
+        verdict = ELSEWHERE
     return PlacementVerdict(
-        verdict=veredicto, slug=survey.slug,
+        verdict=verdict, slug=survey.slug,
         intended_submodule=intended_submodule, hits=survey.hits,
     )
 
@@ -220,26 +220,26 @@ def extension_note(verdict: PlacementVerdict) -> str:
     """
     if verdict.verdict != ELSEWHERE:
         raise ValueError(f"sólo ELSEWHERE lleva mención de extensión: {verdict.verdict}")
-    origen = verdict.origin
-    if origen is None:  # pragma: no cover — ELSEWHERE implica al menos un hallazgo
+    source = verdict.origin
+    if source is None:  # pragma: no cover — ELSEWHERE implica al menos un hallazgo
         raise ValueError("ELSEWHERE sin hallazgo: estado imposible")
 
-    raiz = verdict.extends_from
-    if raiz is not None:
-        ubicacion = f"``pm/{raiz}``"
-        cita = (f":doc:`/gestion/pm/{raiz}/iniciativas/{verdict.slug}/index`")
+    root = verdict.extends_from
+    if root is not None:
+        location = f"``pm/{root}``"
+        citation = (f":doc:`/gestion/pm/{root}/iniciativas/{verdict.slug}/index`")
     else:
         # Hallada fuera de `pm/<raiz>/iniciativas/`: no hay raíz que nombrar,
         # así que se cita la ruta tal cual en vez de inventarle una.
-        relativa = origen.path.as_posix()
-        ubicacion = f"``{relativa}``"
-        cita = f"``{relativa}``"
+        relative = source.path.as_posix()
+        location = f"``{relative}``"
+        citation = f"``{relative}``"
 
     return (
         f".. note:: Se extiende de otra raíz\n\n"
-        f"   Esta iniciativa ya existía bajo {ubicacion}, que **no** es la raíz\n"
+        f"   Esta iniciativa ya existía bajo {location}, que **no** es la raíz\n"
         f"   de su entregable. Se crea aquí, en ``pm/{verdict.intended_submodule}``,\n"
-        f"   y se extiende de aquélla: {cita}.\n\n"
+        f"   y se extiende de aquélla: {citation}.\n\n"
         f"   El trabajo previo sigue siendo válido y su evidencia fechada no se\n"
         f"   reescribe; lo que cambia es el hogar de lo que venga después.\n"
     )
@@ -258,23 +258,23 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if args.consumer:
-        raiz = pathlib.Path(args.consumer)
+        root = pathlib.Path(args.consumer)
     else:
         from paths import reach  # noqa: PLC0415 — sólo lo necesita el camino sin --consumer
-        raiz = reach.consumer_root()
+        root = reach.consumer_root()
 
     try:
-        veredicto = decide_placement(survey_initiative(raiz, args.slug), args.submodule)
-    except (SurveyTruncatedError, GestionRootError) as motivo:
+        verdict = decide_placement(survey_initiative(root, args.slug), args.submodule)
+    except (SurveyTruncatedError, ManagementRootError) as motivo:
         print(f"REHUSA: {motivo}", file=sys.stderr)
         return 2
 
-    print(f"{veredicto.verdict}\t{args.slug}\t(alcance medido: {len(veredicto.hits)} ubicacion(es))")
-    for hit in veredicto.hits:
-        raiz_texto = hit.submodule or "(fuera de pm/<raiz>/iniciativas/)"
-        print(f"  {raiz_texto}\t{hit.path}")
-    if veredicto.verdict == ELSEWHERE:
-        print(extension_note(veredicto))
+    print(f"{verdict.verdict}\t{args.slug}\t(alcance medido: {len(verdict.hits)} ubicacion(es))")
+    for hit in verdict.hits:
+        root_text = hit.submodule or "(fuera de pm/<raiz>/iniciativas/)"
+        print(f"  {root_text}\t{hit.path}")
+    if verdict.verdict == ELSEWHERE:
+        print(extension_note(verdict))
     return 0
 
 

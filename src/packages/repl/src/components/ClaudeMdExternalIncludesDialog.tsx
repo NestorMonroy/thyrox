@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { logEvent } from '@thyrox/local-observability'
-import { Box, Dialog, Link, Text } from '@thyrox/ink'
+import { Box, Dialog, Link, Text } from '@anthropic/ink'
 import type { ExternalClaudeMdInclude } from '@thyrox/storage/claudemd.js'
 import { saveCurrentProjectConfig } from '@thyrox/config'
 import { Select } from './CustomSelect/index.js'

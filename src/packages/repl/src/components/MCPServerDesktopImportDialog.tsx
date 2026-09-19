@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { writeToStdout } from '@thyrox/shell/process.js'
-import { Box, color, Text, useTheme, Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Box, color, Text, useTheme, Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { addMcpConfig, getAllMcpConfigs } from '@thyrox/mcp-runtime/config.js'
 import type {
   ConfigScope,

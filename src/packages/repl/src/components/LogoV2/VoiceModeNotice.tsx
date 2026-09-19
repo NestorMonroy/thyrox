@@ -1,7 +1,7 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { isVoiceModeEnabled } from '@thyrox/voice/voiceModeEnabled.js'

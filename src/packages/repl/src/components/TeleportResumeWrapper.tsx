@@ -9,8 +9,8 @@ import {
   type TeleportSource,
   useTeleportResume,
 } from '../hooks/useTeleportResume.js'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { ResumeTask } from './ResumeTask.js'
 import { Spinner } from './Spinner.js'
 

@@ -56,3 +56,23 @@ dependencies = [
 # por `PYTHONPATH=src`, igual que en `kaupamex-api`. Sin esto uv intentaria
 # construir un paquete que nadie instala.
 package = false
+
+# Dependencias de CONTROL, no de producto. Las de arriba se derivan del arbol
+# —son los unicos imports de terceros que `src/**/*.py` declara— y numpy no
+# esta entre ellas: medido por AST, 0 sitios. Declararla en
+# `[project.dependencies]` contradiria el criterio que este archivo enuncia.
+#
+# Lo que SI la justifica es un control concreto: H-THYROX-145 declaro un
+# DESCONOCIDO —por que las frecuencias que el brief de muestreo por rechazo
+# publica no se reproducen con el generador de la biblioteca estandar— y fijo
+# su condicion de cierre verbatim: «un entorno con numpy donde se pueda
+# ejecutar el brief verbatim». Esta es esa condicion.
+#
+# NO va en `[tool.uv] default-groups`, y eso es la decision: un `uv sync`
+# corriente no debe descargar numpy para instalar el proveedor. Se pide
+# explicitamente, y el control que la consume REHUSA con exit 2 cuando falta
+# en vez de publicar un verde que no midio nada:
+#
+#     uv sync --group verify
+[dependency-groups]
+verify = ["numpy"]

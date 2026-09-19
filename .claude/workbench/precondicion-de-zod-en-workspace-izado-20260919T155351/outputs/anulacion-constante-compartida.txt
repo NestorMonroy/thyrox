@@ -1,0 +1,10 @@
+# Control de anulacion — wait vuelve a heredar el grace
+# fecha: 2026-09-19T16:22:06
+
+OK   el grace por defecto cae en 20-30 s
+OK   start devuelve al vencer el grace, no al terminar
+OK   start senala el desprendimiento con su codigo propio
+OK   la clave de entorno se declara en .env.example
+FALLA wait sin segundos NO hereda el grace: recoge el trabajo — esperado 'si', obtenido 'no'
+
+aserciones: 4 de 5 · fallos: 1

@@ -47,33 +47,33 @@ def main() -> int:
     # Sin este caso el modulo podria decir «hay estructura» SIEMPRE y las
     # demas aserciones seguirian verdes.
     rng = random.Random(20260916)
-    blanco = [rng.gauss(0.0, 1.0) for _ in range(200)]
-    nulo = rs.inspect(blanco, lags=10)
+    blank = [rng.gauss(0.0, 1.0) for _ in range(200)]
+    null = rs.inspect(blank, lags=10)
     check("el ruido blanco NO se declara estructurado",
-          nulo.verdict is rs.Verdict.NO_EVIDENCE,
-          f"Q={nulo.statistic:.2f} critico={nulo.critical:.2f}")
+          null.verdict is rs.Verdict.NO_EVIDENCE,
+          f"Q={null.statistic:.2f} critico={null.critical:.2f}")
     check("y su Q queda por debajo del critico",
-          nulo.statistic < nulo.critical,
-          f"{nulo.statistic:.2f} !< {nulo.critical:.2f}")
+          null.statistic < null.critical,
+          f"{null.statistic:.2f} !< {null.critical:.2f}")
     check("el veredicto se llama «sin evidencia», no «aleatorio»",
-          nulo.verdict.value.startswith("sin"), nulo.verdict.value)
+          null.verdict.value.startswith("sin"), null.verdict.value)
 
     # --- el positivo: una caminata aleatoria tiene memoria por construccion
-    paseo, acc = [], 0.0
+    walk, acc = [], 0.0
     for _ in range(200):
         acc += rng.gauss(0.0, 1.0)
-        paseo.append(acc)
-    con_memoria = rs.inspect(paseo, lags=10)
+        walk.append(acc)
+    with_memory = rs.inspect(walk, lags=10)
     check("una caminata aleatoria SI se declara estructurada",
-          con_memoria.verdict is rs.Verdict.STRUCTURED,
-          f"Q={con_memoria.statistic:.2f}")
+          with_memory.verdict is rs.Verdict.STRUCTURED,
+          f"Q={with_memory.statistic:.2f}")
     check("su Q supera el critico por mucho",
-          con_memoria.statistic > 10 * con_memoria.critical,
-          f"{con_memoria.statistic:.2f} vs {con_memoria.critical:.2f}")
+          with_memory.statistic > 10 * with_memory.critical,
+          f"{with_memory.statistic:.2f} vs {with_memory.critical:.2f}")
 
     # --- la autocorrelacion de rezago 1 de una alternante es ~ -1
-    alterna = [(-1.0) ** i for i in range(60)]
-    r = rs.inspect(alterna, lags=5)
+    alternate = [(-1.0) ** i for i in range(60)]
+    r = rs.inspect(alternate, lags=5)
     check("la autocorrelacion de rezago 1 de una alternante es negativa",
           r.autocorrelations[0] < -0.9, str(r.autocorrelations[0]))
 
@@ -81,20 +81,20 @@ def main() -> int:
     # Es EL caso que la separa del Box-Pierce llano: con n grande los dos
     # coinciden y el control no podria fallar. Medido aqui: Ljung = 12.065
     # rechaza, Box-Pierce = 9.050 no, contra un critico de 9.456.
-    corta, x = [], 0.0
+    short, x = [], 0.0
     r12 = random.Random(7)
     for _ in range(12):
         x = 0.8 * x + r12.gauss(0.0, 1.0)
-        corta.append(x)
-    con_correccion = rs.inspect(corta, lags=4)
-    llano = len(corta) * sum(
-        rs.autocorrelation(corta, k) ** 2 for k in range(1, 5))
+        short.append(x)
+    with_fix = rs.inspect(short, lags=4)
+    plain = len(short) * sum(
+        rs.autocorrelation(short, k) ** 2 for k in range(1, 5))
     check("con n pequeño la correccion de Ljung SI rechaza",
-          con_correccion.verdict is rs.Verdict.STRUCTURED,
-          f"Q={con_correccion.statistic:.3f} critico={con_correccion.critical:.3f}")
+          with_fix.verdict is rs.Verdict.STRUCTURED,
+          f"Q={with_fix.statistic:.3f} critico={with_fix.critical:.3f}")
     check("y el Box-Pierce llano sobre los MISMOS datos no rechazaria",
-          llano <= con_correccion.critical,
-          f"llano={llano:.3f} critico={con_correccion.critical:.3f}")
+          plain <= with_fix.critical,
+          f"llano={plain:.3f} critico={with_fix.critical:.3f}")
 
     # --- rehusa cuando no hay pares con que calcular.
     # La serie tiene 12 puntos —por encima del minimo— para que el rechazo
@@ -103,7 +103,7 @@ def main() -> int:
     for lags, why in [(0, "cero rezagos"), (12, "tantos rezagos como puntos"),
                       (20, "mas rezagos que puntos")]:
         try:
-            rs.inspect(corta, lags=lags)
+            rs.inspect(short, lags=lags)
         except rs.CannotInspect as e:
             check(f"rehusa con {why}", "rezago" in str(e).lower(), str(e))
         else:
@@ -132,15 +132,15 @@ def main() -> int:
     if len(pts) > 20:
         real = series.level(pts, label="store")
         fit = trend.fit_linear(real)
-        resid = series.residuals(real, fit.predicted)
-        lectura = rs.inspect(resid, lags=10)
+        residual = series.residuals(real, fit.predicted)
+        read = rs.inspect(residual, lags=10)
         check("el ajuste lineal sobre el sujeto real deja estructura",
-              lectura.verdict is rs.Verdict.STRUCTURED,
-              f"Q={lectura.statistic:.1f}")
+              read.verdict is rs.Verdict.STRUCTURED,
+              f"Q={read.statistic:.1f}")
         check("aun con un R2 mediocre, el Q lo supera con holgura",
-              lectura.statistic > 5 * lectura.critical,
-              f"R2={fit.r_squared:.4f} Q={lectura.statistic:.1f} "
-              f"critico={lectura.critical:.1f}")
+              read.statistic > 5 * read.critical,
+              f"R2={fit.r_squared:.4f} Q={read.statistic:.1f} "
+              f"critico={read.critical:.1f}")
 
     else:
         check("control positivo del arbol", False, f"solo {len(pts)} puntos")
@@ -151,14 +151,14 @@ def main() -> int:
     # la tiene. Si el modulo leyera el R2, los dos saldrian igual.
     n = 60
     rng2 = random.Random(31415)
-    rampa = series.level([(i * DAY, 100.0 + 10.0 * i + (i - n / 2) * 0.9)
+    ramp = series.level([(i * DAY, 100.0 + 10.0 * i + (i - n / 2) * 0.9)
                           for i in range(n)])
-    ruidosa = series.level([(i * DAY, 100.0 + 10.0 * i + rng2.gauss(0.0, 7.0))
+    noisy = series.level([(i * DAY, 100.0 + 10.0 * i + rng2.gauss(0.0, 7.0))
                             for i in range(n)])
-    fr = trend.fit_linear(rampa)
-    fz = trend.fit_linear(ruidosa)
-    vr = rs.inspect(series.residuals(rampa, fr.predicted), lags=10)
-    vz = rs.inspect(series.residuals(ruidosa, fz.predicted), lags=10)
+    fr = trend.fit_linear(ramp)
+    fz = trend.fit_linear(noisy)
+    vr = rs.inspect(series.residuals(ramp, fr.predicted), lags=10)
+    vz = rs.inspect(series.residuals(noisy, fz.predicted), lags=10)
     check("dos series con R2 casi igual dan veredictos OPUESTOS",
           vr.verdict is not vz.verdict,
           f"R2 {fr.r_squared:.4f}/{fz.r_squared:.4f} -> "

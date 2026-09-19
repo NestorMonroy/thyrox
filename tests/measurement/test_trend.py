@@ -42,8 +42,8 @@ def check(label: str, condition: bool, extra: str = "") -> None:
 
 def main() -> int:
     # --- una recta exacta se recupera exacta
-    recta = series.level([(i * DAY, 3.0 + 2.0 * i) for i in range(6)], label="recta")
-    f = trend.fit_linear(recta)
+    straight_line = series.level([(i * DAY, 3.0 + 2.0 * i) for i in range(6)], label="recta")
+    f = trend.fit_linear(straight_line)
     check("recupera la pendiente por dia", abs(f.slope_per_day - 2.0) < 1e-9,
           str(f.slope_per_day))
     check("recupera la ordenada", abs(f.intercept - 3.0) < 1e-9, str(f.intercept))
@@ -51,11 +51,11 @@ def main() -> int:
           str(f.r_squared))
     check("declara su forma", f.shape is trend.Shape.LINEAR, str(f.shape))
     check("entrega el ajustado, que es la entrada de los residuos",
-          len(f.predicted) == recta.count)
+          len(f.predicted) == straight_line.count)
 
     # --- plana: pendiente cero es resultado, no fallo
-    plana = series.level([(i * DAY, 7.0) for i in range(5)])
-    fp = trend.fit_linear(plana)
+    flat = series.level([(i * DAY, 7.0) for i in range(5)])
+    fp = trend.fit_linear(flat)
     check("una serie plana da pendiente cero sin romper",
           abs(fp.slope_per_day) < 1e-12, str(fp.slope_per_day))
     check("y su R2 se declara cero, no nan",
@@ -71,9 +71,9 @@ def main() -> int:
           abs(fe.r_squared - 1.0) < 1e-9, str(fe.r_squared))
 
     # --- MITAD DE JUICIO 1: no se toma log de un valor no positivo
-    con_cero = series.level([(0.0, 1.0), (DAY, 0.0), (2 * DAY, 4.0)])
+    with_zero = series.level([(0.0, 1.0), (DAY, 0.0), (2 * DAY, 4.0)])
     try:
-        trend.fit_exponential(con_cero)
+        trend.fit_exponential(with_zero)
     except trend.CannotFit as e:
         check("rehusa el exponencial con un valor no positivo",
               "positiv" in str(e).lower(), str(e))
@@ -84,38 +84,38 @@ def main() -> int:
     # --- MITAD DE JUICIO 2: elegir compara en la escala original
     # Serie exponencial con ruido: el R2 del log-ajuste supera al del lineal
     # EN SU PROPIA escala, y eso no autoriza a elegirlo.
-    ruidosa = series.level([(i * DAY, 2.0 * math.exp(0.4 * i) + (1 if i % 2 else -1))
+    noisy = series.level([(i * DAY, 2.0 * math.exp(0.4 * i) + (1 if i % 2 else -1))
                             for i in range(9)])
-    elegido = trend.better_fit(ruidosa)
+    chosen = trend.better_fit(noisy)
     check("sobre una exponencial ruidosa elige el exponencial",
-          elegido.shape is trend.Shape.EXPONENTIAL, str(elegido.shape))
+          chosen.shape is trend.Shape.EXPONENTIAL, str(chosen.shape))
     check("y su R2 comparado es el de la escala original (<= 1)",
-          0.0 <= elegido.r_squared <= 1.0, str(elegido.r_squared))
+          0.0 <= chosen.r_squared <= 1.0, str(chosen.r_squared))
 
     # EL caso que separa los dos criterios, y el unico que puede fallar:
     # una exponencial cuyo punto MAYOR se desvia por factor. En log ese
     # residuo es moderado (R2_log = 0.984); en la escala original domina la
     # suma (R2_orig = 0.758) y la recta lo gana (0.835). Comparar en log
     # elige exponencial; comparar honesto elige recta.
-    cola_caida = [(i * DAY, 2.0 * math.exp(0.6 * i)) for i in range(9)]
-    cola_caida[-1] = (cola_caida[-1][0], cola_caida[-1][1] * 0.5)
-    torcida = series.level(cola_caida, label="exponencial con la cola caida")
-    veredicto = trend.better_fit(torcida)
+    cola_drop = [(i * DAY, 2.0 * math.exp(0.6 * i)) for i in range(9)]
+    cola_drop[-1] = (cola_drop[-1][0], cola_drop[-1][1] * 0.5)
+    skewed = series.level(cola_drop, label="exponencial con la cola caida")
+    verdict = trend.better_fit(skewed)
     check("con el punto mayor desviado elige la RECTA, no el exponencial",
-          veredicto.shape is trend.Shape.LINEAR,
-          f"{veredicto.shape} — comparar el R2 del log daria exponencial")
+          verdict.shape is trend.Shape.LINEAR,
+          f"{verdict.shape} — comparar el R2 del log daria exponencial")
     check("y el R2 que publica es el de la escala original",
-          abs(veredicto.r_squared - 0.8350) < 0.01, str(veredicto.r_squared))
+          abs(verdict.r_squared - 0.8350) < 0.01, str(verdict.r_squared))
     check("el exponencial ajusta PEOR en escala original aunque el log diga 0.98",
-          trend.fit_exponential(torcida).r_squared < veredicto.r_squared,
-          f"{trend.fit_exponential(torcida).r_squared} vs {veredicto.r_squared}")
+          trend.fit_exponential(skewed).r_squared < verdict.r_squared,
+          f"{trend.fit_exponential(skewed).r_squared} vs {verdict.r_squared}")
 
-    lineal_ruidosa = series.level([(i * DAY, 5.0 + 3.0 * i + (0.5 if i % 2 else -0.5))
+    linear_noisy = series.level([(i * DAY, 5.0 + 3.0 * i + (0.5 if i % 2 else -0.5))
                                    for i in range(9)])
     check("sobre una lineal ruidosa elige la recta",
-          trend.better_fit(lineal_ruidosa).shape is trend.Shape.LINEAR)
+          trend.better_fit(linear_noisy).shape is trend.Shape.LINEAR)
     check("y si el exponencial no se puede ajustar, elige la recta sin romper",
-          trend.better_fit(con_cero).shape is trend.Shape.LINEAR)
+          trend.better_fit(with_zero).shape is trend.Shape.LINEAR)
 
     # --- control positivo REAL: la historia del store de agentes
     store = ROOT / "agent-results/agent_store.sqlite3"

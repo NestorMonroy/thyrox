@@ -209,15 +209,15 @@ check("log inexistente y sin pid -> 3, no una traza", TIMED_OUT, proc.returncode
 # anulaciones: es la que impide que el arreglo sea «aceptar cualquier cosa».
 
 print("== el patron por defecto ve las DOS formas de marcador ==")
-for etiqueta, linea in (
+for case_label, line in (
     ("la que escribe el envoltorio a mano", "EXIT=0"),
     ("la que escribe bg.sh", "__BG_EXIT__=0"),
 ):
     with tempfile.TemporaryDirectory() as tmp:
         log = Path(tmp) / "salida.log"
-        log.write_text(f"trabajo hecho\n{linea}\n", encoding="utf-8")
-        resultado = marker_wait.wait_for_marker(log, timeout=2, interval=0.05)
-        check(f"{etiqueta}: {linea}", marker_wait.PRESENT, resultado.code)
+        log.write_text(f"trabajo hecho\n{line}\n", encoding="utf-8")
+        result = marker_wait.wait_for_marker(log, timeout=2, interval=0.05)
+        check(f"{case_label}: {line}", marker_wait.PRESENT, result.code)
 
 print("== y NO acepta un renglon que solo se le parece ==")
 with tempfile.TemporaryDirectory() as tmp:
@@ -227,7 +227,7 @@ with tempfile.TemporaryDirectory() as tmp:
     # pasarian y la espera declararia terminado un trabajo que sigue vivo.
     log.write_text("EXIT=\nel proceso dijo EXIT=0 en mitad de la frase\n",
                    encoding="utf-8")
-    resultado = marker_wait.wait_for_marker(log, timeout=1, interval=0.05)
-    check("un renglon parecido no es un marcador", marker_wait.TIMED_OUT, resultado.code)
+    result = marker_wait.wait_for_marker(log, timeout=1, interval=0.05)
+    check("un renglon parecido no es un marcador", marker_wait.TIMED_OUT, result.code)
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

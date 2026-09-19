@@ -155,8 +155,9 @@ from paths import reach  # noqa: E402
 #: ``src/lib/reach.sh`` y ``src/paths/reach.py``. La resuelve el bit ejecutable
 #: de ``is_shell_entrypoint``, no una excepción por nombre.
 SOURCE_DIRS: tuple[str, ...] = (
-    "src/agents", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
+    "src/agents", "src/typescript", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
     "src/hooks", "src/lib", "src/paths", "src/peer_mailbox", "src/repo",
+    "src/measurement",
     "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
 )
 
@@ -416,9 +417,19 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
         return (
             "#!/usr/bin/env bash\n"
             f"{GENERATED_MARKER}\n"
-            'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+            'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+            'export THYROX_ROOT\n'
             'INTERPRETER="$THYROX_ROOT/.venv/bin/python"\n'
             'if [ ! -x "$INTERPRETER" ]; then\n'
+            '  LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
+            '  if [ -r "$LIB" ]; then\n'
+            '    # shellcheck source=/dev/null\n'
+            '    source "$LIB"\n'
+            '    thyrox_toolchain_degraded_notice \\\n'
+            '      "las herramientas Python de bin/, '
+            f'{display_name} entre ellas" \\\n'
+            '      "cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
+            '  fi\n'
             '  echo "bin/'
             f'{display_name}: falta el entorno del proveedor en $INTERPRETER." >&2\n'
             '  echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
@@ -430,7 +441,8 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
     return (
         "#!/usr/bin/env bash\n"
         f"{GENERATED_MARKER}\n"
-        'THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"\n'
+        'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+        'export THYROX_ROOT\n'
         'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
         f'exec "$THYROX_ROOT/{relative_target}" "$@"\n'
     )
@@ -520,6 +532,156 @@ def install_user_bin(plan: dict[str, str],
     return written, removed, preserved_foreign
 
 
+#: Los directorios donde un ``.ts`` con shebang ES un entrypoint. Es la
+#: segunda mitad del discriminador, y no es adorno: sin ella cualquier ``.ts``
+#: con shebang en cualquier sitio entraria al plan.
+TS_ENTRYPOINT_DIRS: frozenset[str] = frozenset({"bin", "entry"})
+
+
+def is_typescript_entrypoint(path: pathlib.Path) -> bool:
+    """Shebang **y** directorio padre de entrypoint. NO ``import.meta.main``.
+
+    El discriminador se midio contra el arbol antes de elegirlo, en las dos
+    direcciones, igual que ``is_shell_entrypoint`` hizo con el bit ejecutable:
+
+    ======================================  =============  ================
+    Discriminador                           entrypoints    bibliotecas
+    ======================================  =============  ================
+    shebang + padre ``bin``/``entry``       14 de 14       0
+    ``import.meta.main``                    7 de 14        1  (falla)
+    ======================================  =============  ================
+
+    La guarda pierde la mitad de los entrypoints **y** mete una biblioteca:
+    ``cli/src/exitCodes.ts`` la lleva sin shebang — es un modulo con autotest,
+    no algo que se invoque. Medir el significante que esta a mano en vez del
+    que discrimina es el sub-patron C de `metrica-decide-la-conclusion.md`.
+    """
+    if path.suffix != ".ts" or path.parent.name not in TS_ENTRYPOINT_DIRS:
+        return False
+    try:
+        with path.open(encoding="utf-8", errors="replace") as handle:
+            return handle.readline().startswith("#!")
+    except OSError:
+        return False
+
+
+def _kebab(name: str) -> str:
+    """``preModelSwitch`` -> ``pre-model-switch``.
+
+    El envoltorio NO hereda la caja del stem. La forma de entrypoint de este
+    arbol es kebab —``thyrox-audit.sh``, ``check-cli-typecheck``— y ``bin/``
+    no tiene hoy ni un solo nombre en camello; introducirlo por 2 de 14
+    archivos crearia una tercera forma. Que el envoltorio pueda llamarse
+    distinto que su fuente ya lo fija ``resolve_bin_name`` con ``thyrox-bg``.
+    """
+    out: list[str] = []
+    for index, char in enumerate(name):
+        if char.isupper():
+            if index:
+                out.append("-")
+            out.append(char.lower())
+        else:
+            out.append(char)
+    return "".join(out)
+
+
+def typescript_bin_name(target: pathlib.Path, root: pathlib.Path) -> str:
+    """El nombre corto CUALIFICADO por su dueño — ``skills-emit``, no ``emit``.
+
+    Sin cualificar, la mitad TS no puede entrar al espacio plano de ``bin/``:
+    el arbol tiene **cuatro** ``emit.ts`` distintos (``skills``, ``rules``,
+    ``commands`` y el paquete ``agent``), y ``discover_entrypoints`` rehusa
+    una colision de stem en vez de resolverla en silencio.
+
+    Dueño y stem se COLAPSAN cuando uno contiene al otro: ``shell/bin/shell.ts``
+    es ``shell`` y no ``shell-shell``; ``command-runtime/bin/command.ts`` es
+    ``command-runtime``. Medido sobre el arbol al fijar la regla: 14 nombres,
+    0 colisiones entre si y 0 contra los que ``bin/`` ya tenia.
+    """
+    relative = target.relative_to(root)
+    stem = _kebab(target.stem)
+    # El dueño es el segmento anterior al directorio de entrypoint. Con
+    # `entry` hay un `src/` de paquete en medio (`cli/src/entry/main.ts`), asi
+    # que se sube uno mas.
+    partes = relative.parts
+    indice = len(partes) - 2
+    owner = partes[indice - 1] if partes[indice] == "bin" else partes[indice - 2]
+    owner = _kebab(owner)
+    if owner in stem or stem in owner:
+        return owner if len(owner) >= len(stem) else stem
+    return f"{owner}-{stem}"
+
+
+def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Path]:
+    """El mapa nombre-cualificado -> ruta, recorriendo ``src/`` entero.
+
+    A diferencia de ``discover_entrypoints``, que mira UN nivel de cada
+    carpeta de ``SOURCE_DIRS``, este recorre en profundidad: los entrypoints
+    ``.ts`` viven dos y tres niveles adentro (``src/packages/<x>/bin/``), y
+    una lista explicita de 14 rutas envejeceria con cada paquete nuevo.
+    """
+    found: dict[str, pathlib.Path] = {}
+    src = root / "src"
+    if not src.is_dir():
+        return found
+    for entry in sorted(src.rglob("*.ts")):
+        # El linker aislado de bun crea un `node_modules` por paquete
+        # —30 medidos bajo src/packages—, y `rglob` los recorre. Una
+        # dependencia que traiga un `bin/*.ts` con shebang entraria al
+        # plan de ESTE arbol. Hoy son 0, asi que el conteo no lo
+        # delata: es una fuga latente, no una viva.
+        if "node_modules" in entry.parts:
+            continue
+        if not entry.is_file() or not is_typescript_entrypoint(entry):
+            continue
+        name = typescript_bin_name(entry, root)
+        if name in found:
+            raise ValueError(
+                f"colision de nombre TS cualificado: {name!r} lo declaran "
+                f"{found[name]} y {entry} — este generador rehusa resolverla "
+                f"en silencio")
+        found[name] = entry
+    return found
+
+
+def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
+                            bin_name: str) -> str:
+    """El envoltorio de un entrypoint ``.ts``: guarda de bun, luego ``exec``.
+
+    La guarda DELEGA en ``thyrox_toolchain_require_bun`` en vez de comprobar
+    bun aqui. Son dos ejes —que bun resuelva, y que ``node_modules`` este
+    materializado— y duplicarlos daria dos redacciones del mismo remedio, que
+    es la segunda fuente de verdad que este arbol prohibe para una cifra y
+    vale igual para una instruccion.
+
+    Lo que emite al rehusar es el aviso de MODO DEGRADADO: nombra la
+    herramienta, su precondicion, y declara que el resto de ``bin/`` sigue
+    usable. Un envoltorio que muriera con `bun: command not found` deja al que
+    clona sin saber ni que arreglar ni que puede seguir haciendo.
+
+    Si la biblioteca misma no esta alcanzable, el envoltorio lo dice con OTRO
+    mensaje y no reescribe el aviso: dos copias del mismo texto divergen, y un
+    arbol sin ``src/lib/`` tiene un problema distinto del de un bun ausente.
+    """
+    relative_target = target.relative_to(root)
+    return (
+        "#!/usr/bin/env bash\n"
+        f"{GENERATED_MARKER}\n"
+        'THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"\n'
+        'export THYROX_ROOT\n'
+        'LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
+        'if [ ! -r "$LIB" ]; then\n'
+        '  echo "bin/'
+        f'{bin_name}: no alcanza $LIB — el arbol esta incompleto." >&2\n'
+        '  exit 2\n'
+        'fi\n'
+        '# shellcheck source=/dev/null\n'
+        'source "$LIB"\n'
+        'thyrox_toolchain_require_bun || exit 2\n'
+        f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$THYROX_ROOT/{relative_target}" "$@"\n'
+    )
+
+
 def planned_files(root: pathlib.Path) -> dict[str, str]:
     """El plan completo: nombre corto RESUELTO -> contenido del envoltorio.
 
@@ -535,6 +697,18 @@ def planned_files(root: pathlib.Path) -> dict[str, str]:
                 f"colisión de nombre corto tras resolver builtins: "
                 f"{bin_name!r} — no debería ocurrir con el árbol actual")
         plan[bin_name] = wrapper_body(target, root, bin_name)
+
+    # La mitad TypeScript. Va DESPUES y con su propia comprobacion de colision
+    # contra lo ya planificado: sus nombres estan cualificados por dueño, asi
+    # que no deberian chocar — medido, 0 colisiones contra los 184 que bin/
+    # tenia—, pero un choque futuro se rehusa en vez de sobrescribir en
+    # silencio al envoltorio .sh o .py que ya estaba.
+    for bin_name, target in discover_typescript_entrypoints(root).items():
+        if bin_name in plan:
+            raise ValueError(
+                f"colision entre la mitad TS y la mitad sh/py: {bin_name!r} "
+                f"lo declaran {target} y un entrypoint ya planificado")
+        plan[bin_name] = typescript_wrapper_body(target, root, bin_name)
     return plan
 
 

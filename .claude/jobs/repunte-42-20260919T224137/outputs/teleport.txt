@@ -1,0 +1,3 @@
+teleport: emitio pese a 1063 errores (6 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1063 error(es) que siguen vivos en su propio paquete

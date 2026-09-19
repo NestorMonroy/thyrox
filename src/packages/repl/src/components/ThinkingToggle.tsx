@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { useState } from 'react'
 import { useExitOnCtrlCDWithKeybindings } from '../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
-import { Byline, KeyboardShortcutHint, Pane } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint, Pane } from '@anthropic/ink'
 
 type Props = {
   currentValue: boolean

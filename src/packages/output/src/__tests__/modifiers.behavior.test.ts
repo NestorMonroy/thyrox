@@ -85,7 +85,7 @@ describe('modifiers — source pins', () => {
 
   test('isModifierPressed uses dynamic require, NOT top-level import', () => {
     // Pin: dynamic require defers loading until first call.
-    // A top-level `import { isModifierPressed as ... } from 'modifiers-napi'`
+    // A top-level `import { isModifierPressed as ... } from '@thyrox/modifiers-napi'`
     // would load native ffi on every startup.
     expect(source).toMatch(
       /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('modifiers-napi'\)/,
@@ -108,7 +108,7 @@ describe('modifiers — source pins', () => {
   })
 
   test('no top-level import of modifiers-napi (lazy-load discipline)', () => {
-    // Pin: NEVER add a top-level `import ... from 'modifiers-napi'`.
+    // Pin: NEVER add a top-level `import ... from '@thyrox/modifiers-napi'`.
     expect(source).not.toMatch(
       /^import [\s\S]+? from ['"]modifiers-napi['"]/m,
     )

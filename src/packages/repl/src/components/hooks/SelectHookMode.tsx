@@ -8,14 +8,14 @@
 import * as React from 'react'
 import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { HookEventMetadata } from '../../hooksConfigManager.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   getHookDisplayText,
   hookSourceHeaderDisplayString,
   type IndividualHookConfig,
 } from '../../hooksSettings.js'
 import { Select } from '../CustomSelect/select.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 type Props = {
   selectedEvent: HookEvent

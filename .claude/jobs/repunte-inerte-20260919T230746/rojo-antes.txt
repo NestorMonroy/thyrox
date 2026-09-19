@@ -1,0 +1,49 @@
+  ok   las tres piezas existen en el modulo
+  ok   deriva la entrada cuando main entra por src/
+  ok   y cuando main entra por la raiz del paquete
+  ok   emitio la declaracion pese al error de tipo
+  ok   el veredicto declara que hubo errores
+  ok   y no los confunde con un fallo de emision
+  ok   conserva la firma de la funcion exportada
+  ok   no derrama declaraciones fuera de dist/
+  ok   el paquete con entrada en la raiz emite igual
+  ok   el exports pasa a condiciones, no sigue siendo cadena
+  ok   y su condicion types apunta a la declaracion
+  ok   mientras default conserva la fuente, que es el respaldo
+  ok   el types de raiz tambien, para el resolutor que no lee exports
+  ok   el subpath literal tambien pasa a condiciones
+  ok   y su types apunta a la declaracion del subpath
+  ok   el comodin conserva su sustitucion en la declaracion
+  ok   repuntar dos veces no cambia el resultado
+  ok   un import que escapa NO EMITE
+  ok   y su veredicto nombra el escape
+  ok   nombra el archivo que se escapa
+  ok   y NO deja una declaracion fuera de dist/
+  ok   con rootDir src, la ruta relativa es el nombre solo
+  ok   con rootDir de paquete, conserva el directorio
+  ok   y conserva el comodin dentro del directorio
+  ok   los destinos de un manifiesto repuntado son solo la fuente
+  ok   un escape DENTRO del paquete emite igual
+  ok   y su declaracion no sale de dist/
+  FALLO el repunte tras ensanchar apunta a un archivo que existe
+       esperado: []
+       obtenido: ['./dist/index.d.ts']
+  FALLO un comodin de raiz declara el paquete entero
+       esperado: ('.', ['**/*'])
+       obtenido: ('.', ['*.ts'])
+  FALLO sin dist/ el repunte rehusa
+       esperado: False
+       obtenido: True
+  FALLO y NO toca el manifiesto
+       esperado: '{"name": "@probe/sindist", "version": "0.1.0", "private": true, "exports": {".": "./src/index.ts"}}\n'
+       obtenido: '{\n  "name": "@probe/sindist",\n  "version": "0.1.0",\n  "private": true,\n  "exports": {\n    ".": {\n      "types": "./dist/index.d.ts",\n      "default": "./src/index.ts"\n    }\n  },\n  "types": "./dist/index.d.ts"\n}\n'
+  ok   check_package cuenta el error del paquete
+  ok   NO escribe dist/
+  ok   NO toca el manifiesto
+  ok   retira su proyecto temporal
+  ok   [local] el propio cuenta SOLO el error del paquete
+  ok   [local] y el hermano se le atribuye a el
+  ok   [root] el propio cuenta SOLO el error del paquete
+  ok   [root] y el hermano se le atribuye a el
+
+test_emit_declarations: 35 ok, 4 falla

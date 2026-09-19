@@ -52,7 +52,7 @@ done
 # hace que `--force` reescriba SIEMPRE el `.env` del clon donde corre, y no
 # el de la raiz que un `.env` heredado declare. Bug real medido: P1 de
 # `chatgpt-codex-connector` sobre el PR #7, reproducido en
-# `tests/session/test-write-env-repara-clon-desplazado.sh`.
+# `tests/session/test-write-env-repairs-moved-clone.sh`.
 ROOT="$_thyrox_root"
 TREE="$(thyrox_tree_root)" || TREE=""
 DEST="${DEST:-$ROOT/.env}"

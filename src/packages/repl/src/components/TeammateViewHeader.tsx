@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Box, Text, KeyboardShortcutHint } from '@thyrox/ink'
+import { Box, Text, KeyboardShortcutHint } from '@anthropic/ink'
 import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 import { useAppState } from '../appStateHooks.js'
 import { getViewedTeammateTask } from '../selectors.js'

@@ -1,0 +1,18 @@
+ROJO rc=1 tests/agents/test-agent-store-render-tablero.sh
+        ok    cambiar el subject mueve la firma
+        ok    sin tocar nada la firma es estable
+      
+      16 ok, 2 fallos
+ROJO rc=1 tests/session/test_generate_bin.py
+        ok   el envoltorio ejecuta el interprete del proveedor
+        ok   y el ejercicio USA el interprete que se le pasa
+      
+      89 aprobada(s) · 2 fallida(s) (alcance medido: generate_bin.py)
+ROJO rc=1 tests/verify/test-script-naming.sh
+        ok   el reporte de identificadores declara el alcance
+        FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [652]
+      
+      29 ok · 2 falla(s)
+
+SUBCONJUNTO: 72 verdes, 3 rojos
+__BG_EXIT__=0

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Box, Text, useTheme } from '@thyrox/ink'
-import { getTheme, type Theme } from '@thyrox/ink'
+import { Box, Text, useTheme } from '@anthropic/ink'
+import { getTheme, type Theme } from '@anthropic/ink'
 import {
   getDefaultCharacters,
   interpolateColor,

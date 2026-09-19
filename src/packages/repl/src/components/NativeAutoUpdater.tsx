@@ -5,7 +5,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { useInterval } from 'usehooks-ts'
 import { useUpdateNotification } from '../hooks/useUpdateNotification.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { AutoUpdaterResult } from '@thyrox/updater/autoUpdater.js'
 import {
   getMaxVersion,

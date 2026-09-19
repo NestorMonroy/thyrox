@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { useCallback, useState } from 'react'
-import { useDoublePress } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useDoublePress } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
 import {
   useAppState,
@@ -16,7 +16,7 @@ import {
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { env } from '@thyrox/config/env/paths'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { KeyboardShortcutHint } from '@thyrox/ink'
+import { KeyboardShortcutHint } from '@anthropic/ink'
 
 type Props = {
   onBackgroundSession: () => void

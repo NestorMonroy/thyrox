@@ -5,51 +5,170 @@
   "type": "module",
   "description": "El host de la sesion interactiva: el grafo de runtime handles, el ciclo de instalacion de bindings y los selectores de AppState. Adaptacion de @claude-code-how-works/app-host. Depende de @thyrox/command-runtime, @thyrox/config, @thyrox/shell y @thyrox/storage para los especificadores de @claude-code-how-works/* que ya resuelven contra un hermano portado (TASK-DOCS-0198). 55 de 60 modulos portados (medido: .ts + .tsx en ccnmt, menos tests). Este pase cierra state/selectors.ts (reimplementado contra @thyrox/swarm, que ya exporta InProcessTeammateTaskState/isInProcessTeammateTask \u2014 v\u00eda un sustituto local porque swarm no est\u00e1 declarado como dependencia de este paquete, ver src/internal/pendingCrossPackageDeps.ts), context/fpsMetrics.tsx, context/mailbox.tsx, context/notifications.tsx (las tres, capa 0 o con imports type-only hacia @anthropic/ink que se borran al transpilar), context/stats.tsx (persistencia best-effort v\u00eda el mismo sustituto local) y launchRepl.tsx (capa 1 tramo B: el m\u00f3dulo carga \u2014 los tipos de @anthropic/ink y repl son type-only \u2014 pero sus dos dynamic import() a @claude-code-how-works/repl/* quedan literales, sin stub, porque repl no existe en este \u00e1rbol). Los 5 restantes siguen BLOQUEADOS: commands/initCommand.ts y runtime/runtimeHandles.ts (repl + tool-registry, ninguno existe en este \u00e1rbol), runtime/commandRegistryRuntime.ts (repl + swarm/bridge/cli/provider, ~90 comandos), state/AppStateCompat.ts (tool-registry + repl en el tipo AppState \u2014 mismo hallazgo que state/AppStateStore.ts y runtime/appStateCompatShim.ts ya documentan) y context/QueuedMessageContext.tsx (@anthropic/ink como import de VALOR, no type-only \u2014 vendorizado, no publicado, instalarlo es decisi\u00f3n del ejecutor).",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "dependencies": {
+    "@anthropic/ink": "workspace:*",
+    "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/api-logs": "^0.220.0",
+    "@opentelemetry/sdk-logs": "^0.220.0",
+    "@opentelemetry/sdk-metrics": "^2.11.0",
+    "@opentelemetry/sdk-trace-base": "^2.11.0",
     "@thyrox/agent": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
+    "@thyrox/cli": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/ide": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/memory": "workspace:*",
     "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
+    "@thyrox/server": "workspace:*",
     "@thyrox/shell": "workspace:*",
+    "@thyrox/stdin-napi": "workspace:*",
     "@thyrox/storage": "workspace:*",
-    "react": "^19.0.0"
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/voice": "workspace:*",
+    "chalk": "^6.0.0",
+    "lodash-es": "^4.18.1",
+    "react": "^19.0.0",
+    "signal-exit": "^4.1.0"
   },
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./context/fpsMetrics": "./src/context/fpsMetrics.tsx",
-    "./context/mailbox": "./src/context/mailbox.tsx",
-    "./context/notifications": "./src/context/notifications.tsx",
-    "./context/stats": "./src/context/stats.tsx",
-    "./launchRepl": "./src/launchRepl.tsx",
-    "./state/AppState": "./src/state/AppState.tsx",
-    "./runtime/*.js": "./src/runtime/*.ts",
-    "./main/*.js": "./src/main/*.ts",
-    "./cliArgs.js": "./src/cliArgs.ts",
-    "./activityManager.js": "./src/activityManager.ts",
-    "./state/sessionSelectors.js": "./src/state/sessionSelectors.ts",
-    "./state/hostSessionState.js": "./src/state/hostSessionState.ts",
-    "./state/AppStateStore.js": "./src/state/AppStateStore.ts",
-    "./state/store.js": "./src/state/store.ts",
-    "./state/AppState.js": "./src/state/AppState.tsx",
-    "./state/uiSelectors.js": "./src/state/uiSelectors.ts",
-    "./state/pluginSelectors.js": "./src/state/pluginSelectors.ts",
-    "./state/teamSelectors.js": "./src/state/teamSelectors.ts",
-    "./state/taskSelectors.js": "./src/state/taskSelectors.ts",
-    "./state/permissionSelectors.js": "./src/state/permissionSelectors.ts",
-    "./state/mcpSelectors.js": "./src/state/mcpSelectors.ts",
-    "./state/selectors.js": "./src/state/selectors.ts",
-    "./context/fpsMetrics.js": "./src/context/fpsMetrics.tsx",
-    "./context/mailbox.js": "./src/context/mailbox.tsx",
-    "./context/notifications.js": "./src/context/notifications.tsx",
-    "./context/stats.js": "./src/context/stats.tsx",
-    "./launchRepl.js": "./src/launchRepl.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./context/fpsMetrics": {
+      "types": "./dist/context/fpsMetrics.d.ts",
+      "default": "./src/context/fpsMetrics.tsx"
+    },
+    "./context/mailbox": {
+      "types": "./dist/context/mailbox.d.ts",
+      "default": "./src/context/mailbox.tsx"
+    },
+    "./context/notifications": {
+      "types": "./dist/context/notifications.d.ts",
+      "default": "./src/context/notifications.tsx"
+    },
+    "./context/stats": {
+      "types": "./dist/context/stats.d.ts",
+      "default": "./src/context/stats.tsx"
+    },
+    "./launchRepl": {
+      "types": "./dist/launchRepl.d.ts",
+      "default": "./src/launchRepl.tsx"
+    },
+    "./state/AppState": {
+      "types": "./dist/state/AppState.d.ts",
+      "default": "./src/state/AppState.tsx"
+    },
+    "./runtime/*.js": {
+      "types": "./dist/runtime/*.d.ts",
+      "default": "./src/runtime/*.ts"
+    },
+    "./main/*.js": {
+      "types": "./dist/main/*.d.ts",
+      "default": "./src/main/*.ts"
+    },
+    "./cliArgs.js": {
+      "types": "./dist/cliArgs.d.ts",
+      "default": "./src/cliArgs.ts"
+    },
+    "./activityManager.js": {
+      "types": "./dist/activityManager.d.ts",
+      "default": "./src/activityManager.ts"
+    },
+    "./state/sessionSelectors.js": {
+      "types": "./dist/state/sessionSelectors.d.ts",
+      "default": "./src/state/sessionSelectors.ts"
+    },
+    "./state/hostSessionState.js": {
+      "types": "./dist/state/hostSessionState.d.ts",
+      "default": "./src/state/hostSessionState.ts"
+    },
+    "./state/AppStateStore.js": {
+      "types": "./dist/state/AppStateStore.d.ts",
+      "default": "./src/state/AppStateStore.ts"
+    },
+    "./state/store.js": {
+      "types": "./dist/state/store.d.ts",
+      "default": "./src/state/store.ts"
+    },
+    "./state/AppState.js": {
+      "types": "./dist/state/AppState.d.ts",
+      "default": "./src/state/AppState.tsx"
+    },
+    "./state/uiSelectors.js": {
+      "types": "./dist/state/uiSelectors.d.ts",
+      "default": "./src/state/uiSelectors.ts"
+    },
+    "./state/pluginSelectors.js": {
+      "types": "./dist/state/pluginSelectors.d.ts",
+      "default": "./src/state/pluginSelectors.ts"
+    },
+    "./state/teamSelectors.js": {
+      "types": "./dist/state/teamSelectors.d.ts",
+      "default": "./src/state/teamSelectors.ts"
+    },
+    "./state/taskSelectors.js": {
+      "types": "./dist/state/taskSelectors.d.ts",
+      "default": "./src/state/taskSelectors.ts"
+    },
+    "./state/permissionSelectors.js": {
+      "types": "./dist/state/permissionSelectors.d.ts",
+      "default": "./src/state/permissionSelectors.ts"
+    },
+    "./state/mcpSelectors.js": {
+      "types": "./dist/state/mcpSelectors.d.ts",
+      "default": "./src/state/mcpSelectors.ts"
+    },
+    "./state/selectors.js": {
+      "types": "./dist/state/selectors.d.ts",
+      "default": "./src/state/selectors.ts"
+    },
+    "./context/fpsMetrics.js": {
+      "types": "./dist/context/fpsMetrics.d.ts",
+      "default": "./src/context/fpsMetrics.tsx"
+    },
+    "./context/mailbox.js": {
+      "types": "./dist/context/mailbox.d.ts",
+      "default": "./src/context/mailbox.tsx"
+    },
+    "./context/notifications.js": {
+      "types": "./dist/context/notifications.d.ts",
+      "default": "./src/context/notifications.tsx"
+    },
+    "./context/stats.js": {
+      "types": "./dist/context/stats.d.ts",
+      "default": "./src/context/stats.tsx"
+    },
+    "./launchRepl.js": {
+      "types": "./dist/launchRepl.d.ts",
+      "default": "./src/launchRepl.tsx"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./context/QueuedMessageContext.js": {
+      "types": "./dist/context/QueuedMessageContext.d.ts",
+      "default": "./src/context/QueuedMessageContext.tsx"
+    }
   },
   "scripts": {
     "test": "bun test"

@@ -15,7 +15,7 @@
  */
 
 import * as React from 'react'
-import { AlternateScreen } from '@thyrox/ink'
+import { AlternateScreen } from '@anthropic/ink'
 
 import {
   AppStateProvider,

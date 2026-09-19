@@ -1,0 +1,2 @@
+  ANULACION: 17/17 vuelven a fallar nombrando su propio specifier
+  -> el control discrimina: retirada la causa, cae exactamente lo que dependia de ella

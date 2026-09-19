@@ -1,4 +1,4 @@
-import { stringWidth, wrapAnsi } from '@thyrox/ink'
+import { stringWidth, wrapAnsi } from '@anthropic/ink'
 import {
   firstGrapheme,
   getGraphemeSegmenter,

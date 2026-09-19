@@ -86,8 +86,8 @@ def anchor(name: str) -> pathlib.Path:
     niveles fijos— y devuelve la ruta que exista, o `PM / name` para que el
     rehuse de abajo nombre algo legible.
     """
-    for hallada in PM.glob(f"*/iniciativas/*/hallazgos/{name}"):
-        return hallada
+    for found in PM.glob(f"*/iniciativas/*/hallazgos/{name}"):
+        return found
     return PM / name
 
 

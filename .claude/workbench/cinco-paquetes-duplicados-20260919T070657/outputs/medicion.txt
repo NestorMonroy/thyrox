@@ -1,0 +1,21 @@
+== los cinco pares, por conteo de archivos y diferencias
+computer-use-mcp       plano=50    @ant=50    difieren=11
+computer-use-input     plano=7     @ant=7     difieren=3
+computer-use-swift     plano=7     @ant=7     difieren=4
+claude-for-chrome-mcp  plano=10    @ant=10    difieren=2
+ink                    plano=165   @ant=165   difieren=8
+
+== imports por alcance
+ink                      @thyrox/=599   @anthropic/ink=275
+computer-use-input       @thyrox/=1     @ant/computer-use-input=1
+computer-use-mcp         @thyrox/=2     @ant/computer-use-mcp=5
+computer-use-swift       @thyrox/=1     @ant/computer-use-swift=1
+claude-for-chrome-mcp    @thyrox/=0     @ant/claude-for-chrome-mcp=3
+
+== procedencia
+bfdf943e 2026-09-18 Port the thirteen remaining ccnmt packages under @thyrox
+6021edfa 2026-09-18 Bring the five @ant packages into the tree, scope intact
+
+== el lockfile indexa LOS DOS — no esta mal, refleja un arbol con 5 duplicados
+45:    "src/packages/@ant/ink": {
+355:    "src/packages/ink": {

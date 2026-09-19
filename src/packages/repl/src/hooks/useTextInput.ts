@@ -3,7 +3,7 @@ import { useNotifications } from '../notifications.js'
 import stripAnsi from 'strip-ansi'
 import { markBackslashReturnUsed } from '../terminalSetup.js'
 import { addToHistory } from '../history.js'
-import type { Key } from '@thyrox/ink'
+import type { Key } from '@anthropic/ink'
 import type {
   InlineGhostText,
   TextInputState,
@@ -22,7 +22,7 @@ import { env } from '@thyrox/config/env/paths'
 import { isFullscreenEnvEnabled } from '../fullscreen.js'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import { isModifierPressed, prewarmModifiers } from '@thyrox/output/modifiers.js'
-import { useDoublePress } from '@thyrox/ink'
+import { useDoublePress } from '@anthropic/ink'
 
 type MaybeCursor = undefined | Cursor
 type InputHandler = (input: string) => MaybeCursor

@@ -32,7 +32,7 @@ import {
   type HeadlessBridgeOpts,
   BridgeHeadlessPermanentError,
   runBridgeHeadless,
-} from '../../bridge/src/bridgeMain.js'
+} from '@thyrox/bridge/bridgeMain.js'
 import { errorMessage, getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
 
 /**

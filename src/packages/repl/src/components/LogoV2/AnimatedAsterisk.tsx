@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { TEARDROP_ASTERISK } from '@thyrox/output/constants/figures.js'
-import { Box, Text, useAnimationFrame } from '@thyrox/ink'
+import { Box, Text, useAnimationFrame } from '@anthropic/ink'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { hueToRgb, toRGBColor } from '../Spinner/utils.js'
 

@@ -1,0 +1,4 @@
+useVoice: LANZO -> useVoice() no está portado: depende de react, de useSetVoiceState (../
+useVoiceIntegration: LANZO -> useVoiceIntegration() no está portado: es capa de integración React+in
+useVoiceKeybindingHandler: LANZO -> useVoiceKeybindingHandler() no está portado: es capa de integración Re
+VoiceKeybindingHandler: LANZO -> VoiceKeybindingHandler() no está portado: es capa de integración React

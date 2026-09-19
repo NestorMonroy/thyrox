@@ -1,8 +1,8 @@
 import * as React from 'react'
 import { pathToFileURL } from 'url'
-import { Link, supportsHyperlinks, Text } from '@thyrox/ink'
+import { Link, supportsHyperlinks, Text } from '@anthropic/ink'
 import { getStoredImagePath } from '@thyrox/tool-registry/imageStore.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 type Props = {
   imageId: number

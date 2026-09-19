@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/src/__tests__/dynamicCert.behavior.test.ts:
+92 |       const caPath = writePem(dir, 'ca.pem', ca.cert)
+93 |       const leafPath = writePem(dir, 'leaf.pem', leaf.cert)
+94 |       const verify = spawnSync('openssl', ['verify', '-CAfile', caPath, leafPath], {
+95 |         encoding: 'utf8',
+96 |       })
+97 |       expect(`${verify.stdout}${verify.stderr}`).toContain('OK')
+                                                      ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "OK"
+Received: "CN = api.ejemplo.test\nerror 18 at 0 depth lookup: self-signed certificate\nerror /tmp/thyrox-tests-BOMdUo/thyrox-chain-DZB98s/leaf.pem: verification failed\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/dynamicCert.behavior.test.ts:97:50)
+(fail) DynamicCertStore — CA dinamica por SNI > openssl verify acepta la cadena hoja -> CA [118.96ms]
+
+ 7 pass
+ 1 fail
+ 11 expect() calls
+Ran 8 tests across 1 file. [1.83s]

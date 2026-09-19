@@ -1,0 +1,25 @@
+# linea-base
+# fuente: .claude/workbench/tsconfig-extends-raiz-20260919T113154/outputs/linea-base-con-enlaces.log
+# errores TS: 3552
+# archivos distintos: 224
+# --- por familia (top 20) ---
+    580 error TS18046
+    542 error TS2345
+    524 error TS2339
+    492 error TS2305
+    240 error TS6142
+    228 error TS7006
+    172 error TS2322
+    172 error TS18048
+     78 error TS7053
+     76 error TS2349
+     74 error TS2554
+     64 error TS2698
+     36 error TS2307
+     34 error TS2724
+     30 error TS2353
+     28 error TS2741
+     26 error TS1360
+     22 error TS7016
+     14 error TS2571
+     14 error TS2551

@@ -1,4 +1,4 @@
-# @claude-code-how-works/permission
+# @thyrox/permission
 
 Tool-permission policy: mode (default/yolo/plan), classifier, sandbox
 ask-flow, shadowed rule detection, prompt UIs.

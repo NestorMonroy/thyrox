@@ -62,82 +62,82 @@ def check(label: str, expected, obtained) -> None:
 
 
 print("=== 1. distinctive_terms ===")
-cuerpo = "Se declara ``CLAVE_X`` y también ``otro_termino``, más prosa genérica sin backticks."
-check("dos términos citados", {"CLAVE_X", "otro_termino"}, dnc.distinctive_terms(cuerpo))
+body = "Se declara ``CLAVE_X`` y también ``otro_termino``, más prosa genérica sin backticks."
+check("dos términos citados", {"CLAVE_X", "otro_termino"}, dnc.distinctive_terms(body))
 check("sin backticks -> conjunto vacío", set(), dnc.distinctive_terms("prosa llana sin nada citado"))
 
 print("=== 2. CASO (a): palabra-puente sin continuidad real -> NO cuenta ===")
-anterior = dnc.Section(title="Primera", body="Aquí se define ``CLAVE_X`` con su comportamiento.", start_line=1)
-siguiente_a = dnc.Section(
+prior = dnc.Section(title="Primera", body="Aquí se define ``CLAVE_X`` con su comportamiento.", start_line=1)
+following_to = dnc.Section(
     title="Segunda",
     body="Por lo tanto, consideremos ahora un tema totalmente distinto sin relación.",
     start_line=10,
 )
 check("léxico presente, sin término compartido -> False", False,
-      dnc.opens_with_continuity(siguiente_a, anterior))
+      dnc.opens_with_continuity(following_to, prior))
 
 print("=== 3. CASO (b): sin palabra-puente, con término citado -> SÍ cuenta ===")
-siguiente_b = dnc.Section(
+following_b = dnc.Section(
     title="Segunda",
     body="``CLAVE_X`` vuelve a aparecer aquí, ahora en otro contexto distinto.",
     start_line=10,
 )
 check("sin léxico, con término compartido -> True", True,
-      dnc.opens_with_continuity(siguiente_b, anterior))
+      dnc.opens_with_continuity(following_b, prior))
 
 print("=== 4. weak_openers — la primera sección nunca se marca ===")
-solo_una = [anterior]
-check("una sola sección -> sin débiles", [], dnc.weak_openers(solo_una))
+only_one = [prior]
+check("una sola sección -> sin débiles", [], dnc.weak_openers(only_one))
 # Cadena propia: cada sección se compara contra su PREDECESOR INMEDIATO, no
 # contra cualquier sección anterior en la lista.
-tercera_referencia_a_siguiente_a = dnc.Section(
+third_reference_to_following_to = dnc.Section(
     title="Tercera",
     body="Nada que ver con lo anterior, sin backticks ni continuidad declarada.",
     start_line=20,
 )
-tres_secciones = [anterior, siguiente_b, tercera_referencia_a_siguiente_a]
-debiles = dnc.weak_openers(tres_secciones)
+three_sections = [prior, following_b, third_reference_to_following_to]
+weak = dnc.weak_openers(three_sections)
 check("de tres secciones (anterior -> b continua -> tercera no), sólo la tercera es débil",
-      ["Tercera"], [s.title for s in debiles])
-check("exactamente una sección débil, no dos", 1, len(debiles))
+      ["Tercera"], [s.title for s in weak])
+check("exactamente una sección débil, no dos", 1, len(weak))
 
 print("=== 5. split_sections — encabezado RST real, no cualquier '=' ===")
-texto = (
+text = (
     "Introducción\n============\n\nPrimer párrafo con ``TERMINO_UNO``.\n\n"
     "Cierre\n======\n\nSegundo párrafo que cita ``TERMINO_UNO`` de nuevo.\n"
 )
-secciones = dnc.split_sections(texto)
-check("dos secciones detectadas", ["Introducción", "Cierre"], [s.title for s in secciones])
+sections = dnc.split_sections(text)
+check("dos secciones detectadas", ["Introducción", "Cierre"], [s.title for s in sections])
 check("el cuerpo de la primera no incluye el encabezado de la segunda", False,
-      "Cierre" in secciones[0].body)
+      "Cierre" in sections[0].body)
 
 print("=== 6. detect(payload) — sólo Write sobre .rst con content ===")
 payload_no_rst = {"tool_input": {"file_path": "archivo.py", "content": "texto"}}
 check("archivo .py -> None", None, dnc.detect(payload_no_rst))
-payload_sin_content = {"tool_input": {"file_path": "archivo.rst"}}
-check("sin content (Edit) -> None", None, dnc.detect(payload_sin_content))
-payload_rst_debil = {"tool_input": {"file_path": "archivo.rst", "content": texto.replace(
+payload_without_content = {"tool_input": {"file_path": "archivo.rst"}}
+check("sin content (Edit) -> None", None, dnc.detect(payload_without_content))
+payload_rst_weak = {"tool_input": {"file_path": "archivo.rst", "content": text.replace(
     "Segundo párrafo que cita ``TERMINO_UNO`` de nuevo.",
     "Por lo tanto, un segundo párrafo sin relación alguna con lo anterior.",
 )}}
-aviso = dnc.detect(payload_rst_debil)
-check("rst con apertura débil -> aviso no vacío", True, bool(aviso))
-check("el aviso cita el título de la sección débil", True, "Cierre" in (aviso or ""))
+warning = dnc.detect(payload_rst_weak)
+check("rst con apertura débil -> aviso no vacío", True, bool(warning))
+check("el aviso cita el título de la sección débil", True, "Cierre" in (warning or ""))
 
 print("=== 7. ANULACIÓN — léxico de palabras-puente en vez de términos citados ===")
 
 
-def opens_with_continuity_lexico(section, previous, *, window=400):
+def opens_with_continuity_lexicon(section, previous, *, window=400):
     # Anulación: vuelve al patrón que SÍ falla en el caso real medido (H-THYROX-.../srt).
-    puentes = ("por lo tanto", "en consecuencia", "así", "entonces")
-    apertura = section.body[:window].lower()
-    return any(p in apertura for p in puentes)
+    bridges = ("por lo tanto", "en consecuencia", "así", "entonces")
+    opening = section.body[:window].lower()
+    return any(p in opening for p in bridges)
 
 
 check(
     "anulación: con léxico de palabras-puente, el CASO (a) YA NO se marca débil "
     "(léxico presente basta) -- cae exactamente esta aserción",
-    True, opens_with_continuity_lexico(siguiente_a, anterior),
+    True, opens_with_continuity_lexicon(following_to, prior),
 )
 
 print(f"\nOK={OK} FAILED={FAILED}")

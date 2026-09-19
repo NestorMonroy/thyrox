@@ -5,41 +5,135 @@
   "type": "module",
   "description": "El runtime de comandos: por ahora las etiquetas XML con que un comando marca su metadata dentro de un mensaje.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./xml.js": "./src/xml.ts",
-    "./commands/plugin/parseArgs.js": "./src/commands/plugin/parseArgs.ts",
-    "./commands/fork/fork.js": "./src/commands/fork/fork.ts",
-    "./createMovedToPluginCommand.js": "./src/createMovedToPluginCommand.ts",
-    "./promptShellExecution.js": "./src/promptShellExecution.ts",
-    "./commands/review/ultrareviewEnabled.js": "./src/commands/review/ultrareviewEnabled.ts",
-    "./skills/loadSkillsDir.js": "./src/skills/loadSkillsDir.ts",
-    "./commands/clear": "./src/commands/clear/index.ts",
-    "./commands/compact": "./src/commands/compact/index.ts",
-    "./commands/cost": "./src/commands/cost/index.ts",
-    "./commands/goal": "./src/commands/goal/index.ts",
-    "./commands/recap": "./src/commands/recap/index.ts",
-    "./commands/rename": "./src/commands/rename/index.ts",
-    "./commands/status": "./src/commands/status/index.ts",
-    "./commands/voice": "./src/commands/voice/index.ts",
-    "./commands/workflows": "./src/commands/workflows/index.ts",
-    "./testing": "./src/testing/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./xml.js": {
+      "types": "./dist/xml.d.ts",
+      "default": "./src/xml.ts"
+    },
+    "./commands/plugin/parseArgs.js": {
+      "types": "./dist/commands/plugin/parseArgs.d.ts",
+      "default": "./src/commands/plugin/parseArgs.ts"
+    },
+    "./commands/fork/fork.js": {
+      "types": "./dist/commands/fork/fork.d.ts",
+      "default": "./src/commands/fork/fork.ts"
+    },
+    "./createMovedToPluginCommand.js": {
+      "types": "./dist/createMovedToPluginCommand.d.ts",
+      "default": "./src/createMovedToPluginCommand.ts"
+    },
+    "./promptShellExecution.js": {
+      "types": "./dist/promptShellExecution.d.ts",
+      "default": "./src/promptShellExecution.ts"
+    },
+    "./commands/review/ultrareviewEnabled.js": {
+      "types": "./dist/commands/review/ultrareviewEnabled.d.ts",
+      "default": "./src/commands/review/ultrareviewEnabled.ts"
+    },
+    "./skills/loadSkillsDir.js": {
+      "types": "./dist/skills/loadSkillsDir.d.ts",
+      "default": "./src/skills/loadSkillsDir.ts"
+    },
+    "./commands/clear": {
+      "types": "./dist/commands/clear/index.d.ts",
+      "default": "./src/commands/clear/index.ts"
+    },
+    "./commands/compact": {
+      "types": "./dist/commands/compact/index.d.ts",
+      "default": "./src/commands/compact/index.ts"
+    },
+    "./commands/cost": {
+      "types": "./dist/commands/cost/index.d.ts",
+      "default": "./src/commands/cost/index.ts"
+    },
+    "./commands/goal": {
+      "types": "./dist/commands/goal/index.d.ts",
+      "default": "./src/commands/goal/index.ts"
+    },
+    "./commands/recap": {
+      "types": "./dist/commands/recap/index.d.ts",
+      "default": "./src/commands/recap/index.ts"
+    },
+    "./commands/rename": {
+      "types": "./dist/commands/rename/index.d.ts",
+      "default": "./src/commands/rename/index.ts"
+    },
+    "./commands/status": {
+      "types": "./dist/commands/status/index.d.ts",
+      "default": "./src/commands/status/index.ts"
+    },
+    "./commands/voice": {
+      "types": "./dist/commands/voice/index.d.ts",
+      "default": "./src/commands/voice/index.ts"
+    },
+    "./commands/workflows": {
+      "types": "./dist/commands/workflows/index.d.ts",
+      "default": "./src/commands/workflows/index.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./commands/extra-usage/extra-usage.js": {
+      "types": "./dist/commands/extra-usage/extra-usage.d.ts",
+      "default": "./src/commands/extra-usage/extra-usage.tsx"
+    },
+    "./commands/fast/fast.js": {
+      "types": "./dist/commands/fast/fast.d.ts",
+      "default": "./src/commands/fast/fast.tsx"
+    },
+    "./commands/install/install.js": {
+      "types": "./dist/commands/install/install.d.ts",
+      "default": "./src/commands/install/install.tsx"
+    },
+    "./commands/plugin/index.js": {
+      "types": "./dist/commands/plugin/index.d.ts",
+      "default": "./src/commands/plugin/index.tsx"
+    },
+    "./commands/powerup/PowerupBanner.js": {
+      "types": "./dist/commands/powerup/PowerupBanner.d.ts",
+      "default": "./src/commands/powerup/PowerupBanner.tsx"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
+    "@ant/claude-for-chrome-mcp": "workspace:*",
     "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/bridge": "workspace:*",
+    "@thyrox/cli": "workspace:*",
     "@thyrox/config": "workspace:*",
+    "@thyrox/ide": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/memory": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
-    "@thyrox/storage": "workspace:*"
+    "@thyrox/storage": "workspace:*",
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*",
+    "@thyrox/updater": "workspace:*",
+    "@thyrox/voice": "workspace:*"
   }
 }

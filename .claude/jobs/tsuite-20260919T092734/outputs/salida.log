@@ -1,0 +1,42 @@
+
+
+tests/unit/mcp/normalization.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/mcp-runtime/normalization.js' from '/home/user/thyrox/tests/unit/mcp/normalization.test.ts'
+-------------------------------
+
+
+tests/unit/mcp/envExpansion.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/mcp-runtime/envExpansion' from '/home/user/thyrox/tests/unit/mcp/envExpansion.test.ts'
+-------------------------------
+
+
+tests/unit/mcp/officialRegistry.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/local-observability/debug.js' from '/home/user/thyrox/tests/unit/mcp/officialRegistry.test.ts'
+-------------------------------
+
+
+tests/unit/mcp/channelPermissions.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '@thyrox/local-observability/slowOperations.js' from '/home/user/thyrox/tests/unit/mcp/channelPermissions.test.ts'
+-------------------------------
+
+
+ 595 pass
+ 4 skip
+ 152 fail
+ 96 errors
+ 1215 expect() calls
+Ran 751 tests across 137 files. [8.26s]
+EXIT=1
+__BG_EXIT__=0

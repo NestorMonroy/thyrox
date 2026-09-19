@@ -1,8 +1,8 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useState } from 'react'
-import type { Root } from '@thyrox/ink'
-import { Box, Text, useAnimationFrame } from '@thyrox/ink'
+import type { Root } from '@anthropic/ink'
+import { Box, Text, useAnimationFrame } from '@anthropic/ink'
 import { AppStateProvider } from '../appStateHooks.js'
 import {
   checkOutTeleportedSessionBranch,

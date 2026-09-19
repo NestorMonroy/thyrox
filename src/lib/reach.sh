@@ -174,3 +174,32 @@ thyrox_config_home() {
 # reimplementar, que es como nacen las trece copias que este archivo retiro.
 export -f thyrox_root thyrox_tree_root thyrox_config_value thyrox_config_home \
     _thyrox_delegate _thyrox_ascend 2>/dev/null || true
+
+# --- La raiz de IMPORTACION, no solo la de ubicacion --------------------------
+#
+# `thyrox_root` dice DONDE esta thyrox; esto hace que sus modulos se puedan
+# IMPORTAR. Son dos preguntas distintas, y la segunda quedo sin dueño cuando
+# `aa20229e` retiro 109 `sys.path.insert` de `src/` sobre la premisa de que
+# «bin/ declara la raiz». La premisa se sostiene en una de las tres superficies
+# de invocacion: `bin/<envoltorio>` lo exporta, `tests/run.sh` y `.githooks/`
+# tambien, y `python3 src/<x>.py` desde un `.sh` —la superficie de PRODUCCION—
+# no. Medido: cinco guiones de `src/` invocaban asi un modulo que importa un
+# hermano, entre ellos `clone_bootstrap.py`, que es lo que corre un clon nuevo.
+#
+# Va aqui y no repetido en cada guion por la misma razon que las trece copias
+# de la aritmetica de ruta que este archivo retiro: un `.sh` que compusiera su
+# propio `PYTHONPATH` seria una segunda fuente de verdad, y su deriva no
+# reventaria — apuntaria a un `src` plausible.
+#
+# Se PREPONE, no se sustituye: un llamador que trae su propio `PYTHONPATH`
+# —una sonda que antepone un paquete falso para ejercitar un guard, por
+# ejemplo— lo conserva detras. Y se resuelve SIN subproceso: pedirselo a la
+# mitad Python seria preguntarle a quien todavia no se puede importar.
+_thyrox_import_root="${THYROX_ROOT:-}"
+if [[ -z "$_thyrox_import_root" ]]; then
+    _thyrox_import_root="$(_thyrox_ascend "$(dirname "${BASH_SOURCE[0]}")")" || true
+fi
+if [[ -n "$_thyrox_import_root" && -d "$_thyrox_import_root/src" ]]; then
+    export PYTHONPATH="$_thyrox_import_root/src${PYTHONPATH:+:$PYTHONPATH}"
+fi
+unset _thyrox_import_root

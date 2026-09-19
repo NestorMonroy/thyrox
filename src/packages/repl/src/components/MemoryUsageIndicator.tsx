@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useMemoryUsage } from '../hooks/useMemoryUsage.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { formatFileSize } from '@thyrox/output/formatters'
 
 export function MemoryUsageIndicator(): React.ReactNode {

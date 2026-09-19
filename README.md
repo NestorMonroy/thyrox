@@ -140,6 +140,36 @@ directorios hasta encontrar `THYROX_LOCATOR` (`src/paths/reach.py`) — la ruta
 absoluta de **esta** máquina nunca se escribe en el repo, se calcula en cada
 clon.
 
+### Qué de `bin/` se puede usar hoy — el preflight
+
+Las tres piezas de arriba resuelven **dónde** está cada cosa. No dicen si las
+herramientas externas de las que `bin/` depende responden en esta máquina, y
+son dos preguntas distintas: un `.env` impecable convive con un clon donde
+`uv sync` no se ha corrido y ninguno de los envoltorios `.py` arranca.
+
+```bash
+bash bin/check-toolchain-ready          # reporte
+bash bin/check-toolchain-ready --strict # exit 1 también por aviso
+```
+
+Mide **conducta, no presencia**: que `gawk` esté instalado no dice que el
+nombre `awk` resuelva a él —en Debian lo decide `/etc/alternatives/awk`— ni
+que ese binario compile el constructo que los gates escriben. Medir el
+significante y concluir sobre el significado ya costó un episodio real: un
+gate publicó «6 incumplidores sobre 377 archivos» cuando la medición era «13
+sobre 1002», porque una de sus alternativas no compilaba bajo el awk que
+resolvía.
+
+Lo que falte no se traduce en un `command not found` a mitad de trabajo: cada
+sonda publica una línea `IMPORTANT` que nombra **la herramienta**, **la
+precondición con la ruta de este clon ya resuelta** —copiable tal cual, sin
+declarar nada antes— y qué se puede seguir usando mientras tanto. Un clon
+recién bajado, sin `.venv` ni `node_modules`, sale 1 y publica esos avisos;
+las mitades shell de `bin/` siguen enteras. El reparto exacto lo publica el
+propio comando: transcribirlo aquí sería la cifra de un artefacto vivo, y
+`PROBES` crece — una sonda nueva la dejaría rancia sin que nadie toque este
+archivo.
+
 ### Las constantes del ejemplo, con su nombre correcto
 
 Las seis constantes de la pregunta —`THYROX_WORKBENCH_DOCS`,

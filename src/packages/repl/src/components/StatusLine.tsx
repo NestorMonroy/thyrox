@@ -25,7 +25,7 @@ import {
 } from '@thyrox/provider/costTracker.js'
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js'
 import { type ReadonlySettings, useSettings } from '../hooks/useSettings.js'
-import { Ansi, Box, Text } from '@thyrox/ink'
+import { Ansi, Box, Text } from '@anthropic/ink'
 import { getRawUtilization } from '@thyrox/provider/claudeAiLimits.js'
 import type { Message } from '@thyrox/agent/messageShapes'
 import type { StatusLineCommandInput } from '../replTypes/statusLine.js'

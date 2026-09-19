@@ -1,0 +1,12 @@
+# Linea base: el subconjunto derivado sobre HEAD, SIN el cambio
+# fecha: 2026-09-19T15:58:52
+# comando: bun test src/packages/agent/__tests__/contentTextHelpers.test.ts src/packages/agent/__tests__/messagesPureHelpers.test.ts src/packages/agent/__tests__/reconcile.test.ts tests/integration/message-pipeline.test.ts tests/unit/utils/displayTags.test.ts tests/unit/utils/messages.test.ts tests/unit/utils/stringUtils.test.ts
+
+# Unhandled error between tests
+SyntaxError: Export named 'normalizeMessages' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+# Unhandled error between tests
+SyntaxError: Export named 'prepareUserContent' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+ 189 pass
+ 2 fail
+ 2 errors
+Ran 191 tests across 7 files. [564.00ms]

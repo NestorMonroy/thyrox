@@ -24,7 +24,7 @@ import {
   isTeammate,
 } from '@thyrox/swarm/teammateState.js'
 import { isInProcessTeammate } from '@thyrox/swarm/teammateContext.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 type SwarmBannerInfo = {
   text: string

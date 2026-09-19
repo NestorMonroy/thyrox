@@ -1,0 +1,20 @@
+== 1. el caso real del episodio: --label como nombre ==
+  FALLA rehusa con exit 2 — esperado [2] obtenido [127]
+  ok    nombra la bandera ofensora
+== 2. un guion simple tambien se rehusa ==
+  FALLA rehusa con exit 2 — esperado [2] obtenido [0]
+== 3. el mensaje ENUMERA las banderas que start si admite ==
+  FALLA nombra --grace — [PID=15361
+LOG=/tmp/tmp.LvnMusRCsf/jobs/--label-20260919T031437/outputs/salida.log
+RUN=/tmp/tmp.LvnMusRCsf/jobs/--label-20260919T031437
+bash: line 1: etiqueta-x: command not found] no contiene [--grace]
+  FALLA nombra --dir — [PID=15361
+LOG=/tmp/tmp.LvnMusRCsf/jobs/--label-20260919T031437/outputs/salida.log
+RUN=/tmp/tmp.LvnMusRCsf/jobs/--label-20260919T031437
+bash: line 1: etiqueta-x: command not found] no contiene [--dir]
+== 4. CONTROL: un nombre legitimo sigue arrancando ==
+  ok    arranca con exit 0
+  ok    publica su RUN
+  ok    el run no empieza por guion
+
+resumen: 4 ok, 4 fallo

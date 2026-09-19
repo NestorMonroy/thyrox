@@ -1,5 +1,5 @@
-import { normalizeNameForMCP } from '@claude-code-how-works/mcp-runtime/normalization.js'
-import { env } from '@claude-code-how-works/config/env/paths'
+import { normalizeNameForMCP } from '@thyrox/mcp-runtime/normalization.js'
+import { env } from '@thyrox/config/env/paths'
 
 export const COMPUTER_USE_MCP_SERVER_NAME = 'computer-use'
 

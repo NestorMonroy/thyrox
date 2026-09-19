@@ -4,10 +4,10 @@ import {
   checkNeedsClaudeAiLogin,
 } from '@thyrox/agent/background/preconditions.js'
 import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { ConsoleOAuthFlow } from './ConsoleOAuthFlow.js'
 import { Select } from './CustomSelect/index.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import { TeleportStash } from './TeleportStash.js'
 
 export type TeleportLocalErrorType = 'needsLogin' | 'needsGitStash'

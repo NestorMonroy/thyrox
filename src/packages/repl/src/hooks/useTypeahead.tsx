@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNotifications } from '../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import { useDebounceCallback } from 'usehooks-ts'
 import { type Command, getCommandName } from '@thyrox/command-runtime/runtime'
@@ -17,13 +17,13 @@ import {
   useIsModalOverlayActive,
   useRegisterOverlay,
 } from '../overlayContext.js'
-import { KeyboardEvent, useInput } from '@thyrox/ink'
+import { KeyboardEvent, useInput } from '@anthropic/ink'
 // backward-compat bridge until consumers wire handleKeyDown to <Box onKeyDown>
 import {
   useOptionalKeybindingContext,
   useRegisterKeybindingContext,
-} from '@thyrox/ink/keybindings'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+} from '@anthropic/ink/keybindings'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
 import { useAppState, useAppStateStore } from '../appStateHooks.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'

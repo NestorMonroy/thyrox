@@ -5,19 +5,44 @@
   "type": "module",
   "description": "Remote Control / Bridge: sesion remota via claude.ai, transporte WebSocket, poll de trabajo, mensajeria peer-a-peer entre sesiones. Puerto de claude-code-nestor-monroy-tools (packages/bridge). No es miembro del bun workspace (src/packages/package.json) todavia; sus cruces a @thyrox/{provider,storage,local-observability,agent,config,tool-registry} viven como puntos de inyeccion / reimplementaciones fieles en src/internal/pendingCrossPackageDeps.ts (ver ese archivo para la cita completa de origen).",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./testing/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./commands/bridge-kick.js": {
+      "types": "./dist/commands/bridge-kick.d.ts",
+      "default": "./commands/bridge-kick.ts"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
-  "scripts": { "test": "bun test" },
+  "scripts": {
+    "test": "bun test"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "workspace:*",
+    "@thyrox/cli": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/local-observability": "workspace:*",

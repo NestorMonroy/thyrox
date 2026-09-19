@@ -1,6 +1,6 @@
 import { extname } from 'path'
 import React, { Suspense, use, useMemo } from 'react'
-import { Ansi, Text } from '@thyrox/ink'
+import { Ansi, Text } from '@anthropic/ink'
 import { getCliHighlightPromise } from '@thyrox/output/utils/cliHighlight.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { convertLeadingTabsToSpaces } from '@thyrox/storage/file.js'

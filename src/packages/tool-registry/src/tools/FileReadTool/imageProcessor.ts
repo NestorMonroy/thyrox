@@ -72,7 +72,7 @@ export async function getImageProcessor(): Promise<SharpFunction> {
   void isInBundledMode // referenciado para no perder el import; no gatea nada aquí
 
   try {
-    const napiModule = await import('image-processor-napi')
+    const napiModule = await import('@thyrox/image-processor-napi')
     const candidate = (napiModule.sharp ?? napiModule.default) as SharpFunction
     if (typeof candidate === 'function') {
       cachedProcessor = candidate

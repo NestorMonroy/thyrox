@@ -1,12 +1,12 @@
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   extractMcpToolDisplayName,
   getMcpDisplayName,
 } from '@thyrox/mcp-runtime/mcpStringUtils.js'
 import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import type { ServerInfo } from './types.js'
 
 type Props = {

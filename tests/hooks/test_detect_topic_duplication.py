@@ -36,14 +36,14 @@ gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
 
-def _arbol_sintetico() -> pathlib.Path:
+def _tree_synthetic() -> pathlib.Path:
     """Reproduce el caso real a escala reducida: dos iniciativas de 'thyrox',
     una con el identificador ya documentado, otra escribiendo el hallazgo nuevo.
     """
-    raiz = pathlib.Path(tempfile.mkdtemp()) / "pm"
-    vieja = raiz / "thyrox/iniciativas/verificar-hogares-de-sesion-thyrox/hallazgos"
-    vieja.mkdir(parents=True)
-    (vieja / "hallazgo-H-THYROX-01-algo.rst").write_text(
+    root = pathlib.Path(tempfile.mkdtemp()) / "pm"
+    old = root / "thyrox/iniciativas/verificar-hogares-de-sesion-thyrox/hallazgos"
+    old.mkdir(parents=True)
+    (old / "hallazgo-H-THYROX-01-algo.rst").write_text(
         "H-THYROX-01 -- algo\n====================\n\n"
         "Declara THYROX_WORKBENCH_DIR aqui, distinto del titulo nuevo.\n",
         encoding="utf-8",
@@ -51,91 +51,91 @@ def _arbol_sintetico() -> pathlib.Path:
     # Un identificador transversal, presente en MUCHOS archivos -- para el
     # control de anulación del tope de frecuencia.
     for i in range(8):
-        otra = raiz / f"thyrox/iniciativas/otra-iniciativa-{i}/hallazgos"
-        otra.mkdir(parents=True)
-        (otra / f"hallazgo-H-THYROX-{90+i}-x.rst").write_text(
+        other = root / f"thyrox/iniciativas/otra-iniciativa-{i}/hallazgos"
+        other.mkdir(parents=True)
+        (other / f"hallazgo-H-THYROX-{90+i}-x.rst").write_text(
             "H-THYROX-9X -- x\n================\n\nMenciona THYROX_ROOT de paso.\n",
             encoding="utf-8",
         )
-    return raiz
+    return root
 
 
-def _limpiar(raiz: pathlib.Path) -> None:
-    shutil.rmtree(raiz.parent, ignore_errors=True)
+def _clean(root: pathlib.Path) -> None:
+    shutil.rmtree(root.parent, ignore_errors=True)
 
 
 def test_finds_a_duplicate_identifier_in_another_initiative():
-    raiz = _arbol_sintetico()
+    root = _tree_synthetic()
     try:
         hits = gate.find_duplicates(
-            ["THYROX_WORKBENCH_DIR"], raiz, exclude_dir_name="nueva-iniciativa"
+            ["THYROX_WORKBENCH_DIR"], root, exclude_dir_name="nueva-iniciativa"
         )
         assert "THYROX_WORKBENCH_DIR" in hits
         assert any("H-THYROX-01" in f for f in hits["THYROX_WORKBENCH_DIR"])
     finally:
-        _limpiar(raiz)
+        _clean(root)
 
 
 def test_excludes_the_initiative_being_written_into():
-    raiz = _arbol_sintetico()
+    root = _tree_synthetic()
     try:
         # El propio archivo nuevo, dentro de SU iniciativa, no debe contarse.
-        propia = raiz / "thyrox/iniciativas/nueva-iniciativa/hallazgos"
-        propia.mkdir(parents=True)
-        (propia / "hallazgo-H-THYROX-99-nuevo.rst").write_text(
+        own = root / "thyrox/iniciativas/nueva-iniciativa/hallazgos"
+        own.mkdir(parents=True)
+        (own / "hallazgo-H-THYROX-99-nuevo.rst").write_text(
             "H-THYROX-99 -- nuevo\n====================\n\nTHYROX_WORKBENCH_DIR otra vez.\n",
             encoding="utf-8",
         )
         hits = gate.find_duplicates(
-            ["THYROX_WORKBENCH_DIR"], raiz, exclude_dir_name="nueva-iniciativa"
+            ["THYROX_WORKBENCH_DIR"], root, exclude_dir_name="nueva-iniciativa"
         )
         assert all("nueva-iniciativa" not in f for f in hits.get("THYROX_WORKBENCH_DIR", []))
     finally:
-        _limpiar(raiz)
+        _clean(root)
 
 
 def test_a_pervasive_token_is_dropped_by_the_frequency_cap():
-    raiz = _arbol_sintetico()
+    root = _tree_synthetic()
     try:
-        hits = gate.find_duplicates(["THYROX_ROOT"], raiz, exclude_dir_name="nueva-iniciativa")
+        hits = gate.find_duplicates(["THYROX_ROOT"], root, exclude_dir_name="nueva-iniciativa")
         assert "THYROX_ROOT" not in hits  # 8 archivos > FREQUENCY_CAP (5)
     finally:
-        _limpiar(raiz)
+        _clean(root)
 
 
 def test_the_frequency_cap_carries_its_own_weight():
     """Control de anulación: sin el tope, THYROX_ROOT SÍ aparecería -- en los 8."""
-    raiz = _arbol_sintetico()
+    root = _tree_synthetic()
     try:
-        sin_tope: dict[str, list[str]] = {}
-        for rst in raiz.glob("*/iniciativas/*/**/*.rst"):
+        without_cap: dict[str, list[str]] = {}
+        for rst in root.glob("*/iniciativas/*/**/*.rst"):
             if "nueva-iniciativa" in rst.parts:
                 continue
             if "THYROX_ROOT" in rst.read_text(encoding="utf-8"):
-                sin_tope.setdefault("THYROX_ROOT", []).append(str(rst))
-        assert len(sin_tope["THYROX_ROOT"]) == 8
-        assert len(sin_tope["THYROX_ROOT"]) > gate.FREQUENCY_CAP
+                without_cap.setdefault("THYROX_ROOT", []).append(str(rst))
+        assert len(without_cap["THYROX_ROOT"]) == 8
+        assert len(without_cap["THYROX_ROOT"]) > gate.FREQUENCY_CAP
     finally:
-        _limpiar(raiz)
+        _clean(root)
 
 
 def test_bare_repo_jargon_is_not_a_candidate_token():
     """RESUELTO/MEDIA no llevan guion bajo -- TOKEN los ignora sin lista de parada."""
-    texto = "Estado: RESUELTO. Severidad: MEDIA. Ver CLAUDE.md y README."
-    assert gate._candidate_tokens(texto) == []
+    text = "Estado: RESUELTO. Severidad: MEDIA. Ver CLAUDE.md y README."
+    assert gate._candidate_tokens(text) == []
 
 
 def test_the_underscore_anchor_carries_its_own_weight():
     """Control de anulación: un patrón sin guion bajo SÍ capturaría la jerga."""
-    sin_ancla = __import__("re").compile(r"[A-Z][A-Z0-9]{4,}")
-    texto = "Estado: RESUELTO. Severidad: MEDIA."
-    assert sin_ancla.findall(texto) == ["RESUELTO", "MEDIA"]
-    assert gate.TOKEN.findall(texto) == []
+    without_anchor = __import__("re").compile(r"[A-Z][A-Z0-9]{4,}")
+    text = "Estado: RESUELTO. Severidad: MEDIA."
+    assert without_anchor.findall(text) == ["RESUELTO", "MEDIA"]
+    assert gate.TOKEN.findall(text) == []
 
 
 def test_candidate_tokens_deduplicates_preserving_order():
-    texto = "THYROX_ROOT y otra vez THYROX_ROOT, y ahora THYROX_JOBS_DIR."
-    assert gate._candidate_tokens(texto) == ["THYROX_ROOT", "THYROX_JOBS_DIR"]
+    text = "THYROX_ROOT y otra vez THYROX_ROOT, y ahora THYROX_JOBS_DIR."
+    assert gate._candidate_tokens(text) == ["THYROX_ROOT", "THYROX_JOBS_DIR"]
 
 
 def test_detect_stays_silent_without_content():
@@ -145,7 +145,7 @@ def test_detect_stays_silent_without_content():
     assert gate.detect({"tool_input": {"old_string": "x", "new_string": "y"}}) is None
 
 
-def test_detect_stays_silent_outside_a_hallazgo_path():
+def test_detect_stays_silent_outside_to_finding_path():
     payload = {"tool_input": {
         "file_path": "source/gestion/pm/thyrox/iniciativas/x/index.rst",
         "content": "THYROX_WORKBENCH_DIR en cualquier lado.",
@@ -179,16 +179,16 @@ def test_the_dispatcher_registers_it():
 
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

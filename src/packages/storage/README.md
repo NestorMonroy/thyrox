@@ -1,4 +1,4 @@
-# @claude-code-how-works/storage
+# @thyrox/storage
 
 File persistence, claudemd discovery, secure storage, gitFilesystem,
 and other on-disk state utilities.

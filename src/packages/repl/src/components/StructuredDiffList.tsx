@@ -1,6 +1,6 @@
 import type { StructuredPatchHunk } from 'diff'
 import * as React from 'react'
-import { Box, NoSelect, Text } from '@thyrox/ink'
+import { Box, NoSelect, Text } from '@anthropic/ink'
 import { intersperse } from '@thyrox/tool-registry/utils/array.js'
 import { StructuredDiff } from './StructuredDiff.js'
 

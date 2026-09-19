@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Text } from '@thyrox/ink'
+import { Link, Text } from '@anthropic/ink'
 import type { PrReviewState } from '../github/ghPrStatus.js'
 
 type Props = {

@@ -2,7 +2,7 @@ import { basename } from 'path'
 import React from 'react'
 import { logError } from '@thyrox/local-observability/logging'
 import { useDebounceCallback } from 'usehooks-ts'
-import type { InputEvent, Key } from '@thyrox/ink'
+import type { InputEvent, Key } from '@anthropic/ink'
 import {
   getImageFromClipboard,
   isImageFilePath,

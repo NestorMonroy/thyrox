@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 # Generado por src/session/generate_bin.py — no editar a mano.
-THYROX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
+export THYROX_ROOT
 INTERPRETER="$THYROX_ROOT/.venv/bin/python"
 if [ ! -x "$INTERPRETER" ]; then
+  LIB="$THYROX_ROOT/src/lib/toolchain.sh"
+  if [ -r "$LIB" ]; then
+    # shellcheck source=/dev/null
+    source "$LIB"
+    thyrox_toolchain_degraded_notice \
+      "las herramientas Python de bin/, check_unreachable_rules entre ellas" \
+      "cd \"$THYROX_ROOT\" && uv sync" >&2
+  fi
   echo "bin/check_unreachable_rules: falta el entorno del proveedor en $INTERPRETER." >&2
   echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
   exit 2

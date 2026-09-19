@@ -1,3 +1,14 @@
+// El puente al anfitrion, primero en el barril como en la fuente
+// (`ccnmt: packages/agent/index.ts:2-3`). Misma ausencia de EXPORT que el
+// barril de `@thyrox/config` llevaba: `host.ts:262` declara el simbolo desde
+// el porte y el barril no lo dejaba entrar, asi que `app-host` moria con
+// `TS2305: Module '@thyrox/agent' has no exported member`.
+//
+// El docstring de `app-host/src/packageHostSetup.ts` diagnosticaba ESTE caso
+// bien —«es una ausencia de EXPORT, no de puerto»— y el de config mal. Los dos
+// quedan cerrados en el mismo pase.
+export type { AgentHostBindings } from './contracts.ts'
+export { getAgentHostBindings, installAgentHostBindings } from './host.ts'
 export type { AgentDefinition, CacheTtl, EffortValue, ModelAlias, PermissionMode } from './types.ts'
 export { CACHE_TTLS, EFFORT_LEVELS, MODEL_ALIASES } from './types.ts'
 export {

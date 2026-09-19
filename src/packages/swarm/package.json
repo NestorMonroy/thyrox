@@ -3,62 +3,216 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente — contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, el contrato de dependencias de host (SwarmHostDeps, NO confundir con AgentDeps de @thyrox/agent — ver H-DOCS-1170), y el contrato de config.json por equipo (TeamFile). 15 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
+  "description": "Porte parcial del paquete swarm de claude-code-nestor-monroy-tools (TASK-DOCS-0233): coordinacion multi-agente \u2014 contexto de teammate in-process (AsyncLocalStorage), estado de tarea de teammate, tipos/protocolo de buzon, tipos de backend de pane, el contrato de dependencias de host (SwarmHostDeps, NO confundir con AgentDeps de @thyrox/agent \u2014 ver H-DOCS-1170), y el contrato de config.json por equipo (TeamFile). 15 de 52 modulos de la fuente portados completos + 1 parcial (core/teamHelpers.ts: solo los 2 simbolos puros + el contrato de tipos, de sus 21 exports); el resto queda bloqueado por depender de adapters/appRuntime.ts (fachada de host bindings de ccnmt, sin equivalente aqui), de @anthropic/ink (UI, vendorizada y no publicada en ccnmt), o de un primitivo de shell (execFileNoThrow/gitExe) aun no portado a ningun paquete de este arbol. Ver el analisis de la iniciativa para el detalle por modulo.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./errors": "./src/errors.ts",
-    "./backends/types.js": "./src/backends/types.ts",
-    "./types/constants.js": "./src/types/constants.ts",
-    "./types/deps.js": "./src/types/deps.ts",
-    "./core/constants.js": "./src/core/constants.ts",
-    "./core/teammatePromptAddendum.js": "./src/core/teammatePromptAddendum.ts",
-    "./core/teammateColors.js": "./src/core/teammateColors.ts",
-    "./core/teamHelpers.js": "./src/core/teamHelpers.ts",
-    "./teammateContext.js": "./src/teammateContext.ts",
-    "./teammateContextAlias.js": "./src/teammateContextAlias.ts",
-    "./teammateState.js": "./src/teammateState.ts",
-    "./mailbox/protocolMessages.js": "./src/mailbox/protocolMessages.ts",
-    "./tasks/types.js": "./src/tasks/types.ts",
-    "./worktree/postCommitAttribution.js": "./src/worktree/postCommitAttribution.ts",
-    "./worktree/safeRemoval.js": "./src/worktree/safeRemoval.ts",
-    "./worktree/safeIgnore.js": "./src/worktree/safeIgnore.ts",
-    "./adapters/appRuntime.js": "./src/adapters/appRuntime.ts",
-    "./adapters/buildSwarmAgentDeps.js": "./src/adapters/buildSwarmAgentDeps.ts",
-    "./core/teammateModel.js": "./src/core/teammateModel.ts",
-    "./backends/teammateModeSnapshot.js": "./src/backends/teammateModeSnapshot.ts",
-    "./backends/detection.js": "./src/backends/detection.ts",
-    "./runtime/spawnUtils.js": "./src/runtime/spawnUtils.ts",
-    "./worktree/sparseConfigCleanup.js": "./src/worktree/sparseConfigCleanup.ts",
-    "./core/teamFileRegistration.js": "./src/core/teamFileRegistration.ts",
-    "./core/reconnection.js": "./src/core/reconnection.ts",
-    "./teamDiscovery.js": "./src/teamDiscovery.ts",
-    "./mailbox/index.js": "./src/mailbox/index.ts",
-    "./core/teammateInit.js": "./src/core/teammateInit.ts",
-    "./permissions/index.js": "./src/permissions/index.ts",
-    "./backends/PaneBackendExecutor.js": "./src/backends/PaneBackendExecutor.ts",
-    "./backends/it2Setup.js": "./src/backends/it2Setup.ts",
-    "./backends/registry.js": "./src/backends/registry.ts",
-    "./backends/TmuxBackend.js": "./src/backends/TmuxBackend.ts",
-    "./backends/ITermBackend.js": "./src/backends/ITermBackend.ts",
-    "./backends/InProcessBackend.js": "./src/backends/InProcessBackend.ts",
-    "./runtime/pollForPromptOrShutdown.js": "./src/runtime/pollForPromptOrShutdown.ts",
-    "./core/teammateLayoutManager.js": "./src/core/teammateLayoutManager.ts",
-    "./runtime/spawnInProcess.js": "./src/runtime/spawnInProcess.ts",
-    "./runtime/inProcessRunner.js": "./src/runtime/inProcessRunner.ts",
-    "./mailbox": "./src/mailbox/index.ts",
-    "./permissions": "./src/permissions/index.ts",
-    "./worktree": "./src/worktree/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./backends/types.js": {
+      "types": "./dist/src/backends/types.d.ts",
+      "default": "./src/backends/types.ts"
+    },
+    "./types/constants.js": {
+      "types": "./dist/src/types/constants.d.ts",
+      "default": "./src/types/constants.ts"
+    },
+    "./types/deps.js": {
+      "types": "./dist/src/types/deps.d.ts",
+      "default": "./src/types/deps.ts"
+    },
+    "./core/constants.js": {
+      "types": "./dist/src/core/constants.d.ts",
+      "default": "./src/core/constants.ts"
+    },
+    "./core/teammatePromptAddendum.js": {
+      "types": "./dist/src/core/teammatePromptAddendum.d.ts",
+      "default": "./src/core/teammatePromptAddendum.ts"
+    },
+    "./core/teammateColors.js": {
+      "types": "./dist/src/core/teammateColors.d.ts",
+      "default": "./src/core/teammateColors.ts"
+    },
+    "./core/teamHelpers.js": {
+      "types": "./dist/src/core/teamHelpers.d.ts",
+      "default": "./src/core/teamHelpers.ts"
+    },
+    "./teammateContext.js": {
+      "types": "./dist/src/teammateContext.d.ts",
+      "default": "./src/teammateContext.ts"
+    },
+    "./teammateContextAlias.js": {
+      "types": "./dist/src/teammateContextAlias.d.ts",
+      "default": "./src/teammateContextAlias.ts"
+    },
+    "./teammateState.js": {
+      "types": "./dist/src/teammateState.d.ts",
+      "default": "./src/teammateState.ts"
+    },
+    "./mailbox/protocolMessages.js": {
+      "types": "./dist/src/mailbox/protocolMessages.d.ts",
+      "default": "./src/mailbox/protocolMessages.ts"
+    },
+    "./tasks/types.js": {
+      "types": "./dist/src/tasks/types.d.ts",
+      "default": "./src/tasks/types.ts"
+    },
+    "./worktree/postCommitAttribution.js": {
+      "types": "./dist/src/worktree/postCommitAttribution.d.ts",
+      "default": "./src/worktree/postCommitAttribution.ts"
+    },
+    "./worktree/safeRemoval.js": {
+      "types": "./dist/src/worktree/safeRemoval.d.ts",
+      "default": "./src/worktree/safeRemoval.ts"
+    },
+    "./worktree/safeIgnore.js": {
+      "types": "./dist/src/worktree/safeIgnore.d.ts",
+      "default": "./src/worktree/safeIgnore.ts"
+    },
+    "./adapters/appRuntime.js": {
+      "types": "./dist/src/adapters/appRuntime.d.ts",
+      "default": "./src/adapters/appRuntime.ts"
+    },
+    "./adapters/buildSwarmAgentDeps.js": {
+      "types": "./dist/src/adapters/buildSwarmAgentDeps.d.ts",
+      "default": "./src/adapters/buildSwarmAgentDeps.ts"
+    },
+    "./core/teammateModel.js": {
+      "types": "./dist/src/core/teammateModel.d.ts",
+      "default": "./src/core/teammateModel.ts"
+    },
+    "./backends/teammateModeSnapshot.js": {
+      "types": "./dist/src/backends/teammateModeSnapshot.d.ts",
+      "default": "./src/backends/teammateModeSnapshot.ts"
+    },
+    "./backends/detection.js": {
+      "types": "./dist/src/backends/detection.d.ts",
+      "default": "./src/backends/detection.ts"
+    },
+    "./runtime/spawnUtils.js": {
+      "types": "./dist/src/runtime/spawnUtils.d.ts",
+      "default": "./src/runtime/spawnUtils.ts"
+    },
+    "./worktree/sparseConfigCleanup.js": {
+      "types": "./dist/src/worktree/sparseConfigCleanup.d.ts",
+      "default": "./src/worktree/sparseConfigCleanup.ts"
+    },
+    "./core/teamFileRegistration.js": {
+      "types": "./dist/src/core/teamFileRegistration.d.ts",
+      "default": "./src/core/teamFileRegistration.ts"
+    },
+    "./core/reconnection.js": {
+      "types": "./dist/src/core/reconnection.d.ts",
+      "default": "./src/core/reconnection.ts"
+    },
+    "./teamDiscovery.js": {
+      "types": "./dist/src/teamDiscovery.d.ts",
+      "default": "./src/teamDiscovery.ts"
+    },
+    "./mailbox/index.js": {
+      "types": "./dist/src/mailbox/index.d.ts",
+      "default": "./src/mailbox/index.ts"
+    },
+    "./core/teammateInit.js": {
+      "types": "./dist/src/core/teammateInit.d.ts",
+      "default": "./src/core/teammateInit.ts"
+    },
+    "./permissions/index.js": {
+      "types": "./dist/src/permissions/index.d.ts",
+      "default": "./src/permissions/index.ts"
+    },
+    "./backends/PaneBackendExecutor.js": {
+      "types": "./dist/src/backends/PaneBackendExecutor.d.ts",
+      "default": "./src/backends/PaneBackendExecutor.ts"
+    },
+    "./backends/it2Setup.js": {
+      "types": "./dist/src/backends/it2Setup.d.ts",
+      "default": "./src/backends/it2Setup.ts"
+    },
+    "./backends/registry.js": {
+      "types": "./dist/src/backends/registry.d.ts",
+      "default": "./src/backends/registry.ts"
+    },
+    "./backends/TmuxBackend.js": {
+      "types": "./dist/src/backends/TmuxBackend.d.ts",
+      "default": "./src/backends/TmuxBackend.ts"
+    },
+    "./backends/ITermBackend.js": {
+      "types": "./dist/src/backends/ITermBackend.d.ts",
+      "default": "./src/backends/ITermBackend.ts"
+    },
+    "./backends/InProcessBackend.js": {
+      "types": "./dist/src/backends/InProcessBackend.d.ts",
+      "default": "./src/backends/InProcessBackend.ts"
+    },
+    "./runtime/pollForPromptOrShutdown.js": {
+      "types": "./dist/src/runtime/pollForPromptOrShutdown.d.ts",
+      "default": "./src/runtime/pollForPromptOrShutdown.ts"
+    },
+    "./core/teammateLayoutManager.js": {
+      "types": "./dist/src/core/teammateLayoutManager.d.ts",
+      "default": "./src/core/teammateLayoutManager.ts"
+    },
+    "./runtime/spawnInProcess.js": {
+      "types": "./dist/src/runtime/spawnInProcess.d.ts",
+      "default": "./src/runtime/spawnInProcess.ts"
+    },
+    "./runtime/inProcessRunner.js": {
+      "types": "./dist/src/runtime/inProcessRunner.d.ts",
+      "default": "./src/runtime/inProcessRunner.ts"
+    },
+    "./mailbox": {
+      "types": "./dist/src/mailbox/index.d.ts",
+      "default": "./src/mailbox/index.ts"
+    },
+    "./permissions": {
+      "types": "./dist/src/permissions/index.d.ts",
+      "default": "./src/permissions/index.ts"
+    },
+    "./worktree": {
+      "types": "./dist/src/worktree/index.d.ts",
+      "default": "./src/worktree/index.ts"
+    },
+    "./commands/agents/index.js": {
+      "types": "./dist/commands/agents/index.d.ts",
+      "default": "./commands/agents/index.ts"
+    },
+    "./commands/branch/index.js": {
+      "types": "./dist/commands/branch/index.d.ts",
+      "default": "./commands/branch/index.ts"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/agent": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/command-runtime": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
+    "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "chalk": "^6.0.0",

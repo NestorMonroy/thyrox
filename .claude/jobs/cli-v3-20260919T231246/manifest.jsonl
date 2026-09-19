@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/cli && bunx tsc --noEmit -p tsconfig.json 2>&1 | grep -cE '^[^(]+\\([0-9]+,[0-9]+\\): error'", "started_at": "2026-09-19T23:12:46+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T23:13:05+00:00", "duration_seconds": 19.39306}

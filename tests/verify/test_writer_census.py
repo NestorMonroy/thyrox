@@ -57,54 +57,54 @@ ROOT = reach.thyrox_root()
 COMPOSED = ROOT / "src/packages/observability/src/clearedResults.ts"
 
 print("== 1. CONTROL POSITIVO — el escritor real de nombre compuesto ==")
-texto = COMPOSED.read_text(encoding="utf-8")
-con = census.write_statements(texto, "ts", resolve_constants=True)
-sin = census.write_statements(texto, "ts", resolve_constants=False)
-check("el censo por LITERAL no lo ve", set(), tables_of(sin))
-check("el censo que RESUELVE sí lo ve", {"cleared_tool_results"}, tables_of(con))
+text = COMPOSED.read_text(encoding="utf-8")
+with_resolution = census.write_statements(text, "ts", resolve_constants=True)
+without = census.write_statements(text, "ts", resolve_constants=False)
+check("el censo por LITERAL no lo ve", set(), tables_of(without))
+check("el censo que RESUELVE sí lo ve", {"cleared_tool_results"}, tables_of(with_resolution))
 
 print("\n== 2. EL GEMELO — literal llano: los dos censos coinciden ==")
-gemelo = (
+twin = (
     "conn.execute(\"INSERT INTO documents (path, section) VALUES (?, ?)\", fila)\n"
 )
 check("resolviendo", {"documents"},
-      tables_of(census.write_statements(gemelo, "py", resolve_constants=True)))
+      tables_of(census.write_statements(twin, "py", resolve_constants=True)))
 check("sin resolver", {"documents"},
-      tables_of(census.write_statements(gemelo, "py", resolve_constants=False)))
+      tables_of(census.write_statements(twin, "py", resolve_constants=False)))
 
 print("\n== 3. La PROSA que menciona la sentencia no es un escritor ==")
-prosa = (
+prose = (
     '"""Este modulo ya NO hace INSERT INTO cleared_tool_results."""\n'
     "# Antes se escribia con UPDATE documents SET x = 1\n"
 )
 check("ni el docstring ni el comentario cuentan", set(),
-      tables_of(census.write_statements(prosa, "py", resolve_constants=True)))
+      tables_of(census.write_statements(prose, "py", resolve_constants=True)))
 
 print("\n== 4. ANULACIÓN — retirada la resolución, cae exactamente el positivo ==")
 check("el positivo cae a 0", 0,
-      len(census.write_statements(texto, "ts", resolve_constants=False)))
+      len(census.write_statements(text, "ts", resolve_constants=False)))
 check("el gemelo NO se mueve", {"documents"},
-      tables_of(census.write_statements(gemelo, "py", resolve_constants=False)))
+      tables_of(census.write_statements(twin, "py", resolve_constants=False)))
 check("la prosa sigue en 0", 0,
-      len(census.write_statements(prosa, "py", resolve_constants=False)))
+      len(census.write_statements(prose, "py", resolve_constants=False)))
 
 print("\n== 5. La constante tiene que vivir en el MISMO archivo ==")
-ajena = "db.run(`INSERT INTO ${TABLA_DE_OTRO_MODULO} (a) VALUES (?)`)\n"
+foreign = "db.run(`INSERT INTO ${TABLA_DE_OTRO_MODULO} (a) VALUES (?)`)\n"
 check("sin su declaración, no se inventa la tabla", set(),
-      tables_of(census.write_statements(ajena, "ts", resolve_constants=True)))
-propia = "const TABLA = 'mi_tabla'\ndb.run(`INSERT INTO ${TABLA} (a) VALUES (?)`)\n"
+      tables_of(census.write_statements(foreign, "ts", resolve_constants=True)))
+own = "const TABLA = 'mi_tabla'\ndb.run(`INSERT INTO ${TABLA} (a) VALUES (?)`)\n"
 check("con su declaración, resuelve", {"mi_tabla"},
-      tables_of(census.write_statements(propia, "ts", resolve_constants=True)))
+      tables_of(census.write_statements(own, "ts", resolve_constants=True)))
 
 print("\n== 6. El censo del árbol: denominador y cubo de tests ==")
-produccion = census.census(ROOT, include_tests=False)
-con_tests = census.census(ROOT, include_tests=True)
+production = census.census(ROOT, include_tests=False)
+with_tests = census.census(ROOT, include_tests=True)
 check("midió archivos (un 0 sería un verde ciego)", True,
-      produccion.measured > 0)
+      production.measured > 0)
 check("ve la tabla de nombre compuesto", True,
-      "cleared_tool_results" in produccion.by_table)
+      "cleared_tool_results" in production.by_table)
 check("los tests se excluyen por defecto y suman al incluirlos", True,
-      con_tests.measured > produccion.measured)
+      with_tests.measured > production.measured)
 
 print("\n== 7. La CLI: rehúsa sin poder medir, y no emite conteo ==")
 
@@ -115,12 +115,12 @@ def run(*args: str) -> subprocess.CompletedProcess:
         capture_output=True, text=True, cwd=str(ROOT))
 
 
-salida = run("--root", str(ROOT))
-check("publica su alcance medido", True, "alcance medido" in salida.stdout)
-with tempfile.TemporaryDirectory() as vacio:
-    rehusa = run("--root", vacio)
-    check("sin nada que medir, exit 2", 2, rehusa.returncode)
-    check("y NO emite conteo", True, "escritor" not in rehusa.stdout)
+output = run("--root", str(ROOT))
+check("publica su alcance medido", True, "alcance medido" in output.stdout)
+with tempfile.TemporaryDirectory() as empty:
+    refuses = run("--root", empty)
+    check("sin nada que medir, exit 2", 2, refuses.returncode)
+    check("y NO emite conteo", True, "escritor" not in refuses.stdout)
 
 print(f"\nresultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

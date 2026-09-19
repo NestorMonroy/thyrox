@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react'
-import { type KeyboardEvent, Box, Byline, KeyboardShortcutHint, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { type KeyboardEvent, Box, Byline, KeyboardShortcutHint, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { isAutoMemoryEnabled } from '@thyrox/memory/paths'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import { getMemoryScopeDisplay } from '@thyrox/memory/agentMemory'

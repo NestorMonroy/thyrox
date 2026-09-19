@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import * as React from 'react'
 import { BULLET_OPERATOR } from '@thyrox/output/constants/figures.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import {
   filterToolProgressMessages,
   type Tool,

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { type DOMElement, useAnimationFrame, stringWidth } from '@thyrox/ink'
+import { type DOMElement, useAnimationFrame, stringWidth } from '@anthropic/ink'
 import type { SpinnerMode } from './types.js'
 
 export function useShimmerAnimation(

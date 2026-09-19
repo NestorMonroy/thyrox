@@ -1,5 +1,5 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-import { Box, Text, stringWidth } from '@thyrox/ink'
+import { Box, Text, stringWidth } from '@anthropic/ink'
 import * as React from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -14,7 +14,7 @@ import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import sample from 'lodash-es/sample.js'
 import { formatDuration, formatNumber, formatSecondsShort } from '@thyrox/output/formatters'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 import { activityManager } from '@thyrox/app-host/activityManager.js'
 import { getSpinnerVerbs } from '@thyrox/agent/constants/spinnerVerbs.js'
 import { MessageResponse } from './MessageResponse.js'
@@ -22,7 +22,7 @@ import { TaskListV2 } from './TaskListV2.js'
 import { useTasksV2 } from '../hooks/useTasksV2.js'
 import type { Task } from '@thyrox/agent/tasks.js'
 import { useAppState } from '../appStateHooks.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { getDefaultCharacters } from './Spinner/utils.js'
 import type { SpinnerMode } from './Spinner/types.js'
 import { SpinnerAnimationRow } from './Spinner/SpinnerAnimationRow.js'
@@ -41,7 +41,7 @@ import {
 } from '@thyrox/app-host/bootstrap/state.js'
 
 import { TeammateSpinnerTree } from './Spinner/TeammateSpinnerTree.js'
-import { useAnimationFrame } from '@thyrox/ink'
+import { useAnimationFrame } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
 export type { SpinnerMode } from './Spinner/types.js'
 

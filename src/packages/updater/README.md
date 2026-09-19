@@ -1,4 +1,4 @@
-# @claude-code-how-works/updater
+# @thyrox/updater
 
 CLI self-update flow: version probe, download, atomic swap, post-update
 notice rendering.

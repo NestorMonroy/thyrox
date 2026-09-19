@@ -21,9 +21,19 @@ import subprocess
 import sys
 from pathlib import Path
 
-HERE = reach.thyrox_root()
-sys.path.insert(0, str(HERE / "src"))
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
+
 from paths import reach  # noqa: E402
+
+HERE = reach.thyrox_root()
 
 spec = importlib.util.spec_from_file_location("agent_store", HERE / "src" / "agents" / "agent_store.py")
 store = importlib.util.module_from_spec(spec)

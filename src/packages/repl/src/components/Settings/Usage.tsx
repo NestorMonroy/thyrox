@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import { extraUsage as extraUsageCommand } from '../../extraUsage.js'
 import { formatCost } from '@thyrox/provider/costTracker.js'
 import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import {
   type CodexUtilization,
   type ExtraUsage,
@@ -17,7 +17,7 @@ import { formatResetText } from '@thyrox/output/formatters'
 import { logError } from '@thyrox/local-observability/logging'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Byline, ProgressBar } from '@thyrox/ink'
+import { Byline, ProgressBar } from '@anthropic/ink'
 import {
   isEligibleForOverageCreditGrant,
   OverageCreditUpsell,

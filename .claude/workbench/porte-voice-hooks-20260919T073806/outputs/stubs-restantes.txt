@@ -1,0 +1,10 @@
+== el conteo de lineas es CIEGO al stub que reemplaza el cuerpo por un throw
+   (voiceContext.tsx mide 93 contra 76 de la fuente Y su useGetVoiceState lanza)
+
+== instrumento correcto: la cadena de bloqueo, por archivo
+src/packages/voice/src/hooks/useVoiceEnabled.ts:2
+src/packages/voice/src/voiceContext.tsx:5
+
+== los simbolos que cada uno declara sin portar
+src/packages/voice/src/voiceContext.tsx
+useVoiceEnabled

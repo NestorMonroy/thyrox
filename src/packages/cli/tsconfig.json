@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "types": [
       "bun"
-    ]
+    ],
+    "jsx": "react-jsx"
   },
   "include": [
     "src/**/*.ts",

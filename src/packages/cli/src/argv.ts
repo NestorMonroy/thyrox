@@ -33,19 +33,19 @@
  * `harness/bin/harness.ts` y `binary/bin/binary.ts`, ambos fuera de las
  * rutas de este agente.
  *
- * Puente temporal: import relativo, no por nombre de paquete
+ * El puente relativo se RETIRO — su precondicion estaba rancia
  * -------------------------------------------------------------
- * Medido en esta misma tarea: `@thyrox/cli` no resuelve por NOMBRE desde
- * ningún sitio hasta que `src/packages/bun.lock` declare el workspace —
- * `bun install --dry-run` en `src/packages/` lo confirma como aditivo (sin
- * red, sin alterar ninguna entrada existente), pero ESE archivo no está
- * entre las rutas asignadas a este agente en esta tanda. Por eso el import
- * de abajo usa la ruta relativa hacia `app-host/src/cliArgs.ts` en vez de
- * `@thyrox/app-host/cliArgs.js`: funciona hoy sin tocar el lockfile, y el
- * `package.json` de este paquete SÍ declara la dependencia real
- * (`@thyrox/app-host: workspace:*`) para cuando el puente se retire.
- * `// TODO(bun.lock)` marca el cambio de una línea que hace falta entonces.
+ * Aqui vivia un import relativo a `../../app-host/src/cliArgs.ts`, con su
+ * razon declarada: el enlace de workspace no existia todavia y el lockfile
+ * quedaba fuera del alcance de aquel agente. Esa razon era cierta cuando se
+ * escribio y dejo de serlo sin que nadie tocara este archivo — medido por
+ * conducta, no releyendo el comentario: `cli/node_modules/@thyrox/app-host`
+ * existe y apunta a `src/packages/app-host`.
+ *
+ * Retirarlo no es cosmetico. Un import relativo que entra a la FUENTE de un
+ * hermano rodea su `exports` —que declara `./cliArgs.js` explicitamente— y
+ * arrastra ese archivo al programa de `cli` por fuera de su `rootDir`. Ahi
+ * la declaracion emitida aterriza junto a la fuente ajena en vez de en
+ * `dist/`, porque la ruta de salida es `outDir + relativa-a-rootDir`.
  */
-// TODO(bun.lock): cuando `src/packages/bun.lock` registre a `cli`, cambiar
-// por `export { eagerParseCliFlag, extractArgsAfterDoubleDash } from '@thyrox/app-host/cliArgs.js'`.
-export { eagerParseCliFlag, extractArgsAfterDoubleDash } from '../../app-host/src/cliArgs.ts'
+export { eagerParseCliFlag, extractArgsAfterDoubleDash } from '@thyrox/app-host/cliArgs.js'

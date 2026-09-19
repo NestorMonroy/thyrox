@@ -10,7 +10,7 @@ import {
   createInitialVimState,
   transition,
 } from '../vim/index.js'
-import { Cursor } from '@claude-code-how-works/repl/Cursor.js'
+import { Cursor } from '@thyrox/repl/Cursor.js'
 
 describe('@anthropic/ink Phase 1 public API', () => {
   test('keybindings subpath parses and resolves bindings', () => {

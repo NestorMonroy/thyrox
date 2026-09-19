@@ -1,0 +1,45 @@
+=== MITAD ROJA — 2026-09-19T05:59:56 — antes del arreglo
+
+== 1. sin reserva: Avail ES el techo, nada que declarar ==
+  ok    exit 0 cuando no hay reserva
+  ok    nombra el veredicto
+== 2. reserva ALCANZABLE: el techo es mayor que Avail ==
+  ok    exit 1 cuando la reserva se alcanza
+  ok    nombra el veredicto
+== 3. resv_strict la vuelve inalcanzable AUNQUE se tenga el bit ==
+  ok    exit 3 con resv_strict y bit puesto
+  ok    nombra resv_strict como la causa
+== 4. sin el bit 24 la reserva es inalcanzable ==
+  ok    exit 3 sin CAP_SYS_RESOURCE
+  ok    nombra la capacidad ausente
+== 5. ANULACION: retirado el test del bit 24, el veredicto cambia ==
+  ok    la anulacion modifico el guion
+  ok    sin la comprobacion del bit, pasa a ALCANZABLE
+== 6. rehusa SIN cifra si no puede leer las capacidades ==
+  ok    exit 2 al rehusar
+  ok    no emite ninguna cifra en MiB
+== 7. rehusa si la ruta no existe ==
+  ok    exit 2 ante ruta ausente
+== 8. control POSITIVO real: este contenedor, sin fixture ==
+  ok    este contenedor declara la reserva inalcanzable
+  ok    cita la reserva medida
+== 9. borrado y abierto: SOLO lo borrado, una vez por inodo, en ESTE dispositivo ==
+  FALLO cuenta el inodo borrado una sola vez
+        no assert_contains [borrado y abierto 10.00 MiB] en:
+target              .   (montaje /, /dev/x)
+capacidad         251.97 GiB
+disponible        64.07 MiB   ← lo que «df» llama Avail
+reserved           214.92 GiB   (85.3% de la capacidad)
+options          rw,relatime
+CAP_SYS_RESOURCE  presente
+borrado y abierto 401.02 MiB   (espacio que no vuelve hasta cerrar el descriptor)
+VEREDICTO         RESERVA_ALCANZABLE
+  hay CAP_SYS_RESOURCE y no hay resv_strict: el techo real supera «Avail».
+  ok    no suma ningun archivo VIVO
+  ok    no suma el borrado de otro dispositivo
+== 10. control de ANULACION: cada correccion carga su peso ==
+  ok    sin el filtro de borrado, la cifra es 26x mayor
+  ok    sin acotar al dispositivo, entra el memfd
+  ok    sin deduplicar, el inodo se cuenta por descriptor
+
+ok=20 fallo=1

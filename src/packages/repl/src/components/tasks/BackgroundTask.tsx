@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 import type { BackgroundTaskState } from '../../tasksTypes.js'
 import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'

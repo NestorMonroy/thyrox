@@ -1,11 +1,11 @@
 import { mkdir, readFile, unlink, writeFile } from 'fs/promises'
 import { join } from 'path'
-import { getSessionId } from '@claude-code-how-works/app-host/bootstrap/state.js'
-import { registerCleanup } from '@claude-code-how-works/app-host/bootstrap/cleanupRegistry.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@claude-code-how-works/config/env/utils'
-import { jsonParse, jsonStringify } from '@claude-code-how-works/local-observability/slowOperations.js'
-import { getErrnoCode } from '@claude-code-how-works/local-observability/errorHelpers.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 
 const LOCK_FILENAME = 'computer-use.lock'
 

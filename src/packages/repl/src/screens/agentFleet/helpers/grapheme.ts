@@ -8,7 +8,7 @@
  *   z6(text)    → stringWidth    — terminal column width
  */
 
-import { stringWidth } from '@thyrox/ink'
+import { stringWidth } from '@anthropic/ink'
 
 let graphemeSegmenter: Intl.Segmenter | null = null
 

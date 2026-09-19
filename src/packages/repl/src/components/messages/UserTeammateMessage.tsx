@@ -2,7 +2,7 @@ import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import figures from 'figures'
 import * as React from 'react'
 import { TEAMMATE_MESSAGE_TAG } from '@thyrox/command-runtime/xml.js'
-import { Ansi, Box, Text, type TextProps } from '@thyrox/ink'
+import { Ansi, Box, Text, type TextProps } from '@anthropic/ink'
 import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'

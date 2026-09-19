@@ -1,8 +1,8 @@
 import figures from 'figures'
 import React, { useMemo } from 'react'
 import type { DiffFile } from '../../hooks/useDiffData.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
 import { truncateStartToWidth } from '@thyrox/output/formatters/truncate.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 

@@ -135,11 +135,57 @@ if [[ "$THYROX_TEST_BIT_RESOURCE" == "1" ]]; then
 fi
 
 # --- borrados pero abiertos: la OTRA via por la que `Avail` miente ---
+#
+# TASK-THYROX-0219. Esta columna sumaba 220 archivos VIVOS y publicaba 385 MiB
+# donde lo real eran 5. Tres defectos distintos, y cada uno exige su correccion:
+#
+#   1. `lsof` OREA sus selectores salvo con `-a`. `+L1 -- /` se lee como
+#      «(nlink<1) O (abierto en /)», asi que devolvia TODO lo abierto bajo el
+#      montaje. Medido: 221 filas, de las que 1 estaba borrada.
+#   2. El espacio de un inodo borrado se libera UNA vez, no una por descriptor.
+#      Sumar por fila cuenta tres veces un archivo con tres `fd` abiertos.
+#   3. Un inodo borrado en OTRO dispositivo —un `memfd`, por ejemplo— no ocupa
+#      este montaje, y restarlo de su `Avail` es afirmar un espacio que no existe.
+#
+# La cifra alimenta la decision «¿cierro descriptores para recuperar espacio?».
+# Inflada manda a buscar descriptores que no existen — que es exactamente lo que
+# costo el episodio que la destapo.
+
+# El dispositivo tal y como lo imprime `lsof`: «major,minor» en decimal.
+# La descomposicion es la de Linux, no `d>>8`/`d&0xff`: esa acierta con los
+# numeros pequenos y falla en silencio con un major grande.
+mount_dev="${DISK_HEADROOM_DEV:-}"
+if [[ -z "$mount_dev" ]]; then
+    _dev_num="$(stat -c '%d' "$mount_point" 2>/dev/null || true)"
+    if [[ "$_dev_num" =~ ^[0-9]+$ ]]; then
+        mount_dev="$(( ((_dev_num >> 8) & 0xfff) | ((_dev_num >> 32) & ~0xfff) )),$(( (_dev_num & 0xff) | ((_dev_num >> 12) & ~0xff) ))"
+    fi
+fi
+
+# Suma el tamano de cada INODO borrado, una sola vez, en ESTE dispositivo.
+# `(deleted)` hace que NAME ocupe dos campos, pero $1..$9 no se mueven: la clave
+# de deduplicacion `$6":"$9` (dispositivo + inodo) y el centinela `$NF` son
+# estables en las dos formas.
+_sum_deleted_open() {
+    awk -v dev="${1:-}" '
+        NR > 1 && $NF == "(deleted)" && $7 ~ /^[0-9]+$/ {
+            if (dev != "" && $6 != dev) next     # correccion 3: otro dispositivo
+            if (seen[$6 ":" $9]++) next          # correccion 2: una vez por inodo
+            s += $7
+        }
+        END { printf "%.2f MiB", s / 1048576 }
+    '
+}
 
 held_by_open_fd="(no medido)"
-if command -v lsof >/dev/null 2>&1 && [[ -z "${DISK_HEADROOM_STATFS:-}" ]]; then
-    held_by_open_fd="$(timeout 30 lsof +L1 -- "$mount_point" 2>/dev/null \
-        | awk 'NR>1 && $7 ~ /^[0-9]+$/ {s+=$7} END{printf "%.2f MiB", s/1048576}')"
+if [[ -n "${DISK_HEADROOM_LSOF:-}" ]]; then
+    # Punto de inyeccion: sin el, esta rama solo se alcanza midiendo el disco
+    # real, y por eso sus tres defectos vivieron sin una sola asercion encima.
+    held_by_open_fd="$(_sum_deleted_open "$mount_dev" < "${DISK_HEADROOM_LSOF}")"
+elif command -v lsof >/dev/null 2>&1 && [[ -z "${DISK_HEADROOM_STATFS:-}" ]]; then
+    # `-a` convierte el OR en AND: correccion 1.
+    held_by_open_fd="$(timeout 30 lsof -a +L1 -- "$mount_point" 2>/dev/null \
+        | _sum_deleted_open "$mount_dev")"
     [[ -n "$held_by_open_fd" ]] || held_by_open_fd="0.00 MiB"
 fi
 

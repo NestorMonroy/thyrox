@@ -4,7 +4,7 @@ import { Suspense, use } from 'react'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
 import { useIsInsideModal } from '../../modalContext.js'
-import { Box, Text, useTheme } from '@thyrox/ink'
+import { Box, Text, useTheme } from '@anthropic/ink'
 import { type AppState, useAppState } from '../../appStateHooks.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { getCurrentSessionTitle } from '@thyrox/storage/sessionStorage.js'
@@ -22,7 +22,7 @@ import {
   getModelDisplayLabel,
   type Property,
 } from '@thyrox/agent/statusAlias.js'
-import type { ThemeName } from '@thyrox/ink'
+import type { ThemeName } from '@anthropic/ink'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 
 type Props = {

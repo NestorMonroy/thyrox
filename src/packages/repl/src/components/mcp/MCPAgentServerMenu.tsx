@@ -1,8 +1,8 @@
 import figures from 'figures'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { Box, color, Link, Text, useTheme } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, color, Link, Text, useTheme } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import {
   AuthenticationCancelledError,
   performMCPOAuthFlow,
@@ -10,7 +10,7 @@ import {
 import { capitalize } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { Select } from '../CustomSelect/index.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { Spinner } from '../Spinner.js'
 import type { AgentMcpServerInfo } from './types.js'
 

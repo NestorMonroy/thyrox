@@ -4,7 +4,7 @@ import { useInterval } from 'usehooks-ts'
 import '@thyrox/tool-registry/runtime'
 import type { ToolUseConfirm } from '@thyrox/permission/components/PermissionRequest.js'
 import { TEAMMATE_MESSAGE_TAG } from '@thyrox/command-runtime/xml.js'
-import { useTerminalNotification } from '@thyrox/ink'
+import { useTerminalNotification } from '@anthropic/ink'
 import { sendNotification } from '../notifier.js'
 import {
   type AppState,

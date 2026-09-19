@@ -1,0 +1,10 @@
+== typecheck del arbol, por UBICACION de error (no por texto) ==
+El texto del mensaje cambia al anadir una clave al esquema —'62 more'
+pasa a '63 more'— asi que una comparacion por texto publica 9
+desaparecidos y 9 aparecidos que son el MISMO error. Se compara por
+archivo(linea,col) + codigo TS.
+
+base (dfb0cb6d): 5681 ubicaciones
+con el cambio:   5681 ubicaciones
+desaparecieron:  0
+aparecieron:     0

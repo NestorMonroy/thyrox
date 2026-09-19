@@ -1,4 +1,4 @@
-# @claude-code-how-works/ripgrep-napi
+# @thyrox/ripgrep-napi
 
 In-process ripgrep for ccb. Provides three primitives — `findFiles`,
 `searchContent`, `searchStream` — backed by the rust ripgrep crates

@@ -25,14 +25,14 @@ import sys
 import tempfile
 from pathlib import Path
 
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
-_MODULE = _RAIZ / "src/verify/check_doc_citations.py"
+_MODULE = _ROOT / "src/verify/check_doc_citations.py"
 _spec = importlib.util.spec_from_file_location("_gate_doc_citations", _MODULE)
 gate = importlib.util.module_from_spec(_spec)
 sys.modules["_gate_doc_citations"] = gate
@@ -213,16 +213,16 @@ def test_the_three_exit_states_are_distinguishable():
 
 if __name__ == "__main__":
     import traceback
-    fallos = 0
-    for nombre, caso in sorted(globals().items()):
-        if not nombre.startswith("test_") or not callable(caso):
+    failures = 0
+    for name, case in sorted(globals().items()):
+        if not name.startswith("test_") or not callable(case):
             continue
         try:
-            caso()
-            print(f"  ok    {nombre}")
+            case()
+            print(f"  ok    {name}")
         except Exception:
-            fallos += 1
-            print(f"  FALLO {nombre}")
+            failures += 1
+            print(f"  FALLO {name}")
             traceback.print_exc()
-    print(f"resumen: {fallos} fallo(s)")
-    raise SystemExit(1 if fallos else 0)
+    print(f"resumen: {failures} fallo(s)")
+    raise SystemExit(1 if failures else 0)

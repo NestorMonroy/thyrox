@@ -13,7 +13,7 @@
  * Emits `tengu_jediterm_scroll_bug_detected` on first flip per session
  * so we can track how often the workaround actually fires.
  */
-import { logEvent as obsLogEvent } from '@claude-code-how-works/local-observability'
+import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 
 // Telemetry wrapper — best-effort and optional so test/bootstrap paths
 // that haven't installed the sink don't crash on a missing dep.

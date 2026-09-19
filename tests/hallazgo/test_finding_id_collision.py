@@ -140,11 +140,11 @@ def test_minter_sees_ids_that_live_only_in_the_store(home: pathlib.Path,
     que se registra desde el proveedor— es invisible para el siguiente número.
     """
     add_finding(home, f"H-{PREFIX}-7", "solo vive en el store")
-    siguiente = hallazgo_ids.next_id(docs, PREFIX, store_path=store_path(home))
+    following = hallazgo_ids.next_id(docs, PREFIX, store_path=store_path(home))
     # El relleno a dos digitos por debajo de 10 es la forma REAL del arbol,
     # medida: `H-API-01` existe y `H-API-010` no. No es cosmetica de este test.
     check("el siguiente id no colisiona con la fila del store",
-          siguiente == f"H-{PREFIX}-08", siguiente)
+          following == f"H-{PREFIX}-08", following)
 
 
 def test_the_verifier_also_sees_the_store(home: pathlib.Path,
@@ -156,13 +156,13 @@ def test_the_verifier_also_sees_the_store(home: pathlib.Path,
     mismo id. El caso mide el id que vive SÓLO como fila —el .rst del
     consumidor no lo tiene— para que la fuente que discrimina sea el store.
     """
-    libre_sin_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7")
+    free_without_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7")
     check("sin el store, el verificador lo ve libre (la mitad ciega)",
-          libre_sin_store is True, str(libre_sin_store))
-    libre_con_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7",
+          free_without_store is True, str(free_without_store))
+    free_with_store = hallazgo_ids.is_free(docs, f"H-{PREFIX}-7",
                                            store_path=store_path(home))
     check("con el store, el verificador lo ve OCUPADO",
-          libre_con_store is False, str(libre_con_store))
+          free_with_store is False, str(free_with_store))
 
 
 def test_minter_still_reads_the_consumer_tree(home: pathlib.Path,
@@ -178,9 +178,9 @@ def test_minter_still_reads_the_consumer_tree(home: pathlib.Path,
     (docs / "source").mkdir(parents=True, exist_ok=True)
     (docs / "source" / f"hallazgo-H-{PREFIX}-30-algo.rst").write_text(
         f".. _h-{PREFIX.lower()}-30:\n\nH-{PREFIX}-30 — algo\n")
-    siguiente = hallazgo_ids.next_id(docs, PREFIX, store_path=store_path(home))
+    following = hallazgo_ids.next_id(docs, PREFIX, store_path=store_path(home))
     check("el .rst del consumidor sigue contando",
-          siguiente == f"H-{PREFIX}-31", siguiente)
+          following == f"H-{PREFIX}-31", following)
 
 
 def test_the_modules_under_test_do_not_write_to_the_tree() -> None:
@@ -211,8 +211,8 @@ def main() -> int:
         base = pathlib.Path(tmp)
         docs = base / "docs"
         docs.mkdir()
-        for nombre in ("a", "b", "c"):
-            (base / nombre).mkdir()
+        for name in ("a", "b", "c"):
+            (base / name).mkdir()
         test_writer_refuses_an_existing_finding_id(base / "a")
         test_writer_updates_when_the_caller_declares_it(base / "b")
         test_minter_sees_ids_that_live_only_in_the_store(base / "c", docs)

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash src/verify/check-cli-typecheck.sh", "started_at": "2026-09-19T07:20:43+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-19T07:22:17+00:00", "note": "3942 -> 3768 errores; TS2307 322 -> 268; los que nombran los cinco paquetes 62 -> 24"}

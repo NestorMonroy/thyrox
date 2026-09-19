@@ -1,0 +1,39 @@
+familia    extensiones externos  sin-coment  cifra
+specifier  .ts/.tsx    False     False         1440
+specifier  .ts/.tsx    False     True          1413
+specifier  .ts/.tsx    True      False          391
+specifier  .ts/.tsx    True      True           383
+specifier  +.js/.jsx   False     False         1440
+specifier  +.js/.jsx   False     True          1413
+specifier  +.js/.jsx   True      False          391
+specifier  +.js/.jsx   True      True           383
+llamada    .ts/.tsx    False     False         1770
+llamada    .ts/.tsx    False     True          1697
+llamada    +.js/.jsx   False     False         1770
+llamada    +.js/.jsx   False     True          1697
+
+lecturas medidas: 12  ·  coinciden con 1693: 0
+NO REPRODUCE: ninguna de las 12 lecturas da 1693. La cifra llego sin el comando que la produce.
+
+nombres externos alcanzables por import() dinamico : 55
+nombres externos alcanzables por from/require      : 131
+nombres que SOLO llegan por import() dinamico      : 19
+  @anthropic-ai/bedrock-sdk
+  @anthropic-ai/foundry-sdk
+  @anthropic-ai/vertex-sdk
+  @aws-sdk/client-bedrock
+  @aws-sdk/credential-provider-node
+  @aws-sdk/credential-providers
+  @azure/identity
+  @smithy/core
+  @smithy/node-http-handler
+  @thyrox/audio-capture-napi
+  @thyrox/image-processor-napi
+  @thyrox/url-handler-napi
+  cacache
+  cli-highlight
+  fflate
+  plist
+  selfsigned
+  sharp
+  turndown

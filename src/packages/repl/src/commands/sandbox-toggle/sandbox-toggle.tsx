@@ -2,7 +2,7 @@ import { relative } from 'path'
 import React from 'react'
 import { getCwdState } from '@thyrox/app-host/bootstrap/state.js'
 import { SandboxSettings } from '../../components/sandbox/SandboxSettings.js'
-import { color } from '@thyrox/ink'
+import { color } from '@anthropic/ink'
 import { getPlatform } from '@thyrox/config/platform.js'
 import {
   addToExcludedCommands,
@@ -12,7 +12,7 @@ import {
   getSettings,
   getSettingsFilePathForSource,
 } from '@thyrox/config/settings'
-import type { ThemeName } from '@thyrox/ink'
+import type { ThemeName } from '@anthropic/ink'
 
 export async function call(
   onDone: (result?: string) => void,

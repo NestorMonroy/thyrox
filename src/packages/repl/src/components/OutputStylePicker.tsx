@@ -5,7 +5,7 @@ import {
   OUTPUT_STYLE_CONFIG,
   type OutputStyleConfig,
 } from '@thyrox/config/outputStyles.js'
-import { Box, Text, Dialog } from '@thyrox/ink'
+import { Box, Text, Dialog } from '@anthropic/ink'
 import type { OutputStyle } from '@thyrox/config'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { OptionWithDescription } from './CustomSelect/select.js'

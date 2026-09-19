@@ -5,7 +5,7 @@ import { promisify } from 'node:util'
 import * as React from 'react'
 import { useRef, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import {
   type AutoUpdaterResult,
   getLatestVersionForBrew,

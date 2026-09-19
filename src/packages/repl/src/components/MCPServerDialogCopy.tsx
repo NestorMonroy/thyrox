@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, Text } from '@thyrox/ink'
+import { Link, Text } from '@anthropic/ink'
 
 export function MCPServerDialogCopy(): React.ReactNode {
   return (

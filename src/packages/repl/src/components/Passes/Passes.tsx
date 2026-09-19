@@ -3,10 +3,10 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
 import { TEARDROP_ASTERISK } from '@thyrox/output/constants/figures.js'
 import { useExitOnCtrlCDWithKeybindings } from '../../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { setClipboard } from '@thyrox/ink'
+import { setClipboard } from '@anthropic/ink'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- enter to copy link
-import { Box, Link, Text, useInput } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Link, Text, useInput } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { logEvent } from '@thyrox/local-observability'
 import {
   fetchReferralRedemptions,
@@ -19,7 +19,7 @@ import type {
 } from '@thyrox/provider/oauth/types.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { logError } from '@thyrox/local-observability/logging'
-import { Pane } from '@thyrox/ink'
+import { Pane } from '@anthropic/ink'
 
 type PassStatus = {
   passNumber: number

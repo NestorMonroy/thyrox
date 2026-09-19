@@ -29,12 +29,16 @@
  *     tampoco presentes). `isSyncHookJSONOutput`/`isAsyncHookJSONOutput`
  *     no necesitan el esquema — son guardas estructurales puras sobre la
  *     clave `async`.
- *   - `HookCallbackContext`, `HookCallback`, `HookCallbackMatcher` — el
- *     contrato de un hook de tipo callback (registrado, no persistible) y
- *     su contexto (`AttributionState` de `../commitAttribution.js`,
- *     `AppState` opaco). Sin consumidor en `hookTypeGuards.test.ts` ni en
- *     `goalStopHook.test.ts` (que sólo usa hooks `prompt`, vía
- *     `HookCommand`).
+ *   - `HookCallbackContext`, `HookCallback`, `HookCallbackMatcher` —
+ *     PORTADOS 2026-09-19 (TASK-THYROX-0201). Estaban aquí como omitidos
+ *     por falta de consumidor; el consumidor apareció:
+ *     `app-host/bootstrap/state.ts` tipa `registeredHooks` con
+ *     `HookCallbackMatcher | PluginHookMatcher`, igual que la fuente
+ *     (`ccnmt: packages/app-host/src/bootstrap/state.ts:12,22,27`). Con
+ *     ellos viajan `HookInput` —stub estructural, vecino de los de
+ *     salida— y el alias `AppState = unknown` que la fuente misma declara
+ *     local. `AttributionState` sí existe en este árbol
+ *     (`../commitAttribution.ts:240`).
  *   - `HookProgress`, `HookBlockingError`, `PermissionRequestResult`,
  *     `HookResult`, `AggregatedHookResult` — el resultado agregado de
  *     ejecutar hooks de verdad contra el host. Ninguno de los dos tests de
@@ -45,6 +49,8 @@
  * Se porta cuando aparezca su primer consumidor real — mismo criterio que
  * ya fija `../messageShapes.ts` en este árbol.
  */
+
+import type { AttributionState } from '../commitAttribution.js'
 
 /**
  * Universo de eventos de hook. Inlineado verbatim desde
@@ -160,3 +166,75 @@ export type AgentHook = HookCommandBase & {
 
 /** ant `HookCommand` — unión discriminada de los cuatro tipos persistibles. */
 export type HookCommand = BashCommandHook | PromptHook | HttpHook | AgentHook
+
+/**
+ * Stub estructural de la entrada de un hook — porte verbatim de
+ * `ccnmt: packages/headless-sdk/src/coreTypes.generated.ts:69`, vecino
+ * inmediato de los tres stubs de salida que este archivo ya porta arriba
+ * (`:70-72`). La fuente lo importa de
+ * `@claude-code-how-works/headless-sdk/agentSdkTypes.js`; aqui se declara
+ * local por la misma razon que `HookJSONOutput`: ese paquete no publica el
+ * simbolo en este arbol (`agentSdkTypes.ts` solo declara `HookEvent`, y
+ * como `unknown`).
+ */
+export type HookInput = { hook_event_name: string; [key: string]: unknown }
+
+/**
+ * SHIM DE SOLO-TIPO, heredado y DELIBERADO — no un accidente del porte.
+ *
+ * La referencia declara este alias como `unknown` en este mismo archivo
+ * (`ccnmt: packages/agent/types/hooks.ts:19`) en vez de importar el tipo
+ * real, y lo hace en 8 sitios mas del arbol: son archivos con nombre de
+ * shim (`appStateCompatShim`, `appStateShim`, `AppStateCompat`) cuyo
+ * docstring cita la misma decision de particion, para que un paquete no
+ * importe `state/AppState` a nivel de modulo. El tipo real existe y esta
+ * portado, byte a byte, en `app-host/src/state/AppStateCompat.ts:89`.
+ *
+ * La version anterior de este comentario decia que la forma de `unknown`
+ * era «la que la fuente declara», sin mas. Es cierto de la referencia
+ * inmediata y no del original, que si importa el tipo real — el analisis
+ * esta en `.claude/workbench/appstate-shim-leak-20260919T024500/`.
+ *
+ * No se estrecha aqui por el umbral que la propia referencia declara y
+ * midio: estrechar un shim solo rinde sobre consumidores de patron ACCESS
+ * (`x.campo`), y `HookCallbackContext` tiene CERO consumidores en los tres
+ * arboles medidos. El triaje de los 9 shims es TASK-THYROX-0203.
+ */
+type AppState = unknown
+
+/** Contexto que los hooks de callback reciben para acceder al estado. */
+export type HookCallbackContext = {
+  getAppState: () => AppState
+  updateAttributionState: (
+    updater: (prev: AttributionState) => AttributionState,
+  ) => void
+}
+
+/** Hook que es un callback — registrado en memoria, no persistible. */
+export type HookCallback = {
+  type: 'callback'
+  callback: (
+    input: HookInput,
+    toolUseID: string | null,
+    abort: AbortSignal | undefined,
+    /** Indice del hook, para que los de SessionStart compongan CLAUDE_ENV_FILE */
+    hookIndex?: number,
+    /** Contexto opcional de acceso al estado de la aplicacion */
+    context?: HookCallbackContext,
+  ) => Promise<HookJSONOutput>
+  /** Timeout en segundos para este hook */
+  timeout?: number
+  /** Los hooks internos quedan fuera de las metricas de tengu_run_hook */
+  internal?: boolean
+}
+
+/**
+ * Un matcher de hooks de callback. Su discriminador frente al matcher de
+ * plugin es la AUSENCIA de `pluginRoot` — `clearRegisteredPluginHooks` de
+ * `app-host/bootstrap/state.ts` particiona con `'pluginRoot' in m`.
+ */
+export type HookCallbackMatcher = {
+  matcher?: string
+  hooks: HookCallback[]
+  pluginName?: string
+}

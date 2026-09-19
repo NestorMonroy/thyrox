@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Text, useTheme } from '@thyrox/ink'
+import { Box, Text, useTheme } from '@anthropic/ink'
 import { env } from '@thyrox/config/env/paths'
 
 const WELCOME_V2_WIDTH = 58

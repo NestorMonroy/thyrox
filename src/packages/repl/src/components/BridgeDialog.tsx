@@ -15,12 +15,12 @@ import {
 } from '@thyrox/output/constants/figures.js'
 import { useRegisterOverlay } from '../overlayContext.js'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw 'd' key for disconnect, not a configurable keybinding action
-import { Box, Text, useInput } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text, useInput } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { useAppState, useSetAppState } from '../appStateHooks.js'
 import { saveGlobalConfig } from '@thyrox/config'
 import { getBranch } from '@thyrox/storage/git.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 type Props = {
   onDone: () => void

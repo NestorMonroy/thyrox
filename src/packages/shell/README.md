@@ -1,4 +1,4 @@
-# @claude-code-how-works/shell
+# @thyrox/shell
 
 Bash AST, sandbox-aware execution, PowerShell parser, portable
 `execFileNoThrow`, and the Shell.ts wrapper.

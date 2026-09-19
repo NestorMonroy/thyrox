@@ -19,7 +19,7 @@ import { childStatusColor } from './childStatusColor.js'
 
 const PR_COLOR_TO_THEME: Record<
   'error' | 'warning' | 'success',
-  keyof import('@thyrox/ink').Theme
+  keyof import('@anthropic/ink').Theme
 > = {
   error: 'error',
   warning: 'warning',

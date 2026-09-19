@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Notification } from '../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { checkAndInstallOfficialMarketplace } from '@thyrox/config/plugin/officialMarketplaceStartupCheck'
 import { useStartupNotification } from './notifs/useStartupNotification.js'

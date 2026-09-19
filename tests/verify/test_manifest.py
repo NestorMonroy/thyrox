@@ -49,10 +49,10 @@ check("campos accesibles", ("n-001", "section", "Introducción", "doc.rst"),
       (n.node_id, n.kind, n.title, n.source))
 
 print("=== 2. render_manifest escapa el pipe ===")
-con_pipe = [mf.Node("n-005", "text", "A | B", "doc.rst")]
-tabla = mf.render_manifest(con_pipe)
-check("titulo con pipe escapado", True, "A \\| B" in tabla)
-check("titulo con pipe crudo NO aparece", False, "| A | B |" in tabla)
+with_pipe = [mf.Node("n-005", "text", "A | B", "doc.rst")]
+table = mf.render_manifest(with_pipe)
+check("titulo con pipe escapado", True, "A \\| B" in table)
+check("titulo con pipe crudo NO aparece", False, "| A | B |" in table)
 
 print(f"\nOK={OK} FAILED={FAILED}")
 raise SystemExit(1 if FAILED else 0)

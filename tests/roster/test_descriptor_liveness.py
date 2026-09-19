@@ -154,10 +154,10 @@ check("el muerto", "unheld", result["/tmp/tasks/muerto.output"].verdict)
 
 print("== 10. CONTROL contra /proc real: este proceso sostiene su archivo ==")
 with tempfile.NamedTemporaryFile(suffix=".output", delete=False) as handle:
-    sostenido = handle.name
+    sustained = handle.name
     handle.write(b"contenido, para que el archivo NO este vacio\n")
     handle.flush()
-    d = dl.diagnose(sostenido)
+    d = dl.diagnose(sustained)
     check("verdict", "held", d.verdict)
     check("mi propio PID entre los tenedores", True,
           os.getpid() in [h.pid for h in d.holders])
@@ -165,10 +165,10 @@ with tempfile.NamedTemporaryFile(suffix=".output", delete=False) as handle:
 print("== 11. CONTROL contra /proc real: el mismo archivo ya sin tenedor ==")
 # El archivo sigue existiendo Y con contenido — que es justo lo que los otros
 # tres instrumentos leen como "terminado". Aquí el descriptor ya se cerró.
-d = dl.diagnose(sostenido)
+d = dl.diagnose(sustained)
 check("verdict", "unheld", d.verdict)
-check("con contenido en disco", True, os.path.getsize(sostenido) > 0)
-os.unlink(sostenido)
+check("con contenido en disco", True, os.path.getsize(sustained) > 0)
+os.unlink(sustained)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

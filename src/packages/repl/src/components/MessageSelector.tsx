@@ -24,8 +24,8 @@ import {
   Dialog,
   Byline,
   KeyboardShortcutHint,
-} from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+} from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type {
   Message,
   PartialCompactDirection,
@@ -47,7 +47,7 @@ function isTextBlock(block: ContentBlockParam): block is TextBlockParam {
 }
 
 import * as path from 'path'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { isFullscreenEnvEnabled } from '../fullscreen.js'
 import type { FileEditOutput } from '@thyrox/tool-registry/tools/FileEditTool/types.js'
 import type { Output as FileWriteToolOutput } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
@@ -64,7 +64,7 @@ import {
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { formatRelativeTimeAgo } from '@thyrox/output/formatters'
 import { truncate } from '@thyrox/output/formatters/truncate.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 type RestoreOption =
   | 'both'
   | 'conversation'

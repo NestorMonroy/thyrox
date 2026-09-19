@@ -1,0 +1,15 @@
+specifiers distintos medidos: 1155
+sin resolver: 7
+
+== MANIFIESTO: 0
+
+== PUERTO: 7
+  @thyrox/agent/file-history (14 import(s)) -> ningun candidato en disco
+  @thyrox/agent/query-engine (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/REPLTool/REPLTool.js (2 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/SleepTool/SleepTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/SnipTool/SnipTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js (1 import(s)) -> ningun candidato en disco
+  @thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js (1 import(s)) -> ningun candidato en disco
+
+== DESCONOCIDO: 0

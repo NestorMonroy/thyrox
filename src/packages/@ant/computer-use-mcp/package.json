@@ -4,18 +4,66 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./sentinelApps": "./src/sentinelApps.ts",
-    "./types": "./src/types.ts",
-    "./legacy/mcpServer.js": "./src/legacy/mcpServer.ts",
-    "./legacy/common.js": "./src/legacy/common.ts",
-    "./legacy/setup.js": "./src/legacy/setup.ts",
-    "./legacy/cleanup.js": "./src/legacy/cleanup.ts",
-    "./legacy/gates.js": "./src/legacy/gates.ts",
-    "./legacy/wrapper.js": "./src/legacy/wrapper.tsx",
-    "./legacy/win32/windowEnum.js": "./src/legacy/win32/windowEnum.ts",
-    "./legacy/win32/windowCapture.js": "./src/legacy/win32/windowCapture.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./sentinelApps": {
+      "types": "./dist/sentinelApps.d.ts",
+      "default": "./src/sentinelApps.ts"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./legacy/mcpServer.js": {
+      "types": "./dist/legacy/mcpServer.d.ts",
+      "default": "./src/legacy/mcpServer.ts"
+    },
+    "./legacy/common.js": {
+      "types": "./dist/legacy/common.d.ts",
+      "default": "./src/legacy/common.ts"
+    },
+    "./legacy/setup.js": {
+      "types": "./dist/legacy/setup.d.ts",
+      "default": "./src/legacy/setup.ts"
+    },
+    "./legacy/cleanup.js": {
+      "types": "./dist/legacy/cleanup.d.ts",
+      "default": "./src/legacy/cleanup.ts"
+    },
+    "./legacy/gates.js": {
+      "types": "./dist/legacy/gates.d.ts",
+      "default": "./src/legacy/gates.ts"
+    },
+    "./legacy/wrapper.js": {
+      "types": "./dist/legacy/wrapper.d.ts",
+      "default": "./src/legacy/wrapper.tsx"
+    },
+    "./legacy/win32/windowEnum.js": {
+      "types": "./dist/legacy/win32/windowEnum.d.ts",
+      "default": "./src/legacy/win32/windowEnum.ts"
+    },
+    "./legacy/win32/windowCapture.js": {
+      "types": "./dist/legacy/win32/windowCapture.d.ts",
+      "default": "./src/legacy/win32/windowCapture.ts"
+    }
+  },
+  "dependencies": {
+    "@ant/computer-use-input": "workspace:*",
+    "@ant/computer-use-swift": "workspace:*",
+    "@anthropic/ink": "workspace:*",
+    "@thyrox/app-host": "workspace:*",
+    "@thyrox/config": "workspace:*",
+    "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
+    "@thyrox/shell": "workspace:*",
+    "@thyrox/tool-registry": "workspace:*"
   }
 }

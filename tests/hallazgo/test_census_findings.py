@@ -49,8 +49,8 @@ def write(path: pathlib.Path, body: str) -> None:
 
 
 def finding(submodule: str, lines: int = 3) -> str:
-    cuerpo = "\n".join(f"linea {i}" for i in range(lines - 2))
-    return f".. meta::\n   :submodulo: {submodule}\n{cuerpo}\n"
+    body = "\n".join(f"linea {i}" for i in range(lines - 2))
+    return f".. meta::\n   :submodulo: {submodule}\n{body}\n"
 
 
 def build_corpus(root: pathlib.Path) -> None:
@@ -127,20 +127,20 @@ def main() -> int:
 
         print()
         print("== 7. el render publica el DENOMINADOR, no un conteo pelado ==")
-        texto = census_findings.render(data)
-        check("el total aparece", True, "4" in texto)
-        check("la coherencia va con su denominador", True, "3 de 4" in texto)
-        check("y el prefijo inedito llega al texto", True, "ZZZ" in texto)
+        text = census_findings.render(data)
+        check("el total aparece", True, "4" in text)
+        check("la coherencia va con su denominador", True, "3 de 4" in text)
+        check("y el prefijo inedito llega al texto", True, "ZZZ" in text)
 
         print()
         print("== 8. un corpus vacio NO publica un cero mudo ==")
-        vacio = pathlib.Path(tempfile.mkdtemp(prefix="censo-vacio-"))
+        empty = pathlib.Path(tempfile.mkdtemp(prefix="censo-vacio-"))
         try:
-            d2 = census_findings.census(vacio)
+            d2 = census_findings.census(empty)
             check("total 0", 0, d2["total"])
             check("y la mediana declara que no hay poblacion", None, d2["median_lines"])
         finally:
-            shutil.rmtree(vacio, ignore_errors=True)
+            shutil.rmtree(empty, ignore_errors=True)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

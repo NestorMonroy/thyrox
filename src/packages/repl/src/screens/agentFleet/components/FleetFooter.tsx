@@ -32,7 +32,7 @@
  */
 
 import type React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 
 export type FleetFooterSelectionKind = 'job' | 'header' | 'fold' | 'none'
 

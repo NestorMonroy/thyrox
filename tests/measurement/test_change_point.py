@@ -43,40 +43,40 @@ def check(label: str, condition: bool, extra: str = "") -> None:
 def main() -> int:
     # --- EL CASO NULO: ruido sin cambio. Sin umbral, argmax nombra uno igual.
     rng = random.Random(20260916)
-    ruido = series.level([(i * DAY, rng.gauss(100.0, 5.0)) for i in range(80)],
+    noise = series.level([(i * DAY, rng.gauss(100.0, 5.0)) for i in range(80)],
                          label="ruido sin cambio")
-    nulo = cp.locate(ruido)
+    null = cp.locate(noise)
     check("el ruido sin cambio NO declara punto de cambio",
-          nulo.verdict is cp.Verdict.NO_EVIDENCE,
-          f"conf={nulo.confidence:.3f} en indice {nulo.index}")
+          null.verdict is cp.Verdict.NO_EVIDENCE,
+          f"conf={null.confidence:.3f} en indice {null.index}")
     check("aun asi publica el indice del maximo, para que se pueda mirar",
-          0 <= nulo.index < ruido.count, str(nulo.index))
+          0 <= null.index < noise.count, str(null.index))
     check("el veredicto se llama «sin evidencia», no «sin cambio»",
-          nulo.verdict.value.startswith("sin evidencia"), nulo.verdict.value)
+          null.verdict.value.startswith("sin evidencia"), null.verdict.value)
 
     # --- una serie PLANA: el caso mas extremo del nulo
-    plana = series.level([(i * DAY, 50.0) for i in range(40)])
+    flat = series.level([(i * DAY, 50.0) for i in range(40)])
     check("una serie plana tampoco declara cambio",
-          cp.locate(plana).verdict is cp.Verdict.NO_EVIDENCE)
+          cp.locate(flat).verdict is cp.Verdict.NO_EVIDENCE)
 
     # --- el positivo: un escalon real, y se localiza donde esta
-    corte = 30
-    escalon = series.level(
-        [(i * DAY, (100.0 if i < corte else 140.0) + rng.gauss(0.0, 3.0))
+    cut = 30
+    tier = series.level(
+        [(i * DAY, (100.0 if i < cut else 140.0) + rng.gauss(0.0, 3.0))
          for i in range(70)], label="escalon en 30")
-    hallado = cp.locate(escalon)
-    check("un escalon real SI se declara", hallado.verdict is cp.Verdict.CHANGED,
-          f"conf={hallado.confidence:.3f}")
+    found = cp.locate(tier)
+    check("un escalon real SI se declara", found.verdict is cp.Verdict.CHANGED,
+          f"conf={found.confidence:.3f}")
     check("y se localiza a menos de tres puntos del corte real",
-          abs(hallado.index - corte) <= 3,
-          f"{hallado.index} contra {corte}")
+          abs(found.index - cut) <= 3,
+          f"{found.index} contra {cut}")
     check("el tiempo del cambio sale de la serie, no del indice suelto",
-          hallado.time == escalon.times[hallado.index],
-          f"{hallado.time} != {escalon.times[hallado.index]}")
+          found.time == tier.times[found.index],
+          f"{found.time} != {tier.times[found.index]}")
 
     # --- reproducible: el umbral sale de permutaciones con semilla fija
     check("dos corridas sobre la misma serie dan el mismo veredicto",
-          cp.locate(escalon).confidence == hallado.confidence,
+          cp.locate(tier).confidence == found.confidence,
           "el veredicto depende del azar de la corrida")
 
     # --- rehusa lo que no se puede mirar

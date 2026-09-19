@@ -107,7 +107,7 @@ function requireModelCost(): { calculateUSDCost: (model: string, usage: Usage) =
 
 function requireModelMaxOutputTokens(): (model: string) => { default: number } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return (require('@thyrox/agent/context.ts') as { getModelMaxOutputTokens: (model: string) => { default: number } }).getModelMaxOutputTokens
+  return (require('@thyrox/agent/context') as { getModelMaxOutputTokens: (model: string) => { default: number } }).getModelMaxOutputTokens
 }
 
 export const getTotalCost = () => requireBootstrapState().getTotalCostUSD()

@@ -1,6 +1,6 @@
 import figures from 'figures'
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { AdvisorBlock } from '@thyrox/provider/advisor.js'
 import { renderModelName } from '@thyrox/provider/model.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'

@@ -125,8 +125,8 @@ CODE_ROOTS = (
 #: Ninguna raiz se nombra: el proveedor servira arboles que no son los de hoy,
 #: y por eso las dos mitades se PIDEN en vez de enumerarse.
 PATH_ROOTS = tuple(
-    os.path.join(str(raiz), *extra)
-    for raiz in (*reach.roots().values(), reach.thyrox_root())
+    os.path.join(str(root_dir), *extra)
+    for root_dir in (*reach.roots().values(), reach.thyrox_root())
     for extra in ((), ('.claude',))
 )
 

@@ -1,0 +1,11 @@
+=== GNU parallel -j4 ===
+parallel -j4: 38.94 s
+=== run-task-pool --width 4 ===
+run-task-pool: 43.06 s
+=== serie ===
+serie: 40.95 s
+=== ledger tras el pool ===
+  barz6nptm    SIN-PID    pid —      /tmp/claude-0/-home-user/168b0fdf-bfe4-590b-b6c0-b6be124c124a/tasks/barz6nptm.output
+estado: 1 trabajo(s) — SIN-PID=1 
+
+[exited with code 0]

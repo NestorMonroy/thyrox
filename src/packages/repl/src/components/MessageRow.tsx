@@ -1,6 +1,6 @@
 import * as React from 'react'
 import type { Command } from '@thyrox/command-runtime/runtime'
-import { Box } from '@thyrox/ink'
+import { Box } from '@anthropic/ink'
 import type { Screen } from '../screens/REPL.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { RenderableMessage } from '@thyrox/agent/messageShapes'

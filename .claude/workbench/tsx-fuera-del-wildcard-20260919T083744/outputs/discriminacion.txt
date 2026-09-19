@@ -1,0 +1,3 @@
+  ANTES : 17/17 el error nombra el specifier pedido
+  DESPUES: 0/17 el error nombra el specifier pedido
+  (los que quedan rojos lo hacen por OTRO specifier, aguas abajo)

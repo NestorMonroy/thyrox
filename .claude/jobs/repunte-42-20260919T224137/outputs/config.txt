@@ -1,0 +1,3 @@
+config: emitio pese a 6804 errores (517 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 6804 error(es) que siguen vivos en su propio paquete

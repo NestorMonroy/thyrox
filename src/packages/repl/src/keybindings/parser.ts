@@ -1,4 +1,4 @@
-// Re-export from @thyrox/ink keybindings module
+// Re-export from @anthropic/ink keybindings module
 export {
   parseKeystroke,
   parseChord,
@@ -7,4 +7,4 @@ export {
   keystrokeToDisplayString,
   chordToDisplayString,
   parseBindings,
-} from '@thyrox/ink'
+} from '@anthropic/ink'

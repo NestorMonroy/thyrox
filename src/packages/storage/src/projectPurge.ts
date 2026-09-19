@@ -1,7 +1,14 @@
 /**
- * `project purge` core — puerto de
- * `ccnmt: packages/storage/src/projectPurge.ts` (577 líneas fuente), byte-
- * for-byte port of ant v2.1.136:
+ * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/projectPurge.ts`.
+ * La version anterior portaba 7 de 9 exports, y los suyos eran
+ * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
+ * Divergencia frente a la fuente: ninguna, salvo el alcance
+ * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
+ * Refs: TASK-THYROX-0199.
+ */
+
+/**
+ * `project purge` core — byte-for-byte port of ant v2.1.136
  *   - `ci3` → collectProjectPurgeItems (single-project plan)
  *   - `li3` → collectAllProjectsPurgeItems (--all plan)
  *   - `Id8` → executePurgeItem (kind dispatch)
@@ -11,105 +18,42 @@
  *   - `bnK` → pathBelongsToProjects (path === root || startsWith(root + sep))
  *   - `di3` → listSessionIdsInProjectDir (.jsonl filenames, UUID-shaped only)
  *
- * Porte COMPLETO de los cuatro símbolos exportados que los tests ejercitan
- * (`collectProjectPurgeItems`, `collectAllProjectsPurgeItems`,
- * `executePurgeItem`, `scanHistoryFile`) más sus 10 helpers privados. NO se
- * portan los dos wrappers de compatibilidad hacia atrás de la fuente
- * (`collectPurgeItems`, `executePurgeItems`, marcados `@deprecated` en la
- * propia fuente) — ningún test los ejercita.
+ * The implementation is pure of CLI / stdout / process.exit — the CLI
+ * handler in packages/cli/src/commands/project-commands.ts owns the
+ * print / prompt / confirm flow (ant `ni3`, `SnK`, `xnK`, `CnK`, `EnK`).
  *
- * Tres dependencias de la fuente no existen (aún) en este árbol y se
- * reimplementan aquí como funciones PRIVADAS (no exportadas), para no crear
- * ni tocar archivos fuera de mi propiedad en este pase (otro agente
- * concurrente trabaja la familia `session*` de este mismo paquete):
+ * Items collected per project (ant `ci3`):
+ *   - per-session tasks dir:    ~/.claude/tasks/<sessionId>/
+ *   - per-session debug log:    ~/.claude/debug/<sessionId>.txt
+ *   - per-session file-history: ~/.claude/file-history/<sessionId>/
+ *   - project dir:              ~/.claude/projects/<slug>/ (transcripts + memory/)
+ *   - config-key entries:       ~/.claude.json[projects][<projectPath>] (and
+ *                               canonicalized variant)
+ *   - history.jsonl lines:      ~/.claude/history.jsonl lines whose `cwd`
+ *                               belongs to one of the project paths
  *
- *   - `getClaudeConfigHomeDir` (`@claude-code-how-works/config/env/utils`) —
- *     fiel salvo que no se memoiza (no hace falta: cada test cambia
- *     `CLAUDE_CONFIG_DIR` a un valor nuevo, así que memoizar no ahorraría
- *     nada y complicaría la invalidación entre tests).
- *   - `sanitizePath`/`getProjectsDir`/`canonicalizePath`
- *     (`./sessionStoragePortable.js`, no existe en este árbol) — fieles,
- *     incluida la rama de hash para nombres >200 caracteres.
- *
- * Reconciliación (tarea #208, 2026-09-06): `getWorktreePathsPortable` y
- * `findGitRoot` YA NO se reimplementan aquí — ambos módulos reales existen
- * ahora en este mismo paquete (`./getWorktreePathsPortable.ts`,
- * `./findGitRoot.ts`) y este archivo pasa a IMPORTARLOS. Sus copias
- * privadas (idénticas en el primer caso; sin memoize-LRU ni logging de
- * diagnóstico en el segundo, ninguno de los dos ejercitado por los tests
- * de este archivo) se retiran — dos implementaciones del mismo mecanismo
- * era la deuda que esta reconciliación cierra.
+ * Warnings (`ci3` last block):
+ *   - shell-snapshots/ are not project-scoped
+ *   - backups/ may still contain entries in old snapshots
  */
 import { createReadStream } from 'fs'
-import { readdir, readFile, realpath, rm, stat, writeFile } from 'fs/promises'
-import { homedir } from 'os'
+import { readdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { createInterface } from 'readline'
 import { join, resolve as pathResolve, sep as pathSep } from 'path'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import {
+  canonicalizePath,
+  getProjectsDir,
+  sanitizePath,
+} from './sessionStoragePortable.js'
 import { getWorktreePathsPortable } from './getWorktreePathsPortable.js'
 import { findGitRoot } from './findGitRoot.js'
 
-// ---------------------------------------------------------------------------
-// Helpers privados que en la fuente vienen de paquetes hermanos ausentes —
-// ver el docstring de arriba.
-// ---------------------------------------------------------------------------
-
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize(
-    'NFC',
-  )
-}
-
-const MAX_SANITIZED_LENGTH = 200
-
-function djb2Hash(str: string): number {
-  let hash = 5381
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 33) ^ str.charCodeAt(i)
-  }
-  return hash | 0
-}
-
-function simpleHash(str: string): string {
-  return Math.abs(djb2Hash(str)).toString(36)
-}
-
-/**
- * Makes a string safe for use as a directory or file name. Replaces all
- * non-alphanumeric characters with hyphens; for names >200 chars, truncates
- * and appends a hash suffix for uniqueness.
- */
-function sanitizePath(name: string): string {
-  const sanitized = name.replace(/[^a-zA-Z0-9]/g, '-')
-  if (sanitized.length <= MAX_SANITIZED_LENGTH) {
-    return sanitized
-  }
-  const hash =
-    typeof Bun !== 'undefined' ? Bun.hash(name).toString(36) : simpleHash(name)
-  return `${sanitized.slice(0, MAX_SANITIZED_LENGTH)}-${hash}`
-}
-
-function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
-}
-
-/**
- * Resolves a directory path to its canonical form using realpath + NFC
- * normalization. Falls back to NFC-only if realpath fails (e.g., the
- * directory doesn't exist yet).
- */
-async function canonicalizePath(dir: string): Promise<string> {
-  try {
-    return (await realpath(dir)).normalize('NFC')
-  } catch {
-    return dir.normalize('NFC')
-  }
-}
-
 /**
  * Mirror of `agent/tasks.ts` `getTasksDir` + `sanitizePathComponent`. We
- * can't import them from `@claude-code-how-works/agent/tasks` because agent
- * already imports from storage — that direction is the canonical one, so
- * the cycle prevention rule forbids the reverse. The contract is a 3-line
+ * can't import them from `@thyrox/agent/tasks` because agent already
+ * imports from storage — that direction is the canonical one, so the
+ * cycle prevention rule forbids the reverse. The contract is a 3-line
  * regex replace; duplicating it costs less than adding a fourth package.
  */
 function sanitizePathComponent(input: string): string {
@@ -139,9 +83,11 @@ export type PurgeItem = {
   reason: string
   /**
    * Only set on `history-lines` items — the set of project root paths a
-   * history entry's `cwd` must belong to in order to be REMOVED.
+   * history entry's `cwd` must belong to in order to be REMOVED. Mirrors
+   * ant's `matchPaths` field on the history-lines record.
    */
   matchPaths?: ReadonlySet<string>
+  /** Best-effort size estimate for `dir`/`file` items. 0 / undefined elsewhere. */
   size?: number
 }
 
@@ -243,9 +189,11 @@ async function listSessionIdsInProjectDir(
 
 /**
  * Ant `Qi3` — given a slug-prefix candidate project dir and the set of
- * project roots we're purging, probe up to N JSONL files (sorted) and up
- * to N lines per file to confirm a single entry has a `cwd` that belongs
- * to one of the roots.
+ * project roots we're purging, probe up to N JSONL files (sorted) and
+ * up to N lines per file to confirm a single entry has a `cwd` that
+ * belongs to one of the roots. Used to claim slug-prefix-matched dirs
+ * whose hash suffix differs from the exact slug (long-path collisions
+ * between Bun/Node hash, plus pre-canonicalised installs).
  */
 async function projectDirOwnedByPaths(
   candidateDir: string,
@@ -305,6 +253,9 @@ function isEnoent(err: unknown): boolean {
 }
 
 function normalizeKey(path: string): string {
+  // ant uses `wr(W).replace(/\/+$/,"")||"/"` to normalise project keys
+  // for the .claude.json projects map. The leading slash + trailing slash
+  // strip ensures `/foo/` and `/foo` collapse to the same key.
   return path.normalize('NFC').replace(/\/+$/, '') || '/'
 }
 
@@ -312,7 +263,11 @@ async function readClaudeJsonProjects(): Promise<{
   filePath: string
   projects: Record<string, unknown>
 } | null> {
-  const claudeJsonPath = join(getClaudeConfigHomeDir(), '..', '.claude.json')
+  const claudeJsonPath = join(
+    getClaudeConfigHomeDir(),
+    '..',
+    '.claude.json',
+  )
   try {
     const raw = await readFile(claudeJsonPath, 'utf-8')
     const cfg = JSON.parse(raw) as { projects?: Record<string, unknown> }
@@ -323,8 +278,8 @@ async function readClaudeJsonProjects(): Promise<{
 }
 
 /**
- * Ant `ci3` — build the per-project purge plan. Pure: returns the list of
- * items that WOULD be deleted, not a side-effect.
+ * Ant `ci3` — build the per-project purge plan. Pure: returns the list
+ * of items that WOULD be deleted, not a side-effect.
  */
 export async function collectProjectPurgeItems(
   projectPath: string,
@@ -334,6 +289,10 @@ export async function collectProjectPurgeItems(
   const canonicalRoot = await canonicalizePath(rawRoot)
   const projectRoots: ReadonlySet<string> = new Set([rawRoot, canonicalRoot])
 
+  // Also resolve the git repo root for each project root — ant `M$(W)`
+  // returns the enclosing repo root (if any), so worktrees under that
+  // repo get included in the slug-prefix scan. Skip if any root path
+  // doesn't exist (stat throws).
   const repoRoots: string[] = []
   let anyRootExists = false
   for (const root of projectRoots) {
@@ -352,7 +311,8 @@ export async function collectProjectPurgeItems(
     if (await exists(dir)) projectDirs.add(dir)
   }
 
-  // 2. Sibling git-worktree slugs.
+  // 2. Sibling git-worktree slugs — ant `l0(W)` returns worktree paths
+  //    for each project root and adds their resolved project dirs.
   for (const root of projectRoots) {
     let worktreePaths: string[] = []
     try {
@@ -367,7 +327,11 @@ export async function collectProjectPurgeItems(
     }
   }
 
-  // 3. Slug-prefix scan.
+  // 3. Slug-prefix scan — ant walks `WL()` (projects dir) and finds any
+  //    sibling dir starting with `<slug>-` whose first .jsonl has a `cwd`
+  //    that belongs to one of our project roots. This catches long-path
+  //    hash-suffix collisions AND pre-canonicalised dirs that weren't
+  //    listed under exact slug.
   const slugPrefixes = [...projectRoots].map(r => sanitizePath(r) + '-')
   try {
     const entries = await readdir(getProjectsDir(), { withFileTypes: true })
@@ -430,7 +394,8 @@ export async function collectProjectPurgeItems(
     })
   }
 
-  // 7. Config-key entries in ~/.claude.json.
+  // 7. Config-key entries in ~/.claude.json. Match each `projects` key
+  //    whose normalised form equals one of our roots OR a repo root.
   const cfg = await readClaudeJsonProjects()
   if (cfg) {
     const keys = new Set<string>(
@@ -448,7 +413,7 @@ export async function collectProjectPurgeItems(
     }
   }
 
-  // 8. history.jsonl — count matching lines.
+  // 8. history.jsonl — count matching lines (delete pass uses scanHistoryFile filter mode).
   const historyJsonl = join(home, 'history.jsonl')
   if (await exists(historyJsonl)) {
     const count = await scanHistoryFile(historyJsonl, projectRoots, 'count')
@@ -476,14 +441,17 @@ export async function collectProjectPurgeItems(
     )
   }
 
+  // If nothing on disk for this project AT ALL (none of the roots existed
+  // AND nothing got collected), ant still returns an empty plan and lets
+  // the caller decide what to say. Match that — no special-casing here.
   void anyRootExists
   return { items, warnings }
 }
 
 /**
- * Ant `li3` — `--all` purge plan. Collects every top-level dir that holds
- * project state, plus history.jsonl, plus every config-key in
- * `~/.claude.json#projects`.
+ * Ant `li3` — `--all` purge plan. Collects every top-level dir that
+ * holds project state, plus history.jsonl, plus every config-key in
+ * `~/.claude.json#projects`. No worktree / slug-prefix scan needed.
  */
 export async function collectAllProjectsPurgeItems(): Promise<PurgePlan> {
   const home = getClaudeConfigHomeDir()
@@ -565,7 +533,11 @@ export async function executePurgeItem(item: PurgeItem): Promise<void> {
 }
 
 async function deleteClaudeJsonProjectKey(projectKey: string): Promise<void> {
-  const claudeJsonPath = join(getClaudeConfigHomeDir(), '..', '.claude.json')
+  const claudeJsonPath = join(
+    getClaudeConfigHomeDir(),
+    '..',
+    '.claude.json',
+  )
   let raw: string
   try {
     raw = await readFile(claudeJsonPath, 'utf-8')
@@ -581,4 +553,34 @@ async function deleteClaudeJsonProjectKey(projectKey: string): Promise<void> {
   if (!cfg.projects || !(projectKey in cfg.projects)) return
   delete cfg.projects[projectKey]
   await writeFile(claudeJsonPath, JSON.stringify(cfg, null, 2), 'utf-8')
+}
+
+// ----------------------------------------------------------------------------
+// Back-compat thin wrappers — preserve the old API so existing CLI / tests
+// keep compiling while we migrate the handler to the new ant-shaped API.
+// ----------------------------------------------------------------------------
+
+/** @deprecated Use `collectProjectPurgeItems` (returns PurgePlan). */
+export async function collectPurgeItems(
+  projectPath: string,
+): Promise<PurgeItem[]> {
+  const { items } = await collectProjectPurgeItems(projectPath)
+  return items
+}
+
+/** @deprecated Use `executePurgeItem` per-item — handler aggregates counts. */
+export async function executePurgeItems(
+  items: ReadonlyArray<PurgeItem>,
+  _opts: { projectPath: string } = { projectPath: '' },
+): Promise<{ removed: number; bytes: number }> {
+  let removed = 0
+  for (const item of items) {
+    try {
+      await executePurgeItem(item)
+      removed++
+    } catch {
+      // best-effort per ant
+    }
+  }
+  return { removed, bytes: 0 }
 }

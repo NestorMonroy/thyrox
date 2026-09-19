@@ -3,7 +3,7 @@ import {
   formatPastedTextRef,
   getPastedTextRefNumLines,
 } from './history.js'
-import { instances } from '@thyrox/ink'
+import { instances } from '@anthropic/ink'
 import type { PastedContent } from '@thyrox/config'
 import { classifyGuiEditor, getExternalEditor } from '@thyrox/storage/editor.js'
 import { execSync } from '@thyrox/shell/execSyncWrapper.js'

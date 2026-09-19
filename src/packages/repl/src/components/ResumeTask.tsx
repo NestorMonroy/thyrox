@@ -1,19 +1,19 @@
 import React, { useCallback, useState } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import {
   type CodeSession,
   fetchCodeSessionsFromSessionsAPI,
 } from '@thyrox/teleport/api.js'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow list navigation
-import { Box, Text, useInput } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text, useInput } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { detectCurrentRepository } from '@thyrox/storage/detectRepository.js'
 import { formatRelativeTime } from '@thyrox/output/formatters'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
-import { Byline, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
 import { TeleportError } from './TeleportError.js'
 

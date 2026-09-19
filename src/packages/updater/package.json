@@ -4,27 +4,84 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./testing/index.ts",
-    "./autoUpdater.js": "./src/autoUpdater.ts",
-    "./binaryCheck.js": "./src/binaryCheck.ts",
-    "./githubReleases.js": "./src/githubReleases.ts",
-    "./completionCache.js": "./src/completionCache.ts",
-    "./nativeInstaller/index.js": "./src/nativeInstaller/index.ts",
-    "./nativeInstaller/download.js": "./src/nativeInstaller/download.ts",
-    "./nativeInstaller/installer.js": "./src/nativeInstaller/installer.ts",
-    "./nativeInstaller/launcherOwnership.js": "./src/nativeInstaller/launcherOwnership.ts",
-    "./nativeInstaller/packageManagers.js": "./src/nativeInstaller/packageManagers.ts",
-    "./nativeInstaller/pidLock.js": "./src/nativeInstaller/pidLock.ts",
-    "./nativeInstaller/platform.js": "./src/nativeInstaller/platform.ts",
-    "./nativeInstaller/streamBinaryDownload.js": "./src/nativeInstaller/streamBinaryDownload.ts",
-    "./nativeInstaller": "./src/nativeInstaller/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./autoUpdater.js": {
+      "types": "./dist/src/autoUpdater.d.ts",
+      "default": "./src/autoUpdater.ts"
+    },
+    "./binaryCheck.js": {
+      "types": "./dist/src/binaryCheck.d.ts",
+      "default": "./src/binaryCheck.ts"
+    },
+    "./githubReleases.js": {
+      "types": "./dist/src/githubReleases.d.ts",
+      "default": "./src/githubReleases.ts"
+    },
+    "./completionCache.js": {
+      "types": "./dist/src/completionCache.d.ts",
+      "default": "./src/completionCache.ts"
+    },
+    "./nativeInstaller/index.js": {
+      "types": "./dist/src/nativeInstaller/index.d.ts",
+      "default": "./src/nativeInstaller/index.ts"
+    },
+    "./nativeInstaller/download.js": {
+      "types": "./dist/src/nativeInstaller/download.d.ts",
+      "default": "./src/nativeInstaller/download.ts"
+    },
+    "./nativeInstaller/installer.js": {
+      "types": "./dist/src/nativeInstaller/installer.d.ts",
+      "default": "./src/nativeInstaller/installer.ts"
+    },
+    "./nativeInstaller/launcherOwnership.js": {
+      "types": "./dist/src/nativeInstaller/launcherOwnership.d.ts",
+      "default": "./src/nativeInstaller/launcherOwnership.ts"
+    },
+    "./nativeInstaller/packageManagers.js": {
+      "types": "./dist/src/nativeInstaller/packageManagers.d.ts",
+      "default": "./src/nativeInstaller/packageManagers.ts"
+    },
+    "./nativeInstaller/pidLock.js": {
+      "types": "./dist/src/nativeInstaller/pidLock.d.ts",
+      "default": "./src/nativeInstaller/pidLock.ts"
+    },
+    "./nativeInstaller/platform.js": {
+      "types": "./dist/src/nativeInstaller/platform.d.ts",
+      "default": "./src/nativeInstaller/platform.ts"
+    },
+    "./nativeInstaller/streamBinaryDownload.js": {
+      "types": "./dist/src/nativeInstaller/streamBinaryDownload.d.ts",
+      "default": "./src/nativeInstaller/streamBinaryDownload.ts"
+    },
+    "./nativeInstaller": {
+      "types": "./dist/src/nativeInstaller/index.d.ts",
+      "default": "./src/nativeInstaller/index.ts"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"
@@ -33,6 +90,7 @@
     "@thyrox/app-host": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "axios": "^1.20.0",

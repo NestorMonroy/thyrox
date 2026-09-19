@@ -27,6 +27,11 @@ set -uo pipefail
 # `/home/user` —el directorio primario de una sesión multi-repo— daba
 # 3 PASS · 1 FAIL · 17 WARN sobre un árbol que no es éste. Ver H-DOCS-292.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"; cd "$ROOT"
+# La raiz de IMPORTACION se declara aqui y NO se hereda de `reach.sh`: este
+# guion resuelve su propia raiz por la razon medida de arriba (H-DOCS-292), y
+# sourcear `reach.sh` le traeria ademas SU resolucion. Se compone sobre el
+# `ROOT` ya resuelto, que es el unico dato que no se duplica.
+export PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 PARENT="$(dirname "$ROOT")"
 STRICT=false; FAST=false; TIMING=false
 for a in "$@"; do

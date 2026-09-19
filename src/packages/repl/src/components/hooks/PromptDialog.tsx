@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { PromptRequest } from '@thyrox/agent/types/hooks.js'
 import { Select } from '../CustomSelect/select.js'
 import { PermissionDialog } from '@thyrox/permission/components/PermissionDialog.js'

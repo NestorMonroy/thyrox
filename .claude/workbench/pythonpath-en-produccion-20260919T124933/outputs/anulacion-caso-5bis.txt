@@ -1,0 +1,7 @@
+# Control de anulacion del caso 5-bis (render-tablero).
+# Con el interprete derivado del gate:
+  (arriba: 18 ok, 0 fallos)
+# Con el discriminador viejo (.venv del PROVEEDOR) restituido:
+    FALLO la ruta sin nada que revisar tambien sale 0
+    FALLO pero su denominador declara CERO archivos medidos
+  16 ok, 2 fallos

@@ -8,7 +8,7 @@ import type {
   KeybindingBlock,
   KeybindingContextName,
   ParsedBinding,
-} from '@thyrox/ink'
+} from '@anthropic/ink'
 
 /**
  * Types of validation issues that can occur with keybindings.

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useNotifications } from '../../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import {

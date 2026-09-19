@@ -31,10 +31,25 @@
  *    con `require()`, mismo patrón que
  *    `app-host/src/runtime/appStateCompatShim.ts` ya aplica a este mismo
  *    símbolo en otro archivo.
- * 2. `applySettingsChange` (`@claude-code-how-works/config/applySettingsChange`
- *    en la fuente) — `@thyrox/config` no tiene ese módulo (es
- *    `config/settings/applySettingsChange.ts` en ccnmt; no portado aquí,
- *    fuera de los 16). Defiere con `require()`.
+ * 2. `applySettingsChange` — la razón que aquí se declaraba era que
+ *    `@thyrox/config` no tenía ese módulo. **Es falsa desde
+ *    TASK-THYROX-0226**: el módulo existe en
+ *    `config/settings/applySettingsChange.ts`, su subpath está declarado en
+ *    el manifiesto, y `await import(...)` desde este paquete lo carga.
+ *
+ *    La razón REAL es de modo estricto, medida en TASK-THYROX-0229: el
+ *    `setAppState` que este archivo pasa está tipado sobre `AppState` (~80
+ *    campos requeridos) y `applySettingsChange` lo declara sobre
+ *    `SettingsChangeTarget` (cuatro). La función que el puerto invoca
+ *    DEVUELVE un `SettingsChangeTarget`, que no puede producir un `AppState`
+ *    — así que el import estático no compila, y no por un hueco de porte:
+ *    `ccnmt` declara `"strict": false` y nunca comprueba esa dirección.
+ *
+ *    Medido: el import estático introduce un TS2345 y ninguno menos.
+ *    Declararlo genérico tampoco lo cierra — la inferencia cae al límite
+ *    (`Target = SettingsChangeTarget`), y con el argumento de tipo explícito
+ *    falla la restricción. El `require()` + cast se queda, ahora con su
+ *    razón verdadera escrita.
  * 3. `createDisabledBypassPermissionsContext`/
  *    `isBypassPermissionsModeDisabled`
  *    (`@claude-code-how-works/permission/permissionSetup`) — no existe
@@ -92,12 +107,15 @@ function applySettingsChangeSafe(
 ): void {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const mod = require('@thyrox/config/applySettingsChange.js') as {
+    const mod = require('@thyrox/config/applySettingsChange') as {
       applySettingsChange: typeof applySettingsChangeSafe
     }
     mod.applySettingsChange(source, setState)
-  } catch {
-    // config/applySettingsChange no está portado — no-op.
+  } catch (error) {
+    // El módulo SÍ existe (ver divergencia 2). Un fallo aquí es real, no una
+    // ausencia, así que se deja rastro en vez de tragarlo: el no-op se
+    // conserva para no cambiar la conducta, pero deja de ser silencioso.
+    logForDebugging(`applySettingsChange falló: ${String(error)}`)
   }
 }
 

@@ -1,8 +1,8 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useMemo, useState } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { stringWidth } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { stringWidth } from '@anthropic/ink'
 import { useAppState, useSetAppState } from '../../appStateHooks.js'
 import {
   enterTeammateView,
@@ -16,14 +16,14 @@ import {
   type TaskState,
 } from '../../tasksTypes.js'
 import { calculateHorizontalScrollWindow } from '../../uiHelpers/horizontalScroll.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   AGENT_COLOR_TO_THEME_COLOR,
   AGENT_COLORS,
   type AgentColorName,
 } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
-import type { Theme } from '@thyrox/ink'
-import { KeyboardShortcutHint } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
+import { KeyboardShortcutHint } from '@anthropic/ink'
 import {
   isBgAgentPanelEnabled,
   shouldHideTasksFooter,

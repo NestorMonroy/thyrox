@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import { useEffect, useRef } from 'react'
-import { getTerminalFocusState, subscribeTerminalFocus } from '@thyrox/ink'
+import { getTerminalFocusState, subscribeTerminalFocus } from '@anthropic/ink'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { generateAwaySummary } from '@thyrox/agent/awaySummary.js'
 import type { Message } from '@thyrox/agent/messageShapes'

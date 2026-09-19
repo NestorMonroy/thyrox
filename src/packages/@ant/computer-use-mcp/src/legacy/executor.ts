@@ -43,10 +43,10 @@ import type {
 } from '../index.js'
 
 import { API_RESIZE_PARAMS, targetImageSize } from '../index.js'
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { execFileNoThrow } from '@claude-code-how-works/shell/execFileNoThrow.js'
-import { sleep } from '@claude-code-how-works/config/sleep'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { sleep } from '@thyrox/config/sleep'
 import {
   CLI_CU_CAPABILITIES,
   CLI_HOST_BUNDLE_ID,

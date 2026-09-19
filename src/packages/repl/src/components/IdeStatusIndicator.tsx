@@ -2,7 +2,7 @@ import { basename } from 'path'
 import * as React from 'react'
 import { useIdeConnectionStatus } from '@thyrox/ide/hooks/useIdeConnectionStatus.js'
 import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 
 type IdeStatusIndicatorProps = {

@@ -44,6 +44,7 @@ from pathlib import Path
 from hooks.error_log import run_and_log  # noqa: E402
 
 from agents import agents_paths  # noqa: E402
+from paths import reach  # noqa: E402
 
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
 #: legítima: el archivo y su vecino se mudan juntos. Lo que no sería legítimo es
@@ -320,7 +321,7 @@ def _extract_usage(transcript_path: str) -> dict:
     # comprueba que `closing.read()` y este extractor publican lo mismo sobre
     # el mismo transcript (`tests/agents/test_final_message_closing.py`). Dos
     # instrumentos independientes que coinciden es evidencia; uno solo, no.
-    ultimo_cierre_crudo: str | None = None
+    last_close_raw: str | None = None
     # El DENOMINADOR del recorrido (:ref:`h-docs-427`, tarea #899). Sin el, la
     # suma no dice sobre cuantos mensajes se computo, y un transcript truncado
     # publica la misma cifra que uno completo. Son DOS contadores y no uno
@@ -362,7 +363,7 @@ def _extract_usage(transcript_path: str) -> dict:
                 # El crudo se sobreescribe SIEMPRE —incluido a None—, que es
                 # justo lo que lo hace distinto del de abajo: su nulo es el dato.
                 crudo = msg.get("stop_reason")
-                ultimo_cierre_crudo = str(crudo) if crudo else None
+                last_close_raw = str(crudo) if crudo else None
                 if msg.get("stop_reason"):
                     ultimo_cierre = str(msg["stop_reason"])
                 usage = msg.get("usage")
@@ -472,7 +473,7 @@ def _extract_usage(transcript_path: str) -> dict:
         # y vale nulo, y su `output_tokens` es el del `message_start`. Medido
         # sin solape: 1..10 en el grupo que diverge contra 24..3429 en el que
         # no, sobre cuerpos de mediana 2736 y 2804 caracteres.
-        "last_stop_reason": ultimo_cierre_crudo,
+        "last_stop_reason": last_close_raw,
         "compactions": compactaciones or None,
         "dropped_tokens": tokens_tirados or None,
         "perfil": {
@@ -1039,7 +1040,13 @@ def main() -> None:
     # `heng: part7/ch29.md` §29.3). Los dos comandos que este hook emite son
     # idempotentes —resuelven con COALESCE sobre la misma clave— asi que
     # reenviar uno ya aplicado no cambia la fila.
-    run_and_log(f"register_agent_session.py --{mode}", cmd, timeout=10, spool=True)
+    # `env` y no la herencia: el llamador puede haberse hecho importable
+    # insertando en su `sys.path`, que es estado del PROCESO y no viaja al
+    # hijo. El stub del consumidor hace exactamente eso, y sin esta linea
+    # `agent_store.py` muere con ModuleNotFoundError — encolado por
+    # `spool=True`, con exit 0 y sin un byte por stderr (TASK-THYROX-0216).
+    run_and_log(f"register_agent_session.py --{mode}", cmd, timeout=10,
+                spool=True, env=reach.child_env())
 
 
 if __name__ == "__main__":

@@ -42,6 +42,20 @@ yarn-error.log*
 
 # Build outputs
 dist/
+#   ^ cubre tambien `src/packages/*/dist/`, que es donde
+#     `src/typescript/emit_declarations.py` emite las declaraciones de hermano.
+#     No se versionan, y CONSTRUIRLAS ES PRECONDICION REAL — no conveniencia.
+#
+#     Aqui decia que un clon sin ellas «compila como hoy». Es falso, medido
+#     con un instrumento unico sobre el typecheck de `cli`: 2701 con `dist`,
+#     3070 SIN `dist`, 2821 sin repuntar. O sea que el clon sin construir
+#     queda PEOR que antes del repunte, no igual.
+#
+#     Lo que si es cierto —y era la mitad que sostenia la frase— es que la
+#     resolucion no se rompe: `traceResolution` muestra «Failed to resolve
+#     under condition 'types'» seguido de «Matched 'exports' condition
+#     'default'», que aterriza en el `.ts`. El clon compila; lo que no
+#     conserva es el conteo. Ver H-THYROX-148.
 build/
 .next/
 out/

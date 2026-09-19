@@ -121,11 +121,11 @@ def find_duplicates(
         if exclude_dir_name in rst.parts:
             continue
         try:
-            contenido = rst.read_text(encoding="utf-8", errors="ignore")
+            content = rst.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
         for tok in tokens:
-            if tok in contenido:
+            if tok in content:
                 hits.setdefault(tok, []).append(str(rst))
     return {tok: files for tok, files in hits.items() if len(files) <= FREQUENCY_CAP}
 
@@ -150,15 +150,15 @@ def detect(payload: dict) -> str | None:
     if not hits:
         return None
 
-    ordenados = sorted(hits.items(), key=lambda kv: len(kv[1]))[:MAX_TOKENS_REPORTED]
-    lineas = [
+    sorted_hits = sorted(hits.items(), key=lambda kv: len(kv[1]))[:MAX_TOKENS_REPORTED]
+    lines = [
         f"- `{tok}` también en: " + ", ".join(f"`{f}`" for f in files)
-        for tok, files in ordenados
+        for tok, files in sorted_hits
     ]
     return (
         "GATE DE POSIBLE DUPLICACIÓN — este hallazgo comparte identificador(es) "
         "con archivos de OTRA iniciativa de `pm/`:\n\n"
-        + "\n".join(lineas)
+        + "\n".join(lines)
         + "\n\nAntes de publicar: leer esos archivos y confirmar si el tema ya "
           "está cubierto (y este hallazgo cruza con `:ref:` en vez de "
           "duplicar) o si es genuinamente distinto. Episodio real que origina "

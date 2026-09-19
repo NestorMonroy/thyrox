@@ -1,0 +1,35 @@
+[0.09ms] ".env"
+bun install v1.3.11 (af24e281)
+Resolving dependencies
+Resolved, downloaded and extracted [0]
+warn: incorrect peer dependency "commander@13.1.0"
+Saved lockfile
+
++ @alcalzone/ansi-tokenize@0.3.1
++ @anthropic-ai/bedrock-sdk@0.26.4 (v0.33.7 available)
++ @anthropic-ai/claude-agent-sdk@0.3.197
++ @anthropic-ai/foundry-sdk@0.2.4 (v0.4.8 available)
++ @anthropic-ai/mcpb@2.1.2
++ @anthropic-ai/sandbox-runtime@0.0.64 (v0.0.77 available)
++ @anthropic-ai/sdk@0.110.0 (v0.127.0 available)
++ @anthropic-ai/vertex-sdk@0.14.4 (v0.19.10 available)
++ @aws-sdk/client-bedrock@3.1136.0
++ @aws-sdk/credential-provider-node@3.972.83
++ @aws-sdk/credential-providers@3.1136.0
++ @azure/identity@4.13.3
++ @commander-js/extra-typings@14.0.0 (v15.0.0 available)
++ @smithy/core@3.34.1
++ @smithy/node-http-handler@4.12.1
++ diff@8.0.4 (v9.0.0 available)
++ fflate@0.8.3
++ google-auth-library@10.9.1 (v11.1.0 available)
++ he@1.2.0
++ plist@3.1.1 (v5.0.0 available)
++ sharp@0.34.5 (v0.35.4 available)
++ shell-quote@1.10.0
++ turndown@7.2.4
++ undici@7.29.1 (v8.10.2 available)
++ yaml@2.9.1
+
+406 packages installed [219.00ms]
+__BG_EXIT__=0

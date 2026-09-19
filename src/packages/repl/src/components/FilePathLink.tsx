@@ -1,6 +1,6 @@
 import React from 'react'
 import { pathToFileURL } from 'url'
-import { Link } from '@thyrox/ink'
+import { Link } from '@anthropic/ink'
 
 type Props = {
   /** The absolute file path */

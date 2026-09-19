@@ -119,28 +119,28 @@ with tempfile.TemporaryDirectory() as tmp:
           "2.1.246-nombrado" in [e.name for e in plan.to_archive])
 
     print("== 3. idempotente: con keep >= builds no hay nada que archivar ==")
-    holgado = module.select_for_archive(probe, keep=99)
-    check("nada que archivar", [], [e.name for e in holgado.to_archive])
-    check("y todo se conserva", 7, len(holgado.kept))
+    loose = module.select_for_archive(probe, keep=99)
+    check("nada que archivar", [], [e.name for e in loose.to_archive])
+    check("y todo se conserva", 7, len(loose.kept))
 
     print("== 4. no se declara archivado sin verificar la integridad ==")
     if shutil.which("7z") is None:
         print("  OMITIDO  7z ausente — el guion rehusa, no publica un cero")
     else:
-        destino = pathlib.Path(tmp) / "_archived"
-        resultado = module.archive_build(probe / "2.1.241", destino)
-        check("el archivo existe", True, resultado.archive_path.exists())
-        check("la integridad se verifico", True, resultado.verified)
+        target = pathlib.Path(tmp) / "_archived"
+        result = module.archive_build(probe / "2.1.241", target)
+        check("el archivo existe", True, result.archive_path.exists())
+        check("la integridad se verifico", True, result.verified)
         check("y publica el sha256 de lo que escribio", 64,
-              len(resultado.sha256))
+              len(result.sha256))
         # El control positivo del rehuse: se corrompe el archivo y la misma
         # verificacion tiene que FALLAR. Sin esto, `verified=True` no
         # distingue «comprobo» de «devolvio True».
-        with open(resultado.archive_path, "r+b") as handle:
-            handle.seek(max(0, resultado.archive_bytes // 2))
+        with open(result.archive_path, "r+b") as handle:
+            handle.seek(max(0, result.archive_bytes // 2))
             handle.write(b"\x00" * 64)
         check("un archivo corrupto NO pasa la verificacion", False,
-              module.verify_archive(resultado.archive_path))
+              module.verify_archive(result.archive_path))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

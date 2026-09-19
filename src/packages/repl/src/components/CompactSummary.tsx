@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { Screen } from '../screens/REPL.js'
 import type { NormalizedUserMessage } from '@thyrox/agent/messageShapes'
 import { getUserMessageText } from '@thyrox/agent/messages.js'

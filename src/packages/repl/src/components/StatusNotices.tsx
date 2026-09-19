@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { use } from 'react'
-import { Box } from '@thyrox/ink'
+import { Box } from '@anthropic/ink'
 import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { getMemoryFiles } from '@thyrox/storage/claudemd.js'
 import { getGlobalConfig } from '@thyrox/config'

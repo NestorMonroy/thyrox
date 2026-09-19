@@ -1,10 +1,10 @@
 import { buildComputerUseTools } from '../index.js'
 import { join } from 'path'
 import { fileURLToPath } from 'url'
-import { buildMcpToolName } from '@claude-code-how-works/mcp-runtime/mcpStringUtils.js'
-import type { ScopedMcpServerConfig } from '@claude-code-how-works/mcp-runtime/types.js'
+import { buildMcpToolName } from '@thyrox/mcp-runtime/mcpStringUtils.js'
+import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
 
-import { isInBundledMode } from '@claude-code-how-works/config/bundledMode'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
 import { CLI_CU_CAPABILITIES, COMPUTER_USE_MCP_SERVER_NAME } from './common.js'
 import { getChicagoCoordinateMode } from './gates.js'
 

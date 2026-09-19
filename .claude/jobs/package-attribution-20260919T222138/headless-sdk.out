@@ -1,0 +1,27 @@
+src/__tests__/controlMessageCompat.test.ts(1,40): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+src/__tests__/sdkMemorySummary.test.ts(36,8): error TS2307: Cannot find module 'bun:test' or its corresponding type declarations.
+src/__tests__/sdkMemorySummary.test.ts(48,25): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(49,21): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(54,3): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(55,10): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(60,12): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(61,8): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(62,41): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(63,8): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(239,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/__tests__/sdkMemorySummary.test.ts(252,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/coreTypes.generated.ts(26,27): error TS2307: Cannot find module 'crypto' or its corresponding type declarations.
+src/sdkMemorySummary.ts(81,25): error TS2503: Cannot find namespace 'NodeJS'.
+src/sdkMemorySummary.ts(105,14): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(111,10): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(120,39): error TS2503: Cannot find namespace 'NodeJS'.
+src/sdkMemorySummary.ts(121,20): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(249,32): error TS2503: Cannot find namespace 'NodeJS'.
+src/sdkMemorySummary.ts(250,15): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(252,26): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(263,13): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(265,10): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(313,37): error TS2503: Cannot find namespace 'NodeJS'.
+src/sdkMemorySummary.ts(336,22): error TS2503: Cannot find namespace 'NodeJS'.
+src/sdkMemorySummary.ts(341,48): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/sdkMemorySummary.ts(352,40): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.

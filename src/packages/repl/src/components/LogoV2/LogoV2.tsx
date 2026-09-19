@@ -1,7 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import * as React from 'react'
-import { Box, Text, color, stringWidth } from '@thyrox/ink'
-import { useTerminalSize } from '@thyrox/ink'
+import { Box, Text, color, stringWidth } from '@anthropic/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import {
   getLayoutMode,
   calculateLayoutDimensions,

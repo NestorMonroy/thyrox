@@ -9,8 +9,8 @@ import { useNotifications } from '../notifications.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
-import { KeybindingSetup as InkKeybindingSetup } from '@thyrox/ink'
-import type { KeybindingWarning } from '@thyrox/ink'
+import { KeybindingSetup as InkKeybindingSetup } from '@anthropic/ink'
+import type { KeybindingWarning } from '@anthropic/ink'
 import {
   initializeKeybindingWatcher,
   loadKeybindingsSyncWithWarnings,

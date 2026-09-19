@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Link, Text } from '@thyrox/ink'
+import { Box, Link, Text } from '@anthropic/ink'
 import {
   type AwsAuthStatus,
   AwsAuthStatusManager,

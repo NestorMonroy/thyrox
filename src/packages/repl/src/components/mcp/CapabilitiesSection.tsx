@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
-import { Byline } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
+import { Byline } from '@anthropic/ink'
 
 type Props = {
   serverToolsCount: number

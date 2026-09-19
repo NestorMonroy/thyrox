@@ -1,4 +1,4 @@
-# @claude-code-how-works/memory
+# @thyrox/memory
 
 CLAUDE.md discovery + memory file management.
 

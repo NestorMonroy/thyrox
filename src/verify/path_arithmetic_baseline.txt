@@ -33,6 +33,13 @@
 # `_archived` por ser «el THYROX anterior, no vigente», y un banco es la misma
 # categoria — fechado, no vivo. Mientras esa decision no se tome, quedan
 # congelados aqui: una entrada listada no bloquea, una nueva si.
+# .claude/workbench/premisa-rancia-.../test_check_stale_divergence.pristine.py:11
+#   — copia PRISTINA del archivo ANTES del arreglo de TASK-THYROX-0232. Su
+#   valor es ser el estado previo byte a byte: arreglarla la destruiria. Mismo
+#   criterio que test_censar_scripts.pristine.py:23 y generate_bin.pristine.py:189
+#   ya congeladas aqui. Si una copia pristina entra o no en el universo del gate
+#   es la tarea #425, que sigue abierta y NO se decide congelando esta entrada.
+
 .claude/workbench/adoptar-jsonl-censo-20260917T051111/censo.py:141
 .claude/workbench/adoptar-jsonl-en-manifiestos-20260917T061558/migrate_manifests.py:57
 .claude/workbench/analyze-python-shell-reds-20260913T080831/probes/replay_red_shell_suites.py:10
@@ -41,6 +48,7 @@
 .claude/workbench/bloqueo-real-de-permission-20260917T191600/probes/census_sibling_links.py:21
 .claude/workbench/frontera-tool-registry-simbolo/probe_chain.py:25
 .claude/workbench/port-nine-packages-20260918T202217/port_packages.py:29
+.claude/workbench/premisa-rancia-en-comentario-de-porte-20260919T154526/probes/test_check_stale_divergence.pristine.py:11
 .claude/workbench/retirar-path-insert-de-src-20260918T194559/baseline_entrypoints.py:13
 .claude/workbench/retirar-path-insert-de-src-20260918T194559/plan_removal.py:19
 .claude/workbench/retirar-path-insert-de-src-20260918T194559/post_sweep_entrypoints.py:14

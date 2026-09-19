@@ -1,15 +1,12 @@
 /**
  * Puerto de `ccnmt: packages/config/settings/applySettingsChange.ts` (73
- * líneas fuente). Adaptado en un punto, declarado abajo.
+ * líneas fuente). Sin divergencias.
  *
- * DIVERGENCIA declarada: la fuente lee `newSettings.effortLevel` /
- * `prev.settings.effortLevel` como campos declarados del esquema. Nuestro
- * `Settings` (`./types.ts`, ya portado por un agente anterior con un
- * esquema más reducido) no declara `effortLevel` — se lee vía
- * `Record<string, unknown>` en vez de ensanchar el esquema compartido en
- * este pase. El esquema SÍ es `.passthrough()`, así que la clave sobrevive
- * en el objeto en runtime si está presente en disco; sólo cambia el tipo
- * estático de acceso.
+ * La divergencia que este archivo declaraba —leer `effortLevel` vía
+ * `Record<string, unknown>` porque `./types.ts` no lo declaraba— quedó
+ * CERRADA: la clave se portó al esquema desde
+ * `ccnmt: packages/config/settings/types.ts:744`, con su `.catch(undefined)`.
+ * El cuerpo vuelve a la forma de la fuente.
  */
 import { tryGetConfigHostBindings } from '../host.ts'
 import type { SettingSource } from './constants.ts'
@@ -53,7 +50,7 @@ export function applySettingsChange(
   setAppState: (f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void,
 ): void {
   const bindings = tryGetConfigHostBindings()
-  const newSettings = getInitialSettings() as Record<string, unknown>
+  const newSettings = getInitialSettings()
 
   bindings.logDebug?.(`Settings changed from ${source}, updating app state`)
 

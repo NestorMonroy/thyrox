@@ -26,16 +26,16 @@ from pathlib import Path
 
 # Bootstrap canonico (`paths.reach.BOOTSTRAP`): ascenso con deteccion, no
 # `parents[N]` — la aritmetica por offset falla en silencio al mover el archivo.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths.reach import thyrox_root  # noqa: E402
 
-_MODULE = thyrox_root(_AQUI.parent) / "src/hooks/detect_unbounded_traversal.py"
+_MODULE = thyrox_root(_HERE.parent) / "src/hooks/detect_unbounded_traversal.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
 gate = importlib.util.module_from_spec(_spec)
 sys.modules["_gate"] = gate
@@ -50,7 +50,7 @@ def _detect(command):
 #: ejecutor. No es un incumplidor fabricado: uno escrito por quien escribe el
 #: patron hereda su encuadre y confirma el instrumento en vez de probarlo
 #: (``hallazgo-abierto-genera-sucesor.md``).
-COMANDO_REAL = """T="${THYROX_ROOT:-/home/user/thyrox}" && ls "$T/agent-results/"*.sqlite3 2>/dev/null; python3 - <<'PY'
+COMMAND_REAL = """T="${THYROX_ROOT:-/home/user/thyrox}" && ls "$T/agent-results/"*.sqlite3 2>/dev/null; python3 - <<'PY'
 import sqlite3, glob
 for db in glob.glob('/home/user/thyrox/**/*.sqlite3', recursive=True):
     print(db)
@@ -58,9 +58,9 @@ PY"""
 
 
 def test_warns_on_the_real_runaway_command():
-    aviso = _detect(COMANDO_REAL)
-    assert aviso is not None
-    assert "bounded_scan" in aviso
+    warning = _detect(COMMAND_REAL)
+    assert warning is not None
+    assert "bounded_scan" in warning
 
 
 def test_the_heavy_root_axis_carries_its_own_weight():
@@ -90,11 +90,11 @@ def test_warns_on_a_symlink_follower_over_a_LIGHT_root():
     termina en 30 s sobre ella, mientras `rglob` la recorre en 0.01 s. El
     peso de la raiz no discrimina este fenomeno (h-thyrox-29).
     """
-    aviso = _detect(
+    warning = _detect(
         "python3 -c \"import glob; glob.glob('src/packages/agent/**/*.json', recursive=True)\""
     )
-    assert aviso is not None
-    assert "enlaces" in aviso
+    assert warning is not None
+    assert "enlaces" in warning
 
 
 def test_the_symlink_family_separates_r_from_R():
@@ -116,22 +116,22 @@ def test_the_symlink_axis_carries_its_own_weight():
     porque sus raices son ligeras — que es exactamente el falso negativo que
     h-thyrox-29 midio. Los de la familia lineal NO dependen de ella.
     """
-    casos_de_giro = (
+    cases_of_spin = (
         "python3 -c \"import glob; glob.glob('src/packages/agent/**/*.json', recursive=True)\"",
         "grep -Rn foo src/session/",
         "find -L src/session -name '*.sh'",
     )
-    assert all(_detect(c) is not None for c in casos_de_giro)
+    assert all(_detect(c) is not None for c in cases_of_spin)
 
-    guardadas = gate.SYMLINK_FOLLOWING_SHAPES
+    saved = gate.SYMLINK_FOLLOWING_SHAPES
     try:
         gate.SYMLINK_FOLLOWING_SHAPES = ()
-        caidas = [c for c in casos_de_giro if _detect(c) is None]
+        drops = [c for c in cases_of_spin if _detect(c) is None]
         # Caen EXACTAMENTE los tres, ni uno mas: la familia lineal sigue viva.
-        assert len(caidas) == 3, caidas
+        assert len(drops) == 3, drops
         assert _detect("python3 -c \"import pathlib; pathlib.Path('/home/user/thyrox').rglob('*.py')\"") is not None
     finally:
-        gate.SYMLINK_FOLLOWING_SHAPES = guardadas
+        gate.SYMLINK_FOLLOWING_SHAPES = saved
 
 
 def test_the_bound_discount_carries_its_own_weight():
@@ -215,13 +215,13 @@ def test_stays_silent_without_a_command():
 
 
 def test_the_notice_names_the_mechanism_and_the_floor():
-    aviso = _detect(COMANDO_REAL)
-    assert "bounded_scan" in aviso and "timeout" in aviso
+    warning = _detect(COMMAND_REAL)
+    assert "bounded_scan" in warning and "timeout" in warning
 
 
 def test_the_dispatcher_registry_declares_this_detector():
     _spec_d = importlib.util.spec_from_file_location(
-        "_disp", thyrox_root(_AQUI.parent) / "src/hooks/pretooluse_dispatch.py")
+        "_disp", thyrox_root(_HERE.parent) / "src/hooks/pretooluse_dispatch.py")
     disp = importlib.util.module_from_spec(_spec_d)
     sys.modules["_disp"] = disp
     _spec_d.loader.exec_module(disp)
@@ -233,16 +233,16 @@ def test_the_dispatcher_registry_declares_this_detector():
 
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

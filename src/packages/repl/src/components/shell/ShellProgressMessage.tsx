@@ -1,6 +1,6 @@
 import React from 'react'
 import stripAnsi from 'strip-ansi'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { formatFileSize } from '@thyrox/output/formatters'
 import { MessageResponse } from '../MessageResponse.js'
 import { OffscreenFreeze } from '../OffscreenFreeze.js'

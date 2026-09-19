@@ -1,8 +1,8 @@
 import React, { type ReactNode } from 'react'
 import { useExitOnCtrlCDWithKeybindings } from '../../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Byline, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 
 type Props = {
   instructions?: ReactNode

@@ -12,10 +12,10 @@ import React, {
 } from 'react'
 import stripAnsi from 'strip-ansi'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow stats navigation
-import { Ansi, applyColor, Box, Text, useInput, stringWidth as getStringWidth, type Color, Pane, Tab, Tabs, useTabHeaderFocus } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Ansi, applyColor, Box, Text, useInput, stringWidth as getStringWidth, type Color, Pane, Tab, Tabs, useTabHeaderFocus } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { getGlobalConfig } from '@thyrox/config'
 import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 import { generateHeatmap } from '@thyrox/local-observability/aggregates/heatmap.js'
@@ -28,7 +28,7 @@ import {
   type StatsDateRange,
 } from '@thyrox/local-observability/aggregates/stats.js'
 import { resolveThemeSetting } from '../systemTheme.js'
-import { getTheme, themeColorToAnsi } from '@thyrox/ink'
+import { getTheme, themeColorToAnsi } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
 
 function formatPeakDay(dateStr: string): string {

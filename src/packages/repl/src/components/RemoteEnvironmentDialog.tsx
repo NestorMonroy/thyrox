@@ -2,8 +2,8 @@ import chalk from 'chalk'
 import figures from 'figures'
 import * as React from 'react'
 import { useEffect, useState } from 'react'
-import { Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { logError } from '@thyrox/local-observability/logging'
 import {
@@ -15,7 +15,7 @@ import { getEnvironmentSelectionInfo } from '@thyrox/teleport/environmentSelecti
 import type { EnvironmentResource } from '@thyrox/teleport/environments.js'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/select.js'
-import { Byline, Dialog, KeyboardShortcutHint, LoadingState } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint, LoadingState } from '@anthropic/ink'
 
 const DIALOG_TITLE = 'Select Remote Environment'
 const SETUP_HINT = `Configure environments at: https://claude.ai/code`

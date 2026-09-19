@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { KeyboardEvent, useInput } from '@thyrox/ink'
+import { KeyboardEvent, useInput } from '@anthropic/ink'
 // backward-compat bridge until REPL wires handleKeyDown to <Box onKeyDown>
 import {
   type AppState,

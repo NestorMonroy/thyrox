@@ -18,10 +18,13 @@
  *     `./taggedId`, etc. — ningún `./host`). Es una ausencia de EXPORT,
  *     no de puerto: el símbolo existe, el paquete no lo deja entrar.
  *   - `@claude-code-how-works/config` (`installConfigHostBindings`) —
- *     `@thyrox/config` existe, pero su `index.ts` sólo exporta el
- *     subárbol `settings/*` (`SETTING_SOURCES`, `SettingsSchema`, …);
- *     `installConfigHostBindings` no existe en ningún archivo del
- *     paquete.
+ *     CERRADO. La afirmación de este bloque era falsa en su mitad más
+ *     fuerte: decía que el símbolo «no existe en ningún archivo del
+ *     paquete», y `config/host.ts:21` lo declara desde el porte. Lo que
+ *     faltaba era la línea del barril, que la fuente pone al frente
+ *     (`ccnmt: packages/config/index.ts:1-2`) y el puerto omitió. Es una
+ *     ausencia de EXPORT, igual que la de `@thyrox/agent` de arriba —y el
+ *     bloque la diagnosticaba bien para aquélla y mal para ésta.
  *
  * Las otras dos ya resuelven — TASK-THYROX-0005 declaró `@thyrox/memory` y
  * `@thyrox/permission` en las `dependencies` de este paquete (antes

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Box, Text, stringWidth } from '@thyrox/ink'
+import { Box, Text, stringWidth } from '@anthropic/ink'
 import TextInput from '../TextInput.js'
 
 type Props = {

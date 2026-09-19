@@ -12,8 +12,8 @@ import {
   isFastModeCooldown,
   isFastModeEnabled,
 } from '../fastMode.js'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { useAppState, useSetAppState } from '../appStateHooks.js'
 import {
   convertEffortValueToLevel,
@@ -39,7 +39,7 @@ import {
 } from '@thyrox/config/settings'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
-import { Byline, KeyboardShortcutHint, Pane } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint, Pane } from '@anthropic/ink'
 import { effortLevelToSymbol } from './EffortIndicator.js'
 
 export type Props = {

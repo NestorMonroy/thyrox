@@ -75,10 +75,10 @@ def _assistant(stop_reason, block_types):
 
 
 with tempfile.TemporaryDirectory() as tmp:
-    raiz = Path(tmp)
+    root = Path(tmp)
 
     print("== 1. las dos cifras COINCIDEN: el ultimo mensaje declara su cierre ==")
-    p = raiz / "coinciden.jsonl"
+    p = root / "coinciden.jsonl"
     _write(p, [_assistant("end_turn", ["text"]),
                _assistant("tool_use", ["text", "tool_use"])])
     c = closing.read(p)
@@ -91,7 +91,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check("el denominador viaja", 2, c.assistant_messages)
 
     print("== 2. DIFIEREN: el ultimo no declara cierre y la regla arrastra ==")
-    p = raiz / "difieren.jsonl"
+    p = root / "difieren.jsonl"
     _write(p, [_assistant("tool_use", ["tool_use"]),
                {"type": "assistant", "message": {
                    "role": "assistant", "id": "m-sin",
@@ -103,7 +103,7 @@ with tempfile.TemporaryDirectory() as tmp:
     check("y el registro lo DECLARA en vez de esconderlo", True, c.rule_diverges)
 
     print("== 3. un transcript sin mensajes assistant no se inventa un cierre ==")
-    p = raiz / "vacio.jsonl"
+    p = root / "vacio.jsonl"
     _write(p, [{"type": "user", "message": {"role": "user"}}])
     c = closing.read(p)
     check("sin cierre, y el denominador en 0", (None, None, 0),
@@ -112,7 +112,7 @@ with tempfile.TemporaryDirectory() as tmp:
     print("== 4. un transcript ausente REHUSA, no publica un cierre vacio ==")
     # Un `None` aqui no distinguiria «cerro sin declarar» de «no pude leer».
     try:
-        closing.read(raiz / "no-existe.jsonl")
+        closing.read(root / "no-existe.jsonl")
         check("rehusa con TranscriptNotFound", "TranscriptNotFound", "no lanzo")
     except closing.TranscriptNotFound:
         check("rehusa con TranscriptNotFound", "TranscriptNotFound",

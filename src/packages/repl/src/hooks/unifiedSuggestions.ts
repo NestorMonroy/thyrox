@@ -7,7 +7,7 @@ import { getAgentColor } from '@thyrox/tool-registry/tools/AgentTool/agentColorM
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { logError } from '@thyrox/local-observability/logging'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 type FileSuggestionSource = {
   type: 'file'

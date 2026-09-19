@@ -1,0 +1,35 @@
+# Control de ANULACION: los dos rojos del subconjunto derivado son PREEXISTENTES
+# Fecha: 2026-09-19T17:08:01
+#
+# Metodo: git stash de los tres archivos tocados, correr las dos suites,
+# git stash pop. Si el rojo cambia, es mio; si no cambia, es heredado.
+#
+# Subconjunto DERIVADO (alcance-de-la-suite.md), no elegido de memoria:
+#   grep -rlE 'messageShapes|createUserMessage|extractTextContent|ContentBlockParam|HookResultMessage' \
+#     --include=*.ts --include=*.py tests/
+
+## CON mis cambios
+tests/unit/utils/messages.test.ts       -> 0 pass, 1 fail
+  SyntaxError: Export named 'installConfigHostBindings' not found in module
+  '/home/user/thyrox/src/packages/config/index.ts'.
+tests/integration/message-pipeline.test.ts -> 0 pass, 1 fail
+  SyntaxError: Export named 'createAssistantMessage' not found in module
+  '/home/user/thyrox/src/packages/agent/messages.ts'.
+
+## SIN mis cambios (stash)
+tests/unit/utils/messages.test.ts       -> 0 pass, 1 fail
+  SyntaxError: Export named 'installConfigHostBindings' not found in module
+  '/home/user/thyrox/src/packages/config/index.ts'.
+tests/integration/message-pipeline.test.ts -> 0 pass, 1 fail
+  SyntaxError: Export named 'createAssistantMessage' not found in module
+  '/home/user/thyrox/src/packages/agent/messages.ts'.
+
+## Veredicto
+IDENTICOS en las dos mitades: cero de los dos rojos es atribuible al porte.
+Y el segundo NOMBRA su propio sucesor — 'createAssistantMessage' es uno de
+los 66 exports ausentes de TASK-THYROX-0212.
+
+Metrica: el SyntaxError y el conteo pass/fail de bun test, en las dos mitades.
+Ciega a: un rojo que el stash no separe porque dependa de un archivo que el
+stash no toco — aqui los tres tocados son los tres del commit, verificado con
+git status --short tras el pop.

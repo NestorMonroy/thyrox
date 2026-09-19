@@ -1,7 +1,7 @@
 import figures from 'figures'
 import * as React from 'react'
 import type { SettingSource } from '@thyrox/config/constants'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
 import type { ResolvedAgent } from '@thyrox/tool-registry/tools/AgentTool/agentDisplay.js'
 import {
   AGENT_SOURCE_GROUPS,
@@ -11,7 +11,7 @@ import {
 } from '@thyrox/tool-registry/tools/AgentTool/agentDisplay.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
-import { Dialog, Divider } from '@thyrox/ink'
+import { Dialog, Divider } from '@anthropic/ink'
 import { getAgentSourceDisplayName } from './utils.js'
 
 type Props = {

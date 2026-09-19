@@ -1,0 +1,4 @@
+repl: emitio pese a 2972 errores (1977 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 2972 error(es) que siguen vivos en su propio paquete
+__BG_EXIT__=0

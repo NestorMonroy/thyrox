@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getAgentModelOptions } from '@thyrox/provider/modelAgent.js'
 import { Select } from '../CustomSelect/select.js'
 

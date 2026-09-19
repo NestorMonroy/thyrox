@@ -3,11 +3,12 @@
   "version": "0.4.0",
   "private": true,
   "type": "module",
-  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y \u2014en loop/\u2014 el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
+  "description": "El dominio agent: el contrato de definicion, el catalogo de modelos, el port de la referencia y —en loop/— el bucle vivo con lo que necesita para CORRER (tipos, transcript, sesion, hooks, contexto).",
   "main": "./index.ts",
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts",
+    "./file-history": "./fileHistory.ts",
     "./types": "./types.ts",
     "./schema": "./schema.ts",
     "./registry": "./registry.ts",
@@ -44,7 +45,13 @@
     "./sessionStores": "./sessionStores.ts",
     "./yaml": "./yaml.ts",
     "./*": "./*.ts",
-    "./*.js": "./*.ts"
+    "./*.js": "./*.ts",
+    "./claudeInChrome/toolRendering.js": "./claudeInChrome/toolRendering.tsx",
+    "./localAgentTask.js": "./localAgentTask.tsx",
+    "./services/mcpServerApproval.js": "./services/mcpServerApproval.tsx",
+    "./statusAlias.js": "./statusAlias.tsx",
+    "./tasks/LocalMainSessionTask.js": "./tasks/LocalMainSessionTask.tsx",
+    "./tasks/LocalShellTask.js": "./tasks/LocalShellTask.tsx"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",
@@ -56,20 +63,31 @@
     "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json"
   },
   "dependencies": {
+    "@ant/claude-for-chrome-mcp": "workspace:*",
     "@anthropic-ai/sdk": "^0.124.0",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/app-host": "workspace:*",
     "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/context-compression": "workspace:*",
+    "@thyrox/daemon": "workspace:*",
+    "@thyrox/headless-sdk": "workspace:*",
+    "@thyrox/ide": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/memory": "workspace:*",
     "@thyrox/observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
     "@thyrox/permission": "workspace:*",
     "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/shell": "workspace:*",
     "@thyrox/storage": "workspace:*",
+    "@thyrox/swarm": "workspace:*",
+    "@thyrox/teleport": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/tools": "workspace:*",
+    "@thyrox/updater": "workspace:*",
     "zod": "^4.3.6"
   }
 }

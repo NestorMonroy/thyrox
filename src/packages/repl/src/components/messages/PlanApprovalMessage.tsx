@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Markdown } from '../Markdown.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import {
   type IdleNotificationMessage,

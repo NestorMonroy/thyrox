@@ -65,11 +65,11 @@ def main() -> int:
           str([t for t, _ in a.points]))
 
     # --- el caso que hace visible el sesgo: sin el cero, la media miente
-    con_cero = sum(y for _, y in a.points) / len(a.points)
-    sin_cero = sum(y for _, y in a.points if y) / len([1 for _, y in a.points if y])
+    with_zero = sum(y for _, y in a.points) / len(a.points)
+    without_zero = sum(y for _, y in a.points if y) / len([1 for _, y in a.points if y])
     check("el cero cambia la media (1.0 contra 1.5)",
-          abs(con_cero - 1.0) < 1e-9 and abs(sin_cero - 1.5) < 1e-9,
-          f"{con_cero} {sin_cero}")
+          abs(with_zero - 1.0) < 1e-9 and abs(without_zero - 1.5) < 1e-9,
+          f"{with_zero} {without_zero}")
 
     # --- LA MITAD DE JUICIO 2: rehusar sin emitir cifra
     for bad, why in [([], "vacia"), ([(1.0, 1.0)], "un solo punto")]:

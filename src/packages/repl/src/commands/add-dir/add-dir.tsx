@@ -8,7 +8,7 @@ import {
 import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
 import { MessageResponse } from '../../components/MessageResponse.js'
 import { AddWorkspaceDirectory } from '@thyrox/permission/components/rules/AddWorkspaceDirectory.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import {
   applyPermissionUpdate,

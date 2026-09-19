@@ -1,4 +1,4 @@
-# @claude-code-how-works/teleport
+# @thyrox/teleport
 
 Cross-machine session resume / handoff API.
 

@@ -53,12 +53,12 @@ def visible_text(html: str) -> str:
     Un ``<head>`` cargado de metadatos no cuenta como contenido: sólo el
     ``<body>`` es lo que un lector ve.
     """
-    cuerpo = _BODY.search(html)
-    if not cuerpo:
+    body = _BODY.search(html)
+    if not body:
         return ""
-    texto = _SCRIPT_OR_STYLE.sub(" ", cuerpo.group(1))
-    texto = _TAG.sub(" ", texto)
-    return _WHITESPACE.sub(" ", texto).strip()
+    text = _SCRIPT_OR_STYLE.sub(" ", body.group(1))
+    text = _TAG.sub(" ", text)
+    return _WHITESPACE.sub(" ", text).strip()
 
 
 def find_near_empty(
@@ -69,29 +69,29 @@ def find_near_empty(
     Citadas por RUTA — no un conteo agregado. Con ``min_chars=0`` el chequeo
     queda apagado (ninguna página puede tener menos de 0 caracteres).
     """
-    hallazgos = []
-    for ruta, html in pages.items():
-        longitud = len(visible_text(html))
-        if longitud < min_chars:
-            hallazgos.append(PageFinding(
-                path=ruta, kind="near_empty",
-                detail=f"cuerpo visible de {longitud} caracteres (umbral {min_chars})"))
-    return hallazgos
+    findings = []
+    for path, html in pages.items():
+        length = len(visible_text(html))
+        if length < min_chars:
+            findings.append(PageFinding(
+                path=path, kind="near_empty",
+                detail=f"cuerpo visible de {length} caracteres (umbral {min_chars})"))
+    return findings
 
 
 def find_emoji_or_icon(pages: Mapping[str, str]) -> list[PageFinding]:
     """Las páginas con un emoji/icono decorativo, citado por CODEPOINT, no por glifo."""
-    hallazgos = []
-    for ruta, html in pages.items():
-        vistos: dict[str, None] = {}
+    findings = []
+    for path, html in pages.items():
+        seen: dict[str, None] = {}
         for m in _EMOJI_OR_ICON.finditer(html):
-            vistos.setdefault(f"U+{ord(m.group(0)):04X}", None)
-        if vistos:
-            hallazgos.append(PageFinding(
-                path=ruta, kind="emoji_or_icon",
+            seen.setdefault(f"U+{ord(m.group(0)):04X}", None)
+        if seen:
+            findings.append(PageFinding(
+                path=path, kind="emoji_or_icon",
                 detail="carácter(es) fuera de la convención del proyecto: "
-                       + ", ".join(vistos)))
-    return hallazgos
+                       + ", ".join(seen)))
+    return findings
 
 
 def audit_pages(

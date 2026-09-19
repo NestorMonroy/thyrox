@@ -11,11 +11,19 @@ from __future__ import annotations
 import importlib.util
 import json
 import pathlib
+import sys
+from pathlib import Path
 
-# El bootstrap de UNA linea es la unica aritmetica que el gate admite,
-# y la unica que el localizador no puede reemplazar: no se puede pedir
-# `reach.thyrox_root()` antes de que `import reach` funcione.
-sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+# El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
+# deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
+# UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
+              if (p / "src" / "paths" / "reach.py").is_file()), None)
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
+
 from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_agent_dispatch.py"

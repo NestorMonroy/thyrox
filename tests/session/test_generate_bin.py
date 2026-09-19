@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -167,6 +168,12 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
 
     wrapper_dir = tree / "bin"
     wrapper_dir.mkdir()
+    # Copia la biblioteca que el guard sourcea al rehusar. Sin ella el
+    # envoltorio cae a su OTRO camino («arbol incompleto») y el caso
+    # mediria el mensaje equivocado — la clase de TASK-THYROX-0235.
+    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "src/lib/toolchain.sh", tree / "src/lib/toolchain.sh")
+
     wrapper = wrapper_dir / "algo"
     wrapper.write_text(gb.wrapper_body(target, tree))
     wrapper.chmod(0o755)
@@ -175,6 +182,14 @@ def test_python_wrapper_missing_interpreter(base: pathlib.Path) -> None:
     check("sin .venv, el wrapper de un .py sale 2", r.returncode == 2,
           f"dio {r.returncode}: {r.stdout!r} {r.stderr!r}")
     check("y nombra el remedio (uv sync)", "uv sync" in r.stderr)
+    # El remedio a secas no basta: la forma que el ejecutor fijo NOMBRA
+    # la herramienta dos veces y declara que se continua sin ella. Sin
+    # esta asercion, los 184 envoltorios .py seguirian con un texto
+    # distinto del de los 14 .ts — dos formas en el mismo bin/.
+    check("y emite el aviso degradado IMPORTANT", "IMPORTANT" in r.stderr,
+          r.stderr)
+    check("y el aviso declara la continuacion",
+          "continua sin usar" in r.stderr, r.stderr)
     check("y NO llegó a ejecutar el .py",
           "no debería correr" not in r.stdout)
 
@@ -801,6 +816,211 @@ def test_exercise_on_real_tree_is_green() -> None:
               "con /bin/false no fallo ninguno — no esta ejercitando nada")
 
 
+
+# ===========================================================================
+# La mitad TypeScript de bin/. Antes de esto, bin/ tenia 184 envoltorios y
+# CERO para los 14 entrypoints .ts — asi que quien clonaba no tenia como
+# invocar la mitad del arbol sin escribir `bun src/packages/<x>/bin/<y>.ts`.
+# ===========================================================================
+
+
+def test_typescript_discriminator_is_shebang_and_parent(base: pathlib.Path) -> None:
+    """El discriminador es shebang + directorio padre, NO ``import.meta.main``.
+
+    Medido sobre el arbol real antes de elegirlo: shebang da 14; la guarda
+    ``import.meta.main`` da 7, y uno de esos 7 —``cli/src/exitCodes.ts``— la
+    lleva SIN shebang: es biblioteca con un autotest, no un entrypoint. Elegir
+    la guarda como discriminador habria metido una biblioteca en ``bin/`` y
+    dejado fuera a la mitad de los entrypoints reales.
+
+    El directorio padre es la segunda mitad y no es adorno: sin el, cualquier
+    ``.ts`` con shebang en cualquier sitio entraria al plan.
+    """
+    tree = _make_tree(base / "ts-discriminador")
+    (tree / "src/packages/demo/bin").mkdir(parents=True, exist_ok=True)
+
+    real = tree / "src/packages/demo/bin/tool.ts"
+    real.write_text("#!/usr/bin/env bun\nconsole.log('soy entrypoint')\n")
+
+    # Control NEGATIVO 1: la guarda sin shebang. Es la forma de exitCodes.ts.
+    guarda = tree / "src/packages/demo/exitCodes.ts"
+    guarda.write_text("export const X = 1\nif (import.meta.main) { console.log(X) }\n")
+
+    # Control NEGATIVO 2: shebang, pero fuera de un directorio bin/entry.
+    suelto = tree / "src/packages/demo/suelto.ts"
+    suelto.write_text("#!/usr/bin/env bun\nconsole.log('no soy entrypoint')\n")
+
+    check("un .ts con shebang bajo bin/ SI es entrypoint",
+          gb.is_typescript_entrypoint(real))
+    check("la guarda import.meta.main SIN shebang NO lo es",
+          not gb.is_typescript_entrypoint(guarda))
+    check("un shebang fuera de bin/ o entry/ TAMPOCO lo es",
+          not gb.is_typescript_entrypoint(suelto))
+
+
+def test_typescript_names_resolve_stem_collisions(base: pathlib.Path) -> None:
+    """Cuatro ``emit.ts`` distintos. Un nombre plano los colapsaria.
+
+    ``discover_entrypoints`` rehusa una colision de stem en vez de resolverla
+    en silencio, asi que la mitad TS NO puede entrar al espacio plano: necesita
+    un nombre cualificado por su dueño. El separador es GUION, el mismo que
+    ``resolve_bin_name`` ya usa para ``thyrox-bg`` y que ``thyrox-audit.sh``
+    precede en este mismo bin/.
+    """
+    tree = _make_tree(base / "ts-colision")
+    for familia in ("skills", "rules", "commands"):
+        d = tree / f"src/{familia}/bin"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "emit.ts").write_text("#!/usr/bin/env bun\n")
+
+    hallados = gb.discover_typescript_entrypoints(tree)
+    check("los tres emit.ts reciben nombres distintos",
+          len(hallados) == 3, str(sorted(hallados)))
+    for esperado in ("skills-emit", "rules-emit", "commands-emit"):
+        check(f"{esperado} esta en el plan TS", esperado in hallados,
+              str(sorted(hallados)))
+
+    # El dueño y el stem que se repiten se colapsan: `shell/bin/shell.ts` es
+    # `shell`, no `shell-shell`.
+    d = tree / "src/packages/shell/bin"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "shell.ts").write_text("#!/usr/bin/env bun\n")
+    check("dueño y stem iguales se colapsan a uno",
+          "shell" in gb.discover_typescript_entrypoints(tree))
+
+
+def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
+    """Sin bun el envoltorio emite IMPORTANT y NO ejecuta el .ts.
+
+    Es la forma que el ejecutor fijo: nombrar la herramienta, su precondicion,
+    y declarar que se continua sin ella. Un envoltorio que muriera con
+    `bun: command not found` deja al que clona sin saber que arreglar.
+    """
+    tree = _make_tree(base / "ts-degradado")
+    d = tree / "src/packages/demo/bin"
+    d.mkdir(parents=True, exist_ok=True)
+    target = d / "tool.ts"
+    target.write_text("#!/usr/bin/env bun\nconsole.log('NO deberia correr')\n")
+
+    # El fixture COPIA la biblioteca que el envoltorio sourcea. Sin ella el
+    # guion sale 2 por «arbol incompleto» —su otro camino de rehuse— y el caso
+    # pasaria midiendo el mensaje equivocado: verde sobre el fenomeno que no
+    # es. Es la clase que TASK-THYROX-0235 ya registro para otro fixture.
+    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+    shutil.copy2(ROOT / "src/lib/toolchain.sh", tree / "src/lib/toolchain.sh")
+    for dependencia in ("reach.sh", "assert.sh"):
+        origen = ROOT / "src/lib" / dependencia
+        if origen.is_file():
+            shutil.copy2(origen, tree / "src/lib" / dependencia)
+
+    wrapper_dir = tree / "bin"
+    wrapper_dir.mkdir(exist_ok=True)
+    wrapper = wrapper_dir / "demo-tool"
+    wrapper.write_text(gb.typescript_wrapper_body(target, tree, "demo-tool"))
+    wrapper.chmod(0o755)
+
+    entorno = dict(os.environ)
+    entorno["THYROX_TOOLCHAIN_BUN_BIN"] = "bun-que-no-existe-en-ningun-sitio"
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       env=entorno)
+    check("sin bun, el envoltorio .ts sale 2", r.returncode == 2,
+          f"dio {r.returncode}: {r.stdout!r} {r.stderr!r}")
+    check("y emite el aviso degradado IMPORTANT", "IMPORTANT" in r.stderr,
+          r.stderr)
+    check("y NO llego a ejecutar el .ts",
+          "NO deberia correr" not in r.stdout, r.stdout)
+
+
+def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
+    """Los 14 del arbol real tienen envoltorio, y ninguno choca con los 184.
+
+    Sin este caso, el plan TS podria estar vacio y los tres de arriba seguirian
+    en verde sobre fixtures: medirian el mecanismo y no el arbol.
+    """
+    ts = gb.discover_typescript_entrypoints(ROOT)
+    check("el arbol real declara al menos 14 entrypoints .ts",
+          len(ts) >= 14, f"halle {len(ts)}: {sorted(ts)}")
+
+    plan = gb.planned_files(ROOT)
+    faltan = [n for n in ts if n not in plan]
+    check("todos los .ts del arbol llegan al plan de bin/",
+          not faltan, f"fuera del plan: {faltan}")
+
+    # Los cuatro emit.ts son el control de colision sobre el arbol REAL, no
+    # sobre un fixture: si el nombre no estuviera cualificado, el plan tendria
+    # uno en vez de cuatro.
+    # `rglob` recorre TAMBIEN los node_modules que el linker aislado
+    # crea por paquete —30 medidos—. Una dependencia con un bin/*.ts
+    # con shebang entraria al plan. Hoy son 0, asi que el `>= 14` de
+    # arriba pasaria igual con una fuga: no discrimina, y este si.
+    fugas = [str(p) for p in ts.values() if "node_modules" in p.parts]
+    check("ningun entrypoint TS sale de un node_modules",
+          not fugas, str(fugas))
+
+    emits = sorted(n for n in ts if n.endswith("-emit") or n == "emit")
+    check("los cuatro emit.ts del arbol real estan los cuatro",
+          len(emits) == 4, str(emits))
+
+
+def test_wrapper_exports_root_across_exec(base: pathlib.Path) -> None:
+    """El envoltorio EXPORTA su raiz: `exec` no conserva lo que no se exporta.
+
+    Medido sobre un clon fresco real antes de escribir esto: el preflight
+    publicaba «6 ok · 0 error» en un arbol SIN `.venv` y SIN `node_modules`.
+    El envoltorio fijaba `THYROX_ROOT` y hacia `exec`; el proceso nuevo no
+    heredaba la variable, asi que el guion destino resolvia la raiz por su
+    cuenta y media OTRO arbol — el de desarrollo. Un verde que no distingue
+    «la cadena esta sana» de «mediste el arbol equivocado»: el sub-patron C
+    con el clon como sujeto.
+
+    La forma es `${THYROX_ROOT:-<calculada>}` y no una asignacion a secas,
+    para no romper la precedencia que `reach.sh` declara: una raiz declarada
+    gana sobre el localizador, y sobre esto tambien.
+    """
+    tree = _make_tree(base / "export-raiz")
+    target = tree / "src/session/eco.sh"
+    target.write_text('#!/usr/bin/env bash\necho "RAIZ=$THYROX_ROOT"\n')
+    target.chmod(0o755)
+
+    wrapper_dir = tree / "bin"
+    wrapper_dir.mkdir(exist_ok=True)
+    wrapper = wrapper_dir / "eco"
+    wrapper.write_text(gb.wrapper_body(target, tree, "eco"))
+    wrapper.chmod(0o755)
+
+    entorno = {k: v for k, v in os.environ.items() if k != "THYROX_ROOT"}
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    check("el hijo del exec ve la raiz del envoltorio",
+          f"RAIZ={tree.resolve()}" in r.stdout,
+          f"dio {r.stdout!r} (esperaba {tree.resolve()})")
+
+    # Y la raiz DECLARADA sigue ganando: sin esta mitad el arreglo romperia
+    # la precedencia que reach.sh fija para todo el arbol.
+    #
+    # La raiz declarada es un ALIAS del mismo arbol, no una ruta inventada: el
+    # envoltorio ejecuta "$THYROX_ROOT/<destino>", asi que una raiz que no
+    # contenga el destino hace fallar el exec y la sonda no mediria la
+    # precedencia sino la ausencia del archivo — el sub-patron C dentro del
+    # propio control.
+    #
+    # Y se invoca por la ruta REAL declarando el alias, no al reves: `cd` es
+    # logico y `pwd` imprime el enlace, asi que invocar por el alias hace que
+    # la forma condicional y la incondicional publiquen lo mismo. Medido: el
+    # control no discriminaba bajo su propia anulacion. Invocado por la ruta
+    # real, la calculada es el arbol y la declarada es el alias — y ahi la
+    # anulacion si hace caer esta asercion.
+    alias_root = base / "export-raiz-alias"
+    if not alias_root.exists():
+        alias_root.symlink_to(tree)
+    entorno["THYROX_ROOT"] = str(alias_root)
+    r2 = subprocess.run(["bash", str(wrapper)],
+                        capture_output=True, text=True, cwd="/", env=entorno)
+    check("una raiz declarada gana sobre la calculada",
+          f"RAIZ={alias_root}" in r2.stdout,
+          f"dio {r2.stdout!r} (esperaba {alias_root})")
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -820,6 +1040,10 @@ def main() -> int:
         test_package_context_is_detected_and_narrow(base)
         test_dotted_name_refuses_outside_src(base)
         test_exercise_separates_wiring_from_policy(base)
+        test_typescript_discriminator_is_shebang_and_parent(base)
+        test_typescript_names_resolve_stem_collisions(base)
+        test_typescript_wrapper_degrades_without_bun(base)
+        test_wrapper_exports_root_across_exec(base)
     test_builtin_collision_on_real_tree()
     test_cli_check_exit_code()
     test_library_modules_are_silent_when_run_as_scripts()
@@ -829,6 +1053,7 @@ def main() -> int:
     test_library_shell_stays_out_of_the_real_plan()
     test_relative_import_entrypoints_reach_bin_on_real_tree()
     test_exercise_on_real_tree_is_green()
+    test_typescript_entrypoints_reach_bin_on_real_tree()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "
           f"(alcance medido: generate_bin.py)")

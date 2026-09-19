@@ -1,0 +1,13 @@
+# bunx tsc --noEmit -p tsconfig.json, desde el directorio de cada paquete
+# que DECLARA su propio tsconfig.json (10 de 46). 2026-09-19.
+agent: 479
+cli: 1749
+context-compression: 0
+observability: 0
+permission: 239
+plan: 0
+provider: 509
+skills: 0
+swarm: 235
+tools: 0
+# total: 3211 en 5 paquetes; 5 paquetes en VERDE.

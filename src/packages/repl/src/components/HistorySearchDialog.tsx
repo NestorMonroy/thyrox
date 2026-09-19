@@ -5,13 +5,13 @@ import {
   getTimestampedHistory,
   type TimestampedHistoryEntry,
 } from '../history.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text, stringWidth, wrapAnsi } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text, stringWidth, wrapAnsi } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import type { HistoryEntry } from '@thyrox/config'
 import { formatRelativeTimeAgo } from '@thyrox/output/formatters'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
-import { FuzzyPicker } from '@thyrox/ink'
+import { FuzzyPicker } from '@anthropic/ink'
 
 type Props = {
   initialQuery?: string

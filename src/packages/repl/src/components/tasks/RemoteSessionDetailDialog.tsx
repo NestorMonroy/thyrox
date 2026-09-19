@@ -6,7 +6,7 @@ import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
 import { DIAMOND_FILLED, DIAMOND_OPEN } from '@thyrox/output/constants/figures.js'
 import { useElapsedTime } from '../../hooks/useElapsedTime.js'
-import { type KeyboardEvent, Box, Link, Text } from '@thyrox/ink'
+import { type KeyboardEvent, Box, Link, Text } from '@anthropic/ink'
 import type { RemoteAgentTaskState } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js'
 import { getRemoteTaskSessionUrl } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js'
 import {
@@ -24,7 +24,7 @@ import { EMPTY_LOOKUPS, normalizeMessages } from '@thyrox/agent/messages.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { teleportResumeCodeSession } from '@thyrox/tool-registry/teleport.js'
 import { Select } from '../CustomSelect/select.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { Message } from '../Message.js'
 import {
   formatReviewStageCounts,

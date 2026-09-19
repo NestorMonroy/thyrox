@@ -50,24 +50,24 @@ def grade(
         raise ValueError(
             "sin ejes que graduar: población vacía. Un tier aquí no "
             "distinguiría «calidad excelente» de «nada que medir».")
-    aprobados = {r.name for r in results if r.passed}
-    alcanzado = None
-    for nombre, ejes_exigidos in tiers:
-        if ejes_exigidos <= aprobados:
-            alcanzado = nombre
+    approved = {r.name for r in results if r.passed}
+    reached = None
+    for name, axes_required in tiers:
+        if axes_required <= approved:
+            reached = name
     return {
-        "tier": alcanzado,
-        "passed_axes": sorted(aprobados),
+        "tier": reached,
+        "passed_axes": sorted(approved),
         "failing": failing_axes(results),
     }
 
 
 def format_report(results: Sequence[AxisResult]) -> str:
     """Texto plano por eje — ``OK``/``FAIL``, umbral, medido y razón. Sin emoji."""
-    lineas = []
+    lines = []
     for r in results:
-        veredicto = "OK" if r.passed else "FAIL"
-        lineas.append(
-            f"{veredicto} {r.name}: medido={r.measured} umbral={r.threshold} "
+        verdict = "OK" if r.passed else "FAIL"
+        lines.append(
+            f"{verdict} {r.name}: medido={r.measured} umbral={r.threshold} "
             f"({r.reason})")
-    return "\n".join(lineas)
+    return "\n".join(lines)

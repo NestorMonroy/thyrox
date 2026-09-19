@@ -5,38 +5,37 @@
  * Windows para acceso al microfono en-proceso. Cae a SoX `rec` o
  * arecord (ALSA) en Linux si el modulo nativo no esta disponible.
  *
- * Puerto de `ccnmt: packages/voice/src/voice.ts` (525 líneas fuente,
- * 100% portado).
+ * Puerto de `ccnmt: packages/voice/src/voice.ts` (525 lineas fuente).
+ * El codigo es identico a la fuente; los comentarios estan en espanol
+ * por `identificadores-en-ingles.md`.
  *
- * Divergencias declaradas:
+ * Divergencias de codigo: ninguna.
  *
- *   - `audio-capture-napi` — un módulo N-API NATIVO (compilado, no
- *     TypeScript) de ccnmt, ausente de este árbol como paquete de
- *     workspace. La fuente YA lo carga con `import()` DIFERIDO y ya
- *     diseña su propio fallback (arecord/SoX) para cuando no esté
- *     disponible — no es una divergencia que este agente introduzca:
- *     es el mecanismo de resiliencia de la propia fuente, que aquí
- *     simplemente se activa siempre (el import falla con "Cannot find
- *     package", exactamente como "módulo nativo no cargó").
- *   - `isRunningOnHomespace` (`config/env/utils.ts`, porte parcial
- *     declarado que no la incluye) — se reimplementa localmente,
- *     verbatim contra la fuente.
+ * Reescrituras de specifier (no son divergencias — nombran al MISMO
+ * paquete con el nombre que declara en este arbol):
+ *
+ *   - `@claude-code-how-works/*` -> `@thyrox/*`
+ *   - `audio-capture-napi` -> `@thyrox/audio-capture-napi`. La fuente lo
+ *     declara sin alcance (`packages/audio-capture-napi/package.json`:
+ *     `"name": "audio-capture-napi"`); aqui el mismo paquete —con sus
+ *     binarios `vendor/<plataforma>/audio-capture.node`— declara
+ *     `"name": "@thyrox/audio-capture-napi"`.
+ *
+ * Medido al portar: la fuente NO tiene un solo `catch` en las 525
+ * lineas, y sus cuatro llamadores de `loadAudioNapi()` esperan la
+ * promesa sin envolverla. El fallback a arecord/SoX que este modulo
+ * implementa responde a `isNativeAudioAvailable() === false` o a que
+ * `startNativeRecording()` devuelva false — NO a que el `import()`
+ * rechace. Un envoltorio try/catch aqui no seria fidelidad al diseno de
+ * la fuente sino un mecanismo nuevo.
  */
 
 import { type ChildProcess, spawn, spawnSync } from 'child_process'
 import { readFile } from 'fs/promises'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isEnvTruthy, isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { logError } from '@thyrox/local-observability/logging'
 import { getPlatform } from '@thyrox/config/platform'
-
-/** Ver docstring del módulo — sustituto local verbatim. */
-function isRunningOnHomespace(): boolean {
-  return (
-    process.env.USER_TYPE === 'ant' &&
-    isEnvTruthy(process.env.COO_RUNNING_ON_HOMESPACE)
-  )
-}
 
 // Modulo nativo de audio, cargado perezosamente. audio-capture.node
 // enlaza contra CoreAudio.framework + AudioUnit.framework; dlopen es
@@ -45,43 +44,21 @@ function isRunningOnHomespace(): boolean {
 // pulsacion de tecla de voz — sin preload, porque no hay forma de hacer
 // dlopen no-bloqueante y un freeze de arranque es peor que un retraso
 // en la primera pulsacion.
-type AudioNapi = {
-  isNativeAudioAvailable: () => boolean
-  isNativeRecordingActive: () => boolean
-  startNativeRecording: (
-    onData: (data: Buffer) => void,
-    onSilenceEnd: () => void,
-  ) => boolean
-  stopNativeRecording: () => void
-}
+type AudioNapi = typeof import('@thyrox/audio-capture-napi')
 let audioNapi: AudioNapi | null = null
 let audioNapiPromise: Promise<AudioNapi> | null = null
 
 function loadAudioNapi(): Promise<AudioNapi> {
   audioNapiPromise ??= (async () => {
     const t0 = Date.now()
-    try {
-      const mod = (await import('audio-capture-napi')) as AudioNapi
-      // packages/audio-capture-napi/src/index.ts difiere el require(...node)
-      // hasta la primera llamada a funcion — se dispara aqui para que el
-      // timing refleje el costo real.
-      mod.isNativeAudioAvailable()
-      audioNapi = mod
-      logForDebugging(`[voice] audio-capture-napi loaded in ${Date.now() - t0}ms`)
-      return mod
-    } catch {
-      // Ver docstring del módulo: `audio-capture-napi` es un paquete
-      // N-API nativo ausente de este árbol de workspace. La fuente ya
-      // diseña un fallback completo (arecord/SoX) para este caso.
-      const stub: AudioNapi = {
-        isNativeAudioAvailable: () => false,
-        isNativeRecordingActive: () => false,
-        startNativeRecording: () => false,
-        stopNativeRecording: () => {},
-      }
-      audioNapi = stub
-      return stub
-    }
+    const mod = await import('@thyrox/audio-capture-napi')
+    // src/packages/audio-capture-napi/src/index.ts difiere el
+    // require(...node) hasta la primera llamada a funcion — se dispara
+    // aqui para que el timing refleje el costo real.
+    mod.isNativeAudioAvailable()
+    audioNapi = mod
+    logForDebugging(`[voice] audio-capture-napi loaded in ${Date.now() - t0}ms`)
+    return mod
   })()
   return audioNapiPromise
 }

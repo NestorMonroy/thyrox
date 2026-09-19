@@ -1,9 +1,9 @@
 import * as React from 'react'
 import { memo, type ReactNode } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text, stringWidth } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text, stringWidth } from '@anthropic/ink'
 import { truncatePathMiddle, truncateToWidth } from '@thyrox/output/formatters/truncate.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 export type SuggestionItem = {
   id: string

@@ -1,6 +1,6 @@
 import figures from 'figures'
 import React, { useEffect, useState } from 'react'
-import { Box, Text, Dialog } from '@thyrox/ink'
+import { Box, Text, Dialog } from '@anthropic/ink'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import type { GitFileStatus } from '@thyrox/storage/git.js'
 import { getFileStatus, stashToCleanState } from '@thyrox/storage/git.js'

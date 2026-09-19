@@ -8,7 +8,7 @@ import {
   getCommandName,
   type PromptCommand,
 } from '@thyrox/command-runtime/runtime'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   estimateSkillFrontmatterTokens,
   getSkillsPath,
@@ -21,7 +21,7 @@ import {
 } from '@thyrox/config/constants'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 // Skills are always PromptCommands with CommandBase properties
 type SkillCommand = CommandBase & PromptCommand

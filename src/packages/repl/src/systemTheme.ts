@@ -11,7 +11,7 @@
  * updated by the watcher once the OSC 11 response arrives.
  */
 
-import type { ThemeName, ThemeSetting } from '@thyrox/ink'
+import type { ThemeName, ThemeSetting } from '@anthropic/ink'
 import { readEnv } from '@thyrox/config/env/utils'
 
 type SystemTheme = 'dark' | 'light'

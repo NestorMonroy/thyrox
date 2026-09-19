@@ -85,23 +85,23 @@ def check(label, expected, obtained):
 
 
 with tempfile.TemporaryDirectory() as tmp:
-    raiz = Path(tmp)
+    root = Path(tmp)
 
     print("== 1. store ausente: REHUSA, y no fabrica nada ==")
-    ausente = raiz / "sin-store" / "agent-results"
+    missing = root / "sin-store" / "agent-results"
     try:
-        store.connect_readonly(ausente)
+        store.connect_readonly(missing)
         check("rehusa con StoreNotFound", "StoreNotFound", "no levanto nada")
     except store.StoreNotFound:
         check("rehusa con StoreNotFound", "StoreNotFound", "StoreNotFound")
     except Exception as error:  # noqa: BLE001 — el tipo es el sujeto del caso
         check("rehusa con StoreNotFound", "StoreNotFound", type(error).__name__)
-    check("no creo el directorio", False, ausente.exists())
-    check("no creo el padre", False, ausente.parent.exists())
+    check("no creo el directorio", False, missing.exists())
+    check("no creo el padre", False, missing.parent.exists())
 
     print("== 2. store presente: sabe leer ==")
-    vivo = raiz / "vivo" / "agent-results"
-    conn = store.connect(vivo)
+    live = root / "vivo" / "agent-results"
+    conn = store.connect(live)
     conn.execute(
         "INSERT INTO agent_sessions (agent_id, subagent_type, session_id, "
         "status, started_at, updated_at) VALUES "
@@ -109,41 +109,41 @@ with tempfile.TemporaryDirectory() as tmp:
     conn.commit()
     conn.close()
 
-    solo_lectura = store.connect_readonly(vivo)
+    only_read = store.connect_readonly(live)
     check("cuenta las filas que hay", 1,
-          solo_lectura.execute("SELECT COUNT(*) FROM agent_sessions").fetchone()[0])
+          only_read.execute("SELECT COUNT(*) FROM agent_sessions").fetchone()[0])
 
     print("== 3. la conexion RECHAZA escribir ==")
     try:
-        solo_lectura.execute(
+        only_read.execute(
             "INSERT INTO agent_sessions (agent_id, subagent_type, session_id, "
             "status, started_at, updated_at) VALUES "
             "('a-2', 'x', 's-1', 'completed', '2026-01-01', '2026-01-01')")
-        solo_lectura.commit()
+        only_read.commit()
         check("SQLite rechaza el INSERT", "OperationalError", "el INSERT paso")
     except sqlite3.OperationalError:
         check("SQLite rechaza el INSERT", "OperationalError", "OperationalError")
-    solo_lectura.close()
+    only_read.close()
 
     print("== 4. el censo enrutado: rehusa sobre un store ausente ==")
     # ``--claude-dir`` es argumento DEL SUBCOMANDO, no global: invocarlo antes
     # hace que argparse rechace la linea y salga 2 por su cuenta. Ese 2 y el
     # del rehuse son el MISMO numero, asi que el caso no discriminaria — por
     # eso ademas se lee el mensaje, que argparse no sabe escribir.
-    otro = raiz / "censo-sin-store"
-    codigo, salida_error = None, io.StringIO()
+    other = root / "censo-sin-store"
+    code, output_error = None, io.StringIO()
     try:
-        with contextlib.redirect_stderr(salida_error):
-            store.main(["censo-tablas", "--claude-dir", str(otro)])
+        with contextlib.redirect_stderr(output_error):
+            store.main(["censo-tablas", "--claude-dir", str(other)])
     except SystemExit as salida:
-        codigo = salida.code
-    check("exit 2 — no midio, no publica conteo", 2, codigo)
+        code = salida.code
+    check("exit 2 — no midio, no publica conteo", 2, code)
     check("el mensaje nombra el store ausente", True,
-          "el store no existe" in salida_error.getvalue())
+          "el store no existe" in output_error.getvalue())
     check("el censo no fabrico el store", False,
-          (otro / "agent-results" / store.DB_FILENAME).exists())
+          (other / "agent-results" / store.DB_FILENAME).exists())
     check("el censo no fabrico ni el hogar", False,
-          (otro / "agent-results").exists())
+          (other / "agent-results").exists())
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

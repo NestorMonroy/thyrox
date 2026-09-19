@@ -43,7 +43,7 @@
 
 import type React from 'react'
 import { useCallback, useState } from 'react'
-import { Box, Text, type Theme } from '@thyrox/ink'
+import { Box, Text, type Theme } from '@anthropic/ink'
 
 import type {
   FleetActivity,

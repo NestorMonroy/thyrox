@@ -1,0 +1,35 @@
+# paquetes con manifiesto: 42
+# referencia: /home/user/claude-code-nestor-monroy-tools
+
+SIN DECLARAR (excluidas autorreferencia y raiz): 25
+  cubiertas por la RAIZ del workspace: 88 (46 nombre(s) distinto(s))
+  autorreferencias descontadas: 3 -> agent:@thyrox/agent, cli:@thyrox/cli, tool-registry:@thyrox/tool-registry
+
+== NO RESUELVE (causa un rojo): 25
+  stdin-napi               q                                         3 import(s)  ref:ninguno
+  cli                      aaaaa                                     2 import(s)  ref:ninguno
+  cli                      abc                                       2 import(s)  ref:ninguno
+  cli                      abcdefgh                                  2 import(s)  ref:ninguno
+  cli                      bbbbb                                     2 import(s)  ref:ninguno
+  cli                      ccccc                                     2 import(s)  ref:ninguno
+  cli                      hello                                     2 import(s)  ref:ninguno
+  cli                      hola                                      2 import(s)  ref:ninguno
+  config                   github.com                                2 import(s)  ref:ninguno
+  output                   hello                                     2 import(s)  ref:ninguno
+  tool-registry            x                                         2 import(s)  ref:ninguno
+  app-host                 src                                       1 import(s)  ref:ninguno
+  bridge                   hdr                                       1 import(s)  ref:ninguno
+  bridge                   not-json                                  1 import(s)  ref:ninguno
+  cli                      a-very-long-chunk-bigger-than-cap         1 import(s)  ref:ninguno
+  cli                      after                                     1 import(s)  ref:ninguno
+  cli                      hi                                        1 import(s)  ref:ninguno
+  cli                      one                                       1 import(s)  ref:ninguno
+  cli                      two                                       1 import(s)  ref:ninguno
+  computer-use-mcp         list                                      1 import(s)  ref:ninguno
+  stdin-napi               a                                         1 import(s)  ref:ninguno
+  stdin-napi               b                                         1 import(s)  ref:ninguno
+  stdin-napi               c                                         1 import(s)  ref:ninguno
+  storage                  contenido                                 1 import(s)  ref:ninguno
+  tool-registry            slack                                     1 import(s)  ref:ninguno
+
+== RESUELVE YA (hueco formal de manifiesto): 0

@@ -3,7 +3,7 @@ import {
   getLastInteractionTime,
   updateLastInteractionTime,
 } from '@thyrox/app-host/bootstrap/state.js'
-import { useTerminalNotification } from '@thyrox/ink'
+import { useTerminalNotification } from '@anthropic/ink'
 import { sendNotification } from '../notifier.js'
 // The time threshold in milliseconds for considering an interaction "recent" (6 seconds)
 export const DEFAULT_INTERACTION_THRESHOLD_MS = 6000

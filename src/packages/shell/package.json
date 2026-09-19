@@ -3,63 +3,202 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: 54 de 90 modulos de la fuente. Cubre heredocs de bash, specs Fig (carga + registro completo), deteccion/citado/quoting de shell, proveedores de PowerShell (DI y legacy), limites de salida, resolucion de shell por defecto, gate de PowerShellTool, contextos de inyeccion (ShellExecContext/SnapshotContext), tipos transversales, errores tipados, backup de preferencias de terminal (iTerm2/Terminal.app), resolucion de ripgrep para sandbox, stubs de testing, y las utilidades de proceso ya presentes (execFileNoThrow, which, subprocessEnv). El nucleo de parseo de bash (ast.ts/bashParser.ts/commands.ts/parser.ts), el motor de sandbox (sandbox-adapter.ts) y el aislamiento de tmux (tmuxSocket.ts) siguen sin portar por su tamano y su acoplamiento mutuo (~13000 lineas combinadas) — ver los docstrings de los modulos que dependen de ellos.",
+  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: 54 de 90 modulos de la fuente. Cubre heredocs de bash, specs Fig (carga + registro completo), deteccion/citado/quoting de shell, proveedores de PowerShell (DI y legacy), limites de salida, resolucion de shell por defecto, gate de PowerShellTool, contextos de inyeccion (ShellExecContext/SnapshotContext), tipos transversales, errores tipados, backup de preferencias de terminal (iTerm2/Terminal.app), resolucion de ripgrep para sandbox, stubs de testing, y las utilidades de proceso ya presentes (execFileNoThrow, which, subprocessEnv). El nucleo de parseo de bash (ast.ts/bashParser.ts/commands.ts/parser.ts), el motor de sandbox (sandbox-adapter.ts) y el aislamiento de tmux (tmuxSocket.ts) siguen sin portar por su tamano y su acoplamiento mutuo (~13000 lineas combinadas) \u2014 ver los docstrings de los modulos que dependen de ellos.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./process.js": "./src/process.ts",
-    "./subprocessEnv.js": "./src/subprocessEnv.ts",
-    "./bash/heredoc.js": "./src/bash/heredoc.ts",
-    "./bash/registry.js": "./src/bash/registry.ts",
-    "./bash/shellPrefix.js": "./src/bash/shellPrefix.ts",
-    "./bash/shellQuote.js": "./src/bash/shellQuote.ts",
-    "./bash/shellQuoting.js": "./src/bash/shellQuoting.ts",
-    "./bash/internal.js": "./src/bash/internal.ts",
-    "./bash/unicodeDashes.js": "./src/bash/unicodeDashes.ts",
-    "./bash/specs/index.js": "./src/bash/specs/index.ts",
-    "./execFileNoThrow.js": "./src/execFileNoThrow.ts",
-    "./execFileNoThrowPortable.js": "./src/execFileNoThrowPortable.ts",
-    "./genericProcessUtils.js": "./src/genericProcessUtils.ts",
-    "./which.js": "./src/which.ts",
-    "./errors.js": "./src/errors.ts",
-    "./types.js": "./src/types.ts",
-    "./context.js": "./src/context.ts",
-    "./findExecutable.js": "./src/findExecutable.ts",
-    "./immediateCommand.js": "./src/immediateCommand.ts",
-    "./commandLifecycle.js": "./src/commandLifecycle.ts",
-    "./taskOutputPort.js": "./src/taskOutputPort.ts",
-    "./execSyncWrapper.js": "./src/execSyncWrapper.ts",
-    "./sandboxUiUtils.js": "./src/sandboxUiUtils.ts",
-    "./sandbox/sandboxRipgrepResolver.js": "./src/sandbox/sandboxRipgrepResolver.ts",
-    "./terminal/iTermBackup.js": "./src/terminal/iTermBackup.ts",
-    "./terminal/appleTerminalBackup.js": "./src/terminal/appleTerminalBackup.ts",
-    "./providers/outputLimits.js": "./src/providers/outputLimits.ts",
-    "./providers/resolveDefaultShell.js": "./src/providers/resolveDefaultShell.ts",
-    "./providers/shellToolUtils.js": "./src/providers/shellToolUtils.ts",
-    "./providers/shellProvider.js": "./src/providers/shellProvider.ts",
-    "./providers/powershellDetection.js": "./src/providers/powershellDetection.ts",
-    "./providers/powershellProvider.js": "./src/providers/powershellProvider.ts",
-    "./legacy/outputLimits.js": "./src/legacy/outputLimits.ts",
-    "./legacy/resolveDefaultShell.js": "./src/legacy/resolveDefaultShell.ts",
-    "./legacy/shellToolUtils.js": "./src/legacy/shellToolUtils.ts",
-    "./legacy/shellProvider.js": "./src/legacy/shellProvider.ts",
-    "./legacy/powershellDetection.js": "./src/legacy/powershellDetection.ts",
-    "./legacy/powershellProvider.js": "./src/legacy/powershellProvider.ts",
-    "./testing": "./src/testing/index.ts",
-    "./testing.js": "./src/testing/index.ts",
-    "./bash/specs": "./src/bash/specs/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./process.js": {
+      "types": "./dist/process.d.ts",
+      "default": "./src/process.ts"
+    },
+    "./subprocessEnv.js": {
+      "types": "./dist/subprocessEnv.d.ts",
+      "default": "./src/subprocessEnv.ts"
+    },
+    "./bash/heredoc.js": {
+      "types": "./dist/bash/heredoc.d.ts",
+      "default": "./src/bash/heredoc.ts"
+    },
+    "./bash/registry.js": {
+      "types": "./dist/bash/registry.d.ts",
+      "default": "./src/bash/registry.ts"
+    },
+    "./bash/shellPrefix.js": {
+      "types": "./dist/bash/shellPrefix.d.ts",
+      "default": "./src/bash/shellPrefix.ts"
+    },
+    "./bash/shellQuote.js": {
+      "types": "./dist/bash/shellQuote.d.ts",
+      "default": "./src/bash/shellQuote.ts"
+    },
+    "./bash/shellQuoting.js": {
+      "types": "./dist/bash/shellQuoting.d.ts",
+      "default": "./src/bash/shellQuoting.ts"
+    },
+    "./bash/internal.js": {
+      "types": "./dist/bash/internal.d.ts",
+      "default": "./src/bash/internal.ts"
+    },
+    "./bash/unicodeDashes.js": {
+      "types": "./dist/bash/unicodeDashes.d.ts",
+      "default": "./src/bash/unicodeDashes.ts"
+    },
+    "./bash/specs/index.js": {
+      "types": "./dist/bash/specs/index.d.ts",
+      "default": "./src/bash/specs/index.ts"
+    },
+    "./execFileNoThrow.js": {
+      "types": "./dist/execFileNoThrow.d.ts",
+      "default": "./src/execFileNoThrow.ts"
+    },
+    "./execFileNoThrowPortable.js": {
+      "types": "./dist/execFileNoThrowPortable.d.ts",
+      "default": "./src/execFileNoThrowPortable.ts"
+    },
+    "./genericProcessUtils.js": {
+      "types": "./dist/genericProcessUtils.d.ts",
+      "default": "./src/genericProcessUtils.ts"
+    },
+    "./which.js": {
+      "types": "./dist/which.d.ts",
+      "default": "./src/which.ts"
+    },
+    "./errors.js": {
+      "types": "./dist/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./types.js": {
+      "types": "./dist/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./context.js": {
+      "types": "./dist/context.d.ts",
+      "default": "./src/context.ts"
+    },
+    "./findExecutable.js": {
+      "types": "./dist/findExecutable.d.ts",
+      "default": "./src/findExecutable.ts"
+    },
+    "./immediateCommand.js": {
+      "types": "./dist/immediateCommand.d.ts",
+      "default": "./src/immediateCommand.ts"
+    },
+    "./commandLifecycle.js": {
+      "types": "./dist/commandLifecycle.d.ts",
+      "default": "./src/commandLifecycle.ts"
+    },
+    "./taskOutputPort.js": {
+      "types": "./dist/taskOutputPort.d.ts",
+      "default": "./src/taskOutputPort.ts"
+    },
+    "./execSyncWrapper.js": {
+      "types": "./dist/execSyncWrapper.d.ts",
+      "default": "./src/execSyncWrapper.ts"
+    },
+    "./sandboxUiUtils.js": {
+      "types": "./dist/sandboxUiUtils.d.ts",
+      "default": "./src/sandboxUiUtils.ts"
+    },
+    "./sandbox/sandboxRipgrepResolver.js": {
+      "types": "./dist/sandbox/sandboxRipgrepResolver.d.ts",
+      "default": "./src/sandbox/sandboxRipgrepResolver.ts"
+    },
+    "./terminal/iTermBackup.js": {
+      "types": "./dist/terminal/iTermBackup.d.ts",
+      "default": "./src/terminal/iTermBackup.ts"
+    },
+    "./terminal/appleTerminalBackup.js": {
+      "types": "./dist/terminal/appleTerminalBackup.d.ts",
+      "default": "./src/terminal/appleTerminalBackup.ts"
+    },
+    "./providers/outputLimits.js": {
+      "types": "./dist/providers/outputLimits.d.ts",
+      "default": "./src/providers/outputLimits.ts"
+    },
+    "./providers/resolveDefaultShell.js": {
+      "types": "./dist/providers/resolveDefaultShell.d.ts",
+      "default": "./src/providers/resolveDefaultShell.ts"
+    },
+    "./providers/shellToolUtils.js": {
+      "types": "./dist/providers/shellToolUtils.d.ts",
+      "default": "./src/providers/shellToolUtils.ts"
+    },
+    "./providers/shellProvider.js": {
+      "types": "./dist/providers/shellProvider.d.ts",
+      "default": "./src/providers/shellProvider.ts"
+    },
+    "./providers/powershellDetection.js": {
+      "types": "./dist/providers/powershellDetection.d.ts",
+      "default": "./src/providers/powershellDetection.ts"
+    },
+    "./providers/powershellProvider.js": {
+      "types": "./dist/providers/powershellProvider.d.ts",
+      "default": "./src/providers/powershellProvider.ts"
+    },
+    "./legacy/outputLimits.js": {
+      "types": "./dist/legacy/outputLimits.d.ts",
+      "default": "./src/legacy/outputLimits.ts"
+    },
+    "./legacy/resolveDefaultShell.js": {
+      "types": "./dist/legacy/resolveDefaultShell.d.ts",
+      "default": "./src/legacy/resolveDefaultShell.ts"
+    },
+    "./legacy/shellToolUtils.js": {
+      "types": "./dist/legacy/shellToolUtils.d.ts",
+      "default": "./src/legacy/shellToolUtils.ts"
+    },
+    "./legacy/shellProvider.js": {
+      "types": "./dist/legacy/shellProvider.d.ts",
+      "default": "./src/legacy/shellProvider.ts"
+    },
+    "./legacy/powershellDetection.js": {
+      "types": "./dist/legacy/powershellDetection.d.ts",
+      "default": "./src/legacy/powershellDetection.ts"
+    },
+    "./legacy/powershellProvider.js": {
+      "types": "./dist/legacy/powershellProvider.d.ts",
+      "default": "./src/legacy/powershellProvider.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./testing.js": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./bash/specs": {
+      "types": "./dist/bash/specs/index.d.ts",
+      "default": "./src/bash/specs/index.ts"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test",
     "shell": "bun run bin/shell.ts"
   },
   "dependencies": {
+    "@anthropic/ink": "workspace:*",
+    "@thyrox/agent": "workspace:*",
     "@thyrox/app-host": "workspace:*",
+    "@thyrox/command-runtime": "workspace:*",
     "@thyrox/config": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
+    "@thyrox/output": "workspace:*",
+    "@thyrox/permission": "workspace:*",
+    "@thyrox/provider": "workspace:*",
+    "@thyrox/repl": "workspace:*",
     "@thyrox/storage": "workspace:*",
     "@thyrox/tool-registry": "workspace:*"
   }

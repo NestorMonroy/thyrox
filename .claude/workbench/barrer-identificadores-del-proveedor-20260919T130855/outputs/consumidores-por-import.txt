@@ -1,0 +1,6 @@
+renombres en el plan: 612
+archivos .py medidos como posibles consumidores: 407
+nombres con consumidor por IMPORT fuera de su archivo: 0
+
+Metrica: `from M import N` y `M.N` tras `import M`, por AST, en src/tests/bin/.claude/hooks.
+Ciega a: `import *`, un `getattr(mod, "nombre")` por cadena, y un consumidor en .sh o .ts que invoque el simbolo por texto.

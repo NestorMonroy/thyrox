@@ -120,7 +120,7 @@ describe('refreshOAuthToken — clientId + expiresIn signature pins', () => {
 
     test('imports LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS', () => {
       expect(cliSource).toMatch(
-        /import \{ LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS \} from '@claude-code-how-works\/provider\/oauthConstants\.js'/,
+        /import \{ LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS \} from '@thyrox\/provider\/oauthConstants\.js'/,
       )
     })
 

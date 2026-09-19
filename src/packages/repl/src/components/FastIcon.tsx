@@ -1,7 +1,7 @@
 import chalk from 'chalk'
 import * as React from 'react'
 import { LIGHTNING_BOLT } from '@thyrox/output/constants/figures.js'
-import { Text, color } from '@thyrox/ink'
+import { Text, color } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
 import { resolveThemeSetting } from '../systemTheme.js'
 

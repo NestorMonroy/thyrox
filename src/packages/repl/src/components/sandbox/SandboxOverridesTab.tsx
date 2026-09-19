@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, color, Link, Text, useTheme, useTabHeaderFocus } from '@thyrox/ink'
+import { Box, color, Link, Text, useTheme, useTabHeaderFocus } from '@anthropic/ink'
 import type { CommandResultDisplay } from '@thyrox/agent/command.js'
 import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import { Select } from '../CustomSelect/select.js'

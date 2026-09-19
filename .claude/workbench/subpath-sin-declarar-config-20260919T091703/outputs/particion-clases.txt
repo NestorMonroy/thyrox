@@ -1,0 +1,21 @@
+== CLASE A: el specifier trae sufijo .ts (el defecto es del IMPORTADOR) ==
+  @thyrox/config/env/dynamic.ts              existe src/packages/config/env/dynamic.ts -> SI
+  @thyrox/config/env/utils.ts                existe src/packages/config/env/utils.ts -> SI
+  @thyrox/config/feature-flags.ts            existe src/packages/config/feature-flags.ts -> SI
+  @thyrox/config/global/config.ts            existe src/packages/config/global/config.ts -> SI
+  @thyrox/config/index.ts                    existe src/packages/config/index.ts -> SI
+  @thyrox/config/platform.ts                 existe src/packages/config/platform.ts -> SI
+  @thyrox/config/semver.ts                   existe src/packages/config/semver.ts -> SI
+  @thyrox/config/settings/types.ts           existe src/packages/config/settings/types.ts -> SI
+  @thyrox/config/utils/envExpansion.ts       existe src/packages/config/utils/envExpansion.ts -> SI
+  @thyrox/config/utils/expandTilde.ts        existe src/packages/config/utils/expandTilde.ts -> SI
+  @thyrox/config/utils/markdownDescription.ts existe src/packages/config/utils/markdownDescription.ts -> SI
+
+== CLASE B: sin sufijo .ts — ¿donde vive el modulo en NUESTRO arbol? ==
+  applySettingsChange      src/packages/config/settings/applySettingsChange.ts
+  changeDetector           src/packages/config/settings/changeDetector.ts
+  lazySchema               src/packages/config/internal/lazySchema.ts
+  managedPath              src/packages/config/settings/managedPath.ts
+  pluginOnlyPolicy         src/packages/config/settings/pluginOnlyPolicy.ts
+  sync                     AUSENTE en config
+  testing                  AUSENTE en config

@@ -533,4 +533,9 @@ Desde ahora un consumidor invoca sin codificar la ruta:
 Para comprobarlo en cualquier momento:
 
   ${C_RESET}./install.sh --check${C_RESET}
+
+Y para saber QUE de bin/ se puede usar en este arbol —el preflight mide
+conducta, no presencia, y nombra la precondicion de lo que falte:
+
+  ${C_RESET}bash "$ROOT/bin/check-toolchain-ready"${C_RESET}
 EOF

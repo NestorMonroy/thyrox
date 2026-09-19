@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Text, Link } from '@thyrox/ink';
+import { Box, Text, Link } from '@anthropic/ink';
 import { Select } from '../CustomSelect/select.js';
 import { PermissionDialog } from '@thyrox/permission/components/PermissionDialog.js';
 import { useAppState, useSetAppState } from '../../appStateHooks.js';

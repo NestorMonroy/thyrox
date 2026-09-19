@@ -1,0 +1,14 @@
+# Control de anulacion — se retira el WALK-UP (premisa de ubicacion vieja)
+# fecha: 2026-09-19T15:55:53
+
+FALLA ruta absoluta del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+FALLA ruta absoluta del .md derivado: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+FALLA ruta relativa del paquete: el gate MIDE — esperado 'medido', obtenido 'rehuso'
+OK   archivo fuera de la superficie: el gate SE EXIME
+OK   guard sin node_modules/zod: exit 2
+OK   guard sin node_modules/zod: nombra la biblioteca y el comando
+OK   guard con zod distinta de la fijada: exit 2
+FALLA guard con zod distinta: nombra la instalada y la fijada — esperado 'si', obtenido 'no'
+
+aserciones: 4 de 8 · fallos: 4
+exit=1

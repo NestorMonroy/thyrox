@@ -9,8 +9,8 @@
 import figures from 'figures'
 import * as React from 'react'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import type { Theme } from '@thyrox/ink'
-import { Box, Byline, KeyboardShortcutHint, Text, stringWidth } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
+import { Box, Byline, KeyboardShortcutHint, Text, stringWidth } from '@anthropic/ink'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
 import {
   type AppState,

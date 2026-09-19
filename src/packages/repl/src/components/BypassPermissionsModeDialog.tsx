@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 import { logEvent } from '@thyrox/local-observability'
-import { Box, Link, Newline, Text } from '@thyrox/ink'
+import { Box, Link, Newline, Text } from '@anthropic/ink'
 import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from './CustomSelect/index.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 type Props = {
   onAccept(): void

@@ -1,0 +1,3 @@
+claude-for-chrome-mcp: emitio pese a 24 errores (24 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 24 error(es) que siguen vivos en su propio paquete

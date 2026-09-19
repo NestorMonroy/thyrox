@@ -1,7 +1,7 @@
 import * as React from 'react'
 import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { buildMessageLookups } from '@thyrox/agent/messages.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { MessageResponse } from '../MessageResponse.js'
 
 type Props = {

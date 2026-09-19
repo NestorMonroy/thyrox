@@ -8,10 +8,10 @@ import { every } from '@thyrox/output/setUtils.js'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import { useTerminalSize } from '@thyrox/ink'
-import type { ScrollBoxHandle } from '@thyrox/ink'
-import { useTerminalNotification } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import type { ScrollBoxHandle } from '@anthropic/ink'
+import { useTerminalNotification } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
 import type { Screen } from '../screens/REPL.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
@@ -49,7 +49,7 @@ import {
 } from '@thyrox/agent/messages.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { renderableSearchText } from '@thyrox/agent/sessionTools/transcriptSearch.js'
-import { Divider } from '@thyrox/ink'
+import { Divider } from '@anthropic/ink'
 import type { UnseenDivider } from './FullscreenLayout.js'
 import { LogoV2 } from './LogoV2/LogoV2.js'
 import { StreamingMarkdown } from './Markdown.js'
@@ -291,13 +291,13 @@ type Props = {
   /** Paint an existing DOM subtree to fresh Screen, scan. Element comes
    *  from the main tree (all real providers). Message-relative positions. */
   scanElement?: (
-    el: import('@thyrox/ink').DOMElement,
-  ) => import('@thyrox/ink').MatchPosition[]
+    el: import('@anthropic/ink').DOMElement,
+  ) => import('@anthropic/ink').MatchPosition[]
   /** Position-based CURRENT highlight. positions stable (msg-relative),
    *  rowOffset tracks scroll. null clears. */
   setPositions?: (
     state: {
-      positions: import('@thyrox/ink').MatchPosition[]
+      positions: import('@anthropic/ink').MatchPosition[]
       rowOffset: number
       currentIdx: number
     } | null,

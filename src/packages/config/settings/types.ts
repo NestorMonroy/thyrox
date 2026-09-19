@@ -18,6 +18,7 @@
  * - **`cacheTtl` sólo admite `5m` y `1h`** — son los dos que el servicio
  *   tiene, y escribir otro no lo crea.
  */
+import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
 
 /** Los eventos de hook que nuestro harness emite hoy. Los 33 del cliente están en su lista; aquí van los que tienen emisor. */
@@ -210,6 +211,13 @@ export const SettingsSchema = z
     terminalTitleFromRename: z.boolean().optional(),
     prefersReducedMotion: z.boolean().optional(),
     alwaysThinkingEnabled: z.boolean().optional(),
+    // `ccnmt: packages/config/settings/types.ts:744`. Se porta con el
+    // `.catch(undefined)` de la fuente: un valor de disco fuera del enum
+    // degrada a ausente en vez de invalidar el objeto de settings entero.
+    effortLevel: z
+      .enum(['none', 'low', 'medium', 'high', 'xhigh', 'max'])
+      .optional()
+      .catch(undefined),
     showThinkingSummaries: z.boolean().optional(),
     fastMode: z.unknown().optional(),
     fastModePerSessionOptIn: z.boolean().optional(),
@@ -248,3 +256,19 @@ export type SettingsJson = Settings
  * de verdad — igual que en la fuente (`ccnmt: …/types.ts:257`).
  */
 export const CUSTOMIZATION_SURFACES = ['skills', 'agents', 'hooks', 'mcp'] as const
+
+/**
+ * Un matcher de hook aportado por un plugin — `ccnmt: packages/config/
+ * settings/types.ts`. Lo distingue de un matcher interno la presencia de
+ * `pluginRoot`, que es el discriminador que `clearRegisteredPluginHooks` usa
+ * en `app-host/bootstrap/state.ts`. `loadPluginHooks.ts` ya lo importaba de
+ * aqui antes de este porte.
+ */
+export type PluginHookMatcher = {
+  matcher?: string
+  hooks: HookCommand[]
+  pluginRoot: string
+  pluginName: string
+  /** Formato `nombrePlugin@nombreMarketplace`. */
+  pluginId: string
+}

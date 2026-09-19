@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { useShortcutDisplay } from '../../keybindings/useShortcutDisplay.js'
 import { SandboxManager } from '@thyrox/shell/sandbox.js'
 

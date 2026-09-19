@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { MessageResponse } from '@claude-code-how-works/repl/components/MessageResponse.js'
+import { MessageResponse } from '@thyrox/repl/components/MessageResponse.js'
 import { Text } from '@anthropic/ink'
-import { truncateToWidth } from '@claude-code-how-works/output/formatters'
-import type { MCPToolResult } from '@claude-code-how-works/mcp-runtime/mcpValidation.js'
+import { truncateToWidth } from '@thyrox/output/formatters'
+import type { MCPToolResult } from '@thyrox/mcp-runtime/mcpValidation.js'
 
 type CuToolInput = Record<string, unknown> & {
   coordinate?: [number, number]

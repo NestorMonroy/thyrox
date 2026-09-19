@@ -41,11 +41,60 @@ if [[ ${#ARCHIVOS[@]} -gt 0 ]]; then
     fi
 fi
 
-if [[ ! -d "$PAQUETE/node_modules" ]]; then
+# El programa de este gate importa hermanos de workspace (`@thyrox/provider/*`),
+# que se resuelven por el `node_modules` de la cadena. La precondicion exigia ese
+# directorio BAJO el paquete, y el workspace IZA las dependencias a la raiz: no
+# existe, Node sube, y el gate rehusaba sobre cada archivo real de su superficie
+# con el arbol correcto. Se resuelve como Node —subiendo— y ademas se exige que
+# el grafo este anclado al lockfile de $RAIZ, que es el que gobierna: sin el,
+# `bun run` auto-instala (`--install=auto`) y el verde depende de lo que la
+# maquina tenga cacheado.
+# shellcheck source=/dev/null
+source "$RAIZ/src/lib/node_resolution.sh"
+
+if ! NODE_MODULES_OWNER="$(node_modules_owner "$PAQUETE")"; then
     # Rehusa con 2 y SIN cifra: un 0 aqui no distinguiria «no hay lecturas
     # cruzadas» de «no pude medir», que es el sub-patron D.
-    echo "check-cross-model-read: REHUSA — falta node_modules en $PAQUETE_REL." >&2
-    echo "      (cd $PAQUETE_REL && bun install --frozen-lockfile)" >&2
+    echo "check-cross-model-read: REHUSA — no hay node_modules en la cadena de" >&2
+    echo "      resolucion de $PAQUETE_REL. Node sube desde el paquete hasta la" >&2
+    echo "      raiz del workspace; ahi no hay ninguno." >&2
+    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+    exit 2
+fi
+
+# Y el grafo tiene que estar anclado al lockfile de $RAIZ. Hay DOS raices de
+# workspace anidadas —la raiz y `src/packages`— y sus lockfiles NO fijan las
+# mismas resoluciones; si el gate corriera contra el grafo de la anidada, su
+# verde seria falso.
+#
+# Esto NO se mide comparando `duenyo == $RAIZ`. Esa comparacion mide la RUTA
+# del duenyo para concluir sobre el LOCKFILE, y las dos propiedades solo
+# coinciden bajo el linker izado. Con el aislado —el que un `bun install` sin
+# `linker` declarado materializa en este arbol— cada paquete tiene jardin
+# propio cuyas entradas resuelven dentro de `$RAIZ/node_modules/.bun/`: el
+# grafo sigue siendo el de la raiz y la comparacion de ruta rehusaba igual,
+# sobre cada archivo de la superficie con un arbol correcto. Es el sub-patron
+# C de `metrica-decide-la-conclusion.md`, con este gate como sujeto.
+#
+# `anchored_to_root_store` mide a donde RESUELVEN las entradas, que es la
+# propiedad sobre la que se concluye, y acepta los DOS linkers. Cual de los dos
+# gobierna es TASK-THYROX-0098, del ejecutor; este gate no lo decide.
+if ! anchored_to_root_store "$NODE_MODULES_OWNER" "$RAIZ"; then
+    echo "check-cross-model-read: REHUSA — el grafo resuelto no esta anclado al" >&2
+    echo "      lockfile de la raiz del workspace." >&2
+    echo "      duenyo:   $NODE_MODULES_OWNER/node_modules" >&2
+    echo "      esperado: sus entradas externas resuelven bajo" >&2
+    echo "                $RAIZ/node_modules/.bun/" >&2
+    echo "      bun run correria contra el grafo de otro lockfile." >&2
+    echo "      (cd $RAIZ && bun install --frozen-lockfile)" >&2
+    exit 2
+fi
+
+if [[ ! -f "$RAIZ/bun.lock" ]]; then
+    echo "check-cross-model-read: REHUSA — falta \`$RAIZ/bun.lock\`." >&2
+    echo "      El node_modules resuelto ($NODE_MODULES_OWNER/node_modules) no" >&2
+    echo "      esta anclado a ningun lockfile, asi que el verde no seria" >&2
+    echo "      reproducible: bun run correria sobre lo que Bun auto-instale." >&2
     exit 2
 fi
 

@@ -1,8 +1,8 @@
-import type { ToolUseContext } from '@claude-code-how-works/tool-registry/Tool.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 
-import { logForDebugging } from '@claude-code-how-works/local-observability/debug.js'
-import { errorMessage } from '@claude-code-how-works/local-observability/errorHelpers.js'
-import { withResolvers } from '@claude-code-how-works/local-observability/utils/withResolvers.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { withResolvers } from '@thyrox/local-observability/utils/withResolvers.js'
 import { isLockHeldLocally, releaseComputerUseLock } from './computerUseLock.js'
 import { unregisterEscHotkey } from './escHotkey.js'
 

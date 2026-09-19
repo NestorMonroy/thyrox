@@ -1,0 +1,14 @@
+SUITE                                          pelado     PYTHONPATH=src
+tests/hooks/test_error_log.py                  ROJO       ok
+tests/agents/test_final_message_closing.py     ok         ok
+tests/session/test_user_wiring.py              ROJO       ok
+tests/paths/test_child_env.py                  ok         ok
+tests/session/test_generate_bin.py             ROJO       ROJO
+EXIT=0
+__BG_EXIT__=0
+
+--- La causa, citada del corredor (tests/run.sh:38):
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+
+--- La lista de rojos del baseline, medida por el corredor:
+12

@@ -1,4 +1,4 @@
-# @claude-code-how-works/headless-sdk
+# @thyrox/headless-sdk
 
 Programmatic SDK surface: types, session runners, streaming adapter for
 non-interactive consumers (CI, scripts).

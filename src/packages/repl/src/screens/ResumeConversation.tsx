@@ -1,15 +1,15 @@
 import { feature } from 'bun:bundle'
 import { dirname } from 'path'
 import React from 'react'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { getOriginalCwd, switchSession } from '@thyrox/app-host/bootstrap/state.js'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { LogSelector } from '../components/LogSelector.js'
 import { Spinner } from '../components/Spinner.js'
 import { restoreCostStateForSession } from '@thyrox/provider/costTracker.js'
-import { setClipboard } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { setClipboard } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,

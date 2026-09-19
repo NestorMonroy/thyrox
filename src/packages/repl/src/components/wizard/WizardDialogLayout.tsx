@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react'
-import type { Theme } from '@thyrox/ink'
-import { Dialog } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
+import { Dialog } from '@anthropic/ink'
 import { useWizard } from './useWizard.js'
 import { WizardNavigationFooter } from './WizardNavigationFooter.js'
 

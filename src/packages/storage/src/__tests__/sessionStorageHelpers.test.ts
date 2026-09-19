@@ -10,14 +10,20 @@
  * Both functions are exported and called on every session
  * load + every transcript flush — high-frequency code path.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import type { UUID } from 'crypto'
 
-// Adaptación: la fuente mockea @claude-code-how-works/command-runtime/runtime
-// (builtInCommandNames) para no arrastrar el grafo completo de
-// ensureCommandRuntimeInstalled(). Ese paquete no existe aquí (DEC-04); el
-// puerto expone un setter DI local (mismo patrón que `setGetCwdFn` en
-// internal/pendingCrossPackageDeps.ts) en vez de un módulo mockeable.
+// Se mockea `@thyrox/command-runtime/runtime` — que es lo que la fuente hace,
+// ahora que el paquete SI existe con ese nombre. El sustituto por inyeccion
+// que el porte parcial habia puesto en su lugar se retira: colisionaba con el
+// import real del modulo, y la colision estaba enmascarada solo mientras el
+// TS2307 impedia que ese import resolviera.
+//
+// El mock no es comodidad: `builtInCommandNames()` llama a
+// `ensureCommandRuntimeInstalled()`, que arrastra el grafo de bindings de host
+// y hoy lanza — `pendingCrossPackageDeps.ts:60` cita un modulo cuyo propio
+// docstring declara colgante a `./commandRegistryRuntime.js`. Ese defecto es
+// ajeno a lo que estos casos miden, y tiene su sucesor: TASK-THYROX-0211.
 const BUILT_IN_NAMES = new Set([
   'model',
   'clear',
@@ -26,10 +32,12 @@ const BUILT_IN_NAMES = new Set([
   'compact',
 ])
 
-const { getFirstMeaningfulUserMessageTextContent, removeExtraFields, setBuiltInCommandNamesFn } =
-  await import('../sessionStorage.js')
+mock.module('@thyrox/command-runtime/runtime', () => ({
+  builtInCommandNames: () => BUILT_IN_NAMES,
+}))
 
-setBuiltInCommandNamesFn(() => BUILT_IN_NAMES)
+const { getFirstMeaningfulUserMessageTextContent, removeExtraFields } =
+  await import('../sessionStorage.js')
 
 type Msg = Parameters<typeof getFirstMeaningfulUserMessageTextContent>[0][number]
 

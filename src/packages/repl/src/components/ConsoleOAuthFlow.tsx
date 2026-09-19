@@ -4,9 +4,9 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { installOAuthTokens } from '@thyrox/cli/handlers/auth.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { setClipboard, useTerminalNotification, Box, Link, Text, KeyboardShortcutHint } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useTerminalSize } from '@anthropic/ink'
+import { setClipboard, useTerminalNotification, Box, Link, Text, KeyboardShortcutHint } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { getSSLErrorHint } from '@thyrox/provider/errorUtils.js'
 import { sendNotification } from '../notifier.js'
 import { OAuthService, runCodexOAuthFlow, saveCodexOAuthTokens } from '@thyrox/provider/oauth/index.js'

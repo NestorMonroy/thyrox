@@ -89,10 +89,10 @@ _VERIFY = _HERE.parent / 'verify'
 
 def _load(name: str):
     """Carga un modulo de ``src/verify`` por ruta, sin exigir el paquete."""
-    ruta = _VERIFY / f'{name}.py'
-    if not ruta.is_file():
+    path = _VERIFY / f'{name}.py'
+    if not path.is_file():
         return None
-    spec = importlib.util.spec_from_file_location(f'_code_language_{name}', ruta)
+    spec = importlib.util.spec_from_file_location(f'_code_language_{name}', path)
     if spec is None or spec.loader is None:
         return None
     modulo = importlib.util.module_from_spec(spec)
@@ -150,16 +150,16 @@ def comment_text(text: str, is_shell: bool) -> str:
     La mitad de juicio numero 1 vive aqui — se descuentan los literales antes de
     buscar el comentario, para que ``const s = "// corrida"`` no cuente.
     """
-    sin_literales = re.sub(r'"[^"\n]*"|\'[^\'\n]*\'', '""', text)
-    partes: list[str] = []
+    without_literals = re.sub(r'"[^"\n]*"|\'[^\'\n]*\'', '""', text)
+    parts: list[str] = []
     if is_shell:
         # La primera linea puede ser el shebang: es interprete, no prosa.
-        cuerpo = re.sub(r'\A#![^\n]*\n', '\n', sin_literales)
-        partes += _SH_LINE_COMMENT.findall(cuerpo)
+        body = re.sub(r'\A#![^\n]*\n', '\n', without_literals)
+        parts += _SH_LINE_COMMENT.findall(body)
     else:
-        partes += _TS_BLOCK_COMMENT.findall(sin_literales)
-        partes += _TS_LINE_COMMENT.findall(sin_literales)
-    return '\n'.join(partes)
+        parts += _TS_BLOCK_COMMENT.findall(without_literals)
+        parts += _TS_LINE_COMMENT.findall(without_literals)
+    return '\n'.join(parts)
 
 
 def unmarked(prose: str) -> str:
@@ -175,27 +175,27 @@ def load_forbidden() -> frozenset[str] | None:
     if gate is None:
         return None
     try:
-        ruta = gate.resolve_forbidden()
+        path = gate.resolve_forbidden()
     except SystemExit:
         return None
     except Exception:
         return None
-    if ruta is None or not pathlib.Path(ruta).is_file():
+    if path is None or not pathlib.Path(path).is_file():
         return None
-    formas = set()
-    for linea in pathlib.Path(ruta).read_text(encoding='utf-8').splitlines():
-        linea = linea.strip()
-        if linea and not linea.startswith('#'):
-            formas.add(linea.lower())
-    return frozenset(formas)
+    forms = set()
+    for line in pathlib.Path(path).read_text(encoding='utf-8').splitlines():
+        line = line.strip()
+        if line and not line.startswith('#'):
+            forms.add(line.lower())
+    return frozenset(forms)
 
 
 def forbidden_in(prose: str, forbidden: frozenset[str]) -> list[str]:
     """Las formas vetadas que la prosa USA — no las que cita."""
-    cuerpo = unmarked(prose).lower()
+    body = unmarked(prose).lower()
     return sorted({
-        forma for forma in forbidden
-        if re.search(r'(?<![\w])' + re.escape(forma) + r'(?![\w])', cuerpo)
+        form for form in forbidden
+        if re.search(r'(?<![\w])' + re.escape(form) + r'(?![\w])', body)
     })
 
 
@@ -208,14 +208,14 @@ def spanish_in(identifiers: set[str]) -> list[str]:
         families = gate.code_suffix_families(identifiers)
     except Exception:
         families = frozenset()
-    marcados = []
+    marked = []
     for name in sorted(identifiers):
         try:
             if gate.spanish_words_in(name, families):
-                marcados.append(name)
+                marked.append(name)
         except Exception:
             continue
-    return marcados
+    return marked
 
 
 def _content_of(tool_name: str, tool_input: dict) -> str:
@@ -258,29 +258,29 @@ def detect(payload: dict) -> str | None:
             'defectos». Declarar el parametro o correr desde el consumidor.'
         )
 
-    vetadas = forbidden_in(prose, forbidden)
-    espanoles = spanish_in(identifiers)
-    if not vetadas and not espanoles:
+    banned = forbidden_in(prose, forbidden)
+    spanish = spanish_in(identifiers)
+    if not banned and not spanish:
         return None
 
-    lineas = ['IDIOMA en un archivo de codigo — el gate de prosa sólo ve '
+    lines = ['IDIOMA en un archivo de codigo — el gate de prosa sólo ve '
               '`.rst`/`.md` y los de identificador recorren AST de Python, '
               'así que este archivo no lo mide nadie más.']
-    if espanoles:
-        lineas.append(
+    if spanish:
+        lines.append(
             '  identificador en español (van en INGLÉS): '
-            + ', '.join(espanoles[:8])
+            + ', '.join(spanish[:8])
         )
-    if vetadas:
-        lineas.append(
+    if banned:
+        lines.append(
             '  vocabulario vetado en un comentario (el comentario va en '
             'español, pero sin coloquialismos y con el término técnico en '
-            'inglés): ' + ', '.join(vetadas[:8])
+            'inglés): ' + ', '.join(banned[:8])
         )
-    lineas.append(
+    lines.append(
         '  Mide el significante, no el significado: una cita marcada entre '
         'acentos graves no cuenta, una cita en prosa llana sí — el juicio es '
         'de quien recibe el aviso. Reglas: `identificadores-en-ingles.md`, '
         '`redaccion-tecnica-es.md`.'
     )
-    return '\n'.join(lineas)
+    return '\n'.join(lines)

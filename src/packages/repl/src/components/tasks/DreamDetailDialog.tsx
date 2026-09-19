@@ -1,11 +1,11 @@
 import React from 'react'
 import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import { useElapsedTime } from '../../hooks/useElapsedTime.js'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { DreamTaskState } from '@thyrox/agent/tasks/DreamTask/DreamTask.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 
 type Props = {
   task: DeepImmutable<DreamTaskState>

@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { formatNumber } from '@thyrox/output/formatters'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 type Props = {
   agentType: string

@@ -1,6 +1,6 @@
 import figures from 'figures'
 import * as React from 'react'
-import { Box, Text, type TextProps } from '@thyrox/ink'
+import { Box, Text, type TextProps } from '@anthropic/ink'
 import { useAppState } from '../../appStateHooks.js'
 import { getRunningTeammatesSorted } from '@thyrox/swarm'
 import { formatNumber } from '@thyrox/output/formatters'

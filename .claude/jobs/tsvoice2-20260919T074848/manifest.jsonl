@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bunx tsc --noEmit 2>&1 | grep \"^src/packages/voice\"", "started_at": "2026-09-19T07:48:48+00:00"}

@@ -42,8 +42,8 @@ describe('useVoice helpers (voice-mode UX invariants)', () => {
     })
 
     test('full-amplitude signal saturates near 1', () => {
-      // Max 16-bit signed = 32767. RMS of pure 32767 = 32767.
-      // normalized = min(32767/2000, 1) = 1; sqrt(1) = 1.
+      // El maximo de 16 bits con signo es 32767. El RMS de un 32767 puro
+      // vale 32767. normalizado = min(32767/2000, 1) = 1; sqrt(1) = 1.
       const buf = Buffer.alloc(64)
       for (let i = 0; i < 32; i++) {
         buf.writeInt16LE(32767, i * 2)

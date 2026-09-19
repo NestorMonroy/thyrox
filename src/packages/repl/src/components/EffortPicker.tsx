@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Text, useTerminalSize } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text, useTerminalSize } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import {
   EFFORT_LEVELS,
   type EffortLevel,

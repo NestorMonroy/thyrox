@@ -1,76 +1,139 @@
 /**
- * Porte PARCIAL de `ccnmt: packages/storage/src/glob.ts` — sólo
- * `extractGlobBaseDirectory`, el helper puro que separa un patrón glob en
- * un directorio base estático + un patrón relativo. No se porta la función
- * `glob()` (la que de verdad invoca ripgrep): depende de
- * `@claude-code-how-works/tool-registry` (`Tool.js`, `ripgrep.js`) y de
- * `@claude-code-how-works/permission/filesystem` y
- * `@claude-code-how-works/config/plugin/orphanedPluginFilter` — ninguno
- * tiene hogar en este árbol todavía, y ningún test de este porte la
- * ejercita. Declarado, no diferido en silencio (ver
- * `hallazgo-abierto-genera-sucesor.md` de kaupamex-docs, mismo criterio).
- *
- * `getPlatform` sustituye a `@claude-code-how-works/config/platform` (ver
- * `./internal/pendingCrossPackageDeps.ts`); la rama Windows-drive-root que
- * consume no está ejercitada por `extractGlobBaseDirectory.test.ts`, pero
- * se conserva fiel a la fuente.
+ * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/glob.ts`.
+ * La version anterior portaba 1 de 2 exports, y los suyos eran
+ * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
+ * Divergencia frente a la fuente: ninguna, salvo el alcance
+ * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
+ * Refs: TASK-THYROX-0199.
  */
 
-import { basename, dirname, sep } from 'path'
-import { getPlatform } from './internal/pendingCrossPackageDeps.js'
+import { basename, dirname, isAbsolute, join, sep } from 'path'
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import {
+  getFileReadIgnorePatterns,
+  normalizePatternsToPath,
+} from '@thyrox/permission/filesystem'
+import { getPlatform } from '@thyrox/config/platform'
+import { getGlobExclusionsForPluginCache } from '@thyrox/config/plugin/orphanedPluginFilter'
+import { ripGrep } from '@thyrox/tool-registry/ripgrep.js'
 
 /**
- * Extrae el directorio base estático de un patrón glob.
- * El directorio base es todo lo anterior al primer carácter especial de
- * glob (* ? [ {). Retorna la porción de directorio y el patrón relativo
- * restante.
+ * Extracts the static base directory from a glob pattern.
+ * The base directory is everything before the first glob special character (* ? [ {).
+ * Returns the directory portion and the remaining relative pattern.
  */
 export function extractGlobBaseDirectory(pattern: string): {
   baseDir: string
   relativePattern: string
 } {
-  // Encuentra el primer carácter especial de glob: *, ?, [, {
+  // Find the first glob special character: *, ?, [, {
   const globChars = /[*?[{]/
   const match = pattern.match(globChars)
 
   if (!match || match.index === undefined) {
-    // Sin caracteres de glob — es una ruta literal.
-    // Retorna la porción de directorio y el nombre de archivo como patrón.
+    // No glob characters - this is a literal path
+    // Return the directory portion and filename as pattern
     const dir = dirname(pattern)
     const file = basename(pattern)
     return { baseDir: dir, relativePattern: file }
   }
 
-  // Todo lo anterior al primer carácter de glob.
+  // Get everything before the first glob character
   const staticPrefix = pattern.slice(0, match.index)
 
-  // Encuentra el último separador de ruta en el prefijo estático.
+  // Find the last path separator in the static prefix
   const lastSepIndex = Math.max(
     staticPrefix.lastIndexOf('/'),
     staticPrefix.lastIndexOf(sep),
   )
 
   if (lastSepIndex === -1) {
-    // Sin separador de ruta antes del glob — el patrón es relativo a cwd.
+    // No path separator before the glob - pattern is relative to cwd
     return { baseDir: '', relativePattern: pattern }
   }
 
   let baseDir = staticPrefix.slice(0, lastSepIndex)
   const relativePattern = pattern.slice(lastSepIndex + 1)
 
-  // Maneja patrones de directorio raíz (p. ej. /*.txt en Unix o C:/*.txt en
-  // Windows). Cuando lastSepIndex es 0, baseDir queda vacío pero
-  // necesitamos usar '/' como raíz.
+  // Handle root directory patterns (e.g., /*.txt on Unix or C:/*.txt on Windows)
+  // When lastSepIndex is 0, baseDir is empty but we need to use '/' as the root
   if (baseDir === '' && lastSepIndex === 0) {
     baseDir = '/'
   }
 
-  // Maneja rutas de raíz de unidad de Windows (p. ej. C:/*.txt).
-  // 'C:' significa "directorio actual en la unidad C" (relativo), no raíz.
-  // Se necesita 'C:/' o 'C:\' para la raíz real de la unidad.
+  // Handle Windows drive root paths (e.g., C:/*.txt)
+  // 'C:' means "current directory on drive C" (relative), not root
+  // We need 'C:/' or 'C:\' for the actual drive root
   if (getPlatform() === 'windows' && /^[A-Za-z]:$/.test(baseDir)) {
     baseDir = baseDir + sep
   }
 
   return { baseDir, relativePattern }
+}
+
+export async function glob(
+  filePattern: string,
+  cwd: string,
+  { limit, offset }: { limit: number; offset: number },
+  abortSignal: AbortSignal,
+  toolPermissionContext: ToolPermissionContext,
+): Promise<{ files: string[]; truncated: boolean }> {
+  let searchDir = cwd
+  let searchPattern = filePattern
+
+  // Handle absolute paths by extracting the base directory and converting to relative pattern
+  // ripgrep's --glob flag only works with relative patterns
+  if (isAbsolute(filePattern)) {
+    const { baseDir, relativePattern } = extractGlobBaseDirectory(filePattern)
+    if (baseDir) {
+      searchDir = baseDir
+      searchPattern = relativePattern
+    }
+  }
+
+  const ignorePatterns = normalizePatternsToPath(
+    getFileReadIgnorePatterns(toolPermissionContext),
+    searchDir,
+  )
+
+  // Use ripgrep for better memory performance
+  // --files: list files instead of searching content
+  // --glob: filter by pattern
+  // --sort=modified: sort by modification time (oldest first)
+  // --no-ignore: don't respect .gitignore (default true, set CLAUDE_CODE_GLOB_NO_IGNORE=false to respect .gitignore)
+  // --hidden: include hidden files (default true, set CLAUDE_CODE_GLOB_HIDDEN=false to exclude)
+  // Note: use || instead of ?? to treat empty string as unset (defaulting to true)
+  const noIgnore = isEnvTruthy(process.env.CLAUDE_CODE_GLOB_NO_IGNORE || 'true')
+  const hidden = isEnvTruthy(process.env.CLAUDE_CODE_GLOB_HIDDEN || 'true')
+  const args = [
+    '--files',
+    '--glob',
+    searchPattern,
+    '--sort=modified',
+    ...(noIgnore ? ['--no-ignore'] : []),
+    ...(hidden ? ['--hidden'] : []),
+  ]
+
+  // Add ignore patterns
+  for (const pattern of ignorePatterns) {
+    args.push('--glob', `!${pattern}`)
+  }
+
+  // Exclude orphaned plugin version directories
+  for (const exclusion of await getGlobExclusionsForPluginCache(searchDir)) {
+    args.push('--glob', exclusion)
+  }
+
+  const allPaths = await ripGrep(args, searchDir, abortSignal)
+
+  // ripgrep returns relative paths, convert to absolute
+  const absolutePaths = allPaths.map(p =>
+    isAbsolute(p) ? p : join(searchDir, p),
+  )
+
+  const truncated = absolutePaths.length > offset + limit
+  const files = absolutePaths.slice(offset, offset + limit)
+
+  return { files, truncated }
 }

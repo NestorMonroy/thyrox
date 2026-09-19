@@ -28,7 +28,7 @@ import { feature } from 'bun:bundle'
 // imported only when `ccb agents` runs, so pulling stdin-napi in here does NOT
 // touch the REPL boot path, and it keeps the pin/unpin exports visible to knip
 // (a dynamic import would read as unused). Mirrors openAgentsFromRepl.ts.
-import { pinFd0Raw, unpinFd0Raw } from 'stdin-napi'
+import { pinFd0Raw, unpinFd0Raw } from '@thyrox/stdin-napi'
 
 import { stopCapturingEarlyInput } from '@thyrox/repl/earlyInput.js'
 

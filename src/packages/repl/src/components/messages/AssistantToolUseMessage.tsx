@@ -1,10 +1,10 @@
 import type { ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import React, { useMemo } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import type { ThemeName } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import type { ThemeName } from '@anthropic/ink'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import { Box, Text, stringWidth, useTheme } from '@thyrox/ink'
+import { Box, Text, stringWidth, useTheme } from '@anthropic/ink'
 import { useAppStateMaybeOutsideOfProvider } from '../../appStateHooks.js'
 import {
   findToolByName,

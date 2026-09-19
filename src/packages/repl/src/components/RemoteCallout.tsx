@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import { isBridgeEnabled } from '@thyrox/bridge/bridgeEnabled.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import type { OptionWithDescription } from './CustomSelect/select.js'

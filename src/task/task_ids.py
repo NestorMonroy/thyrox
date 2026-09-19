@@ -696,14 +696,14 @@ def correct_layer(store_path, citation_id: str, layer: str,
             "por que es indistinguible de una que se corrompio.")
     conn = sqlite3.connect(store_path)
     try:
-        fila = conn.execute(
+        row = conn.execute(
             "SELECT submodule FROM tasks WHERE citation_id = ?",
             (citation_id,)).fetchone()
-        if fila is None:
+        if row is None:
             raise MappingError(
                 f"no hay ninguna tarea con la cita {citation_id} en "
                 f"{store_path}. NO se escribe nada.")
-        previa = fila[0]
+        previous = row[0]
         stamp = _now()
         conn.execute(
             "UPDATE tasks SET submodule = ?, submodule_source = ?, "
@@ -713,12 +713,12 @@ def correct_layer(store_path, citation_id: str, layer: str,
         conn.commit()
     finally:
         conn.close()
-    return previa, layer_actual
+    return previous, layer_actual
 
 
-def _cmd_corregir_capa(args: argparse.Namespace) -> int:
-    previa, nueva = correct_layer(args.store, args.cita, args.capa, args.razon)
-    print(f"corregir-capa: {args.cita} {previa} -> {nueva} "
+def _cmd_fix_layer(args: argparse.Namespace) -> int:
+    previous, new = correct_layer(args.store, args.cita, args.capa, args.razon)
+    print(f"corregir-capa: {args.cita} {previous} -> {new} "
           f"(la cita NO se mueve: es identidad, no clasificacion)")
     return 0
 
@@ -947,17 +947,17 @@ def main(argv=None) -> int:
                          help="directorio de tarjetas (default: el de la sesion)")
     p_board.set_defaults(func=_cmd_ingerir_board)
 
-    p_capa = sub.add_parser(
+    p_layer = sub.add_parser(
         "corregir-capa",
         help="corrige la CAPA de una tarea sin mover su cita")
-    p_capa.add_argument("cita", help="el TASK-<CAPA>-NNNN de la tarea")
-    p_capa.add_argument("--capa", required=True,
+    p_layer.add_argument("cita", help="el TASK-<CAPA>-NNNN de la tarea")
+    p_layer.add_argument("--capa", required=True,
                         help=f"la capa correcta: {', '.join(LAYERS)} o "
                              f"'{UNKNOWN_LAYER}' (cruza repos)")
-    p_capa.add_argument("--razon", required=True,
+    p_layer.add_argument("--razon", required=True,
                         help="por que la anterior era incorrecta; queda en "
                              "submodule_source")
-    p_capa.set_defaults(func=_cmd_corregir_capa)
+    p_layer.set_defaults(func=_cmd_fix_layer)
 
     p_acunar = sub.add_parser("acunar", help="acuña el id que falte, desde el store")
     p_acunar.add_argument("--dry-run", action="store_true")

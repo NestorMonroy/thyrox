@@ -8,7 +8,7 @@ import {
 } from '@thyrox/local-observability'
 import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
 import type { ToolUseConfirm } from '@thyrox/permission/components/PermissionRequest.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import type {
   ToolPermissionContext,
   Tool as ToolType,

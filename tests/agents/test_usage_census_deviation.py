@@ -82,65 +82,65 @@ def _seed(conn, model, per_turn_values):
 
 
 with tempfile.TemporaryDirectory() as tmp:
-    raiz = Path(tmp) / "sonda" / "agent-results"
-    conn = store.connect(raiz)
+    root = Path(tmp) / "sonda" / "agent-results"
+    conn = store.connect(root)
     _seed(conn, "claude-steady-1", STEADY)
     _seed(conn, "claude-erratic-1", ERRATIC)
     conn.commit()
     conn.close()
 
-    salida = io.StringIO()
-    with contextlib.redirect_stdout(salida):
-        store.main(["censo-medicion", "--claude-dir", str(raiz)])
-    texto = salida.getvalue()
+    output = io.StringIO()
+    with contextlib.redirect_stdout(output):
+        store.main(["censo-medicion", "--claude-dir", str(root)])
+    text = output.getvalue()
 
     # Se leen las filas de LA TABLA, no el texto entero: «300,000» tambien sale
     # en el agregado de arriba, y contarlo ahi mediria otra cosa.
-    _filas = {}
-    for _linea in texto.splitlines():
-        _piezas = _linea.split()
+    _rows = {}
+    for _line in text.splitlines():
+        _pieces = _line.split()
         # `n=` es el discriminador SEMANTICO: de los bloques que el censo
         # emite con el nombre del modelo al principio, este es el unico que lo
         # imprime. El conteo de campos tambien separa hoy (4 aqui, 5 en USD)
         # pero es accidental: depende de cuantas columnas tenga la otra tabla,
         # no de que midan unidades distintas. Sin `n=`, las filas de USD
         # —que se imprimen DESPUES— pisarian estas en el diccionario.
-        if len(_piezas) >= 4 and _piezas[0].startswith("claude-") \
-                and _piezas[1].startswith("n="):
+        if len(_pieces) >= 4 and _pieces[0].startswith("claude-") \
+                and _pieces[1].startswith("n="):
             # Se lee por posicion con respaldo: si el bloque publicara menos
             # columnas de las que este control exige, el caso tiene que FALLAR
             # nombrando la columna ausente, no reventar con un IndexError que
             # no dice cual falta.
-            def _col(_indice):
-                return _piezas[_indice] if _indice < len(_piezas) else "AUSENTE"
-            _filas[_piezas[0]] = {
+            def _col(_index):
+                return _pieces[_index] if _index < len(_pieces) else "AUSENTE"
+            _rows[_pieces[0]] = {
                 "n": _col(1),
-                "equiv_media": _col(2), "equiv_desv": _col(3),
-                "cache_media": _col(4), "cache_desv": _col(5)}
+                "equiv_media": _col(2), "equiv_std": _col(3),
+                "cache_media": _col(4), "cache_std": _col(5)}
 
     print("== 1. la media NO discrimina: los dos modelos dan la misma ==")
-    check("las dos filas estan en la tabla", 2, len(_filas))
+    check("las dos filas estan en la tabla", 2, len(_rows))
     check("misma media en los dos modelos", True,
-          _filas.get("claude-steady-1", {}).get("cache_media")
-          == _filas.get("claude-erratic-1", {}).get("cache_media") == "300,000")
+          _rows.get("claude-steady-1", {}).get("cache_media")
+          == _rows.get("claude-erratic-1", {}).get("cache_media") == "300,000")
 
     print("== 2. la desviacion tipica SI las distingue ==")
     check("el estable publica su desviacion", "7,071",
-          _filas.get("claude-steady-1", {}).get("cache_desv"))
+          _rows.get("claude-steady-1", {}).get("cache_std"))
     check("el erratico publica la suya, un orden mayor", "141,421",
-          _filas.get("claude-erratic-1", {}).get("cache_desv"))
+          _rows.get("claude-erratic-1", {}).get("cache_std"))
 
     print("== 3. la cifra viaja con su denominador ==")
     check("cada modelo declara su n", ["n=5", "n=5"],
-          [_filas.get(m, {}).get("n") for m in
+          [_rows.get(m, {}).get("n") for m in
            ("claude-erratic-1", "claude-steady-1")])
 
     print("== 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==")
-    _cabecera = [l for l in texto.splitlines() if "por turno, por modelo" in l]
+    _header = [l for l in text.splitlines() if "por turno, por modelo" in l]
     check("el bloque nombra su unidad", True,
-          bool(_cabecera) and "tokens" in _cabecera[0].lower())
+          bool(_header) and "tokens" in _header[0].lower())
     check("y NO mezcla dinero en el mismo bloque", True,
-          bool(_cabecera) and "usd" not in _cabecera[0].lower())
+          bool(_header) and "usd" not in _header[0].lower())
 
     print("== 5. publica equiv_cost, que es la unidad de coste que SE CITA ==")
     # `calibration-verified-numbers.md`: de los tres tipos de costo, `equiv_cost`
@@ -148,12 +148,12 @@ with tempfile.TemporaryDirectory() as tmp:
     # unidad de capacidad— y el USD es precio de lista. Un bloque que publicara
     # solo `cache_read` mediria el componente y se leeria como el costo.
     check("el estable publica la desviacion de su equiv_cost", "707",
-          _filas.get("claude-steady-1", {}).get("equiv_desv"))
+          _rows.get("claude-steady-1", {}).get("equiv_std"))
     check("el erratico publica la suya, un orden mayor", "14,142",
-          _filas.get("claude-erratic-1", {}).get("equiv_desv"))
+          _rows.get("claude-erratic-1", {}).get("equiv_std"))
     check("misma media de equiv_cost: tampoco ahi discrimina", True,
-          _filas.get("claude-steady-1", {}).get("equiv_media")
-          == _filas.get("claude-erratic-1", {}).get("equiv_media") == "30,000")
+          _rows.get("claude-steady-1", {}).get("equiv_media")
+          == _rows.get("claude-erratic-1", {}).get("equiv_media") == "30,000")
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

@@ -1,7 +1,7 @@
 import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import * as React from 'react'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import { Box, Text, type TextProps } from '@thyrox/ink'
+import { Box, Text, type TextProps } from '@anthropic/ink'
 import { extractTag } from '@thyrox/agent/messages.js'
 
 type Props = {

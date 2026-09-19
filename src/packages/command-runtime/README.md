@@ -1,4 +1,4 @@
-# @claude-code-how-works/command-runtime
+# @thyrox/command-runtime
 
 Slash command parsing, argument substitution, gitignore-aware globbing,
 and the canonical implementations of built-in slash commands.

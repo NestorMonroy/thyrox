@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react'
-import { Box, Byline, KeyboardShortcutHint } from '@thyrox/ink'
+import { Box, Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import type { SettingSource } from '@thyrox/config/constants'
 import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import { Select } from '../../../CustomSelect/select.js'
