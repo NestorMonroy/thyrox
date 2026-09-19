@@ -1,0 +1,18 @@
+# Conducta de los cuatro prologos reales, en entorno limpio (env -u PYTHONPATH).
+# Se ejecuta el prologo del PROPIO guion hasta su 'source ... reach.sh' y se
+# prueba el import. Mide el significado (¿importa?), no el significante
+# (¿aparece el literal PYTHONPATH?).
+
+## CON el export de reach.sh (estado actual)
+src/verify/install-hooks.sh        IMPORTA OK
+src/task/refresh-board.sh          IMPORTA OK
+src/session/session-start.sh       IMPORTA OK
+src/task/refrescar-tablero.sh      IMPORTA OK
+
+## CONTROL DE ANULACION — con el export deshabilitado
+src/verify/install-hooks.sh        NO IMPORTA
+src/task/refresh-board.sh          NO IMPORTA
+src/session/session-start.sh       NO IMPORTA
+src/task/refrescar-tablero.sh      NO IMPORTA
+
+# restaurado: 0 anulaciones vivas
