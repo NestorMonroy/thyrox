@@ -123,15 +123,41 @@ else
   bad "caso 8: un CA inexistente deberia avisar igual"
 fi
 
-# Caso 9 — las cuatro formas de declarar proxy disparan la sonda, no solo
+# Caso 9 — TODA forma de declarar proxy dispara la sonda, no solo
 # https_proxy. La minuscula y la MAYUSCULA son dos cajas distintas.
-for key in https_proxy HTTPS_PROXY http_proxy HTTP_PROXY; do
+#
+# El bucle recorre el array REAL, no una copia: transcribir la lista aqui
+# seria una segunda fuente de verdad que nadie sincroniza, y una clave nueva
+# quedaria sin ejercitar sin que nada lo dijera.
+for key in "${THYROX_TOOLCHAIN_PROXY_KEYS[@]}"; do
   if [[ "$(exit_code_of "$key"=http://p:8080)" == "1" ]]; then
     ok "caso 9/$key: dispara la sonda"
   else
     bad "caso 9/$key: NO dispara la sonda"
   fi
 done
+
+# Caso 9-bis — el conteo, que es la mitad que DISCRIMINA. Sin el, retirar una
+# clave del array encoge el universo del caso 9 y la suite sigue verde: el
+# instrumento mediria menos y publicaria lo mismo.
+if [[ "${#THYROX_TOOLCHAIN_PROXY_KEYS[@]}" == "6" ]]; then
+  ok "caso 9-bis: el array declara las 6 claves de proxy"
+else
+  bad "caso 9-bis: el array declara ${#THYROX_TOOLCHAIN_PROXY_KEYS[@]} claves, se esperan 6"
+fi
+
+# Caso 9-ter — ALL_PROXY SOLA y SIN CA: avisa. Es el caso que TASK-THYROX-0187
+# abrio, y la forma SIN CA es la unica que discrimina: con el array de cuatro
+# claves la sonda no veia proxy y salia 0 por el camino temprano, asi que un
+# caso «ALL_PROXY + los tres CA -> 0» habria pasado igual antes y despues.
+# Ese verde no habria separado «la sonda ve ALL_PROXY» de «la sonda no ve
+# ningun proxy»: el sub-patron D con la propia suite como sujeto.
+output9ter="$(run_probe ALL_PROXY=http://p:1080)"
+if [[ "$(exit_code_of ALL_PROXY=http://p:1080)" == "1" && "$output9ter" == *"node"* ]]; then
+  ok "caso 9-ter: ALL_PROXY sola y sin CA -> exit 1, y nombra la familia"
+else
+  bad "caso 9-ter: ALL_PROXY sola sin CA deberia avisar — salida: $output9ter"
+fi
 
 # Caso 10 — python admite DOS claves, y cualquiera de las dos basta.
 if [[ "$(exit_code_of https_proxy=http://p:8080 REQUESTS_CA_BUNDLE="$CA_PRESENT" \

@@ -364,15 +364,17 @@ export -f thyrox_toolchain_require_gawk
 # ---------------------------------------------------------------------------
 
 # @description Las claves de entorno que declaran un proxy de salida. Son
-# CUATRO y no dos: la minuscula y la MAYUSCULA son cajas distintas, y un
+# SEIS y no tres: la minuscula y la MAYUSCULA son cajas distintas, y un
 # operador puede declarar solo una.
 #
-# NO incluye ALL_PROXY: `src/packages/provider/src/proxy.ts::getProxyUrl` no
-# la lee hoy (medido: 0 archivos del arbol la leen), asi que declararla aqui
-# haria que la sonda diera verde sobre una via que el consumidor no consume.
-# Su lectura es TASK-THYROX-0187; esta lista crece cuando aquella cierre.
+# ALL_PROXY entro al cerrar TASK-THYROX-0187, no por completitud: hasta
+# entonces `src/packages/provider/src/proxy.ts::getProxyUrl` no la leia
+# (medido: 0 archivos del arbol), asi que declararla habria dado verde sobre
+# una via que el consumidor no consume. Hoy la lee como respaldo de los dos
+# caminos, asi que un entorno que solo la declare SI tiene proxy — y la sonda
+# tiene que verlo para no callar sobre un CA ausente.
 declare -ga THYROX_TOOLCHAIN_PROXY_KEYS=(
-  https_proxy HTTPS_PROXY http_proxy HTTP_PROXY
+  https_proxy HTTPS_PROXY http_proxy HTTP_PROXY all_proxy ALL_PROXY
 )
 
 # @description Las familias de consumidor y las claves de CA que cada una lee,

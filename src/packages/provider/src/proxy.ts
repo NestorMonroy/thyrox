@@ -44,9 +44,57 @@ export function getAddressFamily(options: LookupOptions): 0 | 4 | 6 {
 
 type EnvLike = Record<string, string | undefined>
 
-/** URL de proxy activa, si hay una configurada (minúscula gana sobre MAYÚSCULA). */
-export function getProxyUrl(env: EnvLike = getAllEnv()): string | undefined {
-  return env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY
+/**
+ * URL de proxy activa, elegida POR PROTOCOLO del destino.
+ *
+ * Con `targetUrl` declarado, un destino `http://` recibe el proxy de http y
+ * uno `https://` el de https. Sin él —que es como los consumidores de hoy la
+ * llaman— se conserva la precedencia anterior: https antes que http.
+ *
+ * `ALL_PROXY` es el respaldo de ambos caminos. No se leía en NINGÚN archivo
+ * de este árbol antes de TASK-THYROX-0187 (medido: 0), asi que un entorno
+ * que sólo lo declarara salía sin proxy.
+ *
+ * La forma se adapta de `omniroute: open-sse/utils/proxyFetch.ts:502-526`
+ * (MIT). DIVERGENCIA declarada en la precedencia de caja: la referencia pone
+ * la MAYÚSCULA primero y aquí gana la minúscula, que es lo que `getNoProxy`
+ * ya hace y lo que curl documenta. Cambiarlo alteraría el comportamiento de
+ * un entorno que declare las dos con valores distintos.
+ *
+ * Una `targetUrl` que no parsea cae al camino sin destino en vez de reventar:
+ * el llamador pregunta por el proxy, no por la validez de su URL.
+ *
+ * DESCONOCIDO declarado — un protocolo que no es `http:` ni `https:`. La
+ * referencia lo resuelve con un ternario (`protocol === "https:" ? … : …`),
+ * asi que manda TODO lo no-https por la cadena de http, incluido `wss:`, que
+ * es TLS. Aqui cae al camino sin destino. No se porta el ternario porque su
+ * significante —«no es https»— no coincide con su significado —«transporte
+ * sin TLS»—, y la poblacion que decidiria el empate es hoy VACIA: los dos
+ * consumidores reales llaman sin `targetUrl`. Condicion de cierre: el primer
+ * llamador que pase un destino que no sea http ni https. TASK-THYROX-0191.
+ */
+export function getProxyUrl(
+  env: EnvLike = getAllEnv(),
+  targetUrl?: string,
+): string | undefined {
+  const anyProxy = env.all_proxy || env.ALL_PROXY
+
+  if (targetUrl !== undefined) {
+    let protocol: string | undefined
+    try {
+      protocol = new URL(targetUrl).protocol
+    } catch {
+      protocol = undefined
+    }
+    if (protocol === 'http:') {
+      return env.http_proxy || env.HTTP_PROXY || anyProxy
+    }
+    if (protocol === 'https:') {
+      return env.https_proxy || env.HTTPS_PROXY || anyProxy
+    }
+  }
+
+  return env.https_proxy || env.HTTPS_PROXY || env.http_proxy || env.HTTP_PROXY || anyProxy
 }
 
 /** Valor de NO_PROXY (minúscula gana sobre MAYÚSCULA). */
