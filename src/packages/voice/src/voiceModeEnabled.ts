@@ -1,23 +1,38 @@
 /**
  * Puerto de `ccnmt: packages/voice/src/voiceModeEnabled.ts` (54 líneas
- * fuente, 100% portado). Divergencia declarada: `feature('VOICE_MODE')`
- * de `bun:bundle` — macro de build time de ccnmt, no un módulo
- * importable (medido: `import('bun:bundle')` en Bun 1.3.11 da
- * "Cannot find package 'bundle'"; mismo caso que
- * `updater/nativeInstaller/download.ts`). Sustituto local: lectura de
- * la variable de entorno `CCB_FEATURE_VOICE_MODE`.
+ * fuente), 100 % portado y SIN divergencia.
+ *
+ * LA DIVERGENCIA QUE AQUI SE DECLARABA MEDIA OTRA COSA — retirada el
+ * 2026-09-19T07:59:29. Decia que `bun:bundle` es «macro de build
+ * time, no un módulo importable», citando como medida
+ * `import('bun:bundle')` → "Cannot find package 'bundle'", y ponía en
+ * su lugar un sustituto local que leía `CCB_FEATURE_VOICE_MODE`.
+ *
+ * Esa medida es de la forma DINAMICA y la conclusión era sobre la
+ * ESTATICA, que es la que la fuente usa y la que usan otros 172
+ * archivos de `src/packages` —incluido `./hooks/useVoiceIntegration.tsx`,
+ * en ESTE mismo paquete—. Medido por conducta hoy:
+ *
+ *   - `import('bun:bundle')` (dinámico) → "Cannot find package 'bundle'";
+ *   - `import { feature } from 'bun:bundle'` (estático) → RESUELVE. El
+ *     error que devuelve no es de resolución sino de uso: «feature()
+ *     from "bun:bundle" can only be used directly in an if statement or
+ *     ternary condition».
+ *   - y el ternario —que es exactamente la forma de la fuente, ver el
+ *     comentario de `isVoiceGrowthBookEnabled` abajo— compila y corre.
+ *
+ * Medir el literal de una forma y concluir sobre la otra es el
+ * sub-patrón C. El sustituto local además dejaba al paquete con DOS
+ * nociones contradictorias de `feature()`: ésta y la real de
+ * `useVoiceIntegration.tsx`.
  */
 
+import { feature } from 'bun:bundle'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   getClaudeAIOAuthTokens,
   isAnthropicAuthEnabled,
 } from '@thyrox/provider/authAlias.js'
-
-/** Ver docstring del módulo — sustituto local de `feature()` de `bun:bundle`. */
-function feature(flag: 'VOICE_MODE'): boolean {
-  return process.env[`CCB_FEATURE_${flag}`] !== '0'
-}
 
 /**
  * Chequeo kill-switch para el modo de voz. Devuelve true a menos que el

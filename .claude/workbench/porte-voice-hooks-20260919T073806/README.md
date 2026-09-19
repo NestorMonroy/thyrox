@@ -207,3 +207,136 @@ El hueco que ese `passthrough` esconde sí es real: `voiceEnabled` está
 declarada en `ccnmt: packages/config/settings/types.ts:907` y da **0 hits** en
 todo `src/packages/config` nuestro. Registrado como **H-THYROX-119**; el censo
 de todas las claves en esa situación queda como sucesor.
+
+---
+
+## Cierre: los cinco archivos que divergían, y el sexto bloqueador rancio
+
+Tras cerrar los cuatro hooks, quedaban cinco archivos con diferencia contra la
+fuente. Medidos con `outputs/strip_comments.py`, que separa «se tradujo un
+comentario» de «el porte está incompleto», **tres eran sólo comentario**
+(`index.ts`, `voiceStreamSTT.ts`, `useVoiceHelpers.behavior.test.ts`) y dos
+llevaban código:
+
+| Archivo | Divergencia declarada | Medido |
+|---|---|---|
+| `voiceKeyterms.ts` | *«`storage/src/git.ts` no incluye `getBranch`»* | `:214` lo declara. Restaurado el import de la fuente; el código queda **idéntico**. Efecto lateral: `@thyrox/storage` deja de ser una dependencia huérfana. |
+| `voiceModeEnabled.ts` | *«`bun:bundle` no es importable»* | La forma **dinámica** `await import('bun:bundle')` falla y la **estática** `import { feature } from 'bun:bundle'` resuelve. Se midió una y se concluyó sobre la otra — el sub-patrón C. Retirado el `feature()` local; el código queda **idéntico**. |
+| `voice.ts` | (a) `isRunningOnHomespace` ausente de `config`; (b) `audio-capture-napi` ausente del árbol | Las dos falsas. Ver abajo. |
+
+### `voice.ts` — el sexto bloqueador, y uno séptimo que introduje yo
+
+**(a) `isRunningOnHomespace`** está en `config/env/utils.ts:169`, con cuerpo
+byte a byte igual al de la fuente (`ccnmt: packages/config/env/utils.ts:121`).
+El stub local se retira y se restaura el import de la fuente.
+
+**(b) `audio-capture-napi`** existe en este árbol: `src/packages/audio-capture-napi/`,
+con sus binarios `vendor/{x64-linux,arm64-linux,x64-darwin,arm64-darwin,x64-win32}/audio-capture.node`.
+Lo que faltaba era su **línea en `dependencies`** — el mismo patrón de
+`@anthropic/ink` y `@thyrox/repl`. La fuente lo declara sin alcance
+(`"name": "audio-capture-napi"`) y aquí declara `"@thyrox/audio-capture-napi"`,
+así que el specifier se reescribe: es la misma clase que
+`@claude-code-how-works/*` → `@thyrox/*`, **no** una divergencia.
+
+**El séptimo bloqueador era mío, de este mismo pase.** El docstring que yo
+escribí afirmaba que *«la fuente YA diseña su propio fallback (arecord/SoX)
+para cuando no esté disponible»*, justificando un `try/catch` que devolvía un
+stub. Medido:
+
+```
+grep -n "loadAudioNapi\|catch" ccnmt: packages/voice/src/voice.ts
+  24:function loadAudioNapi(): Promise<AudioNapi> {
+ 196:  const napi = await loadAudioNapi()
+ 242:  const napi = await loadAudioNapi()
+ 270:  const napi = await loadAudioNapi()
+ 343:  const napi = await loadAudioNapi()
+```
+
+**Cero `catch` en las 525 líneas**, y los cuatro llamadores esperan la promesa
+sin envolverla. El fallback de la fuente responde a `isNativeAudioAvailable()
+=== false` o a que `startNativeRecording()` devuelva `false` — **otra
+condición**. Mi `try/catch` no era fidelidad al diseño de la fuente: era un
+mecanismo nuevo con una justificación que no se había medido. Retirado.
+
+### Un defecto de splice, y por qué se corta por ancla
+
+El primer intento de instalar la cabecera nueva usó `tail -n +86` sobre un
+número de línea leído a ojo, y **duplicó** `return audioNapiPromise` + `}`.
+El `head -2` del corte ya lo mostraba en pantalla y no se actuó. El corte se
+rehízo por **ancla** (`grep -n '^// ─── Constantes'`), que no depende de que
+el lector cuente bien.
+
+### El instrumento era ciego al comentario al FINAL de una línea
+
+`strip_comments.py` sólo descartaba una línea que **empieza** por `//`. Con eso
+publicaba **9** líneas de divergencia de código en `voice.ts`, de las que **7**
+eran comentarios traducidos en la cola de una línea de código (`'raw', // PCM
+crudo`). Se le añadió un recorte de cola consciente de comillas —un `'http://x'`
+lleva `//` y no es comentario— con su **control de anulación**: la bandera
+`--no-trail` lo retira.
+
+| | con recorte | sin recorte (`--no-trail`) |
+|---|---|---|
+| `voice.ts` | **4** | 18 |
+| los otros 13 archivos | idénticos en las dos columnas | |
+
+El contraste discrimina: el recorte sólo movió el archivo que tenía comentarios
+en cola, y **no ocultó ninguna divergencia de código** en los demás. Las 4 que
+quedan son las **2 líneas** del specifier de `audio-capture-napi`.
+
+Control positivo del recorte consciente de comillas, en `outputs/`:
+`const u = 'http://x' // comentario` conserva la cadena y pierde el comentario.
+
+## Verde final del paquete, por conducta
+
+| Eje | Antes del pase | Ahora |
+|---|---|---|
+| archivos a delta-de-código 0 | 9 de 15 | **13 de 15** |
+| stubs / shims locales | 7 | **0** |
+| errores de typecheck del paquete | 6 | **3** |
+| suite | 27 pass | **27 pass, 0 fail** |
+
+Los 3 errores restantes son **pre-existentes** y viven en un archivo que este
+pase no creó: `voiceStreamSTT.ts` (`@types/ws` sin declarar, y dos parámetros
+`any` implícitos en `:495`).
+
+Los 2 archivos que siguen divergiendo lo hacen **por declaración**:
+`appStateHooks.ts` (el `import type` que la directiva del ejecutor pidió) y
+`voice.ts` (las 2 líneas del specifier).
+
+### La sonda de conducta NO discriminaba, y el segundo intento sí
+
+`outputs/probe-voice-napi.ts`. El primer intento llamaba a
+`checkRecordingAvailability()` con el entorno tal cual — y en este contenedor
+`CLAUDE_CODE_REMOTE=true`, así que la función sale por el **retorno temprano**
+de `:295` y **nunca llega a `loadAudioNapi()`**. El verde decía «el import
+resolvió» midiendo una rama que no toca el import: el sub-patrón D, con la
+propia sonda como sujeto.
+
+Corre ahora **dos veces**, y el contraste es la medición:
+
+```
+[1] entorno tal cual      -> {"available":false,"reason":"...no audio device..."}
+[2] CLAUDE_CODE_REMOTE=''  -> {"available":true,"reason":null}
+```
+
+El paso [2] recorre la cadena completa y no lanza: como ni la fuente ni el
+puerto tienen `catch`, un `import()` que rechazara mataría la sonda. Que
+termine es la evidencia de que `@thyrox/audio-capture-napi` **resuelve** desde
+dentro del paquete `voice` (su enlace vive en
+`src/packages/voice/node_modules/@thyrox/`, no en la raíz — por eso la sonda no
+lo importa ella misma: mediría la resolución del banco, no la del puerto).
+
+## Lo que este banco NO cierra
+
+- Las 3 dependencias externas sin declarar (`@types/ws` y los dos `any` de
+  `voiceStreamSTT.ts`) — pre-existentes, fuera del alcance de «copiar los
+  archivos».
+- El censo de claves que los consumidores leen y `SettingsSchema` no declara:
+  **TASK-THYROX-0222**.
+- El triaje de los 9 shims de `AppState` por patrón de ACCESO: board **#512**.
+- El izado de dependencias a la raíz del workspace, como hace la referencia:
+  board **#448**.
+
+Patrón de los seis bloqueadores rancios, registrado para que nadie vuelva a
+heredarlos: **H-THYROX-120**.

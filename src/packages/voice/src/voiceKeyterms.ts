@@ -10,19 +10,23 @@
  * Puerto de `ccnmt: packages/voice/src/voiceKeyterms.ts` (106 líneas
  * fuente, 100% portado).
  *
- * Divergencia declarada: `getBranch` vive en
- * `ccnmt: packages/storage/src/git.ts:180-182`, que delega en
- * `getCachedBranch()` de `config/gitFilesystem.ts`. El
- * `storage/src/git.ts` de ESTE árbol es un porte PARCIAL DECLARADO (ver
- * su propio docstring) que no incluye `getBranch` — pero
- * `getCachedBranch` SÍ está portado en `@thyrox/config/gitFilesystem.js`
- * (verificado: `export function getCachedBranch(): Promise<string>`).
- * Se cita directamente desde ahí en vez de bloquearse.
+ * LA DIVERGENCIA QUE AQUI SE DECLARABA YA NO APLICA — retirada el
+ * 2026-09-19T07:58:25. Decia que `storage/src/git.ts` de este arbol
+ * «no incluye `getBranch`» y por eso se citaba `getCachedBranch` de
+ * `@thyrox/config/gitFilesystem.js` en su lugar. Era cierto al
+ * escribirse y es falso hoy, sin que nadie tocara este archivo:
+ * `src/packages/storage/src/git.ts:214` declara
+ * `export const getBranch = async (): Promise<string>`, la misma firma
+ * que el sustituto. El import vuelve al de la fuente.
+ *
+ * Efecto lateral medido: `@thyrox/storage` estaba declarada en el
+ * manifiesto de este paquete con CERO imports. Con este import deja de
+ * estarlo.
  */
 
 import { basename } from 'path'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
-import { getCachedBranch as getBranch } from '@thyrox/config/gitFilesystem.js'
+import { getBranch } from '@thyrox/storage/git.js'
 
 // ─── Keyterms globales ──────────────────────────────────────────────
 
