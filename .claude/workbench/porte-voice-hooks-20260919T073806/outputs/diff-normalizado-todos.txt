@@ -1,0 +1,16 @@
+delta  archivo    (0 = nuestro codigo == fuente tras normalizar alcance y quitar nuestro header)
+     0  src/__tests__/errors.test.ts
+     0  src/appStateHooks.ts
+     0  src/contracts.ts
+     0  src/errors.ts
+    35  src/hooks/__tests__/useVoiceHelpers.behavior.test.ts
+     0  src/hooks/useVoice.ts
+     0  src/hooks/useVoiceEnabled.ts
+     0  src/hooks/useVoiceIntegration.tsx
+     1  src/index.ts
+   253  src/voice.ts
+     0  src/voiceContext.tsx
+    48  src/voiceKeyterms.ts
+    59  src/voiceModeEnabled.ts
+   280  src/voiceStreamSTT.ts
+     0  testing/index.ts

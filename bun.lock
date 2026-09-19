@@ -709,11 +709,13 @@
       "name": "@thyrox/voice",
       "version": "0.0.0",
       "dependencies": {
+        "@anthropic/ink": "workspace:*",
         "@thyrox/app-host": "workspace:*",
         "@thyrox/config": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/output": "workspace:*",
         "@thyrox/provider": "workspace:*",
+        "@thyrox/repl": "workspace:*",
         "@thyrox/storage": "workspace:*",
         "react": "^19.0.0",
         "ws": "^8.21.0",

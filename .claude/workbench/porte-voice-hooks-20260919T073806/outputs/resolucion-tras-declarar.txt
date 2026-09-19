@@ -1,0 +1,18 @@
+== enlaces por conducta
+OK @anthropic/ink -> src/packages/@ant/ink
+OK @thyrox/repl -> src/packages/repl
+== resolucion por conducta (Bun.resolveSync desde voice)
+OK   react -> node_modules/.bun/react@19.3.0/node_modules/react/index.js
+OK   @anthropic/ink -> src/packages/@ant/ink/src/index.ts
+OK   @anthropic/ink/keybindings -> src/packages/@ant/ink/src/keybindings/index.ts
+OK   @thyrox/repl/notifications.js -> src/packages/repl/src/notifications.ts
+OK   @thyrox/repl/overlayContext.js -> src/packages/repl/src/overlayContext.tsx
+OK   @thyrox/config/settings -> src/packages/config/settings/settings.ts
+OK   @thyrox/config/sleep -> src/packages/config/sleep.ts
+OK   @thyrox/local-observability -> src/packages/local-observability/src/index.ts
+OK   @thyrox/local-observability/debug.js -> src/packages/local-observability/src/debug.ts
+OK   @thyrox/local-observability/errorHelpers.js -> src/packages/local-observability/src/errorHelpers.ts
+OK   @thyrox/local-observability/logging -> src/packages/local-observability/src/logging/index.ts
+OK   @thyrox/output/utils/intl.js -> src/packages/output/src/utils/intl.ts
+OK   @thyrox/output/utils/stringUtils.js -> src/packages/output/src/utils/stringUtils.ts
+== ciclo voice<->repl: el 92o de 91 ya existentes, bun lo tolera

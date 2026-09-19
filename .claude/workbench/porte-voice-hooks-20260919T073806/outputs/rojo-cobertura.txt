@@ -1,0 +1,37 @@
+useVoice.ts   238 / 1144
+useVoiceIntegration.tsx 133 / 720
+-- exports declarados por cada uno:
+src/packages/voice/src/hooks/useVoice.ts:7
+src/packages/voice/src/hooks/useVoiceIntegration.tsx:7
+-- exports de la fuente:
+/home/user/claude-code-nestor-monroy-tools/packages/voice/src/hooks/useVoice.ts:4
+/home/user/claude-code-nestor-monroy-tools/packages/voice/src/hooks/useVoiceIntegration.tsx:3
+=== useVoice.ts
+-- NUESTRO:
+FIRST_PRESS_FALLBACK_MS
+UseVoiceOptions
+UseVoiceReturn
+VoiceState
+computeLevel
+normalizeLanguageForSTT
+useVoice
+-- FUENTE:
+FIRST_PRESS_FALLBACK_MS
+computeLevel
+normalizeLanguageForSTT
+useVoice
+-- AUSENTES en el nuestro:
+=== useVoiceIntegration.tsx
+-- NUESTRO:
+InterimRange
+StripOpts
+UseVoiceIntegrationArgs
+UseVoiceIntegrationResult
+VoiceKeybindingHandler
+useVoiceIntegration
+useVoiceKeybindingHandler
+-- FUENTE:
+VoiceKeybindingHandler
+useVoiceIntegration
+useVoiceKeybindingHandler
+-- AUSENTES en el nuestro:

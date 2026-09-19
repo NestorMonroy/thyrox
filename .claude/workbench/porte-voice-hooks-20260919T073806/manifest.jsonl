@@ -1,0 +1,5 @@
+{"kind": "question", "text": "Portar los 17 archivos de ccnmt packages/voice a thyrox reescribiendo el alcance de la fuente; verificar por conducta, no por docstring.", "at": "2026-09-19T07:48:36+00:00"}
+{"kind": "red", "instrument": "outputs/probe-rojo.ts", "result": "4 de 4 simbolos lanzan «no está portado»", "at": "2026-09-19T07:48:36+00:00"}
+{"kind": "measure", "instrument": "Bun.resolveSync desde src/packages/voice/src/hooks", "result": "13 de 13 specifiers resuelven tras declarar @anthropic/ink y @thyrox/repl", "at": "2026-09-19T07:48:36+00:00"}
+{"kind": "green", "instrument": "outputs/probe-verde.ts", "result": "0 de 4 stubs; 0 residuo de specifier; 27 pass 0 fail", "at": "2026-09-19T07:48:36+00:00"}
+{"kind": "annulment", "instrument": "outputs/control-de-anulacion.txt", "result": "revertir useVoice.ts tumba 1 de 4; revertir voiceContext.tsx tumba 2 de 4", "at": "2026-09-19T07:48:36+00:00"}

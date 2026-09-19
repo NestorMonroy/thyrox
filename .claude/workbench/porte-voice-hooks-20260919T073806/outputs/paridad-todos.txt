@@ -1,0 +1,16 @@
+delta_lineas  nuestro  fuente  archivo
+     0      77      77  src/__tests__/errors.test.ts
+    14      27      13  src/appStateHooks.ts
+     6      19      13  src/contracts.ts
+     6      36      30  src/errors.ts
+     7     133     126  src/hooks/__tests__/useVoiceHelpers.behavior.test.ts
+    32    1176    1144  src/hooks/useVoice.ts
+    21      46      25  src/hooks/useVoiceEnabled.ts
+    25     745     720  src/hooks/useVoiceIntegration.tsx
+     6      31      25  src/index.ts
+    64     589     525  src/voice.ts
+    17      93      76  src/voiceContext.tsx
+    20     126     106  src/voiceKeyterms.ts
+    19      73      54  src/voiceModeEnabled.ts
+    26     579     553  src/voiceStreamSTT.ts
+     6      28      22  testing/index.ts

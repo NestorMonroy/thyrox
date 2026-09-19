@@ -1,40 +1,32 @@
 /**
- * Puerto de `ccnmt: packages/voice/src/voiceContext.tsx` (76 líneas).
+ * Puerto de `ccnmt: packages/voice/src/voiceContext.tsx` (76 líneas),
+ * 100 % portado.
  *
- * Cobertura DECLARADA: 1 de 5 exports.
+ * Mismo criterio de reescritura que `./hooks/useVoice.ts`: el alcance de
+ * la fuente pasa a `@thyrox/` sólo en líneas de specifier, y los
+ * comentarios en inglés de la fuente quedan verbatim.
  *
- * Portado VERBATIM (sin dependencia de React ni de ningún módulo
- * ausente — es sólo un alias de tipo, dato puro):
- *   - `VoiceState` (el tipo local de este módulo — el estado de UI de
- *     voz: `voiceState`/`voiceError`/`voiceInterimTranscript`/
- *     `voiceAudioLevels`/`voiceWarmingUp`. NO es el mismo `VoiceState`
- *     de `../contracts.ts`, que describe el runtime completo — son dos
- *     tipos homónimos con alcance de módulo distinto, igual que en la
- *     fuente).
+ * EL BLOQUEADOR DECLARADO ANTES ESTABA RANCIO — verificado por conducta el
+ * 2026-09-19T07:44:53: `react` resuelve a 19.3.0 y
+ * `@thyrox/repl/stateStore.js` resuelve a
+ * `src/packages/repl/src/stateStore.ts`. Lo que faltaba era la
+ * DECLARACIÓN de `@thyrox/repl` en el manifiesto de este paquete.
  *
- * NO portados (4 de 5): `VoiceProvider`, `useVoiceState`,
- * `useSetVoiceState`, `useGetVoiceState`. Bloqueador MEDIDO en DOS
- * capas independientes, cualquiera de las dos ya basta:
- *
- *   1. React: `VoiceProvider` es un componente JSX (`<VoiceContext.
- *      Provider>`); los otros tres usan `createContext`/`useContext`/
- *      `useState`/`useSyncExternalStore`. `react` no existe como
- *      paquete en este árbol (medido con
- *      `Bun.resolveSync('react', <dir>)` desde este paquete →
- *      "Cannot find package 'react'").
- *   2. `@claude-code-how-works/repl/stateStore.js` (`createStore`,
- *      `Store<T>`) — el paquete `repl` entero está ausente de
- *      `thyrox` (medido: `find src/packages -maxdepth 1 -iname repl`
- *      → 0 resultados; es la familia de 11 paquetes que cubre la capa
- *      TUI interactiva completa de ccnmt, fuera del alcance de este
- *      harness headless por diseño).
- *
- * Los cuatro se declaran con su firma exacta y un cuerpo que difiere
- * `require('react')` — mismo patrón que `./hooks/useVoice.ts` y
- * `./hooks/useVoiceEnabled.ts`: el módulo carga sin fallar; sólo
- * invocar cualquiera de los cuatro dispara el error, con el motivo
- * explícito.
+ * Este archivo fue el que destapó la cascada: el porte de
+ * `./hooks/useVoiceIntegration.tsx` dejó de lanzar su propio error de
+ * bloqueo y pasó a lanzar el de `useGetVoiceState()` de AQUÍ. Un conteo
+ * de líneas no lo habría visto —este módulo medía 93 contra 76 de la
+ * fuente, o sea MÁS— porque el stub sustituía el cuerpo por un `throw`
+ * de longitud parecida. Lo vio la sonda de conducta que discrimina por el
+ * CONTENIDO del mensaje. Ver H-THYROX-116.
  */
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useSyncExternalStore,
+} from 'react'
+import { createStore, type Store } from '@thyrox/repl/stateStore.js'
 
 export type VoiceState = {
   voiceState: 'idle' | 'recording' | 'processing'
@@ -44,50 +36,63 @@ export type VoiceState = {
   voiceWarmingUp: boolean
 }
 
-function requireReactUnavailable(symbol: string): never {
-  // `react` no existe como paquete en este árbol, y tampoco
-  // `@thyrox/repl/stateStore.js` (medido: ver docstring del módulo). Se
-  // resuelve con require() diferido — es la ÚNICA excepción admitida a
-  // "sin lazy imports": el especificador no resuelve hoy, no una
-  // preferencia de estilo.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('react')
-  throw new Error(
-    `${symbol}() no está portado: depende de react (createContext/` +
-      'useContext/useState/useSyncExternalStore) y de ' +
-      '@thyrox/repl/stateStore.js (createStore/Store), ninguno de los ' +
-      'dos presente en este árbol.',
-  )
+const DEFAULT_STATE: VoiceState = {
+  voiceState: 'idle',
+  voiceError: null,
+  voiceInterimTranscript: '',
+  voiceAudioLevels: [],
+  voiceWarmingUp: false,
+}
+
+type VoiceStore = Store<VoiceState>
+
+const VoiceContext = createContext<VoiceStore | null>(null)
+
+type Props = {
+  children: React.ReactNode
+}
+
+export function VoiceProvider({ children }: Props): React.ReactNode {
+  // Store is created once — stable context value means the provider never
+  // triggers re-renders. Consumers subscribe to slices via useVoiceState.
+  const [store] = useState(() => createStore<VoiceState>(DEFAULT_STATE))
+  return <VoiceContext.Provider value={store}>{children}</VoiceContext.Provider>
+}
+
+function useVoiceStore(): VoiceStore {
+  const store = useContext(VoiceContext)
+  if (!store) {
+    throw new Error('useVoiceState must be used within a VoiceProvider')
+  }
+  return store
 }
 
 /**
- * NO PORTADO — ver docstring del módulo. En la fuente es un componente
- * JSX; aquí se declara como función que dispara el error de bloqueo si
- * se invoca.
+ * Subscribe to a slice of voice state. Only re-renders when the selected
+ * value changes (compared via Object.is).
  */
-export function VoiceProvider(_props: { children: unknown }): never {
-  return requireReactUnavailable('VoiceProvider')
+export function useVoiceState<T>(selector: (state: VoiceState) => T): T {
+  const store = useVoiceStore()
+  const get = () => selector(store.getState())
+  return useSyncExternalStore(store.subscribe, get, get)
 }
 
 /**
- * NO PORTADO — ver docstring del módulo.
- */
-export function useVoiceState<T>(_selector: (state: VoiceState) => T): T {
-  return requireReactUnavailable('useVoiceState')
-}
-
-/**
- * NO PORTADO — ver docstring del módulo.
+ * Get the voice state setter. Stable reference — never causes re-renders.
+ * store.setState is synchronous: callers can read getVoiceState() immediately
+ * after to observe the new value (VoiceKeybindingHandler relies on this).
  */
 export function useSetVoiceState(): (
   updater: (prev: VoiceState) => VoiceState,
 ) => void {
-  return requireReactUnavailable('useSetVoiceState')
+  return useVoiceStore().setState
 }
 
 /**
- * NO PORTADO — ver docstring del módulo.
+ * Get a synchronous reader for fresh state inside callbacks. Unlike
+ * useVoiceState (which subscribes), this doesn't cause re-renders — use
+ * inside event handlers that need to read state set earlier in the same tick.
  */
 export function useGetVoiceState(): () => VoiceState {
-  return requireReactUnavailable('useGetVoiceState')
+  return useVoiceStore().getState
 }
