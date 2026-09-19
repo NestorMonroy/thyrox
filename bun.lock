@@ -722,6 +722,9 @@
         "ws": "^8.21.0",
         "zod": "^4.3.6",
       },
+      "devDependencies": {
+        "@types/ws": "^8.18.1",
+      },
     },
   },
   "packages": {

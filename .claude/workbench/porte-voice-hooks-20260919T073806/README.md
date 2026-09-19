@@ -293,7 +293,7 @@ Control positivo del recorte consciente de comillas, en `outputs/`:
 |---|---|---|
 | archivos a delta-de-código 0 | 9 de 15 | **13 de 15** |
 | stubs / shims locales | 7 | **0** |
-| errores de typecheck del paquete | 6 | **3** |
+| errores de typecheck del paquete | 6 | **0** |
 | suite | 27 pass | **27 pass, 0 fail** |
 
 Los 3 errores restantes son **pre-existentes** y viven en un archivo que este
@@ -329,9 +329,6 @@ lo importa ella misma: mediría la resolución del banco, no la del puerto).
 
 ## Lo que este banco NO cierra
 
-- Las 3 dependencias externas sin declarar (`@types/ws` y los dos `any` de
-  `voiceStreamSTT.ts`) — pre-existentes, fuera del alcance de «copiar los
-  archivos».
 - El censo de claves que los consumidores leen y `SettingsSchema` no declara:
   **TASK-THYROX-0222**.
 - El triaje de los 9 shims de `AppState` por patrón de ACCESO: board **#512**.
@@ -340,3 +337,49 @@ lo importa ella misma: mediría la resolución del banco, no la del puerto).
 
 Patrón de los seis bloqueadores rancios, registrado para que nadie vuelva a
 heredarlos: **H-THYROX-120**.
+
+---
+
+## Corrección: los 3 «pre-existentes» también eran una declaración ausente
+
+La sección de arriba declaró el verde en **4 → 3** y llamó *pre-existentes* a
+los tres que quedaban, dejándolos fuera del alcance. Las dos cosas eran
+ciertas al medirse y la segunda no se sostiene: los tres son **la misma forma**
+que los otros seis bloqueadores —un paquete presente sin su línea de
+declaración— sólo que del lado de los tipos.
+
+`voiceStreamSTT.ts` importa `ws`, que `voice` sí declara en `dependencies`.
+Lo que faltaba era `@types/ws` en `devDependencies`. El precedente del propio
+árbol es exacto: `src/packages/mcp-runtime/package.json` declara **`ws` en
+`dependencies` y `@types/ws` en `devDependencies`**, y typechequea.
+
+Declarada la línea, los tres caen de una vez: el `TS2307` del módulo y los dos
+`TS7006` de `:495`, que eran `any` implícito **porque** el tipo de `ws.on` no
+se conocía.
+
+### Control de anulación
+
+Se retiró el enlace `src/packages/voice/node_modules/@types/ws` y se volvió a
+medir (`outputs/anulacion-types-ws.txt`):
+
+| | errores en el paquete |
+|---|---|
+| con `@types/ws` | **0** |
+| retirado el enlace | **3** — los mismos tres, ni uno más |
+
+El contraste discrimina: los tres dependen de esa declaración y de nada más.
+Tras restaurar el enlace, `bun install` publica `Checked 386 installs across
+348 packages (no changes)`, así que la mutación del control no dejó residuo.
+
+*Métrica:* `bunx tsc --noEmit -p tsconfig.json` filtrado a `src/packages/voice`.
+*Ciega a:* un error que `tsc` no reporte porque un esquema lo admite por
+`.passthrough()` — el caso de `voiceEnabled` (**H-THYROX-119**), que
+typechequea sin estar declarada. El 0 de esta tabla no es «el paquete está
+completo»: es «el compilador no tiene nada más que decir con los tipos que ve».
+
+**Lo que esta corrección NO decide:** si estas declaraciones deben izarse a la
+raíz del workspace, como hace la referencia (`ccnmt: package.json:135` declara
+`@types/ws` y `:198` `ws` en la raíz, y su `voice` no declara ninguna
+dependencia). Aquí se siguió la convención vigente del árbol —declaración por
+paquete, con `mcp-runtime` como precedente— no se decidió el eje. Ése es el
+board **#448**.
