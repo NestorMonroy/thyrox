@@ -32,8 +32,17 @@ BUILTIN = {
     'fs', 'http', 'https', 'module', 'net', 'os', 'path', 'perf_hooks', 'process',
     'punycode', 'querystring', 'readline', 'stream', 'string_decoder', 'timers',
     'tls', 'tty', 'url', 'util', 'v8', 'vm', 'worker_threads', 'zlib',
+    'async_hooks', 'cluster', 'dgram', 'diagnostics_channel', 'domain', 'http2',
+    'inspector', 'repl', 'sys', 'trace_events', 'wasi',
 }
 SPECIFIER = re.compile(r"""(?:from|import|require\()\s*['"]([^'"\n]+)['"]""")
+# Una linea que EMPIEZA por `*`, `//` o `/*` es prosa: cita la procedencia del
+# porte, no importa nada. `tests/package/package_identity.test.ts` hace la misma
+# distincion, y sin ella este censo publico 7 specifiers
+# `@claude-code-how-works/*` como imports rotos cuando los siete viven en
+# docstrings — el sub-patron C: medir el significante y concluir sobre el
+# significado.
+COMENTARIO = re.compile(r'^\s*(?:\*|//|/\*)')
 # Nombre de paquete npm: opcionalmente con alcance, minusculas, sin espacios.
 NOMBRE_NPM = re.compile(r'^(?:@[a-z0-9~][a-z0-9._~-]*/)?[a-z0-9~][a-z0-9._~-]*$')
 
@@ -60,15 +69,18 @@ def census(package_dir: pathlib.Path) -> tuple[dict[str, int], dict[str, int]]:
     for archivo in package_dir.rglob('*'):
         if archivo.suffix not in ('.ts', '.tsx') or 'node_modules' in archivo.parts:
             continue
-        for m in SPECIFIER.finditer(archivo.read_text(errors='ignore')):
-            spec = m.group(1)
-            if spec.startswith(('.', '/', 'node:', 'bun:')):
+        for linea in archivo.read_text(errors='ignore').split('\n'):
+            if COMENTARIO.match(linea):
                 continue
-            nombre = package_name(spec)
-            if nombre in BUILTIN or nombre in declaradas:
-                continue
-            destino = validos if NOMBRE_NPM.match(nombre) else descartados
-            destino[nombre] = destino.get(nombre, 0) + 1
+            for m in SPECIFIER.finditer(linea):
+                spec = m.group(1)
+                if spec.startswith(('.', '/', 'node:', 'bun:')):
+                    continue
+                nombre = package_name(spec)
+                if nombre in BUILTIN or nombre in declaradas:
+                    continue
+                destino = validos if NOMBRE_NPM.match(nombre) else descartados
+                destino[nombre] = destino.get(nombre, 0) + 1
     return validos, descartados
 
 

@@ -1,0 +1,16 @@
+== CONTROL DE ANULACION del filtro de comentario ==
+# Se anula el filtro de comentario (if COMENTARIO.match -> if False).
+# Si el filtro mide lo que dice, tienen que reaparecer EXACTAMENTE los
+# specifiers que viven en docstrings, y ninguno mas.
+
+  bridge           con filtro: 0     sin filtro: 1
+  repl             con filtro: 0     sin filtro: 1
+  app-host         con filtro: 4     sin filtro: 7
+  agent            con filtro: 11    sin filtro: 13
+
+Los que reaparecen en bridge, con el filtro anulado:
+  1c1,2
+  < SIN DECLARAR con forma de paquete: 0
+  ---
+  > SIN DECLARAR con forma de paquete: 1
+  >       1  @claude-code-how-works/agent     NO esta en el lock

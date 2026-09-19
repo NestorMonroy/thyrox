@@ -1,0 +1,27 @@
+# Censo de dependencias externas SIN DECLARAR, en los 28 paquetes
+# instrumento: probes/census_undeclared_deps.py (con filtro de comentario)
+# medido: 2026-09-19T08:29:46
+
+paquete                      sin-decl cuales
+agent                              11 react axios chokidar lodash-es strip-ansi @modelcontextprotocol/sdk chalk figures @ant/computer-use-mcp @thyrox/agent diff 
+app-host                            4 src stdin-napi @thyrox/voice @anthropic-ai/sdk 
+binary                              1 typescript 
+cli                                15 @commander-js/extra-typings react @modelcontextprotocol/sdk chalk lodash-es stdin-napi @anthropic-ai/sdk axios zod bun p-map figures @anthropic-ai/claude-agent-sdk ws @thyrox/cli 
+color-diff-napi                     1 diff 
+command-runtime                     9 react figures chalk qrcode zod execa usehooks-ts marked diff 
+config                              9 github.com react lru-cache yaml @thyrox/tool-registry @anthropic-ai/mcpb figures execa chokidar 
+ide                                 1 @thyrox/repl 
+mcp-runtime                         1 react 
+output                              6 chalk strip-ansi react @alcalzone/ansi-tokenize modifiers-napi marked 
+permission                          3 react figures usehooks-ts 
+provider                            5 undici execa react diff google-auth-library 
+shell                               5 lodash-es @anthropic-ai/sandbox-runtime execa shell-quote chalk 
+storage                             2 @anthropic/ink @thyrox/permission 
+swarm                               1 react 
+tool-registry                       9 axios @thyrox/tool-registry figures diff vscode-languageserver-types chalk chokidar he ajv 
+updater                             1 @thyrox/repl 
+claude-for-chrome-mcp               2 @modelcontextprotocol/sdk ws 
+computer-use-input                  1 bun 
+computer-use-mcp                    3 @modelcontextprotocol/sdk react list 
+
+TOTAL sin declarar: 90

@@ -150,3 +150,78 @@ Restaurado el estado: `391 installs (no changes)`, 21 enlaces, 504 pass.
 - **Promover `census_undeclared_deps.py` a `src/verify/`.** Es candidato —
   medido contra un paquete, util contra los 28— y promoverlo en este pase
   seria cerrar un eje de paso. Queda declarado como candidatura.
+
+---
+
+## El instrumento tenia DOS cegueras mas, destapadas al correrlo sobre los 28
+
+Al extender el censo del paquete al arbol entero, su primera pasada publico
+**125** dependencias sin declarar en 25 paquetes. La cifra era falsa por dos
+motivos, los dos del propio instrumento:
+
+### 1. Once builtins de Node fuera de la lista
+
+`async_hooks`, `cluster`, `dgram`, `diagnostics_channel`, `domain`, `http2`,
+`inspector`, `repl`, `sys`, `trace_events`, `wasi`. Un `import 'async_hooks'`
+sin prefijo `node:` se contaba como dependencia externa. Añadidos.
+
+### 2. Una linea de COMENTARIO no es un import — el sub-patron C
+
+El recorrido veia `* import … from '@claude-code-how-works/tool-registry/…'`
+dentro de un docstring y lo publicaba como import roto. Medido: **7 archivos**
+citan ese alcance, y los **siete** son prosa que documenta la procedencia del
+porte:
+
+```
+agent/coordinatorMode.ts:19:      *  `import … from '@claude-code-how-works/tool-registry/…'` haria fallar la
+app-host/src/state/store.ts:3:    *  `export * from '@claude-code-how-works/repl/stateStore.js'`
+bridge/src/initReplBridge.ts:35:  *  El `require('@claude-code-how-works/agent/assistant/index.js')` de la
+```
+
+Esa distincion —el literal **nombra** nuestro paquete (defecto) contra el
+literal **cita** la procedencia (correcto)— ya estaba resuelta en
+`tests/package/package_identity.test.ts`, que la documenta y la mide. El censo
+la ignoraba, y por eso publicaba como roto lo que aquel control da por bueno.
+`package_identity` esta en **5 pass, 0 fail**: no era el ciego, lo era el censo.
+
+Filtro añadido: una linea que empieza por `*`, `//` o `/*` no aporta
+specifiers.
+
+### Control de anulacion del filtro
+
+`outputs/anulacion-filtro-de-comentario.txt`. Sustituido
+`if COMENTARIO.match(linea)` por `if False`:
+
+| paquete | con filtro | sin filtro |
+|---|---|---|
+| `bridge` | **0** | 1 — reaparece `@claude-code-how-works/agent`, de un docstring |
+| `repl` | **0** | 1 — reaparece `downloading`, de un comentario |
+| `app-host` | **4** | 7 |
+| `agent` | **11** | 13 |
+
+Reaparecen exactamente los que viven en prosa, y ninguno mas. El filtro mide lo
+que dice medir.
+
+**Efecto sobre `repl`:** su unico residuo —el falso positivo `downloading`—
+tambien era de un comentario, asi que el censo del paquete queda en **0**, no
+en 1.
+
+## El censo del arbol, ya honesto
+
+`outputs/censo-todos-los-paquetes.txt`: **90** dependencias externas sin
+declarar, en **20** de los 28 paquetes. Los mayores: `cli` 15, `agent` 11,
+`command-runtime` 9, `config` 9, `tool-registry` 9.
+
+No es una lista homogenea — hay al menos tres clases dentro, y mezclarlas seria
+el sub-patron A otra vez:
+
+| clase | ejemplo | que es |
+|---|---|---|
+| dependencia externa real sin su linea | `react`, `chalk`, `figures` en `cli` | lo mismo que este pase cerro en `repl` |
+| **auto-import** | `@thyrox/agent` dentro de `agent`, `@thyrox/cli` dentro de `cli` | un paquete importandose por su propio nombre: otro defecto, otro arreglo |
+| texto que sobrevive al filtro de forma | `src`, `github.com`, `list`, `bun`, `typescript` | ceguera declarada del filtro npm |
+
+El barrido de las 90 **no se hace en este pase**: es otro sujeto, con su propio
+triaje por clase. Queda medido, que es lo que faltaba para poder decidirlo.
+
+Sucesor del barrido, con su triaje por clase: **TASK-THYROX-0224**.
