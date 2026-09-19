@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env GIT_LFS_SKIP_SMUDGE=1 timeout 600 git clone --depth 1 https://github.com/NestorMonroy/cybercode.git /home/user/nestormonroy/cybercode", "started_at": "2026-09-19T03:06:42+00:00"}
