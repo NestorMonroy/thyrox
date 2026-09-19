@@ -175,3 +175,35 @@ nuestro archivo abre con `/**` y la fuente no. Donde eso no se cumpla, el
 delta está inflado o deflacionado y la tabla no lo distingue.
 
 Queda **declarado y sin cerrar** en este commit.
+
+## Corrección del ejecutor: thyrox SÍ tiene `@thyrox/app-host/state/AppState.js`
+
+Directiva, a mitad del pase: *«habíamos dicho que en thyrox sí va a tener
+`@thyrox/app-host/state/AppState.js`»*. Medido, y es así:
+
+- el subpath resuelve a `src/packages/app-host/src/state/AppState.tsx`;
+- ese módulo **reexporta el tipo `AppState`** (`:164-167`, desde
+  `./AppStateStore.ts`) y su propio `useAppState` ya está tipado
+  `(state: AppState) => T` (`:273`), no contra `unknown`.
+
+Así que dejar `AppState = unknown` aquí era fidelidad al **literal** de la
+fuente y no a su **intención**: el shim existe para diferir el import de
+**valor**, no el de tipo. `import type` se borra al compilar —no emite
+`require` ni `import`— así que el diferimiento queda intacto y el consumidor
+recupera el tipo real.
+
+**Resultado medido:** los dos `TS18046` caen. El paquete pasa de **6 a 4**
+errores de typecheck, y los 4 que quedan son pre-existentes en archivos que
+este pase no tocó (`audio-capture-napi` y `@types/ws` ausentes).
+
+### Y el verde sobre `voiceEnabled` es FALSO — medido por anulación
+
+`s.settings.voiceEnabled` pasa el typecheck, y **no** porque la clave exista.
+Sustituida por `claveQueNoExisteEnNingunSitio`, **tsc no reporta nada**. La
+causa es `SettingsSchema … .passthrough()` (`config/settings/types.ts:228`),
+que es porte **fiel** del diseño de la fuente.
+
+El hueco que ese `passthrough` esconde sí es real: `voiceEnabled` está
+declarada en `ccnmt: packages/config/settings/types.ts:907` y da **0 hits** en
+todo `src/packages/config` nuestro. Registrado como **H-THYROX-119**; el censo
+de todas las claves en esa situación queda como sucesor.

@@ -1,47 +1,52 @@
 /**
  * Puerto de `ccnmt: packages/voice/src/appStateHooks.ts` (13 líneas),
- * 100 % portado, byte a byte tras normalizar el alcance.
+ * con UNA divergencia declarada respecto a la fuente: el tipo.
  *
- * ESTE ARCHIVO NO ES UN STUB NUESTRO: la FUENTE ya es un shim de
- * `require()` diferido, y lo declara ella misma en su comentario
- * («V7 §7.2 — lazy require() shim…», conservado abajo verbatim). El
- * `require()` y el `export type AppState = unknown` son decisiones de la
- * fuente, no adaptaciones.
+ * LA FUENTE YA ES UN SHIM de `require()` diferido, y lo declara ella
+ * misma en el comentario conservado abajo. El `require()` NO es
+ * adaptación nuestra: es el mecanismo de la fuente, y se conserva.
  *
- * LA VERSIÓN ANTERIOR DE ESTE HEADER AFIRMABA ALGO FALSO, y en dos
- * sentidos — corregido el 2026-09-19T07:50:35:
+ * DIVERGENCIA DECLARADA — `AppState` NO es `unknown` aquí.
  *
- *   1. Decía que `@thyrox/app-host/state/AppState.js` «NO existe en este
- *      árbol (medido: `find src/packages/app-host -iname AppState.ts` → 0
- *      archivos)». El `find` era correcto y la conclusión falsa: el
- *      archivo es `AppState.tsx`, no `.ts`, y el specifier resuelve —
- *      medido por conducta a `src/packages/app-host/src/state/AppState.tsx`.
- *      Buscar la extensión equivocada y concluir que el módulo no existe
- *      es el sub-patrón C: medir el significante, concluir sobre el
- *      significado.
- *   2. Había RETIRADO el comentario en inglés de la fuente y puesto en su
- *      lugar una justificación propia del `require()`. El `require()` no
- *      necesita justificación nuestra: es de la fuente.
+ * La fuente escribe `export type AppState = unknown` y tipa el selector
+ * `(state: unknown) => T`, porque en su árbol el shim existe justamente
+ * para no arrastrar el tipo. En THYROX el módulo destino SÍ está, y el
+ * tipo con él — medido por conducta el 2026-09-19T07:53:24:
  *
- * CONSECUENCIA MEDIDA, declarada y NO corregida aquí: `AppState = unknown`
- * hace que `useVoiceEnabled.ts` dé dos `TS18046: 's' is of type
- * 'unknown'`. Es fidelidad a la fuente, no un defecto introducido por el
- * porte — el selector de la fuente ya está tipado `(state: unknown) => T`.
- * Estrechar el tipo sería DIVERGIR de la fuente, y esa decisión es la
- * tarea #512 («triar los 9 shims de AppState por patrón ACCESS, con el
- * umbral que ccnmt declara»), no ésta.
+ *   - `@thyrox/app-host/state/AppState.js` resuelve a
+ *     `src/packages/app-host/src/state/AppState.tsx`;
+ *   - ese módulo reexporta el tipo `AppState` (`:164-167`, desde
+ *     `./AppStateStore.ts`) y su propio `useAppState` ya está tipado
+ *     `(state: AppState) => T` (`:273`), no contra `unknown`.
+ *
+ * Así que mantener `unknown` aquí sería fidelidad al LITERAL de la
+ * fuente y no a su INTENCIÓN: el shim evita el import de VALOR en
+ * tiempo de ejecución, no el tipo. `import type` se borra al compilar
+ * —no emite `require` ni `import`— así que el mecanismo diferido queda
+ * intacto y el consumidor recupera el tipo real.
+ *
+ * LA VERSIÓN ANTERIOR DE ESTE HEADER AFIRMABA QUE EL MÓDULO NO EXISTE,
+ * citando un `find src/packages/app-host -iname 'AppState.ts'` → 0. El
+ * `find` era correcto y la conclusión falsa: **el archivo es
+ * `AppState.tsx`**. Buscar la extensión equivocada y concluir que el
+ * módulo no existe es el sub-patrón C — medir el significante, concluir
+ * sobre el significado. También había retirado el comentario en inglés
+ * de la fuente; queda restaurado.
  */
 
 // V7 §7.2 — lazy require() shim so voice package does not import
 // src/state/AppState directly at top level.
 
-/** @dynamicRequire */
-export type AppState = unknown
+// `import type` se borra al compilar: no emite `require` ni `import`, así
+// que no rompe el diferimiento que este shim existe para dar.
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 
-export function useAppState<T>(selector: (state: unknown) => T): T {
+export type { AppState }
+
+export function useAppState<T>(selector: (state: AppState) => T): T {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
-    useAppState: <U>(s: (state: unknown) => U) => U
+    useAppState: <U>(s: (state: AppState) => U) => U
   }
   return mod.useAppState<T>(selector)
 }
