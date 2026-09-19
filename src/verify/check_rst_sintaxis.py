@@ -111,31 +111,63 @@ def archivos_nuevos() -> list[pathlib.Path]:
     return sorted(salida)
 
 
-def _reexec_en_venv() -> None:
-    """Re-lanzarse con el intérprete de .venv si Sphinx no es importable aquí.
+def _consumer_interpreter() -> pathlib.Path:
+    """El interprete con el que el CONSUMIDOR construye sus docs."""
+    return RAIZ / '.venv' / 'bin' / 'python'
 
-    El audit invoca los gates con ``python3`` del sistema, donde Sphinx NO
-    está instalado. Sin esto el gate reventaba con ``ModuleNotFoundError``,
-    no imprimía nada, y ``${RSTS:-0}`` lo leía como **0 → PASS**: un verde
-    falso, que es el defecto que este mismo gate existe para no repetir
-    (H-DOCS-134). Si tampoco hay venv, el fallo es ruidoso y no silencioso.
+
+def _running_under(interpreter: pathlib.Path) -> bool:
+    """¿Es `interpreter` el que ejecuta este proceso?
+
+    El discriminador es `sys.prefix`, NO `os.path.realpath(sys.executable)`.
+    Medido en los tres interpretes del arbol: los tres resuelven al mismo
+    binario real (`/usr/bin/python3.11`), asi que comparar la ruta real daria
+    «son el mismo» para los tres y el guard no re-lanzaria nunca. `sys.prefix`
+    nombra el venv y los separa (`tests/verify/test_rst_gate_interpreter.py`).
     """
-    try:
-        import sphinx  # noqa: F401
-        return
-    except ModuleNotFoundError:
-        pass
+    return pathlib.Path(sys.prefix).resolve() == interpreter.parent.parent.resolve()
 
-    venv = RAIZ / '.venv' / 'bin' / 'python'
-    ya_reintentado = os.environ.get('_CHECK_RST_REEXEC') == '1'
-    if venv.is_file() and not ya_reintentado:
-        os.environ['_CHECK_RST_REEXEC'] = '1'
-        os.execv(str(venv), [str(venv), str(pathlib.Path(__file__).resolve()), *sys.argv[1:]])
+
+def _reexec_en_venv() -> None:
+    """Re-lanzarse con el interprete del CONSUMIDOR si no es el que corre.
+
+    El discriminador NO es «¿se importa Sphinx aqui?», que es lo que este
+    guard preguntaba (:ref:`h-thyrox-133`). Sphinx importable es el
+    **significante**; lo que decide es el **significado**: si este interprete
+    puede cargar el `conf.py` del consumidor, que declara siete extensiones.
+    El venv del PROVEEDOR trae Sphinx 9.0.4 y ninguna de ellas, asi que la
+    pregunta vieja devolvia «si» y el gate moria despues con `ExtensionError`
+    — exit 1 y stdout vacio, o sea «encontre un defecto de sintaxis» sobre una
+    medicion que nunca ocurrio.
+
+    Y no basta con instalar las extensiones en el proveedor: su Sphinx es
+    9.0.4 y el del consumidor 8.2.3. Un gate que mida la prosa del consumidor
+    con un motor que el consumidor nunca usa mide otro fenomeno.
+
+    Si el consumidor no tiene venv, el fallo es ruidoso y no silencioso:
+    exit 2, sin conteo. Un 0 ahi seria un verde falso (H-DOCS-134).
+    """
+    venv = _consumer_interpreter()
+
+    if venv.is_file():
+        if _running_under(venv):
+            return
+        if os.environ.get('_CHECK_RST_REEXEC') != '1':
+            os.environ['_CHECK_RST_REEXEC'] = '1'
+            os.execv(str(venv), [str(venv), str(pathlib.Path(__file__).resolve()), *sys.argv[1:]])
+        print(
+            f'check-rst-sintaxis: ERROR — el re-lanzamiento no cambio de '
+            f'interprete: sigo bajo {sys.prefix} y el del consumidor es '
+            f'{venv.parent.parent}. NO se emite un conteo: un 0 aqui seria '
+            'un verde falso.',
+            file=sys.stderr,
+        )
+        sys.exit(2)
 
     print(
-        'check-rst-sintaxis: ERROR — Sphinx no es importable y no hay '
-        f'.venv utilizable en {RAIZ / ".venv"}. Corre `make sync`. '
-        'NO se emite un conteo: un 0 aquí sería un verde falso.',
+        'check-rst-sintaxis: ERROR — el interprete del consumidor no existe en '
+        f'{venv}. Corre `make sync` en {RAIZ}. NO se emite un conteo: un 0 '
+        'aqui seria un verde falso.',
         file=sys.stderr,
     )
     sys.exit(2)
