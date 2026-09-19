@@ -59,8 +59,8 @@ def classify_block(text: str) -> Verdict:
     El orden importa: un bloque que dice «BLOQUEADO por diseno» y ademas
     menciona una ausencia es una decision, no una afirmacion que caduque.
     """
-    limpio = text.strip().lower()
-    if re.match(r"^ninguna\b", limpio):
+    clean = text.strip().lower()
+    if re.match(r"^ninguna\b", clean):
         return Verdict.NONE
     for patron in DESIGN_PATTERNS:
         if re.search(patron, text, re.I):
@@ -78,16 +78,16 @@ def extract_referent(text: str) -> str | None:
     Devuelve `None` cuando no hay ninguno, en vez de inventar uno: sin
     referente el bloque es INDECIDIBLE, que no es lo mismo que vigente.
     """
-    plano = " ".join(text.split())
-    posicion = None
+    flat = " ".join(text.split())
+    position = None
     for patron in ABSENCE_PATTERNS:
-        m = re.search(patron, plano, re.I)
-        if m and (posicion is None or m.start() < posicion):
-            posicion = m.start()
-    if posicion is None:
+        m = re.search(patron, flat, re.I)
+        if m and (position is None or m.start() < position):
+            position = m.start()
+    if position is None:
         return None
-    anteriores = [m for m in re.finditer(r"`([^`]+)`", plano) if m.end() <= posicion]
-    return anteriores[-1].group(1) if anteriores else None
+    previous = [m for m in re.finditer(r"`([^`]+)`", flat) if m.end() <= position]
+    return previous[-1].group(1) if previous else None
 
 
 def extract_referents(text: str) -> list[str]:
@@ -98,39 +98,39 @@ def extract_referents(text: str) -> list[str]:
     `tool-registry`, ausente de este arbol» nombra el CONTENEDOR ultimo y el
     SIMBOLO antes. La afirmacion caduca si CUALQUIERA de los dos resuelve.
     """
-    plano = " ".join(text.split())
-    posicion = None
+    flat = " ".join(text.split())
+    position = None
     for patron in ABSENCE_PATTERNS:
-        m = re.search(patron, plano, re.I)
-        if m and (posicion is None or m.start() < posicion):
-            posicion = m.start()
-    if posicion is None:
+        m = re.search(patron, flat, re.I)
+        if m and (position is None or m.start() < position):
+            position = m.start()
+    if position is None:
         return []
     return [
         m.group(1)
-        for m in re.finditer(r"`([^`]+)`", plano)
-        if m.end() <= posicion
+        for m in re.finditer(r"`([^`]+)`", flat)
+        if m.end() <= position
     ][::-1]
 
 
 def _workspace_packages(root: pathlib.Path) -> dict[str, pathlib.Path]:
     """Los hermanos de workspace, por el nombre que su manifiesto declara."""
-    manifiesto = root / "package.json"
-    if not manifiesto.is_file():
+    manifest = root / "package.json"
+    if not manifest.is_file():
         return {}
-    fuera: dict[str, pathlib.Path] = {}
-    for patron in json.loads(manifiesto.read_text()).get("workspaces", []):
-        for ruta in root.glob(patron):
-            propio = ruta / "package.json"
-            if not propio.is_file():
+    out: dict[str, pathlib.Path] = {}
+    for patron in json.loads(manifest.read_text()).get("workspaces", []):
+        for path in root.glob(patron):
+            own = path / "package.json"
+            if not own.is_file():
                 continue
             try:
-                nombre = json.loads(propio.read_text()).get("name")
+                name = json.loads(own.read_text()).get("name")
             except json.JSONDecodeError:
                 continue
-            if nombre:
-                fuera[nombre] = ruta
-    return fuera
+            if name:
+                out[name] = path
+    return out
 
 
 def _looks_like_specifier(referent: str) -> bool:
@@ -149,19 +149,19 @@ def resolves_today(referent: str, root: pathlib.Path) -> bool:
     # cierta.
     referent = referent.replace("@claude-code-how-works/", "@thyrox/")
     if _looks_like_specifier(referent):
-        paquetes = _workspace_packages(root)
-        partes = referent.split("/")
-        base = "/".join(partes[:2]) if referent.startswith("@") else partes[0]
-        subpath = "./" + "/".join(partes[2:]) if referent.startswith("@") else (
-            "./" + "/".join(partes[1:])
+        packages = _workspace_packages(root)
+        parts = referent.split("/")
+        base = "/".join(parts[:2]) if referent.startswith("@") else parts[0]
+        subpath = "./" + "/".join(parts[2:]) if referent.startswith("@") else (
+            "./" + "/".join(parts[1:])
         )
-        if base in paquetes:
-            if len(partes) == (2 if referent.startswith("@") else 1):
+        if base in packages:
+            if len(parts) == (2 if referent.startswith("@") else 1):
                 return True
-            exportados = json.loads(
-                (paquetes[base] / "package.json").read_text()
+            exported = json.loads(
+                (packages[base] / "package.json").read_text()
             ).get("exports", {})
-            return subpath in exportados
+            return subpath in exported
         return (root / "node_modules" / base).exists()
     # Un simbolo: resuelve si algun hermano lo exporta.
     patron = re.compile(
@@ -169,9 +169,9 @@ def resolves_today(referent: str, root: pathlib.Path) -> bool:
         r"(?:function|const|class|type|interface|enum)\s+" + re.escape(referent) + r"\b",
         re.M,
     )
-    for ruta in (root / "src" / "packages").rglob("*.ts"):
+    for path in (root / "src" / "packages").rglob("*.ts"):
         try:
-            if patron.search(ruta.read_text(errors="ignore")):
+            if patron.search(path.read_text(errors="ignore")):
                 return True
         except OSError:
             continue
@@ -180,25 +180,25 @@ def resolves_today(referent: str, root: pathlib.Path) -> bool:
 
 def iter_blocks(root: pathlib.Path):
     """Cada bloque de comentario que lleva el rotulo, con su archivo."""
-    raiz_paquetes = root / "src" / "packages"
+    packages_root = root / "src" / "packages"
     patron = re.compile(re.escape(MARKER) + r"(.{0,900}?)\*/", re.S)
-    for ruta in sorted(
-        list(raiz_paquetes.rglob("*.ts")) + list(raiz_paquetes.rglob("*.tsx"))
+    for path in sorted(
+        list(packages_root.rglob("*.ts")) + list(packages_root.rglob("*.tsx"))
     ):
         try:
-            texto = ruta.read_text(errors="ignore")
+            text = path.read_text(errors="ignore")
         except OSError:
             continue
-        for m in patron.finditer(texto):
-            cuerpo = " ".join(m.group(1).replace("*", " ").split())
-            linea = texto[: m.start()].count("\n") + 1
-            yield ruta.relative_to(root), linea, cuerpo
+        for m in patron.finditer(text):
+            body = " ".join(m.group(1).replace("*", " ").split())
+            line = text[: m.start()].count("\n") + 1
+            yield path.relative_to(root), line, body
 
 
 def main(argv: list[str]) -> int:
-    estricto = "--strict" in argv
-    posicionales = [a for a in argv[1:] if not a.startswith("-")]
-    root = pathlib.Path(posicionales[0]) if posicionales else pathlib.Path.cwd()
+    strict = "--strict" in argv
+    positionals = [a for a in argv[1:] if not a.startswith("-")]
+    root = pathlib.Path(positionals[0]) if positionals else pathlib.Path.cwd()
     if not (root / "src" / "packages").is_dir():
         print(
             f"check-stale-divergence: no existe {root}/src/packages; "
@@ -208,41 +208,41 @@ def main(argv: list[str]) -> int:
         )
         return 2
 
-    cubos: dict[str, list[tuple]] = {
-        "RANCIA": [], "VIGENTE": [], "INDECIDIBLE": [], "DISENO": [], "NINGUNA": [],
+    buckets: dict[str, list[tuple]] = {
+        "STALE": [], "CURRENT": [], "UNDECIDABLE": [], "DESIGN": [], "NONE": [],
     }
     total = 0
-    for ruta, linea, cuerpo in iter_blocks(root):
+    for path, line, body in iter_blocks(root):
         total += 1
-        clase = classify_block(cuerpo)
-        if clase is Verdict.NONE:
-            cubos["NINGUNA"].append((ruta, linea, ""))
+        klass = classify_block(body)
+        if klass is Verdict.NONE:
+            buckets["NONE"].append((path, line, ""))
             continue
-        if clase is Verdict.DESIGN:
-            cubos["DISENO"].append((ruta, linea, ""))
+        if klass is Verdict.DESIGN:
+            buckets["DESIGN"].append((path, line, ""))
             continue
-        candidatos = extract_referents(cuerpo)
-        if not candidatos:
-            cubos["INDECIDIBLE"].append((ruta, linea, ""))
+        candidates = extract_referents(body)
+        if not candidates:
+            buckets["UNDECIDABLE"].append((path, line, ""))
             continue
-        resuelven = [c for c in candidatos if resolves_today(c, root)]
-        if resuelven:
-            cubos["RANCIA"].append((ruta, linea, ", ".join(resuelven)))
+        resolving = [c for c in candidates if resolves_today(c, root)]
+        if resolving:
+            buckets["STALE"].append((path, line, ", ".join(resolving)))
         else:
-            cubos["VIGENTE"].append((ruta, linea, candidatos[0]))
+            buckets["CURRENT"].append((path, line, candidates[0]))
 
-    for nombre in ("RANCIA", "INDECIDIBLE", "VIGENTE", "DISENO", "NINGUNA"):
-        filas = cubos[nombre]
-        print(f"{nombre}: {len(filas)}")
-        if nombre in ("RANCIA", "INDECIDIBLE"):
-            for ruta, linea, ref in filas:
-                print(f"    {ruta}:{linea}  {ref}")
+    for name in ("STALE", "UNDECIDABLE", "CURRENT", "DESIGN", "NONE"):
+        rows = buckets[name]
+        print(f"{name}: {len(rows)}")
+        if name in ("STALE", "UNDECIDABLE"):
+            for path, line, ref in rows:
+                print(f"    {path}:{line}  {ref}")
     print(
-        f"check-stale-divergence: {len(cubos['RANCIA'])} afirmacion(es) de "
+        f"check-stale-divergence: {len(buckets['STALE'])} afirmacion(es) de "
         f"ausencia que YA resuelven (alcance medido: {total} bloque(s) con "
         f"el rotulo)"
     )
-    return 1 if (estricto and cubos["RANCIA"]) else 0
+    return 1 if (strict and buckets["STALE"]) else 0
 
 
 if __name__ == "__main__":

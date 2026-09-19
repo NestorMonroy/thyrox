@@ -8,8 +8,8 @@ incumplidor inventado por quien escribe el patron hereda su encuadre.
 import pathlib
 import sys
 
-RAIZ = pathlib.Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(RAIZ / "src"))
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "src"))
 
 from verify.check_stale_divergence import (  # noqa: E402
     Verdict,
@@ -19,13 +19,13 @@ from verify.check_stale_divergence import (  # noqa: E402
     resolves_today,
 )
 
-fallos = []
+failures = []
 
 
-def check(etiqueta, condicion):
-    print(f"  {'OK  ' if condicion else 'FALLO'}  {etiqueta}")
-    if not condicion:
-        fallos.append(etiqueta)
+def check(label, condition):
+    print(f"  {'OK  ' if condition else 'FALLO'}  {label}")
+    if not condition:
+        failures.append(label)
 
 
 print("=== Caso 1: una ausencia declarada se reconoce como tal ===")
@@ -80,25 +80,25 @@ check(
 print("=== Caso 4: la vigencia se mide contra el arbol, no se supone ===")
 check(
     "un subpath declarado por un hermano RESUELVE hoy",
-    resolves_today("@thyrox/output/utils/stringUtils.js", RAIZ) is True,
+    resolves_today("@thyrox/output/utils/stringUtils.js", ROOT) is True,
 )
 check(
     "un paquete que el arbol declara ausente y SI esta, resuelve",
-    resolves_today("lodash-es", RAIZ) is True,
+    resolves_today("lodash-es", ROOT) is True,
 )
 check(
     "un especificador genuinamente ausente NO resuelve",
-    resolves_today("bun:bundle", RAIZ) is False,
+    resolves_today("bun:bundle", ROOT) is False,
 )
 check(
     "un simbolo exportado por un hermano RESUELVE",
-    resolves_today("Progress", RAIZ) is True,
+    resolves_today("Progress", ROOT) is True,
 )
 
 print("=== Caso 4-bis: las dos cegueras que el censo destapo ===")
 check(
     "el alcance PRE-renombre resuelve contra el nombre de hoy",
-    resolves_today("@claude-code-how-works/output/utils/displayTags.js", RAIZ)
+    resolves_today("@claude-code-how-works/output/utils/displayTags.js", ROOT)
     is True,
 )
 check(
@@ -114,5 +114,5 @@ check(
 )
 
 print()
-print(f"{len(fallos)} fallo(s)" if fallos else "todos en verde")
-sys.exit(1 if fallos else 0)
+print(f"{len(failures)} fallo(s)" if failures else "todos en verde")
+sys.exit(1 if failures else 0)
