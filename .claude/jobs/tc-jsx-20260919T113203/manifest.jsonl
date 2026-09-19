@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox/src/packages/cli && bun run typecheck 2>&1; echo \"TC_EXIT=$?\"", "started_at": "2026-09-19T11:32:03+00:00"}

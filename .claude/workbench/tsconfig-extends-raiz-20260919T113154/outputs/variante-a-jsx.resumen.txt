@@ -1,0 +1,25 @@
+# variante-a-jsx
+# fuente: .claude/jobs/tc-jsx-20260919T113203/outputs/salida.log
+# errores TS: 2931
+# archivos distintos: 501
+# --- por familia (top 20) ---
+    540 error TS2305
+    500 error TS2345
+    472 error TS18046
+    377 error TS2339
+    255 error TS7006
+    215 error TS2322
+    123 error TS18048
+     57 error TS2698
+     54 error TS2724
+     44 error TS7053
+     40 error TS2554
+     38 error TS2349
+     26 error TS2307
+     21 error TS7016
+     18 error TS2353
+     15 error TS2741
+     13 error TS1360
+     12 error TS2769
+     11 error TS2571
+      9 error TS2551
