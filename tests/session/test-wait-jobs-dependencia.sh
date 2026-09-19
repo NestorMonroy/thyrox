@@ -97,6 +97,38 @@ EST=$(bash "$GUION" status 2>&1)   # misma razon que el caso 1: pipefail inviert
 grep -q "CANCELADO" <<<"$EST"
 afirmar "pero status SIGUE mostrandolo" 0 $?
 
+
+echo
+echo "== 6. lo LANZADO sobrevive al shell que lo lanzo: es LIDER de su grupo =="
+# El control que faltaba, y el defecto que cierra (TASK-THYROX-0502): el caso 5
+# mide que `dispatch` LANZA, no que lo lanzado SOBREVIVA. Son dos cosas, y la
+# suite pasaba con el defecto presente porque medía sólo la primera.
+#
+# Un trabajo lanzado sin `setsid` queda en el grupo de procesos del lanzador:
+# `disown` lo retira de la tabla de jobs del shell, no del grupo. Una señal
+# dirigida al grupo —lo que hace el harness al terminar una llamada de
+# herramienta— lo alcanza igual, y el síntoma es MUDO: log vacío y BAIL.
+#
+# Se mide `pgid == pid` sobre el propio trabajo, que es lo que «líder de su
+# grupo» significa, y no `pgid != pgid del lanzador`: esto último es cierto
+# también de un nieto cualquiera y no discriminaría.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LH=$(fixture_file); printf 'EXIT=0\n' > "$LH"
+bash "$GUION" register padre "$LH" >/dev/null
+GRUPO=$(fixture_file)
+LI=$(fixture_file)
+bash "$GUION" register hijo "$LI" --after-ok padre \
+    --run "ps -o pid=,pgid= -p \$\$ > $GRUPO" >/dev/null
+bash "$GUION" dispatch >/dev/null 2>&1
+for _ in 1 2 3 4 5 6 7 8 9 10; do [[ -s "$GRUPO" ]] && break; sleep 0.3; done
+
+LEIDO=$(tr -s ' ' < "$GRUPO" | sed 's/^ *//')
+HIJO_PID=${LEIDO%% *}; HIJO_PGID=${LEIDO##* }
+afirmar "el dependiente arrancó y dejó su medición" "medido" \
+    "$( [[ -n "$HIJO_PID" ]] && echo medido || echo ausente )"
+afirmar "y es LIDER de su propio grupo (pgid == pid)" "$HIJO_PID" "$HIJO_PGID"
+bash "$GUION" forget padre >/dev/null 2>&1
+bash "$GUION" forget hijo  >/dev/null 2>&1
 echo
 printf 'resumen: %d ok, %d fallo(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]
