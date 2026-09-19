@@ -53,9 +53,21 @@ Lo que este modulo NO reproduce, declarado
 El brief publica frecuencias empiricas ``[0.0996 0.1002 0.4007 0.3002
 0.0994]`` para ``np.random.seed(21)`` y ``n = 300000``. **No se reproducen
 aqui**, y no por descuido: numpy no esta instalado en este arbol y el modulo
-es stdlib pura, igual que su hermano ``normalizer_magnitude``. Esos digitos
-son un artefacto del MT19937 de numpy y del orden de muestreo de
-``np.random.choice``; con ``random.Random`` salen otros, igual de validos.
+es stdlib pura, igual que su hermano ``normalizer_magnitude``.
+
+Medido con este modulo y ``random.Random(21)``, ``n = 300000``:
+``[0.1001, 0.1002, 0.4001, 0.2991, 0.1005]``. Difieren del brief en el cuarto
+decimal y los dos vectores caen dentro de 5 errores estandar de ``q_target``:
+la discrepancia es del generador, no del mecanismo.
+
+**A que se debe exactamente queda DESCONOCIDO, y se declara en vez de
+atribuirse.** Una version anterior de este parrafo culpaba al «MT19937 de
+numpy y el orden de muestreo de ``np.random.choice``». Eso no se puede medir
+aqui —numpy no esta instalado— asi que era una atribucion de memoria disfrazada
+de causa. Lo que SI esta medido es que dos generadores distintos dan digitos
+distintos: ``random.Random(7)`` da ``[0.0999, 0.0999, 0.4009, 0.2990,
+0.1004]``. Condicion de cierre: un entorno con numpy donde se pueda ejecutar
+el brief verbatim.
 
 La invariante que el brief establece de verdad —y la que su control mide— es
 **la frecuencia empirica converge a ``q_target``**. Su tolerancia se deriva

@@ -27,10 +27,13 @@ Lo que este control NO mide, declarado
 Las frecuencias empiricas que el brief publica —``[0.0996 0.1002 0.4007
 0.3002 0.0994]`` con ``np.random.seed(21)``— **no se reproducen aqui**, y no
 por descuido: numpy no esta instalado en este arbol y el modulo es stdlib
-pura, como su hermano ``normalizer_magnitude``. Esos digitos son un artefacto
-del MT19937 de numpy y del orden de muestreo de ``np.random.choice``; la
-invariante que el brief establece de verdad es **empirico converge a
-``q_target``**, y es esa la que se mide.
+pura, como su hermano ``normalizer_magnitude``. Medido aqui con
+``random.Random(21)``: ``[0.1001, 0.1002, 0.4001, 0.2991, 0.1005]`` — difiere
+en el cuarto decimal, y los dos vectores caen dentro de 5 errores estandar de
+``q_target``. A QUE se debe exactamente queda DESCONOCIDO (ver el docstring
+del sujeto): sin numpy instalado, atribuirlo a su generador seria una
+afirmacion de memoria. La invariante que el brief establece de verdad es
+**empirico converge a ``q_target``**, y es esa la que se mide.
 
 La tolerancia se DERIVA de ``n``, no se copia del brief: el error estandar de
 una frecuencia es ``sqrt(q (1 - q) / n)``, que para ``q = 0.4`` y
