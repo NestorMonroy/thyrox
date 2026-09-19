@@ -72,6 +72,14 @@ def _thyrox_root() -> Path:
 
 HERE = _thyrox_root()
 
+# Cargar un modulo por su RUTA no hace importables a sus paquetes hermanos:
+# `spec_from_file_location` resuelve ESE archivo, y los `import` de su cuerpo
+# siguen pasando por `sys.path`. `register_session.py` importa `hooks.error_log`
+# y `agents.agents_paths`, asi que sin esta linea muere con ModuleNotFoundError
+# antes de ejecutar una sola asercion (TASK-THYROX-0217).
+if str(HERE / "src") not in sys.path:
+    sys.path.insert(0, str(HERE / "src"))
+
 spec = importlib.util.spec_from_file_location(
     "register_session", HERE / "src" / "agents" / "register_session.py")
 register_session = importlib.util.module_from_spec(spec)
