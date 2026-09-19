@@ -467,3 +467,170 @@ function thyrox_toolchain_probe_proxy() {
 export -f thyrox_toolchain_proxy_declared
 export -f thyrox_toolchain_family_has_ca
 export -f thyrox_toolchain_probe_proxy
+
+# ---------------------------------------------------------------------------
+# El aviso degradado, y las dos sondas que `check-toolchain-ready` no tenia.
+#
+# El defecto que cierran lo nombro el ejecutor: quien clona el repositorio no
+# tiene como saber QUE herramientas externas usa thyrox ni si las suyas
+# sirven. Antes de esto, `PROBES` declaraba cuatro —awk, parallel, el
+# interprete del proveedor, el proxy— y el arbol dependia ademas de dos que
+# ninguna sonda interrogaba.
+#
+# CUAL de las dos es cual se midio antes de escribirlas, y el resultado
+# invierte lo que el nombre sugiere:
+#
+#   ==============================  ============  ===========================
+#   Candidato                       Consumidores  Veredicto
+#   ==============================  ============  ===========================
+#   CLI `sqlite3`                   0             NO es dependencia
+#   modulo `sqlite3` de Python      55            SI: asi se abre el store
+#   `bun` / `bunx` como comando     55            SI: 14 entrypoints .ts
+#   ==============================  ============  ===========================
+#
+# Por eso la sonda se llama `require_sqlite_reader` y no `require_sqlite3`: el
+# sujeto es la CAPACIDAD DE LEER el store, no un binario con ese nombre. En el
+# contenedor donde se escribio esto el CLI esta AUSENTE y el store se abre sin
+# problema — un guard sobre el CLI habria publicado rojo con el arbol sano,
+# que es el sub-patron C de `metrica-decide-la-conclusion.md`.
+# ---------------------------------------------------------------------------
+
+# @description El aviso de MODO DEGRADADO: nombra la herramienta que no se
+# puede usar, la precondicion que la desbloquea, y declara que lo demas sigue.
+#
+# La forma la fijo el ejecutor verbatim. Sus tres mitades no son adorno:
+#
+#   1. el prefijo `IMPORTANT`, que la hace greppeable en un log;
+#   2. la herramienta nombrada DOS veces —al pedirla y al decir que se sigue
+#      sin ella—, que es lo que un «falta X» pierde;
+#   3. la precondicion, que es el remedio accionable.
+#
+# Sin la tercera mitad el aviso se lee como un rehuse, y el que clona no sabe
+# si puede seguir. Ese es exactamente el desenlace que esta funcion evita: un
+# arbol que degrada y sigue usable, no uno que falla entero.
+# @arg $1 string La herramienta o capacidad que queda fuera.
+# @arg $2 string La precondicion a corregir para recuperarla.
+# @stdout La linea de aviso.
+# @exitcode 2 Falta alguno de los dos argumentos. NO se emite una linea con
+#   huecos: un aviso que dijera «si desea usar  es necesario corregir » es
+#   peor que ninguno, porque parece informacion.
+function thyrox_toolchain_degraded_notice() {
+  local tool="${1:-}" fix="${2:-}"
+  if [[ -z "$tool" || -z "$fix" ]]; then
+    echo "thyrox_toolchain_degraded_notice: faltan <herramienta> y <precondicion>." >&2
+    return 2
+  fi
+  printf 'IMPORTANT si desea usar %s es necesario corregir %s por el momento, continua sin usar %s\n' \
+    "$tool" "$fix" "$tool"
+}
+export -f thyrox_toolchain_degraded_notice
+
+# @description El interprete al que se le pregunta por el lector de SQLite.
+# Declarado, y no compuesto dentro de la funcion, por la misma razon que
+# `THYROX_TOOLCHAIN_AWK_BIN`: un control necesita apuntar la sonda a un
+# interprete ausente sin romper todo lo demas.
+THYROX_TOOLCHAIN_PYTHON_BIN="${THYROX_TOOLCHAIN_PYTHON_BIN:-}"
+
+# @description ¿Se puede LEER el store? El sujeto es la capacidad, no el CLI.
+#
+# El store de thyrox es SQLite y sus 55 consumidores lo abren con el modulo
+# `sqlite3` de la biblioteca estandar de Python. El CLI homonimo tiene CERO
+# invocaciones en el arbol, asi que sondearlo mediria otra cosa.
+#
+# `sqlite3` es stdlib, pero NO siempre esta: un CPython compilado sin
+# `libsqlite3-dev` lo omite, y el import falla en tiempo de ejecucion con el
+# arbol entero instalado. Por eso la sonda IMPORTA el modulo en vez de dar por
+# hecho que existe — mide conducta, no presencia del interprete.
+# @noargs
+# @exitcode 0 El interprete resuelve y su modulo sqlite3 importa.
+# @exitcode 2 No resuelve, o resuelve a un Python sin el modulo. REHUSA sin
+#   emitir conteo: un cero aqui no distinguiria «no hay lector» de «no pude
+#   medir».
+function thyrox_toolchain_require_sqlite_reader() {
+  local interpreter="$THYROX_TOOLCHAIN_PYTHON_BIN"
+
+  if [[ -z "$interpreter" ]]; then
+    interpreter="$(thyrox_toolchain_provider_python 2>/dev/null)" || {
+      thyrox_toolchain_degraded_notice \
+        "el store de agentes, tareas y hallazgos" \
+        "cd \$THYROX_ROOT && uv sync" >&2
+      return 2
+    }
+  fi
+
+  if [[ ! -x "$interpreter" ]]; then
+    echo "thyrox_toolchain: '$interpreter' no resuelve a un interprete." >&2
+    thyrox_toolchain_degraded_notice \
+      "el store de agentes, tareas y hallazgos" \
+      "cd \$THYROX_ROOT && uv sync" >&2
+    return 2
+  fi
+
+  # CONDUCTA: el modulo importa. `command -v python` no lo dice.
+  if ! "$interpreter" -c 'import sqlite3' >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$interpreter' resuelve, y su modulo sqlite3 NO importa." >&2
+    echo "                  Es un CPython compilado sin libsqlite3-dev. El CLI" >&2
+    echo "                  'sqlite3' no lo arregla: el arbol no lo invoca." >&2
+    thyrox_toolchain_degraded_notice \
+      "el store de agentes, tareas y hallazgos" \
+      "un Python con el modulo sqlite3" >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_sqlite_reader
+
+# @description El binario de bun. Declarado por la razon de siempre: el
+# control necesita apuntar a un nombre ausente.
+THYROX_TOOLCHAIN_BUN_BIN="${THYROX_TOOLCHAIN_BUN_BIN:-bun}"
+
+# @description El hogar de dependencias instaladas. Su ausencia es el eje 2 y
+# no se deduce del eje 1: bun puede estar y `bun install` no haberse corrido.
+THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-}"
+
+# @description ¿Se puede correr la mitad TypeScript? DOS ejes, como awk.
+#
+#   1. PRESENCIA — que `bun` resuelva. Su remedio es instalarlo.
+#   2. DEPENDENCIAS — que `node_modules` este materializado. Su remedio es
+#      `bun install`, y NO es el mismo: bun instalado sin dependencias deja
+#      los 14 entrypoints `.ts` igual de muertos.
+#
+# Medir solo el eje 1 es el sub-patron C: el significante (el binario esta)
+# concluyendo sobre el significado (la mitad TypeScript corre).
+#
+# Este rehuse NO bloquea el arbol: las mitades Python y shell de `bin/` no
+# dependen de bun. Por eso su aviso es el degradado y su clase en
+# `check-toolchain-ready` es `aviso`, no `error`.
+# @noargs
+# @exitcode 0 bun resuelve y las dependencias estan.
+# @exitcode 2 Falta alguno de los dos ejes. El aviso nombra cual.
+function thyrox_toolchain_require_bun() {
+  local bin="$THYROX_TOOLCHAIN_BUN_BIN" home="$THYROX_TOOLCHAIN_NODE_MODULES_HOME"
+
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: '$bin' no resuelve." >&2
+    thyrox_toolchain_degraded_notice \
+      "los entrypoints .ts de src/**/bin y el paquete @thyrox/cli" \
+      "instalar bun (https://bun.sh)" >&2
+    return 2
+  fi
+
+  if [[ -z "$home" ]]; then
+    local root
+    root="$(thyrox_toolchain_provider_root)" || return 2
+    home="$root/node_modules"
+  fi
+
+  # El eje 2. Un directorio VACIO cuenta como ausente: `bun install` lo crea
+  # antes de poblarlo, asi que medir su existencia a secas daria verde a mitad
+  # de una instalacion interrumpida.
+  if [[ ! -d "$home" ]] || [[ -z "$(ls -A "$home" 2>/dev/null)" ]]; then
+    echo "thyrox_toolchain: '$bin' resuelve, y $home esta ausente o vacio." >&2
+    thyrox_toolchain_degraded_notice \
+      "los entrypoints .ts de src/**/bin y el paquete @thyrox/cli" \
+      "cd \$THYROX_ROOT && bun install" >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_bun

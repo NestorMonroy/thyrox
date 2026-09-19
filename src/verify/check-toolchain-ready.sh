@@ -126,6 +126,15 @@ PROBES=(
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"
   "proxy|aviso|thyrox_toolchain_probe_proxy"
+  # El lector del store. Clase `error`: sin el, todo guion que toque
+  # tareas, hallazgos o agentes publica otra cosa. Su sujeto es la
+  # CAPACIDAD de leer, no el CLI `sqlite3` —que tiene 0 consumidores
+  # en el arbol y esta ausente en este contenedor con el store sano—.
+  "sqlite-reader|error|thyrox_toolchain_require_sqlite_reader"
+  # bun y sus dependencias. Clase `aviso` y no `error`: sin ellos las
+  # mitades Python y shell de bin/ siguen enteras. Es el caso que el
+  # aviso degradado existe para nombrar — se continua sin la mitad TS.
+  "bun|aviso|thyrox_toolchain_require_bun"
 )
 
 ERRORS=0; WARNS=0; PASSED=0
