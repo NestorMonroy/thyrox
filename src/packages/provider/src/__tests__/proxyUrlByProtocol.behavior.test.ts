@@ -83,3 +83,27 @@ describe('getProxyUrl — las DOS formas ciegas', () => {
     expect(getProxyUrl({ https_proxy: HTTPS }, 'no-es-una-url')).toBe(HTTPS)
   })
 })
+
+describe('getProxyUrl — el protocolo que no es http: ni https:', () => {
+  // La referencia resuelve con un ternario: `https:` toma la cadena de https
+  // y TODO lo demas la de http (`omniroute: proxyFetch.ts:512-518`). Medido
+  // quien la llama —`proxyFallback.ts:206`, `proxyFetch.ts:552`,
+  // `tlsClientProxy.ts:21`—, su poblacion es la del camino de fetch y TLS: un
+  // `ws:` de la referencia viaja por otro camino (`executors/uc/ws.ts`) y no
+  // llega aqui. El ternario no es un descuido sobre `wss:`, es la forma.
+
+  test('un destino ws:// toma la cadena de http, como todo lo no-https', () => {
+    expect(getProxyUrl({ https_proxy: HTTPS, http_proxy: HTTP }, 'ws://api.example.com'))
+      .toBe(HTTP)
+  })
+
+  test('un destino wss:// tambien, porque el eje es «es https», no «es TLS»', () => {
+    expect(getProxyUrl({ https_proxy: HTTPS, http_proxy: HTTP }, 'wss://api.example.com'))
+      .toBe(HTTP)
+  })
+
+  test('sin proxy de http, un destino no-https cae a ALL_PROXY, no al de https', () => {
+    expect(getProxyUrl({ https_proxy: HTTPS, ALL_PROXY: ALL }, 'ftp://files.example.com'))
+      .toBe(ALL)
+  })
+})

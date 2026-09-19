@@ -64,14 +64,14 @@ type EnvLike = Record<string, string | undefined>
  * Una `targetUrl` que no parsea cae al camino sin destino en vez de reventar:
  * el llamador pregunta por el proxy, no por la validez de su URL.
  *
- * DESCONOCIDO declarado — un protocolo que no es `http:` ni `https:`. La
- * referencia lo resuelve con un ternario (`protocol === "https:" ? … : …`),
- * asi que manda TODO lo no-https por la cadena de http, incluido `wss:`, que
- * es TLS. Aqui cae al camino sin destino. No se porta el ternario porque su
- * significante —«no es https»— no coincide con su significado —«transporte
- * sin TLS»—, y la poblacion que decidiria el empate es hoy VACIA: los dos
- * consumidores reales llaman sin `targetUrl`. Condicion de cierre: el primer
- * llamador que pase un destino que no sea http ni https. TASK-THYROX-0191.
+ * Un protocolo que no es `https:` toma la cadena de http — el ternario de la
+ * referencia, portado. No es un descuido suyo sobre `wss:`: medido quien
+ * llama a `resolveEnvProxyUrl` (`proxyFallback.ts:206`, `proxyFetch.ts:552`)
+ * y a `resolveProxyForRequest` (`tlsClientProxy.ts:21`, `proxyFetch.ts:779`),
+ * su poblacion es la del camino de fetch y TLS; el websocket de la referencia
+ * viaja por otro camino (`executors/uc/ws.ts`) y nunca llega al ternario. El
+ * eje es «es https», no «es TLS», y esa es la forma, no un efecto colateral.
+ * TASK-THYROX-0191.
  */
 export function getProxyUrl(
   env: EnvLike = getAllEnv(),
@@ -86,11 +86,10 @@ export function getProxyUrl(
     } catch {
       protocol = undefined
     }
-    if (protocol === 'http:') {
-      return env.http_proxy || env.HTTP_PROXY || anyProxy
-    }
-    if (protocol === 'https:') {
-      return env.https_proxy || env.HTTPS_PROXY || anyProxy
+    if (protocol !== undefined) {
+      return protocol === 'https:'
+        ? env.https_proxy || env.HTTPS_PROXY || anyProxy
+        : env.http_proxy || env.HTTP_PROXY || anyProxy
     }
   }
 
