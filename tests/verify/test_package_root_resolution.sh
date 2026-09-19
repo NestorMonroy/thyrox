@@ -98,22 +98,36 @@ afirmar "cli-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
 # Se invoca por ruta ABSOLUTA y desde `$THYROX`: los casos de arriba corren en
 # el arbol sintetico `$T`, y una ruta relativa desde alli da 127 —el gate no
 # existe— que se leeria como «el gate fallo» en vez de «lo invoque mal».
-SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-cli-typecheck.sh" 2>&1)"; COD=$?
+SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-cli-typecheck.sh" --strict 2>&1)"; COD=$?
 case "$SAL" in
     *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
     *"NO ENCONTRADO"*) VISTO=rehusa ;;
     *) VISTO=otra ;;
 esac
 #
-# ESTOS DOS ESTAN ROJOS HOY, y su causa esta medida y nombrada:
-# TASK-THYROX-0236. NO es la que el remedio generico del gate sugiere
-# (`bun install`): los errores no son de modulo sin resolver, son de MODO
-# ESTRICTO en los 5 paquetes `@ant/*` que TASK-THYROX-0487 trajo enteros. Es la
-# misma pared que 0228 y 0233 cruzaron simbolo a simbolo, ahora a escala de
-# paquete — la fuente compila con `strict: false` y esta raiz con `strict:
-# true`. Se dejan ROJOS a proposito: un caso desactivado publicaria verde sobre
-# una medicion que nunca ocurre, que es el sub-patron D con esta suite como
-# sujeto.
+# ESTOS DOS SIGUEN ROJOS, y su causa es OTRA que la que este comentario
+# afirmaba. Decia que los errores eran «de MODO ESTRICTO en los 5 paquetes
+# `@ant/*`», y lo llamaba medido. Medido de verdad (TASK-THYROX-0239, censo
+# en `.claude/jobs/typecheck-census-*`): los cinco `@ant` son **61 de 2821**
+# —2.2 %— y **dos de los cinco no aportan ni un error**. La causa real es
+# estructural y no de rigor: los 42 hermanos exponen FUENTE en su `exports`
+# (`./src/index.ts`), asi que el consumidor los recompila enteros bajo SUS
+# opciones y `skipLibCheck` no lo evita —salta los `.d.ts`, no los `.ts`—. De
+# ahi que **76 % de los errores del gate no sean del paquete que mide**.
+#
+# El mecanismo que lo cierra es `src/typescript/emit_declarations.py`, y su efecto
+# esta medido por anulacion sobre `storage`: repuntado su `exports` a la
+# declaracion, el typecheck del consumidor pasa de 2821 a 2701 y storage de
+# 103 a 0, con los demas paquetes **exactamente iguales**.
+#
+# Se dejan ROJOS a proposito hasta que los 42 esten repuntados: un caso
+# desactivado publicaria verde sobre una medicion que nunca ocurre, que es el
+# sub-patron D con esta suite como sujeto.
+#
+# Y el caso de abajo MIDE CON `--strict` desde hoy. Sin el, el gate devuelve 0
+# sobre un arbol rojo —sus dos ultimas lineas lo hacen explicito— asi que la
+# asercion «sale 0 sobre el arbol limpio» no podia fallar por la unica causa
+# que le importa: era verde por construccion, no por el arbol.
 afirmar "cli-typecheck mide los dos proyectos del paquete" mide "$VISTO"
 afirmar "cli-typecheck sale 0 sobre el arbol limpio" 0 "$COD"
 

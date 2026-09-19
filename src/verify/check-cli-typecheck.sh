@@ -101,7 +101,13 @@ for project in tsconfig.json tsconfig.tests.json; do
         exit 2
     fi
     OUT="$(cd "$PACKAGE" && bunx tsc --noEmit -p "$project" 2>&1)" || {
-        echo "check-cli-typecheck: $project FALLA" >&2
+        # El denominador acompana a CADA veredicto terminal, no solo al verde.
+        # Publicarlo unicamente en el OK hace que «mide los dos proyectos» y
+        # «los dos proyectos compilan» sean la misma afirmacion, y no lo son:
+        # un gate que midiera UN proyecto y lo encontrara roto publicaria
+        # exactamente esta linea. Es el sub-patron A con este gate como sujeto.
+        echo "check-cli-typecheck: $project FALLA" \
+             "(proyectos medidos: $((MEASURED + 1)) de 2)" >&2
         printf '%s\n' "$OUT" | grep "error TS" >&2 || printf '%s\n' "$OUT" >&2
         UNLINKED="$UNLINKED$(unlinked_from "$OUT")"$'\n'
         CODE=1
@@ -128,6 +134,7 @@ if [[ -n "$UNLINKED" ]]; then
     {
         echo
         echo "check-cli-typecheck: workspace sin enlazar — NO hay veredicto sobre el codigo."
+        echo "  (proyectos medidos: $MEASURED de 2)"
         echo
         echo "  Estos paquetes EXISTEN en $PACKAGES_DIR y no estan en"
         echo "  $PACKAGE_REL/$SCOPE_DIR:"
@@ -153,5 +160,6 @@ check-cli-typecheck: el paquete no compila.
 
 AVISO
 echo "      cd $PACKAGE_REL && bun run typecheck && bun run typecheck:tests" >&2
+echo "check-cli-typecheck: proyectos medidos: $MEASURED de 2" >&2
 [[ "$STRICT" -eq 1 ]] && exit 1
 exit 0
