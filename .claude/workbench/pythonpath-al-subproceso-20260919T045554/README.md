@@ -57,20 +57,39 @@ cada reintento y se abandona al tercero.
 traza; el control positivo —un comando que escribe un archivo— da **1**. El
 instrumento discrimina, así que el cero es una medición y no un silencio.
 
-## Lo que el arreglo cerró además
+## Lo que el arreglo cerró además — CORREGIDO 2026-09-19 (TASK-THYROX-0218)
 
-Tres suites que estaban rojas por la misma causa pasaron a verde sin tocarlas:
+**La tabla que vivía aquí era falsa.** Afirmaba que tres suites «estaban rojas
+por la misma causa y pasaron a verde sin tocarlas», atribuyendo el cambio a
+`child_env`. Las tres se midieron con `python3 tests/xxx.py` **pelado**, y el
+corredor exporta el árbol (`tests/run.sh:38`):
 
-| Suite | Antes | Después |
-|---|---|---|
-| `tests/agents/test_final_message_closing.py` | `ModuleNotFoundError: hooks` | 14 ok, 0 fallos |
-| `tests/hooks/test_error_log.py` | 30 de 32 | 32 de 32 |
-| `tests/session/test_user_wiring.py` | 69 ok, 5 fallos | 74 ok, 0 fallos |
+```
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+```
 
-*Métrica:* exit code y última línea de cada suite, corridas en el pool con
-`cd` propio y entorno limpio.
-*Ciega a:* si alguna de las tres tenía además otra causa que esta corrida no
-ejercita — el verde dice que hoy pasan, no que sólo dependieran de esto.
+Así que lo medido era mi invocación, no el árbol. Re-medido contra las **tres**
+poblaciones que sí discriminan:
+
+| Suite | baseline (corredor, pre-`c3346cdb`) | pelado, hoy | corredor, hoy |
+|---|---|---|---|
+| `tests/hooks/test_error_log.py` | **verde** (log :6145) | ROJO | ok |
+| `tests/agents/test_final_message_closing.py` | **verde** (log :5359) | ok* | ok |
+| `tests/session/test_user_wiring.py` | **ROJO** — `NameError: name 'reach' is not defined` (log :7954) | ROJO | ok |
+
+(*) pelado da `ok` hoy **sólo** porque `12328c81` le insertó `src`; antes de ese
+commit daba ROJO. Ésa es la premisa de `TASK-THYROX-0217`, y por eso la columna
+del medio no vale por sí sola para nada.
+
+**Ninguna de las tres cambió de veredicto por `child_env`.** Dos estaban verdes
+bajo el corredor antes de tocar nada, y la tercera estaba roja por la familia de
+`TASK-THYROX-0214` —uso antes del import—, que cerró `c3346cdb` a las 04:51:29,
+**después** de que el baseline dejara de escribir (04:42:18).
+
+Lo que `child_env` **sí** cerró es el defecto de producción —el hook del
+consumidor escribiendo cero filas— y eso lo sostiene su propio control de
+anulación sobre su propio sujeto: el caso 8 de `test_store_home.py`, que cae
+1 de 8 al retirar `env=reach.child_env()`. Ese control no se toca.
 
 ## Lo que este banco NO cierra
 
@@ -131,30 +150,28 @@ comandos, salida a `/dev/null`, y el reloj de cada trabajo por separado.
 la memoria y la contención de disco; y una segunda corrida que diera otra
 cifra, porque cada modo se midió **una vez**.
 
-## Atribución: mencionar el símbolo no es cambiar de veredicto
+## Atribución — CORREGIDO 2026-09-19 (TASK-THYROX-0218)
 
-El subconjunto derivado da **17 rojos** y sólo **tres** mencionan los símbolos
-tocados. Mencionarlos es el *significante*; cambiar de veredicto es el
-*significado*. Medido reponiendo el contenido de `HEAD` en los tres archivos de
-fuente y volviendo a correr:
+**Esta tabla también se midió pelada, y contradecía a la de arriba.** Publicaba
+las tres suites como ROJO en las **dos** columnas; la sección «Lo que el arreglo
+cerró además» las publicaba como rojas que pasaban a verde. Las dos no podían ser
+ciertas a la vez, y ninguna lo era: las dos medían la invocación.
 
-| Suite | HEAD | con `child_env` |
-|---|---|---|
-| `tests/paths/test_child_env.py` | **ROJO** | **7 ok, 0 fallos** |
-| `tests/agents/test_final_message_closing.py` | ROJO | ROJO |
-| `tests/hooks/test_error_log.py` | ROJO (30/32) | ROJO (30/32) |
-| `tests/session/test_user_wiring.py` | ROJO (69/5) | ROJO (69/5) |
+Lo que **sobrevive** de este control, y es lo que importaba: cambia de veredicto
+**exactamente una**, y es la del sujeto — `tests/paths/test_child_env.py`, que no
+existía antes de `706d6f1e`. Mencionar el símbolo es el *significante*; cambiar de
+veredicto es el *significado*. Eso sigue en pie.
 
-Cambia de veredicto **exactamente una**, y es la del sujeto. Las otras tres son
-pre-existentes y no se atribuyen a este cambio.
+**Y el décimo archivo de la familia de `TASK-THYROX-0214` sigue siendo real, pero
+su severidad no.** `test_final_message_closing.py` **no** «moría antes de ejecutar
+una sola aserción» bajo el corredor: estaba verde. Lo que es cierto, y es el
+hallazgo, es que el censo AST es **ciego por construcción** al cargador dinámico —
+mide uso-antes-de-import dentro del módulo, y `spec_from_file_location` no importa
+el árbol en ninguna línea. Que esa ceguera no costara un rojo aquí es suerte del
+`PYTHONPATH` del corredor, no cobertura del censo.
 
-**Y el control destapó un décimo archivo de la familia de TASK-THYROX-0214.**
-`test_final_message_closing.py` muere con `ModuleNotFoundError: No module named
-'hooks'` al cargar `register_session.py` con `spec_from_file_location` sin poner
-`src/` en `sys.path`. El censo AST de aquel pase era **ciego a esta forma por
-construcción**: mide uso-antes-de-import *dentro* del módulo, y un cargador
-dinámico no importa el árbol en ninguna línea.
-
-*Métrica:* veredicto de cada suite con el contenido de `HEAD` y con el del
-árbol, mismo intérprete, `__pycache__` borrado entre las dos.
-*Ciega a:* un rojo intermitente — cada suite se corrió una vez por lado.
+*Métrica:* veredicto de cada suite en tres poblaciones — el baseline del corredor
+(**12 ROJO sobre 189 suites**), la invocación pelada de hoy, y el corredor de hoy.
+*Ciega a:* un rojo intermitente (cada suite se corrió una vez por población); y a
+lo que `3ceff589` —el único commit dentro de la ventana del baseline, 04:36—
+pudiera haber cambiado: medido, toca **0** archivos `.py`.

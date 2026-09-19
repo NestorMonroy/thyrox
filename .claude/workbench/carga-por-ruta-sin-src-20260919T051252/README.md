@@ -3,14 +3,30 @@
 Décimo archivo de la familia de `TASK-THYROX-0214`, y el censo AST de aquel
 pase **no podía verlo**.
 
-## La pregunta
+## La pregunta — CORREGIDA 2026-09-19 (TASK-THYROX-0218)
 
-`tests/agents/test_final_message_closing.py` moría con
+**La premisa que se escribió aquí era mi invocación, no el árbol.** Decía que
+`tests/agents/test_final_message_closing.py` «moría con
 `ModuleNotFoundError: No module named 'hooks'` antes de ejecutar una sola
-aserción. Su bootstrap es correcto en lo que sí hace —resuelve la raíz por
-**marcador**, no por `parents[N]`, con su propia `_thyrox_root()` y el
-docstring que explica por qué repite el marcador— y omite la otra mitad:
-**nunca inserta `src/` en `sys.path`**.
+aserción». Eso es cierto con `python3 tests/xxx.py` **pelado** y falso bajo el
+corredor, que exporta el árbol (`tests/run.sh:38`):
+
+```
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
+```
+
+Medido en el baseline del pase —corredor real, antes de tocar nada— el archivo
+aparece **verde**, en la línea 5359 de su log, sin marca `-- ROJO`.
+
+**Qué sigue siendo cierto, y qué cambia de clase:**
+
+- El bootstrap **sí** omite insertar `src/` en `sys.path`: eso es un hecho del
+  archivo, no de la invocación, y es lo que el censo mide.
+- La reparación **sí** es hardening real — hace el archivo ejecutable por sí
+  solo, sin depender de que quien lo invoque exporte el árbol.
+- Lo que **no** es: la reparación de un rojo visible bajo el corredor. No había
+  tal rojo. `TASK-THYROX-0217` queda `completed`, con su afirmación reclasificada
+  de «repara un fallo» a «cierra una dependencia implícita del invocador».
 
 ## El mecanismo, que no es obvio
 
@@ -64,10 +80,17 @@ cambiara ahí no estaría midiendo el fenómeno.
 
 Los dos, verbatim, en `outputs/control-de-anulacion.txt`.
 
-## Atribución
+## Atribución — CORREGIDA 2026-09-19 (TASK-THYROX-0218)
 
-La reparación es de UNA línea y su efecto está acotado a este archivo: el
-subconjunto derivado de `register_session|hooks.error_log` no cambia de
-veredicto en ninguna otra suite (las otras dos rojas —`test_error_log.py` y
-`test_user_wiring.py`— son pre-existentes y se midieron en el banco de
-`TASK-THYROX-0216`).
+La reparación es de UNA línea y su efecto está acotado a este archivo. Lo que
+esta sección afirmaba de más: que `test_error_log.py` y `test_user_wiring.py`
+eran «pre-existentes» medidas en el banco de `TASK-THYROX-0216`. Las dos se
+midieron **peladas** allí, y bajo el corredor no son lo que se publicó —
+`test_error_log.py` estaba **verde** en el baseline, y `test_user_wiring.py`
+estaba roja por la familia de `TASK-THYROX-0214`, no por esto. La tabla corregida,
+con sus tres poblaciones, vive en el README de aquel banco.
+
+*Métrica:* veredicto del archivo en el baseline del corredor (log :5359), con la
+invocación pelada, y con el corredor de hoy.
+*Ciega a:* si el archivo tendría otro fallo bajo un invocador que exporte un
+`PYTHONPATH` distinto del que el corredor exporta.
