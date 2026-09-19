@@ -21,16 +21,16 @@ from pathlib import Path
 # UNA profundidad y falla en SILENCIO al mover el archivo un nivel — resuelve
 # otra ruta que existe y nadie se entera (tarea #228, H-DOCS-1103). El ascenso
 # no depende de cuantos niveles haya.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths.reach import thyrox_root  # noqa: E402
 
-_MODULE = thyrox_root(_AQUI.parent) / "src/session/bounded_scan.py"
+_MODULE = thyrox_root(_HERE.parent) / "src/session/bounded_scan.py"
 _spec = importlib.util.spec_from_file_location("_scan", _MODULE)
 scan = importlib.util.module_from_spec(_spec)
 # El registro en `sys.modules` ANTES de ejecutar es parte de la receta de
@@ -57,13 +57,13 @@ def _tree():
 
 def test_finds_the_file_outside_the_pruned_directories():
     root = _tree()
-    resultado = scan.walk(root, name="*.sqlite3")
-    nombres = sorted(pathlib.Path(p).name for p in resultado.paths)
+    result = scan.walk(root, name="*.sqlite3")
+    names = sorted(pathlib.Path(p).name for p in result.paths)
     # `_references` NO se poda: son los corpus contra los que se construye, o
     # sea sujeto de analisis. Lo que se poda es volumen: .git y node_modules.
-    assert nombres == ["tambien.sqlite3", "uno.sqlite3"]
-    assert resultado.complete is True
-    assert resultado.reason is None
+    assert names == ["tambien.sqlite3", "uno.sqlite3"]
+    assert result.complete is True
+    assert result.reason is None
 
 
 def test_the_default_prune_list_carries_its_own_weight():
@@ -74,26 +74,26 @@ def test_the_default_prune_list_carries_its_own_weight():
     seria codigo muerto.
     """
     root = _tree()
-    con_poda = scan.walk(root, name="*.sqlite3")
-    sin_poda = scan.walk(root, name="*.sqlite3", prune=())
-    assert len(con_poda.paths) == 2
-    assert len(sin_poda.paths) == 4
+    with_prune = scan.walk(root, name="*.sqlite3")
+    without_prune = scan.walk(root, name="*.sqlite3", prune=())
+    assert len(with_prune.paths) == 2
+    assert len(without_prune.paths) == 4
 
 
 def test_a_truncated_walk_declares_itself_and_does_not_pass_for_complete():
     root = _tree()
-    resultado = scan.walk(root, name="*", max_entries=2, prune=())
-    assert resultado.complete is False
-    assert resultado.reason == "max_entries"
-    assert resultado.exit_code == scan.EXIT_TRUNCATED
+    result = scan.walk(root, name="*", max_entries=2, prune=())
+    assert result.complete is False
+    assert result.reason == "max_entries"
+    assert result.exit_code == scan.EXIT_TRUNCATED
 
 
 def test_the_deadline_stops_a_walk_that_the_entry_cap_would_not():
     """El deadline es un guard distinto del cap, y se anula por separado."""
     root = _tree()
-    resultado = scan.walk(root, name="*", deadline=0.0, prune=())
-    assert resultado.complete is False
-    assert resultado.reason == "deadline"
+    result = scan.walk(root, name="*", deadline=0.0, prune=())
+    assert result.complete is False
+    assert result.reason == "deadline"
 
 
 def test_a_complete_walk_exits_zero():
@@ -102,40 +102,40 @@ def test_a_complete_walk_exits_zero():
 
 
 def test_refuses_a_root_that_does_not_exist():
-    resultado = scan.walk(pathlib.Path("/no/existe/en/ningun/arbol"), name="*")
-    assert resultado.exit_code == scan.EXIT_REFUSED
-    assert resultado.complete is False
-    assert "no existe" in (resultado.reason or "")
+    result = scan.walk(pathlib.Path("/no/existe/en/ningun/arbol"), name="*")
+    assert result.exit_code == scan.EXIT_REFUSED
+    assert result.complete is False
+    assert "no existe" in (result.reason or "")
 
 
 def test_the_cli_prints_the_notice_to_stderr_when_it_truncates(capsys=None):
     """El corte se declara por stderr, no mezclado con las rutas de stdout."""
     root = _tree()
-    codigo = scan.main([str(root), "--name", "*", "--max-entries", "1",
+    code = scan.main([str(root), "--name", "*", "--max-entries", "1",
                         "--no-default-prune"])
-    assert codigo == scan.EXIT_TRUNCATED
+    assert code == scan.EXIT_TRUNCATED
 
 
 def test_the_symlink_loop_does_not_hang_the_walk():
     """Un enlace al padre es la forma clasica de recorrido infinito."""
     root = _tree()
     os.symlink(str(root), str(root / "src" / "bucle"))
-    resultado = scan.walk(root, name="*.sqlite3", deadline=5.0)
-    assert resultado.exit_code in (scan.EXIT_OK, scan.EXIT_TRUNCATED)
+    result = scan.walk(root, name="*.sqlite3", deadline=5.0)
+    assert result.exit_code in (scan.EXIT_OK, scan.EXIT_TRUNCATED)
 
 
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

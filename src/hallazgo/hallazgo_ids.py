@@ -266,13 +266,13 @@ def is_free(source_root: Path, full_id: str,
     return number not in used
 
 
-def _cmd_acunar(args: argparse.Namespace) -> int:
+def _cmd_mint(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
     print(next_id(root, args.prefix))   # default: árbol + store
     return 0
 
 
-def _cmd_verificar(args: argparse.Namespace) -> int:
+def _cmd_verify(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
     if is_free(root, args.id):          # default: árbol + store
         print(f'{args.id} — libre')
@@ -288,18 +288,18 @@ def build_parser() -> argparse.ArgumentParser:
                      'iniciativa.')
     sub = parser.add_subparsers(dest='comando', required=True)
 
-    acunar = sub.add_parser(
+    mint = sub.add_parser(
         'acunar', help='imprime el next_number H-<PREFIJO>-N libre')
-    acunar.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
-    acunar.add_argument('--consumer', default='docs',
+    mint.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    mint.add_argument('--consumer', default='docs',
                          help='el clon a resolver con reach.root (default: docs)')
-    acunar.set_defaults(func=_cmd_acunar)
+    mint.set_defaults(func=_cmd_mint)
 
-    verificar = sub.add_parser(
+    verify = sub.add_parser(
         'verificar', help='¿un H-<PREFIJO>-N ya elegido está libre?')
-    verificar.add_argument('id', help='el identificador completo, p. ej. H-API-1112')
-    verificar.add_argument('--consumer', default='docs')
-    verificar.set_defaults(func=_cmd_verificar)
+    verify.add_argument('id', help='el identificador completo, p. ej. H-API-1112')
+    verify.add_argument('--consumer', default='docs')
+    verify.set_defaults(func=_cmd_verify)
 
     return parser
 

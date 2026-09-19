@@ -80,23 +80,23 @@ def read_catalog_lines(lines) -> dict:
     """
     meta = None
     tiers: dict = {}
-    modelos: list = []
-    for linea in lines:
-        if not linea.strip():
+    models: list = []
+    for line in lines:
+        if not line.strip():
             continue
-        registro = json.loads(linea)
-        kind = registro.pop("kind", None)
+        record = json.loads(line)
+        kind = record.pop("kind", None)
         if kind == "meta":
-            meta = registro
+            meta = record
         elif kind == "tier":
-            tiers[registro["name"]] = registro["pricing"]
+            tiers[record["name"]] = record["pricing"]
         elif kind == "model":
-            modelos.append(registro)
+            models.append(record)
         else:
             raise ValueError(f"registro con kind desconocido: {kind!r}")
     if meta is None:
         raise ValueError("ningún registro declara kind \"meta\"")
-    return {**meta, "pricing_tiers": tiers, "models": modelos}
+    return {**meta, "pricing_tiers": tiers, "models": models}
 
 
 def try_catalog(path: Path = CATALOG_PATH) -> tuple[dict | None, str | None]:

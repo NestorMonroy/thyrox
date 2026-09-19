@@ -154,12 +154,12 @@ def main(argv=None):
         return EXIT_OK
 
     if args.disponible:
-        capa, numero = args.disponible
-        if capa not in LAYERS or not numero.isdigit():
+        layer, number = args.disponible
+        if layer not in LAYERS or not number.isdigit():
             print('ERROR — --disponible requiere CAPA conocida y NUMERO entero.',
                   file=sys.stderr)
             return EXIT_GUARD
-        etiqueta = f'.. _h-{capa}-{int(numero)}:'
+        etiqueta = f'.. _h-{layer}-{int(number)}:'
         owners = []
         refs = [r for r in git('for-each-ref', '--format=%(refname:short)',
                                'refs/remotes/origin').split() if not r.endswith('/HEAD')]

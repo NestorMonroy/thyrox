@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# test-write-env-repara-clon-desplazado.sh
+# test-write-env-repairs-moved-clone.sh
 # =============================================================================
 #
 # Origen: hallazgo de un bot de revisión sobre el PR #7 (`chatgpt-codex-connector`,
@@ -28,7 +28,7 @@
 # sintético — y la redirección de escritura falla. Con el fix, `ROOT` es el
 # `_thyrox_root` ya derivado por ascenso, y el `.env` aterriza en el clon real.
 #
-# Uso:  bash tests/session/test-write-env-repara-clon-desplazado.sh
+# Uso:  bash tests/session/test-write-env-repairs-moved-clone.sh
 
 set -uo pipefail
 

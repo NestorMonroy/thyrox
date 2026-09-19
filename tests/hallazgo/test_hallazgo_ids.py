@@ -56,8 +56,8 @@ print("== 1. el literal se reconoce con límite de palabra en los dos extremos =
 (TMP / "uno" / "a.rst").write_text(
     "cita a PH-API-5 (no cuenta) y a H-API-7 (sí cuenta) y H-API-70X (no, "
     "sigue con letra)\n", encoding="utf-8")
-numeros = hallazgo_ids.used_numbers(TMP / "uno", "API")
-check("sólo el 7 cuenta", [7], sorted(numeros))
+numbers = hallazgo_ids.used_numbers(TMP / "uno", "API")
+check("sólo el 7 cuenta", [7], sorted(numbers))
 
 # --- 2. escaneo por CONTENIDO, no por nombre de archivo ----------------------
 print("== 2. un monolito con varios números en el mismo archivo, todos cuentan ==")
@@ -65,18 +65,18 @@ print("== 2. un monolito con varios números en el mismo archivo, todos cuentan 
 (TMP / "dos" / "hallazgos-migrar-algo.rst").write_text(
     "H-API-100 -- resuelto\nH-API-101 -- resuelto\nH-API-102 -- documentado\n",
     encoding="utf-8")
-numeros = hallazgo_ids.used_numbers(TMP / "dos", "API")
+numbers = hallazgo_ids.used_numbers(TMP / "dos", "API")
 check("los tres números del monolito, ninguno en el nombre del archivo",
-      [100, 101, 102], sorted(numeros))
+      [100, 101, 102], sorted(numbers))
 
 # --- 3. el prefijo discrimina -------------------------------------------------
 print("== 3. H-DOCS-9 no cuenta para el prefijo API ==")
 (TMP / "tres").mkdir()
 (TMP / "tres" / "a.rst").write_text("H-API-3\nH-DOCS-9\nH-API-4\n", encoding="utf-8")
-numeros_api = hallazgo_ids.used_numbers(TMP / "tres", "API")
-numeros_docs = hallazgo_ids.used_numbers(TMP / "tres", "DOCS")
-check("API ve 3 y 4, no el 9 de DOCS", [3, 4], sorted(numeros_api))
-check("DOCS ve sólo el 9", [9], sorted(numeros_docs))
+numbers_api = hallazgo_ids.used_numbers(TMP / "tres", "API")
+numbers_docs = hallazgo_ids.used_numbers(TMP / "tres", "DOCS")
+check("API ve 3 y 4, no el 9 de DOCS", [3, 4], sorted(numbers_api))
+check("DOCS ve sólo el 9", [9], sorted(numbers_docs))
 
 # --- 4. árbol vacío para el prefijo -> nace en 1 -----------------------------
 print("== 4. sin ninguna cita del prefijo, el siguiente es H-<PREFIJO>-1 ==")
@@ -90,17 +90,17 @@ print("== 5. CONTROL: un archivo no-UTF-8 se salta, no revienta el escaneo ==")
 (TMP / "cinco").mkdir()
 (TMP / "cinco" / "a.rst").write_text("H-API-1\n", encoding="utf-8")
 (TMP / "cinco" / "binario.bin").write_bytes(b"\xff\xfe\x00H-API-999\xff")
-numeros = hallazgo_ids.used_numbers(TMP / "cinco", "API")
-check("el binario no se cuenta y el escaneo no revienta", [1], sorted(numeros))
+numbers = hallazgo_ids.used_numbers(TMP / "cinco", "API")
+check("el binario no se cuenta y el escaneo no revienta", [1], sorted(numbers))
 
 # --- 6. is_free es el inverso de next_id sobre el mismo árbol ----------------
 print("== 6. is_free concuerda con next_id ==")
 (TMP / "seis").mkdir()
 (TMP / "seis" / "a.rst").write_text("H-API-5\nH-API-6\n", encoding="utf-8")
-siguiente = hallazgo_ids.next_id(TMP / "seis", "API",
+following = hallazgo_ids.next_id(TMP / "seis", "API",
                                  store_path=hallazgo_ids.NO_STORE)
 check("el siguiente propuesto está libre", True,
-      hallazgo_ids.is_free(TMP / "seis", siguiente,
+      hallazgo_ids.is_free(TMP / "seis", following,
                            store_path=hallazgo_ids.NO_STORE))
 check("el máximo ya usado NO está libre", False,
       hallazgo_ids.is_free(TMP / "seis", "H-API-6",
@@ -110,29 +110,29 @@ check("el máximo ya usado NO está libre", False,
 print("== 7. ANULACIÓN: un patrón sin ancla de prefijo mezcla los dos ==")
 import re as _re  # noqa: E402  -- sólo para el patrón anulado de este bloque
 
-_PATRON_SIN_ANCLA = _re.compile(r'H-[A-Z]+-(?P<numero>\d+)')
+_PATRON_WITHOUT_ANCHOR = _re.compile(r'H-[A-Z]+-(?P<numero>\d+)')
 
 
-def _numeros_sin_ancla(carpeta: Path) -> list[int]:
+def _numbers_without_anchor(folder: Path) -> list[int]:
     """La misma lógica de recorrido de ``used_numbers``, con el patrón
     anulado: acepta CUALQUIER prefijo como si coincidiera con el pedido."""
-    numeros = []
-    for archivo in carpeta.rglob('*'):
-        if not archivo.is_file():
+    numbers = []
+    for file in folder.rglob('*'):
+        if not file.is_file():
             continue
         try:
-            texto = archivo.read_text(encoding='utf-8')
+            text = file.read_text(encoding='utf-8')
         except (UnicodeDecodeError, OSError):
             continue
-        numeros.extend(int(m.group('numero')) for m in _PATRON_SIN_ANCLA.finditer(texto))
-    return numeros
+        numbers.extend(int(m.group('numero')) for m in _PATRON_WITHOUT_ANCHOR.finditer(text))
+    return numbers
 
 
-numeros_anulado = _numeros_sin_ancla(TMP / "tres")
+numbers_nulled = _numbers_without_anchor(TMP / "tres")
 check("SIN el ancla de prefijo, API se contamina con el 9 de DOCS",
-      [3, 9, 4], numeros_anulado)
+      [3, 9, 4], numbers_nulled)
 check("y con el ancla (caso 3), el 9 no aparece — el control DISCRIMINA",
-      True, 9 not in numeros_api and 9 in numeros_anulado)
+      True, 9 not in numbers_api and 9 in numbers_nulled)
 
 # --- 8. relleno a 2 digitos por debajo de 10, medido contra el arbol real ---
 print("== 8. bajo 10 lleva cero de relleno, igual que el arbol real "
@@ -185,16 +185,16 @@ check("el DEFAULT no es el opt-out: RESOLVE_STORE es el valor por omisión",
 # gana sobre el .env, así que exportar la variable redirige la resolución real.
 import os as _os  # noqa: E402
 
-_previo = _os.environ.get("THYROX_AGENT_STORE")
+_previous = _os.environ.get("THYROX_AGENT_STORE")
 _os.environ["THYROX_AGENT_STORE"] = str(_STORE)
 try:
     check("SIN declarar store_path, el default resuelve y ve la fila 09",
           "H-TESTDEF-10", hallazgo_ids.next_id(TMP / "nueve", "TESTDEF"))
 finally:
-    if _previo is None:
+    if _previous is None:
         _os.environ.pop("THYROX_AGENT_STORE", None)
     else:
-        _os.environ["THYROX_AGENT_STORE"] = _previo
+        _os.environ["THYROX_AGENT_STORE"] = _previous
 
 
 # --- 10. el prefijo se VALIDA: el acuñador antepone `H-`, no lo acepta -------
@@ -215,11 +215,11 @@ def _refuses(prefix):
         return True, str(exc)
 
 
-_rehuso, _devuelto = _refuses("H-THYROX")
-check("`H-THYROX` (prefijo ya con H-) se rehusa", True, _rehuso)
-check("y NO devuelve el doble prefijo", False, str(_devuelto).startswith("H-H-"))
+_refused, _returned = _refuses("H-THYROX")
+check("`H-THYROX` (prefijo ya con H-) se rehusa", True, _refused)
+check("y NO devuelve el doble prefijo", False, str(_returned).startswith("H-H-"))
 check("el mensaje nombra el argumento correcto", True,
-      _rehuso and "THYROX" in str(_devuelto))
+      _refused and "THYROX" in str(_returned))
 
 # Control positivo: la capa desnuda sigue acuñando. Sin esta asercion, un guard
 # que rehusara SIEMPRE pasaria las tres de arriba — el sub-patron D.
@@ -232,8 +232,8 @@ check("y la minuscula tambien, como antes", "H-THYROX-01",
 
 # El prefijo no es `[A-Za-z]+`: la misma forma que `is_free` ya rehusa para el
 # id completo, aplicada al argumento del acuñador.
-_rehuso_raro, _ = _refuses("API-2")
-check("un prefijo con no-letras se rehusa", True, _rehuso_raro)
+_refused_odd, _ = _refuses("API-2")
+check("un prefijo con no-letras se rehusa", True, _refused_odd)
 
 # ANULACION: retirando `validated_prefix` de `next_id`, caen exactamente las
 # cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de

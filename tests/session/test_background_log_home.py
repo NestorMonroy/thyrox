@@ -25,12 +25,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths import reach  # noqa: E402
 from session import background  # noqa: E402

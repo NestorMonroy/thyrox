@@ -62,12 +62,12 @@ def _thyrox_root() -> Path:
     el mismo que `reach.THYROX_MARKER` declara; se repite aqui, y solo aqui,
     porque este es el arranque: no se puede importar `reach` sin localizarlo.
     """
-    aqui = Path(__file__).resolve()
-    marcador = Path("src") / "paths" / "reach.py"
-    for nivel in (aqui.parent, *aqui.parents):
-        if (nivel / marcador).is_file():
-            return nivel
-    raise RuntimeError(f"no se encontro la raiz de thyrox ascendiendo desde {aqui}")
+    here = Path(__file__).resolve()
+    marker = Path("src") / "paths" / "reach.py"
+    for level in (here.parent, *here.parents):
+        if (level / marker).is_file():
+            return level
+    raise RuntimeError(f"no se encontro la raiz de thyrox ascendiendo desde {here}")
 
 
 HERE = _thyrox_root()
@@ -162,26 +162,26 @@ FINAL_RECONCILED = _assistant(
 
 
 with tempfile.TemporaryDirectory() as tmp:
-    raiz = Path(tmp)
+    root = Path(tmp)
 
-    parcial = register_session._extract_usage(
-        _write(raiz / "parcial.jsonl", [TOOL_CALL, FINAL_PARTIAL]))
-    reconciliado = register_session._extract_usage(
-        _write(raiz / "reconciliado.jsonl", [TOOL_CALL, FINAL_RECONCILED]))
+    partial = register_session._extract_usage(
+        _write(root / "parcial.jsonl", [TOOL_CALL, FINAL_PARTIAL]))
+    reconciled = register_session._extract_usage(
+        _write(root / "reconciliado.jsonl", [TOOL_CALL, FINAL_RECONCILED]))
 
     print("== 1. la REGLA no cambia: sigue publicando el ultimo NO NULO ==")
     # Su control cruzado —16 `stop_sequence` == 16 `api_error_status`— vive en
     # el store y depende de esta regla. Cambiarla lo destruiria.
     check("con el final parcial, la regla retrocede al turno anterior",
-          "tool_use", parcial.get("stop_reason"))
+          "tool_use", partial.get("stop_reason"))
     check("con el final reconciliado, la regla publica su cierre",
-          "end_turn", reconciliado.get("stop_reason"))
+          "end_turn", reconciled.get("stop_reason"))
 
     print("== 2. la columna NUEVA declara el cierre CRUDO del ultimo mensaje ==")
     check("el final parcial no declaro cierre: la columna es nula",
-          None, parcial.get("last_stop_reason"))
+          None, partial.get("last_stop_reason"))
     check("el final reconciliado si lo declaro",
-          "end_turn", reconciliado.get("last_stop_reason"))
+          "end_turn", reconciled.get("last_stop_reason"))
 
     print("== 3. y la clave EXISTE en los dos: nula no es ausente ==")
     # Sin esto, un `dict.get` que devuelve None no distingue «el transcript
@@ -189,33 +189,33 @@ with tempfile.TemporaryDirectory() as tmp:
     # que es la misma confusion, un nivel mas arriba, que el caso 2 separa
     # abajo en el transcript.
     check("la clave viaja en el dict del final parcial",
-          True, "last_stop_reason" in parcial)
+          True, "last_stop_reason" in partial)
     check("y en el del reconciliado",
-          True, "last_stop_reason" in reconciliado)
+          True, "last_stop_reason" in reconciled)
 
     print("== 4. las dos cifras DISCREPAN en el grupo acusado y no en el otro ==")
     # Es el caso que hace que la columna gane su sitio: con una sola cifra, la
     # divergencia es invisible.
     check("discrepan con el final parcial", True,
-          parcial.get("stop_reason") != parcial.get("last_stop_reason"))
+          partial.get("stop_reason") != partial.get("last_stop_reason"))
     check("coinciden con el final reconciliado", True,
-          reconciliado.get("stop_reason") == reconciliado.get("last_stop_reason"))
+          reconciled.get("stop_reason") == reconciled.get("last_stop_reason"))
 
     print("== 5. CONTROL CRUZADO: el destilador y el extractor coinciden ==")
     # Las dos derivaciones son independientes —`closing.read()` recorre el
     # archivo por su cuenta— y responden la misma pregunta. Que coincidan es lo
     # que sustituye a compartir el codigo. Si alguna vez divergen, este caso lo
     # dice antes de que una fila del store lo publique.
-    for etiqueta, ruta, extraido in (
-            ("final parcial", raiz / "parcial.jsonl", parcial),
-            ("final reconciliado", raiz / "reconciliado.jsonl", reconciliado)):
-        destilado = closing.read(ruta)
-        check(f"[{etiqueta}] el cierre crudo coincide",
-              destilado.last_stop_reason, extraido.get("last_stop_reason"))
-        check(f"[{etiqueta}] la regla coincide",
-              destilado.last_declared_stop_reason, extraido.get("stop_reason"))
-        check(f"[{etiqueta}] el denominador coincide",
-              destilado.assistant_messages, extraido.get("assistant_messages"))
+    for case_label, jsonl_path, extracted in (
+            ("final parcial", root / "parcial.jsonl", partial),
+            ("final reconciliado", root / "reconciliado.jsonl", reconciled)):
+        distilled = closing.read(jsonl_path)
+        check(f"[{case_label}] el cierre crudo coincide",
+              distilled.last_stop_reason, extracted.get("last_stop_reason"))
+        check(f"[{case_label}] la regla coincide",
+              distilled.last_declared_stop_reason, extracted.get("stop_reason"))
+        check(f"[{case_label}] el denominador coincide",
+              distilled.assistant_messages, extracted.get("assistant_messages"))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

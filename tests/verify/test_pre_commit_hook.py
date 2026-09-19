@@ -186,8 +186,8 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         self.repo = pathlib.Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
         (self.repo / 'src').mkdir()
-        for paquete in ('paths', 'workbench', 'task'):
-            shutil.copytree(THYROX / 'src' / paquete, self.repo / 'src' / paquete,
+        for package in ('paths', 'workbench', 'task'):
+            shutil.copytree(THYROX / 'src' / package, self.repo / 'src' / package,
                             ignore=shutil.ignore_patterns('__pycache__'))
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
@@ -201,9 +201,9 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         # El board: una tarjeta con el sujeto y la descripcion CORREGIDA.
         self.board_root = pathlib.Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.board_root, ignore_errors=True)
-        tarjeta = self.board_root / self.SESSION
-        tarjeta.mkdir()
-        (tarjeta / '7.json').write_text(json.dumps(
+        card = self.board_root / self.SESSION
+        card.mkdir()
+        (card / '7.json').write_text(json.dumps(
             {'id': '7', 'subject': self.SUBJECT, 'status': 'completed',
              'description': 'la corregida'}))
 
@@ -224,14 +224,14 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         git(self.repo, 'add', '-A')
         self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
 
-    def _fila_del_commit(self, ref='HEAD'):
+    def _row_of_commit(self, ref='HEAD'):
         """La fila tal como quedo DENTRO del commit, no en el disco."""
         blob = subprocess.run(
             ['git', '-C', str(self.repo), 'show', f'{ref}:{self.STORE_REL}'],
             capture_output=True)
-        copia = pathlib.Path(tempfile.mkdtemp()) / 'store.sqlite3'
-        copia.write_bytes(blob.stdout)
-        conn = sqlite3.connect(copia)
+        copy = pathlib.Path(tempfile.mkdtemp()) / 'store.sqlite3'
+        copy.write_bytes(blob.stdout)
+        conn = sqlite3.connect(copy)
         try:
             return conn.execute(
                 'SELECT status, description FROM tasks WHERE citation_id=?',
@@ -239,7 +239,7 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         finally:
             conn.close()
 
-    def _commit_con_el_store(self, mensaje):
+    def _commit_with_the_store(self, message):
         # Se toca el store para que entre al commit por su propio cambio, que
         # es como llega de verdad: el turno escribe telemetria y lo commitea.
         conn = sqlite3.connect(self.repo / self.STORE_REL)
@@ -249,22 +249,22 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         git(self.repo, 'add', self.STORE_REL)
         env = {**os.environ, 'THYROX_BOARD_ROOT': str(self.board_root)}
         return subprocess.run(
-            ['git', '-C', str(self.repo), 'commit', '-q', '-m', mensaje],
+            ['git', '-C', str(self.repo), 'commit', '-q', '-m', message],
             capture_output=True, text=True,
             env={**env, 'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
                  'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'})
 
-    def test_el_store_llega_reconciliado_al_commit(self):
-        self.assertEqual(self._fila_del_commit(), ('pending', 'la vieja'),
+    def test_the_store_arrives_reconciled_to_commit(self):
+        self.assertEqual(self._row_of_commit(), ('pending', 'la vieja'),
                          'precondicion: el seed lleva la fila vieja')
-        salida = self._commit_con_el_store('telemetria del turno')
-        self.assertEqual(salida.returncode, 0, salida.stdout + salida.stderr)
+        output = self._commit_with_the_store('telemetria del turno')
+        self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
         self.assertEqual(
-            self._fila_del_commit(), ('completed', 'la corregida'),
+            self._row_of_commit(), ('completed', 'la corregida'),
             'el commit lleva la fila ya convergida — el hook reconcilio Y '
             're-preparo; sin el re-add, el disco converge y el commit no')
 
-    def test_sin_el_store_en_el_commit_no_se_reconcilia(self):
+    def test_without_the_store_in_the_commit_not_se_reconciles(self):
         """El hook no toca el store cuando el commit no lo lleva.
 
         Reconciliar en TODO commit escribiria telemetria en un pase que no la
@@ -276,11 +276,11 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         env = {**os.environ, 'THYROX_BOARD_ROOT': str(self.board_root),
                'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
                'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'}
-        salida = subprocess.run(
+        output = subprocess.run(
             ['git', '-C', str(self.repo), 'commit', '-q', '-m', 'sin store'],
             capture_output=True, text=True, env=env)
-        self.assertEqual(salida.returncode, 0, salida.stdout + salida.stderr)
-        self.assertEqual(self._fila_del_commit(), ('pending', 'la vieja'),
+        self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+        self.assertEqual(self._row_of_commit(), ('pending', 'la vieja'),
                          'la fila sigue vieja: no se reconcilio nada')
 
 

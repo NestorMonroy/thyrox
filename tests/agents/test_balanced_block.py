@@ -48,12 +48,12 @@ def _thyrox_root() -> Path:
     el mismo que `reach.THYROX_MARKER` declara; se repite aqui, y solo aqui,
     porque este es el arranque: no se puede importar `reach` sin localizarlo.
     """
-    aqui = Path(__file__).resolve()
-    marcador = Path("src") / "paths" / "reach.py"
-    for nivel in (aqui.parent, *aqui.parents):
-        if (nivel / marcador).is_file():
-            return nivel
-    raise RuntimeError(f"no se encontro la raiz de thyrox ascendiendo desde {aqui}")
+    here = Path(__file__).resolve()
+    marker = Path("src") / "paths" / "reach.py"
+    for level in (here.parent, *here.parents):
+        if (level / marker).is_file():
+            return level
+    raise RuntimeError(f"no se encontro la raiz de thyrox ascendiendo desde {here}")
 
 
 HERE = _thyrox_root()
@@ -63,7 +63,7 @@ _spec = importlib.util.spec_from_file_location(
     HERE / "src" / "packages" / "agent" / "bin" / "extract_model_registry.py")
 _extractor = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_extractor)
-bloque_balanceado = _extractor.bloque_balanceado
+block_balanced = _extractor.bloque_balanceado
 
 OK = FAILED = 0
 
@@ -81,28 +81,28 @@ def check(label, expected, obtained):
 #: Sonda minima con las DOS formas. El registro de `return{` va SEGUNDO para
 #: que el retroceso tenga un registro anterior al que aterrizar: con el primero
 #: el fallo no se reproduce, y un caso que no reproduce no mide nada.
-SONDA = (
+PROBE = (
     'var primero={alfa:1,beta:{anidado:2},gamma:"tres"};'
     'function suma(e,n){if(!n)return{...e};'
     'return{izquierda:n.izquierda!==null?n.izquierda:e.izquierda,derecha:0}}'
 )
 
 print("== 1. la forma de asignacion: delimita y contiene su ancla ==")
-bloque = bloque_balanceado(SONDA, "beta:{anidado")
-check("devuelve un bloque", True, bloque is not None)
-check("y contiene el ancla", True, bloque is not None and "beta:{anidado" in bloque)
+block = block_balanced(PROBE, "beta:{anidado")
+check("devuelve un bloque", True, block is not None)
+check("y contiene el ancla", True, block is not None and "beta:{anidado" in block)
 check("es el registro de la asignacion, no el archivo entero",
-      'var primero=' not in (bloque or ""), True)
+      'var primero=' not in (block or ""), True)
 
 print("== 2. la forma `return{`: REHUSA en vez de devolver el vecino ==")
 # El ancla vive dentro de un `return{…}`, que el retroceso no reconoce. Antes
 # de la postcondicion devolvia `{alfa:1,…}` — el registro anterior del texto.
-vecino = bloque_balanceado(SONDA, "izquierda:n.izquierda!==null")
-check("rehusa", None, vecino)
+neighbor = block_balanced(PROBE, "izquierda:n.izquierda!==null")
+check("rehusa", None, neighbor)
 
 print("== 3. el ancla ausente sigue rehusando (no se rompio lo que ya iba) ==")
-check("ancla inexistente", None, bloque_balanceado(SONDA, "no-esta-en-el-texto"))
-check("bloque que no cierra", None, bloque_balanceado("{alfa:1,beta:", "beta:"))
+check("ancla inexistente", None, block_balanced(PROBE, "no-esta-en-el-texto"))
+check("bloque que no cierra", None, block_balanced("{alfa:1,beta:", "beta:"))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

@@ -158,10 +158,10 @@ def log_dir(start: str | Path | None = None) -> Path:
     declared = env_value(LOG_DIR_VAR, anchor)
     if declared:
         return Path(declared)
-    grafias = f"{log_home_name(repo)} o {LOG_DIR_VAR}" if repo else LOG_DIR_VAR
+    spellings = f"{log_home_name(repo)} o {LOG_DIR_VAR}" if repo else LOG_DIR_VAR
     raise LogHomeError(
         "El hogar de los logs de segundo plano no esta declarado. Es una "
-        f"decision del consumidor, no de THYROX: declara {grafias} en el "
+        f"decision del consumidor, no de THYROX: declara {spellings} en el "
         f"proceso, o en el archivo que nombra {LOG_DIR_ENV_FILE_VAR} (por "
         "defecto el .env del arbol). Tambien se puede pasar `log_dir=` "
         "explicito. NO se emite un hogar por defecto.")

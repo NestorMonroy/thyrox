@@ -141,17 +141,17 @@ def _declared_extensions() -> list[str]:
     if not conf.is_file():
         return []
     try:
-        arbol = ast.parse(conf.read_text(encoding='utf-8'))
+        tree = ast.parse(conf.read_text(encoding='utf-8'))
     except SyntaxError:
         return []
-    for nodo in arbol.body:
-        if not isinstance(nodo, ast.Assign):
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
             continue
-        if not any(getattr(t, 'id', None) == 'extensions' for t in nodo.targets):
+        if not any(getattr(t, 'id', None) == 'extensions' for t in node.targets):
             continue
-        if not isinstance(nodo.value, (ast.List, ast.Tuple)):
+        if not isinstance(node.value, (ast.List, ast.Tuple)):
             return []
-        return [e.value for e in nodo.value.elts
+        return [e.value for e in node.value.elts
                 if isinstance(e, ast.Constant) and isinstance(e.value, str)]
     return []
 
@@ -164,22 +164,22 @@ def _missing_extensions() -> list[str]:
     Sphinx las alcanza porque su `confdir` esta en el path. Medido: sin
     `FUENTE`, `plantuml_cached` no resuelve ni en el venv del consumidor.
     """
-    faltan: list[str] = []
+    missing: list[str] = []
     ruta = str(FUENTE)
-    inyectado = ruta not in sys.path
-    if inyectado:
+    injected = ruta not in sys.path
+    if injected:
         sys.path.insert(0, ruta)
     try:
-        for nombre in _declared_extensions():
+        for name in _declared_extensions():
             try:
-                if importlib.util.find_spec(nombre) is None:
-                    faltan.append(nombre)
+                if importlib.util.find_spec(name) is None:
+                    missing.append(name)
             except (ImportError, ValueError):
-                faltan.append(nombre)
+                missing.append(name)
     finally:
-        if inyectado:
+        if injected:
             sys.path.remove(ruta)
-    return faltan
+    return missing
 
 
 def _reexec_en_venv() -> None:
@@ -205,12 +205,12 @@ def _reexec_en_venv() -> None:
 
     if venv.is_file():
         if _running_under(venv):
-            faltan = _missing_extensions()
-            if faltan:
+            missing = _missing_extensions()
+            if missing:
                 print(
                     'check-rst-sintaxis: ERROR — el interprete del consumidor '
-                    f'({sys.prefix}) no resuelve {len(faltan)} extension(es) que '
-                    f'su conf.py declara: {", ".join(faltan)}. Corre `make sync` '
+                    f'({sys.prefix}) no resuelve {len(missing)} extension(es) que '
+                    f'su conf.py declara: {", ".join(missing)}. Corre `make sync` '
                     f'en {RAIZ}. NO se emite un conteo: un 0 aqui seria un verde '
                     'falso, y un 1 diria «hay errores de sintaxis» sobre una '
                     'medicion que no ocurrio.',

@@ -24,12 +24,12 @@ from pathlib import Path
 # El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
 # deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
 # UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths import reach  # noqa: E402
 
@@ -47,39 +47,39 @@ def check(name: str, expected: object, got: object) -> None:
 
 
 print("== 1. el entorno heredado sobrevive ==")
-_marca = "THYROX_TEST_CHILD_ENV_MARK"
-os.environ[_marca] = "presente"
+_mark = "THYROX_TEST_CHILD_ENV_MARK"
+os.environ[_mark] = "presente"
 try:
-    entorno = reach.child_env()
-    check("1.1 conserva una clave ajena", "presente", entorno.get(_marca))
+    environment = reach.child_env()
+    check("1.1 conserva una clave ajena", "presente", environment.get(_mark))
 finally:
-    os.environ.pop(_marca, None)
+    os.environ.pop(_mark, None)
 
 print("== 2. EL QUE DISCRIMINA: el subproceso importa el arbol ==")
 # Sin PYTHONPATH compuesto esto es `ModuleNotFoundError`, que es exactamente
 # lo que el hook del consumidor producia en silencio.
-_limpio = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
-_sonda = "import agents.agents_paths, hooks.error_log; print('alcanzado')"
-_sin = subprocess.run([sys.executable, "-c", _sonda], env=_limpio,
+_clean = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+_probe = "import agents.agents_paths, hooks.error_log; print('alcanzado')"
+_without = subprocess.run([sys.executable, "-c", _probe], env=_clean,
                       capture_output=True, text=True)
-check("2.1 sin composicion, el hijo NO alcanza", 1, _sin.returncode)
+check("2.1 sin composicion, el hijo NO alcanza", 1, _without.returncode)
 
-_con = subprocess.run([sys.executable, "-c", _sonda],
-                      env=reach.child_env(base=_limpio),
+_with = subprocess.run([sys.executable, "-c", _probe],
+                      env=reach.child_env(base=_clean),
                       capture_output=True, text=True)
-check("2.2 con composicion, el hijo alcanza", 0, _con.returncode)
-check("2.3 y lo dice", "alcanzado", _con.stdout.strip())
+check("2.2 con composicion, el hijo alcanza", 0, _with.returncode)
+check("2.3 y lo dice", "alcanzado", _with.stdout.strip())
 
 print("== 3. un PYTHONPATH previo se CONSERVA, no se pisa ==")
-_previo = dict(_limpio, PYTHONPATH="/un/camino/ajeno")
-_partes = reach.child_env(base=_previo)["PYTHONPATH"].split(os.pathsep)
-check("3.1 el arbol va primero", str(reach.thyrox_root() / "src"), _partes[0])
-check("3.2 y el previo sigue ahi", True, "/un/camino/ajeno" in _partes)
+_previous = dict(_clean, PYTHONPATH="/un/camino/ajeno")
+_parts = reach.child_env(base=_previous)["PYTHONPATH"].split(os.pathsep)
+check("3.1 el arbol va primero", str(reach.thyrox_root() / "src"), _parts[0])
+check("3.2 y el previo sigue ahi", True, "/un/camino/ajeno" in _parts)
 
 print("== 4. es idempotente: componer dos veces no duplica ==")
-_dos = reach.child_env(base=reach.child_env(base=_limpio))["PYTHONPATH"]
+_two = reach.child_env(base=reach.child_env(base=_clean))["PYTHONPATH"]
 check("4.1 una sola vez el arbol", 1,
-      _dos.split(os.pathsep).count(str(reach.thyrox_root() / "src")))
+      _two.split(os.pathsep).count(str(reach.thyrox_root() / "src")))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

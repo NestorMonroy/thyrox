@@ -94,7 +94,7 @@ def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
     # cwd. Medido antes de cerrarlo: partiendo de
     # `kaupamex-docs/source/gestion` daba `…/source/gestion/.claude/cache`.
     try:
-        raiz = consumer_root(start=anchor)
+        root = consumer_root(start=anchor)
     except ConsumerUnknownError:
         # El PROVEEDOR. `consumer_root` rehusa aqui —thyrox tambien lleva
         # `.claude/`, asi que el marcador no lo distingue— y esta familia NO
@@ -102,9 +102,9 @@ def cache_dir(start: str | pathlib.Path | None = None) -> pathlib.Path:
         # reconstruible y un arbol sin declaracion no queda sin mecanismo. Se
         # ancla en la raiz del proveedor, que es una DECISION explicita; lo
         # prohibido era heredarla del cwd, no tener default.
-        raiz = thyrox_root()
+        root = thyrox_root()
 
-    home = raiz / state_dir(anchor) / CACHE_DIR_DEFAULT
+    home = root / state_dir(anchor) / CACHE_DIR_DEFAULT
     record_fallback(
         CACHE_DIR_VAR, home,
         f"nadie lo declaro; sale de la raiz del arbol + la zona de estado + "

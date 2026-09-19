@@ -213,26 +213,26 @@ def tagged_records(models_output, alias_output):
             'defaults': alias_output['defaults'],
             'latest_per_family': alias_output['latest_per_family'],
             'alias_migration': alias_output['alias_migration']}
-    registros = [meta]
+    records = [meta]
     # El orden de los tiers es el de `sorted()` que `ordenar` ya impuso, y el de
     # los modelos es el del catalogo: los dos son estables entre ejecuciones,
     # que es lo que la comparacion byte a byte de la suite exige.
-    for nombre, precios in models_output['pricing_tiers'].items():
-        registros.append({KIND_KEY: 'tier', 'name': nombre, 'pricing': precios})
-    for modelo in models_output['models']:
+    for name, prices in models_output['pricing_tiers'].items():
+        records.append({KIND_KEY: 'tier', 'name': name, 'pricing': prices})
+    for model in models_output['models']:
         fila = {KIND_KEY: 'model'}
-        fila.update(modelo)
-        registros.append(fila)
-    return registros
+        fila.update(model)
+        records.append(fila)
+    return records
 
 
-def jsonl(registros):
+def jsonl(records):
     """Un registro por linea, sin sangria — es lo que hace legible el diff.
 
     `ensure_ascii=False` por la misma razon que en el resto del extractor: un
     identificador con acento se lee en el archivo, no como escape.
     """
-    return ''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in registros)
+    return ''.join(json.dumps(r, ensure_ascii=False) + '\n' for r in records)
 
 
 def main(argv):
@@ -309,12 +309,12 @@ def main(argv):
         'alias_migration': catalogo.get('alias_migration', {}),
     })
 
-    registros = tagged_records(salida_modelos, salida_alias)
+    records = tagged_records(salida_modelos, salida_alias)
 
     if a_stdout:
         # Un registro por linea: es lo que `src/models.jsonl` vendoriza y lo
         # que la suite del paquete re-deriva para compararlo byte a byte.
-        sys.stdout.write(jsonl(registros))
+        sys.stdout.write(jsonl(records))
         return 0
 
     # Los dos archivos son el MISMO catalogo repartido, asi que llevan los
@@ -326,7 +326,7 @@ def main(argv):
     # en vez de omitirse — sobre un archivo de una sola linea `json.load` del
     # entero pasa, asi que ese archivo NO sirve como control de que el lector
     # lea lineas. El control vive en el combinado, que tiene 28.
-    meta_modelos = {KIND_KEY: 'meta',
+    meta_models = {KIND_KEY: 'meta',
                     'fuente': salida_modelos['fuente'],
                     'schema_version': OUTPUT_SCHEMA_VERSION}
     meta_alias = {KIND_KEY: 'meta'}
@@ -336,7 +336,7 @@ def main(argv):
     meta_alias['schema_version'] = OUTPUT_SCHEMA_VERSION
 
     (destino / 'model_registry.jsonl').write_text(
-        jsonl([meta_modelos] + [r for r in registros
+        jsonl([meta_models] + [r for r in records
                                 if r[KIND_KEY] in ('tier', 'model')]))
     (destino / 'aliases.jsonl').write_text(jsonl([meta_alias]))
 

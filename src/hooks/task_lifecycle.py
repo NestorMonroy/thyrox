@@ -93,11 +93,11 @@ def handle(payload: dict, store_path, board_dir=None, layer=None) -> dict:
                            "dos no se sabe que fila tocar")}
 
     if event == "TaskCreated":
-        resultado = board_sync.mint_created_card(
+        result = board_sync.mint_created_card(
             store_path, session, ordinal, board_dir=board_dir, layer=layer,
             tool_name=event)
-        return {"acted": resultado.acted, "reason": resultado.reason,
-                "minted": resultado.minted}
+        return {"acted": result.acted, "reason": result.reason,
+                "minted": result.minted}
 
     # `TaskCompleted`: el estado lo lleva el reconciliador, que aparea la
     # tarjeta con su fila. No se acuña — la cita ya existe desde el alta.
@@ -119,14 +119,14 @@ def main(argv=None) -> int:
     payload = read_payload(sys.stdin)
     store = Path(args.store) if args.store else agents_paths.agent_store_path()
     try:
-        resultado = handle(payload, store, board_dir=args.board,
+        result = handle(payload, store, board_dir=args.board,
                            layer=args.capa)
     except Exception as error:                      # noqa: BLE001
         # Deliberadamente ancho: el contrato del hook es no romper el turno.
         print(f"task_lifecycle: no se acuño ({error})", file=sys.stderr)
         return 0
-    if not resultado.get("acted"):
-        print(f"task_lifecycle: {resultado.get('reason')}", file=sys.stderr)
+    if not result.get("acted"):
+        print(f"task_lifecycle: {result.get('reason')}", file=sys.stderr)
     return 0
 
 

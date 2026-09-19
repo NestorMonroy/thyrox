@@ -81,18 +81,18 @@ def detect(payload: dict) -> str | None:
         return None
     text, source = found
 
-    efimeras = sorted(set(m.group(0) for m in EPHEMERAL.finditer(text)))
-    if not efimeras:
+    ephemeral = sorted(set(m.group(0) for m in EPHEMERAL.finditer(text)))
+    if not ephemeral:
         return None
     if DURABLE.search(text):
         return None
 
-    lugar = "el mensaje del commit" if source == "commit" else "este archivo del banco/job"
+    place = "el mensaje del commit" if source == "commit" else "este archivo del banco/job"
     return (
         "GATE DE CITA EFÍMERA — "
-        + lugar
+        + place
         + " nombra "
-        + ", ".join(f"`{e}`" for e in efimeras)
+        + ", ".join(f"`{e}`" for e in ephemeral)
         + " (el ordinal del board) sin ninguna cita durable `TASK-<CAPA>-NNNN` "
           "que la acompañe. `.claude/CLAUDE.md` (Flujo de sesión, paso 4): el "
           "`#N` reinicia por sesión y colisiona 332 de 337 veces entre dos "

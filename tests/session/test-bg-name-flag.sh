@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# test-bg-nombre-bandera.sh — `start` rehusa un nombre que empieza por guion
+# test-bg-name-flag.sh — `start` rehusa un nombre que empieza por guion
 # =============================================================================
 # El defecto NO era que `--label` estuviera mal escrito: era que `start` lo
 # ACEPTA. `cmd_start` toma `$1` como nombre ANTES del bucle de banderas, sin

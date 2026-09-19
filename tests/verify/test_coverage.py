@@ -60,46 +60,46 @@ def check(label: str, expected, obtained) -> None:
 
 
 print("=== 1. probe_candidates ===")
-plano = Node(node_id="n-002", kind="text", title="Un párrafo cualquiera", source="doc.rst")
+flat = Node(node_id="n-002", kind="text", title="Un párrafo cualquiera", source="doc.rst")
 check("título sin forma de ruta -> un solo candidato", ["Un párrafo cualquiera"],
-      cv.probe_candidates(plano))
-con_ruta = Node(node_id="n-003", kind="figure", title="slides-images/slide-013.jpg", source="deck.pdf")
+      cv.probe_candidates(flat))
+with_path = Node(node_id="n-003", kind="figure", title="slides-images/slide-013.jpg", source="deck.pdf")
 check("título con forma de ruta -> título + nombre + stem",
       ["slides-images/slide-013.jpg", "slide-013.jpg", "slide-013"],
-      cv.probe_candidates(con_ruta))
+      cv.probe_candidates(with_path))
 
 print("=== 2. find_missing cita el ID exacto ===")
-nodos = [
+nodes = [
     Node("n-001", "section", "Introducción", "doc.rst"),
     Node("n-002", "figure", "grafica-ventas.png", "doc.rst"),
     Node("n-003", "section", "Cierre", "doc.rst"),
 ]
-artefacto = "El documento habla de Introducción y también de Cierre, sin figuras."
-faltantes = cv.find_missing(nodos, artefacto)
-check("un solo nodo requerido falta, citado por ID", ["n-002"], [x.node_id for x in faltantes])
+artifact = "El documento habla de Introducción y también de Cierre, sin figuras."
+missing = cv.find_missing(nodes, artifact)
+check("un solo nodo requerido falta, citado por ID", ["n-002"], [x.node_id for x in missing])
 
 print("=== 3. required_only=False agrega opcionales ausentes ===")
-nodos_con_opcional = nodos + [Node("n-004", "text", "Nota al margen", "doc.rst", required=False)]
-faltantes_req = cv.find_missing(nodos_con_opcional, artefacto, required_only=True)
-faltantes_todos = cv.find_missing(nodos_con_opcional, artefacto, required_only=False)
-check("por defecto NO cuenta el opcional ausente", ["n-002"], [x.node_id for x in faltantes_req])
+nodes_with_optional = nodes + [Node("n-004", "text", "Nota al margen", "doc.rst", required=False)]
+missing_req = cv.find_missing(nodes_with_optional, artifact, required_only=True)
+missing_every = cv.find_missing(nodes_with_optional, artifact, required_only=False)
+check("por defecto NO cuenta el opcional ausente", ["n-002"], [x.node_id for x in missing_req])
 check("con required_only=False SÍ lo cuenta", ["n-002", "n-004"],
-      sorted(x.node_id for x in faltantes_todos))
+      sorted(x.node_id for x in missing_every))
 
 print("=== 4. coverage_report sobre manifiesto vacío ===")
 try:
-    cv.coverage_report([], artefacto)
+    cv.coverage_report([], artifact)
     check("manifiesto vacío -> ValueError", True, False)
 except ValueError:
     check("manifiesto vacío -> ValueError", True, True)
 
 print("=== 5. coverage_report — conteo completo ===")
-reporte = cv.coverage_report(nodos, artefacto)
-check("total", 3, reporte["total"])
-check("required", 3, reporte["required"])
-check("optional", 0, reporte["optional"])
-check("covered", 2, reporte["covered"])
-check("missing_ids", ["n-002"], reporte["missing_ids"])
+report = cv.coverage_report(nodes, artifact)
+check("total", 3, report["total"])
+check("required", 3, report["required"])
+check("optional", 0, report["optional"])
+check("covered", 2, report["covered"])
+check("missing_ids", ["n-002"], report["missing_ids"])
 
 print(f"\nOK={OK} FAILED={FAILED}")
 raise SystemExit(1 if FAILED else 0)

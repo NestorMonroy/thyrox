@@ -33,11 +33,11 @@ def pearson_correlation(xs: Sequence[float], ys: Sequence[float]) -> float:
     if len(xs) < 2:
         raise ValueError("menos de 2 observaciones: no hay varianza que medir.")
     media_x, media_y = statistics.fmean(xs), statistics.fmean(ys)
-    covarianza = sum((x - media_x) * (y - media_y) for x, y in zip(xs, ys))
-    varianza_x = sum((x - media_x) ** 2 for x in xs)
-    varianza_y = sum((y - media_y) ** 2 for y in ys)
-    if varianza_x == 0 or varianza_y == 0:
+    covariance = sum((x - media_x) * (y - media_y) for x, y in zip(xs, ys))
+    variance_x = sum((x - media_x) ** 2 for x in xs)
+    variance_and = sum((y - media_y) ** 2 for y in ys)
+    if variance_x == 0 or variance_and == 0:
         raise ValueError(
             "una serie sin varianza (todos sus valores son iguales): la "
             "correlación no está definida ahí.")
-    return covarianza / (varianza_x * varianza_y) ** 0.5
+    return covariance / (variance_x * variance_and) ** 0.5

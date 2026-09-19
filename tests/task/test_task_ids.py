@@ -560,7 +560,7 @@ check(_default_store_con({}) == _DEFAULT and _dir.is_dir(),
 # Sin ella, una implementacion que renumerara pasaria los otros dos.
 _, DB9 = _store_con([("7", "Sujeto mal atribuido", S, "api", "TASK-API-0395")])
 
-_antes = sqlite3.connect(DB9).execute(
+_before = sqlite3.connect(DB9).execute(
     "SELECT submodule, submodule_source, citation_id FROM tasks "
     " WHERE citation_id = 'TASK-API-0395'").fetchone()
 kx.correct_layer(DB9, "TASK-API-0395", "gen", "los commits cruzan repos")
@@ -572,7 +572,7 @@ _dsp = sqlite3.connect(DB9).execute(
     "SELECT submodule, submodule_source, citation_id FROM tasks "
     " WHERE task_id = '7'").fetchone()
 
-check(_antes[0] == "api" and _dsp[0] == "gen", "capa: la columna se corrige")
+check(_before[0] == "api" and _dsp[0] == "gen", "capa: la columna se corrige")
 check("los commits cruzan repos" in (_dsp[1] or ""),
       "capa: la procedencia guarda la RAZON, no solo el valor nuevo")
 check(_dsp[2] == "TASK-API-0395",

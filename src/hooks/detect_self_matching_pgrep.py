@@ -146,7 +146,7 @@ if __name__ == "__main__":  # pragma: no cover
     import json
     import sys
 
-    aviso = detect(json.load(sys.stdin))
-    if aviso:
-        print(aviso)
+    warning = detect(json.load(sys.stdin))
+    if warning:
+        print(warning)
     raise SystemExit(0)

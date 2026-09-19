@@ -2075,3 +2075,61 @@ tests/workbench/test_manifest.py::nombre
 tests/workbench/test_manifest.py::por_mtime
 tests/workbench/test_paths.py::anotados
 tests/workbench/test_provider_evidence.py::_vacio
+
+# --- 2026-09-19: lo que el barrido NO renombra, y por que ---
+# Nombres de ARTEFACTO del consumidor: la clave nombra el .rst que se
+# emite y cuyo nombre fija `metadata-standards.md` —`alcance-<slug>.rst`,
+# `tareas-<slug>.rst`—. Traducir la clave y dejar el valor en español
+# rompe la correspondencia que hace legible la tabla.
+src/docs/scaffold_initiative.py::alcance
+src/docs/scaffold_initiative.py::tareas
+# FALSO AMIGO del lexico: `subnormal` es el termino IEEE 754, en ingles.
+# El identificador YA esta en ingles; el gate lo marca por su lexico
+# probabilistico. Sucesor del eje: TASK-THYROX-0309.
+src/measurement/normalizer_magnitude.py::FLOAT64_MIN_SUBNORMAL
+# FREEZE de generate_bin.py: la directiva prohibe tocar el generador ni
+# bin/ hasta que TypeScript, Python y shell esten en verde. No es deuda
+# heredada: es un bloqueo nombrado que se destapa cuando el freeze caiga.
+src/session/generate_bin.py::cubiertos
+src/session/generate_bin.py::fuera
+src/session/generate_bin.py::raiz_src
+src/session/generate_bin.py::entorno
+src/session/generate_bin.py::linea
+src/session/generate_bin.py::fallos
+src/session/generate_bin.py::del_proveedor
+src/session/generate_bin.py::hecho
+src/session/generate_bin.py::aviso
+src/session/generate_bin.py::razon
+src/session/generate_bin.py::forma
+src/session/generate_bin.py::objetivo
+src/session/generate_bin.py::nombre
+tests/session/test_generate_bin.py::marcador
+tests/session/test_generate_bin.py::destino
+tests/session/test_generate_bin.py::arbol
+tests/session/test_generate_bin.py::entorno
+tests/session/test_generate_bin.py::hecho
+tests/session/test_generate_bin.py::salida
+tests/session/test_generate_bin.py::libreria
+tests/session/test_generate_bin.py::esperado
+tests/session/test_generate_bin.py::biblioteca
+tests/session/test_generate_bin.py::huerfanos
+tests/session/test_generate_bin.py::objetivos
+tests/session/test_generate_bin.py::relativo
+tests/session/test_generate_bin.py::plano
+tests/session/test_generate_bin.py::punteado
+tests/session/test_generate_bin.py::cuerpo_rel
+tests/session/test_generate_bin.py::cuerpo_plano
+tests/session/test_generate_bin.py::fuera
+tests/session/test_generate_bin.py::con_relativo
+tests/session/test_generate_bin.py::rehusa
+tests/session/test_generate_bin.py::fallos
+tests/session/test_generate_bin.py::del_proveedor
+tests/session/test_generate_bin.py::ruidosos
+tests/session/test_generate_bin.py::de_paquete
+tests/session/test_generate_bin.py::ciego_rel
+tests/session/test_generate_bin.py::ciego_plano
+tests/session/test_generate_bin.py::nombre
+tests/session/test_generate_bin.py::envoltorio
+tests/session/test_generate_bin.py::proceso
+tests/session/test_generate_bin.py::fallos_ciego
+tests/session/test_generate_bin.py::marcado

@@ -83,7 +83,7 @@ def parse_errors(text):
     return report.count('ERROR') + report.count('SEVERE')
 
 
-class ConstructosIntactos(unittest.TestCase):
+class ConstructsIntact(unittest.TestCase):
     """Los constructos con estructura propia nunca se unen."""
 
     def assert_unchanged(self, text):
@@ -116,7 +116,7 @@ class ConstructosIntactos(unittest.TestCase):
         self.assert_unchanged('Cierre::\n\n   no tocar\n   esta parte')
 
 
-class ProsaUnida(unittest.TestCase):
+class ProseJoined(unittest.TestCase):
     """La prosa —y sólo la prosa— queda en una línea."""
 
     def test_wrapped_paragraph(self):
@@ -153,22 +153,22 @@ class CorpusReal(unittest.TestCase):
         cls.paths = sorted(glob.glob(os.path.join(
             str(CONSUMER), 'source/gestion/pm/*/iniciativas/*/hallazgos/*.rst')))
 
-    def test_hay_corpus_que_medir(self):
+    def test_has_corpus_that_measure(self):
         # Un universo vacío no prueba nada: la suite saldría verde sin medir.
         self.assertGreater(len(self.paths), 20,
                            'el corpus de hallazgos no se encontró')
 
-    def test_preserva_el_parseo_y_es_idempotente(self):
-        divergentes, no_idempotentes = [], []
+    def test_preserves_the_parse_and_is_idempotente(self):
+        divergent, no_idempotentes = [], []
         for path in self.paths:
             with open(path, encoding='utf-8') as handle:
                 original = handle.read()
             rewritten = unwrap(original)
             if parse_errors(original) != parse_errors(rewritten):
-                divergentes.append(path)
+                divergent.append(path)
             if unwrap(rewritten) != rewritten:
                 no_idempotentes.append(path)
-        self.assertEqual(divergentes, [], 'cambia los errores de parseo')
+        self.assertEqual(divergent, [], 'cambia los errores de parseo')
         self.assertEqual(no_idempotentes, [], 'no es idempotente')
 
 

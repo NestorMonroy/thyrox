@@ -56,18 +56,18 @@ def check(label: str, expected, obtained) -> None:
 
 
 print("=== 1. CASO (a): diferencia real ===")
-apretada_alta = [100.0, 102.0, 98.0, 101.0, 99.0, 100.5, 99.5]
-apretada_baja = [50.0, 52.0, 48.0, 51.0, 49.0, 50.5, 49.5]
-resultado_a = bootstrap.bootstrap_difference(apretada_alta, apretada_baja, n_resamples=2000, seed=7)
-check("diferencia real -> significant=True", True, resultado_a["significant"])
-check("el IC no cruza cero", True, resultado_a["ci_low"] > 0 or resultado_a["ci_high"] < 0)
+tight_high = [100.0, 102.0, 98.0, 101.0, 99.0, 100.5, 99.5]
+tight_low = [50.0, 52.0, 48.0, 51.0, 49.0, 50.5, 49.5]
+result_to = bootstrap.bootstrap_difference(tight_high, tight_low, n_resamples=2000, seed=7)
+check("diferencia real -> significant=True", True, result_to["significant"])
+check("el IC no cruza cero", True, result_to["ci_low"] > 0 or result_to["ci_high"] < 0)
 
 print("=== 2. CASO (b): ruido, sin diferencia real ===")
-ruidosa_a = [10.0, 50.0, 5.0, 45.0, 20.0, 35.0, 15.0]
-ruidosa_b = [15.0, 40.0, 8.0, 35.0, 22.0, 30.0, 18.0]
-resultado_b = bootstrap.bootstrap_difference(ruidosa_a, ruidosa_b, n_resamples=2000, seed=7)
-check("diferencia del orden del ruido -> significant=False", False, resultado_b["significant"])
-check("el IC SÍ cruza cero", True, resultado_b["ci_low"] <= 0 <= resultado_b["ci_high"])
+noisy_to = [10.0, 50.0, 5.0, 45.0, 20.0, 35.0, 15.0]
+noisy_b = [15.0, 40.0, 8.0, 35.0, 22.0, 30.0, 18.0]
+result_b = bootstrap.bootstrap_difference(noisy_to, noisy_b, n_resamples=2000, seed=7)
+check("diferencia del orden del ruido -> significant=False", False, result_b["significant"])
+check("el IC SÍ cruza cero", True, result_b["ci_low"] <= 0 <= result_b["ci_high"])
 
 print("=== 3. N=1 rehúsa ===")
 try:
@@ -77,21 +77,21 @@ except ValueError:
     check("N=1 en una muestra -> ValueError", True, True)
 
 print("=== 4. determinismo — mismo seed, mismo resultado exacto ===")
-r1 = bootstrap.bootstrap_difference(apretada_alta, apretada_baja, n_resamples=500, seed=42)
-r2 = bootstrap.bootstrap_difference(apretada_alta, apretada_baja, n_resamples=500, seed=42)
+r1 = bootstrap.bootstrap_difference(tight_high, tight_low, n_resamples=500, seed=42)
+r2 = bootstrap.bootstrap_difference(tight_high, tight_low, n_resamples=500, seed=42)
 check("dos corridas con el mismo seed dan el mismo IC exacto",
       (r1["ci_low"], r1["ci_high"]), (r2["ci_low"], r2["ci_high"]))
 
 print("=== 5. ANULACIÓN — n_resamples=1 vuelve el veredicto un falso positivo sistemático ===")
-veredictos_n1 = {
-    bootstrap.bootstrap_difference(ruidosa_a, ruidosa_b, n_resamples=1, seed=semilla)["significant"]
-    for semilla in range(8)
+verdicts_n1 = {
+    bootstrap.bootstrap_difference(noisy_to, noisy_b, n_resamples=1, seed=seed)["significant"]
+    for seed in range(8)
 }
 check(
     "con n_resamples=1, el caso (b) SIN diferencia real da significant=True "
     "en las 8 semillas -- el 'intervalo' de un solo punto casi nunca cae en "
     "cero, así que deja de discriminar y siempre marca 'real'",
-    {True}, veredictos_n1,
+    {True}, verdicts_n1,
 )
 
 print(f"\nOK={OK} FAILED={FAILED}")

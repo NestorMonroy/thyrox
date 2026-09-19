@@ -30,11 +30,11 @@ def probe_candidates(node: Node) -> list[str]:
     ``check_note_coverage.py`` aplica a slides/figuras, generalizado: no se
     nombra ningún ``kind`` concreto, se detecta por la FORMA del título.
     """
-    candidatos = [node.title]
-    ruta = pathlib.PurePosixPath(node.title)
-    if ruta.suffix:
-        candidatos += [ruta.name, ruta.stem]
-    return candidatos
+    candidates = [node.title]
+    path = pathlib.PurePosixPath(node.title)
+    if path.suffix:
+        candidates += [path.name, path.stem]
+    return candidates
 
 
 def find_missing(
@@ -46,11 +46,11 @@ def find_missing(
     nodo opcional ausente no cuenta como falta. Con ``False`` se evalúan
     todos.
     """
-    objetivo = [n for n in nodes if (not required_only) or n.required]
+    target = [n for n in nodes if (not required_only) or n.required]
     return [
-        nodo for nodo in objetivo
-        if not any(candidato and candidato in artifact_text
-                   for candidato in probe_candidates(nodo))
+        node for node in target
+        if not any(candidate and candidate in artifact_text
+                   for candidate in probe_candidates(node))
     ]
 
 
@@ -67,13 +67,13 @@ def coverage_report(nodes: Sequence[Node], artifact_text: str) -> dict:
             "manifiesto sin nodos: población vacía. Un reporte de 0 "
             "faltantes aquí no distinguiría «cobertura completa» de "
             "«nada que medir».")
-    requeridos = [n for n in nodes if n.required]
-    faltantes = find_missing(nodes, artifact_text, required_only=True)
+    required = [n for n in nodes if n.required]
+    missing = find_missing(nodes, artifact_text, required_only=True)
     return {
         "total": len(nodes),
-        "required": len(requeridos),
-        "optional": len(nodes) - len(requeridos),
-        "covered": len(requeridos) - len(faltantes),
-        "missing": faltantes,
-        "missing_ids": [n.node_id for n in faltantes],
+        "required": len(required),
+        "optional": len(nodes) - len(required),
+        "covered": len(required) - len(missing),
+        "missing": missing,
+        "missing_ids": [n.node_id for n in missing],
     }

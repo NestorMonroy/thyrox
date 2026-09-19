@@ -33,9 +33,9 @@ def external_settings() -> pathlib.Path:
     existe para cerrar. La raiz se pide a `reach`, que es de donde el gate la
     saca.
     """
-    declarado = os.environ.get("THYROX_EXTERNAL_SETTINGS")
-    if declarado:
-        return pathlib.Path(declarado)
+    declared = os.environ.get("THYROX_EXTERNAL_SETTINGS")
+    if declared:
+        return pathlib.Path(declared)
     return pathlib.Path(reach.tree_root()) / ".claude" / "settings.local.json"
 
 

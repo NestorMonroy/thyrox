@@ -183,8 +183,8 @@ def flat_home(run_dir: str | pathlib.Path) -> str:
     dentro» de «este run apunta afuera». Un default compuesto por aritmética
     diría dónde *podría* estar el log, no dónde está.
     """
-    valor = read_manifest(run_dir).get(FLAT_HOME_KEY)
-    return valor if isinstance(valor, str) else ""
+    value = read_manifest(run_dir).get(FLAT_HOME_KEY)
+    return value if isinstance(value, str) else ""
 
 
 def scaffold_run(
@@ -257,17 +257,17 @@ def settle(run_dir: str | pathlib.Path, exit_code: int,
     ruta = pathlib.Path(run_dir) / MANIFEST_FILE_NAME
     legacy_file = pathlib.Path(run_dir) / LEGACY_MANIFEST_FILE_NAME
     settlement: dict[str, object] = {"exit_code": exit_code}
-    fin = now or datetime.now(timezone.utc)
-    settlement["finished_at"] = fin.isoformat(timespec="seconds")
+    end = now or datetime.now(timezone.utc)
+    settlement["finished_at"] = end.isoformat(timespec="seconds")
     # Se LEE para derivar la duración, pero no se reescribe: el registro de
     # lanzamiento ya está en el archivo y ahí se queda, byte a byte.
-    inicio = read_manifest(run_dir).get("started_at")
-    if isinstance(inicio, str):
+    start = read_manifest(run_dir).get("started_at")
+    if isinstance(start, str):
         # Un run andamiado antes de que `started_at` existiera no tiene con qué
         # restar: se omite la clave en vez de escribir un 0, que no distinguiría
         # «tardó nada» de «no se midió».
         settlement["duration_seconds"] = max(
-            0.0, (fin - datetime.fromisoformat(inicio)).total_seconds())
+            0.0, (end - datetime.fromisoformat(start)).total_seconds())
     # Un run que todavía lleva el nombre heredado se ASCIENDE aquí, no en un
     # barrido: el documento entero se reparte en sus registros y el archivo
     # viejo se retira. Es el único momento en que el mecanismo ya está
@@ -307,17 +307,17 @@ def duration_distribution(durations: Sequence[float]) -> dict:
         raise ValueError(
             "distribución sin medición: población vacía. Un 0 aquí no "
             "distinguiría «ningún trabajo tardó nada» de «no hay medición».")
-    ordenadas = sorted(float(d) for d in durations)
-    n = len(ordenadas)
-    mitad = n // 2
-    mediana = (ordenadas[mitad] if n % 2
-               else (ordenadas[mitad - 1] + ordenadas[mitad]) / 2)
-    total, mayor = sum(ordenadas), ordenadas[-1]
+    sorted_durations = sorted(float(d) for d in durations)
+    n = len(sorted_durations)
+    half = n // 2
+    median = (sorted_durations[half] if n % 2
+               else (sorted_durations[half - 1] + sorted_durations[half]) / 2)
+    total, greatest = sum(sorted_durations), sorted_durations[-1]
     return {
         "n": n,
         "total": total,
-        "min": ordenadas[0],
-        "median": mediana,
-        "max": mayor,
-        "floor_wall_clock": lambda width: max(total / width, mayor),
+        "min": sorted_durations[0],
+        "median": median,
+        "max": greatest,
+        "floor_wall_clock": lambda width: max(total / width, greatest),
     }

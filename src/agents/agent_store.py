@@ -520,7 +520,7 @@ _SESSION_USAGE_COLUMNS: dict[str, str] = {
     #: Misma forma que ``outcome_source`` para el desenlace: la columna guarda
     #: la PROCEDENCIA, no el dato, y por eso puede declarar que no hay dato.
     #: Vocabulario: ``transcript`` (se leyó el JSONL del agente y se sumó su
-    #: bloque ``usage``), ``no_medido`` (terminal, sin tokens y sin transcript:
+    #: bloque ``usage``), ``not_measured`` (terminal, sin tokens y sin transcript:
     #: ya no se puede medir), NULL (todavía sin clasificar — el agente puede
     #: seguir vivo, o su transcript seguir en disco). Las dos últimas se
     #: separan a propósito: colapsarlas repite un nivel más abajo el mismo
@@ -1145,7 +1145,7 @@ def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
     if ddl and _TASK_STATUS_CHECK.replace(" ", "") in (ddl[0] or "").replace(" ", ""):
         return                      # ya migrada
 
-    fuera = [
+    outside = [
         (fila[0], fila[1])
         for fila in conn.execute(
             "SELECT status, COUNT(*) FROM tasks WHERE status NOT IN ({}) "
@@ -1153,8 +1153,8 @@ def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
             TASK_STATUSES,
         )
     ]
-    if fuera:
-        detalle = ", ".join(f"{estado!r}: {cuantas}" for estado, cuantas in fuera)
+    if outside:
+        detalle = ", ".join(f"{estado!r}: {how_many}" for estado, how_many in outside)
         raise ValueError(
             "tasks tiene filas fuera de TASK_STATUSES y migrarlas las "
             f"perderia en silencio — {detalle}. Reconciliarlas antes de "
@@ -1164,30 +1164,30 @@ def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
     #: El DDL se DERIVA de la tabla viva, columna a columna, para que la
     #: reconstruccion no dependa de que esta funcion conozca el esquema de hoy.
     #: `fila` es (cid, name, type, notnull, dflt_value, pk).
-    definiciones = []
-    for _, nombre, tipo, notnull, defecto, _pk in columnas:
-        pieza = f"{nombre} {tipo}" if tipo else str(nombre)
-        if defecto is not None:
-            pieza += f" DEFAULT {defecto}"
+    definitions = []
+    for _, name, tipo, notnull, defect, _pk in columnas:
+        piece = f"{name} {tipo}" if tipo else str(name)
+        if defect is not None:
+            piece += f" DEFAULT {defect}"
         if notnull:
-            pieza += " NOT NULL"
-        if nombre == "status":
-            pieza += f" {_TASK_STATUS_CHECK}"
-        definiciones.append(pieza)
+            piece += " NOT NULL"
+        if name == "status":
+            piece += f" {_TASK_STATUS_CHECK}"
+        definitions.append(piece)
 
     clave = [fila[1] for fila in sorted(columnas, key=lambda f: f[5]) if fila[5]]
     if clave:
-        definiciones.append(f"PRIMARY KEY ({', '.join(clave)})")
+        definitions.append(f"PRIMARY KEY ({', '.join(clave)})")
 
-    nombres = ", ".join(fila[1] for fila in columnas)
+    names = ", ".join(fila[1] for fila in columnas)
     conn.executescript(
         "CREATE TABLE tasks_con_check (\n    {}\n);\n"
-        "INSERT INTO tasks_con_check ({nombres}) SELECT {nombres} FROM tasks;\n"
+        "INSERT INTO tasks_con_check ({names}) SELECT {names} FROM tasks;\n"
         "DROP TABLE tasks;\n"
         "ALTER TABLE tasks_con_check RENAME TO tasks;\n"
         "CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);\n"
         "CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id);\n"
-        .format(",\n    ".join(definiciones), nombres=nombres)
+        .format(",\n    ".join(definitions), names=names)
     )
     conn.commit()
 
@@ -2218,7 +2218,7 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
 
     commits = _last_commit_dates(repo, args.subtree)
     conn = None if args.dry_run else connect(resolve_store_dir(args))
-    escritas_antes = conn.total_changes if conn is not None else 0
+    written_before = conn.total_changes if conn is not None else 0
 
     universo = por_fuente = 0
     conteo = collections.Counter()
@@ -2278,7 +2278,7 @@ def cmd_date_documents(args: argparse.Namespace) -> None:
                 (rel, valor, fuente, crudo, crudo_commit),
             )
 
-    escritas = conn.total_changes - escritas_antes if conn is not None else 0
+    escritas = conn.total_changes - written_before if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2347,7 +2347,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
         raise SystemExit(2)
 
     conn = None if args.dry_run else connect(resolve_store_dir(args))
-    escritas_antes = conn.total_changes if conn is not None else 0
+    written_before = conn.total_changes if conn is not None else 0
 
     universo = sin_seccion = 0
     series = collections.Counter()
@@ -2383,7 +2383,7 @@ def cmd_classify_documents(args: argparse.Namespace) -> None:
                 (rel, seccion, serie),
             )
 
-    escritas = conn.total_changes - escritas_antes if conn is not None else 0
+    escritas = conn.total_changes - written_before if conn is not None else 0
     if conn is not None:
         conn.commit()
 
@@ -2997,23 +2997,23 @@ def stop_reason_provenance(conn: sqlite3.Connection) -> dict:
 
     Los cubos, y por que sus remedios son OPUESTOS:
 
-    - ``con_valor``  — el transcript lo declaro. No hay nada que hacer.
-    - ``declarado_nulo`` — leida por el extractor actual (``client_version``
+    - ``with_value``  — el transcript lo declaro. No hay nada que hacer.
+    - ``declared_null`` — leida por el extractor actual (``client_version``
       presente) y el transcript no declaro ningun cierre finalizado. **El NULL
       es el dato**, no un hueco: un turno sin finalizar escribe
       ``stop_reason: null``. PROVEN por conducta sobre el unico transcript de
       este cubo que seguia en disco.
-    - ``extractor_sin_lectura`` — ``usage_source='transcript'`` y sin
+    - ``extractor_without_read`` — ``usage_source='transcript'`` y sin
       ``client_version``. Leida por una generacion anterior a que este campo se
       leyera, asi que el valor existio y su evidencia ya no. Terminal.
       El discriminador esta medido: **0** filas del store tienen
       ``client_version IS NULL`` con ``stop_reason IS NOT NULL``.
-    - ``no_medido``  — transcript irrecuperable. **Tiene procedencia
+    - ``not_measured``  — transcript irrecuperable. **Tiene procedencia
       declarada**: dice «nadie podra ya». Contarla como hueco colapsa la
       distincion que la columna existe para conservar.
-    - ``sin_clasificar`` — ``usage_source`` vacio: «nadie ha pasado todavia».
+    - ``unclassified`` — ``usage_source`` vacio: «nadie ha pasado todavia».
       La resuelve el barrido, no una escritura.
-    - ``huerfano``  — valor escrito sin que nadie declare quien lo midio. Solo
+    - ``orphan``  — valor escrito sin que nadie declare quien lo midio. Solo
       puede venir de un escritor que no paso por el recorrido; se reporta en vez
       de sumarse a los medidos.
 
@@ -3021,22 +3021,22 @@ def stop_reason_provenance(conn: sqlite3.Connection) -> dict:
     no sumen el total deja una poblacion invisible cuyo silencio se lee como
     cero.
     """
-    def cuenta(donde: str) -> int:
+    def count(where: str) -> int:
         return conn.execute(
-            f"SELECT COUNT(*) FROM agent_sessions WHERE {donde}").fetchone()[0]
+            f"SELECT COUNT(*) FROM agent_sessions WHERE {where}").fetchone()[0]
 
-    leido = "usage_source = 'transcript'"
-    nulo = "stop_reason IS NULL"
+    read = "usage_source = 'transcript'"
+    null = "stop_reason IS NULL"
     return {
-        "total": cuenta("1"),
-        "con_valor": cuenta(f"{leido} AND stop_reason IS NOT NULL"),
-        "declarado_nulo": cuenta(
-            f"{leido} AND {nulo} AND client_version IS NOT NULL"),
-        "extractor_sin_lectura": cuenta(
-            f"{leido} AND {nulo} AND client_version IS NULL"),
-        "no_medido": cuenta("usage_source = 'no_medido'"),
-        "sin_clasificar": cuenta(f"usage_source IS NULL AND {nulo}"),
-        "huerfano": cuenta("usage_source IS NULL AND stop_reason IS NOT NULL"),
+        "total": count("1"),
+        "with_value": count(f"{read} AND stop_reason IS NOT NULL"),
+        "declared_null": count(
+            f"{read} AND {null} AND client_version IS NOT NULL"),
+        "extractor_without_read": count(
+            f"{read} AND {null} AND client_version IS NULL"),
+        "not_measured": count("usage_source = 'no_medido'"),
+        "unclassified": count(f"usage_source IS NULL AND {null}"),
+        "orphan": count("usage_source IS NULL AND stop_reason IS NOT NULL"),
     }
 
 
@@ -3059,24 +3059,24 @@ def cmd_stop_reason_census(args: argparse.Namespace) -> None:
 
     print(f"filas en agent_sessions: {total}")
     print(f"  el transcript lo declaro (stop_reason con valor): "
-          f"{r['con_valor']} ({pct(r['con_valor'])})")
+          f"{r['with_value']} ({pct(r['with_value'])})")
     print(f"  DATO — leida por el extractor actual y el transcript declaro "
-          f"nulo: {r['declarado_nulo']} ({pct(r['declarado_nulo'])})")
+          f"nulo: {r['declared_null']} ({pct(r['declared_null'])})")
     print(f"  terminal — leida antes de que este campo se leyera "
-          f"(client_version vacio): {r['extractor_sin_lectura']}")
+          f"(client_version vacio): {r['extractor_without_read']}")
     print(f"  terminal — transcript irrecuperable (usage_source='no_medido'): "
-          f"{r['no_medido']} ({pct(r['no_medido'])})")
+          f"{r['not_measured']} ({pct(r['not_measured'])})")
     print(f"  pendiente — sin clasificar todavia (usage_source vacio): "
-          f"{r['sin_clasificar']}")
-    if r["huerfano"]:
+          f"{r['unclassified']}")
+    if r["orphan"]:
         print(f"  ATENCION — con valor y sin procedencia declarada: "
-              f"{r['huerfano']}")
-    cubos = ("con_valor", "declarado_nulo", "extractor_sin_lectura",
-             "no_medido", "sin_clasificar", "huerfano")
-    suma = sum(r[c] for c in cubos)
+              f"{r['orphan']}")
+    buckets = ("with_value", "declared_null", "extractor_without_read",
+               "not_measured", "unclassified", "orphan")
+    bucket_sum = sum(r[c] for c in buckets)
     print()
-    print(f"los cubos suman {suma} de {total}"
-          + ("" if suma == total else "  — ATENCION: hay poblacion sin cubo"))
+    print(f"los cubos suman {bucket_sum} de {total}"
+          + ("" if bucket_sum == total else "  — ATENCION: hay poblacion sin cubo"))
     print("la procedencia de stop_reason la declara usage_source, no "
           "outcome_source (que parea con status)")
 
@@ -3156,19 +3156,19 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
     # unidades bajo un mismo encabezado es el sub-patron A.
     print()
     with connect_readonly(store_dir) as conn:
-        _por_modelo = conn.execute(
+        _by_model = conn.execute(
             "SELECT model, equiv_cost, cache_read_tokens, turns "
             "FROM agent_sessions "
             "WHERE usage_source = 'transcript' AND model LIKE 'claude-%' "
             "AND turns > 0 AND cache_read_tokens IS NOT NULL "
             "AND equiv_cost IS NOT NULL "
             "ORDER BY model").fetchall()
-    _equivalentes: dict = {}
-    _capacidades: dict = {}
-    for _fila in _por_modelo:
-        _equivalentes.setdefault(_fila[0], []).append(_fila[1] / _fila[3])
-        _capacidades.setdefault(_fila[0], []).append(_fila[2] / _fila[3])
-    if not _equivalentes:
+    _equivalent: dict = {}
+    _capabilities: dict = {}
+    for _row in _by_model:
+        _equivalent.setdefault(_row[0], []).append(_row[1] / _row[3])
+        _capabilities.setdefault(_row[0], []).append(_row[2] / _row[3])
+    if not _equivalent:
         print("Dispersion por turno, por modelo, en tokens: SIN MEDIR — "
               "ninguna fila declara modelo, turnos, equiv_cost y cache_read "
               "a la vez")
@@ -3178,15 +3178,15 @@ def cmd_usage_census(args: argparse.Namespace) -> None:
         print(f"  {'modelo':<22} {'n':>4} {'equiv_cost media':>18}"
               f" {'equiv_cost desv':>17} {'cache_read media':>18}"
               f" {'cache_read desv':>17}")
-        for _modelo in sorted(_equivalentes):
-            _fila_texto = f"  {_modelo:<22} n={len(_equivalentes[_modelo]):<2}"
-            for _muestra, _ancho in ((_equivalentes[_modelo], 18),
-                                     (_capacidades[_modelo], 17)):
-                _valores, _pesos = distribution.from_sample(_muestra)
-                _fila_texto += (
-                    f" {deviation.center(_valores, _pesos):>{_ancho},.0f}"
-                    f" {deviation.typical_deviation(_valores, _pesos):>{_ancho},.0f}")
-            print(_fila_texto)
+        for _model in sorted(_equivalent):
+            _row_text = f"  {_model:<22} n={len(_equivalent[_model]):<2}"
+            for _sample, _width in ((_equivalent[_model], 18),
+                                     (_capabilities[_model], 17)):
+                _values, _weights = distribution.from_sample(_sample)
+                _row_text += (
+                    f" {deviation.center(_values, _weights):>{_width},.0f}"
+                    f" {deviation.typical_deviation(_values, _weights):>{_width},.0f}")
+            print(_row_text)
         print("  (desviacion POBLACIONAL de la muestra: cada fila pesa 1/n. "
               "Un modelo con n=1 declara desviacion 0, que significa «una sola "
               "observacion», no «consistente»)")
@@ -3544,7 +3544,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--equiv-cost", type=int, default=None,
                     help="input + 1.25*cache_creation + 0.1*cache_read + 5*output — H-DOCS-135/136")
     p.add_argument("--usage-source", default=None,
-                    choices=("transcript", "no_medido"),
+                    choices=("transcript","not_measured"),
                     help="qué instrumento midió los tokens. Sin él, NULL en "
                          "las cuatro columnas de uso no distingue «no gastó» "
                          "de «nadie lo midió» (:ref:`h-docs-427`)")

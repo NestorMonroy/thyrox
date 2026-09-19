@@ -31,12 +31,12 @@ from pathlib import Path
 # El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
 # deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
 # UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontró src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths import reach  # noqa: E402
 
@@ -64,13 +64,13 @@ def check(etiqueta, esperado, obtenido):
 #: `TaskCreated`/`TaskCompleted` entran con TASK-DOCS-0404: son eventos
 #: DEDICADOS del cliente, no un `PostToolUse` con matcher, y su payload trae
 #: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
-EVENTOS_DECLARADOS = ["PreModelSwitch", "SubagentStart", "SubagentStop",
+EVENTS_DECLARED = ["PreModelSwitch", "SubagentStart", "SubagentStop",
                       "TaskCompleted", "TaskCreated"]
 
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
 d = w.declared_wiring()
 check("es un settings con hooks", True, "hooks" in d)
-check("declara sus eventos, todos y solo ellos", EVENTOS_DECLARADOS,
+check("declara sus eventos, todos y solo ellos", EVENTS_DECLARED,
       sorted(d["hooks"]))
 
 print("== 2. el control VE una ruta que no existe ==")
@@ -136,7 +136,7 @@ _record = w.install(_live, w.declared_wiring(), _double, "SELLO", backups=_tmp,
 _final = _json.loads(_live.read_text())
 check("conserva permissions verbatim", _foreign["permissions"], _final["permissions"])
 check("sustituye advisorModel", "claude-fable-5-1", _final["advisorModel"])
-check("sustituye hooks por lo declarado", EVENTOS_DECLARADOS,
+check("sustituye hooks por lo declarado", EVENTS_DECLARED,
       sorted(_final["hooks"]))
 check("el acta nombra lo conservado", ["permissions"], _record["preserved"])
 
@@ -254,8 +254,8 @@ for _ev, _gs in w.declared_wiring()["hooks"].items():
             _m = _re.search(r"(?:python3|node|bun run)\s+(\S+)", _h["command"])
             if _m:
                 _ejecutables.append((_ev, _m.group(1)))
-_esperados = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)
-check("todo comando declarado nombra su ejecutable", _esperados, len(_ejecutables))
+_expected = sum(len(_g["hooks"]) for _gs in d["hooks"].values() for _g in _gs)
+check("todo comando declarado nombra su ejecutable", _expected, len(_ejecutables))
 _ajenos = [f"{ev}:{r}" for ev, r in _ejecutables if "/thyrox/" not in r]
 check("ninguno ejecuta desde el consumidor", [], _ajenos)
 check("y todos existen", [],

@@ -55,14 +55,14 @@ def axis(name, measured, threshold, reason="sin razon declarada"):
 
 
 print("=== 1. failing_axes cita eje + umbral + medido ===")
-resultados = [
+results = [
     axis("boxes", 3, 5, "cinco cajas minimas por leccion"),
     axis("prose_per_fig", 300, 260, "260 caracteres por figura"),
     axis("figs", 2, 3, "tres figuras minimas"),
 ]
-fallos = gg.failing_axes(resultados)
-check("dos ejes fallan, citados por nombre", ["boxes", "figs"], [f.name for f in fallos])
-check("cada fallo trae su umbral y su valor medido", (5, 3), (fallos[0].threshold, fallos[0].measured))
+failures = gg.failing_axes(results)
+check("dos ejes fallan, citados por nombre", ["boxes", "figs"], [f.name for f in failures])
+check("cada fallo trae su umbral y su valor medido", (5, 3), (failures[0].threshold, failures[0].measured))
 
 print("=== 2. grade con tiers ascendentes por CONJUNTO de ejes ===")
 TIERS = [
@@ -70,17 +70,17 @@ TIERS = [
     ("ESTANDAR", frozenset({"boxes", "figs"})),
     ("EXCELENTE", frozenset({"boxes", "figs", "prose_per_fig"})),
 ]
-solo_boxes_falla = [axis("boxes", 2, 5), axis("figs", 10, 3), axis("prose_per_fig", 300, 260)]
+only_boxes_failure = [axis("boxes", 2, 5), axis("figs", 10, 3), axis("prose_per_fig", 300, 260)]
 check("BASICO exige boxes; boxes falla -> ningun tier",
-      None, gg.grade(solo_boxes_falla, TIERS)["tier"])
+      None, gg.grade(only_boxes_failure, TIERS)["tier"])
 
-todo_menos_prosa = [axis("boxes", 10, 5), axis("figs", 10, 3), axis("prose_per_fig", 100, 260)]
+every_minus_prose = [axis("boxes", 10, 5), axis("figs", 10, 3), axis("prose_per_fig", 100, 260)]
 check("boxes y figs pasan, prosa no -> ESTANDAR, no EXCELENTE",
-      "ESTANDAR", gg.grade(todo_menos_prosa, TIERS)["tier"])
+      "ESTANDAR", gg.grade(every_minus_prose, TIERS)["tier"])
 
-todo_pasa = [axis("boxes", 10, 5), axis("figs", 10, 3), axis("prose_per_fig", 300, 260)]
+every_passes = [axis("boxes", 10, 5), axis("figs", 10, 3), axis("prose_per_fig", 300, 260)]
 check("los tres pasan -> EXCELENTE (el tier mas alto)",
-      "EXCELENTE", gg.grade(todo_pasa, TIERS)["tier"])
+      "EXCELENTE", gg.grade(every_passes, TIERS)["tier"])
 
 print("=== 3. grade sobre resultados vacíos ===")
 try:
@@ -90,22 +90,22 @@ except ValueError:
     check("vacío -> ValueError", True, True)
 
 print("=== 4. format_report — texto plano, sin glifos decorativos ===")
-reporte = gg.format_report(resultados)
+report = gg.format_report(results)
 check("sin caracteres fuera de ASCII imprimible", True,
       all(32 <= ord(c) <= 126 or c in "\n\táéíóúñÁÉÍÓÚÑ"
-          for c in reporte))
-check("idioma OK/FAIL, no emoji", True, "OK" in reporte and "FAIL" in reporte)
-check("el eje reprobado nombra su umbral", True, "5" in reporte and "boxes" in reporte)
+          for c in report))
+check("idioma OK/FAIL, no emoji", True, "OK" in report and "FAIL" in report)
+check("el eje reprobado nombra su umbral", True, "5" in report and "boxes" in report)
 
 print("=== 5. ANULACIÓN — bajar UN umbral cambia SOLO ese fallo ===")
-resultados_corregidos = [
+results_fixed = [
     axis("boxes", 3, 3, "cinco cajas minimas por leccion — bajado a 3 para la prueba"),
     axis("prose_per_fig", 300, 260, "260 caracteres por figura"),
     axis("figs", 2, 3, "tres figuras minimas"),
 ]
-fallos_tras_bajar = gg.failing_axes(resultados_corregidos)
+failures_after_lower = gg.failing_axes(results_fixed)
 check("con el umbral de boxes bajado, sólo figs sigue fallando — nada más cambió",
-      ["figs"], [f.name for f in fallos_tras_bajar])
+      ["figs"], [f.name for f in failures_after_lower])
 
 print(f"\nOK={OK} FAILED={FAILED}")
 raise SystemExit(1 if FAILED else 0)

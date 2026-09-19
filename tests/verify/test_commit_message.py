@@ -105,7 +105,7 @@ with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as handle:
 captured = io.StringIO()
 with contextlib.redirect_stderr(captured):
     mod.main(["commit_message.py", overlong_message_path])
-aviso = captured.getvalue()
+warning = captured.getvalue()
 pathlib.Path(overlong_message_path).unlink()
 
 # La asercion mide la ATRIBUCION, no la palabra. Prohibir el literal `mawk`
@@ -114,11 +114,11 @@ pathlib.Path(overlong_message_path).unlink()
 # 6»—, que es legitimo, y lo que no puede volver a decir es que el awk de
 # esta maquina SEA mawk.
 assert_equal("el aviso ya no afirma que el awk de esta maquina sea mawk",
-             False, "maquina (mawk)" in aviso)
+             False, "maquina (mawk)" in warning)
 assert_equal("el aviso nombra el locale, que es la causa medida",
-             True, "locale" in aviso.lower())
+             True, "locale" in warning.lower())
 assert_equal("...y sigue nombrando a mawk como dato de la comparacion",
-             True, "mawk" in aviso)
+             True, "mawk" in warning)
 
 print()
 print(f"== {ok} ok · {failures} fallas ==")

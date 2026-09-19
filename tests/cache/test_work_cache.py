@@ -228,19 +228,19 @@ with tempfile.TemporaryDirectory() as td:
     index = work_cache.WorkIndex()
     full = work_cache.sync_index(index, root, stats_of(root), extract)
 
-    destino = root / work_cache.INDEX_FILE_NAME
+    target = root / work_cache.INDEX_FILE_NAME
     partial = work_cache.SyncLedger(added=1, scan_completed=False)
     check("barrido incompleto: no persiste",
-          False, work_cache.persist(destino, index, partial, FINGERPRINT))
-    check("barrido incompleto: no dejo archivo", False, destino.exists())
+          False, work_cache.persist(target, index, partial, FINGERPRINT))
+    check("barrido incompleto: no dejo archivo", False, target.exists())
     check("barrido completo: si persiste",
-          True, work_cache.persist(destino, index, full, FINGERPRINT))
+          True, work_cache.persist(target, index, full, FINGERPRINT))
 
     # 8. La huella de config rechaza el INDICE ENTERO, no un documento.
-    otro = work_cache.load(destino, "lexico-v2")
-    check("otra huella: el indice entero se rechaza", 0, len(otro.docs))
-    mismo = work_cache.load(destino, FINGERPRINT)
-    check("misma huella: el indice se reusa entero", 1, len(mismo.docs))
+    other = work_cache.load(target, "lexico-v2")
+    check("otra huella: el indice entero se rechaza", 0, len(other.docs))
+    same = work_cache.load(target, FINGERPRINT)
+    check("misma huella: el indice se reusa entero", 1, len(same.docs))
 
 # --------------------------------------------------------------------------
 # 9. `to_remove` — lo que desaparece del barrido sale del indice.

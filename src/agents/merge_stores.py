@@ -225,16 +225,16 @@ def merge(origin_path: Path, target_path: Path, *, dry_run: bool = False) -> lis
         # ciega». Una tabla que solo esta en el origen NO se crea —el DDL esta
         # fuera del alcance de `merge`, que fusiona filas— pero se reporta con su
         # conteo, para que el llamador sepa que hay dato que no se puede traer.
-        en_origen = _real_tables(origin)
-        en_destino = _real_tables(target)
-        for t in sorted(set(en_origen) | set(en_destino)):
-            if t not in en_origen:
+        in_source = _real_tables(origin)
+        in_target = _real_tables(target)
+        for t in sorted(set(in_source) | set(in_target)):
+            if t not in in_source:
                 informe.append({"tabla": t, "omitida": "no existe en el origen"})
                 continue
-            if t not in en_destino:
-                filas = origin.execute('SELECT count(*) FROM "%s"' % t).fetchone()[0]
+            if t not in in_target:
+                rows = origin.execute('SELECT count(*) FROM "%s"' % t).fetchone()[0]
                 informe.append({"tabla": t, "omitida": "no existe en el destino",
-                                "filas_en_el_origen": filas})
+                                "rows_in_source": rows})
                 continue
             informe.append(merge_table(origin, target, t))
         if dry_run:

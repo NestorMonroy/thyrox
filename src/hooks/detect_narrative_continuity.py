@@ -51,37 +51,37 @@ def distinctive_terms(body: str) -> set[str]:
 
 def opens_with_continuity(section: Section, previous: Section, *, window: int = OPENING_WINDOW) -> bool:
     """¿La apertura de ``section`` referencia al menos un término distintivo de ``previous``?"""
-    apertura = section.body[:window]
-    terminos = distinctive_terms(previous.body)
-    return any(t in apertura for t in terminos)
+    opening = section.body[:window]
+    terms = distinctive_terms(previous.body)
+    return any(t in opening for t in terms)
 
 
 def weak_openers(sections: list[Section], *, window: int = OPENING_WINDOW) -> list[Section]:
     """Las secciones (salvo la primera) cuya apertura no referencia la anterior."""
     return [
-        seccion for indice, seccion in enumerate(sections)
-        if indice > 0 and not opens_with_continuity(seccion, sections[indice - 1], window=window)
+        section for index, section in enumerate(sections)
+        if index > 0 and not opens_with_continuity(section, sections[index - 1], window=window)
     ]
 
 
 def split_sections(text: str) -> list[Section]:
     """Parte ``text`` en secciones por encabezado RST real (título + subrayado)."""
-    lineas = text.splitlines()
-    encabezados: list[tuple[int, str]] = []
-    for indice in range(len(lineas) - 1):
-        titulo, subrayado = lineas[indice], lineas[indice + 1]
-        if not titulo.strip() or titulo.strip().startswith("."):
+    lines = text.splitlines()
+    headings: list[tuple[int, str]] = []
+    for index in range(len(lines) - 1):
+        title, underscore = lines[index], lines[index + 1]
+        if not title.strip() or title.strip().startswith("."):
             continue
-        if _HEADING_UNDERLINE.match(subrayado) and len(subrayado.rstrip()) >= len(titulo.rstrip()):
-            encabezados.append((indice, titulo.strip()))
+        if _HEADING_UNDERLINE.match(underscore) and len(underscore.rstrip()) >= len(title.rstrip()):
+            headings.append((index, title.strip()))
 
-    secciones: list[Section] = []
-    for posicion, (linea_inicio, titulo) in enumerate(encabezados):
-        cuerpo_desde = linea_inicio + 2
-        cuerpo_hasta = encabezados[posicion + 1][0] if posicion + 1 < len(encabezados) else len(lineas)
-        cuerpo = "\n".join(lineas[cuerpo_desde:cuerpo_hasta])
-        secciones.append(Section(title=titulo, body=cuerpo, start_line=linea_inicio + 1))
-    return secciones
+    sections: list[Section] = []
+    for position, (line_start, title) in enumerate(headings):
+        body_from = line_start + 2
+        body_until = headings[position + 1][0] if position + 1 < len(headings) else len(lines)
+        body = "\n".join(lines[body_from:body_until])
+        sections.append(Section(title=title, body=body, start_line=line_start + 1))
+    return sections
 
 
 def detect(payload: dict) -> str | None:
@@ -95,19 +95,19 @@ def detect(payload: dict) -> str | None:
     if not path.endswith(".rst"):
         return None
 
-    secciones = split_sections(content)
-    if len(secciones) < 2:
+    sections = split_sections(content)
+    if len(sections) < 2:
         return None
 
-    debiles = weak_openers(secciones)
-    if not debiles:
+    weak = weak_openers(sections)
+    if not weak:
         return None
 
-    titulos = ", ".join(f"`{s.title}`" for s in debiles)
+    titles = ", ".join(f"`{s.title}`" for s in weak)
     return (
         "AVISO DE CONTINUIDAD NARRATIVA — la apertura de estas secciones no "
         f"referencia ningún término citado (```` `` ````) de la sección anterior: "
-        f"{titulos}. No es un léxico de palabras-puente: se verifica contra el "
+        f"{titles}. No es un léxico de palabras-puente: se verifica contra el "
         "contenido real. Si la transición existe con otras palabras, este aviso "
         "es un falso positivo — juicio de quien escribe, no bloqueo."
     )

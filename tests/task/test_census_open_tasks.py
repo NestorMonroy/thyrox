@@ -120,10 +120,10 @@ _bad = subprocess.run(
     capture_output=True, text=True)
 check(_bad.returncode != 0, "1e: una capa fuera del catalogo no corre")
 
-_sin = subprocess.run(
+_without = subprocess.run(
     [sys.executable, str(MODULE_PATH), "--store", str(STORE)],
     capture_output=True, text=True)
-check(_sin.returncode != 0,
+check(_without.returncode != 0,
       "1f: sin `--layer` el programa rehusa — un default seria un universo silencioso")
 
 
@@ -178,12 +178,12 @@ check(not cot.is_render("kaupamex-api/src/orm/fields.py",
 #: La COMPOSICION que `main()` hace: el destino declarado se resuelve contra su
 #: raiz y sale como parte extra. Es el control que puede fallar — si la
 #: derivacion devuelve la tupla vacia, el censo se lee a si mismo.
-_evidencia = cot.reach.root("api") / "scripts" / "evidence"
-_propias = cot.own_output_parts(str(_evidencia))
-check(_propias == ("/scripts/evidence/",),
-      f"3h: el destino se deriva contra su raiz, no se escribe a mano ({_propias})")
+_evidence = cot.reach.root("api") / "scripts" / "evidence"
+_own = cot.own_output_parts(str(_evidence))
+check(_own == ("/scripts/evidence/",),
+      f"3h: el destino se deriva contra su raiz, no se escribe a mano ({_own})")
 check(cot.is_render("kaupamex-api/scripts/evidence/census_open_api_tasks.json",
-                    extra_parts=_propias),
+                    extra_parts=_own),
       "3i: y compuesto con is_render descuenta la salida PROPIA del censo")
 check(cot.own_output_parts(None) == (),
       "3j: sin destino declarado no se inventa descuento")
@@ -206,12 +206,12 @@ check(len(_roots) == len(set(_roots)),
 #: Poblacion PROPIA, no `_api`: este bloque mide el reparto en cubos, que es
 #: ortogonal al filtro de capa. Reusar `_api` encadenaba cuatro aserciones al
 #: mismo defecto y la anulacion dejaba de discriminar cual media que.
-_poblacion = [
+_population = [
     {"citation_id": "TASK-API-0001", "status": "pending", "subject": "con commit"},
     {"citation_id": "TASK-API-0002", "status": "pending", "subject": "solo prosa"},
 ]
 _buckets = cot.build_buckets(
-    _poblacion,
+    _population,
     {"TASK-API-0001": ["repo@abc12345"]},
     {"TASK-API-0002": {"kaupamex-api/src/x.py"}},
 )
@@ -222,8 +222,8 @@ check([t["citation_id"] for t in _buckets["owned_but_open"]] == ["TASK-API-0002"
 check(_buckets["orphan"] == [],
       "5c: `orphan` es el resto, y aqui no hay resto")
 
-_huerfana = cot.build_buckets(_docs, {}, {})
-check([t["citation_id"] for t in _huerfana["orphan"]] == ["TASK-DOCS-0001"],
+_orphan = cot.build_buckets(_docs, {}, {})
+check([t["citation_id"] for t in _orphan["orphan"]] == ["TASK-DOCS-0001"],
       "5d: sin commit ni prosa -> `orphan`")
 
 

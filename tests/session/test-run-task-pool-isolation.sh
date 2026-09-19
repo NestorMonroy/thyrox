@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# test-run-task-pool-aislamiento.sh — dos despachos no se pisan
+# test-run-task-pool-isolation.sh — dos despachos no se pisan
 # =============================================================================
 # Publica su conteo de aserciones al correr (`calibration-verified-numbers.md`).
 #
@@ -58,7 +58,7 @@ despachar() { # despachar <archivo-de-comandos> [args...]
     bash "$WAIT_JOBS" wait --timeout 30 >/dev/null 2>&1
 }
 
-echo "test-run-task-pool-aislamiento:"
+echo "test-run-task-pool-isolation:"
 
 # -------------------------------------------------------------------------
 # 1. EL CONTROL POSITIVO — dos despachos, mismo prefijo, la evidencia del

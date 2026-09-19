@@ -107,7 +107,7 @@ def fill_placeholders(
     evita. El resultado puede verse redundante; sigue siendo correcto y
     editable a mano después.
     """
-    sustituciones = {
+    substitutions = {
         "<YYYY-MM-DDTHH:MM:SS>": now.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", ""),
         "<SUBMODULO-UPPER>": submodule.upper(),
         "<SLUG-UPPER>": slug.upper(),
@@ -116,22 +116,22 @@ def fill_placeholders(
         "<Titulo descriptivo de la iniciativa>": title,
         "<Titulo de la iniciativa>": title,
     }
-    resultado = body
-    for marcador, valor in sustituciones.items():
-        resultado = resultado.replace(marcador, valor)
-    return resultado
+    result = body
+    for marker, value in substitutions.items():
+        result = result.replace(marker, value)
+    return result
 
 
 def _write_piece(
-    plantillas_dir: pathlib.Path, destino: pathlib.Path, kind: str, pieza: str,
+    templates_dir: pathlib.Path, target: pathlib.Path, kind: str, piece: str,
     *, submodule: str, slug: str, title: str, now: datetime,
 ) -> None:
-    ruta_plantilla = plantillas_dir / TEMPLATE_FILES[kind][pieza]
-    cruda = ruta_plantilla.read_text(encoding="utf-8")
-    cuerpo = strip_instructions(cruda)
-    llenado = fill_placeholders(cuerpo, submodule=submodule, slug=slug, title=title, now=now)
-    nombre = OUTPUT_FILE_NAMES[pieza].format(slug=slug)
-    (destino / nombre).write_text(llenado, encoding="utf-8")
+    path_template = templates_dir / TEMPLATE_FILES[kind][piece]
+    raw = path_template.read_text(encoding="utf-8")
+    body = strip_instructions(raw)
+    filled = fill_placeholders(body, submodule=submodule, slug=slug, title=title, now=now)
+    name = OUTPUT_FILE_NAMES[piece].format(slug=slug)
+    (target / name).write_text(filled, encoding="utf-8")
 
 
 def scaffold_initiative(
@@ -140,7 +140,7 @@ def scaffold_initiative(
     slug: str,
     title: str,
     *,
-    with_tareas: bool = False,
+    with_tasks: bool = False,
     now: datetime | None = None,
 ) -> pathlib.Path:
     """Materializa ``pm/<submodulo>/iniciativas/<slug>/`` y devuelve su ruta.
@@ -153,37 +153,37 @@ def scaffold_initiative(
 
     Rehúsa si el directorio ya existe: no pisa trabajo ajeno en silencio.
     """
-    momento = now or datetime.now(timezone.utc)
-    plantillas_dir = pathlib.Path(consumer_root) / "source" / "normativa" / "estandares" / "plantillas"
-    destino = (pathlib.Path(consumer_root) / "source" / "gestion" / "pm"
+    moment = now or datetime.now(timezone.utc)
+    templates_dir = pathlib.Path(consumer_root) / "source" / "normativa" / "estandares" / "plantillas"
+    target = (pathlib.Path(consumer_root) / "source" / "gestion" / "pm"
                / submodule / "iniciativas" / slug)
 
-    veredicto = _placement_verdict(consumer_root, submodule, slug)
-    if veredicto.verdict == ip.IN_PLACE:
-        raise FileExistsError(f"la iniciativa ya existe: {destino}")
-    destino.mkdir(parents=True)
+    verdict = _placement_verdict(consumer_root, submodule, slug)
+    if verdict.verdict == ip.IN_PLACE:
+        raise FileExistsError(f"la iniciativa ya existe: {target}")
+    target.mkdir(parents=True)
 
     kind = template_kind(submodule)
-    piezas = ["index", "alcance"] + (["tareas"] if with_tareas else [])
-    for pieza in piezas:
-        _write_piece(plantillas_dir, destino, kind, pieza,
-                     submodule=submodule, slug=slug, title=title, now=momento)
+    pieces = ["index", "alcance"] + (["tareas"] if with_tasks else [])
+    for piece in pieces:
+        _write_piece(templates_dir, target, kind, piece,
+                     submodule=submodule, slug=slug, title=title, now=moment)
 
-    if veredicto.verdict == ip.ELSEWHERE:
-        _append_extension_note(destino, veredicto)
-    return destino
+    if verdict.verdict == ip.ELSEWHERE:
+        _append_extension_note(target, verdict)
+    return target
 
 
-def _append_extension_note(destino: pathlib.Path, veredicto) -> None:
+def _append_extension_note(target: pathlib.Path, verdict) -> None:
     """Apenda al ``index`` la mencion de la raiz de la que se extiende.
 
     Va en el ``index`` y no en el ``alcance`` porque el ``index`` es el unico
     artefacto que DEC-AM-01 exige siempre: una iniciativa recien nacida puede
     no tener alcance todavia, y la mencion no puede depender de eso.
     """
-    indice = destino / OUTPUT_FILE_NAMES["index"]
-    with indice.open("a", encoding="utf-8") as manija:
-        manija.write("\n" + ip.extension_note(veredicto))
+    index = target / OUTPUT_FILE_NAMES["index"]
+    with index.open("a", encoding="utf-8") as handle:
+        handle.write("\n" + ip.extension_note(verdict))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -200,10 +200,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="raiz del clon consumidor (por defecto, la que reach resuelva)")
     args = parser.parse_args(argv)
 
-    raiz = pathlib.Path(args.consumer) if args.consumer else reach.consumer_root()
+    root = pathlib.Path(args.consumer) if args.consumer else reach.consumer_root()
     try:
-        destino = scaffold_initiative(
-            raiz, args.submodule, args.slug, args.title, with_tareas=args.with_tareas)
+        target = scaffold_initiative(
+            root, args.submodule, args.slug, args.title, with_tasks=args.with_tareas)
     except ip.SurveyTruncatedError as corte:
         print(f"REHUSA: {corte}", file=sys.stderr)
         return EXIT_REFUSED
@@ -211,7 +211,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"REHUSA: {existe}", file=sys.stderr)
         return EXIT_REFUSED
 
-    print(destino)
+    print(target)
     return EXIT_OK
 
 
@@ -230,6 +230,6 @@ def _placement_verdict(consumer_root, submodule: str, slug: str):
     """
     try:
         survey = ip.survey_initiative(consumer_root, slug)
-    except ip.GestionRootError:
+    except ip.ManagementRootError:
         survey = ip.SurveyResult(slug=slug, hits=(), truncated=False)
     return ip.decide_placement(survey, submodule)

@@ -61,12 +61,12 @@ def restore(var, previous):
 
 
 print("== 1. el hogar declarado y AUSENTE existe tras resolverlo ==")
-for var, name, resolver in RESOLVERS:
+for var, name, resolve in RESOLVERS:
     with tempfile.TemporaryDirectory() as tmp:
         absent = pathlib.Path(tmp) / "no" / "existe" / name
         previous = declared(var, absent)
         try:
-            resolved = pathlib.Path(resolver())
+            resolved = pathlib.Path(resolve())
             check(f"{name} crea su hogar declarado", True, resolved.exists())
             check(f"{name} crea la cadena de padres", True,
                   resolved.parent.exists())
@@ -75,15 +75,15 @@ for var, name, resolver in RESOLVERS:
 
 print()
 print("== 2. es IDEMPOTENTE: resolver dos veces no falla ==")
-for var, name, resolver in RESOLVERS:
+for var, name, resolve in RESOLVERS:
     with tempfile.TemporaryDirectory() as tmp:
         absent = pathlib.Path(tmp) / "dos" / "veces"
         previous = declared(var, absent)
         try:
-            resolver()
+            resolve()
             second = "sin excepcion"
             try:
-                resolver()
+                resolve()
             except Exception as exc:                 # noqa: BLE001
                 second = f"{type(exc).__name__}: {exc}"
             check(f"{name} resuelto dos veces", "sin excepcion", second)

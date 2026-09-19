@@ -87,16 +87,16 @@ def test_the_dispatcher_registers_it():
 # de módulo, y ésas sí corren al importar).
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

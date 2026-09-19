@@ -110,14 +110,14 @@ print("== 9. anulada la excepcion del corchete, cae EXACTAMENTE ese caso ==")
 original = gate.has_bracket_class
 try:
     gate.has_bracket_class = lambda _pattern: False
-    caidos = []
+    dropped = []
     if detect("until ! pgrep -f '[c]heck_suite_discrimina'; do sleep 5; done") is not None:
-        caidos.append("corchete")
+        dropped.append("corchete")
     if detect("pgrep sleep") is not None:
-        caidos.append("sin -f")
+        dropped.append("sin -f")
     if detect("bash tests/run.sh") is not None:
-        caidos.append("sin pgrep")
-    check("cae el del corchete y ninguno mas", ["corchete"], caidos)
+        dropped.append("sin pgrep")
+    check("cae el del corchete y ninguno mas", ["corchete"], dropped)
 finally:
     gate.has_bracket_class = original
 

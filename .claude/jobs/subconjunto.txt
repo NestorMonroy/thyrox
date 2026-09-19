@@ -38,13 +38,13 @@ tests/session/test-instalar-config-usuario.sh
 tests/session/test-medir-disparo-de-hooks.sh
 tests/session/test-process-group.sh
 tests/session/test-record-environment.sh
-tests/session/test-run-task-pool-aislamiento.sh
-tests/session/test-run-task-pool-alcance.sh
+tests/session/test-run-task-pool-isolation.sh
+tests/session/test-run-task-pool-scope.sh
 tests/session/test-run-task-pool.sh
 tests/session/test-sincronizar-settings-local.sh
-tests/session/test-wait-jobs-dependencia.sh
+tests/session/test-wait-jobs-dependency.sh
 tests/session/test-wait-jobs.sh
-tests/session/test-write-env-repara-clon-desplazado.sh
+tests/session/test-write-env-repairs-moved-clone.sh
 tests/session/test_generate_bin.py
 tests/session/test_write_env.py
 tests/task/test-closure-graph.sh

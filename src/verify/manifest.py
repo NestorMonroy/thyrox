@@ -36,9 +36,9 @@ class Node:
 
 def render_manifest(nodes: Sequence[Node]) -> str:
     """La tabla markdown del manifiesto, con el ``|`` de cada título escapado."""
-    filas = ["| ID | Type | Required | Source | Title |", "|---|---|---|---|---|"]
-    for nodo in nodes:
-        titulo = nodo.title.replace("|", "\\|")
-        requerido = "yes" if nodo.required else "optional"
-        filas.append(f"| {nodo.node_id} | {nodo.kind} | {requerido} | `{nodo.source}` | {titulo} |")
-    return "\n".join(filas)
+    rows = ["| ID | Type | Required | Source | Title |", "|---|---|---|---|---|"]
+    for node in nodes:
+        title = node.title.replace("|", "\\|")
+        required = "yes" if node.required else "optional"
+        rows.append(f"| {node.node_id} | {node.kind} | {required} | `{node.source}` | {title} |")
+    return "\n".join(rows)

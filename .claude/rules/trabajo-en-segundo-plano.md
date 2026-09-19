@@ -157,7 +157,7 @@ cadena se mueva, y sobreviven las cuatro que miden el registro — ni una más
 (`.claude/workbench/dependencia-al-lanzar-20260910T232832/`).
 
 ```bash
-bash tests/session/test-wait-jobs-dependencia.sh
+bash tests/session/test-wait-jobs-dependency.sh
 ```
 
 Antes de esto (medido 2026-09-10) `afterok|depend|blockedBy` daba **0 hits** en

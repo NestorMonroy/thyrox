@@ -32,12 +32,12 @@ from pathlib import Path
 
 # Bootstrap canonico (`paths.reach.BOOTSTRAP`): ascenso con deteccion, no
 # `parents[N]` — la aritmetica por offset falla en silencio al mover el archivo.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from docs import citations as cit  # noqa: E402
 
@@ -76,7 +76,7 @@ def test_a_sibling_target_stays_in_the_citing_directory():
 #: Texto REAL del arbol, no fabricado: los tres renglones son
 #: ``progreso-revisar-pendientes-docs.rst:1297,1298,1340``, donde el rol vive
 #: dentro de un literal en linea y por tanto NO es un enlace.
-TEXTO_CON_LITERAL = """Un enlace de verdad: :doc:`accounts/index`.
+TEXT_WITH_LITERAL = """Un enlace de verdad: :doc:`accounts/index`.
 
 - ``modulos/mod-accounts.rst`` -> ``:doc:`accounts/index```
 - ``modulos/mod-catalogue.rst`` -> ``:doc:`catalogue/index```
@@ -92,11 +92,11 @@ def test_a_citation_inside_an_inline_literal_is_not_a_link():
     medir un fenomeno que no ocurre — el sub-patron C con el censo como
     sujeto.
     """
-    vistas = [t for t, _ in cit.iter_citations(TEXTO_CON_LITERAL, "x/y")]
-    assert vistas == ["accounts/index"], vistas
+    views = [t for t, _ in cit.iter_citations(TEXT_WITH_LITERAL, "x/y")]
+    assert views == ["accounts/index"], views
 
 
-TEXTO_CON_BLOQUE = """Prosa con su enlace :doc:`vivo/uno`.
+TEXT_WITH_BLOCK = """Prosa con su enlace :doc:`vivo/uno`.
 
 .. code-block:: rst
 
@@ -107,8 +107,8 @@ Prosa otra vez.
 
 
 def test_a_citation_inside_a_literal_block_is_not_a_link():
-    vistas = [t for t, _ in cit.iter_citations(TEXTO_CON_BLOQUE, "x/y")]
-    assert vistas == ["vivo/uno"], vistas
+    views = [t for t, _ in cit.iter_citations(TEXT_WITH_BLOCK, "x/y")]
+    assert views == ["vivo/uno"], views
 
 
 def test_the_literal_skip_carries_its_own_weight():
@@ -118,24 +118,24 @@ def test_the_literal_skip_carries_its_own_weight():
     textos de arriba pasan de 1 cita a 4 y a 2. Si al anularlo el veredicto
     no cambiara, el salto no estaria midiendo nada.
     """
-    guardadas = cit.LITERAL_SPANNERS
+    saved = cit.LITERAL_SPANNERS
     try:
         cit.LITERAL_SPANNERS = ()
-        con_linea = [t for t, _ in cit.iter_citations(TEXTO_CON_LITERAL, "x/y")]
-        con_bloque = [t for t, _ in cit.iter_citations(TEXTO_CON_BLOQUE, "x/y")]
-        assert len(con_linea) == 4, con_linea
-        assert len(con_bloque) == 2, con_bloque
+        with_line = [t for t, _ in cit.iter_citations(TEXT_WITH_LITERAL, "x/y")]
+        with_block = [t for t, _ in cit.iter_citations(TEXT_WITH_BLOCK, "x/y")]
+        assert len(with_line) == 4, with_line
+        assert len(with_block) == 2, with_block
     finally:
-        cit.LITERAL_SPANNERS = guardadas
+        cit.LITERAL_SPANNERS = saved
 
     # Y restaurado, vuelve a discriminar.
-    assert len([t for t, _ in cit.iter_citations(TEXTO_CON_LITERAL, "x/y")]) == 1
+    assert len([t for t, _ in cit.iter_citations(TEXT_WITH_LITERAL, "x/y")]) == 1
 
 
 def test_a_citation_reports_the_line_it_lives_on():
     """Sin el renglon, el aviso del gate no es accionable."""
-    [(destino, linea)] = cit.iter_citations("uno\ndos\n:doc:`tres/cuatro`\n", "x/y")
-    assert (destino, linea) == ("tres/cuatro", 3)
+    [(target, line)] = cit.iter_citations("uno\ndos\n:doc:`tres/cuatro`\n", "x/y")
+    assert (target, line) == ("tres/cuatro", 3)
 
 
 
@@ -144,7 +144,7 @@ def test_a_citation_reports_the_line_it_lives_on():
 #: y un `.. code-block::` cuyo cuerpo lleva uno que es muestra. Los dos abren
 #: con un renglon terminado en `::`, asi que un detector que no discrimine
 #: directiva de parrafo los trata igual.
-TEXTO_CON_DIRECTIVAS = """Titulo
+TEXT_WITH_DIRECTIVES = """Titulo
 ======
 
 .. seealso::
@@ -158,13 +158,13 @@ TEXTO_CON_DIRECTIVAS = """Titulo
 
 
 def test_a_doc_inside_a_seealso_is_a_live_link():
-    vivas = [d for d, _ in cit.iter_citations(TEXTO_CON_DIRECTIVAS, "x/y")]
-    assert "/requisitos/casos-uso/auth/uc-auth-01-registrar" in vivas, vivas
+    live = [d for d, _ in cit.iter_citations(TEXT_WITH_DIRECTIVES, "x/y")]
+    assert "/requisitos/casos-uso/auth/uc-auth-01-registrar" in live, live
 
 
 def test_a_doc_inside_a_code_block_is_not_a_link():
-    vivas = [d for d, _ in cit.iter_citations(TEXTO_CON_DIRECTIVAS, "x/y")]
-    assert "/esto/es/muestra" not in vivas, vivas
+    live = [d for d, _ in cit.iter_citations(TEXT_WITH_DIRECTIVES, "x/y")]
+    assert "/esto/es/muestra" not in live, live
 
 
 def test_the_directive_discrimination_carries_its_own_weight():
@@ -177,30 +177,30 @@ def test_the_directive_discrimination_carries_its_own_weight():
     """
     import re as _re
 
-    antes = {d for d, _ in cit.iter_citations(TEXTO_CON_DIRECTIVAS, "x/y")}
+    before = {d for d, _ in cit.iter_citations(TEXT_WITH_DIRECTIVES, "x/y")}
     original = cit._DIRECTIVE_OPENING
     try:
         cit._DIRECTIVE_OPENING = _re.compile(r"(?!)")   # no casa nunca
-        despues = {d for d, _ in cit.iter_citations(TEXTO_CON_DIRECTIVAS, "x/y")}
+        after = {d for d, _ in cit.iter_citations(TEXT_WITH_DIRECTIVES, "x/y")}
     finally:
         cit._DIRECTIVE_OPENING = original
 
-    caidas = antes - despues
-    assert caidas == {"/requisitos/casos-uso/auth/uc-auth-01-registrar"}, caidas
+    drops = before - after
+    assert drops == {"/requisitos/casos-uso/auth/uc-auth-01-registrar"}, drops
 
 
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

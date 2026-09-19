@@ -66,9 +66,9 @@ def baseline_destination(measured=()):
     eso la deuda de un corpus congelaria la de todos. El destino se compone, no
     se descubre.
     """
-    declarado = os.environ.get(BASELINE_VAR, '').strip()
-    if declarado:
-        return pathlib.Path(declarado)
+    declared = os.environ.get(BASELINE_VAR, '').strip()
+    if declared:
+        return pathlib.Path(declared)
     return _parametro.consumer_root(measured) / '.claude' / 'baselines' / BASELINE_NAME
 PATRON_RUTA = re.compile(
     r'source/gestion/pm/(?P<carpeta>[^/]+)/iniciativas/[^/]+/hallazgos/'
@@ -135,15 +135,15 @@ def main():
     nuevos = [d for d in desajuste if not d[4]]
 
     if escribir:
-        destino = baseline_destination(universo)
-        destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_text(
+        target = baseline_destination(universo)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
             '# Deuda heredada de check_hallazgo_submodulo.py — congelada, no barrida.\n'
             '# Una ruta listada no bloquea; una nueva sí. Al mover un hallazgo a su\n'
             '# iniciativa correcta, quitar su línea: si no, el baseline miente.\n'
             + '\n'.join(sorted(d[0] for d in desajuste)) + '\n',
             encoding='utf-8')
-        print(f'baseline escrito en {destino}: {len(desajuste)} ruta(s)')
+        print(f'baseline escrito en {target}: {len(desajuste)} ruta(s)')
         return 0
 
     if quiet:

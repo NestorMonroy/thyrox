@@ -54,16 +54,16 @@ def bootstrap_difference(
             "variación de la que aprender — un resultado aquí no sería "
             "medido, sería inventado.")
     rng = random.Random(seed)
-    diferencias = []
+    diffs = []
     for _ in range(n_resamples):
-        remuestreo_a = [rng.choice(sample_a) for _ in sample_a]
-        remuestreo_b = [rng.choice(sample_b) for _ in sample_b]
-        diferencias.append(statistics.fmean(remuestreo_a) - statistics.fmean(remuestreo_b))
-    diferencias.sort()
-    alfa = (1 - confidence) / 2
-    indice_bajo = int(alfa * n_resamples)
-    indice_alto = min(n_resamples - 1, int((1 - alfa) * n_resamples))
-    ci_low, ci_high = diferencias[indice_bajo], diferencias[indice_alto]
+        resampling_to = [rng.choice(sample_a) for _ in sample_a]
+        resampling_b = [rng.choice(sample_b) for _ in sample_b]
+        diffs.append(statistics.fmean(resampling_to) - statistics.fmean(resampling_b))
+    diffs.sort()
+    alpha = (1 - confidence) / 2
+    index_low = int(alpha * n_resamples)
+    index_high = min(n_resamples - 1, int((1 - alpha) * n_resamples))
+    ci_low, ci_high = diffs[index_low], diffs[index_high]
     return {
         "observed_diff": statistics.fmean(sample_a) - statistics.fmean(sample_b),
         "ci_low": ci_low,

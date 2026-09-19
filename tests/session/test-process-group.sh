@@ -287,7 +287,7 @@ bash "$WAIT_JOBS" forget zombi-001 >/dev/null 2>&1 || true
 # que una senal dirigida al grupo lo alcanzaba. Es el caso de uso que la
 # arista existe para cubrir: sobrevivir mientras el primer plano sigue.
 #
-# Por que este caso hacia falta: `test-wait-jobs-dependencia.sh` mide que
+# Por que este caso hacia falta: `test-wait-jobs-dependency.sh` mide que
 # `dispatch` LANZA, no que lo lanzado SOBREVIVA. Pasaba en verde con el
 # defecto presente — el sub-patron D con la suite hermana como sujeto.
 # -----------------------------------------------------------------------------

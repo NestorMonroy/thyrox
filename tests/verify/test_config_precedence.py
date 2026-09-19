@@ -199,9 +199,9 @@ check('un parametro homonimo no entra en la cadena',
 #     que `env_value` entro en `FUENTES`, esto daba `[]` — y `[]` no distingue
 #     «vi una guarda, no es cadena» de «no vi ninguna lectura».
 reach = RAIZ / 'src' / 'paths' / 'reach.py'
-texto_reach = reach.read_text(encoding='utf-8')
+text_reach = reach.read_text(encoding='utf-8')
 check('el auditor NO cubre la precedencia por bucle de thyrox_root',
-      ['del_entorno'], mod.branch_order(texto_reach))
+      ['del_entorno'], mod.branch_order(text_reach))
 
 # --- 6-bis. y el discriminador: que VEA las lecturas, no que calle ---------
 #     La asercion de arriba, sola, no separa sus dos causas posibles. Este
@@ -211,7 +211,7 @@ check('el auditor NO cubre la precedencia por bucle de thyrox_root',
 #     `os.environ.get` directamente— y las SEIS que pasan por `env_value` eran
 #     invisibles.
 check('el auditor ve las lecturas que pasan por env_value',
-      True, len(mod.assignment_order(texto_reach)) > 1)
+      True, len(mod.assignment_order(text_reach)) > 1)
 check('y env_value cuenta como fuente', True, 'env_value' in mod.FUENTES)
 
 # --- 7. denominador y rehuse ------------------------------------------------

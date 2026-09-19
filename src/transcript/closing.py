@@ -66,18 +66,18 @@ class Closing:
 
 def read(transcript_path: "str | Path") -> Closing:
     """Destila el cierre de un transcript. Lee; no escribe nada."""
-    ruta = Path(transcript_path)
-    if not ruta.exists():
-        raise TranscriptNotFound(f"no hay transcript en {ruta}")
+    path = Path(transcript_path)
+    if not path.exists():
+        raise TranscriptNotFound(f"no hay transcript en {path}")
 
     read_last, read_declared, read_blocks, read_count = None, None, [], 0
-    with open(ruta, "r", encoding="utf-8") as fh:
-        for linea in fh:
-            linea = linea.strip()
-            if not linea:
+    with open(path, "r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
                 continue
             try:
-                obj = json.loads(linea)
+                obj = json.loads(line)
             except ValueError:
                 continue
             if obj.get("type") != "assistant":

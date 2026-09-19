@@ -15,12 +15,12 @@ from pathlib import Path
 # El bootstrap CANONICO de thyrox (`paths.reach.BOOTSTRAP`): ascenso con
 # deteccion del marcador, no `parents[N]`. La aritmetica por offset acierta a
 # UNA profundidad y falla en SILENCIO al mover el archivo un nivel.
-_AQUI = Path(__file__).resolve()
-_RAIZ = next((p for p in _AQUI.parents
+_HERE = Path(__file__).resolve()
+_ROOT = next((p for p in _HERE.parents
               if (p / "src" / "paths" / "reach.py").is_file()), None)
-if _RAIZ is None:
-    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_AQUI}")
-sys.path.insert(0, str(_RAIZ / "src"))
+if _ROOT is None:
+    raise RuntimeError(f"thyrox: no se encontro src/paths/reach.py sobre {_HERE}")
+sys.path.insert(0, str(_ROOT / "src"))
 
 from paths.reach import thyrox_root  # noqa: E402
 
@@ -35,7 +35,7 @@ from session.job_ledger import JobLedger  # noqa: E402
 # a nivel de modulo. Invocado por ruta muere con `ModuleNotFoundError`, que
 # es la precondicion que `trabajo-en-segundo-plano.md` declara — el test
 # media el fallo del atajo, no la conducta del sujeto.
-MODULE = str(thyrox_root(_AQUI.parent) / "bin" / "adopt_background")
+MODULE = str(thyrox_root(_HERE.parent) / "bin" / "adopt_background")
 OK = FAILED = 0
 
 

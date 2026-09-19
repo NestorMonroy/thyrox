@@ -54,7 +54,7 @@ def check(label: str, expected, obtained) -> None:
         FAILED += 1
 
 
-PAGINA_NORMAL = """
+PAGE_NORMAL = """
 <html><head><title>SOLO-EN-HEAD-NO-DEBE-APARECER</title><script>var x=1;</script>
 <style>.a{color:red}</style></head>
 <body>
@@ -64,14 +64,14 @@ entorno limpio, incluyendo dependencias y verificacion post-instalacion.</p>
 </body></html>
 """
 
-PAGINA_ROTA = """
+PAGE_BROKEN = """
 <html><head><title>Guia</title></head>
 <body>
 <h1>Guia</h1>
 </body></html>
 """
 
-PAGINA_CON_EMOJI = """
+PAGE_WITH_EMOJI = """
 <html><head><title>Estado</title></head>
 <body>
 <h1>Estado del build</h1>
@@ -80,42 +80,42 @@ PAGINA_CON_EMOJI = """
 """
 
 print("=== 1. visible_text — sólo <body>, sin script/style/etiquetas ===")
-texto = vqa.visible_text(PAGINA_NORMAL)
-check("no incluye el título del <head>", False, "SOLO-EN-HEAD-NO-DEBE-APARECER" in texto)
-check("no incluye el contenido del <script>", False, "var x=1" in texto)
-check("sí incluye el párrafo del body", True, "paso a paso" in texto)
+text = vqa.visible_text(PAGE_NORMAL)
+check("no incluye el título del <head>", False, "SOLO-EN-HEAD-NO-DEBE-APARECER" in text)
+check("no incluye el contenido del <script>", False, "var x=1" in text)
+check("sí incluye el párrafo del body", True, "paso a paso" in text)
 
 print("=== 2. find_near_empty cita la ruta ===")
-paginas = {"build/html/guia.html": PAGINA_NORMAL, "build/html/rota.html": PAGINA_ROTA}
-hallazgos = vqa.find_near_empty(paginas, min_chars=40)
-check("una sola página rota, citada por ruta", ["build/html/rota.html"], [h.path for h in hallazgos])
-check("el tipo de hallazgo es near_empty", "near_empty", hallazgos[0].kind)
+pages = {"build/html/guia.html": PAGE_NORMAL, "build/html/rota.html": PAGE_BROKEN}
+findings = vqa.find_near_empty(pages, min_chars=40)
+check("una sola página rota, citada por ruta", ["build/html/rota.html"], [h.path for h in findings])
+check("el tipo de hallazgo es near_empty", "near_empty", findings[0].kind)
 
 print("=== 3. find_near_empty no marca la página normal ===")
-check("la página normal no aparece", True, "build/html/guia.html" not in [h.path for h in hallazgos])
+check("la página normal no aparece", True, "build/html/guia.html" not in [h.path for h in findings])
 
 print("=== 4. find_emoji_or_icon cita el CODEPOINT, no el glifo ===")
-hallazgos_emoji = vqa.find_emoji_or_icon({"build/html/estado.html": PAGINA_CON_EMOJI})
-check("un hallazgo, citado por ruta", ["build/html/estado.html"], [h.path for h in hallazgos_emoji])
-check("el detalle cita el codepoint", True, "U+2705" in hallazgos_emoji[0].detail)
-check("el detalle NO contiene el glifo crudo", False, "✅" in hallazgos_emoji[0].detail)
+findings_emoji = vqa.find_emoji_or_icon({"build/html/estado.html": PAGE_WITH_EMOJI})
+check("un hallazgo, citado por ruta", ["build/html/estado.html"], [h.path for h in findings_emoji])
+check("el detalle cita el codepoint", True, "U+2705" in findings_emoji[0].detail)
+check("el detalle NO contiene el glifo crudo", False, "✅" in findings_emoji[0].detail)
 
 print("=== 5. find_emoji_or_icon no marca español/ASCII llano ===")
-sin_emoji = vqa.find_emoji_or_icon({"build/html/guia.html": PAGINA_NORMAL})
-check("sin hallazgos sobre texto llano con acentos", [], sin_emoji)
+without_emoji = vqa.find_emoji_or_icon({"build/html/guia.html": PAGE_NORMAL})
+check("sin hallazgos sobre texto llano con acentos", [], without_emoji)
 
 print("=== 6. format_report — ningún carácter del reporte es emoji ===")
-todos = vqa.find_near_empty(paginas, min_chars=40) + hallazgos_emoji
-reporte = vqa.format_report(todos)
-EMOJI_RANGO = range(0x1F300, 0x1FB00)
+every = vqa.find_near_empty(pages, min_chars=40) + findings_emoji
+report = vqa.format_report(every)
+EMOJI_SPAN = range(0x1F300, 0x1FB00)
 check("ningún carácter del reporte cae en el rango de emoji", True,
-      all(ord(c) not in EMOJI_RANGO for c in reporte))
+      all(ord(c) not in EMOJI_SPAN for c in report))
 check("el reporte sí nombra la ruta de cada hallazgo", True,
-      "build/html/rota.html" in reporte and "build/html/estado.html" in reporte)
+      "build/html/rota.html" in report and "build/html/estado.html" in report)
 
 print("=== 7. ANULACIÓN — min_chars=0 apaga el chequeo ===")
-sin_umbral = vqa.find_near_empty(paginas, min_chars=0)
-check("con min_chars=0, la página rota deja de marcarse", [], sin_umbral)
+without_threshold = vqa.find_near_empty(pages, min_chars=0)
+check("con min_chars=0, la página rota deja de marcarse", [], without_threshold)
 
 print(f"\nOK={OK} FAILED={FAILED}")
 raise SystemExit(1 if FAILED else 0)

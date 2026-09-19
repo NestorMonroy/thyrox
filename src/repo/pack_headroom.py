@@ -142,15 +142,15 @@ def _mib(value: float) -> str:
 
 def report(headroom: Headroom, advice: Advice,
            margin: float = SAFETY_MARGIN) -> str:
-    def _cabe(peak: int) -> str:
+    def _fits(peak: int) -> str:
         # El margen se aplica AQUI, en la comparacion — no al disco libre. La
         # version anterior colgaba «(margen aplicado ×1.15)» de la linea del
         # disco libre, y quien la leyera creeria que esa cifra ya venia
         # descontada. La forma que no se puede malleer es mostrar la
         # comparacion entera: el operando, el factor y el resultado.
-        exigido = peak * margin
-        return (f"{_mib(peak)} × {margin} = {_mib(exigido)}"
-                f"   → {'cabe' if headroom.free_bytes >= exigido else 'NO cabe'}")
+        required = peak * margin
+        return (f"{_mib(peak)} × {margin} = {_mib(required)}"
+                f"   → {'cabe' if headroom.free_bytes >= required else 'NO cabe'}")
 
     return "\n".join([
         f"objetos sueltos   {headroom.loose_objects}"
@@ -158,8 +158,8 @@ def report(headroom: Headroom, advice: Advice,
         f"empaquetados      {headroom.packed_objects}"
         f"   ({_mib(headroom.pack_bytes)})",
         f"disco libre       {_mib(headroom.free_bytes)}   (crudo, sin margen)",
-        f"pico completo     {_cabe(headroom.full_peak)}",
-        f"pico incremental  {_cabe(headroom.loose_peak)}",
+        f"pico completo     {_fits(headroom.full_peak)}",
+        f"pico incremental  {_fits(headroom.loose_peak)}",
         f"VEREDICTO         {advice.value}",
         f"  lanzar: {advice.command}",
     ])

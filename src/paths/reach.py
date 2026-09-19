@@ -526,7 +526,7 @@ def ensure_home(path: str | Path) -> Path:
     return home
 
 
-def creates_home(resolver):
+def creates_home(resolve):
     """Decorador: el hogar que `resolver` devuelve EXISTE al volver.
 
     Se aplica al resolutor y no a cada `return` por dos razones medidas. La
@@ -539,9 +539,9 @@ def creates_home(resolver):
     No cambia la firma: `functools.wraps` conserva nombre y docstring, que es
     lo que leen los tests de superficie.
     """
-    @functools.wraps(resolver)
+    @functools.wraps(resolve)
     def wrapped(*args, **kwargs):
-        return ensure_home(resolver(*args, **kwargs))
+        return ensure_home(resolve(*args, **kwargs))
     return wrapped
 
 

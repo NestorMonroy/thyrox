@@ -1,0 +1,10 @@
+  src/hallazgo/hallazgo_ids.py  ->  español: hallazgo
+  tests/hallazgo/test_hallazgo_ids.py  ->  español: hallazgo
+  tests/session/test-bg-nombre-bandera.sh  ->  español: bandera, nombre
+  tests/session/test-run-task-pool-aislamiento.sh  ->  español: aislamiento
+  tests/session/test-run-task-pool-alcance.sh  ->  español: alcance
+  tests/session/test-wait-jobs-dependencia.sh  ->  español: dependencia
+  tests/session/test-write-env-repara-clon-desplazado.sh  ->  español: clon, desplazado, repara
+  tests/verify/test-hallazgo-submodulo-baseline.sh  ->  español: hallazgo, submodulo
+8 nombre(s) de archivo en español (alcance medido: 580 archivo(s) .py y .sh bajo .claude/scripts/src/tests/addons/provisioners/utils; 71 congelado(s) en baseline)
+  Cota inferior: ciega a la palabra que existe en los dos idiomas (total, final, normal).

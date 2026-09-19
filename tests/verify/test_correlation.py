@@ -43,13 +43,13 @@ def check(label: str, expected, obtained) -> None:
 
 print("=== 1. CASO (c): series correlacionadas ===")
 xs = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
-ys_correlacionada = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0]
-r_c = correlation.pearson_correlation(xs, ys_correlacionada)
+ys_correlated = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0]
+r_c = correlation.pearson_correlation(xs, ys_correlated)
 check("correlación perfecta -> cercana a 1", True, r_c > 0.99)
 
 print("=== 2. CASO (d): series independientes ===")
-ys_independiente = [3.0, 1.0, 6.0, 2.0, 7.0, 4.0, 3.0]
-r_d = correlation.pearson_correlation(xs, ys_independiente)
+ys_independent = [3.0, 1.0, 6.0, 2.0, 7.0, 4.0, 3.0]
+r_d = correlation.pearson_correlation(xs, ys_independent)
 check("correlación independiente discriminada de (c)", True, abs(r_d) < abs(r_c) - 0.3)
 
 print("=== 3. serie constante ===")

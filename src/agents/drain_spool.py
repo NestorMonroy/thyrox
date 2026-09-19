@@ -140,8 +140,8 @@ def _write(destination: Path, events: list) -> None:
 
 def drain(dry_run: bool = False) -> dict:
     """Reenvia cada evento del carrete. Devuelve el conteo por desenlace."""
-    registro = error_log()
-    destination = registro.spool_path()
+    record = error_log()
+    destination = record.spool_path()
     events = _read(destination)
     tope = _max_attempts()
     reenviados = abandonados = 0
@@ -172,7 +172,7 @@ def drain(dry_run: bool = False) -> dict:
         evento["last_error"] = (detalle or "").strip()[:500]
         if evento["attempts"] >= tope:
             abandonados += 1
-            registro._append("drain_spool.py", cmd, None,
+            record._append("drain_spool.py", cmd, None,
                     f"abandonado tras {evento['attempts']} intento(s): "
                     f"{evento['last_error']}")
         else:

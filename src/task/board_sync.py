@@ -328,8 +328,8 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
         for row in conn.execute(
                 f"SELECT {', '.join(_MATCH_COLUMNS)} "
                 f"  FROM tasks WHERE session_id = ?", (session_id,)):
-            fila = dict(zip(_MATCH_COLUMNS, row))
-            by_subject[fila["subject"]].append(fila)
+            record = dict(zip(_MATCH_COLUMNS, row))
+            by_subject[record["subject"]].append(record)
 
         buckets = {name: [] for name in RECONCILE_BUCKETS}
         for ordinal, card in sorted(cards.items(), key=lambda kv: int(kv[0])):
@@ -345,25 +345,25 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
                     {"ordinal": ordinal, "subject": subject,
                      "board_status": board.get("status")})
             else:
-                fila = matches[0]
+                record = matches[0]
                 # `None` y `""` son el mismo «sin texto» a efectos de
                 # convergencia: una columna nula y una tarjeta sin la clave no
                 # son una divergencia que escribir.
                 drifted = [name for name in RECONCILED_FIELDS
-                           if (fila[name] or "") != (board[name] or "")]
+                           if (record[name] or "") != (board[name] or "")]
                 if PRIMARY_RECONCILED_FIELD in drifted:
                     target = "status_drift"
                 elif drifted:
                     target = "field_drift"
                 else:
                     target = "same"
-                entrada = {"ordinal": ordinal, "subject": subject,
-                           "citation": fila["citation_id"],
-                           "task_id": fila["task_id"], "drifted": drifted}
+                board_entry = {"ordinal": ordinal, "subject": subject,
+                           "citation": record["citation_id"],
+                           "task_id": record["task_id"], "drifted": drifted}
                 for name in RECONCILED_FIELDS:
-                    entrada[f"board_{name}"] = board[name]
-                    entrada[f"store_{name}"] = fila[name]
-                buckets[target].append(entrada)
+                    board_entry[f"board_{name}"] = board[name]
+                    board_entry[f"store_{name}"] = record[name]
+                buckets[target].append(board_entry)
 
         # Las filas que NINGUNA tarjeta nombra. No se pueden reconciliar —a una
         # fila sin tarjeta no hay fuente desde la que propagar— pero callarlas
@@ -373,14 +373,14 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
         subjects_on_board = {card.get("subject") for card in cards.values()}
         store_rows = 0
         unpaired_rows = []
-        for subject, filas in by_subject.items():
-            store_rows += len(filas)
+        for subject, rows in by_subject.items():
+            store_rows += len(rows)
             if subject in subjects_on_board:
                 continue
-            for fila in filas:
+            for record in rows:
                 unpaired_rows.append(
-                    {"task_id": fila["task_id"], "subject": subject,
-                     "citation": fila["citation_id"], "status": fila["status"]})
+                    {"task_id": record["task_id"], "subject": subject,
+                     "citation": record["citation_id"], "status": record["status"]})
         # «Abierta» es el dato que decide si la cifra importa: 614 de 888 lo
         # estaban. Se deriva del vocabulario que la tabla ya hace cumplir, no
         # de una segunda lista.
@@ -388,23 +388,23 @@ def reconcile_status(store_path, session_id, *, board_dir=None,
                             if e["status"] != CLOSED_STATUS)
 
         written = 0
-        pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
-        if apply_changes and pendientes:
+        pending = [e for name in DRIFT_BUCKETS for e in buckets[name]]
+        if apply_changes and pending:
             stamp = task_ids._now()
-            for entry in pendientes:
+            for entry in pending:
                 # Se escribe SOLO lo que difiere. Un UPDATE de las dos columnas
                 # tocaria `description` en una fila cuya divergencia era de
                 # estado, y con eso el conteo de escrituras dejaria de decir
                 # que se corrigio.
-                sets, valores = [], []
+                sets, values = [], []
                 for name in RECONCILED_FIELDS:
                     if name in entry["drifted"]:
                         sets.append(f"{name} = ?")
-                        valores.append(entry[f"board_{name}"])
+                        values.append(entry[f"board_{name}"])
                 conn.execute(
                     f"UPDATE tasks SET {', '.join(sets)}, updated_at = ? "
                     " WHERE session_id = ? AND citation_id = ?",
-                    (*valores, stamp, session_id, entry["citation"]))
+                    (*values, stamp, session_id, entry["citation"]))
                 written += 1
             conn.commit()
     finally:
@@ -506,39 +506,39 @@ def _cmd_reconcile_status(args: argparse.Namespace) -> int:
     print(f"  del store: {result['store_rows']} fila(s) en la sesion, "
           f"{len(result['unpaired_rows'])} sin tarjeta que las nombre "
           f"({result['open_unpaired']} abierta(s)) — fuera de los cubos")
-    pendientes = [e for name in DRIFT_BUCKETS for e in buckets[name]]
-    for entry in sorted(pendientes, key=lambda e: int(e["ordinal"])):
+    pending = [e for name in DRIFT_BUCKETS for e in buckets[name]]
+    for entry in sorted(pending, key=lambda e: int(e["ordinal"])):
         # La flecha va del store al board: es la direccion de la escritura,
         # no el orden en que se leyeron las dos columnas.
-        campos = ",".join(entry["drifted"])
+        fields = ",".join(entry["drifted"])
         print(f"    #{entry['ordinal']:<5} {entry['citation']:<18} "
-              f"{campos:<20} {entry['store_status']:>12} -> "
+              f"{fields:<20} {entry['store_status']:>12} -> "
               f"{entry['board_status']:<12} {entry['subject'][:40]}")
     if result["applied"]:
         print(f"  escritas: {result['written']} fila(s)")
     else:
         print(f"  NO se escribio nada (faltó --aplicar); "
-              f"{len(pendientes)} fila(s) quedarian al dia")
+              f"{len(pending)} fila(s) quedarian al dia")
     return 0
 
 
 def _cmd_reconcile_all(args: argparse.Namespace) -> int:
     result = reconcile_all_sessions(args.store, board_root=args.raiz,
                                     apply_changes=args.aplicar)
-    sesiones = result["sessions"]
+    sessions = result["sessions"]
     print(f"reconciliar-todo: raiz {result['root']}")
-    print(f"  sesiones del store    {len(sesiones):5d}")
+    print(f"  sesiones del store    {len(sessions):5d}")
     # Las omitidas se publican con su conteo: son el denominador de lo que la
     # raiz aloja y este store no gobierna, y sin el un «3 sesiones» no dice
     # sobre cuantas se midio.
     print(f"  omitidas (sin filas)  {len(result['skipped']):5d}")
-    pendientes = 0
-    for sesion, uno in sorted(sesiones.items()):
-        cuantas = sum(len(uno["buckets"][name]) for name in DRIFT_BUCKETS)
-        pendientes += cuantas
-        if cuantas:
-            print(f"    {sesion}  {cuantas} fila(s) con deriva "
-                  f"de {uno['total_cards']} tarjeta(s)")
+    pending = 0
+    for session, one in sorted(sessions.items()):
+        how_many = sum(len(one["buckets"][name]) for name in DRIFT_BUCKETS)
+        pending += how_many
+        if how_many:
+            print(f"    {session}  {how_many} fila(s) con deriva "
+                  f"de {one['total_cards']} tarjeta(s)")
     print(f"  del store: {result['store_rows_total']} fila(s), "
           f"{result['unpaired_total']} sin tarjeta que las nombre "
           f"({result['open_unpaired_total']} abierta(s)) — fuera de los cubos")
@@ -546,7 +546,7 @@ def _cmd_reconcile_all(args: argparse.Namespace) -> int:
         print(f"  escritas: {result['written']} fila(s)")
     else:
         print(f"  NO se escribio nada (faltó --aplicar); "
-              f"{pendientes} fila(s) quedarian al dia")
+              f"{pending} fila(s) quedarian al dia")
     return 0
 
 

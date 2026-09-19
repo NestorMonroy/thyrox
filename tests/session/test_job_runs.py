@@ -124,14 +124,14 @@ def test_the_distribution_publishes_its_operands_not_only_the_total():
 
 def test_opposite_dispersion_with_the_SAME_total_gives_a_different_verdict():
     # CONTROL POSITIVO: mismo total (16 s) y misma n; solo cambia la forma.
-    uniforme = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
-    dominante = job_runs.duration_distribution([13.0, 1.0, 1.0, 1.0])
-    assert uniforme["total"] == dominante["total"]
+    uniform = job_runs.duration_distribution([4.0, 4.0, 4.0, 4.0])
+    dominant = job_runs.duration_distribution([13.0, 1.0, 1.0, 1.0])
+    assert uniform["total"] == dominant["total"]
     # El reloj de pared con C servidores NO es total/C cuando hay un dominante:
     # no se puede bajar de la pieza mas larga.
-    assert uniforme["floor_wall_clock"](2) == 8.0      # total/C manda
-    assert dominante["floor_wall_clock"](2) == 13.0    # max manda
-    assert uniforme["floor_wall_clock"](2) != dominante["floor_wall_clock"](2)
+    assert uniform["floor_wall_clock"](2) == 8.0      # total/C manda
+    assert dominant["floor_wall_clock"](2) == 13.0    # max manda
+    assert uniform["floor_wall_clock"](2) != dominant["floor_wall_clock"](2)
 
 
 def test_an_empty_population_refuses_instead_of_publishing_a_zero():
@@ -154,16 +154,16 @@ def test_an_empty_population_refuses_instead_of_publishing_a_zero():
 # de módulo, y ésas sí corren al importar).
 if __name__ == "__main__":
     import traceback
-    _fallos = 0
-    for _nombre, _caso in sorted(list(globals().items())):
-        if not _nombre.startswith("test_") or not callable(_caso):
+    _failures = 0
+    for _name, _case in sorted(list(globals().items())):
+        if not _name.startswith("test_") or not callable(_case):
             continue
         try:
-            _caso()
-            print(f"  ok    {_nombre}")
+            _case()
+            print(f"  ok    {_name}")
         except Exception:
-            _fallos += 1
-            print(f"  FALLO {_nombre}")
+            _failures += 1
+            print(f"  FALLO {_name}")
             traceback.print_exc()
-    print(f"resumen: {_fallos} fallo(s)")
-    raise SystemExit(1 if _fallos else 0)
+    print(f"resumen: {_failures} fallo(s)")
+    raise SystemExit(1 if _failures else 0)

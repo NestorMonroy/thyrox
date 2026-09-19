@@ -77,7 +77,7 @@ def _run(interpreter: pathlib.Path | str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_el_sujeto_y_los_interpretes_existen():
+def test_the_subject_and_the_interpreters_exist():
     """Precondicion: sin ellos los otros bloques medirian otra cosa."""
     assert GATE.is_file(), GATE
     assert (CONSUMER / SUBJECT).is_file(), CONSUMER / SUBJECT
@@ -85,7 +85,7 @@ def test_el_sujeto_y_los_interpretes_existen():
     assert CONSUMER_PYTHON.is_file(), CONSUMER_PYTHON
 
 
-def test_el_venv_del_proveedor_no_publica_un_conteo_que_no_midio():
+def test_the_venv_of_provider_not_publishes_a_count_that_not_measured():
     """Bloque 1 — el defecto medido.
 
     Hoy sale 1 con un traceback de `ExtensionError` y stdout vacio. Un 1 es
@@ -103,7 +103,7 @@ def test_el_venv_del_proveedor_no_publica_un_conteo_que_no_midio():
         f'rehusa sin nombrar el interprete: {r.stderr[-400:]!r}')
 
 
-def test_la_via_del_pre_commit_SI_publica_su_conteo():
+def test_the_via_of_pre_commit_WHETHER_publishes_su_count():
     """Bloque 2 — el gemelo que hace del bloque 1 un control y no un adorno.
 
     Si el arreglo hiciera rehusar a todo el mundo, el bloque 1 pasaria igual
@@ -116,15 +116,15 @@ def test_la_via_del_pre_commit_SI_publica_su_conteo():
     assert r.returncode in (0, 1), f'exit inesperado: {r.returncode}'
 
 
-def test_la_ruta_real_del_ejecutable_NO_discrimina():
+def test_the_path_real_of_executable_NOT_discriminates():
     """Bloque 3 — por que el discriminador es `sys.prefix`.
 
     Medido: los tres interpretes del arbol resuelven al mismo binario real.
     Comparar `os.path.realpath(sys.executable)` daria «son el mismo» para los
     tres, y el guard no re-lanzaria nunca.
     """
-    reales = set()
-    prefijos = set()
+    real = set()
+    prefixes = set()
     for p in ('/usr/bin/python3', PROVIDER_PYTHON, CONSUMER_PYTHON):
         out = subprocess.run(
             [str(p), '-c',
@@ -132,10 +132,10 @@ def test_la_ruta_real_del_ejecutable_NO_discrimina():
              'print(os.path.realpath(sys.executable));'
              'print(pathlib.Path(sys.prefix).resolve())'],
             capture_output=True, text=True, check=False).stdout.splitlines()
-        reales.add(out[0])
-        prefijos.add(out[1])
-    assert len(reales) == 1, f'la premisa del bloque cambio: {reales}'
-    assert len(prefijos) == 3, f'sys.prefix dejo de discriminar: {prefijos}'
+        real.add(out[0])
+        prefixes.add(out[1])
+    assert len(real) == 1, f'la premisa del bloque cambio: {real}'
+    assert len(prefixes) == 3, f'sys.prefix dejo de discriminar: {prefixes}'
 
 
 def _missing_under(interpreter: pathlib.Path) -> list[str]:
@@ -144,20 +144,20 @@ def _missing_under(interpreter: pathlib.Path) -> list[str]:
     Se importa el gate por ruta y se llama a su helper: el subproceso ejerce
     el interprete real, no una simulacion de su `sys.path`.
     """
-    guion = (
+    script = (
         "import sys, importlib.util as iu;"
         f"sys.path.insert(0, {str(THYROX_ROOT / 'src')!r});"
         f"spec = iu.spec_from_file_location('crs', {str(GATE)!r});"
         "m = iu.module_from_spec(spec); spec.loader.exec_module(m);"
         "print(repr(m._missing_extensions()))"
     )
-    r = subprocess.run([str(interpreter), '-c', guion],
+    r = subprocess.run([str(interpreter), '-c', script],
                        cwd=str(CONSUMER), capture_output=True, text=True, check=False)
     assert r.returncode == 0, f'la sonda murio: {r.stderr[-400:]!r}'
     return eval(r.stdout.strip())                                # noqa: S307
 
 
-def test_la_precondicion_de_extensiones_discrimina_los_dos_venv():
+def test_the_precondition_of_extensions_discriminates_the_two_venv():
     """Bloque 4 — el guard mide si el interprete puede CARGAR el conf.py.
 
     `import sphinx` es el significante; lo que decide es si las extensiones
@@ -171,32 +171,32 @@ def test_la_precondicion_de_extensiones_discrimina_los_dos_venv():
     el gate volveria a morir con `ExtensionError` tras declarar que podia
     medir (sub-patron D de `metrica-decide-la-conclusion.md`).
     """
-    declaradas = _missing_under(CONSUMER_PYTHON)
-    assert declaradas == [], (
+    declared = _missing_under(CONSUMER_PYTHON)
+    assert declared == [], (
         'el venv del consumidor no resuelve lo que su propio conf.py declara; '
-        f'corre `make sync` en {CONSUMER}: {declaradas}')
+        f'corre `make sync` en {CONSUMER}: {declared}')
 
-    faltan = _missing_under(PROVIDER_PYTHON)
-    assert faltan, (
+    missing = _missing_under(PROVIDER_PYTHON)
+    assert missing, (
         'el venv del proveedor resuelve las extensiones del consumidor: la '
         'premisa del guard cambio y el bloque 1 dejo de discriminar')
-    assert 'sphinx_design' in faltan, (
-        f'la extension del episodio medido ya no falta: {faltan}')
+    assert 'sphinx_design' in missing, (
+        f'la extension del episodio medido ya no falta: {missing}')
 
 
 def _run_suite() -> int:
-    fallos = 0
-    casos = [(n, f) for n, f in sorted(globals().items())
+    failures = 0
+    cases = [(n, f) for n, f in sorted(globals().items())
              if n.startswith('test_') and callable(f)]
-    for nombre, caso in casos:
+    for name, case in cases:
         try:
-            caso()
-            print(f'  ok    {nombre}')
+            case()
+            print(f'  ok    {name}')
         except Exception as e:                          # noqa: BLE001
-            fallos += 1
-            print(f'  FALLA {nombre}: {type(e).__name__}: {e}')
-    print(f'{len(casos) - fallos}/{len(casos)} aserciones verdes')
-    return 1 if fallos else 0
+            failures += 1
+            print(f'  FALLA {name}: {type(e).__name__}: {e}')
+    print(f'{len(cases) - failures}/{len(cases)} aserciones verdes')
+    return 1 if failures else 0
 
 
 if __name__ == '__main__':
