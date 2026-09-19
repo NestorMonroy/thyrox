@@ -5,16 +5,46 @@
   "type": "module",
   "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) \u2014 porte parcial, ver docstrings por modulo.",
   "exports": {
-    ".": "./src/index.ts",
-    "./cache-paths": "./src/cache-paths.ts",
-    "./tempfile.js": "./src/tempfile.ts",
-    "./path.js": "./src/path.ts",
-    "./windowsPaths.js": "./src/windowsPaths.ts",
-    "./xdg.js": "./src/xdg.ts",
-    "./glob.js": "./src/glob.ts",
-    "./testing": "./src/testing/index.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./cache-paths": {
+      "types": "./dist/cache-paths.d.ts",
+      "default": "./src/cache-paths.ts"
+    },
+    "./tempfile.js": {
+      "types": "./dist/tempfile.d.ts",
+      "default": "./src/tempfile.ts"
+    },
+    "./path.js": {
+      "types": "./dist/path.d.ts",
+      "default": "./src/path.ts"
+    },
+    "./windowsPaths.js": {
+      "types": "./dist/windowsPaths.d.ts",
+      "default": "./src/windowsPaths.ts"
+    },
+    "./xdg.js": {
+      "types": "./dist/xdg.d.ts",
+      "default": "./src/xdg.ts"
+    },
+    "./glob.js": {
+      "types": "./dist/glob.d.ts",
+      "default": "./src/glob.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test",
@@ -41,5 +71,5 @@
     "proper-lockfile": "^4.1.2"
   },
   "main": "./src/index.ts",
-  "types": "./src/index.ts"
+  "types": "./dist/index.d.ts"
 }

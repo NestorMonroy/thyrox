@@ -5,19 +5,58 @@
   "type": "module",
   "description": "La interfaz del modelo y sus dos adaptadores: HTTP a Anthropic (SSE) y el grabado que reproduce respuestas. Lo que el bucle LLAMA para obtener un turno.",
   "exports": {
-    ".": "./src/index.ts",
-    "./anthropicHttp": "./src/anthropicHttp.ts",
-    "./recorded": "./src/recorded.ts",
-    "./anthropicMockServer": "./src/anthropicMockServer.ts",
-    "./sse": "./src/sse.ts",
-    "./caCerts": "./src/internal/caCerts.ts",
-    "./gemini": "./src/gemini/index.ts",
-    "./openai": "./src/openai/index.ts",
-    "./policyLimits": "./src/policyLimits/index.ts",
-    "./cost/*": "./src/cost/*.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts",
-    "./commands/logout/logout.js": "./src/commands/logout/logout.tsx"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./anthropicHttp": {
+      "types": "./dist/anthropicHttp.d.ts",
+      "default": "./src/anthropicHttp.ts"
+    },
+    "./recorded": {
+      "types": "./dist/recorded.d.ts",
+      "default": "./src/recorded.ts"
+    },
+    "./anthropicMockServer": {
+      "types": "./dist/anthropicMockServer.d.ts",
+      "default": "./src/anthropicMockServer.ts"
+    },
+    "./sse": {
+      "types": "./dist/sse.d.ts",
+      "default": "./src/sse.ts"
+    },
+    "./caCerts": {
+      "types": "./dist/internal/caCerts.d.ts",
+      "default": "./src/internal/caCerts.ts"
+    },
+    "./gemini": {
+      "types": "./dist/gemini/index.d.ts",
+      "default": "./src/gemini/index.ts"
+    },
+    "./openai": {
+      "types": "./dist/openai/index.d.ts",
+      "default": "./src/openai/index.ts"
+    },
+    "./policyLimits": {
+      "types": "./dist/policyLimits/index.d.ts",
+      "default": "./src/policyLimits/index.ts"
+    },
+    "./cost/*": {
+      "types": "./dist/cost/*.d.ts",
+      "default": "./src/cost/*.ts"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./commands/logout/logout.js": {
+      "types": "./dist/commands/logout/logout.d.ts",
+      "default": "./src/commands/logout/logout.tsx"
+    }
   },
   "scripts": {
     "test": "bun test",
@@ -52,5 +91,6 @@
     "openai": "6.33.0",
     "selfsigned": "^5.5.0",
     "zod": "^4.3.6"
-  }
+  },
+  "types": "./dist/index.d.ts"
 }

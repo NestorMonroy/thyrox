@@ -5,22 +5,64 @@
   "type": "module",
   "description": "Porte completo del paquete headless-sdk de claude-code-nestor-monroy-tools (tarea #238, primer tramo): contratos SDK, protocolo de control (schemas + tipos), tipos core generados, tipos de runtime, tipos de sandbox, telemetria de memoria, compat de mensajes de control. 15 de 15 modulos de la fuente. Cross-dependencias: la fuente importa lazySchema de @claude-code-how-works/tool-registry y logEvent de @claude-code-how-works/local-observability; ninguno resuelve aqui porque headless-sdk no es miembro del bun workspace (DEC-04), asi que ambos viven como sustitutos locales en src/internal/pendingCrossPackageDeps.ts (reimplementacion fiel y punto de inyeccion, respectivamente). MessageContent (de agent/messageShapes en la fuente) se reconstruye directamente desde @anthropic-ai/sdk, que SI es una dependencia npm real. Ver el analisis de la iniciativa para el detalle.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./testing": "./testing/index.ts",
-    "./agentSdkTypes.js": "./src/agentSdkTypes.ts",
-    "./controlMessageCompat": "./src/controlMessageCompat.ts",
-    "./controlTypes.js": "./src/controlTypes.ts",
-    "./sdkMemorySummary.js": "./src/sdkMemorySummary.ts",
-    "./sdkUtilityTypes.js": "./src/sdkUtilityTypes.ts",
-    "./runtimeTypes.js": "./src/runtimeTypes.ts",
-    "./coreTypes.js": "./src/coreTypes.ts",
-    "./coreSchemas.js": "./src/coreSchemas.ts",
-    "./controlSchemas.js": "./src/controlSchemas.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./agentSdkTypes.js": {
+      "types": "./dist/src/agentSdkTypes.d.ts",
+      "default": "./src/agentSdkTypes.ts"
+    },
+    "./controlMessageCompat": {
+      "types": "./dist/src/controlMessageCompat.d.ts",
+      "default": "./src/controlMessageCompat.ts"
+    },
+    "./controlTypes.js": {
+      "types": "./dist/src/controlTypes.d.ts",
+      "default": "./src/controlTypes.ts"
+    },
+    "./sdkMemorySummary.js": {
+      "types": "./dist/src/sdkMemorySummary.d.ts",
+      "default": "./src/sdkMemorySummary.ts"
+    },
+    "./sdkUtilityTypes.js": {
+      "types": "./dist/src/sdkUtilityTypes.d.ts",
+      "default": "./src/sdkUtilityTypes.ts"
+    },
+    "./runtimeTypes.js": {
+      "types": "./dist/src/runtimeTypes.d.ts",
+      "default": "./src/runtimeTypes.ts"
+    },
+    "./coreTypes.js": {
+      "types": "./dist/src/coreTypes.d.ts",
+      "default": "./src/coreTypes.ts"
+    },
+    "./coreSchemas.js": {
+      "types": "./dist/src/coreSchemas.d.ts",
+      "default": "./src/coreSchemas.ts"
+    },
+    "./controlSchemas.js": {
+      "types": "./dist/src/controlSchemas.d.ts",
+      "default": "./src/controlSchemas.ts"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

@@ -1,0 +1,3 @@
+repl: emitio pese a 8516 errores (2054 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 8516 error(es) que siguen vivos en su propio paquete

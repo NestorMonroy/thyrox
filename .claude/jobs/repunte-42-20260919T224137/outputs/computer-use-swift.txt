@@ -1,0 +1,3 @@
+computer-use-swift: emitio pese a 31 errores (29 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 31 error(es) que siguen vivos en su propio paquete

@@ -270,13 +270,28 @@ def export_targets(manifest: dict):
         if isinstance(valor, str):
             destinos.append(valor)
         elif isinstance(valor, dict):
-            for anidado in valor.values():
+            # De un manifiesto YA repuntado se toma solo `default`: `types`
+            # apunta a `dist/`, y meterlo aqui haria que el paquete compilara
+            # sus propias declaraciones y le subiria el `rootDir`. Medido:
+            # `storage` daba `src` antes del repunte y `.` despues, sin que su
+            # codigo cambiara — la emision entera se habria movido.
+            if "default" in valor:
+                recolectar(valor["default"])
+                return
+            for clave, anidado in valor.items():
+                if clave == "types":
+                    continue
                 recolectar(anidado)
 
     for clave in ("main", "types"):
         recolectar(manifest.get(clave))
     recolectar(manifest.get("exports"))
-    return destinos
+    # `dist/` es SALIDA por definicion, nunca fuente. La clave `types` de raiz
+    # de un manifiesto ya repuntado apunta ahi, y sin este filtro el paquete
+    # se compilaria a si mismo: `repoint_manifest` dejaria de ser idempotente
+    # porque el `rootDir` que deriva cambiaria en la segunda pasada.
+    salida = f"{OUTPUT_DIR}/"
+    return [d for d in destinos if not d.lstrip("./").startswith(salida)]
 
 
 def _project_shape(package_dir: Path):
@@ -484,19 +499,41 @@ def emit_package(package_dir: Path) -> EmitResult:
                       escaped_errors=cubos["escaped"])
 
 
-def _declaration_for(source_entry: str) -> str:
-    """La declaracion que corresponde a una entrada de fuente cualquiera.
+def declaration_for(source_entry: str, root_dir: str = "") -> str:
+    """La declaracion que corresponde a una entrada de fuente, dado el rootDir.
 
-    Conserva el comodin: `./src/*.ts` da `./dist/*.d.ts`, no `./dist/.d.ts`.
+    La ruta de salida de tsc es `outDir + relativa-al-rootDir`, asi que la
+    declaracion conserva TODO el camino que sobra despues del `rootDir` — no
+    solo el nombre del archivo.
+
+    El defecto que cierra, medido sobre el arbol tras repuntar los 37: la
+    version anterior aplanaba el directorio. `repl` declara `./screens/*.js`
+    apuntando a `./src/screens/*.tsx`, y su declaracion quedo como
+    `./dist/*.d.ts` cuando el archivo real esta en `dist/src/screens/`. Esa
+    ruta no resuelve, tsc cae a la condicion `default` —la fuente— y el
+    repunte queda **inerte**: el typecheck del consumidor bajo de 2821 a 2656,
+    un 6 % en vez del 53 % que la atribucion predecia.
+
+    Lo que el fixture no podia destapar: sus paquetes sinteticos tienen la
+    entrada en la raiz de `src`, donde aplanar y conservar dan lo mismo. El
+    caso que discrimina necesita un directorio **anidado** bajo el rootDir.
+
+    Conserva el comodin: `./src/screens/*.tsx` da `./dist/src/screens/*.d.ts`.
     Esa sustitucion es lo que hace que UNA entrada cubra los 240 imports por
     subpath que los consumidores de `storage` emiten.
     """
-    stem = source_entry.rsplit("/", 1)[-1]
-    stem = stem[: -len(".ts")] if stem.endswith(".ts") else os.path.splitext(stem)[0]
-    directory = source_entry.rsplit("/", 1)[0] if "/" in source_entry else "."
-    depth = directory.strip("./")
-    prefix = f"./{OUTPUT_DIR}" if not depth or depth == "." else f"./{OUTPUT_DIR}"
-    return f"{prefix}/{stem}.d.ts"
+    ruta = source_entry.lstrip("./")
+    base = ruta[: -len(".ts")] if ruta.endswith(".ts") else os.path.splitext(ruta)[0]
+    raiz = (root_dir or "").strip("./")
+    if raiz and raiz != "." and (base + "/").startswith(raiz + "/"):
+        base = base[len(raiz) + 1:]
+    return f"./{OUTPUT_DIR}/{base}.d.ts"
+
+
+#: Nombre anterior, conservado porque tres llamadas internas lo usan. El
+#: publico es `declaration_for`: el guion bajo decia «detalle interno» sobre
+#: una funcion que el contrato del repunte necesita poder medir.
+_declaration_for = declaration_for
 
 
 def repoint_manifest(package_dir: Path) -> bool:
@@ -522,6 +559,10 @@ def repoint_manifest(package_dir: Path) -> bool:
     package_dir = Path(package_dir)
     manifest_path = package_dir / "package.json"
     manifest = _read_manifest(package_dir)
+    # El MISMO `rootDir` con que se emitio: la ruta de salida es
+    # `outDir + relativa-al-rootDir`, asi que repuntar con otro apunta a un
+    # archivo que no existe y el `exports` cae a `default` sin avisar.
+    root_dir, _ = _project_shape(package_dir)
     exports = manifest.get("exports")
     if not isinstance(exports, dict):
         exports = {".": exports or manifest.get("main") or "./index.ts"}
@@ -532,7 +573,7 @@ def repoint_manifest(package_dir: Path) -> bool:
         if not isinstance(source_entry, str):
             repointed[subpath] = entry
             continue
-        repointed[subpath] = {"types": _declaration_for(source_entry),
+        repointed[subpath] = {"types": declaration_for(source_entry, root_dir),
                               "default": source_entry}
     manifest["exports"] = repointed
 

@@ -3,47 +3,164 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/mcp-runtime (ccnmt), TASK #232: runtime cliente/servidor del Model Context Protocol — pool de conexiones, lifecycle, aggregation de herramientas, OAuth y XAA. 36 de 49 modulos portados (medido: 67 .ts + 1 .tsx en src/ + 1 .ts en testing/ de ccnmt, menos tests) — este pase cierra testing/index.ts (InMemoryMcpRuntime, createInMemoryMcpRuntimeBindings): es una hoja sin dependencia de tool-registry (sólo cita McpRuntimeHostBindings, ya portado), a diferencia de los 13 de src/ que siguen bloqueados. Los 13 restantes, todos en src/, estan BLOQUEADOS por una sola causa raiz — el paquete @claude-code-how-works/tool-registry (y su /repl) no existe todavia en este arbol, ni directo ni via su sustituto local: utils.ts, clientRuntime.ts, channelAllowlist.ts, channelNotification.ts, vscodeSdkMcp.ts, xaa.ts, useManageMCPConnections.ts y MCPConnectionManager.tsx lo importan directo; auth.ts (2465 lineas) y config.ts (1604 lineas) dependen transitivamente via ./utils.js; mcpOutputStorage.ts y runtimeHostSetup.ts via ./clientRuntime.js; index.ts (barrel) via ./config.js. Sucesor nombrado: portar @thyrox/tool-registry primero. Ver el hallazgo de esta iniciativa para el detalle modulo a modulo y el defecto sistemico de import-crash que un pase anterior corrigio en 9 archivos.",
+  "description": "Porte de @claude-code-how-works/mcp-runtime (ccnmt), TASK #232: runtime cliente/servidor del Model Context Protocol \u2014 pool de conexiones, lifecycle, aggregation de herramientas, OAuth y XAA. 36 de 49 modulos portados (medido: 67 .ts + 1 .tsx en src/ + 1 .ts en testing/ de ccnmt, menos tests) \u2014 este pase cierra testing/index.ts (InMemoryMcpRuntime, createInMemoryMcpRuntimeBindings): es una hoja sin dependencia de tool-registry (s\u00f3lo cita McpRuntimeHostBindings, ya portado), a diferencia de los 13 de src/ que siguen bloqueados. Los 13 restantes, todos en src/, estan BLOQUEADOS por una sola causa raiz \u2014 el paquete @claude-code-how-works/tool-registry (y su /repl) no existe todavia en este arbol, ni directo ni via su sustituto local: utils.ts, clientRuntime.ts, channelAllowlist.ts, channelNotification.ts, vscodeSdkMcp.ts, xaa.ts, useManageMCPConnections.ts y MCPConnectionManager.tsx lo importan directo; auth.ts (2465 lineas) y config.ts (1604 lineas) dependen transitivamente via ./utils.js; mcpOutputStorage.ts y runtimeHostSetup.ts via ./clientRuntime.js; index.ts (barrel) via ./config.js. Sucesor nombrado: portar @thyrox/tool-registry primero. Ver el hallazgo de esta iniciativa para el detalle modulo a modulo y el defecto sistemico de import-crash que un pase anterior corrigio en 9 archivos.",
   "exports": {
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./normalization": "./src/normalization.ts",
-    "./sanitization": "./src/sanitization.ts",
-    "./secureStorageTypes": "./src/secureStorageTypes.ts",
-    "./appStateHooks": "./src/appStateHooks.ts",
-    "./reservedNames": "./src/reservedNames.ts",
-    "./envExpansion": "./src/envExpansion.ts",
-    "./host": "./src/host.ts",
-    "./api": "./src/api.ts",
-    "./client": "./src/client.ts",
-    "./compat": "./src/compat.ts",
-    "./client/authCache": "./src/client/authCache.ts",
-    "./client/transport": "./src/client/transport.ts",
-    "./client/discovery": "./src/client/discovery.ts",
-    "./client/auth": "./src/client/auth.ts",
-    "./InProcessTransport": "./src/InProcessTransport.ts",
-    "./SdkControlTransport": "./src/SdkControlTransport.ts",
-    "./channelPermissions": "./src/channelPermissions.ts",
-    "./claudeai": "./src/claudeai.ts",
-    "./dateTimeParser": "./src/dateTimeParser.ts",
-    "./elicitationHandler": "./src/elicitationHandler.ts",
-    "./elicitationValidation": "./src/elicitationValidation.ts",
-    "./headersHelper": "./src/headersHelper.ts",
-    "./macOsKeychainHelpers": "./src/macOsKeychainHelpers.ts",
-    "./mcpConnectionTelemetry": "./src/mcpConnectionTelemetry.ts",
-    "./mcpInstructionsDelta": "./src/mcpInstructionsDelta.ts",
-    "./mcpStringUtils": "./src/mcpStringUtils.ts",
-    "./mcpValidation": "./src/mcpValidation.ts",
-    "./mcpWebSocketTransport": "./src/mcpWebSocketTransport.ts",
-    "./oauthPort": "./src/oauthPort.ts",
-    "./officialRegistry": "./src/officialRegistry.ts",
-    "./roots": "./src/roots.ts",
-    "./types": "./src/types.ts",
-    "./xaaIdpLogin": "./src/xaaIdpLogin.ts",
-    "./testing": "./testing/index.ts",
-    "./MCPConnectionManager.js": "./src/MCPConnectionManager.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./normalization": {
+      "types": "./dist/src/normalization.d.ts",
+      "default": "./src/normalization.ts"
+    },
+    "./sanitization": {
+      "types": "./dist/src/sanitization.d.ts",
+      "default": "./src/sanitization.ts"
+    },
+    "./secureStorageTypes": {
+      "types": "./dist/src/secureStorageTypes.d.ts",
+      "default": "./src/secureStorageTypes.ts"
+    },
+    "./appStateHooks": {
+      "types": "./dist/src/appStateHooks.d.ts",
+      "default": "./src/appStateHooks.ts"
+    },
+    "./reservedNames": {
+      "types": "./dist/src/reservedNames.d.ts",
+      "default": "./src/reservedNames.ts"
+    },
+    "./envExpansion": {
+      "types": "./dist/src/envExpansion.d.ts",
+      "default": "./src/envExpansion.ts"
+    },
+    "./host": {
+      "types": "./dist/src/host.d.ts",
+      "default": "./src/host.ts"
+    },
+    "./api": {
+      "types": "./dist/src/api.d.ts",
+      "default": "./src/api.ts"
+    },
+    "./client": {
+      "types": "./dist/src/client.d.ts",
+      "default": "./src/client.ts"
+    },
+    "./compat": {
+      "types": "./dist/src/compat.d.ts",
+      "default": "./src/compat.ts"
+    },
+    "./client/authCache": {
+      "types": "./dist/src/client/authCache.d.ts",
+      "default": "./src/client/authCache.ts"
+    },
+    "./client/transport": {
+      "types": "./dist/src/client/transport.d.ts",
+      "default": "./src/client/transport.ts"
+    },
+    "./client/discovery": {
+      "types": "./dist/src/client/discovery.d.ts",
+      "default": "./src/client/discovery.ts"
+    },
+    "./client/auth": {
+      "types": "./dist/src/client/auth.d.ts",
+      "default": "./src/client/auth.ts"
+    },
+    "./InProcessTransport": {
+      "types": "./dist/src/InProcessTransport.d.ts",
+      "default": "./src/InProcessTransport.ts"
+    },
+    "./SdkControlTransport": {
+      "types": "./dist/src/SdkControlTransport.d.ts",
+      "default": "./src/SdkControlTransport.ts"
+    },
+    "./channelPermissions": {
+      "types": "./dist/src/channelPermissions.d.ts",
+      "default": "./src/channelPermissions.ts"
+    },
+    "./claudeai": {
+      "types": "./dist/src/claudeai.d.ts",
+      "default": "./src/claudeai.ts"
+    },
+    "./dateTimeParser": {
+      "types": "./dist/src/dateTimeParser.d.ts",
+      "default": "./src/dateTimeParser.ts"
+    },
+    "./elicitationHandler": {
+      "types": "./dist/src/elicitationHandler.d.ts",
+      "default": "./src/elicitationHandler.ts"
+    },
+    "./elicitationValidation": {
+      "types": "./dist/src/elicitationValidation.d.ts",
+      "default": "./src/elicitationValidation.ts"
+    },
+    "./headersHelper": {
+      "types": "./dist/src/headersHelper.d.ts",
+      "default": "./src/headersHelper.ts"
+    },
+    "./macOsKeychainHelpers": {
+      "types": "./dist/src/macOsKeychainHelpers.d.ts",
+      "default": "./src/macOsKeychainHelpers.ts"
+    },
+    "./mcpConnectionTelemetry": {
+      "types": "./dist/src/mcpConnectionTelemetry.d.ts",
+      "default": "./src/mcpConnectionTelemetry.ts"
+    },
+    "./mcpInstructionsDelta": {
+      "types": "./dist/src/mcpInstructionsDelta.d.ts",
+      "default": "./src/mcpInstructionsDelta.ts"
+    },
+    "./mcpStringUtils": {
+      "types": "./dist/src/mcpStringUtils.d.ts",
+      "default": "./src/mcpStringUtils.ts"
+    },
+    "./mcpValidation": {
+      "types": "./dist/src/mcpValidation.d.ts",
+      "default": "./src/mcpValidation.ts"
+    },
+    "./mcpWebSocketTransport": {
+      "types": "./dist/src/mcpWebSocketTransport.d.ts",
+      "default": "./src/mcpWebSocketTransport.ts"
+    },
+    "./oauthPort": {
+      "types": "./dist/src/oauthPort.d.ts",
+      "default": "./src/oauthPort.ts"
+    },
+    "./officialRegistry": {
+      "types": "./dist/src/officialRegistry.d.ts",
+      "default": "./src/officialRegistry.ts"
+    },
+    "./roots": {
+      "types": "./dist/src/roots.d.ts",
+      "default": "./src/roots.ts"
+    },
+    "./types": {
+      "types": "./dist/src/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./xaaIdpLogin": {
+      "types": "./dist/src/xaaIdpLogin.d.ts",
+      "default": "./src/xaaIdpLogin.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./MCPConnectionManager.js": {
+      "types": "./dist/src/MCPConnectionManager.d.ts",
+      "default": "./src/MCPConnectionManager.tsx"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

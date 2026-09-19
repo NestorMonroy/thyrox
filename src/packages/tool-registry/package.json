@@ -5,81 +5,300 @@
   "type": "module",
   "description": "Porte de @claude-code-how-works/tool-registry (ccnmt), TASK #232: la pieza angular del ciclo \u2014 el contrato Tool completo (buildTool, ToolUseContext, Tool, ToolDef) y los cuatro clientes MCP que 13 de los 14 modulos ausentes en @thyrox/mcp-runtime necesitan como valor (ListMcpResourcesTool, MCPTool, McpAuthTool, ReadMcpResourceTool). 15 modulos completos + 3 parciales declarados sobre 294 modulos .ts/.tsx de ccnmt (medido: find src -name '*.ts' -o -name '*.tsx', sin __tests__ ni *.test.*; index.ts e internal/pendingCrossPackageDeps.ts no cuentan contra ese universo por no tener contraparte directa en ccnmt) -- ver hallazgo de esta iniciativa para el desglose modulo a modulo. renderToolResultMessage/renderToolUseProgressMessage de los tres clientes MCP con UI quedan BLOQUEADOS por la ausencia total de @anthropic/ink + react + @thyrox/repl en este arbol (mismo bloqueador que @thyrox/output, @thyrox/swarm y @thyrox/app-host ya declaran): el modulo carga sin fallar, invocar la funcion dispara el error con el motivo explicito (ver internal y los UI.ts de cada herramienta). McpAuthTool.ts, ListMcpResourcesTool.ts y ReadMcpResourceTool.ts importan symbols de @thyrox/mcp-runtime/{auth,clientRuntime,mcpOutputStorage}.js que siguen ausentes por el lado de mcp-runtime -- es el ciclo inverso, no un bloqueo de este paquete.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./Tool.js": "./src/Tool.ts",
-    "./progressTypes": "./src/progressTypes.ts",
-    "./appStateTypes": "./src/appStateTypes.ts",
-    "./genericTypeUtils": "./src/genericTypeUtils.ts",
-    "./fileStateCache": "./src/fileStateCache.ts",
-    "./codeIndexing.js": "./src/codeIndexing.ts",
-    "./utils/array.js": "./src/utils/array.ts",
-    "./utils/lazySchema.js": "./src/utils/lazySchema.ts",
-    "./hooks/appState.js": "./src/hooks/appState.ts",
-    "./services/classifyToolError.js": "./src/services/classifyToolError.ts",
-    "./suggestions/skillUsageTracking.js": "./src/suggestions/skillUsageTracking.ts",
-    "./task/outputFormatting.js": "./src/task/outputFormatting.ts",
-    "./testing": "./src/testing/index.ts",
-    "./testing/index.js": "./src/testing/index.ts",
-    "./utils/objectGroupBy.js": "./src/utils/objectGroupBy.ts",
-    "./utils/semanticBoolean.js": "./src/utils/semanticBoolean.ts",
-    "./utils/semanticNumber.js": "./src/utils/semanticNumber.ts",
-    "./tools/MCPTool/classifyForCollapse.js": "./src/tools/MCPTool/classifyForCollapse.ts",
-    "./tools/MCPTool/MCPTool.js": "./src/tools/MCPTool/MCPTool.ts",
-    "./tools/MCPTool/UI.js": "./src/tools/MCPTool/UI.ts",
-    "./tools/MCPTool/prompt.js": "./src/tools/MCPTool/prompt.ts",
-    "./tools/ListMcpResourcesTool/ListMcpResourcesTool.js": "./src/tools/ListMcpResourcesTool/ListMcpResourcesTool.ts",
-    "./tools/ListMcpResourcesTool/UI.js": "./src/tools/ListMcpResourcesTool/UI.ts",
-    "./tools/ListMcpResourcesTool/prompt.js": "./src/tools/ListMcpResourcesTool/prompt.ts",
-    "./tools/ReadMcpResourceTool/ReadMcpResourceTool.js": "./src/tools/ReadMcpResourceTool/ReadMcpResourceTool.ts",
-    "./tools/ReadMcpResourceTool/UI.js": "./src/tools/ReadMcpResourceTool/UI.ts",
-    "./tools/ReadMcpResourceTool/prompt.js": "./src/tools/ReadMcpResourceTool/prompt.ts",
-    "./tools/McpAuthTool/McpAuthTool.js": "./src/tools/McpAuthTool/McpAuthTool.ts",
-    "./internal/pendingCrossPackageDeps.js": "./src/internal/pendingCrossPackageDeps.ts",
-    "./tools/TaskGetTool/TaskGetTool.js": "./src/tools/TaskGetTool/TaskGetTool.ts",
-    "./tools/TaskGetTool/constants.js": "./src/tools/TaskGetTool/constants.ts",
-    "./tools/TaskGetTool/prompt.js": "./src/tools/TaskGetTool/prompt.ts",
-    "./tools/TaskListTool/TaskListTool.js": "./src/tools/TaskListTool/TaskListTool.ts",
-    "./tools/TaskListTool/constants.js": "./src/tools/TaskListTool/constants.ts",
-    "./tools/TaskListTool/prompt.js": "./src/tools/TaskListTool/prompt.ts",
-    "./todo/types.js": "./src/todo/types.ts",
-    "./tools/AgentTool/constants.js": "./src/tools/AgentTool/constants.ts",
-    "./tools/FileEditTool/constants.js": "./src/tools/FileEditTool/constants.ts",
-    "./tools/TodoWriteTool/TodoWriteTool.js": "./src/tools/TodoWriteTool/TodoWriteTool.ts",
-    "./tools/TodoWriteTool/constants.js": "./src/tools/TodoWriteTool/constants.ts",
-    "./tools/TodoWriteTool/prompt.js": "./src/tools/TodoWriteTool/prompt.ts",
-    "./tools/SleepTool/prompt.js": "./src/tools/SleepTool/prompt.ts",
-    "./tools/testing/TestingPermissionTool.js": "./src/tools/testing/TestingPermissionTool.tsx",
-    "./runtime": "./src/runtime.ts",
-    "./errors": "./src/errors.ts",
-    "./Task.js": "./src/Task.ts",
-    "./notebookTypes": "./src/notebookTypes.ts",
-    "./toolLimits": "./src/toolLimits.ts",
-    "./readEditContext.js": "./src/readEditContext.ts",
-    "./toolErrors.js": "./src/toolErrors.ts",
-    "./toolSchemaCache.js": "./src/toolSchemaCache.ts",
-    "./imageStore.js": "./src/imageStore.ts",
-    "./undercover.js": "./src/undercover.ts",
-    "./words.js": "./src/words.ts",
-    "./pdf.js": "./src/pdf.ts",
-    "./gitDiff.js": "./src/gitDiff.ts",
-    "./embeddedRgExtractor.js": "./src/embeddedRgExtractor.ts",
-    "./claudeCodeHints.js": "./src/claudeCodeHints.ts",
-    "./generatedFiles.js": "./src/generatedFiles.ts",
-    "./tools/testing/TestingPermissionTool": "./src/tools/testing/TestingPermissionTool.tsx",
-    "./task/TaskOutput.js": "./src/task/TaskOutput.ts",
-    "./tasks/RemoteAgentTask.js": "./src/tasks/RemoteAgentTask.tsx",
-    "./teleport.js": "./src/teleport.tsx",
-    "./tools/AgentTool/AgentTool.js": "./src/tools/AgentTool/AgentTool.tsx",
-    "./tools/AgentTool/UI.js": "./src/tools/AgentTool/UI.tsx",
-    "./tools/AskUserQuestionTool/AskUserQuestionTool.js": "./src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx",
-    "./tools/BashTool/BashTool.js": "./src/tools/BashTool/BashTool.tsx",
-    "./tools/BashTool/BashToolResultMessage.js": "./src/tools/BashTool/BashToolResultMessage.tsx",
-    "./tools/PowerShellTool/PowerShellTool.js": "./src/tools/PowerShellTool/PowerShellTool.tsx",
-    "./tools/TaskOutputTool/TaskOutputTool.js": "./src/tools/TaskOutputTool/TaskOutputTool.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./Tool.js": {
+      "types": "./dist/Tool.d.ts",
+      "default": "./src/Tool.ts"
+    },
+    "./progressTypes": {
+      "types": "./dist/progressTypes.d.ts",
+      "default": "./src/progressTypes.ts"
+    },
+    "./appStateTypes": {
+      "types": "./dist/appStateTypes.d.ts",
+      "default": "./src/appStateTypes.ts"
+    },
+    "./genericTypeUtils": {
+      "types": "./dist/genericTypeUtils.d.ts",
+      "default": "./src/genericTypeUtils.ts"
+    },
+    "./fileStateCache": {
+      "types": "./dist/fileStateCache.d.ts",
+      "default": "./src/fileStateCache.ts"
+    },
+    "./codeIndexing.js": {
+      "types": "./dist/codeIndexing.d.ts",
+      "default": "./src/codeIndexing.ts"
+    },
+    "./utils/array.js": {
+      "types": "./dist/utils/array.d.ts",
+      "default": "./src/utils/array.ts"
+    },
+    "./utils/lazySchema.js": {
+      "types": "./dist/utils/lazySchema.d.ts",
+      "default": "./src/utils/lazySchema.ts"
+    },
+    "./hooks/appState.js": {
+      "types": "./dist/hooks/appState.d.ts",
+      "default": "./src/hooks/appState.ts"
+    },
+    "./services/classifyToolError.js": {
+      "types": "./dist/services/classifyToolError.d.ts",
+      "default": "./src/services/classifyToolError.ts"
+    },
+    "./suggestions/skillUsageTracking.js": {
+      "types": "./dist/suggestions/skillUsageTracking.d.ts",
+      "default": "./src/suggestions/skillUsageTracking.ts"
+    },
+    "./task/outputFormatting.js": {
+      "types": "./dist/task/outputFormatting.d.ts",
+      "default": "./src/task/outputFormatting.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./testing/index.js": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./utils/objectGroupBy.js": {
+      "types": "./dist/utils/objectGroupBy.d.ts",
+      "default": "./src/utils/objectGroupBy.ts"
+    },
+    "./utils/semanticBoolean.js": {
+      "types": "./dist/utils/semanticBoolean.d.ts",
+      "default": "./src/utils/semanticBoolean.ts"
+    },
+    "./utils/semanticNumber.js": {
+      "types": "./dist/utils/semanticNumber.d.ts",
+      "default": "./src/utils/semanticNumber.ts"
+    },
+    "./tools/MCPTool/classifyForCollapse.js": {
+      "types": "./dist/tools/MCPTool/classifyForCollapse.d.ts",
+      "default": "./src/tools/MCPTool/classifyForCollapse.ts"
+    },
+    "./tools/MCPTool/MCPTool.js": {
+      "types": "./dist/tools/MCPTool/MCPTool.d.ts",
+      "default": "./src/tools/MCPTool/MCPTool.ts"
+    },
+    "./tools/MCPTool/UI.js": {
+      "types": "./dist/tools/MCPTool/UI.d.ts",
+      "default": "./src/tools/MCPTool/UI.ts"
+    },
+    "./tools/MCPTool/prompt.js": {
+      "types": "./dist/tools/MCPTool/prompt.d.ts",
+      "default": "./src/tools/MCPTool/prompt.ts"
+    },
+    "./tools/ListMcpResourcesTool/ListMcpResourcesTool.js": {
+      "types": "./dist/tools/ListMcpResourcesTool/ListMcpResourcesTool.d.ts",
+      "default": "./src/tools/ListMcpResourcesTool/ListMcpResourcesTool.ts"
+    },
+    "./tools/ListMcpResourcesTool/UI.js": {
+      "types": "./dist/tools/ListMcpResourcesTool/UI.d.ts",
+      "default": "./src/tools/ListMcpResourcesTool/UI.ts"
+    },
+    "./tools/ListMcpResourcesTool/prompt.js": {
+      "types": "./dist/tools/ListMcpResourcesTool/prompt.d.ts",
+      "default": "./src/tools/ListMcpResourcesTool/prompt.ts"
+    },
+    "./tools/ReadMcpResourceTool/ReadMcpResourceTool.js": {
+      "types": "./dist/tools/ReadMcpResourceTool/ReadMcpResourceTool.d.ts",
+      "default": "./src/tools/ReadMcpResourceTool/ReadMcpResourceTool.ts"
+    },
+    "./tools/ReadMcpResourceTool/UI.js": {
+      "types": "./dist/tools/ReadMcpResourceTool/UI.d.ts",
+      "default": "./src/tools/ReadMcpResourceTool/UI.ts"
+    },
+    "./tools/ReadMcpResourceTool/prompt.js": {
+      "types": "./dist/tools/ReadMcpResourceTool/prompt.d.ts",
+      "default": "./src/tools/ReadMcpResourceTool/prompt.ts"
+    },
+    "./tools/McpAuthTool/McpAuthTool.js": {
+      "types": "./dist/tools/McpAuthTool/McpAuthTool.d.ts",
+      "default": "./src/tools/McpAuthTool/McpAuthTool.ts"
+    },
+    "./internal/pendingCrossPackageDeps.js": {
+      "types": "./dist/internal/pendingCrossPackageDeps.d.ts",
+      "default": "./src/internal/pendingCrossPackageDeps.ts"
+    },
+    "./tools/TaskGetTool/TaskGetTool.js": {
+      "types": "./dist/tools/TaskGetTool/TaskGetTool.d.ts",
+      "default": "./src/tools/TaskGetTool/TaskGetTool.ts"
+    },
+    "./tools/TaskGetTool/constants.js": {
+      "types": "./dist/tools/TaskGetTool/constants.d.ts",
+      "default": "./src/tools/TaskGetTool/constants.ts"
+    },
+    "./tools/TaskGetTool/prompt.js": {
+      "types": "./dist/tools/TaskGetTool/prompt.d.ts",
+      "default": "./src/tools/TaskGetTool/prompt.ts"
+    },
+    "./tools/TaskListTool/TaskListTool.js": {
+      "types": "./dist/tools/TaskListTool/TaskListTool.d.ts",
+      "default": "./src/tools/TaskListTool/TaskListTool.ts"
+    },
+    "./tools/TaskListTool/constants.js": {
+      "types": "./dist/tools/TaskListTool/constants.d.ts",
+      "default": "./src/tools/TaskListTool/constants.ts"
+    },
+    "./tools/TaskListTool/prompt.js": {
+      "types": "./dist/tools/TaskListTool/prompt.d.ts",
+      "default": "./src/tools/TaskListTool/prompt.ts"
+    },
+    "./todo/types.js": {
+      "types": "./dist/todo/types.d.ts",
+      "default": "./src/todo/types.ts"
+    },
+    "./tools/AgentTool/constants.js": {
+      "types": "./dist/tools/AgentTool/constants.d.ts",
+      "default": "./src/tools/AgentTool/constants.ts"
+    },
+    "./tools/FileEditTool/constants.js": {
+      "types": "./dist/tools/FileEditTool/constants.d.ts",
+      "default": "./src/tools/FileEditTool/constants.ts"
+    },
+    "./tools/TodoWriteTool/TodoWriteTool.js": {
+      "types": "./dist/tools/TodoWriteTool/TodoWriteTool.d.ts",
+      "default": "./src/tools/TodoWriteTool/TodoWriteTool.ts"
+    },
+    "./tools/TodoWriteTool/constants.js": {
+      "types": "./dist/tools/TodoWriteTool/constants.d.ts",
+      "default": "./src/tools/TodoWriteTool/constants.ts"
+    },
+    "./tools/TodoWriteTool/prompt.js": {
+      "types": "./dist/tools/TodoWriteTool/prompt.d.ts",
+      "default": "./src/tools/TodoWriteTool/prompt.ts"
+    },
+    "./tools/SleepTool/prompt.js": {
+      "types": "./dist/tools/SleepTool/prompt.d.ts",
+      "default": "./src/tools/SleepTool/prompt.ts"
+    },
+    "./tools/testing/TestingPermissionTool.js": {
+      "types": "./dist/tools/testing/TestingPermissionTool.d.ts",
+      "default": "./src/tools/testing/TestingPermissionTool.tsx"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "default": "./src/runtime.ts"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./Task.js": {
+      "types": "./dist/Task.d.ts",
+      "default": "./src/Task.ts"
+    },
+    "./notebookTypes": {
+      "types": "./dist/notebookTypes.d.ts",
+      "default": "./src/notebookTypes.ts"
+    },
+    "./toolLimits": {
+      "types": "./dist/toolLimits.d.ts",
+      "default": "./src/toolLimits.ts"
+    },
+    "./readEditContext.js": {
+      "types": "./dist/readEditContext.d.ts",
+      "default": "./src/readEditContext.ts"
+    },
+    "./toolErrors.js": {
+      "types": "./dist/toolErrors.d.ts",
+      "default": "./src/toolErrors.ts"
+    },
+    "./toolSchemaCache.js": {
+      "types": "./dist/toolSchemaCache.d.ts",
+      "default": "./src/toolSchemaCache.ts"
+    },
+    "./imageStore.js": {
+      "types": "./dist/imageStore.d.ts",
+      "default": "./src/imageStore.ts"
+    },
+    "./undercover.js": {
+      "types": "./dist/undercover.d.ts",
+      "default": "./src/undercover.ts"
+    },
+    "./words.js": {
+      "types": "./dist/words.d.ts",
+      "default": "./src/words.ts"
+    },
+    "./pdf.js": {
+      "types": "./dist/pdf.d.ts",
+      "default": "./src/pdf.ts"
+    },
+    "./gitDiff.js": {
+      "types": "./dist/gitDiff.d.ts",
+      "default": "./src/gitDiff.ts"
+    },
+    "./embeddedRgExtractor.js": {
+      "types": "./dist/embeddedRgExtractor.d.ts",
+      "default": "./src/embeddedRgExtractor.ts"
+    },
+    "./claudeCodeHints.js": {
+      "types": "./dist/claudeCodeHints.d.ts",
+      "default": "./src/claudeCodeHints.ts"
+    },
+    "./generatedFiles.js": {
+      "types": "./dist/generatedFiles.d.ts",
+      "default": "./src/generatedFiles.ts"
+    },
+    "./tools/testing/TestingPermissionTool": {
+      "types": "./dist/tools/testing/TestingPermissionTool.d.ts",
+      "default": "./src/tools/testing/TestingPermissionTool.tsx"
+    },
+    "./task/TaskOutput.js": {
+      "types": "./dist/task/TaskOutput.d.ts",
+      "default": "./src/task/TaskOutput.ts"
+    },
+    "./tasks/RemoteAgentTask.js": {
+      "types": "./dist/tasks/RemoteAgentTask.d.ts",
+      "default": "./src/tasks/RemoteAgentTask.tsx"
+    },
+    "./teleport.js": {
+      "types": "./dist/teleport.d.ts",
+      "default": "./src/teleport.tsx"
+    },
+    "./tools/AgentTool/AgentTool.js": {
+      "types": "./dist/tools/AgentTool/AgentTool.d.ts",
+      "default": "./src/tools/AgentTool/AgentTool.tsx"
+    },
+    "./tools/AgentTool/UI.js": {
+      "types": "./dist/tools/AgentTool/UI.d.ts",
+      "default": "./src/tools/AgentTool/UI.tsx"
+    },
+    "./tools/AskUserQuestionTool/AskUserQuestionTool.js": {
+      "types": "./dist/tools/AskUserQuestionTool/AskUserQuestionTool.d.ts",
+      "default": "./src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx"
+    },
+    "./tools/BashTool/BashTool.js": {
+      "types": "./dist/tools/BashTool/BashTool.d.ts",
+      "default": "./src/tools/BashTool/BashTool.tsx"
+    },
+    "./tools/BashTool/BashToolResultMessage.js": {
+      "types": "./dist/tools/BashTool/BashToolResultMessage.d.ts",
+      "default": "./src/tools/BashTool/BashToolResultMessage.tsx"
+    },
+    "./tools/PowerShellTool/PowerShellTool.js": {
+      "types": "./dist/tools/PowerShellTool/PowerShellTool.d.ts",
+      "default": "./src/tools/PowerShellTool/PowerShellTool.tsx"
+    },
+    "./tools/TaskOutputTool/TaskOutputTool.js": {
+      "types": "./dist/tools/TaskOutputTool/TaskOutputTool.d.ts",
+      "default": "./src/tools/TaskOutputTool/TaskOutputTool.tsx"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

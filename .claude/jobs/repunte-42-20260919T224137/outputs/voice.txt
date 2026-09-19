@@ -1,0 +1,3 @@
+voice: emitio pese a 6372 errores (88 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 6372 error(es) que siguen vivos en su propio paquete

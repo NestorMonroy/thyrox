@@ -73,10 +73,22 @@ def main():
     solo_exports = {"exports": {"./mode": "./src/mode.ts", "./*": "./src/*.ts"}}
     check("los destinos salen tambien de exports",
           ["./src/mode.ts", "./src/*.ts"], mod.export_targets(solo_exports))
+    # `export_targets` alimenta la FORMA del proyecto (rootDir/include), asi que
+    # solo puede devolver ENTRADAS. La rama `types` de una condicion apunta a la
+    # declaracion que este mecanismo emite: incluirla mete `dist/` en el include
+    # y el rootDir comun colapsa a `.`.
+    #
+    # Medido: repuntado `storage`, su forma paso de `src` a `.` y el tsc volvio
+    # a compilar `dist/` junto al fuente. De ahi que se tome SOLO `default` y se
+    # filtre todo destino bajo `dist/` — venga de donde venga.
     condiciones = {"main": "./index.ts",
                    "exports": {".": {"types": "./dist/i.d.ts", "default": "./src/i.ts"}}}
-    check("y de un exports con condiciones, en las dos ramas",
-          ["./index.ts", "./dist/i.d.ts", "./src/i.ts"], mod.export_targets(condiciones))
+    check("de un exports con condiciones se toma SOLO la rama default",
+          ["./index.ts", "./src/i.ts"], mod.export_targets(condiciones))
+    ya_repuntado = {"main": "./dist/index.d.ts",
+                    "exports": {".": {"default": "./dist/a.js"}, "./b": "./src/b.ts"}}
+    check("y un destino bajo dist/ se filtra aunque sea el default",
+          ["./src/b.ts"], mod.export_targets(ya_repuntado))
 
     # --- el baseline ----------------------------------------------------------
     check("un baseline ausente no revienta: da el mapa vacio",

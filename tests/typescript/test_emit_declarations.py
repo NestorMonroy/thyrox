@@ -296,6 +296,37 @@ def main():
                    if "dist" not in f.parts and "node_modules" not in f.parts]
         check("y NO deja una declaracion fuera de dist/", [], derrame)
 
+    # --- la declaracion CONSERVA la ruta relativa al rootDir ---------------
+    #
+    # EL CASO QUE EL BARRIDO DESTAPO, y el que el fixture anterior no podia:
+    # sus paquetes sinteticos tienen la entrada en la raiz de `src`, asi que
+    # aplanar el directorio da el mismo resultado que conservarlo. Medido sobre
+    # el arbol real tras repuntar los 37: `repl` declara `./screens/*.js` ->
+    # `./src/screens/*.tsx` y su declaracion aterrizo como `./dist/*.d.ts`,
+    # cuando el archivo real esta en `dist/src/screens/`. No resuelve, tsc cae
+    # a la condicion `default` —la fuente— y el repunte queda INERTE: el
+    # typecheck del consumidor bajo de 2821 a 2656, un 6 %.
+    check("con rootDir src, la ruta relativa es el nombre solo",
+          "./dist/a.d.ts", mod.declaration_for("./src/a.ts", "src"))
+    check("con rootDir de paquete, conserva el directorio",
+          "./dist/src/screens/x.d.ts",
+          mod.declaration_for("./src/screens/x.tsx", "."))
+    check("y conserva el comodin dentro del directorio",
+          "./dist/src/screens/*.d.ts",
+          mod.declaration_for("./src/screens/*.tsx", "."))
+
+    # --- el manifiesto REPUNTADO no se lee como fuente ---------------------
+    #
+    # Sin esto, `_project_shape` de un paquete ya repuntado mete `dist/` en su
+    # programa: el paquete compilaria sus propias declaraciones y su `rootDir`
+    # subiria de `src` a la raiz, moviendo toda su emision. Medido: `storage`
+    # daba `src` antes del repunte y `.` despues, sin que su codigo cambiara.
+    repuntado = {"types": "./dist/index.d.ts",
+                 "exports": {".": {"types": "./dist/index.d.ts",
+                                   "default": "./src/index.ts"}}}
+    check("los destinos de un manifiesto repuntado son solo la fuente",
+          ["./src/index.ts"], mod.export_targets(repuntado))
+
     # --- el escape DENTRO del paquete se amplia, no se rehusa --------------
     #
     # EL PAR QUE DISCRIMINA. Un escape fuera del paquete produce una ruta de

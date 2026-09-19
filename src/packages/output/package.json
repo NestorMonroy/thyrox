@@ -5,35 +5,116 @@
   "type": "module",
   "description": "Porte parcial del paquete output de claude-code-nestor-monroy-tools (TASK-DOCS-0229): formateo puro (tamanos, duraciones, timestamps relativos), buffers de escritura, targets de OutputEvent y utilidades sin dependencia visual. 23 de 36 modulos de la fuente (34 .ts + 2 .tsx); los 13 restantes dependen de @anthropic/ink (fork de Ink vendorizado en ccnmt como packages/@ant/ink, NO publicado en npm) o de hermanos que no existen o no exportan aun el simbolo que la fuente necesita (repl, tool-registry, local-observability; agent/messages.js, app-host/bootstrap/*, storage/fsOperations.js sin exportar). Ver el analisis de la iniciativa para el detalle por modulo.",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./src/testing/index.ts",
-    "./buffers": "./src/buffers/index.ts",
-    "./buffers/buffered-writer.js": "./src/buffers/buffered-writer.ts",
-    "./buffers/circular-buffer.js": "./src/buffers/circular-buffer.ts",
-    "./formatters": "./src/formatters/index.ts",
-    "./formatters/format.js": "./src/formatters/format.ts",
-    "./formatters/brief-timestamp.js": "./src/formatters/brief-timestamp.ts",
-    "./capture": "./src/capture/index.ts",
-    "./capture/ansi-to-svg.js": "./src/capture/ansi-to-svg.ts",
-    "./constants/figures.js": "./src/constants/figures.ts",
-    "./targets/json.js": "./src/targets/json.ts",
-    "./targets/silent.js": "./src/targets/silent.ts",
-    "./targets/terminal.js": "./src/targets/terminal.ts",
-    "./utils/intl.js": "./src/utils/intl.ts",
-    "./utils/stringUtils.js": "./src/utils/stringUtils.ts",
-    "./utils/displayTags.js": "./src/utils/displayTags.ts",
-    "./utils/cliHighlight.js": "./src/utils/cliHighlight.ts",
-    "./setUtils.js": "./src/setUtils.ts",
-    "./fpsTracker.js": "./src/fpsTracker.ts",
-    "./xml.js": "./src/xml.ts",
-    "./render": "./src/render/index.ts",
-    "./render/exportRenderer.js": "./src/render/exportRenderer.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./buffers": {
+      "types": "./dist/buffers/index.d.ts",
+      "default": "./src/buffers/index.ts"
+    },
+    "./buffers/buffered-writer.js": {
+      "types": "./dist/buffers/buffered-writer.d.ts",
+      "default": "./src/buffers/buffered-writer.ts"
+    },
+    "./buffers/circular-buffer.js": {
+      "types": "./dist/buffers/circular-buffer.d.ts",
+      "default": "./src/buffers/circular-buffer.ts"
+    },
+    "./formatters": {
+      "types": "./dist/formatters/index.d.ts",
+      "default": "./src/formatters/index.ts"
+    },
+    "./formatters/format.js": {
+      "types": "./dist/formatters/format.d.ts",
+      "default": "./src/formatters/format.ts"
+    },
+    "./formatters/brief-timestamp.js": {
+      "types": "./dist/formatters/brief-timestamp.d.ts",
+      "default": "./src/formatters/brief-timestamp.ts"
+    },
+    "./capture": {
+      "types": "./dist/capture/index.d.ts",
+      "default": "./src/capture/index.ts"
+    },
+    "./capture/ansi-to-svg.js": {
+      "types": "./dist/capture/ansi-to-svg.d.ts",
+      "default": "./src/capture/ansi-to-svg.ts"
+    },
+    "./constants/figures.js": {
+      "types": "./dist/constants/figures.d.ts",
+      "default": "./src/constants/figures.ts"
+    },
+    "./targets/json.js": {
+      "types": "./dist/targets/json.d.ts",
+      "default": "./src/targets/json.ts"
+    },
+    "./targets/silent.js": {
+      "types": "./dist/targets/silent.d.ts",
+      "default": "./src/targets/silent.ts"
+    },
+    "./targets/terminal.js": {
+      "types": "./dist/targets/terminal.d.ts",
+      "default": "./src/targets/terminal.ts"
+    },
+    "./utils/intl.js": {
+      "types": "./dist/utils/intl.d.ts",
+      "default": "./src/utils/intl.ts"
+    },
+    "./utils/stringUtils.js": {
+      "types": "./dist/utils/stringUtils.d.ts",
+      "default": "./src/utils/stringUtils.ts"
+    },
+    "./utils/displayTags.js": {
+      "types": "./dist/utils/displayTags.d.ts",
+      "default": "./src/utils/displayTags.ts"
+    },
+    "./utils/cliHighlight.js": {
+      "types": "./dist/utils/cliHighlight.d.ts",
+      "default": "./src/utils/cliHighlight.ts"
+    },
+    "./setUtils.js": {
+      "types": "./dist/setUtils.d.ts",
+      "default": "./src/setUtils.ts"
+    },
+    "./fpsTracker.js": {
+      "types": "./dist/fpsTracker.d.ts",
+      "default": "./src/fpsTracker.ts"
+    },
+    "./xml.js": {
+      "types": "./dist/xml.d.ts",
+      "default": "./src/xml.ts"
+    },
+    "./render": {
+      "types": "./dist/render/index.d.ts",
+      "default": "./src/render/index.ts"
+    },
+    "./render/exportRenderer.js": {
+      "types": "./dist/render/exportRenderer.d.ts",
+      "default": "./src/render/exportRenderer.tsx"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

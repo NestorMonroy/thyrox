@@ -4,12 +4,24 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./keybindings": "./src/keybindings/index.ts",
-    "./search": "./src/search/index.ts",
-    "./vim": "./src/vim/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./keybindings": {
+      "types": "./dist/keybindings/index.d.ts",
+      "default": "./src/keybindings/index.ts"
+    },
+    "./search": {
+      "types": "./dist/search/index.d.ts",
+      "default": "./src/search/index.ts"
+    },
+    "./vim": {
+      "types": "./dist/vim/index.d.ts",
+      "default": "./src/vim/index.ts"
+    }
   },
   "dependencies": {
     "@alcalzone/ansi-tokenize": "^0.1.3",

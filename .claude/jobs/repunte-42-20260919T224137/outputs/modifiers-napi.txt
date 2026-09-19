@@ -1,0 +1,3 @@
+modifiers-napi: emitio pese a 4 errores (4 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 4 error(es) que siguen vivos en su propio paquete

@@ -4,43 +4,148 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./src/testing/index.ts",
-    "./compat": "./src/compat.ts",
-    "./spans": "./src/spans.ts",
-    "./logging": "./src/logging/index.ts",
-    "./telemetry": "./src/telemetry/index.ts",
-    "./slowOperations.js": "./src/slowOperations.ts",
-    "./slowLoggingTag.js": "./src/slowLoggingTag.ts",
-    "./errorHelpers.js": "./src/errorHelpers.ts",
-    "./fileOperationAnalytics": "./src/fileOperationAnalytics.ts",
-    "./debug.js": "./src/debug.ts",
-    "./log.js": "./src/log.ts",
-    "./telemetryEvents.js": "./src/telemetryEvents.ts",
-    "./sentry.js": "./src/sentry.ts",
-    "./betaSessionTracing.js": "./src/betaSessionTracing.ts",
-    "./errorIds.js": "./src/errorIds.ts",
-    "./errorIds": "./src/errorIds.ts",
-    "./utils/withResolvers.js": "./src/utils/withResolvers.ts",
-    "./sinks.js": "./src/sinks.ts",
-    "./eventLoopStallDetector.js": "./src/eventLoopStallDetector.ts",
-    "./uds/udsMessaging.js": "./src/uds/udsMessaging.ts",
-    "./uds/udsClient.js": "./src/uds/udsClient.ts",
-    "./sdkHeapDumpMonitor.js": "./src/sdkHeapDumpMonitor.ts",
-    "./sessionDataUploader.js": "./src/sessionDataUploader.ts",
-    "./telemetry/perfettoTracing.js": "./src/telemetry/perfettoTracing.ts",
-    "./aggregates/cleanup.js": "./src/aggregates/cleanup.ts",
-    "./aggregates/headlessProfiler.js": "./src/aggregates/headlessProfiler.ts",
-    "./aggregates/heatmap.js": "./src/aggregates/heatmap.ts",
-    "./aggregates/queryProfiler.js": "./src/aggregates/queryProfiler.ts",
-    "./aggregates/stats.js": "./src/aggregates/stats.ts",
-    "./localEventLogger.js": "./src/localEventLogger.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./src/testing/index.ts"
+    },
+    "./compat": {
+      "types": "./dist/compat.d.ts",
+      "default": "./src/compat.ts"
+    },
+    "./spans": {
+      "types": "./dist/spans.d.ts",
+      "default": "./src/spans.ts"
+    },
+    "./logging": {
+      "types": "./dist/logging/index.d.ts",
+      "default": "./src/logging/index.ts"
+    },
+    "./telemetry": {
+      "types": "./dist/telemetry/index.d.ts",
+      "default": "./src/telemetry/index.ts"
+    },
+    "./slowOperations.js": {
+      "types": "./dist/slowOperations.d.ts",
+      "default": "./src/slowOperations.ts"
+    },
+    "./slowLoggingTag.js": {
+      "types": "./dist/slowLoggingTag.d.ts",
+      "default": "./src/slowLoggingTag.ts"
+    },
+    "./errorHelpers.js": {
+      "types": "./dist/errorHelpers.d.ts",
+      "default": "./src/errorHelpers.ts"
+    },
+    "./fileOperationAnalytics": {
+      "types": "./dist/fileOperationAnalytics.d.ts",
+      "default": "./src/fileOperationAnalytics.ts"
+    },
+    "./debug.js": {
+      "types": "./dist/debug.d.ts",
+      "default": "./src/debug.ts"
+    },
+    "./log.js": {
+      "types": "./dist/log.d.ts",
+      "default": "./src/log.ts"
+    },
+    "./telemetryEvents.js": {
+      "types": "./dist/telemetryEvents.d.ts",
+      "default": "./src/telemetryEvents.ts"
+    },
+    "./sentry.js": {
+      "types": "./dist/sentry.d.ts",
+      "default": "./src/sentry.ts"
+    },
+    "./betaSessionTracing.js": {
+      "types": "./dist/betaSessionTracing.d.ts",
+      "default": "./src/betaSessionTracing.ts"
+    },
+    "./errorIds.js": {
+      "types": "./dist/errorIds.d.ts",
+      "default": "./src/errorIds.ts"
+    },
+    "./errorIds": {
+      "types": "./dist/errorIds.d.ts",
+      "default": "./src/errorIds.ts"
+    },
+    "./utils/withResolvers.js": {
+      "types": "./dist/utils/withResolvers.d.ts",
+      "default": "./src/utils/withResolvers.ts"
+    },
+    "./sinks.js": {
+      "types": "./dist/sinks.d.ts",
+      "default": "./src/sinks.ts"
+    },
+    "./eventLoopStallDetector.js": {
+      "types": "./dist/eventLoopStallDetector.d.ts",
+      "default": "./src/eventLoopStallDetector.ts"
+    },
+    "./uds/udsMessaging.js": {
+      "types": "./dist/uds/udsMessaging.d.ts",
+      "default": "./src/uds/udsMessaging.ts"
+    },
+    "./uds/udsClient.js": {
+      "types": "./dist/uds/udsClient.d.ts",
+      "default": "./src/uds/udsClient.ts"
+    },
+    "./sdkHeapDumpMonitor.js": {
+      "types": "./dist/sdkHeapDumpMonitor.d.ts",
+      "default": "./src/sdkHeapDumpMonitor.ts"
+    },
+    "./sessionDataUploader.js": {
+      "types": "./dist/sessionDataUploader.d.ts",
+      "default": "./src/sessionDataUploader.ts"
+    },
+    "./telemetry/perfettoTracing.js": {
+      "types": "./dist/telemetry/perfettoTracing.d.ts",
+      "default": "./src/telemetry/perfettoTracing.ts"
+    },
+    "./aggregates/cleanup.js": {
+      "types": "./dist/aggregates/cleanup.d.ts",
+      "default": "./src/aggregates/cleanup.ts"
+    },
+    "./aggregates/headlessProfiler.js": {
+      "types": "./dist/aggregates/headlessProfiler.d.ts",
+      "default": "./src/aggregates/headlessProfiler.ts"
+    },
+    "./aggregates/heatmap.js": {
+      "types": "./dist/aggregates/heatmap.d.ts",
+      "default": "./src/aggregates/heatmap.ts"
+    },
+    "./aggregates/queryProfiler.js": {
+      "types": "./dist/aggregates/queryProfiler.d.ts",
+      "default": "./src/aggregates/queryProfiler.ts"
+    },
+    "./aggregates/stats.js": {
+      "types": "./dist/aggregates/stats.d.ts",
+      "default": "./src/aggregates/stats.ts"
+    },
+    "./localEventLogger.js": {
+      "types": "./dist/localEventLogger.d.ts",
+      "default": "./src/localEventLogger.ts"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

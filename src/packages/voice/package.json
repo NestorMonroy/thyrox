@@ -4,25 +4,76 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./testing/index.ts",
-    "./voiceModeEnabled.js": "./src/voiceModeEnabled.ts",
-    "./voice.js": "./src/voice.ts",
-    "./voiceStreamSTT.js": "./src/voiceStreamSTT.ts",
-    "./voiceKeyterms.js": "./src/voiceKeyterms.ts",
-    "./appStateHooks.js": "./src/appStateHooks.ts",
-    "./hooks/useVoice.js": "./src/hooks/useVoice.ts",
-    "./hooks/useVoiceEnabled.js": "./src/hooks/useVoiceEnabled.ts",
-    "./hooks/useVoiceIntegration.js": "./src/hooks/useVoiceIntegration.tsx",
-    "./voiceContext.js": "./src/voiceContext.tsx",
-    "./hooks/useVoiceIntegration": "./src/hooks/useVoiceIntegration.tsx",
-    "./voiceContext": "./src/voiceContext.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./voiceModeEnabled.js": {
+      "types": "./dist/src/voiceModeEnabled.d.ts",
+      "default": "./src/voiceModeEnabled.ts"
+    },
+    "./voice.js": {
+      "types": "./dist/src/voice.d.ts",
+      "default": "./src/voice.ts"
+    },
+    "./voiceStreamSTT.js": {
+      "types": "./dist/src/voiceStreamSTT.d.ts",
+      "default": "./src/voiceStreamSTT.ts"
+    },
+    "./voiceKeyterms.js": {
+      "types": "./dist/src/voiceKeyterms.d.ts",
+      "default": "./src/voiceKeyterms.ts"
+    },
+    "./appStateHooks.js": {
+      "types": "./dist/src/appStateHooks.d.ts",
+      "default": "./src/appStateHooks.ts"
+    },
+    "./hooks/useVoice.js": {
+      "types": "./dist/src/hooks/useVoice.d.ts",
+      "default": "./src/hooks/useVoice.ts"
+    },
+    "./hooks/useVoiceEnabled.js": {
+      "types": "./dist/src/hooks/useVoiceEnabled.d.ts",
+      "default": "./src/hooks/useVoiceEnabled.ts"
+    },
+    "./hooks/useVoiceIntegration.js": {
+      "types": "./dist/src/hooks/useVoiceIntegration.d.ts",
+      "default": "./src/hooks/useVoiceIntegration.tsx"
+    },
+    "./voiceContext.js": {
+      "types": "./dist/src/voiceContext.d.ts",
+      "default": "./src/voiceContext.tsx"
+    },
+    "./hooks/useVoiceIntegration": {
+      "types": "./dist/src/hooks/useVoiceIntegration.d.ts",
+      "default": "./src/hooks/useVoiceIntegration.tsx"
+    },
+    "./voiceContext": {
+      "types": "./dist/src/voiceContext.d.ts",
+      "default": "./src/voiceContext.tsx"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

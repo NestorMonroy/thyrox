@@ -4,17 +4,44 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./errors": "./src/errors.ts",
-    "./testing": "./testing/index.ts",
-    "./remote-setup": "./src/remote-setup/index.ts",
-    "./remote-setup/remote-setup": "./src/remote-setup/remote-setup.tsx",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts",
-    "./remote-setup/*.js": "./src/remote-setup/*.ts"
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./errors": {
+      "types": "./dist/src/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./remote-setup": {
+      "types": "./dist/src/remote-setup/index.d.ts",
+      "default": "./src/remote-setup/index.ts"
+    },
+    "./remote-setup/remote-setup": {
+      "types": "./dist/src/remote-setup/remote-setup.d.ts",
+      "default": "./src/remote-setup/remote-setup.tsx"
+    },
+    "./*": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/src/*.d.ts",
+      "default": "./src/*.ts"
+    },
+    "./remote-setup/*.js": {
+      "types": "./dist/src/remote-setup/*.d.ts",
+      "default": "./src/remote-setup/*.ts"
+    }
   },
   "scripts": {
     "test": "bun test"

@@ -1,0 +1,3 @@
+provider: emitio pese a 7075 errores (764 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 7075 error(es) que siguen vivos en su propio paquete

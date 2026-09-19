@@ -5,28 +5,88 @@
   "type": "module",
   "description": "La capa de configuracion: esquema de settings, precedencia de fuentes y validacion. Lo que el harness y el tooling leen en vez de parsear JSON a mano.",
   "main": "./index.ts",
-  "types": "./index.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
-    ".": "./index.ts",
-    "./types": "./settings/types.ts",
-    "./constants": "./settings/constants.ts",
-    "./validation": "./settings/validation.ts",
-    "./load": "./settings/load.ts",
-    "./settings": "./settings/settings.ts",
-    "./env": "./env/index.ts",
-    "./env/utils": "./env/utils.ts",
-    "./remote": "./remote/index.ts",
-    "./applySettingsChange": "./settings/applySettingsChange.ts",
-    "./changeDetector": "./settings/changeDetector.ts",
-    "./lazySchema": "./internal/lazySchema.ts",
-    "./lazySchema.js": "./internal/lazySchema.ts",
-    "./managedPath": "./settings/managedPath.ts",
-    "./pluginOnlyPolicy": "./settings/pluginOnlyPolicy.ts",
-    "./sync": "./sync/index.ts",
-    "./testing": "./testing/index.ts",
-    "./*": "./*.ts",
-    "./*.js": "./*.ts",
-    "./plugin/core/performStartupChecks.js": "./plugin/core/performStartupChecks.tsx"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./index.ts"
+    },
+    "./types": {
+      "types": "./dist/settings/types.d.ts",
+      "default": "./settings/types.ts"
+    },
+    "./constants": {
+      "types": "./dist/settings/constants.d.ts",
+      "default": "./settings/constants.ts"
+    },
+    "./validation": {
+      "types": "./dist/settings/validation.d.ts",
+      "default": "./settings/validation.ts"
+    },
+    "./load": {
+      "types": "./dist/settings/load.d.ts",
+      "default": "./settings/load.ts"
+    },
+    "./settings": {
+      "types": "./dist/settings/settings.d.ts",
+      "default": "./settings/settings.ts"
+    },
+    "./env": {
+      "types": "./dist/env/index.d.ts",
+      "default": "./env/index.ts"
+    },
+    "./env/utils": {
+      "types": "./dist/env/utils.d.ts",
+      "default": "./env/utils.ts"
+    },
+    "./remote": {
+      "types": "./dist/remote/index.d.ts",
+      "default": "./remote/index.ts"
+    },
+    "./applySettingsChange": {
+      "types": "./dist/settings/applySettingsChange.d.ts",
+      "default": "./settings/applySettingsChange.ts"
+    },
+    "./changeDetector": {
+      "types": "./dist/settings/changeDetector.d.ts",
+      "default": "./settings/changeDetector.ts"
+    },
+    "./lazySchema": {
+      "types": "./dist/internal/lazySchema.d.ts",
+      "default": "./internal/lazySchema.ts"
+    },
+    "./lazySchema.js": {
+      "types": "./dist/internal/lazySchema.d.ts",
+      "default": "./internal/lazySchema.ts"
+    },
+    "./managedPath": {
+      "types": "./dist/settings/managedPath.d.ts",
+      "default": "./settings/managedPath.ts"
+    },
+    "./pluginOnlyPolicy": {
+      "types": "./dist/settings/pluginOnlyPolicy.d.ts",
+      "default": "./settings/pluginOnlyPolicy.ts"
+    },
+    "./sync": {
+      "types": "./dist/sync/index.d.ts",
+      "default": "./sync/index.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    },
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    },
+    "./*.js": {
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    },
+    "./plugin/core/performStartupChecks.js": {
+      "types": "./dist/plugin/core/performStartupChecks.d.ts",
+      "default": "./plugin/core/performStartupChecks.tsx"
+    }
   },
   "scripts": {
     "test": "bun test",

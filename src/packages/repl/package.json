@@ -4,192 +4,744 @@
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "types": "./dist/src/index.d.ts",
   "exports": {
-    "./screens/*.js": "./src/screens/*.tsx",
-    "./screens/*": "./src/screens/*",
-    "./screens/agentFleet/mountFleetView.js": "./src/screens/agentFleet/mountFleetView.tsx",
-    "./screens/agentFleet/FleetView.js": "./src/screens/agentFleet/FleetView.tsx",
-    "./keybindings/KeybindingProviderSetup.js": "./src/keybindings/KeybindingProviderSetup.tsx",
-    "./keybindings/*.js": "./src/keybindings/*.ts",
-    "./keybindings/*": "./src/keybindings/*",
-    "./hooks/useSwarmPermissionPoller.js": "./src/hooks/useSwarmPermissionPoller.ts",
-    "./hooks/useNotifyAfterTimeout.js": "./src/hooks/useNotifyAfterTimeout.ts",
-    "./hooks/useMainLoopModel.js": "./src/hooks/useMainLoopModel.ts",
-    "./hooks/useManagePlugins.js": "./src/hooks/useManagePlugins.ts",
-    "./hooks/useCanUseTool.js": "./src/hooks/useCanUseTool.tsx",
-    "./hooks/useExitOnCtrlCDWithKeybindings.js": "./src/hooks/useExitOnCtrlCDWithKeybindings.ts",
-    "./hooks/fileSuggestions.js": "./src/hooks/fileSuggestions.ts",
-    "./hooks/useSettings.js": "./src/hooks/useSettings.ts",
-    "./hooks/useSettingsChange.js": "./src/hooks/useSettingsChange.ts",
-    "./components/AgentProgressLine.js": "./src/components/AgentProgressLine.tsx",
-    "./components/App.js": "./src/components/App.tsx",
-    "./components/ConfigurableShortcutHint.js": "./src/components/ConfigurableShortcutHint.tsx",
-    "./components/ConsoleOAuthFlow.js": "./src/components/ConsoleOAuthFlow.tsx",
-    "./components/ContextVisualization.js": "./src/components/ContextVisualization.tsx",
-    "./components/CtrlOToExpand.js": "./src/components/CtrlOToExpand.tsx",
-    "./components/CustomSelect/index.js": "./src/components/CustomSelect/index.ts",
-    "./components/CustomSelect/select.js": "./src/components/CustomSelect/select.tsx",
-    "./components/FallbackToolUseErrorMessage.js": "./src/components/FallbackToolUseErrorMessage.tsx",
-    "./components/FallbackToolUseRejectedMessage.js": "./src/components/FallbackToolUseRejectedMessage.tsx",
-    "./components/FastIcon.js": "./src/components/FastIcon.tsx",
-    "./components/FileEditToolDiff.js": "./src/components/FileEditToolDiff.tsx",
-    "./components/FileEditToolUpdatedMessage.js": "./src/components/FileEditToolUpdatedMessage.tsx",
-    "./components/FileEditToolUseRejectedMessage.js": "./src/components/FileEditToolUseRejectedMessage.tsx",
-    "./components/FilePathLink.js": "./src/components/FilePathLink.tsx",
-    "./components/HighlightedCode.js": "./src/components/HighlightedCode.tsx",
-    "./components/IdeAutoConnectDialog.js": "./src/components/IdeAutoConnectDialog.tsx",
-    "./components/IdeOnboardingDialog.js": "./src/components/IdeOnboardingDialog.tsx",
-    "./components/InvalidConfigDialog.js": "./src/components/InvalidConfigDialog.tsx",
-    "./components/LogSelector.js": "./src/components/LogSelector.tsx",
-    "./components/LogoutPicker.js": "./src/components/LogoutPicker.tsx",
-    "./components/LogoV2/WelcomeV2.js": "./src/components/LogoV2/WelcomeV2.tsx",
-    "./components/MCPServerApprovalDialog.js": "./src/components/MCPServerApprovalDialog.tsx",
-    "./components/MCPServerDesktopImportDialog.js": "./src/components/MCPServerDesktopImportDialog.tsx",
-    "./components/MCPServerMultiselectDialog.js": "./src/components/MCPServerMultiselectDialog.tsx",
-    "./components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.js": "./src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx",
-    "./components/ManagedSettingsSecurityDialog/utils.js": "./src/components/ManagedSettingsSecurityDialog/utils.ts",
-    "./components/Markdown.js": "./src/components/Markdown.tsx",
-    "./components/Message.js": "./src/components/Message.tsx",
-    "./components/MessageResponse.js": "./src/components/MessageResponse.tsx",
-    "./components/MessageSelector.js": "./src/components/MessageSelector.tsx",
-    "./components/Messages.js": "./src/components/Messages.tsx",
-    "./components/ModelPicker.js": "./src/components/ModelPicker.tsx",
-    "./components/EffortPicker.js": "./src/components/EffortPicker.tsx",
-    "./components/NotebookEditToolUseRejectedMessage.js": "./src/components/NotebookEditToolUseRejectedMessage.tsx",
-    "./components/PromptInput/PromptInputFooterSuggestions.js": "./src/components/PromptInput/PromptInputFooterSuggestions.tsx",
-    "./utils/suggestions/directoryCompletion.js": "./src/utils/suggestions/directoryCompletion.ts",
-    "./components/RemoteCallout.js": "./src/components/RemoteCallout.tsx",
-    "./components/RemoteEnvironmentDialog.js": "./src/components/RemoteEnvironmentDialog.tsx",
-    "./components/Settings/Settings.js": "./src/components/Settings/Settings.tsx",
-    "./components/ShowInIDEPrompt.js": "./src/components/ShowInIDEPrompt.tsx",
-    "./components/Spinner/ShimmerChar.js": "./src/components/Spinner/ShimmerChar.tsx",
-    "./components/Spinner/SpinnerGlyph.js": "./src/components/Spinner/SpinnerGlyph.tsx",
-    "./components/Spinner/useShimmerAnimation.js": "./src/components/Spinner/useShimmerAnimation.ts",
-    "./components/Spinner.js": "./src/components/Spinner.tsx",
-    "./components/StructuredDiff.js": "./src/components/StructuredDiff.tsx",
-    "./components/TeleportError.js": "./src/components/TeleportError.tsx",
-    "./components/TeleportProgress.js": "./src/components/TeleportProgress.tsx",
-    "./components/TextInput.js": "./src/components/TextInput.tsx",
-    "./components/ThemePicker.js": "./src/components/ThemePicker.tsx",
-    "./components/ToolUseLoader.js": "./src/components/ToolUseLoader.tsx",
-    "./components/WorkflowMultiselectDialog.js": "./src/components/WorkflowMultiselectDialog.tsx",
-    "./components/agents/AgentsMenu.js": "./src/components/agents/AgentsMenu.tsx",
-    "./components/agents/SnapshotUpdateDialog.js": "./src/components/agents/SnapshotUpdateDialog.ts",
-    "./components/grove/Grove.js": "./src/components/grove/Grove.tsx",
-    "./components/mcp/MCPReconnect.js": "./src/components/mcp/MCPReconnect.tsx",
-    "./components/mcp/MCPRemoteServerMenu.js": "./src/components/mcp/MCPRemoteServerMenu.tsx",
-    "./components/mcp/MCPStdioServerMenu.js": "./src/components/mcp/MCPStdioServerMenu.tsx",
-    "./components/mcp/MCPToolDetailView.js": "./src/components/mcp/MCPToolDetailView.tsx",
-    "./components/mcp/MCPToolListView.js": "./src/components/mcp/MCPToolListView.tsx",
-    "./components/mcp/index.js": "./src/components/mcp/index.ts",
-    "./components/mcp/types.js": "./src/components/mcp/types.ts",
-    "./components/memory/MemoryFileSelector.js": "./src/components/memory/MemoryFileSelector.tsx",
-    "./components/memory/MemoryUpdateNotification.js": "./src/components/memory/MemoryUpdateNotification.tsx",
-    "./components/messages/UserToolResultMessage/RejectedPlanMessage.js": "./src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx",
-    "./components/shell/OutputLine.js": "./src/components/shell/OutputLine.tsx",
-    "./components/shell/ShellProgressMessage.js": "./src/components/shell/ShellProgressMessage.tsx",
-    "./components/shell/ShellTimeDisplay.js": "./src/components/shell/ShellTimeDisplay.tsx",
-    "./components/skills/SkillsMenu.js": "./src/components/skills/SkillsMenu.tsx",
-    "./components/tasks/BackgroundTasksDialog.js": "./src/components/tasks/BackgroundTasksDialog.tsx",
-    "./components/tasks/WorkflowsDialog.js": "./src/components/tasks/WorkflowsDialog.tsx",
-    "./components/ui/option.js": "./src/components/ui/option.ts",
-    "./notifications.js": "./src/notifications.ts",
-    "./promptEditor.js": "./src/promptEditor.ts",
-    "./fullscreen.js": "./src/fullscreen.ts",
-    "./fastMode.js": "./src/fastMode.ts",
-    "./doctorDiagnostic.js": "./src/doctorDiagnostic.ts",
-    "./imagePaste.js": "./src/imagePaste.ts",
-    "./conversationRecovery.js": "./src/conversationRecovery.tsx",
-    "./localInstaller.js": "./src/localInstaller.ts",
-    "./stateStore.js": "./src/stateStore.ts",
-    "./overlayContext.js": "./src/overlayContext.tsx",
-    "./history.js": "./src/history.ts",
-    "./modalContext.js": "./src/modalContext.ts",
-    "./teammateViewHelpers.js": "./src/teammateViewHelpers.ts",
-    "./Cursor.js": "./src/Cursor.ts",
-    "./selectors.js": "./src/selectors.ts",
-    "./hooksSettings.js": "./src/hooksSettings.ts",
-    "./isHookEqual.js": "./src/isHookEqual.ts",
-    "./textInputTypes.js": "./src/textInputTypes.ts",
-    "./tasksTypes.js": "./src/tasksTypes.ts",
-    "./localShellTaskGuards.js": "./src/localShellTaskGuards.ts",
-    "./ultraplan.js": "./src/ultraplan.ts",
-    "./ultraplan/keyword.js": "./src/ultraplan/keyword.ts",
-    "./toolPool.js": "./src/toolPool.ts",
-    "./readFileInRange.js": "./src/readFileInRange.ts",
-    "./queryHelpers.js": "./src/queryHelpers.ts",
-    "./hookEvents.js": "./src/hookEvents.ts",
-    "./earlyInput.js": "./src/earlyInput.ts",
-    "./relaunch.js": "./src/relaunch.ts",
-    "./terminalSetup.js": "./src/terminalSetup.ts",
-    "./promptSuggestionSpeculation.js": "./src/promptSuggestionSpeculation.tsx",
-    "./promptSuggestion.js": "./src/promptSuggestion.tsx",
-    "./projectOnboardingState.js": "./src/projectOnboardingState.ts",
-    "./promptOverlayContext.js": "./src/promptOverlayContext.tsx",
-    "./extraUsage.js": "./src/extraUsage.ts",
-    "./onChangeAppState.js": "./src/onChangeAppState.ts",
-    "./collapseTeammateShutdowns.js": "./src/collapseTeammateShutdowns.ts",
-    "./collapseHookSummaries.js": "./src/collapseHookSummaries.ts",
-    "./commands/color/index.js": "./src/commands/color/index.ts",
-    "./commands/statusline.js": "./src/commands/statusline.tsx",
-    "./commands/diff/index.js": "./src/commands/diff/index.ts",
-    "./commands/usage/index.js": "./src/commands/usage/index.ts",
-    "./commands/stats/index.js": "./src/commands/stats/index.ts",
-    "./commands/config/index.js": "./src/commands/config/index.ts",
-    "./commands/doctor/index.js": "./src/commands/doctor/index.ts",
-    "./commands/export/index.js": "./src/commands/export/index.ts",
-    "./commands/desktop/index.js": "./src/commands/desktop/index.ts",
-    "./commands/help/index.js": "./src/commands/help/index.ts",
-    "./commands/mobile/index.js": "./src/commands/mobile/index.ts",
-    "./commands/output-style/index.js": "./src/commands/output-style/index.ts",
-    "./commands/passes/index.js": "./src/commands/passes/index.ts",
-    "./commands/vim/index.js": "./src/commands/vim/index.ts",
-    "./commands/rewind/index.js": "./src/commands/rewind/index.ts",
-    "./commands/install-slack-app/index.js": "./src/commands/install-slack-app/index.ts",
-    "./commands/stickers/index.js": "./src/commands/stickers/index.ts",
-    "./commands/files/index.js": "./src/commands/files/index.ts",
-    "./commands/tag/index.js": "./src/commands/tag/index.ts",
-    "./commands/hooks/index.js": "./src/commands/hooks/index.ts",
-    "./commands/keybindings/index.js": "./src/commands/keybindings/index.ts",
-    "./commands/exit/index.js": "./src/commands/exit/index.ts",
-    "./commands/plan/index.js": "./src/commands/plan/index.ts",
-    "./commands/heapdump/index.js": "./src/commands/heapdump/index.ts",
-    "./commands/tui/index.js": "./src/commands/tui/index.ts",
-    "./tips/tipRegistry.js": "./src/tips/tipRegistry.ts",
-    "./commands/add-dir/index.js": "./src/commands/add-dir/index.ts",
-    "./commands/sandbox-toggle/index.js": "./src/commands/sandbox-toggle/index.ts",
-    "./processUserInput/processUserInput.js": "./src/processUserInput/processUserInput.ts",
-    "./processUserInput/processSlashCommand.js": "./src/processUserInput/processSlashCommand.tsx",
-    "./deepLink/banner.js": "./src/deepLink/banner.ts",
-    "./deepLink/registerProtocol.js": "./src/deepLink/registerProtocol.ts",
-    "./deepLink/protocolHandler.js": "./src/deepLink/protocolHandler.ts",
-    "./ultraplan/ccrSession.js": "./src/ultraplan/ccrSession.ts",
-    "./replTypes/ids.js": "./src/replTypes/ids.ts",
-    "./replTypes/permissions.js": "./src/replTypes/permissions.ts",
-    "./replTypes/logs.js": "./src/replTypes/logs.ts",
-    "./replTypes/utils.js": "./src/replTypes/utils.ts",
-    "./replTypes/connectorText.js": "./src/replTypes/connectorText.ts",
-    "./replTypes/fileSuggestion.js": "./src/replTypes/fileSuggestion.ts",
-    "./replTypes/message.js": "./src/replTypes/message.ts",
-    "./replTypes/statusLine.js": "./src/replTypes/statusLine.ts",
-    "./replTypes/command.js": "./src/replTypes/command.ts",
-    "./replTypes/hooks.js": "./src/replTypes/hooks.ts",
-    "./diagnostics/claudeDesktop.js": "./src/diagnostics/claudeDesktop.ts",
-    "./diagnostics/debugFilter.js": "./src/diagnostics/debugFilter.ts",
-    "./github/githubRepoPathMapping.js": "./src/github/githubRepoPathMapping.ts",
-    "./uiHelpers/groupToolUses.js": "./src/uiHelpers/groupToolUses.ts",
-    "./uiHelpers/horizontalScroll.js": "./src/uiHelpers/horizontalScroll.ts",
-    "./uiHelpers/logoV2Utils.js": "./src/uiHelpers/logoV2Utils.ts",
-    "./uiHelpers/treeify.js": "./src/uiHelpers/treeify.ts",
-    "./clipboard/pasteStore.js": "./src/clipboard/pasteStore.ts",
-    "./keybindings/useShortcutDisplay.js": "./src/keybindings/useShortcutDisplay.ts",
-    "./interactiveHelpers/interactiveHelpers.js": "./src/interactiveHelpers/interactiveHelpers.tsx",
-    "./dialogLaunchers/dialogLaunchers.js": "./src/dialogLaunchers/dialogLaunchers.tsx",
-    "./commands/assistant/index.js": "./src/commands/assistant/index.ts",
-    ".": "./src/index.ts",
-    "./contracts": "./src/contracts.ts",
-    "./testing": "./testing/index.ts"
+    "./screens/*.js": {
+      "types": "./dist/src/screens/*.d.ts",
+      "default": "./src/screens/*.tsx"
+    },
+    "./screens/*": {
+      "types": "./dist/src/screens/*.d.ts",
+      "default": "./src/screens/*"
+    },
+    "./screens/agentFleet/mountFleetView.js": {
+      "types": "./dist/src/screens/agentFleet/mountFleetView.d.ts",
+      "default": "./src/screens/agentFleet/mountFleetView.tsx"
+    },
+    "./screens/agentFleet/FleetView.js": {
+      "types": "./dist/src/screens/agentFleet/FleetView.d.ts",
+      "default": "./src/screens/agentFleet/FleetView.tsx"
+    },
+    "./keybindings/KeybindingProviderSetup.js": {
+      "types": "./dist/src/keybindings/KeybindingProviderSetup.d.ts",
+      "default": "./src/keybindings/KeybindingProviderSetup.tsx"
+    },
+    "./keybindings/*.js": {
+      "types": "./dist/src/keybindings/*.d.ts",
+      "default": "./src/keybindings/*.ts"
+    },
+    "./keybindings/*": {
+      "types": "./dist/src/keybindings/*.d.ts",
+      "default": "./src/keybindings/*"
+    },
+    "./hooks/useSwarmPermissionPoller.js": {
+      "types": "./dist/src/hooks/useSwarmPermissionPoller.d.ts",
+      "default": "./src/hooks/useSwarmPermissionPoller.ts"
+    },
+    "./hooks/useNotifyAfterTimeout.js": {
+      "types": "./dist/src/hooks/useNotifyAfterTimeout.d.ts",
+      "default": "./src/hooks/useNotifyAfterTimeout.ts"
+    },
+    "./hooks/useMainLoopModel.js": {
+      "types": "./dist/src/hooks/useMainLoopModel.d.ts",
+      "default": "./src/hooks/useMainLoopModel.ts"
+    },
+    "./hooks/useManagePlugins.js": {
+      "types": "./dist/src/hooks/useManagePlugins.d.ts",
+      "default": "./src/hooks/useManagePlugins.ts"
+    },
+    "./hooks/useCanUseTool.js": {
+      "types": "./dist/src/hooks/useCanUseTool.d.ts",
+      "default": "./src/hooks/useCanUseTool.tsx"
+    },
+    "./hooks/useExitOnCtrlCDWithKeybindings.js": {
+      "types": "./dist/src/hooks/useExitOnCtrlCDWithKeybindings.d.ts",
+      "default": "./src/hooks/useExitOnCtrlCDWithKeybindings.ts"
+    },
+    "./hooks/fileSuggestions.js": {
+      "types": "./dist/src/hooks/fileSuggestions.d.ts",
+      "default": "./src/hooks/fileSuggestions.ts"
+    },
+    "./hooks/useSettings.js": {
+      "types": "./dist/src/hooks/useSettings.d.ts",
+      "default": "./src/hooks/useSettings.ts"
+    },
+    "./hooks/useSettingsChange.js": {
+      "types": "./dist/src/hooks/useSettingsChange.d.ts",
+      "default": "./src/hooks/useSettingsChange.ts"
+    },
+    "./components/AgentProgressLine.js": {
+      "types": "./dist/src/components/AgentProgressLine.d.ts",
+      "default": "./src/components/AgentProgressLine.tsx"
+    },
+    "./components/App.js": {
+      "types": "./dist/src/components/App.d.ts",
+      "default": "./src/components/App.tsx"
+    },
+    "./components/ConfigurableShortcutHint.js": {
+      "types": "./dist/src/components/ConfigurableShortcutHint.d.ts",
+      "default": "./src/components/ConfigurableShortcutHint.tsx"
+    },
+    "./components/ConsoleOAuthFlow.js": {
+      "types": "./dist/src/components/ConsoleOAuthFlow.d.ts",
+      "default": "./src/components/ConsoleOAuthFlow.tsx"
+    },
+    "./components/ContextVisualization.js": {
+      "types": "./dist/src/components/ContextVisualization.d.ts",
+      "default": "./src/components/ContextVisualization.tsx"
+    },
+    "./components/CtrlOToExpand.js": {
+      "types": "./dist/src/components/CtrlOToExpand.d.ts",
+      "default": "./src/components/CtrlOToExpand.tsx"
+    },
+    "./components/CustomSelect/index.js": {
+      "types": "./dist/src/components/CustomSelect/index.d.ts",
+      "default": "./src/components/CustomSelect/index.ts"
+    },
+    "./components/CustomSelect/select.js": {
+      "types": "./dist/src/components/CustomSelect/select.d.ts",
+      "default": "./src/components/CustomSelect/select.tsx"
+    },
+    "./components/FallbackToolUseErrorMessage.js": {
+      "types": "./dist/src/components/FallbackToolUseErrorMessage.d.ts",
+      "default": "./src/components/FallbackToolUseErrorMessage.tsx"
+    },
+    "./components/FallbackToolUseRejectedMessage.js": {
+      "types": "./dist/src/components/FallbackToolUseRejectedMessage.d.ts",
+      "default": "./src/components/FallbackToolUseRejectedMessage.tsx"
+    },
+    "./components/FastIcon.js": {
+      "types": "./dist/src/components/FastIcon.d.ts",
+      "default": "./src/components/FastIcon.tsx"
+    },
+    "./components/FileEditToolDiff.js": {
+      "types": "./dist/src/components/FileEditToolDiff.d.ts",
+      "default": "./src/components/FileEditToolDiff.tsx"
+    },
+    "./components/FileEditToolUpdatedMessage.js": {
+      "types": "./dist/src/components/FileEditToolUpdatedMessage.d.ts",
+      "default": "./src/components/FileEditToolUpdatedMessage.tsx"
+    },
+    "./components/FileEditToolUseRejectedMessage.js": {
+      "types": "./dist/src/components/FileEditToolUseRejectedMessage.d.ts",
+      "default": "./src/components/FileEditToolUseRejectedMessage.tsx"
+    },
+    "./components/FilePathLink.js": {
+      "types": "./dist/src/components/FilePathLink.d.ts",
+      "default": "./src/components/FilePathLink.tsx"
+    },
+    "./components/HighlightedCode.js": {
+      "types": "./dist/src/components/HighlightedCode.d.ts",
+      "default": "./src/components/HighlightedCode.tsx"
+    },
+    "./components/IdeAutoConnectDialog.js": {
+      "types": "./dist/src/components/IdeAutoConnectDialog.d.ts",
+      "default": "./src/components/IdeAutoConnectDialog.tsx"
+    },
+    "./components/IdeOnboardingDialog.js": {
+      "types": "./dist/src/components/IdeOnboardingDialog.d.ts",
+      "default": "./src/components/IdeOnboardingDialog.tsx"
+    },
+    "./components/InvalidConfigDialog.js": {
+      "types": "./dist/src/components/InvalidConfigDialog.d.ts",
+      "default": "./src/components/InvalidConfigDialog.tsx"
+    },
+    "./components/LogSelector.js": {
+      "types": "./dist/src/components/LogSelector.d.ts",
+      "default": "./src/components/LogSelector.tsx"
+    },
+    "./components/LogoutPicker.js": {
+      "types": "./dist/src/components/LogoutPicker.d.ts",
+      "default": "./src/components/LogoutPicker.tsx"
+    },
+    "./components/LogoV2/WelcomeV2.js": {
+      "types": "./dist/src/components/LogoV2/WelcomeV2.d.ts",
+      "default": "./src/components/LogoV2/WelcomeV2.tsx"
+    },
+    "./components/MCPServerApprovalDialog.js": {
+      "types": "./dist/src/components/MCPServerApprovalDialog.d.ts",
+      "default": "./src/components/MCPServerApprovalDialog.tsx"
+    },
+    "./components/MCPServerDesktopImportDialog.js": {
+      "types": "./dist/src/components/MCPServerDesktopImportDialog.d.ts",
+      "default": "./src/components/MCPServerDesktopImportDialog.tsx"
+    },
+    "./components/MCPServerMultiselectDialog.js": {
+      "types": "./dist/src/components/MCPServerMultiselectDialog.d.ts",
+      "default": "./src/components/MCPServerMultiselectDialog.tsx"
+    },
+    "./components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.js": {
+      "types": "./dist/src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.d.ts",
+      "default": "./src/components/ManagedSettingsSecurityDialog/ManagedSettingsSecurityDialog.tsx"
+    },
+    "./components/ManagedSettingsSecurityDialog/utils.js": {
+      "types": "./dist/src/components/ManagedSettingsSecurityDialog/utils.d.ts",
+      "default": "./src/components/ManagedSettingsSecurityDialog/utils.ts"
+    },
+    "./components/Markdown.js": {
+      "types": "./dist/src/components/Markdown.d.ts",
+      "default": "./src/components/Markdown.tsx"
+    },
+    "./components/Message.js": {
+      "types": "./dist/src/components/Message.d.ts",
+      "default": "./src/components/Message.tsx"
+    },
+    "./components/MessageResponse.js": {
+      "types": "./dist/src/components/MessageResponse.d.ts",
+      "default": "./src/components/MessageResponse.tsx"
+    },
+    "./components/MessageSelector.js": {
+      "types": "./dist/src/components/MessageSelector.d.ts",
+      "default": "./src/components/MessageSelector.tsx"
+    },
+    "./components/Messages.js": {
+      "types": "./dist/src/components/Messages.d.ts",
+      "default": "./src/components/Messages.tsx"
+    },
+    "./components/ModelPicker.js": {
+      "types": "./dist/src/components/ModelPicker.d.ts",
+      "default": "./src/components/ModelPicker.tsx"
+    },
+    "./components/EffortPicker.js": {
+      "types": "./dist/src/components/EffortPicker.d.ts",
+      "default": "./src/components/EffortPicker.tsx"
+    },
+    "./components/NotebookEditToolUseRejectedMessage.js": {
+      "types": "./dist/src/components/NotebookEditToolUseRejectedMessage.d.ts",
+      "default": "./src/components/NotebookEditToolUseRejectedMessage.tsx"
+    },
+    "./components/PromptInput/PromptInputFooterSuggestions.js": {
+      "types": "./dist/src/components/PromptInput/PromptInputFooterSuggestions.d.ts",
+      "default": "./src/components/PromptInput/PromptInputFooterSuggestions.tsx"
+    },
+    "./utils/suggestions/directoryCompletion.js": {
+      "types": "./dist/src/utils/suggestions/directoryCompletion.d.ts",
+      "default": "./src/utils/suggestions/directoryCompletion.ts"
+    },
+    "./components/RemoteCallout.js": {
+      "types": "./dist/src/components/RemoteCallout.d.ts",
+      "default": "./src/components/RemoteCallout.tsx"
+    },
+    "./components/RemoteEnvironmentDialog.js": {
+      "types": "./dist/src/components/RemoteEnvironmentDialog.d.ts",
+      "default": "./src/components/RemoteEnvironmentDialog.tsx"
+    },
+    "./components/Settings/Settings.js": {
+      "types": "./dist/src/components/Settings/Settings.d.ts",
+      "default": "./src/components/Settings/Settings.tsx"
+    },
+    "./components/ShowInIDEPrompt.js": {
+      "types": "./dist/src/components/ShowInIDEPrompt.d.ts",
+      "default": "./src/components/ShowInIDEPrompt.tsx"
+    },
+    "./components/Spinner/ShimmerChar.js": {
+      "types": "./dist/src/components/Spinner/ShimmerChar.d.ts",
+      "default": "./src/components/Spinner/ShimmerChar.tsx"
+    },
+    "./components/Spinner/SpinnerGlyph.js": {
+      "types": "./dist/src/components/Spinner/SpinnerGlyph.d.ts",
+      "default": "./src/components/Spinner/SpinnerGlyph.tsx"
+    },
+    "./components/Spinner/useShimmerAnimation.js": {
+      "types": "./dist/src/components/Spinner/useShimmerAnimation.d.ts",
+      "default": "./src/components/Spinner/useShimmerAnimation.ts"
+    },
+    "./components/Spinner.js": {
+      "types": "./dist/src/components/Spinner.d.ts",
+      "default": "./src/components/Spinner.tsx"
+    },
+    "./components/StructuredDiff.js": {
+      "types": "./dist/src/components/StructuredDiff.d.ts",
+      "default": "./src/components/StructuredDiff.tsx"
+    },
+    "./components/TeleportError.js": {
+      "types": "./dist/src/components/TeleportError.d.ts",
+      "default": "./src/components/TeleportError.tsx"
+    },
+    "./components/TeleportProgress.js": {
+      "types": "./dist/src/components/TeleportProgress.d.ts",
+      "default": "./src/components/TeleportProgress.tsx"
+    },
+    "./components/TextInput.js": {
+      "types": "./dist/src/components/TextInput.d.ts",
+      "default": "./src/components/TextInput.tsx"
+    },
+    "./components/ThemePicker.js": {
+      "types": "./dist/src/components/ThemePicker.d.ts",
+      "default": "./src/components/ThemePicker.tsx"
+    },
+    "./components/ToolUseLoader.js": {
+      "types": "./dist/src/components/ToolUseLoader.d.ts",
+      "default": "./src/components/ToolUseLoader.tsx"
+    },
+    "./components/WorkflowMultiselectDialog.js": {
+      "types": "./dist/src/components/WorkflowMultiselectDialog.d.ts",
+      "default": "./src/components/WorkflowMultiselectDialog.tsx"
+    },
+    "./components/agents/AgentsMenu.js": {
+      "types": "./dist/src/components/agents/AgentsMenu.d.ts",
+      "default": "./src/components/agents/AgentsMenu.tsx"
+    },
+    "./components/agents/SnapshotUpdateDialog.js": {
+      "types": "./dist/src/components/agents/SnapshotUpdateDialog.d.ts",
+      "default": "./src/components/agents/SnapshotUpdateDialog.ts"
+    },
+    "./components/grove/Grove.js": {
+      "types": "./dist/src/components/grove/Grove.d.ts",
+      "default": "./src/components/grove/Grove.tsx"
+    },
+    "./components/mcp/MCPReconnect.js": {
+      "types": "./dist/src/components/mcp/MCPReconnect.d.ts",
+      "default": "./src/components/mcp/MCPReconnect.tsx"
+    },
+    "./components/mcp/MCPRemoteServerMenu.js": {
+      "types": "./dist/src/components/mcp/MCPRemoteServerMenu.d.ts",
+      "default": "./src/components/mcp/MCPRemoteServerMenu.tsx"
+    },
+    "./components/mcp/MCPStdioServerMenu.js": {
+      "types": "./dist/src/components/mcp/MCPStdioServerMenu.d.ts",
+      "default": "./src/components/mcp/MCPStdioServerMenu.tsx"
+    },
+    "./components/mcp/MCPToolDetailView.js": {
+      "types": "./dist/src/components/mcp/MCPToolDetailView.d.ts",
+      "default": "./src/components/mcp/MCPToolDetailView.tsx"
+    },
+    "./components/mcp/MCPToolListView.js": {
+      "types": "./dist/src/components/mcp/MCPToolListView.d.ts",
+      "default": "./src/components/mcp/MCPToolListView.tsx"
+    },
+    "./components/mcp/index.js": {
+      "types": "./dist/src/components/mcp/index.d.ts",
+      "default": "./src/components/mcp/index.ts"
+    },
+    "./components/mcp/types.js": {
+      "types": "./dist/src/components/mcp/types.d.ts",
+      "default": "./src/components/mcp/types.ts"
+    },
+    "./components/memory/MemoryFileSelector.js": {
+      "types": "./dist/src/components/memory/MemoryFileSelector.d.ts",
+      "default": "./src/components/memory/MemoryFileSelector.tsx"
+    },
+    "./components/memory/MemoryUpdateNotification.js": {
+      "types": "./dist/src/components/memory/MemoryUpdateNotification.d.ts",
+      "default": "./src/components/memory/MemoryUpdateNotification.tsx"
+    },
+    "./components/messages/UserToolResultMessage/RejectedPlanMessage.js": {
+      "types": "./dist/src/components/messages/UserToolResultMessage/RejectedPlanMessage.d.ts",
+      "default": "./src/components/messages/UserToolResultMessage/RejectedPlanMessage.tsx"
+    },
+    "./components/shell/OutputLine.js": {
+      "types": "./dist/src/components/shell/OutputLine.d.ts",
+      "default": "./src/components/shell/OutputLine.tsx"
+    },
+    "./components/shell/ShellProgressMessage.js": {
+      "types": "./dist/src/components/shell/ShellProgressMessage.d.ts",
+      "default": "./src/components/shell/ShellProgressMessage.tsx"
+    },
+    "./components/shell/ShellTimeDisplay.js": {
+      "types": "./dist/src/components/shell/ShellTimeDisplay.d.ts",
+      "default": "./src/components/shell/ShellTimeDisplay.tsx"
+    },
+    "./components/skills/SkillsMenu.js": {
+      "types": "./dist/src/components/skills/SkillsMenu.d.ts",
+      "default": "./src/components/skills/SkillsMenu.tsx"
+    },
+    "./components/tasks/BackgroundTasksDialog.js": {
+      "types": "./dist/src/components/tasks/BackgroundTasksDialog.d.ts",
+      "default": "./src/components/tasks/BackgroundTasksDialog.tsx"
+    },
+    "./components/tasks/WorkflowsDialog.js": {
+      "types": "./dist/src/components/tasks/WorkflowsDialog.d.ts",
+      "default": "./src/components/tasks/WorkflowsDialog.tsx"
+    },
+    "./components/ui/option.js": {
+      "types": "./dist/src/components/ui/option.d.ts",
+      "default": "./src/components/ui/option.ts"
+    },
+    "./notifications.js": {
+      "types": "./dist/src/notifications.d.ts",
+      "default": "./src/notifications.ts"
+    },
+    "./promptEditor.js": {
+      "types": "./dist/src/promptEditor.d.ts",
+      "default": "./src/promptEditor.ts"
+    },
+    "./fullscreen.js": {
+      "types": "./dist/src/fullscreen.d.ts",
+      "default": "./src/fullscreen.ts"
+    },
+    "./fastMode.js": {
+      "types": "./dist/src/fastMode.d.ts",
+      "default": "./src/fastMode.ts"
+    },
+    "./doctorDiagnostic.js": {
+      "types": "./dist/src/doctorDiagnostic.d.ts",
+      "default": "./src/doctorDiagnostic.ts"
+    },
+    "./imagePaste.js": {
+      "types": "./dist/src/imagePaste.d.ts",
+      "default": "./src/imagePaste.ts"
+    },
+    "./conversationRecovery.js": {
+      "types": "./dist/src/conversationRecovery.d.ts",
+      "default": "./src/conversationRecovery.tsx"
+    },
+    "./localInstaller.js": {
+      "types": "./dist/src/localInstaller.d.ts",
+      "default": "./src/localInstaller.ts"
+    },
+    "./stateStore.js": {
+      "types": "./dist/src/stateStore.d.ts",
+      "default": "./src/stateStore.ts"
+    },
+    "./overlayContext.js": {
+      "types": "./dist/src/overlayContext.d.ts",
+      "default": "./src/overlayContext.tsx"
+    },
+    "./history.js": {
+      "types": "./dist/src/history.d.ts",
+      "default": "./src/history.ts"
+    },
+    "./modalContext.js": {
+      "types": "./dist/src/modalContext.d.ts",
+      "default": "./src/modalContext.ts"
+    },
+    "./teammateViewHelpers.js": {
+      "types": "./dist/src/teammateViewHelpers.d.ts",
+      "default": "./src/teammateViewHelpers.ts"
+    },
+    "./Cursor.js": {
+      "types": "./dist/src/Cursor.d.ts",
+      "default": "./src/Cursor.ts"
+    },
+    "./selectors.js": {
+      "types": "./dist/src/selectors.d.ts",
+      "default": "./src/selectors.ts"
+    },
+    "./hooksSettings.js": {
+      "types": "./dist/src/hooksSettings.d.ts",
+      "default": "./src/hooksSettings.ts"
+    },
+    "./isHookEqual.js": {
+      "types": "./dist/src/isHookEqual.d.ts",
+      "default": "./src/isHookEqual.ts"
+    },
+    "./textInputTypes.js": {
+      "types": "./dist/src/textInputTypes.d.ts",
+      "default": "./src/textInputTypes.ts"
+    },
+    "./tasksTypes.js": {
+      "types": "./dist/src/tasksTypes.d.ts",
+      "default": "./src/tasksTypes.ts"
+    },
+    "./localShellTaskGuards.js": {
+      "types": "./dist/src/localShellTaskGuards.d.ts",
+      "default": "./src/localShellTaskGuards.ts"
+    },
+    "./ultraplan.js": {
+      "types": "./dist/src/ultraplan.d.ts",
+      "default": "./src/ultraplan.ts"
+    },
+    "./ultraplan/keyword.js": {
+      "types": "./dist/src/ultraplan/keyword.d.ts",
+      "default": "./src/ultraplan/keyword.ts"
+    },
+    "./toolPool.js": {
+      "types": "./dist/src/toolPool.d.ts",
+      "default": "./src/toolPool.ts"
+    },
+    "./readFileInRange.js": {
+      "types": "./dist/src/readFileInRange.d.ts",
+      "default": "./src/readFileInRange.ts"
+    },
+    "./queryHelpers.js": {
+      "types": "./dist/src/queryHelpers.d.ts",
+      "default": "./src/queryHelpers.ts"
+    },
+    "./hookEvents.js": {
+      "types": "./dist/src/hookEvents.d.ts",
+      "default": "./src/hookEvents.ts"
+    },
+    "./earlyInput.js": {
+      "types": "./dist/src/earlyInput.d.ts",
+      "default": "./src/earlyInput.ts"
+    },
+    "./relaunch.js": {
+      "types": "./dist/src/relaunch.d.ts",
+      "default": "./src/relaunch.ts"
+    },
+    "./terminalSetup.js": {
+      "types": "./dist/src/terminalSetup.d.ts",
+      "default": "./src/terminalSetup.ts"
+    },
+    "./promptSuggestionSpeculation.js": {
+      "types": "./dist/src/promptSuggestionSpeculation.d.ts",
+      "default": "./src/promptSuggestionSpeculation.tsx"
+    },
+    "./promptSuggestion.js": {
+      "types": "./dist/src/promptSuggestion.d.ts",
+      "default": "./src/promptSuggestion.tsx"
+    },
+    "./projectOnboardingState.js": {
+      "types": "./dist/src/projectOnboardingState.d.ts",
+      "default": "./src/projectOnboardingState.ts"
+    },
+    "./promptOverlayContext.js": {
+      "types": "./dist/src/promptOverlayContext.d.ts",
+      "default": "./src/promptOverlayContext.tsx"
+    },
+    "./extraUsage.js": {
+      "types": "./dist/src/extraUsage.d.ts",
+      "default": "./src/extraUsage.ts"
+    },
+    "./onChangeAppState.js": {
+      "types": "./dist/src/onChangeAppState.d.ts",
+      "default": "./src/onChangeAppState.ts"
+    },
+    "./collapseTeammateShutdowns.js": {
+      "types": "./dist/src/collapseTeammateShutdowns.d.ts",
+      "default": "./src/collapseTeammateShutdowns.ts"
+    },
+    "./collapseHookSummaries.js": {
+      "types": "./dist/src/collapseHookSummaries.d.ts",
+      "default": "./src/collapseHookSummaries.ts"
+    },
+    "./commands/color/index.js": {
+      "types": "./dist/src/commands/color/index.d.ts",
+      "default": "./src/commands/color/index.ts"
+    },
+    "./commands/statusline.js": {
+      "types": "./dist/src/commands/statusline.d.ts",
+      "default": "./src/commands/statusline.tsx"
+    },
+    "./commands/diff/index.js": {
+      "types": "./dist/src/commands/diff/index.d.ts",
+      "default": "./src/commands/diff/index.ts"
+    },
+    "./commands/usage/index.js": {
+      "types": "./dist/src/commands/usage/index.d.ts",
+      "default": "./src/commands/usage/index.ts"
+    },
+    "./commands/stats/index.js": {
+      "types": "./dist/src/commands/stats/index.d.ts",
+      "default": "./src/commands/stats/index.ts"
+    },
+    "./commands/config/index.js": {
+      "types": "./dist/src/commands/config/index.d.ts",
+      "default": "./src/commands/config/index.ts"
+    },
+    "./commands/doctor/index.js": {
+      "types": "./dist/src/commands/doctor/index.d.ts",
+      "default": "./src/commands/doctor/index.ts"
+    },
+    "./commands/export/index.js": {
+      "types": "./dist/src/commands/export/index.d.ts",
+      "default": "./src/commands/export/index.ts"
+    },
+    "./commands/desktop/index.js": {
+      "types": "./dist/src/commands/desktop/index.d.ts",
+      "default": "./src/commands/desktop/index.ts"
+    },
+    "./commands/help/index.js": {
+      "types": "./dist/src/commands/help/index.d.ts",
+      "default": "./src/commands/help/index.ts"
+    },
+    "./commands/mobile/index.js": {
+      "types": "./dist/src/commands/mobile/index.d.ts",
+      "default": "./src/commands/mobile/index.ts"
+    },
+    "./commands/output-style/index.js": {
+      "types": "./dist/src/commands/output-style/index.d.ts",
+      "default": "./src/commands/output-style/index.ts"
+    },
+    "./commands/passes/index.js": {
+      "types": "./dist/src/commands/passes/index.d.ts",
+      "default": "./src/commands/passes/index.ts"
+    },
+    "./commands/vim/index.js": {
+      "types": "./dist/src/commands/vim/index.d.ts",
+      "default": "./src/commands/vim/index.ts"
+    },
+    "./commands/rewind/index.js": {
+      "types": "./dist/src/commands/rewind/index.d.ts",
+      "default": "./src/commands/rewind/index.ts"
+    },
+    "./commands/install-slack-app/index.js": {
+      "types": "./dist/src/commands/install-slack-app/index.d.ts",
+      "default": "./src/commands/install-slack-app/index.ts"
+    },
+    "./commands/stickers/index.js": {
+      "types": "./dist/src/commands/stickers/index.d.ts",
+      "default": "./src/commands/stickers/index.ts"
+    },
+    "./commands/files/index.js": {
+      "types": "./dist/src/commands/files/index.d.ts",
+      "default": "./src/commands/files/index.ts"
+    },
+    "./commands/tag/index.js": {
+      "types": "./dist/src/commands/tag/index.d.ts",
+      "default": "./src/commands/tag/index.ts"
+    },
+    "./commands/hooks/index.js": {
+      "types": "./dist/src/commands/hooks/index.d.ts",
+      "default": "./src/commands/hooks/index.ts"
+    },
+    "./commands/keybindings/index.js": {
+      "types": "./dist/src/commands/keybindings/index.d.ts",
+      "default": "./src/commands/keybindings/index.ts"
+    },
+    "./commands/exit/index.js": {
+      "types": "./dist/src/commands/exit/index.d.ts",
+      "default": "./src/commands/exit/index.ts"
+    },
+    "./commands/plan/index.js": {
+      "types": "./dist/src/commands/plan/index.d.ts",
+      "default": "./src/commands/plan/index.ts"
+    },
+    "./commands/heapdump/index.js": {
+      "types": "./dist/src/commands/heapdump/index.d.ts",
+      "default": "./src/commands/heapdump/index.ts"
+    },
+    "./commands/tui/index.js": {
+      "types": "./dist/src/commands/tui/index.d.ts",
+      "default": "./src/commands/tui/index.ts"
+    },
+    "./tips/tipRegistry.js": {
+      "types": "./dist/src/tips/tipRegistry.d.ts",
+      "default": "./src/tips/tipRegistry.ts"
+    },
+    "./commands/add-dir/index.js": {
+      "types": "./dist/src/commands/add-dir/index.d.ts",
+      "default": "./src/commands/add-dir/index.ts"
+    },
+    "./commands/sandbox-toggle/index.js": {
+      "types": "./dist/src/commands/sandbox-toggle/index.d.ts",
+      "default": "./src/commands/sandbox-toggle/index.ts"
+    },
+    "./processUserInput/processUserInput.js": {
+      "types": "./dist/src/processUserInput/processUserInput.d.ts",
+      "default": "./src/processUserInput/processUserInput.ts"
+    },
+    "./processUserInput/processSlashCommand.js": {
+      "types": "./dist/src/processUserInput/processSlashCommand.d.ts",
+      "default": "./src/processUserInput/processSlashCommand.tsx"
+    },
+    "./deepLink/banner.js": {
+      "types": "./dist/src/deepLink/banner.d.ts",
+      "default": "./src/deepLink/banner.ts"
+    },
+    "./deepLink/registerProtocol.js": {
+      "types": "./dist/src/deepLink/registerProtocol.d.ts",
+      "default": "./src/deepLink/registerProtocol.ts"
+    },
+    "./deepLink/protocolHandler.js": {
+      "types": "./dist/src/deepLink/protocolHandler.d.ts",
+      "default": "./src/deepLink/protocolHandler.ts"
+    },
+    "./ultraplan/ccrSession.js": {
+      "types": "./dist/src/ultraplan/ccrSession.d.ts",
+      "default": "./src/ultraplan/ccrSession.ts"
+    },
+    "./replTypes/ids.js": {
+      "types": "./dist/src/replTypes/ids.d.ts",
+      "default": "./src/replTypes/ids.ts"
+    },
+    "./replTypes/permissions.js": {
+      "types": "./dist/src/replTypes/permissions.d.ts",
+      "default": "./src/replTypes/permissions.ts"
+    },
+    "./replTypes/logs.js": {
+      "types": "./dist/src/replTypes/logs.d.ts",
+      "default": "./src/replTypes/logs.ts"
+    },
+    "./replTypes/utils.js": {
+      "types": "./dist/src/replTypes/utils.d.ts",
+      "default": "./src/replTypes/utils.ts"
+    },
+    "./replTypes/connectorText.js": {
+      "types": "./dist/src/replTypes/connectorText.d.ts",
+      "default": "./src/replTypes/connectorText.ts"
+    },
+    "./replTypes/fileSuggestion.js": {
+      "types": "./dist/src/replTypes/fileSuggestion.d.ts",
+      "default": "./src/replTypes/fileSuggestion.ts"
+    },
+    "./replTypes/message.js": {
+      "types": "./dist/src/replTypes/message.d.ts",
+      "default": "./src/replTypes/message.ts"
+    },
+    "./replTypes/statusLine.js": {
+      "types": "./dist/src/replTypes/statusLine.d.ts",
+      "default": "./src/replTypes/statusLine.ts"
+    },
+    "./replTypes/command.js": {
+      "types": "./dist/src/replTypes/command.d.ts",
+      "default": "./src/replTypes/command.ts"
+    },
+    "./replTypes/hooks.js": {
+      "types": "./dist/src/replTypes/hooks.d.ts",
+      "default": "./src/replTypes/hooks.ts"
+    },
+    "./diagnostics/claudeDesktop.js": {
+      "types": "./dist/src/diagnostics/claudeDesktop.d.ts",
+      "default": "./src/diagnostics/claudeDesktop.ts"
+    },
+    "./diagnostics/debugFilter.js": {
+      "types": "./dist/src/diagnostics/debugFilter.d.ts",
+      "default": "./src/diagnostics/debugFilter.ts"
+    },
+    "./github/githubRepoPathMapping.js": {
+      "types": "./dist/src/github/githubRepoPathMapping.d.ts",
+      "default": "./src/github/githubRepoPathMapping.ts"
+    },
+    "./uiHelpers/groupToolUses.js": {
+      "types": "./dist/src/uiHelpers/groupToolUses.d.ts",
+      "default": "./src/uiHelpers/groupToolUses.ts"
+    },
+    "./uiHelpers/horizontalScroll.js": {
+      "types": "./dist/src/uiHelpers/horizontalScroll.d.ts",
+      "default": "./src/uiHelpers/horizontalScroll.ts"
+    },
+    "./uiHelpers/logoV2Utils.js": {
+      "types": "./dist/src/uiHelpers/logoV2Utils.d.ts",
+      "default": "./src/uiHelpers/logoV2Utils.ts"
+    },
+    "./uiHelpers/treeify.js": {
+      "types": "./dist/src/uiHelpers/treeify.d.ts",
+      "default": "./src/uiHelpers/treeify.ts"
+    },
+    "./clipboard/pasteStore.js": {
+      "types": "./dist/src/clipboard/pasteStore.d.ts",
+      "default": "./src/clipboard/pasteStore.ts"
+    },
+    "./keybindings/useShortcutDisplay.js": {
+      "types": "./dist/src/keybindings/useShortcutDisplay.d.ts",
+      "default": "./src/keybindings/useShortcutDisplay.ts"
+    },
+    "./interactiveHelpers/interactiveHelpers.js": {
+      "types": "./dist/src/interactiveHelpers/interactiveHelpers.d.ts",
+      "default": "./src/interactiveHelpers/interactiveHelpers.tsx"
+    },
+    "./dialogLaunchers/dialogLaunchers.js": {
+      "types": "./dist/src/dialogLaunchers/dialogLaunchers.d.ts",
+      "default": "./src/dialogLaunchers/dialogLaunchers.tsx"
+    },
+    "./commands/assistant/index.js": {
+      "types": "./dist/src/commands/assistant/index.d.ts",
+      "default": "./src/commands/assistant/index.ts"
+    },
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./contracts": {
+      "types": "./dist/src/contracts.d.ts",
+      "default": "./src/contracts.ts"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "default": "./testing/index.ts"
+    }
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
