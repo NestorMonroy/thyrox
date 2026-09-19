@@ -30,7 +30,14 @@ arbol antes de la retirada:
 | TS7016 (sin declaracion de tipos) | 2 | 10 | **+8** |
 | **total** | **3942** | **3768** | **−174** |
 
-Y los TS2307 que nombran a los cinco paquetes: **62 → 24**.
+**Retractada una cifra de este mismo README.** Decia «los TS2307 que nombran
+a los cinco paquetes: 62 → 24». El patron casaba la **ruta del archivo**
+(`../@ant/claude-for-chrome-mcp/src/...`), no el **specifier** del modulo, asi
+que contaba errores *en archivos de* esos paquetes y no errores *sobre* ellos —
+y esos cayeron simplemente porque 239 archivos desaparecieron. Medido por
+specifier (`module '<X>'`): **0 antes y 0 ahora**. Ningun TS2307 nombro nunca a
+los cinco. Es el mismo sub-patron C que H-THYROX-116 registra, cometido en el
+mismo pase con otro instrumento.
 
 El paquete **sigue sin compilar** — 3768 errores no es cero, y el gate lo
 dice. Lo que la medicion establece es que la retirada **no** fue neutra: el

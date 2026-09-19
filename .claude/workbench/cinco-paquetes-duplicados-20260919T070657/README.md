@@ -116,7 +116,7 @@ src/packages/repl/node_modules/@anthropic/ink -> ../../../@ant/ink
 significante —un directorio que no es donde vive el fenomeno— y se concluyo
 sobre el significado. Y el veredicto real, medido en
 `.claude/jobs/tscli3-20260919T072043/`: **3942 → 3768** errores (−174), con
-**TS2307 322 → 268** y los que nombran a los cinco paquetes **62 → 24**. El
+**TS2307 322 → 268** y **TS6142 318 → 220** (menos archivos que leer). El
 paquete sigue sin compilar, pero la retirada **no fue neutra**: es exactamente
 lo contrario de lo que la afirmacion corregida decia.
 
