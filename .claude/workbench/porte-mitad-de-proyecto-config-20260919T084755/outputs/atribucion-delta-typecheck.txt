@@ -1,0 +1,8 @@
+== DESAPARECIERON (5710 -> 5704) ==
+src/packages/config/global/config.ts: error TS2353: Object literal may only specify known properties, and 'projectOnboardingSeenCount' does not exist in type 'ProjectConfig'.
+src/packages/config/global/config.ts: error TS2554: Expected 2 arguments, but got 1.
+src/packages/config/global/config.ts: error TS2554: Expected 2 arguments, but got 1.
+src/packages/repl/src/components/Settings/Config.tsx: error TS2339: Property 'hasClaudeMdExternalIncludesApproved' does not exist on type 'ProjectConfig'.
+src/packages/repl/src/projectOnboardingState.ts: error TS2339: Property 'projectOnboardingSeenCount' does not exist on type 'ProjectConfig'.
+src/packages/repl/src/projectOnboardingState.ts: error TS2339: Property 'projectOnboardingSeenCount' does not exist on type 'ProjectConfig'.
+== APARECIERON ==

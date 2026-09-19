@@ -52,7 +52,21 @@
  *
  * La caché, en consecuencia, guarda TAMBIÉN el archivo del que salió: con
  * una sola ranura sin esa clave, un lector de otra ruta recibiría la config
- * de la anterior.
+ * de la anterior. Los dos escritores de la mitad de PROYECTO resuelven ese
+ * archivo con `_getGlobalClaudeFile()` y no admiten override: el registro de
+ * proyecto vive DENTRO del archivo global, bajo la clave `projects`, así que
+ * su ruta no es un parámetro del llamador.
+ *
+ * `ProjectConfig` recupera las tres claves que su `DEFAULT_PROJECT_CONFIG`
+ * siembra —`projectOnboardingSeenCount` (requerida, sin `?`),
+ * `hasClaudeMdExternalIncludesApproved` y
+ * `hasClaudeMdExternalIncludesWarningShown`— con la misma opcionalidad que la
+ * fuente les da en `ccnmt: packages/config/global/config.ts:154-156`. No es
+ * completitud por completitud: siete sitios de `@thyrox/repl` las leen
+ * (`projectOnboardingState.ts`, `ClaudeMdExternalIncludesDialog.tsx`,
+ * `Settings/Config.tsx`). El resto del tipo sigue siendo un porte parcial
+ * declarado — la fuente declara ~15 claves más que ningún consumidor de este
+ * árbol lee todavía.
  */
 import { unwatchFile, watchFile } from 'node:fs'
 import memoize from 'lodash-es/memoize.js'
@@ -189,6 +203,9 @@ export type ProjectConfig = {
   allowedTools?: string[]
   hasTrustDialogAccepted?: boolean
   hasCompletedProjectOnboarding?: boolean
+  projectOnboardingSeenCount: number
+  hasClaudeMdExternalIncludesApproved?: boolean
+  hasClaudeMdExternalIncludesWarningShown?: boolean
   mcpServers?: Record<string, McpServerConfig>
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
@@ -1037,7 +1054,7 @@ export function saveCurrentProjectConfig(
       },
     )
     if (didWrite && written) {
-      writeThroughGlobalConfigCache(written)
+      writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
     }
   } catch (error) {
     getConfigHostBindings().logDebug?.(
@@ -1072,6 +1089,6 @@ export function saveCurrentProjectConfig(
       },
     }
     saveConfig(_getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
-    writeThroughGlobalConfigCache(written)
+    writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
   }
 }

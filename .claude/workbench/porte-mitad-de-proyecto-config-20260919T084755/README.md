@@ -138,9 +138,27 @@ identidad, la clave normalizada— y **ninguno pudo correr**: ni desde
 hermano. Su vecino `tests/unit/settings/config.test.ts` falla por lo mismo,
 **desde antes de este pase**.
 
-Medido: **86 archivos de `tests/`** importan un hermano `@thyrox/*`, de 12
-paquetes distintos (`outputs/rojo-hermanos-en-tests.txt`), contra **0**
-declarados en la raíz.
+> **El instrumento se corrigió antes de publicar la cifra.** La primera
+> medición usó `bun test` desnudo desde la raíz, que es *mi* invocación, no
+> la del corredor. Medido en `tests/run.sh`: hace `cd "$(dirname $0)/.."` y
+> corre `bun test "${suites_ts[@]}"` con `descubrir_ts()` =
+> `find src tests -name '*.test.ts'`. **Es la misma invocación**, así que la
+> cifra vale — pero se declara el instrumento, no se da por supuesto.
+
+Medido bajo el universo del corredor: **85 archivos `*.test.ts` de `tests/`**
+importan un hermano `@thyrox/*`, de 12 paquetes distintos
+(`outputs/rojo-hermanos-en-tests.txt`), contra **0** declarados en la raíz.
+Comprobado por conducta en tres de ellos —`context-build`, `tool-chain`,
+`message-pipeline`— los tres con `Cannot find module`.
+
+**Los 67 `*.test.ts` de `src/` NO están en ese cubo**: viven dentro de un
+paquete y resuelven por su propio manifiesto. La partición es «dentro del
+paquete» contra «fuera», no `tests/` contra `src/`.
+
+*Métrica:* `*.test.ts` bajo `tests/` que citan `from '@thyrox/`, contra las
+dependencias declaradas en el `package.json` de la raíz.
+*Ciega a:* un archivo que arme el specifier por concatenación, y a si el
+resto de la mitad TS del corredor está verde — eso exige correrla entera.
 
 No se declaró nada en `package.json` de la raíz: eso es adyacente a
 **TASK-THYROX-0098** («Izar las dependencias a la raíz del workspace, como la
@@ -148,3 +166,86 @@ referencia»), que es una decisión del ejecutor pendiente, y el hogar del
 corredor es el sujeto de la tarea de organizar la suite. La sonda se retiró
 en vez de dejarla muerta en el árbol; sus cuatro casos están descritos aquí
 para reescribirlos cuando el hogar exista.
+
+---
+
+## Tercer tramo — el typecheck que el porte no había corrido
+
+El porte se cerró con la suite en verde y **sin correr `bun run typecheck`**.
+Al correrlo, `src/packages/config/global/config.ts` daba **4 errores**, tres
+de ellos míos:
+
+| línea | error | causa |
+|---|---|---|
+| 546 | TS6133 `lastReadFileStats` sin usar | **PRE-EXISTENTE** — no es de este pase |
+| 935 | TS2353 `projectOnboardingSeenCount` no existe en `ProjectConfig` | el tipo de aquí es un porte parcial y no declara las tres claves que su propio `DEFAULT_PROJECT_CONFIG` siembra |
+| 1040, 1075 | TS2554 «Expected 2 arguments, but got 1» | los dos sitios nuevos llamaban `writeThroughGlobalConfigCache(written)` y la firma de AQUÍ lleva un segundo parámetro |
+
+### El segundo parámetro no es un error del porte: es la divergencia ya declarada
+
+La fuente firma `writeThroughGlobalConfigCache(config)`
+(`ccnmt: packages/config/global/config.ts:1096`); la de aquí firma
+`(config, file)` porque la caché de este árbol guarda **el archivo del que
+salió la config** — consecuencia directa del `filePath` opcional que el
+bloque de cabecera ya declaraba. Los dos sitios nuevos pasan
+`_getGlobalClaudeFile()` y **no** admiten override, porque el registro de
+proyecto vive dentro del archivo global bajo la clave `projects`: su ruta no
+es un parámetro del llamador.
+
+### Las tres claves NO se añadieron por completitud — se midió a sus consumidores
+
+La alternativa era retirarlas de `DEFAULT_PROJECT_CONFIG` y declarar la
+divergencia. Se midió antes de elegir:
+
+```
+$ grep -rn "projectOnboardingSeenCount\|hasClaudeMdExternalIncludesApproved\|
+            hasClaudeMdExternalIncludesWarningShown" src/ tests/
+src/packages/repl/src/components/Settings/Config.tsx:1133
+src/packages/repl/src/components/ClaudeMdExternalIncludesDialog.tsx:31,32,38,39
+src/packages/repl/src/projectOnboardingState.ts:70,82
+```
+
+**Siete sitios en tres archivos de `@thyrox/repl` las leen.** Retirarlas del
+default habría dejado `projectOnboardingState.ts:70` comparando `undefined >= 4`.
+Así que se añaden al tipo con la **misma opcionalidad que la fuente**
+(`ccnmt :154-156`): `projectOnboardingSeenCount: number` requerida, las otras
+dos opcionales. La requerida no rompe ningún literal — los dos que existen
+(`DEFAULT_PROJECT_CONFIG` y `TEST_PROJECT_CONFIG_FOR_TESTING`, que lo esparce)
+la satisfacen.
+
+El resto de `ProjectConfig` **sigue siendo porte parcial declarado**: la
+fuente declara ~15 claves más que ningún consumidor de este árbol lee.
+
+### La atribución del delta, que no se dio por supuesta
+
+El total del árbol pasó de **5710 a 5704** — seis, no los tres míos. Un
+número que se mueve no es evidencia de *por qué* se movió, así que se
+diffearon los dos conjuntos de errores en vez de asumir:
+
+```
+== DESAPARECIERON ==
+config/global/config.ts: TS2353 'projectOnboardingSeenCount' ...     ← mío
+config/global/config.ts: TS2554 Expected 2 arguments, but got 1.     ← mío
+config/global/config.ts: TS2554 Expected 2 arguments, but got 1.     ← mío
+repl/src/components/Settings/Config.tsx: TS2339 'hasClaudeMdExternalIncludesApproved'
+repl/src/projectOnboardingState.ts: TS2339 'projectOnboardingSeenCount'
+repl/src/projectOnboardingState.ts: TS2339 'projectOnboardingSeenCount'
+== APARECIERON ==
+(ninguno)
+```
+
+Los tres de `repl` son **pre-existentes en archivos que este pase no tocó**:
+completar el tipo los cerró de paso. Eso es lo que convierte la elección de
+añadir las claves en medida y no en preferencia — si hubieran sido
+arbitrarias, el delta habría sido exactamente tres.
+
+Mi sujeto queda en **1 error**, el `lastReadFileStats` pre-existente;
+`src/packages/config/index.ts` en **0**.
+
+*Métrica:* líneas `error TS####` del log de `bun run typecheck`, normalizadas
+quitando `(línea,columna)` y diffeadas con `comm` entre las dos corridas.
+*Ciega a:* un error que cambie de texto sin dejar de existir (se leería como
+uno que desaparece y otro que aparece — aquí el cubo «aparecieron» está
+vacío, así que no ocurrió); y a los 5704 restantes del árbol, que son el
+sujeto de TASK-THYROX-0098 y de las tareas de declaración de dependencias, no
+de este porte.
