@@ -1,7 +1,7 @@
 import React from 'react'
 import { logEvent } from '@thyrox/local-observability'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- enter to continue
-import { Box, Dialog, Link, Newline, Text, useInput } from '@thyrox/ink'
+import { Box, Dialog, Link, Newline, Text, useInput } from '@anthropic/ink'
 import { isChromeExtensionInstalled } from '@thyrox/agent/claudeInChromeSetup.js'
 import { saveGlobalConfig } from '@thyrox/config'
 

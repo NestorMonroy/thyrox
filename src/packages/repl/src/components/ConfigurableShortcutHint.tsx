@@ -2,9 +2,9 @@ import * as React from 'react'
 import type {
   KeybindingAction,
   KeybindingContextName,
-} from '@thyrox/ink/keybindings'
+} from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js'
-import { KeyboardShortcutHint } from '@thyrox/ink'
+import { KeyboardShortcutHint } from '@anthropic/ink'
 
 type Props = {
   /** The keybinding action (e.g., 'app:toggleTranscript') */

@@ -8,7 +8,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import type { ScrollBoxHandle, DOMElement } from '@thyrox/ink'
+import type { ScrollBoxHandle, DOMElement } from '@anthropic/ink'
 
 // Tuning constants live in ./useVirtualScroll.constants.ts so the
 // rationale comments (multi-line per-constant) don't bloat this file

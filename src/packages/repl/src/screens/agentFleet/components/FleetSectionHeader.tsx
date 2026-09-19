@@ -14,7 +14,7 @@
  */
 
 import type React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 
 interface FleetSectionHeaderProps {
   label: string

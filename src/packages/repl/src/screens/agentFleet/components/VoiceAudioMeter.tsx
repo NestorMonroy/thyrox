@@ -16,7 +16,7 @@
 
 import type React from 'react'
 import { useEffect, useRef } from 'react'
-import { Box, Text, useAnimationFrame } from '@thyrox/ink'
+import { Box, Text, useAnimationFrame } from '@anthropic/ink'
 
 import { useSettings } from '../../../hooks/useSettings.js'
 import { useVoiceState } from '@thyrox/voice/voiceContext.js'

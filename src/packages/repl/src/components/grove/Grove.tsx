@@ -3,7 +3,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '@thyrox/local-observability'
-import { Box, Link, Text, useInput } from '@thyrox/ink'
+import { Box, Link, Text, useInput } from '@anthropic/ink'
 import {
   type AccountSettings,
   calculateShouldShowGrove,
@@ -14,7 +14,7 @@ import {
   updateGroveSettings,
 } from '@thyrox/provider/grove.js'
 import { Select } from '../CustomSelect/index.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 
 export type GroveDecision =
   | 'accept_opt_in'

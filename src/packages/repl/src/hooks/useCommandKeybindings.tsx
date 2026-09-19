@@ -10,8 +10,8 @@
  */
 import { useMemo } from 'react'
 import { useIsModalOverlayActive } from '../overlayContext.js'
-import { useOptionalKeybindingContext } from '@thyrox/ink/keybindings'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { useOptionalKeybindingContext } from '@anthropic/ink/keybindings'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { PromptInputHelpers } from '../handlePromptSubmit.js'
 
 type Props = {

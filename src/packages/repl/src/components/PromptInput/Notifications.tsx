@@ -13,7 +13,7 @@ import { useIdeConnectionStatus } from '@thyrox/ide/hooks/useIdeConnectionStatus
 import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { useVoiceEnabled } from '@thyrox/voice/hooks/useVoiceEnabled.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
 import { calculateTokenWarningState } from '@thyrox/agent/compaction/autoCompact.js'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { useSettings } from '../hooks/useSettings.js'
-import { Ansi, Box, type DOMElement, measureElement, NoSelect, Text, useTheme } from '@thyrox/ink'
+import { Ansi, Box, type DOMElement, measureElement, NoSelect, Text, useTheme } from '@anthropic/ink'
 import { isFullscreenEnvEnabled } from '../fullscreen.js'
 import sliceAnsi from '@thyrox/output/utils/sliceAnsi.js'
 import { countCharInString } from '@thyrox/output/utils/stringUtils.js'

@@ -1,14 +1,14 @@
 import partition from 'lodash-es/partition.js'
 import React, { useCallback } from 'react'
 import { logEvent } from '@thyrox/local-observability'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   getSettings,
   updateSettingsForSource,
 } from '@thyrox/config/settings'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { SelectMulti } from './CustomSelect/SelectMulti.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { MCPServerDialogCopy } from './MCPServerDialogCopy.js'
 
 type Props = {

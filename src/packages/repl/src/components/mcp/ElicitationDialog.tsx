@@ -8,10 +8,10 @@ import figures from 'figures'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRegisterOverlay } from '../../overlayContext.js'
 import { useNotifyAfterTimeout } from '../../hooks/useNotifyAfterTimeout.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw text input for elicitation form
-import { Box, Text, useInput } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text, useInput } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { ElicitationRequestEvent } from '@thyrox/mcp-runtime/elicitationHandler.js'
 import { openBrowser } from '@thyrox/storage/browser.js'
 import {
@@ -27,7 +27,7 @@ import {
 } from '@thyrox/mcp-runtime/elicitationValidation.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import TextInput from '../TextInput.js'
 
 type Props = {

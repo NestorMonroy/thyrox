@@ -1,7 +1,7 @@
 import { homedir } from 'os'
 import { relative } from 'path'
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 
 export function getRelativeMemoryPath(path: string): string {

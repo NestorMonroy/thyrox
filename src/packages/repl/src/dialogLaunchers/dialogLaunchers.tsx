@@ -9,7 +9,7 @@
 import React from 'react'
 import type { AssistantSession } from '@thyrox/agent/assistant/sessionDiscovery.js'
 import type { StatsStore } from '@thyrox/app-host/context/stats.js'
-import type { Root } from '@thyrox/ink'
+import type { Root } from '@anthropic/ink'
 import { renderAndRun, showSetupDialog } from '../interactiveHelpers/interactiveHelpers.js'
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js'
 import type { AppState } from '@thyrox/app-host/state/AppStateStore.js'

@@ -9,7 +9,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { isNonSpacePrintable } from '../components/PromptInput/utils.js'
-import type { Key } from '@thyrox/ink'
+import type { Key } from '@anthropic/ink'
 
 function key(over: Partial<Key> = {}): Key {
   // Default Key has all flags false.

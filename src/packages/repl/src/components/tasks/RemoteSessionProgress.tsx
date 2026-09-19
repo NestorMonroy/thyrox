@@ -3,7 +3,7 @@ import type { RemoteAgentTaskState } from '@thyrox/tool-registry/tasks/RemoteAge
 import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import { DIAMOND_FILLED, DIAMOND_OPEN } from '@thyrox/output/constants/figures.js'
 import { useSettings } from '../../hooks/useSettings.js'
-import { Text, useAnimationFrame } from '@thyrox/ink'
+import { Text, useAnimationFrame } from '@anthropic/ink'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { getRainbowColor } from '@thyrox/provider/thinking.js'
 

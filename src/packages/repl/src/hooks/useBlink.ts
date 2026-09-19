@@ -1,4 +1,4 @@
-import { type DOMElement, useAnimationFrame, useTerminalFocus } from '@thyrox/ink'
+import { type DOMElement, useAnimationFrame, useTerminalFocus } from '@anthropic/ink'
 
 const BLINK_INTERVAL_MS = 600
 

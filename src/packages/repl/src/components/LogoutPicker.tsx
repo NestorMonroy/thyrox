@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Dialog, Text } from '@thyrox/ink'
+import { Box, Dialog, Text } from '@anthropic/ink'
 import {
   disconnectConnection,
   getConnections,

@@ -1,6 +1,6 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
-import { Box, Text, Tree } from '@thyrox/ink'
+import { Box, Text, Tree } from '@anthropic/ink'
 import type { ContextData } from '@thyrox/agent/sessionTools/analyzeContext.js'
 import { generateContextSuggestions } from '@thyrox/agent/sessionTools/contextSuggestions.js'
 import { getDisplayPath } from '@thyrox/storage/file.js'

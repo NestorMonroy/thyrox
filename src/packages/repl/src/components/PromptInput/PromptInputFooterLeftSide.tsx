@@ -6,7 +6,7 @@ const coordinatorModule = feature('COORDINATOR_MODE')
   ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
   : undefined
 /* eslint-enable @typescript-eslint/no-require-imports */
-import { Box, Text, Link } from '@thyrox/ink'
+import { Box, Text, Link } from '@anthropic/ink'
 import * as React from 'react'
 import figures from 'figures'
 import {
@@ -43,15 +43,15 @@ import { useAppState, useAppStateStore } from '../../appStateHooks.js'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import HistorySearchInput from './HistorySearchInput.js'
 import { usePrStatus } from '../../hooks/usePrStatus.js'
-import { Byline, KeyboardShortcutHint } from '@thyrox/ink'
-import { useTerminalSize } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { useTasksV2 } from '../../hooks/useTasksV2.js'
 import { formatDuration } from '@thyrox/output/formatters'
 import { VoiceWarmupHint } from './VoiceIndicator.js'
 import { useVoiceEnabled } from '@thyrox/voice/hooks/useVoiceEnabled.js'
 import { useVoiceState } from '@thyrox/voice/voiceContext.js'
 import { isFullscreenEnvEnabled } from '../../fullscreen.js'
-import { isXtermJs, useHasSelection, useSelection } from '@thyrox/ink'
+import { isXtermJs, useHasSelection, useSelection } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { getPlatform } from '@thyrox/config/platform'
 import { PrBadge } from '../PrBadge.js'

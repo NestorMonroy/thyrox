@@ -1,5 +1,5 @@
 import { getDirectConnectServerUrl, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
-import { stringWidth } from '@thyrox/ink'
+import { stringWidth } from '@anthropic/ink'
 import type { LogOption } from '../replTypes/logs.js'
 import { getSubscriptionName, isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'

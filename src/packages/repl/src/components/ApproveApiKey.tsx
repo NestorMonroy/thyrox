@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Dialog } from '@thyrox/ink'
+import { Text, Dialog } from '@anthropic/ink'
 import { saveGlobalConfig } from '@thyrox/config'
 import { Select } from './CustomSelect/index.js'
 

@@ -3,8 +3,8 @@ import figures from 'figures'
 import * as React from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useSetAppState } from '../../appStateHooks.js'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import {
   type AgentColorName,

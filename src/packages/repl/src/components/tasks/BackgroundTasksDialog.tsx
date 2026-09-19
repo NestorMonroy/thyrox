@@ -14,7 +14,7 @@ import React, {
   useState,
 } from 'react'
 import { isCoordinatorMode } from '@thyrox/agent/coordinatorMode.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { useAppState, useSetAppState } from '../../appStateHooks.js'
 import {
   enterTeammateView,
@@ -47,11 +47,11 @@ import { stopUltraplan } from '../../ultraplan.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
 import { useRegisterOverlay } from '../../overlayContext.js'
 import type { ExitState } from '../../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../../keybindings/useShortcutDisplay.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import { AsyncAgentDetailDialog } from './AsyncAgentDetailDialog.js'
 import { BackgroundTask as BackgroundTaskComponent } from './BackgroundTask.js'
 import { DreamDetailDialog } from './DreamDetailDialog.js'

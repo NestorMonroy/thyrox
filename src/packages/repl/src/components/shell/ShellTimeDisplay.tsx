@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { formatDuration } from '@thyrox/output/formatters'
 
 type Props = {

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useMemo } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { Ansi, Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Ansi, Text } from '@anthropic/ink'
 import { createHyperlink } from '@thyrox/output/hyperlink.js'
 
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'

@@ -11,10 +11,10 @@ import figures from 'figures'
 import * as React from 'react'
 import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { HookEventMetadata } from '../../hooksConfigManager.js'
-import { Box, Link, Text } from '@thyrox/ink'
+import { Box, Link, Text } from '@anthropic/ink'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { Select } from '../CustomSelect/select.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 type Props = {
   hookEventMetadata: Record<HookEvent, HookEventMetadata>

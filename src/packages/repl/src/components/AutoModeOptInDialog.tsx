@@ -1,6 +1,6 @@
 import React from 'react'
 import { logEvent } from '@thyrox/local-observability'
-import { Box, Dialog, Link, Text } from '@thyrox/ink'
+import { Box, Dialog, Link, Text } from '@anthropic/ink'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from './CustomSelect/index.js'
 

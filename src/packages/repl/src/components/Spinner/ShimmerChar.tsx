@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { Text } from '@thyrox/ink'
-import type { Theme } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
+import type { Theme } from '@anthropic/ink'
 
 type Props = {
   char: string

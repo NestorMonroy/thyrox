@@ -19,7 +19,7 @@
  */
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { CIRCLED_BULLET } from '@thyrox/output/constants/figures.js'
 import { useAppState } from '@thyrox/app-host/state/AppState.js'
 

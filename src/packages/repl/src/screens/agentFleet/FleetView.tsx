@@ -20,7 +20,7 @@
 
 import type React from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Box, Text, type ClickEvent, type Key, instances, useInput, useSelection, useTerminalSize } from '@thyrox/ink'
+import { Box, Text, type ClickEvent, type Key, instances, useInput, useSelection, useTerminalSize } from '@anthropic/ink'
 import { Cursor } from '../../Cursor.js'
 import { fileURLToPath } from 'node:url'
 import { openBrowser, openPath } from '@thyrox/storage/browser.js'

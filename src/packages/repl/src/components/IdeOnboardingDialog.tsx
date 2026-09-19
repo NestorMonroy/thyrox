@@ -1,7 +1,7 @@
 import React from 'react'
 import { envDynamic } from '@thyrox/config/env/dynamic'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { env } from '@thyrox/config/env/paths'
 import {
@@ -10,7 +10,7 @@ import {
   isJetBrainsIde,
   toIDEDisplayName,
 } from '@thyrox/ide/ide.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 interface Props {
   onDone: () => void

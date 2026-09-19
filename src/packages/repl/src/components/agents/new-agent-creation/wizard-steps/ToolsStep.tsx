@@ -1,6 +1,6 @@
 import React, { type ReactNode } from 'react'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
-import { Byline, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'

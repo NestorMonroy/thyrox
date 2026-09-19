@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import type { ChannelEntry } from '@thyrox/app-host/bootstrap/state.js'
-import { Box, Text, Dialog } from '@thyrox/ink'
+import { Box, Text, Dialog } from '@anthropic/ink'
 import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { Select } from './CustomSelect/index.js'
 

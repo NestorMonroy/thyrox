@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { FLAG_ICON } from '@thyrox/output/constants/figures.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 
 /**
  * ANT-ONLY: Banner shown in the transcript that prompts users to report

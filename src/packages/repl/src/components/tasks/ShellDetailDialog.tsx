@@ -7,15 +7,15 @@ import React, {
 } from 'react'
 import type { DeepImmutable } from '@thyrox/tool-registry/genericTypeUtils'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { useTerminalSize } from '@thyrox/ink'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { useTerminalSize } from '@anthropic/ink'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { LocalShellTaskState } from '../../localShellTaskGuards.js'
 import { formatDuration, formatFileSize } from '@thyrox/output/formatters'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { tailFile } from '@thyrox/storage/fsOperations.js'
 import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 
 type Props = {
   shell: DeepImmutable<LocalShellTaskState>

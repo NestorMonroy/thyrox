@@ -9,7 +9,7 @@
 
 import type React from 'react'
 import { useEffect, useState } from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 
 import {
   SPINNER_FRAME_MS,
@@ -21,7 +21,7 @@ interface FleetSpinnerProps {
    * Theme color key passed to Ink `<Text color>`. Undefined renders
    * with the parent's color (typically dimmed).
    */
-  color?: keyof import('@thyrox/ink').Theme
+  color?: keyof import('@anthropic/ink').Theme
   /** If true, applies `dimColor` on the glyph text. */
   dim?: boolean
 }

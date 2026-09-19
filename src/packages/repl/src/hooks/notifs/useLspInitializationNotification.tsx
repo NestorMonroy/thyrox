@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useInterval } from 'usehooks-ts'
 import { getIsRemoteMode, getIsScrollDraining } from '@thyrox/app-host/bootstrap/state.js'
 import { useNotifications } from '../../notifications.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import {
   getInitializationStatus,
   getLspServerManager,

@@ -1,8 +1,8 @@
 import type { StructuredPatchHunk } from 'diff'
 import * as React from 'react'
 import { Suspense, use, useState } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { FileEdit } from '@thyrox/tool-registry/tools/FileEditTool/types.js'
 import {
   findActualString,

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { SandboxManager } from '@thyrox/shell/sandbox.js'
 
 export function SandboxDoctorSection(): React.ReactNode {

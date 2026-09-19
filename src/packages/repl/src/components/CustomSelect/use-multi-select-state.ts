@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { isDeepStrictEqual } from 'util'
 import { useRegisterOverlay } from '../../overlayContext.js'
-import { type InputEvent, useInput } from '@thyrox/ink'
+import { type InputEvent, useInput } from '@anthropic/ink'
 import {
   normalizeFullWidthDigits,
   normalizeFullWidthSpace,

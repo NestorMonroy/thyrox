@@ -1,11 +1,11 @@
 import type { StructuredPatchHunk } from 'diff'
 import { resolve } from 'path'
 import React, { useMemo } from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { readFileSafe } from '@thyrox/storage/file.js'
-import { Divider } from '@thyrox/ink'
+import { Divider } from '@anthropic/ink'
 import { StructuredDiff } from '../StructuredDiff.js'
 
 type Props = {

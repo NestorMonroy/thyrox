@@ -1,6 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import React, { useMemo } from 'react'
-import { Ansi, Box, Text } from '@thyrox/ink'
+import { Ansi, Box, Text } from '@anthropic/ink'
 import { FilePathLink } from '../FilePathLink.js'
 import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 import type { Attachment } from '@thyrox/agent/attachments.js'
@@ -14,7 +14,7 @@ import { basename, sep } from 'path'
 import { UserTextMessage } from './UserTextMessage.js'
 import { DiagnosticsDisplay } from '../DiagnosticsDisplay.js'
 import { getContentText } from '@thyrox/agent/messages.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 import { UserImageMessage } from './UserImageMessage.js'
 
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'

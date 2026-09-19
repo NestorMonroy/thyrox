@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { useTheme } from '@thyrox/ink'
-import type { useSelection } from '@thyrox/ink'
+import { useTheme } from '@anthropic/ink'
+import type { useSelection } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
-import { getTheme } from '@thyrox/ink'
+import { getTheme } from '@anthropic/ink'
 
 type Selection = ReturnType<typeof useSelection>
 

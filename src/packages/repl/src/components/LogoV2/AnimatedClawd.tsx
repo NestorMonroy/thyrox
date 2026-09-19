@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { Box } from '@thyrox/ink'
+import { Box } from '@anthropic/ink'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { Clawd, type ClawdPose } from './Clawd.js'
 

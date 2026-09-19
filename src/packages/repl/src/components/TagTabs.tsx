@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Text, stringWidth } from '@thyrox/ink'
+import { Box, Text, stringWidth } from '@anthropic/ink'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 
 // Constants for width calculations - derived from actual rendered strings

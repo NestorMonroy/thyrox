@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import {
   extractMcpToolDisplayName,
   getMcpDisplayName,
@@ -10,7 +10,7 @@ import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { Select } from '../CustomSelect/index.js'
-import { Byline, Dialog, KeyboardShortcutHint } from '@thyrox/ink'
+import { Byline, Dialog, KeyboardShortcutHint } from '@anthropic/ink'
 import type { ServerInfo } from './types.js'
 
 type Props = {

@@ -1,5 +1,5 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
-import { Box, Link, Text, type TextProps } from '@thyrox/ink'
+import { Box, Link, Text, type TextProps } from '@anthropic/ink'
 import { FilePathLink } from '../FilePathLink.js'
 import { feature } from 'bun:bundle'
 import * as React from 'react'
@@ -21,7 +21,7 @@ const teamMemSaved = feature('TEAMMEM')
   : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 import { TURN_COMPLETION_VERBS } from '@thyrox/agent/constants/turnCompletionVerbs.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import type {
   SystemMessage,
   SystemStopHookSummaryMessage,
@@ -33,7 +33,7 @@ import type {
 import { SystemAPIErrorMessage } from './SystemAPIErrorMessage.js'
 import { formatDuration, formatNumber, formatSecondsShort } from '@thyrox/output/formatters'
 import { getGlobalConfig } from '@thyrox/config'
-import { Text as ThemedText } from '@thyrox/ink'
+import { Text as ThemedText } from '@anthropic/ink'
 import { CtrlOToExpand } from '../CtrlOToExpand.js'
 import { useAppStateStore } from '../../appStateHooks.js'
 import { isBackgroundTask, type TaskState } from '../../tasksTypes.js'

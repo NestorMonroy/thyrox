@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import type { Key } from '@thyrox/ink'
+import type { Key } from '@anthropic/ink'
 import {
   executeIndent,
   executeJoin,
@@ -18,7 +18,7 @@ import {
   type PersistentState,
   type RecordedChange,
   type VimState,
-} from '@thyrox/ink/vim'
+} from '@anthropic/ink/vim'
 import type { VimInputState, VimMode } from '../textInputTypes.js'
 import { Cursor } from '../Cursor.js'
 import { lastGrapheme } from '@thyrox/output/utils/intl.js'

@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { useTerminalSize } from '@thyrox/ink'
-import { useTheme } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { useTheme } from '@anthropic/ink'
 import {
   filterToolProgressMessages,
   type Tool,

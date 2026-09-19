@@ -5,9 +5,9 @@ import {
   getValueFromInput,
 } from '../components/PromptInput/inputModes.js'
 import { makeHistoryReader } from '../history.js'
-import { KeyboardEvent, useInput } from '@thyrox/ink'
+import { KeyboardEvent, useInput } from '@anthropic/ink'
 // backward-compat bridge until consumers wire handleKeyDown to <Box onKeyDown>
-import { useKeybinding, useKeybindings } from '@thyrox/ink/keybindings'
+import { useKeybinding, useKeybindings } from '@anthropic/ink/keybindings'
 import type { PromptInputMode } from '../textInputTypes.js'
 import type { HistoryEntry } from '@thyrox/config'
 

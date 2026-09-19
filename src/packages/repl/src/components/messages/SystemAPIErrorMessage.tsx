@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { formatAPIError } from '@thyrox/provider/errorUtils.js'
 import type { SystemAPIErrorMessage } from '@thyrox/agent/messageShapes'
 import { useInterval } from 'usehooks-ts'

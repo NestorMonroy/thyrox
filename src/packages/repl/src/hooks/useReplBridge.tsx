@@ -19,7 +19,7 @@ import type {
   SDKMessage,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { SDKControlResponse } from '@thyrox/headless-sdk/controlTypes.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {
   useAppState,

@@ -47,7 +47,7 @@ import type {
   FleetPrCache,
   FleetPrSummary,
 } from '@thyrox/agent/background/fleet/fleetTypes.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 /** Source: ant `IdK` status badge entry. */
 export interface PeekChildStatusBadge {

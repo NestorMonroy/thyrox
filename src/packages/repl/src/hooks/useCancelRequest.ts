@@ -19,7 +19,7 @@ import { useNotifications } from '../notifications.js'
 import { useIsOverlayActive } from '../overlayContext.js'
 import { useCommandQueue } from './useCommandQueue.js'
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { Screen } from '../screens/REPL.js'
 import { exitTeammateView } from '../teammateViewHelpers.js'
 import {

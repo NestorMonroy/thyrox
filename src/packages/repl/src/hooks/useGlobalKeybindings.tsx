@@ -6,8 +6,8 @@
  */
 import { feature } from 'bun:bundle'
 import { useCallback } from 'react'
-import { instances } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { instances } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { Screen } from '../screens/REPL.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import {

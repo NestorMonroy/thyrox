@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Dialog, Link, Text } from '@thyrox/ink'
+import { Box, Dialog, Link, Text } from '@anthropic/ink'
 import { Select } from './CustomSelect/index.js'
 
 type Props = {

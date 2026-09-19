@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react'
-import { ListItem } from '@thyrox/ink'
+import { ListItem } from '@anthropic/ink'
 
 type SelectOptionProps = {
   /**

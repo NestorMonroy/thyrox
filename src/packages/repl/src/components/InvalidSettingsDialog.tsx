@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text, Dialog } from '@thyrox/ink'
+import { Text, Dialog } from '@anthropic/ink'
 import type { ValidationError } from '@thyrox/config/validation'
 import { Select } from './CustomSelect/index.js'
 import { ValidationErrorsList } from './ValidationErrorsList.js'

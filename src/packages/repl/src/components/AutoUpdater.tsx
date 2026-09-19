@@ -6,7 +6,7 @@ import {
 } from '@thyrox/local-observability'
 import { useInterval } from 'usehooks-ts'
 import { useUpdateNotification } from '../hooks/useUpdateNotification.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   type AutoUpdaterResult,
   getLatestVersion,

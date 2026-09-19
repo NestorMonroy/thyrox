@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { pathToFileURL } from 'url'
-import { Box, Link, supportsHyperlinks, Text } from '@thyrox/ink'
+import { Box, Link, supportsHyperlinks, Text } from '@anthropic/ink'
 import { getStoredImagePath } from '@thyrox/tool-registry/imageStore.js'
 import { MessageResponse } from '../MessageResponse.js'
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useTerminalFocus, useTerminalTitle } from '@thyrox/ink'
+import { useTerminalFocus, useTerminalTitle } from '@anthropic/ink'
 
 const TITLE_ANIMATION_FRAMES = ['⠂', '⠐']
 const TITLE_STATIC_PREFIX = '✳'

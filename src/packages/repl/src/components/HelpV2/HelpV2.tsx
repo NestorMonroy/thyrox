@@ -8,9 +8,9 @@ import {
   INTERNAL_ONLY_COMMANDS,
 } from '@thyrox/command-runtime/runtime'
 import { useIsInsideModal } from '../../modalContext.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, Link, Text, Tab, Tabs, Pane } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, Link, Text, Tab, Tabs, Pane } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { Commands } from './Commands.js'
 import { General } from './General.js'
 

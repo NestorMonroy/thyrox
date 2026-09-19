@@ -1,6 +1,6 @@
 import figures from 'figures'
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   AGENT_COLOR_TO_THEME_COLOR,
   AGENT_COLORS,
@@ -8,7 +8,7 @@ import {
 } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
 import type { PromptInputMode } from '../../textInputTypes.js'
 import { getTeammateColor } from '@thyrox/swarm/teammateState.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 
 type Props = {

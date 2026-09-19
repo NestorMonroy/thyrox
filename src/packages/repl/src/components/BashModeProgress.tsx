@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box } from '@thyrox/ink'
+import { Box } from '@anthropic/ink'
 import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
 import type { ShellProgress } from '@thyrox/tool-registry/progressTypes'
 import { UserBashInputMessage } from './messages/UserBashInputMessage.js'

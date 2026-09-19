@@ -2,7 +2,7 @@ import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs
 import type { UUID } from 'crypto'
 import type React from 'react'
 import type { PermissionResult } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { Key } from '@thyrox/ink'
+import type { Key } from '@anthropic/ink'
 import type { PastedContent } from '@thyrox/config'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import type { TextHighlight } from '@thyrox/output/textHighlighting.js'

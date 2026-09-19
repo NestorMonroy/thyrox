@@ -18,8 +18,8 @@ import {
   usePromptOverlay,
   usePromptOverlayDialog,
 } from '../promptOverlayContext.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box, ScrollBox, type ScrollBoxHandle, Text, instances } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box, ScrollBox, type ScrollBoxHandle, Text, instances } from '@anthropic/ink'
 import type { Message } from '@thyrox/agent/messageShapes'
 import { openBrowser, openPath } from '@thyrox/storage/browser.js'
 import { isFullscreenEnvEnabled } from '../fullscreen.js'

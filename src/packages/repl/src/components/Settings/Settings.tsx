@@ -1,14 +1,14 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import * as React from 'react'
 import { Suspense, useState } from 'react'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import { useExitOnCtrlCDWithKeybindings } from '../../hooks/useExitOnCtrlCDWithKeybindings.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import {
   useIsInsideModal,
   useModalOrTerminalSize,
 } from '../../modalContext.js'
-import { Pane, Tab, Tabs } from '@thyrox/ink'
+import { Pane, Tab, Tabs } from '@anthropic/ink'
 import { Status, buildDiagnostics } from './Status.js'
 import { Config } from './Config.js'
 import { Usage } from './Usage.js'

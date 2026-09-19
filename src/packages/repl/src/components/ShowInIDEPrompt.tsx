@@ -1,6 +1,6 @@
 import { basename, relative } from 'path'
 import React from 'react'
-import { Box, Text, Pane } from '@thyrox/ink'
+import { Box, Text, Pane } from '@anthropic/ink'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { isSupportedVSCodeTerminal } from '@thyrox/ide/ide.js'
 import { Select } from './CustomSelect/index.js'

@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "thyrox",
-      "dependencies": {
-        "selfsigned": "5.5.0",
-      },
       "devDependencies": {
         "@types/bun": "latest",
         "@types/lodash-es": "^4.17.12",
@@ -33,6 +30,16 @@
         "@ant/computer-use-input": "workspace:*",
         "@ant/computer-use-swift": "workspace:*",
         "@anthropic/ink": "workspace:*",
+        "@thyrox/app-host": "workspace:*",
+        "@thyrox/config": "workspace:*",
+        "@thyrox/local-observability": "workspace:*",
+        "@thyrox/mcp-runtime": "workspace:*",
+        "@thyrox/output": "workspace:*",
+        "@thyrox/permission": "workspace:*",
+        "@thyrox/provider": "workspace:*",
+        "@thyrox/repl": "workspace:*",
+        "@thyrox/shell": "workspace:*",
+        "@thyrox/tool-registry": "workspace:*",
       },
     },
     "src/packages/@ant/computer-use-swift": {
@@ -166,10 +173,6 @@
         "zod": "^4.3.6",
       },
     },
-    "src/packages/claude-for-chrome-mcp": {
-      "name": "@thyrox/claude-for-chrome-mcp",
-      "version": "1.0.0",
-    },
     "src/packages/cli": {
       "name": "@thyrox/cli",
       "version": "0.1.0",
@@ -236,36 +239,6 @@
         "@thyrox/tool-registry": "workspace:*",
         "@thyrox/updater": "workspace:*",
         "@thyrox/voice": "workspace:*",
-      },
-    },
-    "src/packages/computer-use-input": {
-      "name": "@thyrox/computer-use-input",
-      "version": "1.0.0",
-    },
-    "src/packages/computer-use-mcp": {
-      "name": "@thyrox/computer-use-mcp",
-      "version": "1.0.0",
-      "dependencies": {
-        "@thyrox/app-host": "workspace:*",
-        "@thyrox/computer-use-input": "workspace:*",
-        "@thyrox/computer-use-swift": "workspace:*",
-        "@thyrox/config": "workspace:*",
-        "@thyrox/ink": "workspace:*",
-        "@thyrox/local-observability": "workspace:*",
-        "@thyrox/mcp-runtime": "workspace:*",
-        "@thyrox/output": "workspace:*",
-        "@thyrox/permission": "workspace:*",
-        "@thyrox/provider": "workspace:*",
-        "@thyrox/repl": "workspace:*",
-        "@thyrox/shell": "workspace:*",
-        "@thyrox/tool-registry": "workspace:*",
-      },
-    },
-    "src/packages/computer-use-swift": {
-      "name": "@thyrox/computer-use-swift",
-      "version": "1.0.0",
-      "dependencies": {
-        "@thyrox/computer-use-mcp": "workspace:*",
       },
     },
     "src/packages/config": {
@@ -351,32 +324,6 @@
     "src/packages/image-processor-napi": {
       "name": "@thyrox/image-processor-napi",
       "version": "1.0.0",
-    },
-    "src/packages/ink": {
-      "name": "@thyrox/ink",
-      "version": "1.0.0",
-      "dependencies": {
-        "@thyrox/local-observability": "workspace:*",
-        "@thyrox/output": "workspace:*",
-        "@thyrox/repl": "workspace:*",
-        "auto-bind": "^5.0.1",
-        "bidi-js": "^1.0.3",
-        "chalk": "^5.6.2",
-        "cli-boxes": "^4.0.1",
-        "emoji-regex": "^10.6.0",
-        "figures": "^6.1.0",
-        "get-east-asian-width": "^1.5.0",
-        "indent-string": "^5.0.0",
-        "lodash-es": "^4.17.23",
-        "react": "^19.2.4",
-        "react-reconciler": "^0.33.0",
-        "signal-exit": "^4.1.0",
-        "strip-ansi": "^7.2.0",
-        "supports-hyperlinks": "^4.4.0",
-        "type-fest": "^5.5.0",
-        "usehooks-ts": "^3.1.1",
-        "wrap-ansi": "^10.0.0",
-      },
     },
     "src/packages/local-observability": {
       "name": "@thyrox/local-observability",
@@ -536,6 +483,7 @@
         "https-proxy-agent": "^5.0.1",
         "lodash-es": "^4.18.1",
         "openai": "6.33.0",
+        "selfsigned": "^5.5.0",
         "zod": "^4.3.6",
       },
       "devDependencies": {
@@ -546,6 +494,7 @@
       "name": "@thyrox/repl",
       "version": "0.0.0",
       "dependencies": {
+        "@anthropic/ink": "workspace:*",
         "@thyrox/agent": "workspace:*",
         "@thyrox/app-host": "workspace:*",
         "@thyrox/bridge": "workspace:*",
@@ -556,7 +505,6 @@
         "@thyrox/headless-sdk": "workspace:*",
         "@thyrox/ide": "workspace:*",
         "@thyrox/image-processor-napi": "workspace:*",
-        "@thyrox/ink": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/mcp-runtime": "workspace:*",
         "@thyrox/memory": "workspace:*",
@@ -870,19 +818,11 @@
 
     "@thyrox/bridge": ["@thyrox/bridge@workspace:src/packages/bridge"],
 
-    "@thyrox/claude-for-chrome-mcp": ["@thyrox/claude-for-chrome-mcp@workspace:src/packages/claude-for-chrome-mcp"],
-
     "@thyrox/cli": ["@thyrox/cli@workspace:src/packages/cli"],
 
     "@thyrox/color-diff-napi": ["@thyrox/color-diff-napi@workspace:src/packages/color-diff-napi"],
 
     "@thyrox/command-runtime": ["@thyrox/command-runtime@workspace:src/packages/command-runtime"],
-
-    "@thyrox/computer-use-input": ["@thyrox/computer-use-input@workspace:src/packages/computer-use-input"],
-
-    "@thyrox/computer-use-mcp": ["@thyrox/computer-use-mcp@workspace:src/packages/computer-use-mcp"],
-
-    "@thyrox/computer-use-swift": ["@thyrox/computer-use-swift@workspace:src/packages/computer-use-swift"],
 
     "@thyrox/config": ["@thyrox/config@workspace:src/packages/config"],
 
@@ -895,8 +835,6 @@
     "@thyrox/ide": ["@thyrox/ide@workspace:src/packages/ide"],
 
     "@thyrox/image-processor-napi": ["@thyrox/image-processor-napi@workspace:src/packages/image-processor-napi"],
-
-    "@thyrox/ink": ["@thyrox/ink@workspace:src/packages/ink"],
 
     "@thyrox/local-observability": ["@thyrox/local-observability@workspace:src/packages/local-observability"],
 

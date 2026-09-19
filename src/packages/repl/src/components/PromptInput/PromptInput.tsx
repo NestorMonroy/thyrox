@@ -50,21 +50,21 @@ import {
   type HistoryMode,
   useArrowKeyHistory,
 } from '../../hooks/useArrowKeyHistory.js'
-import { useDoublePress } from '@thyrox/ink'
+import { useDoublePress } from '@anthropic/ink'
 import { useHistorySearch } from '../../hooks/useHistorySearch.js'
 import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
 import { useInputBuffer } from '../../hooks/useInputBuffer.js'
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { usePromptSuggestion } from '../../hooks/usePromptSuggestion.js'
-import { useTerminalSize } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
 import { useTypeahead } from '../../hooks/useTypeahead.js'
-import { Box, type BorderTextOptions, type ClickEvent, type Key, stringWidth, Text, useInput } from '@thyrox/ink'
-import { useOptionalKeybindingContext } from '@thyrox/ink/keybindings'
+import { Box, type BorderTextOptions, type ClickEvent, type Key, stringWidth, Text, useInput } from '@anthropic/ink'
+import { useOptionalKeybindingContext } from '@anthropic/ink/keybindings'
 import { getShortcutDisplay } from '../../keybindings/shortcutFormat.js'
 import {
   useKeybinding,
   useKeybindings,
-} from '@thyrox/ink/keybindings'
+} from '@anthropic/ink/keybindings'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import {
   abortPromptSuggestion,
@@ -171,7 +171,7 @@ import { getTeammateColor } from '@thyrox/swarm/teammateState.js'
 import { isInProcessTeammate } from '@thyrox/swarm/teammateContext.js'
 import { writeToMailbox } from '@thyrox/swarm'
 import type { TextHighlight } from '@thyrox/output/textHighlighting.js'
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 import {
   findThinkingTriggerPositions,
   getRainbowColor,

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Text, Dialog } from '@thyrox/ink'
+import { Text, Dialog } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { isSupportedTerminal } from '@thyrox/ide/ide.js'
 import { Select } from './CustomSelect/index.js'

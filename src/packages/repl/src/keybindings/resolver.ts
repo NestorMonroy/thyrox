@@ -1,4 +1,4 @@
-// Re-export from @thyrox/ink keybindings module
+// Re-export from @anthropic/ink keybindings module
 export {
   resolveKey,
   resolveKeyWithChordState,
@@ -6,4 +6,4 @@ export {
   keystrokesEqual,
   type ResolveResult,
   type ChordResolveResult,
-} from '@thyrox/ink'
+} from '@anthropic/ink'

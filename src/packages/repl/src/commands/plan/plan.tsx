@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { handlePlanModeTransition } from '@thyrox/app-host/bootstrap/state.js'
 import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 import { getExternalEditor } from '@thyrox/storage/editor.js'
 import { toIDEDisplayName } from '@thyrox/ide/ide.js'

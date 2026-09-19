@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { UP_ARROW } from '@thyrox/output/constants/figures.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { isOpus1mMergeEnabled } from '@thyrox/provider/model.js'
 import { AnimatedAsterisk } from './AnimatedAsterisk.js'

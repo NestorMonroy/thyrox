@@ -2,7 +2,7 @@ import {
   hasUsedBackslashReturn,
   isShiftEnterKeyBindingInstalled,
 } from '../../terminalSetup.js'
-import type { Key } from '@thyrox/ink'
+import type { Key } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
 import { env } from '@thyrox/config/env/paths'
 /**

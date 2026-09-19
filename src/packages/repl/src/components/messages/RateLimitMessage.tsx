@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { extraUsage } from '../../extraUsage.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { useClaudeAiLimits } from '@thyrox/provider/claudeAiLimitsHook.js'
 import { shouldProcessMockLimits } from '@thyrox/provider/rateLimitMocking.js' // Used for /mock-limits command
 import {

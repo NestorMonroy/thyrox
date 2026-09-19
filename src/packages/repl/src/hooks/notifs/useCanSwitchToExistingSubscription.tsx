@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { getOauthProfileFromApiKey } from '@thyrox/provider/oauth/getOauthProfile.js'
 import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { useStartupNotification } from './useStartupNotification.js'

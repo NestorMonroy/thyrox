@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
-import { useApp } from '@thyrox/ink'
-import type { KeybindingContextName } from '@thyrox/ink/keybindings'
-import { useDoublePress } from '@thyrox/ink'
+import { useApp } from '@anthropic/ink'
+import type { KeybindingContextName } from '@anthropic/ink/keybindings'
+import { useDoublePress } from '@anthropic/ink'
 
 export type ExitState = {
   pending: boolean

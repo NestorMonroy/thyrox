@@ -1,9 +1,9 @@
 import React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import { findToolByName } from '@thyrox/tool-registry/Tool.js'
 import type { ToolActivity } from '@thyrox/agent/localAgentTask.js'
-import type { ThemeName } from '@thyrox/ink'
+import type { ThemeName } from '@anthropic/ink'
 
 export function renderToolActivity(
   activity: ToolActivity,

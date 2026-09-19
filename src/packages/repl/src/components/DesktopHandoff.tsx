@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw input for "any key" dismiss and y/n prompt
-import { Box, Text, useInput, LoadingState } from '@thyrox/ink'
+import { Box, Text, useInput, LoadingState } from '@anthropic/ink'
 import { getDesktopInstallStatus, openCurrentSessionInDesktop } from '../diagnostics/desktopDeepLink.js'
 import { openBrowser } from '@thyrox/storage/browser.js'
 

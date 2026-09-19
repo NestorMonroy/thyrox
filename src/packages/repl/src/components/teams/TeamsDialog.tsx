@@ -5,8 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
 import { useRegisterOverlay } from '../../overlayContext.js'
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- raw j/k/arrow dialog navigation
-import { Box, Text, useInput, stringWidth } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text, useInput, stringWidth } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { useShortcutDisplay } from '../../keybindings/useShortcutDisplay.js'
 import {
   type AppState,
@@ -59,8 +59,8 @@ import {
   sendShutdownRequestToMailbox,
   writeToMailbox,
 } from '@thyrox/swarm'
-import { Dialog } from '@thyrox/ink'
-import { Text as ThemedText } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
+import { Text as ThemedText } from '@anthropic/ink'
 
 type Props = {
   initialTeams?: TeamSummary[]

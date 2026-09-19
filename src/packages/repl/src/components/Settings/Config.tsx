@@ -1,12 +1,12 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle'
-import { type KeyboardEvent, Box, Text, useTheme, useThemeSetting, useTerminalFocus } from '@thyrox/ink'
+import { type KeyboardEvent, Box, Text, useTheme, useThemeSetting, useTerminalFocus } from '@anthropic/ink'
 import * as React from 'react'
 import { useState, useCallback } from 'react'
 import {
   useKeybinding,
   useKeybindings,
-} from '@thyrox/ink/keybindings'
+} from '@anthropic/ink/keybindings'
 import figures from 'figures'
 import {
   type GlobalConfig,
@@ -60,7 +60,7 @@ import {
   ChannelDowngradeDialog,
   type ChannelDowngradeChoice,
 } from '../ChannelDowngradeDialog.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import { Select } from '../CustomSelect/index.js'
 import { OutputStylePicker } from '../OutputStylePicker.js'
 import { LanguagePicker } from '../LanguagePicker.js'
@@ -69,10 +69,10 @@ import {
   getMemoryFiles,
   hasExternalClaudeMdIncludes,
 } from '@thyrox/storage/claudemd.js'
-import { Byline, KeyboardShortcutHint, useTabHeaderFocus } from '@thyrox/ink'
+import { Byline, KeyboardShortcutHint, useTabHeaderFocus } from '@anthropic/ink'
 import { ConfigurableShortcutHint } from '../ConfigurableShortcutHint.js'
 import { useIsInsideModal } from '../../modalContext.js'
-import { SearchBox } from '@thyrox/ink'
+import { SearchBox } from '@anthropic/ink'
 import {
   isSupportedTerminal,
   hasAccessToIDEExtensionDiffFeature,
@@ -97,8 +97,8 @@ import {
   getCliTeammateModeOverride,
   clearCliTeammateModeOverride,
 } from '@thyrox/swarm'
-import { useSearchInput } from '@thyrox/ink/search'
-import { useTerminalSize } from '@thyrox/ink'
+import { useSearchInput } from '@anthropic/ink/search'
+import { useTerminalSize } from '@anthropic/ink'
 import {
   clearFastModeCooldown,
   FAST_MODE_MODEL_DISPLAY,

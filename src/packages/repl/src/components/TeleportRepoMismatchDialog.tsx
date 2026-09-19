@@ -1,12 +1,12 @@
 import React, { useCallback, useState } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getDisplayPath } from '@thyrox/storage/file.js'
 import {
   removePathFromRepo,
   validateRepoAtPath,
 } from '../github/githubRepoPathMapping.js'
 import { Select } from './CustomSelect/index.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
 
 type Props = {

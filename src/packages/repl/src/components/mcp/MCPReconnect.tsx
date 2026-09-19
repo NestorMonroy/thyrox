@@ -1,7 +1,7 @@
 import figures from 'figures'
 import React, { useEffect, useState } from 'react'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { Box, color, Text, useTheme } from '@thyrox/ink'
+import { Box, color, Text, useTheme } from '@anthropic/ink'
 import { useMcpReconnect } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
 import { useAppStateStore } from '../../appStateHooks.js'
 import { Spinner } from '../Spinner.js'

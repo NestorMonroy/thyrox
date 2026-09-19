@@ -1,9 +1,9 @@
 import { toString as qrToString } from 'qrcode'
 import * as React from 'react'
 import { useCallback, useEffect, useState } from 'react'
-import { Pane } from '@thyrox/ink'
-import { type KeyboardEvent, Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Pane } from '@anthropic/ink'
+import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
 
 type Platform = 'ios' | 'android'

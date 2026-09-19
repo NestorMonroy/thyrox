@@ -202,7 +202,7 @@
     "@thyrox/headless-sdk": "workspace:*",
     "@thyrox/ide": "workspace:*",
     "@thyrox/image-processor-napi": "workspace:*",
-    "@thyrox/ink": "workspace:*",
+    "@anthropic/ink": "workspace:*",
     "@thyrox/local-observability": "workspace:*",
     "@thyrox/mcp-runtime": "workspace:*",
     "@thyrox/memory": "workspace:*",

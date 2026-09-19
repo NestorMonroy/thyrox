@@ -23,7 +23,7 @@ import { createSignal } from '@thyrox/config/signal'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import { DEFAULT_BINDINGS } from './defaultBindings.js'
 import { parseBindings } from './parser.js'
-import type { KeybindingBlock, ParsedBinding } from '@thyrox/ink'
+import type { KeybindingBlock, ParsedBinding } from '@anthropic/ink'
 import {
   checkDuplicateKeysInJson,
   type KeybindingWarning,

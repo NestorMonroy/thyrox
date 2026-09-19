@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useMemo } from 'react'
 import { type Command, formatDescriptionWithSource } from '@thyrox/command-runtime/runtime'
-import { Box, Text, useTabHeaderFocus } from '@thyrox/ink'
+import { Box, Text, useTabHeaderFocus } from '@anthropic/ink'
 import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { Select } from '../CustomSelect/index.js'
 

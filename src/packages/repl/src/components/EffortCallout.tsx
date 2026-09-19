@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   isMaxSubscriber,
   isProSubscriber,

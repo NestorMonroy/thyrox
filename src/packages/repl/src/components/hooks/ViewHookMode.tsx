@@ -5,12 +5,12 @@
  * confirmation screen and directs users to settings.json or Claude for edits.
  */
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import {
   hookSourceDescriptionDisplayString,
   type IndividualHookConfig,
 } from '../../hooksSettings.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 
 type Props = {
   selectedHook: IndividualHookConfig

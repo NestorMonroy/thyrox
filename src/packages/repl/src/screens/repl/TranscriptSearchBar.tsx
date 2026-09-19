@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, type RefObject } from 'react'
-import { Box, Text } from '@thyrox/ink'
-import { useSearchInput } from '@thyrox/ink/search'
+import { Box, Text } from '@anthropic/ink'
+import { useSearchInput } from '@anthropic/ink/search'
 import type { JumpHandle } from '../../components/VirtualMessageList.js'
 
 /** less-style / bar. 1-row, same border-top styling as TranscriptModeFooter

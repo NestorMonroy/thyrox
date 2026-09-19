@@ -1,7 +1,7 @@
 import { relative } from 'path'
 import * as React from 'react'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { HighlightedCode } from './HighlightedCode.js'
 import { MessageResponse } from './MessageResponse.js'
 

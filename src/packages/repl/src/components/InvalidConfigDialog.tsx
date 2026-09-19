@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Dialog, wrappedRender as render, Text } from '@thyrox/ink'
+import { Box, Dialog, wrappedRender as render, Text } from '@anthropic/ink'
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js'
 import { AppStateProvider } from '../appStateHooks.js'
 import type { ConfigParseError } from '@thyrox/local-observability/errorHelpers.js'
@@ -8,7 +8,7 @@ import {
   jsonStringify,
   writeFileSync,
 } from '@thyrox/local-observability/slowOperations.js'
-import type { ThemeName } from '@thyrox/ink'
+import type { ThemeName } from '@anthropic/ink'
 import { Select } from './CustomSelect/index.js'
 
 interface InvalidConfigHandlerProps {

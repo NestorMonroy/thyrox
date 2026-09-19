@@ -1,6 +1,6 @@
 import { relative } from 'path'
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { DiagnosticTrackingService } from '@thyrox/tool-registry/diagnosticTracking.js'
 import type { Attachment } from '@thyrox/agent/attachments.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'

@@ -10,8 +10,8 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { useVirtualScroll } from '../hooks/useVirtualScroll.js'
-import { Box, type DOMElement, type ScrollBoxHandle, type MatchPosition } from '@thyrox/ink'
-import { TextHoverColorContext } from '@thyrox/ink'
+import { Box, type DOMElement, type ScrollBoxHandle, type MatchPosition } from '@anthropic/ink'
+import { TextHoverColorContext } from '@anthropic/ink'
 import { ScrollChromeContext } from './FullscreenLayout.js'
 
 // Rows of breathing room above the target when we scrollTo.

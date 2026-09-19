@@ -1,5 +1,5 @@
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getPlatform } from '@thyrox/config/platform'
 import type { SandboxDependencyCheck } from '@thyrox/shell/sandbox.js'
 

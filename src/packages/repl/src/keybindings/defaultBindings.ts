@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import { satisfies } from '@thyrox/config/semver'
 import { isRunningWithBun } from '@thyrox/config/bundledMode'
 import { getPlatform } from '@thyrox/config/platform'
-import type { KeybindingBlock } from '@thyrox/ink'
+import type { KeybindingBlock } from '@anthropic/ink'
 
 /**
  * Default keybindings that match current Claude Code behavior.

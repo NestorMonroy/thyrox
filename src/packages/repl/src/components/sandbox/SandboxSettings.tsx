@@ -1,6 +1,6 @@
 import React from 'react'
-import { Box, color, Link, Text, useTheme, Pane, Tab, Tabs, useTabHeaderFocus } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, color, Link, Text, useTheme, Pane, Tab, Tabs, useTabHeaderFocus } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { CommandResultDisplay } from '@thyrox/agent/command.js'
 import type { SandboxDependencyCheck } from '@thyrox/shell/sandbox.js'
 import { SandboxManager } from '@thyrox/shell/sandbox.js'

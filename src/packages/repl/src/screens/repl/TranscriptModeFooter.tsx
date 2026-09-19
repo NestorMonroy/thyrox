@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import figures from 'figures'
 import { useShortcutDisplay } from '../../keybindings/useShortcutDisplay.js'
 

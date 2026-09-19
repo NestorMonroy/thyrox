@@ -9,8 +9,8 @@ import type {
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import * as React from 'react'
 import type { Command } from '@thyrox/command-runtime/runtime'
-import { useTerminalSize } from '@thyrox/ink'
-import { Box } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Box } from '@anthropic/ink'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import {
   type ConnectorTextBlock,

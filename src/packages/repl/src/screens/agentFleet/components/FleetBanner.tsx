@@ -19,7 +19,7 @@
  */
 
 import type React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 
 export interface FleetBannerProps {
   /** Display version (e.g. "v26.5.43" — caller passes "v" + MACRO.VERSION). */

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useEffect, useMemo } from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { getDynamicConfig_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 

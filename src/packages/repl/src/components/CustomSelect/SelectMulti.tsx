@@ -1,6 +1,6 @@
 import figures from 'figures'
 import React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import type { PastedContent } from '@thyrox/config'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import type { OptionWithDescription } from './select.js'

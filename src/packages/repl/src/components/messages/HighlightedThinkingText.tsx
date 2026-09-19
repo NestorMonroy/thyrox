@@ -3,7 +3,7 @@ import { isScreenReaderMode } from '../../accessibility.js'
 import * as React from 'react'
 import { useContext } from 'react'
 import { useQueuedMessage } from '@thyrox/app-host/context/QueuedMessageContext.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { formatBriefTimestamp } from '@thyrox/output/formatters'
 import {
   findThinkingTriggerPositions,

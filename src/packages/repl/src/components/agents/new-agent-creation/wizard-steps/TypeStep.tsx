@@ -1,6 +1,6 @@
 import React, { type ReactNode, useState } from 'react'
-import { Box, Byline, KeyboardShortcutHint, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Byline, KeyboardShortcutHint, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import TextInput from '../../../TextInput.js'

@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+tests/package/package_identity.test.ts:
+162 |       porBasename.set(base, [...(porBasename.get(base) ?? []), rel])
+163 |     }
+164 |     const colisiones = [...porBasename.entries()]
+165 |       .filter(([, rutas]) => rutas.length > 1)
+166 |       .map(([base, rutas]) => `${base}: ${rutas.join(' | ')}`)
+167 |     expect(colisiones).toEqual([])
+                             ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "computer-use-input: computer-use-input | @ant/computer-use-input",
++   "computer-use-swift: computer-use-swift | @ant/computer-use-swift",
++   "ink: @ant/ink | ink",
++   "computer-use-mcp: @ant/computer-use-mcp | computer-use-mcp",
++   "claude-for-chrome-mcp: @ant/claude-for-chrome-mcp | claude-for-chrome-mcp",
++ ]
+
+- Expected  - 1
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/tests/package/package_identity.test.ts:167:24)
+(fail) identidad del paquete > caso 3: ningun basename de workspace se repite [0.95ms]
+
+ 4 pass
+ 1 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [524.00ms]

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useState } from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import {
   formatGrantAmount,

@@ -6,7 +6,7 @@ import {
   getScopeLabel,
 } from '@thyrox/mcp-runtime/utils.js'
 import type { ValidationError } from '@thyrox/config/validation'
-import { Box, Link, Text } from '@thyrox/ink'
+import { Box, Link, Text } from '@anthropic/ink'
 
 function McpConfigErrorSection({
   scope,

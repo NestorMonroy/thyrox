@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Text } from '@thyrox/ink'
+import { Text } from '@anthropic/ink'
 
 /**
  * Inverse-highlight every occurrence of `query` in `text` (case-insensitive).

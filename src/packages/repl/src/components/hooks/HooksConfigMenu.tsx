@@ -16,8 +16,8 @@ import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import { useAppState, useAppStateStore } from '../../appStateHooks.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
 import { useSettingsChange } from '../../hooks/useSettingsChange.js'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybinding } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybinding } from '@anthropic/ink/keybindings'
 import {
   getHookEventMetadata,
   getHooksForMatcher,
@@ -31,7 +31,7 @@ import {
   getSettingsForSource,
 } from '@thyrox/config/settings'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
-import { Dialog } from '@thyrox/ink'
+import { Dialog } from '@anthropic/ink'
 import { SelectEventMode } from './SelectEventMode.js'
 import { SelectHookMode } from './SelectHookMode.js'
 import { SelectMatcherMode } from './SelectMatcherMode.js'

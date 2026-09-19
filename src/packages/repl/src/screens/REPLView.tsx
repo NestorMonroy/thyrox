@@ -61,15 +61,15 @@ import { dirname, join } from 'path';
 import { tmpdir } from 'os';
 import figures from 'figures';
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- / n N Esc [ v are bare letters in transcript modal context, same class as g/G/j/k in ScrollKeybindingHandler
-import { useInput } from '@thyrox/ink'
-import { useSearchInput } from '@thyrox/ink/search'
-import { useTerminalSize } from '@thyrox/ink'
-import { useSearchHighlight } from '@thyrox/ink'
+import { useInput } from '@anthropic/ink'
+import { useSearchInput } from '@anthropic/ink/search'
+import { useTerminalSize } from '@anthropic/ink'
+import { useSearchHighlight } from '@anthropic/ink'
 import type { JumpHandle } from '../components/VirtualMessageList.js'
 import { renderMessagesToPlainText } from '@thyrox/output/render/exportRenderer.js'
 import { openFileInExternalEditor } from '@thyrox/storage/editor.js'
 import { writeFile } from 'fs/promises'
-import { type TabStatusKind, Box, Text, useStdin, useTheme, useTerminalFocus, useTerminalTitle, useTabStatus } from '@thyrox/ink'
+import { type TabStatusKind, Box, Text, useStdin, useTheme, useTerminalFocus, useTerminalTitle, useTabStatus } from '@anthropic/ink'
 import { CostThresholdDialog } from '../components/CostThresholdDialog.js'
 import { IdleReturnDialog } from '../components/IdleReturnDialog.js'
 import * as React from 'react'
@@ -89,7 +89,7 @@ import {
   startPreventSleep,
   stopPreventSleep,
 } from '@thyrox/agent/services/preventSleep.js'
-import { useTerminalNotification, hasCursorUpViewportYankBug } from '@thyrox/ink'
+import { useTerminalNotification, hasCursorUpViewportYankBug } from '@anthropic/ink'
 import {
   createFileStateCacheWithSizeLimit,
   mergeFileStateCaches,
@@ -442,7 +442,7 @@ import { useAwaySummary } from '../hooks/useAwaySummary.js';
 import { useChromeExtensionNotification } from '../hooks/useChromeExtensionNotification.js';
 import { useOfficialMarketplaceNotification } from '../hooks/useOfficialMarketplaceNotification.js';
 import { getTipToShowOnSpinner, recordShownTip } from '../tips/tipScheduler.js';
-import type { Theme } from '@thyrox/ink';
+import type { Theme } from '@anthropic/ink';
 import {
   checkAndDisableBypassPermissionsIfNeeded,
   checkAndDisableAutoModeIfNeeded,
@@ -508,7 +508,7 @@ import {
   maybeGetTmuxMouseHint,
   isMouseTrackingEnabled,
 } from '../fullscreen.js'
-import { AlternateScreen } from '@thyrox/ink'
+import { AlternateScreen } from '@anthropic/ink'
 import { ScrollKeybindingHandler } from '../components/ScrollKeybindingHandler.js'
 import {
   useMessageActions,
@@ -518,8 +518,8 @@ import {
   type MessageActionsNav,
   type MessageActionCaps,
 } from '../components/messageActions.js'
-import { setClipboard } from '@thyrox/ink'
-import type { ScrollBoxHandle } from '@thyrox/ink'
+import { setClipboard } from '@anthropic/ink'
+import type { ScrollBoxHandle } from '@anthropic/ink'
 import {
   createAttachmentMessage,
   getQueuedCommandAttachments,

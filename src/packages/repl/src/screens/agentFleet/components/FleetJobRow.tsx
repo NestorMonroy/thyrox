@@ -32,7 +32,7 @@
  */
 
 import type React from 'react'
-import { Box, Link, Text } from '@thyrox/ink'
+import { Box, Link, Text } from '@anthropic/ink'
 import figures from 'figures'
 
 import {
@@ -60,7 +60,7 @@ type ActivityOrPending = FleetActivity | undefined
 
 export interface FleetRowChildSummary {
   /** Theme color key for the child rollup glyph (or undefined to suppress). */
-  color?: keyof import('@thyrox/ink').Theme
+  color?: keyof import('@anthropic/ink').Theme
   href: string
   kind: 'agent' | 'frame'
 }
@@ -95,7 +95,7 @@ export interface FleetJobRowProps {
 
 function colorBadgeStyleFor(
   color: string | undefined,
-): { theme: keyof import('@thyrox/ink').Theme } | undefined {
+): { theme: keyof import('@anthropic/ink').Theme } | undefined {
   if (color === undefined) return undefined
   if (!(AGENT_COLORS as readonly string[]).includes(color)) return undefined
   return { theme: AGENT_COLOR_TO_THEME_COLOR[color as AgentColorName] }
@@ -147,7 +147,7 @@ export function FleetJobRow(props: FleetJobRowProps): React.ReactNode {
 
   const outcome = stateOutcome(state.state)
   const { color: glyphColorKey, dim: glyphDim } = glyphColor(state, activity, presence)
-  const glyphCol = glyphColorKey as keyof import('@thyrox/ink').Theme | undefined
+  const glyphCol = glyphColorKey as keyof import('@anthropic/ink').Theme | undefined
 
   const { glyph, isAnimated } = pickRowGlyph(state, presence, attaching, deleteArmed, outcome)
 
@@ -239,7 +239,7 @@ interface LabelCellProps {
   label: string
   renaming?: { draft: string; cursor: number }
   typingFrame?: { display: string; newLen: number }
-  badge?: { theme: keyof import('@thyrox/ink').Theme }
+  badge?: { theme: keyof import('@anthropic/ink').Theme }
   focused: boolean
   /** OSC 8 URL the label should hyperlink to. ant rs3 wraps the label
    *  in `<sq url={L}>` when state.output.result resolves to a URL. */

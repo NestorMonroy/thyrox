@@ -21,7 +21,7 @@
  */
 
 import type React from 'react'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import figures from 'figures'
 
 export interface HelpOverlayProps {

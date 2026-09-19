@@ -1,4 +1,4 @@
-import type { TerminalNotification } from '@thyrox/ink'
+import type { TerminalNotification } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
 import { env } from '@thyrox/config/env/paths'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'

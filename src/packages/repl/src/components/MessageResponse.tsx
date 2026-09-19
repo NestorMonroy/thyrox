@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { useContext } from 'react'
-import { Box, NoSelect, Text, Ratchet } from '@thyrox/ink'
+import { Box, NoSelect, Text, Ratchet } from '@anthropic/ink'
 import { isScreenReaderMode } from '../accessibility.js'
 
 type Props = {

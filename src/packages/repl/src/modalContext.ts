@@ -3,7 +3,7 @@ import {
   ModalContext,
   useIsInsideModal,
   useModalScrollRef,
-} from '@thyrox/ink'
+} from '@anthropic/ink'
 
 export function useModalOrTerminalSize(fallback: {
   rows: number

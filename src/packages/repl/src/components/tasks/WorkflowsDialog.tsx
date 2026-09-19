@@ -26,9 +26,9 @@
 import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import figures from 'figures'
-import { Box, Byline, Dialog, KeyboardShortcutHint, Text } from '@thyrox/ink'
-import type { Theme } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Byline, Dialog, KeyboardShortcutHint, Text } from '@anthropic/ink'
+import type { Theme } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { Message } from '@thyrox/agent/messageShapes'
 import {
   type ActiveGoal,

@@ -3,7 +3,7 @@ import React, { useContext } from 'react'
 import { ERROR_MESSAGE_USER_ABORT } from '@thyrox/agent/compaction/compact.js'
 import { isRateLimitErrorMessage } from '@thyrox/provider/rateLimitMessages.js'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
-import { Box, NoSelect, Text } from '@thyrox/ink'
+import { Box, NoSelect, Text } from '@anthropic/ink'
 import {
   API_ERROR_MESSAGE_PREFIX,
   API_TIMEOUT_ERROR_MESSAGE,

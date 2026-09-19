@@ -1,12 +1,12 @@
 import figures from 'figures'
 import * as React from 'react'
 import { useMemo, useRef } from 'react'
-import { Box, Text, useAnimationFrame, stringWidth, Byline } from '@thyrox/ink'
+import { Box, Text, useAnimationFrame, stringWidth, Byline } from '@anthropic/ink'
 import { toInkColor } from '@thyrox/tool-registry/utils/inkColor.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
 import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 
-import type { Theme } from '@thyrox/ink'
+import type { Theme } from '@anthropic/ink'
 
 import { GlimmerMessage } from './GlimmerMessage.js'
 import { SpinnerGlyph } from './SpinnerGlyph.js'

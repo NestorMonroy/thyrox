@@ -3,15 +3,15 @@ import * as React from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { useRegisterOverlay } from '../overlayContext.js'
 import { generateFileSuggestions } from '../hooks/fileSuggestions.js'
-import { useTerminalSize } from '@thyrox/ink'
-import { Text } from '@thyrox/ink'
+import { useTerminalSize } from '@anthropic/ink'
+import { Text } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { openFileInExternalEditor } from '@thyrox/storage/editor.js'
 import { truncatePathMiddle, truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import { highlightMatch } from '../highlight/highlightMatch.js'
 import { readFileInRange } from '../readFileInRange.js'
-import { FuzzyPicker, LoadingState } from '@thyrox/ink'
+import { FuzzyPicker, LoadingState } from '@anthropic/ink'
 
 type Props = {
   onDone: () => void

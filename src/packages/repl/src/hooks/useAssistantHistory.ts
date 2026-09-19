@@ -13,7 +13,7 @@ import {
   type HistoryAuthCtx,
   type HistoryPage,
 } from '@thyrox/agent/assistant/sessionHistory.js'
-import type { ScrollBoxHandle } from '@thyrox/ink'
+import type { ScrollBoxHandle } from '@anthropic/ink'
 import type { RemoteSessionConfig } from '@thyrox/server/remote/RemoteSessionManager.js'
 import { convertSDKMessage } from '@thyrox/server/remote/sdkMessageAdapter.js'
 import type { Message, SystemInformationalMessage } from '@thyrox/agent/messageShapes'

@@ -1,8 +1,8 @@
 import figures from 'figures'
 import type { RefObject } from 'react'
 import React, { useCallback, useMemo, useRef } from 'react'
-import { Box, Text } from '@thyrox/ink'
-import { useKeybindings } from '@thyrox/ink/keybindings'
+import { Box, Text } from '@anthropic/ink'
+import { useKeybindings } from '@anthropic/ink/keybindings'
 import { logEvent } from '@thyrox/local-observability'
 import type {
   NormalizedUserMessage,

@@ -11,7 +11,7 @@ import {
   getAllowedChannels,
   getHasDevChannels,
 } from '@thyrox/app-host/bootstrap/state.js'
-import { Box, Text } from '@thyrox/ink'
+import { Box, Text } from '@anthropic/ink'
 import { isChannelsEnabled } from '@thyrox/mcp-runtime/channelAllowlist.js'
 import { getEffectiveChannelAllowlist } from '@thyrox/mcp-runtime/channelNotification.js'
 import { getMcpConfigsByScope } from '@thyrox/mcp-runtime/config.js'
