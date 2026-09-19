@@ -22,7 +22,44 @@ import {
 	selectUltraplanPendingChoice,
 } from '@thyrox/app-host/state/uiSelectors.js';
 
-export function useReplAppState() {
+/** El estado que el REPL lee del store, con su tipo NOMBRADO.
+ *
+ * Sin esta anotacion tsc rehusa emitir la declaracion de
+ * `useReplAppState` con TS2742: el tipo inferido alcanza
+ * `@thyrox/app-host/node_modules/@thyrox/repl/tasksTypes.js` —una ruta de
+ * izado que este paquete no declara— y lo declara «likely not portable».
+ *
+ * El efecto no es un error visible: tsc SALTA ese `.d.ts` y emite el resto,
+ * asi que el paquete quedaba con una declaracion menos y el repunte de su
+ * `exports` rehusaba. Cada campo se deriva con `ReturnType<typeof ...>` del
+ * selector que ya se importa aqui: ningun tipo transcrito a mano.
+ */
+export interface ReplAppState {
+	verbose: ReturnType<typeof selectVerbose>
+	isBriefOnly: ReturnType<typeof selectIsBriefOnly>
+	initialMessage: ReturnType<typeof selectInitialMessage>
+	spinnerTip: ReturnType<typeof selectSpinnerTip>
+	showRemoteCallout: ReturnType<typeof selectShowRemoteCallout>
+	toolPermissionContext: ReturnType<typeof selectToolPermissionContext>
+	pendingWorkerRequest: ReturnType<typeof selectPendingWorkerRequest>
+	pendingSandboxRequest: ReturnType<typeof selectPendingSandboxRequest>
+	workerSandboxPermissions: ReturnType<typeof selectWorkerSandboxPermissions>
+	mcp: ReturnType<typeof selectMcp>
+	elicitation: ReturnType<typeof selectElicitation>
+	plugins: ReturnType<typeof selectPlugins>
+	agentDefinitions: ReturnType<typeof selectAgentDefinitions>
+	tasks: ReturnType<typeof selectTasks>
+	viewingAgentTaskId: ReturnType<typeof selectViewingAgentTaskId>
+	fileHistory: ReturnType<typeof selectFileHistory>
+	teamContext: ReturnType<typeof selectTeamContext>
+	showExpandedTodos: ReturnType<typeof selectShowExpandedTodos>
+	ultraplanPendingChoice: ReturnType<typeof selectUltraplanPendingChoice>
+	ultraplanLaunchPending: ReturnType<typeof selectUltraplanLaunchPending>
+	setAppState: ReturnType<typeof useSetAppState>
+	store: ReturnType<typeof useAppStateStore>
+}
+
+export function useReplAppState(): ReplAppState {
 	const verbose = useAppState(selectVerbose);
 	const isBriefOnly = useAppState(selectIsBriefOnly);
 	const initialMessage = useAppState(selectInitialMessage);

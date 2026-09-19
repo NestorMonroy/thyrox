@@ -597,8 +597,14 @@ def _declaration_exists(package_dir: Path, candidate: str,
     # `dist/` queda fuera: sus `.d.ts` TERMINAN en `.ts`, asi que el patron
     # `*.ts` los recoge como si fueran fuente y pide la declaracion de una
     # declaracion. Es la misma razon por la que `export_targets` lo filtra.
+    # Solo ARCHIVOS: un patron sin extension —`"./screens/*":
+    # "./src/screens/*"` de `repl`— casa tambien los subdirectorios, y pedir
+    # `dist/src/screens/agentFleet.d.ts` rehusaba el repunte de un paquete
+    # cuyas declaraciones estaban todas emitidas. Un gate que bloquea trabajo
+    # correcto cuesta mas que no tenerlo.
     fuentes = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
-                     if OUTPUT_DIR not in f.relative_to(package_dir).parts)
+                     if f.is_file()
+                     and OUTPUT_DIR not in f.relative_to(package_dir).parts)
     if not fuentes:
         return any(package_dir.glob(relativa))
     for fuente in fuentes:

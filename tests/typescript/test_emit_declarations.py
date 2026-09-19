@@ -533,6 +533,31 @@ def main():
         check("un test sin declaracion no hace rehusar", True,
               mod.repoint_manifest(pkg))
 
+    # --- un DIRECTORIO no es una fuente que declarar ----------------------
+    #
+    # `repl` declara `"./screens/*": "./src/screens/*"` — sin extension, asi
+    # que el patron casa tambien los subdirectorios. La verificacion pedia
+    # `dist/src/screens/agentFleet.d.ts`, que no existe ni puede existir, y
+    # rehusaba el repunte de un paquete cuyas 6 declaraciones estaban todas
+    # emitidas.
+    #
+    # Es el gate bloqueando trabajo correcto, que cuesta mas que no tenerlo.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = root / "condir"
+        (pkg / "src" / "screens" / "sub").mkdir(parents=True)
+        (pkg / mod.OUTPUT_DIR / "src" / "screens").mkdir(parents=True)
+        (pkg / "package.json").write_text(json.dumps({
+            "name": "@probe/condir", "version": "0.1.0", "private": True,
+            "exports": {"./screens/*": "./src/screens/*"},
+        }) + "\n", encoding="utf8")
+        (pkg / "src" / "screens" / "Uno.tsx").write_text(
+            "export const U = 1\n", encoding="utf8")
+        (pkg / mod.OUTPUT_DIR / "src" / "screens" / "Uno.d.ts").write_text(
+            "export declare const U: number\n", encoding="utf8")
+        check("un subdirectorio no cuenta como fuente sin declaracion",
+              True, mod.repoint_manifest(pkg))
+
     # --- el gate por paquete: mide sin mutar -------------------------------
     #
     # `EmitResult.errors` ya ES el conteo por paquete; lo que faltaba era una
