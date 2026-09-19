@@ -1,0 +1,37 @@
+  ok   las tres piezas existen en el modulo
+  ok   deriva la entrada cuando main entra por src/
+  ok   y cuando main entra por la raiz del paquete
+  ok   emitio la declaracion pese al error de tipo
+  ok   el veredicto declara que hubo errores
+  ok   y no los confunde con un fallo de emision
+  ok   conserva la firma de la funcion exportada
+  ok   no derrama declaraciones fuera de dist/
+  ok   el paquete con entrada en la raiz emite igual
+  ok   el exports pasa a condiciones, no sigue siendo cadena
+  ok   y su condicion types apunta a la declaracion
+  ok   mientras default conserva la fuente, que es el respaldo
+  ok   el types de raiz tambien, para el resolutor que no lee exports
+  ok   el subpath literal tambien pasa a condiciones
+  ok   y su types apunta a la declaracion del subpath
+  ok   el comodin conserva su sustitucion en la declaracion
+  ok   repuntar dos veces no cambia el resultado
+  FALLO un import que escapa NO EMITE
+       esperado: False
+       obtenido: True
+  FALLO y su veredicto nombra el escape
+       esperado: True
+       obtenido: False
+  FALLO nombra el archivo que se escapa
+       esperado: True
+       obtenido: False
+  FALLO y NO deja una declaracion fuera de dist/
+       esperado: []
+       obtenido: ['shared.d.ts']
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/typescript/test_emit_declarations.py", line 249, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/user/thyrox/tests/typescript/test_emit_declarations.py", line 236, in main
+    result = mod.check_package(pkg)
+             ^^^^^^^^^^^^^^^^^
+AttributeError: module 'typescript.emit_declarations' has no attribute 'check_package'

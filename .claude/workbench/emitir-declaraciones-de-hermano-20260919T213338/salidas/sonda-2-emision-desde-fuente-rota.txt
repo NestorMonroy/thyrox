@@ -1,0 +1,19 @@
+`tsc --emitDeclarationOnly --declaration` sobre fuente que NO compila:
+
+  src/index.ts(1,14): error TS2322: Type 'number' is not assignable to type 'string'.
+  TSC_EXIT=2
+  dist/index.d.ts   <- SE EMITIO PESE AL ERROR
+
+Contenido emitido — conserva la firma real, no degrada a `any`:
+
+  export declare const roto: string;
+  export declare function suma(a: number, b: number): number;
+  export type Forma = { x: number; y: number; };
+  export declare const inferido: { a: number; b: string; };
+
+Las dos mitades importan y apuntan en direcciones opuestas:
+  - conserva los tipos -> el consumidor sigue midiendo SU uso de verdad;
+  - emite pese al error -> un guion que ignore el codigo de salida publica un
+    consumidor verde con el hermano igual de roto. Es el sub-patron D a escala
+    de arquitectura, y es la razon de que el mecanismo tenga que declarar
+    CUANTOS errores emitio pese a, no solo que emitio.

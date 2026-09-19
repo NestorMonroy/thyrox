@@ -1,0 +1,8 @@
+Dos hermanos, MISMO defecto (`export const x: string = 1`), consumidor con skipLibCheck: true.
+
+  @p/src-pkg  types: ./index.ts     (fuente)      -> node_modules/@p/src-pkg/index.ts(1,14): error TS2322
+  @p/dts-pkg  types: ./index.d.ts   (declaracion) -> SILENCIO
+
+Un solo error publicado, de los dos hermanos igual de rotos. `skipLibCheck` salta
+el `.d.ts` y NO salta el `.ts`: por eso un hermano que expone fuente se recompila
+entero bajo las opciones del consumidor.
