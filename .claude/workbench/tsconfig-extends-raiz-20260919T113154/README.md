@@ -32,10 +32,10 @@ arrastra tipos*, como el propio gate declara. Cierra la mitad de instalación de
 | Variante | errores TS | archivos | TS6142 |
 |---|---|---|---|
 | línea base (con enlaces, sin `jsx`) | 3552 | 224 | 240 |
-| **A — sólo `"jsx": "react-jsx"`** | **2931** | **501** | **0** |
-| B — `extends` de la raíz | 3287 | 595 | 0 |
+| **A — sólo `"jsx": "react-jsx"`** | **2931** | **449** | **0** |
+| B — `extends` de la raíz | 3287 | 544 | 0 |
 
-**El conteo de archivos sube porque el compilador por fin los lee.** 224 → 501
+**El conteo de archivos sube porque el compilador por fin los lee.** 224 → 449
 no es regresión: es que los 639 `.tsx` dejaron de rebotar en TS6142 y entraron
 a la comparación. Un instrumento que leyera «más archivos con error = peor»
 mediría el fenómeno contrario al real.
@@ -86,8 +86,8 @@ midiendo con los suyos.
 Medido con la variante A en disco, los dos por separado:
 
 ```
-tsconfig.json       -> errores=2931 archivos=501
-tsconfig.tests.json -> errores=2931 archivos=501
+tsconfig.json       -> errores=2931 archivos=449
+tsconfig.tests.json -> errores=2931 archivos=449
 ```
 
 **Idénticos**, porque `tsconfig.tests.json` extiende al de fuente y su
@@ -99,7 +99,21 @@ Esa duplicación es correcta como gate —dos proyectos, dos veredictos— y
 engañosa como cifra: 5862 no es el tamaño del problema. Todo conteo de este
 banco se cita sobre **un** proyecto.
 
-*Métrica:* líneas `): error TSxxxx` y rutas distintas antes del primer `(`, de
+**Y los dos ejes NO se duplican igual** (corregido 2026-09-19T11:59:04, :ref:`h-thyrox-130`).
+Sobre el mismo log: los **errores** sí —5862 = 2 × 2931— y las **rutas** no, porque
+el `sort -u` colapsa los dos conjuntos. Citar «5862 errores / 449 archivos» como
+si vinieran del mismo universo es el sub-patrón A con este banco como sujeto.
+
+En el mismo pase se corrigieron las dos cifras de archivos de la tabla de arriba:
+eran **501** y **595**, y estaban infladas por 52 y 51 líneas de continuación del
+mensaje de error (`Type 'import(`), que el patrón `^[^(]+\(` captura como si
+fueran rutas. El gate no las sufre porque filtra por `error TS` antes de emitir
+(`check-cli-typecheck.sh:78`). **El veredicto no se mueve:** los errores salen de
+`grep -cE '\): error TS'`, que ninguna continuación satisface.
+
+*Métrica:* líneas `): error TSxxxx`, y rutas distintas antes del primer `(` **de
+las líneas que contienen `error TS`** — el filtro es lo que excluye las
+continuaciones—, de
 la salida de `tsc --noEmit -p tsconfig.json` sobre `src/packages/cli` —UN
 proyecto—, con los enlaces de workspace presentes.
 *Ciega a:* si los 2931 restantes son defectos reales o ruido de tipos de
