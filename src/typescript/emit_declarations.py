@@ -99,11 +99,61 @@ COMPILER_OPTIONS = {
 PROJECT_FILE = "tsconfig.declarations.json"
 
 _ERROR_LINE = re.compile(r"error TS[0-9]+")
+#: Una linea de error de tsc que ademas NOMBRA su archivo. Es un subconjunto
+#: estricto de `_ERROR_LINE`: un error de proyecto (TS5083, TS6053) no lleva
+#: ruta, asi que no se puede atribuir a ningun paquete y no entra en ningun
+#: cubo. La diferencia entre los dos conteos es justo esa poblacion.
+_LOCATED_ERROR = re.compile(r"^(?P<file>[^(\n]+)\(\d+,\d+\): error TS[0-9]+", re.M)
+
+
+def classify_errors(output: str, package_dir) -> dict:
+    """Reparte los errores de tsc en propios, de hermano y escapados.
+
+    El defecto que cierra, medido sobre el arbol real: `check_package(storage)`
+    publica **7062** errores y solo **769** (10.9 %) viven en el propio paquete
+    — **6293** llegan por `node_modules/@thyrox/*`, con `tool-registry`
+    aportando 5262 el solo. Es el mismo defecto estructural que el gate del
+    consumidor tiene un nivel mas arriba, y publicarlo bajo el rotulo «los
+    errores del paquete» es el sub-patron A de
+    `metrica-decide-la-conclusion.md` con este mecanismo de sujeto.
+
+    El discriminador es la RESOLUCION de la ruta, no su prefijo. tsc la reporta
+    relativa a su cwd, y el arbol tiene los dos repartos: 26 paquetes llevan
+    `node_modules/@thyrox/` propio —cuya ruta sale como `node_modules/...`— y
+    17 resuelven por la raiz del workspace, cuya ruta sale como
+    `../node_modules/...`, con `..` delante. Un `startswith("node_modules")`
+    acierta en los primeros y lee los segundos como PROPIOS.
+
+    Se normaliza sin `resolve()`: resolver seguiria el enlace del hermano hasta
+    su ruta real —`<raiz>/<hermano>/src/...`—, que ya no lleva el segmento
+    `node_modules` y volveria indistinguible un hermano enlazado de un import
+    que escapa del paquete. El segmento es la evidencia; perderlo es perder el
+    cubo.
+
+    El tercer cubo, `escaped`, no es adorno: `check_package` no corre el
+    preflight de `escaping_files`, asi que un error en `../../paths/docs.ts`
+    —la forma que `agent`, `cli` y `bridge` tienen hoy— no es propio ni de
+    hermano. Sin el, se sumaria al que no le toca.
+    """
+    package_dir = os.path.abspath(str(package_dir))
+    cubos = {"own": 0, "sibling": 0, "escaped": 0}
+    for match in _LOCATED_ERROR.finditer(output):
+        crudo = match.group("file").strip()
+        if not os.path.isabs(crudo):
+            crudo = os.path.join(package_dir, crudo)
+        ruta = os.path.normpath(crudo)
+        if "node_modules" in ruta.split(os.sep):
+            cubos["sibling"] += 1
+        elif ruta.startswith(package_dir + os.sep):
+            cubos["own"] += 1
+        else:
+            cubos["escaped"] += 1
+    return cubos
 
 
 @dataclass
 class EmitResult:
-    """El veredicto de tres estados, con su conteo."""
+    """El veredicto de cuatro estados, con su conteo repartido por dueño."""
 
     package: str
     emitted: bool
@@ -114,16 +164,32 @@ class EmitResult:
     #: arbol, porque la ruta de salida es `outDir + relativa-a-rootDir` y una
     #: relativa con `..` aterriza fuera de `dist/`.
     escaping: tuple = ()
+    #: Los errores repartidos por dueño. `errors` es el TOTAL que tsc reporto;
+    #: estos tres son la unica cifra atribuible, y la unica sobre la que un
+    #: baseline por paquete significa algo.
+    own_errors: int = 0
+    sibling_errors: int = 0
+    escaped_errors: int = 0
+    #: `True` cuando el paquete se MIDIO sin emitir (`noEmit`). Sin este eje el
+    #: veredicto publica «emitio pese a N errores» sobre una corrida que no
+    #: escribio un byte — el significante de una operacion que no ocurrio.
+    checked: bool = False
 
     def verdict(self) -> str:
         if self.escaping:
             return (f"{self.package}: NO EMITIO — {len(self.escaping)} import(s) "
                     f"salen de su rootDir: {', '.join(self.escaping)}")
+        if self.checked:
+            return (f"{self.package}: {self.own_errors} propio(s) "
+                    f"· {self.sibling_errors} de hermano "
+                    f"· {self.escaped_errors} fuera del paquete "
+                    f"(total {self.errors})")
         if not self.emitted:
             return f"{self.package}: NO EMITIO — no hay veredicto sobre su declaracion"
         if self.errors == 0:
             return f"{self.package}: OK"
-        return f"{self.package}: emitio pese a {self.errors} errores"
+        return (f"{self.package}: emitio pese a {self.errors} errores "
+                f"({self.own_errors} propio(s))")
 
 
 def entry_directory(main_entry: str) -> str:
@@ -226,12 +292,18 @@ def escaping_files(package_dir: Path) -> tuple:
 
 
 def check_package(package_dir: Path) -> EmitResult:
-    """Cuenta los errores de UN paquete sin emitir ni tocar su manifiesto.
+    """Mide un paquete sin emitir ni tocar su manifiesto, y REPARTE su conteo.
 
     Es el gate que hace que repuntar los 42 no sea lavanderia: sin el, sacar
     los errores del hermano del typecheck del consumidor los deja sin dueño.
-    `EmitResult.errors` ya era el conteo por paquete; lo que faltaba era una
-    superficie que lo publique.
+
+    Su primera version decia que `EmitResult.errors` «ya era el conteo por
+    paquete». Era falso, y medido: sobre `storage` publica **7062** y solo
+    **769** son del paquete — el resto llega por `node_modules/@thyrox/*`.
+    Un baseline construido sobre esa cifra congelaria 89 % de errores ajenos,
+    que es el mismo defecto estructural que este mecanismo existe para cerrar,
+    un nivel mas abajo. La cifra atribuible es `own_errors`; `errors` sigue
+    siendo el total, con su nombre, para que la diferencia se pueda leer.
 
     NO muta (ERR-066): `noEmit`, sin `outDir`, sin reescribir `package.json`,
     y su proyecto temporal se retira en `finally`.
@@ -252,7 +324,10 @@ def check_package(package_dir: Path) -> EmitResult:
         return EmitResult(package_dir.name, False, 0, f"{type(exc).__name__}: {exc}")
     finally:
         project.unlink(missing_ok=True)
-    return EmitResult(package_dir.name, True, len(_ERROR_LINE.findall(output)), output)
+    cubos = classify_errors(output, package_dir)
+    return EmitResult(package_dir.name, False, len(_ERROR_LINE.findall(output)), output,
+                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
+                      escaped_errors=cubos["escaped"], checked=True)
 
 
 def emit_package(package_dir: Path) -> EmitResult:
@@ -290,7 +365,10 @@ def emit_package(package_dir: Path) -> EmitResult:
 
     emitted = (package_dir / OUTPUT_DIR).is_dir() and any(
         (package_dir / OUTPUT_DIR).rglob("*.d.ts"))
-    return EmitResult(package_dir.name, emitted, len(_ERROR_LINE.findall(output)), output)
+    cubos = classify_errors(output, package_dir)
+    return EmitResult(package_dir.name, emitted, len(_ERROR_LINE.findall(output)), output,
+                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
+                      escaped_errors=cubos["escaped"])
 
 
 def _declaration_for(source_entry: str) -> str:

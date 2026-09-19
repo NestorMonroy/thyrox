@@ -49,12 +49,40 @@ def check(label, expected, seen):
         print(f"  FALLO {label}\n       esperado: {expected!r}\n       obtenido: {seen!r}")
 
 
+def write_types_stub(root):
+    """El `@types/bun` que `COMPILER_OPTIONS` declara, resoluble desde el fixture.
+
+    Sin el, tsc emite **TS2688** —«Cannot find type definition file for 'bun'»—
+    y no publica NINGUN diagnostico semantico del paquete. Medido: el control
+    `check_package cuenta el error del paquete` pasaba con `errors == 1`, y ese
+    1 era el TS2688, no el `export const broken: string = 1` que el fixture
+    escribe para provocarlo. Sub-patron D con esta propia suite de sujeto: el
+    verde no distinguia «cuenta el error del paquete» de «cuenta un error de
+    configuracion del compilador».
+
+    El stub va en la RAIZ del arbol sintetico porque tsc busca `node_modules/
+    @types/<x>` subiendo desde el directorio del proyecto — igual que en el
+    arbol real, donde lo resuelve el `node_modules` de la raiz del workspace.
+
+    Es lo mismo que ya habia mordido a `escaping_files`, que leyo las tres
+    lineas de ese error como si fueran rutas de archivo.
+    """
+    stub = root / "node_modules" / "@types" / "bun"
+    stub.mkdir(parents=True, exist_ok=True)
+    (stub / "package.json").write_text(
+        json.dumps({"name": "@types/bun", "version": "1.0.0",
+                    "types": "./index.d.ts"}) + "\n", encoding="utf8")
+    (stub / "index.d.ts").write_text("export {}\n", encoding="utf8")
+    return stub
+
+
 def make_package(root, name, main_dir):
     """Un paquete sintetico con su manifiesto y una fuente con UN defecto.
 
     `main_dir` vacio pone la entrada en la raiz del paquete — los dos repartos
     que el arbol real tiene (32 en `src`, 10 en raiz).
     """
+    write_types_stub(root)
     pkg = root / name
     src = pkg / main_dir if main_dir else pkg
     src.mkdir(parents=True, exist_ok=True)
@@ -95,6 +123,7 @@ def make_escaping_package(root, name, main_dir="src"):
     Un import que sube por encima de `rootDir` produce una relativa con `..`,
     asi que su `.d.ts` aterriza FUERA de `dist/`, junto a la fuente ajena.
     """
+    write_types_stub(root)
     shared = root / "shared.ts"
     shared.write_text("export const shared = (n: number) => n + 1\n", encoding="utf8")
     pkg = root / name
@@ -109,6 +138,47 @@ def make_escaping_package(root, name, main_dir="src"):
         "import { shared } from '../../shared.ts'\n"
         "export const use = (n: number): number => shared(n)\n")
     return pkg
+
+
+def make_consumer_with_sibling(root, name, sibling, link="local"):
+    """Un consumidor con UN error propio que importa un hermano con DOS.
+
+    `link` elige donde aterriza el enlace del hermano, y no es cosmetico: 26 de
+    los 43 paquetes del arbol real llevan `node_modules/@thyrox/` propio y 17
+    resuelven por la raiz del workspace. tsc reporta la ruta relativa a su cwd,
+    asi que el primer caso sale como `node_modules/@probe/x/src/index.ts` y el
+    segundo como `../node_modules/@probe/x/src/index.ts` — con `..` delante.
+
+    Un clasificador por PREFIJO de ruta lee el segundo como propio, y ese es el
+    defecto que este fixture existe para poder destapar. El primer reparto que
+    se midio sobre `storage` uso ese prefijo; acerto porque storage tiene enlace
+    propio, y habria mentido sobre los 17 que no.
+    """
+    def write_package(directory, pkg_name, body):
+        src = directory / "src"
+        src.mkdir(parents=True, exist_ok=True)
+        (directory / "package.json").write_text(json.dumps({
+            "name": pkg_name, "version": "0.1.0", "private": True,
+            "main": "./src/index.ts", "types": "./src/index.ts",
+            "exports": {".": "./src/index.ts"},
+        }) + "\n", encoding="utf8")
+        (src / "index.ts").write_text(body, encoding="utf8")
+
+    write_types_stub(root)
+    write_package(root / sibling, f"@probe/{sibling}",
+                  "export const first: string = 1\n"
+                  "export const second: number = 'dos'\n"
+                  "export const helps = (n: number): number => n + 1\n")
+    consumer = root / name
+    write_package(consumer, f"@probe/{name}",
+                  f"import {{ helps }} from '@probe/{sibling}'\n"
+                  "export const mine: string = 1\n"
+                  "export const use = (n: number): number => helps(n)\n")
+
+    enlace = (consumer if link == "local" else root) / "node_modules" / "@probe"
+    enlace.mkdir(parents=True, exist_ok=True)
+    (enlace / sibling).symlink_to(root / sibling, target_is_directory=True)
+    return consumer
 
 
 def main():
@@ -219,8 +289,11 @@ def main():
         check("y su veredicto nombra el escape", True,
               "escapa" in result.verdict() and "rootDir" in result.verdict())
         check("nombra el archivo que se escapa", True, "shared.ts" in result.output)
+        # `node_modules` queda fuera del barrido: el `@types/bun` del fixture es
+        # un `.d.ts` que el propio control escribe, no un derrame de la emision.
+        # Contarlo confundiria el instrumento con su sujeto.
         derrame = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
-                   if "dist" not in f.parts]
+                   if "dist" not in f.parts and "node_modules" not in f.parts]
         check("y NO deja una declaracion fuera de dist/", [], derrame)
 
     # --- el gate por paquete: mide sin mutar -------------------------------
@@ -240,6 +313,28 @@ def main():
               (pkg / "package.json").read_text(encoding="utf8"))
         sobrantes = [f.name for f in pkg.glob("tsconfig*.json")]
         check("retira su proyecto temporal", [], sobrantes)
+
+
+    # --- la atribucion: el conteo del paquete NO es el de su cierre ---------
+    #
+    # EL CASO QUE DISCRIMINA. Medido sobre el arbol real antes de escribirlo:
+    # `check_package(storage)` publica 7062 errores y solo 769 (10.9 %) viven en
+    # `src/` del propio paquete; 6293 llegan por `node_modules/@thyrox/*`, con
+    # `tool-registry` aportando 5262 el solo. El docstring decia «cuenta los
+    # errores de UN paquete» — sub-patron A con este mecanismo de sujeto, y un
+    # baseline construido sobre esa cifra congelaria 89 % de errores ajenos.
+    #
+    # Las DOS formas de enlace se ejercitan porque el clasificador tiene que
+    # sobrevivir a las dos: por prefijo de ruta, la del workspace miente.
+    for forma in ("local", "root"):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            consumidor = make_consumer_with_sibling(root, "consume", "hermano", forma)
+            medido = mod.check_package(consumidor)
+            check(f"[{forma}] el propio cuenta SOLO el error del paquete",
+                  1, medido.own_errors)
+            check(f"[{forma}] y el hermano se le atribuye a el",
+                  2, medido.sibling_errors)
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0
