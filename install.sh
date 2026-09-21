@@ -304,6 +304,32 @@ REACH="$ROOT/$MARKER_REL"
     "la raíz $ROOT no contiene $MARKER_REL — no parece ser thyrox ($ROOT_ORIGIN)" \
     "declara THYROX_ROOT apuntando a la raíz del árbol de thyrox"
 
+# ``bin/`` es un producto derivado de los entrypoints, no una colección que
+# quien clona deba reconstruir a mano. El instalador gobierna sus tres estados
+# con el mismo modo que gobierna la declaración del consumidor: instala,
+# compara sin escribir, o muestra el plan sin escribir. El generador descubre
+# los candidatos por estructura y contenido; no los ejecuta.
+BIN_GENERATOR="$ROOT/src/session/generate_bin.py"
+[ -f "$BIN_GENERATOR" ] || fatal \
+    "la raíz $ROOT no contiene src/session/generate_bin.py" \
+    "actualiza el clon de thyrox; install.sh necesita el generador de bin/"
+
+sync_bin() {
+    local generator_mode=() output
+    case "$MODE" in
+        check)   generator_mode=(--check) ;;
+        dry-run) generator_mode=(--dry-run) ;;
+    esac
+    output="$(THYROX_ROOT="$ROOT" PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+        python3 "$BIN_GENERATOR" "${generator_mode[@]}" 2>&1)" || fatal \
+        "bin/ no satisface el plan de src/session/generate_bin.py:
+$output" \
+        "corre ./install.sh para regenerarlo, o inspecciona el error del generador"
+    [ -n "$output" ] && info "$output"
+}
+
+sync_bin
+
 # --------------------------------------------------------------------------
 # Paso 5 — los destinos: los dados, o los que el alcance resuelva
 #
