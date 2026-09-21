@@ -97,6 +97,24 @@ class RunnerExitTwoTestCase(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stdout)
         self.assertIn('OK:', proc.stdout)
 
+    def test_provider_virtualenv_interpreter_is_used_when_present(self) -> None:
+        interpreter = self.tree / '.venv' / 'bin' / 'python'
+        interpreter.parent.mkdir(parents=True)
+        interpreter.write_text(
+            '#!/usr/bin/env bash\n'
+            'echo PROVIDER_INTERPRETER\n'
+            f'exec {sys.executable!s} "$@"\n', encoding='utf-8')
+        interpreter.chmod(0o755)
+        proc = self._run()
+        self.assertIn('PROVIDER_INTERPRETER', proc.stdout)
+
+    def test_runner_declares_the_tree_it_is_measuring(self) -> None:
+        (self.tree / 'tests' / 'test_green.py').write_text(
+            'import os\nprint("ROOT=" + os.environ.get("THYROX_ROOT", ""))\n',
+            encoding='utf-8')
+        proc = self._run()
+        self.assertIn(f'ROOT={self.tree}', proc.stdout)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -24,6 +24,16 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
+# El checkout que contiene este runner es el sujeto. Una variable o un `.env`
+# heredado no puede redirigir la medición hacia otro clon.
+export THYROX_ROOT="$PWD"
+export THYROX_REACH_ROOT="$(dirname "$PWD")"
+
+# El lock de Python sólo gobierna si se usa su intérprete. Los fixtures
+# sintéticos del runner no tienen `.venv`, por eso conservan un fallback.
+PYTHON_BIN="$PWD/.venv/bin/python"
+[ -x "$PYTHON_BIN" ] || PYTHON_BIN="$(command -v python3)"
+
 # --- La raiz la declara el CORREDOR, no cada modulo ---------------------------
 #
 # `bin/` ya lo hacia (`export PYTHONPATH="$THYROX_ROOT/src"`) y este corredor no,
@@ -141,7 +151,7 @@ if [ "$only" = "--changed" ] || [ "$only" = "--changed-list" ]; then
     [ -n "$s" ] || continue
     case "$s" in
       *.test.ts) bun test "$s" >/dev/null 2>&1 ;;
-      *.py)      python3 "$s" >/dev/null 2>&1 ;;
+      *.py)      "$PYTHON_BIN" "$s" >/dev/null 2>&1 ;;
       *)         bash "$s" >/dev/null 2>&1 ;;
     esac
     if [ $? -eq 0 ]; then echo "-- $s"; else echo "-- ROJO $s"; rojas=$((rojas+1)); fi
@@ -193,7 +203,7 @@ if [ "$only" != "--ts-only" ] && [ "$only" != "--shell-only" ]; then
     # once rojos sin nombre no se pueden triar. Misma forma que «un conteo sin
     # denominador no es un resultado», un nivel más abajo.
     echo "-- $suite"          # ANTES de correr: un cuelgue se atribuye
-    python3 "$suite"
+    "$PYTHON_BIN" "$suite"
     case $? in
       0) ;;
       2) sin_medir_py=$((sin_medir_py + 1)); echo "-- SIN MEDIR (exit 2) $suite" ;;

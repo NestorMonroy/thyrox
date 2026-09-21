@@ -7,6 +7,10 @@
   ],
   "type": "module",
   "license": "UNLICENSED",
+  "engines": {
+    "bun": ">=1.4.0",
+    "node": ">=20"
+  },
   "description": "THYROX \u2014 el Agentic AI y su project management: el mecanismo, sin el parametro del repo que lo consume (DEC-04).",
   "exports": {
     "./commands": "./src/commands/index.ts",
