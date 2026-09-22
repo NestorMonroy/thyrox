@@ -1,0 +1,6 @@
+test_roster_declared_prefix:
+  ok    un clon con el prefijo declarado forma el roster
+  ok    el prefijo declarado gana a una mayoria ajena
+  ok    sin declaracion, un clon sigue rehusando
+  ok    el roster se deriva bajo la raiz declarada
+test_roster_declared_prefix: 4 aserciones — 4 ok, 0 falla(s)

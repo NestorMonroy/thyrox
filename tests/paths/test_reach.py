@@ -398,7 +398,10 @@ print("\n12. --env se bootstrapea a sí mismo: exporta las dos entradas de DEC-0
 _env = _capture(["reach.py", "--env"])
 check("exporta THYROX_ROOT", True, 'export THYROX_ROOT="' in _env)
 check("exporta THYROX_ENV_FILE", True, "THYROX_ENV_FILE" in _env)
-check("sigue exportando las cinco raíces", _env.count("export THYROX_REACH_"), 5)
+# Una exportacion por raiz del roster, no cinco: de los consumidores solo
+# `docs` es obligatorio y los demas pueden no estar en el host.
+check("sigue exportando una raíz por clon del roster",
+      _env.count("export THYROX_REACH_"), len(reach.reach_roots()))
 
 # --------------------------------------------------------------------------
 # El multi-repo NO se codifica en el proveedor (#249)

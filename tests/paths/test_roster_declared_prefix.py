@@ -55,5 +55,16 @@ with synthetic_clone_tree(("api", "docs")) as tree:
 with synthetic_clone_tree(("docs",)):
     assert_equal("sin declaracion, un clon sigue rehusando", "ReachRootError", roster_or_error())
 
+# La raiz de los clones DECLARADA (`THYROX_REACH_ROOT`) es la base de la
+# derivacion, no el padre del proveedor. Antes eran dos bases: las rutas se
+# componian bajo la declarada y el roster se derivaba del padre del proveedor.
+with synthetic_clone_tree(("api", "docs")) as tree:
+    elsewhere = tree.base / "elsewhere" / "thyrox"
+    (elsewhere / "src" / "paths").mkdir(parents=True)
+    (elsewhere / "src" / "paths" / "reach.py").write_text("")
+    os.environ["THYROX_ROOT"] = str(elsewhere)          # proveedor sin hermanos
+    assert_equal("el roster se deriva bajo la raiz declarada", ("api", "docs"),
+                 roster_or_error())
+
 print(f"test_roster_declared_prefix: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
