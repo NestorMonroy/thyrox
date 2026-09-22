@@ -30,3 +30,6 @@ totales.
 
 *Ciega a:* conducta de cada herramienta después de instalar bindings; esa
 conducta pertenece a sus suites de integración.
+
+El typecheck completo no se copia al workbench: su salida autoritativa vive en
+`.claude/jobs/ts2305-tool-registry-green-20260922T204751/outputs/salida.log`.
