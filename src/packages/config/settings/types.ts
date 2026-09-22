@@ -21,6 +21,39 @@
 import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
 
+const ServerNameEntrySchema = z.object({
+  serverName: z.string().regex(/^[A-Za-z0-9._-]+$/),
+}).strict()
+const ServerCommandEntrySchema = z.object({
+  serverCommand: z.array(z.string()).min(1),
+}).strict()
+const ServerUrlEntrySchema = z.object({
+  serverUrl: z.string().min(1),
+}).strict()
+
+export const AllowedMcpServerEntrySchema = () => z.union([
+  ServerNameEntrySchema,
+  ServerCommandEntrySchema,
+  ServerUrlEntrySchema,
+])
+export const DeniedMcpServerEntrySchema = AllowedMcpServerEntrySchema
+
+export type McpServerEntry = z.infer<ReturnType<typeof AllowedMcpServerEntrySchema>>
+
+export function isMcpServerNameEntry(entry: McpServerEntry): entry is { serverName: string } {
+  return 'serverName' in entry
+}
+
+export function isMcpServerCommandEntry(
+  entry: McpServerEntry,
+): entry is { serverCommand: string[] } {
+  return 'serverCommand' in entry
+}
+
+export function isMcpServerUrlEntry(entry: McpServerEntry): entry is { serverUrl: string } {
+  return 'serverUrl' in entry
+}
+
 /** Los eventos de hook que nuestro harness emite hoy. Los 33 del cliente están en su lista; aquí van los que tienen emisor. */
 export const HOOK_EVENTS = [
   'SessionStart',
