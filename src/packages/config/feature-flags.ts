@@ -49,6 +49,7 @@ export const FEATURE_FLAGS_ENV = 'THYROX_FEATURE_FLAGS'
 const LOCAL_GATE_DEFAULTS: Record<string, FeatureValue> = {}
 
 const configOverrides = new Map<string, FeatureValue>()
+const refreshListeners = new Set<() => void>()
 
 function envOverrides(): Record<string, FeatureValue> {
   const raw = process.env[FEATURE_FLAGS_ENV]
@@ -119,4 +120,54 @@ export function getGrowthBookConfigOverrides(): Record<string, FeatureValue> {
 
 export function getAllGrowthBookFeatures(): Record<string, FeatureValue> {
   return { ...LOCAL_GATE_DEFAULTS, ...getGrowthBookConfigOverrides(), ...envOverrides() }
+}
+
+/** Alias público para configuraciones estructuradas, no sólo gates booleanos. */
+export function getDynamicConfig_CACHED_MAY_BE_STALE<T>(
+  configName: string,
+  fallback: T,
+): T {
+  return getFeatureValue_CACHED_MAY_BE_STALE(configName, fallback)
+}
+
+/**
+ * La fuente puede esperar inicialización remota. Este provider resuelve desde
+ * fuentes locales, pero conserva la firma async para sus consumers.
+ */
+export async function getDynamicConfig_BLOCKS_ON_INIT<T>(
+  configName: string,
+  fallback: T,
+): Promise<T> {
+  return getDynamicConfig_CACHED_MAY_BE_STALE(configName, fallback)
+}
+
+export async function checkGate_CACHED_OR_BLOCKING(
+  gate: string,
+): Promise<boolean> {
+  return Boolean(getFeatureValue_CACHED_MAY_BE_STALE(gate, false))
+}
+
+/** No existe cliente remoto que inicializar; la Promise mantiene el contrato. */
+export async function initializeGrowthBook(): Promise<void> {}
+
+export function onGrowthBookRefresh(listener: () => void): () => void {
+  refreshListeners.add(listener)
+  return () => {
+    refreshListeners.delete(listener)
+  }
+}
+
+function notifyGrowthBookRefresh(): void {
+  for (const listener of [...refreshListeners]) listener()
+}
+
+/** Una autenticación nueva puede cambiar segmentación; los consumers releen. */
+export function refreshGrowthBookAfterAuthChange(): void {
+  notifyGrowthBookRefresh()
+}
+
+/** Restablece el estado local sin conservar overrides de la sesión anterior. */
+export function resetGrowthBook(): void {
+  clearGrowthBookConfigOverrides()
+  notifyGrowthBookRefresh()
 }

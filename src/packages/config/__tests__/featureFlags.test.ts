@@ -12,9 +12,16 @@
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  checkGate_CACHED_OR_BLOCKING,
   clearGrowthBookConfigOverrides,
+  getDynamicConfig_BLOCKS_ON_INIT,
+  getDynamicConfig_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
   hasGrowthBookEnvOverride,
+  initializeGrowthBook,
+  onGrowthBookRefresh,
+  refreshGrowthBookAfterAuthChange,
+  resetGrowthBook,
   setGrowthBookConfigOverride,
 } from '../feature-flags'
 
@@ -51,5 +58,46 @@ describe('getFeatureValue_CACHED_MAY_BE_STALE', () => {
     process.env[ENV] = JSON.stringify({ x: false })
     expect(hasGrowthBookEnvOverride('x')).toBe(true)   // false declarado ES override
     expect(hasGrowthBookEnvOverride('y')).toBe(false)
+  })
+})
+
+describe('public GrowthBook compatibility surface', () => {
+  test('dynamic config sync and blocking forms preserve the same local precedence', async () => {
+    setGrowthBookConfigOverride('config', { enabled: true })
+    expect(
+      getDynamicConfig_CACHED_MAY_BE_STALE('config', { enabled: false }),
+    ).toEqual({ enabled: true })
+    expect(
+      await getDynamicConfig_BLOCKS_ON_INIT('config', { enabled: false }),
+    ).toEqual({ enabled: true })
+    expect(await checkGate_CACHED_OR_BLOCKING('config')).toBe(true)
+  })
+
+  test('refresh notifies subscribers and unsubscribe stops subsequent notifications', async () => {
+    let calls = 0
+    const unsubscribe = onGrowthBookRefresh(() => {
+      calls += 1
+    })
+
+    await initializeGrowthBook()
+    refreshGrowthBookAfterAuthChange()
+    expect(calls).toBe(1)
+    unsubscribe()
+    refreshGrowthBookAfterAuthChange()
+    expect(calls).toBe(1)
+  })
+
+  test('reset removes process overrides and notifies subscribers', () => {
+    let calls = 0
+    const unsubscribe = onGrowthBookRefresh(() => {
+      calls += 1
+    })
+    setGrowthBookConfigOverride('x', true)
+
+    resetGrowthBook()
+
+    expect(getDynamicConfig_CACHED_MAY_BE_STALE('x', false)).toBe(false)
+    expect(calls).toBe(1)
+    unsubscribe()
   })
 })

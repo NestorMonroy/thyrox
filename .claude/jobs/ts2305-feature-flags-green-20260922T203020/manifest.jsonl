@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit", "started_at": "2026-09-22T20:30:20+00:00", "question": "¿Desaparecen todas las aristas TS2305 de @thyrox/config/feature-flags?", "metric": "5 050 diagnósticos en 946 archivos; TS2305=619; aristas del provider=0.", "blind_to": "La semántica GrowthBook remota ausente y errores de otros providers."}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-22T20:31:43+00:00", "duration_seconds": 83.613607}
