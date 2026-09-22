@@ -34,7 +34,10 @@ from paths.reach import thyrox_root  # noqa: E402
 #: taparía.
 RAIZ = thyrox_root()
 GATE = RAIZ / 'src' / 'verify' / 'check_config_precedence.py'
-LITELLM = Path('/home/user/nestormonroy/litellm/litellm/proxy/proxy_server.py')
+# Vendorizado en `_references/litellm/` (commit `da82ea8e`, MIT; ver su
+# `PROVENANCE.md`). Antes se leia de un clon local por ruta literal, ausente
+# en cualquier otra sesion, y el control fallaba sin haber medido nada.
+LITELLM = RAIZ / '_references' / 'litellm' / 'litellm' / 'proxy' / 'proxy_server.py'
 
 verdes = 0
 total = 0
