@@ -1,20 +1,12 @@
 /**
- * Facade del subsistema de scheduling — puerto MÍNIMO de
+ * Facade del subsistema de scheduling — puerto del surface público de
  * `ccnmt: packages/agent/scheduler.ts` (67 líneas, re-exporta seis
  * módulos internos: `cronCore`, `cronTasksCore`, `cronTasksLockCore`,
  * `cronSchedulerCore`, `loopDynamicCore`, `loopSentinelCore`).
  *
- * PORTE PARCIAL, declarado. Este archivo re-exporta únicamente lo que
- * `__tests__/cronJitterConfig.test.ts` importa de él —
- * `DEFAULT_CRON_JITTER_CONFIG` (y el tipo `CronJitterConfig` que lo
- * acompaña)— desde `./internal/cronTasksCore.ts`, ya portado en este
- * árbol. Ninguno de los símbolos de `cronCore.ts`, `loopDynamicCore.ts` ni
- * `loopSentinelCore.ts` (los otros tres módulos internos que sí existen
- * aquí) se re-exporta: el test que este porte cubre no los ejercita, y
- * `cronTasksLockCore` / `cronSchedulerCore` (los dos que la fuente
- * también re-exporta) no tienen puerto todavía en `internal/`. Ampliar
- * este facade a la forma completa de la fuente es trabajo de un porte
- * posterior, cuando aparezca un consumidor de esos símbolos.
+ * Los seis módulos internos de la fuente ya tienen implementación canónica
+ * en este árbol. El facade los vuelve a publicar explícitamente para que los
+ * consumidores usen un solo contrato y no dependan de rutas `internal/`.
  *
  * Además de la reexportación, este archivo aporta
  * `getFeatureValue_CACHED_WITH_REFRESH` — un símbolo que NO existe en la
@@ -51,7 +43,26 @@
  * hay caché remota que refrescar.
  */
 export type { CronJitterConfig } from './internal/cronTasksCore.ts'
-export { DEFAULT_CRON_JITTER_CONFIG } from './internal/cronTasksCore.ts'
+export {
+  DEFAULT_CRON_JITTER_CONFIG,
+  addCronTask,
+  getCronFilePath,
+  listAllCronTasks,
+  nextCronRunMs,
+  removeCronTasks,
+} from './internal/cronTasksCore.ts'
+export {
+  computeNextCronRun,
+  cronToHuman,
+  parseCronExpression,
+} from './internal/cronCore.ts'
+export { createCronScheduler } from './internal/cronSchedulerCore.ts'
+export {
+  cancelAllPendingLoopSessionCrons,
+  isLoopDynamicEnabled,
+  scheduleLoopWakeup,
+} from './internal/loopDynamicCore.ts'
+export { resolveLoopDefaultFire } from './internal/loopSentinelCore.ts'
 
 export function getFeatureValue_CACHED_WITH_REFRESH<T>(
   _key: string,
