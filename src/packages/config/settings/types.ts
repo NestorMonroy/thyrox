@@ -21,6 +21,17 @@
 import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
 
+// Este módulo conserva el subpath público histórico
+// `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
+// schema canónico de hooks.
+export type {
+  AgentHook,
+  HookMatcher,
+  HooksSettings,
+  HttpHook,
+  PromptHook,
+} from './schemas/hooks.js'
+
 const ServerNameEntrySchema = z.object({
   serverName: z.string().regex(/^[A-Za-z0-9._-]+$/),
 }).strict()
