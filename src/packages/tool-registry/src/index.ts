@@ -2,13 +2,10 @@
  * Barrel del porte de `@claude-code-how-works/tool-registry` (ccnmt) a
  * thyrox.
  *
- * NO es un porte literal de `ccnmt: packages/tool-registry/src/index.ts`
- * — ese archivo reexporta `ToolRegistry`, `host.ts`, `BuiltInToolsProvider`
- * y `TOOL_PRESETS`/`parseToolPreset`, ninguno portado en este pase (viven
- * en `contracts.ts`/`ToolRegistry.ts`/`host.ts`/`providers/*`, fuera del
- * alcance de esta ola — ver el `package.json` de este paquete para el
- * mapa porte/bloqueo). Este archivo reexporta ÚNICAMENTE lo que este pase
- * portó de verdad.
+ * La superficie runtime y sus host bindings ya tienen implementaciones
+ * canónicas en `runtime.ts` y `host.ts`. El barrel las publica de forma
+ * explícita: los consumidores no deben saltarse la inicialización del runtime
+ * importando `api.ts`, ni mantener una segunda lista de presets.
  *
  * `progressTypes.js` NO se reexporta por separado: `Tool.js` ya reexporta
  * sus ocho símbolos (`AgentToolProgress`, `BashProgress`, `MCPProgress`,
@@ -26,3 +23,23 @@ export * from './fileStateCache.js'
 export * from './codeIndexing.js'
 export * from './utils/array.js'
 export * from './utils/lazySchema.js'
+
+export type {
+  Tool,
+  ToolPermissionContext,
+  ToolPreset,
+  Tools,
+} from './runtime.ts'
+export {
+  TOOL_PRESETS,
+  assembleToolPool,
+  filterToolsByDenyRules,
+  getAllBaseTools,
+  getMergedTools,
+  getToolRegistry,
+  getTools,
+  getToolsForDefaultPreset,
+  installToolRegistryRuntimeBindings,
+  parseToolPreset,
+} from './runtime.ts'
+export { installToolRegistryHostBindings } from './host.ts'
