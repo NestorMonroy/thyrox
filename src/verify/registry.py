@@ -154,6 +154,8 @@ CHECKS: list[Check] = [
           'la clave de caché lleva el modelo: nadie relee lo que otro escribió'),
     Check('cli-typecheck', 'Paquete', 'cli', 'check-cli-typecheck.sh',
           'el paquete typechequea antes de publicarse'),
+    Check('package-typecheck', 'Paquete', 'codigo', 'check_package_typecheck.py',
+          'los errores PROPIOS de cada paquete no crecen sobre su baseline'),
     Check('key-rename-symmetry', 'Paquete', 'codigo',
           'check_key_rename_symmetry.py',
           ':ref:`h-thyrox-136` — la clave del dict y su lectura se mueven juntas'),
