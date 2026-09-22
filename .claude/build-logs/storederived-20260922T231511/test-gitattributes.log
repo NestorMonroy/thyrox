@@ -1,0 +1,21 @@
+FALLO: 1. cinco repos con el contrato completo
+  esperado: 0
+  obtenido: 1
+FALLO: 3. comentarios y lineas vacias no son divergencia
+  esperado: 0
+  obtenido: 1
+FALLO: 5a. el arbol real pasa el gate
+  esperado: 0
+  obtenido: 1
+AVISO: 0 repos medidos — el caso 5 no midio nada
+FALLO: 6a. con un repo fuera, el alcance baja a 4
+  esperado: si
+  obtenido: no
+FALLO: 6b. el repo ausente se nombra
+  esperado: si
+  obtenido: no
+FALLO: 6c. un repo ausente no hace fallar al gate
+  esperado: 0
+  obtenido: 1
+test-gitattributes: 14 de 21 aserciones en verde
+EXIT=1

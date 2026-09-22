@@ -1,0 +1,30 @@
+== Caso 1: el tipo viene en el payload -> type_source='payload'
+  ok    el tipo aterriza
+  ok    procedencia = payload
+== Caso 2 (EL QUE DISCRIMINA): la fuente lo emite VACÍO
+  ok    el tipo cae a desconocido
+  ok    procedencia = vacio_en_origen
+== Caso 3: la clave NO viene en el payload -> 'ausente'
+  ok    el tipo cae a desconocido
+  ok    procedencia = ausente
+== Caso 4: los dos cubos se distinguen en el agregado
+  ok    vacio_en_origen
+  ok    ausente
+  ok    payload
+== Caso 5 (CONTROL ANULADO): sin el discriminador los cubos colapsan
+  ok    anulado: vacio_en_origen deja de verse
+  ok    anulado: ausente deja de verse
+  ok    anulado: las 2 quedan indistinguibles
+== Caso 6: el Stop sin tipo NO degrada la procedencia que puso el Start
+  ok    el tipo se preserva (ya estaba protegido)
+  ok    la procedencia se preserva EN PAREJA
+== Caso 7 (la otra mitad): sobre una fila SIN tipo, la procedencia si se rellena
+  ok    el tipo se rellena
+  ok    la procedencia se rellena
+== Caso 8 (CONTROL ANULADO): con la expresion vieja, el 6 CAE y el 7 SOBREVIVE
+  ok    anulado: el 6 CAE (la procedencia se pisa)
+  ok    anulado: el 7 SOBREVIVE (no dependia del arrastre)
+  ok    el fuente queda restaurado
+
+19 ok · 0 falla(s)  (alcance medido: 19 aserciones)
+EXIT=0

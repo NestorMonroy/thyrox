@@ -1,0 +1,9 @@
+== caso 1: el journal declara result -> completed/journal ==
+== caso 2: el journal declara solo started -> failed/journal ==
+== caso 3: con sidecar manda la firma del transcript, no el journal ==
+== caso 4: CONTROL ANULADO — sin lector de journal caen 1 y 2, no el 3 ==
+== caso 5: el arbol REAL — ninguna fila ALCANZABLE queda sin procedencia ==
+  (store ausente en este arbol — caso omitido, no da verde falso)
+
+OK: 4 de 4 casos en verde
+EXIT=0

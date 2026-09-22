@@ -1,0 +1,26 @@
+== 1. el defecto SIN el sujeto (control positivo: reproduce MM) ==
+  ok    sin post-commit el indice queda rancio (MM)
+
+== 2. CON el sujeto: el indice queda sincronizado ==
+  ok    el arbol queda limpio
+  ok    HEAD e indice coinciden
+  ok    el worktree NO se toco (sigue en HEAD)
+  ok    y el commit SI llevo la reconciliacion
+
+== 3. GUARDA: un cambio real sin commitear NO se toca ==
+  ok    el cambio preparado sobrevive al hook (PREPARADO, no revertido)
+  ok    y su contenido intacto
+
+== 4. el pathspec NO describe el commit: manda lo que HEAD registro ==
+  ok    el store viajo en el commit pese al pathspec
+  ok    y el hook lo dejo limpio
+
+== 5. un commit cuyo HEAD NO nombra el store: el hook se abstiene ==
+  ok    HEAD no registra el store
+  ok    el cambio preparado sigue preparado
+
+== 6. el FILTRO por arbol de HEAD: preparado que el disco ya no tiene ==
+  ok    el contenido preparado sigue en el indice
+
+resultado: 12 de 12 aserciones en verde
+EXIT=0

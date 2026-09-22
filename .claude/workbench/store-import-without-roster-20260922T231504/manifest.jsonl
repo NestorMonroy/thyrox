@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Importar el store exige un roster de clones en el host?","instrument":"proveedor sintetico sin hermanos, con anulacion de la lectura perezosa","metric":"exit de la importacion y del --repo con y sin roster","blind_to":"suites shell sin veredicto previo"}

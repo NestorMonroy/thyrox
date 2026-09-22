@@ -1,0 +1,46 @@
+== 1. connect() crea el esquema núcleo: 8 columnas + 2 índices ==
+  ok    las 8 columnas núcleo
+  ok    los 2 índices declarados
+== 2. CONTROL: store_dir vacío rehúsa, no crea nada silenciosamente ==
+  ok    rehúsa store_dir vacío
+== 3. extra_columns — migración aditiva, idempotente ==
+  ok    las columnas extra aparecen
+  ok    reconectar es idempotente
+== 4. register_session — inserta una sesión nueva ==
+  ok    status por defecto
+  ok    subagent_type
+== 5. DISCRIMINA: el upsert NO revierte una sesión terminal a running ==
+  ok    status se queda completed
+  ok    output_key se queda out-1
+== 6. update_session — COALESCE por campo: sólo toca lo que se pasa ==
+  ok    outcome updated
+  ok    status cambia
+  ok    output_key no tocado
+== 7. DISCRIMINA: la guarda de no-op no mueve updated_at sin cambio real ==
+  ok    outcome unchanged
+  ok    updated_at NO se mueve
+== 8. update_session — el tercer desenlace: agent_id inexistente rehúsa ==
+  ok    rehúsa agent_id ausente
+== 9. update_session — columna desconocida rehúsa (no la interpola) ==
+  ok    rehúsa columna desconocida
+== 10. update_session — create_if_missing crea el stub y aplica el update ==
+  ok    outcome updated
+  ok    subagent_type del stub luego actualizado
+  ok    status aplicado
+== 11. list_sessions — orden por started_at, filtro por status, rehúsa inválido ==
+  ok    orden por started_at
+  ok    filtro por status
+  ok    rehúsa status inválido
+== 12. DISCRIMINA: usage_census — AND (no OR) en el predicado no-medido ==
+  ok    c1 sin ningún dato -> sin_clasificar
+  ok    c2 con un dato parcial -> huerfano, no sin_clasificar
+== 13. usage_census — rehúsa measure_columns vacío ==
+  ok    rehúsa measure_columns vacío
+== 14. usage_census — agregado es None (no cero fabricado) sin medidos ==
+  ok    sin filas medidas, aggregate es None
+== 15. usage_census — el agregado suma correctamente sobre los medidos ==
+  ok    n medidos
+  ok    suma de m1
+
+28 ok, 0 fallos
+EXIT=0

@@ -1,0 +1,28 @@
+  ok    sin --crear-si-falta, un agent_id ausente sigue fallando
+  ok    sin --crear-si-falta, no se creó ninguna fila
+  ok    --crear-si-falta crea la fila que el alta nunca escribió
+  ok    la fila creada conserva el session_id del payload
+  ok    la fila creada conserva el subagent_type del payload
+  ok    el UPDATE puebla las columnas de uso sobre la fila recién creada
+  ok    una segunda pasada no pisa el session_id con el placeholder
+  ok    una segunda pasada no pisa el subagent_type con el placeholder
+  ok    el hook nunca rompe el flujo
+  ok    el cierre registra al agente aunque no hubiera alta previa
+  ok    lee agent_transcript_path, no el señuelo transcript_path
+  ok    el conteo de turnos sale del transcript del subagente
+  ok    marca el origen como hook
+  ok    sin agent_transcript_path cae a transcript_path
+  ok    el hook nunca rompe el flujo con el transcript rico
+  ok    el hook escribe duration_s del transcript
+  ok    el hook escribe tool_uses_total
+  ok    el hook escribe el desglose por herramienta
+  ok    el prompt es el encargo, no el eco del tool_result
+  ok    el nivel de retención sigue saliendo del payload
+  ok    sin timestamps, duration_s queda NULL
+  ok    sin tool_use, tool_uses_total queda NULL
+  ok    sin mensaje de usuario, prompt queda NULL
+  ok    el hook guarda el conjunto de claves del payload
+  ok    un payload de otra forma da otro conjunto de claves
+
+25 ok, 0 fallos
+EXIT=0
