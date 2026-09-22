@@ -39,6 +39,7 @@ import {
   DEFAULT_GLOBAL_CONFIG, GLOBAL_CONFIG_KEYS, isGlobalConfigKey,
   getGlobalConfig, saveGlobalConfig, _setGlobalConfigCacheForTesting,
   type ConnectionRecord, type GlobalConfig,
+  type ProjectConfig,
 } from '../global/config.ts'
 import { installConfigHostBindings } from '../host.ts'
 
@@ -55,6 +56,40 @@ beforeEach(() => {
 })
 
 describe('el registro de configuración global', () => {
+  test('0. las claves MCP heredadas caben en el contrato que las migra', () => {
+    const legacyMcpConfig = {
+      projectOnboardingSeenCount: 0,
+      enableAllProjectMcpServers: true,
+      enabledMcpjsonServers: ['enabled'],
+      disabledMcpjsonServers: ['disabled'],
+    } satisfies ProjectConfig
+
+    expect(legacyMcpConfig.enableAllProjectMcpServers).toBe(true)
+    expect(legacyMcpConfig.enabledMcpjsonServers).toEqual(['enabled'])
+    expect(legacyMcpConfig.disabledMcpjsonServers).toEqual(['disabled'])
+  })
+
+  test('0b. los guards y timestamps de migración conservan tipos concretos', () => {
+    const migrationState = {
+      sonnet1m45MigrationComplete: true,
+      hasResetAutoModeOptInForDefaultOffer: true,
+      opusProMigrationComplete: true,
+      opusProMigrationTimestamp: 1,
+      legacyOpusMigrationTimestamp: 2,
+      sonnet45To46MigrationTimestamp: 3,
+    } satisfies Pick<
+      GlobalConfig,
+      | 'sonnet1m45MigrationComplete'
+      | 'hasResetAutoModeOptInForDefaultOffer'
+      | 'opusProMigrationComplete'
+      | 'opusProMigrationTimestamp'
+      | 'legacyOpusMigrationTimestamp'
+      | 'sonnet45To46MigrationTimestamp'
+    >
+
+    expect(migrationState.opusProMigrationTimestamp).toBe(1)
+  })
+
   test('1. sin archivo devuelve el default MIGRADO, no un objeto vacío', () => {
     // El sustituto que esto reemplaza devolvía `{}`, y un `{}` no distingue
     // «no hay configuración» de «hay una con todo por defecto». El default

@@ -207,6 +207,8 @@ export type ProjectConfig = {
   hasClaudeMdExternalIncludesApproved?: boolean
   hasClaudeMdExternalIncludesWarningShown?: boolean
   mcpServers?: Record<string, McpServerConfig>
+  /** @deprecated Migrado a `settings.enableAllProjectMcpServers`. */
+  enableAllProjectMcpServers?: boolean
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
   mcpContextUris?: string[]
@@ -417,6 +419,12 @@ export type GlobalConfig = {
   additionalModelOptionsCache?: ModelOption[]
   metricsStatusCache?: { enabled: boolean; timestamp: number }
   migrationVersion?: number
+  sonnet1m45MigrationComplete?: boolean
+  hasResetAutoModeOptInForDefaultOffer?: boolean
+  opusProMigrationComplete?: boolean
+  opusProMigrationTimestamp?: number
+  legacyOpusMigrationTimestamp?: number
+  sonnet45To46MigrationTimestamp?: number
   agentLastUsed?: Record<string, number>
   fleetViewGroupMode?: 'state' | 'directory'
 }
