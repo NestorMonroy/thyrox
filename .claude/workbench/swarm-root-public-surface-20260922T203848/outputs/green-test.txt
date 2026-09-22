@@ -1,0 +1,9 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/swarm/src/__tests__/publicSurface.test.ts:
+(pass) @thyrox/swarm public surface > publishes the canonical implementations already present in the package [0.11ms]
+
+ 1 pass
+ 0 fail
+ 2 expect() calls
+Ran 1 test across 1 file. [863.00ms]
