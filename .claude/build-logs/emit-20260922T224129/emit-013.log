@@ -1,0 +1,4 @@
+server: emitio pese a 4072 errores (69 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 4072 error(es) que siguen vivos en su propio paquete
+EXIT=0

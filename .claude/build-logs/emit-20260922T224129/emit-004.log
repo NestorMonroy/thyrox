@@ -1,0 +1,4 @@
+memory: emitio pese a 81 errores (81 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 81 error(es) que siguen vivos en su propio paquete
+EXIT=0

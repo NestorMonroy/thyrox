@@ -1,0 +1,4 @@
+tool-registry: emitio pese a 1957 errores (739 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1957 error(es) que siguen vivos en su propio paquete
+EXIT=0
