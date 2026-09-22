@@ -18,6 +18,21 @@ export type SettingSource = (typeof SETTING_SOURCES)[number]
 
 /** Las que nosotros escribimos. `flagSettings` es efímera y `policySettings` es ajena. */
 export const EDITABLE_SOURCES = ['localSettings', 'projectSettings', 'userSettings'] as const
+export type EditableSettingSource = (typeof EDITABLE_SOURCES)[number]
+
+let enabledSettingSources: readonly SettingSource[] = SETTING_SOURCES
+
+export function getEnabledSettingSources(): readonly SettingSource[] {
+  return enabledSettingSources
+}
+
+export function setEnabledSettingSources(sources: readonly SettingSource[]): void {
+  enabledSettingSources = [...sources]
+}
+
+export function isSettingSourceEnabled(source: string): boolean {
+  return enabledSettingSources.includes(source as SettingSource)
+}
 
 const NOMBRES: Record<SettingSource, string> = {
   userSettings: 'usuario',

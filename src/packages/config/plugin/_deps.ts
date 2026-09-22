@@ -1279,13 +1279,8 @@ export type BundledSkillDefinition = {
   [key: string]: unknown
 }
 
-/**
- * `FILE_EDIT_TOOL_NAME`/`FILE_READ_TOOL_NAME`/`FILE_WRITE_TOOL_NAME` — de
- * `@claude-code-how-works/tool-registry/tools/.../constants.js`. El paquete
- * `@thyrox/tool-registry` NO EXISTE EN ABSOLUTO en este árbol (verificado
- * con `ls src/packages/`). No se re-exportan aquí — inventar tres
- * constantes de nombre de herramienta sería fabricar un contrato que
- * ningún `tool-registry` real respalda todavía
- * (`porte-completo-no-parcial.md`: «un módulo fabricado es peor que uno
- * ausente»).
- */
+// El paquete ya existe: se reexportan los bindings canónicos en vez de
+// conservar la prosa heredada que afirmaba que estaba ausente.
+export { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
+export { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
+export { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/constants.js'
