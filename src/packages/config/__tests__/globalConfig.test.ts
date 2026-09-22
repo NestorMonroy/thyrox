@@ -90,6 +90,64 @@ describe('el registro de configuración global', () => {
     expect(migrationState.opusProMigrationTimestamp).toBe(1)
   })
 
+  test('0c. el estado escrito por consumers conserva su forma concreta', () => {
+    const projectState = {
+      enabledMcpServers: ['computer-use'],
+      disabledMcpServers: ['legacy'],
+      lastToolDuration: 10,
+      lastFpsAverage: 60,
+      lastFpsLow1Pct: 45,
+      lastSessionMetrics: { turns: 2 },
+    } satisfies Partial<ProjectConfig>
+    const globalState = {
+      autoPermissionsNotificationCount: 1,
+      computerUseApprovedApps: [
+        { bundleId: 'com.example.app', displayName: 'Example', grantedAt: 1 },
+      ],
+      desktopUpsellDismissed: true,
+      desktopUpsellSeenCount: 2,
+      effortCalloutDismissed: true,
+      effortCalloutV2Dismissed: true,
+      groveConfigCache: {
+        account: { grove_enabled: true, timestamp: 1 },
+      },
+      hasSeenUltraplanTerms: true,
+      idleReturnDismissed: true,
+      officialMarketplaceAutoInstallAttempted: true,
+      officialMarketplaceAutoInstalled: false,
+      officialMarketplaceAutoInstallFailReason: 'git_unavailable',
+      officialMarketplaceAutoInstallRetryCount: 1,
+      officialMarketplaceAutoInstallNextRetryTime: 2,
+      opus1mMergeNoticeSeenCount: 1,
+      overageCreditGrantCache: {
+        organization: {
+          info: {
+            available: true,
+            eligible: true,
+            granted: false,
+            amount_minor_units: 100,
+            currency: 'USD',
+          },
+          timestamp: 1,
+        },
+      },
+      speculationEnabled: true,
+      tungstenPanelVisible: true,
+      voiceFooterHintSeenCount: 1,
+      voiceLangHintLastLanguage: 'en',
+      voiceLangHintShownCount: 1,
+      voiceNoticeSeenCount: 1,
+    } satisfies Partial<GlobalConfig>
+
+    expect(projectState.lastSessionMetrics.turns).toBe(2)
+    expect(globalState.computerUseApprovedApps[0]?.bundleId).toBe(
+      'com.example.app',
+    )
+    expect(globalState.officialMarketplaceAutoInstallFailReason).toBe(
+      'git_unavailable',
+    )
+  })
+
   test('1. sin archivo devuelve el default MIGRADO, no un objeto vacío', () => {
     // El sustituto que esto reemplaza devolvía `{}`, y un `{}` no distingue
     // «no hay configuración» de «hay una con todo por defecto». El default

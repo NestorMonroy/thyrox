@@ -84,6 +84,28 @@ else
   bad "esperaba exit 2 con instalador mentiroso, dio $rc"
 fi
 
+# Caso 6-bis — un ejecutable llamado `parallel` no implica GNU parallel.
+# moreutils instala el mismo nombre, pero no entiende `--jobs 40`; aceptar su
+# presencia haría verde el preflight y rojo el primer pool real.
+FAKE_DIR="$(mktemp -d)"
+cat > "$FAKE_DIR/parallel" <<'SH'
+#!/usr/bin/env bash
+echo 'parallel from moreutils'
+SH
+chmod +x "$FAKE_DIR/parallel"
+if THYROX_TOOLCHAIN_PARALLEL_BIN="$FAKE_DIR/parallel" \
+   thyrox_toolchain_require_parallel >/dev/null 2>&1; then
+  bad "un homónimo no GNU no puede satisfacer el contrato"
+else
+  rc=$?
+  if [[ $rc -eq 2 ]]; then
+    ok "rehusa un parallel que no implementa GNU parallel"
+  else
+    bad "parallel no GNU dio exit $rc, esperaba 2"
+  fi
+fi
+rm -rf "$FAKE_DIR"
+
 
 # Caso 7 — tras adquirirlo, la CITA queda reconocida. Sin esto la primera
 # invocacion real BLOQUEA esperando que alguien teclee el reconocimiento en un

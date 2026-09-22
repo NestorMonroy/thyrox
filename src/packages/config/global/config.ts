@@ -199,6 +199,34 @@ export interface HistoryEntry {
 
 export type ReleaseChannel = 'stable' | 'latest'
 
+export type ApprovedComputerUseApp = {
+  bundleId: string
+  displayName: string
+  grantedAt: number
+}
+
+export type GroveConfigCacheEntry = {
+  grove_enabled: boolean
+  timestamp: number
+}
+
+export type OverageCreditGrantCacheEntry = {
+  info: {
+    available: boolean
+    eligible: boolean
+    granted: boolean
+    amount_minor_units: number | null
+    currency: string | null
+  }
+  timestamp: number
+}
+
+export type OfficialMarketplaceAutoInstallFailReason =
+  | 'policy_blocked'
+  | 'gcs_unavailable'
+  | 'git_unavailable'
+  | 'unknown'
+
 export type ProjectConfig = {
   allowedTools?: string[]
   hasTrustDialogAccepted?: boolean
@@ -211,12 +239,18 @@ export type ProjectConfig = {
   enableAllProjectMcpServers?: boolean
   enabledMcpjsonServers?: string[]
   disabledMcpjsonServers?: string[]
+  enabledMcpServers?: string[]
+  disabledMcpServers?: string[]
   mcpContextUris?: string[]
   exampleFiles?: string[]
   exampleFilesGeneratedAt?: number
   lastCost?: number
   lastAPIDuration?: number
   lastDuration?: number
+  lastToolDuration?: number
+  lastFpsAverage?: number
+  lastFpsLow1Pct?: number
+  lastSessionMetrics?: Record<string, number>
   lastLinesAdded?: number
   lastLinesRemoved?: number
   lastTotalInputTokens?: number
@@ -425,6 +459,28 @@ export type GlobalConfig = {
   opusProMigrationTimestamp?: number
   legacyOpusMigrationTimestamp?: number
   sonnet45To46MigrationTimestamp?: number
+  autoPermissionsNotificationCount?: number
+  computerUseApprovedApps?: ApprovedComputerUseApp[]
+  desktopUpsellDismissed?: boolean
+  desktopUpsellSeenCount?: number
+  effortCalloutDismissed?: boolean
+  effortCalloutV2Dismissed?: boolean
+  groveConfigCache?: Record<string, GroveConfigCacheEntry>
+  hasSeenUltraplanTerms?: boolean
+  idleReturnDismissed?: boolean
+  officialMarketplaceAutoInstallAttempted?: boolean
+  officialMarketplaceAutoInstalled?: boolean
+  officialMarketplaceAutoInstallFailReason?: OfficialMarketplaceAutoInstallFailReason
+  officialMarketplaceAutoInstallRetryCount?: number
+  officialMarketplaceAutoInstallNextRetryTime?: number
+  opus1mMergeNoticeSeenCount?: number
+  overageCreditGrantCache?: Record<string, OverageCreditGrantCacheEntry>
+  speculationEnabled?: boolean
+  tungstenPanelVisible?: boolean
+  voiceFooterHintSeenCount?: number
+  voiceLangHintLastLanguage?: string
+  voiceLangHintShownCount?: number
+  voiceNoticeSeenCount?: number
   agentLastUsed?: Record<string, number>
   fleetViewGroupMode?: 'state' | 'directory'
 }

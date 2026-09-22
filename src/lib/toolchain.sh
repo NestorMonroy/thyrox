@@ -217,6 +217,21 @@ function thyrox_toolchain_require_parallel() {
     fi
   fi
 
+  # `moreutils` instala otro `/usr/bin/parallel`. La presencia y el nombre
+  # coinciden, pero su CLI no implementa `--jobs`, que es el contrato que
+  # consumen los pools de Thyrox. Sólo se exige esta identidad al nombre
+  # canónico; los tests pueden inyectar `sh` para medir el flujo genérico.
+  if [[ "${bin##*/}" == "parallel" ]]; then
+    local version
+    version="$($bin --version 2>&1)" || version=""
+    if [[ "$version" != GNU\ parallel* ]]; then
+      echo "thyrox_toolchain: '$bin' resuelve, pero no es GNU parallel." >&2
+      echo "                  Instala el paquete 'parallel'; moreutils no implementa --jobs." >&2
+      echo "                  NO se emite conteo: el pool solicitado no se pudo ejecutar." >&2
+      return 2
+    fi
+  fi
+
   # GNU parallel BLOQUEA en su primera invocacion esperando que alguien teclee
   # el reconocimiento de la cita en un prompt. Medido: un `$(parallel
   # --version)` dentro de un heredoc colgo hasta el timeout. Un guion no
