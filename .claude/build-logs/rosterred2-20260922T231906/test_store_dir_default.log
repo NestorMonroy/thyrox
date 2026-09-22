@@ -1,0 +1,21 @@
+test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor (__main__.TestDestinoPorDefecto.test_1_sin_nada_declarado_devuelve_el_hogar_del_proveedor)
+Falla si sigue rehusando. Es el cambio entero: el llamador deja de ... ok
+test_2_no_apunta_al_silo (__main__.TestDestinoPorDefecto.test_2_no_apunta_al_silo)
+Falla si el defecto vuelve por otra via. El nombre del clon esta ... ok
+test_3_claude_dir_sigue_ganando (__main__.TestDestinoPorDefecto.test_3_claude_dir_sigue_ganando)
+Falla si el peldano nuevo pisa al mas especifico. Una ruta explicita ... ok
+test_4_un_repo_declarado_a_proposito_sigue_resolviendo (__main__.TestDestinoPorDefecto.test_4_un_repo_declarado_a_proposito_sigue_resolviendo)
+Falla si el peldano nuevo retira la capacidad de apuntar a un clon. ... ok
+test_5_un_repo_invalido_sigue_rehusando (__main__.TestDestinoPorDefecto.test_5_un_repo_invalido_sigue_rehusando)
+Falla si el peldano nuevo se traga un error del llamador. ... ok
+test_1_el_default_de_repo_no_nombra_un_consumidor (__main__.TestParserDefault.test_1_el_default_de_repo_no_nombra_un_consumidor) ... ok
+test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+El par que impide arreglar un eje rompiendo el otro. ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.013s
+
+OK
+EXIT=0

@@ -1,0 +1,18 @@
+== 1. la bandera explicita manda ==
+  ok    con --repo-docs se usa tal cual
+== 2. sin bandera, se DERIVA del consumidor ya nombrado en --repo ==
+  ok    --repo docs resuelve al arbol de docs
+== 3. --claude-dir tambien lo determina ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/agents/test_document_root_default.py", line 66, in <module>
+    class _Cd:
+  File "/home/user/thyrox/tests/agents/test_document_root_default.py", line 67, in _Cd
+    repo = None; claude_dir = str(reach.root("api") / ".claude"); repo_docs = None; subtree = "source"
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+    raise KeyError(
+KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+EXIT=1

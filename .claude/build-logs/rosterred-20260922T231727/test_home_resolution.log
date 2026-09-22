@@ -1,0 +1,113 @@
+EEEE.EE
+======================================================================
+ERROR: test_con_raiz_resoluble_la_misma_relativa_SI_se_compone (__main__.WorkbenchHomeResolution.test_con_raiz_resoluble_la_misma_relativa_SI_se_compone)
+CONTROL DE ANULACIÓN del caso anterior.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 144, in test_con_raiz_resoluble_la_misma_relativa_SI_se_compone
+    roots = _sin_clave_por_clon()
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_clave_por_clon_tambien_se_resuelve (__main__.WorkbenchHomeResolution.test_la_clave_por_clon_tambien_se_resuelve)
+El peldaño más específico no puede quedarse sin la resolución.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 113, in test_la_clave_por_clon_tambien_se_resuelve
+    roots = _sin_clave_por_clon()
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_poblacion_medible_alcanza_para_la_afirmacion (__main__.WorkbenchHomeResolution.test_la_poblacion_medible_alcanza_para_la_afirmacion)
+Sin al menos dos clones, «un hogar POR CLON» no se puede observar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 86, in test_la_poblacion_medible_alcanza_para_la_afirmacion
+    self.assertGreaterEqual(len(_sin_clave_por_clon()), 2)
+                                ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_las_dos_familias_resuelven_igual (__main__.WorkbenchHomeResolution.test_las_dos_familias_resuelven_igual)
+`rules` ya lo hacía y `workbench` no — la asimetría que se cerró.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 174, in test_las_dos_familias_resuelven_igual
+    roots = {repo: root for repo, root in _sin_clave_por_clon().items()
+                                          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_un_segmento_relativo_compone_un_hogar_por_clon (__main__.WorkbenchHomeResolution.test_un_segmento_relativo_compone_un_hogar_por_clon)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 89, in test_un_segmento_relativo_compone_un_hogar_por_clon
+    roots = _sin_clave_por_clon()
+            ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_una_absoluta_SI_colisiona_y_es_correcto (__main__.WorkbenchHomeResolution.test_una_absoluta_SI_colisiona_y_es_correcto)
+Quien escribe una absoluta nombra un sitio, no un patrón.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 104, in test_una_absoluta_SI_colisiona_y_es_correcto
+    for repo, root in _sin_clave_por_clon().items()}
+                      ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 65, in _sin_clave_por_clon
+    return {repo: Path(root) for repo, root in reach.roots().items()
+                                               ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.004s
+
+FAILED (errors=6)
+EXIT=1

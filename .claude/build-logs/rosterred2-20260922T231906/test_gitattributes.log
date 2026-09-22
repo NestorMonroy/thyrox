@@ -1,0 +1,23 @@
+
+== read_directives ==
+  ok    una directiva sin comentario no está declarada
+  ok    el comentario en su PROPIA línea la declara
+  ok    una línea en blanco corta la adscripción
+  ok    el comentario en LÍNEA no declara — git descarta la línea entera
+  ok    el duplicado se conserva: es lista, no conjunto
+
+== review ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_gitattributes.py", line 115, in <module>
+    "ok", gitattributes.review("api", root)[0])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/gitattributes.py", line 120, in review
+    root = repo_root(repo, tree_root)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/gitattributes.py", line 111, in repo_root
+    return Path(tree_root) / reach.clone_name(repo)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+    raise KeyError(
+KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+EXIT=1

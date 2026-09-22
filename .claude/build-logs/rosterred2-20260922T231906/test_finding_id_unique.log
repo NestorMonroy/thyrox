@@ -1,0 +1,15 @@
+  FAIL la fila sin .rst se reporta
+  ok   y --strict sale 1
+  ok   la fila CON .rst no se reporta
+  FAIL el par 5/05 se reporta como colisión
+  FAIL 6 y 7 no son colisión — --quiet dio ''
+  FAIL la entrada congelada no bloquea — exit=1 
+  FAIL y el denominador se publica igual
+  FAIL rehúsa con exit 2 — exit=1
+  ok   y no emite ningún conteo
+  FAIL el gate ve los 3 pares de relleno reales del corpus — vistos=[] :: 
+  ok   no aparecen archivos nuevos en el árbol
+  FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/build-logs/rosterred2-20260922T231906/test_hallazgo_sucesor.log', '/home/user/thyrox/.claude/build-logs/rosterred2-20260922T231906/test_hook_script_token.log']
+
+4 aprobada(s) · 8 fallida(s) (alcance medido: check_finding_id_unique, sus dos mitades)
+EXIT=1
