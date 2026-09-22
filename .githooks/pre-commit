@@ -130,6 +130,19 @@ bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 
+# La identidad del commit, contra la que el repositorio declara
+# (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
+# inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.
+#   exit 1 -> bloquea: la identidad efectiva difiere, o es la del agente.
+#   exit 2 -> avisa y NO bloquea: sin declaracion no hay contra que medir, y
+#             bloquear dejaria sin commit a todo clon que aun no declara. El
+#             aviso nombra SIN MEDIR para que no se lea como aprobado.
+python3 "$GATES/commit_identity.py" check --repo "$ROOT"
+case $? in
+    0|2) ;;
+    *)   CODE=1 ;;
+esac
+
 # El cableado de #184: si el store va en ESTE commit, llega reconciliado.
 #
 # `reconcile_all_sessions` existia y nadie lo corria — un mecanismo sin

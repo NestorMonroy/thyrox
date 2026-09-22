@@ -50,6 +50,13 @@ fi
 
 python3 "$GATE" "$1" || true   # avisa; el veredicto no detiene el commit
 
+# Los remolques del agente (`Co-Authored-By: Claude`, `Claude-Session:`) que el
+# entorno remoto pide y `git.md` prohibe. Este SI bloquea: un remolque
+# prohibido no es una incognita. Se parsea el bloque real de remolques, no
+# lineas sueltas, asi que un parrafo que los mencione no se rechaza.
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+    python3 "$ROOT/src/verify/commit_identity.py" trailers "$1" || exit 1
+
 # Segundo eje: la cita durable RESUELVE, no solo tiene la FORMA
 # -------------------------------------------------------------
 # El septimo detector de PreToolUse mide la FORMA —que un `board #N` venga con
