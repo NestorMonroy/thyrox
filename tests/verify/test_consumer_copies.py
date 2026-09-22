@@ -95,8 +95,12 @@ with tempfile.TemporaryDirectory() as d:
     check('y NO emite conteo al rehusar', False, 'alcance medido' in r.stdout)
 
 # --- el control positivo REAL, sobre el arbol vivo -------------------------
-r = correr('--fuente', str(RAIZ), '--consumidor', '/home/user/kaupamex-api')
-check('ve copias reales en kaupamex-api', True,
+# Sobre el consumidor OBLIGATORIO, resuelto por `reach` y no por ruta literal:
+# `kaupamex-api` es opcional y un host sin el dejaba el control sin sujeto
+# (H-THYROX-155). Medido al cambiarlo: 3 copias en `kaupamex-docs/.claude`.
+CONSUMER = reach.root('docs')
+r = correr('--fuente', str(RAIZ), '--consumidor', str(CONSUMER))
+check('ve copias reales en el consumidor obligatorio', True,
       'copia(s)' in r.stdout and ': 0 copia(s)' not in r.stdout)
 
 # --- sin argumentos: el registro invoca los gates a secas ------------------
@@ -137,7 +141,7 @@ check('y NO emite conteo al no poder derivarlo', False, 'alcance medido' in r.st
 # dos de arriba: el verde no distinguiria «rehusa sin consumidor» de «rehusa
 # ante todo», y la conveniencia de invocarlo a secas —la del `runCheck` de
 # `ccnmt: scripts/doctor-architecture.ts`— quedaria rota sin que nada lo dijera.
-entorno = dict(os.environ, THYROX_CONSUMER='/home/user/kaupamex-api')
+entorno = dict(os.environ, THYROX_CONSUMER=str(CONSUMER))
 r = subprocess.run([sys.executable, str(GATE)], capture_output=True, text=True,
                    env=entorno, cwd=str(RAIZ))
 check('con THYROX_CONSUMER declarado SI mide a secas', True, 'alcance medido' in r.stdout)
