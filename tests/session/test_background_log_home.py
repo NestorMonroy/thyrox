@@ -19,6 +19,8 @@ sistema de archivos, igual que sus dos hermanas.
 """
 from __future__ import annotations
 
+from contextlib import ExitStack
+
 import os
 import sys
 import tempfile
@@ -34,6 +36,7 @@ sys.path.insert(0, str(_ROOT / "src"))
 
 from paths import reach  # noqa: E402
 from session import background  # noqa: E402
+from testing.clone_tree import synthetic_clone_tree  # noqa: E402
 
 
 class _Declared:
@@ -52,6 +55,20 @@ class _Declared:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = previous
+
+
+# La suite compone rutas de `api` y `docs`; no mide el host. De los
+# consumidores solo `docs` es obligatorio, asi que los clones salen de un
+# arbol sintetico y no del roster de la maquina que la corre (H-THYROX-155).
+_TREE = ExitStack()
+
+
+def setUpModule() -> None:
+    _TREE.enter_context(synthetic_clone_tree(("api", "docs")))
+
+
+def tearDownModule() -> None:
+    _TREE.close()
 
 
 def _clone(repo: str) -> Path:

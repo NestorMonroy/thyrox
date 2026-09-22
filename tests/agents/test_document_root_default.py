@@ -63,9 +63,12 @@ check("--repo docs resuelve al arbol de docs", reach.root("docs"),
       store.document_root(_Sin()))
 
 print("== 3. --claude-dir tambien lo determina ==")
+# Un clon del roster y no `api`: la regla vale para cualquiera, y de los
+# consumidores solo `docs` es obligatorio (H-THYROX-155).
+_CLONE = reach.reach_roots()[0]
 class _Cd:
-    repo = None; claude_dir = str(reach.root("api") / ".claude"); repo_docs = None; subtree = "source"
-check("el padre de .claude es la raiz", reach.root("api"), store.document_root(_Cd()))
+    repo = None; claude_dir = str(reach.root(_CLONE) / ".claude"); repo_docs = None; subtree = "source"
+check("el padre de .claude es la raiz", reach.root(_CLONE), store.document_root(_Cd()))
 
 print("== 4. corrido DESDE el proveedor ya no compone thyrox/source ==")
 hecho = subprocess.run(

@@ -77,7 +77,10 @@ print("\n3. Y resuelve lo mismo que el dueño")
 sys.path.insert(0, str(pathlib.Path("/home/user/thyrox/src")))
 from paths import reach as owner  # noqa: E402
 
-check("root('api') coincide", owner.root("api"), reach_roots.root("api"))
+# Un clon del roster y no `api`: lo que se mide es que el shim resuelva lo
+# mismo que el dueno, sea cual sea el clon; `api` puede no estar en el host.
+_clone = owner.reach_roots()[0]
+check(f"root({_clone!r}) coincide", owner.root(_clone), reach_roots.root(_clone))
 check("reach() coincide", owner.reach(), reach_roots.reach())
 check("el tipo de error es EL MISMO objeto", True,
       reach_roots.ReachRootError is owner.ReachRootError)

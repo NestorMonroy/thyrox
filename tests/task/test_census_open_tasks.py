@@ -178,7 +178,9 @@ check(not cot.is_render("kaupamex-api/src/orm/fields.py",
 #: La COMPOSICION que `main()` hace: el destino declarado se resuelve contra su
 #: raiz y sale como parte extra. Es el control que puede fallar — si la
 #: derivacion devuelve la tupla vacia, el censo se lee a si mismo.
-_evidence = cot.reach.root("api") / "scripts" / "evidence"
+# El clon es el primero del roster y no `api`: la composicion no depende de
+# cual sea, y de los consumidores solo `docs` es obligatorio (H-THYROX-155).
+_evidence = cot.reach.root(cot.reach.reach_roots()[0]) / "scripts" / "evidence"
 _own = cot.own_output_parts(str(_evidence))
 check(_own == ("/scripts/evidence/",),
       f"3h: el destino se deriva contra su raiz, no se escribe a mano ({_own})")
