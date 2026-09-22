@@ -40,13 +40,11 @@
 # Ciega a: carga dominada por E/S (red, disco), donde la anchura útil es mayor
 # que nproc y este default queda corto — subirla con `--width` y declararlo; y a
 # la memoria, porque el eje 2 se midió con durmientes: 24 `pytest` con su base
-# cada uno es otro perfil, no medido. Para ese eje existe `--memfree`, que
-# acota por memoria disponible y no por numero de trabajos (ver su seccion).
+# cada uno es otro perfil, no medido.
 #
 # Uso
 # ---
-#   run-task-pool.sh [--width N] [--timeout S] [--dir LOGDIR] [--prefix P]
-#                    [--memfree SIZE] <archivo>
+#   run-task-pool.sh [--width N] [--timeout S] [--dir LOGDIR] [--prefix P] <archivo>
 #   ... | run-task-pool.sh [opciones] -            # los comandos por stdin
 #
 # Una línea = un comando. Se saltan las vacías y las que empiezan por `#`.
@@ -142,11 +140,10 @@ parse_binary_size() {
 
 # mem_available_bytes -> bytes disponibles, o falla si no se puede medir.
 # La ruta es inyectable para que la suite conduzca la memoria sin consumirla.
-# El awk es `AWK_BIN`, resuelto abajo una sola vez.
 mem_available_bytes() {
     local path="${THYROX_POOL_MEMINFO_PATH:-/proc/meminfo}"
     [ -r "$path" ] || return 1
-    "$AWK_BIN" '/^MemAvailable:/ { available = $2 }
+    awk '/^MemAvailable:/ { available = $2 }
          /^(MemFree|Buffers|Cached|SwapCached):/ { legacy += $2 }
          END { if (available != "") print available * 1024
                else if (legacy > 0) print legacy * 1024
@@ -154,14 +151,6 @@ mem_available_bytes() {
 }
 
 if [ -n "$MEMFREE_SPEC" ]; then
-    # El awk es el que declara `THYROX_TOOLCHAIN_AWK_BIN` —el mismo nombre que
-    # `thyrox_toolchain_require_gawk` sondea por conducta—, no el `awk` del
-    # PATH, que en Debian suele resolver a mawk. Se resuelve con
-    # `thyrox_config_value`, que lee el proceso y despues el `.env`: un `grep`
-    # propio del `.env` seria una segunda fuente de verdad. Se resuelve UNA vez:
-    # cada consulta lanza un interprete, y la sonda corre en cada ciclo.
-    source "$HERE/../lib/reach.sh"
-    AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
     MEMFREE="$(parse_binary_size "$MEMFREE_SPEC")" || {
         echo "run-task-pool: --memfree ilegible: '$MEMFREE_SPEC' (ej. 1G, 512M, 800m)" >&2; exit 4; }
     # Una cota que no se puede medir no se ignora en silencio: se rehusa.

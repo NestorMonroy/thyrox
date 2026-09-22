@@ -1,0 +1,137 @@
+run-task-pool: 11 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/derived-20260922T230337
+  derived-20260922T230337/test_detect_foreground_long_command pid 19964   PYTHONPATH=src .venv/bin/python tests/hooks/test_detect_foreground_long_command.py
+  derived-20260922T230337/test-fixture-leak pid 19992   bash tests/repo/test-fixture-leak.sh
+  derived-20260922T230337/test-process-group pid 20013   bash tests/session/test-process-group.sh
+  derived-20260922T230337/test-run-task-pool-isolation pid 20046   bash tests/session/test-run-task-pool-isolation.sh
+  derived-20260922T230337/test-run-task-pool-memfree pid 20083   bash tests/session/test-run-task-pool-memfree.sh
+  derived-20260922T230337/test-run-task-pool-scope pid 20672   bash tests/session/test-run-task-pool-scope.sh
+  derived-20260922T230337/test-run-task-pool pid 21538   bash tests/session/test-run-task-pool.sh
+  derived-20260922T230337/test-wait-jobs pid 21882   bash tests/session/test-wait-jobs.sh
+  derived-20260922T230337/test_background pid 21907   PYTHONPATH=src .venv/bin/python tests/session/test_background.py
+  derived-20260922T230337/test_job_runs pid 22122   PYTHONPATH=src .venv/bin/python tests/session/test_job_runs.py
+  derived-20260922T230337/test_task_pool pid 22231   PYTHONPATH=src .venv/bin/python tests/session/test_task_pool.py
+run-task-pool: lanzados 11 de 11; esperando en PRIMER PLANO (timeout 900s)
+== 12 trabajos asentados ==
+OLVIDADO derived-20260922T230337
+       | (vacío — no emitió nada)
+OK     derived-20260922T230337_test-fixture-leak
+       |   ok    el caso sano sigue en 0 con y sin el desvio
+       | == 7. NO BORRA: la sonda conserva lo que se fugo ==
+       |   ok    queda al menos una entrada de evidencia
+       | == 8. ATRIBUCION: la entrada de OTRO proceso se imputa a la suite ==
+       |   ok    la suite LIMPIA sale FUGA por la entrada ajena
+       |   ok    la imputacion cae en el eje compartido
+       |   ok    y el confinado queda en 0: no fue ella
+       | 
+       | ok=17 fallo=0
+       | EXIT=0
+OK     derived-20260922T230337_test-process-group
+       |   ok   kill alcanza al lider de grupo sin sesion propia
+       |   ok   control: el grupo del zombi tiene 1 miembro, en estado Z
+       |   ok   control: kill -0 sobre el grupo dice SI (el ingenuo se equivoca)
+       |   ok   cmd_kill lee el cadaver como muerto, no lo señala
+       |   ok   el ledger se suelta: el turno no queda bloqueado por un cadaver
+       |   ok   dispatch: el dependiente es lider de su grupo (pgid==pid)
+       |   ok   dispatch: el .job no repite proc_start
+       |   ok   dispatch: el .job no repite cmd
+       | test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+       | EXIT=0
+OK     derived-20260922T230337_test-run-task-pool-isolation
+       |   ok   el directorio lleva prefijo e ISO
+       |   ok   dos despachos dejan DOS trabajos en el ledger
+       |   ok   el log lleva el nombre declarado, no el ordinal
+       |   ok   y el segundo tambien
+       |   ok   ninguno quedo con nombre de ordinal
+       |   ok   una linea sin tabulador sigue corriendo
+       |   ok   un comando con tabulador no se parte
+       | 
+       | resultado: 11 de 11 aserciones en verde
+       | EXIT=0
+OK     derived-20260922T230337_test-run-task-pool-memfree
+       |   ok   con memoria escasa el pool termina
+       |   ok   con memoria escasa corre uno a la vez
+       |   ok   con memoria de sobra corren los tres a la vez
+       |   ok   tras la caida el pool termina en verde
+       |   ok   cada trabajo termina exactamente una vez
+       |   ok   el mas viejo no se reencola
+       |   ok   al menos un trabajo se reencolo
+       |   ok   el reencolado se anuncia
+       | test-run-task-pool-memfree: 12 aserciones — 12 ok, 0 falla(s)
+       | EXIT=0
+OK     derived-20260922T230337_test-run-task-pool-scope
+       | == 3. sin --only, la barrera SIGUE viendo todo el ledger ==
+       |   ok    wait sin filtro se topa con el sentinel y sale 3 (timeout)
+       | == 4. --only ve una etiqueta LLANA, no solo un grupo con guion ==
+       |   ok    wait --only <etiqueta llana> la asienta y sale 0
+       |   ok    y NO publica «sin trabajos registrados» sobre un trabajo real
+       | == 5. el grupo con guion sigue funcionando — el default no se rompe ==
+       |   ok    wait --only <prefijo> sigue viendo su grupo <prefijo>-NNN
+       | 
+       | resumen: 8 ok, 0 fallo(s)
+       | EXIT=0
+OK     derived-20260922T230337_test-run-task-pool
+       |   ok   el archivo aporta la anchura
+       |   ok   los cuatro trabajos se lanzaron
+       |   ok   releer el archivo admite los cuatro en menos de 3 vueltas
+       |   ok   el drenaje corta antes de los seis
+       |   ok   y los vivos llegaron a su marcador
+       |   ok   publica la anchura EFECTIVA con 2 trabajos y --width 4
+       |   ok   con 6 trabajos y --width 2 publica 2, no 6
+       |   ok   capar no deja trabajos sin lanzar
+       | test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+       | EXIT=0
+OK     derived-20260922T230337_test-wait-jobs
+       |   ok    un BAIL real -> status sigue en exit 1
+       |   ok    nombre corto sin ambiguedad: suelta el ledger
+       |   ok    ambiguo: nombra el primer candidato
+       |   ok    ambiguo: nombra el segundo candidato
+       |   ok    ambiguo: los dos siguen anotados
+       |   ok    etiqueta completa: queda solo el otro
+       |   ok    etiqueta completa: el que queda es el que no se nombro
+       | 
+       | 39 ok, 0 fallos
+       | EXIT=0
+OK     derived-20260922T230337_test_background
+       | == 8. la anchura cae a la formula del ejecutable, y se publica ==
+       |   ok    width por defecto = width_cap()
+       |   ok    y una anchura declarada la sobreescribe
+       | == 9. CONTROL: el modulo ARRANCA como guion, no solo importado ==
+       |   ok    sale 0 como guion
+       |   ok    y NO muere importando sus hermanos
+       |   ok    y publica su anchura por defecto
+       | 
+       | 21 ok, 0 fallos
+       | EXIT=0
+OK     derived-20260922T230337_test_detect_foreground_long_command
+       |   ok    test_names_every_family_the_command_invokes
+       |   ok    test_stays_silent_on_short_commands
+       |   ok    test_stays_silent_when_the_command_already_uses_the_assembler
+       |   ok    test_stays_silent_without_a_command
+       |   ok    test_the_background_discount_carries_its_own_weight
+       |   ok    test_the_dispatcher_registers_it
+       |   ok    test_warns_on_the_bare_suite
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     derived-20260922T230337_test_job_runs
+       |   ok    test_scaffold_records_when_the_job_started
+       |   ok    test_settle_forced_reasserts_and_says_so
+       |   ok    test_settle_is_idempotent_and_its_duration_does_not_grow
+       |   ok    test_settle_records_the_duration_not_only_the_exit_code
+       |   ok    test_settle_records_the_exit_code_where_the_manifest_can_be_read
+       |   ok    test_the_distribution_publishes_its_operands_not_only_the_total
+       |   ok    test_the_log_lives_inside_its_run_not_beside_it
+       |   ok    test_the_manifest_declares_the_instrument_and_OMITS_what_it_cannot_know
+       | resumen: 0 fallo(s)
+       | EXIT=0
+OK     derived-20260922T230337_test_task_pool
+       |   ok    con uno 'bailed' Y otro sin asentar, gana timed_out
+       |   ok    el que se cuelga queda 'waiting' en el detalle
+       | == 9. adaptador Job→pid — el Job registrado SIEMPRE trae pid propio ==
+       |   ok    el único Job trae su pid
+       | == 10. DISCRIMINA (hecho 5): marcador en shell exterior, con bash REAL ==
+       |   ok    un solo shell: el comando que llama exit SE LLEVA el marcador
+       |   ok    shell exterior: el marcador sobrevive al exit del comando
+       | 
+       | 27 ok, 0 fallos
+       | EXIT=0
+__BG_EXIT__=0

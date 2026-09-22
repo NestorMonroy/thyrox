@@ -1,0 +1,12 @@
+test-run-task-pool-memfree:
+  ok   --memfree ilegible sale 4
+  ok   y no lanzo ningun trabajo
+  ok   con memoria escasa el pool termina
+  FALLA con memoria escasa corre uno a la vez — esperado «1», obtenido «35»
+  ok   con memoria de sobra corren los tres a la vez
+  ok   tras la caida el pool termina en verde
+  ok   cada trabajo termina exactamente una vez
+  ok   el mas viejo no se reencola
+  ok   al menos un trabajo se reencolo
+  ok   el reencolado se anuncia
+test-run-task-pool-memfree: 10 aserciones — 9 ok, 1 falla(s)
