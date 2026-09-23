@@ -52,7 +52,7 @@ export async function call(
   // If not in plan mode, enable it
   if (currentMode !== 'plan') {
     handlePlanModeTransition(currentMode, 'plan')
-    setAppState((prev): { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } } => ({
+    setAppState(prev => ({
       ...prev,
       toolPermissionContext: applyPermissionUpdate(
         prepareContextForPlanMode(prev.toolPermissionContext),
