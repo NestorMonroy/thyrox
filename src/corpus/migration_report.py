@@ -24,9 +24,36 @@ import pathlib
 import subprocess
 import sys
 
-# Sobreescribible por entorno para poder ejercitar el guard contra una raíz
-# ausente: un control que no se puede hacer fallar no discrimina nada.
-API_ROOT = pathlib.Path(os.environ.get('KAUPAMEX_API_ROOT', '/home/user/kaupamex-api'))
+#: La raiz del clon cuyos gates se miden.
+#:
+#: Sobreescribible por entorno para poder ejercitar el guard contra una raiz
+#: ausente: un control que no se puede hacer fallar no discrimina nada. Lo que
+#: cambia es el DEFAULT: era ``/home/user/kaupamex-api``, un literal que ata
+#: este informe a un arbol concreto. Ahora sale de la cadena declarada.
+#:
+#: REHUSA cuando el clon no esta en el roster, en vez de devolver una ruta
+#: fantasma: un `cwd` inexistente hace que cada gate falle por una causa que no
+#: es la suya, y el informe publicaria ceros que no midio.
+API_ROOT_VAR = 'THYROX_MIGRATION_ROOT'
+API_ROOT_COMPAT_VAR = 'KAUPAMEX_API_ROOT'
+MEASURED_CLONE = 'api'
+
+
+def measured_root() -> pathlib.Path:
+    """La raiz medida: la declarada, o la del clon en el roster."""
+    declared_one = os.environ.get(API_ROOT_VAR) or os.environ.get(API_ROOT_COMPAT_VAR)
+    if declared_one:
+        return pathlib.Path(declared_one)
+    from paths import reach  # noqa: PLC0415
+    try:
+        return reach.root(MEASURED_CLONE)
+    except Exception as err:  # el roster no tiene ese clon
+        raise SystemExit(
+            f"migration_report: el clon {MEASURED_CLONE!r} no esta en el roster "
+            f"declarado. Declara {API_ROOT_VAR} con su raiz, o anade el clon a "
+            f"THYROX_REACH_ROOTS. NO se emite informe: un cwd inexistente hace "
+            f"fallar cada gate por una causa ajena y la cifra no mediria nada. "
+            f"({err})") from err
 
 # Cada fila: (nombre, argumentos fijos, cómo acota). El tercer campo dice qué
 # bandera acepta el gate para reducir su universo — None significa que barre
@@ -50,7 +77,7 @@ def require_api_tree():
     hay defectos» de «no pude medir», que es el sub-patrón D de
     ``metrica-decide-la-conclusion.md``.
     """
-    gates_dir = API_ROOT / 'scripts'
+    gates_dir = measured_root() / 'scripts'
     if not (gates_dir / 'reference_roots.py').is_file():
         print(f'ERROR — no encuentro {gates_dir}/reference_roots.py.\n'
               'Este guion COMPONE los gates de kaupamex-api; sin ese árbol no '
@@ -63,7 +90,7 @@ def require_api_tree():
 def reference_roots(gates_dir):
     """Las cuatro raíces, leídas de su única fuente — nunca tecleadas aquí."""
     salida = subprocess.run([sys.executable, 'scripts/reference_roots.py'],
-                            cwd=API_ROOT, capture_output=True, text=True)
+                            cwd=measured_root(), capture_output=True, text=True)
     return salida.stdout.rstrip()
 
 
@@ -78,14 +105,14 @@ def run_gate(gates_dir, name, fixed_args, narrowing, addon, paths):
         args += list(paths)
         scope = f'{len(paths)} archivo(s)'
 
-    proceso = subprocess.run(args, cwd=API_ROOT, capture_output=True, text=True)
-    lineas = [l for l in (proceso.stdout + proceso.stderr).splitlines() if l.strip()]
+    proceso = subprocess.run(args, cwd=measured_root(), capture_output=True, text=True)
+    lines = [l for l in (proceso.stdout + proceso.stderr).splitlines() if l.strip()]
     return {
         'name': name,
         'scope': scope,
         'exit': proceso.returncode,
         # La cola es donde los gates de este repo publican su denominador.
-        'tail': lineas[-3:] if lineas else ['(sin salida)'],
+        'tail': lines[-3:] if lines else ['(sin salida)'],
     }
 
 
@@ -106,18 +133,18 @@ def main():
         print(reference_roots(gates_dir))
         return 0
 
-    resultados = [run_gate(gates_dir, n, a, s, opciones.addon, opciones.paths)
+    results = [run_gate(gates_dir, n, a, s, opciones.addon, opciones.paths)
                   for n, a, s in GATES]
 
     print('reporte-de-porte — composición de gates de kaupamex-api\n')
-    for r in resultados:
-        marca = 'OK  ' if r['exit'] == 0 else 'FALLA'
-        print(f"{marca} {r['name']}  [alcance: {r['scope']}]")
-        for linea in r['tail']:
-            print(f'        {linea}')
+    for r in results:
+        mark = 'OK  ' if r['exit'] == 0 else 'FALLA'
+        print(f"{mark} {r['name']}  [alcance: {r['scope']}]")
+        for line in r['tail']:
+            print(f'        {line}')
 
-    fallidos = [r['name'] for r in resultados if r['exit'] != 0]
-    print(f"\n{len(fallidos)} de {len(resultados)} gate(s) con salida distinta de 0"
+    fallidos = [r['name'] for r in results if r['exit'] != 0]
+    print(f"\n{len(fallidos)} de {len(results)} gate(s) con salida distinta de 0"
           f"{': ' + ', '.join(fallidos) if fallidos else ''}")
     print('El alcance de cada gate va en su fila: una cifra de árbol completo y '
           'una acotada NO son comparables.')
