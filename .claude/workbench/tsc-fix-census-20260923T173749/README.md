@@ -41,3 +41,20 @@ Métrica: casos de la suite por pieza anulada; blob del sujeto antes y después
 en `annulment.jsonl`.
 Ciega a: un `fixId` que el servicio ofrezca en el proyecto y ningún caso cree;
 ésos salen `unclassified` y no se admiten, que es el lado seguro.
+
+## Un proveedor de TypeScript que lanza (2026-09-23)
+
+El primer censo real sobre el árbol murió con exit 1: un proveedor de code
+fixes de TypeScript 5.9.3 lanzó `TypeError: … 'type.symbol.declarations'`
+sobre algún diagnóstico, y un solo proveedor roto abortaba el censo entero
+(job `tsc-fix-census-*`). Ahora esa fila queda con `fixError`, sin arreglos
+admitidos (el lado seguro), y el resumen publica `providerErrors`.
+
+| Pieza | Cae |
+|---|---|
+| `provider-guard` — relanzar el error en vez de registrarlo | sólo «un proveedor que lanza no aborta el censo» |
+
+`*-INVALID-provider-guard-finally*`: una primera anulación cambió `catch` por
+`finally`. Eso deja el `continue` ejecutándose siempre, y tumbó 7 casos en vez
+de 1. No anulaba la guarda: rompía el recorrido. Se conserva como evidencia de
+una anulación mal diseñada.

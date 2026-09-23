@@ -79,6 +79,33 @@ describe('tscFixCensus', () => {
     expect(row.fixes.filter(fix => fix.klass === 'safe')).toEqual([])
   })
 
+  test('un proveedor de arreglos que lanza no aborta el censo: queda en su fila', () => {
+    // Medido en el árbol real: un proveedor de TypeScript lanzó
+    // `type.symbol.declarations` indefinido y el censo entero murió con exit 1.
+    const { service } = createMemoryService({
+      ...base,
+      '/p/main.ts': "import { used, unused } from './dep'\nexport function f(x) { return x * 2 }\n",
+    })
+    let calls = 0
+    const throwing = new Proxy(service, {
+      get(target, key) {
+        if (key !== 'getCodeFixesAtPosition') return Reflect.get(target, key)
+        return (...args: Parameters<typeof service.getCodeFixesAtPosition>) => {
+          calls += 1
+          if (calls === 1) throw new TypeError("undefined is not an object (evaluating 'type.symbol.declarations')")
+          return target.getCodeFixesAtPosition(...args)
+        }
+      },
+    })
+    const rows = censusFixes(throwing, ['/p/main.ts'])
+    expect(rows.length).toBe(2)
+    const broken = rows.filter(row => row.fixError !== undefined)
+    expect(broken.length).toBe(1)
+    expect(broken[0].fixes).toEqual([])
+    expect(rows.filter(row => row.fixError === undefined)[0].fixes.length).toBeGreaterThan(0)
+    expect(summarize(rows).providerErrors).toBe(1)
+  })
+
   test('el resumen publica su denominador y cuenta admitidos sólo por arreglos seguros', () => {
     const rows = [
       { code: 1, file: 'a', start: 0, fixes: [{ fixName: 'x', fixId: 'inferFromUsage', klass: 'safe' as const }] },

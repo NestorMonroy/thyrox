@@ -1,0 +1,11 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -115,7 +115,7 @@
+       let offered: readonly ts.CodeFixAction[]
+       try {
+         offered = service.getCodeFixesAtPosition(sf.fileName, diagnostic.start, end, [diagnostic.code], {}, {})
+-      } catch (error) {
++      } finally {
+         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+         // censo entero. La fila queda con su error y sin arreglos admitidos:
