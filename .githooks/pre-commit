@@ -130,6 +130,13 @@ bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 
+# Un commit por pathspec de un banco commitea sólo lo que git ya sigue: un
+# archivo nuevo del banco sin `git add -N` se queda fuera EN SILENCIO. Mira
+# sólo los bancos que este commit toca, no los de otro escritor. Bloquea: el
+# remedio es un `add -N`, y el coste de no bloquear es evidencia citada que
+# no viajó. Sin rutas lee las staged del índice del propio commit.
+python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.
