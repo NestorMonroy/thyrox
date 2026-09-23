@@ -47,6 +47,13 @@ with synthetic_clone_tree(("api", "docs", "ui")) as tree:
                  (tree.provider / "src" / "paths" / "reach.py").is_file())
     assert_equal("sin roster declarado: la derivacion es la que responde", None,
                  os.environ.get("THYROX_REACH_ROOTS"))
+    # Los clones reales llevan el marcador de consumidor; sin el, resolver la
+    # raiz desde una ruta honda devuelve la ruta honda (medido en las suites
+    # de hogares: `kaupamex-docs/source/gestion` en vez de `kaupamex-docs`).
+    deep = tree.base / "kaupamex-docs" / "source" / "gestion"
+    deep.mkdir(parents=True)
+    assert_equal("la raiz del consumidor se resuelve desde una ruta honda",
+                 (tree.base / "kaupamex-docs").resolve(), reach.consumer_root(start=deep))
 
 with synthetic_clone_tree(("docs",)):
     try:

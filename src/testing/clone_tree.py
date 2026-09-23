@@ -43,10 +43,14 @@ def synthetic_clone_tree(clones: Sequence[str] = ("api", "db", "docs", "server",
     saved = {k: v for k, v in os.environ.items() if k.startswith(_GOVERNING_PREFIXES)}
     with tempfile.TemporaryDirectory(prefix="clone-tree-") as tmp:
         base = Path(tmp)
+        # Cada clon y el proveedor llevan `.claude/`, el marcador con que
+        # `reach.consumer_root` reconoce una raiz al ascender. Sin el, la raiz
+        # resuelta desde una ruta honda es la ruta honda misma.
         for clone in clones:
-            (base / f"{prefix}{clone}").mkdir()
+            (base / f"{prefix}{clone}" / ".claude").mkdir(parents=True)
         provider = base / "thyrox"
         (provider / "src" / "paths").mkdir(parents=True)
+        (provider / ".claude").mkdir()
         # El marcador del ascenso: `thyrox_root` reconoce al proveedor por el.
         (provider / "src" / "paths" / "reach.py").write_text("")
         for key in saved:
