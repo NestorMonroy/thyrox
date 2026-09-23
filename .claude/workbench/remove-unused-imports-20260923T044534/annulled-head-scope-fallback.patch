@@ -1,0 +1,12 @@
+--- a/src/verify/removeUnusedImports.ts
++++ b/src/verify/removeUnusedImports.ts
+@@ -115,8 +115,7 @@
+       // alcance desde ahí: da el alias importado salvo que otra ligadura lo
+       // sombree, que es justo la distinción que el texto no hace.
+       const resolved =
+-        checker.getSymbolAtLocation(node) ??
+-        checker.resolveName(node.text, node, ts.SymbolFlags.All, false)
++        checker.getSymbolAtLocation(node)
+       if (symbol && resolved === symbol) named.add(node.text)
+     }
+     ts.forEachChild(node, visit)

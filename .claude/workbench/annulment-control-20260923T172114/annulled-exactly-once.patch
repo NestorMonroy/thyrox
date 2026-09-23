@@ -1,0 +1,11 @@
+--- a/src/verify/annulment_control.py
++++ b/src/verify/annulment_control.py
+@@ -122,7 +122,7 @@
+     repo, subject = repo.resolve(), subject.resolve()
+     text = subject.read_text()
+     found = text.count(old)
+-    if found != 1:
++    if False:
+         raise ValueError(f"la sustitución debe casar exactamente una vez; casa {found}")
+     relative = str(subject.relative_to(repo))
+     diff = "".join(difflib.unified_diff(
