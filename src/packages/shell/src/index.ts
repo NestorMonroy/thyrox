@@ -1,12 +1,11 @@
 /**
- * Barril de `@thyrox/shell` — PORTE PARCIAL DEL PAQUETE.
+ * Barril público de `@thyrox/shell`.
  *
  * La fuente (`claude-code-nestor-monroy-tools: packages/shell/src/index.ts`)
- * reexporta ~20 módulos (tipos de shell, contexto de snapshot, parser AST
- * de bash, `bashPipeCommand`, `commands`, `shellQuoting`, `Shell.ts`,
- * PowerShell, sandbox, terminal…). Esta tarea (TASK-DOCS-0200) portó sólo
- * los cinco módulos que sus cinco tests ejercitan; este barril reexporta
- * SÓLO esos. El resto del paquete fuente NO está portado.
+ * reexporta los módulos de tipos, contexto, parser AST de bash,
+ * `bashPipeCommand`, commands, quoting, providers, discovery, snapshots y
+ * ejecución. Este árbol ya contiene esas implementaciones; se publican por
+ * nombre desde sus dueños canónicos y se excluyen las copias `legacy`.
  *
  * @module
  */
