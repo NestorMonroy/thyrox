@@ -33,8 +33,20 @@ import json
 import pathlib
 import sys
 
-#: Dónde el harness deja el transcript de cada subagente de esta sesión.
-ROSTER = pathlib.Path('/root/.claude/projects/-home-user')
+#: El patrón con que el harness nombra el transcript de un subagente, RELATIVO
+#: al hogar de transcripts. El slug del proyecto va como comodín y no como
+#: literal: el cliente lo deriva del cwd, así que una misma sesión escribe bajo
+#: varios —medido el 2026-09-23, ésta escribió bajo dos—. Antes el slug estaba
+#: incrustado (`/root/.claude/projects/-home-user`) y la búsqueda no veía nada
+#: de lo que el cliente hubiera abierto bajo el otro.
+ROSTER_PATTERN = '*/*/subagents/agent-{agent_id}.jsonl'
+
+
+def roster() -> pathlib.Path:
+    """El hogar de transcripts, resuelto al LLAMAR y no al importar."""
+    from session.transcripts import transcripts_dir  # noqa: PLC0415
+
+    return transcripts_dir()
 
 #: Por encima de esto un hueco deja de ser cadencia y pasa a ser espera. No es
 #: un umbral del dominio: es el corte con que se reportó el episodio, y se
@@ -46,9 +58,10 @@ def transcript_for(agent_id: str) -> pathlib.Path:
     """El JSONL del agente, buscado por id bajo el roster de la sesión."""
     if '/' in agent_id:
         return pathlib.Path(agent_id)
-    hits = sorted(ROSTER.glob(f'*/subagents/agent-{agent_id}.jsonl'))
+    base = roster()
+    hits = sorted(base.glob(ROSTER_PATTERN.format(agent_id=agent_id)))
     if not hits:
-        print(f'ERROR — no se encontró transcript para «{agent_id}» bajo {ROSTER}.\n'
+        print(f'ERROR — no se encontró transcript para «{agent_id}» bajo {base}.\n'
               '  NO se emite conteo: un 0 aquí sería un verde falso — no '
               'distinguiría «no hizo nada» de «no pude medir».', file=sys.stderr)
         raise SystemExit(2)
