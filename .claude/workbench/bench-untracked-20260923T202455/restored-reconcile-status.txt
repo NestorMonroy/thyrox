@@ -1,0 +1,6 @@
+test-pre-commit-reconcile-status:
+  ok    el fallo de la reconciliación nombra su código real
+  ok    y no bloquea el commit: el store es telemetría
+test-pre-commit-reconcile-status: 2 aserciones — 2 ok, 0 falla(s)
+
+[exit=0]

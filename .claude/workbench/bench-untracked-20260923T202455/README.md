@@ -36,3 +36,13 @@ conservado junto con su banco y el registro (con `add -N`). Se detiene en
 
 Sin caso que discrimine, declarado: reutilizar el log final como «antes» (sólo
 ahorra una pasada de `tsc`; la suite no cuenta pasadas del lazo).
+
+# pre-commit: el código de la reconciliación que falla
+
+Suite: `tests/githooks/test-pre-commit-reconcile-status.sh`, que corre el hook
+real en un repositorio temporal con gates falsos y un `board_sync.py` que sale
+2. El hook publicaba «fallo (exit 0)» porque el `echo >&2` que abre la rama
+`else` ponía `$?` a 0. En este contenedor el código real es 2: la raíz de
+boards `/root/.claude/tasks` no existe, y `board_sync` rehúsa en vez de
+publicar un cero. Anulación `reconcile-status` (volver a `$?`): cae «el fallo
+de la reconciliación nombra su código real».

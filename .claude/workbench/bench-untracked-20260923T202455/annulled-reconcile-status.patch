@@ -1,0 +1,11 @@
+--- a/.githooks/pre-commit
++++ b/.githooks/pre-commit
+@@ -179,7 +179,7 @@
+         # hook publicaba «fallo (exit 0)», que no distingue nada.
+         RECONCILE_STATUS=$?
+         echo >&2
+-        echo "pre-commit: la reconciliacion board->store fallo (exit $RECONCILE_STATUS)." >&2
++        echo "pre-commit: la reconciliacion board->store fallo (exit $?)." >&2
+         echo "  El commit SIGUE: el store es telemetria y el trabajo no se" >&2
+         echo "  pierde por ella. La fila queda atrasada hasta el proximo pase." >&2
+     fi
