@@ -15,3 +15,24 @@ escribió este gate (el commit del desempate de ediciones abortó por rutas sin
 | `bench-roots` — tratar cualquier directorio como banco | «una ruta fuera de las raíces de banco no es banco» |
 
 Ciega a: un archivo que `.gitignore` excluye.
+
+# tsc_zero_loop: el lazo entero
+
+`src/verify/tsc_zero_loop.py` (`bin/tsc_zero_loop`). Suite:
+`tests/verify/test_tsc_zero_loop.py`, sobre un repositorio git temporal con un
+proponente y un `tsc` falsos: el proponente arregla sólo el PRIMER `BAD<n>` de
+cada archivo, así que un archivo con dos exige dos vueltas con bases nuevas.
+
+Cada vuelta pide candidatos nuevos, corre `tsc_zero_step.run_step` con el log
+final de la vuelta anterior como «antes», y commitea por pathspec lo
+conservado junto con su banco y el registro (con `add -N`). Se detiene en
+`done`, `stalled` o al tope de pasos. No publica.
+
+| Pieza anulada | Cae |
+|---|---|
+| `loop-fresh-candidates` — reutilizar los candidatos de la primera vuelta | «llega a tsc cero», «a.ts necesitó dos vueltas…», «un commit por paso…», «el total baja por pasos…» |
+| `loop-stalled-stop` — seguir tras `stalled` | «se detiene en la primera vuelta», «y no commitea nada» (commitea el banco de cada vuelta vacía) |
+| `loop-commit` — no commitear | «un commit por paso con progreso», «el árbol queda limpio…» |
+
+Sin caso que discrimine, declarado: reutilizar el log final como «antes» (sólo
+ahorra una pasada de `tsc`; la suite no cuenta pasadas del lazo).
