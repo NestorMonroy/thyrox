@@ -49,6 +49,19 @@ class TypeScriptDiagnosticAnalysisTest(unittest.TestCase):
             "count": 1,
         }])
 
+    def test_diagnostic_identity_ignores_coordinates_and_preserves_count(self) -> None:
+        _, report = self.run_analysis(
+            "src/consumer.ts(7,2): error TS2339: Property 'value' does not exist.\n"
+            "src/consumer.ts(70,20): error TS2339: Property 'value' does not exist.\n"
+        )
+        self.assertEqual(report["diagnostic_keys"], [{
+            "file": "src/consumer.ts",
+            "code": "TS2339",
+            "message": "Property 'value' does not exist.",
+            "key": "src/consumer.ts: TS2339: Property 'value' does not exist.",
+            "count": 2,
+        }])
+
     def test_refuses_a_log_without_diagnostics(self) -> None:
         result, report = self.run_analysis("typescript produced no parseable result\n")
         self.assertEqual(result.returncode, 2)

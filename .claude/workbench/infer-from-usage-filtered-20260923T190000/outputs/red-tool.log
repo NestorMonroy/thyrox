@@ -1,0 +1,14 @@
+bun test v1.4.3-canary.1 (6d504dd98)
+
+tests/verify/applyInferredTypes.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../../src/verify/applyInferredTypes' from '/workspace/kaupamex/thyrox/tests/verify/applyInferredTypes.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [30.00ms]

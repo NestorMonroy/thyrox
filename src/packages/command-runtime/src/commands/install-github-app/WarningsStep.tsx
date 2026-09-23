@@ -3,6 +3,7 @@ import { GITHUB_ACTION_SETUP_DOCS_URL } from '@thyrox/agent/constants/github-app
 import { Box, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { Warning } from './types.js'
+import { ReactElement,JSXElementConstructor,ReactNode,ReactPortal,Key } from 'react'
 
 interface WarningsStepProps {
   warnings: Warning[]
@@ -31,7 +32,7 @@ export function WarningsStep({ warnings, onContinue }: WarningsStepProps) {
             <Text>{warning.message}</Text>
             {warning.instructions.length > 0 && (
               <Box flexDirection="column" marginLeft={2} marginTop={1}>
-                {warning.instructions.map((instruction, i) => (
+                {warning.instructions.map((instruction: string|number|bigint|boolean|ReactElement<unknown,string|JSXElementConstructor<any>>|Iterable<ReactNode>|ReactPortal|Promise<string|number|bigint|boolean|ReactPortal|ReactElement<unknown,string|JSXElementConstructor<any>>|Iterable<ReactNode>|null|undefined>|null|undefined, i: Key|null|undefined) => (
                   <Text key={i} dimColor>
                     • {instruction}
                   </Text>

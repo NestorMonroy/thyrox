@@ -308,7 +308,7 @@ export function createSwarmHostDeps(
         if (!setAppState) {
           return
         }
-        updateTaskState(taskId, setAppState, task => updater(task) as never)
+        updateTaskState(taskId, setAppState, (task: unknown): unknown => updater(task) as never)
       },
       getAppState() {
         return context?.getAppState?.() ?? null

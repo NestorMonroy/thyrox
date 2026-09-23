@@ -171,7 +171,7 @@ export function createMcpAuthTool(
             ...prev,
             mcp: {
               ...prev.mcp,
-              clients: prev.mcp.clients.map(c =>
+              clients: prev.mcp.clients.map((c): { name: string } =>
                 c.name === serverName ? result.client : c,
               ),
               tools: [
