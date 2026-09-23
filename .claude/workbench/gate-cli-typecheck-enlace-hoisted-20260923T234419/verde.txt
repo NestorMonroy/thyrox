@@ -1,0 +1,21 @@
+  ok   limpio sale 0
+  ok   limpio publica OK
+  ok   codigo roto sale 1 con --strict
+  ok   codigo roto se publica como codigo roto
+  ok   workspace sin enlazar rehusa con exit 2
+  ok   workspace sin enlazar se publica como tal
+  ok   workspace sin enlazar nombra el paquete
+  ok   workspace sin enlazar declara que no hay veredicto
+  ok   modulo sin hermano en el arbol sigue siendo codigo roto
+  ok   modulo sin hermano sale 1 con --strict
+  ok   baseline igual al conteo: no crece, sale 0
+  ok   baseline igual declara que no crece
+  ok   conteo sobre el baseline sale 1
+  ok   conteo sobre el baseline nombra las dos cifras
+  ok   conteo bajo el baseline sale 0
+  ok   conteo bajo el baseline pide bajarlo
+  ok   enlace hoisted en un ancestro: el TS2307 es codigo roto, no enlace
+  ok   enlace hoisted en un ancestro sale 1 con --strict
+
+18 ok, 0 fallo(s)
+rc=0

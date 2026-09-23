@@ -77,6 +77,20 @@ fi
 # estar enlazados en `node_modules/@thyrox/`. Es el discriminador de
 # TASK-THYROX-0056: un modulo ausente cuyo hermano tampoco existe NO es un
 # workspace sin enlazar — es una dependencia rota, y su arreglo es otro.
+# ¿Esta enlazado `@thyrox/<pkg>` en el `node_modules` del paquete o en el de
+# algun ANCESTRO? La resolucion de Node sube por los ancestros, y el linker que
+# `bunfig.toml` declara —`hoisted`, H-THYROX-154— enlaza los workspaces en la
+# RAIZ. Mirar solo el del paquete publicaba «sin enlazar» sobre un enlace que
+# existia, y rehusaba el veredicto de un `TS2307` que era codigo roto.
+linked_in_ancestor() {
+    local pkg="$1" dir="$PACKAGE"
+    while :; do
+        [ -e "$dir/$SCOPE_DIR/$pkg" ] && return 0
+        [ "$dir" = "/" ] && return 1
+        dir="$(dirname "$dir")"
+    done
+}
+
 unlinked_from() {
     local salida="$1"
     printf '%s\n' "$salida" \
@@ -86,7 +100,7 @@ unlinked_from() {
         | while read -r pkg; do
               [ -n "$pkg" ] || continue
               [ -d "$PACKAGES_DIR/$pkg" ] || continue
-              [ -e "$PACKAGE/$SCOPE_DIR/$pkg" ] && continue
+              linked_in_ancestor "$pkg" && continue
               printf '%s\n' "$pkg"
           done
 }

@@ -20,11 +20,15 @@ import { resolveTaskStore } from '../src/commands/importTasks.ts'
 import { STORE_DIR, STORE_FILE, storePath } from '@thyrox/observability/store'
 
 const CONSUMER_ROOT_VAR = 'THYROX_CONSUMER'
+const STORE_PATH_VAR = 'THYROX_STORE'
 const previo = process.env[CONSUMER_ROOT_VAR]
+const previoStore = process.env[STORE_PATH_VAR]
 
 afterEach(() => {
   if (previo === undefined) delete process.env[CONSUMER_ROOT_VAR]
   else process.env[CONSUMER_ROOT_VAR] = previo
+  if (previoStore === undefined) delete process.env[STORE_PATH_VAR]
+  else process.env[STORE_PATH_VAR] = previoStore
 })
 
 describe('resolveTaskStore — el localizador, no el cwd', () => {
@@ -46,6 +50,10 @@ describe('resolveTaskStore — el localizador, no el cwd', () => {
 
   test('el consumidor declarado manda, y NO al hogar heredado', () => {
     const consumidor = mkdtempSync(join(tmpdir(), 'consumidor-'))
+    // El caso mide el peldaño del CONSUMIDOR, así que retira el de arriba:
+    // `THYROX_STORE` gana sobre él, y el preload del store
+    // (`tests/preload/store.ts`) lo fija en cada ejecución de bun.
+    delete process.env[STORE_PATH_VAR]
     process.env[CONSUMER_ROOT_VAR] = consumidor
     const destino = resolveTaskStore(undefined, '/cualquier/cwd')
     expect(destino).toBe(join(consumidor, STORE_DIR, STORE_FILE))

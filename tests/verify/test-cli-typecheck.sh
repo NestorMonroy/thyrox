@@ -174,5 +174,31 @@ assert "conteo bajo el baseline sale 0" 0 "$CODE"
 case "$OUT" in *"baja el baseline"*) V=pide ;; *) V="$OUT" ;; esac
 assert "conteo bajo el baseline pide bajarlo" pide "$V"
 
+# --- 8. el enlace HOISTED: vive en un node_modules ANCESTRO -------------------
+# `bunfig.toml` declara `linker = "hoisted"` (H-THYROX-154), asi que `bun
+# install` enlaza los workspaces en `node_modules/@thyrox/` de la RAIZ y no en
+# el del paquete. La resolucion de Node sube por los ancestros y los encuentra.
+# Medido en el arbol real el 2026-09-23: `@thyrox/mcp-runtime` estaba enlazado
+# en la raiz, `cli` daba `TS2307` porque su `exports` no declara `"."`, y el
+# gate lo publicaba «sin enlazar» y rehusaba el commit — su arreglo, `bun
+# install` en el paquete, no crea nada bajo el linker declarado.
+#
+# Que lo haria fallar: mirar solo el `node_modules` del paquete.
+mkdir -p "$PKGS/hoisted" "$T/node_modules/@thyrox"
+printf 'export const mark = 1;\n' > "$PKGS/hoisted/sub.ts"
+printf '{"name":"@thyrox/hoisted","version":"0.0.0","exports":{"./sub":"./sub.ts"}}\n' \
+    > "$PKGS/hoisted/package.json"
+ln -s ../../packages/hoisted "$T/node_modules/@thyrox/hoisted"
+printf 'import { mark } from "@thyrox/hoisted";\nexport const v: number = mark;\n' \
+    > "$PKGS/subject/index.ts"
+run_gate
+case "$OUT" in
+    *"sin enlazar"*) V=confundio-con-workspace ;;
+    *"TS2307"*)      V=codigo-roto ;;
+    *)               V="$OUT" ;;
+esac
+assert "enlace hoisted en un ancestro: el TS2307 es codigo roto, no enlace" codigo-roto "$V"
+assert "enlace hoisted en un ancestro sale 1 con --strict" 1 "$CODE"
+
 printf '\n%d ok, %d fallo(s)\n' "$ok" "$fail"
 [ "$fail" -eq 0 ]
