@@ -10,6 +10,19 @@ import ts from 'typescript'
 
 export type Reader = (fileName: string) => string | undefined
 
+/** Aplica ediciones de TypeScript a un texto, de atrás hacia adelante: cada
+ * edición conserva las posiciones de las previas. Una sola copia para los
+ * proponentes: dos habrían divergido como divergió el host. */
+export function applyEdits(text: string, edits: readonly ts.TextChange[]): string {
+  return [...edits]
+    .sort((a, b) => b.span.start - a.span.start)
+    .reduce(
+      (acc, edit) =>
+        acc.slice(0, edit.span.start) + edit.newText + acc.slice(edit.span.start + edit.span.length),
+      text,
+    )
+}
+
 export function createService(
   rootNames: string[],
   options: ts.CompilerOptions,

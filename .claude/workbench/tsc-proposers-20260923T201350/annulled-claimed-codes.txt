@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscProposers.test.ts:
+66 |     const rows = proposeInMemory(sources, ['/p/a.ts'], '/p')
+67 |     const unused = rows.find(row => row.proposer === 'unused-imports')!
+68 |     const infer = rows.find(row => row.proposer === 'infer-from-usage')!
+69 |     // Ni el TS2305 pegado a la edición (otro código) ni el TS6133 del local
+70 |     // (mismo código, sin tocar): sólo el diagnóstico de la declaración.
+71 |     expect(unused.targets).toEqual(['a.ts: TS6192: All imports in import declaration are unused.'])
+                                ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,3 @@
+  [
++   "a.ts: TS2305: Module '"node:fs"' has no exported member 'nope'.",
+    "a.ts: TS6192: All imports in import declaration are unused.",
+
+- Expected  - 0
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscProposers.test.ts:71:28)
+(fail) tscProposers > claims only the diagnostics its edits touch [534.32ms]
+
+ 17 pass
+ 1 fail
+ 38 expect() calls
+Ran 18 tests across 2 files. [13.40s]
+
+[exit=1]

@@ -85,6 +85,14 @@ describe('removeUnusedImports', () => {
     expect(out ?? 'import { Metadata }').toMatch(/^import \{[^}]*\bMetadata\b/m)
   })
 
+  test('con un solo binding TS6133 cubre la declaración entera, y la guarda la ve igual', () => {
+    // Medido al reunir los proponentes: con un binding único el tramo de
+    // TS6133 es el `import` completo, no el nombre, y una guarda que compare
+    // el tramo con el texto del nombre no lo reconoce.
+    const out = run("import { Metadata } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n")
+    expect(out).toBeUndefined()
+  })
+
   test('una reexportación con el mismo nombre no es un uso del binding importado', () => {
     // Medido en el lote real: `bridge/src/index.ts`, `sessionStorage.ts` y
     // `SendMessageTool.ts` importan un nombre y lo reexportan en OTRA
