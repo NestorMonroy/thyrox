@@ -19,5 +19,9 @@
 == 7. anulada la excepcion de entrada provista, cae EXACTAMENTE ese caso ==
   ok    caen heredoc, tubo y redireccion, y ninguno mas
   ok    y restaurada, vuelve a callar
+== 8. la linea real del episodio: DOS interpretes desnudos, no uno ==
+  ok    nombra el primer interprete
+  ok    nombra el segundo, el que siguio vivo
+  ok    calla el que recibe heredoc
 
-14 ok, 0 fallos
+17 ok, 0 fallos

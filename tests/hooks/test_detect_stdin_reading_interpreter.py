@@ -106,5 +106,25 @@ finally:
     gate.has_provided_input = original
 check("y restaurada, vuelve a callar", None, detect("python - <<'PY'\nprint(1)\nPY"))
 
+
+print("== 8. la linea real del episodio: DOS interpretes desnudos, no uno ==")
+# Estructura verbatim de la linea que escribio H-THYROX-156. Se mato el
+# primer interprete y el segundo siguio esperando 46 minutos: el aviso tiene
+# que nombrar los dos, y callar el tercero, que si recibe un heredoc.
+EPISODE = (
+    "cd /home/user/kaupamex-docs && D=hallazgos; cat > $D/h.rst <<EOF\n"
+    ".. meta::\n   :estado: resuelto\nEOF\n"
+    ".venv/bin/python 2>/dev/null; sed -i 's|a|a|' $D/index.rst; "
+    ".venv/bin/python - 2>/dev/null; /home/user/thyrox/.venv/bin/python - <<'PY'\n"
+    "import pathlib\nPY\ntail -5 $D/index.rst"
+)
+episode_notice = detect(EPISODE)
+check("nombra el primer interprete",
+      True, episode_notice is not None and "`.venv/bin/python 2>/dev/null`" in episode_notice)
+check("nombra el segundo, el que siguio vivo",
+      True, episode_notice is not None and "`.venv/bin/python - 2>/dev/null`" in episode_notice)
+check("calla el que recibe heredoc",
+      False, episode_notice is not None and "/home/user/thyrox/.venv/bin/python" in episode_notice)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

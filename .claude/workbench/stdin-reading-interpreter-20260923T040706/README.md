@@ -22,3 +22,18 @@ primera etapa del tubo, y no saltaba el destino de `<`): el control lo destapo.
 Metrica: casos de la suite, veredicto del detector por forma.
 Ciega a: un interprete que lea stdin por otra via (p. ej. `input()` dentro
 de un guion) y a interpretes fuera de la lista `_INTERPRETER`.
+
+## Corrección 2026-09-23: la línea tenía DOS intérpretes desnudos
+
+`.venv/bin/python 2>/dev/null` (pid 4203) y `.venv/bin/python - 2>/dev/null`
+(pid 4264). Se mató sólo el primero y el episodio se dio por cerrado sin
+esperar la notificación de la tarea; el segundo siguió esperando stdin
+46 minutos, hasta que el ejecutor preguntó. Se mató primero el shell padre
+(4199) para que la última etapa no duplicara la fila de H-THYROX-156 en el
+índice, luego 4264; la tarea se recogió con `exited with code 1` y el índice
+quedó con una sola fila.
+
+El detector no era el hueco: la sección 8 de la suite reproduce la línea y
+nombra los dos, callando el tercero (que recibe heredoc). El hueco era de
+recogida: matar un proceso hijo no es recoger la tarea. La tarea está
+recogida cuando llega su notificación o su marcador, no cuando muere un pid.
