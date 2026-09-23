@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_schedule.py
++++ b/src/verify/tsc_schedule.py
+@@ -110,7 +110,7 @@
+     for candidate in ranked:
+         if max_batch is not None and len(selected) >= max_batch:
+             break
+-        if candidate.files & used:
++        if False:
+             continue
+         selected.append(candidate)
+         used |= candidate.files
