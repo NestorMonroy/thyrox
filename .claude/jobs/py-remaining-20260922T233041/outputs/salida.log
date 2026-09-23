@@ -1,0 +1,171 @@
+run-task-pool: 14 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/pyrem-20260922T233041
+  pyrem-20260922T233041/cache-test_home_resolution pid 27003   PYTHONPATH=src .venv/bin/python tests/cache/test_home_resolution.py
+  pyrem-20260922T233041/corpus-test_censo_contraparte pid 27018   PYTHONPATH=src .venv/bin/python tests/corpus/test_censo_contraparte.py
+  pyrem-20260922T233041/paths-test_reach_roots_declared pid 27034   PYTHONPATH=src .venv/bin/python tests/paths/test_reach_roots_declared.py
+  pyrem-20260922T233041/repo-test_citations pid 27052   PYTHONPATH=src .venv/bin/python tests/repo/test_citations.py
+  pyrem-20260922T233041/session-test_generate_bin pid 27072   PYTHONPATH=src .venv/bin/python tests/session/test_generate_bin.py
+  pyrem-20260922T233041/verify-test_citation_resolution pid 27109   PYTHONPATH=src .venv/bin/python tests/verify/test_citation_resolution.py
+  pyrem-20260922T233041/verify-test_config_precedence pid 27168   PYTHONPATH=src .venv/bin/python tests/verify/test_config_precedence.py
+  pyrem-20260922T233041/verify-test_consumer_copies pid 27185   PYTHONPATH=src .venv/bin/python tests/verify/test_consumer_copies.py
+  pyrem-20260922T233041/verify-test_hook_script_token pid 27202   PYTHONPATH=src .venv/bin/python tests/verify/test_hook_script_token.py
+  pyrem-20260922T233041/verify-test_path_arithmetic pid 27268   PYTHONPATH=src .venv/bin/python tests/verify/test_path_arithmetic.py
+  pyrem-20260922T233041/verify-test_rst_gate_interpreter pid 27285   PYTHONPATH=src .venv/bin/python tests/verify/test_rst_gate_interpreter.py
+  pyrem-20260922T233041/verify-test_runner pid 27324   PYTHONPATH=src .venv/bin/python tests/verify/test_runner.py
+  pyrem-20260922T233041/verify-test_script_naming_scope pid 27376   PYTHONPATH=src .venv/bin/python tests/verify/test_script_naming_scope.py
+  pyrem-20260922T233041/workbench-test_home_resolution pid 27420   PYTHONPATH=src .venv/bin/python tests/workbench/test_home_resolution.py
+run-task-pool: lanzados 14 de 14; esperando en PRIMER PLANO (timeout 900s)
+== 15 trabajos asentados ==
+OLVIDADO pyrem-20260922T233041
+       | (vacío — no emitió nada)
+OK     pyrem-20260922T233041_cache-test_home_resolution
+       | Traceback (most recent call last):
+       |   File "/home/user/thyrox/tests/cache/test_home_resolution.py", line 200, in test_the_three_families_compose_the_same_segment_alike
+       |     self.assertGreaterEqual(
+       | AssertionError: 1 not greater than or equal to 2 : sin dos clones observables en las TRES familias, la simetria no se puede afirmar
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 9 tests in 0.014s
+       | 
+       | FAILED (failures=2)
+       | EXIT=1
+OK     pyrem-20260922T233041_corpus-test_censo_contraparte
+       |         esperado=[0] obtenido=[2]
+       | == 9. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+       |   ok    el repo censado no cae a un consumidor concreto
+       |   ok    el árbol de referencia no se nombra en el mecanismo
+       |   ok    qué marca la unidad censada se declara
+       |   ok    y su constante existe
+       |   ok    igual que la del árbol de referencia
+       | 
+       | 11 ok, 9 fallos
+       | EXIT=1
+OK     pyrem-20260922T233041_paths-test_reach_roots_declared
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 74, in with_env
+       |     return fn()
+       |            ^^^^
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 115, in <lambda>
+       |     reach.reach_roots()))
+       |     ^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 421, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     pyrem-20260922T233041_repo-test_citations
+       |   ok   anulada la clasificacion, la evidencia se cuenta como viva
+       |   ok   y restaurada, vuelve a discriminar
+       |   ok   un directorio sin .git rehusa
+       |   ok   y dice que no emite conteo
+       |   ok   sin ningun clon alcanzable, rehusa
+       |   ok   y lo llama verde falso
+       |   ok   --verify sale 0 sin citas vivas
+       | 
+       | 22 aprobada(s) · 0 fallida(s) (alcance medido: citations.py)
+       | EXIT=0
+OK     pyrem-20260922T233041_session-test_generate_bin
+       |   ok   0 envoltorios .py fallan al cargar en el arbol real
+       |   ok   el envoltorio ejecuta el interprete del proveedor
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       | 
+       | 106 aprobada(s) · 4 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_citation_resolution
+       |   ok    NO emite veredicto de citas
+       |   ok    nombra el store ausente
+       | == 7. REFUSAL — sin archivo de mensaje tampoco ==
+       |   ok    exit 2 al rehusar
+       | == 8. --history mide el corpus, que es OTRA superficie ==
+       |   ok    exit 0: medir no es juzgar
+       |   ok    publica su denominador
+       | 
+       | resultado: 11 de 15 aserciones en verde
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_config_precedence
+       |   ok   el auditor NO cubre la precedencia por bucle de thyrox_root
+       |   ok   el auditor ve las lecturas que pasan por env_value
+       |   ok   y env_value cuenta como fuente
+       |   ok   publica su denominador
+       |   ok   el arbol de thyrox sale 0 con --strict
+       |   ok   rehusa con exit 2 si la raiz no existe
+       |   ok   y NO emite conteo al rehusar
+       | 
+       | resultado: 17 de 18 aserciones en verde
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_consumer_copies
+       |          real:     False
+       |   ok   sin argumentos NO rehusa por falta de argumentos
+       |   ok   sin consumidor derivable rehusa con exit 2
+       |   ok   y NO emite conteo al no poder derivarlo
+       |   FALLA con THYROX_CONSUMER declarado SI mide a secas
+       |          esperado: True
+       |          real:     False
+       | 
+       | resultado: 12 de 14 aserciones en verde
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_hook_script_token
+       |           real:     False
+       |   ok    --strict con una forma opaca sale 1
+       |   FALLA y nombra la forma
+       |           esperado: True
+       |           real:     False
+       |   ok    cero comandos NO se publica como aprobado en silencio
+       |   ok    y con --strict el cero sin medir sale 1
+       | 
+       | resultado: 17 de 21 aserciones en verde
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_path_arithmetic
+       |   ok    sin --strict, un incumplidor nuevo NO bloquea
+       |   ok    pero se nombra en la salida
+       |   ok    con --strict, el incumplidor nuevo bloquea
+       |   ok    --write-baseline sale 0
+       |   ok    y congela la entrada
+       |   ok    congelada, la deuda heredada NO bloquea
+       |   ok    --quiet publica sólo el conteo, pelado
+       | 
+       | resultado: 16 de 17 aserciones en verde
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_rst_gate_interpreter
+       |   ok    test_the_path_real_of_executable_NOT_discriminates
+       |   FALLA test_the_precondition_of_extensions_discriminates_the_two_venv: AssertionError: el venv del consumidor no resuelve lo que su propio conf.py declara; corre `make sync` en /home/user/kaupamex-docs: ['sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.autosectionlabel', 'sphinx_design', 'sphinx_copybutton', 'sphinx_tabs.tabs', 'sphinxcontrib.plantuml']
+       |   ok    test_the_subject_and_the_interpreters_exist
+       |   ok    test_the_venv_of_provider_not_publishes_a_count_that_not_measured
+       |   FALLA test_the_via_of_pre_commit_WHETHER_publishes_su_count: AssertionError: la via que hoy mide dejo de medir: exit=2 stdout='' stderr='user/kaupamex-docs/.venv) no resuelve 7 extension(es) que su conf.py declara: sphinx.ext.intersphinx, sphinx.ext.todo, sphinx.ext.autosectionlabel, sphinx_design, sphinx_copybutton, sphinx_tabs.tabs, sphinxcontrib.plantuml. Corre `make sync` en /home/user/kaupamex-docs. NO se emite un conteo: un 0 aqui seria un verde falso, y un 1 diria «hay errores de sintaxis» sobre una medicion que no ocurrio.\n'
+       | 3/5 aserciones verdes
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_runner
+       | 'check_package_typecheck.py'
+       | 
+       | - ['check_package_typecheck.py']
+       | + [] : 1 gate(s) en disco sin registrar
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 18 tests in 0.170s
+       | 
+       | FAILED (failures=1)
+       | EXIT=1
+OK     pyrem-20260922T233041_verify-test_script_naming_scope
+       |   FAIL el eje de separador no reporta el banco: 1 != 0
+       |        265 archivo(s) del banco, p.ej. .claude/eventos/acl-en-las-referencias-20260827T192754/sondas/censo_dato_acl.py
+       |   FAIL el eje de identificadores no reporta el banco: 265 != 0
+       | === Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+       |   OK   el eje de idioma sigue midiendo archivos
+       |   OK   el eje de separador sigue midiendo archivos
+       |   OK   el eje de identificadores sigue midiendo archivos
+       | 
+       | 4 ok, 4 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+       | EXIT=1
+OK     pyrem-20260922T233041_workbench-test_home_resolution
+       | Traceback (most recent call last):
+       |   File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 176, in test_las_dos_familias_resuelven_igual
+       |     self.assertGreaterEqual(
+       | AssertionError: 1 not greater than or equal to 2 : sin dos clones sin clave por clon en NINGUNA de las dos familias, «las dos resuelven igual» no se puede afirmar
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.013s
+       | 
+       | FAILED (failures=2)
+       | EXIT=1
+__BG_EXIT__=0
