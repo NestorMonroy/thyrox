@@ -283,10 +283,16 @@ cmd_wait() {
     # propios hijos y publica «sin trabajos registrados» saliendo 0 — el mismo
     # verde falso que el parrafo de arriba describe, por otra via. El glob
     # tiene que conocer el saneo que su propio escritor aplica.
-    local timeout=1800 pattern="$DEFAULT_PATTERN" only=""
+    # `--heartbeat N`: cada N segundos, mientras quede alguno vivo, una linea
+    # por STDERR con cuantos asentaron y cuales faltan. 0 lo apaga. Existe
+    # porque el bucle era mudo: `wait | tail` pasaba minutos sin salida y quien
+    # miraba no separaba «espera un trabajo vivo» de «esta atascado». Va por
+    # STDERR para no tocar el veredicto de STDOUT que otros ya leen.
+    local timeout=1800 pattern="$DEFAULT_PATTERN" only="" heartbeat=30
     while [[ $# -gt 0 ]]; do
         case "$1" in
             --timeout) timeout="${2:?--timeout exige segundos}"; shift 2 ;;
+            --heartbeat) heartbeat="${2:?--heartbeat exige segundos}"; shift 2 ;;
             --pattern)  pattern="${2:?--pattern exige una expresión}"; shift 2 ;;
             --only)     only="${2:?--only exige una etiqueta}"; shift 2 ;;
             *) echo "argumento no reconocido: $1" >&2; exit 64 ;;
@@ -307,6 +313,7 @@ cmd_wait() {
     fi
 
     local started_at; started_at=$(date +%s)
+    local last_beat=$started_at
     local -A settled_as=()
     local total=${#jobs[@]}
 
@@ -326,10 +333,22 @@ cmd_wait() {
             if [[ "$v" != ESPERANDO ]]; then
                 settled_as[$label]="$v"
                 (( settled++ ))
+                echo "asentado: $label -> $v ($settled de $total)" >&2
             fi
         done
 
         (( settled == total )) && break
+
+        local now; now=$(date +%s)
+        if (( heartbeat > 0 && now - last_beat >= heartbeat )); then
+            local alive=()
+            for f in "${jobs[@]}"; do
+                local e; e=$(basename "$f" .job)
+                [[ -n "${settled_as[$e]:-}" ]] || alive+=("$e")
+            done
+            echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            last_beat=$now
+        fi
 
         if (( $(date +%s) - started_at >= timeout )); then
             echo "TIMEOUT — ${timeout}s con $((total - settled)) de $total trabajos sin asentar."

@@ -1,0 +1,13 @@
+.venv/bin/python tests/hooks/test_stop_gate.py
+bash tests/lib/test-toolchain-parallel.sh
+.venv/bin/python tests/roster/test_process_liveness.py
+bash tests/session/test-contrato-de-escotilla.sh
+bash tests/session/test-process-group.sh
+bash tests/session/test-run-task-pool-isolation.sh
+bash tests/session/test-run-task-pool-scope.sh
+bash tests/session/test-run-task-pool.sh
+bash tests/session/test-wait-jobs-dependency.sh
+bash tests/session/test-wait-jobs.sh
+.venv/bin/python tests/session/test_job_ledger.py
+.venv/bin/python tests/session/test_user_wiring.py
+.venv/bin/python tests/verify/test_env_contract_keys.py

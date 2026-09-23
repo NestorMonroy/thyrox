@@ -250,6 +250,33 @@ afirmar "etiqueta completa: el que queda es el que no se nombro" "si" \
     "$(contiene_texto "$(bash "$GUION" pendientes 2>/dev/null)" 'batch-b')"
 kill $PID_B2 2>/dev/null; wait $PID_B2 2>/dev/null
 
+# =============================================================================
+# La espera tiene que VERSE viva — el bucle de `wait` era mudo
+# =============================================================================
+# Episodio 2026-09-23: `wait --timeout 540 | tail -25` estuvo minutos «sin
+# salida» mientras la suite de partida terminaba. No estaba colgado: el bucle
+# sólo imprimía al asentar TODOS o al vencer el plazo, así que quien mira no
+# separaba «espera un trabajo vivo» de «está atascado». El progreso va por
+# STDERR para no tocar el veredicto de STDOUT que otros ya leen.
+#
+# Qué lo haría fallar: retirar el latido o la línea de asentado — cae el caso
+# correspondiente y ninguno más. STDOUT se sigue comparando entero.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+LH1=$(fixture_file); nohup bash -c "echo EXIT=0" >"$LH1" 2>&1 & PH1=$!; disown $PH1
+LH2=$(fixture_file); nohup bash -c "sleep 3; echo EXIT=0" >"$LH2" 2>&1 & PH2=$!; disown $PH2
+sleep 1
+bash "$GUION" register rapido "$LH1" "$PH1" >/dev/null
+bash "$GUION" register lento  "$LH2" "$PH2" >/dev/null
+ERR_H=$(fixture_file)
+OUT_H=$(WAIT_JOBS_INTERVAL=1 bash "$GUION" wait --timeout 30 --heartbeat 1 2>"$ERR_H")
+RC_H=$?
+STDERR_H=$(cat "$ERR_H")
+afirmar "latido: wait sigue saliendo 0"                     0    "$RC_H"
+afirmar "latido: stdout conserva su cabecera"               "si" "$(contiene_texto "$OUT_H" '^== 2 trabajos asentados ==')"
+afirmar "latido: stderr anuncia el primero que asienta"     "si" "$(contiene_texto "$STDERR_H" 'asentado: rapido -> OK \(1 de 2\)')"
+afirmar "latido: stderr late mientras uno sigue vivo"       "si" "$(contiene_texto "$STDERR_H" 'esperando: 1 de 2 asentados.*lento')"
+afirmar "latido: nada de progreso contamina stdout"         "no" "$(contiene_texto "$OUT_H" 'esperando:|asentado:')"
+
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))
