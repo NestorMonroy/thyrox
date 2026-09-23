@@ -24,3 +24,21 @@ el miembro (un miembro declarado no da TS2305).
 
 Ciega a: ciclos en runtime que no pasen por `getAgentHostBindings` ni por un
 import directo; la guarda nombra el único patrón medido (H-THYROX-156).
+
+## Censo de los TS2305 del árbol (sonda, `facade_census.probe.ts`)
+
+Corrido sobre `tsconfig.json` raíz tras el paso que dejó `tsc` en 4004
+(`facade_census.out`): 247 miembros no existen en ningún sitio (exigen porte),
+93 existen sólo en otro paquete, 12 tienen varias declaraciones en el paquete y
+12 son candidatos. Las fachadas del mismo paquete quedan agotadas con esos 12.
+El siguiente margen son los 93 de otro paquete cuando el proveedor YA depende
+del paquete que declara: sin dependencia nueva que nadie decidió.
+
+Métrica: diagnósticos TS2305 del servicio de lenguaje, clasificados por las
+declaraciones exportadas del miembro en el programa.
+Ciega a: un miembro exportado sólo desde un `.d.ts` o desde `node_modules`,
+que el índice excluye.
+
+La sonda ocupó ~5 GB y, corrida junto al lazo, dejó sin memoria a sus
+proponentes (SIGKILL, `run-20260923T204551`): dos cargas del programa completo
+no corren a la vez en esta máquina (16 GB, sin swap).
