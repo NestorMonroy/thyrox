@@ -68,3 +68,20 @@ pendiente. Y un primer guard comparaba por subcadena (`unused` contiene
 | `v3-annulled-organize.txt` | volver a `organizeImports` | sólo «no reformatea» |
 | `v3-annulled-everything.txt` | `deleteImports` + `delete` | sólo «no toca locales ni parámetros» |
 | `v3-restored.txt` | — | 9 de 9 verdes |
+
+## Corrección de la premisa: la razón era otra
+
+Este banco decía que retirar un import sin uso no cambia el runtime **porque
+`tsconfig.json` no declara `verbatimModuleSyntax`**. Esa razón era incompleta:
+10 paquetes lo declaran en SU tsconfig (`provider`, `agent`, `cli`, …), y con
+él tsc conserva los imports de valor.
+
+Medido por conducta (`bun-elision-probe/`): un `import { x } from './b'` sin
+uso, con `b` que imprime al cargarse. Con `verbatimModuleSyntax` en `true` y en
+`false`, `bun a.ts` NO ejecuta el efecto de `b`, y `bun build` no incluye su
+texto (0 coincidencias en los dos). Bun elide el import sin uso en los dos
+modos. La conclusión (el runtime no cambia) se sostiene; su razón es la
+conducta medida de Bun, no la opción de tsc.
+
+Ciega a: un consumidor que ejecute la salida de `tsc` (no de Bun) de un
+paquete con `verbatimModuleSyntax`; hoy no se midió ninguno.
