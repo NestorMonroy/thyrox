@@ -38,3 +38,33 @@ Caso rojo nuevo: «no reformatea lo que conserva». Implementación nueva:
 | `v2-annulled-organize.txt` | volver a `organizeImports` | sólo «no reformatea» |
 | `v2-annulled-everything.txt` | `deleteImports` + `delete` | sólo «no toca locales ni parámetros» |
 | `v2-restored.txt` | — | 7 de 7 verdes |
+
+## Tercera versión: un nombre que el checker da «sin uso» y el archivo nombra
+
+El lote v2 bajó tsc de 4 787 a 4 475, pero introdujo 3 diagnósticos nuevos:
+- `provider/src/fastMode.ts`: `local-observability` reexporta
+  `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` como TIPO
+  (`export type { … }`) y el archivo lo usa como valor (`typeof X`). El
+  checker da TS2693 en los usos y TS6133 en el import. Retirar el import
+  cambió 3 diagnósticos por 2 TS2304 (neto −1) escondiendo el defecto, que
+  está en el uso.
+- la propia herramienta: `getCombinedCodeFix(…, undefined)` no tipa.
+
+Por qué los casos en memoria no lo vieron: el host preguntaba al disco por el
+directorio virtual `/p`, recibía «no existe» y **todo import quedaba sin
+resolver (TS2307)**. Cada caso en memoria medía imports rotos. Control nuevo
+del arnés: la fixture no da TS2307 y el caso `typeof` da TS2693. Y la primera
+aserción del caso nuevo tampoco discriminaba (el nombre sigue en el cuerpo);
+ahora se mide sobre la declaración `import`.
+
+Guard: si un nombre marcado sin uso aparece como identificador fuera de las
+declaraciones `import`, el archivo se saltea y se reporta con juicio
+pendiente. Y un primer guard comparaba por subcadena (`unused` contiene
+`used`) y salteaba de más; ahora compara por igualdad.
+
+| Archivo | Anulación | Cae |
+|---|---|---|
+| `v3-annulled-named-guard.txt` | el guard devuelve `[]` | sólo «no retira un binding que el archivo nombra» |
+| `v3-annulled-organize.txt` | volver a `organizeImports` | sólo «no reformatea» |
+| `v3-annulled-everything.txt` | `deleteImports` + `delete` | sólo «no toca locales ni parámetros» |
+| `v3-restored.txt` | — | 9 de 9 verdes |

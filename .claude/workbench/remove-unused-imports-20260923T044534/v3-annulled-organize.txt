@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+67 |     // quitaba sangría y espacios) en 230 archivos.
+68 |     const source =
+69 |       "import { used, unused } from './dep'\nimport {\n  used as again,\n} from './dep'\nconsole.log(used, again)\n"
+70 |     const expected =
+71 |       "import { used } from './dep'\nimport {\n  used as again,\n} from './dep'\nconsole.log(used, again)\n"
+72 |     expect(run(source)).toBe(expected)
+                             ^
+error: expect(received).toBe(expected)
+
+@@ -2,3 +2,3 @@
+  import {
+-   used as again,
++ used as again,
+  } from './dep'
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:72:25)
+(fail) removeUnusedImports > no reformatea lo que conserva: sólo retira el binding [556.60ms]
+
+ 8 pass
+ 1 fail
+ 12 expect() calls
+Ran 9 tests across 1 file. [6.10s]

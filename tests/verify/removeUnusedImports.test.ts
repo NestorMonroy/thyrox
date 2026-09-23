@@ -7,11 +7,15 @@
  * medias. Esa decisión no es mecánica y esta herramienta no la toma.
  */
 import { describe, expect, test } from 'bun:test'
-import { removeUnusedImports } from '../../src/verify/removeUnusedImports'
+import { removeUnusedImports, semanticDiagnosticCodes } from '../../src/verify/removeUnusedImports'
 
 const files = {
   '/p/dep.ts': "export const used = 1\nexport const unused = 2\nexport type Shape = { a: number }\n",
   '/p/side.ts': 'globalThis.touched = true\nexport {}\n',
+  // La forma real: el tipo se declara en un módulo y el índice lo reexporta
+  // con `export type { … }` (`local-observability/src/index.ts`).
+  '/p/compat.ts': 'export type Metadata = never\n',
+  '/p/typeOnly.ts': "export type { Metadata } from './compat'\nexport const unused = 1\n",
 }
 
 function run(source: string): string | undefined {
@@ -19,6 +23,15 @@ function run(source: string): string | undefined {
 }
 
 describe('removeUnusedImports', () => {
+  test('control del arnés: la fixture resuelve sus módulos', () => {
+    const codes = semanticDiagnosticCodes(
+      { ...files, '/p/main.ts': "import { Metadata } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n" },
+      '/p/main.ts',
+    )
+    expect(codes).not.toContain(2307)
+    expect(codes).toContain(2693)
+  })
+
   test('retira el binding sin uso y conserva el usado', () => {
     const out = run("import { used, unused } from './dep'\nconsole.log(used)\n")
     expect(out).toContain('used')
@@ -57,6 +70,19 @@ describe('removeUnusedImports', () => {
     const expected =
       "import { used } from './dep'\nimport {\n  used as again,\n} from './dep'\nconsole.log(used, again)\n"
     expect(run(source)).toBe(expected)
+  })
+
+  test('no retira un binding que el archivo nombra, aunque el checker lo dé por no leído', () => {
+    // Medido en el lote real (`fastMode.ts`): el módulo exporta un TIPO y el
+    // archivo lo usa como valor con `typeof`. El checker da TS2693 en el uso
+    // y TS6133 en el import; retirar el import cambia tres diagnósticos por
+    // dos TS2304 y esconde el defecto, que está en el uso.
+    const out = run(
+      "import { Metadata, unused } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n",
+    )
+    // Se mide sobre la DECLARACIÓN import: el nombre sigue en el cuerpo pase
+    // lo que pase, y una aserción sobre el texto entero no discrimina.
+    expect(out ?? 'import { Metadata }').toMatch(/^import \{[^}]*\bMetadata\b/m)
   })
 
   test('un archivo sin imports sin uso no aparece en el resultado', () => {
