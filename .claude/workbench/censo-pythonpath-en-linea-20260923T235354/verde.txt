@@ -1,0 +1,15 @@
+=== Caso 1: el guion existe y parsea ===
+  ok    parsea
+=== Caso 2 (EL QUE DISCRIMINA): sin reach.sh el modulo real MUERE ===
+  ok    sin la declaracion, src/session/clone_bootstrap.py no importa su hermano
+=== Caso 3: tras sourcear reach.sh, ese mismo modulo arranca ===
+  ok    el modulo importa su hermano
+=== Caso 4: el prepend NO pisa lo que el llamador ya traia ===
+  ok    src va delante y lo del llamador sobrevive
+=== Caso 5: dos source no duplican la entrada ===
+  ok    el guard de doble inclusion lo cubre
+=== Caso 6: 0 guiones de PRODUCCION invocan un modulo que no podran importar ===
+  ok    0 guiones de produccion sin cobertura (universo medido: 106 modulos)
+
+6 casos: 6 ok, 0 fallos
+rc=0

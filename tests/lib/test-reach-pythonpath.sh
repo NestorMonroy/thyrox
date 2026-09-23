@@ -124,12 +124,33 @@ for guion in sorted(list(src.rglob("*.sh")) + list((raiz / ".githooks").glob("*"
             cubre_en = n
             break
 
-    tocados = []
+    #: La TERCERA forma de cobertura: la asignacion sólo para ESE comando,
+    #: `PYTHONPATH=... python3 ...`, que el shell exporta al hijo sin tocar
+    #: el entorno del guion. `.githooks/commit-msg` la usa partida en dos
+    #: lineas con `\`, asi que se mide sobre la LINEA LOGICA —las
+    #: continuaciones unidas—, no sobre la fisica. Sin esto el censo publicaba
+    #: el hook como «no podra importar» cuando importaba bien.
+    logicas = []
+    inicio, partes = None, []
     for n, linea in enumerate(lineas, 1):
+        if inicio is None:
+            inicio = n
+        partes.append(linea.rstrip("\\"))
+        if not linea.endswith("\\"):
+            logicas.append((inicio, " ".join(partes)))
+            inicio, partes = None, []
+    if partes:
+        logicas.append((inicio, " ".join(partes)))
+
+    tocados = []
+    for n, linea in logicas:
+        en_linea = re.search(r"(^|[\s;&|(])PYTHONPATH=\S*\s+(\S+\s+)*python3?\b", linea)
         for m in cita.findall(linea):
             #: Solo cuenta la INVOCACION, no la asignacion a una variable:
             #: `STORE_CLI="$RAIZ/src/agents/agent_store.py"` no ejecuta nada.
             if m in exigen and re.search(r"python3?\b", linea):
+                if en_linea:
+                    continue
                 if cubre_en is None or n < cubre_en:
                     tocados.append(m)
     if tocados:
