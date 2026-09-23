@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: 54 de 90 modulos de la fuente. Cubre heredocs de bash, specs Fig (carga + registro completo), deteccion/citado/quoting de shell, proveedores de PowerShell (DI y legacy), limites de salida, resolucion de shell por defecto, gate de PowerShellTool, contextos de inyeccion (ShellExecContext/SnapshotContext), tipos transversales, errores tipados, backup de preferencias de terminal (iTerm2/Terminal.app), resolucion de ripgrep para sandbox, stubs de testing, y las utilidades de proceso ya presentes (execFileNoThrow, which, subprocessEnv). El nucleo de parseo de bash (ast.ts/bashParser.ts/commands.ts/parser.ts), el motor de sandbox (sandbox-adapter.ts) y el aislamiento de tmux (tmuxSocket.ts) siguen sin portar por su tamano y su acoplamiento mutuo (~13000 lineas combinadas) \u2014 ver los docstrings de los modulos que dependen de ellos.",
+  "description": "Porte parcial del paquete shell de claude-code-nestor-monroy-tools: 54 de 90 modulos de la fuente. Cubre heredocs de bash, specs Fig (carga + registro completo), deteccion/citado/quoting de shell, proveedores de PowerShell (DI y legacy), limites de salida, resolucion de shell por defecto, gate de PowerShellTool, contextos de inyeccion (ShellExecContext/SnapshotContext), tipos transversales, errores tipados, backup de preferencias de terminal (iTerm2/Terminal.app), resolucion de ripgrep para sandbox, stubs de testing, y las utilidades de proceso ya presentes (execFileNoThrow, which, subprocessEnv). El nucleo de parseo de bash (ast.ts/bashParser.ts/commands.ts/parser.ts), el motor de sandbox (sandbox-adapter.ts) y el aislamiento de tmux (tmuxSocket.ts) siguen sin portar por su tamano y su acoplamiento mutuo (~13000 lineas combinadas) — ver los docstrings de los modulos que dependen de ellos.",
   "main": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -200,6 +200,7 @@
     "@thyrox/provider": "workspace:*",
     "@thyrox/repl": "workspace:*",
     "@thyrox/storage": "workspace:*",
-    "@thyrox/tool-registry": "workspace:*"
+    "@thyrox/tool-registry": "workspace:*",
+    "shell-quote": "^1.10.0"
   }
 }

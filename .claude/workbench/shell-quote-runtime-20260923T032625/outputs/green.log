@@ -1,0 +1,18 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/shell/src/__test__/shellQuote.behavior.test.ts:
+(pass) shell-quote safe runtime > parses operators while preserving caller-provided variables [2.75ms]
+(pass) shell-quote safe runtime > returns typed failures rather than throwing for unsupported substitutions [0.23ms]
+Error: Cannot quote argument at index 1: object values are not supported
+    at <anonymous> (/workspace/kaupamex/thyrox/src/packages/shell/src/bash/shellQuote.ts:102:19)
+    at map (native:1:11)
+    at tryQuoteShellArgs (/workspace/kaupamex/thyrox/src/packages/shell/src/bash/shellQuote.ts:87:38)
+    at <anonymous> (/workspace/kaupamex/thyrox/src/packages/shell/src/__test__/shellQuote.behavior.test.ts:33:22)
+(pass) shell-quote safe runtime > quotes scalar arguments and rejects object arguments [0.86ms]
+(pass) shell-quote safe runtime > detects malformed syntax that shell-quote would normalize [0.32ms]
+(pass) shell-quote safe runtime > detects the single-quoted trailing-backslash differential [0.11ms]
+
+ 5 pass
+ 0 fail
+ 13 expect() calls
+Ran 5 tests across 1 file. [72.00ms]
