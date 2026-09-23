@@ -1,0 +1,54 @@
+/**
+ * Retirar imports sin uso con el propio servicio de lenguaje de TypeScript
+ * (`organizeImports` en modo `RemoveUnused`), y SOLO imports.
+ *
+ * La mitad de juicio es la frontera: un local o un parámetro sin uso también
+ * da TS6133, pero retirarlo cambia una firma o borra trabajo de un porte a
+ * medias. Esa decisión no es mecánica y esta herramienta no la toma.
+ */
+import { describe, expect, test } from 'bun:test'
+import { removeUnusedImports } from '../../src/verify/removeUnusedImports'
+
+const files = {
+  '/p/dep.ts': "export const used = 1\nexport const unused = 2\nexport type Shape = { a: number }\n",
+  '/p/side.ts': 'globalThis.touched = true\nexport {}\n',
+}
+
+function run(source: string): string | undefined {
+  return removeUnusedImports({ ...files, '/p/main.ts': source }, ['/p/main.ts']).get('/p/main.ts')
+}
+
+describe('removeUnusedImports', () => {
+  test('retira el binding sin uso y conserva el usado', () => {
+    const out = run("import { used, unused } from './dep'\nconsole.log(used)\n")
+    expect(out).toContain('used')
+    expect(out).not.toContain('unused')
+  })
+
+  test('retira la declaración entera cuando ningún binding se usa', () => {
+    const out = run("import { unused } from './dep'\nexport const x = 1\n")
+    expect(out).not.toContain("from './dep'")
+  })
+
+  test('conserva el import de efecto', () => {
+    const out = run("import './side'\nimport { unused } from './dep'\nexport const x = 1\n")
+    expect(out).toContain("import './side'")
+  })
+
+  test('conserva el tipo usado sólo en posición de tipo', () => {
+    const out = run("import type { Shape } from './dep'\nexport const s: Shape = { a: 1 }\n")
+    expect(out).toBeUndefined()
+  })
+
+  test('no toca locales ni parámetros sin uso', () => {
+    const out = run(
+      "import { unused } from './dep'\nexport function f(p: number) { const l = 1; return 2 }\n",
+    )
+    expect(out).toContain('p: number')
+    expect(out).toContain('const l = 1')
+  })
+
+  test('un archivo sin imports sin uso no aparece en el resultado', () => {
+    expect(run("import { used } from './dep'\nconsole.log(used)\n")).toBeUndefined()
+  })
+})
