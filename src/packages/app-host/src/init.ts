@@ -82,7 +82,6 @@ import {
 import {
   initializeRemoteManagedSettingsLoadingPromise,
   isEligibleForRemoteManagedSettings,
-  waitForRemoteManagedSettingsToLoad,
 } from '@thyrox/config/remote'
 import { preconnectAnthropicApi } from './startup/apiPreconnect.js'
 import { applyExtraCACertsFromConfig } from './startup/caCertsConfig.js'
@@ -95,14 +94,13 @@ import { initJetBrainsDetection } from '@thyrox/config/env/dynamic'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getPlatform } from '@thyrox/config/platform'
 import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@thyrox/shell'
-import { ConfigParseError, errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { ConfigParseError } from '@thyrox/local-observability/errorHelpers.js'
 // showInvalidConfigDialog se importa dinámicamente en la ruta de error para no cargar React durante init
 import {
   gracefulShutdownSync,
   setupGracefulShutdown,
 } from './bootstrap/gracefulShutdown.js'
 import {
-  applyConfigEnvironmentVariables,
   applySafeConfigEnvironmentVariables,
 } from '@thyrox/config/managedEnv.js'
 import { configureGlobalMTLS } from '@thyrox/provider/mtls.js'
@@ -114,7 +112,6 @@ import {
 // ~400KB de módulos OpenTelemetry + protobuf hasta que la telemetría realmente se inicializa.
 // Los exporters gRPC (~700KB vía @grpc/grpc-js) se cargan perezosamente aún más adentro, en instrumentation.ts.
 import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
-import { isBetaTracingEnabled } from '@thyrox/local-observability/betaSessionTracing.js'
 import { getTelemetryAttributes } from '@thyrox/local-observability/telemetry'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
 import { initSentry } from '@thyrox/local-observability/sentry.js'

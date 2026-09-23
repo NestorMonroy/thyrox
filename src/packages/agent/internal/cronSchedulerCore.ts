@@ -8,7 +8,6 @@
 
 import type { FSWatcher } from 'chokidar'
 import { getAgentHostBindings } from '../host.js'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../internalTypes.js'
 import { cronToHuman } from './cronCore.js'
 import {
   type CronJitterConfig,

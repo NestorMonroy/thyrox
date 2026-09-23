@@ -11,7 +11,7 @@
  * sustituir directamente en cada caso. El original se guarda y se restaura
  * para mantener el aislamiento entre tests.
  */
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import { detectBrewFormulaName } from '../packageManagers.js'
 
 const ORIGINAL_EXEC_PATH = process.execPath

@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { type KeyboardEvent, Box, Byline, KeyboardShortcutHint, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
 import { isAutoMemoryEnabled } from '@thyrox/memory/paths'

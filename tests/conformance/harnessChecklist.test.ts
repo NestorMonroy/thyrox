@@ -20,7 +20,7 @@
  * hecha ANTES, y por eso puede fallar por una ausencia.
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { CHECKLIST, SECTIONS, coverage, type Predicate } from '../../src/conformance/checklist.ts'
 import { auditEvidence } from '../../src/conformance/audit.ts'

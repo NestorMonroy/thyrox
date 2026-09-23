@@ -1,6 +1,5 @@
 import type {
   AgentHookResult,
-  AgentLogOption,
   AgentMessage,
   AgentQuerySource,
   AgentREPLHookContext,

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { Box, Text } from '@anthropic/ink'
 import { LiveModeCycler } from '../LiveModeCycler.js'
 import type { Lesson } from './types.js'

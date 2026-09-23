@@ -17,7 +17,6 @@ import {
   getAPIProvider,
   isFirstPartyAnthropicBaseUrl,
 } from './providers.js'
-import { readEnv } from '@thyrox/config/env/utils'
 
 // .strip() — don't persist internal-only fields (mycro_deployments etc.) to disk
 const ModelCapabilitySchema = lazySchema(() =>

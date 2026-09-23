@@ -10,7 +10,6 @@ import {
 } from '@thyrox/local-observability'
 import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
 import { PermissionDialog } from './PermissionDialog.js'
-import { readEnv } from '@thyrox/config/env'
 
 export type SandboxPermissionRequestProps = {
   hostPattern: NetworkHostPattern

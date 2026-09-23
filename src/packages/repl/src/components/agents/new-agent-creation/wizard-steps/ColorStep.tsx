@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { Box, Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
 import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'

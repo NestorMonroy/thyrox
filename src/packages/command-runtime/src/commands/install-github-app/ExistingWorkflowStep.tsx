@@ -1,4 +1,3 @@
-import React from 'react'
 import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import { Box, Text } from '@anthropic/ink'
 

@@ -76,34 +76,13 @@ import {
 
   findSuitableShell,
   createProviderResolver,
-  createShellConfigFactory,
-  createPsProviderFactory,
-
+  
   exec,
   setCwd,
   setCreateTaskOutputFn,
   setGetSandboxTmpDirNameFn,
 } from '../index.js'
 
-import type {
-  ShellType,
-  ShellProvider,
-  ShellConfig,
-  ExecOptions,
-  ExecResult,
-  ShellCommand,
-  ShellExecContext,
-  SnapshotContext,
-  CommandSpec,
-  Argument,
-  Option,
-  ParseEntry,
-  ShellParseResult,
-  ShellQuoteResult,
-  PowerShellEdition,
-  FlagArgType,
-  ExternalCommandConfig,
-} from '../index.js'
 
 describe('@thyrox/shell import verification', () => {
 

@@ -7,7 +7,7 @@
  */
 import { randomUUID } from 'node:crypto'
 import { join } from 'node:path'
-import { readTranscript, Transcript } from './transcript.ts'
+import { Transcript } from './transcript.ts'
 import type { LastTurn } from './session/reconcile.ts'
 import { classifyLastTurn, filterUnresolvedToolUses, readTranscriptLines, resumableMessages, sessionEpoch } from './session/reconcile.ts'
 import type { Message } from './types.ts'

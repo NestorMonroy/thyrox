@@ -6,7 +6,6 @@ import {
   truncate as fsTruncate,
   link,
 } from 'fs/promises'
-import * as React from 'react'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { AppStateLike as AppState } from '../../contracts.js'
 import { z } from 'zod/v4'

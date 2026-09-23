@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { UP_ARROW } from '@thyrox/output/constants/figures.js'
 import { Box, Text } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
-import { isOpus1mMergeEnabled } from '@thyrox/provider/model.js'
 import { AnimatedAsterisk } from './AnimatedAsterisk.js'
 
 const MAX_SHOW_COUNT = 6

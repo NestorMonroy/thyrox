@@ -31,7 +31,6 @@
 
 import * as fs from 'node:fs'
 import * as fsPromises from 'node:fs/promises'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { performance as nodePerformance } from 'node:perf_hooks'
 

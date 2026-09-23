@@ -28,7 +28,7 @@ import {
 import { OAUTH_BETA_HEADER } from './oauthConstants.js'
 import { isClaudeAISubscriber } from './authAlias.js'
 import { has1mContext } from '@thyrox/agent/context.js'
-import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { getCanonicalName } from './model.js'
 import { get3PModelCapabilityOverride } from './model/modelSupportOverrides.js'
 import { getAPIProvider } from './providers.js'

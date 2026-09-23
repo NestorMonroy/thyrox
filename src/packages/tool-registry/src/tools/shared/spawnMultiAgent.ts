@@ -57,7 +57,6 @@ import {
   registerTeammateInTeamFile,
   sanitizeAgentName,
   sanitizeName,
-  type TeamFile,
 } from '@thyrox/swarm'
 import {
   assignTeammateColor,

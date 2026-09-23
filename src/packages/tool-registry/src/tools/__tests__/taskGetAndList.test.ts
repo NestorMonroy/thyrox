@@ -18,7 +18,6 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdtemp, rm } from 'fs/promises'
-import { join } from 'path'
 import { createTask, updateTask } from '@thyrox/agent/tasks.js'
 import {
   resetStateForTests,

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { useEffect } from 'react'
 import { useNotifications } from '../../notifications.js'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'

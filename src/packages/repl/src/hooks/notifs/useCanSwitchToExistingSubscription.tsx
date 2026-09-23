@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { getOauthProfileFromApiKey } from '@thyrox/provider/oauth/getOauthProfile.js'
 import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 import { Text } from '@anthropic/ink'

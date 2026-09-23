@@ -29,7 +29,7 @@
  *
  * MITAD ROJA: los casos fallan porque los ocho módulos no existen.
  */
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 
 describe('constants — los cuatro conjuntos que acotan qué herramienta ve un agente', () => {
   test('1. un agente NUNCA puede engendrar otro ni salir del plan por su cuenta', async () => {

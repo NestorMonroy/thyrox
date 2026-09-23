@@ -5,11 +5,6 @@ import {
   getLargeMemoryFiles,
 } from '@thyrox/storage/claudemd.js'
 import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
-import {
-  createTempDir,
-  cleanupTempDir,
-  writeTempFile,
-} from '../mocks/file-system'
 
 // ─── CLAUDE.md Integration with System Prompt ─────────────────────────
 

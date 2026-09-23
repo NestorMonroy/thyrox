@@ -18,7 +18,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { EffortValue, SkillDefinition } from '../types.ts'
+import type { EffortValue } from '../types.ts'
 import { EFFORT_LEVELS } from '../types.ts'
 import { skillArtifacts, skillsDir } from '../paths.ts'
 

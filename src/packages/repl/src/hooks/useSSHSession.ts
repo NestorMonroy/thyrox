@@ -21,7 +21,7 @@ import {
   isSessionEndMessage,
 } from '@thyrox/server/remote/sdkMessageAdapter.js'
 import type { SSHSession } from '@thyrox/cli/ssh/createSSHSession.js'
-import type { SSHSessionManager, SSHPermissionRequest } from '@thyrox/cli/ssh/SSHSessionManager.js'
+import type { SSHSessionManager } from '@thyrox/cli/ssh/SSHSessionManager.js'
 import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { findToolByName } from '@thyrox/tool-registry/Tool.js'
 import type { Message as MessageType } from '@thyrox/agent/messageShapes'

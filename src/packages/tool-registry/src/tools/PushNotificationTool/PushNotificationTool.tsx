@@ -7,7 +7,6 @@
 //     no replacement transport — local-only by design.
 //   - Telemetry event omitted in self-host mode.
 
-import * as React from 'react'
 import { z } from 'zod/v4'
 import { Box, Text } from '@anthropic/ink'
 import { isEnvTruthy } from '@thyrox/config/env/utils'

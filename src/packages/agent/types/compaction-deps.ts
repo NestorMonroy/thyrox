@@ -1,11 +1,8 @@
 
 import type { CoreMessage, Usage } from './messages.js'
 import type {
-  CompactionResult,
-  CompactionContext,
   PostCompactCleanupActions,
   ToolNameConstants,
-  TokenWarningState,
 } from './compaction.js'
 
 // ── Feature Flag ──

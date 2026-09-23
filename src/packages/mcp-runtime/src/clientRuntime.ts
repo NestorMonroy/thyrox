@@ -16,7 +16,6 @@ import {
 } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import {
   createFetchWithInit,
-  type FetchLike,
   type Transport,
 } from '@modelcontextprotocol/sdk/shared/transport.js'
 import {
@@ -110,10 +109,7 @@ import { buildMcpToolName } from './mcpStringUtils.js'
 import { normalizeNameForMCP } from './normalization.js'
 import {
   clearMcpAuthCache,
-  getMcpAuthCache,
-  getMcpAuthCachePath,
   isMcpAuthCached,
-  setMcpAuthCacheEntry,
 } from './client/authCache.js'
 import {
   createClaudeAiProxyFetch,

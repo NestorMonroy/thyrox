@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from 'child_process';
 import { resolve } from 'path';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { getBridgeDisabledReason, isBridgeEnabled } from '@thyrox/bridge/bridgeEnabled.js';
+import { getBridgeDisabledReason } from '@thyrox/bridge/bridgeEnabled.js';
 import { getBridgeAccessToken } from '@thyrox/bridge/bridgeConfig.js';
 import { BRIDGE_LOGIN_INSTRUCTION } from '@thyrox/bridge/types.js';
 import { Dialog } from '@anthropic/ink';

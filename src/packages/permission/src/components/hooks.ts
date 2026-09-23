@@ -22,7 +22,6 @@ import { useSetAppState } from '../appStateHooks.js'
 import { env } from '@thyrox/config/env/paths'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { type CompletionType, logUnaryEvent } from '@thyrox/local-observability/logging'
-import { readEnv } from '@thyrox/config/env'
 
 export type UnaryEvent = {
   completion_type: CompletionType

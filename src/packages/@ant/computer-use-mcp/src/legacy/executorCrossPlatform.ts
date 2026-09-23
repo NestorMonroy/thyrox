@@ -42,7 +42,6 @@ import { sleep } from '@thyrox/config/sleep'
 import { CLI_CU_CAPABILITIES, CLI_HOST_BUNDLE_ID } from './common.js'
 import { validateHwnd } from './win32/shared.js'
 import { loadPlatform } from './platforms/index.js'
-import type { Platform } from './platforms/index.js'
 
 // ---------------------------------------------------------------------------
 // Helpers for HWND-bound mode

@@ -4,7 +4,6 @@
 // when the loop has aged out or the runtime gate is off — the model
 // should treat that as "loop ended".
 
-import * as React from 'react'
 import { z } from 'zod/v4'
 import { Text } from '@anthropic/ink'
 import {

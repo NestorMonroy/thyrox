@@ -9,9 +9,9 @@ import { readFileSync, unlinkSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import type {
-  AppInfo, AppsAPI, DisplayAPI, DisplayGeometry, InstalledApp,
-  PrepareDisplayResult, RunningApp, ScreenshotAPI, ScreenshotResult,
-  SwiftBackend, WindowDisplayInfo,
+  AppsAPI, DisplayAPI, DisplayGeometry, InstalledApp,
+  ScreenshotAPI
+  ,
 } from '../types.js'
 
 // ---------------------------------------------------------------------------

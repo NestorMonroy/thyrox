@@ -46,7 +46,6 @@ import type {
   MemCanUseTool,
   MemSystemMessage,
 } from './internalTypes.js'
-import { readEnv } from '@thyrox/config/env/utils'
 import * as teamMemPathsModule from './teamMemPaths.js'
 
 const teamMemPaths = feature('TEAMMEM') ? teamMemPathsModule : null

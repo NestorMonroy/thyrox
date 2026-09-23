@@ -46,7 +46,6 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import type { RuntimeGraph } from '@thyrox/app-host'
 import { feature } from 'bun:bundle';
-import { spawnSync } from 'child_process';
 import { cancelAllPendingLoopSessionCrons } from '@thyrox/agent/scheduler';
 import {
   snapshotOutputTokensForTurn,
@@ -59,17 +58,15 @@ import { parseTokenBudget } from '@thyrox/agent/tokenBudget';
 import { count } from '@thyrox/tool-registry/utils/array.js';
 import { dirname, join } from 'path';
 import { tmpdir } from 'os';
-import figures from 'figures';
 // eslint-disable-next-line custom-rules/prefer-use-keybindings -- / n N Esc [ v are bare letters in transcript modal context, same class as g/G/j/k in ScrollKeybindingHandler
 import { useInput } from '@anthropic/ink'
-import { useSearchInput } from '@anthropic/ink/search'
 import { useTerminalSize } from '@anthropic/ink'
 import { useSearchHighlight } from '@anthropic/ink'
 import type { JumpHandle } from '../components/VirtualMessageList.js'
 import { renderMessagesToPlainText } from '@thyrox/output/render/exportRenderer.js'
 import { openFileInExternalEditor } from '@thyrox/storage/editor.js'
 import { writeFile } from 'fs/promises'
-import { type TabStatusKind, Box, Text, useStdin, useTheme, useTerminalFocus, useTerminalTitle, useTabStatus } from '@anthropic/ink'
+import { type TabStatusKind, Box, Text, useStdin, useTheme, useTerminalFocus, useTabStatus } from '@anthropic/ink'
 import { CostThresholdDialog } from '../components/CostThresholdDialog.js'
 import { IdleReturnDialog } from '../components/IdleReturnDialog.js'
 import * as React from 'react'
@@ -81,7 +78,6 @@ import {
   useCallback,
   useDeferredValue,
   useLayoutEffect,
-  type RefObject,
 } from 'react'
 import { useNotifications } from '../notifications.js'
 import { sendNotification } from '../notifier.js'
@@ -119,7 +115,6 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js';
 import { QueryGuard } from '@thyrox/agent/runtime/QueryGuard.js';
 import { isEnvTruthy } from '@thyrox/config/env/utils';
 import { formatTokens } from '@thyrox/output/formatters'
-import { truncateToWidth } from '@thyrox/output/formatters/truncate.js';
 import { consumeEarlyInput } from '../earlyInput.js';
 
 import { setMemberActive } from '@thyrox/swarm';
@@ -188,14 +183,13 @@ import { useCostSummary } from '../costHook/costHook.js';
 import { useFpsMetrics } from '@thyrox/app-host/context/fpsMetrics.js';
 import { useAfterFirstRender } from '../hooks/useAfterFirstRender.js';
 import { useDeferredHookMessages } from '../hooks/useDeferredHookMessages.js';
-import { addToHistory, removeLastFromHistory, expandPastedTextRefs, parseReferences } from '../history.js';
+import { addToHistory, removeLastFromHistory, parseReferences } from '../history.js';
 import { prependModeCharacterToInput } from '../components/PromptInput/inputModes.js';
 import { prependToShellHistoryCache } from '../suggestions/shellHistoryCompletion.js';
 import { useApiKeyVerification } from '../hooks/useApiKeyVerification.js';
 import { GlobalKeybindingHandlers } from '../hooks/useGlobalKeybindings.js';
 import { CommandKeybindingHandlers } from '../hooks/useCommandKeybindings.js';
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js';
-import { useShortcutDisplay } from '../keybindings/useShortcutDisplay.js';
 import { TranscriptModeFooter } from './repl/TranscriptModeFooter.js';
 import { TranscriptSearchBar } from './repl/TranscriptSearchBar.js';
 import { AnimatedTerminalTitle } from './repl/AnimatedTerminalTitle.js';
@@ -217,7 +211,6 @@ import { useStartupCallouts } from './repl/useStartupCallouts.js';
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js';
 import { CancelRequestHandler } from '../hooks/useCancelRequest.js';
 import { useBackgroundTaskNavigation } from '../hooks/useBackgroundTaskNavigation.js';
-import { useSwarmInitialization } from '../hooks/useSwarmInitialization.js';
 import { useTeammateViewAutoExit } from '../hooks/useTeammateViewAutoExit.js';
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js';
 import { isHumanTurn } from '@thyrox/agent/messagePredicates.js';
@@ -261,7 +254,6 @@ import { buildPermissionUpdates } from '@thyrox/permission/components/ExitPlanMo
 import { stripDangerousPermissionsForAutoMode } from '@thyrox/permission/permissionSetup';
 import { getScratchpadDir, isScratchpadEnabled } from '@thyrox/permission/filesystem';
 import { WEB_FETCH_TOOL_NAME } from '@thyrox/tool-registry/tools/WebFetchTool/prompt.js';
-import { SLEEP_TOOL_NAME } from '@thyrox/tool-registry/tools/SleepTool/prompt.js';
 import { clearSpeculativeChecks } from '@thyrox/tool-registry/tools/BashTool/bashPermissions.js';
 import type { AutoUpdaterResult } from '@thyrox/updater/autoUpdater.js';
 import { getGlobalConfig, saveGlobalConfig, getGlobalConfigWriteCount } from '@thyrox/config';
@@ -300,7 +292,6 @@ import { queryCheckpoint, logQueryProfileReport } from '@thyrox/local-observabil
 import type {
   Message as MessageType,
   UserMessage,
-  ProgressMessage,
   HookResultMessage,
   PartialCompactDirection,
 } from '@thyrox/agent/messageShapes';
@@ -380,7 +371,6 @@ import { isInProcessTeammateTask, type InProcessTeammateTaskState } from '@thyro
 import { restoreRemoteAgentTasks } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js';
 import { useInboxPoller } from '../hooks/useInboxPoller.js';
 import { getViewedLocalAgentTask } from './repl/backgrounding.js';
-import { getInteractiveMcpClients } from './repl/integrations.js';
 import { parseImmediateCommandInput } from './repl/submission.js';
 // Dead code elimination: conditional import for loop mode
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -403,11 +393,8 @@ import {
   type IdeType,
 } from '@thyrox/ide/ide.js';
 import { useIDEIntegration } from '@thyrox/ide/hooks/useIDEIntegration.js';
-import exit from '../commands/exit/index.js';
-import { ExitFlow } from '../components/ExitFlow.js';
 import { getCurrentWorktreeSession } from '@thyrox/swarm';
 import {
-  popAllEditable,
   enqueue,
   type SetAppState,
   getCommandQueue,
@@ -421,7 +408,7 @@ import { useSessionBackgrounding } from '../hooks/useSessionBackgrounding.js';
 import { diagnosticTracker } from '@thyrox/tool-registry/diagnosticTracking.js';
 import { handleSpeculationAccept, type ActiveSpeculationState } from '../promptSuggestionSpeculation.js';
 import { IdeOnboardingDialog } from '../components/IdeOnboardingDialog.js';
-import { EffortCallout, shouldShowEffortCallout } from '../components/EffortCallout.js';
+import { EffortCallout } from '../components/EffortCallout.js';
 import type { EffortValue } from '@thyrox/agent/effort.js';
 import { RemoteCallout } from '../components/RemoteCallout.js';
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
@@ -466,7 +453,6 @@ import { useClaudeCodeHintRecommendation } from '../hooks/useClaudeCodeHintRecom
 import { PluginHintMenu } from '../components/ClaudeCodeHint/PluginHintMenu.js';
 import {
   DesktopUpsellStartup,
-  shouldShowDesktopUpsellStartup,
 } from '../components/DesktopUpsell/DesktopUpsellStartup.js';
 import { usePluginInstallationStatus } from '../hooks/notifs/usePluginInstallationStatus.js';
 import { usePluginAutoupdateNotification } from '../hooks/notifs/usePluginAutoupdateNotification.js';
@@ -480,7 +466,6 @@ import { useModelMigrationNotifications } from '../hooks/notifs/useModelMigratio
 import { useCanSwitchToExistingSubscription } from '../hooks/notifs/useCanSwitchToExistingSubscription.js';
 import { useTeammateLifecycleNotification } from '../hooks/notifs/useTeammateShutdownNotification.js';
 import { useFastModeNotification } from '../hooks/notifs/useFastModeNotification.js';
-import type { HookProgress } from '@thyrox/agent/types/hooks.js';
 import { TungstenLiveMonitor } from '@thyrox/tool-registry/tools/TungstenTool/TungstenLiveMonitor.js';
 /* eslint-disable @typescript-eslint/no-require-imports */
 const WebBrowserPanelModule = feature('WEB_BROWSER_TOOL')

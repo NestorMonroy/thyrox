@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { PermissionRuleList } from '../components/rules/PermissionRuleList.js'
 import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
 import { createPermissionRetryMessage } from '@thyrox/agent/messages.js'

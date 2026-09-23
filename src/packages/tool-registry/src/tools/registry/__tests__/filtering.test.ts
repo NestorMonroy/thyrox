@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import {
   applyCoordinatorToolFilter,
   isPrActivitySubscriptionTool,
-  mergeAndFilterTools,
 } from '../filtering.js'
 
 describe('isPrActivitySubscriptionTool', () => {

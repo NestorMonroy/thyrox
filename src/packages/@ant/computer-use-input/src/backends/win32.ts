@@ -7,7 +7,7 @@
  * All P/Invoke types are compiled once at module load and reused across calls.
  */
 
-import type { FrontmostAppInfo, InputBackend } from '../types.js'
+import type { InputBackend } from '../types.js'
 
 // ---------------------------------------------------------------------------
 // PowerShell helper — run a script and return trimmed stdout

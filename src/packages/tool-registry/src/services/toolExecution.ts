@@ -64,9 +64,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   AbortError,
   errorMessage,
-  getErrnoCode,
   ShellError,
-  TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 } from '@thyrox/local-observability/errorHelpers.js'
 import { executePermissionDeniedHooks } from '@thyrox/agent/hooks.js'
 import { logError } from '@thyrox/local-observability/logging'

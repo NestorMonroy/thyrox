@@ -1,4 +1,4 @@
-import { mock, describe, expect, test, beforeEach } from 'bun:test'
+import { mock, describe, expect, test } from 'bun:test'
 
 // Mock heavy deps before importing memoize
 mock.module('src/utils/log.ts', () => ({

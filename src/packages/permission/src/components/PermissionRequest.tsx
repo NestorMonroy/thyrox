@@ -4,7 +4,7 @@ import { EnterPlanModeTool } from '@thyrox/tool-registry/tools/EnterPlanModeTool
 import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
 import { useNotifyAfterTimeout } from '@thyrox/repl/hooks/useNotifyAfterTimeout.js'
 import { useKeybinding } from '@anthropic/ink/keybindings'
-import type { AnyObject, Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { AskUserQuestionTool } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { BashTool } from '@thyrox/tool-registry/tools/BashTool/BashTool.js'
 import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
@@ -16,8 +16,6 @@ import { NotebookEditTool } from '@thyrox/tool-registry/tools/NotebookEditTool/N
 import { PowerShellTool } from '@thyrox/tool-registry/tools/PowerShellTool/PowerShellTool.js'
 import { SkillTool } from '@thyrox/tool-registry/tools/SkillTool/SkillTool.js'
 import { WebFetchTool } from '@thyrox/tool-registry/tools/WebFetchTool/WebFetchTool.js'
-import type { AssistantMessage } from '@thyrox/agent/messageShapes'
-import type { PermissionDecision } from '../PermissionResult.js'
 import { AskUserQuestionPermissionRequest } from './AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.js'
 import { BashPermissionRequest } from './BashPermissionRequest/BashPermissionRequest.js'
 import { EnterPlanModePermissionRequest } from './EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.js'
@@ -69,11 +67,7 @@ const MonitorPermissionRequest = feature('MONITOR_TOOL')
     ).MonitorPermissionRequest
   : null
 
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 /* eslint-enable @typescript-eslint/no-require-imports */
-import type { z } from 'zod/v4'
-import type { PermissionUpdate } from '../PermissionUpdateSchema.js'
-import type { WorkerBadgeProps } from './WorkerBadge.js'
 
 function permissionComponentForTool(
   tool: Tool,

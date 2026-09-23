@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import '@thyrox/tool-registry/runtime'
 import type { Tools, ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { assembleToolPool } from '@thyrox/tool-registry'
-import { useAppState } from '../appStateHooks.js'
 import { mergeAndFilterTools } from '../toolPool.js'
 
 /**

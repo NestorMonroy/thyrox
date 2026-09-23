@@ -31,7 +31,6 @@ import {
   SYNTHETIC_MODEL,
 } from '@thyrox/agent/messages.js'
 import type {
-  Message,
   AssistantMessage,
   UserMessage,
 } from '@thyrox/repl/replTypes/message.js'

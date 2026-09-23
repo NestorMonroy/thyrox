@@ -8,7 +8,7 @@
 
 import { afterEach, describe, expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Journal, readJournal } from '../src/journal.ts'

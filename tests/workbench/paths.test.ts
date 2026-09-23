@@ -38,7 +38,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { thyroxRoot } from '../../src/paths/reach.ts'
-import { WORKBENCH_DIR_VAR, WorkbenchHomeError, evidenceDir, stateDir, workbenchDir } from '../../src/workbench/paths.ts'
+import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../../src/workbench/paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
