@@ -158,6 +158,42 @@ def residual_distribution(draft, target):
     return [value / total for value in excess]
 
 
+def acceptance_rate(draft, target):
+    """La probabilidad de aceptar una propuesta: ``sum(min(p, q))``.
+
+    Es ``sum(p(x) * min(1, q(x) / p(x)))``: cada aceptacion pesa lo que el
+    borrador la PROPONE. Promediar ``acceptance_probabilities`` sin ese peso
+    da otra cantidad —0.7238 en el ejemplo del brief contra 0.55 que acepta el
+    muestreador—, porque trataria igual a un indice que el borrador casi nunca
+    propone. Equivale a uno menos la distancia de variacion total entre ``p``
+    y ``q``: mide cuanto se parecen, que es de lo que depende la ganancia.
+    """
+    _validate(draft, target)
+    return sum(min(proposed, wanted) for proposed, wanted in zip(draft, target))
+
+
+def expected_tokens_per_call(alpha, gamma):
+    """Tokens que produce en promedio una llamada al objetivo con ``gamma``
+    propuestas: ``(1 - alpha ** (gamma + 1)) / (1 - alpha)``.
+
+    Se aceptan propuestas hasta el primer rechazo, y la llamada produce
+    ademas un token siempre: el de correccion, o uno adicional si se
+    aceptaron las ``gamma``. Con ``alpha == 1`` el limite es ``gamma + 1``;
+    con ``alpha == 0``, solo el de correccion. Supone aceptaciones
+    independientes con la misma ``alpha`` en cada posicion, que es lo que un
+    borrador y un objetivo fijos cumplen y un modelo real solo aproxima.
+    La ganancia de velocidad es este numero dividido por el costo relativo de
+    correr el borrador ``gamma`` veces.
+    """
+    if not 0.0 <= alpha <= 1.0:
+        raise ValueError(f"alpha es una probabilidad: {alpha}")
+    if gamma < 1:
+        raise ValueError(f"gamma cuenta propuestas, al menos una: {gamma}")
+    if alpha == 1.0:
+        return float(gamma + 1)
+    return (1 - alpha ** (gamma + 1)) / (1 - alpha)
+
+
 def _draw(weights, uniform):
     """El indice que le toca a ``uniform`` repartiendo por ``weights``.
 
