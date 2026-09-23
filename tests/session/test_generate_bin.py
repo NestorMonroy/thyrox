@@ -28,6 +28,12 @@ import tempfile
 
 HERE = pathlib.Path(__file__).resolve()
 ROOT = HERE.parent.parent.parent
+
+# La suite mide envoltorios que derivan la raíz de SU ubicación. `tests/run.sh`
+# y `bin/` EXPORTAN `THYROX_ROOT`, y heredada gana: los envoltorios del árbol
+# sintético resolvían al árbol real y caían nueve casos. Medido: sin la
+# variable, la suite pasa entera. Los casos que la necesitan la fijan ellos.
+os.environ.pop("THYROX_ROOT", None)
 sys.path.insert(0, str(ROOT / "src/session"))
 import generate_bin as gb  # noqa: E402
 

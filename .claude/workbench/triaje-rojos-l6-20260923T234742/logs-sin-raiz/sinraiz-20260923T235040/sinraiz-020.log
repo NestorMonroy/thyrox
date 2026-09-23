@@ -1,0 +1,95 @@
+FFFFFFFFFF
+======================================================================
+FAIL: test_el_clon_real_lo_tiene_activado (__main__.PreCommitHook.test_el_clon_real_lo_tiene_activado)
+`core.hooksPath` no se versiona: se comprueba que este clon lo fijo.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_identity_that_differs_from_the_declared_one_blocks (__main__.PreCommitHook.test_identity_that_differs_from_the_declared_one_blocks)
+El fixture commitea como `t <t@t>`; el `.env` declara otra identidad.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_sin_gates_rehusa_en_vez_de_omitir (__main__.PreCommitHook.test_sin_gates_rehusa_en_vez_de_omitir)
+Un exit 0 con los gates inalcanzables seria un verde falso.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_sin_un_gate_de_paquete_rehusa (__main__.PreCommitHook.test_sin_un_gate_de_paquete_rehusa)
+El contrato de rehusar-en-vez-de-omitir alcanza a los dos nuevos.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_un_banco_en_el_proveedor_se_reporta (__main__.PreCommitHook.test_un_banco_en_el_proveedor_se_reporta)
+El negativo: con un banco propio, el gate lo NOMBRA en la salida.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_un_gate_que_revienta_no_publica_la_receta_del_banco (__main__.PreCommitHook.test_un_gate_que_revienta_no_publica_la_receta_del_banco)
+Reventar no es dictaminar: el remedio del banco seria un mensaje falso.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 72, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 247, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 247, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.871s
+
+FAILED (failures=10)
+EXIT=1

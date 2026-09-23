@@ -72,7 +72,9 @@ if [[ -z "$_thyrox_root" && -n "${THYROX_ENV_FILE:-}" && -f "${THYROX_ENV_FILE}"
 fi
 printf '%s' "$_thyrox_root"
 INNER
-got="$(THYROX_ENV_FILE="$TMP/declaracion.env" bash "$TMP/hondo.sh" 2>&1)"
+# `env -u`: `tests/run.sh` y `bin/` EXPORTAN `THYROX_ROOT`, y heredada gana
+# sobre el archivo — el caso medía la variable y no la carga.
+got="$(env -u THYROX_ROOT THYROX_ENV_FILE="$TMP/declaracion.env" bash "$TMP/hondo.sh" 2>&1)"
 if [[ "$got" == "$TMP/porarchivo" ]]; then ok "la declaracion por archivo resuelve"
 else bad "THYROX_ENV_FILE ignorado: '$got'"; fi
 

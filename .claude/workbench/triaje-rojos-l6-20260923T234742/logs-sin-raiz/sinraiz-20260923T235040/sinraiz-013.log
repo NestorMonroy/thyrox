@@ -1,0 +1,26 @@
+FALLO: 2a. un repo sin .gitattributes
+  esperado: 1
+  obtenido: 0
+FALLO: 2b. falta una directiva (solo text=auto)
+  esperado: 1
+  obtenido: 0
+FALLO: 2c. directiva duplicada
+  esperado: 1
+  obtenido: 0
+FALLO: 2d. directiva ajena al contrato
+  esperado: 1
+  obtenido: 0
+FALLO: 2e. archivo sin directivas efectivas
+  esperado: 1
+  obtenido: 0
+FALLO: 4a. con el gate, los 4 defectos de contenido se rechazan
+  esperado: 4
+  obtenido: 0
+FALLO: 6a. con un repo fuera, el alcance baja a 4
+  esperado: si
+  obtenido: no
+FALLO: 6b. el repo ausente se nombra
+  esperado: si
+  obtenido: no
+test-gitattributes: 13 de 21 aserciones en verde
+EXIT=1

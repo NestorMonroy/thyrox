@@ -1,0 +1,15 @@
+OK   sube desde un nieto al node_modules del abuelo
+OK   el node_modules mas cercano gana
+OK   sin node_modules en la cadena: exit 1
+OK   sin node_modules en la cadena: no emite ruta
+OK   resuelve el directorio del paquete
+OK   arbol real: el duenyo es alcanzable desde src/packages/agent
+FALLA arbol real: el duenyo esta anclado al store de la raiz — esperado 'anclado', obtenido 'no'
+OK   izado: el duenyo es la raiz, acepta
+OK   aislado que ancla en la raiz: acepta
+OK   aislado que ancla en la raiz ANIDADA: rehusa
+OK   jardin sin entradas: rehusa, no publica un cero
+OK   solo hermanos de workspace: rehusa (no son entradas del store)
+
+aserciones: 11 de 12 · fallos: 1
+EXIT=1

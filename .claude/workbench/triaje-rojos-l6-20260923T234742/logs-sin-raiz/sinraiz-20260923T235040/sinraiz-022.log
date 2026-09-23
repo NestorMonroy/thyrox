@@ -1,0 +1,18 @@
+=== Caso 1: el sujeto existe y esta bajo el banco declarado ===
+  OK   el archivo del banco existe
+=== Caso 2 (EL QUE DISCRIMINA): el descuento necesita la raiz medida ===
+  FAIL con la raiz, el banco se descuenta: False != True
+=== Caso 3: los tres recorridos del gate pasan la raiz ===
+       213 archivo(s) del banco, p.ej. .claude/eventos/acl-como-puerta-20260827T194322/sondas/mapear_csv_de_la_referencia.py
+  FAIL el eje de idioma no reporta el banco: 213 != 0
+       1 archivo(s) del banco, p.ej. /home/user/kaupamex-docs/.claude/eventos/hogar-del-banco-en-constante-20260907T012124/instrumento-dos-entradas.py
+  FAIL el eje de separador no reporta el banco: 1 != 0
+       265 archivo(s) del banco, p.ej. .claude/eventos/acl-en-las-referencias-20260827T192754/sondas/censo_dato_acl.py
+  FAIL el eje de identificadores no reporta el banco: 265 != 0
+=== Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+  OK   el eje de idioma sigue midiendo archivos
+  OK   el eje de separador sigue midiendo archivos
+  OK   el eje de identificadores sigue midiendo archivos
+
+4 ok, 4 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+EXIT=1
