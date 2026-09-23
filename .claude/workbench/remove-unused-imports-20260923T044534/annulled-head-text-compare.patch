@@ -1,0 +1,11 @@
+--- a/src/verify/removeUnusedImports.ts
++++ b/src/verify/removeUnusedImports.ts
+@@ -117,7 +117,7 @@
+       const resolved =
+         checker.getSymbolAtLocation(node) ??
+         checker.resolveName(node.text, node, ts.SymbolFlags.All, false)
+-      if (symbol && resolved === symbol) named.add(node.text)
++      if (symbol) named.add(node.text)
+     }
+     ts.forEachChild(node, visit)
+   }

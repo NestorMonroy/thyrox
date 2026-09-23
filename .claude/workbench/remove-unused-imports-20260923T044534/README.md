@@ -105,3 +105,23 @@ el TypeQuery), así que se resuelve por alcance con `resolveName`.
 Una primera versión saltaba además las `ExportDeclaration` con módulo. Su
 anulación no tumbó ningún caso: era código muerto, porque la comparación por
 símbolo ya lo distinguía, y se retiró.
+
+## Las anulaciones, repetibles: parche y manifiesto (2026-09-23)
+
+Las tablas de arriba describían cada anulación en prosa, y las copias de
+partida (`.claude/cache/*.orig.ts`) se borraron. Rehechas contra HEAD
+`857e999c` con `bin/annulment_control`; cada una deja su `annulled-<pieza>.patch`,
+sus dos salidas y una fila en `annulment.jsonl` con el blob del sujeto antes y
+después (iguales en todas).
+
+| Pieza | Parche | Cae |
+|---|---|---|
+| volver a `organizeImports` | `annulled-head-organize.patch` | «no reformatea lo que conserva» |
+| `deleteImports` + `delete` | `annulled-head-everything.patch` | «no toca locales ni parámetros» |
+| comparar por texto | `annulled-head-text-compare.patch` | reexportación y sombreado |
+| sin `resolveName` | `annulled-head-scope-fallback.patch` | el caso `typeof` |
+
+`*-INVALID-head-text-compare.*` (y la primera fila `head-text-compare` del
+manifiesto) es una corrida inválida: el parche se compuso fuera, la
+sustitución no casó y el parche borraba el módulo entero. Se conserva como
+evidencia del defecto que llevó a `--replace`; no mide la pieza.

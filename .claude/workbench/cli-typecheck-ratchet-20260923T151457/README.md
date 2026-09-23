@@ -19,3 +19,10 @@ sobrevive porque la conducta binaria también bloquea. `restored.txt`: 16/16.
 Métrica: líneas `error TS` por proyecto de `cli`.
 Ciega a: un commit que arregla N errores y crea N distintos — el conteo no
 cambia. Por eso bajar el baseline es una edición explícita, no automática.
+
+## La anulación, repetible (2026-09-23)
+
+Rehecha con `bin/annulment_control --replace` contra HEAD `857e999c`:
+`annulled-head-ratchet.patch` desactiva el bloque del trinquete. Caen los mismos
+5 casos que en la primera corrida; `restored-head-ratchet.txt` da 16/16, y el
+manifiesto registra el mismo blob antes y después.
