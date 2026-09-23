@@ -215,6 +215,24 @@ def verify_proposals(before_lines, after_lines, proposals: list[Proposal]) -> Ba
     )
 
 
+def ledger_rows(report: BatchReport) -> list[dict]:
+    """Una fila del registro de veredictos por propuesta del lote."""
+    rows = []
+    for v in report.verdicts:
+        if isinstance(v, Verdict):
+            row = {"proposal_id": v.provider, "proposer": "ts2305-facade",
+                   "outcome": v.outcome, "targets_before": v.edges_before,
+                   "targets_after": v.edges_after, "new_diagnostics": []}
+        else:
+            row = {"proposal_id": v.proposal_id, "proposer": v.proposer,
+                   "outcome": v.outcome, "targets_before": v.targets_before,
+                   "targets_after": v.targets_after,
+                   "new_diagnostics": v.new_diagnostics}
+        row["total_before"], row["total_after"] = report.total_before, report.total_after
+        rows.append(row)
+    return rows
+
+
 def read_proposals(path: Path) -> list[Proposal]:
     """Lee el contrato JSONL común a todos los proponentes."""
     proposals: list[Proposal] = []
@@ -285,17 +303,7 @@ def main(argv: list[str] | None = None) -> int:
         # Se añade y no se reescribe: el registro es la historia de la que el
         # planificador aprende, y un lote nuevo no borra los anteriores.
         with args.verdicts_out.open("a", encoding="utf-8") as ledger:
-            for v in report.verdicts:
-                if isinstance(v, Verdict):
-                    row = {"proposal_id": v.provider, "proposer": "ts2305-facade",
-                           "outcome": v.outcome, "targets_before": v.edges_before,
-                           "targets_after": v.edges_after, "new_diagnostics": []}
-                else:
-                    row = {"proposal_id": v.proposal_id, "proposer": v.proposer,
-                           "outcome": v.outcome, "targets_before": v.targets_before,
-                           "targets_after": v.targets_after,
-                           "new_diagnostics": v.new_diagnostics}
-                row["total_before"], row["total_after"] = report.total_before, report.total_after
+            for row in ledger_rows(report):
                 ledger.write(json.dumps(row, ensure_ascii=False) + "\n")
     print(f"batch_verification: alpha {report.acceptance_rate:.2f} · total "
           f"{report.total_before} -> {report.total_after} · "

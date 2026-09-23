@@ -39,3 +39,28 @@ fixture; su condición de cierre es un proponente que la produzca.
 Métrica: casos de las dos suites por pieza anulada.
 Ciega a: si las claves aparecen en el log real de `tsc` — lo mide
 `batch_verification`, que da `no-targets` cuando no aparecen.
+
+# tsc_zero_step: un paso del lazo
+
+`src/verify/tsc_zero_step.py` (`bin/tsc_zero_step`). Suite:
+`tests/verify/test_tsc_zero_step.py`, con un `tsc` falso y determinista en el
+formato de `tsc --pretty false` (incluida una dependencia entre archivos).
+
+Compone `tsc_schedule.schedule`, la aplicación con base comprobada,
+`batch_verification.verify_proposals` y su `ledger_rows` (extraído del CLI
+para no duplicar la fila), la reversión de lo no aceptado y una pasada de
+confirmación cuando se revirtió algo y quedó algo. Estados `done`, `progress`,
+`stalled`; un `tsc` que sale distinto de 0 sin diagnósticos rehúsa. No
+commitea: devuelve `files_kept` para el commit por pathspec.
+
+| Pieza anulada | Cae |
+|---|---|
+| `step-revert-rejected` | «la rechazada se revierte», «y el árbol queda como estaba», y —por la red de confirmación, que revierte todo al ver el diagnóstico nuevo— «la aceptada queda aplicada», «el total confirmado baja», «el paso… progresa» |
+| `step-base-check` | «la de base vieja no se aplica», «el registro lleva los tres veredictos», «el total confirmado baja de 4 a 3» |
+| `step-confirm-run` | «revertir exige una pasada de confirmación», los dos casos de la dependencia entre archivos |
+| `step-empty-log` | «un tsc que falla sin diagnósticos rehúsa» |
+| `step-done` | «tsc sale 0 sin diagnósticos: tsc cero» |
+| `step-confirm-rollback` | «la confirmación trae un diagnóstico nuevo: se revierte todo» |
+
+Ciega a: el `tsc` real — sus tiempos y su universo los mide la primera corrida
+sobre el árbol, no esta suite.

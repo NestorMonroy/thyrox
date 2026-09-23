@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -139,7 +139,7 @@
+ 
+     accepted = [pid for pid in applied if outcomes[pid] == "accepted"]
+     reverted = [pid for pid in applied if outcomes[pid] != "accepted"]
+-    for pid in reverted:
++    for pid in []:
+         for file, text in applied[pid].items():
+             (root / file).write_text(text)
+     final_lines = after_lines

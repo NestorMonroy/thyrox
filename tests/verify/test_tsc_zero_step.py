@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+"""Control de `src/verify/tsc_zero_step.py`: un paso del lazo tsc cero.
+
+El paso aplica un lote de candidatos, corre UNA vez el verificador, reparte el
+veredicto por propuesta, lo añade al registro y revierte lo no aceptado. Aquí
+el verificador es un `tsc` falso y determinista: una línea con `BAD<n>` da un
+TS9001 y una con `WORSE` da un TS9002, en el formato de `tsc --pretty false`.
+
+Qué haría fallar a este control:
+- no revertir lo rechazado: el árbol quedaría con el diagnóstico nuevo;
+- revertir lo aceptado, o no aplicarlo;
+- aplicar una propuesta cuya base cambió: escribiría en el sitio equivocado;
+- tomar un `tsc` que no produjo nada como «cero errores»: sin su código de
+  salida 0, un log vacío no es el final del lazo sino una medición rota;
+- no confirmar con otra pasada tras revertir: lo aceptado se juzgó junto a lo
+  que se revirtió, y sólo otra pasada mide lo que queda.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import sys
+import tempfile
+from pathlib import Path
+
+from verify import tsc_zero_step as step
+
+passed = failed = 0
+
+
+def assert_equal(name: str, expected, obtained) -> None:
+    global passed, failed
+    if expected == obtained:
+        passed += 1
+        print(f"  ok    {name}")
+    else:
+        failed += 1
+        print(f"  FALLA {name} — esperado {expected!r}, obtenido {obtained!r}")
+
+
+FAKE_TSC = '''import pathlib, re, sys
+lines = []
+provides = any("PROVIDES" in p.read_text() for p in pathlib.Path(".").glob("*.ts"))
+for path in sorted(pathlib.Path(".").glob("*.ts")):
+    for number, text in enumerate(path.read_text().splitlines(), 1):
+        for match in re.finditer(r"BAD(\\d+)", text):
+            lines.append(f"{path.name}({number},1): error TS9001: bad {match.group(1)}.")
+        if "WORSE" in text:
+            lines.append(f"{path.name}({number},1): error TS9002: worse.")
+        if "NEEDS" in text and not provides:
+            lines.append(f"{path.name}({number},1): error TS9003: needs a provider.")
+print("\\n".join(lines))
+sys.exit(2 if lines else 0)
+'''
+
+
+def sha(text: str) -> str:
+    return hashlib.sha256(text.encode()).hexdigest()
+
+
+def proposal(pid: str, proposer: str, file: str, text: str, old: str, new: str, targets: list[str]) -> dict:
+    start = text.index(old)
+    return {"proposal_id": pid, "proposer": proposer, "targets": targets, "files": [file],
+            "edits": [{"file": file, "start": start, "length": len(old), "newText": new}],
+            "bases": {file: sha(text)}}
+
+
+def fixture(base: Path) -> tuple[list[dict], list[str]]:
+    texts = {"a.ts": "const a = BAD1\n", "b.ts": "const b = BAD2\n", "c.ts": "const c = BAD3\n",
+             "d.ts": "const d = BAD4\n"}
+    for name, text in texts.items():
+        (base / name).write_text(text)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    candidates = [
+        proposal("fix:a.ts", "good", "a.ts", texts["a.ts"], "BAD1", "1", ["a.ts: TS9001: bad 1."]),
+        proposal("fix:b.ts", "bad", "b.ts", texts["b.ts"], "BAD2", "WORSE", ["b.ts: TS9001: bad 2."]),
+        # Base vieja: el archivo cambió después de proponerse.
+        {**proposal("fix:c.ts", "good", "c.ts", texts["c.ts"], "BAD3", "3", ["c.ts: TS9001: bad 3."]),
+         "bases": {"c.ts": sha("otro texto\n")}},
+    ]
+    return candidates, [sys.executable, "fake_tsc.py"]
+
+
+print("test_tsc_zero_step:")
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, candidates, tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None)
+    rows = [json.loads(line) for line in ledger.read_text().splitlines()] if ledger.exists() else []
+    outcomes = {row["proposal_id"]: row["outcome"] for row in rows}
+    assert_equal("la aceptada queda aplicada", "const a = 1\n", (base / "a.ts").read_text())
+    assert_equal("la rechazada se revierte", "const b = BAD2\n", (base / "b.ts").read_text())
+    assert_equal("la de base vieja no se aplica", "const c = BAD3\n", (base / "c.ts").read_text())
+    assert_equal("el registro lleva los tres veredictos",
+                 {"fix:a.ts": "accepted", "fix:b.ts": "rejected", "fix:c.ts": "infrastructure"},
+                 outcomes)
+    assert_equal("el total confirmado baja de 4 a 3", (4, 3), (report.total_before, report.total_final))
+    assert_equal("revertir exige una pasada de confirmación", 3, report.tsc_runs)
+    assert_equal("el paso con alguna aceptada progresa", "progress", report.status)
+    assert_equal("el log final queda en el banco para el paso siguiente", True,
+                 (base / "bench" / "final.log").exists())
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    only_good = [candidates[0]]
+    report = step.run_step(base, only_good, tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("sin nada que revertir no hay pasada de confirmación", 2, report.tsc_runs)
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    report = step.run_step(base, [candidates[1]], tsc, base / "ledger.jsonl", base / "bench",
+                           seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("sin ninguna aceptada el lazo se detiene", "stalled", report.status)
+    assert_equal("y el árbol queda como estaba", "const b = BAD2\n", (base / "b.ts").read_text())
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = 1\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    report = step.run_step(base, [], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("tsc sale 0 sin diagnósticos: tsc cero", "done", report.status)
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "broken_tsc.py").write_text("import sys\nsys.exit(1)\n")
+    try:
+        step.run_step(base, [], [sys.executable, "broken_tsc.py"], base / "ledger.jsonl",
+                      base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+        assert_equal("un tsc que falla sin diagnósticos rehúsa", "RuntimeError", "sin error")
+    except RuntimeError:
+        assert_equal("un tsc que falla sin diagnósticos rehúsa", "RuntimeError", "RuntimeError")
+
+with tempfile.TemporaryDirectory() as directory:
+    # Lo aceptado dependía de lo revertido: `a.ts` cierra su objetivo sólo
+    # mientras `b.ts` provee, y `b.ts` se rechaza por su propio diagnóstico.
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    a, b = (base / "a.ts").read_text(), (base / "b.ts").read_text()
+    coupled = [
+        proposal("fix:a.ts", "good", "a.ts", a, "BAD1", "NEEDS", ["a.ts: TS9001: bad 1."]),
+        proposal("fix:b.ts", "bad", "b.ts", b, "BAD2", "PROVIDES WORSE", ["b.ts: TS9001: bad 2."]),
+    ]
+    report = step.run_step(base, coupled, tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("la confirmación trae un diagnóstico nuevo: se revierte todo",
+                 ("stalled", "const a = BAD1\n"), (report.status, (base / "a.ts").read_text()))
+    assert_equal("y el total final es el de antes", (4, 4), (report.total_before, report.total_final))
+
+print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
+sys.exit(1 if failed else 0)

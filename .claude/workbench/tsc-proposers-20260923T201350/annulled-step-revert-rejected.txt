@@ -1,0 +1,19 @@
+test_tsc_zero_step:
+  FALLA la aceptada queda aplicada — esperado 'const a = 1\n', obtenido 'const a = BAD1\n'
+  FALLA la rechazada se revierte — esperado 'const b = BAD2\n', obtenido 'const b = WORSE\n'
+  ok    la de base vieja no se aplica
+  ok    el registro lleva los tres veredictos
+  FALLA el total confirmado baja de 4 a 3 — esperado (4, 3), obtenido (4, 4)
+  ok    revertir exige una pasada de confirmación
+  FALLA el paso con alguna aceptada progresa — esperado 'progress', obtenido 'stalled'
+  ok    el log final queda en el banco para el paso siguiente
+  ok    sin nada que revertir no hay pasada de confirmación
+  ok    sin ninguna aceptada el lazo se detiene
+  FALLA y el árbol queda como estaba — esperado 'const b = BAD2\n', obtenido 'const b = WORSE\n'
+  ok    tsc sale 0 sin diagnósticos: tsc cero
+  ok    un tsc que falla sin diagnósticos rehúsa
+  ok    la confirmación trae un diagnóstico nuevo: se revierte todo
+  ok    y el total final es el de antes
+test_tsc_zero_step: 15 aserciones — 10 ok, 5 falla(s)
+
+[exit=1]
