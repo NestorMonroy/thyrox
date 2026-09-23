@@ -263,10 +263,16 @@ describe('storePath — el consumidor es parámetro, no el clon de docs', () => 
     expect(STORE_DIR).not.toBe(LEGACY_CONSUMER_STORE_DIR)
   })
 
-  test('sin ninguna de las dos, cae al clon de docs — la conducta de hoy', () => {
+  // Comparaba contra la CONSTANTE `STORE_PATH`, que se resuelve al importar
+  // el modulo con el entorno de ESE momento: bajo el preload del store
+  // (`tests/preload/store.ts`, H-THYROX-164) apunta a la copia de la ejecucion,
+  // y con razon. Lo que el caso afirma es el ultimo peldaño de la precedencia,
+  // asi que se compara contra ese peldaño. El titulo decia «clon de docs»: el
+  // hogar unico es el proveedor desde el 2026-09-07, como el docstring declara.
+  test('sin ninguna de las dos, cae al árbol del proveedor', () => {
     delete process.env[STORE_PATH_VAR]
     delete process.env[CONSUMER_ROOT_VAR]
-    expect(storePath()).toBe(STORE_PATH)
+    expect(storePath()).toBe(join(thyroxRoot(), STORE_DIR, STORE_FILE))
   })
 
   test('el ascenso NO gobierna: tres árboles del sistema llevan el marcador', () => {
