@@ -154,5 +154,22 @@ with tempfile.TemporaryDirectory() as directory:
                  ("stalled", "const a = BAD1\n"), (report.status, (base / "a.ts").read_text()))
     assert_equal("y el total final es el de antes", (4, 4), (report.total_before, report.total_final))
 
+with tempfile.TemporaryDirectory() as directory:
+    # Dos inserciones en el mismo punto, en el orden de `inferFromUsage`.
+    base = Path(directory)
+    (base / "e.ts").write_text("b => BAD5\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    text = (base / "e.ts").read_text()
+    row = {"proposal_id": "fix:e.ts", "proposer": "good", "targets": ["e.ts: TS9001: bad 5."],
+           "files": ["e.ts"], "bases": {"e.ts": sha(text)},
+           "edits": [{"file": "e.ts", "start": 0, "length": 0, "newText": "("},
+                     {"file": "e.ts", "start": 1, "length": 0, "newText": ": T"},
+                     {"file": "e.ts", "start": 1, "length": 0, "newText": ")"},
+                     {"file": "e.ts", "start": 5, "length": 4, "newText": "5"}]}
+    step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl", base / "bench",
+                  seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("dos inserciones en un punto conservan su orden", "(b: T) => 5\n",
+                 (base / "e.ts").read_text())
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

@@ -14,7 +14,7 @@
 import { describe, expect, test } from 'bun:test'
 import ts from 'typescript'
 import { applyProposalEdits, proposeInMemory } from '../../src/verify/tscProposers'
-import { DEFAULT_OPTIONS, createMemoryService } from '../../src/verify/tsLanguageService'
+import { DEFAULT_OPTIONS, applyEdits, createMemoryService } from '../../src/verify/tsLanguageService'
 
 const sources = {
   // `nope` no existe (TS2305) y queda pegado al binding que se retira; el
@@ -46,6 +46,21 @@ function tscKeys(files: Record<string, string>, cwd: string): string[] {
     .filter((m): m is RegExpMatchArray => m !== null)
     .map(m => `${m[1]}: ${m[2]}: ${m[3]}`)
 }
+
+describe('applyEdits', () => {
+  test('two insertions at one position keep their order', () => {
+    // Forma real de `inferFromUsage` sobre una flecha sin paréntesis
+    // (`onlySleepToolActive.ts`): «(» antes del nombre, y la anotación y «)»
+    // en el MISMO punto tras él. Aplicadas al revés con orden estable daban
+    // `(b): T =>`, que convierte la anotación en el tipo de retorno.
+    const edits = [
+      { span: { start: 0, length: 0 }, newText: '(' },
+      { span: { start: 1, length: 0 }, newText: ': T' },
+      { span: { start: 1, length: 0 }, newText: ')' },
+    ]
+    expect(applyEdits('b => b', edits)).toBe('(b: T) => b')
+  })
+})
 
 describe('tscProposers', () => {
   test('emits one candidate per proposer and file, with the tsc key form', () => {
