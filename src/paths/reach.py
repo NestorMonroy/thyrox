@@ -700,6 +700,45 @@ CONSUMER_ROOT_VAR = "THYROX_CONSUMER"
 #: dentro en vez del rótulo fuera.
 CONSUMER_MARKER = ".claude"
 
+#: La declaracion que ENCIENDE las dos clausulas estrictas de
+#: ``consumer_root``. Sin ella el mecanismo se comporta como siempre.
+#:
+#: Existe porque thyrox es un PROVEEDOR: distintos consumidores lo usan de
+#: formas distintas, y endurecer una resolucion sin preguntar rompe al que la
+#: usaba de otro modo — en silencio, porque no escribio nada que revisar. Es
+#: la misma doctrina que las cinco familias de hogar ya aplican: la
+#: declaracion manda sobre la derivacion, y quien no declara se queda con lo
+#: que tenia.
+#:
+#: Las dos clausulas, y por que son dos:
+#:
+#: 1. **Rehusar cuando el punto de partida es el proveedor.** Declarar cual es
+#:    el consumidor no convierte al proveedor en uno. Medido el 2026-09-23 en
+#:    un arbol real: sin esta clausula, un gate de idioma paso de 0 a 70
+#:    nombres al declararse la variable. Ninguno era nuevo — dejo de leer el
+#:    baseline del PROVEEDOR y lo busco en el consumidor, donde no esta.
+#: 2. **Resolver una declaracion RELATIVA contra la raiz del contenedor.** Una
+#:    ruta relativa resuelta contra el cwd da una respuesta distinta por cada
+#:    directorio desde el que se invoque — el defecto home-by-cwd que este
+#:    arbol ya cerro para workbench y cache.
+CONSUMER_STRICT_VAR = "THYROX_CONSUMER_STRICT"
+
+#: Los valores que NO encienden la variable. Se declaran para que nadie
+#: descubra por accidente que ``THYROX_CONSUMER_STRICT=0`` la enciende, que es
+#: lo que un ``if value:`` ingenuo produce.
+FALSEY_VALUES: frozenset[str] = frozenset({"", "0", "false", "no", "off"})
+
+
+def strict_consumer(start: Path | None = None) -> bool:
+    """¿Estan encendidas las clausulas estrictas de ``consumer_root``?
+
+    Se lee **al llamar**, y por la misma puerta que el resto de la familia
+    (``env_value``), asi que un ``.env`` la declara igual que el proceso.
+    """
+    value = env_value(CONSUMER_STRICT_VAR, start)
+    return bool(value) and value.strip().lower() not in FALSEY_VALUES
+
+
 
 #: La variable con que un proceso hijo alcanza ``src/`` de este arbol.
 #:
@@ -769,7 +808,36 @@ def consumer_root(declared: str | Path | None = None,
 
     value = env_value(CONSUMER_ROOT_VAR, start)
     if value:
-        return Path(value).resolve()
+        if not strict_consumer(start):
+            # El DEFECTO conserva la conducta historica byte a byte. Lo que
+            # sigue es opt-in: ver `CONSUMER_STRICT_VAR`.
+            return Path(value).resolve()
+
+        # Clausula 1 — la declaracion dice CUAL es el consumidor; `start` dice
+        # DESDE DONDE resolver. Cuando `start` es el proveedor la respuesta
+        # correcta sigue siendo rehusar, y quien le paso esa raiz necesita
+        # saberlo para caer a su propio hogar.
+        here = (Path(start) if start else Path.cwd()).resolve()
+        provider = thyrox_root().resolve()
+        if start is not None and here == provider:
+            raise ConsumerUnknownError(
+                f"{CONSUMER_ROOT_VAR} declara {value}, pero el punto de "
+                f"partida es el PROVEEDOR ({provider}). Declarar cual es el "
+                f"consumidor no convierte al proveedor en uno: quien mide el "
+                f"proveedor tiene que caer a su propio hogar, o leeria el "
+                f"baseline de otro arbol y publicaria deuda congelada como "
+                f"nueva. NO se devuelve {value}. "
+                f"(Clausula de {CONSUMER_STRICT_VAR}; sin esa declaracion se "
+                f"devolveria {value}.)"
+            )
+
+        # Clausula 2 — una declaracion RELATIVA nombra al hermano dentro del
+        # contenedor, y se resuelve contra el padre del proveedor, nunca
+        # contra el cwd.
+        declaration = Path(value)
+        if not declaration.is_absolute():
+            return (provider.parent / declaration).resolve()
+        return declaration.resolve()
 
     here = (Path(start) if start else Path.cwd()).resolve()
     provider = thyrox_root().resolve()
