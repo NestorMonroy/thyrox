@@ -558,7 +558,7 @@ export function renderToolUseProgressMessage(
       }
       const message = msg.data.message
       return message.message.content.some(
-        content => content.type === 'tool_use',
+(        content: { type: string }) => content.type === 'tool_use',
       )
     })
 
@@ -633,7 +633,7 @@ export function renderToolUseProgressMessage(
       return false
     }
     return data.message.message.content.some(
-      content => content.type === 'tool_use',
+(      content: { type: string }) => content.type === 'tool_use',
     )
   })
 
@@ -802,7 +802,7 @@ function calculateAgentStats(progressMessages: ProgressMessage<Progress>[]): {
     const message = msg.data.message
     return (
       message.type === 'user' &&
-      message.message.content.some(content => content.type === 'tool_result')
+      message.message.content.some((content: { type: string }) => content.type === 'tool_result')
     )
   })
 
@@ -1084,14 +1084,14 @@ export function extractLastToolInfo(
       const message = msg.data.message
       return (
         message.type === 'user' &&
-        message.message.content.some(c => c.type === 'tool_result')
+        message.message.content.some((c: { type: string }) => c.type === 'tool_result')
       )
     },
   )
 
   if (lastToolResult?.data.message.type === 'user') {
     const toolResultBlock = lastToolResult.data.message.message.content.find(
-      c => c.type === 'tool_result',
+(      c: { type: string }) => c.type === 'tool_result',
     )
 
     if (toolResultBlock?.type === 'tool_result') {

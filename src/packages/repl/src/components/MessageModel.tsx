@@ -15,7 +15,7 @@ export function MessageModel({
     isTranscriptMode &&
     message.type === 'assistant' &&
     message.message.model &&
-    message.message.content.some(c => c.type === 'text')
+    message.message.content.some((c: { type: string }) => c.type === 'text')
 
   if (!shouldShowModel) {
     return null

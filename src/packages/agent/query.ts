@@ -664,7 +664,7 @@ async function* queryLoop(
               fetchOverride: dumpPromptsFetch,
               mcpTools: appState.mcp.tools,
               hasPendingMcpServers: appState.mcp.clients.some(
-                c => c.type === 'pending',
+(                c: { type: string }) => c.type === 'pending',
               ),
               queryTracking,
               effortValue: appState.effortValue,

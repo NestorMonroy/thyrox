@@ -368,7 +368,7 @@ async function getSkills(cwd: string): Promise<{
 }> {
   try {
     const [skillDirCommands, pluginSkills] = await Promise.all([
-      getSkillDirCommands(cwd).catch(err => {
+      getSkillDirCommands(cwd).catch((err: unknown) => {
         logError(toError(err))
         logForDebugging(
           'Skill directory commands failed to load, continuing without them',
@@ -501,7 +501,7 @@ export async function getCommands(cwd: string): Promise<Command[]> {
   // Dedupe dynamic skills - only add if not already present
   const baseCommandNames = new Set(baseCommands.map(c => c.name))
   const uniqueDynamicSkills = dynamicSkills.filter(
-    s =>
+(    s: Command) =>
       !baseCommandNames.has(s.name) &&
       meetsAvailabilityRequirement(s) &&
       isCommandEnabled(s),

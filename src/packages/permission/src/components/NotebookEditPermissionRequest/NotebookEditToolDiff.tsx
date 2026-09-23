@@ -14,6 +14,7 @@ import { safeParseJSON } from '@thyrox/storage/json.js'
 import { parseCellId } from '@thyrox/tool-registry/notebook.js'
 import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
 import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
+import { StructuredPatchHunk } from 'diff'
 
 type Props = {
   notebook_path: string
@@ -83,7 +84,7 @@ function NotebookEditToolDiffInner({
       }
       return ''
     }
-    const cell = notebookData.cells.find(cell => cell.id === cell_id)
+    const cell = notebookData.cells.find((cell: { id: string }) => cell.id === cell_id)
     if (!cell) {
       return ''
     }
@@ -147,7 +148,7 @@ function NotebookEditToolDiffInner({
           </Box>
         ) : hunks ? (
           intersperse(
-            hunks.map(_ => (
+            hunks.map((_: StructuredPatchHunk) => (
               <StructuredDiff
                 key={_.newStart}
                 patch={_}

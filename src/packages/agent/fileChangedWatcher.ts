@@ -54,7 +54,7 @@ function resolveWatchPaths(
   const staticPaths: string[] = []
   for (const m of matchers) {
     if (!m.matcher) continue
-    for (const name of m.matcher.split('|').map(s => s.trim())) {
+    for (const name of m.matcher.split('|').map((s: string) => s.trim())) {
       if (!name) continue
       staticPaths.push(isAbsolute(name) ? name : join(currentCwd, name))
     }
@@ -96,7 +96,7 @@ function handleFileEvent(
         }
       }
     })
-    .catch(e => {
+    .catch((e: unknown) => {
       const msg = errorMessage(e)
       logForDebugging(`FileChanged hook failed: ${msg}`, {
         level: 'error',
@@ -145,7 +145,7 @@ export async function onCwdChangedForHooks(
   currentCwd = newCwd
 
   await clearCwdEnvFiles()
-  const hookResult = await executeCwdChangedHooks(oldCwd, newCwd).catch(e => {
+  const hookResult = await executeCwdChangedHooks(oldCwd, newCwd).catch((e: unknown) => {
     const msg = errorMessage(e)
     logForDebugging(`CwdChanged hook failed: ${msg}`, {
       level: 'error',

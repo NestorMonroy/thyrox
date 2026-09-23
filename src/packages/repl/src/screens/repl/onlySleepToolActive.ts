@@ -16,12 +16,12 @@ export function isOnlySleepToolActive(
   const lastAssistant = messages.findLast(m => m.type === 'assistant')
   if (lastAssistant?.type !== 'assistant') return false
   const inProgressToolUses = lastAssistant.message.content.filter(
-    b => b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
+(    b: { type: string; id: string }) => b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
   )
   return (
     inProgressToolUses.length > 0 &&
     inProgressToolUses.every(
-      b => b.type === 'tool_use' && b.name === SLEEP_TOOL_NAME,
+(      b: { type: string; name: string }) => b.type === 'tool_use' && b.name === SLEEP_TOOL_NAME,
     )
   )
 }

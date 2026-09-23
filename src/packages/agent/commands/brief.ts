@@ -86,7 +86,7 @@ const brief = {
         // without the tool, emitting plain text the filter hides.
         setUserMsgOptIn(newState)
 
-        context.setAppState(prev => {
+        context.setAppState((prev: { isBriefOnly: boolean }) => {
           if (prev.isBriefOnly === newState) return prev
           return { ...prev, isBriefOnly: newState }
         })

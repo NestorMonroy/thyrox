@@ -362,7 +362,7 @@ function handleInteractivePermission(
             method: CHANNEL_PERMISSION_REQUEST_METHOD,
             params,
           })
-          .catch(e => {
+          .catch((e: unknown) => {
             logForDebugging(
               `Channel permission_request failed for ${client.name}: ${errorMessage(e)}`,
               { level: 'error' },

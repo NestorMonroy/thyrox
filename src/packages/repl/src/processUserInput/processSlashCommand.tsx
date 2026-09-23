@@ -199,7 +199,7 @@ async function executeForkedSlashCommand(
       const deadline = Date.now() + MCP_SETTLE_TIMEOUT_MS
       while (Date.now() < deadline) {
         const s = context.getAppState()
-        if (!s.mcp.clients.some(c => c.type === 'pending')) break
+        if (!s.mcp.clients.some((c: { type: string }) => c.type === 'pending')) break
         await sleep(MCP_SETTLE_POLL_MS)
       }
       const freshTools =

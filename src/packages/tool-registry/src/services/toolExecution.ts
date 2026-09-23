@@ -1564,7 +1564,7 @@ async function checkPermissionsAndCallTool(
       toolUseContext.setAppState(prevState => {
         const serverName = error.serverName
         const existingClientIndex = prevState.mcp.clients.findIndex(
-          c => c.name === serverName,
+(          c: { name: string }) => c.name === serverName,
         )
         if (existingClientIndex === -1) {
           return prevState
