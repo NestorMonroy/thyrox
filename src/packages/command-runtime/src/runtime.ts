@@ -26,15 +26,7 @@ import {
 import type { CommandLike } from './contracts.js'
 import { getCommandRegistryHostBindings } from './host.js'
 import {
-  getCommandName,
-  isCommandEnabled,
   type Command,
-  type CommandBase,
-  type CommandResultDisplay,
-  type LocalCommandResult,
-  type LocalJSXCommandContext,
-  type PromptCommand,
-  type ResumeEntrypoint,
 } from './types.js'
 
 export type {

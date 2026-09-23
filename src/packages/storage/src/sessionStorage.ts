@@ -54,7 +54,6 @@ import {
   readdir,
   readFile,
   stat,
-  unlink,
   writeFile,
 } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
@@ -111,7 +110,7 @@ import { updateSessionName } from '@thyrox/agent/concurrentSessions.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
 import type { FileHistorySnapshot } from '@thyrox/agent/fileHistory.js'
 import { formatFileSize } from '@thyrox/output/formatters'
@@ -178,7 +177,6 @@ export {
 } from './sessionStoragePredicates.js'
 import {
   isChainParticipant,
-  isEphemeralToolProgress,
   isTranscriptMessage,
 } from './sessionStoragePredicates.js'
 
@@ -1771,7 +1769,6 @@ export {
 } from './conversationChain.js'
 import {
   buildConversationChain,
-  checkResumeConsistency,
 } from './conversationChain.js'
 
 /**
