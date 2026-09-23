@@ -114,6 +114,7 @@ export {
   createPowerShellProvider,
 } from './providers/powershellProvider.js'
 export type { PowerShellEdition } from './providers/powershellDetection.js'
+export { getCachedPowerShellPath } from './providers/powershellDetection.js'
 export { resolveDefaultShell } from './providers/resolveDefaultShell.js'
 export {
   createProviderResolver,

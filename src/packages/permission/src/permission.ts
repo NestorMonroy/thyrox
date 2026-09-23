@@ -125,3 +125,14 @@ export function evaluate(
   if (permitida) return { decision: 'allow', rule: permitida }
   return { decision: decide(policy, capability, interactive), reason: `por capacidad ${capability}` }
 }
+
+// Las transiciones de modo y el estado del modo automatico viven en
+// `permissionSetup.ts`; el barrel no los publicaba y sus consumidores fallaban
+// con TS2305.
+export {
+  getAutoModeUnavailableNotification,
+  getAutoModeUnavailableReason,
+  isAutoModeGateEnabled,
+  isBypassPermissionsModeDisabled,
+  transitionPermissionMode,
+} from './permissionSetup.js'

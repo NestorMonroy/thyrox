@@ -1,0 +1,6 @@
+@thyrox/output/capture	src/packages/output/src/capture/index.ts
+@thyrox/permission	src/packages/permission/src/permission.ts
+@thyrox/provider/claudeAiLimits.js	src/packages/provider/src/claudeAiLimits.ts
+@thyrox/shell	src/packages/shell/src/index.ts
+@thyrox/agent/messages/systemInit.js	src/packages/agent/messages/systemInit.ts
+@thyrox/app-host/state/AppState.js	src/packages/app-host/src/state/AppState.tsx

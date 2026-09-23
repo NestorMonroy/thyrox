@@ -1,0 +1,3 @@
+src-packages-agent-__tests__-sdkCompatToolName-test-ts	bun test src/packages/agent/__tests__/sdkCompatToolName.test.ts
+src-packages-provider-__tests__-claudeAiLimits-test-ts	bun test src/packages/provider/__tests__/claudeAiLimits.test.ts
+tests-unit-facades-ts2305Batch1PublicSurface-test-ts	bun test tests/unit/facades/ts2305Batch1PublicSurface.test.ts
