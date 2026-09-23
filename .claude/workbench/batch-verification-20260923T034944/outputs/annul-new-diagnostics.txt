@@ -1,0 +1,13 @@
+test_batch_verification:
+  ok    alpha llega a cero: aceptada
+  ok    gamma baja sin llegar a cero: parcial
+  ok    delta no tenia aristas: sin objeto, no aceptada
+  ok    las aristas antes y despues de gamma
+  ok    alpha = aceptadas / propuestas con objeto
+  ok    el total baja de 6 a 4
+  FALLA el diagnostico nuevo se reporta aunque el total baje — esperado ['y.ts(7,5): TS2339'], obtenido []
+  ok    el lote no es limpio: una parcial y un diagnostico nuevo
+  ok    dos propuestas a cero y nada nuevo: lote limpio
+  ok    con las dos aceptadas alpha vale 1
+  ok    un log previo sin diagnosticos rehusa
+test_batch_verification: 11 aserciones — 10 ok, 1 falla(s)
