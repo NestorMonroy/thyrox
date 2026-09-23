@@ -1,0 +1,7 @@
+El store del mapa se declara, no se deriva por aritmetica
+71 aserciones
+  FALLA — 10f: la fila sin cita que dejó el snapshot recibe su cita, sin duplicarse
+  FALLA — 10g: y la capa declarada sustituye al «gen» que no sabía
+  FALLA — 10h: el informe la cuenta como acuñada en su ordinal existente
+
+[exit=1]
