@@ -5,3 +5,10 @@
 # El mecanismo y su guarda de propiedad: `tests/preload/tmpdir.ts`.
 [test]
 preload = ["./tests/preload/tmpdir.ts"]
+
+# La raíz ejecuta typecheck sobre consumidores que importan los workspaces por
+# nombre. El linker isolated no crea esos enlaces en node_modules raíz y cambia
+# el universo medido (H-THYROX-154); declararlo aquí hace reproducible el mismo
+# grafo sin depender de un flag manual de `bun install`.
+[install]
+linker = "hoisted"

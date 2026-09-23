@@ -32,3 +32,15 @@ export type {
   ProviderAvailability,
   ProviderQueryArgs,
 } from './types.js'
+
+// Adaptadores canónicos consumidos desde la raíz del paquete. Las
+// implementaciones viven en sus módulos de protocolo; el barrel únicamente
+// fija la frontera pública compartida por runtime y pruebas de compatibilidad.
+export type { ProviderThinkingConfig } from './contracts.js'
+export { getAnthropicClient } from './anthropic/client.js'
+export { anthropicMessagesToGemini } from './gemini/convertMessages.js'
+export { resolveGeminiModel } from './gemini/modelMapping.js'
+export { adaptGeminiStreamToAnthropic } from './gemini/streamAdapter.js'
+export { anthropicMessagesToOpenAI } from './openai/convertMessages.js'
+export { resolveOpenAIModel } from './openai/modelMapping.js'
+export { adaptOpenAIStreamToAnthropic } from './openai/streamAdapter.js'

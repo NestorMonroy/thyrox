@@ -1,0 +1,14 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/shell/src/__test__/import.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'tryParseShellCommand' not found in module '/workspace/kaupamex/thyrox/src/packages/shell/src/index.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [83.00ms]

@@ -1,12 +1,11 @@
 /**
- * Barril de `@thyrox/shell` — PORTE PARCIAL DEL PAQUETE.
+ * Barril público de `@thyrox/shell`.
  *
  * La fuente (`claude-code-nestor-monroy-tools: packages/shell/src/index.ts`)
- * reexporta ~20 módulos (tipos de shell, contexto de snapshot, parser AST
- * de bash, `bashPipeCommand`, `commands`, `shellQuoting`, `Shell.ts`,
- * PowerShell, sandbox, terminal…). Esta tarea (TASK-DOCS-0200) portó sólo
- * los cinco módulos que sus cinco tests ejercitan; este barril reexporta
- * SÓLO esos. El resto del paquete fuente NO está portado.
+ * reexporta los módulos de tipos, contexto, parser AST de bash,
+ * `bashPipeCommand`, commands, quoting, providers, discovery, snapshots y
+ * ejecución. Este árbol ya contiene esas implementaciones; se publican por
+ * nombre desde sus dueños canónicos y se excluyen las copias `legacy`.
  *
  * @module
  */
@@ -21,6 +20,7 @@ export {
 
 export {
   loadFigSpec,
+  getCommandSpec,
   type CommandSpec,
   type Argument,
   type Option,
@@ -33,3 +33,102 @@ export { formatShellPrefixCommand } from './bash/shellPrefix.js'
 export { quote } from './bash/shellQuote.js'
 
 export { subprocessEnv, registerUpstreamProxyEnvFn } from './subprocessEnv.js'
+
+// Superficie canónica del runtime shell. Estos módulos ya están portados y
+// los consumidores de la raíz no deben depender de rutas internas ni de las
+// copias legacy que aún conserva el árbol.
+export type {
+  ExecOptions,
+  ExecResult,
+  ShellCommand,
+  ShellConfig,
+  ShellProvider,
+  ShellType,
+} from './types.js'
+export { DEFAULT_HOOK_SHELL, SHELL_TYPES } from './types.js'
+export type { ShellExecContext, SnapshotContext } from './context.js'
+export type {
+  ParseEntry,
+  ShellParseResult,
+  ShellQuoteResult,
+} from './bash/shellQuote.js'
+export {
+  hasMalformedTokens,
+  hasShellQuoteSingleQuoteBug,
+  tryParseShellCommand,
+  tryQuoteShellArgs,
+} from './bash/shellQuote.js'
+export {
+  hasStdinRedirect,
+  quoteShellCommand,
+  shouldAddStdinRedirect,
+} from './bash/shellQuoting.js'
+export { rearrangePipeCommand } from './bash/bashPipeCommand.js'
+export {
+  PARSE_ABORTED,
+  ensureInitialized,
+  extractCommandArguments,
+  parseCommand,
+  parseCommandRaw,
+} from './bash/parser.js'
+export {
+  clearCommandPrefixCaches,
+  extractOutputRedirections,
+  filterControlOperators,
+  isHelpCommand,
+  isUnsafeCompoundCommand,
+  splitCommand,
+  splitCommandWithOperators,
+} from './bash/commands.js'
+export {
+  analyzeCommand,
+  extractCompoundStructure,
+  extractDangerousPatterns,
+  extractQuoteContext,
+  hasActualOperatorNodes,
+} from './bash/treeSitterAnalysis.js'
+export {
+  createAndSaveSnapshot,
+  createFindGrepShellIntegration,
+  createRipgrepShellIntegration,
+} from './bash/ShellSnapshot.js'
+export { getCommandPrefixStatic, getCompoundCommandPrefixesStatic } from './bash/prefix.js'
+export { DEPTH_RULES, buildPrefix } from './prefix/specPrefix.js'
+export {
+  FLAG_PATTERN,
+  GIT_READ_ONLY_COMMANDS,
+  validateFlags,
+} from './providers/readOnlyCommandValidation.js'
+export type {
+  ExternalCommandConfig,
+  FlagArgType,
+} from './providers/readOnlyCommandValidation.js'
+export { getMaxOutputLength } from './providers/outputLimits.js'
+export {
+  SHELL_TOOL_NAMES,
+  isPowerShellToolEnabled,
+} from './providers/shellToolUtils.js'
+export { createBashShellProvider } from './providers/bashProvider.js'
+export {
+  buildPowerShellArgs,
+  createPowerShellProvider,
+} from './providers/powershellProvider.js'
+export type { PowerShellEdition } from './providers/powershellDetection.js'
+export { resolveDefaultShell } from './providers/resolveDefaultShell.js'
+export {
+  createProviderResolver,
+  createPsProviderFactory,
+  createShellConfigFactory,
+  findSuitableShell,
+} from './shellDiscovery.js'
+export {
+  createAbortedCommand,
+  createFailedCommand,
+  wrapSpawn,
+} from './shellCommand.js'
+export {
+  exec,
+  setCreateTaskOutputFn,
+  setCwd,
+  setGetSandboxTmpDirNameFn,
+} from './exec.js'
