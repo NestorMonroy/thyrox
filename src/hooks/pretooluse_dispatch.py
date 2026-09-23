@@ -77,6 +77,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_stdin_reading_interpreter",
     "detect_temp_home_write",
     "detect_bare_awk",
+    "detect_client_background",
 )
 
 
