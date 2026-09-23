@@ -19,6 +19,11 @@ function rowsFor(source: string) {
   return censusFixes(service, ['/p/main.ts'])
 }
 
+function requireRow<T>(value: T | undefined, description: string): T {
+  if (value === undefined) throw new Error(`expected census row: ${description}`)
+  return value
+}
+
 describe('tscFixCensus', () => {
   test('control del arnés: la fixture resuelve sus módulos', () => {
     const rows = rowsFor("import { used } from './dep'\nconsole.log(used)\n")
@@ -30,27 +35,30 @@ describe('tscFixCensus', () => {
   // clasificar por `fixId` haría que la clase dependiera de cuántos errores
   // hermanos tenga el archivo.
   test('un import sin uso, SOLO en su archivo, trae un arreglo seguro', () => {
-    const [row] = rowsFor("import { used, unused } from './dep'\nconsole.log(used)\n")
+    const row = requireRow(
+      rowsFor("import { used, unused } from './dep'\nconsole.log(used)\n")[0],
+      'unused import',
+    )
     expect(row.code).toBe(6133)
     expect(row.fixes.some(fix => fix.fixName === 'unusedIdentifier' && fix.klass === 'safe')).toBe(true)
   })
 
   test('un parámetro sin uso NO es seguro: retirarlo cambia la firma', () => {
     const rows = rowsFor('export function f(p: number) { return 1 }\n')
-    const row = rows.find(r => r.code === 6133)!
+    const row = requireRow(rows.find(r => r.code === 6133), 'unused parameter')
     expect(row.fixes.length).toBeGreaterThan(0)
     expect(row.fixes.every(fix => fix.klass !== 'safe')).toBe(true)
   })
 
   test('un parámetro sin tipo trae inferFromUsage, seguro', () => {
     const rows = rowsFor('export function f(x) { return x * 2 }\n')
-    const row = rows.find(r => r.code === 7006)!
+    const row = requireRow(rows.find(r => r.code === 7006), 'implicit any parameter')
     expect(row.fixes.some(fix => fix.fixName === 'inferFromUsage' && fix.klass === 'safe')).toBe(true)
   })
 
   test('una conversión sin solape trae un arreglo que TAPA el error', () => {
     const rows = rowsFor("export const n = 'a' as number\n")
-    const row = rows.find(r => r.code === 2352)!
+    const row = requireRow(rows.find(r => r.code === 2352), 'non-overlapping conversion')
     expect(
       row.fixes.some(
         fix => fix.fixName === 'addConvertToUnknownForNonOverlappingTypes' && fix.klass === 'hides',
@@ -63,8 +71,11 @@ describe('tscFixCensus', () => {
     // es con más de una instancia: sin este caso, retirar su entrada no tumbaba
     // nada (anulación `NONDISCRIMINATING-hides-entry` en el banco).
     const rows = rowsFor("export const n = 'a' as number\nexport const m = 'b' as number\n")
-    const row = rows.find(r => r.code === 2352)!
-    const fix = row.fixes.find(f => f.fixName === 'addConvertToUnknownForNonOverlappingTypes')!
+    const row = requireRow(rows.find(r => r.code === 2352), 'repeated non-overlapping conversion')
+    const fix = requireRow(
+      row.fixes.find(f => f.fixName === 'addConvertToUnknownForNonOverlappingTypes'),
+      'conversion fix',
+    )
     expect(fix.fixId).toBe('addConvertToUnknownForNonOverlappingTypes')
     expect(fix.klass).toBe('hides')
   })
@@ -74,8 +85,8 @@ describe('tscFixCensus', () => {
     // fixMissingProperties salían `unclassified` porque sólo estaban en la
     // tabla por `fixId`, y con una instancia el servicio no pone el id.
     const rows = rowsFor('function g() { return 1 }\nexport const r = g(1)\n')
-    const row = rows.find(r => r.code === 2554)!
-    const fix = row.fixes.find(f => f.fixName === 'addMissingParam')!
+    const row = requireRow(rows.find(r => r.code === 2554), 'extra argument')
+    const fix = requireRow(row.fixes.find(f => f.fixName === 'addMissingParam'), 'missing parameter fix')
     expect(fix.fixId).toBeUndefined()
     expect(fix.klass).toBe('judgment')
   })
@@ -86,7 +97,7 @@ describe('tscFixCensus', () => {
 
   test('un diagnóstico sin arreglos queda con la lista vacía', () => {
     const rows = rowsFor('export const n: number = missingName\n')
-    const row = rows.find(r => r.code === 2304)!
+    const row = requireRow(rows.find(r => r.code === 2304), 'missing name')
     expect(row.fixes.filter(fix => fix.klass === 'safe')).toEqual([])
   })
 
@@ -112,8 +123,8 @@ describe('tscFixCensus', () => {
     expect(rows.length).toBe(2)
     const broken = rows.filter(row => row.fixError !== undefined)
     expect(broken.length).toBe(1)
-    expect(broken[0].fixes).toEqual([])
-    expect(rows.filter(row => row.fixError === undefined)[0].fixes.length).toBeGreaterThan(0)
+    expect(requireRow(broken[0], 'provider error').fixes).toEqual([])
+    expect(requireRow(rows.find(row => row.fixError === undefined), 'working provider').fixes.length).toBeGreaterThan(0)
     expect(summarize(rows).providerErrors).toBe(1)
   })
 
