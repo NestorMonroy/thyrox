@@ -43,8 +43,16 @@ bad() { thyrox_fail "$*" || true; }
 
 # El sujeto corre en un entorno limpio: sin las funciones exportadas de la
 # cadena y sin las variables que un caso previo haya dejado puestas.
+#
+# Y por defecto, un clon con sus githooks ACTIVOS: `core.hooksPath` vive en
+# `.git/config`, que no se versiona, asi que sin esto el veredicto de los casos
+# dependeria del clon de quien corre la suite. Se fija con `GIT_CONFIG_*`, que
+# git lee del entorno sin escribir ningun archivo; un caso que necesite otro
+# valor lo pasa despues y `env` se queda con el ultimo.
 run_subject() {
-  env -i PATH="$PATH" HOME="$HOME" "$@" bash "$SUBJECT" 2>&1
+  env -i PATH="$PATH" HOME="$HOME" \
+    GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=.githooks \
+    "$@" bash "$SUBJECT" 2>&1
 }
 
 MISSING_BIN="thyrox-binario-que-no-existe-$$"
@@ -151,6 +159,38 @@ if [[ $rc_relative -ne 2 ]]; then
   ok "la forma relativa de la clave se resuelve contra la raiz, no contra el cwd"
 else
   bad "con la forma de .env.example dio exit 2 desde otro cwd: $relative_form"
+fi
+
+# Caso 9 — los GITHOOKS del clon. `core.hooksPath` vive en `.git/config`, que
+# no viaja con el repositorio: un clon nuevo tiene `.githooks/` escritos y git
+# no los mira, y todo gate de commit deja de correr SIN decir nada. Asi entraron
+# cinco claves sin declarar a develop con su gate en rojo (H-THYROX-161). Es
+# clase `error`: sin hooks, el commit publica el veredicto de nadie.
+#
+# Que lo haria fallar: una sonda que mirara `.githooks/` en vez de lo que git
+# EJECUTA — los archivos estan en los dos casos.
+unset_hooks="$(run_subject GIT_CONFIG_VALUE_0=)"; rc_unset=$?
+if grep -qE '^error +· +githooks' <<<"$unset_hooks" && [[ $rc_unset -eq 1 ]]; then
+  ok "sin core.hooksPath, la sonda githooks sale error y el preflight exit 1"
+else
+  bad "esperaba 'error · githooks' y exit 1 sin hooks (rc=$rc_unset); salida: $unset_hooks"
+fi
+if grep -q 'scripts/install-hooks.sh' <<<"$unset_hooks"; then
+  ok "el rechazo nombra el instalador que lo arregla"
+else
+  bad "el rechazo no nombra scripts/install-hooks.sh: $unset_hooks"
+fi
+other_hooks="$(run_subject GIT_CONFIG_VALUE_0=.husky)"
+if grep -qE '^error +· +githooks' <<<"$other_hooks"; then
+  ok "un core.hooksPath que no es .githooks tampoco cuenta como activo"
+else
+  bad "con core.hooksPath=.husky esperaba 'error · githooks'; salida: $other_hooks"
+fi
+set_hooks="$(run_subject)"
+if grep -qE '^ok +· +githooks' <<<"$set_hooks"; then
+  ok "con core.hooksPath=.githooks, la sonda githooks sale ok"
+else
+  bad "esperaba 'ok · githooks' con los hooks activos; salida: $set_hooks"
 fi
 
 thyrox_summary

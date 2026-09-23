@@ -1,0 +1,8 @@
+bash tests/lib/test-toolchain-degraded.sh
+bash tests/lib/test-toolchain-gawk.sh
+bash tests/lib/test-toolchain-manifests.sh
+bash tests/lib/test-toolchain-parallel.sh
+bash tests/lib/test-toolchain-proxy.sh
+bash tests/lib/test-toolchain-sh.sh
+.venv/bin/python tests/session/test_generate_bin.py
+bash tests/verify/test-toolchain-ready.sh

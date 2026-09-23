@@ -765,6 +765,37 @@ function thyrox_toolchain_require_manifests() {
 }
 export -f thyrox_toolchain_require_manifests
 
+# ---------------------------------------------------------------------------
+# thyrox_toolchain_require_githooks — ¿git EJECUTA los hooks versionados?
+# ---------------------------------------------------------------------------
+# `core.hooksPath` vive en `.git/config`, que no se versiona: un clon nuevo
+# trae `.githooks/` escrito y git no lo mira, asi que ningun gate de commit
+# corre y nadie lo nota. Asi llegaron a develop cinco claves sin declarar con
+# su gate en rojo (H-THYROX-161). La sonda mide lo que git VA A EJECUTAR —el
+# valor efectivo de `core.hooksPath`, que tambien puede venir del entorno por
+# `GIT_CONFIG_*`— y no que los archivos existan: estan en los dos casos.
+#
+# Ciega a: un hook con `--no-verify`, y un `.githooks/` cuyo contenido no sea
+# el versionado. Mide la activacion, no lo que cada hook hace.
+function thyrox_toolchain_require_githooks() {
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    echo "                  NO se emite conteo." >&2
+    return 2
+  }
+  local current
+  current="$(git -C "$root" config --get core.hooksPath 2>/dev/null || true)"
+  if [[ "$current" == ".githooks" ]]; then
+    return 0
+  fi
+  echo "thyrox_toolchain: core.hooksPath=${current:-<sin fijar>} en $root:" >&2
+  echo "                  los hooks de .githooks/ no corren, y ningun gate" >&2
+  echo "                  de commit se ejecuta. Arreglo:" >&2
+  echo "                    bash \"$root/scripts/install-hooks.sh\"" >&2
+  return 1
+}
+export -f thyrox_toolchain_require_githooks
+
 # @description Normaliza un nombre de paquete Python segun PEP 503: minusculas
 # y toda corrida de `-`, `_` o `.` colapsada a un solo guion medio.
 #

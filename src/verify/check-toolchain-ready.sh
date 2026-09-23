@@ -129,6 +129,10 @@ PROBES=(
   # sintoma. Leida en este orden, la salida nombra la causa antes que su
   # efecto.
   "manifiestos|error|thyrox_toolchain_require_manifests"
+  # Los GITHOOKS, segundos: son la otra mitad de la declaracion. Sin ellos
+  # ningun gate de commit corre, y el preflight de las herramientas publicaria
+  # verde sobre un clon que no verifica nada al commitear (H-THYROX-161).
+  "githooks|error|thyrox_toolchain_require_githooks"
   "awk|error|thyrox_toolchain_require_gawk"
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"
