@@ -47,6 +47,8 @@ fallos (medido: ``api`` declara ``THYROX_CACHE_API``).
 """
 from __future__ import annotations
 
+from contextlib import ExitStack
+
 import os
 import sys
 import unittest
@@ -62,6 +64,21 @@ sys.path.insert(0, str(_ROOT / "src"))
 from cache import paths as cache  # noqa: E402
 from paths import declarations, reach  # noqa: E402
 from workbench import paths as workbench  # noqa: E402
+from testing.clone_tree import synthetic_clone_tree  # noqa: E402
+
+
+# La suite compone un hogar por clon y necesita dos clones distintos. De los
+# consumidores solo `docs` es obligatorio, asi que los clones salen de un
+# arbol sintetico y no del roster del host (H-THYROX-155).
+_TREE = ExitStack()
+
+
+def setUpModule() -> None:
+    _TREE.enter_context(synthetic_clone_tree(("api", "docs")))
+
+
+def tearDownModule() -> None:
+    _TREE.close()
 
 
 class _Declared:
