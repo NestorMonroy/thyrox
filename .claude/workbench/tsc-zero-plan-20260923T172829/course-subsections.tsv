@@ -1,0 +1,8 @@
+cs224r/lecture14/lecture14-notes.tex	Upper Confidence Bound (UCB)
+cs224r/lecture14/lecture14-notes.tex	Thompson Sampling
+talks/berkeley-llm-agents/sp25/lecture12/lecture12-notes.tex	Verifier gating loops
+talks/berkeley-llm-agents/sp25/lecture12/lecture12-notes.tex	Multi-verifier orchestration
+talks/berkeley-llm-agents/f24/lecture07/lecture07-notes.tex	Plan-Act-Verify 细节
+talks/berkeley-llm-agents/f25/lecture04/lecture04-notes.tex	Metric Contract：在跑实验前冻结语义
+talks/berkeley-llm-agents/f25/lecture04/lecture04-notes.tex	不确定性：一次运行不是能力估计
+talks/berkeley-llm-agents/f25/lecture04/lecture04-notes.tex	Failure Taxonomy：把分数下降变成可修复信号

@@ -69,6 +69,17 @@ describe('tscFixCensus', () => {
     expect(fix.klass).toBe('hides')
   })
 
+  test('un arreglo de firma sin fixId (una sola instancia) es juicio, no sin clasificar', () => {
+    // Medido en el censo real: addMissingParam, addOptionalParam y
+    // fixMissingProperties salían `unclassified` porque sólo estaban en la
+    // tabla por `fixId`, y con una instancia el servicio no pone el id.
+    const rows = rowsFor('function g() { return 1 }\nexport const r = g(1)\n')
+    const row = rows.find(r => r.code === 2554)!
+    const fix = row.fixes.find(f => f.fixName === 'addMissingParam')!
+    expect(fix.fixId).toBeUndefined()
+    expect(fix.klass).toBe('judgment')
+  })
+
   test('un fixId fuera de la lista cerrada no se admite', () => {
     expect(classifyFix('someFutureFix', 'someFutureFix_id')).toBe('unclassified')
   })

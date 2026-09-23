@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+75 |     // tabla por `fixId`, y con una instancia el servicio no pone el id.
+76 |     const rows = rowsFor('function g() { return 1 }\nexport const r = g(1)\n')
+77 |     const row = rows.find(r => r.code === 2554)!
+78 |     const fix = row.fixes.find(f => f.fixName === 'addMissingParam')!
+79 |     expect(fix.fixId).toBeUndefined()
+80 |     expect(fix.klass).toBe('judgment')
+                           ^
+error: expect(received).toBe(expected)
+
+Expected: "judgment"
+Received: "unclassified"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:80:23)
+(fail) tscFixCensus > un arreglo de firma sin fixId (una sola instancia) es juicio, no sin clasificar [605.41ms]
+
+ 10 pass
+ 1 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [6.37s]
+
+[exit=1]

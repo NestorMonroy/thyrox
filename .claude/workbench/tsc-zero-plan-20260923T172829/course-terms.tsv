@@ -1,0 +1,18 @@
+speculative_decoding	speculative decoding
+rejection_sampling	rejection sampling
+label_smoothing	label smoothing
+calibration	calibrat
+verifier	verifier
+weak_verifier_ensemble	弱验证器|weak verifier
+self_consistency	self-consistency
+best_of_n	best-of-n|best of n
+test_time_compute	test-time compute
+bandit_ucb_thompson	thompson sampling|upper confidence bound|\bUCB\b|bandit
+tree_search	MCTS|tree search|LATS
+swe_bench	SWE-bench
+self_debug_oracle	self-debug|unit test|oracle
+error_taxonomy	error analysis|错误分析|failure mode
+bisect	bisect|delta debugging
+curriculum	curriculum
+process_reward	process reward|\bPRM\b
+pass_at_k	pass@k
