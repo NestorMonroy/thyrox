@@ -1,0 +1,54 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/facadeProposals.test.ts:
+81 |         "import { other } from './barrel.js'\nexport function helper(): number { return other }\n" +
+82 |         'export interface Shape { a: number }\n',
+83 |     }
+84 |     const rows = proposeInMemory(cyclic, Object.keys(cyclic).filter(f => f.endsWith('.ts')), '/p', OPTIONS)
+85 |       .filter(row => row.proposer === 'ts2305-facade')
+86 |     expect(rows).toEqual([])
+                      ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "bases": {
++       "barrel.ts": "ba69e0e69e1a168631af89a0a584d0fe278e77ec2f44490334e7c552a6038db9",
++     },
++     "edits": [
++       {
++         "file": "barrel.ts",
++         "length": 0,
++         "newText": 
++ "export type { Shape } from './impl.js'
++ export { helper } from './impl.js'
++ "
++ ,
++         "start": 23,
++       },
++     ],
++     "files": [
++       "barrel.ts",
++     ],
++     "proposal_id": "ts2305-facade:barrel.ts",
++     "proposer": "ts2305-facade",
++     "targets": [
++       "use.ts: TS2305: Module '"./barrel.js"' has no exported member 'Shape'.",
++       "use.ts: TS2305: Module '"./barrel.js"' has no exported member 'helper'.",
++     ],
++   },
++ ]
+
+- Expected  - 1
++ Received  + 28
+
+      at <anonymous> (/home/user/thyrox/tests/verify/facadeProposals.test.ts:86:18)
+(fail) ts2305 facades > a declaration that imports the provider is a direct cycle [575.50ms]
+
+ 12 pass
+ 1 fail
+ 36 expect() calls
+Ran 13 tests across 2 files. [12.36s]
+
+[exit=1]

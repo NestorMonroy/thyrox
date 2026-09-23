@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/facadeProposals.test.ts:
+48 |     expect(rows.map(row => row.proposal_id)).toEqual(['ts2305-facade:barrel.ts'])
+49 |     expect(rows[0].files).toEqual(['barrel.ts'])
+50 |     expect(rows[0].targets).toHaveLength(2)
+51 |     const next = applyProposalEdits(base, rows[0], '/p')
+52 |     expect(next['/p/barrel.ts']).toContain("export { helper } from './impl.js'")
+53 |     expect(next['/p/barrel.ts']).toContain("export type { Shape } from './impl.js'")
+                                      ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "export type { Shape } from './impl.js'"
+Received: "export const other = 1\nexport { Shape } from './impl.js'\nexport { helper } from './impl.js'\n"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/facadeProposals.test.ts:53:34)
+(fail) ts2305 facades > re-exports a value and a type from their single declaration [672.25ms]
+
+ 12 pass
+ 1 fail
+ 34 expect() calls
+Ran 13 tests across 2 files. [11.72s]
+
+[exit=1]
