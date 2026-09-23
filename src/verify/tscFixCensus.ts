@@ -72,9 +72,10 @@ const BY_FIX_NAME: Record<string, FixClass> = {
 }
 
 export function classifyFix(fixName: string, fixId?: string): FixClass {
-  if (fixId !== undefined && fixId in BY_FIX_ID) return BY_FIX_ID[fixId]
-  if (fixId === undefined && fixName in BY_FIX_NAME) return BY_FIX_NAME[fixName]
-  return 'unclassified'
+  const byId = fixId === undefined ? undefined : BY_FIX_ID[fixId]
+  if (byId !== undefined) return byId
+  const byName = fixId === undefined ? BY_FIX_NAME[fixName] : undefined
+  return byName ?? 'unclassified'
 }
 
 /**
@@ -88,7 +89,11 @@ export function classifyFix(fixName: string, fixId?: string): FixClass {
 function classifyAction(fix: ts.CodeFixAction, sf: ts.SourceFile): FixClass {
   if (fix.fixName !== 'unusedIdentifier') return classifyFix(fix.fixName, fix.fixId === undefined ? undefined : String(fix.fixId))
   const imports = sf.statements.filter(ts.isImportDeclaration)
-  const edits = fix.changes.flatMap(change => (change.fileName === sf.fileName ? change.textChanges : [null]))
+  // Una edición en OTRO archivo cuenta como `null`: ya no es sólo un borrado
+  // dentro de los imports de este.
+  const edits: (ts.TextChange | null)[] = fix.changes.flatMap(change =>
+    change.fileName === sf.fileName ? [...change.textChanges] : [null],
+  )
   const onlyImportDeletions =
     edits.length > 0 &&
     edits.every(

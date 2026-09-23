@@ -103,8 +103,8 @@ describe('tscProposers', () => {
     // sitio (TS2693). Las posiciones son del texto sobre el que se propuso.
     const rows = proposeInMemory(sources, ['/p/a.ts'], '/p')
     expect(rows.length).toBe(2)
-    const first = applyProposalEdits(sources, rows[0], '/p')
-    expect(() => applyProposalEdits(first, rows[1], '/p')).toThrow(/cambió/)
+    const first = applyProposalEdits(sources, rows[0]!, '/p')
+    expect(() => applyProposalEdits(first, rows[1]!, '/p')).toThrow(/cambió/)
   })
 
   test('keeps the unused-imports guard: a name the checker calls unused is not deleted', () => {

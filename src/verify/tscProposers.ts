@@ -125,14 +125,17 @@ function moduleFile(checker: ts.TypeChecker, specifier: ts.Expression): ts.Sourc
 function missingMember(source: ts.SourceFile, start: number): { specifier: ts.Expression; member: string } | undefined {
   for (const statement of source.statements) {
     if (statement.getStart(source) > start || start >= statement.getEnd()) continue
-    const specifier = (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement))
-      ? statement.moduleSpecifier
-      : undefined
+    let elements: readonly (ts.ImportSpecifier | ts.ExportSpecifier)[] = []
+    let specifier: ts.Expression | undefined
+    if (ts.isImportDeclaration(statement)) {
+      specifier = statement.moduleSpecifier
+      const bindings = statement.importClause?.namedBindings
+      if (bindings && ts.isNamedImports(bindings)) elements = bindings.elements
+    } else if (ts.isExportDeclaration(statement)) {
+      specifier = statement.moduleSpecifier
+      if (statement.exportClause && ts.isNamedExports(statement.exportClause)) elements = statement.exportClause.elements
+    }
     if (!specifier) return undefined
-    const elements = ts.isImportDeclaration(statement)
-      ? (statement.importClause?.namedBindings && ts.isNamedImports(statement.importClause.namedBindings)
-          ? statement.importClause.namedBindings.elements : [])
-      : (statement.exportClause && ts.isNamedExports(statement.exportClause) ? statement.exportClause.elements : [])
     for (const element of elements) {
       const name = element.propertyName ?? element.name
       if (name.getStart(source) <= start && start < name.getEnd()) return { specifier, member: name.text }
@@ -193,10 +196,12 @@ function proposeFacades(service: ts.LanguageService, files: string[], read: Read
       if (!pkg) continue
       const candidates = exportsOf(pkg, found.member)
       if (candidates.size !== 1) continue
-      const [[symbol, declaring]] = [...candidates]
+      const [entry] = [...candidates]
+      if (!entry) continue
+      const [symbol, declaring] = entry
       if (declaring === provider) continue
       if (declaring.text.includes('getAgentHostBindings')) continue
-      const cycle = declaring.statements.some(statement =>
+      const cycle = declaring.statements.some((statement: ts.Statement) =>
         (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
         statement.moduleSpecifier !== undefined &&
         moduleFile(checker, statement.moduleSpecifier) === provider)
@@ -296,7 +301,7 @@ export function applyProposalEdits(
     const edits = row.edits
       .filter(edit => edit.file === file)
       .map(edit => ({ span: { start: edit.start, length: edit.length }, newText: edit.newText }))
-    next[absolute] = applyEdits(next[absolute], edits)
+    next[absolute] = applyEdits(next[absolute] ?? '', edits)
   }
   return next
 }
