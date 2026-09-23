@@ -48,6 +48,17 @@ describe('removeUnusedImports', () => {
     expect(out).toContain('const l = 1')
   })
 
+  test('no reformatea lo que conserva: sólo retira el binding', () => {
+    // Medido en el primer lote: con opciones de formato vacías,
+    // organizeImports reescribía los bloques conservados (añadía `;`,
+    // quitaba sangría y espacios) en 230 archivos.
+    const source =
+      "import { used, unused } from './dep'\nimport {\n  used as again,\n} from './dep'\nconsole.log(used, again)\n"
+    const expected =
+      "import { used } from './dep'\nimport {\n  used as again,\n} from './dep'\nconsole.log(used, again)\n"
+    expect(run(source)).toBe(expected)
+  })
+
   test('un archivo sin imports sin uso no aparece en el resultado', () => {
     expect(run("import { used } from './dep'\nconsole.log(used)\n")).toBeUndefined()
   })

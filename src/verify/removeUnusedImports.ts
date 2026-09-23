@@ -1,8 +1,8 @@
 /**
  * Retira los imports sin uso de los archivos pedidos, con el servicio de
- * lenguaje de TypeScript: `organizeImports` en modo `RemoveUnused`, que
- * decide con el checker —no con un patrón— si un binding se usa, y que no
- * ordena ni combina las declaraciones que conserva.
+ * lenguaje de TypeScript: el arreglo combinado `unusedIdentifier_deleteImports`,
+ * que decide con el checker —no con un patrón— si un binding se usa y edita
+ * sólo el tramo de ese binding, sin reformatear lo que conserva.
  *
  * POR QUÉ SÓLO IMPORTS. TS6133 cae igual sobre un import, un local y un
  * parámetro, pero sólo el primero es mecánico: sin `verbatimModuleSyntax`
@@ -60,8 +60,14 @@ function collect(service: ts.LanguageService, targets: string[], read: Reader): 
   for (const fileName of targets) {
     const text = read(fileName)
     if (text === undefined) continue
-    const changes = service.organizeImports(
-      { type: 'file', fileName, mode: ts.OrganizeImportsMode.RemoveUnused },
+    // `unusedIdentifier_deleteImports` edita sólo el tramo del binding sin
+    // uso. `organizeImports` reescribía el bloque entero con el formato por
+    // defecto (`;`, sangría, espacios): 230 archivos de churn en el primer
+    // lote. Y `unusedIdentifier_delete` —el id vecino— NO toca imports:
+    // retira locales y parámetros, que aquí no se tocan.
+    const { changes } = service.getCombinedCodeFix(
+      { type: 'file', fileName },
+      'unusedIdentifier_deleteImports',
       {},
       undefined,
     )

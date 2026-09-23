@@ -21,3 +21,20 @@ porte a medias.
 Métrica: casos de la suite por implementación.
 Ciega a: imports cuyo módulo alguien espere cargar por efecto sin usar
 ningún binding (tsc ya los elide, la conducta no cambia).
+
+## Segunda versión: el primer lote reformateaba
+
+Aplicada al proyecto, `organizeImports` con opciones de formato vacías
+reescribía los bloques que conservaba: `;` añadidos, sangría perdida, comas
+sin espacio, en 230 archivos (+2426 / −2727). Uno de ellos declara que sus
+imports no se reordenan (`ANT-ONLY import markers`). El lote se revirtió
+entero sin verificar y el tsc que lo medía se detuvo (exit 143, recogido).
+
+Caso rojo nuevo: «no reformatea lo que conserva». Implementación nueva:
+`unusedIdentifier_deleteImports`, que edita sólo el tramo del binding.
+
+| Archivo | Anulación | Cae |
+|---|---|---|
+| `v2-annulled-organize.txt` | volver a `organizeImports` | sólo «no reformatea» |
+| `v2-annulled-everything.txt` | `deleteImports` + `delete` | sólo «no toca locales ni parámetros» |
+| `v2-restored.txt` | — | 7 de 7 verdes |
