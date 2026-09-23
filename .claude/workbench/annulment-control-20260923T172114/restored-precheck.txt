@@ -1,0 +1,22 @@
+== 1. sujeto commiteado: anula, mide, restaura, y lo prueba ==
+  ok    la suite anulada sale distinto de cero
+  ok    la suite restaurada sale cero
+  ok    el blob restaurado es el de partida
+  ok    el árbol seguido queda sin cambios
+  ok    el parche queda en el banco
+  ok    la salida anulada queda en el banco
+  ok    la salida restaurada queda en el banco
+  ok    el manifiesto nombra el commit de partida
+  ok    sujeto commiteado: no se copia su estado de partida
+== 2. sujeto SIN commitear: su estado de partida va al banco ==
+  ok    el estado de partida sin commitear queda en el banco
+  ok    y el archivo vuelve a él
+  ok    blob antes == blob después
+== 3. un parche que no aplica rehúsa sin tocar nada ==
+  ok    rehúsa con ValueError
+  ok    el sujeto no cambió
+  ok    no deja salida de una medición que no ocurrió
+
+15 ok, 0 fallos
+
+[exit=0]

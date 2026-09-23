@@ -1,0 +1,4 @@
+El store del mapa se declara, no se deriva por aritmetica
+68 aserciones
+OK: todas las aserciones pasan
+EXIT=0

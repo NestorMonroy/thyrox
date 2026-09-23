@@ -1,4 +1,3 @@
-import { feature } from 'bun:bundle'
 import { getCliHostBindings } from './host.js'
 import type { HeadlessStateStore } from './contracts.js'
 import type { Command } from '@thyrox/command-runtime/runtime'

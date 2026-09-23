@@ -1,11 +1,8 @@
 import * as React from 'react'
-import { Box, Text, useTheme } from '@anthropic/ink'
-import { getTheme, type Theme } from '@anthropic/ink'
+import { Box, Text } from '@anthropic/ink'
+import { type Theme } from '@anthropic/ink'
 import {
   getDefaultCharacters,
-  interpolateColor,
-  parseRGB,
-  toRGBColor,
 } from './utils.js'
 
 const DEFAULT_CHARACTERS = getDefaultCharacters();

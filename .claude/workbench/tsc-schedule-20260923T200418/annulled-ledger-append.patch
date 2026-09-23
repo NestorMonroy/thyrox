@@ -1,0 +1,11 @@
+--- a/src/verify/batch_verification.py
++++ b/src/verify/batch_verification.py
+@@ -284,7 +284,7 @@
+     if args.verdicts_out:
+         # Se añade y no se reescribe: el registro es la historia de la que el
+         # planificador aprende, y un lote nuevo no borra los anteriores.
+-        with args.verdicts_out.open("a", encoding="utf-8") as ledger:
++        with args.verdicts_out.open("w", encoding="utf-8") as ledger:
+             for v in report.verdicts:
+                 if isinstance(v, Verdict):
+                     row = {"proposal_id": v.provider, "proposer": "ts2305-facade",

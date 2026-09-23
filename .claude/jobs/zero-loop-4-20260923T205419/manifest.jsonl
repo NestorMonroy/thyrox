@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c eval \"$(bash bin/commit_identity env </dev/null)\"; bin/tsc_zero_loop --root . --loop-dir .claude/workbench/tsc-zero-loop/run-20260923T205419 --max-steps 6 --seed 1790196859 -- bin/tsc_proposers -- bunx tsc --noEmit -p tsconfig.json --pretty false > .claude/workbench/tsc-zero-loop/run-20260923T205419/result.json 2> .claude/workbench/tsc-zero-loop/run-20260923T205419/stderr.txt", "started_at": "2026-09-23T20:54:19+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-23T21:01:00+00:00", "duration_seconds": 401.950158}

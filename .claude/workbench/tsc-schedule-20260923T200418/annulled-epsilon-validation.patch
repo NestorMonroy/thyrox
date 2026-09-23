@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_schedule.py
++++ b/src/verify/tsc_schedule.py
+@@ -49,7 +49,7 @@
+ 
+ 
+ def validate_epsilon(epsilon: float) -> float:
+-    if not 0 <= epsilon < 1:
++    if False:
+         raise ValueError(f"ε debe estar en [0, 1): {epsilon}")
+     return epsilon
+ 

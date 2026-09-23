@@ -123,11 +123,41 @@ else:
     # parametro, no el mecanismo. Ocurrio al congelar las 100 claves de docs.
     raw, total = gate.scan(consumer, frozen=set())
     check('el universo no esta vacio', total > 0, True)
-    check('y encuentra las claves espanolas del banco', len(raw) > 0, True)
-    # Y con el baseline puesto, la deuda congelada NO bloquea: los dos lados
-    # del mismo mecanismo, medidos por separado.
-    frozen_hits, _ = gate.scan(consumer)
-    check('lo congelado no vuelve a reportarse', len(frozen_hits) < len(raw), True)
+    # La deteccion NO se mide contra la deuda del consumidor: docs la pago
+    # (269 manifiestos, 0 claves espanolas, medido 2026-09-22), y un control
+    # que exige deuda pasa a rojo el dia que alguien la salda. En los hosts
+    # sin roster este caso se OMITIA, asi que nunca lo habia notado nadie.
+    # Se toma un run REAL del consumidor, se copia a un hogar temporal con una
+    # clave espanola inyectada, y se mide con el mismo `scan`: solo el
+    # descubrimiento de hogares se redirige a la copia.
+    import shutil
+    real_run = next((p.parent for h in gate.manifest_homes(consumer)
+                     for name in (gate.MANIFEST_FILE_NAME, gate.LEGACY_MANIFEST_FILE_NAME)
+                     for p in h.rglob(name)), None)
+    check('el consumidor tiene al menos un run real', real_run is not None, True)
+    with tempfile.TemporaryDirectory() as tmp_home:
+        copy = Path(tmp_home) / real_run.name
+        shutil.copytree(real_run, copy)
+        jsonl = copy / gate.MANIFEST_FILE_NAME
+        if jsonl.is_file():
+            with jsonl.open('a', encoding='utf-8') as handle:
+                handle.write('{"kind": "note", "tarea": "inyectada"}\n')
+        else:
+            legacy = copy / gate.LEGACY_MANIFEST_FILE_NAME
+            data = json.loads(legacy.read_text(encoding='utf-8'))
+            data['tarea'] = 'inyectada'
+            legacy.write_text(json.dumps(data, indent=2), encoding='utf-8')
+        original_homes = gate.manifest_homes
+        gate.manifest_homes = lambda _root: [Path(tmp_home)]
+        try:
+            injected, _ = gate.scan(consumer, frozen=set())
+            check('y encuentra la clave espanola inyectada en un run real',
+                  [key for _, key in injected], ['tarea'])
+            entry = f'{injected[0][0]}::{injected[0][1]}' if injected else ''
+            frozen_hits, _ = gate.scan(consumer, frozen={entry})
+            check('lo congelado no vuelve a reportarse', frozen_hits, [])
+        finally:
+            gate.manifest_homes = original_homes
 
 #: El manifiesto sintetico de los casos 6 y 8: las cinco claves obligatorias en
 #: ingles y UNA espanola, que es el sujeto. Va como TEXTO por la misma razon que

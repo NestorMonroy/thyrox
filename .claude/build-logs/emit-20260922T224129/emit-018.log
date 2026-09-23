@@ -1,0 +1,4 @@
+swarm: emitio pese a 1876 errores (110 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 1876 error(es) que siguen vivos en su propio paquete
+EXIT=0

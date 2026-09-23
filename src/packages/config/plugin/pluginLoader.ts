@@ -46,7 +46,7 @@ import {
 } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
 import { resolveSessionPluginPath } from './remotePluginArchive.js'
-import { basename, dirname, join, relative, resolve, sep } from 'path'
+import { basename, dirname, join, relative, sep } from 'path'
 import { getInlinePlugins } from './_deps.js'
 import {
   BUILTIN_MARKETPLACE_NAME,

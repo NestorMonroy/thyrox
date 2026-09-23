@@ -1,0 +1,8 @@
+src/packages/app-host/src/state/AppStateStore.ts
+src/packages/app-host/src/state/AppStateCompat.ts
+src/packages/output/src/capture/ansi-to-png.ts
+src/packages/output/src/capture/asciicast.ts
+src/packages/agent/internal/headlessRuntime.ts
+src/packages/permission/src/permissionSetup.ts
+src/packages/provider/src/rateLimitMessages.ts
+src/packages/shell/src/providers/powershellDetection.ts

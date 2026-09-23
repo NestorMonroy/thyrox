@@ -1,0 +1,87 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:33:19)
+(fail) tscFixCensus > un import sin uso, SOLO en su archivo, trae un arreglo seguro [705.38ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:39:18)
+(fail) tscFixCensus > un parámetro sin uso NO es seguro: retirarlo cambia la firma [654.73ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:46:18)
+(fail) tscFixCensus > un parámetro sin tipo trae inferFromUsage, seguro [761.38ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:52:18)
+(fail) tscFixCensus > una conversión sin solape trae un arreglo que TAPA el error [699.61ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:65:18)
+(fail) tscFixCensus > con DOS instancias en el archivo (fixId presente) sigue tapando [706.95ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:77:18)
+(fail) tscFixCensus > un diagnóstico sin arreglos queda con la lista vacía [747.94ms]
+118 |       } finally {
+119 |         // Medido en el árbol real: un proveedor de TypeScript lanza sobre algún
+120 |         // diagnóstico (`type.symbol.declarations` indefinido) y abortaba el
+121 |         // censo entero. La fila queda con su error y sin arreglos admitidos:
+122 |         // el lado seguro, y visible en el resumen.
+123 |         rows.push({ code: diagnostic.code, file: sf.fileName, start: diagnostic.start, fixes, fixError: String(error) })
+                                                                                                                          ^
+ReferenceError: error is not defined
+      at censusFixes (/home/user/thyrox/src/verify/tscFixCensus.ts:123:117)
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:100:18)
+(fail) tscFixCensus > un proveedor de arreglos que lanza no aborta el censo: queda en su fila [609.26ms]
+
+ 3 pass
+ 7 fail
+ 3 expect() calls
+Ran 10 tests across 1 file. [6.61s]
+
+[exit=1]

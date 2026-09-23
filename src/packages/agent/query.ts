@@ -36,7 +36,6 @@ import {
   isAutoCompactEnabled,
   isWithheldMaxOutputTokens,
   MAX_OUTPUT_TOKENS_RECOVERY_LIMIT,
-  type Continue,
   type QueryLoopState,
   type Terminal,
 } from './internal/queryConfig.js'
@@ -83,7 +82,7 @@ import type {
   AgentToolUseSummaryMessage as ToolUseSummaryMessage,
 } from './internalTypes.js'
 import { createBudgetTracker, checkTokenBudget } from './internal/tokenBudget.js'
-import { asSystemPrompt, count, isEnvTruthy, type SystemPrompt } from './internalUtils.js'
+import { asSystemPrompt, count, type SystemPrompt } from './internalUtils.js'
 import {
   appendSystemContext,
   applyContextCollapsesIfNeeded,
@@ -665,7 +664,7 @@ async function* queryLoop(
               fetchOverride: dumpPromptsFetch,
               mcpTools: appState.mcp.tools,
               hasPendingMcpServers: appState.mcp.clients.some(
-                c => c.type === 'pending',
+(                c: { type: string }) => c.type === 'pending',
               ),
               queryTracking,
               effortValue: appState.effortValue,

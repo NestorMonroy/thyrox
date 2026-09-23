@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -185,7 +185,7 @@
+             write(pid, applied[pid])
+         kept_first, lines_first = settle(first, base_lines, None)
+         for pid in second:
+-            write(pid, patched[pid])
++            pass
+         kept_second, lines_second = settle(second, lines_first, None)
+         return kept_first + kept_second, lines_second
+ 

@@ -1,4 +1,4 @@
-import React, { type ReactNode, useCallback, useState } from 'react'
+import { type ReactNode, useCallback, useState } from 'react'
 import { Box, Byline, KeyboardShortcutHint, Text } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
 import { editPromptInEditor } from '../../../../promptEditor.js'

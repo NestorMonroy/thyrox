@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import React from 'react'
 import { Text } from '@anthropic/ink'
 import type { TaskStatus } from '@thyrox/tool-registry/Task.js'
 import type { LocalShellTaskState } from '../../localShellTaskGuards.js'

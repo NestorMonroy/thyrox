@@ -60,7 +60,7 @@ describe('betas.ts header assembly (ant ux/SQ_/CQ_)', () => {
 
     test('ANTHROPIC_BETAS env var splits on comma and trims (escape hatch)', () => {
       expect(fnSlice).toMatch(
-        /readEnv\('ANTHROPIC_BETAS'\)\.split\(','\)[\s\S]{0,100}\.map\([^)]+=>\s*[^)]+\.trim\(\)\)[\s\S]{0,40}\.filter\(Boolean\)/,
+        /const anthropicBetas = readEnv\('ANTHROPIC_BETAS'\)[\s\S]{0,80}if \(anthropicBetas\)[\s\S]{0,80}anthropicBetas\.split\(','\)[\s\S]{0,100}\.map\([^)]+=>\s*[^)]+\.trim\(\)\)[\s\S]{0,40}\.filter\(Boolean\)/,
       )
     })
   })

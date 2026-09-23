@@ -1,0 +1,31 @@
+test_task_lifecycle:
+
+== 1. el guard admite el EVENTO del hook, no solo el nombre del tool ==
+  ok    `TaskCreated` (el evento) esta en CREATION_EVENTS
+  ok    `TaskCreate` (el tool) sigue estando
+
+== 2. la OTRA mitad: lo que no crea sigue rechazado ==
+  ok    `TaskCompleted` NO acuña
+  ok    `TaskUpdate` NO acuña
+
+== 3. el hook lee el payload del cliente y acuña ==
+  ok    sale 0
+  ok    acuña exactamente una fila
+  ok    y su cita es de la capa declarada
+  ok    y lleva el sujeto de la tarjeta
+
+== 4. el evento de cierre NO acuña una fila mas ==
+  ok    sale 0 igualmente (no es un error)
+  ok    y el store sigue con UNA fila
+
+== 5. un payload roto no rompe el turno ==
+  ok    sale 0 ante JSON invalido
+  ok    sale 0 ante stdin vacio
+
+== 6. el cableado del usuario DECLARA el evento ==
+  ok    `TaskCreated` esta declarado
+  ok    `TaskCompleted` esta declarado
+  ok    los dos apuntan al mismo guion
+
+resultado: 15 de 15 aserciones en verde
+EXIT=0

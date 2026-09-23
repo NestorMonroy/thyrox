@@ -13,7 +13,7 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import sample from 'lodash-es/sample.js'
-import { formatDuration, formatNumber, formatSecondsShort } from '@thyrox/output/formatters'
+import { formatDuration, formatNumber } from '@thyrox/output/formatters'
 import type { Theme } from '@anthropic/ink'
 import { activityManager } from '@thyrox/app-host/activityManager.js'
 import { getSpinnerVerbs } from '@thyrox/agent/constants/spinnerVerbs.js'

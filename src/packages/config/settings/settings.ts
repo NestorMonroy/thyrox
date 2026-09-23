@@ -66,7 +66,6 @@
  */
 import mergeWith from 'lodash-es/mergeWith.js'
 import {
-  existsSync,
   mkdirSync,
   readFileSync as fsReadFileSync,
   realpathSync,

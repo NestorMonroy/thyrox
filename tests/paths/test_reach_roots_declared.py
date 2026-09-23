@@ -28,6 +28,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from paths import reach  # noqa: E402
+from testing.clone_tree import synthetic_clone_tree  # noqa: E402
 
 OK = 0
 FAILED = 0
@@ -109,10 +110,14 @@ print("== 5. sin declaracion, DERIVA del arbol real ==")
 vacio = fixture("sin-declaracion")
 vacio.mkdir(parents=True, exist_ok=True)
 (vacio / ".env").write_text("")
-with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
-         lambda: check("deriva los cinco hermanos de este arbol",
-                       ("api", "db", "docs", "server", "ui"),
-                       reach.reach_roots()))
+# Sobre un arbol sintetico de cinco clones y no sobre el host: de los
+# consumidores solo `docs` es obligatorio, y un host con uno solo no tiene los
+# cinco que este caso afirma (H-THYROX-155).
+with synthetic_clone_tree(("api", "db", "docs", "server", "ui")):
+    with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
+             lambda: check("deriva los cinco hermanos del arbol",
+                           ("api", "db", "docs", "server", "ui"),
+                           reach.reach_roots()))
 
 print("== 6. CONTROL DE ANULACION: deriva sobre un arbol que NO es este ==")
 # Si el mecanismo volviera al literal, este es el unico caso que lo delata.
@@ -126,9 +131,12 @@ with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
                        reach.reach_roots(start=otro / "thyrox")))
 
 print("== 7. el atributo REACH_ROOTS sigue resolviendo (6 consumidores) ==")
-with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
-         lambda: check("el nombre historico devuelve lo mismo que la funcion",
-                       reach.reach_roots(), reach.REACH_ROOTS))
+# En el arbol sintetico, por la misma razon que el caso 5: lo que se afirma
+# es la equivalencia de los dos nombres, no el roster del host.
+with synthetic_clone_tree(("api", "db", "docs", "server", "ui")):
+    with_env({"THYROX_REACH_ROOTS": None, "THYROX_ENV_FILE": str(vacio / ".env")},
+             lambda: check("el nombre historico devuelve lo mismo que la funcion",
+                           reach.reach_roots(), reach.REACH_ROOTS))
 
 print("== 8. sin declaracion NI derivacion posible, REHUSA ==")
 solo = fixture("sin-hermanos") / "thyrox"

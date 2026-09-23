@@ -1,0 +1,23 @@
+  ok   recupera la pendiente por dia
+  ok   recupera la ordenada
+  ok   R2 de un ajuste exacto es 1
+  ok   declara su forma
+  ok   entrega el ajustado, que es la entrada de los residuos
+  ok   una serie plana da pendiente cero sin romper
+  ok   y su R2 se declara cero, no nan
+  ok   recupera la tasa de crecimiento por dia
+  ok   declara forma exponencial
+  ok   su R2 se mide en la escala ORIGINAL, y es ~1 aqui
+  ok   rehusa el exponencial con un valor no positivo
+  ok   sobre una exponencial ruidosa elige el exponencial
+  ok   y su R2 comparado es el de la escala original (<= 1)
+  ok   con el punto mayor desviado elige la RECTA, no el exponencial
+  ok   y el R2 que publica es el de la escala original
+  ok   el exponencial ajusta PEOR en escala original aunque el log diga 0.98
+  ok   sobre una lineal ruidosa elige la recta
+  ok   y si el exponencial no se puede ajustar, elige la recta sin romper
+  ok   el sujeto real crece: pendiente positiva
+  ok   y su R2 esta en [0,1]
+
+20 aprobada(s) · 0 fallida(s) (alcance medido: trend.py)
+EXIT=0

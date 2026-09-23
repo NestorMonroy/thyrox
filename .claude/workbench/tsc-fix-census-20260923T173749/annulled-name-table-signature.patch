@@ -1,0 +1,13 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -63,10 +63,6 @@
+   fixMissingMember: 'judgment',
+   // Los de firma o forma también llegan sin `fixId` con una sola instancia:
+   // medido en el censo real, salían `unclassified` por faltar aquí.
+-  addMissingParam: 'judgment',
+-  addOptionalParam: 'judgment',
+-  fixMissingProperties: 'judgment',
+-  addMissingAwait: 'judgment',
+   addConvertToUnknownForNonOverlappingTypes: 'hides',
+   spelling: 'hides',
+ }

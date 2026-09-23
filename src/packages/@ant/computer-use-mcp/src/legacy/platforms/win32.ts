@@ -42,9 +42,7 @@ import {
   psAsync,
   validateHwnd,
   VK_MAP,
-  MODIFIER_KEYS,
 } from '../win32/shared.js'
-import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 // ---------------------------------------------------------------------------
 // Python Bridge (lazy-loaded, preferred over PowerShell for screenshots)

@@ -1,4 +1,3 @@
-import React from 'react'
 import { MCPServerApprovalDialog } from '@thyrox/repl/components/MCPServerApprovalDialog.js'
 import { MCPServerMultiselectDialog } from '@thyrox/repl/components/MCPServerMultiselectDialog.js'
 import type { Root } from '@anthropic/ink'

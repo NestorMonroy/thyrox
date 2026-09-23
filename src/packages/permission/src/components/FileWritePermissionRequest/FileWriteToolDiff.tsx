@@ -6,6 +6,7 @@ import { intersperse } from '@thyrox/tool-registry/utils/array.js'
 import { getPatchForDisplay } from '@thyrox/agent/diff.js'
 import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
 import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
+import { StructuredPatchHunk } from 'diff'
 
 type Props = {
   file_path: string
@@ -53,7 +54,7 @@ export function FileWriteToolDiff({
       >
         {hunks ? (
           intersperse(
-            hunks.map(_ => (
+            hunks.map((_: StructuredPatchHunk) => (
               <StructuredDiff
                 key={_.newStart}
                 patch={_}

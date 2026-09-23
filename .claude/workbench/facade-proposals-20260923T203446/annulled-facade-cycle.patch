@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -200,7 +200,7 @@
+         (ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) &&
+         statement.moduleSpecifier !== undefined &&
+         moduleFile(checker, statement.moduleSpecifier) === provider)
+-      if (cycle) continue
++      if (false) continue
+       let relative = path.relative(path.dirname(provider.fileName), declaring.fileName).replace(/\.tsx?$/, '.js')
+       if (!relative.startsWith('.')) relative = `./${relative}`
+       // Un tipo reexportado con `export {}` es un error bajo `isolatedModules`.

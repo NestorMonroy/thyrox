@@ -1,0 +1,35 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. siembra: dos sesiones distintas, como dos chats ==
+  ok    siembra sin error
+== 3. --id devuelve exactamente esa fila ==
+  ok    #864 presente
+  ok    #865 ausente
+  ok    total 1
+== 4. DISCRIMINADOR — por omision consulta TODAS las sesiones ==
+  ok    ve la tarea de sesion-vieja
+  ok    ve la tarea de sesion-nueva
+  ok    total 3
+== 5. --sesion acota a una ==
+  ok    sesion-vieja: 2 filas
+  ok    no cuela la nueva
+== 6. --query busca en description, no solo en subject ==
+  ok    encuentra por description
+  ok    no distingue mayusculas
+== 7. --status y --submodulo filtran ==
+  ok    status in_progress: 1
+  ok    submodulo docs: 1
+== 8. --limit recorta y --id acepta el # delante ==
+  ok    limit 2
+  ok    #864 con almohadilla
+== 9. el cero viene con su denominador (sub-patron D) ==
+  ok    total 0
+  ok    publica alcance medido
+== 10. --detalle imprime description, sesion y origen ==
+  ok    trae la description
+  ok    trae la sesion
+  ok    trae el origen
+  ok    sin --detalle no la trae
+
+22 ok · 0 fallas
+EXIT=0

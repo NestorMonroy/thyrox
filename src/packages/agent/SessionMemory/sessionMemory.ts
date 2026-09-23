@@ -72,7 +72,6 @@ import {
   getDynamicConfig_CACHED_MAY_BE_STALE,
   getFeatureValue_CACHED_MAY_BE_STALE,
 } from '@thyrox/config/feature-flags'
-import { readEnv } from '@thyrox/config/env'
 
 /**
  * Check if session memory feature is enabled.

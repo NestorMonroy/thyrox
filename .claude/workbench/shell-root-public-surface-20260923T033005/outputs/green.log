@@ -1,0 +1,50 @@
+bun test v1.4.3-canary.1 (87466cf1f)
+
+src/packages/shell/src/__test__/import.test.ts:
+(pass) @thyrox/shell import verification > shellQuote: quote and parse functions exist [0.04ms]
+(pass) @thyrox/shell import verification > shellQuoting: quoteShellCommand works [0.06ms]
+(pass) @thyrox/shell import verification > bashPipeCommand: rearrangePipeCommand exists [0.01ms]
+(pass) @thyrox/shell import verification > shellPrefix: formatShellPrefixCommand exists [0.03ms]
+(pass) @thyrox/shell import verification > parser: parseCommand and ensureInitialized exist [0.03ms]
+(pass) @thyrox/shell import verification > commands: splitCommand and helpers exist [0.03ms]
+(pass) @thyrox/shell import verification > prefix: getCommandPrefixStatic and getCompoundCommandPrefixesStatic exist [0.01ms]
+(pass) @thyrox/shell import verification > heredoc: extractHeredocs and helpers exist [0.02ms]
+(pass) @thyrox/shell import verification > registry: getCommandSpec and loadFigSpec exist [0.01ms]
+(pass) @thyrox/shell import verification > treeSitterAnalysis: analyzeCommand and helpers exist [0.03ms]
+(pass) @thyrox/shell import verification > types: SHELL_TYPES and DEFAULT_HOOK_SHELL exported [0.09ms]
+(pass) @thyrox/shell import verification > outputLimits: getMaxOutputLength exists [0.03ms]
+(pass) @thyrox/shell import verification > resolveDefaultShell: exists [0.01ms]
+(pass) @thyrox/shell import verification > shellToolUtils: isPowerShellToolEnabled and SHELL_TOOL_NAMES exported [0.03ms]
+(pass) @thyrox/shell import verification > readOnlyCommandValidation: GIT_READ_ONLY_COMMANDS, validateFlags, FLAG_PATTERN exported [0.07ms]
+(pass) @thyrox/shell import verification > specPrefix: buildPrefix and DEPTH_RULES exported [0.02ms]
+(pass) @thyrox/shell import verification > bashProvider: createBashShellProvider is a function
+(pass) @thyrox/shell import verification > powershellProvider: createPowerShellProvider and buildPowerShellArgs exist [0.14ms]
+(pass) @thyrox/shell import verification > ShellSnapshot: createAndSaveSnapshot, createRipgrepShellIntegration, createFindGrepShellIntegration exist [0.02ms]
+(pass) @thyrox/shell import verification > quote: can quote a simple argument [0.49ms]
+(pass) @thyrox/shell import verification > tryParseShellCommand: can parse a simple command [0.77ms]
+(pass) @thyrox/shell import verification > tryQuoteShellArgs: can quote args [0.13ms]
+(pass) @thyrox/shell import verification > quoteShellCommand: can quote a command [0.41ms]
+(pass) @thyrox/shell import verification > splitCommand: splits simple command [1.62ms]
+(pass) @thyrox/shell import verification > splitCommandWithOperators: splits with operators [0.18ms]
+(pass) @thyrox/shell import verification > isHelpCommand: detects --help [0.22ms]
+(pass) @thyrox/shell import verification > containsHeredoc: detects non-heredoc [0.06ms]
+(pass) @thyrox/shell import verification > shouldAddStdinRedirect: detects redirect [0.14ms]
+(pass) @thyrox/shell import verification > getMaxOutputLength: returns a number [0.82ms]
+(pass) @thyrox/shell import verification > validateFlags: is a function with correct signature [0.08ms]
+(pass) @thyrox/shell import verification > getCommandSpec: returns null for unknown command [0.63ms]
+(pass) @thyrox/shell import verification > buildPrefix: builds prefix for simple command [1.03ms]
+(pass) @thyrox/shell import verification > subprocessEnv: returns env object [0.53ms]
+(pass) @thyrox/shell import verification > registerUpstreamProxyEnvFn: is a function [0.02ms]
+(pass) @thyrox/shell import verification > wrapSpawn: is a function [0.01ms]
+(pass) @thyrox/shell import verification > createAbortedCommand: returns killed command [0.27ms]
+(pass) @thyrox/shell import verification > createFailedCommand: returns completed command with error [0.19ms]
+(pass) @thyrox/shell import verification > findSuitableShell: is a function [0.02ms]
+(pass) @thyrox/shell import verification > createProviderResolver: is a function [0.01ms]
+(pass) @thyrox/shell import verification > exec: is a function [0.01ms]
+(pass) @thyrox/shell import verification > setCwd: is a function
+(pass) @thyrox/shell import verification > exec injection setters: exist [0.02ms]
+
+ 42 pass
+ 0 fail
+ 84 expect() calls
+Ran 42 tests across 1 file. [315.00ms]

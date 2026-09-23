@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
 
 export const call: LocalJSXCommandCall = async (onDone, context) => {

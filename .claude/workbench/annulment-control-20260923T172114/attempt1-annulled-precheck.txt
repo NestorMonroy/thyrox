@@ -1,0 +1,28 @@
+== 1. sujeto commiteado: anula, mide, restaura, y lo prueba ==
+  ok    la suite anulada sale distinto de cero
+  ok    la suite restaurada sale cero
+  ok    el blob restaurado es el de partida
+  ok    el árbol seguido queda sin cambios
+  ok    el parche queda en el banco
+  ok    la salida anulada queda en el banco
+  ok    la salida restaurada queda en el banco
+  ok    el manifiesto nombra el commit de partida
+  ok    sujeto commiteado: no se copia su estado de partida
+== 2. sujeto SIN commitear: su estado de partida va al banco ==
+  ok    el estado de partida sin commitear queda en el banco
+  ok    y el archivo vuelve a él
+  ok    blob antes == blob después
+== 3. un parche que no aplica rehúsa sin tocar nada ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_annulment_control.py", line 124, in <module>
+    run_annulment(repo, bench, "bad", repo / "subject.py", bad, suite)
+  File "/home/user/thyrox/src/verify/annulment_control.py", line 77, in run_annulment
+    _git(repo, "apply", str(patch))
+  File "/home/user/thyrox/src/verify/annulment_control.py", line 42, in _git
+    return subprocess.run(["git", "-C", str(repo), *args], check=check,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-C', '/tmp/tmpqmjrrtm5/repo', 'apply', '/tmp/tmpqmjrrtm5/bad.patch']' returned non-zero exit status 1.
+
+[exit=1]

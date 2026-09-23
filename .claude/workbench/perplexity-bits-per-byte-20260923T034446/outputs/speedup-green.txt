@@ -1,0 +1,11 @@
+test_speculative_speedup:
+  ok    alpha del brief es sum(min(p, q))
+  ok    el muestreador real acepta esa fraccion
+  ok    con p == q se acepta siempre
+  ok    con alpha 1 cada llamada produce gamma + 1 tokens
+  ok    con alpha 0 cada llamada produce solo el token de correccion
+  ok    tokens por llamada del brief con gamma 4
+  ok    la formula coincide con la simulacion del mecanismo
+  ok    un alpha fuera de [0, 1] rehusa
+  ok    gamma menor que 1 rehusa
+test_speculative_speedup: 9 aserciones — 9 ok, 0 falla(s)

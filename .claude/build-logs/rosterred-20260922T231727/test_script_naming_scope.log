@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_script_naming_scope.py", line 39, in <module>
+    CONSUMER = clone_root('docs')
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

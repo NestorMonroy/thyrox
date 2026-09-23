@@ -1,0 +1,11 @@
+--- a/src/verify/annulment_control.py
++++ b/src/verify/annulment_control.py
+@@ -73,7 +73,7 @@
+     blob_before = _blob(repo, subject)
+     committed = _is_committed(repo, relative)
+     shutil.copyfile(patch, bench / f"annulled-{name}.patch")
+-    if not committed:
++    if False:
+         (bench / f"{subject.stem}-before-{name}{subject.suffix}").write_bytes(before_text)
+ 
+     _git(repo, "apply", str(patch))

@@ -17,7 +17,6 @@ import { agentTool } from '../src/agent.ts'
 import { taskTools } from '../src/tasks.ts'
 import { readJournal } from '@thyrox/observability/journal'
 import { RecordedProvider } from '@thyrox/provider/recorded'
-import { CORE_TOOLS } from '../src/registry.ts'
 import type { AssistantTurn } from '@thyrox/agent/loop/types'
 
 const dir = () => mkdtempSync(join(tmpdir(), 'sub-'))

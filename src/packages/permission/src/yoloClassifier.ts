@@ -42,7 +42,6 @@ import {
   XML_S2_SUFFIX,
 } from './classifierXmlFormat.js'
 import {
-  type AutoModeOutcome,
   classifyClassifierErrorKind,
   detectPromptTooLong,
   logAutoModeOutcome,

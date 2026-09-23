@@ -13,7 +13,7 @@ if (!globalThis.MACRO) {
   globalThis.MACRO = { VERSION: '0.0.0-test', BUILD_TIME: '0' } as any
 }
 
-import { BingSearchAdapter, extractBingResults } from '../adapters/bingAdapter'
+import { BingSearchAdapter } from '../adapters/bingAdapter'
 
 const query = process.env.BING_QUERY || 'Claude AI Anthropic'
 

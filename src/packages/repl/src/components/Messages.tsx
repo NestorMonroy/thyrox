@@ -4,7 +4,6 @@ import type { UUID } from 'crypto'
 import type { RefObject } from 'react'
 import * as React from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { every } from '@thyrox/output/setUtils.js'
 import { getIsRemoteMode } from '@thyrox/app-host/bootstrap/state.js'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
@@ -39,7 +38,6 @@ import {
   getMessagesAfterCompactBoundary,
   getToolUseID,
   getToolUseIDs,
-  hasUnresolvedHooksFromLookup,
   isNotEmptyMessage,
   normalizeMessages,
   reorderMessagesInUI,

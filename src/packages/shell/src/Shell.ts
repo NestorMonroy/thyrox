@@ -35,10 +35,6 @@ import { getTaskOutputDir } from '@thyrox/storage/task/diskOutput.js'
 import { TaskOutput } from '@thyrox/tool-registry/task/TaskOutput.js'
 import { ensureSocketInitialized, getClaudeTmuxEnv, hasTmuxToolBeenUsed } from './terminal/tmuxSocket.js'
 import { which } from './which.js'
-import {
-  posixPathToWindowsPath,
-  windowsPathToPosixPath,
-} from '@thyrox/storage/windowsPaths.js'
 
 setCreateTaskOutputFn(
   (

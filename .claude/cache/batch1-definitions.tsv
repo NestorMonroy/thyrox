@@ -1,0 +1,15 @@
+@thyrox/agent/messages/systemInit.js	buildSystemInitMessage	src/packages/agent/internal/headlessRuntime.ts 
+@thyrox/agent/sessionTitle.js	generateSessionTitle	src/packages/bridge/src/internal/pendingCrossPackageDeps.ts 
+@thyrox/app-host/state/AppState.js	getDefaultAppState	src/packages/app-host/src/runtime/appStateCompatShim.ts src/packages/app-host/src/state/AppStateCompat.ts 
+@thyrox/config/env	env	src/packages/config/env/paths.ts src/packages/swarm/src/adapters/appRuntime.ts src/packages/ide/src/internal/pendingCrossPackageDeps.ts 
+@thyrox/output/capture	ansiToPng	src/packages/output/src/capture/ansi-to-png.ts 
+@thyrox/output/capture	renameRecordingForSession	src/packages/output/src/capture/asciicast.ts 
+@thyrox/permission	getAutoModeUnavailableNotification	src/packages/permission/src/permissionSetup.ts 
+@thyrox/permission	getAutoModeUnavailableReason	src/packages/permission/src/permissionSetup.ts 
+@thyrox/permission	hasPermissionsToUseTool	src/packages/swarm/src/adapters/appRuntime.ts 
+@thyrox/permission	isAutoModeGateEnabled	src/packages/permission/src/permissionSetup.ts 
+@thyrox/permission	isBypassPermissionsModeDisabled	src/packages/permission/src/permissionSetup.ts 
+@thyrox/permission	transitionPermissionMode	src/packages/permission/src/permissionSetup.ts 
+@thyrox/provider/claudeAiLimits.js	getRateLimitWarning	src/packages/provider/src/rateLimitMessages.ts 
+@thyrox/provider/claudeAiLimits.js	getUsingOverageText	src/packages/provider/src/rateLimitMessages.ts 
+@thyrox/shell	getCachedPowerShellPath	src/packages/shell/src/providers/powershellDetection.ts src/packages/shell/src/legacy/powershellDetection.ts 

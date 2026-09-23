@@ -189,7 +189,7 @@ function MessageRowImpl({
   const hasMetadata =
     isTranscriptMode &&
     displayMsg.type === 'assistant' &&
-    displayMsg.message.content.some(c => c.type === 'text') &&
+    displayMsg.message.content.some((c: { type: string }) => c.type === 'text') &&
     (displayMsg.timestamp || displayMsg.message.model)
 
   const messageEl = (

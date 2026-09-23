@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import { isAutoMemoryEnabled } from '@thyrox/memory/paths'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'

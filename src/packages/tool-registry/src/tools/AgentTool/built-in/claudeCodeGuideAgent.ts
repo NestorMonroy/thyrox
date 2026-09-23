@@ -1,4 +1,3 @@
-import { BASH_TOOL_NAME } from '../../BashTool/toolName.js'
 import { FILE_READ_TOOL_NAME } from '../../FileReadTool/constants.js'
 import { GLOB_TOOL_NAME } from '../../GlobTool/prompt.js'
 import { GREP_TOOL_NAME } from '../../GrepTool/prompt.js'

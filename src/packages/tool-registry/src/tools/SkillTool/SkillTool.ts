@@ -87,7 +87,7 @@ async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
   const mcpSkills = context
     .getAppState()
     .mcp.commands.filter(
-      cmd => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
+(      cmd: { type: string; loadedFrom: string }) => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
     )
   if (mcpSkills.length === 0) return getCommands(getProjectRoot())
   const localCommands = await getCommands(getProjectRoot())

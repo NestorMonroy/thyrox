@@ -1,0 +1,4 @@
+teleport: emitio pese a 34 errores (5 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 34 error(es) que siguen vivos en su propio paquete
+EXIT=0

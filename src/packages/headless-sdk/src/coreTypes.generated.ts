@@ -24,6 +24,8 @@
  */
 
 import type { UUID } from 'crypto'
+import type { z } from 'zod/v4'
+import type { SDKMessageSchema } from './coreSchemas.ts'
 import type {
   ContentBlock,
   ContentBlockParam,
@@ -137,7 +139,11 @@ export type CwdChangedHookInput = HookInput & { cwd: string }
 export type FileChangedHookInput = HookInput & { path: string }
 
 // SDK Message types
-export type SDKMessage = { type: string; [key: string]: unknown }
+// Inferido del esquema, como el build completo genera este archivo: el
+// placeholder `{ type: string; [key: string]: unknown }` dejaba en `unknown`
+// todo campo leído tras estrechar por `type` (p. ej. `message.request` en
+// `cli/.../run-streaming.ts`).
+export type SDKMessage = z.infer<ReturnType<typeof SDKMessageSchema>>
 export type SDKUserMessage = {
   type: "user"
   content: string | Array<{ type: string; [key: string]: unknown }>

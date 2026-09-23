@@ -1,0 +1,81 @@
+EE..EE.E..
+======================================================================
+ERROR: test_declarar_un_clon_no_mueve_a_los_demas (__main__.RulesPathsParity.test_declarar_un_clon_no_mueve_a_los_demas)
+El control que faltaba, y el defecto que ya ocurrió.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 110, in test_declarar_un_clon_no_mueve_a_los_demas
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_el_hogar_del_consumidor_cae_dentro_del_consumidor (__main__.RulesPathsParity.test_el_hogar_del_consumidor_cae_dentro_del_consumidor)
+El defecto de #286: resolver el hogar del consumidor DENTRO del proveedor.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 199, in test_el_hogar_del_consumidor_cae_dentro_del_consumidor
+    for repo, root in reach.roots().items():
+                      ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_clave_de_familia_absoluta_SI_colisiona (__main__.RulesPathsParity.test_la_clave_de_familia_absoluta_SI_colisiona)
+Y es correcto que lo haga — el control que impide sobre-afirmar.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 165, in test_la_clave_de_familia_absoluta_SI_colisiona
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_clave_de_familia_como_segmento_relativo_no_colisiona (__main__.RulesPathsParity.test_la_clave_de_familia_como_segmento_relativo_no_colisiona)
+La clave de FAMILIA con un segmento relativo dice lo correcto para todos.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 141, in test_la_clave_de_familia_como_segmento_relativo_no_colisiona
+    roots = reach.roots()
+            ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+======================================================================
+ERROR: test_la_familia_sigue_siendo_el_ultimo_recurso (__main__.RulesPathsParity.test_la_familia_sigue_siendo_el_ultimo_recurso)
+Sin clave por clon, la de familia manda — y eso NO es el defecto.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/rules/test_paths_parity.py", line 187, in test_la_familia_sigue_siendo_el_ultimo_recurso
+    for repo, root in reach.roots().items():
+                      ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.003s
+
+FAILED (errors=5)
+EXIT=1

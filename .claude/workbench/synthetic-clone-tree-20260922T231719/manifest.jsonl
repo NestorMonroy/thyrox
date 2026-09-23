@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Pueden las suites ejercer la derivacion del roster sin depender de los clones del host?","instrument":"fixture de arbol sintetico con anulacion declarar-en-vez-de-construir","metric":"roster derivado y rutas compuestas","blind_to":"suites shell y hijos que lean .env por ruta"}

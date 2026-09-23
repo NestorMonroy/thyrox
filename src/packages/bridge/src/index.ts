@@ -4,7 +4,7 @@ import {
   type InitBridgeOptions,
   type ReplBridgeHandle,
 } from './contracts.js'
-import { getBridgeHostBindings, installBridgeHostBindings } from './host.js'
+import { getBridgeHostBindings } from './host.js'
 
 export * from './contracts.js'
 export * from './errors.js'

@@ -1,0 +1,38 @@
+=== Caso 1: el corpus esta, o el gate no puede medir ===
+  ok    el lexico carga
+=== Caso 2: la clave anidada se ve (EL QUE EXIGE RECURSION) ===
+  OMITIDO — el sujeto no es alcanzable: api:analogue-in-the-client-20260830T192922/manifest.json
+=== Caso 3: el filtro descarta lo que no puede ser un nombre ===
+  ok    NO ve el nombre de archivo
+  ok    NO ve la frase con parentesis
+  ok    SI ve la clave espanola
+  ok    SI ve la clave inglesa (no filtra por idioma aqui)
+=== Caso 4: las cinco claves obligatorias son inglesas ===
+  ok    ninguna de las obligatorias cae
+=== Caso 5: el gate mide manifiestos de verdad (control positivo) ===
+  ok    el universo no esta vacio
+  ok    el consumidor tiene al menos un run real
+  FALLO y encuentra la clave espanola inyectada en un run real: esperaba ['tarea'], obtuve []
+  ok    lo congelado no vuelve a reportarse
+=== Caso 6: una entrada del baseline no bloquea; una nueva si ===
+  FALLO sin baseline la clave nueva bloquea: esperaba 1, obtuve 0
+  FALLO y la nombra: esperaba True, obtuve False
+  ok    congelada, no bloquea
+=== Caso 7: sin lexico REHUSA — no publica un cero ===
+  ok    rehusa con 2
+  ok    NO publica un conteo de manifiestos
+=== Caso 8 (EL DISCRIMINANTE DEL CONGELADO): re-congelar no destruye ===
+  FALLO la primera congela la deuda: esperaba ['sonda-20260101T000000/manifest.json::tarea'], obtuve []
+  ok    la segunda NO la destruye
+  ok    y tras re-congelar sigue sin bloquear
+=== Caso 9: los DOS nombres, y el .json llega MULTILINEA ===
+  ok    el sujeto heredado es multilinea (si no, el caso no discrimina)
+  ok    mide los DOS runs
+  FALLO y ve la clave espanola de CADA forma: esperaba ['heredado-20260101T000000', 'nuevo-20260101T000000'], obtuve []
+  ok    un run con los DOS nombres cuenta una vez
+  ok    anulada, CAE: el heredado sale del universo
+  ok    anulada, CAE: su clave espanola desaparece
+  FALLO anulada, NO cae: el JSONL sigue medido: esperaba ['nuevo-20260101T000000'], obtuve []
+  ok    la anulacion se deshizo
+
+20 ok, 6 fallos (alcance medido: 26 aserciones sobre /home/user/thyrox/src/verify/check_manifest_language.py)

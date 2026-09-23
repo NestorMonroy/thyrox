@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'removeUnusedImports' not found in module '/home/user/thyrox/src/verify/removeUnusedImports.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [93.00ms]
+
+[exit=1]

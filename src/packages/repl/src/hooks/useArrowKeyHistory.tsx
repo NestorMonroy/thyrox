@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { getModeFromInput } from '../components/PromptInput/inputModes.js'
 import { useNotifications } from '../notifications.js'
 import { ConfigurableShortcutHint } from '../components/ConfigurableShortcutHint.js'

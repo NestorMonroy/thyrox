@@ -1,0 +1,11 @@
+test_detect_foreground_long_command	PYTHONPATH=src .venv/bin/python tests/hooks/test_detect_foreground_long_command.py
+test-fixture-leak	bash tests/repo/test-fixture-leak.sh
+test-process-group	bash tests/session/test-process-group.sh
+test-run-task-pool-isolation	bash tests/session/test-run-task-pool-isolation.sh
+test-run-task-pool-memfree	bash tests/session/test-run-task-pool-memfree.sh
+test-run-task-pool-scope	bash tests/session/test-run-task-pool-scope.sh
+test-run-task-pool	bash tests/session/test-run-task-pool.sh
+test-wait-jobs	bash tests/session/test-wait-jobs.sh
+test_background	PYTHONPATH=src .venv/bin/python tests/session/test_background.py
+test_job_runs	PYTHONPATH=src .venv/bin/python tests/session/test_job_runs.py
+test_task_pool	PYTHONPATH=src .venv/bin/python tests/session/test_task_pool.py

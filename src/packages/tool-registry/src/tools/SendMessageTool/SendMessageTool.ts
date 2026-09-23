@@ -12,7 +12,6 @@ import { isMainSessionTask } from '@thyrox/agent/tasks/LocalMainSessionTask.js'
 import { toAgentId } from '@thyrox/agent/idTypes'
 import { generateRequestId } from '@thyrox/agent/agentIdUtils'
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
-import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { lazySchema } from '../../utils/lazySchema.js'
@@ -22,7 +21,6 @@ import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { TEAM_LEAD_NAME } from '@thyrox/swarm'
 import { readTeamFileAsync } from '@thyrox/swarm'
 import {
-  getAgentId,
   getAgentName,
   getTeammateColor,
   getTeamName,
@@ -94,9 +92,7 @@ export type {
 import type {
   BroadcastOutput,
   MessageOutput,
-  MessageRouting,
   RequestOutput,
-  ResponseOutput,
   SendMessageToolOutput,
 } from './types.js'
 

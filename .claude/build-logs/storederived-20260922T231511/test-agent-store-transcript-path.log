@@ -1,0 +1,22 @@
+== Caso 1: el transcript declarado EXISTE
+  ok    guarda la ruta declarada
+  ok    declara que estaba
+== Caso 2 (EL QUE DISCRIMINA): la ruta declarada NO existe
+  ok    guarda la ruta declarada
+  ok    declara que NO estaba
+  ok    sin uso medido
+== Caso 3: las dos filas se distinguen en el agregado
+  ok    con transcript
+  ok    sin transcript
+== Caso 4: la clase de la tarea de fondo homónima queda registrada
+  ok    guarda la entrada homónima
+  ok    censa las clases presentes
+== Caso 5 (EL QUE DISCRIMINA): el agente NO figura entre las tareas de fondo
+  ok    declara que no figura
+  ok    y aun así censa las clases
+== Caso 6 (CONTROL ANULADO): sin el registro las dos colapsan
+  ok    anulado: con transcript deja de verse
+  ok    anulado: las 4 quedan indistinguibles
+
+13 ok · 0 falla(s)  (alcance medido: 13 aserciones)
+EXIT=0

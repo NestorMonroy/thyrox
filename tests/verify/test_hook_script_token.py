@@ -39,6 +39,13 @@ sys.path.insert(0, str(HERE.parents[2] / "src"))
 
 from verify import hook_script_token as gate  # noqa: E402
 from paths import reach  # noqa: E402
+import os  # noqa: E402
+
+# La premisa de la suite: los casos siembran `api`, `db`, `docs` y `ui` en su propio
+# arbol, y el gate recorre el roster. Antes se tomaba el roster del host, donde
+# de los consumidores solo `docs` es obligatorio, y el conteo salia a medias
+# (H-THYROX-155). La suite declara el roster que sus arboles construyen.
+os.environ["THYROX_REACH_ROOTS"] = "api,db,docs,server,ui"
 
 #: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta el
 #: `sys.path.insert` y falla con ruido si algo se mueve. Todo lo demás sale

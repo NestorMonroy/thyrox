@@ -1,0 +1,13 @@
+--- a/src/verify/tsc_schedule.py
++++ b/src/verify/tsc_schedule.py
+@@ -40,8 +40,8 @@
+ from dataclasses import dataclass, field
+ from pathlib import Path
+ 
+-AGAINST = {"rejected", "partial"}
+-IGNORED = {"ambiguous", "no-targets", "infrastructure"}
++AGAINST = {"rejected", "partial", "ambiguous", "no-targets", "infrastructure"}
++IGNORED: set[str] = set()
+ #: Un parámetro de Beta debe ser positivo. Con ε = 0 y sin historia la
+ #: posterior es impropia; se acota para poder muestrear, y el informe lo
+ #: publica tal cual.

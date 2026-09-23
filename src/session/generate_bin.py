@@ -173,6 +173,46 @@ GENERATED_MARKER = "# Generado por src/session/generate_bin.py — no editar a m
 #: ninguna wiring de PATH propia, delega en este directorio).
 DEFAULT_USER_BIN_DIR = pathlib.Path.home() / ".local" / "bin"
 
+#: El piso de version que el interprete de repuesto debe cumplir cuando
+#: ``.venv`` no esta. Es un DEFECTO, no la verdad: la verdad vive en
+#: ``requires-python`` del ``pyproject.toml`` y ``minimum_python`` la lee de
+#: ahi. Este valor solo cubre el arbol sintetico de un control, que no tiene
+#: ``pyproject.toml``.
+FALLBACK_MINIMUM_PYTHON: tuple[int, int] = (3, 11)
+
+#: La variable con la que se DECLARA el interprete de repuesto. Un control
+#: necesita apuntarla a un interprete ausente —o a uno bajo el piso— sin
+#: tocar el PATH de la maquina entera.
+PYTHON_FALLBACK_VAR = "THYROX_PYTHON_FALLBACK"
+
+
+def minimum_python(root: pathlib.Path) -> tuple[int, int]:
+    """El piso de version declarado en ``requires-python``, o el defecto.
+
+    Se LEE y no se copia porque ``pyproject.toml`` ya lo declara: una segunda
+    grafia del mismo numero en este archivo diverge del dia en que el piso
+    suba, y el envoltorio aceptaria un interprete que el proyecto excluye.
+
+    Ciega a: los operadores distintos de ``>=`` dentro de ``requires-python``.
+    El tope (``<3.15``) no se mira aqui — un interprete por encima del tope es
+    un problema del proyecto entero, no del repuesto de un envoltorio.
+    """
+    manifest = root / "pyproject.toml"
+    if not manifest.is_file():
+        return FALLBACK_MINIMUM_PYTHON
+    try:
+        import tomllib
+        declared = tomllib.loads(
+            manifest.read_text(encoding="utf-8")
+        )["project"]["requires-python"]
+    except Exception:
+        return FALLBACK_MINIMUM_PYTHON
+    floor = re.search(r">=\s*(\d+)\.(\d+)", declared)
+    if not floor:
+        return FALLBACK_MINIMUM_PYTHON
+    return (int(floor.group(1)), int(floor.group(2)))
+
+
 #: Builtins de bash medidos con ``compgen -b`` (bash 5.x, esta sesión). Un
 #: stem que coincida con uno de éstos sigue siendo válido como ``bin/<stem>``
 #: o por ruta completa; lo que deja de funcionar es invocarlo SUELTO con
@@ -404,6 +444,8 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
     (defecto real, sucesor propio).
     """
     display_name = bin_name if bin_name is not None else target.stem
+    floor = minimum_python(root)
+    fallback_var = PYTHON_FALLBACK_VAR
     relative_target = target.relative_to(root)
     if target.suffix == ".py":
         # La puerta de entrada la decide el módulo, no el generador: con import
@@ -421,19 +463,29 @@ def wrapper_body(target: pathlib.Path, root: pathlib.Path, bin_name: str | None 
             'export THYROX_ROOT\n'
             'INTERPRETER="$THYROX_ROOT/.venv/bin/python"\n'
             'if [ ! -x "$INTERPRETER" ]; then\n'
-            '  LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
-            '  if [ -r "$LIB" ]; then\n'
-            '    # shellcheck source=/dev/null\n'
-            '    source "$LIB"\n'
-            '    thyrox_toolchain_degraded_notice \\\n'
-            '      "las herramientas Python de bin/, '
+            f'  RESCUE="$(command -v "${{{fallback_var}:-python3}}" 2>/dev/null)"\n'
+            '  if [ -n "$RESCUE" ] && "$RESCUE" -c '
+            f"'import sys; raise SystemExit(0 if sys.version_info >= {floor} else 1)'"
+            ' >/dev/null 2>&1; then\n'
+            '    echo "bin/'
+            f'{display_name}: sin entorno del proveedor; corre con $RESCUE." >&2\n'
+            '    echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
+            '    INTERPRETER="$RESCUE"\n'
+            '  else\n'
+            '    LIB="$THYROX_ROOT/src/lib/toolchain.sh"\n'
+            '    if [ -r "$LIB" ]; then\n'
+            '      # shellcheck source=/dev/null\n'
+            '      source "$LIB"\n'
+            '      thyrox_toolchain_degraded_notice \\\n'
+            '        "las herramientas Python de bin/, '
             f'{display_name} entre ellas" \\\n'
-            '      "cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
-            '  fi\n'
-            '  echo "bin/'
+            '        "cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
+            '    fi\n'
+            '    echo "bin/'
             f'{display_name}: falta el entorno del proveedor en $INTERPRETER." >&2\n'
-            '  echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
-            '  exit 2\n'
+            '    echo "              Generalo con: cd \\"$THYROX_ROOT\\" && uv sync" >&2\n'
+            '    exit 1\n'
+            '  fi\n'
             'fi\n'
             'export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"\n'
             + invocation
@@ -673,11 +725,11 @@ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
         'if [ ! -r "$LIB" ]; then\n'
         '  echo "bin/'
         f'{bin_name}: no alcanza $LIB — el arbol esta incompleto." >&2\n'
-        '  exit 2\n'
+        '  exit 1\n'
         'fi\n'
         '# shellcheck source=/dev/null\n'
         'source "$LIB"\n'
-        'thyrox_toolchain_require_bun || exit 2\n'
+        'thyrox_toolchain_require_bun || exit 1\n'
         f'exec "${{THYROX_TOOLCHAIN_BUN_BIN:-bun}}" "$THYROX_ROOT/{relative_target}" "$@"\n'
     )
 

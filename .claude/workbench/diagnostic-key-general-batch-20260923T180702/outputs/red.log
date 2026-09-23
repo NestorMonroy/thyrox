@@ -1,0 +1,18 @@
+test_batch_verification:
+  ok    alpha llega a cero: aceptada
+  ok    gamma baja sin llegar a cero: parcial
+  ok    delta no tenia aristas: sin objeto, no aceptada
+  ok    las aristas antes y despues de gamma
+  ok    alpha = aceptadas / propuestas con objeto
+  ok    el total baja de 6 a 4
+  ok    el diagnostico nuevo se reporta aunque el total baje
+  ok    el lote no es limpio: una parcial y un diagnostico nuevo
+  ok    dos propuestas a cero y nada nuevo: lote limpio
+  ok    con las dos aceptadas alpha vale 1
+  ok    un log previo sin diagnosticos rehusa
+  FALLA mover líneas no fabrica diagnósticos nuevos — esperado [], obtenido ['c.ts(30,1): TS2305', 'z.ts(90,5): TS2345']
+Traceback (most recent call last):
+  File "/workspace/kaupamex/thyrox/tests/verify/test_batch_verification.py", line 98, in <module>
+    target = bv.diagnostic_key_from_line(generic_before[0])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'verify.batch_verification' has no attribute 'diagnostic_key_from_line'

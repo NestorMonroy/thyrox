@@ -36,6 +36,9 @@ PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
 # morian en setUp. Medido: 6 de 6 rojos por deriva del fixture, no por el
 # contrato que dicen medir.
 UNCHECKED_GATES = ('check-cross-model-read.sh',)
+# El gate de identidad. Viaja al fixture porque el hook lo invoca en todo
+# commit; su ausencia pondria rojos los casos que no miden identidad.
+IDENTITY_GATE = 'commit_identity.py'
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
@@ -57,7 +60,7 @@ class PreCommitHook(unittest.TestCase):
         shutil.copytree(THYROX / 'src' / 'workbench', self.repo / 'src' / 'workbench')
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES:
+        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
@@ -67,6 +70,25 @@ class PreCommitHook(unittest.TestCase):
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
         git(self.repo, 'add', '-A')
         self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+
+    def test_identity_that_differs_from_the_declared_one_blocks(self):
+        """El fixture commitea como `t <t@t>`; el `.env` declara otra identidad."""
+        (self.repo / '.env').write_text(
+            'THYROX_COMMIT_AUTHOR=Declared Author <author@example.com>\n'
+            'THYROX_COMMIT_COMMITTER=Declared Committer <committer@example.com>\n')
+        (self.repo / 'nota.txt').write_text('x\n')
+        git(self.repo, 'add', 'nota.txt')
+        result = git(self.repo, 'commit', '-q', '-m', 'identidad ajena')
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('difiere de la identidad declarada', result.stderr)
+
+    def test_undeclared_identity_warns_without_blocking(self):
+        """Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea."""
+        (self.repo / 'nota.txt').write_text('x\n')
+        git(self.repo, 'add', 'nota.txt')
+        result = git(self.repo, 'commit', '-q', '-m', 'sin declarar')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn('SIN MEDIR', result.stderr)
 
     def test_sin_bancos_el_commit_pasa(self):
         """El positivo: sin bancos propios, el hook no estorba."""
@@ -191,7 +213,7 @@ class PreCommitReconcilesBoard(unittest.TestCase):
                             ignore=shutil.ignore_patterns('__pycache__'))
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES:
+        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()

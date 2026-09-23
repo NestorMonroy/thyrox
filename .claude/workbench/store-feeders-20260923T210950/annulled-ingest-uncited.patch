@@ -1,0 +1,11 @@
+--- a/src/task/task_ids.py
++++ b/src/task/task_ids.py
+@@ -630,7 +630,7 @@
+                 )
+             data = json.loads(card.read_text())
+             subject = data.get("subject", "")
+-            if subject in vistos and subject not in sin_cita:
++            if subject in vistos:
+                 continue
+             # La tarjeta del board NO trae capa (medido: sus claves son
+             # blockedBy/blocks/description/id/status/subject). `--capa` es una

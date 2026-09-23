@@ -1,4 +1,4 @@
-import type { Tool, Tools } from '../../../Tool.js'
+import type { Tools } from '../../../Tool.js'
 import type { ToolProvider } from '../types.js'
 
 /**

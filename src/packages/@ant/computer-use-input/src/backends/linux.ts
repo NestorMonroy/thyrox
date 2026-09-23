@@ -5,7 +5,7 @@
  * Requires: xdotool (apt install xdotool)
  */
 
-import type { FrontmostAppInfo, InputBackend } from '../types.js'
+import type { InputBackend } from '../types.js'
 
 // ---------------------------------------------------------------------------
 // Shell helper — run a command and return trimmed stdout

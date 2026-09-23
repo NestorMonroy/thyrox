@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿El roster se deriva bajo la raiz de clones declarada?","instrument":"fixture de varios clones con el proveedor fuera del arbol, con anulacion","metric":"roster derivado","blind_to":"KAUPAMEX_ROOT sin caso propio"}

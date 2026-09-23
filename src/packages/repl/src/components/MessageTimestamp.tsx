@@ -15,7 +15,7 @@ export function MessageTimestamp({
     isTranscriptMode &&
     message.timestamp &&
     message.type === 'assistant' &&
-    message.message.content.some(c => c.type === 'text')
+    message.message.content.some((c: { type: string }) => c.type === 'text')
 
   if (!shouldShowTimestamp) {
     return null

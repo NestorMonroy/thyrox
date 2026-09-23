@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+64 |     // nada (anulación `NONDISCRIMINATING-hides-entry` en el banco).
+65 |     const rows = rowsFor("export const n = 'a' as number\nexport const m = 'b' as number\n")
+66 |     const row = rows.find(r => r.code === 2352)!
+67 |     const fix = row.fixes.find(f => f.fixName === 'addConvertToUnknownForNonOverlappingTypes')!
+68 |     expect(fix.fixId).toBe('addConvertToUnknownForNonOverlappingTypes')
+69 |     expect(fix.klass).toBe('hides')
+                           ^
+error: expect(received).toBe(expected)
+
+Expected: "hides"
+Received: "unclassified"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:69:23)
+(fail) tscFixCensus > con DOS instancias en el archivo (fixId presente) sigue tapando [645.10ms]
+
+ 8 pass
+ 1 fail
+ 12 expect() calls
+Ran 9 tests across 1 file. [5.29s]
+
+[exit=1]

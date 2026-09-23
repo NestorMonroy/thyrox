@@ -2,7 +2,7 @@
  * Puerto de `ccnmt: packages/local-observability/src/__tests__/fileOperationAnalytics.test.ts`
  * (261 líneas fuente, 100 % portado).
  */
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // Mockea logEvent antes de importar el SUT.
 const realIndex = await import('../index.js')

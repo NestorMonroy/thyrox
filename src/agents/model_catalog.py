@@ -274,12 +274,20 @@ def _cmd_por_modelo(catalog: dict, args: argparse.Namespace) -> int:
 # ---------------------------------------------------------------------------
 
 def session_transcript_default() -> Path | None:
-    """Ruta del transcript de la sesión principal, si el entorno la declara."""
-    sid = os.environ.get("CLAUDE_CODE_SESSION_ID")
-    if not sid:
-        return None
-    hits = sorted((Path.home() / ".claude" / "projects").glob(f"*/{sid}.jsonl"))
-    return hits[-1] if hits else None
+    """Ruta del transcript de la sesión principal, si el entorno la declara.
+
+    DELEGA en ``session.transcripts``. Hasta el 2026-09-23 componía el hogar
+    por su cuenta y desempataba por ORDEN DE RUTA (``sorted(...)[-1]``),
+    mientras ``session_restart`` desempataba por TAMAÑO. Sobre la sesión viva
+    daban archivos distintos: éste leía 5 581 100 bytes de los 45 277 263 que
+    la sesión había escrito, y agregaba tokens y caché sobre ese 12% sin
+    denominador que lo delatara. Un desempate, declarado una vez.
+    """
+    from session.transcripts import (  # noqa: PLC0415
+        session_id_declared, transcript_for,
+    )
+
+    return transcript_for(session_id_declared())
 
 
 def session_usage_by_model(path: Path) -> dict:

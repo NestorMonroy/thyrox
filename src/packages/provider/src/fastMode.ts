@@ -62,7 +62,7 @@ import axios from 'axios'
 import { getOauthConfig, OAUTH_BETA_HEADER } from './oauthConstants.ts'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags.js'
 import {
-  AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
 } from '@thyrox/local-observability'
 import {
@@ -325,7 +325,7 @@ export function triggerFastModeCooldown(
   logEvent('tengu_fast_mode_fallback_triggered', {
     cooldown_duration_ms: cooldownDurationMs,
     cooldown_reason:
-      reason as typeof AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      reason as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   })
   cooldownTriggered.emit(resetTimestamp, reason)
 }
@@ -400,7 +400,7 @@ export function handleFastModeOverageRejection(reason: string | null): void {
   )
   logEvent('tengu_fast_mode_overage_rejected', {
     overage_disabled_reason: (reason ??
-      'unknown') as typeof AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   })
   if (!isOutOfCreditsReason(reason)) {
     updateSettingsForSource('userSettings', { fastMode: undefined })

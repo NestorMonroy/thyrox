@@ -625,6 +625,7 @@
         "@thyrox/repl": "workspace:*",
         "@thyrox/storage": "workspace:*",
         "@thyrox/tool-registry": "workspace:*",
+        "shell-quote": "^1.10.0",
       },
     },
     "src/packages/skills": {

@@ -11,7 +11,6 @@
  * del archivo — import inerte que se conserva verbatim).
  */
 import { feature } from 'bun:bundle'
-import { readEnv } from '@thyrox/config/env/utils'
 
 export const CLAUDE_CODE_20250219_BETA_HEADER = 'claude-code-how-works-how-works-20250219'
 export const INTERLEAVED_THINKING_BETA_HEADER = 'interleaved-thinking-2025-05-14'

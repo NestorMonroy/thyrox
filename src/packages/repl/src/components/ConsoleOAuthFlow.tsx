@@ -13,11 +13,10 @@ import { OAuthService, runCodexOAuthFlow, saveCodexOAuthTokens } from '@thyrox/p
 import { LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS } from '@thyrox/provider/oauthConstants.js'
 import { getOauthAccountInfo, validateForceLoginOrg } from '@thyrox/provider/authAlias.js'
 import { logError } from '@thyrox/local-observability/logging'
-import { getSettings, updateSettingsForSource } from '@thyrox/config/settings'
+import { getSettings } from '@thyrox/config/settings'
 import {
   getConnections,
   saveConnection,
-  removeConnection,
   toggleConnection,
   getDefaultModelsForProtocol,
   generateConnectionId,
@@ -29,7 +28,6 @@ import {
 import { Select } from './CustomSelect/select.js'
 import { Spinner } from './Spinner.js'
 import TextInput from './TextInput.js'
-import { fi } from 'zod/v4/locales'
 
 type Props = {
   onDone(): void

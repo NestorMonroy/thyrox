@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Puede un bucle de admision impedir que N trabajos agoten la memoria?","instrument":"run-task-pool --memfree contra /proc/meminfo sintetico, con dos anulaciones","metric":"concurrencia maxima e intentos por trabajo","blind_to":"memoria real, OOM del kernel y --memsuspend"}

@@ -78,9 +78,13 @@ tsconfig_for > "$PKGS/subject/tsconfig.json"
 tsconfig_for > "$PKGS/subject/tsconfig.tests.json"
 printf '{"name":"@thyrox/subject","version":"0.0.0"}\n' > "$PKGS/subject/package.json"
 
+# Los casos 1-4 miden la conducta BINARIA, la de un arbol sin baseline. El
+# default del gate apunta a `.claude/baselines/` del arbol real, que si lo
+# tiene: sin aislarlo, estos casos medirian el trinquete sin decirlo.
 run_gate() {
     OUT="$(CHECK_CLI_TYPECHECK_PKG_DIR="$PKGS/subject" \
            CHECK_CLI_TYPECHECK_PACKAGES_DIR="$PKGS" \
+           CHECK_CLI_TYPECHECK_BASELINE="$T/sin-baseline.txt" \
            bash "$GATE" --strict 2>&1)"
     CODE=$?
 }
@@ -136,6 +140,39 @@ case "$OUT" in
 esac
 assert "modulo sin hermano en el arbol sigue siendo codigo roto" codigo-roto "$V"
 assert "modulo sin hermano sale 1 con --strict" 1 "$CODE"
+
+# --- 5-7. el TRINQUETE: con baseline declarado, --strict bloquea si CRECE ------
+# Sin esto el gate era binario sobre un paquete ya rojo: bloqueaba TODO commit
+# que tocara `cli`, tambien los que bajaban errores (medido 2026-09-23: un lote
+# de imports sin uso que bajaba el total de 4787 a 4493 no pudo commitearse).
+# Sin baseline la conducta binaria se conserva: los casos 2 y 4 la miden.
+printf 'export const a: number = "x";\nexport const b: number = "y";\n' > "$PKGS/subject/index.ts"
+BASE="$T/baseline.txt"
+run_ratchet() {
+    OUT="$(CHECK_CLI_TYPECHECK_PKG_DIR="$PKGS/subject" \
+           CHECK_CLI_TYPECHECK_PACKAGES_DIR="$PKGS" \
+           CHECK_CLI_TYPECHECK_BASELINE="$BASE" \
+           bash "$GATE" --strict 2>&1)"
+    CODE=$?
+}
+
+printf 'tsconfig.json 2\ntsconfig.tests.json 2\n' > "$BASE"
+run_ratchet
+assert "baseline igual al conteo: no crece, sale 0" 0 "$CODE"
+case "$OUT" in *"no crece"*) V=declara ;; *) V="$OUT" ;; esac
+assert "baseline igual declara que no crece" declara "$V"
+
+printf 'tsconfig.json 1\ntsconfig.tests.json 2\n' > "$BASE"
+run_ratchet
+assert "conteo sobre el baseline sale 1" 1 "$CODE"
+case "$OUT" in *"2 sobre un baseline de 1"*) V=nombra ;; *) V="$OUT" ;; esac
+assert "conteo sobre el baseline nombra las dos cifras" nombra "$V"
+
+printf 'tsconfig.json 5\ntsconfig.tests.json 5\n' > "$BASE"
+run_ratchet
+assert "conteo bajo el baseline sale 0" 0 "$CODE"
+case "$OUT" in *"baja el baseline"*) V=pide ;; *) V="$OUT" ;; esac
+assert "conteo bajo el baseline pide bajarlo" pide "$V"
 
 printf '\n%d ok, %d fallo(s)\n' "$ok" "$fail"
 [ "$fail" -eq 0 ]

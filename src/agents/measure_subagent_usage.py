@@ -64,8 +64,15 @@ PESO = {'input': 1.0, 'cache_creation': 1.25, 'cache_read': 0.1, 'output': 5.0}
 
 
 def subagents_root() -> pathlib.Path | None:
-    """Localiza el directorio subagents/ de la sesión más reciente."""
-    projects = pathlib.Path.home() / '.claude' / 'projects'
+    """Localiza el directorio subagents/ de la sesión más reciente.
+
+    El hogar lo resuelve `session.transcripts`, que es de quien es el concepto.
+    Aquí se componía con `Path.home()`, una de las SEIS grafías que el árbol
+    tenía del mismo directorio el 2026-09-23.
+    """
+    from session.transcripts import transcripts_dir  # noqa: PLC0415
+
+    projects = transcripts_dir()
     if not projects.is_dir():
         return None
     cands = [p for p in projects.glob('*/*/subagents') if p.is_dir()]

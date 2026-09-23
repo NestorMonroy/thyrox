@@ -1,0 +1,11 @@
+--- a/src/verify/removeUnusedImports.ts
++++ b/src/verify/removeUnusedImports.ts
+@@ -68,7 +68,7 @@
+     if (namedBindings && ts.isNamespaceImport(namedBindings)) bindings.push(namedBindings.name)
+     if (namedBindings && ts.isNamedImports(namedBindings)) bindings.push(...namedBindings.elements.map(element => element.name))
+     for (const binding of bindings) {
+-      if (binding.getStart(source) < diagnostic.start || spanEnd < binding.getEnd()) continue
++      if (diagnostic.code !== 6192 && source.text.slice(diagnostic.start, spanEnd) !== binding.text) continue
+       const symbol = checker.getSymbolAtLocation(binding)
+       if (symbol) flagged.set(binding.text, symbol)
+     }

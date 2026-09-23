@@ -94,6 +94,7 @@ unlinked_from() {
 CODE=0
 MEASURED=0
 UNLINKED=""
+declare -A COUNTS=()
 for project in tsconfig.json tsconfig.tests.json; do
     if [[ ! -f "$PACKAGE/$project" ]]; then
         echo "check-cli-typecheck: $project NO ENCONTRADO en el paquete." >&2
@@ -110,6 +111,7 @@ for project in tsconfig.json tsconfig.tests.json; do
              "(proyectos medidos: $((MEASURED + 1)) de 2)" >&2
         printf '%s\n' "$OUT" | grep "error TS" >&2 || printf '%s\n' "$OUT" >&2
         UNLINKED="$UNLINKED$(unlinked_from "$OUT")"$'\n'
+        COUNTS[$project]="$(printf '%s\n' "$OUT" | grep -c "error TS")"
         CODE=1
     }
     MEASURED=$((MEASURED + 1))
@@ -149,6 +151,40 @@ if [[ -n "$UNLINKED" ]]; then
         echo "  medicion esta INCOMPLETA: un modulo sin resolver arrastra tipos."
     } >&2
     exit 2
+fi
+
+# EL TRINQUETE. Con baseline declarado, el veredicto de `--strict` es «no
+# crece», no «compila»: un gate binario sobre un paquete ya rojo bloquea TODO
+# commit que lo toque, tambien los que bajan errores — medido 2026-09-23, un
+# lote que bajaba el total de 4787 a 4493 no pudo commitearse. Sin baseline se
+# conserva la conducta binaria de abajo.
+#
+# El baseline es parametro de ESTE arbol (DEC-04): `<proyecto> <conteo>`.
+# Ciego a: un commit que arregla N errores y crea N distintos — el conteo no
+# cambia. Por eso bajar el baseline es una edicion explicita, no automatica.
+BASELINE="${CHECK_CLI_TYPECHECK_BASELINE:-$ROOT/.claude/baselines/cli_typecheck_baseline.txt}"
+if [[ -f "$BASELINE" ]]; then
+    GROWN=0
+    for project in tsconfig.json tsconfig.tests.json; do
+        count="${COUNTS[$project]:-0}"
+        base="$(awk -v p="$project" '$1 == p {print $2}' "$BASELINE")"
+        if [[ -z "$base" ]]; then
+            echo "check-cli-typecheck: $project sin entrada en $BASELINE — sin veredicto de trinquete." >&2
+            exit 2
+        fi
+        if (( count > base )); then
+            echo "check-cli-typecheck: $project CRECE — $count sobre un baseline de $base." >&2
+            GROWN=1
+        elif (( count < base )); then
+            echo "check-cli-typecheck: $project baja: $count bajo un baseline de $base —" \
+                 "baja el baseline en $BASELINE para que no vuelva a subir." >&2
+        else
+            echo "check-cli-typecheck: $project no crece: $count, igual al baseline." >&2
+        fi
+    done
+    echo "check-cli-typecheck: proyectos medidos: $MEASURED de 2" >&2
+    [[ "$STRICT" -eq 1 && "$GROWN" -eq 1 ]] && exit 1
+    exit 0
 fi
 
 cat >&2 <<'AVISO'

@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+91 |     // sentencia (`export { X } from …`). La reexportación resuelve al símbolo
+92 |     // del módulo, no al alias local: el import sigue sin uso.
+93 |     const out = run(
+94 |       "import { used, unused } from './dep'\nexport { unused } from './dep'\nconsole.log(used)\n",
+95 |     )
+96 |     expect(out).toBe("import { used } from './dep'\nexport { unused } from './dep'\nconsole.log(used)\n")
+                     ^
+error: expect(received).toBe(expected)
+
+Expected: "import { used } from './dep'\nexport { unused } from './dep'\nconsole.log(used)\n"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:96:17)
+(fail) removeUnusedImports > una reexportación con el mismo nombre no es un uso del binding importado [607.24ms]
+100 |     // Medido en `pluginLoader.ts`: `resolve` de `path` sin uso, y otro
+101 |     // `resolve` ligado en el cuerpo. Mismo texto, otro símbolo.
+102 |     const out = run(
+103 |       "import { used, unused } from './dep'\nexport const f = (unused: number) => unused + used\n",
+104 |     )
+105 |     expect(out).toBe("import { used } from './dep'\nexport const f = (unused: number) => unused + used\n")
+                      ^
+error: expect(received).toBe(expected)
+
+Expected: "import { used } from './dep'\nexport const f = (unused: number) => unused + used\n"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:105:17)
+(fail) removeUnusedImports > un nombre sombreado por otra ligadura no es un uso del import [514.96ms]
+
+ 9 pass
+ 2 fail
+ 14 expect() calls
+Ran 11 tests across 1 file. [7.44s]
+
+[exit=1]

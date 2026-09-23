@@ -1,0 +1,46 @@
+test_json_is_machine_readable (__main__.CliTest.test_json_is_machine_readable) ... ok
+test_list_prints_the_registry_and_exits_0 (__main__.CliTest.test_list_prints_the_registry_and_exits_0) ... ok
+test_only_without_match_exits_2 (__main__.CliTest.test_only_without_match_exits_2) ... ok
+test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered) ... FAIL
+test_every_registered_gate_is_on_disk (__main__.CoverageTest.test_every_registered_gate_is_on_disk) ... ok
+test_every_registered_check_declares_its_rule (__main__.RegistryTest.test_every_registered_check_declares_its_rule)
+Sin la regla que lo documenta, un fallo no dice contra que mide. ... ok
+test_every_registered_id_is_unique (__main__.RegistryTest.test_every_registered_id_is_unique) ... ok
+test_the_registry_is_not_empty (__main__.RegistryTest.test_the_registry_is_not_empty) ... ok
+test_a_gate_that_refuses_with_2_is_not_measured (__main__.RunnerTest.test_a_gate_that_refuses_with_2_is_not_measured)
+Exit 2 = «no emití veredicto». Ni pass ni fail: sin medir. ... ok
+test_failing_gate_is_reported_as_fail (__main__.RunnerTest.test_failing_gate_is_reported_as_fail) ... ok
+test_missing_blocks_the_verdict (__main__.RunnerTest.test_missing_blocks_the_verdict)
+`missing` NO es un aprobado: sin esto, un gate borrado pasa en verde. ... ok
+test_passing_gate_is_reported_as_pass (__main__.RunnerTest.test_passing_gate_is_reported_as_pass) ... ok
+test_registered_arguments_reach_the_gate (__main__.RunnerTest.test_registered_arguments_reach_the_gate) ... ok
+test_registered_gate_absent_from_disk_is_missing_not_pass (__main__.RunnerTest.test_registered_gate_absent_from_disk_is_missing_not_pass)
+El caso que la referencia resuelve con un tercer estado. ... ok
+test_the_consumer_is_passed_to_the_gate_as_its_cwd (__main__.RunnerTest.test_the_consumer_is_passed_to_the_gate_as_its_cwd)
+thyrox es proveedor: el arbol medido es un parametro, no su propio cwd. ... ok
+test_verdict_publishes_every_bucket (__main__.RunnerTest.test_verdict_publishes_every_bucket)
+El denominador. Un conteo sin el reparto no es un resultado. ... ok
+test_only_filters_by_substring_of_the_id (__main__.SelectionTest.test_only_filters_by_substring_of_the_id) ... ok
+test_only_with_no_match_refuses (__main__.SelectionTest.test_only_with_no_match_refuses)
+Un filtro que no selecciona nada NO aprueba en vacio. ... ok
+
+======================================================================
+FAIL: test_every_gate_on_disk_is_registered (__main__.CoverageTest.test_every_gate_on_disk_is_registered)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_runner.py", line 164, in test_every_gate_on_disk_is_registered
+    self.assertEqual(missing, [], f'{len(missing)} gate(s) en disco sin registrar')
+AssertionError: Lists differ: ['check_package_typecheck.py'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'check_package_typecheck.py'
+
+- ['check_package_typecheck.py']
++ [] : 1 gate(s) en disco sin registrar
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.170s
+
+FAILED (failures=1)
+EXIT=1

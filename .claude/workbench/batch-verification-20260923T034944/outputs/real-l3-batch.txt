@@ -1,0 +1,33 @@
+partial     78 -> 9    ../index.js
+partial     16 -> 2    ./index.js
+accepted     7 -> 0    ./shellQuote.js
+accepted     6 -> 0    @thyrox/output/formatters
+accepted     8 -> 0    @thyrox/provider
+partial      2 -> 1    @thyrox/shell
+accepted     9 -> 0    @thyrox/shell/bash/shellQuote.js
+nuevo     src/packages/shell/src/Shell.ts(51,7): TS2345
+nuevo     src/packages/shell/src/Shell.ts(66,5): TS2322
+nuevo     src/packages/shell/src/Shell.ts(68,50): TS2345
+nuevo     src/packages/shell/src/Shell.ts(74,5): TS2322
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1221,9): TS2741
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1253,11): TS2345
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1383,40): TS2339
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1410,19): TS2339
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1475,15): TS2741
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1497,30): TS2339
+nuevo     src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1502,41): TS2339
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1023,11): TS2345
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1116,40): TS2339
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1158,19): TS2339
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1235,15): TS2741
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1258,30): TS2339
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1265,41): TS2339
+nuevo     src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(993,9): TS2741
+nuevo     tests/unit/gemini/convertMessages.test.ts(268,12): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(173,12): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(174,12): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(175,12): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(177,12): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(283,13): TS2532
+nuevo     tests/unit/openai/convertMessages.test.ts(43,12): TS2532
+batch_verification: alpha 0.57 · total 4919 -> 4797 · 25 diagnostico(s) nuevo(s) (alcance medido: 7 propuesta(s))

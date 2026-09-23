@@ -41,8 +41,6 @@ import {
   TMUX_COMMAND,
 } from '@thyrox/swarm'
 import {
-  addHiddenPaneId,
-  removeHiddenPaneId,
   removeMemberFromTeam,
   setMemberMode,
   setMultipleMemberModes,

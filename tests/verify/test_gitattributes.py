@@ -38,6 +38,14 @@ sys.path.insert(0, str(HERE.parents[2] / "src"))
 
 from verify import gitattributes  # noqa: E402  (la ruta se compone arriba, a propósito)
 from paths import reach  # noqa: E402
+import os  # noqa: E402
+
+# La premisa de la suite: el multi-repo DECLARA cinco consumidores, y el arbol
+# que cada caso escribe decide cuales estan presentes («2 de 5»). Antes se
+# tomaba del roster del host, donde de los consumidores solo `docs` es
+# obligatorio; en un host sin los cinco la suite moria con `KeyError` antes de
+# medir (H-THYROX-155). La declaracion viaja tambien a los subprocesos de `run`.
+os.environ["THYROX_REACH_ROOTS"] = "api,db,docs,server,ui"
 
 #: El bootstrap de arriba es la ÚNICA aritmética admitida: alimenta un
 #: `sys.path.insert` y falla con ruido (`ImportError`) si algo se mueve. Todo

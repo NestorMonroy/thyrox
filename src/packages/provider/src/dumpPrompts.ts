@@ -5,7 +5,6 @@ import { dirname, join } from 'path'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
-import { readEnv } from '@thyrox/config/env'
 
 function hashString(str: string): string {
   return createHash('sha256').update(str).digest('hex')

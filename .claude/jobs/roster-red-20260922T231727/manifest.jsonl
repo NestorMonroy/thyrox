@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --memfree 2G --timeout 900 --prefix rosterred .claude/cache/roster-red-suites.txt", "started_at": "2026-09-22T23:17:27+00:00"}

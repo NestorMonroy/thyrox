@@ -1,0 +1,18 @@
+== 1. sintaxis ==
+  ok    agent_store.py parsea
+== 2. ciclo normal: running -> completed, sin re-registro ==
+  ok    arranca en running
+  ok    actualizar-sesion cierra en completed
+== 3. re-registro tras terminal (SubagentStart re-disparado al reanudar) NO regresa a running ==
+  ok    status sigue completed tras re-registro
+  ok    output_key de la terminación se conserva
+== 4. lo mismo para failed ==
+  ok    status sigue failed tras re-registro
+== 5. lo que SÍ debe seguir mutando: campos de registro (no de estado terminal) ==
+  ok    subagent_type se actualiza aun con status terminal
+  ok    session_id se actualiza aun con status terminal
+== 6. caso normal (sin terminal previo): running -> running SÍ actualiza status/output_key ==
+  ok    sin terminal previo, session_id sí se actualiza
+
+9 ok, 0 fallos
+EXIT=0

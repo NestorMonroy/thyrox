@@ -27,6 +27,8 @@ sistema de archivos, igual que `workbench_dir`.
 """
 from __future__ import annotations
 
+from contextlib import ExitStack
+
 import os
 import sys
 import tempfile
@@ -42,6 +44,7 @@ sys.path.insert(0, str(_RAIZ / "src"))
 
 from paths import reach  # noqa: E402
 from session import job_runs  # noqa: E402
+from testing.clone_tree import synthetic_clone_tree  # noqa: E402
 
 
 class _Declared:
@@ -60,6 +63,20 @@ class _Declared:
                 os.environ.pop(clave, None)
             else:
                 os.environ[clave] = previo
+
+
+# La suite compone rutas de `api` y `docs`; no mide el host. De los
+# consumidores solo `docs` es obligatorio, asi que los clones salen de un
+# arbol sintetico y no del roster de la maquina que la corre (H-THYROX-155).
+_TREE = ExitStack()
+
+
+def setUpModule() -> None:
+    _TREE.enter_context(synthetic_clone_tree(("api", "docs")))
+
+
+def tearDownModule() -> None:
+    _TREE.close()
 
 
 def _clon(repo: str) -> Path:
@@ -142,23 +159,24 @@ class AnclaDelArchivo(unittest.TestCase):
     """
 
     def test_sin_start_gobierna_el_env_del_cwd(self) -> None:
+        # Antes dependia de que el host tuviera `kaupamex-api/.env` con la
+        # clave, y en cualquier otro host se saltaba: nunca media. El arbol
+        # sintetico permite escribir la declaracion del consumidor.
         api = _clon("api")
-        env = api / ".env"
-        if not env.is_file():
-            self.skipTest(f"{env} no existe: el caso no es observable")
-        declarado = None
-        for linea in env.read_text().splitlines():
-            if linea.startswith("THYROX_JOBS_API="):
-                declarado = linea.partition("=")[2].strip()
-        if not declarado:
-            self.skipTest(f"{env} no declara THYROX_JOBS_API")
-        previo = os.getcwd()
+        declarado = api / "scripts" / "evidence"
+        (api / ".env").write_text(f"THYROX_JOBS_API={declarado}\n")
+        previo_cwd = os.getcwd()
+        # La fixture fija `THYROX_ENV_FILE`; aqui se retira para que el `.env`
+        # se encuentre por ascenso desde el cwd, que es lo que el caso mide.
+        previo_env_file = os.environ.pop("THYROX_ENV_FILE", None)
         os.chdir(api)
         try:
             os.environ.pop("THYROX_JOBS_API", None)
-            self.assertEqual(job_runs.jobs_dir(), Path(declarado))
+            self.assertEqual(job_runs.jobs_dir(), declarado)
         finally:
-            os.chdir(previo)
+            os.chdir(previo_cwd)
+            if previo_env_file is not None:
+                os.environ["THYROX_ENV_FILE"] = previo_env_file
 
 
 if __name__ == "__main__":

@@ -1,0 +1,16 @@
+== A. Sin declarar telemetría, todo cuenta como hoy ==
+  ok    el store sucio dispara el gate
+  ok    y se cuenta como dirty
+== B. Declarada, la telemetría se cuenta APARTE ==
+  ok    el código sigue en dirty
+  ok    el store va a su propio eje
+== C. Sólo telemetría NO es trabajo sin publicar ==
+  ok    el repo no entra en la lista
+== D. Un repo limpio sigue sin entrar ==
+  ok    nada que publicar
+== E. La línea NOMBRA la telemetría del repo que sí entra ==
+  ok    nombra el código
+  ok    y nombra la telemetría, no la esconde
+
+RESULTADO: 8 ok, 0 fallo(s)
+EXIT=0

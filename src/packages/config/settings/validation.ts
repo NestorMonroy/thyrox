@@ -8,8 +8,17 @@
  */
 import type { ZodError } from 'zod'
 import { SettingsSchema } from './types.ts'
+import { generateSettingsJSONSchema } from './schemaOutput.ts'
 
-export type SettingsError = { file: string; path: string; message: string }
+export type SettingsError = {
+  file: string
+  path: string
+  message: string
+  invalidValue?: unknown
+}
+
+/** Nombre público conservado por los consumers anteriores al rename. */
+export type ValidationError = SettingsError
 
 /**
  * Settings fusionados más sus errores de validación — la forma exacta que
@@ -28,20 +37,32 @@ export function formatZodError(error: ZodError, file: string): SettingsError[] {
   }))
 }
 
-export type ValidationResult = { isValid: true; settings: unknown } | { isValid: false; error: string }
+export type ValidationResult =
+  | { isValid: true }
+  | { isValid: false; error: string; fullSchema: string }
 
 export function validateSettingsFileContent(content: string): ValidationResult {
   let data: unknown
   try {
     data = JSON.parse(content)
   } catch (e) {
-    return { isValid: false, error: `JSON inválido: ${(e as Error).message}` }
+    return {
+      isValid: false,
+      error: `Invalid JSON / JSON inválido: ${(e as Error).message}`,
+      fullSchema: generateSettingsJSONSchema(),
+    }
   }
-  const r = SettingsSchema.safeParse(data)
+  // El schema público es passthrough para cargar versiones futuras. Esta
+  // frontera valida una edición escrita por Thyrox y por ello es estricta.
+  const r = SettingsSchema.strict().safeParse(data)
   if (!r.success) {
-    return { isValid: false, error: formatZodError(r.error, '(contenido)').map((x) => `${x.path}: ${x.message}`).join('; ') }
+    return {
+      isValid: false,
+      error: `Settings validation failed: ${formatZodError(r.error, '(contenido)').map((x) => `${x.path}: ${x.message}`).join('; ')}`,
+      fullSchema: generateSettingsJSONSchema(),
+    }
   }
-  return { isValid: true, settings: r.data }
+  return { isValid: true }
 }
 
 /**
@@ -55,14 +76,30 @@ export function filterInvalidPermissionRules(data: unknown, file: string): Setti
   const permisos = (data as { permissions?: Record<string, unknown> }).permissions
   if (typeof permisos !== 'object' || permisos === null) return []
   const avisos: SettingsError[] = []
-  for (const lista of ['allow', 'deny']) {
+  for (const lista of ['allow', 'deny', 'ask']) {
     const v = permisos[lista]
     if (!Array.isArray(v)) continue
-    const limpias = v.filter((x) => typeof x === 'string')
-    if (limpias.length !== v.length) {
-      avisos.push({ file, path: `permissions.${lista}`, message: `se descartaron ${v.length - limpias.length} reglas que no son cadena` })
-      permisos[lista] = limpias
+    const limpias: string[] = []
+    for (const rule of v) {
+      if (typeof rule !== 'string') {
+        avisos.push({
+          file,
+          path: `permissions.${lista}`,
+          message: 'Non-string permission rule was discarded',
+          invalidValue: rule,
+        })
+      } else if (!/^[A-Z][A-Za-z]*(?:\([^()]*\))?$/.test(rule)) {
+        avisos.push({
+          file,
+          path: `permissions.${lista}`,
+          message: `Invalid permission rule was discarded: ${rule}`,
+          invalidValue: rule,
+        })
+      } else {
+        limpias.push(rule)
+      }
     }
+    permisos[lista] = limpias
   }
   return avisos
 }

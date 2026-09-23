@@ -1,0 +1,4 @@
+stdin-napi: emitio pese a 22 errores (22 propio(s))
+
+emit_declarations: 1 paquete(s) medido(s), 22 error(es) que siguen vivos en su propio paquete
+EXIT=0

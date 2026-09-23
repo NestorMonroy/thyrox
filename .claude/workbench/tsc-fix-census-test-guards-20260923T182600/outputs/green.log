@@ -1,0 +1,19 @@
+bun test v1.4.3-canary.1 (6d504dd98)
+
+tests/verify/tscFixCensus.test.ts:
+(pass) tscFixCensus > control del arnés: la fixture resuelve sus módulos [3383.71ms]
+(pass) tscFixCensus > un import sin uso, SOLO en su archivo, trae un arreglo seguro [1656.90ms]
+(pass) tscFixCensus > un parámetro sin uso NO es seguro: retirarlo cambia la firma [1459.38ms]
+(pass) tscFixCensus > un parámetro sin tipo trae inferFromUsage, seguro [1371.33ms]
+(pass) tscFixCensus > una conversión sin solape trae un arreglo que TAPA el error [1270.21ms]
+(pass) tscFixCensus > con DOS instancias en el archivo (fixId presente) sigue tapando [1404.29ms]
+(pass) tscFixCensus > un arreglo de firma sin fixId (una sola instancia) es juicio, no sin clasificar [1173.21ms]
+(pass) tscFixCensus > un fixId fuera de la lista cerrada no se admite [0.03ms]
+(pass) tscFixCensus > un diagnóstico sin arreglos queda con la lista vacía [1174.55ms]
+(pass) tscFixCensus > un proveedor de arreglos que lanza no aborta el censo: queda en su fila [1229.55ms]
+(pass) tscFixCensus > el resumen publica su denominador y cuenta admitidos sólo por arreglos seguros [0.17ms]
+
+ 11 pass
+ 0 fail
+ 19 expect() calls
+Ran 11 tests across 1 file. [14.68s]

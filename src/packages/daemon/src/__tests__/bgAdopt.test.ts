@@ -1,7 +1,6 @@
 // Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgAdopt.test.ts`.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import {
-  existsSync,
   mkdirSync,
   mkdtempSync,
   readdirSync,

@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { Text } from '@anthropic/ink'
 import { isClaudeAISubscriber } from '@thyrox/provider/authAlias.js'
 import {

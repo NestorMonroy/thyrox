@@ -1,4 +1,3 @@
-import * as React from 'react'
 import type { Notification } from '../notifications.js'
 import { Text } from '@anthropic/ink'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'

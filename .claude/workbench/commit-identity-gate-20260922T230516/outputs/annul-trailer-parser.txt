@@ -1,0 +1,13 @@
+test_commit_identity:
+  ok    parse separa nombre y correo
+  ok    parse rechaza una identidad sin correo
+  ok    la identidad declarada pasa
+  ok    un author inyectado distinto se detecta
+  ok    el agente como committer se detecta
+  ok    declarar al agente no lo autoriza
+  ok    sin declaracion rehusa
+  ok    export_lines fija la identidad declarada
+  ok    un remolque Co-Authored-By del agente se detecta
+  ok    un remolque Claude-Session se detecta
+  FALLA trailer-in-prose: la mencion en prosa no se detecta — esperado 0, obtenido 1
+test_commit_identity: 11 aserciones — 10 ok, 1 falla(s)

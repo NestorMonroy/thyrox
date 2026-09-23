@@ -1,0 +1,455 @@
+run-task-pool: 39 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/rosterred-20260922T231727
+  rosterred-20260922T231727/test_derive_submodule pid 2982    PYTHONPATH=src .venv/bin/python tests/agents/test_derive_submodule.py
+  rosterred-20260922T231727/test_document_root_default pid 2997    PYTHONPATH=src .venv/bin/python tests/agents/test_document_root_default.py
+  rosterred-20260922T231727/test_readonly_connection pid 3012    PYTHONPATH=src .venv/bin/python tests/agents/test_readonly_connection.py
+  rosterred-20260922T231727/test_retention_backfill pid 3029    PYTHONPATH=src .venv/bin/python tests/agents/test_retention_backfill.py
+  rosterred-20260922T231727/test_stop_reason_provenance pid 3045    PYTHONPATH=src .venv/bin/python tests/agents/test_stop_reason_provenance.py
+  rosterred-20260922T231727/test_store_dir_default pid 3061    PYTHONPATH=src .venv/bin/python tests/agents/test_store_dir_default.py
+  rosterred-20260922T231727/test_table_census pid 3077    PYTHONPATH=src .venv/bin/python tests/agents/test_table_census.py
+  rosterred-20260922T231727/test_task_status_vocabulary pid 3093    PYTHONPATH=src .venv/bin/python tests/agents/test_task_status_vocabulary.py
+  rosterred-20260922T231727/test_usage_census_deviation pid 3108    PYTHONPATH=src .venv/bin/python tests/agents/test_usage_census_deviation.py
+  rosterred-20260922T231727/test_home_resolution pid 3124    PYTHONPATH=src .venv/bin/python tests/cache/test_home_resolution.py
+  rosterred-20260922T231727/test_censar_scripts pid 3140    PYTHONPATH=src .venv/bin/python tests/corpus/test_censar_scripts.py
+  rosterred-20260922T231727/test_censo_contraparte pid 3156    PYTHONPATH=src .venv/bin/python tests/corpus/test_censo_contraparte.py
+  rosterred-20260922T231727/test_unwrap_rst pid 3171    PYTHONPATH=src .venv/bin/python tests/docs/test_unwrap_rst.py
+  rosterred-20260922T231727/test_task_lifecycle pid 3187    PYTHONPATH=src .venv/bin/python tests/hooks/test_task_lifecycle.py
+  rosterred-20260922T231727/test_consumer_root_refuses_provider pid 3203    PYTHONPATH=src .venv/bin/python tests/paths/test_consumer_root_refuses_provider.py
+  rosterred-20260922T231727/test_reach pid 3219    PYTHONPATH=src .venv/bin/python tests/paths/test_reach.py
+  rosterred-20260922T231727/test_reach_roots_declared pid 3235    PYTHONPATH=src .venv/bin/python tests/paths/test_reach_roots_declared.py
+  rosterred-20260922T231727/test_reach_roots_shim pid 3252    PYTHONPATH=src .venv/bin/python tests/paths/test_reach_roots_shim.py
+  rosterred-20260922T231727/test_paths_parity pid 3268    PYTHONPATH=src .venv/bin/python tests/rules/test_paths_parity.py
+  rosterred-20260922T231727/test_provenance_parity pid 3286    PYTHONPATH=src .venv/bin/python tests/rules/test_provenance_parity.py
+  rosterred-20260922T231727/test_background_log_home pid 3303    PYTHONPATH=src .venv/bin/python tests/session/test_background_log_home.py
+  rosterred-20260922T231727/test_installed_hooks_resolve pid 3319    PYTHONPATH=src .venv/bin/python tests/session/test_installed_hooks_resolve.py
+  rosterred-20260922T231727/test_jobs_home pid 3336    PYTHONPATH=src .venv/bin/python tests/session/test_jobs_home.py
+  rosterred-20260922T231727/test_user_wiring pid 3352    PYTHONPATH=src .venv/bin/python tests/session/test_user_wiring.py
+  rosterred-20260922T231727/test_census_open_tasks pid 3368    PYTHONPATH=src .venv/bin/python tests/task/test_census_open_tasks.py
+  rosterred-20260922T231727/test_layer_axis pid 3384    PYTHONPATH=src .venv/bin/python tests/task/test_layer_axis.py
+  rosterred-20260922T231727/test_layer_signals pid 3400    PYTHONPATH=src .venv/bin/python tests/task/test_layer_signals.py
+  rosterred-20260922T231727/test_docs_root_resolution pid 3417    PYTHONPATH=src .venv/bin/python tests/verify/test_docs_root_resolution.py
+  rosterred-20260922T231727/test_error_catalog pid 3450    PYTHONPATH=src .venv/bin/python tests/verify/test_error_catalog.py
+  rosterred-20260922T231727/test_finding_id_unique pid 3465    PYTHONPATH=src .venv/bin/python tests/verify/test_finding_id_unique.py
+  rosterred-20260922T231727/test_gitattributes pid 3481    PYTHONPATH=src .venv/bin/python tests/verify/test_gitattributes.py
+  rosterred-20260922T231727/test_hallazgo_sucesor pid 3497    PYTHONPATH=src .venv/bin/python tests/verify/test_hallazgo_sucesor.py
+  rosterred-20260922T231727/test_hook_script_token pid 3514    PYTHONPATH=src .venv/bin/python tests/verify/test_hook_script_token.py
+  rosterred-20260922T231727/test_reference_root_resolution pid 3531    PYTHONPATH=src .venv/bin/python tests/verify/test_reference_root_resolution.py
+  rosterred-20260922T231727/test_rst_gate_interpreter pid 3549    PYTHONPATH=src .venv/bin/python tests/verify/test_rst_gate_interpreter.py
+  rosterred-20260922T231727/test_rst_gate_root pid 3566    PYTHONPATH=src .venv/bin/python tests/verify/test_rst_gate_root.py
+  rosterred-20260922T231727/test_rule_divergence pid 3582    PYTHONPATH=src .venv/bin/python tests/verify/test_rule_divergence.py
+  rosterred-20260922T231727/test_script_naming_scope pid 3599    PYTHONPATH=src .venv/bin/python tests/verify/test_script_naming_scope.py
+  rosterred-20260922T231727/test_home_resolution pid 3616    PYTHONPATH=src .venv/bin/python tests/workbench/test_home_resolution.py
+run-task-pool: lanzados 39 de 39; esperando en PRIMER PLANO (timeout 900s)
+== 39 trabajos asentados ==
+OLVIDADO rosterred-20260922T231727
+       | (vacío — no emitió nada)
+OK     rosterred-20260922T231727_test_background_log_home
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.003s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_censar_scripts
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_censo_contraparte
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_census_open_tasks
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_consumer_root_refuses_provider
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.002s
+       | 
+       | FAILED (errors=1)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_derive_submodule
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_docs_root_resolution
+       |     from paths import reach  # noqa: E402
+       |     ^^^^^^^^^^^^^^^^^^^^^^^
+       | ModuleNotFoundError: No module named 'paths'
+       | 
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 2 tests in 0.032s
+       | 
+       | FAILED (failures=1)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_document_root_default
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_error_catalog
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_finding_id_unique
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_gitattributes
+       |   File "/home/user/thyrox/src/verify/gitattributes.py", line 111, in repo_root
+       |     return Path(tree_root) / reach.clone_name(repo)
+       |                              ^^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_hallazgo_sucesor
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_home_resolution
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.004s
+       | 
+       | FAILED (errors=6)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_hook_script_token
+       |   File "/home/user/thyrox/src/verify/hook_script_token.py", line 131, in declared_commands
+       |     for repo in reach.REACH_ROOTS:
+       |                 ^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 408, in __getattr__
+       |     return reach_roots()
+       |            ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_installed_hooks_resolve
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_jobs_home
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.003s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_layer_axis
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.085s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred-20260922T231727_test_layer_signals
+       | .....
+       | ----------------------------------------------------------------------
+       | Ran 5 tests in 0.023s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred-20260922T231727_test_paths_parity
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 10 tests in 0.003s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_provenance_parity
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 8 tests in 0.002s
+       | 
+       | FAILED (errors=1)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_reach
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_reach_roots_declared
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 74, in with_env
+       |     return fn()
+       |            ^^^^
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 115, in <lambda>
+       |     reach.reach_roots()))
+       |     ^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_reach_roots_shim
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_shim.py", line 74, in <module>
+       |     check(f"reexporta {name}", True, hasattr(reach_roots, name))
+       |                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach_roots.py", line 136, in __getattr__
+       |     return _owner.reach_roots()
+       |            ^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_readonly_connection
+       | == 3. la conexion RECHAZA escribir ==
+       |   ok    SQLite rechaza el INSERT
+       | == 4. el censo enrutado: rehusa sobre un store ausente ==
+       |   ok    exit 2 — no midio, no publica conteo
+       |   ok    el mensaje nombra el store ausente
+       |   ok    el censo no fabrico el store
+       |   ok    el censo no fabrico ni el hogar
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+OK     rosterred-20260922T231727_test_reference_root_resolution
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_retention_backfill
+       | == C. El conteo publica su alcance ==
+       |   ok    cuatro filas tocadas, no seis
+       | == D. Lo que NO se toca — el control que puede fallar ==
+       |   ok    usage_source NULL sigue NULL: «nadie ha pasado todavía»
+       |   ok    un agente vivo no recibe nivel
+       | == E. Idempotencia: un segundo pase no reescribe nada ==
+       |   ok    segunda pasada toca 0
+       | 
+       | RESULTADO: 10 ok, 0 fallo(s)
+       | EXIT=0
+OK     rosterred-20260922T231727_test_rst_gate_interpreter
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_rst_gate_root
+       |   ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+       |   FALLA test_la_aritmetica_vieja_da_un_veredicto_DISTINTO: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       |   FALLA test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       |   FALLA test_la_raiz_derivada_tiene_lo_que_el_gate_toca: ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 1/4 aserciones verdes
+       | EXIT=1
+OK     rosterred-20260922T231727_test_rule_divergence
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 5 tests in 0.002s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_script_naming_scope
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_stop_reason_provenance
+       |   ok    total 0
+       |   ok    y los cubos suman 0
+       | 
+       | == 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+       |   ok    la fila sana no se reclama
+       |   ok    stop_reason NULL leido por el extractor actual NO se reclama
+       |   ok    la que nunca se leyo si se reclama
+       | 
+       | resultado: 19 de 19 aserciones en verde
+       | EXIT=0
+OK     rosterred-20260922T231727_test_store_dir_default
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 9 tests in 0.016s
+       | 
+       | FAILED (errors=3)
+       | EXIT=1
+OK     rosterred-20260922T231727_test_table_census
+       | == 3. varias columnas: se devuelven TODAS, no la primera ==
+       |   ok    created_at y updated_at
+       | == 4. una tabla sin fecha lo dice, no falla ==
+       |   ok    lista vacia
+       | == 5. la ultima escritura sale del MAXIMO de todas ==
+       |   ok    gana el mayor entre las dos columnas
+       |   ok    sin columna de fecha devuelve None
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+OK     rosterred-20260922T231727_test_task_lifecycle
+       |   File "/home/user/thyrox/src/paths/reach.py", line 892, in reach
+       |     return {**roots(start), **extra_roots()}
+       |               ^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+       |     return {r: root(r, start) for r in reach_roots(start)}
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_task_status_vocabulary
+       |   ok    y conserva sus tres filas
+       |   ok    y ahora rechaza lo de fuera
+       |   ok    y la clave compuesta sobrevive a la reconstruccion
+       | 
+       | == 5. la migracion es idempotente ==
+       |   ok    segunda pasada: las filas siguen
+       |   ok    y no quedo ninguna tabla de trabajo
+       | 
+       | resultado: 18 de 18 aserciones en verde
+       | EXIT=0
+OK     rosterred-20260922T231727_test_unwrap_rst
+       |   File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+       |     declaradas = reach_roots()
+       |                  ^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred-20260922T231727_test_usage_census_deviation
+       | == 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+       |   ok    el bloque nombra su unidad
+       |   ok    y NO mezcla dinero en el mismo bloque
+       | == 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+       |   ok    el estable publica la desviacion de su equiv_cost
+       |   ok    el erratico publica la suya, un orden mayor
+       |   ok    misma media de equiv_cost: tampoco ahi discrimina
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+OK     rosterred-20260922T231727_test_user_wiring
+       |   File "/home/user/thyrox/src/paths/reach.py", line 892, in reach
+       |     return {**roots(start), **extra_roots()}
+       |               ^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 860, in roots
+       |     return {r: root(r, start) for r in reach_roots(start)}
+       |                                        ^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+__BG_EXIT__=0

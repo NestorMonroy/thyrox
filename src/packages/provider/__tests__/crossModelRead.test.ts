@@ -8,7 +8,7 @@ import {
 import { dispatchPlan } from '../src/cost/policy.ts'
 import { routesForOtherModel } from '../src/cost/cacheRoutes.ts'
 import type { AgentDefinition } from '@thyrox/agent/types'
-import { CATALOG, MODELS } from '@thyrox/agent/models'
+import { CATALOG } from '@thyrox/agent/models'
 
 const def = (name: string, model?: string): AgentDefinition =>
   ({ name, description: 'x', prompt: 'p', ...(model ? { model } : {}) }) as AgentDefinition

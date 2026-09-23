@@ -1,0 +1,1 @@
+{"kind":"declaration","question":"¿Se pueden verificar N arreglos con una sola pasada de tsc y juzgar cada uno?","instrument":"verificador por propuesta sobre logs sinteticos y el lote real de l3, con dos anulaciones","metric":"aristas TS2305 por proveedor y diagnosticos nuevos por clave","blind_to":"especificadores relativos y desplazamientos de linea"}

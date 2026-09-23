@@ -14,12 +14,6 @@ import {
 import { truncate } from '@thyrox/output/formatters/truncate.js'
 import { getDisplayPath } from '@thyrox/storage/file.js'
 import { Clawd } from './Clawd.js'
-import { FeedColumn } from './FeedColumn.js'
-import {
-  createRecentActivityFeed,
-  createProjectOnboardingFeed,
-  createGuestPassesFeed,
-} from './feedConfigs.js'
 import { getGlobalConfig } from '@thyrox/config'
 import { resolveThemeSetting } from '../../systemTheme.js'
 import { getInitialSettings } from '@thyrox/config/settings'
@@ -30,7 +24,6 @@ import {
 } from '@thyrox/local-observability/debug.js'
 import { useEffect, useState } from 'react'
 import {
-  getSteps,
   shouldShowProjectOnboarding,
   incrementProjectOnboardingSeenCount,
 } from '../../projectOnboardingState.js'
@@ -69,9 +62,7 @@ import {
 import {
   useShowOverageCreditUpsell,
   incrementOverageCreditUpsellSeenCount,
-  createOverageCreditFeed,
 } from './OverageCreditUpsell.js'
-import { plural } from '@thyrox/output/utils/stringUtils.js'
 import { useAppState } from '../../appStateHooks.js'
 import { getEffortSuffix } from '@thyrox/agent/effort.js'
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'

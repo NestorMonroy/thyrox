@@ -370,6 +370,25 @@ con.close()
 check(len(kx.ingest_board(DB, BOARD, S, ["5"])) == 0,
       "10e: repetir el ingest no acuña de nuevo el mismo sujeto")
 
+# 10f — `snapshot-tareas` inserta la fila SIN cita y en `gen`; si después se
+#     ingiere el board, el sujeto ya existe y se saltaba, así que la fila se
+#     quedaba sin cita durable para siempre. Medido 2026-09-23: cuatro tareas
+#     de la sesión quedaron así y `ingerir-board` publicó «0 acuñadas».
+#     Se acuña en ESA fila, sólo porque su cita es nula: una cita existente
+#     nunca se reasigna (h-docs-1042).
+_, DB3 = _store_con([("1", NUEVO, S, "gen", None)])
+acunadas3 = kx.ingest_board(DB3, BOARD, S, ["5"], layer="thyrox")
+con = sqlite3.connect(DB3)
+filas3 = con.execute("SELECT task_id, citation_id, submodule FROM tasks "
+                     "WHERE subject = ?", (NUEVO,)).fetchall()
+con.close()
+check(len(filas3) == 1 and filas3[0][1] is not None and filas3[0][1].startswith("TASK-THYROX-"),
+      "10f: la fila sin cita que dejó el snapshot recibe su cita, sin duplicarse")
+check(filas3 and filas3[0][2] == "thyrox",
+      "10g: y la capa declarada sustituye al «gen» que no sabía")
+check(len(acunadas3) == 1 and acunadas3[0][1] == "1",
+      "10h: el informe la cuenta como acuñada en su ordinal existente")
+
 # 10f — control que DISCRIMINA: con el indice de sujetos vacio —la pieza que
 #     hace el trabajo— el segundo ingest SI duplicaria. Se mide sobre un store
 #     hermano, sin tocar el de arriba.

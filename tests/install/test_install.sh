@@ -48,8 +48,9 @@ trap 'rm -rf "$WORK"' EXIT
 # Un árbol de thyrox sintético: sólo la pieza que install.sh exige.
 fake_tree() {
     local root="$WORK/tree-$1"
-    mkdir -p "$root/src/paths"
+    mkdir -p "$root/src/paths" "$root/src/session"
     cp "$THYROX_REAL/src/paths/reach.py" "$root/src/paths/reach.py"
+    cp "$THYROX_REAL/src/session/generate_bin.py" "$root/src/session/generate_bin.py"
     printf '%s' "$root"
 }
 
@@ -97,6 +98,21 @@ check "instala -> escribe .env" "si" \
       "$([ -f "$CONSUMER/.env" ] && echo si || echo no)"
 check "instala -> declara THYROX_ROOT con la raiz resuelta" "THYROX_ROOT=$TREE" \
       "$(grep '^THYROX_ROOT=' "$CONSUMER/.env" 2>/dev/null || echo AUSENTE)"
+check "instala -> genera bin/ desde los entrypoints" "si" \
+      "$([ -x "$TREE/bin/generate_bin" ] && echo si || echo no)"
+
+# El generador descubre los guiones por estructura; no debe ejecutarlos para
+# decidir que existen. El control usa una escritura observable, no confía en
+# el comentario del candidato.
+WRITER="$TREE/src/session/write-if-executed.sh"
+SENTINEL="$WORK/candidate-was-executed"
+printf '#!/usr/bin/env bash\nprintf ejecutado > %q\n' "$SENTINEL" > "$WRITER"
+chmod +x "$WRITER"
+THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" >/dev/null 2>&1
+check "instalar genera el wrapper del candidato" "si" \
+      "$([ -x "$TREE/bin/write-if-executed" ] && echo si || echo no)"
+check "instalar NO ejecuta el candidato" "no" \
+      "$([ -e "$SENTINEL" ] && echo si || echo no)"
 
 # 5. Idempotencia: la segunda ejecución no cambia un byte. Es la propiedad que
 #    un `test -f` no puede ver — el archivo existe en los dos casos.
@@ -164,6 +180,20 @@ THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" >/dev/null 2>&1
 OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
 check "--check ya instalado -> exit 0" "0" "$RC"
 
+# La declaración del consumidor y los wrappers son dos productos del mismo
+# instalador. Un bin/ ausente no puede publicar verde sólo porque `.env` esté
+# bien: ése sería comprobar el significante equivocado.
+rm -rf "$TREE/bin"
+OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
+check "--check con bin/ ausente -> exit 1" "1" "$RC"
+check_contains "--check con bin/ ausente nombra el generador" \
+    "src/session/generate_bin.py" "$OUT"
+check "--check con bin/ ausente no escribe" "no" \
+      "$([ -d "$TREE/bin" ] && echo si || echo no)"
+# Restablece el fixture compartido para que los casos siguientes midan la
+# declaración del consumidor, no vuelvan a medir deliberadamente la deriva.
+THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" >/dev/null 2>&1
+
 printf '\n== install.sh — --check dice QUE clave mide (tarea #246) ==\n'
 
 # El aviso decia «sin declarar» a secas, y el resumen «5 de 5 sin declarar».
@@ -201,6 +231,8 @@ check_contains "la familia por clon se ve, no se cuenta como cero" \
 # declara nada» de «no pude medir el contrato».
 TREE_SIN="$(fake_tree sin-contrato)"
 CONSUMER="$(fake_consumer check-sin-contrato)"
+THYROX_ROOT="$TREE_SIN" PYTHONPATH="$TREE_SIN/src" \
+    python3 "$TREE_SIN/src/session/generate_bin.py" >/dev/null
 OUT="$(THYROX_ROOT="$TREE_SIN" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"
 check_contains "sin .env.example dice que no pudo leer el contrato" \
     "contrato no legible" "$OUT"

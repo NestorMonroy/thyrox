@@ -10,7 +10,7 @@ import {
   switchCost,
   ttlBreakEvenExpiries,
 } from '../src/cost/policy.ts'
-import { MODELS, isModelId, usageCostUsd, usageEquivalentTokens } from '@thyrox/agent/models'
+import { MODELS, usageCostUsd, usageEquivalentTokens } from '@thyrox/agent/models'
 import type { AgentDefinition } from '@thyrox/agent/types'
 
 // El control positivo es real: el contexto del último turno de la sesión del

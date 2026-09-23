@@ -46,7 +46,7 @@ export function countToolCalls(
     if (!msg) continue
     if (msg.type === 'assistant' && Array.isArray(msg.message.content)) {
       const hasToolUse = msg.message.content.some(
-        (block): block is ToolUseBlock =>
+        (block: { type: string; name: string }): block is ToolUseBlock =>
           block.type === 'tool_use' && block.name === toolName,
       )
       if (hasToolUse) {

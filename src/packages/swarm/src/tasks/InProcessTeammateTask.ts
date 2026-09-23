@@ -44,7 +44,7 @@ import {
   logForDebugging,
   updateTaskState,
 } from '../adapters/appRuntime.js'
-import type { Message } from '../adapters/appRuntime.js'
+import type { AppState, Message } from '../adapters/appRuntime.js'
 import { killInProcessTeammate } from '../runtime/spawnInProcess.js'
 import type { InProcessTeammateTaskState, TaskStateBase } from './types.js'
 import { appendCappedMessage, isInProcessTeammateTask } from './types.js'
@@ -53,7 +53,7 @@ import { appendCappedMessage, isInProcessTeammateTask } from './types.js'
 export const InProcessTeammateTask: Task = {
   name: 'InProcessTeammateTask',
   type: 'in_process_teammate',
-  async kill(taskId, setAppState) {
+  async kill(taskId: string, setAppState: (updater: (prev: AppState) => AppState) => void) {
     killInProcessTeammate(taskId, setAppState)
   },
 }

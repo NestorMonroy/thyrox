@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import TextInput from '@thyrox/repl/components/TextInput.js'
 import { useTerminalSize } from '@anthropic/ink'
 import { Box, color, Text, useTheme } from '@anthropic/ink'

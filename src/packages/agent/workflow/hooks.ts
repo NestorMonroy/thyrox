@@ -15,8 +15,6 @@
 import { availableParallelism } from 'node:os'
 import type { ToolUseContext, Tools } from '@thyrox/tool-registry/Tool.js'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
-import type { AgentId } from '@thyrox/agent/idTypes'
-import { createAgentId } from '../uuid.js'
 import { runAgentAttempt } from './workflowAgentRun.js'
 import {
   setupWorkflowAgentWorktree,

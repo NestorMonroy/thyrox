@@ -9,7 +9,6 @@ import {
   getSettingsForSource,
 } from '@thyrox/config/settings'
 import type { HookCommand, HookMatcher } from '@thyrox/config/types'
-import { DEFAULT_HOOK_SHELL } from '@thyrox/shell/legacy/shellProvider.js'
 import { getSessionHooks } from '@thyrox/agent/hooks/sessionHooks.js'
 
 export type HookSource =
@@ -31,7 +30,6 @@ export interface IndividualHookConfig {
  * Check if two hooks are equal (comparing only command/prompt content, not timeout)
  */
 export { isHookEqual } from './isHookEqual.js'
-import { isHookEqual } from './isHookEqual.js'
 
 /** Get the display text for a hook */
 export function getHookDisplayText(

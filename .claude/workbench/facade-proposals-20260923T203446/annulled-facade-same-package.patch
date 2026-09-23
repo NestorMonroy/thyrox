@@ -1,0 +1,11 @@
+--- a/src/verify/tscProposers.ts
++++ b/src/verify/tscProposers.ts
+@@ -164,7 +164,7 @@
+     if (found) return found
+     found = new Map()
+     for (const sf of sources) {
+-      if (packageRoot(sf.fileName, read, packages) !== pkg) continue
++      if (false) continue
+       const moduleSymbol = checker.getSymbolAtLocation(sf)
+       if (!moduleSymbol) continue
+       for (const symbol of checker.getExportsOfModule(moduleSymbol)) {

@@ -184,3 +184,81 @@ export {
   killInProcessTeammate,
   spawnInProcessTeammate,
 } from './runtime/spawnInProcess.js'
+
+// Superficie pública consumida por los paquetes del runtime. Todos estos
+// símbolos ya tienen implementación canónica dentro de swarm; el barrel
+// parcial anterior era quien los ocultaba.
+export {
+  buildInheritedEnvVars,
+} from './runtime/spawnUtils.js'
+
+export type { TeammateMessage } from './mailbox/index.js'
+export {
+  markMessagesAsRead,
+  readUnreadMessages,
+  sendShutdownRequestToMailbox,
+  writeToMailbox,
+} from './mailbox/index.js'
+
+export {
+  generateSandboxRequestId,
+  isSwarmWorker,
+  pollForResponse,
+  removeWorkerResponse,
+  sendPermissionRequestViaMailbox,
+  sendPermissionResponseViaMailbox,
+} from './permissions/index.js'
+export {
+  getLeaderToolUseConfirmQueue,
+  registerLeaderSetToolPermissionContext,
+  registerLeaderToolUseConfirmQueue,
+  unregisterLeaderSetToolPermissionContext,
+  unregisterLeaderToolUseConfirmQueue,
+} from './permissions/leaderPermissionBridge.js'
+
+export {
+  findTeammateTaskByAgentId,
+  getRunningTeammatesSorted,
+  injectUserMessageToTeammate,
+} from './tasks/InProcessTeammateTask.js'
+
+export {
+  cleanupWorktree,
+  createAgentWorktree,
+  createTmuxSessionForWorktree,
+  createWorktreeForSession,
+  generateTmuxSessionName,
+  getCurrentWorktreeSession,
+  hasWorktreeChanges,
+  keepWorktree,
+  killTmuxSession,
+  removeAgentWorktree,
+  validateWorktreeSlug,
+  worktreeBranchName,
+} from './worktree/index.js'
+
+export {
+  IT2_COMMAND,
+  isInsideTmux,
+  isInsideTmuxSync,
+  isTmuxAvailable,
+} from './backends/detection.js'
+export {
+  clearCliTeammateModeOverride,
+  getCliTeammateModeOverride,
+  getTeammateModeFromSnapshot,
+} from './backends/teammateModeSnapshot.js'
+
+export {
+  createTeammatePaneInSwarmView,
+  enablePaneBorderStatus,
+  sendCommandToPane,
+} from './core/teammateLayoutManager.js'
+export {
+  ensureTeamFileFromSnapshot,
+  registerTeammateInTeamFile,
+} from './core/teamFileRegistration.js'
+export { initializeTeammateContextFromSession } from './core/reconnection.js'
+export { initializeTeammateHooks } from './core/teammateInit.js'
+export { getHardcodedTeammateModelFallback } from './core/teammateModel.js'
+export { It2SetupPrompt } from './core/It2SetupPrompt.js'

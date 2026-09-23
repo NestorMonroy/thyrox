@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import {
   AbortError,
   ClaudeError,
-  MalformedCommandError,
   ConfigParseError,
   ShellError,
   TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,

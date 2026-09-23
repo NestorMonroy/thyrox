@@ -462,3 +462,7 @@ export function readCurrentLimits(): ClaudeAILimits {
 export function resetCurrentLimits(): void {
   currentLimits = { ...INITIAL_LIMITS }
 }
+
+// Los textos de advertencia de limite viven en `rateLimitMessages.ts`; sus
+// consumidores los piden a este modulo.
+export { getRateLimitWarning, getUsingOverageText } from './rateLimitMessages.js'

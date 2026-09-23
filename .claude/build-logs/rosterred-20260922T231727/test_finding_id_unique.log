@@ -1,0 +1,28 @@
+  FAIL la fila sin .rst se reporta
+  ok   y --strict sale 1
+  ok   la fila CON .rst no se reporta
+  FAIL el par 5/05 se reporta como colisión
+  FAIL 6 y 7 no son colisión — --quiet dio ''
+  FAIL la entrada congelada no bloquea — exit=1 
+  FAIL y el denominador se publica igual
+  FAIL rehúsa con exit 2 — exit=1
+  ok   y no emite ningún conteo
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_finding_id_unique.py", line 258, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/tests/verify/test_finding_id_unique.py", line 250, in main
+    test_the_real_padding_collisions_are_seen()
+  File "/home/user/thyrox/tests/verify/test_finding_id_unique.py", line 204, in test_the_real_padding_collisions_are_seen
+    consumer = reach.root("docs")
+               ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 845, in root
+    name = clone_name(repo)          # valida el repo antes de mirar el entorno
+           ^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 414, in clone_name
+    declaradas = reach_roots()
+                 ^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 391, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+EXIT=1

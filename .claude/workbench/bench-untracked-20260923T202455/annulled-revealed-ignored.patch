@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_schedule.py
++++ b/src/verify/tsc_schedule.py
+@@ -43,7 +43,7 @@
+ AGAINST = {"rejected", "partial"}
+ #: `revealed` tampoco cuenta: la propuesta cerró su objetivo y lo que destapa
+ #: son contratos reales, que van a la cola residual (`tsc_zero_step`).
+-IGNORED = {"ambiguous", "no-targets", "infrastructure", "revealed"}
++IGNORED = {"ambiguous", "no-targets", "infrastructure"}
+ #: Un parámetro de Beta debe ser positivo. Con ε = 0 y sin historia la
+ #: posterior es impropia; se acota para poder muestrear, y el informe lo
+ #: publica tal cual.

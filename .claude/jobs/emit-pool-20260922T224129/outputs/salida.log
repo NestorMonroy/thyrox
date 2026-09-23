@@ -1,0 +1,148 @@
+run-task-pool: 24 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/emit-20260922T224129
+  emit-20260922T224129/emit-001 pid 4575    bash bin/emit_declarations @ant
+  emit-20260922T224129/emit-002 pid 4604    bash bin/emit_declarations agent
+  emit-20260922T224129/emit-003 pid 4629    bash bin/emit_declarations cli
+  emit-20260922T224129/emit-004 pid 4646    bash bin/emit_declarations memory
+  emit-20260922T224129/emit-005 pid 4668    bash bin/emit_declarations modifiers-napi
+  emit-20260922T224129/emit-006 pid 4726    bash bin/emit_declarations observability
+  emit-20260922T224129/emit-007 pid 4753    bash bin/emit_declarations output
+  emit-20260922T224129/emit-008 pid 4768    bash bin/emit_declarations permission
+  emit-20260922T224129/emit-009 pid 4856    bash bin/emit_declarations plan
+  emit-20260922T224129/emit-010 pid 4871    bash bin/emit_declarations provider
+  emit-20260922T224129/emit-011 pid 4914    bash bin/emit_declarations repl
+  emit-20260922T224129/emit-012 pid 5612    bash bin/emit_declarations ripgrep-napi
+  emit-20260922T224129/emit-013 pid 5728    bash bin/emit_declarations server
+  emit-20260922T224129/emit-014 pid 5993    bash bin/emit_declarations shell
+  emit-20260922T224129/emit-015 pid 6370    bash bin/emit_declarations skills
+  emit-20260922T224129/emit-016 pid 6455    bash bin/emit_declarations stdin-napi
+  emit-20260922T224129/emit-017 pid 6875    bash bin/emit_declarations storage
+  emit-20260922T224129/emit-018 pid 7354    bash bin/emit_declarations swarm
+  emit-20260922T224129/emit-019 pid 8236    bash bin/emit_declarations teleport
+  emit-20260922T224129/emit-020 pid 8313    bash bin/emit_declarations tool-registry
+  emit-20260922T224129/emit-021 pid 8344    bash bin/emit_declarations tools
+  emit-20260922T224129/emit-022 pid 8694    bash bin/emit_declarations updater
+  emit-20260922T224129/emit-023 pid 8750    bash bin/emit_declarations url-handler-napi
+  emit-20260922T224129/emit-024 pid 8801    bash bin/emit_declarations voice
+run-task-pool: lanzados 24 de 24; esperando en PRIMER PLANO (timeout 1800s)
+== 25 trabajos asentados ==
+OLVIDADO emit-20260922T224129
+       | (vacío — no emitió nada)
+OK     emit-20260922T224129_emit-001
+       | emit_declarations: ningun paquete coincide con ['@ant']
+       | EXIT=2
+OK     emit-20260922T224129_emit-002
+       | agent: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/docs.ts, ../../paths/reach.ts, ../../store/db.ts
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-003
+       | cli: NO EMITIO — 7 import(s) salen de su rootDir: ../../coordination/branchIntegration.ts, ../../coordination/claims.ts, ../../coordination/ledger.ts, ../../task/io.ts, ../../task/premises.ts, ../../task/rst.ts, ../../workbench/manifest.ts
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-004
+       | memory: emitio pese a 81 errores (81 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 81 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-005
+       | modifiers-napi: emitio pese a 4 errores (4 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 4 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-006
+       | observability: NO EMITIO — 2 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-007
+       | output: emitio pese a 4652 errores (52 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 4652 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-008
+       | permission: emitio pese a 4793 errores (192 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 4793 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-009
+       | plan: emitio pese a 3 errores (3 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 3 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-010
+       | provider: emitio pese a 5007 errores (401 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 5007 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-011
+       | repl: emitio pese a 6553 errores (1895 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 6553 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-012
+       | ripgrep-napi: emitio pese a 19 errores (19 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 19 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-013
+       | server: emitio pese a 4072 errores (69 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 4072 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-014
+       | shell: emitio pese a 4209 errores (266 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 4209 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-015
+       | skills: NO EMITIO — 1 import(s) salen de su rootDir: ../../paths/reach.ts
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-016
+       | stdin-napi: emitio pese a 22 errores (22 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 22 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-017
+       | storage: emitio pese a 1060 errores (385 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 1060 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-018
+       | swarm: emitio pese a 1876 errores (110 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 1876 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-019
+       | teleport: emitio pese a 34 errores (5 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 34 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-020
+       | tool-registry: emitio pese a 1957 errores (739 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 1957 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-021
+       | tools: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts, ../../task/schema.ts
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-022
+       | updater: emitio pese a 169 errores (140 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 169 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-023
+       | url-handler-napi: OK
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+OK     emit-20260922T224129_emit-024
+       | voice: emitio pese a 1106 errores (79 propio(s))
+       | 
+       | emit_declarations: 1 paquete(s) medido(s), 1106 error(es) que siguen vivos en su propio paquete
+       | EXIT=0
+__BG_EXIT__=0

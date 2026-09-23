@@ -1,0 +1,440 @@
+run-task-pool: 39 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/rosterred2-20260922T231906
+  rosterred2-20260922T231906/test_derive_submodule pid 4751    PYTHONPATH=src .venv/bin/python tests/agents/test_derive_submodule.py
+  rosterred2-20260922T231906/test_document_root_default pid 4766    PYTHONPATH=src .venv/bin/python tests/agents/test_document_root_default.py
+  rosterred2-20260922T231906/test_readonly_connection pid 4782    PYTHONPATH=src .venv/bin/python tests/agents/test_readonly_connection.py
+  rosterred2-20260922T231906/test_retention_backfill pid 4800    PYTHONPATH=src .venv/bin/python tests/agents/test_retention_backfill.py
+  rosterred2-20260922T231906/test_stop_reason_provenance pid 4816    PYTHONPATH=src .venv/bin/python tests/agents/test_stop_reason_provenance.py
+  rosterred2-20260922T231906/test_store_dir_default pid 4832    PYTHONPATH=src .venv/bin/python tests/agents/test_store_dir_default.py
+  rosterred2-20260922T231906/test_table_census pid 4848    PYTHONPATH=src .venv/bin/python tests/agents/test_table_census.py
+  rosterred2-20260922T231906/test_task_status_vocabulary pid 4864    PYTHONPATH=src .venv/bin/python tests/agents/test_task_status_vocabulary.py
+  rosterred2-20260922T231906/test_usage_census_deviation pid 4880    PYTHONPATH=src .venv/bin/python tests/agents/test_usage_census_deviation.py
+  rosterred2-20260922T231906/test_home_resolution pid 4895    PYTHONPATH=src .venv/bin/python tests/cache/test_home_resolution.py
+  rosterred2-20260922T231906/test_censar_scripts pid 4911    PYTHONPATH=src .venv/bin/python tests/corpus/test_censar_scripts.py
+  rosterred2-20260922T231906/test_censo_contraparte pid 4927    PYTHONPATH=src .venv/bin/python tests/corpus/test_censo_contraparte.py
+  rosterred2-20260922T231906/test_unwrap_rst pid 4955    PYTHONPATH=src .venv/bin/python tests/docs/test_unwrap_rst.py
+  rosterred2-20260922T231906/test_task_lifecycle pid 4976    PYTHONPATH=src .venv/bin/python tests/hooks/test_task_lifecycle.py
+  rosterred2-20260922T231906/test_consumer_root_refuses_provider pid 5057    PYTHONPATH=src .venv/bin/python tests/paths/test_consumer_root_refuses_provider.py
+  rosterred2-20260922T231906/test_reach pid 5073    PYTHONPATH=src .venv/bin/python tests/paths/test_reach.py
+  rosterred2-20260922T231906/test_reach_roots_declared pid 5089    PYTHONPATH=src .venv/bin/python tests/paths/test_reach_roots_declared.py
+  rosterred2-20260922T231906/test_reach_roots_shim pid 5105    PYTHONPATH=src .venv/bin/python tests/paths/test_reach_roots_shim.py
+  rosterred2-20260922T231906/test_paths_parity pid 5121    PYTHONPATH=src .venv/bin/python tests/rules/test_paths_parity.py
+  rosterred2-20260922T231906/test_provenance_parity pid 5138    PYTHONPATH=src .venv/bin/python tests/rules/test_provenance_parity.py
+  rosterred2-20260922T231906/test_background_log_home pid 5156    PYTHONPATH=src .venv/bin/python tests/session/test_background_log_home.py
+  rosterred2-20260922T231906/test_installed_hooks_resolve pid 5172    PYTHONPATH=src .venv/bin/python tests/session/test_installed_hooks_resolve.py
+  rosterred2-20260922T231906/test_jobs_home pid 5188    PYTHONPATH=src .venv/bin/python tests/session/test_jobs_home.py
+  rosterred2-20260922T231906/test_user_wiring pid 5204    PYTHONPATH=src .venv/bin/python tests/session/test_user_wiring.py
+  rosterred2-20260922T231906/test_census_open_tasks pid 5454    PYTHONPATH=src .venv/bin/python tests/task/test_census_open_tasks.py
+  rosterred2-20260922T231906/test_layer_axis pid 5470    PYTHONPATH=src .venv/bin/python tests/task/test_layer_axis.py
+  rosterred2-20260922T231906/test_layer_signals pid 5487    PYTHONPATH=src .venv/bin/python tests/task/test_layer_signals.py
+  rosterred2-20260922T231906/test_docs_root_resolution pid 5520    PYTHONPATH=src .venv/bin/python tests/verify/test_docs_root_resolution.py
+  rosterred2-20260922T231906/test_error_catalog pid 5536    PYTHONPATH=src .venv/bin/python tests/verify/test_error_catalog.py
+  rosterred2-20260922T231906/test_finding_id_unique pid 5552    PYTHONPATH=src .venv/bin/python tests/verify/test_finding_id_unique.py
+  rosterred2-20260922T231906/test_gitattributes pid 5585    PYTHONPATH=src .venv/bin/python tests/verify/test_gitattributes.py
+  rosterred2-20260922T231906/test_hallazgo_sucesor pid 5601    PYTHONPATH=src .venv/bin/python tests/verify/test_hallazgo_sucesor.py
+  rosterred2-20260922T231906/test_hook_script_token pid 5617    PYTHONPATH=src .venv/bin/python tests/verify/test_hook_script_token.py
+  rosterred2-20260922T231906/test_reference_root_resolution pid 6121    PYTHONPATH=src .venv/bin/python tests/verify/test_reference_root_resolution.py
+  rosterred2-20260922T231906/test_rst_gate_interpreter pid 6141    PYTHONPATH=src .venv/bin/python tests/verify/test_rst_gate_interpreter.py
+  rosterred2-20260922T231906/test_rst_gate_root pid 6589    PYTHONPATH=src .venv/bin/python tests/verify/test_rst_gate_root.py
+  rosterred2-20260922T231906/test_rule_divergence pid 6617    PYTHONPATH=src .venv/bin/python tests/verify/test_rule_divergence.py
+  rosterred2-20260922T231906/test_script_naming_scope pid 6643    PYTHONPATH=src .venv/bin/python tests/verify/test_script_naming_scope.py
+  rosterred2-20260922T231906/test_home_resolution pid 7120    PYTHONPATH=src .venv/bin/python tests/workbench/test_home_resolution.py
+run-task-pool: lanzados 39 de 39; esperando en PRIMER PLANO (timeout 900s)
+== 39 trabajos asentados ==
+OLVIDADO rosterred2-20260922T231906
+       | (vacío — no emitió nada)
+OK     rosterred2-20260922T231906_test_background_log_home
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.003s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_censar_scripts
+       |   ok   CONTROL — docs/ queda fuera del universo, como declara su Ciega a
+       |   ok   CONTROL — __pycache__ nunca es un guion
+       | == la clase se deriva del citante también con la ruta anidada ==
+       |   ok   gates/check_something.py citado desde docs → gate-de-reporte
+       |   ok   deep_tool.py sin citante → huerfano (el instrumento sí puede fallar)
+       | == el baseline de huérfanos apunta a un archivo que EXISTE en el repo real ==
+       |   ok   BASELINE existe: .claude/baselines/scripts_huerfanos_baseline.txt
+       | 
+       | resultado: 10 ok, 0 fallas
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_censo_contraparte
+       |         esperado=[0] obtenido=[2]
+       | == 9. el DOMINIO DEL PRODUCTO es parámetro, no conocimiento de aquí ==
+       |   ok    el repo censado no cae a un consumidor concreto
+       |   ok    el árbol de referencia no se nombra en el mecanismo
+       |   ok    qué marca la unidad censada se declara
+       |   ok    y su constante existe
+       |   ok    igual que la del árbol de referencia
+       | 
+       | 11 ok, 9 fallos
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_census_open_tasks
+       |   File "/home/user/thyrox/tests/task/test_census_open_tasks.py", line 181, in <module>
+       |     _evidence = cot.reach.root("api") / "scripts" / "evidence"
+       |                 ^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_consumer_root_refuses_provider
+       | test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa (__main__.TestConsumerRootRefusesProvider.test_3_desde_un_subdirectorio_del_proveedor_tambien_rehusa)
+       | Falla si el guard solo mira la raiz. El ascenso desde `src/` llega ... ok
+       | test_4_un_consumidor_real_sigue_resolviendo (__main__.TestConsumerRootRefusesProvider.test_4_un_consumidor_real_sigue_resolviendo)
+       | El par que impide «arreglar» rehusando siempre. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.003s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_derive_submodule
+       | 
+       | == 5. el valor y su procedencia viajan juntos ==
+       |   ok    procedencia de «Cerrar H-SERVER-16»
+       |   ok    procedencia de «Cerrar H-UI-07»
+       |   ok    procedencia de «Tocar src/addons/sale»
+       |   ok    procedencia de «Sin senal alguna»
+       |   ok    sin declaracion devuelve el hueco, no una capa adivinada
+       | 
+       | resultado: 20 de 20 aserciones en verde
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_docs_root_resolution
+       |     from paths import reach  # noqa: E402
+       |     ^^^^^^^^^^^^^^^^^^^^^^^
+       | ModuleNotFoundError: No module named 'paths'
+       | 
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 2 tests in 0.046s
+       | 
+       | FAILED (failures=1)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_document_root_default
+       |   File "/home/user/thyrox/tests/agents/test_document_root_default.py", line 67, in _Cd
+       |     repo = None; claude_dir = str(reach.root("api") / ".claude"); repo_docs = None; subtree = "source"
+       |                                   ^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_error_catalog
+       |   ok   con el archivo fuera del hogar, exit 1
+       |   ok   y nombra el motivo: fuera de errores/
+       | 8. el indice que no resuelve contra el hogar se ve
+       |   ok   archivo sin fila en el indice → exit 1
+       |   ok   y nombra el motivo: sin entrada en index.rst
+       |   ok   fila sin archivo → exit 1
+       |   ok   y nombra el motivo: sin archivo
+       | 
+       | OK: todas las aserciones pasan
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_finding_id_unique
+       |   FAIL la entrada congelada no bloquea — exit=1 
+       |   FAIL y el denominador se publica igual
+       |   FAIL rehúsa con exit 2 — exit=1
+       |   ok   y no emite ningún conteo
+       |   FAIL el gate ve los 3 pares de relleno reales del corpus — vistos=[] :: 
+       |   ok   no aparecen archivos nuevos en el árbol
+       |   FAIL no cambia ningún archivo del árbol — ['/home/user/thyrox/.claude/build-logs/rosterred2-20260922T231906/test_hallazgo_sucesor.log', '/home/user/thyrox/.claude/build-logs/rosterred2-20260922T231906/test_hook_script_token.log']
+       | 
+       | 4 aprobada(s) · 8 fallida(s) (alcance medido: check_finding_id_unique, sus dos mitades)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_gitattributes
+       |   File "/home/user/thyrox/src/verify/gitattributes.py", line 120, in review
+       |     root = repo_root(repo, tree_root)
+       |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/verify/gitattributes.py", line 111, in repo_root
+       |     return Path(tree_root) / reach.clone_name(repo)
+       |                              ^^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_hallazgo_sucesor
+       |   ok    y NO emite cifra alguna
+       |   ok    y con el awk sano el MISMO arbol da 0 — el control DISCRIMINA
+       | == 10. CONTROL POSITIVO REAL, SIN baseline: el ordinal solo YA falla ==
+       |   ok    el control positivo NO cita ninguna forma durable
+       |   ok    hallazgo real con SOLO ordinal, sin baseline, SI se marca
+       | == 11. MISMO contenido, CON su ruta en un baseline sintetico: pasa ==
+       |   ok    el mismo hallazgo, con su ruta baseline, NO se marca
+       | 
+       | 15 ok, 0 fallos
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_home_resolution
+       | Traceback (most recent call last):
+       |   File "/home/user/thyrox/tests/workbench/test_home_resolution.py", line 176, in test_las_dos_familias_resuelven_igual
+       |     self.assertGreaterEqual(
+       | AssertionError: 1 not greater than or equal to 2 : sin dos clones sin clave por clon en NINGUNA de las dos familias, «las dos resuelven igual» no se puede afirmar
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.011s
+       | 
+       | FAILED (failures=2)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_hook_script_token
+       |           real:     False
+       |   ok    --strict con una forma opaca sale 1
+       |   FALLA y nombra la forma
+       |           esperado: True
+       |           real:     False
+       |   ok    cero comandos NO se publica como aprobado en silencio
+       |   ok    y con --strict el cero sin medir sale 1
+       | 
+       | resultado: 17 de 21 aserciones en verde
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_installed_hooks_resolve
+       | test_it_emits_the_declared_event_set (__main__.InstalledHooksResolve.test_it_emits_the_declared_event_set)
+       | Sin esto, un instalador que no escribiera nada daría verde. ... ok
+       | test_the_two_older_assertions_cannot_see_the_topology (__main__.InstalledHooksResolve.test_the_two_older_assertions_cannot_see_the_topology)
+       | CONTROL ANULADO: con la topologia contraria, cae UNA y solo una. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 4 tests in 0.426s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_jobs_home
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 7 tests in 0.003s
+       | 
+       | FAILED (errors=5)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_layer_axis
+       | test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+       | Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+       | test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+       | CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 6 tests in 0.057s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_layer_signals
+       | .....
+       | ----------------------------------------------------------------------
+       | Ran 5 tests in 0.025s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_paths_parity
+       | ..........
+       | ----------------------------------------------------------------------
+       | Ran 10 tests in 0.006s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_provenance_parity
+       | ........
+       | ----------------------------------------------------------------------
+       | Ran 8 tests in 0.002s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_reach
+       |   File "/home/user/thyrox/tests/paths/test_reach.py", line 122, in <module>
+       |     check("THYROX_REACH_API gana sobre el árbol", otro, reach.root("api", start=start))
+       |                                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_reach_roots_declared
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 74, in with_env
+       |     return fn()
+       |            ^^^^
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_declared.py", line 115, in <lambda>
+       |     reach.reach_roots()))
+       |     ^^^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 399, in reach_roots
+       |     raise ReachRootError(
+       | paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_reach_roots_shim
+       |   File "/home/user/thyrox/tests/paths/test_reach_roots_shim.py", line 80, in <module>
+       |     check("root('api') coincide", owner.root("api"), reach_roots.root("api"))
+       |                                   ^^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 853, in root
+       |     name = clone_name(repo)          # valida el repo antes de mirar el entorno
+       |            ^^^^^^^^^^^^^^^^
+       |   File "/home/user/thyrox/src/paths/reach.py", line 424, in clone_name
+       |     raise KeyError(
+       | KeyError: "raíz desconocida: 'api'. Las declaradas son ['docs']."
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_readonly_connection
+       | == 3. la conexion RECHAZA escribir ==
+       |   ok    SQLite rechaza el INSERT
+       | == 4. el censo enrutado: rehusa sobre un store ausente ==
+       |   ok    exit 2 — no midio, no publica conteo
+       |   ok    el mensaje nombra el store ausente
+       |   ok    el censo no fabrico el store
+       |   ok    el censo no fabrico ni el hogar
+       | 
+       | 9 ok, 0 fallos
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_reference_root_resolution
+       | == 4. el gate NO se marca a sí mismo por citar el anti-patrón ==
+       |   ok    no aparece su propio archivo en la salida
+       | == 5. el barrido por omisión SALTA el directorio de control ==
+       |   ok    por omisión no reporta nada bajo control/
+       | == 6. CONTROL DE ANULACIÓN: sin el control positivo, los casos 2-3 caen ==
+       |   ok    sobre un directorio vacío NO ve la composición contra una raíz
+       |   ok    y --strict ahí sale 0 — el 1 del caso 3 venía del control
+       | 
+       | 12 ok, 0 fallos
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_retention_backfill
+       | == C. El conteo publica su alcance ==
+       |   ok    cuatro filas tocadas, no seis
+       | == D. Lo que NO se toca — el control que puede fallar ==
+       |   ok    usage_source NULL sigue NULL: «nadie ha pasado todavía»
+       |   ok    un agente vivo no recibe nivel
+       | == E. Idempotencia: un segundo pase no reescribe nada ==
+       |   ok    segunda pasada toca 0
+       | 
+       | RESULTADO: 10 ok, 0 fallo(s)
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_rst_gate_interpreter
+       |   ok    test_the_path_real_of_executable_NOT_discriminates
+       |   FALLA test_the_precondition_of_extensions_discriminates_the_two_venv: AssertionError: el venv del consumidor no resuelve lo que su propio conf.py declara; corre `make sync` en /home/user/kaupamex-docs: ['sphinx.ext.intersphinx', 'sphinx.ext.todo', 'sphinx.ext.autosectionlabel', 'sphinx_design', 'sphinx_copybutton', 'sphinx_tabs.tabs', 'sphinxcontrib.plantuml']
+       |   ok    test_the_subject_and_the_interpreters_exist
+       |   ok    test_the_venv_of_provider_not_publishes_a_count_that_not_measured
+       |   FALLA test_the_via_of_pre_commit_WHETHER_publishes_su_count: AssertionError: la via que hoy mide dejo de medir: exit=2 stdout='' stderr='user/kaupamex-docs/.venv) no resuelve 7 extension(es) que su conf.py declara: sphinx.ext.intersphinx, sphinx.ext.todo, sphinx.ext.autosectionlabel, sphinx_design, sphinx_copybutton, sphinx_tabs.tabs, sphinxcontrib.plantuml. Corre `make sync` en /home/user/kaupamex-docs. NO se emite un conteo: un 0 aqui seria un verde falso, y un 1 diria «hay errores de sintaxis» sobre una medicion que no ocurrio.\n'
+       | 3/5 aserciones verdes
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_rst_gate_root
+       |   ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+       |   ok    test_la_aritmetica_vieja_da_un_veredicto_DISTINTO
+       |   ok    test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene
+       |   ok    test_la_raiz_derivada_tiene_lo_que_el_gate_toca
+       | 4/4 aserciones verdes
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_rule_divergence
+       | .....
+       | ----------------------------------------------------------------------
+       | Ran 5 tests in 0.010s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_script_naming_scope
+       |   FAIL el eje de separador no reporta el banco: 1 != 0
+       |        265 archivo(s) del banco, p.ej. .claude/eventos/acl-en-las-referencias-20260827T192754/sondas/censo_dato_acl.py
+       |   FAIL el eje de identificadores no reporta el banco: 265 != 0
+       | === Caso 4: el descuento no apaga el eje — sigue midiendo producto ===
+       |   OK   el eje de idioma sigue midiendo archivos
+       |   OK   el eje de separador sigue midiendo archivos
+       |   OK   el eje de identificadores sigue midiendo archivos
+       | 
+       | 4 ok, 4 fallos (alcance medido: 8 aserciones sobre /home/user/thyrox/src/verify/check_script_naming.py)
+       | EXIT=1
+OK     rosterred2-20260922T231906_test_stop_reason_provenance
+       |   ok    total 0
+       |   ok    y los cubos suman 0
+       | 
+       | == 6. el barrido NO reclama una fila cuyo stop_reason ya se leyo ==
+       |   ok    la fila sana no se reclama
+       |   ok    stop_reason NULL leido por el extractor actual NO se reclama
+       |   ok    la que nunca se leyo si se reclama
+       | 
+       | resultado: 19 de 19 aserciones en verde
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_store_dir_default
+       | test_2_el_destino_sin_banderas_es_el_hogar (__main__.TestParserDefault.test_2_el_destino_sin_banderas_es_el_hogar) ... ok
+       | test_3_el_destino_sin_banderas_no_cae_en_ningun_clon (__main__.TestParserDefault.test_3_el_destino_sin_banderas_no_cae_en_ningun_clon) ... ok
+       | test_4_el_arbol_documental_no_se_rompe_con_repo_ausente (__main__.TestParserDefault.test_4_el_arbol_documental_no_se_rompe_con_repo_ausente)
+       | El par que impide arreglar un eje rompiendo el otro. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 9 tests in 0.013s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_table_census
+       | == 3. varias columnas: se devuelven TODAS, no la primera ==
+       |   ok    created_at y updated_at
+       | == 4. una tabla sin fecha lo dice, no falla ==
+       |   ok    lista vacia
+       | == 5. la ultima escritura sale del MAXIMO de todas ==
+       |   ok    gana el mayor entre las dos columnas
+       |   ok    sin columna de fecha devuelve None
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_task_lifecycle
+       |   ok    sale 0 ante JSON invalido
+       |   ok    sale 0 ante stdin vacio
+       | 
+       | == 6. el cableado del usuario DECLARA el evento ==
+       |   ok    `TaskCreated` esta declarado
+       |   ok    `TaskCompleted` esta declarado
+       |   ok    los dos apuntan al mismo guion
+       | 
+       | resultado: 15 de 15 aserciones en verde
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_task_status_vocabulary
+       |   ok    y conserva sus tres filas
+       |   ok    y ahora rechaza lo de fuera
+       |   ok    y la clave compuesta sobrevive a la reconstruccion
+       | 
+       | == 5. la migracion es idempotente ==
+       |   ok    segunda pasada: las filas siguen
+       |   ok    y no quedo ninguna tabla de trabajo
+       | 
+       | resultado: 18 de 18 aserciones en verde
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_unwrap_rst
+       | test_paragraph_before_title_is_not_swallowed (__main__.ProseJoined.test_paragraph_before_title_is_not_swallowed) ... ok
+       | test_role_at_paragraph_start_is_prose (__main__.ProseJoined.test_role_at_paragraph_start_is_prose) ... ok
+       | test_title_keeps_its_underline (__main__.ProseJoined.test_title_keeps_its_underline) ... ok
+       | test_wrapped_paragraph (__main__.ProseJoined.test_wrapped_paragraph) ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 15 tests in 34.000s
+       | 
+       | OK
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_usage_census_deviation
+       | == 4. la unidad se declara: el bloque es de TOKENS, no de dinero ==
+       |   ok    el bloque nombra su unidad
+       |   ok    y NO mezcla dinero en el mismo bloque
+       | == 5. publica equiv_cost, que es la unidad de coste que SE CITA ==
+       |   ok    el estable publica la desviacion de su equiv_cost
+       |   ok    el erratico publica la suya, un orden mayor
+       |   ok    misma media de equiv_cost: tampoco ahi discrimina
+       | 
+       | 10 ok, 0 fallos
+       | EXIT=0
+OK     rosterred2-20260922T231906_test_user_wiring
+       |   ok    17-bis.1 anulado el sufijo, el relativo SIGUE viendose (lleva `/`)
+       |   ok    17-bis.2 anulados los prefijos, `~/` deja de resolver a la casa
+       |   ok    17-bis.3 y el interprete sano SOBREVIVE en None
+       |   ok    17-bis.4 restaurado, el sufijo vuelve a casar un `.ts`
+       |   ok    17-bis.5 con la version vieja, 17.1 CAE
+       |   ok    17-bis.6 y 17.2 CAE: el comando roto sale del universo
+       |   ok    17-bis.7 restaurada, vuelve a verlo
+       | 
+       | 74 ok, 0 fallos
+       | EXIT=0
+__BG_EXIT__=0

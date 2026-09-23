@@ -1,0 +1,64 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/removeUnusedImports.test.ts:
+88 |   test('con un solo binding TS6133 cubre la declaración entera, y la guarda la ve igual', () => {
+89 |     // Medido al reunir los proponentes: con un binding único el tramo de
+90 |     // TS6133 es el `import` completo, no el nombre, y una guarda que compare
+91 |     // el tramo con el texto del nombre no lo reconoce.
+92 |     const out = run("import { Metadata } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n")
+93 |     expect(out).toBeUndefined()
+                     ^
+error: expect(received).toBeUndefined()
+
+Received: "export const x = 1 as unknown as typeof Metadata\n"
+
+      at <anonymous> (/home/user/thyrox/tests/verify/removeUnusedImports.test.ts:93:17)
+(fail) removeUnusedImports > con un solo binding TS6133 cubre la declaración entera, y la guarda la ve igual [539.96ms]
+
+tests/verify/tscProposers.test.ts:
+ 98 |       '/p/compat.ts': 'export type Metadata = never\n',
+ 99 |       '/p/typeOnly.ts': "export type { Metadata } from './compat'\n",
+100 |       '/p/c.ts': "import { Metadata } from './typeOnly'\nexport const x = 1 as unknown as typeof Metadata\n",
+101 |     }
+102 |     const rows = proposeInMemory(named, ['/p/c.ts'], '/p')
+103 |     expect(rows.filter(row => row.proposer === 'unused-imports')).toEqual([])
+                                                                        ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   {
++     "bases": {
++       "c.ts": "9ec34d90c826cbd2f43e31333f7014522df863d566e90d89712dc655a061660b",
++     },
++     "edits": [
++       {
++         "file": "c.ts",
++         "length": 38,
++         "newText": "",
++         "start": 0,
++       },
++     ],
++     "files": [
++       "c.ts",
++     ],
++     "proposal_id": "unused-imports:c.ts",
++     "proposer": "unused-imports",
++     "targets": [
++       "c.ts: TS6133: 'Metadata' is declared but its value is never read.",
++     ],
++   },
++ ]
+
+- Expected  - 1
++ Received  + 23
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscProposers.test.ts:103:67)
+(fail) tscProposers > keeps the unused-imports guard: a name the checker calls unused is not deleted [547.92ms]
+
+ 16 pass
+ 2 fail
+ 37 expect() calls
+Ran 18 tests across 2 files. [13.91s]
+
+[exit=1]

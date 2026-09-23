@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bunx tsc --noEmit", "started_at": "2026-09-22T18:44:29+00:00", "question": "¿Quedaron en cero los diagnósticos de propiedades GlobalConfig/ProjectConfig censadas por los cuarenta trabajos?", "metric": "5 066 diagnósticos en 952 archivos; cero diagnósticos de la familia objetivo.", "blind_to": "Propiedades que aún no alcanza TypeScript por imports o providers sin resolver."}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-22T18:46:11+00:00", "duration_seconds": 102.853949}

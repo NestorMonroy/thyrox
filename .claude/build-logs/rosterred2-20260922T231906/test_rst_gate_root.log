@@ -1,0 +1,6 @@
+  ok    test_el_gate_de_sintaxis_ya_no_deriva_su_raiz_de_su_posicion
+  ok    test_la_aritmetica_vieja_da_un_veredicto_DISTINTO
+  ok    test_la_raiz_del_consumidor_no_es_el_arbol_que_lo_contiene
+  ok    test_la_raiz_derivada_tiene_lo_que_el_gate_toca
+4/4 aserciones verdes
+EXIT=0

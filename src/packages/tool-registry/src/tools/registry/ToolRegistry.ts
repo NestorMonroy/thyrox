@@ -1,5 +1,4 @@
 import {
-  toolMatchesName,
   type Tool,
   type ToolPermissionContext,
   type Tools,

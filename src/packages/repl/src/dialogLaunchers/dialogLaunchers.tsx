@@ -87,7 +87,7 @@ export async function launchAssistantSessionChooser(
   return showSetupDialog<string | null>(root, done => (
     <AssistantSessionChooser
       sessions={props.sessions}
-      onSelect={id => done(id)}
+      onSelect={(id: string|null) => done(id)}
       onCancel={() => done(null)}
     />
   ))

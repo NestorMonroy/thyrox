@@ -1,0 +1,20 @@
+test_perplexity:
+  ok    PPL por logaritmos (brief)
+  ok    PPL por la formula directa (brief)
+  ok    el producto colapsa a cero
+  ok    la formula directa rehusa en vez de dar infinito
+  ok    la via por logaritmos sigue siendo exacta
+  ok    bits por token (brief)
+  ok    bits por byte con 4 bytes por token (brief)
+  ok    PPL del tokenizador A (brief)
+  ok    PPL del tokenizador B (brief)
+  ok    la PPL prefiere a B
+  ok    B asigna menos probabilidad total al texto
+  FALLA los bits por byte prefieren a A, como la probabilidad total — esperado True, obtenido False
+  FALLA las dos formas de bits por byte coinciden — esperado True, obtenido False
+  ok    valida las probabilidades del brief
+  ok    una probabilidad 0 rehusa
+  ok    una probabilidad mayor que 1 rehusa
+  ok    una secuencia vacia rehusa
+  ok    cero bytes rehusa
+test_perplexity: 18 aserciones — 16 ok, 2 falla(s)

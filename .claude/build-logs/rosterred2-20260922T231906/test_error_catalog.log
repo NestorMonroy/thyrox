@@ -1,0 +1,54 @@
+1. lectura de la cabecera (archivo real del repo)
+  ok   recupera :clase:
+  ok   recupera :tipo_error:
+  ok   recupera :severidad:
+  ok   recupera :estado:
+  ok   recupera :iniciativa:
+2. el corpus real no tiene defecto
+  ok   hay corpus que medir (17 archivos)
+  ok   error-ERR-021-el-camino-barato-no-tenia-registro.rst sin defecto
+  ok   error-ERR-022-la-evidencia-nacio-en-tmp-que-muere-con-el-contenedor.rst sin defecto
+  ok   error-ERR-023-el-renombre-en-bloque-corrompio-prosa-y-rompio-el-programa.rst sin defecto
+  ok   error-ERR-024-la-cita-del-sucesor-no-resuelve-contra-el-tablero.rst sin defecto
+  ok   error-ERR-025-un-cat-sobrescribio-un-indice-de-diez-hallazgos.rst sin defecto
+  ok   error-ERR-026-se-construyo-un-mecanismo-sin-medir-el-que-ya-llenaba-el-store.rst sin defecto
+  ok   error-ERR-027-resolvi-el-merge-uniendo-por-task-id.rst sin defecto
+  ok   error-ERR-028-reincidi-en-el-renombre-por-token-cuatro-horas-despues.rst sin defecto
+  ok   error-ERR-029-infieri-el-estado-del-remoto-desde-un-ref-local-huerfano.rst sin defecto
+  ok   error-ERR-030-cite-el-numero-de-tarea-en-siete-rst-contra-la-regla.rst sin defecto
+  ok   error-ERR-031-conclui-la-procedencia-de-un-simbolo-por-como-suena.rst sin defecto
+  ok   error-ERR-032-enumere-lo-que-recordaba-y-lo-publique-como-conteo.rst sin defecto
+  ok   error-ERR-033-reincidi-en-la-evidencia-en-tmp-y-lo-corrigio-el-ejecutor.rst sin defecto
+  ok   error-ERR-034-elegi-un-nombre-por-juicio-teniendo-la-regla-de-medir.rst sin defecto
+  ok   error-ERR-035-reincidi-en-err-032-una-hora-y-media-despues.rst sin defecto
+  ok   error-ERR-036-valide-rst-con-el-instrumento-que-un-gate-prohibe.rst sin defecto
+  ok   error-ERR-037-cite-de-memoria-las-rutas-y-el-commit-quedo-parcial.rst sin defecto
+3. el control puede fallar — se muta el archivo REAL, una clave por vez
+  ok   la mutacion «tipo fuera del vocabulario cerrado» aplica sobre texto real
+  ok   lo detecta y nombra la clave: tipo fuera del vocabulario cerrado
+  ok   la mutacion «severidad con grafia libre» aplica sobre texto real
+  ok   lo detecta y nombra la clave: severidad con grafia libre
+  ok   la mutacion «estado con grafia libre» aplica sobre texto real
+  ok   lo detecta y nombra la clave: estado con grafia libre
+  ok   la mutacion «clase producto dentro de errores/» aplica sobre texto real
+  ok   lo detecta y nombra la clave: clase producto dentro de errores/
+4. coherencia id ↔ nombre de archivo
+  ok   la etiqueta que no coincide con el nombre del archivo
+5. el alcance vacio NO publica cero
+  ok   rehusa con exit 2 sobre un arbol sin errores/
+  ok   y no emite ningun conteo por stdout
+6. el gate publica su denominador sobre el corpus real
+  ok   sale 0 sobre el corpus real
+  ok   declara su alcance medido
+7. el error escrito FUERA del hogar se ve
+  ok   el arbol de control, con el archivo REAL en su hogar, pasa
+  ok   con el archivo fuera del hogar, exit 1
+  ok   y nombra el motivo: fuera de errores/
+8. el indice que no resuelve contra el hogar se ve
+  ok   archivo sin fila en el indice → exit 1
+  ok   y nombra el motivo: sin entrada en index.rst
+  ok   fila sin archivo → exit 1
+  ok   y nombra el motivo: sin archivo
+
+OK: todas las aserciones pasan
+EXIT=0

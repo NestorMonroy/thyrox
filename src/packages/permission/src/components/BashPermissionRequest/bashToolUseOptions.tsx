@@ -6,7 +6,6 @@ import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import { shouldShowAlwaysAllowOptions } from '../../permissionsLoader.js'
 import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 import { generateShellSuggestionsLabel } from '../shellPermissionHelpers.js'
-import { readEnv } from '@thyrox/config/env'
 
 type BashToolUseOption =
   | 'yes'

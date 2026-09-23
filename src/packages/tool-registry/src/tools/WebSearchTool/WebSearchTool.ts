@@ -2,7 +2,6 @@ import type { PermissionResult } from '@thyrox/permission/PermissionResult'
 import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { createAdapter } from './adapters/index.js'
 import { getWebSearchPrompt, WEB_SEARCH_TOOL_NAME } from './prompt.js'
 import {

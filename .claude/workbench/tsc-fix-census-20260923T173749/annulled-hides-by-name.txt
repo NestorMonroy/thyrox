@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+53 |     const row = rows.find(r => r.code === 2352)!
+54 |     expect(
+55 |       row.fixes.some(
+56 |         fix => fix.fixName === 'addConvertToUnknownForNonOverlappingTypes' && fix.klass === 'hides',
+57 |       ),
+58 |     ).toBe(true)
+           ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:58:7)
+(fail) tscFixCensus > una conversión sin solape trae un arreglo que TAPA el error [676.01ms]
+
+ 8 pass
+ 1 fail
+ 12 expect() calls
+Ran 9 tests across 1 file. [5.35s]
+
+[exit=1]

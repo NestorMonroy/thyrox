@@ -4,17 +4,24 @@ THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
 export THYROX_ROOT
 INTERPRETER="$THYROX_ROOT/.venv/bin/python"
 if [ ! -x "$INTERPRETER" ]; then
-  LIB="$THYROX_ROOT/src/lib/toolchain.sh"
-  if [ -r "$LIB" ]; then
-    # shellcheck source=/dev/null
-    source "$LIB"
-    thyrox_toolchain_degraded_notice \
-      "las herramientas Python de bin/, manifest entre ellas" \
-      "cd \"$THYROX_ROOT\" && uv sync" >&2
+  RESCUE="$(command -v "${THYROX_PYTHON_FALLBACK:-python3}" 2>/dev/null)"
+  if [ -n "$RESCUE" ] && "$RESCUE" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
+    echo "bin/manifest: sin entorno del proveedor; corre con $RESCUE." >&2
+    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
+    INTERPRETER="$RESCUE"
+  else
+    LIB="$THYROX_ROOT/src/lib/toolchain.sh"
+    if [ -r "$LIB" ]; then
+      # shellcheck source=/dev/null
+      source "$LIB"
+      thyrox_toolchain_degraded_notice \
+        "las herramientas Python de bin/, manifest entre ellas" \
+        "cd \"$THYROX_ROOT\" && uv sync" >&2
+    fi
+    echo "bin/manifest: falta el entorno del proveedor en $INTERPRETER." >&2
+    echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
+    exit 1
   fi
-  echo "bin/manifest: falta el entorno del proveedor en $INTERPRETER." >&2
-  echo "              Generalo con: cd \"$THYROX_ROOT\" && uv sync" >&2
-  exit 2
 fi
 export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
 exec "$INTERPRETER" -m workbench.manifest "$@"

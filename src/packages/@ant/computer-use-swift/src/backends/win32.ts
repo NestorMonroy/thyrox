@@ -6,9 +6,8 @@
  */
 
 import type {
-  AppInfo, AppsAPI, DisplayAPI, DisplayGeometry, InstalledApp,
-  PrepareDisplayResult, RunningApp, ScreenshotAPI, ScreenshotResult,
-  SwiftBackend, WindowDisplayInfo,
+  AppsAPI, DisplayAPI, DisplayGeometry, 
+  ScreenshotAPI, ScreenshotResult,
 } from '../types.js'
 
 import { listWindows } from '@ant/computer-use-mcp/legacy/win32/windowEnum.js'

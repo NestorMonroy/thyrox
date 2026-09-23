@@ -119,9 +119,12 @@ function frontmatterValue(texto: string, clave: string): string | null {
   const guiones = /^---\r?\n([\s\S]*?)\r?\n---/.exec(texto)
   const m = cercado ?? guiones
   if (!m) return null
-  const linea = new RegExp(`^${clave}:\\s*(.+)$`, 'm').exec(m[1])
+  const body = m[1]
+  if (body === undefined) return null
+  const linea = new RegExp(`^${clave}:\\s*(.+)$`, 'm').exec(body)
   if (!linea) return null
-  return linea[1].trim().replace(/^["']|["']$/g, '')
+  const value = linea[1]
+  return value === undefined ? null : value.trim().replace(/^["']|["']$/g, '')
 }
 
 /**

@@ -54,7 +54,13 @@ HERE = Path(__file__).resolve().parent
 def _hooks() -> "Path":
     return agents_paths.hooks_dir()
 AGENT_STORE = HERE / "agent_store.py"
-_DEFAULT_PROJECTS = Path("/root/.claude/projects")
+#: El hogar por defecto lo resuelve `session.transcripts`, no un literal.
+#: El literal `/root/.claude/projects` acertaba en ESTE contenedor y en
+#: ninguno donde HOME sea otro.
+def _default_projects() -> Path:
+    from session.transcripts import transcripts_dir  # noqa: PLC0415
+
+    return transcripts_dir()
 
 # Los DOS acoplamientos externos del guion: de dónde LEE y en qué ESCRIBE.
 # `None` en ambos = el caso normal (transcripts del cliente, store de `docs`).
@@ -73,7 +79,8 @@ def projects_dir() -> Path:
     directamente, la variable para quien invoca **a través de un hook**.
     """
     destination = _PROJECTS_DIR or os.environ.get("AGENT_STORE_PROJECTS_DIR")
-    return Path(destination).expanduser().resolve() if destination else _DEFAULT_PROJECTS
+    return (Path(destination).expanduser().resolve() if destination
+            else _default_projects())
 
 
 def _claude_dir() -> "str | None":

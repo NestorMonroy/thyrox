@@ -1,0 +1,26 @@
+== 1. ε se valida en [0, 1) ==
+  ok    ε = 1 rehúsa
+  ok    ε negativo rehúsa
+  ok    ε = 0 se admite
+  ok    ε = 0.5 se admite
+== 2. la media de la posterior es la α̂ suavizada del plan ==
+  ok    a = aceptadas + ε·α₀
+  ok    b = rechazadas + ε·(1 − α₀)
+  ok    media = (k + ε·α₀)/(n + ε)
+== 3. el registro cuenta sólo lo que es de la propuesta ==
+  ok    p: 1 aceptada, 2 rechazadas (partial cuenta como no aceptada)
+  ok    q: 1 aceptada, 0 rechazadas
+== 4. Thompson: reproducible y explora ==
+  ok    misma semilla, mismo lote
+  ok    el proponente sin historia sale elegido alguna vez
+  ok    y el veterano también
+  ok    el informe guarda semilla, ε y α₀
+== 5. sin interferencia: dos propuestas no comparten archivo ==
+  FALLO de las que chocan entra una sola, y la libre entra
+        esperado=True obtenido=False
+== 6. el orden sigue α̃ × objetivos ==
+  ok    mismo proponente: primero el de más objetivos
+
+14 ok, 1 fallos
+
+[exit=1]

@@ -22,7 +22,6 @@ import { TOOL_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/ToolSearchToo
 import { WORKFLOW_TOOL_NAME } from '@thyrox/tool-registry/tools/WorkflowTool/constants.js'
 import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'
 import type { PermissionDecisionReason } from './permissionTypes.js'
-import { readEnv } from '@thyrox/config/env'
 
 // Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los
 // comentarios traducidos; el cuerpo es el de la fuente.

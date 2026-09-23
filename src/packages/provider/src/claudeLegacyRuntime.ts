@@ -62,7 +62,6 @@
  * procedencia por símbolo.
  */
 
-import Anthropic from '@anthropic-ai/sdk'
 import type { ClientOptions } from '@anthropic-ai/sdk'
 import {
   APIUserAbortError,
@@ -104,7 +103,7 @@ import { getAnthropicClient, CLIENT_REQUEST_ID_HEADER } from './internal/anthrop
 import { getAPIProvider, getProviderForModel } from './providers.ts'
 import { unpackModelId } from './connections.ts'
 import { getDefaultOpusModel, getDefaultSonnetModel, getSmallFastModel } from './model.ts'
-import { getOauthAccountInfo, isClaudeAISubscriber, getAnthropicApiKey } from './authAlias.ts'
+import { getOauthAccountInfo, isClaudeAISubscriber } from './authAlias.ts'
 import {
   type QuerySource,
   type CacheScope,

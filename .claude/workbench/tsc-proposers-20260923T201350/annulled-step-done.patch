@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -107,7 +107,7 @@
+         before_lines = run_tsc(root, tsc, bench / "before.log")
+         runs += 1
+     total_before = _count(before_lines)
+-    if total_before == 0:
++    if False:
+         return StepReport("done", 0, 0, runs)
+ 
+     by_id = {row["proposal_id"]: row for row in candidates}

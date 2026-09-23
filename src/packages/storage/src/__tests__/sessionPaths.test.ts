@@ -7,7 +7,6 @@ import {
   getProjectDir,
   getProjectsDir,
   getSessionId,
-  getSessionProjectDir,
   getTranscriptPath,
   getTranscriptPathForSession,
   MAX_TRANSCRIPT_READ_BYTES,

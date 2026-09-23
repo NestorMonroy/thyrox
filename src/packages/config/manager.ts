@@ -21,7 +21,6 @@ import {
 import {
   type EditableSettingSource,
   type SettingSource,
-  getEnabledSettingSources,
 } from './settings/constants.js'
 import { subscribe as subscribeToSettingsChanges } from './settings/changeDetector.js'
 

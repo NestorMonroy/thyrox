@@ -15,7 +15,7 @@
  *
  * Run: bun test tests/smoke/bg-cycle-smoke.test.ts
  */
-import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { afterAll, describe, expect, test } from 'bun:test'
 import { spawnSync } from 'child_process'
 import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'fs'
 import { tmpdir } from 'os'

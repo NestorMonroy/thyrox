@@ -1,7 +1,6 @@
 import type { CoordinateMode, CuSubGates } from '../types.js'
 
 import { getDynamicConfig_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
-import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 
 type ChicagoConfig = CuSubGates & {

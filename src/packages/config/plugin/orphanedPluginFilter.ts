@@ -69,7 +69,7 @@ export async function getGlobExclusionsForPluginCache(
       new AbortController().signal,
     )
 
-    cachedExclusions = markers.map(markerPath => {
+    cachedExclusions = markers.map((markerPath: string): string => {
       // ripgrep may return absolute or relative — normalize to relative.
       const versionDir = dirname(markerPath)
       const rel = isAbsolute(versionDir)

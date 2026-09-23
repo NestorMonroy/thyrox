@@ -5,9 +5,9 @@ export THYROX_ROOT
 LIB="$THYROX_ROOT/src/lib/toolchain.sh"
 if [ ! -r "$LIB" ]; then
   echo "bin/rules-emit: no alcanza $LIB — el arbol esta incompleto." >&2
-  exit 2
+  exit 1
 fi
 # shellcheck source=/dev/null
 source "$LIB"
-thyrox_toolchain_require_bun || exit 2
+thyrox_toolchain_require_bun || exit 1
 exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$THYROX_ROOT/src/rules/bin/emit.ts" "$@"

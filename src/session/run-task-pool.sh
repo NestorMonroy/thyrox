@@ -40,11 +40,13 @@
 # Ciega a: carga dominada por E/S (red, disco), donde la anchura útil es mayor
 # que nproc y este default queda corto — subirla con `--width` y declararlo; y a
 # la memoria, porque el eje 2 se midió con durmientes: 24 `pytest` con su base
-# cada uno es otro perfil, no medido.
+# cada uno es otro perfil, no medido. Para ese eje existe `--memfree`, que
+# acota por memoria disponible y no por numero de trabajos (ver su seccion).
 #
 # Uso
 # ---
-#   run-task-pool.sh [--width N] [--timeout S] [--dir LOGDIR] [--prefix P] <archivo>
+#   run-task-pool.sh [--width N] [--timeout S] [--dir LOGDIR] [--prefix P]
+#                    [--memfree SIZE] <archivo>
 #   ... | run-task-pool.sh [opciones] -            # los comandos por stdin
 #
 # Una línea = un comando. Se saltan las vacías y las que empiezan por `#`.
@@ -73,6 +75,7 @@ TIMEOUT=1800
 DIR="${BG_DIR:-}"
 PREFIX="job"
 INPUT=""
+MEMFREE_SPEC=""
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -80,6 +83,7 @@ while [ $# -gt 0 ]; do
         --timeout) TIMEOUT="$2"; shift 2 ;;
         --dir)     DIR="$2"; shift 2 ;;
         --prefix)  PREFIX="$2"; shift 2 ;;
+        --memfree) MEMFREE_SPEC="$2"; shift 2 ;;
         -h|--help) sed -n '2,60p' "${BASH_SOURCE[0]}"; exit 0 ;;
         *)         INPUT="$1"; shift ;;
     esac
@@ -87,6 +91,58 @@ done
 
 [ -n "$INPUT" ] || { echo "run-task-pool: falta el archivo de comandos (o '-' para stdin)" >&2; exit 4; }
 [ -x "$WAIT_JOBS" ] || { echo "run-task-pool: no encuentro wait-jobs.sh en $HERE" >&2; exit 4; }
+
+# ---------------------------------------------------------------------------
+# La cota por MEMORIA — `--memfree` de GNU Parallel 20231122
+# ---------------------------------------------------------------------------
+# La anchura acota CUANTOS trabajos corren; no acota cuanta memoria consumen.
+# Un `tsc` completo de este arbol ocupa 2.0 GB a los 18 s de arrancar, asi que
+# una anchura alta agota la memoria antes que los nucleos. La referencia
+# resuelve eso con dos mitades, y se portan las dos:
+#
+#   admision   (`/usr/bin/parallel:4113-4118`) — no se lanza un trabajo si la
+#              memoria disponible es menor que la cota;
+#   aplicacion (`:6972-7005`) — si baja de la MITAD de la cota, se mata al
+#              trabajo mas joven y se reencola.
+#
+# La segunda no es redundante con la primera. La admision mide la memoria AL
+# ADMITIR y es ciega a lo que el trabajo consuma despues: varios `tsc`
+# admitidos con memoria de sobra crecen juntos y la agotan igual.
+#
+# DIVERGENCIAS DECLARADAS:
+#   - la medida es `MemAvailable`, la estimacion del kernel de memoria
+#     recuperable sin swap. La referencia suma `MemFree + Buffers + Cached +
+#     SwapCached`, que cuenta `Shmem` como libre aunque no se pueda recuperar.
+#     Sin `MemAvailable` (kernel < 3.14) se usa la suma de la referencia.
+#   - con cero trabajos vivos se admite aunque falte memoria. Sin esa
+#     excepcion, un trabajo mayor que la cota bloquearia el pool para siempre.
+#   - no se mata al ULTIMO trabajo vivo: matarlo no libera memoria que otro
+#     trabajo del despacho pueda usar, solo repite el mismo trabajo.
+#   - los sufijos llegan hasta `T`/`Ti`; `P` a `Y` no se portan porque ninguna
+#     maquina de este arbol tiene esa memoria.
+#   - `--memsuspend` (SIGSTOP en vez de matar) no se porta en este pase.
+MEMFREE=0
+
+# `parse_binary_size` y `mem_available_bytes` viven en `src/lib/memory.sh`,
+# compartidas con `bg.sh --memfree`.
+source "$HERE/../lib/memory.sh"
+
+if [ -n "$MEMFREE_SPEC" ]; then
+    # El awk es el que declara `THYROX_TOOLCHAIN_AWK_BIN` —el mismo nombre que
+    # `thyrox_toolchain_require_gawk` sondea por conducta—, no el `awk` del
+    # PATH, que en Debian suele resolver a mawk. Se resuelve con
+    # `thyrox_config_value`, que lee el proceso y despues el `.env`: un `grep`
+    # propio del `.env` seria una segunda fuente de verdad. Se resuelve UNA vez:
+    # cada consulta lanza un interprete, y la sonda corre en cada ciclo.
+    source "$HERE/../lib/reach.sh"
+    AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
+    MEMFREE="$(parse_binary_size "$MEMFREE_SPEC")" || {
+        echo "run-task-pool: --memfree ilegible: '$MEMFREE_SPEC' (ej. 1G, 512M, 800m)" >&2; exit 4; }
+    # Una cota que no se puede medir no se ignora en silencio: se rehusa.
+    mem_available_bytes >/dev/null || {
+        echo "run-task-pool: --memfree pedido, pero no puedo leer la memoria disponible" \
+             "(${THYROX_POOL_MEMINFO_PATH:-/proc/meminfo})" >&2; exit 4; }
+fi
 
 # ---------------------------------------------------------------------------
 # La anchura: entero, porcentaje de nucleos, o un archivo que se RELEE
@@ -264,25 +320,68 @@ SERIE=""
 
 echo "run-task-pool: $N trabajo(s), anchura ${WIDTH}${SERIE}, logs en $RUN_DIR"
 
-ALIVE=()
+ALIVE=()          # pids vivos, del mas viejo al mas joven
+ALIVE_INDEX=()    # el indice del comando de cada pid
+ALIVE_LABEL=()    # la etiqueta del ledger de cada pid
 DRAINING=0
 LAUNCHED=0
+REQUEUED=0
+QUEUE=()
+for ((q = 0; q < N; q++)); do QUEUE+=("$q"); done
+ATTEMPTS=()
+
+# Retira de las tres listas paralelas los trabajos que ya terminaron.
+prune_alive() {
+    local k keep_pid=() keep_index=() keep_label=()
+    for k in "${!ALIVE[@]}"; do
+        if kill -0 "${ALIVE[$k]}" 2>/dev/null; then
+            keep_pid+=("${ALIVE[$k]}"); keep_index+=("${ALIVE_INDEX[$k]}")
+            keep_label+=("${ALIVE_LABEL[$k]}")
+        fi
+    done
+    ALIVE=("${keep_pid[@]}"); ALIVE_INDEX=("${keep_index[@]}"); ALIVE_LABEL=("${keep_label[@]}")
+}
+
+# ¿La memoria impide admitir otro trabajo? Nunca con cero vivos.
+memory_blocks_admission() {
+    [ "$MEMFREE" -gt 0 ] && [ "${#ALIVE[@]}" -gt 0 ] || return 1
+    local available
+    available="$(mem_available_bytes)" || return 1
+    [ "$available" -lt "$MEMFREE" ]
+}
+
+# La mitad de aplicacion: por debajo de la mitad de la cota, se mata al mas
+# joven —el ultimo de la lista— y su comando vuelve al final de la cola.
+enforce_memfree() {
+    [ "$MEMFREE" -gt 0 ] && [ "${#ALIVE[@]}" -gt 1 ] || return 0
+    local available last
+    available="$(mem_available_bytes)" || return 0
+    [ "$available" -lt $(( MEMFREE / 2 )) ] || return 0
+    last=$(( ${#ALIVE[@]} - 1 ))
+    "$WAIT_JOBS" kill "${ALIVE_LABEL[$last]}" >/dev/null 2>&1
+    echo "run-task-pool: memoria disponible $available < $(( MEMFREE / 2 )) —" \
+         "${ALIVE_LABEL[$last]} matado y reencolado" >&2
+    QUEUE+=("${ALIVE_INDEX[$last]}")
+    REQUEUED=$((REQUEUED + 1))
+    LAUNCHED=$((LAUNCHED - 1))
+    unset "ALIVE[$last]" "ALIVE_INDEX[$last]" "ALIVE_LABEL[$last]"
+    ALIVE=("${ALIVE[@]}"); ALIVE_INDEX=("${ALIVE_INDEX[@]}"); ALIVE_LABEL=("${ALIVE_LABEL[@]}")
+}
 
 # Espera a que quede un hueco. No usa `wait -n`: los trabajos van desprendidos
 # (`disown`) para sobrevivir al fin del turno, y un proceso desprendido ya no es
 # hijo esperable de este shell.
 free_a_slot() {
-    while [ "${#ALIVE[@]}" -ge "$WIDTH" ]; do
-        local remaining=()
-        for p in "${ALIVE[@]}"; do
-            kill -0 "$p" 2>/dev/null && remaining+=("$p")
-        done
-        ALIVE=("${remaining[@]}")
+    while :; do
+        prune_alive
+        enforce_memfree
         refresh_width
         [ "$DRAINING" -eq 1 ] && return 0
-        [ "${#ALIVE[@]}" -ge "$WIDTH" ] && sleep 1
+        if [ "${#ALIVE[@]}" -lt "$WIDTH" ] && ! memory_blocks_admission; then
+            return 0
+        fi
+        sleep 1
     done
-    refresh_width
 }
 
 # Relee el archivo de anchura, si lo hay. Un valor invalido NO mata el despacho:
@@ -309,17 +408,35 @@ refresh_width() {
     echo "run-task-pool: anchura ahora $WIDTH (releida de $WIDTH_FILE)" >&2
 }
 
-i=0
-for cmd in "${COMMANDS[@]}"; do
-    i=$((i + 1))
-    free_a_slot
-    if [ "$DRAINING" -eq 1 ]; then
-        echo "run-task-pool: sin lanzar ($((N - LAUNCHED))): $cmd" >&2
+# La cola se consume hasta vaciarse. Con `--memfree` un trabajo matado vuelve a
+# ella, asi que el bucle no termina al lanzar el ultimo: sigue vigilando la
+# memoria mientras quede alguno vivo, y relanza lo que se reencole.
+while :; do
+    if [ "${#QUEUE[@]}" -eq 0 ]; then
+        [ "$MEMFREE" -gt 0 ] || break
+        prune_alive
+        [ "${#ALIVE[@]}" -eq 0 ] && break
+        enforce_memfree
+        [ "${#QUEUE[@]}" -eq 0 ] && sleep 1
         continue
     fi
-    # El nombre: el declarado, o el ordinal dentro de ESTE despacho.
-    _nombre="${NAMES[$((i - 1))]}"
-    [ -n "$_nombre" ] || _nombre="$(printf '%s-%03d' "$PREFIX" "$i")"
+    free_a_slot
+    if [ "$DRAINING" -eq 1 ]; then
+        for idx in "${QUEUE[@]}"; do
+            echo "run-task-pool: sin lanzar ($((N - LAUNCHED))): ${COMMANDS[$idx]}" >&2
+        done
+        QUEUE=()
+        continue
+    fi
+    idx="${QUEUE[0]}"; QUEUE=("${QUEUE[@]:1}")
+    cmd="${COMMANDS[$idx]}"
+    ATTEMPTS[$idx]=$(( ${ATTEMPTS[$idx]:-0} + 1 ))
+    # El nombre: el declarado, o el ordinal dentro de ESTE despacho. Un
+    # reintento lleva sufijo propio: su etiqueta y su log no pisan los del
+    # intento matado, que se conservan como evidencia.
+    _nombre="${NAMES[$idx]}"
+    [ -n "$_nombre" ] || _nombre="$(printf '%s-%03d' "$PREFIX" "$((idx + 1))")"
+    [ "${ATTEMPTS[$idx]}" -gt 1 ] && _nombre="$_nombre-retry$(( ATTEMPTS[$idx] - 1 ))"
     # La etiqueta lleva el despacho: es la clave del ledger, y sin el
     # discriminante dos despachos se pisaban la fila.
     LABEL="$DISPATCH/$_nombre"
@@ -339,11 +456,12 @@ for cmd in "${COMMANDS[@]}"; do
     nohup setsid bash -c 'bash -c "$1"; echo EXIT=$?' _ "$cmd" > "$LOG" 2>&1 &
     PID=$!
     disown "$PID" 2>/dev/null || true
-    ALIVE+=("$PID")
+    ALIVE+=("$PID"); ALIVE_INDEX+=("$idx"); ALIVE_LABEL+=("$LABEL")
     "$WAIT_JOBS" register "$LABEL" "$LOG" "$PID" >/dev/null
     LAUNCHED=$((LAUNCHED + 1))
     printf '  %-14s pid %-7s %s\n' "$LABEL" "$PID" "$cmd"
 done
+[ "$REQUEUED" -eq 0 ] || echo "run-task-pool: $REQUEUED reencolado(s) por memoria"
 
 # `--only "$DISPATCH"` acota la espera a los hijos de ESTE despacho. Con
 # `$PREFIX` a secas —como estaba— dos pools que compartieran prefijo se

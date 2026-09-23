@@ -26,7 +26,7 @@ import { mkdtempSync, writeFileSync, mkdirSync, copyFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
-  integrate, verificationPlan, docsLabelCollisionGate, committerMismatch, docsLabelRenumber,
+  integrate, verificationPlan, docsLabelCollisionGate, committerMismatch, 
   unionConflictResolver,
   EXPECTED_COMMITTER_EMAIL, EXPECTED_COMMITTER_NAME,
   type CollisionGate, type IntegrationRepo, type LabelResolver, type RenumberedLabel, type StaticGate,

@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_loop.py
++++ b/src/verify/tsc_zero_loop.py
+@@ -62,7 +62,7 @@
+             totals.append(report.total_before)
+         if report.status == "done":
+             return LoopResult("done", index, totals)
+-        if report.status == "stalled":
++        if False:
+             return LoopResult("stalled", index, totals)
+         totals.append(report.total_final)
+         # El banco y el registro viajan con el arreglo: sin `add -N`, un

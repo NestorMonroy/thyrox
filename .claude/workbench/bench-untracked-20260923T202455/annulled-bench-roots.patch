@@ -1,0 +1,11 @@
+--- a/src/verify/check_bench_untracked.py
++++ b/src/verify/check_bench_untracked.py
+@@ -32,7 +32,7 @@
+         if path.startswith(root):
+             name = path[len(root):].split("/", 1)[0]
+             return root + name if name else None
+-    return None
++    return str(Path(path).parent)
+ 
+ 
+ def untracked_in_benches(repo: Path, staged: list[str]) -> dict[str, list[str]]:

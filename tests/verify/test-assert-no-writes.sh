@@ -37,6 +37,9 @@ command -v strace >/dev/null 2>&1 || { echo 'ERROR — strace no esta instalado'
 
 T="$(mktemp -d "${TMPDIR:-/tmp}/test-anw-XXXXXX")"
 trap 'rm -rf "$T"' EXIT
+# Los runs de la familia `jobs` —bg.sh crea su run-puntero aun con `--dir`— van
+# al temporal: sin esto la suite dejaba un `sonda-*` en el árbol en cada corrida.
+export THYROX_JOBS_DIR="$T/jobs"
 
 echo '1. rehusa en vez de publicar un cero'
 bash "$SUJETO" >/dev/null 2>&1

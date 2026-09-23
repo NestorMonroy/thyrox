@@ -273,7 +273,7 @@ export async function reconcileMcpServers(
     ])
 
     // Remove old dynamic tools
-    const nonDynamicTools = prev.mcp.tools.filter(t => {
+    const nonDynamicTools = prev.mcp.tools.filter((t: { name: string }) => {
       for (const serverName of allDynamicServerNames) {
         if (t.name.startsWith(`mcp__${serverName}__`)) {
           return false
@@ -283,7 +283,7 @@ export async function reconcileMcpServers(
     })
 
     // Remove old dynamic clients
-    const nonDynamicClients = prev.mcp.clients.filter(c => {
+    const nonDynamicClients = prev.mcp.clients.filter((c: { name: string }) => {
       return !allDynamicServerNames.has(c.name)
     })
 

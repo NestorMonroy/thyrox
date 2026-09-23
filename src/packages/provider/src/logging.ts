@@ -23,7 +23,6 @@ import { logError } from '@thyrox/local-observability/logging'
 import { getAPIProviderForStatsig } from './providers.js'
 import type { PermissionMode } from '@thyrox/permission/PermissionMode'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
-import { logOTelEvent } from '@thyrox/local-observability/telemetryEvents.js'
 import {
   endLLMRequestSpan,
   isBetaTracingEnabled,

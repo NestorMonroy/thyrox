@@ -5,8 +5,6 @@
  * de sus funciones (esas ya tienen su propia suite, junto a cada módulo).
  */
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const BIN = join(import.meta.dir, '..', '..', 'bin', 'command.ts')

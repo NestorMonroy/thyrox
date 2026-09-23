@@ -1,0 +1,14 @@
+== 1. el entorno heredado sobrevive ==
+  ok    1.1 conserva una clave ajena
+== 2. EL QUE DISCRIMINA: el subproceso importa el arbol ==
+  ok    2.1 sin composicion, el hijo NO alcanza
+  ok    2.2 con composicion, el hijo alcanza
+  ok    2.3 y lo dice
+== 3. un PYTHONPATH previo se CONSERVA, no se pisa ==
+  ok    3.1 el arbol va primero
+  ok    3.2 y el previo sigue ahi
+== 4. es idempotente: componer dos veces no duplica ==
+  ok    4.1 una sola vez el arbol
+
+7 ok, 0 fallos
+EXIT=0
