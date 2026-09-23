@@ -112,5 +112,28 @@ with tempfile.TemporaryDirectory() as directory:
                            [sys.executable, "fake_tsc.py"], base / "loop", max_steps=1, seed=1)
     assert_equal("el tope de iteraciones detiene el lazo", ("max-steps", 1), (result.status, result.steps))
 
+with tempfile.TemporaryDirectory() as directory:
+    # El run del lazo vive en un banco, y el `pre-commit` real bloquea un
+    # commit que deja fuera archivos nuevos del banco. Quien lanza el lazo
+    # escribe en el run (`seed`, `result.json`); el paso escribe
+    # `residual.jsonl`. Medido: el lazo real murió en su primer commit por eso.
+    base = Path(directory)
+    fixture(base)
+    hook = base / ".git" / "hooks" / "pre-commit"
+    hook.write_text(f"#!/bin/sh\nPYTHONPATH={Path(loop.__file__).parents[1]} "
+                    f"exec {sys.executable} -m verify.check_bench_untracked --repo .\n")
+    hook.chmod(0o755)
+    run_dir = base / ".claude" / "workbench" / "loop" / "run-1"
+    run_dir.mkdir(parents=True)
+    (run_dir / "seed").write_text("1\n")
+    try:
+        result = loop.run_loop(base, [sys.executable, "fake_proposer.py", "good"],
+                               [sys.executable, "fake_tsc.py"], run_dir, max_steps=10, seed=1)
+        status = result.status
+    except subprocess.CalledProcessError:
+        status = "commit bloqueado"
+    assert_equal("el commit del lazo lleva el run entero y el gate del banco no lo bloquea",
+                 "done", status)
+
 print(f"test_tsc_zero_loop: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

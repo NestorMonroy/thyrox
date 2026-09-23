@@ -1,0 +1,12 @@
+test-bg-memfree:
+  ok    el único trabajo se admite aunque falte memoria
+  FALLA sin memoria, el segundo rehúsa al vencer la espera — esperado 3, obtenido 0
+  FALLA y no lanza nada — esperado , obtenido 21680
+  ok    con memoria liberada durante la espera, se admite
+  ok    bajo la mitad de la cota se mata al más joven
+  ok    y el mayor sigue vivo
+  ok    la muerte se declara en su log
+  ok    el último trabajo vivo no se mata
+test-bg-memfree: 8 aserciones — 6 ok, 2 falla(s)
+
+[exit=1]
