@@ -43,3 +43,4 @@ export {
   parseToolPreset,
 } from './runtime.ts'
 export { installToolRegistryHostBindings } from './host.ts'
+export { __resetToolRegistryForTests } from './api.js'

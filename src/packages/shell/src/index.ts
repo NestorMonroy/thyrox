@@ -133,3 +133,5 @@ export {
   setCwd,
   setGetSandboxTmpDirNameFn,
 } from './exec.js'
+export type { TaskOutputPort } from './taskOutputPort.js'
+export { MAX_TASK_OUTPUT_BYTES } from './shellCommand.js'
