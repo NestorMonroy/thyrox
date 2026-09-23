@@ -1,0 +1,7 @@
+/home/user/thyrox/src/packages/bridge/src/index.ts
+/home/user/thyrox/src/packages/command-runtime/src/runtime.ts
+/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts
+/home/user/thyrox/src/packages/storage/src/sessionStorage.ts
+/home/user/thyrox/src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts
+removeUnusedImports: 5 de 5 archivo(s) con imports sin uso; 0 salteado(s) con juicio pendiente
+__BG_EXIT__=0

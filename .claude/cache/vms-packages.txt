@@ -1,0 +1,10 @@
+src/packages/agent
+src/packages/cli
+src/packages/context-compression
+src/packages/observability
+src/packages/permission
+src/packages/plan
+src/packages/provider
+src/packages/skills
+src/packages/swarm
+src/packages/tools

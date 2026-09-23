@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun src/verify/removeUnusedImports.ts tsconfig.json --write $(cat .claude/cache/skipped5.txt) </dev/null", "started_at": "2026-09-23T15:23:10+00:00"}

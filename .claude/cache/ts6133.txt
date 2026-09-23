@@ -1,0 +1,453 @@
+src/packages/@ant/claude-for-chrome-mcp/src/bridgeClient.ts(75,11): error TS6133: 'pairingInProgress' is declared but its value is never read.
+src/packages/@ant/computer-use-input/src/backends/darwin.ts(9,15): error TS6196: 'FrontmostAppInfo' is declared but never used.
+src/packages/@ant/computer-use-input/src/backends/linux.ts(8,15): error TS6196: 'FrontmostAppInfo' is declared but never used.
+src/packages/@ant/computer-use-input/src/backends/linux.ts(23,16): error TS6133: 'runAsync' is declared but its value is never read.
+src/packages/@ant/computer-use-input/src/backends/win32.ts(10,15): error TS6196: 'FrontmostAppInfo' is declared but never used.
+src/packages/@ant/computer-use-input/src/backends/win32.ts(25,16): error TS6133: 'psAsync' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts(45,1): error TS6133: 'Platform' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts(203,45): error TS6133: 'opts' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts(505,18): error TS6133: 'x' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts(505,29): error TS6133: 'y' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/gates.ts(4,1): error TS6133: 'getSubscriptionType' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(45,3): error TS6133: 'MODIFIER_KEYS' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(47,1): error TS6133: 'logForDebugging' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(142,5): error TS6133: 'boundPid' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(418,23): error TS6133: 'x' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(418,26): error TS6133: 'y' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(418,29): error TS6133: 'w' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts(418,32): error TS6133: 'h' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/inputIndicator.ts(25,7): error TS6133: 'ACCENT_COLOR' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/windowMessage.ts(16,7): error TS6133: 'CLIPBOARD_THRESHOLD' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/windowMessage.ts(283,10): error TS6133: 'pasteViaClipboard' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(157,10): error TS6133: 'requireNumber' is declared but its value is never read.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(956,7): error TS6133: 'dialogFlags' is declared but its value is never read.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(12,3): error TS6196: 'AppInfo' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(13,3): error TS6196: 'PrepareDisplayResult' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(13,25): error TS6196: 'RunningApp' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(13,52): error TS6196: 'ScreenshotResult' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(14,3): error TS6196: 'SwiftBackend' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(14,17): error TS6196: 'WindowDisplayInfo' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(29,10): error TS6133: 'osascriptSync' is declared but its value is never read.
+src/packages/@ant/computer-use-swift/src/backends/darwin.ts(141,44): error TS6133: 'surrogateHost' is declared but its value is never read.
+src/packages/@ant/computer-use-swift/src/backends/linux.ts(13,3): error TS6196: 'SwiftBackend' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(9,3): error TS6196: 'AppInfo' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(9,50): error TS6196: 'InstalledApp' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(10,3): error TS6196: 'PrepareDisplayResult' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(10,25): error TS6196: 'RunningApp' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(11,3): error TS6196: 'SwiftBackend' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(11,17): error TS6196: 'WindowDisplayInfo' is declared but never used.
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(67,26): error TS6133: 'primary' is declared but its value is never read.
+src/packages/@ant/ink/src/components/App.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/@ant/ink/src/components/ErrorOverview.tsx(3,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/@ant/ink/src/components/Newline.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/@ant/ink/src/components/Spacer.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/@ant/ink/src/core/ink.tsx(11,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/@ant/ink/src/hooks/useSearchInput.ts(63,9): error TS6133: '_effectiveColumns' is declared but its value is never read.
+src/packages/agent/SessionMemory/sessionMemory.ts(75,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/agent/__tests__/claudeInChromeCommon.test.ts(99,11): error TS6133: 'baseId' is declared but its value is never read.
+src/packages/agent/__tests__/compat.test.ts(17,1): error TS6133: 'openSession' is declared but its value is never read.
+src/packages/agent/__tests__/productionWiring.test.ts(89,30): error TS6133: 'tool' is declared but its value is never read.
+src/packages/agent/__tests__/reconcile.test.ts(11,23): error TS6133: 'mkdirSync' is declared but its value is never read.
+src/packages/agent/__tests__/reconcile.test.ts(11,49): error TS6133: 'appendFileSync' is declared but its value is never read.
+src/packages/agent/claudeInChromeSetupPortable.ts(5,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/agent/claudeInChromeSetupPortable.ts(96,10): error TS6133: 'getAllBrowserDataPathsPortable' is declared but its value is never read.
+src/packages/agent/contracts.ts(3,3): error TS6196: 'AgentLogOption' is declared but never used.
+src/packages/agent/featureFlags.ts(20,3): error TS6133: 'key' is declared but its value is never read.
+src/packages/agent/goalStopHook.ts(99,30): error TS6133: 'T' is declared but its value is never read.
+src/packages/agent/internal/cronSchedulerCore.ts(11,1): error TS6133: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' is declared but its value is never read.
+src/packages/agent/internal/loopDynamicCore.ts(119,5): error TS6133: 'scheduledTasksEnabled' is declared but its value is never read.
+src/packages/agent/loop/session.ts(10,10): error TS6133: 'readTranscript' is declared but its value is never read.
+src/packages/agent/query.ts(39,8): error TS6133: 'Continue' is declared but its value is never read.
+src/packages/agent/query.ts(86,33): error TS6133: 'isEnvTruthy' is declared but its value is never read.
+src/packages/agent/services/mcpServerApproval.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/agent/types/compaction-deps.ts(4,3): error TS6196: 'CompactionResult' is declared but never used.
+src/packages/agent/types/compaction-deps.ts(5,3): error TS6196: 'CompactionContext' is declared but never used.
+src/packages/agent/types/compaction-deps.ts(8,3): error TS6196: 'TokenWarningState' is declared but never used.
+src/packages/agent/types/tools.ts(2,1): error TS6133: 'z' is declared but its value is never read.
+src/packages/agent/workflow/hooks.ts(18,1): error TS6133: 'AgentId' is declared but its value is never read.
+src/packages/agent/workflow/hooks.ts(19,1): error TS6133: 'createAgentId' is declared but its value is never read.
+src/packages/app-host/src/init.ts(85,3): error TS6133: 'waitForRemoteManagedSettingsToLoad' is declared but its value is never read.
+src/packages/app-host/src/init.ts(98,28): error TS6133: 'errorMessage' is declared but its value is never read.
+src/packages/app-host/src/init.ts(105,3): error TS6133: 'applyConfigEnvironmentVariables' is declared but its value is never read.
+src/packages/app-host/src/init.ts(117,1): error TS6133: 'isBetaTracingEnabled' is declared but its value is never read.
+src/packages/app-host/src/init.ts(418,16): error TS6133: 'doInitializeTelemetry' is declared but its value is never read.
+src/packages/bridge/src/index.ts(7,33): error TS6133: 'installBridgeHostBindings' is declared but its value is never read.
+src/packages/cli/__tests__/workbench.test.ts(53,49): error TS6133: 'readFileSync' is declared but its value is never read.
+src/packages/cli/src/handlers/mcp.tsx(9,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/cli/src/headless.ts(1,1): error TS6133: 'feature' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(4,1): error TS6133: 'applySettingsChange' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(7,3): error TS6133: 'getSettings' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(10,1): error TS6133: 'hasPermissionsToUseTool' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(15,3): error TS6133: 'filterToolsByDenyRules' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(18,1): error TS6133: 'dirname' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(31,1): error TS6133: 'createStreamlinedTransformer' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(32,1): error TS6133: 'installStreamJsonStdoutGuard' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(33,1): error TS6133: 'ToolPermissionContext' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(46,32): error TS6133: 'Tool' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(49,3): error TS6133: 'isBuiltInAgent' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(51,24): error TS6196: 'NormalizedUserMessage' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(68,8): error TS6133: 'RequiresActionDetails' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(69,8): error TS6133: 'SessionExternalMetadata' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(71,1): error TS6133: 'externalMetadataToAppState' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(73,1): error TS6192: All imports in import declaration are unused.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(77,1): error TS6133: 'Stream' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(80,3): error TS6133: 'loadConversationForResume' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(105,1): error TS6133: 'validateUuid' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(108,1): error TS6192: All imports in import declaration are unused.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(112,1): error TS6133: 'getStructuredIO' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(121,3): error TS6133: 'loadInitialMessages' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(123,3): error TS6133: 'emitLoadError' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(125,1): error TS6133: 'LoadInitialMessagesResult' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(128,26): error TS6133: 'runtimeReconcileMcpServers' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(132,26): error TS6196: 'McpSetServersResultBase' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(144,6): error TS6196: 'SdkMcpState' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(156,1): error TS6133: 'registerHookEventHandler' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(168,3): error TS6196: 'ModelInfo' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(169,3): error TS6196: 'SDKMessage' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(171,3): error TS6196: 'PermissionResult' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(179,3): error TS6196: 'SDKControlResponse' is declared but never used.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(185,1): error TS6133: 'getCwd' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(188,1): error TS6133: 'isPolicyAllowed' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(202,1): error TS6192: All imports in import declaration are unused.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(209,3): error TS6133: 'isFastModeEnabled' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(229,1): error TS6133: 'parseSessionIdentifier' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(231,3): error TS6133: 'hydrateRemoteSession' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(232,3): error TS6133: 'hydrateFromCCRv2InternalEvents' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(233,3): error TS6133: 'resetSessionFilePointer' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(237,3): error TS6133: 'saveAgentSetting' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(238,3): error TS6133: 'saveMode' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(240,3): error TS6133: 'restoreSessionMetadata' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(248,1): error TS6192: All imports in import declaration are unused.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(278,1): error TS6133: 'ensureModelStringsInitialized' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(282,3): error TS6133: 'switchSession' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(283,3): error TS6133: 'isSessionPersistenceDisabled' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(287,3): error TS6133: 'getMainThreadAgentType' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(293,1): error TS6133: 'ContentBlockParam' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(301,1): error TS6192: All imports in import declaration are unused.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(305,1): error TS6133: 'SandboxManager' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(315,1): error TS6133: 'asSessionId' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(344,1): error TS6133: 'initializeGrowthBook' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(347,1): error TS6133: 'isExtractModeActive' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(351,7): error TS6133: 'coordinatorModeModule' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(361,7): error TS6133: 'extractMemoriesModule' is declared but its value is never read.
+src/packages/cli/src/rollback.ts(2,32): error TS6133: 'target' is declared but its value is never read.
+src/packages/cli/src/rollback.ts(2,49): error TS6133: 'options' is declared but its value is never read.
+src/packages/color-diff-napi/src/index.ts(197,7): error TS6133: 'MONOKAI_SCOPES' is declared but its value is never read.
+src/packages/command-runtime/src/__tests__/command.test.ts(8,1): error TS6192: All imports in import declaration are unused.
+src/packages/command-runtime/src/__tests__/command.test.ts(9,1): error TS6133: 'tmpdir' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/ApiKeyStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/CheckExistingSecretStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/CheckGitHubStep.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/ChooseRepoStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/CreatingStep.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/ErrorStep.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/ExistingWorkflowStep.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/InstallAppStep.tsx(2,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/install-github-app/WarningsStep.tsx(2,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/plugin/PluginErrors.tsx(138,9): error TS6133: '_exhaustive' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/at-mentions.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/automate.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/background.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/fork.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/mcp.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/memory.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/model-dial.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/modes.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/multi-provider.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/powerup/lessons/undo.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx(5,35): error TS6133: 'isBridgeEnabled' is declared but its value is never read.
+src/packages/command-runtime/src/commands/review/featureFlags.ts(21,3): error TS6133: 'key' is declared but its value is never read.
+src/packages/command-runtime/src/commands/review/ultrareviewCommand.tsx(2,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(29,3): error TS6133: 'getCommandName' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(30,3): error TS6133: 'isCommandEnabled' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(32,8): error TS6133: 'CommandBase' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(33,8): error TS6133: 'CommandResultDisplay' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(34,8): error TS6133: 'LocalCommandResult' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(35,8): error TS6133: 'LocalJSXCommandContext' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(36,8): error TS6133: 'PromptCommand' is declared but its value is never read.
+src/packages/command-runtime/src/runtime.ts(37,8): error TS6133: 'ResumeEntrypoint' is declared but its value is never read.
+src/packages/config/global/config.ts(627,5): error TS6133: 'lastReadFileStats' is declared but its value is never read.
+src/packages/config/manager.ts(24,3): error TS6133: 'getEnabledSettingSources' is declared but its value is never read.
+src/packages/config/plugin/gitAvailability.ts(67,10): error TS6133: 'clearGitAvailabilityCache' is declared but its value is never read.
+src/packages/config/plugin/installedPluginsManager.ts(390,11): error TS6133: '_errorMsg' is declared but its value is never read.
+src/packages/config/plugin/lspPluginIntegration.ts(88,13): error TS6133: '_errorMsg' is declared but its value is never read.
+src/packages/config/plugin/lspPluginIntegration.ts(182,15): error TS6133: '_errorMsg' is declared but its value is never read.
+src/packages/config/plugin/nameCollision.ts(73,10): error TS6133: '_logFolderShadowed' is declared but its value is never read.
+src/packages/config/plugin/pluginLoader.ts(49,45): error TS6133: 'resolve' is declared but its value is never read.
+src/packages/config/plugin/pluginVersioning.ts(157,10): error TS6133: 'isVersionedPath' is declared but its value is never read.
+src/packages/config/plugin/zipCache.ts(86,10): error TS6133: 'getZipCacheInstalledPluginsPath' is declared but its value is never read.
+src/packages/config/plugin/zipCache.ts(166,10): error TS6133: 'resetSessionPluginCache' is declared but its value is never read.
+src/packages/config/plugin/zipCacheAdapters.ts(72,16): error TS6133: 'readMarketplaceJson' is declared but its value is never read.
+src/packages/config/settings/settings.ts(69,3): error TS6133: 'existsSync' is declared but its value is never read.
+src/packages/daemon/src/__tests__/bgAdopt.test.ts(4,3): error TS6133: 'existsSync' is declared but its value is never read.
+src/packages/headless-sdk/src/sdkMemorySummary.ts(57,6): error TS6196: 'ChildKind' is declared but never used.
+src/packages/local-observability/src/__tests__/cleanupHelpers.test.ts(85,11): error TS6133: 'filename' is declared but its value is never read.
+src/packages/local-observability/src/__tests__/fileOperationAnalytics.test.ts(5,10): error TS6133: 'afterEach' is declared but its value is never read.
+src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts(34,1): error TS6133: 'homedir' is declared but its value is never read.
+src/packages/local-observability/src/slowLoggingTag.ts(41,5): error TS6133: 'reportSlowOp' is declared but its value is never read.
+src/packages/local-observability/src/slowLoggingTag.ts(42,5): error TS6133: 'logForDebuggingInjected' is declared but its value is never read.
+src/packages/mcp-runtime/src/SdkControlTransport.ts(135,7): error TS6196: 'SdkControlServerTransport' is declared but never used.
+src/packages/mcp-runtime/src/client.ts(17,6): error TS6196: 'MCPResultType' is declared but never used.
+src/packages/mcp-runtime/src/client.ts(18,6): error TS6196: 'McpDiscoverySnapshot' is declared but never used.
+src/packages/mcp-runtime/src/client.ts(24,6): error TS6196: 'TransformedMCPResult' is declared but never used.
+src/packages/mcp-runtime/src/clientRuntime.ts(19,8): error TS6133: 'FetchLike' is declared but its value is never read.
+src/packages/mcp-runtime/src/clientRuntime.ts(113,3): error TS6133: 'getMcpAuthCache' is declared but its value is never read.
+src/packages/mcp-runtime/src/clientRuntime.ts(114,3): error TS6133: 'getMcpAuthCachePath' is declared but its value is never read.
+src/packages/mcp-runtime/src/clientRuntime.ts(116,3): error TS6133: 'setMcpAuthCacheEntry' is declared but its value is never read.
+src/packages/memory/src/extractMemories.ts(49,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/memory/src/extractMemories.ts(564,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/extractMemories.ts(577,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/memdir.ts(143,64): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/memdir.ts(372,40): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/teamMemPaths.ts(138,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/teamMemPaths.ts(159,55): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/teamMemSyncTypes.ts(69,7): error TS6133: 'TeamMemoryTooManyEntriesSchema' is declared but its value is never read.
+src/packages/memory/src/teamMemSyncTypes.ts(100,6): error TS6196: 'TeamMemorySyncFetchResult' is declared but never used.
+src/packages/memory/src/teamMemSyncTypes.ts(118,6): error TS6196: 'TeamMemoryHashesResult' is declared but never used.
+src/packages/memory/src/teamMemSyncTypes.ts(153,6): error TS6196: 'TeamMemorySyncUploadResult' is declared but never used.
+src/packages/memory/src/teamMemorySync.ts(724,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/memory/src/teamMemorySync.ts(927,56): error TS6133: 'signal' is declared but its value is never read.
+src/packages/observability/__tests__/observability.test.ts(11,34): error TS6133: 'readFileSync' is declared but its value is never read.
+src/packages/output/src/__tests__/safeJoinAndTruncate.test.ts(147,11): error TS6133: 'beforeAppend' is declared but its value is never read.
+src/packages/permission/src/__tests__/pathValidation.test.ts(1,10): error TS6133: 'afterEach' is declared but its value is never read.
+src/packages/permission/src/__tests__/pathValidation.test.ts(1,21): error TS6133: 'beforeAll' is declared but its value is never read.
+src/packages/permission/src/classifierDecision.ts(25,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/permission/src/commands/permissions.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/permission/src/components/BashPermissionRequest/bashToolUseOptions.tsx(9,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx(3,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(7,15): error TS6196: 'AnyObject' is declared but never used.
+src/packages/permission/src/components/PermissionRequest.tsx(7,32): error TS6196: 'ToolUseContext' is declared but never used.
+src/packages/permission/src/components/PermissionRequest.tsx(19,1): error TS6133: 'AssistantMessage' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(20,1): error TS6133: 'PermissionDecision' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(72,1): error TS6133: 'ContentBlockParam' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(74,1): error TS6133: 'z' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(75,1): error TS6133: 'PermissionUpdate' is declared but its value is never read.
+src/packages/permission/src/components/PermissionRequest.tsx(76,1): error TS6133: 'WorkerBadgeProps' is declared but its value is never read.
+src/packages/permission/src/components/SandboxPermissionRequest.tsx(13,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/permission/src/components/hooks.ts(25,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/permission/src/components/shellPermissionHelpers.tsx(2,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/permission/src/yoloClassifier.ts(45,8): error TS6133: 'AutoModeOutcome' is declared but its value is never read.
+src/packages/provider/__tests__/cost.test.ts(13,18): error TS6133: 'isModelId' is declared but its value is never read.
+src/packages/provider/__tests__/crossModelRead.test.ts(11,19): error TS6133: 'MODELS' is declared but its value is never read.
+src/packages/provider/src/antModels.ts(2,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/provider/src/anthropic/client.ts(73,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/provider/src/betas.ts(31,10): error TS6133: 'isEnvDefinedFalsy' is declared but its value is never read.
+src/packages/provider/src/betasConstants.ts(14,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/provider/src/claudeLegacyRuntime.ts(65,1): error TS6133: 'Anthropic' is declared but its value is never read.
+src/packages/provider/src/claudeLegacyRuntime.ts(107,53): error TS6133: 'getAnthropicApiKey' is declared but its value is never read.
+src/packages/provider/src/codex/fetchAdapter.ts(269,11): error TS6133: 'inReasoningBlock' is declared but its value is never read.
+src/packages/provider/src/commands/provider.ts(34,45): error TS6133: 'context' is declared but its value is never read.
+src/packages/provider/src/contracts.ts(175,6): error TS6196: 'ProviderClientFetch' is declared but never used.
+src/packages/provider/src/dumpPrompts.ts(8,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/provider/src/fastMode.ts(65,3): error TS6133: 'AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' is declared but its value is never read.
+src/packages/provider/src/logging.ts(26,1): error TS6133: 'logOTelEvent' is declared but its value is never read.
+src/packages/provider/src/logging.ts(425,3): error TS6133: 'effort' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(101,10): error TS6133: 'setMockHeader' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(250,10): error TS6133: 'addExceededLimit' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(277,10): error TS6133: 'setMockEarlyWarning' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(322,10): error TS6133: 'setMockRateLimitScenario' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(628,10): error TS6133: 'getMockStatus' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(721,10): error TS6133: 'getCurrentMockScenario' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(759,10): error TS6133: 'getScenarioDescription' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(807,10): error TS6133: 'setMockSubscriptionType' is declared but its value is never read.
+src/packages/provider/src/mockRateLimits.ts(835,10): error TS6133: 'setMockBillingAccess' is declared but its value is never read.
+src/packages/provider/src/modelCapabilities.ts(20,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/provider/src/proxy.ts(133,10): error TS6133: 'parseIpv4ToInteger' is declared but its value is never read.
+src/packages/provider/src/rateLimitMessages.ts(14,1): error TS6133: 'readEnv' is declared but its value is never read.
+src/packages/provider/src/runtimeHelpers.ts(180,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/provider/src/runtimeHelpers.ts(268,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/provider/src/vcr.ts(387,16): error TS6133: 'withTokenCountVCR' is declared but its value is never read.
+src/packages/repl/src/__tests__/relaunch.test.ts(23,10): error TS6133: 'setExecPath' is declared but its value is never read.
+src/packages/repl/src/commands/config/config.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/diff/diff.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/doctor/doctor.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/help/help.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/hooks/hooks.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/stats/stats.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/commands/usage/usage.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(16,23): error TS6133: 'updateSettingsForSource' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(20,3): error TS6133: 'removeConnection' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(32,1): error TS6133: 'fi' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(128,10): error TS6133: 'connectionProtocol' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(128,30): error TS6133: 'setConnectionProtocol' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(592,3): error TS6133: 'setConnectionName' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(937,15): error TS6133: 'switchTo' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/CondensedLogo.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(17,1): error TS6133: 'FeedColumn' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(18,1): error TS6192: All imports in import declaration are unused.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(33,3): error TS6133: 'getSteps' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(72,3): error TS6133: 'createOverageCreditFeed' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(74,1): error TS6133: 'plural' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(83,9): error TS6133: 'activities' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(327,22): error TS6133: 'rightWidth' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx(6,1): error TS6133: 'isOpus1mMergeEnabled' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/Opus1mMergeNotice.tsx(9,7): error TS6133: 'MAX_SHOW_COUNT' is declared but its value is never read.
+src/packages/repl/src/components/LogoV2/feedConfigs.tsx(3,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/Messages.tsx(7,1): error TS6133: 'every' is declared but its value is never read.
+src/packages/repl/src/components/Messages.tsx(42,3): error TS6133: 'hasUnresolvedHooksFromLookup' is declared but its value is never read.
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(458,42): error TS6133: 's' is declared but its value is never read.
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(707,9): error TS6133: 'bagelSelected' is declared but its value is never read.
+src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/PromptInput/SandboxPromptFooterHint.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/SandboxViolationExpandedView.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/Spinner.tsx(16,40): error TS6133: 'formatSecondsShort' is declared but its value is never read.
+src/packages/repl/src/components/Spinner.tsx(269,7): error TS6133: 'ttftText' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerAnimationRow.tsx(90,3): error TS6133: 'overrideColor' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerAnimationRow.tsx(134,22): error TS6133: 'stalledIntensity' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx(2,21): error TS6133: 'useTheme' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx(3,10): error TS6133: 'getTheme' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx(6,3): error TS6133: 'interpolateColor' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx(7,3): error TS6133: 'parseRGB' is declared but its value is never read.
+src/packages/repl/src/components/Spinner/SpinnerGlyph.tsx(8,3): error TS6133: 'toRGBColor' is declared but its value is never read.
+src/packages/repl/src/components/ThemePicker.tsx(5,10): error TS6133: 'useAppState' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(31,3): error TS6133: 'onCancel' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34,9): error TS6133: 'steps' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStepWrapper.tsx(2,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx(2,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/PromptStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/agents/types.ts(23,6): error TS6196: 'AgentValidationResult' is declared but never used.
+src/packages/repl/src/components/goal/GoalPanel.tsx(35,10): error TS6133: 'relativeTime' is declared but its value is never read.
+src/packages/repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx(4,1): error TS6133: 'BULLET_OPERATOR' is declared but its value is never read.
+src/packages/repl/src/components/tasks/ShellProgress.tsx(2,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(44,3): error TS6133: 'addHiddenPaneId' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(45,3): error TS6133: 'removeHiddenPaneId' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(694,3): error TS6133: 'teammate' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(695,3): error TS6133: 'teamName' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(704,3): error TS6133: 'teammate' is declared but its value is never read.
+src/packages/repl/src/components/teams/TeamsDialog.tsx(705,3): error TS6133: 'teamName' is declared but its value is never read.
+src/packages/repl/src/components/wizard/WizardDialogLayout.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/wizard/WizardNavigationFooter.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/wizard/WizardProvider.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/components/wizard/types.ts(2,31): error TS6133: 'T' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/useIDEStatusIndicator.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/useMcpConnectivityStatus.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/usePluginAutoupdateNotification.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/usePluginInstallationStatus.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/notifs/useRateLimitWarningNotification.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/useArrowKeyHistory.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/useChromeExtensionNotification.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/useMergedTools.ts(6,1): error TS6133: 'useAppState' is declared but its value is never read.
+src/packages/repl/src/hooks/useOfficialMarketplaceNotification.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooks/useSSHSession.ts(24,34): error TS6196: 'SSHPermissionRequest' is declared but never used.
+src/packages/repl/src/hooks/useTypeahead.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/hooksSettings.ts(12,1): error TS6133: 'DEFAULT_HOOK_SHELL' is declared but its value is never read.
+src/packages/repl/src/hooksSettings.ts(34,1): error TS6133: 'isHookEqual' is declared but its value is never read.
+src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx(156,3): error TS6133: 'commands' is declared but its value is never read.
+src/packages/repl/src/promptEditor.ts(109,3): error TS6133: 'originalPrompt' is declared but its value is never read.
+src/packages/repl/src/promptOverlayContext.tsx(21,8): error TS6133: 'React' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(49,1): error TS6133: 'spawnSync' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(62,1): error TS6133: 'figures' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(65,1): error TS6133: 'useSearchInput' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(72,79): error TS6133: 'useTerminalTitle' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(84,8): error TS6133: 'RefObject' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(122,1): error TS6133: 'truncateToWidth' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(191,47): error TS6133: 'expandPastedTextRefs' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(198,1): error TS6133: 'useShortcutDisplay' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(220,1): error TS6133: 'useSwarmInitialization' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(264,1): error TS6133: 'SLEEP_TOOL_NAME' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(303,3): error TS6196: 'ProgressMessage' is declared but never used.
+src/packages/repl/src/screens/REPLView.tsx(383,1): error TS6133: 'getInteractiveMcpClients' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(406,1): error TS6133: 'exit' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(407,1): error TS6133: 'ExitFlow' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(410,3): error TS6133: 'popAllEditable' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(424,25): error TS6133: 'shouldShowEffortCallout' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(430,7): error TS6133: 'shouldShowAntModelSwitch' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(469,3): error TS6133: 'shouldShowDesktopUpsellStartup' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(483,1): error TS6133: 'HookProgress' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(603,3): error TS6133: 'initialAgentName' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(604,3): error TS6133: 'initialAgentColor' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(778,5): error TS6133: 'mcp' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(780,5): error TS6133: 'plugins' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(1741,9): error TS6133: 'hasActivePrompt' is declared but its value is never read.
+src/packages/repl/src/screens/REPLView.tsx(2431,7): error TS6133: 'newMessages' is declared but its value is never read.
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(13,25): error TS6133: 'stripSystemBlocks' is declared but its value is never read.
+src/packages/server/src/directConnectManager.ts(68,24): error TS6133: 'jsonStringify' is declared but its value is never read.
+src/packages/shell/src/Shell.ts(38,1): error TS6192: All imports in import declaration are unused.
+src/packages/shell/src/__test__/import.test.ts(79,3): error TS6133: 'createShellConfigFactory' is declared but its value is never read.
+src/packages/shell/src/__test__/import.test.ts(80,3): error TS6133: 'createPsProviderFactory' is declared but its value is never read.
+src/packages/shell/src/__test__/import.test.ts(88,1): error TS6192: All imports in import declaration are unused.
+src/packages/shell/src/bash/ShellSnapshot.ts(413,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/ast.ts(384,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/parser.ts(49,41): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/parser.ts(57,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/parser.ts(106,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/prefix.ts(32,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/bash/prefix.ts(139,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/prefix/specPrefix.ts(92,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/shell/src/shell/prefix.ts(25,10): error TS6133: 'createLRUCache' is declared but its value is never read.
+src/packages/shell/src/shellDiscovery.ts(41,3): error TS6133: 'signal' is declared but its value is never read.
+src/packages/storage/src/__tests__/diskOutput.test.ts(2,10): error TS6133: 'symlink' is declared but its value is never read.
+src/packages/storage/src/__tests__/sessionPaths.test.ts(10,3): error TS6133: 'getSessionProjectDir' is declared but its value is never read.
+src/packages/storage/src/sessionStorage.ts(57,3): error TS6133: 'unlink' is declared but its value is never read.
+src/packages/storage/src/sessionStorage.ts(114,10): error TS6133: 'getClaudeConfigHomeDir' is declared but its value is never read.
+src/packages/storage/src/sessionStorage.ts(181,3): error TS6133: 'isEphemeralToolProgress' is declared but its value is never read.
+src/packages/storage/src/sessionStorage.ts(1774,3): error TS6133: 'checkResumeConsistency' is declared but its value is never read.
+src/packages/tool-registry/src/__tests__/rootModules.test.ts(32,10): error TS6133: 'afterEach' is declared but its value is never read.
+src/packages/tool-registry/src/__tests__/semanticCoercion.test.ts(174,54): error TS6133: 'n' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolExecution.ts(67,3): error TS6133: 'getErrnoCode' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolExecution.ts(69,3): error TS6133: 'TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolExecution.ts(219,13): error TS6133: '_exhaustive' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolHooks.ts(48,3): error TS6133: 'mcpServerBaseUrl' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolHooks.ts(203,3): error TS6133: 'mcpServerBaseUrl' is declared but its value is never read.
+src/packages/tool-registry/src/services/toolHooks.ts(443,3): error TS6133: 'mcpServerBaseUrl' is declared but its value is never read.
+src/packages/tool-registry/src/teleport.tsx(4,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/toolPool.ts(53,3): error TS6133: 'mode' is declared but its value is never read.
+src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx(2,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/tools/AgentTool/built-in/claudeCodeGuideAgent.ts(1,1): error TS6133: 'BASH_TOOL_NAME' is declared but its value is never read.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(9,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts(221,33): error TS6133: 'context' is declared but its value is never read.
+src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts(79,3): error TS6133: 'FILE_READ_TOOL_NAME' is declared but its value is never read.
+src/packages/tool-registry/src/tools/MCPTool/UI.ts(38,7): error TS6133: 'MCP_OUTPUT_WARNING_THRESHOLD_TOKENS' is declared but its value is never read.
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(10,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts(1529,3): error TS6133: 'input' is declared but its value is never read.
+src/packages/tool-registry/src/tools/PushNotificationTool/PushNotificationTool.tsx(10,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ScheduleCronTool/prompt.ts(1,1): error TS6133: 'feature' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ScheduleWakeupTool/ScheduleWakeupTool.tsx(7,1): error TS6133: 'React' is declared but its value is never read.
+src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts(15,1): error TS6133: 'logForDebugging' is declared but its value is never read.
+src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts(25,3): error TS6133: 'getAgentId' is declared but its value is never read.
+src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts(97,3): error TS6196: 'MessageRouting' is declared but never used.
+src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts(99,3): error TS6196: 'ResponseOutput' is declared but never used.
+src/packages/tool-registry/src/tools/SendMessageTool/UI.tsx(22,3): error TS6133: 'verbose' is declared but its value is never read.
+src/packages/tool-registry/src/tools/TaskStopTool/TaskStopTool.ts(109,33): error TS6133: 'abortController' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(349,20): error TS6133: 'waitForPendingMcpServers' is declared but its value is never read.
+src/packages/tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(382,14): error TS6133: 'extractTargetMcpServer' is declared but its value is never read.
+src/packages/tool-registry/src/tools/WebSearchTool/WebSearchTool.ts(5,1): error TS6133: 'jsonStringify' is declared but its value is never read.
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.integration.ts(16,29): error TS6133: 'extractBingResults' is declared but its value is never read.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(187,13): error TS6133: 'prefix' is declared but its value is never read.
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(21,1): error TS6133: 'join' is declared but its value is never read.
+src/packages/tool-registry/src/tools/registry/ToolRegistry.ts(2,3): error TS6133: 'toolMatchesName' is declared but its value is never read.
+src/packages/tool-registry/src/tools/registry/__tests__/filtering.test.ts(5,3): error TS6133: 'mergeAndFilterTools' is declared but its value is never read.
+src/packages/tool-registry/src/tools/registry/filtering.ts(48,3): error TS6133: 'mode' is declared but its value is never read.
+src/packages/tool-registry/src/tools/registry/providers/McpToolsProvider.ts(1,15): error TS6196: 'Tool' is declared but never used.
+src/packages/tool-registry/src/tools/registry/providers/PluginToolsProvider.ts(1,15): error TS6196: 'Tool' is declared but never used.
+src/packages/tool-registry/src/tools/registry/providers/UserToolsProvider.ts(1,15): error TS6196: 'Tool' is declared but never used.
+src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts(60,8): error TS6133: 'TeamFile' is declared but its value is never read.
+src/packages/tools/__tests__/subagent.test.ts(20,1): error TS6133: 'CORE_TOOLS' is declared but its value is never read.
+src/packages/updater/src/nativeInstaller/__tests__/packageManagers.test.ts(14,21): error TS6133: 'beforeEach' is declared but its value is never read.
+src/packages/updater/src/nativeInstaller/download.ts(60,7): error TS6133: 'GCS_BUCKET_URL' is declared but its value is never read.
+src/rules/emit/markdown.ts(55,37): error TS6133: 'match' is declared but its value is never read.
+src/skills/bin/import.ts(21,28): error TS6196: 'SkillDefinition' is declared but never used.
+tests/conformance/harnessChecklist.test.ts(23,10): error TS6133: 'existsSync' is declared but its value is never read.
+tests/coordination/branchIntegration.test.ts(29,75): error TS6133: 'docsLabelRenumber' is declared but its value is never read.
+tests/coordination/branchIntegration.test.ts(38,7): error TS6133: 'L3' is declared but its value is never read.
+tests/integration/context-build.test.ts(8,1): error TS6192: All imports in import declaration are unused.
+tests/integration/context-build.test.ts(70,7): error TS6133: 'tempDir' is declared but its value is never read.
+tests/smoke/bg-cycle-smoke.test.ts(18,20): error TS6133: 'beforeAll' is declared but its value is never read.
+tests/unit/settings/config.test.ts(7,3): error TS6133: 'DeniedMcpServerEntrySchema' is declared but its value is never read.
+tests/unit/utils/errors.test.ts(5,3): error TS6133: 'MalformedCommandError' is declared but its value is never read.
+tests/unit/utils/memoize.test.ts(1,40): error TS6133: 'beforeEach' is declared but its value is never read.
+tests/unit/utils/messages.test.ts(34,3): error TS6196: 'Message' is declared but never used.
+tests/unit/utils/treeify.test.ts(12,11): error TS6133: 'colorKey' is declared but its value is never read.
+tests/unit/utils/treeify.test.ts(12,29): error TS6133: 'themeName' is declared but its value is never read.
+tests/workbench/paths.test.ts(41,29): error TS6133: 'WorkbenchHomeError' is declared but its value is never read.

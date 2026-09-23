@@ -1,0 +1,11 @@
+src/packages/command-runtime/src/commands/plugin/ManagePlugins.tsx: error TS2322: Type 'undefined' is not assignable to type 'boolean'.
+src/packages/command-runtime/src/commands/plugin/ManagePlugins.tsx: error TS2322: Type 'undefined' is not assignable to type 'boolean'.
+src/packages/command-runtime/src/commands/plugin/ManagePlugins.tsx: error TS2322: Type 'undefined' is not assignable to type 'boolean'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'command' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'command' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'isAuthenticated' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'isAuthenticated' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'url' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'url' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'url' does not exist on type 'AgentMcpServerInfo'.
+src/packages/repl/src/components/mcp/MCPAgentServerMenu.tsx: error TS2339: Property 'url' does not exist on type 'AgentMcpServerInfo'.
