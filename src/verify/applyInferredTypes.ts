@@ -29,8 +29,12 @@ function collect(service: ts.LanguageService, targets: string[], read: Reader): 
     if (edits.length === 0) continue
     if (edits.some(edit => /\bany\b/.test(edit.newText))) continue
     const next = applyEdits(text, edits)
-    const source = ts.createSourceFile(fileName, next, ts.ScriptTarget.Latest, true)
-    if (source.parseDiagnostics.length > 0) continue
+    const syntax = ts.transpileModule(next, {
+      fileName,
+      reportDiagnostics: true,
+      compilerOptions: { noEmit: true, target: ts.ScriptTarget.ES2022 },
+    }).diagnostics ?? []
+    if (syntax.some(diagnostic => diagnostic.category === ts.DiagnosticCategory.Error)) continue
     if (next !== text) changed.set(fileName, next)
   }
   return changed
