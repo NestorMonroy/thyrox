@@ -105,5 +105,11 @@ same = [
 order = [c.proposal_id for c in schedule(same, [], 0.5, 0.5, seed=3).selected]
 check("mismo proponente: primero el de más objetivos", ["big", "small"], order)
 
+# `revealed` no cuenta ni a favor ni en contra: la propuesta es correcta y lo
+# que destapa son contratos reales, que van a la cola residual.
+check("revealed no cuenta en el registro", {"p": (1, 0)},
+             count_ledger([{"proposer": "p", "outcome": "accepted"},
+                              {"proposer": "p", "outcome": "revealed"}]))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

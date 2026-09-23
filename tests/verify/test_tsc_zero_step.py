@@ -49,6 +49,10 @@ for path in sorted(pathlib.Path(".").glob("*.ts")):
             lines.append(f"{path.name}({number},1): error TS9002: worse.")
         if "NEEDS" in text and not provides:
             lines.append(f"{path.name}({number},1): error TS9003: needs a provider.")
+        if "REVEAL" in text:
+            # Un contrato que el arreglo destapa en OTRO archivo: no se
+            # atribuye a la propuesta, y aun así el lote no está limpio.
+            lines.append(f"z.ts(1,1): error TS9004: revealed contract.")
 print("\\n".join(lines))
 sys.exit(2 if lines else 0)
 '''
@@ -170,6 +174,44 @@ with tempfile.TemporaryDirectory() as directory:
                   seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
     assert_equal("dos inserciones en un punto conservan su orden", "(b: T) => 5\n",
                  (base / "e.ts").read_text())
+
+with tempfile.TemporaryDirectory() as directory:
+    # Todo se acepta por atribución y nada se revierte, pero `a.ts` destapa un
+    # contrato en otro archivo. Se biseca: `a.ts` queda `revealed`, a la cola
+    # residual; `b.ts` se conserva.
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    a, b = (base / "a.ts").read_text(), (base / "b.ts").read_text()
+    rows = [
+        proposal("fix:a.ts", "facade", "a.ts", a, "BAD1", "REVEAL", ["a.ts: TS9001: bad 1."]),
+        proposal("fix:b.ts", "good", "b.ts", b, "BAD2", "2", ["b.ts: TS9001: bad 2."]),
+    ]
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, rows, tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None)
+    outcomes = {r["proposal_id"]: r["outcome"] for r in map(json.loads, ledger.read_text().splitlines())}
+    assert_equal("sin revertir nada, un contrato destapado no se conserva en automático",
+                 "const a = BAD1\n", (base / "a.ts").read_text())
+    assert_equal("la bisección conserva lo que no revela", "const b = 2\n", (base / "b.ts").read_text())
+    assert_equal("el registro dice revealed, no accepted",
+                 {"fix:a.ts": "revealed", "fix:b.ts": "accepted"}, outcomes)
+    residual = base / "residual.jsonl"
+    queued = [json.loads(line) for line in residual.read_text().splitlines()] if residual.exists() else []
+    assert_equal("la revelada va a la cola residual con sus contratos",
+                 [("fix:a.ts", ["z.ts: TS9004: revealed contract."])],
+                 [(q["proposal_id"], q["new_diagnostics"]) for q in queued])
+    assert_equal("y el paso progresa por lo conservado", ("progress", 4, 3),
+                 (report.status, report.total_before, report.total_final))
+
+    # La vuelta siguiente no vuelve a aplicar lo que ya está en la cola.
+    rows_again = [proposal("fix:a.ts", "facade", "a.ts", a, "BAD1", "REVEAL", ["a.ts: TS9001: bad 1."])]
+    again = step.run_step(base, rows_again, tsc, ledger, base / "bench2", seed=8, epsilon=0.5,
+                          alpha0=0.5, max_batch=None)
+    assert_equal("lo que está en la cola residual no se vuelve a aplicar",
+                 ("stalled", "const a = BAD1\n"), (again.status, (base / "a.ts").read_text()))
+    # Sin la exclusión el árbol acabaría igual —se revelaría y revertiría otra
+    # vez—, pero pagando el lote: lo que discrimina es que no hay pasada.
+    assert_equal("ni paga otra pasada de tsc por ella", 1, again.tsc_runs)
 
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

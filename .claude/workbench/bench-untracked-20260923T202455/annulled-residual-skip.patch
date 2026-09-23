@@ -1,0 +1,11 @@
+--- a/src/verify/tsc_zero_step.py
++++ b/src/verify/tsc_zero_step.py
+@@ -125,7 +125,7 @@
+     residual = ledger.parent / "residual.jsonl"
+     queued = _queued(residual)
+     candidates = [row for row in candidates
+-                  if (row["proposal_id"], json.dumps(row["bases"], sort_keys=True)) not in queued]
++                  if (row["proposal_id"], json.dumps(row["bases"], sort_keys=True)) or True]
+     by_id = {row["proposal_id"]: row for row in candidates}
+     plan = schedule([Candidate(r["proposal_id"], r["proposer"], len(r["targets"]), frozenset(r["files"]))
+                      for r in candidates], _read_jsonl(ledger), epsilon, alpha0, seed, max_batch)

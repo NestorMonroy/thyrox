@@ -46,3 +46,26 @@ real en un repositorio temporal con gates falsos y un `board_sync.py` que sale
 boards `/root/.claude/tasks` no existe, y `board_sync` rehúsa en vez de
 publicar un cero. Anulación `reconcile-status` (volver a `$?`): cae «el fallo
 de la reconciliación nombra su código real».
+
+# tsc_zero_step: bisección de lo aceptado y cola residual
+
+Lo midió la segunda corrida del lazo (`tsc-zero-loop/run-20260923T203729/`):
+cuatro fachadas TS2305 cerraron sus objetivos y destaparon 13 contratos en los
+consumidores. La confirmación estricta revirtió todo, pero el registro las
+anotó `accepted`, y la vuelta siguiente las habría propuesto otra vez. Además,
+con todo aceptado y nada revertido, el paso conservaba un lote con
+diagnósticos nuevos sin atribuir.
+
+Ahora el estado final no puede traer un diagnóstico que el «antes» no tenía;
+si lo trae, se biseca lo aceptado. La propuesta que sola destapa contratos
+queda `revealed`: se revierte, va a `residual.jsonl` con los contratos, no se
+vuelve a aplicar y `tsc_schedule` no la cuenta ni a favor ni en contra.
+
+| Pieza anulada | Cae |
+|---|---|
+| `settle-new-check` | los cinco casos de contratos destapados y la dependencia entre archivos |
+| `settle-singleton-revert` | «…se revierte todo», «…no se conserva en automático», «…no se vuelve a aplicar» |
+| `settle-reapply` — no reaplicar la segunda mitad | «el registro dice revealed…», «la revelada va a la cola residual…» |
+| `residual-skip` | **NO DISCRIMINÓ**: sin la exclusión, el árbol termina igual porque se revela y revierte otra vez. Se conserva como evidencia. |
+| `residual-skip-runs` — la misma anulación, tras añadir el caso de pasadas | «ni paga otra pasada de tsc por ella» |
+| `revealed-ignored` — `revealed` fuera de `IGNORED` | la suite de `tsc_schedule` revienta en ese caso, el último |
