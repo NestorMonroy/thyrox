@@ -38,6 +38,10 @@ CHECKS: list[Check] = [
           'auto-audit-before-writing.md — autoría canónica y list-table'),
     Check('rst-referencias', 'Prosa', 'rst', 'check_rst_referencias.py',
           ':ref:`h-docs-92` — un :ref: sin etiqueta resuelve al vacío'),
+    Check('rst-toctree', 'Prosa', 'rst', 'check_rst_toctree.py',
+          'cada entrada de toctree resuelve y ningún documento queda fuera'),
+    Check('meta-timestamps', 'Prosa', 'rst', 'check_meta_timestamps.py',
+          'timestamps-iso8601 — los campos de fecha de `.. meta::` no mienten'),
     Check('doc-citations', 'Prosa', 'rst', 'check_doc_citations.py',
           'TASK-DOCS-0546 — un :doc: que no resuelve contra el árbol de hoy'),
     Check('vocabulario-prosa', 'Prosa', 'lexico', 'check_vocabulario_prosa.py',
@@ -68,6 +72,8 @@ CHECKS: list[Check] = [
           'H-DOCS-120 — la evidencia citada existe y está versionada'),
 
     # ── Herramienta ─────────────────────────────────────────────────────
+    Check('bench-untracked', 'Herramienta', 'gate', 'check_bench_untracked.py',
+          'un commit que toca un banco no deja fuera sus archivos nuevos'),
     Check('unbounded-pipe', 'Herramienta', 'shell',
           'check_unbounded_pipe.py',
           'un escritor sin fin canalizado a un consumidor que cortocircuita'),

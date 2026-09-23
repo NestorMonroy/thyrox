@@ -1,0 +1,9 @@
+src/packages/agent/__tests__/models.test.ts
+src/packages/agent/__tests__/registry.test.ts
+tests/agents/test_balanced_block.py
+tests/repo/test_citations.py
+tests/verify/test_audit_delegates.sh
+tests/verify/test_class_header.py
+tests/verify/test_counterpart_body.py
+tests/verify/test_runner.py
+tests/verify/test_symbol_presence.py
