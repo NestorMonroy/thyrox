@@ -1,0 +1,118 @@
+run-task-pool: 9 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/workbench/registrar-tres-gates-20260923T235458/logs/reg-20260923T235458
+  reg-20260923T235458/reg-001 pid 1553    cd /home/user/thyrox && bun test src/packages/agent/__tests__/models.test.ts
+  reg-20260923T235458/reg-002 pid 1573    cd /home/user/thyrox && bun test src/packages/agent/__tests__/registry.test.ts
+  reg-20260923T235458/reg-003 pid 1613    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/agents/test_balanced_block.py
+  reg-20260923T235458/reg-004 pid 1629    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/repo/test_citations.py
+  reg-20260923T235458/reg-005 pid 1645    cd /home/user/thyrox && bash tests/verify/test_audit_delegates.sh
+  reg-20260923T235458/reg-006 pid 1715    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_class_header.py
+  reg-20260923T235458/reg-007 pid 1732    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_counterpart_body.py
+  reg-20260923T235458/reg-008 pid 1748    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_runner.py
+  reg-20260923T235458/reg-009 pid 1778    cd /home/user/thyrox && PYTHONPATH=/home/user/thyrox/src .venv/bin/python tests/verify/test_symbol_presence.py
+run-task-pool: lanzados 9 de 9; esperando en PRIMER PLANO (timeout 600s)
+asentado: reg-20260923T235458_reg-001 -> OK (2 de 10)
+asentado: reg-20260923T235458_reg-002 -> OK (3 de 10)
+asentado: reg-20260923T235458_reg-003 -> OK (4 de 10)
+asentado: reg-20260923T235458_reg-004 -> OK (5 de 10)
+asentado: reg-20260923T235458_reg-005 -> OK (6 de 10)
+asentado: reg-20260923T235458_reg-006 -> OK (7 de 10)
+asentado: reg-20260923T235458_reg-007 -> OK (8 de 10)
+asentado: reg-20260923T235458_reg-008 -> OK (9 de 10)
+asentado: reg-20260923T235458_reg-009 -> OK (10 de 10)
+== 10 trabajos asentados ==
+OLVIDADO reg-20260923T235458
+       | (vacío — no emitió nada)
+OK     reg-20260923T235458_reg-001
+       | Received: 2
+       | 
+       |       at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/models.test.ts:30:29)
+       | (fail) src/models.jsonl es derivado, no escrito a mano > coincide byte a byte con la extracción del volcado 2.1.258 [28.41ms]
+       | 
+       |  15 pass
+       |  1 fail
+       |  112 expect() calls
+       | Ran 16 tests across 1 file. [173.00ms]
+       | EXIT=1
+OK     reg-20260923T235458_reg-002
+       | bun test v1.3.11 (af24e281)
+       | 
+       |  8 pass
+       |  0 fail
+       |  17 expect() calls
+       | Ran 8 tests across 1 file. [158.00ms]
+       | EXIT=0
+OK     reg-20260923T235458_reg-003
+       |   ok    y contiene el ancla
+       |   ok    es el registro de la asignacion, no el archivo entero
+       | == 2. la forma `return{`: REHUSA en vez de devolver el vecino ==
+       |   ok    rehusa
+       | == 3. el ancla ausente sigue rehusando (no se rompio lo que ya iba) ==
+       |   ok    ancla inexistente
+       |   ok    bloque que no cierra
+       | 
+       | 6 ok, 0 fallos
+       | EXIT=0
+OK     reg-20260923T235458_reg-004
+       |   ok   anulada la clasificacion, la evidencia se cuenta como viva
+       |   ok   y restaurada, vuelve a discriminar
+       |   ok   un directorio sin .git rehusa
+       |   ok   y dice que no emite conteo
+       |   ok   sin ningun clon alcanzable, rehusa
+       |   ok   y lo llama verde falso
+       |   ok   --verify sale 0 sin citas vivas
+       | 
+       | 22 aprobada(s) · 0 fallida(s) (alcance medido: citations.py)
+       | EXIT=0
+OK     reg-20260923T235458_reg-005
+       |   ok   el audit no enumera ningun gate registrado
+       |   ok   el audit invoca al corredor del registro
+       |   ok   los bloques que ningun gate cubre siguen en el audit
+       |   ok   el corredor alcanza los gates que el registro declara
+       |   ok   la delegacion lee una clave que el corredor emite (summary)
+       | 
+       | test-audit-delegates: 5 ok, 0 falla
+       | EXIT=0
+OK     reg-20260923T235458_reg-006
+       |   ok    6.1 con el default, un nombre sin guion bajo no es candidato
+       |   ok    6.2 con un `selects` propio, el mismo par SI da hallazgo
+       | 
+       | 7. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+       |   ok    7.1 con otro lector, el contenedor de otro lenguaje se compara
+       |   ok    7.2 y salen las dos familias, como en Python
+       |   ok    7.3 el lector de Python NO ve contenedores ahi
+       | 
+       | 23 ok, 0 fallos
+       | EXIT=0
+OK     reg-20260923T235458_reg-007
+       | 
+       | 6. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+       |   ok    6.1 con el lector de patrones, el par de TypeScript se compara
+       |   ok    6.2 y sale el mismo desacuerdo que en Python
+       |   ok    6.3 el lector de Python NO ve simbolos ahi (por eso es parametro)
+       |   ok    6.4 y las extensiones salen del lector, no del motor
+       |   ok    6.5 tree_files recorre lo que el lector declara
+       | 
+       | 25 ok, 0 fallos
+       | EXIT=0
+OK     reg-20260923T235458_reg-008
+       | El denominador. Un conteo sin el reparto no es un resultado. ... ok
+       | test_only_filters_by_substring_of_the_id (__main__.SelectionTest.test_only_filters_by_substring_of_the_id) ... ok
+       | test_only_with_no_match_refuses (__main__.SelectionTest.test_only_with_no_match_refuses)
+       | Un filtro que no selecciona nada NO aprueba en vacio. ... ok
+       | 
+       | ----------------------------------------------------------------------
+       | Ran 18 tests in 0.201s
+       | 
+       | OK
+       | EXIT=0
+OK     reg-20260923T235458_reg-009
+       |   ok    11.1 con la llave por defecto, la clase no se empareja
+       |   ok    11.2 con la del consumidor, se empareja y no hay hallazgo
+       |   ok    11.3 y entra al denominador comparado
+       | 
+       | 12. CONTROL — el lector es PARAMETRO, no esta cableado a Python
+       |   ok    12.1 el nivel corre sobre un formato que `ast` no parsea
+       |   ok    12.2 el lector de Python no ve nada ahi (por eso es parametro)
+       | 
+       | 20 ok, 0 fallos
+       | EXIT=0
+__BG_EXIT__=0
