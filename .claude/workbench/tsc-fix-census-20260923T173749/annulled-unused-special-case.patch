@@ -1,0 +1,11 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -73,7 +73,7 @@
+  * un parámetro, borrar un local— cambia una firma o una forma: juicio.
+  */
+ function classifyAction(fix: ts.CodeFixAction, sf: ts.SourceFile): FixClass {
+-  if (fix.fixName !== 'unusedIdentifier') return classifyFix(fix.fixName, fix.fixId === undefined ? undefined : String(fix.fixId))
++  if (true) return classifyFix(fix.fixName, fix.fixId === undefined ? undefined : String(fix.fixId))
+   const imports = sf.statements.filter(ts.isImportDeclaration)
+   const edits = fix.changes.flatMap(change => (change.fileName === sf.fileName ? change.textChanges : [null]))
+   const onlyImportDeletions =

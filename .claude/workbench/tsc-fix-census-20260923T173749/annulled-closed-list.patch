@@ -1,0 +1,11 @@
+--- a/src/verify/tscFixCensus.ts
++++ b/src/verify/tscFixCensus.ts
+@@ -61,7 +61,7 @@
+ export function classifyFix(fixName: string, fixId?: string): FixClass {
+   if (fixId !== undefined && fixId in BY_FIX_ID) return BY_FIX_ID[fixId]
+   if (fixId === undefined && fixName in BY_FIX_NAME) return BY_FIX_NAME[fixName]
+-  return 'unclassified'
++  return 'safe'
+ }
+ 
+ /**

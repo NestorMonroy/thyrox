@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+tests/verify/tscFixCensus.test.ts:
+30 |   // clasificar por `fixId` haría que la clase dependiera de cuántos errores
+31 |   // hermanos tenga el archivo.
+32 |   test('un import sin uso, SOLO en su archivo, trae un arreglo seguro', () => {
+33 |     const [row] = rowsFor("import { used, unused } from './dep'\nconsole.log(used)\n")
+34 |     expect(row.code).toBe(6133)
+35 |     expect(row.fixes.some(fix => fix.fixName === 'unusedIdentifier' && fix.klass === 'safe')).toBe(true)
+                                                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/verify/tscFixCensus.test.ts:35:95)
+(fail) tscFixCensus > un import sin uso, SOLO en su archivo, trae un arreglo seguro [600.36ms]
+
+ 7 pass
+ 1 fail
+ 10 expect() calls
+Ran 8 tests across 1 file. [4.60s]
+
+[exit=1]
