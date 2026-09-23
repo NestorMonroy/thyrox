@@ -19,10 +19,19 @@ MISSING_EXPORT = re.compile(
 )
 
 
+def diagnostic_key(match: re.Match[str]) -> str:
+    """Identidad estable de un diagnóstico, sin coordenadas volátiles."""
+    return (
+        f"{match.group('file')}: {match.group('code')}: "
+        f"{match.group('message')}"
+    )
+
+
 def analyze(lines: Iterable[str]) -> dict[str, object]:
     by_code: collections.Counter[str] = collections.Counter()
     by_file: collections.Counter[str] = collections.Counter()
     edges: collections.Counter[tuple[str, str, str]] = collections.Counter()
+    identities: collections.Counter[tuple[str, str, str]] = collections.Counter()
 
     for raw_line in lines:
         match = DIAGNOSTIC.match(raw_line.rstrip("\n"))
@@ -31,6 +40,7 @@ def analyze(lines: Iterable[str]) -> dict[str, object]:
         consumer = match.group("file")
         by_code[match.group("code")] += 1
         by_file[consumer] += 1
+        identities[(consumer, match.group("code"), match.group("message"))] += 1
         missing = MISSING_EXPORT.search(match.group("message"))
         if missing:
             edges[(consumer, missing.group("provider"), missing.group("symbol"))] += 1
@@ -40,6 +50,16 @@ def analyze(lines: Iterable[str]) -> dict[str, object]:
         "files": len(by_file),
         "by_code": dict(sorted(by_code.items())),
         "by_file": dict(sorted(by_file.items())),
+        "diagnostic_keys": [
+            {
+                "file": file,
+                "code": code,
+                "message": message,
+                "key": f"{file}: {code}: {message}",
+                "count": count,
+            }
+            for (file, code, message), count in sorted(identities.items())
+        ],
         "missing_exports": [
             {"consumer": consumer, "provider": provider, "symbol": symbol, "count": count}
             for (consumer, provider, symbol), count in sorted(edges.items())

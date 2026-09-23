@@ -27,12 +27,11 @@ una propuesta que no rindio y un diagnostico nuevo que nadie reclama. Por eso
 el lote reporta aparte los diagnosticos NUEVOS, y solo es limpio si todas las
 propuestas con objeto se aceptan y no aparece ninguno.
 
-Ciego a
--------
-La clave de un diagnostico es `archivo(linea,columna): codigo`. Un arreglo que
-desplaza lineas en un archivo con otros errores los hace parecer nuevos: es un
-falso positivo CONSERVADOR, que puede rechazar un lote sano pero nunca aceptar
-uno roto.
+Identidad estable
+-----------------
+La clave de un diagnóstico es ``archivo: código: mensaje``. Línea y columna
+son coordenadas de presentación: una edición que inserta texto no convierte
+un diagnóstico preexistente en uno nuevo.
 
 Salidas del CLI: 0 lote limpio · 1 lote con rechazos o diagnosticos nuevos ·
 2 un log ilegible o sin diagnosticos previos.
@@ -40,12 +39,13 @@ Salidas del CLI: 0 lote limpio · 1 lote con rechazos o diagnosticos nuevos ·
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key
 
 
 @dataclass(frozen=True)
@@ -57,15 +57,38 @@ class Verdict:
 
 
 @dataclass(frozen=True)
+class Proposal:
+    """Una edición propuesta por cualquier mecanismo del lazo."""
+
+    proposal_id: str
+    proposer: str
+    targets: frozenset[str]
+    files: frozenset[str]
+
+
+@dataclass(frozen=True)
+class ProposalVerdict:
+    proposal_id: str
+    proposer: str
+    targets_before: int
+    targets_after: int
+    new_diagnostics: list[str]
+    outcome: str
+
+
+@dataclass(frozen=True)
 class BatchReport:
-    verdicts: list[Verdict]
+    verdicts: list[Verdict | ProposalVerdict]
     total_before: int
     total_after: int
     new_diagnostics: list[str] = field(default_factory=list)
 
     @property
     def acceptance_rate(self) -> float:
-        with_object = [v for v in self.verdicts if v.outcome != "no-edges"]
+        with_object = [
+            v for v in self.verdicts
+            if v.outcome not in ("no-edges", "no-targets")
+        ]
         if not with_object:
             return 0.0
         return sum(v.outcome == "accepted" for v in with_object) / len(with_object)
@@ -73,7 +96,8 @@ class BatchReport:
     @property
     def clean(self) -> bool:
         return (not self.new_diagnostics
-                and all(v.outcome in ("accepted", "no-edges") for v in self.verdicts))
+                and all(v.outcome in ("accepted", "no-edges", "no-targets")
+                        for v in self.verdicts))
 
 
 def _edges_by_provider(lines) -> Counter:
@@ -83,14 +107,38 @@ def _edges_by_provider(lines) -> Counter:
     return counts
 
 
-def _diagnostic_keys(lines) -> set[str]:
-    keys = set()
+def diagnostic_key_from_line(raw: str) -> str:
+    match = DIAGNOSTIC.match(raw.rstrip("\n"))
+    if not match:
+        raise ValueError(f"la línea no es un diagnóstico TypeScript: {raw!r}")
+    return diagnostic_key(match)
+
+
+def _diagnostic_keys(lines) -> Counter[str]:
+    keys: Counter[str] = Counter()
     for raw in lines:
         match = DIAGNOSTIC.match(raw.rstrip("\n"))
         if match:
-            keys.add(f"{match.group('file')}({match.group('line')},"
-                     f"{match.group('column')}): {match.group('code')}")
+            keys[diagnostic_key(match)] += 1
     return keys
+
+
+def _new_diagnostics(before_lines, after_lines) -> tuple[list[str], dict[str, list[str]]]:
+    before = _diagnostic_keys(before_lines)
+    remaining = before.copy()
+    new: list[str] = []
+    by_file: dict[str, list[str]] = {}
+    for raw in after_lines:
+        match = DIAGNOSTIC.match(raw.rstrip("\n"))
+        if not match:
+            continue
+        key = diagnostic_key(match)
+        if remaining[key] > 0:
+            remaining[key] -= 1
+            continue
+        new.append(key)
+        by_file.setdefault(match.group("file"), []).append(key)
+    return sorted(new), by_file
 
 
 def _outcome(before: int, after: int) -> str:
@@ -110,25 +158,124 @@ def verify_batch(before_lines, after_lines, providers) -> BatchReport:
     edges_before, edges_after = _edges_by_provider(before_lines), _edges_by_provider(after_lines)
     verdicts = [Verdict(p, edges_before[p], edges_after[p], _outcome(edges_before[p], edges_after[p]))
                 for p in providers]
-    new = sorted(_diagnostic_keys(after_lines) - _diagnostic_keys(before_lines))
+    new, _ = _new_diagnostics(before_lines, after_lines)
     return BatchReport(verdicts, total_before, analyze(after_lines)["diagnostics"], new)
+
+
+def verify_proposals(before_lines, after_lines, proposals: list[Proposal]) -> BatchReport:
+    """Verifica propuestas generales por objetivo y archivo tocado."""
+    before_lines, after_lines = list(before_lines), list(after_lines)
+    total_before = analyze(before_lines)["diagnostics"]
+    if total_before == 0:
+        raise ValueError("el log previo no tiene diagnosticos: no hay contra que verificar")
+
+    before_keys = _diagnostic_keys(before_lines)
+    after_keys = _diagnostic_keys(after_lines)
+    new, new_by_file = _new_diagnostics(before_lines, after_lines)
+    owners: Counter[str] = Counter(
+        file for proposal in proposals for file in proposal.files
+    )
+    verdicts: list[ProposalVerdict] = []
+    for proposal in proposals:
+        targets_before = sum(before_keys[target] for target in proposal.targets)
+        targets_after = sum(after_keys[target] for target in proposal.targets)
+        attributable = sorted(
+            key
+            for file in proposal.files
+            if owners[file] == 1
+            for key in new_by_file.get(file, [])
+        )
+        ambiguous = any(
+            owners[file] > 1 and new_by_file.get(file)
+            for file in proposal.files
+        )
+        if targets_before == 0:
+            outcome = "no-targets"
+        elif targets_after:
+            outcome = "partial" if targets_after < targets_before else "rejected"
+        elif attributable:
+            outcome = "rejected"
+        elif ambiguous:
+            outcome = "ambiguous"
+        else:
+            outcome = "accepted"
+        verdicts.append(ProposalVerdict(
+            proposal.proposal_id,
+            proposal.proposer,
+            targets_before,
+            targets_after,
+            attributable,
+            outcome,
+        ))
+    return BatchReport(
+        verdicts,
+        total_before,
+        analyze(after_lines)["diagnostics"],
+        new,
+    )
+
+
+def read_proposals(path: Path) -> list[Proposal]:
+    """Lee el contrato JSONL común a todos los proponentes."""
+    proposals: list[Proposal] = []
+    for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not raw.strip():
+            continue
+        try:
+            row = json.loads(raw)
+            proposal_id = row["proposal_id"]
+            proposer = row["proposer"]
+            targets = row["targets"]
+            files = row["files"]
+        except (json.JSONDecodeError, KeyError, TypeError) as error:
+            raise ValueError(
+                f"propuesta inválida en {path}:{line_number}: {error}"
+            ) from error
+        if not isinstance(proposal_id, str) or not isinstance(proposer, str):
+            raise ValueError(f"propuesta inválida en {path}:{line_number}: id/proposer no son texto")
+        if not isinstance(targets, list) or not all(isinstance(x, str) for x in targets):
+            raise ValueError(f"propuesta inválida en {path}:{line_number}: targets no es string[]")
+        if not isinstance(files, list) or not all(isinstance(x, str) for x in files):
+            raise ValueError(f"propuesta inválida en {path}:{line_number}: files no es string[]")
+        proposals.append(Proposal(
+            proposal_id,
+            proposer,
+            frozenset(targets),
+            frozenset(files),
+        ))
+    if not proposals:
+        raise ValueError(f"el manifiesto {path} no contiene propuestas")
+    return proposals
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--before", type=Path, required=True, help="log de tsc antes del lote")
     parser.add_argument("--after", type=Path, required=True, help="log de tsc despues del lote")
-    parser.add_argument("providers", nargs="+", help="los proveedores que el lote arreglo")
+    parser.add_argument("--proposals", type=Path,
+                        help="manifiesto JSONL de propuestas generales")
+    parser.add_argument("providers", nargs="*", help="los proveedores TS2305 que el lote arreglo")
     args = parser.parse_args(argv)
     try:
-        report = verify_batch(args.before.read_text(errors="replace").splitlines(),
-                              args.after.read_text(errors="replace").splitlines(),
-                              args.providers)
+        before = args.before.read_text(errors="replace").splitlines()
+        after = args.after.read_text(errors="replace").splitlines()
+        if args.proposals:
+            if args.providers:
+                raise ValueError("use --proposals o providers posicionales, no ambos")
+            report = verify_proposals(before, after, read_proposals(args.proposals))
+        else:
+            if not args.providers:
+                raise ValueError("declare --proposals o al menos un provider")
+            report = verify_batch(before, after, args.providers)
     except (OSError, ValueError) as error:
         print(f"batch_verification: SIN MEDIR — {error}", file=sys.stderr)
         return 2
     for v in report.verdicts:
-        print(f"{v.outcome:<9} {v.edges_before:>4} -> {v.edges_after:<4} {v.provider}")
+        if isinstance(v, Verdict):
+            print(f"{v.outcome:<9} {v.edges_before:>4} -> {v.edges_after:<4} {v.provider}")
+        else:
+            print(f"{v.outcome:<9} {v.targets_before:>4} -> {v.targets_after:<4} "
+                  f"{v.proposer}/{v.proposal_id} · {len(v.new_diagnostics)} nuevo(s)")
     for key in report.new_diagnostics:
         print(f"nuevo     {key}")
     print(f"batch_verification: alpha {report.acceptance_rate:.2f} · total "

@@ -16,7 +16,10 @@ Que haria fallar a este control:
 """
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
+from pathlib import Path
 
 from verify import batch_verification as bv
 
@@ -72,7 +75,8 @@ assert_equal("las aristas antes y despues de gamma", (2, 1),
 assert_equal("alpha = aceptadas / propuestas con objeto", 0.5, report.acceptance_rate)
 assert_equal("el total baja de 6 a 4", (6, 4), (report.total_before, report.total_after))
 assert_equal("el diagnostico nuevo se reporta aunque el total baje",
-             ["y.ts(7,5): TS2339"], report.new_diagnostics)
+             ["y.ts: TS2339: Argument of type 'x' is not assignable."],
+             report.new_diagnostics)
 assert_equal("el lote no es limpio: una parcial y un diagnostico nuevo", False, report.clean)
 
 CLEAN_AFTER = [missing("c.ts", 3, "@thyrox/beta", "three"), other("z.ts", 9)]
@@ -85,6 +89,51 @@ try:
     assert_equal("un log previo sin diagnosticos rehusa", "ValueError", "sin error")
 except ValueError:
     assert_equal("un log previo sin diagnosticos rehusa", "ValueError", "ValueError")
+
+# La identidad semántica no contiene coordenadas: insertar una línea no crea
+# un diagnóstico nuevo.
+SHIFTED_AFTER = [missing("c.ts", 30, "@thyrox/beta", "three"), other("z.ts", 90)]
+shifted = bv.verify_batch(BEFORE, SHIFTED_AFTER, ["@thyrox/alpha", "@thyrox/gamma"])
+assert_equal("mover líneas no fabrica diagnósticos nuevos", [], shifted.new_diagnostics)
+
+# El verificador general recibe objetivos y archivos de cualquier proponente,
+# no sólo providers TS2305.
+generic_before = [other("imports.ts", 3, "TS6133"), other("keep.ts", 7, "TS2322")]
+target = bv.diagnostic_key_from_line(generic_before[0])
+proposal = bv.Proposal(
+    proposal_id="unused-import-1",
+    proposer="typescript-code-fix",
+    targets=frozenset({target}),
+    files=frozenset({"imports.ts"}),
+)
+generic_after = [other("keep.ts", 70, "TS2322")]
+generic = bv.verify_proposals(generic_before, generic_after, [proposal])
+assert_equal("un proponente general cierra su objetivo", "accepted", generic.verdicts[0].outcome)
+assert_equal("y el movimiento de la línea ajena no ensucia el lote", True, generic.clean)
+
+regressed_after = [other("imports.ts", 4, "TS2339"), other("keep.ts", 70, "TS2322")]
+regressed = bv.verify_proposals(generic_before, regressed_after, [proposal])
+assert_equal("un diagnóstico nuevo en el archivo tocado rechaza la propuesta",
+             "rejected", regressed.verdicts[0].outcome)
+assert_equal("el veredicto atribuye el diagnóstico nuevo",
+             [bv.diagnostic_key_from_line(regressed_after[0])],
+             regressed.verdicts[0].new_diagnostics)
+
+with tempfile.TemporaryDirectory() as directory:
+    manifest = Path(directory) / "proposals.jsonl"
+    manifest.write_text(json.dumps({
+        "proposal_id": "generic-1",
+        "proposer": "fixture",
+        "targets": [target],
+        "files": ["imports.ts"],
+    }) + "\n", encoding="utf-8")
+    loaded = bv.read_proposals(manifest)
+    assert_equal("el manifiesto JSONL general conserva id y proponente",
+                 ("generic-1", "fixture"),
+                 (loaded[0].proposal_id, loaded[0].proposer))
+    assert_equal("el manifiesto conserva objetivos y archivos como conjuntos",
+                 (frozenset({target}), frozenset({"imports.ts"})),
+                 (loaded[0].targets, loaded[0].files))
 
 print(f"test_batch_verification: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
