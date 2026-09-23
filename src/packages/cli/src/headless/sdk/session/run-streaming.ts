@@ -1,21 +1,14 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle'
 import '@thyrox/app-host/runtime/bootstrap.js'
-import { applySettingsChange } from '@thyrox/config/applySettingsChange'
 import { settingsChangeDetector } from '@thyrox/config/changeDetector'
 import {
-  getSettings,
   getSettingsWithSources,
 } from '@thyrox/config/settings'
 import {
-  hasPermissionsToUseTool,
-} from '@thyrox/permission'
-import {
   assembleToolPool,
-  filterToolsByDenyRules,
 } from '@thyrox/tool-registry'
 import { readFile, stat } from 'fs/promises'
-import { dirname } from 'path'
 import {
   downloadUserSettings,
   redownloadUserSettings,
@@ -28,9 +21,6 @@ import {
   formatDescriptionWithSource,
   getCommandName,
 } from '@thyrox/command-runtime/runtime'
-import { createStreamlinedTransformer } from './utils/streamlinedTransform.js'
-import { installStreamJsonStdoutGuard } from './utils/streamJsonStdoutGuard.js'
-import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { ThinkingConfig } from '@thyrox/provider/thinking.js'
 import uniqBy from 'lodash-es/uniqBy.js'
 import { uniq } from '@thyrox/tool-registry/utils/array.js'
@@ -43,12 +33,11 @@ import {
   logForDiagnosticsNoPII,
   withDiagnosticsTiming,
 } from '@thyrox/local-observability/logging'
-import { toolMatchesName, type Tool, type Tools } from '@thyrox/tool-registry/Tool.js'
+import { toolMatchesName, type Tools } from '@thyrox/tool-registry/Tool.js'
 import {
   type AgentDefinition,
-  isBuiltInAgent,
 } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
-import type { Message, NormalizedUserMessage } from '@thyrox/agent/messageShapes'
+import type { Message } from '@thyrox/agent/messageShapes'
 import type { QueuedCommand } from '@thyrox/repl/textInputTypes.js'
 import {
   dequeue,
@@ -65,19 +54,10 @@ import {
   notifySessionStateChanged,
   notifySessionMetadataChanged,
   setPermissionModeChangedListener,
-  type RequiresActionDetails,
-  type SessionExternalMetadata,
 } from '@thyrox/storage/sessionState.js'
-import { externalMetadataToAppState } from '@thyrox/repl/onChangeAppState.js'
 import { getInMemoryErrors, logError, logMCPDebug } from '@thyrox/local-observability/log.js'
-import {
-  writeToStdout,
-  registerProcessOutputErrorHandlers,
-} from '@thyrox/shell/process.js'
-import type { Stream } from '@thyrox/config/stream'
 import { EMPTY_USAGE } from '@thyrox/provider/logging.js'
 import {
-  loadConversationForResume,
   type TurnInterruptionState,
 } from '@thyrox/repl/conversationRecovery.js'
 import {
@@ -102,14 +82,8 @@ import {
   type McpSdkServerConfig,
   type ScopedMcpServerConfig,
 } from '@thyrox/mcp-runtime'
-import { validateUuid } from '@thyrox/agent/uuid.js'
 import { ask } from '@thyrox/agent/query-engine'
 import { canBatchWith, joinPromptValues } from './prompt-utils.js'
-import {
-  createCanUseToolWithPermissionPrompt,
-  getCanUseToolFn,
-} from '../control/permission-helpers.js'
-import { getStructuredIO } from '../../../transport.js'
 import { handleOrphanedPermissionResponse } from '../../handleOrphanedPermissionResponse.js'
 import {
   handleInitializeRequest,
@@ -118,18 +92,13 @@ import {
   reregisterChannelHandlerAfterReconnect,
 } from '../control/handlers.js'
 import {
-  loadInitialMessages,
   removeInterruptedMessage,
-  emitLoadError,
 } from './load.js'
-import type { LoadInitialMessagesResult } from './load.js'
 import {
   handleMcpSetServers as runtimeHandleMcpSetServers,
-  reconcileMcpServers as runtimeReconcileMcpServers,
 } from '@thyrox/mcp-runtime'
 import type {
   DynamicMcpState as DynamicMcpStateBase,
-  McpSetServersResult as McpSetServersResultBase,
   SdkMcpState as SdkMcpStateBase,
 } from '@thyrox/mcp-runtime'
 
@@ -153,7 +122,6 @@ import {
 } from '@thyrox/tool-registry/fileStateCache'
 import { expandPath } from '@thyrox/storage/path.js'
 import { extractReadFilesFromMessages } from '@thyrox/repl/queryHelpers.js'
-import { registerHookEventHandler } from '@thyrox/repl/hookEvents.js'
 import { executeFilePersistence } from '@thyrox/storage/filePersistence/filePersistence.js'
 import { finalizePendingAsyncHooks } from '@thyrox/agent/hooks/AsyncHookRegistry.js'
 import {
@@ -165,10 +133,7 @@ import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { createIdleTimeoutManager } from '@thyrox/agent/idleTimeout.js'
 import type {
   SDKStatus,
-  ModelInfo,
-  SDKMessage,
   SDKUserMessageReplay,
-  PermissionResult,
   McpServerConfigForProcessTransport,
   McpServerStatus,
   RewindFilesResult,
@@ -176,16 +141,13 @@ import type {
 import type {
   StdoutMessage,
   SDKControlRequest,
-  SDKControlResponse,
   SDKControlMcpSetServersResponse,
   SDKControlReloadPluginsResponse,
 } from '@thyrox/headless-sdk/controlTypes.js'
 import type { PermissionMode } from '@anthropic-ai/claude-agent-sdk'
 import { cwd } from 'process'
-import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import omit from 'lodash-es/omit.js'
 import reject from 'lodash-es/reject.js'
-import { isPolicyAllowed } from '@thyrox/provider/policyLimits/index.js'
 import {
   buildBridgeConnectUrl,
   extractInboundMessageFields,
@@ -199,14 +161,8 @@ import { createAbortController } from '@thyrox/agent/abortController.js'
 import { generateSessionTitle } from '@thyrox/agent/sessionTitle.js'
 import { buildSideQuestionFallbackParams } from '@thyrox/agent/queryContext.js'
 import { runSideQuestion } from '@thyrox/agent/sideQuestion.js'
-import {
-  processSessionStartHooks,
-  processSetupHooks,
-  takeInitialUserMessage,
-} from '@thyrox/storage/sessionStart.js'
 import { TEAMMATE_MESSAGE_TAG, TICK_TAG } from '@thyrox/command-runtime/xml.js'
 import {
-  isFastModeEnabled,
   isFastModeSupportedByModel,
 } from '@thyrox/repl/fastMode.js'
 import {
@@ -226,18 +182,11 @@ import {
   setSdkAgentProgressSummariesEnabled,
 } from '@thyrox/app-host/bootstrap/state.js'
 import { createSyntheticOutputTool } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
-import { parseSessionIdentifier } from '@thyrox/agent/sessionUrl.js'
 import {
-  hydrateRemoteSession,
-  hydrateFromCCRv2InternalEvents,
-  resetSessionFilePointer,
   doesMessageExistInSession,
   findUnresolvedToolUse,
   recordAttributionSnapshot,
-  saveAgentSetting,
-  saveMode,
   saveAiGeneratedTitle,
-  restoreSessionMetadata,
 } from '@thyrox/storage/sessionStorage.js'
 import { incrementPromptCount } from '@thyrox/agent/commitAttribution.js'
 import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
@@ -245,10 +194,6 @@ import {
   ElicitRequestSchema,
   ElicitationCompleteNotificationSchema,
 } from '@modelcontextprotocol/sdk/types.js'
-import {
-  isQualifiedForGrove,
-  checkGroveForNonInteractive,
-} from '@thyrox/provider/grove.js'
 import {
   toInternalMessages,
   toSDKRateLimitInfo,
@@ -275,22 +220,17 @@ import {
 } from '@thyrox/agent/effort.js'
 import { modelSupportsAdaptiveThinking } from '@thyrox/provider/thinking.js'
 import { modelSupportsAutoMode } from '@thyrox/provider/betas.js'
-import { ensureModelStringsInitialized } from '@thyrox/provider/modelStrings.js'
 import {
   getSessionId,
   setMainLoopModelOverride,
-  switchSession,
-  isSessionPersistenceDisabled,
   getIsRemoteMode,
   getFlagSettingsInline,
   setFlagSettingsInline,
-  getMainThreadAgentType,
   setMcpClientsAccessor,
 } from '@thyrox/app-host/bootstrap/state.js'
 import { runWithWorkload, WORKLOAD_CRON } from '@thyrox/provider/workloadContext.js'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { AppStateLike as AppState } from '../../../contracts.js'
 import {
   fileHistoryRewind,
@@ -298,11 +238,6 @@ import {
   fileHistoryEnabled,
   fileHistoryGetDiffStats,
 } from '@thyrox/agent/file-history'
-import {
-  restoreAgentFromSession,
-  restoreSessionStateFromLog,
-} from '@thyrox/storage/sessionRestore.js'
-import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import {
   headlessProfilerStartTurn,
   headlessProfilerCheckpoint,
@@ -312,7 +247,6 @@ import {
   startQueryProfile,
   logQueryProfileReport,
 } from '@thyrox/provider/queryProfiler.js'
-import { asSessionId } from '@thyrox/agent/idTypes'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { skillChangeDetector } from '@thyrox/tool-registry/skills/skillChangeDetector.js'
 import { getCommands, clearCommandsCache } from '@thyrox/command-runtime/runtime'
@@ -341,10 +275,8 @@ import { getRunningTasks } from '@thyrox/agent/task/framework.js'
 import { isBackgroundTask } from '@thyrox/repl/tasksTypes.js'
 import { stopTask } from '@thyrox/agent/tasks/stopTask.js'
 import { drainSdkEvents } from '@thyrox/agent/sdkEventQueue.js'
-import { initializeGrowthBook } from '@thyrox/config/feature-flags'
 import { errorMessage, toError } from '@thyrox/local-observability/errorHelpers.js'
 import { sleep } from '@thyrox/config/sleep'
-import { isExtractModeActive } from '@thyrox/memory/paths'
 
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
