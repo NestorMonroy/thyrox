@@ -1,0 +1,23 @@
+== 1. el comando del episodio, verbatim ==
+  ok    avisa sobre el comando que se colgo de verdad
+  ok    y nombra la forma desnuda del episodio
+== 2. EL QUE DISCRIMINA: la entrada provista -> silencio ==
+  ok    calla ante un heredoc
+  ok    calla ante un tubo
+  ok    calla ante una redireccion
+== 3. un guion, -c o -m no leen stdin -> silencio ==
+  ok    calla ante un guion
+  ok    calla ante -c
+  ok    calla ante -m
+== 4. node sin guion tambien lee stdin ==
+  ok    avisa ante node desnudo
+== 5. la palabra en prosa no es una invocacion ==
+  ok    calla ante python dentro de un echo
+  ok    calla sin interprete
+== 6. el aviso nombra la salida ==
+  ok    nombra </dev/null
+== 7. anulada la excepcion de entrada provista, cae EXACTAMENTE ese caso ==
+  ok    caen heredoc, tubo y redireccion, y ninguno mas
+  ok    y restaurada, vuelve a callar
+
+14 ok, 0 fallos

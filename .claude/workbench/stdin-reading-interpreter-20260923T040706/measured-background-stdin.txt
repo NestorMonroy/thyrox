@@ -1,0 +1,4 @@
+en-segundo-plano desnudo exit=124
+en-segundo-plano devnull exit=0
+
+[exited with code 0]

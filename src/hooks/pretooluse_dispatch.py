@@ -73,6 +73,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_unbounded_traversal",
     "detect_code_language",
     "detect_self_matching_pgrep",
+    "detect_stdin_reading_interpreter",
 )
 
 
