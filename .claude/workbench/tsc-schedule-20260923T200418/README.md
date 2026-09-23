@@ -22,3 +22,11 @@ Lee el mismo JSONL de propuestas que `bin/batch_verification --proposals`
 Métrica: casos de la suite por pieza anulada; blobs en `annulment.jsonl`.
 Ciega a: si Thompson mejora el rendimiento del lazo frente a la media — eso
 sólo lo mide el registro de lotes reales.
+
+## Registro de veredictos (`batch_verification --verdicts-out`)
+
+Una fila JSONL por propuesta, AÑADIDA al registro: es la entrada `--ledger` de
+`tsc_schedule`. Anulación `ledger-append` (abrir con `w`): cae «el registro se
+AÑADE, no se reescribe». `STALE-PYC-ledger-append`: la primera corrida de esa
+anulación, que no se ejecutó por el bytecode en caché (ver el banco
+`annulment-control-*`).

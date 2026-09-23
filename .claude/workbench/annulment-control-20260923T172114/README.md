@@ -54,3 +54,20 @@ VIEJO no casa exactamente una vez. El manifiesto guarda la sustitución.
 «Una sustitución que no casa rehúsa» sobrevive a la primera anulación, y es lo
 esperado: el parche vacío que resulta lo rechaza igualmente `git apply
 --check`. Son dos defensas independientes, y cada anulación mide la suya.
+
+## Tercera versión: el bytecode en caché escondía la anulación (2026-09-23)
+
+Anular `open("a")` → `open("w")` en `batch_verification.py` dejó su suite en
+verde. No es que el caso no discriminara: la anulación no llegó a ejecutarse.
+Python valida el `.pyc` por mtime y tamaño, y un cambio del mismo tamaño dentro
+del mismo segundo que la compilación anterior reutiliza el bytecode viejo. La
+corrida se conserva como `STALE-PYC-ledger-append` en el banco `tsc-schedule-*`.
+
+Ahora cada corrida de la suite usa un `PYTHONPYCACHEPREFIX` nuevo y siempre
+compila desde el fuente. Caso rojo: «una anulación del mismo tamaño SÍ se
+ejecuta». Anulación `pycache-prefix` (sin el prefijo): cae «y al restaurar
+vuelve a verde». Qué aserción del par cae depende de en qué segundo coincide
+cada corrida con el caché; las dos miden el mismo fenómeno.
+
+Las anulaciones en Python anteriores de esta sesión tumbaron algún caso, lo que
+prueba que se ejecutaron; el riesgo existía sólo cuando no caía nada.

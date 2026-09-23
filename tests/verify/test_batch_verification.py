@@ -135,5 +135,29 @@ with tempfile.TemporaryDirectory() as directory:
                  (frozenset({target}), frozenset({"imports.ts"})),
                  (loaded[0].targets, loaded[0].files))
 
+# El registro de veredictos es la entrada `--ledger` de `bin/tsc_schedule`:
+# sin él, el planificador no tiene historia de la que aprender.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "before.log").write_text("\n".join(generic_before) + "\n", encoding="utf-8")
+    (base / "after.log").write_text("\n".join(generic_after) + "\n", encoding="utf-8")
+    (base / "proposals.jsonl").write_text(json.dumps({
+        "proposal_id": "unused-import-1", "proposer": "typescript-code-fix",
+        "targets": [target], "files": ["imports.ts"],
+    }) + "\n", encoding="utf-8")
+    ledger = base / "verdicts.jsonl"
+    code = bv.main(["--before", str(base / "before.log"), "--after", str(base / "after.log"),
+                    "--proposals", str(base / "proposals.jsonl"), "--verdicts-out", str(ledger)])
+    rows = ([json.loads(line) for line in ledger.read_text().splitlines() if line.strip()]
+            if ledger.exists() else [])
+    assert_equal("el lote limpio sale 0", 0, code)
+    assert_equal("el registro lleva una fila por propuesta con su veredicto",
+                 [("unused-import-1", "typescript-code-fix", "accepted")],
+                 [(r.get("proposal_id"), r.get("proposer"), r.get("outcome")) for r in rows])
+    code_again = bv.main(["--before", str(base / "before.log"), "--after", str(base / "after.log"),
+                          "--proposals", str(base / "proposals.jsonl"), "--verdicts-out", str(ledger)])
+    rows_again = [line for line in ledger.read_text().splitlines() if line.strip()] if ledger.exists() else []
+    assert_equal("el registro se AÑADE, no se reescribe: es historia", 2, len(rows_again))
+
 print(f"test_batch_verification: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

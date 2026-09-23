@@ -176,5 +176,22 @@ with tempfile.TemporaryDirectory() as tmp:
           ["return x > 0  # sin commitear", "return True"],
           manifest5[-1].get("replace") if manifest5 else None)
 
+    print("== 5. el bytecode en caché no puede esconder la anulación ==")
+    # Medido 2026-09-23: anular `open("a")` → `open("w")` (mismo tamaño) en un
+    # módulo recién compilado dejó la suite en verde: Python validó su `.pyc`
+    # por mtime y tamaño, dentro del mismo segundo, y corrió el código viejo.
+    (repo / "mod.py").write_text("MODE = 'a'\n")
+    (repo / "suite_mod.py").write_text(
+        "import sys\nsys.path.insert(0, '.')\nimport mod\n"
+        "print('modo', mod.MODE)\nsys.exit(0 if mod.MODE == 'a' else 1)\n")
+    git(repo, "add", "mod.py", "suite_mod.py")
+    git(repo, "commit", "-q", "-m", "mod")
+    subprocess.run([sys.executable, "suite_mod.py"], cwd=repo, check=True, capture_output=True)
+    report6 = run_substitution(repo, bench, "same-size", repo / "mod.py",
+                               "MODE = 'a'", "MODE = 'w'", [sys.executable, "suite_mod.py"])
+    check("una anulación del mismo tamaño SÍ se ejecuta: la suite cae", True,
+          report6["annulled_exit"] != 0)
+    check("y al restaurar vuelve a verde", 0, report6["restored_exit"])
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
