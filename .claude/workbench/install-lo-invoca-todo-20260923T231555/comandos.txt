@@ -1,0 +1,5 @@
+bash tests/install/test_install.sh
+.venv/bin/python tests/paths/test_reach.py
+bash tests/session/test-instalar-config-usuario.sh
+.venv/bin/python tests/session/test_generate_bin.py
+bun test tests/unit/plugin/parseArgs.test.ts

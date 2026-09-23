@@ -158,7 +158,10 @@ check "y no escribe el .env del destino" "no" \
 OTRO="$(fake_tree cargada-del-archivo)"
 CARGA="$WORK/carga.env"; printf 'THYROX_ROOT=%s\n' "$OTRO" > "$CARGA"
 CONSUMER="$(fake_consumer carga)"
-OUT="$(THYROX_ENV_FILE="$CARGA" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"
+# `env -u`: el corredor (`tests/run.sh`) y los envoltorios de `bin/` EXPORTAN
+# `THYROX_ROOT`, asi que sin retirarla el caso heredaba la raiz real y no
+# medía la carga. Era el rojo de la medicion de partida de feature/thyrox-l5.
+OUT="$(env -u THYROX_ROOT THYROX_ENV_FILE="$CARGA" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"
 check_contains "carga la raiz del archivo de entorno" "$OTRO" "$OUT"
 check "y declara ESA raiz, no la del guion" "THYROX_ROOT=$OTRO" \
       "$(grep '^THYROX_ROOT=' "$CARGA" | tail -1)"
@@ -295,6 +298,110 @@ CONSUMER_PRE="$(fake_consumer preflight)"
 SALIDA_PRE="$(env -u THYROX_ROOT bash "$TREE_PRE/install.sh" "$CONSUMER_PRE" 2>&1)"
 check_contains "el informe final nombra el preflight de la cadena" \
     "bin/check-toolchain-ready" "$SALIDA_PRE"
+
+# --------------------------------------------------------------------------
+# install.sh lo invoca TODO — H-THYROX-161
+#
+# Un clon nuevo trae `.githooks/` y el driver `sqlite-union` declarados, y los
+# dos viven en `.git/config`, que no viaja: git no corre los hooks y el store
+# se mergea como binario. Los mecanismos existian —`src/verify/install-hooks.sh`,
+# `check-toolchain-ready.sh`, `check_env_contract_keys.py`— y nadie los
+# invocaba. install.sh es el paso del onboarding, asi que los invoca el.
+#
+# Los mecanismos del arbol sintetico son ESPIAS: registran con que destino y
+# que argumentos los llamaron, o devuelven el veredicto que el caso pide. Lo
+# que se prueba es el contrato de install.sh —delegar, propagar, no escribir
+# en --check—, no lo que cada mecanismo hace, que tiene su propia suite.
+# --------------------------------------------------------------------------
+printf '\n== install.sh — prepara los clones y mide el arbol ==\n'
+
+spy_tree() {
+    local root; root="$(fake_tree "$1")"
+    mkdir -p "$root/src/verify"
+    git -C "$root" init -q
+    cat > "$root/src/verify/install-hooks.sh" <<'SPY'
+#!/usr/bin/env bash
+printf 'TARGET=%s ARGS=%s\n' "$THYROX_TARGET_REPO" "$*" >> "$SPY_LOG"
+# exit 3 es el codigo del instalador real para «githooks y driver hechos, los
+# hooks de sesion no». El caso elige a que destino se lo devuelve.
+[ "$THYROX_TARGET_REPO" = "${SPY_RC3_FOR:-}" ] && exit 3
+exit 0
+SPY
+    cat > "$root/src/verify/check-toolchain-ready.sh" <<'SPY'
+#!/usr/bin/env bash
+printf '%s\n' "${SPY_PREFLIGHT_OUT:-8 ok · 0 error · 0 aviso}"
+exit "${SPY_PREFLIGHT_RC:-0}"
+SPY
+    cat > "$root/src/verify/check_env_contract_keys.py" <<'SPY'
+import os, sys
+print(os.environ.get("SPY_CONTRACT_OUT", "sin declarar: 0"))
+sys.exit(int(os.environ.get("SPY_CONTRACT_RC", "0")))
+SPY
+    printf '%s' "$root"
+}
+
+# 8. Delega en el instalador de clones, para el PROVEEDOR y para cada
+#    consumidor, sin escribir los hooks de sesion (--solo-mostrar).
+TREE="$(spy_tree todo)"; CONSUMER="$(fake_consumer todo)"; LOG="$WORK/spy-todo.log"
+OUT="$(SPY_LOG="$LOG" THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "prepara -> exit 0 con todo sano" "0" "$RC"
+check "prepara el proveedor" "1" "$(grep -c "^TARGET=$TREE ARGS=--solo-mostrar$" "$LOG" 2>/dev/null || echo 0)"
+check "prepara el consumidor" "1" "$(grep -c "^TARGET=$CONSUMER ARGS=--solo-mostrar$" "$LOG" 2>/dev/null || echo 0)"
+check_contains "publica el preflight" "8 ok · 0 error" "$OUT"
+check_contains "publica el contrato de .env" "sin declarar: 0" "$OUT"
+
+# 9. Un preflight con error hace fallar la instalacion y se nombra.
+TREE="$(spy_tree preflight-rojo)"; CONSUMER="$(fake_consumer preflight-rojo)"
+OUT="$(SPY_LOG="$WORK/spy-pf.log" SPY_PREFLIGHT_RC=1 SPY_PREFLIGHT_OUT='error · githooks' \
+       THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "preflight con error -> exit 1" "1" "$RC"
+check_contains "preflight con error -> nombra la sonda" "error · githooks" "$OUT"
+
+# 10. Un contrato de .env roto hace fallar la instalacion y se nombra.
+TREE="$(spy_tree contrato-rojo)"; CONSUMER="$(fake_consumer contrato-rojo)"
+OUT="$(SPY_LOG="$WORK/spy-ct.log" SPY_CONTRACT_RC=1 SPY_CONTRACT_OUT='SIN DECLARAR  THYROX_X' \
+       THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "contrato roto -> exit 1" "1" "$RC"
+check_contains "contrato roto -> nombra la clave" "SIN DECLARAR  THYROX_X" "$OUT"
+
+# 11. --check no ESCRIBE: no invoca el instalador de clones, y un consumidor
+#     con .githooks/ sin activar cuenta como pendiente.
+TREE="$(spy_tree check)"; CONSUMER="$(fake_consumer check)"; LOG="$WORK/spy-check.log"
+mkdir -p "$CONSUMER/.githooks"
+SPY_LOG="$LOG" THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" >/dev/null 2>&1
+git -C "$CONSUMER" config --unset core.hooksPath 2>/dev/null
+: > "$LOG"
+OUT="$(SPY_LOG="$LOG" THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
+check "--check con githooks sin activar -> exit 1" "1" "$RC"
+check_contains "--check nombra core.hooksPath" "core.hooksPath" "$OUT"
+check "--check no invoca el instalador de clones" "0" "$(grep -c . "$LOG")"
+
+# 12. --dry-run tampoco lo invoca, y dice lo que haria.
+TREE="$(spy_tree dry)"; CONSUMER="$(fake_consumer dry)"; LOG="$WORK/spy-dry.log"
+OUT="$(SPY_LOG="$LOG" THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --dry-run "$CONSUMER" 2>&1)"
+check "--dry-run no invoca el instalador de clones" "0" "$(grep -c . "$LOG" 2>/dev/null || echo 0)"
+check_contains "--dry-run dice que prepararia el clon" "prepararía" "$OUT"
+
+# 13. Sin los mecanismos, NO se calla: se declara SIN MEDIR y se nombra el
+#     archivo que falta. Un exit 0 mudo aqui es el verde falso de siempre.
+TREE="$(fake_tree sin-mecanismos)"; CONSUMER="$(fake_consumer sin-mecanismos)"
+OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"
+check_contains "sin instalador -> SIN MEDIR" "SIN MEDIR" "$OUT"
+check_contains "sin instalador -> nombra el archivo" "src/verify/install-hooks.sh" "$OUT"
+
+# 14. El PROVEEDOR no declara hooks de sesion: el instalador real sale 3
+#     (githooks y driver hechos, sesion no) y eso es lo esperado para el.
+#     En un CONSUMIDOR el mismo 3 es un fallo. Lo que discrimina es el
+#     destino, no el codigo.
+TREE="$(spy_tree rc3-proveedor)"; CONSUMER="$(fake_consumer rc3-proveedor)"
+OUT="$(SPY_LOG="$WORK/spy-rc3a.log" SPY_RC3_FOR="$TREE" THYROX_ROOT="$TREE" \
+       /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "exit 3 en el proveedor -> exit 0" "0" "$RC"
+check_contains "exit 3 en el proveedor -> lo dice" "sin hooks de sesión" "$OUT"
+TREE="$(spy_tree rc3-consumidor)"; CONSUMER="$(fake_consumer rc3-consumidor)"
+OUT="$(SPY_LOG="$WORK/spy-rc3b.log" SPY_RC3_FOR="$CONSUMER" THYROX_ROOT="$TREE" \
+       /bin/bash "$INSTALL" "$CONSUMER" 2>&1)"; RC=$?
+check "exit 3 en un consumidor -> exit 1" "1" "$RC"
 
 printf '\n%d aserciones: %d ok, %d fallidas\n' "$((PASS + FAIL))" "$PASS" "$FAIL"
 [ "$FAIL" -eq 0 ]
