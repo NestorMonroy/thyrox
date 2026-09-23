@@ -75,7 +75,12 @@ function namedDespiteUnused(service: ts.LanguageService, fileName: string): stri
   const program = service.getProgram()
   const source = program?.getSourceFile(fileName)
   if (!source) return []
-  const flagged = new Set<string>()
+  const checker = program!.getTypeChecker()
+  // Nombre → símbolo del binding importado. Se compara por SÍMBOLO, no por
+  // texto: una reexportación `export { X } from …` y una ligadura que sombrea
+  // el nombre comparten el texto y no son usos del import (medido en
+  // `bridge/src/index.ts` y `pluginLoader.ts`).
+  const flagged = new Map<string, ts.Symbol>()
   for (const diagnostic of service.getSemanticDiagnostics(fileName)) {
     if (!UNUSED_IMPORT_CODES.has(diagnostic.code) || diagnostic.start === undefined) continue
     const span = source.text.slice(diagnostic.start, diagnostic.start + (diagnostic.length ?? 0))
@@ -87,19 +92,33 @@ function namedDespiteUnused(service: ts.LanguageService, fileName: string): stri
     ) as ts.ImportDeclaration | undefined
     if (!declaration) continue
     // TS6192 cubre la declaración entera: todos sus bindings cuentan.
-    const bindings: string[] = []
+    const bindings: ts.Identifier[] = []
     const clause = declaration.importClause
-    if (clause?.name) bindings.push(clause.name.text)
-    const named = clause?.namedBindings
-    if (named && ts.isNamespaceImport(named)) bindings.push(named.name.text)
-    if (named && ts.isNamedImports(named)) bindings.push(...named.elements.map(element => element.name.text))
-    for (const name of bindings) if (diagnostic.code === 6192 || span === name) flagged.add(name)
+    if (clause?.name) bindings.push(clause.name)
+    const namedBindings = clause?.namedBindings
+    if (namedBindings && ts.isNamespaceImport(namedBindings)) bindings.push(namedBindings.name)
+    if (namedBindings && ts.isNamedImports(namedBindings)) bindings.push(...namedBindings.elements.map(element => element.name))
+    for (const binding of bindings) {
+      if (diagnostic.code !== 6192 && span !== binding.text) continue
+      const symbol = checker.getSymbolAtLocation(binding)
+      if (symbol) flagged.set(binding.text, symbol)
+    }
   }
   if (flagged.size === 0) return []
   const named = new Set<string>()
   const visit = (node: ts.Node): void => {
     if (ts.isImportDeclaration(node)) return
-    if (ts.isIdentifier(node) && flagged.has(node.text)) named.add(node.text)
+    if (ts.isIdentifier(node)) {
+      const symbol = flagged.get(node.text)
+      // Un uso ROTO —un tipo leído como valor con `typeof`— no tiene símbolo
+      // en su sitio (medido: `undefined` en el TypeQuery). Se resuelve por
+      // alcance desde ahí: da el alias importado salvo que otra ligadura lo
+      // sombree, que es justo la distinción que el texto no hace.
+      const resolved =
+        checker.getSymbolAtLocation(node) ??
+        checker.resolveName(node.text, node, ts.SymbolFlags.All, false)
+      if (symbol && resolved === symbol) named.add(node.text)
+    }
     ts.forEachChild(node, visit)
   }
   visit(source)

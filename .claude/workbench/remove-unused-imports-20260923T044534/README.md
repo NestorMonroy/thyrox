@@ -85,3 +85,23 @@ conducta medida de Bun, no la opción de tsc.
 
 Ciega a: un consumidor que ejecute la salida de `tsc` (no de Bun) de un
 paquete con `verbatimModuleSyntax`; hoy no se midió ninguno.
+
+## Cuarta versión: el guard comparaba texto, no símbolos
+
+El lote v3 salteó 6 archivos. Uno (`fastMode.ts`) era el caso verdadero. Los
+otros 5 eran falsos positivos del propio guard: nombraban el texto en una
+reexportación aparte (`export { X } from …`: `bridge`, `sessionStorage`,
+`SendMessageTool`) o en otra ligadura que lo sombrea (`resolve` en
+`pluginLoader`). El guard ahora compara el **símbolo** del checker. En un uso
+roto (`typeof` sobre un tipo) `getSymbolAtLocation` da `undefined` (medido en
+el TypeQuery), así que se resuelve por alcance con `resolveName`.
+
+| Archivo | Anulación | Cae |
+|---|---|---|
+| `v4-annulled-text-compare.txt` | comparar por texto | reexportación y sombreado |
+| `v4-annulled-scope-fallback.txt` | sin `resolveName` | el caso `typeof` |
+| `v4-restored.txt` | — | 11 de 11 verdes |
+
+Una primera versión saltaba además las `ExportDeclaration` con módulo. Su
+anulación no tumbó ningún caso: era código muerto, porque la comparación por
+símbolo ya lo distinguía, y se retiró.

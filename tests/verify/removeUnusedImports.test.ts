@@ -85,6 +85,26 @@ describe('removeUnusedImports', () => {
     expect(out ?? 'import { Metadata }').toMatch(/^import \{[^}]*\bMetadata\b/m)
   })
 
+  test('una reexportación con el mismo nombre no es un uso del binding importado', () => {
+    // Medido en el lote real: `bridge/src/index.ts`, `sessionStorage.ts` y
+    // `SendMessageTool.ts` importan un nombre y lo reexportan en OTRA
+    // sentencia (`export { X } from …`). La reexportación resuelve al símbolo
+    // del módulo, no al alias local: el import sigue sin uso.
+    const out = run(
+      "import { used, unused } from './dep'\nexport { unused } from './dep'\nconsole.log(used)\n",
+    )
+    expect(out).toBe("import { used } from './dep'\nexport { unused } from './dep'\nconsole.log(used)\n")
+  })
+
+  test('un nombre sombreado por otra ligadura no es un uso del import', () => {
+    // Medido en `pluginLoader.ts`: `resolve` de `path` sin uso, y otro
+    // `resolve` ligado en el cuerpo. Mismo texto, otro símbolo.
+    const out = run(
+      "import { used, unused } from './dep'\nexport const f = (unused: number) => unused + used\n",
+    )
+    expect(out).toBe("import { used } from './dep'\nexport const f = (unused: number) => unused + used\n")
+  })
+
   test('un archivo sin imports sin uso no aparece en el resultado', () => {
     expect(run("import { used } from './dep'\nconsole.log(used)\n")).toBeUndefined()
   })
