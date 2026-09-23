@@ -347,9 +347,10 @@ export const getAllModelBetas = memoize((model: string): string[] => {
     betaHeaders.push(MID_CONVERSATION_SYSTEM_BETA_HEADER)
   }
 
-  if (readEnv('ANTHROPIC_BETAS')) {
+  const anthropicBetas = readEnv('ANTHROPIC_BETAS')
+  if (anthropicBetas) {
     betaHeaders.push(
-      ...readEnv('ANTHROPIC_BETAS').split(',')
+      ...anthropicBetas.split(',')
         .map(_ => _.trim())
         .filter(Boolean),
     )
