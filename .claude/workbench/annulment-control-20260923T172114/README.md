@@ -32,3 +32,25 @@ Métrica: aserciones de la suite por pieza anulada; blob del sujeto antes y
 después (`annulment.jsonl`).
 Ciega a: archivos que la suite escriba fuera del sujeto; la herramienta sólo
 garantiza que el sujeto vuelve a su blob de partida.
+
+## Segunda versión: la sustitución vive DENTRO de la herramienta
+
+Episodio, el mismo día: al regenerar las anulaciones de `removeUnusedImports`,
+el parche se componía FUERA (una sustitución en Python y luego `diff -u`). Una
+sustitución no casó, el archivo «anulado» quedó vacío, y `diff` produjo un
+parche que borraba el módulo entero. La herramienta lo aplicó y la suite
+«cayó», por el motivo equivocado. La corrida se conserva en ese banco como
+`*-INVALID-head-text-compare.*`.
+
+`--replace VIEJO NUEVO` (`run_substitution`) compone el parche aquí y rehúsa si
+VIEJO no casa exactamente una vez. El manifiesto guarda la sustitución.
+
+| Pieza anulada (v2, 23 casos) | Cae |
+|---|---|
+| `annulled-exactly-once.*` — sin la guarda de «exactamente una vez» | sólo «una sustitución ambigua rehúsa» |
+| `annulled-v2-precheck.*` — sin `git apply --check` | sólo «rehúsa con ValueError» |
+| `annulled-v2-before-copy.*` — sin copia del estado sin commitear | sólo «el estado de partida sin commitear queda en el banco» |
+
+«Una sustitución que no casa rehúsa» sobrevive a la primera anulación, y es lo
+esperado: el parche vacío que resulta lo rechaza igualmente `git apply
+--check`. Son dos defensas independientes, y cada anulación mide la suya.

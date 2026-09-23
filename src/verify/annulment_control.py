@@ -25,16 +25,18 @@ una salida de una medición que no ocurrió.
 Uso::
 
     bin/annulment_control --bench <dir> --name <pieza> --subject <archivo> \\
-        --patch <parche> -- <comando de la suite...>
+        (--patch <parche> | --replace VIEJO NUEVO) -- <comando de la suite...>
 """
 from __future__ import annotations
 
 import argparse
 import datetime as _dt
+import difflib
 import json
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -62,7 +64,7 @@ def _run(command: list[str], cwd: Path, output: Path) -> int:
 
 
 def run_annulment(repo: Path, bench: Path, name: str, subject: Path,
-                  patch: Path, command: list[str]) -> dict:
+                  patch: Path, command: list[str], extra: dict | None = None) -> dict:
     repo, subject, patch = repo.resolve(), subject.resolve(), patch.resolve()
     relative = str(subject.relative_to(repo))
     if _git(repo, "apply", "--check", str(patch), check=False).returncode != 0:
@@ -101,10 +103,40 @@ def run_annulment(repo: Path, bench: Path, name: str, subject: Path,
         "restored_exit": restored_exit,
         "command": command,
         "at": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S"),
+        **(extra or {}),
     }
     with (bench / "annulment.jsonl").open("a") as manifest:
         manifest.write(json.dumps(report, ensure_ascii=False) + "\n")
     return report
+
+
+def run_substitution(repo: Path, bench: Path, name: str, subject: Path,
+                     old: str, new: str, command: list[str]) -> dict:
+    """Anula sustituyendo ``old`` por ``new`` en el sujeto.
+
+    El parche se compone AQUÍ y no fuera: generado aparte, una sustitución que
+    no casaba dejaba vacío el archivo anulado y el parche borraba el módulo
+    entero; la suite caía por eso y la anulación parecía válida (2026-09-23).
+    Rehúsa si ``old`` no aparece exactamente una vez.
+    """
+    repo, subject = repo.resolve(), subject.resolve()
+    text = subject.read_text()
+    found = text.count(old)
+    if found != 1:
+        raise ValueError(f"la sustitución debe casar exactamente una vez; casa {found}")
+    relative = str(subject.relative_to(repo))
+    diff = "".join(difflib.unified_diff(
+        text.splitlines(keepends=True),
+        text.replace(old, new, 1).splitlines(keepends=True),
+        fromfile=f"a/{relative}", tofile=f"b/{relative}"))
+    with tempfile.NamedTemporaryFile("w", suffix=".patch", delete=False) as handle:
+        handle.write(diff)
+        patch = Path(handle.name)
+    try:
+        return run_annulment(repo, bench, name, subject, patch, command,
+                             extra={"replace": [old, new]})
+    finally:
+        patch.unlink()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -117,12 +149,19 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--bench", type=Path, required=True)
     parser.add_argument("--name", required=True)
     parser.add_argument("--subject", type=Path, required=True)
-    parser.add_argument("--patch", type=Path, required=True)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--patch", type=Path)
+    source.add_argument("--replace", nargs=2, metavar=("VIEJO", "NUEVO"),
+                        help="anular sustituyendo un texto que casa exactamente una vez")
     parser.add_argument("--repo", type=Path, default=Path.cwd())
     args = parser.parse_args(argv[:split])
     try:
-        report = run_annulment(args.repo, args.bench, args.name, args.subject,
-                               args.patch, argv[split + 1:])
+        if args.replace:
+            report = run_substitution(args.repo, args.bench, args.name, args.subject,
+                                      *args.replace, argv[split + 1:])
+        else:
+            report = run_annulment(args.repo, args.bench, args.name, args.subject,
+                                   args.patch, argv[split + 1:])
     except ValueError as error:
         print(f"annulment_control: {error}", file=sys.stderr)
         return 2

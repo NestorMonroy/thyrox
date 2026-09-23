@@ -18,7 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from verify.annulment_control import run_annulment  # noqa: E402
+from verify.annulment_control import run_annulment, run_substitution  # noqa: E402
 
 OK = FAILED = 0
 
@@ -136,6 +136,45 @@ with tempfile.TemporaryDirectory() as tmp:
     check("el sujeto no cambió", before, (repo / "subject.py").read_text())
     check("no deja salida de una medición que no ocurrió", False,
           (bench / "annulled-bad.txt").exists())
+
+    print("== 4. anulación por sustitución declarada ==")
+    # El episodio: el parche se generaba FUERA con un paso cuyo fallo nadie
+    # comprobaba; una sustitución que no casó produjo un parche que borraba el
+    # módulo entero, y la suite «cayó» por eso. La sustitución vive ahora
+    # dentro de la herramienta, que rehúsa si no casa exactamente una vez.
+    before = (repo / "subject.py").read_text()
+    try:
+        run_substitution(repo, bench, "missing", repo / "subject.py",
+                         "texto que no existe", "x", suite)
+        outcome = "sin rehusar"
+    except Exception as error:
+        outcome = type(error).__name__
+    check("una sustitución que no casa rehúsa con ValueError", "ValueError", outcome)
+    check("y no deja parche de una anulación que no existe", False,
+          (bench / "annulled-missing.patch").exists())
+    check("ni toca el sujeto", before, (repo / "subject.py").read_text())
+
+    (repo / "subject.py").write_text("x = 1\nx = 1\n")
+    try:
+        run_substitution(repo, bench, "twice", repo / "subject.py", "x = 1", "x = 2", suite)
+        outcome = "sin rehusar"
+    except Exception as error:
+        outcome = type(error).__name__
+    check("una sustitución ambigua (dos casos) rehúsa", "ValueError", outcome)
+    (repo / "subject.py").write_text(before)
+
+    report5 = run_substitution(repo, bench, "subst", repo / "subject.py",
+                               "return x > 0  # sin commitear", "return True", suite)
+    check("la sustitución que casa anula: la suite cae", True, report5["annulled_exit"] != 0)
+    check("y restaura al blob de partida", report5["blob_before"], report5["blob_after"])
+    patch_text = read(bench / "annulled-subst.patch") or ""
+    check("el parche compuesto sólo cambia la línea sustituida", True,
+          "-    return x > 0  # sin commitear" in patch_text and "+    return True" in patch_text
+          and patch_text.count("\n-") == 1)
+    manifest5 = [json.loads(l) for l in (read(bench / "annulment.jsonl") or "").splitlines()]
+    check("el manifiesto guarda la sustitución declarada",
+          ["return x > 0  # sin commitear", "return True"],
+          manifest5[-1].get("replace") if manifest5 else None)
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
