@@ -196,7 +196,7 @@ export async function pruneRemovedPluginHooks(): Promise<void> {
   const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
   for (const [event, matchers] of Object.entries(current)) {
     const kept = matchers.filter(
-      (m): m is PluginHookMatcher =>
+      (m: { pluginRoot: string }): m is PluginHookMatcher =>
         'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
     )
     if (kept.length > 0) survivors[event as HookEvent] = kept

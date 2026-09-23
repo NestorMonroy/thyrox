@@ -1,0 +1,24 @@
+bun test v1.4.3-canary.1 (6d504dd98)
+
+tests/verify/applyInferredTypes.test.ts:
+(pass) applyInferredTypes > adds the inferred annotation and closes TS7006 [3298.37ms]
+(pass) applyInferredTypes > does not rewrite a file without an inference fix [1251.21ms]
+19 |     expect(applyInferredTypes(sources, ['/p/b.ts']).size).toBe(0)
+20 |   })
+21 | 
+22 |   test('rejects an inference that merely makes implicit any explicit', () => {
+23 |     const unsafe = { '/p/unsafe.ts': 'export function identity(value) { return value }\n' }
+24 |     expect(applyInferredTypes(unsafe, ['/p/unsafe.ts']).size).toBe(0)
+                                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/workspace/kaupamex/thyrox/tests/verify/applyInferredTypes.test.ts:24:63)
+(fail) applyInferredTypes > rejects an inference that merely makes implicit any explicit [884.36ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [5.67s]

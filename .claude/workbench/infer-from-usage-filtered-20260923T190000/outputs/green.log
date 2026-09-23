@@ -1,0 +1,11 @@
+bun test v1.4.3-canary.1 (6d504dd98)
+
+tests/verify/applyInferredTypes.test.ts:
+(pass) applyInferredTypes > adds the inferred annotation and closes TS7006 [3501.21ms]
+(pass) applyInferredTypes > does not rewrite a file without an inference fix [651.12ms]
+(pass) applyInferredTypes > rejects an inference that merely makes implicit any explicit [634.75ms]
+
+ 3 pass
+ 0 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [5.03s]

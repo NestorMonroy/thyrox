@@ -504,7 +504,7 @@ export function resolvePluginMcpEnvironment(
 
       // Resolve args
       if (stdioConfig.args) {
-        stdioConfig.args = stdioConfig.args.map(arg => resolveValue(arg))
+        stdioConfig.args = stdioConfig.args.map((arg): string => resolveValue(arg))
       }
 
       // Resolve environment variables and add CLAUDE_PLUGIN_ROOT / CLAUDE_PLUGIN_DATA

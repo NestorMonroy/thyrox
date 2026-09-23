@@ -1,0 +1,2 @@
+accepted     7 -> 0    typescript-language-service/infer-from-usage-no-any · 0 nuevo(s)
+batch_verification: alpha 1.00 · total 4050 -> 4043 · 0 diagnostico(s) nuevo(s) (alcance medido: 1 propuesta(s))
