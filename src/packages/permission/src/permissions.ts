@@ -16,15 +16,13 @@
  *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver
  *   abajo; antes OMITIDA por falta de consumidor)
  *
- * OMITIDAS (5 de 17), declaradas por nombre, línea y bloqueo — ninguna
+ * OMITIDAS (4 de 17), declaradas por nombre, línea y bloqueo — ninguna
  * tiene consumidor confirmado en este pase:
  *
  *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —
  *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,
  *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por
  *     `./PermissionUpdate.js` (330 líneas, no portado).
- *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —
- *     mismo bloqueo que la anterior.
  *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por
  *     `deletePermissionRuleFromSettings` (host binding sin implementación
  *     de referencia en este árbol) y `./PermissionUpdate.js`.
@@ -396,3 +394,7 @@ export function createPermissionRequestMessage(toolName: string, decisionReason?
   }
   return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`
 }
+
+// La mitad por reglas de la decisión (`oT` de 2.1.275) vive en su propio
+// módulo; los consumidores la importan desde aquí, como en la fuente.
+export { checkRuleBasedPermissions } from './ruleBasedPermissions.js'
