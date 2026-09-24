@@ -1,0 +1,5 @@
+prefijo: 927 archivos
+B reproduce: 464
+B reproduce: 232
+B reproduce: 116
+ninguna mitad sola reproduce con 116: interaccion entre mitades

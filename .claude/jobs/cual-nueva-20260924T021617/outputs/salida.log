@@ -1,0 +1,10 @@
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-nueva.sh: line 8:  4288 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/con-$(basename "$nueva").txt" 2>&1
+REPRODUCE con src/packages/agent/__tests__/internalUtils.test.ts
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-nueva.sh: line 8:  5532 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/con-$(basename "$nueva").txt" 2>&1
+REPRODUCE con src/packages/config/__tests__/permissionPromptOptIn.test.ts
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-nueva.sh: line 8:  6780 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/con-$(basename "$nueva").txt" 2>&1
+REPRODUCE con src/packages/provider/__tests__/classifyAPIError.test.ts
+/home/user/thyrox/.claude/workbench/bisecar-caida-de-bun-en-la-suite-20260924T021344/probes/cual-nueva.sh: line 8:  8029 Illegal instruction     timeout 300 bun --smol test "${lista[@]}" "$OBJ" > "$BENCH/outputs/con-$(basename "$nueva").txt" 2>&1
+REPRODUCE con NINGUNA
+EXIT=0
+__BG_EXIT__=0

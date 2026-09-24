@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/config/__tests__/permissionPromptOptIn.test.ts:
+40 |     expect(predicate()).toBe(true)
+41 |   })
+42 |   test('declarada SOLO en projectSettings: false — un repo no acepta por el usuario', () => {
+43 |     updateSettingsForSource('localSettings', {})
+44 |     updateSettingsForSource('projectSettings', { [key]: true } as never)
+45 |     expect(predicate()).toBe(false)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/permissionPromptOptIn.test.ts:45:25)
+(fail) hasSkipDangerousModePermissionPrompt > declarada SOLO en projectSettings: false — un repo no acepta por el usuario [0.51ms]
+40 |     expect(predicate()).toBe(true)
+41 |   })
+42 |   test('declarada SOLO en projectSettings: false — un repo no acepta por el usuario', () => {
+43 |     updateSettingsForSource('localSettings', {})
+44 |     updateSettingsForSource('projectSettings', { [key]: true } as never)
+45 |     expect(predicate()).toBe(false)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/permissionPromptOptIn.test.ts:45:25)
+(fail) hasAutoModeOptIn > declarada SOLO en projectSettings: false — un repo no acepta por el usuario [0.39ms]
+
+ 4 pass
+ 2 fail
+ 6 expect() calls
+Ran 6 tests across 1 file. [169.00ms]

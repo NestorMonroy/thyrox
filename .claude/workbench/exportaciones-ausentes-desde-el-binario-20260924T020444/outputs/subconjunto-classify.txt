@@ -1,0 +1,2 @@
+2 src/packages/permission/__tests__
+2 src/packages/provider/__tests__

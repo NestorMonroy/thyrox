@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/classifyAPIError.test.ts:
+34 |   })
+35 |   test('interruptor de capacidad', () => {
+36 |     expect(classifyAPIError(new Error('Opus is experiencing high load, please use /model to switch to Sonnet'))).toBe('capacity_off_switch')
+37 |   })
+38 |   test('429 es límite de tasa', () => {
+39 |     expect(classifyAPIError(api(429, 'too many'))).toBe('rate_limit')
+                                                        ^
+error: expect(received).toBe(expected)
+
+Expected: "rate_limit"
+Received: "client_error"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/classifyAPIError.test.ts:39:52)
+(fail) classifyAPIError > 429 es límite de tasa [0.35ms]
+
+ 12 pass
+ 1 fail
+ 29 expect() calls
+Ran 13 tests across 1 file. [136.00ms]
