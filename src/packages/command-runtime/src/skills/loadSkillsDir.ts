@@ -1,5 +1,6 @@
 import { homedir } from 'os'
 import { join } from 'path'
+import { clearDynamicSkills } from './dynamicSkills.js'
 import { getManagedFilePath } from './managedPath.js'
 
 /**
@@ -136,4 +137,26 @@ export function estimateSkillFrontmatterTokens(
     .filter(Boolean)
     .join(' ')
   return roughTokenCountEstimation(frontmatterText)
+}
+
+// Skills dinámicas (porte de 2.1.275): viven en `dynamicSkills.ts` y se
+// exportan desde aquí porque es la ruta que importan los consumidores.
+export {
+  activateConditionalSkillsForPaths,
+  addSkillDirectories,
+  discoverSkillDirsForPaths,
+  dynamicSkillKey,
+  getConditionalSkills,
+  getDynamicSkills,
+  onDynamicSkillsLoaded,
+  registerConditionalSkill,
+  setSkillDirectoryLoader,
+  type DynamicPromptSkill,
+  type LoadedSkill,
+  type SkillDirectoryLoader,
+} from './dynamicSkills.js'
+
+/** Vacía el estado de skills dinámicas y condicionales. */
+export function clearSkillCaches(): void {
+  clearDynamicSkills()
 }

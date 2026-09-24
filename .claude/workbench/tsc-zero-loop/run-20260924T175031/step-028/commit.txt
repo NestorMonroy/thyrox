@@ -1,0 +1,7 @@
+Export the dynamic skills API from loadSkillsDir
+
+Twenty-eighth step of the agent-compiler loop, accepted-net
+2979 -> 2969. The ported dynamic skills module is re-exported from
+loadSkillsDir, the path FileRead/Edit/WriteTool, the skill change
+detector and the command registry import, and clearSkillCaches now
+empties the dynamic state.
