@@ -33,19 +33,16 @@ describe('Token-count estimation heuristics', () => {
       expect(roughTokenCountEstimation(text, 2)).toBe(100)
     })
 
-    test('Chinese-heavy text: ~1.5 tokens per CJK char (CRITICAL — prevent underestimate)', () => {
-      // 10 caracteres CJK × 1.5 ≈ 15 tokens
+    // El binario 2.1.275 no ajusta CJK (`xu`, `chunk-8f0aeskw.js`): estos
+    // dos casos fijaban el 1.5 por caracter de ccnmt y se alinean al binario.
+    test('Chinese-heavy text: la misma division que cualquier cadena', () => {
       const cjkText = '你好世界這是測試文字字符'
-      const estimate = roughTokenCountEstimation(cjkText)
-      // 12 caracteres CJK × 1.5 = 18
-      expect(estimate).toBe(18)
+      expect(roughTokenCountEstimation(cjkText)).toBe(Math.round(cjkText.length / 4))
     })
 
-    test('mixed CJK + ASCII: each contributes via its own ratio', () => {
-      // 4 caracteres CJK × 1.5 = 6, más 8 ASCII / 4 = 2, total ~8
+    test('mixed CJK + ASCII: una sola razon', () => {
       const mixed = '你好世界abcdefgh'
-      const estimate = roughTokenCountEstimation(mixed)
-      expect(estimate).toBe(Math.round(8 / 4 + 4 * 1.5))
+      expect(roughTokenCountEstimation(mixed)).toBe(Math.round(mixed.length / 4))
     })
 
     test('empty string → 0 (no crash)', () => {

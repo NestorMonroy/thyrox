@@ -221,7 +221,8 @@
     "./worktreeModeEnabled.js": "./worktreeModeEnabled.ts",
     "./yaml.js": "./yaml.ts",
     "./zodSchema/zodToJsonSchema.js": "./zodSchema/zodToJsonSchema.ts",
-    "./query-engine": "./QueryEngine.ts"
+    "./query-engine": "./QueryEngine.ts",
+    "./subagentLimits.js": "./subagentLimits.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",

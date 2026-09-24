@@ -49,6 +49,7 @@ import {
 import { assembleToolPool } from '../../runtime.js'
 import { asAgentId } from '@thyrox/agent/idTypes'
 import { getAgentContext, runWithAgentContext } from '@thyrox/agent/agentContext.js'
+import { agentDepth, concurrencyRefusal, depthRefusal } from '@thyrox/agent/subagentLimits.js'
 import { isAgentSwarmsEnabled } from '@thyrox/agent/agentSwarmsEnabled.js'
 import { getCwd, runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -404,8 +405,24 @@ export const AgentTool = buildTool({
     const startTime = Date.now()
     const model = isCoordinatorMode() ? undefined : modelParam
 
+    // Las dos guardas del binario (`lo`/`pn`, 2.1.275): quien ya esta en la
+    // profundidad maxima no engendra, y el lanzamiento N+1 se RECHAZA, no se
+    // encola. Ver `@thyrox/agent/subagentLimits`.
+    const depthBlock = depthRefusal(
+      getAgentContext(),
+      process.env,
+      getFeatureValue_CACHED_MAY_BE_STALE,
+    )
+    if (depthBlock) throw new Error(depthBlock.message)
+
     // Get app state for permission mode and agent filtering
     const appState = toolUseContext.getAppState()
+
+    const runningSubagents = (
+      Object.values(appState.tasks ?? {}) as { type?: string; status?: string }[]
+    ).filter(task => task.type === 'local_agent' && task.status === 'running').length
+    const widthBlock = concurrencyRefusal(runningSubagents, process.env)
+    if (widthBlock) throw new Error(widthBlock.message)
     const permissionMode = appState.toolPermissionContext.mode
     // In-process teammates get a no-op setAppState; setAppStateForTasks
     // reaches the root store so task registration/progress/kill stay visible.
@@ -990,6 +1007,7 @@ export const AgentTool = buildTool({
         parentSessionId: getParentSessionId(),
         parentAgentId: getAgentContext()?.agentId,
         agentType: 'subagent' as const,
+        depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
         invokingRequestId: assistantMessage?.requestId,
@@ -1061,6 +1079,7 @@ export const AgentTool = buildTool({
         parentSessionId: getParentSessionId(),
         parentAgentId: getAgentContext()?.agentId,
         agentType: 'subagent' as const,
+        depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
         invokingRequestId: assistantMessage?.requestId,

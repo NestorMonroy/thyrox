@@ -81,61 +81,26 @@ describe('roughTokenCountEstimation — non-CJK content', () => {
   })
 })
 
-describe('roughTokenCountEstimation — CJK content', () => {
-  test('100 CJK chars: ~150 tokens (1.5 ratio)', () => {
-    // 100 caracteres chinos × 1.5 = 150 tokens.
-    const chinese = '中'.repeat(100)
-    expect(roughTokenCountEstimation(chinese)).toBe(150)
+// El binario 2.1.275 (`xu`, `chunk-8f0aeskw.js`) NO ajusta el texto CJK: divide
+// la longitud entre los bytes por token igual que para cualquier otra cadena.
+// Estos casos fijaban el 1.5 por caracter que ccnmt anadio; se alinean al
+// binario, que gana (directiva del ejecutor).
+describe('roughTokenCountEstimation — CJK content (sin ajuste, como el binario)', () => {
+  test('100 CJK chars: 100 / 4 = 25', () => {
+    expect(roughTokenCountEstimation('中'.repeat(100))).toBe(25)
   })
-
-  test('100 Japanese hiragana: ~150 tokens', () => {
-    const hiragana = 'あ'.repeat(100)
-    expect(roughTokenCountEstimation(hiragana)).toBe(150)
+  test('hiragana y katakana siguen la misma division', () => {
+    expect(roughTokenCountEstimation('あ'.repeat(100))).toBe(25)
+    expect(roughTokenCountEstimation('ア'.repeat(100))).toBe(25)
   })
-
-  test('100 Japanese katakana: ~150 tokens', () => {
-    const katakana = 'カ'.repeat(100)
-    expect(roughTokenCountEstimation(katakana)).toBe(150)
+  test('mixed CJK + ASCII: una sola razon para toda la cadena', () => {
+    expect(roughTokenCountEstimation('你好世界abcdefgh')).toBe(Math.round(12 / 4))
   })
-
-  test('mixed CJK + ASCII uses split formula', () => {
-    // 50 chinos (× 1.5 = 75) + 100 ASCII (/ 4 = 25) = 100 tokens
-    const mixed = '中'.repeat(50) + 'a'.repeat(100)
-    expect(roughTokenCountEstimation(mixed)).toBe(100)
+  test('bytesPerToken aplica a toda la cadena, CJK incluido', () => {
+    expect(roughTokenCountEstimation('中文中文', 2)).toBe(2)
   })
-
-  test('CJK punctuation (e.g. 。) is counted as CJK', () => {
-    // CJK_REGEX incluye 　-〿 (bloque de puntuación CJK).
-    expect(roughTokenCountEstimation('。'.repeat(100))).toBe(150)
-  })
-
-  test('CJK heuristic does not double-count', () => {
-    // Para 100 caracteres todos CJK: nonCjkLength = 100 - 100 = 0, sin
-    // término /4. Resultado = 0/4 + 100*1.5 = 150. Confirma que no suma
-    // ambas vías.
-    expect(roughTokenCountEstimation('中'.repeat(100))).toBe(150)
-  })
-
-  test('empty string short-circuits CJK branch (no regex match)', () => {
+  test('empty string is 0', () => {
     expect(roughTokenCountEstimation('')).toBe(0)
-  })
-})
-
-describe('roughTokenCountEstimation — boundary cases', () => {
-  test('single CJK char: 1.5 → rounds to 2', () => {
-    expect(roughTokenCountEstimation('中')).toBe(2)
-  })
-
-  test('two CJK chars: 3', () => {
-    expect(roughTokenCountEstimation('中文')).toBe(3)
-  })
-
-  test('CJK custom bytesPerToken affects only non-CJK part', () => {
-    // 4 CJK + 4 ASCII, bytesPerToken=2:
-    //   nonCjkLength = 8 - 4 = 4 → 4/2 = 2
-    //   cjkCount × 1.5 = 6
-    //   total = 8
-    expect(roughTokenCountEstimation('中文四字abcd', 2)).toBe(8)
   })
 })
 
@@ -150,10 +115,10 @@ describe('roughTokenCountEstimationForFileType — combined helper', () => {
       .toBe(25)
   })
 
-  test('json with CJK uses 1.5 for CJK + 2 for non-CJK', () => {
-    // 50 CJK × 1.5 = 75, 100 ASCII / 2 = 50, total 125
-    const content = '中'.repeat(50) + 'a'.repeat(100)
-    expect(roughTokenCountEstimationForFileType(content, 'json')).toBe(125)
+  test('json with CJK: la razon de json aplica a toda la cadena', () => {
+    expect(roughTokenCountEstimationForFileType('{"a":"中文"}', 'json')).toBe(
+      Math.round('{"a":"中文"}'.length / 2),
+    )
   })
 
   test('underestimate-resistance: dense JSON gives higher count than naive /4', () => {
