@@ -1,0 +1,8 @@
+Record the revealing reorder step of the tsc loop
+
+Thirty-second step: reorderMessagesInUI ported from 2.1.275 (Z4n).
+Its target fell but it revealed 3 diagnostics in Messages.tsx: the
+signature bound the element type to Message, and Messages.tsx passes
+the result on to functions over its local shapes. Reverted and queued
+as residual; the lesson (leave the element type free, as step 30 did)
+is recorded.
