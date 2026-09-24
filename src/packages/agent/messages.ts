@@ -2074,3 +2074,109 @@ export function shouldShowUserMessage(message: Message, isTranscriptMode: boolea
   if (m.isVisibleInTranscriptOnly && !isTranscriptMode) return false
   return true
 }
+
+/** Los tipos de adjunto que produce un hook (`qpn` de 2.1.275). */
+const HOOK_ATTACHMENT_TYPES = new Set([
+  'hook_blocking_error',
+  'hook_cancelled',
+  'hook_error_during_execution',
+  'hook_non_blocking_error',
+  'hook_success',
+  'hook_system_message',
+  'hook_additional_context',
+  'hook_stopped_continuation',
+  'hook_deferred_tool',
+])
+
+type ToolUseGroup<M = unknown> = {
+  toolUse: M | null
+  preHooks: M[] | undefined
+  toolResult: M | null
+  postHooks: M[] | undefined
+}
+
+function toolUseGroup<M>(groups: Map<string, ToolUseGroup<M>>, id: string): ToolUseGroup<M> {
+  let group = groups.get(id)
+  if (group === undefined) {
+    group = { toolUse: null, preHooks: undefined, toolResult: null, postHooks: undefined }
+    groups.set(id, group)
+  }
+  return group
+}
+
+/**
+ * Orden de la vista (`Z4n` de 2.1.275): cada uso de herramienta se muestra con
+ * sus hooks previos, su resultado y sus hooks posteriores (incluidas las
+ * líneas de resultado del host) en el sitio del uso; los errores de API del
+ * sistema se omiten, un resultado sin su uso no se muestra, y los mensajes
+ * sintéticos del streaming van al final.
+ */
+export function reorderMessagesInUI<M>(messages: M[], syntheticStreamingToolUseMessages: M[]): M[] {
+  const groups = new Map<string, ToolUseGroup<M>>()
+  const slots: Array<ToolUseGroup<M> | null | undefined> = Array(messages.length)
+  for (let index = 0; index < messages.length; index++) {
+    const message = messages[index] as unknown as {
+      type: string
+      subtype?: string
+      message?: { content?: unknown }
+      attachment?: { type?: string; hookEvent?: string; toolUseID?: unknown }
+    }
+    switch (message.type) {
+      case 'assistant': {
+        const content = message.message?.content
+        if (Array.isArray(content) && content.some((b: { type?: string }) => b.type === 'tool_use')) {
+          const id = (content[0] as { id?: string } | undefined)?.id
+          if (id) {
+            const group = toolUseGroup(groups, id)
+            slots[index] = group.toolUse === null ? group : null
+            group.toolUse = messages[index]!
+          } else slots[index] = null
+        }
+        break
+      }
+      case 'attachment': {
+        const attachment = message.attachment
+        if (attachment && HOOK_ATTACHMENT_TYPES.has(attachment.type ?? '')) {
+          const event = attachment.hookEvent
+          if (event === 'PreToolUse' || event === 'PostToolUse') {
+            slots[index] = null
+            const group = toolUseGroup(groups, String(attachment.toolUseID))
+            if (event === 'PreToolUse') (group.preHooks ??= []).push(messages[index]!)
+            else (group.postHooks ??= []).push(messages[index]!)
+          }
+        } else if (attachment?.type === 'tool_host_result_lines' && typeof attachment.toolUseID === 'string') {
+          slots[index] = null
+          ;(toolUseGroup(groups, attachment.toolUseID).postHooks ??= []).push(messages[index]!)
+        }
+        break
+      }
+      case 'user': {
+        const first = Array.isArray(message.message?.content)
+          ? (message.message!.content as Array<{ type?: string; tool_use_id?: string }>)[0]
+          : undefined
+        if (first?.type === 'tool_result') {
+          slots[index] = null
+          toolUseGroup(groups, String(first.tool_use_id)).toolResult = messages[index]!
+        }
+        break
+      }
+      case 'system': {
+        if (message.subtype === 'api_error') slots[index] = null
+        break
+      }
+    }
+  }
+  const out: M[] = []
+  for (let index = 0; index < messages.length; index++) {
+    const slot = slots[index]
+    if (slot === undefined) out.push(messages[index]!)
+    else if (slot !== null && slot.toolUse) {
+      out.push(slot.toolUse)
+      if (slot.preHooks) out.push(...slot.preHooks)
+      if (slot.toolResult) out.push(slot.toolResult)
+      if (slot.postHooks) out.push(...slot.postHooks)
+    }
+  }
+  out.push(...syntheticStreamingToolUseMessages)
+  return out
+}

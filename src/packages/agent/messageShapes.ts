@@ -151,7 +151,16 @@ export type CompactMetadata = Record<string, unknown>
 export type SystemAPIErrorMessage = Message & { type: 'system' }
 export type SystemFileSnapshotMessage = Message & { type: 'system' }
 export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage
-export type NormalizedMessage = Message
+/**
+ * Un mensaje tras `normalizeMessages`: un bloque por mensaje, así que su
+ * `content`, cuando hay `message`, es SIEMPRE un arreglo de bloques. El alias
+ * plano a `Message` (`content` cadena u opcional) obligaba a los consumidores
+ * de la vista (`Messages.tsx`: `filterForBriefTool`, `dropTextInBriefTurns`)
+ * a recibir una forma más ancha que la que el normalizador produce.
+ */
+export type NormalizedMessage = Message & {
+  message?: NonNullable<Message['message']> & { content: ContentItem[] }
+}
 export type PartialCompactDirection = string
 
 export type StopHookInfo = {

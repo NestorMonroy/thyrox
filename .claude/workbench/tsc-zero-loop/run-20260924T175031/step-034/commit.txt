@@ -1,0 +1,12 @@
+Give NormalizedMessage its normalized shape
+
+Thirty-fourth step of the agent-compiler loop, accepted-net
+2966 -> 2960, applying the corrected lesson of step 33.
+NormalizedMessage was a plain alias of Message, whose content may be a
+string or absent; normalizeMessages emits one block per message, so
+its content is a block array. Declaring that lets reorderMessagesInUI
+(Z4n of 2.1.275, re-applied here) feed the Messages.tsx helpers.
+
+It revealed real contracts now in the ledger: normalizeMessages must
+return the narrowed type, and MessageRow passes AssistantMessage where
+NormalizedMessage is expected.
