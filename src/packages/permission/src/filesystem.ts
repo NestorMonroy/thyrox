@@ -7,7 +7,7 @@
  * — más sus dependencias transitivas y un puñado de funciones puras
  * hermanas sin costo adicional.
  *
- * PORTADAS (21 de 29):
+ * PORTADAS (25 de 29):
  *
  *   `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` · `normalizeCaseForComparison`
  *   · `relativePath` · `toPosixPath` · `getSessionMemoryDir` ·
@@ -20,23 +20,18 @@
  *   binding, abajo) · `matchingRuleForInput` · `getFileReadIgnorePatterns` ·
  *   `normalizePatternsToPath` (reexportadas de `./ruleMatching.ts`, porte del
  *   contrato de 2.1.275 — ver su cabecera) · `checkPathSafetyForAutoEdit`
- *   (reexportada de `./pathSafety.ts`, mismo criterio)
+ *   e `isClaudeSettingsPath` (reexportadas de `./pathSafety.ts`) ·
+ *   `checkEditableInternalPath` · `checkReadableInternalPath` ·
+ *   `getBundledSkillsRoot` (reexportadas de `./internalPaths.ts`) — las
+ *   tres, porte del contrato de 2.1.275; ver sus cabeceras
  *
- * OMITIDAS (8 de 29), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS (4 de 29), declaradas por nombre, línea y bloqueo:
  *
  *   - `getClaudeSkillScope` (filesystem.ts:108-177) — sin consumidor
  *     confirmado en este pase; depende de convenciones de `.claude/skills/`
  *     no verificadas contra este árbol.
- *   - `isClaudeSettingsPath` (filesystem.ts:207-228, + `getSettingsPaths`
- *     privada) — bloqueada: `getSettingsFilePathForSource`/
- *     `getSettingsRootPathForSource` de `@claude-code-how-works/config` NO
- *     existen en `@thyrox/config` (medido con grep sobre todo el paquete).
- *   - `getBundledSkillsRoot` (filesystem.ts:372-382) — sin consumidor
- *     confirmado; añade `randomBytes`/`MACRO.VERSION` sin necesidad
- *     inmediata.
  *   - `checkReadPermissionForTool`, `checkWritePermissionForTool`,
- *     `generateSuggestions`, `checkEditableInternalPath`,
- *     `checkReadableInternalPath` (filesystem.ts:627-673 y 807-1785, el
+ *     `generateSuggestions` (filesystem.ts:627-673 y 807-1785, el
  *     resto del archivo) — son las guardas de confinamiento/permiso de
  *     lectura y escritura. Cada una depende de `SandboxManager`
  *     (`@claude-code-how-works/shell/sandbox.js`, subsistema grande, no
@@ -503,7 +498,12 @@ export function pathInWorkingPath(path: string, workingPath: string): boolean {
 
 // El compilador de reglas de archivo de 2.1.275 vive en su propio módulo;
 // los consumidores lo importan desde aquí, como en la fuente.
-export { checkPathSafetyForAutoEdit } from './pathSafety.js'
+export { checkPathSafetyForAutoEdit, isClaudeSettingsPath } from './pathSafety.js'
+export {
+  checkEditableInternalPath,
+  checkReadableInternalPath,
+  getBundledSkillsRoot,
+} from './internalPaths.js'
 export {
   getFileReadIgnorePatterns,
   matchingRuleForInput,

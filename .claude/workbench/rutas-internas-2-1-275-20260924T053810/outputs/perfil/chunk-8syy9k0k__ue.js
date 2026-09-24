@@ -1,0 +1,1 @@
+function ue(){let e=process.env,r=e.ANTHROPIC_CONFIG_DIR?.trim();if(r)return{dir:r,space:"userNamed"};let n=e.XDG_CONFIG_HOME?.trim();if(n)return{dir:g(n,"anthropic"),space:"home"};let s=e.HOME?.trim();return s?{dir:g(s,".config","anthropic"),space:"home"}:null}

@@ -1,0 +1,1 @@
+function Hs(e,n,r){let s;for(let g of e){let h=n(g,r);if(h.behavior==="passthrough"){let y=A_n(g);if(y!==g)h=n(y,r)}if(h.behavior==="deny")return h;if(h.behavior!=="allow")return{behavior:"passthrough",message:""};s??=h}return s??{behavior:"passthrough",message:""}}

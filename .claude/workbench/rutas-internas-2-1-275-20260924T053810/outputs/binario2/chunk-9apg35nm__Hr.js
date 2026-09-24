@@ -1,0 +1,1 @@
+Hr={behavior:"deny",message:"Staged Claude Code settings changes are the owner\u2019s to review in /settings-review; the review store cannot be written directly",decisionReason:{type:"safetyCheck",reason:"settings review store write substitutes a proposal the owner is about to accept",classifierApprovable:!1,circuitBreaker:"claudeSettingsFile"}}

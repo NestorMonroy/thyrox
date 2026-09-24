@@ -1,0 +1,1 @@
+Ur={behavior:"deny",message:"The Anthropic profile store holds the sign-in that decides which organization policy applies; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"profile store write substitutes the credential and organization behind managed settings",classifierApprovable:!1}}
