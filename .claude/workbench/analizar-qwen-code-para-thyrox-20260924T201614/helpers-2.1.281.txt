@@ -1,0 +1,19 @@
+==== Aa: 1 definicion(es) de nivel superior
+---- chunk-wfscmafr.js function Aa [43675,43716)
+function Aa(e){return vt(e,"permission")}
+==== Or: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function Or [137774,138043)
+function Or(e,n){return{behavior:"deny",message:`Refusing to ${e==="write to"?"write":"read"} ${KY(n)}: where it leads on disk could not be determined (a link on the way could not be examined, or the links do not resolve).`,decisionReason:{type:"othe
+r",reason:ien(n)}}}
+==== Ir: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function Ir [137389,137774)
+function Ir(e,n,r,s){let d=`Claude requested permissions to ${e} ${n}, but you haven't granted it yet.`,m=WVe(r,s);if(m===null||!m.carriedOut)return{message:d,decisionReason:{type:"workingDir",reason:mPr}};let g=sen(n,m);return{message:`${d} ${g}.`,b
+lockedPath:m.landing,decisionReason:e==="write to"?{type:"safetyCheck",reason:g,classifierApprovable:!1}:{type:"workingDir",reason:g}}}
+==== xr: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function xr [114641,115104)
+function xr(e,n,r,s,d,m){if(n.unresolved)return{behavior:"deny",message:`${ien(e)}; ${d.why}`,decisionReason:{type:"other",reason:d.reason}};if(py(e,r,n.spellings,m)||s().behavior==="allow")return null;let g=Array.from(m).join(", "),h=WVe(n,r,m);retu
+rn{behavior:"deny",message:h?.carriedOut?`${Nr(e,h.landing)}, which is outside ${g}; ${d.why}`:`${e} is outside ${g}; ${d.why}`,decisionReason:{type:"other",reason:d.reason},blockedPath:h?.carriedOut?h.landing:e}}
+==== jLn: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function jLn [137055,137269)
+function jLn(e,n,r){let s=WVe(n,r);if(s===null)return null;let d=vse(n.requested,[n.requested],void 0,A0e(r),r.trustedNetworkDirectories).safe;return{landing:s.landing,sentence:sen(e,s),personOnly:d||s.carriedOut}}
+symbol: 5 de 5 nombre(s) resueltos

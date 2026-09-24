@@ -1,0 +1,15 @@
+==== vt: 1 definicion(es) de nivel superior
+---- chunk-wfscmafr.js function vt [43799,45714)
+function vt(e,n){let r=e;if(r==="~")r=pt().normalize("NFC");else if(r.startsWith("~/"))r=d.join(pt().normalize("NFC"),r.slice(2));let i=new Set([r]),s=(y,x=!1)=>({unresolved:!1,requested:r,spellings:Array.from(i),landing:y,leafIsSymlink:x});if(Pn(r)&
+&!fl(r)||Bi(r)||XT(r))return s(r);let o=ce(),a=UTe(o),u,c,l=!1,h=!1,p=!1,m=[],A=new Set,b=(y)=>{let x=d.resolve(y);if(!A.has(x))A.add(x),m.push(y)},w=r,g,I=(y)=>{if(w=y.path,y.kind==="readlink"){h=!0;try{return o.readlinkSync(y.path)}catch(x){throw p
+=!0,x}}g=void 0;try{if(y.kind==="opendirNofollow")return o.openDirNoFollowSync(y.path),"ok";return o.lstatSync(y.path)}catch(x){throw g=v(x),x}},D=Ce(ue(r,{unreadableAncestry:"unverified",launchAncestry:a,...!1,onCollapsedLanding:(y)=>{u=y},onOutcome
+:(y)=>{c=y},onHop:({composed:y,leaf:x,text:z})=>{if(x)i.add(y),l=!0;if(n==="screen"&&He(z))b(y)}}),I),W=n==="permission"&&!h&&(g==="ENAMETOOLONG"||(g==="EACCES"||g==="EPERM")),L=()=>{let y=Hn(r);return i.add(y),s(y)},k=()=>W?L():{unresolved:!0,reques
+ted:r,spellings:Array.from(i),stoppedAt:w,leafIsSymlink:l},Ne=8,H=()=>{for(let y=0;y<m.length;y++){if(y>=Ne)return!1;let x=m[y];if(Pn(x)&&!fl(x)||Bi(x)||XT(x)){i.add(x);continue}let z=Ce(ue(x,{unreadableAncestry:"unverified",launchAncestry:a,onHop:({
+composed:At,text:Ot})=>{if(He(Ot))b(At)}}),I);if(z===s_||p)return!1;if(z!==void 0)i.add(z)}return!0};if(D===s_||D===nLt)return k();if(D!==void 0){if(n==="screen"&&!H())return k();if(u!==void 0)i.add(u);return i.delete(D),i.add(D),s(D,l)}if(c===void 0
+){if(n==="screen"&&!p)return H()?L():k();return k()}if(c.kind==="absent"&&(n==="screen"?c.remaining.some((y)=>ja(y)):h&&c.remaining.some((y)=>h$(y))))return k();let E=c.kind==="absent"?c.at:c.path,U=c.kind==="absent"?c.remaining.join(d.sep):"",le=Hn(
+U===""?E:d.join(E,U));if(h||E!==d.parse(E).root)i.add(le);let K=Un(o,E,U);if(K!==void 0&&K!==le)i.delete(K),i.add(K);if(n==="screen"&&!H())return k();return s(le,l)}
+symbol: 1 de 1 nombre(s) resueltos
+==== sot: 1 definicion(es) de nivel superior
+---- chunk-mm8vme0b.js function sot [136920,137018)
+function sot(e){if(e.unresolved)return null;return fr(e.landing)===fr(e.requested)?null:e.landing}
+symbol: 1 de 1 nombre(s) resueltos
