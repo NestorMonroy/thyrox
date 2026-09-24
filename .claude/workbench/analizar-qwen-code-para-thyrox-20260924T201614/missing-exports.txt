@@ -1,0 +1,25 @@
+"../../permissions.js": deletePermissionRule hasPermissionsToUseTool
+"../global/config.js": getMemoryPath
+"../messages.js": hasSuccessfulToolCall handleMessageFromStream
+"../settings/types.js": ExtraKnownMarketplaceSchema
+"./_deps.js": AgentDefinition
+"./compact.js": createPlanAttachmentIfNeeded compactConversation
+"./loadSkillsDir.js": createSkillCommand parseSkillFrontmatterFields
+"./mode-dispatch.js": PendingConnect runModeDispatch PendingAssistantChat PendingSSH
+"./permissionTypes.js": YoloClassifierResult
+"@thyrox/agent/attachments.js": Attachment AgentMentionAttachment getQueuedCommandAttachments
+"@thyrox/agent/compaction/compact.js": compactConversation partialCompactConversation
+"@thyrox/agent/effort.js": getOpusDefaultEffortConfig
+"@thyrox/agent/inProcessTeammateHelpers.js": setAwaitingPlanApproval handlePlanApprovalResponse
+"@thyrox/agent/messages.js": handleMessageFromStream StreamingToolUse StreamingThinking
+"@thyrox/agent/messages/systemInit.js": buildSystemInitMessage
+"@thyrox/agent/sessionTools/transcriptSearch.js": renderableSearchText
+"@thyrox/agent/tasks.js": claimTask
+"@thyrox/agent/tokenEstimation.js": countTokensWithAPI
+"@thyrox/cli": runClaudeCode
+"@thyrox/command-runtime/skills/loadSkillsDir.js": getSkillDirCommands
+"@thyrox/config/settings": getUseAutoModeDuringPlan getManagedSettingsKeysForLogging
+"@thyrox/permission": hasPermissionsToUseTool
+"@thyrox/permission/getNextPermissionMode.js": cyclePermissionMode
+"@thyrox/permission/permissions": hasPermissionsToUseTool
+"@thyrox/storage/sessionRestore.js": restoreSessionStateFromLog exitRestoredWorktree restoreAgentFromSession restoreWorktreeForResume
