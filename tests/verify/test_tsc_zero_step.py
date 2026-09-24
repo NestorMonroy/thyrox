@@ -213,5 +213,61 @@ with tempfile.TemporaryDirectory() as directory:
     # vez—, pero pagando el lote: lo que discrimina es que no hay pasada.
     assert_equal("ni paga otra pasada de tsc por ella", 1, again.tsc_runs)
 
+# --- Política neta (`net=True`): el arreglo de causa raíz ---------------------
+# Tipar un contrato destapa errores que antes no se podían ver. Con la política
+# estricta eso es `revealed` y se revierte; con la neta se conserva si bajan los
+# objetivos Y baja el total, y lo destapado queda registrado como trabajo nuevo.
+
+
+def net_fixture(base: Path, replacement: str) -> tuple[dict, list[str]]:
+    a = "const a = BAD1 BAD5\n"
+    (base / "a.ts").write_text(a)
+    (base / "b.ts").write_text("const b = BAD2\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    row = proposal("root:a.ts", "agent", "a.ts", a, "BAD1 BAD5", replacement,
+                   ["a.ts: TS9001: bad 1.", "a.ts: TS9001: bad 5."])
+    return row, [sys.executable, "fake_tsc.py"]
+
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "REVEAL")
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, [row], tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None, net=True)
+    last = [json.loads(line) for line in ledger.read_text().splitlines()][-1]
+    assert_equal("neta: destapa en otro archivo pero el total baja — se conserva",
+                 ("progress", 3, 2, "const a = REVEAL\n"),
+                 (report.status, report.total_before, report.total_final, (base / "a.ts").read_text()))
+    assert_equal("neta: el registro dice accepted-net y lleva lo destapado",
+                 ("accepted-net", ["z.ts: TS9004: revealed contract."]),
+                 (last["outcome"], last["new_diagnostics"]))
+    assert_equal("neta: lo destapado no va a la cola residual", False,
+                 (base / "residual.jsonl").exists() and "root:a.ts" in (base / "residual.jsonl").read_text())
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "WORSE")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, net=True)
+    assert_equal("neta: un diagnóstico nuevo en su propio archivo tampoco la tumba si el total baja",
+                 ("progress", "const a = WORSE\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "REVEAL")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("estricta (por defecto): el mismo cambio se revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5 WORSE REVEAL")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, net=True)
+    assert_equal("neta: si el total no baja se revierte aunque un objetivo baje",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

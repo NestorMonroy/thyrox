@@ -113,7 +113,7 @@ def _queued(residual: Path) -> set[tuple[str, str]]:
 
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
-             before_lines: list[str] | None = None) -> StepReport:
+             before_lines: list[str] | None = None, net: bool = False) -> StepReport:
     runs = 0
     if before_lines is None:
         before_lines = run_tsc(root, tsc, bench / "before.log")
@@ -151,10 +151,19 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
         Proposal(pid, by_id[pid]["proposer"], frozenset(by_id[pid]["targets"]), frozenset(by_id[pid]["files"]))
         for pid in applied])
     outcomes.update({v.proposal_id: v.outcome for v in report.verdicts})
+    # Política neta: sólo con una propuesta por lote, porque el total no se
+    # puede repartir entre varias. Se conserva si bajan sus objetivos y baja el
+    # total; lo que destapa se registra y no se revierte.
+    net_kept: str | None = None
+    if net and len(applied) == 1 and len(report.verdicts) == 1:
+        verdict = report.verdicts[0]
+        if verdict.targets_after < verdict.targets_before and report.total_after < report.total_before:
+            net_kept = verdict.proposal_id
+            outcomes[net_kept] = "accepted-net"
 
     patched = {pid: {file: (root / file).read_text() for file in applied[pid]} for pid in applied}
-    accepted = [pid for pid in applied if outcomes[pid] == "accepted"]
-    reverted = [pid for pid in applied if outcomes[pid] != "accepted"]
+    accepted = [pid for pid in applied if outcomes[pid] in ("accepted", "accepted-net")]
+    reverted = [pid for pid in applied if outcomes[pid] not in ("accepted", "accepted-net")]
     for pid in reverted:
         for file, text in applied[pid].items():
             (root / file).write_text(text)
@@ -191,13 +200,17 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
 
     kept: list[str] = []
     final_lines = before_lines
-    if accepted:
+    if net_kept is not None:
+        # No se biseca: lo destapado ya se aceptó al conservarla por el neto.
+        kept, final_lines = [net_kept], after_lines
+    elif accepted:
         kept, final_lines = settle(accepted, before_lines, None if reverted else after_lines)
     runs += counter["n"]
     for pid in revealed:
         outcomes[pid] = "revealed"
     ledger_out = rows + [{**row, "outcome": outcomes[row["proposal_id"]],
-                          "new_diagnostics": revealed.get(row["proposal_id"], row["new_diagnostics"])}
+                          "new_diagnostics": (report.new_diagnostics if row["proposal_id"] == net_kept
+                                              else revealed.get(row["proposal_id"], row["new_diagnostics"]))}
                          for row in ledger_rows(report)]
     _append(ledger, ledger_out)
     _append(residual, [{"proposal_id": pid, "proposer": by_id[pid]["proposer"], "bases": by_id[pid]["bases"],
@@ -226,12 +239,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--epsilon", type=float, default=0.5)
     parser.add_argument("--alpha0", type=float, default=0.5)
     parser.add_argument("--max-batch", type=int)
+    parser.add_argument("--net", action="store_true",
+                        help="política neta: conservar una propuesta si bajan sus objetivos y el total")
     args = parser.parse_args(argv[:split])
     try:
         before = args.before_log.read_text().splitlines() if args.before_log else None
         report = run_step(args.root, _read_jsonl(args.candidates), argv[split + 1:], args.ledger,
                           args.bench, seed=args.seed, epsilon=args.epsilon, alpha0=args.alpha0,
-                          max_batch=args.max_batch, before_lines=before)
+                          max_batch=args.max_batch, before_lines=before, net=args.net)
     except (OSError, ValueError, RuntimeError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_zero_step: SIN MEDIR — {error}", file=sys.stderr)
         return 2
