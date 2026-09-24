@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bun src/verify/message_shape_audit.ts > .claude/cache/shape-baseline.txt 2>&1", "started_at": "2026-09-24T22:08:22+00:00"}

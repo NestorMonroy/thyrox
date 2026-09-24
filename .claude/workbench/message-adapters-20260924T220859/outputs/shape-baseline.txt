@@ -1,0 +1,11 @@
+src/packages/agent/createDeps.ts(328,34): error SHAPE002: model crossing without adapter: core value asserted as agent
+src/packages/agent/createDeps.ts(332,14): error SHAPE002: model crossing without adapter: core value asserted as agent
+src/packages/agent/createDeps.ts(336,14): error SHAPE002: model crossing without adapter: core value asserted as agent
+src/packages/agent/createDeps.ts(337,14): error SHAPE002: model crossing without adapter: core value asserted as agent
+src/packages/agent/createDeps.ts(424,30): error SHAPE002: model crossing without adapter: core value asserted as agent
+src/packages/agent/core/AgentLoop.ts(114,32): error SHAPE002: model crossing without adapter: foreign value asserted as core
+src/packages/agent/core/AgentLoop.ts(117,47): error SHAPE002: model crossing without adapter: foreign value asserted as core
+src/packages/agent/core/AgentLoop.ts(158,33): error SHAPE001: dual-shape read .message.stop_reason on a flat CoreMessage
+src/packages/agent/core/AgentLoop.ts(445,23): error SHAPE001: dual-shape read .message.content on a flat CoreMessage
+src/packages/agent/core/AgentLoop.ts(446,11): error SHAPE001: dual-shape read .message.content on a flat CoreMessage
+message_shape_audit: 10 hallazgo(s) (alcance medido: 319 archivo(s) de src/packages/agent)
