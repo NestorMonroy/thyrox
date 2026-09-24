@@ -1,0 +1,8 @@
+Type the tool render methods as ReactNode
+
+Tool.ts aliased React.ReactNode to unknown because react did not
+resolve from tool-registry when the file was ported. It is now a
+declared dependency of the package, so the alias names the real type
+and every renderToolUseMessage or renderToolResultMessage result can
+be placed in JSX without a cast. The module header no longer claims
+react is missing.

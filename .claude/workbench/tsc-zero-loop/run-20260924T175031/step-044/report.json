@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2672, "total_final": 2655, "tsc_runs": 1, "accepted": ["agent:react-node-real"], "files_kept": ["src/packages/tool-registry/src/Tool.ts"], "outcomes": {"agent:react-node-real": "accepted-net"}}

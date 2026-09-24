@@ -17,12 +17,9 @@
  *   `command-runtime/src`), `@thyrox/agent/file-history` (no existe aún).
  *   Cuando esos paquetes hermanos completen esa ruta, este archivo empieza
  *   a tipar contra el símbolo real sin tocarlo.
- * - `React.ReactNode` se sustituye por el alias local `ReactNodeLike` (ver
- *   más abajo): `react` no está instalado en este árbol (medido — ningún
- *   `node_modules/react` bajo este paquete) y `React` tampoco es un
- *   namespace ambiental aquí (no hay `@types/react`). El alias documenta la
- *   forma sin traer la dependencia — mismo patrón que
- *   `@thyrox/voice: src/hooks/useVoiceIntegration.tsx`.
+ * - `React.ReactNode` se nombra por el alias `ReactNodeLike` (ver más
+ *   abajo); desde que `react` es dependencia del paquete, el alias es el
+ *   tipo real y no un `unknown`.
  */
 import type {
   ToolResultBlockParam,
@@ -33,17 +30,18 @@ import type {
   ElicitResult,
 } from '@modelcontextprotocol/sdk/types.js'
 import type { UUID } from 'crypto'
+import type { ReactNode } from 'react'
 import type { z } from 'zod/v4'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { ThinkingConfig } from '@thyrox/provider/thinking.js'
 
 /**
- * Sustituto local de `React.ReactNode` — ver docstring del módulo. Sólo se
- * usa como anotación de tipo en las firmas de renderizado de abajo; ninguna
- * de esas firmas se invoca desde este archivo.
+ * `React.ReactNode`. Se llamó `ReactNodeLike` y valía `unknown` mientras
+ * `react` no resolvía desde este paquete; ya es dependencia declarada
+ * (`package.json`) y el alias se conserva para no renombrar sus usos.
  */
-export type ReactNodeLike = unknown
+export type ReactNodeLike = ReactNode
 
 export type ToolInputJSONSchema = {
   [x: string]: unknown
