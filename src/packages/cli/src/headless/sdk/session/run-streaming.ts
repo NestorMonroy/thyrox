@@ -1,4 +1,5 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
+import type { McpSetServersResult } from '../../../mcpServersHandlers.js'
 import { feature } from 'bun:bundle'
 import '@thyrox/app-host/runtime/bootstrap.js'
 import { settingsChangeDetector } from '@thyrox/config/changeDetector'
@@ -931,12 +932,14 @@ export function runHeadlessStreaming(
     }> => {
       const oldSdkClientNames = new Set(sdkClients.map(c => c.name))
 
-      const result = await runtimeHandleMcpSetServers(
+      // El API del runtime es opaco (V7 §10.2 Cut 5): quien llama lo
+      // especializa con el tipo concreto de su implementación.
+      const result = (await runtimeHandleMcpSetServers(
         servers,
         { configs: sdkMcpConfigs, clients: sdkClients, tools: sdkTools },
         dynamicMcpState,
-        setAppState,
-      )
+        setAppState as (f: (prev: unknown) => unknown) => void,
+      )) as McpSetServersResult
 
       // Update SDK state (need to mutate sdkMcpConfigs since it's shared)
       for (const key of Object.keys(sdkMcpConfigs)) {
