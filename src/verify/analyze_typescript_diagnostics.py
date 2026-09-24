@@ -10,9 +10,13 @@ import re
 import sys
 from typing import Iterable
 
+# Dos familias de codigo: `TSnnnn` de tsc y `SHAPEnnn` del auditor de forma
+# de mensajes (`message_shape_audit.ts`), que emite en este mismo formato para
+# que el lazo, su memoria de patrones y sus gates lo lean sin cambios. Es una
+# lista cerrada a proposito: un prefijo desconocido no cuenta como error.
 DIAGNOSTIC = re.compile(
     r"^(?P<file>.+?)\((?P<line>\d+),(?P<column>\d+)\): "
-    r"error (?P<code>TS\d+): (?P<message>.*)$"
+    r"error (?P<code>TS\d+|SHAPE\d+): (?P<message>.*)$"
 )
 MISSING_EXPORT = re.compile(
     r'''Module '["](?P<provider>.+?)["]' has no exported member '(?P<symbol>.+?)'\.'''

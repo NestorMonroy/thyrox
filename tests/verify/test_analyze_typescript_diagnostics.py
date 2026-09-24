@@ -39,6 +39,19 @@ class TypeScriptDiagnosticAnalysisTest(unittest.TestCase):
         self.assertEqual(report["files"], 1)
         self.assertEqual(report["by_code"], {"TS2305": 1, "TS2322": 1})
 
+    def test_counts_shape_audit_diagnostics_beside_tsc(self) -> None:
+        # El segundo verificador (`message_shape_audit.ts`) emite en el formato
+        # de tsc con codigo SHAPEnnn, para que el lazo, su memoria y sus gates
+        # lo lean sin cambios. Una linea que imita el formato con otro prefijo
+        # sigue sin contar: la regex acepta dos familias, no cualquier codigo.
+        result, report = self.run_analysis(
+            "src/a.ts(2,3): error TS2322: Type 'string' is not assignable to type 'number'.\n"
+            "src/core/Loop.ts(9,5): error SHAPE001: dual-shape read .message.content on CoreAssistantMessage\n"
+            "src/b.ts(1,1): error LINT001: not a verifier this loop knows\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(report["by_code"], {"SHAPE001": 1, "TS2322": 1})
+
     def test_extracts_missing_export_relationship(self) -> None:
         _, report = self.run_analysis(
             "src/consumer.ts(7,2): error TS2305: Module '\"@thyrox/provider\"' has no exported member 'createClient'.\n"
