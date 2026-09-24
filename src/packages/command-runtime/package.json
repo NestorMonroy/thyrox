@@ -99,13 +99,229 @@
       "types": "./dist/commands/powerup/PowerupBanner.d.ts",
       "default": "./src/commands/powerup/PowerupBanner.tsx"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./api.js": {
+      "types": "./dist/api.d.ts",
+      "default": "./src/api.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./argumentSubstitution.js": {
+      "types": "./dist/argumentSubstitution.d.ts",
+      "default": "./src/argumentSubstitution.ts"
+    },
+    "./commands/background/index.js": {
+      "types": "./dist/commands/background/index.d.ts",
+      "default": "./src/commands/background/index.ts"
+    },
+    "./commands/bridge/index.js": {
+      "types": "./dist/commands/bridge/index.d.ts",
+      "default": "./src/commands/bridge/index.ts"
+    },
+    "./commands/btw/index.js": {
+      "types": "./dist/commands/btw/index.d.ts",
+      "default": "./src/commands/btw/index.ts"
+    },
+    "./commands/chrome/index.js": {
+      "types": "./dist/commands/chrome/index.d.ts",
+      "default": "./src/commands/chrome/index.ts"
+    },
+    "./commands/clear/conversation.js": {
+      "types": "./dist/commands/clear/conversation.d.ts",
+      "default": "./src/commands/clear/conversation.ts"
+    },
+    "./commands/clear/index.js": {
+      "types": "./dist/commands/clear/index.d.ts",
+      "default": "./src/commands/clear/index.ts"
+    },
+    "./commands/compact/index.js": {
+      "types": "./dist/commands/compact/index.d.ts",
+      "default": "./src/commands/compact/index.ts"
+    },
+    "./commands/context/context-noninteractive.js": {
+      "types": "./dist/commands/context/context-noninteractive.d.ts",
+      "default": "./src/commands/context/context-noninteractive.ts"
+    },
+    "./commands/context/index.js": {
+      "types": "./dist/commands/context/index.d.ts",
+      "default": "./src/commands/context/index.ts"
+    },
+    "./commands/copy/index.js": {
+      "types": "./dist/commands/copy/index.d.ts",
+      "default": "./src/commands/copy/index.ts"
+    },
+    "./commands/cost/index.js": {
+      "types": "./dist/commands/cost/index.d.ts",
+      "default": "./src/commands/cost/index.ts"
+    },
+    "./commands/effort/index.js": {
+      "types": "./dist/commands/effort/index.d.ts",
+      "default": "./src/commands/effort/index.ts"
+    },
+    "./commands/extra-usage/extra-usage-noninteractive.js": {
+      "types": "./dist/commands/extra-usage/extra-usage-noninteractive.d.ts",
+      "default": "./src/commands/extra-usage/extra-usage-noninteractive.ts"
+    },
+    "./commands/fast/index.js": {
+      "types": "./dist/commands/fast/index.d.ts",
+      "default": "./src/commands/fast/index.ts"
+    },
+    "./commands/fork/index.js": {
+      "types": "./dist/commands/fork/index.d.ts",
+      "default": "./src/commands/fork/index.ts"
+    },
+    "./commands/goal/index.js": {
+      "types": "./dist/commands/goal/index.d.ts",
+      "default": "./src/commands/goal/index.ts"
+    },
+    "./commands/ide/index.js": {
+      "types": "./dist/commands/ide/index.d.ts",
+      "default": "./src/commands/ide/index.ts"
+    },
+    "./commands/insights/insights.js": {
+      "types": "./dist/commands/insights/insights.d.ts",
+      "default": "./src/commands/insights/insights.ts"
+    },
+    "./commands/install-github-app/index.js": {
+      "types": "./dist/commands/install-github-app/index.d.ts",
+      "default": "./src/commands/install-github-app/index.ts"
+    },
+    "./commands/install-github-app/types.js": {
+      "types": "./dist/commands/install-github-app/types.d.ts",
+      "default": "./src/commands/install-github-app/types.ts"
+    },
+    "./commands/login/index.js": {
+      "types": "./dist/commands/login/index.d.ts",
+      "default": "./src/commands/login/index.ts"
+    },
+    "./commands/mcp/index.js": {
+      "types": "./dist/commands/mcp/index.d.ts",
+      "default": "./src/commands/mcp/index.ts"
+    },
+    "./commands/memory/index.js": {
+      "types": "./dist/commands/memory/index.d.ts",
+      "default": "./src/commands/memory/index.ts"
+    },
+    "./commands/model/index.js": {
+      "types": "./dist/commands/model/index.d.ts",
+      "default": "./src/commands/model/index.ts"
+    },
+    "./commands/powerup/index.js": {
+      "types": "./dist/commands/powerup/index.d.ts",
+      "default": "./src/commands/powerup/index.ts"
+    },
+    "./commands/privacy-settings/index.js": {
+      "types": "./dist/commands/privacy-settings/index.d.ts",
+      "default": "./src/commands/privacy-settings/index.ts"
+    },
+    "./commands/rate-limit-options/index.js": {
+      "types": "./dist/commands/rate-limit-options/index.d.ts",
+      "default": "./src/commands/rate-limit-options/index.ts"
+    },
+    "./commands/recap/index.js": {
+      "types": "./dist/commands/recap/index.d.ts",
+      "default": "./src/commands/recap/index.ts"
+    },
+    "./commands/remote-env/index.js": {
+      "types": "./dist/commands/remote-env/index.d.ts",
+      "default": "./src/commands/remote-env/index.ts"
+    },
+    "./commands/remoteControlServer/index.js": {
+      "types": "./dist/commands/remoteControlServer/index.d.ts",
+      "default": "./src/commands/remoteControlServer/index.ts"
+    },
+    "./commands/rename/index.js": {
+      "types": "./dist/commands/rename/index.d.ts",
+      "default": "./src/commands/rename/index.ts"
+    },
+    "./commands/resume/index.js": {
+      "types": "./dist/commands/resume/index.d.ts",
+      "default": "./src/commands/resume/index.ts"
+    },
+    "./commands/review/review.js": {
+      "types": "./dist/commands/review/review.d.ts",
+      "default": "./src/commands/review/review.ts"
+    },
+    "./commands/session/index.js": {
+      "types": "./dist/commands/session/index.d.ts",
+      "default": "./src/commands/session/index.ts"
+    },
+    "./commands/skills/index.js": {
+      "types": "./dist/commands/skills/index.d.ts",
+      "default": "./src/commands/skills/index.ts"
+    },
+    "./commands/status/index.js": {
+      "types": "./dist/commands/status/index.d.ts",
+      "default": "./src/commands/status/index.ts"
+    },
+    "./commands/stop/index.js": {
+      "types": "./dist/commands/stop/index.d.ts",
+      "default": "./src/commands/stop/index.ts"
+    },
+    "./commands/terminalSetup/index.js": {
+      "types": "./dist/commands/terminalSetup/index.d.ts",
+      "default": "./src/commands/terminalSetup/index.ts"
+    },
+    "./commands/theme/index.js": {
+      "types": "./dist/commands/theme/index.d.ts",
+      "default": "./src/commands/theme/index.ts"
+    },
+    "./commands/upgrade/index.js": {
+      "types": "./dist/commands/upgrade/index.d.ts",
+      "default": "./src/commands/upgrade/index.ts"
+    },
+    "./commands/voice/index.js": {
+      "types": "./dist/commands/voice/index.d.ts",
+      "default": "./src/commands/voice/index.ts"
+    },
+    "./commands/workflows/index.js": {
+      "types": "./dist/commands/workflows/index.d.ts",
+      "default": "./src/commands/workflows/index.ts"
+    },
+    "./exampleCommands.js": {
+      "types": "./dist/exampleCommands.d.ts",
+      "default": "./src/exampleCommands.ts"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "default": "./src/runtime.ts"
+    },
+    "./runtime.js": {
+      "types": "./dist/runtime.d.ts",
+      "default": "./src/runtime.ts"
+    },
+    "./skills/bundledSkills.js": {
+      "types": "./dist/skills/bundledSkills.d.ts",
+      "default": "./src/skills/bundledSkills.ts"
+    },
+    "./skills/featureCheck.js": {
+      "types": "./dist/skills/featureCheck.d.ts",
+      "default": "./src/skills/featureCheck.ts"
+    },
+    "./skills/mcpSkills.js": {
+      "types": "./dist/skills/mcpSkills.d.ts",
+      "default": "./src/skills/mcpSkills.ts"
+    },
+    "./slashCommandParsing.js": {
+      "types": "./dist/slashCommandParsing.d.ts",
+      "default": "./src/slashCommandParsing.ts"
+    },
+    "./stubs/emptyCommandStub.js": {
+      "types": "./dist/stubs/emptyCommandStub.d.ts",
+      "default": "./src/stubs/emptyCommandStub.ts"
+    },
+    "./stubs/resetLimitsStub.js": {
+      "types": "./dist/stubs/resetLimitsStub.d.ts",
+      "default": "./src/stubs/resetLimitsStub.ts"
+    },
+    "./stubs/stubCommand.js": {
+      "types": "./dist/stubs/stubCommand.d.ts",
+      "default": "./src/stubs/stubCommand.ts"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./types.js": {
+      "types": "./dist/types.d.ts",
+      "default": "./src/types.ts"
     }
   },
   "scripts": {

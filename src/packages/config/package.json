@@ -75,17 +75,425 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./*.ts"
-    },
     "./plugin/core/performStartupChecks.js": {
       "types": "./dist/plugin/core/performStartupChecks.d.ts",
       "default": "./plugin/core/performStartupChecks.tsx"
+    },
+    "./bundledMode": {
+      "types": "./dist/bundledMode.d.ts",
+      "default": "./bundledMode.ts"
+    },
+    "./bundledMode.js": {
+      "types": "./dist/bundledMode.d.ts",
+      "default": "./bundledMode.ts"
+    },
+    "./commonConstants.js": {
+      "types": "./dist/commonConstants.d.ts",
+      "default": "./commonConstants.ts"
+    },
+    "./configConstants.js": {
+      "types": "./dist/configConstants.d.ts",
+      "default": "./configConstants.ts"
+    },
+    "./dxt/helpers.js": {
+      "types": "./dist/dxt/helpers.d.ts",
+      "default": "./dxt/helpers.ts"
+    },
+    "./dxt/zip.js": {
+      "types": "./dist/dxt/zip.d.ts",
+      "default": "./dxt/zip.ts"
+    },
+    "./embeddedTools.js": {
+      "types": "./dist/embeddedTools.d.ts",
+      "default": "./embeddedTools.ts"
+    },
+    "./env/dynamic": {
+      "types": "./dist/env/dynamic.d.ts",
+      "default": "./env/dynamic.ts"
+    },
+    "./env/git-settings": {
+      "types": "./dist/env/git-settings.d.ts",
+      "default": "./env/git-settings.ts"
+    },
+    "./env/index.js": {
+      "types": "./dist/env/index.d.ts",
+      "default": "./env/index.ts"
+    },
+    "./env/managed-constants": {
+      "types": "./dist/env/managed-constants.d.ts",
+      "default": "./env/managed-constants.ts"
+    },
+    "./env/paths": {
+      "types": "./dist/env/paths.d.ts",
+      "default": "./env/paths.ts"
+    },
+    "./env/paths.js": {
+      "types": "./dist/env/paths.d.ts",
+      "default": "./env/paths.ts"
+    },
+    "./env/privacy": {
+      "types": "./dist/env/privacy.d.ts",
+      "default": "./env/privacy.ts"
+    },
+    "./env/privacy-level": {
+      "types": "./dist/env/privacy-level.d.ts",
+      "default": "./env/privacy-level.ts"
+    },
+    "./env/utils.js": {
+      "types": "./dist/env/utils.d.ts",
+      "default": "./env/utils.ts"
+    },
+    "./env/validation": {
+      "types": "./dist/env/validation.d.ts",
+      "default": "./env/validation.ts"
+    },
+    "./feature-flags": {
+      "types": "./dist/feature-flags.d.ts",
+      "default": "./feature-flags.ts"
+    },
+    "./feature-flags.js": {
+      "types": "./dist/feature-flags.d.ts",
+      "default": "./feature-flags.ts"
+    },
+    "./frontmatterParser.js": {
+      "types": "./dist/frontmatterParser.d.ts",
+      "default": "./frontmatterParser.ts"
+    },
+    "./generators": {
+      "types": "./dist/generators.d.ts",
+      "default": "./generators.ts"
+    },
+    "./git/gitConfigParser.js": {
+      "types": "./dist/git/gitConfigParser.d.ts",
+      "default": "./git/gitConfigParser.ts"
+    },
+    "./gitFilesystem.js": {
+      "types": "./dist/gitFilesystem.d.ts",
+      "default": "./gitFilesystem.ts"
+    },
+    "./global/config.js": {
+      "types": "./dist/global/config.d.ts",
+      "default": "./global/config.ts"
+    },
+    "./hash": {
+      "types": "./dist/hash.d.ts",
+      "default": "./hash.ts"
+    },
+    "./hash.js": {
+      "types": "./dist/hash.d.ts",
+      "default": "./hash.ts"
+    },
+    "./host": {
+      "types": "./dist/host.d.ts",
+      "default": "./host.ts"
+    },
+    "./host.js": {
+      "types": "./dist/host.d.ts",
+      "default": "./host.ts"
+    },
+    "./internal/allowedSourcesState.js": {
+      "types": "./dist/internal/allowedSourcesState.d.ts",
+      "default": "./internal/allowedSourcesState.ts"
+    },
+    "./internal/lazySchema.js": {
+      "types": "./dist/internal/lazySchema.d.ts",
+      "default": "./internal/lazySchema.ts"
+    },
+    "./managedEnv.js": {
+      "types": "./dist/managedEnv.d.ts",
+      "default": "./managedEnv.ts"
+    },
+    "./mcpConfigSchema.js": {
+      "types": "./dist/mcpConfigSchema.d.ts",
+      "default": "./mcpConfigSchema.ts"
+    },
+    "./memoize.js": {
+      "types": "./dist/memoize.d.ts",
+      "default": "./memoize.ts"
+    },
+    "./outputStyles.js": {
+      "types": "./dist/outputStyles.d.ts",
+      "default": "./outputStyles.ts"
+    },
+    "./platform": {
+      "types": "./dist/platform.d.ts",
+      "default": "./platform.ts"
+    },
+    "./platform.js": {
+      "types": "./dist/platform.d.ts",
+      "default": "./platform.ts"
+    },
+    "./plugin/_deps": {
+      "types": "./dist/plugin/_deps.d.ts",
+      "default": "./plugin/_deps.ts"
+    },
+    "./plugin/_deps.js": {
+      "types": "./dist/plugin/_deps.d.ts",
+      "default": "./plugin/_deps.ts"
+    },
+    "./plugin/builtin": {
+      "types": "./dist/plugin/builtin.d.ts",
+      "default": "./plugin/builtin.ts"
+    },
+    "./plugin/cacheUtils": {
+      "types": "./dist/plugin/cacheUtils.d.ts",
+      "default": "./plugin/cacheUtils.ts"
+    },
+    "./plugin/commands/reload-plugins/index.js": {
+      "types": "./dist/plugin/commands/reload-plugins/index.d.ts",
+      "default": "./plugin/commands/reload-plugins/index.ts"
+    },
+    "./plugin/commands/thinkback-play/index.js": {
+      "types": "./dist/plugin/commands/thinkback-play/index.d.ts",
+      "default": "./plugin/commands/thinkback-play/index.ts"
+    },
+    "./plugin/commands/thinkback/index.js": {
+      "types": "./dist/plugin/commands/thinkback/index.d.ts",
+      "default": "./plugin/commands/thinkback/index.ts"
+    },
+    "./plugin/core/loadPluginHooks.js": {
+      "types": "./dist/plugin/core/loadPluginHooks.d.ts",
+      "default": "./plugin/core/loadPluginHooks.ts"
+    },
+    "./plugin/core/pluginAutoupdate.js": {
+      "types": "./dist/plugin/core/pluginAutoupdate.d.ts",
+      "default": "./plugin/core/pluginAutoupdate.ts"
+    },
+    "./plugin/core/pluginLoader.js": {
+      "types": "./dist/plugin/core/pluginLoader.d.ts",
+      "default": "./plugin/core/pluginLoader.ts"
+    },
+    "./plugin/headlessPluginInstall": {
+      "types": "./dist/plugin/headlessPluginInstall.d.ts",
+      "default": "./plugin/headlessPluginInstall.ts"
+    },
+    "./plugin/hintRecommendation": {
+      "types": "./dist/plugin/hintRecommendation.d.ts",
+      "default": "./plugin/hintRecommendation.ts"
+    },
+    "./plugin/ineffectiveDisables.js": {
+      "types": "./dist/plugin/ineffectiveDisables.d.ts",
+      "default": "./plugin/ineffectiveDisables.ts"
+    },
+    "./plugin/installCounts": {
+      "types": "./dist/plugin/installCounts.d.ts",
+      "default": "./plugin/installCounts.ts"
+    },
+    "./plugin/installedPluginsManager": {
+      "types": "./dist/plugin/installedPluginsManager.d.ts",
+      "default": "./plugin/installedPluginsManager.ts"
+    },
+    "./plugin/loadPluginAgentsAlias.js": {
+      "types": "./dist/plugin/loadPluginAgentsAlias.d.ts",
+      "default": "./plugin/loadPluginAgentsAlias.ts"
+    },
+    "./plugin/loadPluginCommands": {
+      "types": "./dist/plugin/loadPluginCommands.d.ts",
+      "default": "./plugin/loadPluginCommands.ts"
+    },
+    "./plugin/loadPluginCommands.js": {
+      "types": "./dist/plugin/loadPluginCommands.d.ts",
+      "default": "./plugin/loadPluginCommands.ts"
+    },
+    "./plugin/loadPluginHooks": {
+      "types": "./dist/plugin/loadPluginHooks.d.ts",
+      "default": "./plugin/loadPluginHooks.ts"
+    },
+    "./plugin/lspPluginIntegration": {
+      "types": "./dist/plugin/lspPluginIntegration.d.ts",
+      "default": "./plugin/lspPluginIntegration.ts"
+    },
+    "./plugin/lspRecommendation": {
+      "types": "./dist/plugin/lspRecommendation.d.ts",
+      "default": "./plugin/lspRecommendation.ts"
+    },
+    "./plugin/marketplaceHelpers": {
+      "types": "./dist/plugin/marketplaceHelpers.d.ts",
+      "default": "./plugin/marketplaceHelpers.ts"
+    },
+    "./plugin/marketplaceManager": {
+      "types": "./dist/plugin/marketplaceManager.d.ts",
+      "default": "./plugin/marketplaceManager.ts"
+    },
+    "./plugin/mcpPluginIntegration": {
+      "types": "./dist/plugin/mcpPluginIntegration.d.ts",
+      "default": "./plugin/mcpPluginIntegration.ts"
+    },
+    "./plugin/mcpbHandler": {
+      "types": "./dist/plugin/mcpbHandler.d.ts",
+      "default": "./plugin/mcpbHandler.ts"
+    },
+    "./plugin/officialMarketplace": {
+      "types": "./dist/plugin/officialMarketplace.d.ts",
+      "default": "./plugin/officialMarketplace.ts"
+    },
+    "./plugin/officialMarketplaceStartupCheck": {
+      "types": "./dist/plugin/officialMarketplaceStartupCheck.d.ts",
+      "default": "./plugin/officialMarketplaceStartupCheck.ts"
+    },
+    "./plugin/orphanedPluginFilter": {
+      "types": "./dist/plugin/orphanedPluginFilter.d.ts",
+      "default": "./plugin/orphanedPluginFilter.ts"
+    },
+    "./plugin/parseMarketplaceInput": {
+      "types": "./dist/plugin/parseMarketplaceInput.d.ts",
+      "default": "./plugin/parseMarketplaceInput.ts"
+    },
+    "./plugin/pluginAutoupdate": {
+      "types": "./dist/plugin/pluginAutoupdate.d.ts",
+      "default": "./plugin/pluginAutoupdate.ts"
+    },
+    "./plugin/pluginBlocklist": {
+      "types": "./dist/plugin/pluginBlocklist.d.ts",
+      "default": "./plugin/pluginBlocklist.ts"
+    },
+    "./plugin/pluginCliCommands": {
+      "types": "./dist/plugin/pluginCliCommands.d.ts",
+      "default": "./plugin/pluginCliCommands.ts"
+    },
+    "./plugin/pluginDirectories": {
+      "types": "./dist/plugin/pluginDirectories.d.ts",
+      "default": "./plugin/pluginDirectories.ts"
+    },
+    "./plugin/pluginFlagging": {
+      "types": "./dist/plugin/pluginFlagging.d.ts",
+      "default": "./plugin/pluginFlagging.ts"
+    },
+    "./plugin/pluginIdentifier": {
+      "types": "./dist/plugin/pluginIdentifier.d.ts",
+      "default": "./plugin/pluginIdentifier.ts"
+    },
+    "./plugin/pluginInstallationHelpers": {
+      "types": "./dist/plugin/pluginInstallationHelpers.d.ts",
+      "default": "./plugin/pluginInstallationHelpers.ts"
+    },
+    "./plugin/pluginLoader": {
+      "types": "./dist/plugin/pluginLoader.d.ts",
+      "default": "./plugin/pluginLoader.ts"
+    },
+    "./plugin/pluginOperations": {
+      "types": "./dist/plugin/pluginOperations.d.ts",
+      "default": "./plugin/pluginOperations.ts"
+    },
+    "./plugin/pluginOperations.js": {
+      "types": "./dist/plugin/pluginOperations.d.ts",
+      "default": "./plugin/pluginOperations.ts"
+    },
+    "./plugin/pluginOptionsStorage": {
+      "types": "./dist/plugin/pluginOptionsStorage.d.ts",
+      "default": "./plugin/pluginOptionsStorage.ts"
+    },
+    "./plugin/pluginPolicy": {
+      "types": "./dist/plugin/pluginPolicy.d.ts",
+      "default": "./plugin/pluginPolicy.ts"
+    },
+    "./plugin/pluginStartupCheck": {
+      "types": "./dist/plugin/pluginStartupCheck.d.ts",
+      "default": "./plugin/pluginStartupCheck.ts"
+    },
+    "./plugin/refresh": {
+      "types": "./dist/plugin/refresh.d.ts",
+      "default": "./plugin/refresh.ts"
+    },
+    "./plugin/schemas": {
+      "types": "./dist/plugin/schemas.d.ts",
+      "default": "./plugin/schemas.ts"
+    },
+    "./plugin/types": {
+      "types": "./dist/plugin/types.d.ts",
+      "default": "./plugin/types.ts"
+    },
+    "./plugin/validatePlugin": {
+      "types": "./dist/plugin/validatePlugin.d.ts",
+      "default": "./plugin/validatePlugin.ts"
+    },
+    "./plugin/walkPluginMarkdown.js": {
+      "types": "./dist/plugin/walkPluginMarkdown.d.ts",
+      "default": "./plugin/walkPluginMarkdown.ts"
+    },
+    "./product": {
+      "types": "./dist/product.d.ts",
+      "default": "./product.ts"
+    },
+    "./semver": {
+      "types": "./dist/semver.d.ts",
+      "default": "./semver.ts"
+    },
+    "./sequential": {
+      "types": "./dist/sequential.d.ts",
+      "default": "./sequential.ts"
+    },
+    "./settings/allErrors": {
+      "types": "./dist/settings/allErrors.d.ts",
+      "default": "./settings/allErrors.ts"
+    },
+    "./settings/core/allErrors.js": {
+      "types": "./dist/settings/core/allErrors.d.ts",
+      "default": "./settings/core/allErrors.ts"
+    },
+    "./settings/core/changeDetector.js": {
+      "types": "./dist/settings/core/changeDetector.d.ts",
+      "default": "./settings/core/changeDetector.ts"
+    },
+    "./settings/core/constants.js": {
+      "types": "./dist/settings/core/constants.d.ts",
+      "default": "./settings/core/constants.ts"
+    },
+    "./settings/core/settings.js": {
+      "types": "./dist/settings/core/settings.d.ts",
+      "default": "./settings/core/settings.ts"
+    },
+    "./settings/core/validation.js": {
+      "types": "./dist/settings/core/validation.d.ts",
+      "default": "./settings/core/validation.ts"
+    },
+    "./settings/mdm/rawRead": {
+      "types": "./dist/settings/mdm/rawRead.d.ts",
+      "default": "./settings/mdm/rawRead.ts"
+    },
+    "./settings/mdm/settings": {
+      "types": "./dist/settings/mdm/settings.d.ts",
+      "default": "./settings/mdm/settings.ts"
+    },
+    "./settings/settingsCache.js": {
+      "types": "./dist/settings/settingsCache.d.ts",
+      "default": "./settings/settingsCache.ts"
+    },
+    "./settings/types.js": {
+      "types": "./dist/settings/types.d.ts",
+      "default": "./settings/types.ts"
+    },
+    "./settings/validateEditTool": {
+      "types": "./dist/settings/validateEditTool.d.ts",
+      "default": "./settings/validateEditTool.ts"
+    },
+    "./signal": {
+      "types": "./dist/signal.d.ts",
+      "default": "./signal.ts"
+    },
+    "./sleep": {
+      "types": "./dist/sleep.d.ts",
+      "default": "./sleep.ts"
+    },
+    "./stream": {
+      "types": "./dist/stream.d.ts",
+      "default": "./stream.ts"
+    },
+    "./timeouts": {
+      "types": "./dist/timeouts.d.ts",
+      "default": "./timeouts.ts"
+    },
+    "./utils/envExpansion.js": {
+      "types": "./dist/utils/envExpansion.d.ts",
+      "default": "./utils/envExpansion.ts"
+    },
+    "./utils/markdownDescription.js": {
+      "types": "./dist/utils/markdownDescription.d.ts",
+      "default": "./utils/markdownDescription.ts"
+    },
+    "./yaml.js": {
+      "types": "./dist/yaml.d.ts",
+      "default": "./yaml.ts"
     }
   },
   "scripts": {

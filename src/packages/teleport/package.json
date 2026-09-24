@@ -30,17 +30,25 @@
       "types": "./dist/src/remote-setup/remote-setup.d.ts",
       "default": "./src/remote-setup/remote-setup.tsx"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./api.js": {
+      "types": "./dist/src/api.d.ts",
+      "default": "./src/api.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./environmentSelection.js": {
+      "types": "./dist/src/environmentSelection.d.ts",
+      "default": "./src/environmentSelection.ts"
     },
-    "./remote-setup/*.js": {
-      "types": "./dist/src/remote-setup/*.d.ts",
-      "default": "./src/remote-setup/*.ts"
+    "./environments.js": {
+      "types": "./dist/src/environments.d.ts",
+      "default": "./src/environments.ts"
+    },
+    "./gitBundle.js": {
+      "types": "./dist/src/gitBundle.d.ts",
+      "default": "./src/gitBundle.ts"
+    },
+    "./remote-setup/index.js": {
+      "types": "./dist/src/remote-setup/index.d.ts",
+      "default": "./src/remote-setup/index.ts"
     }
   },
   "scripts": {

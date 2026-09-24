@@ -14,13 +14,61 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./agentMemory": {
+      "types": "./dist/src/agentMemory.d.ts",
+      "default": "./src/agentMemory.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./extractMemories": {
+      "types": "./dist/src/extractMemories.d.ts",
+      "default": "./src/extractMemories.ts"
+    },
+    "./memoryAge": {
+      "types": "./dist/src/memoryAge.d.ts",
+      "default": "./src/memoryAge.ts"
+    },
+    "./memoryFileDetection": {
+      "types": "./dist/src/memoryFileDetection.d.ts",
+      "default": "./src/memoryFileDetection.ts"
+    },
+    "./memoryShapeTelemetry": {
+      "types": "./dist/src/memoryShapeTelemetry.d.ts",
+      "default": "./src/memoryShapeTelemetry.ts"
+    },
+    "./memorySourceTypes": {
+      "types": "./dist/src/memorySourceTypes.d.ts",
+      "default": "./src/memorySourceTypes.ts"
+    },
+    "./paths": {
+      "types": "./dist/src/paths.d.ts",
+      "default": "./src/paths.ts"
+    },
+    "./projectGitInfo": {
+      "types": "./dist/src/projectGitInfo.d.ts",
+      "default": "./src/projectGitInfo.ts"
+    },
+    "./sessionMemoryPrompts": {
+      "types": "./dist/src/sessionMemoryPrompts.d.ts",
+      "default": "./src/sessionMemoryPrompts.ts"
+    },
+    "./sessionMemoryUtils": {
+      "types": "./dist/src/sessionMemoryUtils.d.ts",
+      "default": "./src/sessionMemoryUtils.ts"
+    },
+    "./teamMemPaths": {
+      "types": "./dist/src/teamMemPaths.d.ts",
+      "default": "./src/teamMemPaths.ts"
+    },
+    "./teamMemSecretGuard": {
+      "types": "./dist/src/teamMemSecretGuard.d.ts",
+      "default": "./src/teamMemSecretGuard.ts"
+    },
+    "./teamMemoryOps": {
+      "types": "./dist/src/teamMemoryOps.d.ts",
+      "default": "./src/teamMemoryOps.ts"
+    },
+    "./teamMemorySyncWatcher": {
+      "types": "./dist/src/teamMemorySyncWatcher.d.ts",
+      "default": "./src/teamMemorySyncWatcher.ts"
     }
   },
   "scripts": {

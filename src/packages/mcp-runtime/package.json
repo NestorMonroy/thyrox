@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/mcp-runtime (ccnmt), TASK #232: runtime cliente/servidor del Model Context Protocol \u2014 pool de conexiones, lifecycle, aggregation de herramientas, OAuth y XAA. 36 de 49 modulos portados (medido: 67 .ts + 1 .tsx en src/ + 1 .ts en testing/ de ccnmt, menos tests) \u2014 este pase cierra testing/index.ts (InMemoryMcpRuntime, createInMemoryMcpRuntimeBindings): es una hoja sin dependencia de tool-registry (s\u00f3lo cita McpRuntimeHostBindings, ya portado), a diferencia de los 13 de src/ que siguen bloqueados. Los 13 restantes, todos en src/, estan BLOQUEADOS por una sola causa raiz \u2014 el paquete @claude-code-how-works/tool-registry (y su /repl) no existe todavia en este arbol, ni directo ni via su sustituto local: utils.ts, clientRuntime.ts, channelAllowlist.ts, channelNotification.ts, vscodeSdkMcp.ts, xaa.ts, useManageMCPConnections.ts y MCPConnectionManager.tsx lo importan directo; auth.ts (2465 lineas) y config.ts (1604 lineas) dependen transitivamente via ./utils.js; mcpOutputStorage.ts y runtimeHostSetup.ts via ./clientRuntime.js; index.ts (barrel) via ./config.js. Sucesor nombrado: portar @thyrox/tool-registry primero. Ver el hallazgo de esta iniciativa para el detalle modulo a modulo y el defecto sistemico de import-crash que un pase anterior corrigio en 9 archivos.",
+  "description": "Porte de @claude-code-how-works/mcp-runtime (ccnmt), TASK #232: runtime cliente/servidor del Model Context Protocol — pool de conexiones, lifecycle, aggregation de herramientas, OAuth y XAA. 36 de 49 modulos portados (medido: 67 .ts + 1 .tsx en src/ + 1 .ts en testing/ de ccnmt, menos tests) — este pase cierra testing/index.ts (InMemoryMcpRuntime, createInMemoryMcpRuntimeBindings): es una hoja sin dependencia de tool-registry (sólo cita McpRuntimeHostBindings, ya portado), a diferencia de los 13 de src/ que siguen bloqueados. Los 13 restantes, todos en src/, estan BLOQUEADOS por una sola causa raiz — el paquete @claude-code-how-works/tool-registry (y su /repl) no existe todavia en este arbol, ni directo ni via su sustituto local: utils.ts, clientRuntime.ts, channelAllowlist.ts, channelNotification.ts, vscodeSdkMcp.ts, xaa.ts, useManageMCPConnections.ts y MCPConnectionManager.tsx lo importan directo; auth.ts (2465 lineas) y config.ts (1604 lineas) dependen transitivamente via ./utils.js; mcpOutputStorage.ts y runtimeHostSetup.ts via ./clientRuntime.js; index.ts (barrel) via ./config.js. Sucesor nombrado: portar @thyrox/tool-registry primero. Ver el hallazgo de esta iniciativa para el detalle modulo a modulo y el defecto sistemico de import-crash que un pase anterior corrigio en 9 archivos.",
   "exports": {
     "./contracts": {
       "types": "./dist/src/contracts.d.ts",
@@ -153,13 +153,89 @@
       "types": "./dist/src/MCPConnectionManager.d.ts",
       "default": "./src/MCPConnectionManager.tsx"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./auth.js": {
+      "types": "./dist/src/auth.d.ts",
+      "default": "./src/auth.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./channelAllowlist.js": {
+      "types": "./dist/src/channelAllowlist.d.ts",
+      "default": "./src/channelAllowlist.ts"
+    },
+    "./channelNotification.js": {
+      "types": "./dist/src/channelNotification.d.ts",
+      "default": "./src/channelNotification.ts"
+    },
+    "./channelPermissions.js": {
+      "types": "./dist/src/channelPermissions.d.ts",
+      "default": "./src/channelPermissions.ts"
+    },
+    "./claudeai.js": {
+      "types": "./dist/src/claudeai.d.ts",
+      "default": "./src/claudeai.ts"
+    },
+    "./clientRuntime.js": {
+      "types": "./dist/src/clientRuntime.d.ts",
+      "default": "./src/clientRuntime.ts"
+    },
+    "./config.js": {
+      "types": "./dist/src/config.d.ts",
+      "default": "./src/config.ts"
+    },
+    "./elicitationHandler.js": {
+      "types": "./dist/src/elicitationHandler.d.ts",
+      "default": "./src/elicitationHandler.ts"
+    },
+    "./elicitationValidation.js": {
+      "types": "./dist/src/elicitationValidation.d.ts",
+      "default": "./src/elicitationValidation.ts"
+    },
+    "./envExpansion.js": {
+      "types": "./dist/src/envExpansion.d.ts",
+      "default": "./src/envExpansion.ts"
+    },
+    "./macOsKeychainHelpers.js": {
+      "types": "./dist/src/macOsKeychainHelpers.d.ts",
+      "default": "./src/macOsKeychainHelpers.ts"
+    },
+    "./mcpOutputStorage.js": {
+      "types": "./dist/src/mcpOutputStorage.d.ts",
+      "default": "./src/mcpOutputStorage.ts"
+    },
+    "./mcpStringUtils.js": {
+      "types": "./dist/src/mcpStringUtils.d.ts",
+      "default": "./src/mcpStringUtils.ts"
+    },
+    "./mcpValidation.js": {
+      "types": "./dist/src/mcpValidation.d.ts",
+      "default": "./src/mcpValidation.ts"
+    },
+    "./normalization.js": {
+      "types": "./dist/src/normalization.d.ts",
+      "default": "./src/normalization.ts"
+    },
+    "./runtimeHostSetup.js": {
+      "types": "./dist/src/runtimeHostSetup.d.ts",
+      "default": "./src/runtimeHostSetup.ts"
+    },
+    "./sanitization.js": {
+      "types": "./dist/src/sanitization.d.ts",
+      "default": "./src/sanitization.ts"
+    },
+    "./types.js": {
+      "types": "./dist/src/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./utils.js": {
+      "types": "./dist/src/utils.d.ts",
+      "default": "./src/utils.ts"
+    },
+    "./vscodeSdkMcp.js": {
+      "types": "./dist/src/vscodeSdkMcp.d.ts",
+      "default": "./src/vscodeSdkMcp.ts"
+    },
+    "./xaaIdpLogin.js": {
+      "types": "./dist/src/xaaIdpLogin.d.ts",
+      "default": "./src/xaaIdpLogin.ts"
     }
   },
   "scripts": {

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/tool-registry (ccnmt), TASK #232: la pieza angular del ciclo \u2014 el contrato Tool completo (buildTool, ToolUseContext, Tool, ToolDef) y los cuatro clientes MCP que 13 de los 14 modulos ausentes en @thyrox/mcp-runtime necesitan como valor (ListMcpResourcesTool, MCPTool, McpAuthTool, ReadMcpResourceTool). 15 modulos completos + 3 parciales declarados sobre 294 modulos .ts/.tsx de ccnmt (medido: find src -name '*.ts' -o -name '*.tsx', sin __tests__ ni *.test.*; index.ts e internal/pendingCrossPackageDeps.ts no cuentan contra ese universo por no tener contraparte directa en ccnmt) -- ver hallazgo de esta iniciativa para el desglose modulo a modulo. renderToolResultMessage/renderToolUseProgressMessage de los tres clientes MCP con UI quedan BLOQUEADOS por la ausencia total de @anthropic/ink + react + @thyrox/repl en este arbol (mismo bloqueador que @thyrox/output, @thyrox/swarm y @thyrox/app-host ya declaran): el modulo carga sin fallar, invocar la funcion dispara el error con el motivo explicito (ver internal y los UI.ts de cada herramienta). McpAuthTool.ts, ListMcpResourcesTool.ts y ReadMcpResourceTool.ts importan symbols de @thyrox/mcp-runtime/{auth,clientRuntime,mcpOutputStorage}.js que siguen ausentes por el lado de mcp-runtime -- es el ciclo inverso, no un bloqueo de este paquete.",
+  "description": "Porte de @claude-code-how-works/tool-registry (ccnmt), TASK #232: la pieza angular del ciclo — el contrato Tool completo (buildTool, ToolUseContext, Tool, ToolDef) y los cuatro clientes MCP que 13 de los 14 modulos ausentes en @thyrox/mcp-runtime necesitan como valor (ListMcpResourcesTool, MCPTool, McpAuthTool, ReadMcpResourceTool). 15 modulos completos + 3 parciales declarados sobre 294 modulos .ts/.tsx de ccnmt (medido: find src -name '*.ts' -o -name '*.tsx', sin __tests__ ni *.test.*; index.ts e internal/pendingCrossPackageDeps.ts no cuentan contra ese universo por no tener contraparte directa en ccnmt) -- ver hallazgo de esta iniciativa para el desglose modulo a modulo. renderToolResultMessage/renderToolUseProgressMessage de los tres clientes MCP con UI quedan BLOQUEADOS por la ausencia total de @anthropic/ink + react + @thyrox/repl en este arbol (mismo bloqueador que @thyrox/output, @thyrox/swarm y @thyrox/app-host ya declaran): el modulo carga sin fallar, invocar la funcion dispara el error con el motivo explicito (ver internal y los UI.ts de cada herramienta). McpAuthTool.ts, ListMcpResourcesTool.ts y ReadMcpResourceTool.ts importan symbols de @thyrox/mcp-runtime/{auth,clientRuntime,mcpOutputStorage}.js que siguen ausentes por el lado de mcp-runtime -- es el ciclo inverso, no un bloqueo de este paquete.",
   "main": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -291,13 +291,377 @@
       "types": "./dist/tools/TaskOutputTool/TaskOutputTool.d.ts",
       "default": "./src/tools/TaskOutputTool/TaskOutputTool.tsx"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./collapseReadSearch.js": {
+      "types": "./dist/collapseReadSearch.d.ts",
+      "default": "./src/collapseReadSearch.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./diagnosticTracking.js": {
+      "types": "./dist/diagnosticTracking.d.ts",
+      "default": "./src/diagnosticTracking.ts"
+    },
+    "./markdownConfigLoader.js": {
+      "types": "./dist/markdownConfigLoader.d.ts",
+      "default": "./src/markdownConfigLoader.ts"
+    },
+    "./notebook.js": {
+      "types": "./dist/notebook.d.ts",
+      "default": "./src/notebook.ts"
+    },
+    "./ripgrep.js": {
+      "types": "./dist/ripgrep.d.ts",
+      "default": "./src/ripgrep.ts"
+    },
+    "./services/StreamingToolExecutor.js": {
+      "types": "./dist/services/StreamingToolExecutor.d.ts",
+      "default": "./src/services/StreamingToolExecutor.ts"
+    },
+    "./services/toolOrchestration.js": {
+      "types": "./dist/services/toolOrchestration.d.ts",
+      "default": "./src/services/toolOrchestration.ts"
+    },
+    "./skills/skillChangeDetector.js": {
+      "types": "./dist/skills/skillChangeDetector.d.ts",
+      "default": "./src/skills/skillChangeDetector.ts"
+    },
+    "./telemetry/pluginTelemetry.js": {
+      "types": "./dist/telemetry/pluginTelemetry.d.ts",
+      "default": "./src/telemetry/pluginTelemetry.ts"
+    },
+    "./toolConstants": {
+      "types": "./dist/toolConstants.d.ts",
+      "default": "./src/toolConstants.ts"
+    },
+    "./toolPool.js": {
+      "types": "./dist/toolPool.d.ts",
+      "default": "./src/toolPool.ts"
+    },
+    "./tools/AgentTool/agentColorManager.js": {
+      "types": "./dist/tools/AgentTool/agentColorManager.d.ts",
+      "default": "./src/tools/AgentTool/agentColorManager.ts"
+    },
+    "./tools/AgentTool/agentDisplay.js": {
+      "types": "./dist/tools/AgentTool/agentDisplay.d.ts",
+      "default": "./src/tools/AgentTool/agentDisplay.ts"
+    },
+    "./tools/AgentTool/agentToolUtils.js": {
+      "types": "./dist/tools/AgentTool/agentToolUtils.d.ts",
+      "default": "./src/tools/AgentTool/agentToolUtils.ts"
+    },
+    "./tools/AgentTool/built-in/claudeCodeGuideAgent.js": {
+      "types": "./dist/tools/AgentTool/built-in/claudeCodeGuideAgent.d.ts",
+      "default": "./src/tools/AgentTool/built-in/claudeCodeGuideAgent.ts"
+    },
+    "./tools/AgentTool/forkSubagent.js": {
+      "types": "./dist/tools/AgentTool/forkSubagent.d.ts",
+      "default": "./src/tools/AgentTool/forkSubagent.ts"
+    },
+    "./tools/AgentTool/loadAgentsDir.js": {
+      "types": "./dist/tools/AgentTool/loadAgentsDir.d.ts",
+      "default": "./src/tools/AgentTool/loadAgentsDir.ts"
+    },
+    "./tools/AgentTool/resumeAgent.js": {
+      "types": "./dist/tools/AgentTool/resumeAgent.d.ts",
+      "default": "./src/tools/AgentTool/resumeAgent.ts"
+    },
+    "./tools/AgentTool/runAgent.js": {
+      "types": "./dist/tools/AgentTool/runAgent.d.ts",
+      "default": "./src/tools/AgentTool/runAgent.ts"
+    },
+    "./tools/AskUserQuestionTool/prompt.js": {
+      "types": "./dist/tools/AskUserQuestionTool/prompt.d.ts",
+      "default": "./src/tools/AskUserQuestionTool/prompt.ts"
+    },
+    "./tools/BashTool/bashPermissions.js": {
+      "types": "./dist/tools/BashTool/bashPermissions.d.ts",
+      "default": "./src/tools/BashTool/bashPermissions.ts"
+    },
+    "./tools/BashTool/destructiveCommandWarning.js": {
+      "types": "./dist/tools/BashTool/destructiveCommandWarning.d.ts",
+      "default": "./src/tools/BashTool/destructiveCommandWarning.ts"
+    },
+    "./tools/BashTool/readOnlyValidation.js": {
+      "types": "./dist/tools/BashTool/readOnlyValidation.d.ts",
+      "default": "./src/tools/BashTool/readOnlyValidation.ts"
+    },
+    "./tools/BashTool/sedEditParser.js": {
+      "types": "./dist/tools/BashTool/sedEditParser.d.ts",
+      "default": "./src/tools/BashTool/sedEditParser.ts"
+    },
+    "./tools/BashTool/shouldUseSandbox.js": {
+      "types": "./dist/tools/BashTool/shouldUseSandbox.d.ts",
+      "default": "./src/tools/BashTool/shouldUseSandbox.ts"
+    },
+    "./tools/BashTool/toolName.js": {
+      "types": "./dist/tools/BashTool/toolName.d.ts",
+      "default": "./src/tools/BashTool/toolName.ts"
+    },
+    "./tools/BriefTool/BriefTool.js": {
+      "types": "./dist/tools/BriefTool/BriefTool.d.ts",
+      "default": "./src/tools/BriefTool/BriefTool.ts"
+    },
+    "./tools/BriefTool/prompt.js": {
+      "types": "./dist/tools/BriefTool/prompt.d.ts",
+      "default": "./src/tools/BriefTool/prompt.ts"
+    },
+    "./tools/EnterPlanModeTool/EnterPlanModeTool.js": {
+      "types": "./dist/tools/EnterPlanModeTool/EnterPlanModeTool.d.ts",
+      "default": "./src/tools/EnterPlanModeTool/EnterPlanModeTool.ts"
+    },
+    "./tools/EnterPlanModeTool/constants.js": {
+      "types": "./dist/tools/EnterPlanModeTool/constants.d.ts",
+      "default": "./src/tools/EnterPlanModeTool/constants.ts"
+    },
+    "./tools/ExitPlanModeTool/ExitPlanModeV2Tool.js": {
+      "types": "./dist/tools/ExitPlanModeTool/ExitPlanModeV2Tool.d.ts",
+      "default": "./src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts"
+    },
+    "./tools/ExitPlanModeTool/constants.js": {
+      "types": "./dist/tools/ExitPlanModeTool/constants.d.ts",
+      "default": "./src/tools/ExitPlanModeTool/constants.ts"
+    },
+    "./tools/FileEditTool/FileEditTool.js": {
+      "types": "./dist/tools/FileEditTool/FileEditTool.d.ts",
+      "default": "./src/tools/FileEditTool/FileEditTool.ts"
+    },
+    "./tools/FileEditTool/types.js": {
+      "types": "./dist/tools/FileEditTool/types.d.ts",
+      "default": "./src/tools/FileEditTool/types.ts"
+    },
+    "./tools/FileEditTool/utils.js": {
+      "types": "./dist/tools/FileEditTool/utils.d.ts",
+      "default": "./src/tools/FileEditTool/utils.ts"
+    },
+    "./tools/FileReadTool/FileReadTool.js": {
+      "types": "./dist/tools/FileReadTool/FileReadTool.d.ts",
+      "default": "./src/tools/FileReadTool/FileReadTool.ts"
+    },
+    "./tools/FileReadTool/constants.js": {
+      "types": "./dist/tools/FileReadTool/constants.d.ts",
+      "default": "./src/tools/FileReadTool/constants.ts"
+    },
+    "./tools/FileReadTool/imageProcessor.js": {
+      "types": "./dist/tools/FileReadTool/imageProcessor.d.ts",
+      "default": "./src/tools/FileReadTool/imageProcessor.ts"
+    },
+    "./tools/FileReadTool/prompt.js": {
+      "types": "./dist/tools/FileReadTool/prompt.d.ts",
+      "default": "./src/tools/FileReadTool/prompt.ts"
+    },
+    "./tools/FileWriteTool/FileWriteTool.js": {
+      "types": "./dist/tools/FileWriteTool/FileWriteTool.d.ts",
+      "default": "./src/tools/FileWriteTool/FileWriteTool.ts"
+    },
+    "./tools/FileWriteTool/constants.js": {
+      "types": "./dist/tools/FileWriteTool/constants.d.ts",
+      "default": "./src/tools/FileWriteTool/constants.ts"
+    },
+    "./tools/FileWriteTool/prompt.js": {
+      "types": "./dist/tools/FileWriteTool/prompt.d.ts",
+      "default": "./src/tools/FileWriteTool/prompt.ts"
+    },
+    "./tools/GlobTool/GlobTool.js": {
+      "types": "./dist/tools/GlobTool/GlobTool.d.ts",
+      "default": "./src/tools/GlobTool/GlobTool.ts"
+    },
+    "./tools/GlobTool/prompt.js": {
+      "types": "./dist/tools/GlobTool/prompt.d.ts",
+      "default": "./src/tools/GlobTool/prompt.ts"
+    },
+    "./tools/GrepTool/GrepTool.js": {
+      "types": "./dist/tools/GrepTool/GrepTool.d.ts",
+      "default": "./src/tools/GrepTool/GrepTool.ts"
+    },
+    "./tools/GrepTool/prompt.js": {
+      "types": "./dist/tools/GrepTool/prompt.d.ts",
+      "default": "./src/tools/GrepTool/prompt.ts"
+    },
+    "./tools/LSPTool/prompt.js": {
+      "types": "./dist/tools/LSPTool/prompt.d.ts",
+      "default": "./src/tools/LSPTool/prompt.ts"
+    },
+    "./tools/MonitorTool/MonitorTool.js": {
+      "types": "./dist/tools/MonitorTool/MonitorTool.d.ts",
+      "default": "./src/tools/MonitorTool/MonitorTool.ts"
+    },
+    "./tools/NotebookEditTool/NotebookEditTool.js": {
+      "types": "./dist/tools/NotebookEditTool/NotebookEditTool.d.ts",
+      "default": "./src/tools/NotebookEditTool/NotebookEditTool.ts"
+    },
+    "./tools/NotebookEditTool/constants.js": {
+      "types": "./dist/tools/NotebookEditTool/constants.d.ts",
+      "default": "./src/tools/NotebookEditTool/constants.ts"
+    },
+    "./tools/OverflowTestTool/OverflowTestTool.js": {
+      "types": "./dist/tools/OverflowTestTool/OverflowTestTool.d.ts",
+      "default": "./src/tools/OverflowTestTool/OverflowTestTool.ts"
+    },
+    "./tools/PowerShellTool/destructiveCommandWarning.js": {
+      "types": "./dist/tools/PowerShellTool/destructiveCommandWarning.d.ts",
+      "default": "./src/tools/PowerShellTool/destructiveCommandWarning.ts"
+    },
+    "./tools/PowerShellTool/readOnlyValidation.js": {
+      "types": "./dist/tools/PowerShellTool/readOnlyValidation.d.ts",
+      "default": "./src/tools/PowerShellTool/readOnlyValidation.ts"
+    },
+    "./tools/PowerShellTool/toolName.js": {
+      "types": "./dist/tools/PowerShellTool/toolName.d.ts",
+      "default": "./src/tools/PowerShellTool/toolName.ts"
+    },
+    "./tools/REPLTool/constants.js": {
+      "types": "./dist/tools/REPLTool/constants.d.ts",
+      "default": "./src/tools/REPLTool/constants.ts"
+    },
+    "./tools/REPLTool/primitiveTools.js": {
+      "types": "./dist/tools/REPLTool/primitiveTools.d.ts",
+      "default": "./src/tools/REPLTool/primitiveTools.ts"
+    },
+    "./tools/RemoteTriggerTool/prompt.js": {
+      "types": "./dist/tools/RemoteTriggerTool/prompt.d.ts",
+      "default": "./src/tools/RemoteTriggerTool/prompt.ts"
+    },
+    "./tools/ReviewArtifactTool/ReviewArtifactTool.js": {
+      "types": "./dist/tools/ReviewArtifactTool/ReviewArtifactTool.d.ts",
+      "default": "./src/tools/ReviewArtifactTool/ReviewArtifactTool.ts"
+    },
+    "./tools/ScheduleCronTool/prompt.js": {
+      "types": "./dist/tools/ScheduleCronTool/prompt.d.ts",
+      "default": "./src/tools/ScheduleCronTool/prompt.ts"
+    },
+    "./tools/ScheduleWakeupTool/prompt.js": {
+      "types": "./dist/tools/ScheduleWakeupTool/prompt.d.ts",
+      "default": "./src/tools/ScheduleWakeupTool/prompt.ts"
+    },
+    "./tools/SendMessageTool/SendMessageTool.js": {
+      "types": "./dist/tools/SendMessageTool/SendMessageTool.d.ts",
+      "default": "./src/tools/SendMessageTool/SendMessageTool.ts"
+    },
+    "./tools/SendMessageTool/constants.js": {
+      "types": "./dist/tools/SendMessageTool/constants.d.ts",
+      "default": "./src/tools/SendMessageTool/constants.ts"
+    },
+    "./tools/SendUserFileTool/SendUserFileTool.js": {
+      "types": "./dist/tools/SendUserFileTool/SendUserFileTool.d.ts",
+      "default": "./src/tools/SendUserFileTool/SendUserFileTool.ts"
+    },
+    "./tools/SendUserFileTool/prompt.js": {
+      "types": "./dist/tools/SendUserFileTool/prompt.d.ts",
+      "default": "./src/tools/SendUserFileTool/prompt.ts"
+    },
+    "./tools/SkillTool/SkillTool.js": {
+      "types": "./dist/tools/SkillTool/SkillTool.d.ts",
+      "default": "./src/tools/SkillTool/SkillTool.ts"
+    },
+    "./tools/SkillTool/constants.js": {
+      "types": "./dist/tools/SkillTool/constants.d.ts",
+      "default": "./src/tools/SkillTool/constants.ts"
+    },
+    "./tools/SkillTool/prompt.js": {
+      "types": "./dist/tools/SkillTool/prompt.d.ts",
+      "default": "./src/tools/SkillTool/prompt.ts"
+    },
+    "./tools/SyntheticOutputTool/SyntheticOutputTool.js": {
+      "types": "./dist/tools/SyntheticOutputTool/SyntheticOutputTool.d.ts",
+      "default": "./src/tools/SyntheticOutputTool/SyntheticOutputTool.ts"
+    },
+    "./tools/TaskCreateTool/constants.js": {
+      "types": "./dist/tools/TaskCreateTool/constants.d.ts",
+      "default": "./src/tools/TaskCreateTool/constants.ts"
+    },
+    "./tools/TaskOutputTool/constants.js": {
+      "types": "./dist/tools/TaskOutputTool/constants.d.ts",
+      "default": "./src/tools/TaskOutputTool/constants.ts"
+    },
+    "./tools/TaskStopTool/TaskStopTool.js": {
+      "types": "./dist/tools/TaskStopTool/TaskStopTool.d.ts",
+      "default": "./src/tools/TaskStopTool/TaskStopTool.ts"
+    },
+    "./tools/TaskStopTool/prompt.js": {
+      "types": "./dist/tools/TaskStopTool/prompt.d.ts",
+      "default": "./src/tools/TaskStopTool/prompt.ts"
+    },
+    "./tools/TaskUpdateTool/constants.js": {
+      "types": "./dist/tools/TaskUpdateTool/constants.d.ts",
+      "default": "./src/tools/TaskUpdateTool/constants.ts"
+    },
+    "./tools/TeamCreateTool/constants.js": {
+      "types": "./dist/tools/TeamCreateTool/constants.d.ts",
+      "default": "./src/tools/TeamCreateTool/constants.ts"
+    },
+    "./tools/TeamDeleteTool/constants.js": {
+      "types": "./dist/tools/TeamDeleteTool/constants.d.ts",
+      "default": "./src/tools/TeamDeleteTool/constants.ts"
+    },
+    "./tools/TerminalCaptureTool/prompt.js": {
+      "types": "./dist/tools/TerminalCaptureTool/prompt.d.ts",
+      "default": "./src/tools/TerminalCaptureTool/prompt.ts"
+    },
+    "./tools/ToolSearchTool/ToolSearchTool.js": {
+      "types": "./dist/tools/ToolSearchTool/ToolSearchTool.d.ts",
+      "default": "./src/tools/ToolSearchTool/ToolSearchTool.ts"
+    },
+    "./tools/ToolSearchTool/prompt.js": {
+      "types": "./dist/tools/ToolSearchTool/prompt.d.ts",
+      "default": "./src/tools/ToolSearchTool/prompt.ts"
+    },
+    "./tools/TungstenTool/TungstenLiveMonitor.js": {
+      "types": "./dist/tools/TungstenTool/TungstenLiveMonitor.d.ts",
+      "default": "./src/tools/TungstenTool/TungstenLiveMonitor.ts"
+    },
+    "./tools/TungstenTool/TungstenTool.js": {
+      "types": "./dist/tools/TungstenTool/TungstenTool.d.ts",
+      "default": "./src/tools/TungstenTool/TungstenTool.ts"
+    },
+    "./tools/VerifyPlanExecutionTool/constants.js": {
+      "types": "./dist/tools/VerifyPlanExecutionTool/constants.d.ts",
+      "default": "./src/tools/VerifyPlanExecutionTool/constants.ts"
+    },
+    "./tools/WebBrowserTool/WebBrowserPanel.js": {
+      "types": "./dist/tools/WebBrowserTool/WebBrowserPanel.d.ts",
+      "default": "./src/tools/WebBrowserTool/WebBrowserPanel.ts"
+    },
+    "./tools/WebFetchTool/WebFetchTool.js": {
+      "types": "./dist/tools/WebFetchTool/WebFetchTool.d.ts",
+      "default": "./src/tools/WebFetchTool/WebFetchTool.ts"
+    },
+    "./tools/WebFetchTool/prompt.js": {
+      "types": "./dist/tools/WebFetchTool/prompt.d.ts",
+      "default": "./src/tools/WebFetchTool/prompt.ts"
+    },
+    "./tools/WebFetchTool/utils.js": {
+      "types": "./dist/tools/WebFetchTool/utils.d.ts",
+      "default": "./src/tools/WebFetchTool/utils.ts"
+    },
+    "./tools/WebSearchTool/WebSearchTool.js": {
+      "types": "./dist/tools/WebSearchTool/WebSearchTool.d.ts",
+      "default": "./src/tools/WebSearchTool/WebSearchTool.ts"
+    },
+    "./tools/WebSearchTool/prompt.js": {
+      "types": "./dist/tools/WebSearchTool/prompt.d.ts",
+      "default": "./src/tools/WebSearchTool/prompt.ts"
+    },
+    "./tools/WorkflowTool/WorkflowTool.js": {
+      "types": "./dist/tools/WorkflowTool/WorkflowTool.d.ts",
+      "default": "./src/tools/WorkflowTool/WorkflowTool.ts"
+    },
+    "./tools/WorkflowTool/bundled/index.js": {
+      "types": "./dist/tools/WorkflowTool/bundled/index.d.ts",
+      "default": "./src/tools/WorkflowTool/bundled/index.ts"
+    },
+    "./tools/WorkflowTool/constants.js": {
+      "types": "./dist/tools/WorkflowTool/constants.d.ts",
+      "default": "./src/tools/WorkflowTool/constants.ts"
+    },
+    "./tools/registry/providers/BuiltInToolsProvider.js": {
+      "types": "./dist/tools/registry/providers/BuiltInToolsProvider.d.ts",
+      "default": "./src/tools/registry/providers/BuiltInToolsProvider.ts"
+    },
+    "./tools/shared/gitOperationTracking.js": {
+      "types": "./dist/tools/shared/gitOperationTracking.d.ts",
+      "default": "./src/tools/shared/gitOperationTracking.ts"
+    },
+    "./utils/inkColor.js": {
+      "types": "./dist/utils/inkColor.d.ts",
+      "default": "./src/utils/inkColor.ts"
     }
   },
   "scripts": {

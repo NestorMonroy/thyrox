@@ -31,25 +31,37 @@
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
-    "./lsp/*.js": {
-      "types": "./dist/src/lsp/*.d.ts",
-      "default": "./src/lsp/*.ts"
-    },
-    "./hooks/*.js": {
-      "types": "./dist/src/hooks/*.d.ts",
-      "default": "./src/hooks/*.ts"
-    },
     "./hooks/useIDEIntegration.js": {
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./hooks/useDiffInIDE.js": {
+      "types": "./dist/src/hooks/useDiffInIDE.d.ts",
+      "default": "./src/hooks/useDiffInIDE.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./hooks/useIdeAtMentioned.js": {
+      "types": "./dist/src/hooks/useIdeAtMentioned.d.ts",
+      "default": "./src/hooks/useIdeAtMentioned.ts"
+    },
+    "./hooks/useIdeConnectionStatus.js": {
+      "types": "./dist/src/hooks/useIdeConnectionStatus.d.ts",
+      "default": "./src/hooks/useIdeConnectionStatus.ts"
+    },
+    "./hooks/useIdeLogging.js": {
+      "types": "./dist/src/hooks/useIdeLogging.d.ts",
+      "default": "./src/hooks/useIdeLogging.ts"
+    },
+    "./hooks/useIdeSelection.js": {
+      "types": "./dist/src/hooks/useIdeSelection.d.ts",
+      "default": "./src/hooks/useIdeSelection.ts"
+    },
+    "./lsp/LSPDiagnosticRegistry.js": {
+      "types": "./dist/src/lsp/LSPDiagnosticRegistry.d.ts",
+      "default": "./src/lsp/LSPDiagnosticRegistry.ts"
+    },
+    "./lsp/manager.js": {
+      "types": "./dist/src/lsp/manager.d.ts",
+      "default": "./src/lsp/manager.ts"
     }
   },
   "scripts": {

@@ -9,9 +9,7 @@
     "./cost": "./src/cost.ts",
     "./store": "./src/store.ts",
     "./transcriptShape": "./src/transcriptShape.ts",
-    "./clearedResults": "./src/clearedResults.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts"
+    "./clearedResults": "./src/clearedResults.ts"
   },
   "scripts": {
     "test": "bun test",

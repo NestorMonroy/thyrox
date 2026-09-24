@@ -23,13 +23,33 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./bgWorkerRegistry.js": {
+      "types": "./dist/src/bgWorkerRegistry.d.ts",
+      "default": "./src/bgWorkerRegistry.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./daemonClient.js": {
+      "types": "./dist/src/daemonClient.d.ts",
+      "default": "./src/daemonClient.ts"
+    },
+    "./dispatchSpool.js": {
+      "types": "./dist/src/dispatchSpool.d.ts",
+      "default": "./src/dispatchSpool.ts"
+    },
+    "./launchAgent.js": {
+      "types": "./dist/src/launchAgent.d.ts",
+      "default": "./src/launchAgent.ts"
+    },
+    "./main.js": {
+      "types": "./dist/src/main.d.ts",
+      "default": "./src/main.ts"
+    },
+    "./socketProto.js": {
+      "types": "./dist/src/socketProto.d.ts",
+      "default": "./src/socketProto.ts"
+    },
+    "./workerRegistry.js": {
+      "types": "./dist/src/workerRegistry.d.ts",
+      "default": "./src/workerRegistry.ts"
     }
   },
   "scripts": {

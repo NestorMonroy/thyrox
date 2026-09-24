@@ -65,14 +65,6 @@
     "./voiceContext": {
       "types": "./dist/src/voiceContext.d.ts",
       "default": "./src/voiceContext.tsx"
-    },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
     }
   },
   "scripts": {

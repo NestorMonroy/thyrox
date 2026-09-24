@@ -55,13 +55,9 @@
       "types": "./dist/src/controlSchemas.d.ts",
       "default": "./src/controlSchemas.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./agentSdkTypes": {
+      "types": "./dist/src/agentSdkTypes.d.ts",
+      "default": "./src/agentSdkTypes.ts"
     }
   },
   "scripts": {

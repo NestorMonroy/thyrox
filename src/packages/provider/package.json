@@ -41,21 +41,389 @@
       "types": "./dist/policyLimits/index.d.ts",
       "default": "./src/policyLimits/index.ts"
     },
-    "./cost/*": {
-      "types": "./dist/cost/*.d.ts",
-      "default": "./src/cost/*.ts"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
     "./commands/logout/logout.js": {
       "types": "./dist/commands/logout/logout.d.ts",
       "default": "./src/commands/logout/logout.tsx"
+    },
+    "./adminRequests.js": {
+      "types": "./dist/adminRequests.d.ts",
+      "default": "./src/adminRequests.ts"
+    },
+    "./advisor.js": {
+      "types": "./dist/advisor.d.ts",
+      "default": "./src/advisor.ts"
+    },
+    "./antModels.js": {
+      "types": "./dist/antModels.d.ts",
+      "default": "./src/antModels.ts"
+    },
+    "./apiLimits.js": {
+      "types": "./dist/apiLimits.d.ts",
+      "default": "./src/apiLimits.ts"
+    },
+    "./authAlias.js": {
+      "types": "./dist/authAlias.d.ts",
+      "default": "./src/authAlias.ts"
+    },
+    "./authPortable.js": {
+      "types": "./dist/authPortable.d.ts",
+      "default": "./src/authPortable.ts"
+    },
+    "./awsAuthStatusManager.js": {
+      "types": "./dist/awsAuthStatusManager.d.ts",
+      "default": "./src/awsAuthStatusManager.ts"
+    },
+    "./betas.js": {
+      "types": "./dist/betas.d.ts",
+      "default": "./src/betas.ts"
+    },
+    "./betasConstants.js": {
+      "types": "./dist/betasConstants.d.ts",
+      "default": "./src/betasConstants.ts"
+    },
+    "./billing.js": {
+      "types": "./dist/billing.d.ts",
+      "default": "./src/billing.ts"
+    },
+    "./caCerts.js": {
+      "types": "./dist/caCerts.d.ts",
+      "default": "./src/caCerts.ts"
+    },
+    "./claude.js": {
+      "types": "./dist/claude.d.ts",
+      "default": "./src/claude.ts"
+    },
+    "./claudeAiLimits.js": {
+      "types": "./dist/claudeAiLimits.d.ts",
+      "default": "./src/claudeAiLimits.ts"
+    },
+    "./claudeAiLimitsHook.js": {
+      "types": "./dist/claudeAiLimitsHook.d.ts",
+      "default": "./src/claudeAiLimitsHook.ts"
+    },
+    "./claudeLegacy": {
+      "types": "./dist/claudeLegacy.d.ts",
+      "default": "./src/claudeLegacy.ts"
+    },
+    "./claudeLegacyRuntime.js": {
+      "types": "./dist/claudeLegacyRuntime.d.ts",
+      "default": "./src/claudeLegacyRuntime.ts"
+    },
+    "./commands/advisor.js": {
+      "types": "./dist/commands/advisor.d.ts",
+      "default": "./src/commands/advisor.ts"
+    },
+    "./commands/logout/index.js": {
+      "types": "./dist/commands/logout/index.d.ts",
+      "default": "./src/commands/logout/index.ts"
+    },
+    "./commands/provider.js": {
+      "types": "./dist/commands/provider.d.ts",
+      "default": "./src/commands/provider.ts"
+    },
+    "./connections": {
+      "types": "./dist/connections.d.ts",
+      "default": "./src/connections.ts"
+    },
+    "./connections.js": {
+      "types": "./dist/connections.d.ts",
+      "default": "./src/connections.ts"
+    },
+    "./connectorTextTypes": {
+      "types": "./dist/connectorTextTypes.d.ts",
+      "default": "./src/connectorTextTypes.ts"
+    },
+    "./context.js": {
+      "types": "./dist/context.d.ts",
+      "default": "./src/context.ts"
+    },
+    "./cost/cacheBreak": {
+      "types": "./dist/cost/cacheBreak.d.ts",
+      "default": "./src/cost/cacheBreak.ts"
+    },
+    "./cost/cacheRoutes": {
+      "types": "./dist/cost/cacheRoutes.d.ts",
+      "default": "./src/cost/cacheRoutes.ts"
+    },
+    "./cost/compaction": {
+      "types": "./dist/cost/compaction.d.ts",
+      "default": "./src/cost/compaction.ts"
+    },
+    "./cost/crossModelRead": {
+      "types": "./dist/cost/crossModelRead.d.ts",
+      "default": "./src/cost/crossModelRead.ts"
+    },
+    "./cost/policy": {
+      "types": "./dist/cost/policy.d.ts",
+      "default": "./src/cost/policy.ts"
+    },
+    "./costTracker.js": {
+      "types": "./dist/costTracker.d.ts",
+      "default": "./src/costTracker.ts"
+    },
+    "./dumpPrompts.js": {
+      "types": "./dist/dumpPrompts.d.ts",
+      "default": "./src/dumpPrompts.ts"
+    },
+    "./errorUtils.js": {
+      "types": "./dist/errorUtils.d.ts",
+      "default": "./src/errorUtils.ts"
+    },
+    "./errors.js": {
+      "types": "./dist/errors.d.ts",
+      "default": "./src/errors.ts"
+    },
+    "./extraUsage.js": {
+      "types": "./dist/extraUsage.d.ts",
+      "default": "./src/extraUsage.ts"
+    },
+    "./fastMode.js": {
+      "types": "./dist/fastMode.d.ts",
+      "default": "./src/fastMode.ts"
+    },
+    "./fileConstants.js": {
+      "types": "./dist/fileConstants.d.ts",
+      "default": "./src/fileConstants.ts"
+    },
+    "./filesApi.js": {
+      "types": "./dist/filesApi.d.ts",
+      "default": "./src/filesApi.ts"
+    },
+    "./fingerprint.js": {
+      "types": "./dist/fingerprint.d.ts",
+      "default": "./src/fingerprint.ts"
+    },
+    "./firstTokenDate.js": {
+      "types": "./dist/firstTokenDate.d.ts",
+      "default": "./src/firstTokenDate.ts"
+    },
+    "./gatewayModelDiscovery.js": {
+      "types": "./dist/gatewayModelDiscovery.d.ts",
+      "default": "./src/gatewayModelDiscovery.ts"
+    },
+    "./gemini/convertTools.js": {
+      "types": "./dist/gemini/convertTools.d.ts",
+      "default": "./src/gemini/convertTools.ts"
+    },
+    "./gemini/types.js": {
+      "types": "./dist/gemini/types.d.ts",
+      "default": "./src/gemini/types.ts"
+    },
+    "./grove.js": {
+      "types": "./dist/grove.d.ts",
+      "default": "./src/grove.ts"
+    },
+    "./headlessProfiler.js": {
+      "types": "./dist/headlessProfiler.d.ts",
+      "default": "./src/headlessProfiler.ts"
+    },
+    "./http.js": {
+      "types": "./dist/http.d.ts",
+      "default": "./src/http.ts"
+    },
+    "./internal/pendingCrossPackageDeps.js": {
+      "types": "./dist/internal/pendingCrossPackageDeps.d.ts",
+      "default": "./src/internal/pendingCrossPackageDeps.ts"
+    },
+    "./legacy/api.js": {
+      "types": "./dist/legacy/api.d.ts",
+      "default": "./src/legacy/api.ts"
+    },
+    "./logging.js": {
+      "types": "./dist/logging.d.ts",
+      "default": "./src/logging.ts"
+    },
+    "./model.js": {
+      "types": "./dist/model.d.ts",
+      "default": "./src/model.ts"
+    },
+    "./model/aliases.js": {
+      "types": "./dist/model/aliases.d.ts",
+      "default": "./src/model/aliases.ts"
+    },
+    "./model/antModels.js": {
+      "types": "./dist/model/antModels.d.ts",
+      "default": "./src/model/antModels.ts"
+    },
+    "./model/check1mAccess.js": {
+      "types": "./dist/model/check1mAccess.d.ts",
+      "default": "./src/model/check1mAccess.ts"
+    },
+    "./model/configs.js": {
+      "types": "./dist/model/configs.d.ts",
+      "default": "./src/model/configs.ts"
+    },
+    "./model/contextWindowUpgradeCheck.js": {
+      "types": "./dist/model/contextWindowUpgradeCheck.d.ts",
+      "default": "./src/model/contextWindowUpgradeCheck.ts"
+    },
+    "./model/deprecation.js": {
+      "types": "./dist/model/deprecation.d.ts",
+      "default": "./src/model/deprecation.ts"
+    },
+    "./model/model.js": {
+      "types": "./dist/model/model.d.ts",
+      "default": "./src/model/model.ts"
+    },
+    "./model/modelAllowlist.js": {
+      "types": "./dist/model/modelAllowlist.d.ts",
+      "default": "./src/model/modelAllowlist.ts"
+    },
+    "./model/providers.js": {
+      "types": "./dist/model/providers.d.ts",
+      "default": "./src/model/providers.ts"
+    },
+    "./modelAgent.js": {
+      "types": "./dist/modelAgent.d.ts",
+      "default": "./src/modelAgent.ts"
+    },
+    "./modelAliases.js": {
+      "types": "./dist/modelAliases.d.ts",
+      "default": "./src/modelAliases.ts"
+    },
+    "./modelCost.js": {
+      "types": "./dist/modelCost.d.ts",
+      "default": "./src/modelCost.ts"
+    },
+    "./modelOptions.js": {
+      "types": "./dist/modelOptions.d.ts",
+      "default": "./src/modelOptions.ts"
+    },
+    "./modelStrings.js": {
+      "types": "./dist/modelStrings.d.ts",
+      "default": "./src/modelStrings.ts"
+    },
+    "./mtls.js": {
+      "types": "./dist/mtls.d.ts",
+      "default": "./src/mtls.ts"
+    },
+    "./oauth/client.js": {
+      "types": "./dist/oauth/client.d.ts",
+      "default": "./src/oauth/client.ts"
+    },
+    "./oauth/codex-auth.js": {
+      "types": "./dist/oauth/codex-auth.d.ts",
+      "default": "./src/oauth/codex-auth.ts"
+    },
+    "./oauth/getOauthProfile.js": {
+      "types": "./dist/oauth/getOauthProfile.d.ts",
+      "default": "./src/oauth/getOauthProfile.ts"
+    },
+    "./oauth/index.js": {
+      "types": "./dist/oauth/index.d.ts",
+      "default": "./src/oauth/index.ts"
+    },
+    "./oauth/types.js": {
+      "types": "./dist/oauth/types.d.ts",
+      "default": "./src/oauth/types.ts"
+    },
+    "./oauthConstants": {
+      "types": "./dist/oauthConstants.d.ts",
+      "default": "./src/oauthConstants.ts"
+    },
+    "./oauthConstants.js": {
+      "types": "./dist/oauthConstants.d.ts",
+      "default": "./src/oauthConstants.ts"
+    },
+    "./openai/convertTools.js": {
+      "types": "./dist/openai/convertTools.d.ts",
+      "default": "./src/openai/convertTools.ts"
+    },
+    "./overageCreditGrant.js": {
+      "types": "./dist/overageCreditGrant.d.ts",
+      "default": "./src/overageCreditGrant.ts"
+    },
+    "./policyLimits/index.js": {
+      "types": "./dist/policyLimits/index.d.ts",
+      "default": "./src/policyLimits/index.ts"
+    },
+    "./promptCacheBreakDetection.js": {
+      "types": "./dist/promptCacheBreakDetection.d.ts",
+      "default": "./src/promptCacheBreakDetection.ts"
+    },
+    "./providerHostSetup": {
+      "types": "./dist/providerHostSetup.d.ts",
+      "default": "./src/providerHostSetup.ts"
+    },
+    "./providers.js": {
+      "types": "./dist/providers.d.ts",
+      "default": "./src/providers.ts"
+    },
+    "./proxy.js": {
+      "types": "./dist/proxy.d.ts",
+      "default": "./src/proxy.ts"
+    },
+    "./queryProfiler.js": {
+      "types": "./dist/queryProfiler.d.ts",
+      "default": "./src/queryProfiler.ts"
+    },
+    "./rateLimitMessages.js": {
+      "types": "./dist/rateLimitMessages.d.ts",
+      "default": "./src/rateLimitMessages.ts"
+    },
+    "./rateLimitMocking.js": {
+      "types": "./dist/rateLimitMocking.d.ts",
+      "default": "./src/rateLimitMocking.ts"
+    },
+    "./referral.js": {
+      "types": "./dist/referral.d.ts",
+      "default": "./src/referral.ts"
+    },
+    "./sessionIngress.js": {
+      "types": "./dist/sessionIngress.d.ts",
+      "default": "./src/sessionIngress.ts"
+    },
+    "./sessionIngressAuth.js": {
+      "types": "./dist/sessionIngressAuth.d.ts",
+      "default": "./src/sessionIngressAuth.ts"
+    },
+    "./systemConstants.js": {
+      "types": "./dist/systemConstants.d.ts",
+      "default": "./src/systemConstants.ts"
+    },
+    "./systemPrompt.js": {
+      "types": "./dist/systemPrompt.d.ts",
+      "default": "./src/systemPrompt.ts"
+    },
+    "./systemPromptSections": {
+      "types": "./dist/systemPromptSections.d.ts",
+      "default": "./src/systemPromptSections.ts"
+    },
+    "./systemPromptType.js": {
+      "types": "./dist/systemPromptType.d.ts",
+      "default": "./src/systemPromptType.ts"
+    },
+    "./thinking.js": {
+      "types": "./dist/thinking.d.ts",
+      "default": "./src/thinking.ts"
+    },
+    "./ultrareviewQuota.js": {
+      "types": "./dist/ultrareviewQuota.d.ts",
+      "default": "./src/ultrareviewQuota.ts"
+    },
+    "./usage.js": {
+      "types": "./dist/usage.d.ts",
+      "default": "./src/usage.ts"
+    },
+    "./user.js": {
+      "types": "./dist/user.d.ts",
+      "default": "./src/user.ts"
+    },
+    "./userAgent.js": {
+      "types": "./dist/userAgent.d.ts",
+      "default": "./src/userAgent.ts"
+    },
+    "./validateModel.js": {
+      "types": "./dist/validateModel.d.ts",
+      "default": "./src/validateModel.ts"
+    },
+    "./withRetry.js": {
+      "types": "./dist/withRetry.d.ts",
+      "default": "./src/withRetry.ts"
+    },
+    "./workloadContext.js": {
+      "types": "./dist/workloadContext.d.ts",
+      "default": "./src/workloadContext.ts"
     }
   },
   "scripts": {

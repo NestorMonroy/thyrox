@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "El host de la sesion interactiva: el grafo de runtime handles, el ciclo de instalacion de bindings y los selectores de AppState. Adaptacion de @claude-code-how-works/app-host. Depende de @thyrox/command-runtime, @thyrox/config, @thyrox/shell y @thyrox/storage para los especificadores de @claude-code-how-works/* que ya resuelven contra un hermano portado (TASK-DOCS-0198). 55 de 60 modulos portados (medido: .ts + .tsx en ccnmt, menos tests). Este pase cierra state/selectors.ts (reimplementado contra @thyrox/swarm, que ya exporta InProcessTeammateTaskState/isInProcessTeammateTask \u2014 v\u00eda un sustituto local porque swarm no est\u00e1 declarado como dependencia de este paquete, ver src/internal/pendingCrossPackageDeps.ts), context/fpsMetrics.tsx, context/mailbox.tsx, context/notifications.tsx (las tres, capa 0 o con imports type-only hacia @anthropic/ink que se borran al transpilar), context/stats.tsx (persistencia best-effort v\u00eda el mismo sustituto local) y launchRepl.tsx (capa 1 tramo B: el m\u00f3dulo carga \u2014 los tipos de @anthropic/ink y repl son type-only \u2014 pero sus dos dynamic import() a @claude-code-how-works/repl/* quedan literales, sin stub, porque repl no existe en este \u00e1rbol). Los 5 restantes siguen BLOQUEADOS: commands/initCommand.ts y runtime/runtimeHandles.ts (repl + tool-registry, ninguno existe en este \u00e1rbol), runtime/commandRegistryRuntime.ts (repl + swarm/bridge/cli/provider, ~90 comandos), state/AppStateCompat.ts (tool-registry + repl en el tipo AppState \u2014 mismo hallazgo que state/AppStateStore.ts y runtime/appStateCompatShim.ts ya documentan) y context/QueuedMessageContext.tsx (@anthropic/ink como import de VALOR, no type-only \u2014 vendorizado, no publicado, instalarlo es decisi\u00f3n del ejecutor).",
+  "description": "El host de la sesion interactiva: el grafo de runtime handles, el ciclo de instalacion de bindings y los selectores de AppState. Adaptacion de @claude-code-how-works/app-host. Depende de @thyrox/command-runtime, @thyrox/config, @thyrox/shell y @thyrox/storage para los especificadores de @claude-code-how-works/* que ya resuelven contra un hermano portado (TASK-DOCS-0198). 55 de 60 modulos portados (medido: .ts + .tsx en ccnmt, menos tests). Este pase cierra state/selectors.ts (reimplementado contra @thyrox/swarm, que ya exporta InProcessTeammateTaskState/isInProcessTeammateTask — vía un sustituto local porque swarm no está declarado como dependencia de este paquete, ver src/internal/pendingCrossPackageDeps.ts), context/fpsMetrics.tsx, context/mailbox.tsx, context/notifications.tsx (las tres, capa 0 o con imports type-only hacia @anthropic/ink que se borran al transpilar), context/stats.tsx (persistencia best-effort vía el mismo sustituto local) y launchRepl.tsx (capa 1 tramo B: el módulo carga — los tipos de @anthropic/ink y repl son type-only — pero sus dos dynamic import() a @claude-code-how-works/repl/* quedan literales, sin stub, porque repl no existe en este árbol). Los 5 restantes siguen BLOQUEADOS: commands/initCommand.ts y runtime/runtimeHandles.ts (repl + tool-registry, ninguno existe en este árbol), runtime/commandRegistryRuntime.ts (repl + swarm/bridge/cli/provider, ~90 comandos), state/AppStateCompat.ts (tool-registry + repl en el tipo AppState — mismo hallazgo que state/AppStateStore.ts y runtime/appStateCompatShim.ts ya documentan) y context/QueuedMessageContext.tsx (@anthropic/ink como import de VALOR, no type-only — vendorizado, no publicado, instalarlo es decisión del ejecutor).",
   "main": "./src/index.ts",
   "types": "./dist/index.d.ts",
   "dependencies": {
@@ -72,14 +72,6 @@
     "./state/AppState": {
       "types": "./dist/state/AppState.d.ts",
       "default": "./src/state/AppState.tsx"
-    },
-    "./runtime/*.js": {
-      "types": "./dist/runtime/*.d.ts",
-      "default": "./src/runtime/*.ts"
-    },
-    "./main/*.js": {
-      "types": "./dist/main/*.d.ts",
-      "default": "./src/main/*.ts"
     },
     "./cliArgs.js": {
       "types": "./dist/cliArgs.d.ts",
@@ -157,17 +149,77 @@
       "types": "./dist/launchRepl.d.ts",
       "default": "./src/launchRepl.tsx"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
     "./context/QueuedMessageContext.js": {
       "types": "./dist/context/QueuedMessageContext.d.ts",
       "default": "./src/context/QueuedMessageContext.tsx"
+    },
+    "./bootstrap/cleanupRegistry.js": {
+      "types": "./dist/bootstrap/cleanupRegistry.d.ts",
+      "default": "./src/bootstrap/cleanupRegistry.ts"
+    },
+    "./bootstrap/cwd.js": {
+      "types": "./dist/bootstrap/cwd.d.ts",
+      "default": "./src/bootstrap/cwd.ts"
+    },
+    "./bootstrap/gracefulShutdown.js": {
+      "types": "./dist/bootstrap/gracefulShutdown.d.ts",
+      "default": "./src/bootstrap/gracefulShutdown.ts"
+    },
+    "./bootstrap/state.js": {
+      "types": "./dist/bootstrap/state.d.ts",
+      "default": "./src/bootstrap/state.ts"
+    },
+    "./heapDumpService.js": {
+      "types": "./dist/heapDumpService.d.ts",
+      "default": "./src/heapDumpService.ts"
+    },
+    "./init.js": {
+      "types": "./dist/init.d.ts",
+      "default": "./src/init.ts"
+    },
+    "./main/startup/context.js": {
+      "types": "./dist/main/startup/context.d.ts",
+      "default": "./src/main/startup/context.ts"
+    },
+    "./main/startup/settings.js": {
+      "types": "./dist/main/startup/settings.d.ts",
+      "default": "./src/main/startup/settings.ts"
+    },
+    "./providerHostSetup.js": {
+      "types": "./dist/providerHostSetup.d.ts",
+      "default": "./src/providerHostSetup.ts"
+    },
+    "./runtime/appStateCompatShim.js": {
+      "types": "./dist/runtime/appStateCompatShim.d.ts",
+      "default": "./src/runtime/appStateCompatShim.ts"
+    },
+    "./runtime/bootstrap.js": {
+      "types": "./dist/runtime/bootstrap.d.ts",
+      "default": "./src/runtime/bootstrap.ts"
+    },
+    "./runtime/commandRegistryRuntime.js": {
+      "types": "./dist/runtime/commandRegistryRuntime.d.ts",
+      "default": "./src/runtime/commandRegistryRuntime.ts"
+    },
+    "./runtime/installCommandRuntimeBindings.js": {
+      "types": "./dist/runtime/installCommandRuntimeBindings.d.ts",
+      "default": "./src/runtime/installCommandRuntimeBindings.ts"
+    },
+    "./runtime/runtimeHandles.js": {
+      "types": "./dist/runtime/runtimeHandles.d.ts",
+      "default": "./src/runtime/runtimeHandles.ts"
+    },
+    "./startup/ghAuthStatus.js": {
+      "types": "./dist/startup/ghAuthStatus.d.ts",
+      "default": "./src/startup/ghAuthStatus.ts"
+    },
+    "./startup/profilerBase.js": {
+      "types": "./dist/startup/profilerBase.d.ts",
+      "default": "./src/startup/profilerBase.ts"
+    },
+    "./startup/startupProfiler.js": {
+      "types": "./dist/startup/startupProfiler.d.ts",
+      "default": "./src/startup/startupProfiler.ts"
     }
   },
   "scripts": {

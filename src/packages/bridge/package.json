@@ -27,13 +27,89 @@
       "types": "./dist/commands/bridge-kick.d.ts",
       "default": "./commands/bridge-kick.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./bridgeConfig.js": {
+      "types": "./dist/src/bridgeConfig.d.ts",
+      "default": "./src/bridgeConfig.ts"
     },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
+    "./bridgeEnabled.js": {
+      "types": "./dist/src/bridgeEnabled.d.ts",
+      "default": "./src/bridgeEnabled.ts"
+    },
+    "./bridgeMain.js": {
+      "types": "./dist/src/bridgeMain.d.ts",
+      "default": "./src/bridgeMain.ts"
+    },
+    "./bridgeMessaging.js": {
+      "types": "./dist/src/bridgeMessaging.d.ts",
+      "default": "./src/bridgeMessaging.ts"
+    },
+    "./bridgePermissionCallbacks.js": {
+      "types": "./dist/src/bridgePermissionCallbacks.d.ts",
+      "default": "./src/bridgePermissionCallbacks.ts"
+    },
+    "./bridgeStatusUtil.js": {
+      "types": "./dist/src/bridgeStatusUtil.d.ts",
+      "default": "./src/bridgeStatusUtil.ts"
+    },
+    "./createSession.js": {
+      "types": "./dist/src/createSession.d.ts",
+      "default": "./src/createSession.ts"
+    },
+    "./envLessBridgeConfig.js": {
+      "types": "./dist/src/envLessBridgeConfig.d.ts",
+      "default": "./src/envLessBridgeConfig.ts"
+    },
+    "./inboundAttachments.js": {
+      "types": "./dist/src/inboundAttachments.d.ts",
+      "default": "./src/inboundAttachments.ts"
+    },
+    "./inboundMessages.js": {
+      "types": "./dist/src/inboundMessages.d.ts",
+      "default": "./src/inboundMessages.ts"
+    },
+    "./initReplBridge.js": {
+      "types": "./dist/src/initReplBridge.d.ts",
+      "default": "./src/initReplBridge.ts"
+    },
+    "./jwtUtils.js": {
+      "types": "./dist/src/jwtUtils.d.ts",
+      "default": "./src/jwtUtils.ts"
+    },
+    "./peerSessions.js": {
+      "types": "./dist/src/peerSessions.d.ts",
+      "default": "./src/peerSessions.ts"
+    },
+    "./pollConfig.js": {
+      "types": "./dist/src/pollConfig.d.ts",
+      "default": "./src/pollConfig.ts"
+    },
+    "./replBridge.js": {
+      "types": "./dist/src/replBridge.d.ts",
+      "default": "./src/replBridge.ts"
+    },
+    "./replBridgeHandle.js": {
+      "types": "./dist/src/replBridgeHandle.d.ts",
+      "default": "./src/replBridgeHandle.ts"
+    },
+    "./runtimeHostSetup.js": {
+      "types": "./dist/src/runtimeHostSetup.d.ts",
+      "default": "./src/runtimeHostSetup.ts"
+    },
+    "./sessionIdCompat.js": {
+      "types": "./dist/src/sessionIdCompat.d.ts",
+      "default": "./src/sessionIdCompat.ts"
+    },
+    "./trustedDevice.js": {
+      "types": "./dist/src/trustedDevice.d.ts",
+      "default": "./src/trustedDevice.ts"
+    },
+    "./types.js": {
+      "types": "./dist/src/types.d.ts",
+      "default": "./src/types.ts"
+    },
+    "./webhookSanitizer.js": {
+      "types": "./dist/src/webhookSanitizer.d.ts",
+      "default": "./src/webhookSanitizer.ts"
     }
   },
   "scripts": {

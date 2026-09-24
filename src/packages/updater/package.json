@@ -73,14 +73,6 @@
     "./nativeInstaller": {
       "types": "./dist/src/nativeInstaller/index.d.ts",
       "default": "./src/nativeInstaller/index.ts"
-    },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
     }
   },
   "scripts": {

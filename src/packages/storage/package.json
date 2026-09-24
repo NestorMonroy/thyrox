@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) \u2014 porte parcial, ver docstrings por modulo.",
+  "description": "Persistencia en disco: rutas, archivos temporales, XDG y conversion Windows/POSIX. Adaptacion de @claude-code-how-works/storage (ccnmt) — porte parcial, ver docstrings por modulo.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -37,13 +37,141 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./browser.js": {
+      "types": "./dist/browser.d.ts",
+      "default": "./src/browser.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./claudemd.js": {
+      "types": "./dist/claudemd.d.ts",
+      "default": "./src/claudemd.ts"
+    },
+    "./detectRepository.js": {
+      "types": "./dist/detectRepository.d.ts",
+      "default": "./src/detectRepository.ts"
+    },
+    "./editor.js": {
+      "types": "./dist/editor.d.ts",
+      "default": "./src/editor.ts"
+    },
+    "./file.js": {
+      "types": "./dist/file.d.ts",
+      "default": "./src/file.ts"
+    },
+    "./filePersistence/filePersistence.js": {
+      "types": "./dist/filePersistence/filePersistence.d.ts",
+      "default": "./src/filePersistence/filePersistence.ts"
+    },
+    "./filePersistence/types.js": {
+      "types": "./dist/filePersistence/types.d.ts",
+      "default": "./src/filePersistence/types.ts"
+    },
+    "./fileRead.js": {
+      "types": "./dist/fileRead.d.ts",
+      "default": "./src/fileRead.ts"
+    },
+    "./findGitRoot.js": {
+      "types": "./dist/findGitRoot.d.ts",
+      "default": "./src/findGitRoot.ts"
+    },
+    "./fsOperations": {
+      "types": "./dist/fsOperations.d.ts",
+      "default": "./src/fsOperations.ts"
+    },
+    "./fsOperations.js": {
+      "types": "./dist/fsOperations.d.ts",
+      "default": "./src/fsOperations.ts"
+    },
+    "./getWorktreePaths.js": {
+      "types": "./dist/getWorktreePaths.d.ts",
+      "default": "./src/getWorktreePaths.ts"
+    },
+    "./git.js": {
+      "types": "./dist/git.d.ts",
+      "default": "./src/git.ts"
+    },
+    "./imageResizer.js": {
+      "types": "./dist/imageResizer.d.ts",
+      "default": "./src/imageResizer.ts"
+    },
+    "./imageValidation.js": {
+      "types": "./dist/imageValidation.d.ts",
+      "default": "./src/imageValidation.ts"
+    },
+    "./json.js": {
+      "types": "./dist/json.d.ts",
+      "default": "./src/json.ts"
+    },
+    "./lockfile.js": {
+      "types": "./dist/lockfile.d.ts",
+      "default": "./src/lockfile.ts"
+    },
+    "./pdfUtils.js": {
+      "types": "./dist/pdfUtils.d.ts",
+      "default": "./src/pdfUtils.ts"
+    },
+    "./plans.js": {
+      "types": "./dist/plans.d.ts",
+      "default": "./src/plans.ts"
+    },
+    "./projectPurge.js": {
+      "types": "./dist/projectPurge.d.ts",
+      "default": "./src/projectPurge.ts"
+    },
+    "./secureStorage.js": {
+      "types": "./dist/secureStorage.d.ts",
+      "default": "./src/secureStorage.ts"
+    },
+    "./secureStorage/keychainPrefetch.js": {
+      "types": "./dist/secureStorage/keychainPrefetch.d.ts",
+      "default": "./src/secureStorage/keychainPrefetch.ts"
+    },
+    "./secureStorage/macOsKeychainHelpers.js": {
+      "types": "./dist/secureStorage/macOsKeychainHelpers.d.ts",
+      "default": "./src/secureStorage/macOsKeychainHelpers.ts"
+    },
+    "./secureStorage/macOsKeychainStorage.js": {
+      "types": "./dist/secureStorage/macOsKeychainStorage.d.ts",
+      "default": "./src/secureStorage/macOsKeychainStorage.ts"
+    },
+    "./sessionActivity.js": {
+      "types": "./dist/sessionActivity.d.ts",
+      "default": "./src/sessionActivity.ts"
+    },
+    "./sessionEnvVars.js": {
+      "types": "./dist/sessionEnvVars.d.ts",
+      "default": "./src/sessionEnvVars.ts"
+    },
+    "./sessionEnvironment.js": {
+      "types": "./dist/sessionEnvironment.d.ts",
+      "default": "./src/sessionEnvironment.ts"
+    },
+    "./sessionRestore.js": {
+      "types": "./dist/sessionRestore.d.ts",
+      "default": "./src/sessionRestore.ts"
+    },
+    "./sessionStart.js": {
+      "types": "./dist/sessionStart.d.ts",
+      "default": "./src/sessionStart.ts"
+    },
+    "./sessionState.js": {
+      "types": "./dist/sessionState.d.ts",
+      "default": "./src/sessionState.ts"
+    },
+    "./sessionStorage.js": {
+      "types": "./dist/sessionStorage.d.ts",
+      "default": "./src/sessionStorage.ts"
+    },
+    "./sessionStoragePortable.js": {
+      "types": "./dist/sessionStoragePortable.d.ts",
+      "default": "./src/sessionStoragePortable.ts"
+    },
+    "./task/diskOutput.js": {
+      "types": "./dist/task/diskOutput.d.ts",
+      "default": "./src/task/diskOutput.ts"
+    },
+    "./toolResultStorage.js": {
+      "types": "./dist/toolResultStorage.d.ts",
+      "default": "./src/toolResultStorage.ts"
     }
   },
   "scripts": {

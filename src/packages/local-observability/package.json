@@ -138,13 +138,13 @@
       "types": "./dist/localEventLogger.d.ts",
       "default": "./src/localEventLogger.ts"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./internal/pendingCrossPackageDeps.js": {
+      "types": "./dist/internal/pendingCrossPackageDeps.d.ts",
+      "default": "./src/internal/pendingCrossPackageDeps.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./logging/error-log.js": {
+      "types": "./dist/logging/error-log.d.ts",
+      "default": "./src/logging/error-log.ts"
     }
   },
   "dependencies": {

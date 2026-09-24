@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Porte de @claude-code-how-works/server (ccnmt): endpoints HTTP/WebSocket \u2014 directConnectManager, RemoteSessionManager, relay CONNECT-sobre-WebSocket de upstreamproxy. 21 de 21 modulos fuente portados (contando indice y stubs; 7 son ellos mismos stubs auto-generados en la FUENTE, no una limitacion de este porte). Ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (paquete no registrado todavia en src/packages/package.json:workspaces) y la reimplementacion fiel recortada de fromSDKCompactMetadata (agent/messagesMappers.ts no existe en este arbol). sendEventToRemoteSession (teleport/api.ts) queda como punto de inyeccion: el paquete teleport no existe en este arbol.",
+  "description": "Porte de @claude-code-how-works/server (ccnmt): endpoints HTTP/WebSocket — directConnectManager, RemoteSessionManager, relay CONNECT-sobre-WebSocket de upstreamproxy. 21 de 21 modulos fuente portados (contando indice y stubs; 7 son ellos mismos stubs auto-generados en la FUENTE, no una limitacion de este porte). Ver internal/pendingCrossPackageDeps.ts para las dependencias cruzadas resueltas por require() diferido (paquete no registrado todavia en src/packages/package.json:workspaces) y la reimplementacion fiel recortada de fromSDKCompactMetadata (agent/messagesMappers.ts no existe en este arbol). sendEventToRemoteSession (teleport/api.ts) queda como punto de inyeccion: el paquete teleport no existe en este arbol.",
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {
@@ -23,17 +23,61 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
-    "./*": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/src/*.d.ts",
-      "default": "./src/*.ts"
-    },
     "./upstreamproxy/upstreamproxy.js": {
       "types": "./dist/src/upstreamproxy/upstreamproxy.d.ts",
       "default": "./src/upstreamproxy/upstreamproxy.ts"
+    },
+    "./backends/dangerousBackend.js": {
+      "types": "./dist/src/backends/dangerousBackend.d.ts",
+      "default": "./src/backends/dangerousBackend.ts"
+    },
+    "./connectHeadless.js": {
+      "types": "./dist/src/connectHeadless.d.ts",
+      "default": "./src/connectHeadless.ts"
+    },
+    "./createDirectConnectSession.js": {
+      "types": "./dist/src/createDirectConnectSession.d.ts",
+      "default": "./src/createDirectConnectSession.ts"
+    },
+    "./directConnectManager.js": {
+      "types": "./dist/src/directConnectManager.d.ts",
+      "default": "./src/directConnectManager.ts"
+    },
+    "./lockfile.js": {
+      "types": "./dist/src/lockfile.d.ts",
+      "default": "./src/lockfile.ts"
+    },
+    "./parseConnectUrl.js": {
+      "types": "./dist/src/parseConnectUrl.d.ts",
+      "default": "./src/parseConnectUrl.ts"
+    },
+    "./remote/RemoteSessionManager.js": {
+      "types": "./dist/src/remote/RemoteSessionManager.d.ts",
+      "default": "./src/remote/RemoteSessionManager.ts"
+    },
+    "./remote/remotePermissionBridge.js": {
+      "types": "./dist/src/remote/remotePermissionBridge.d.ts",
+      "default": "./src/remote/remotePermissionBridge.ts"
+    },
+    "./remote/sdkMessageAdapter.js": {
+      "types": "./dist/src/remote/sdkMessageAdapter.d.ts",
+      "default": "./src/remote/sdkMessageAdapter.ts"
+    },
+    "./server.js": {
+      "types": "./dist/src/server.d.ts",
+      "default": "./src/server.ts"
+    },
+    "./serverBanner.js": {
+      "types": "./dist/src/serverBanner.d.ts",
+      "default": "./src/serverBanner.ts"
+    },
+    "./serverLog.js": {
+      "types": "./dist/src/serverLog.d.ts",
+      "default": "./src/serverLog.ts"
+    },
+    "./sessionManager.js": {
+      "types": "./dist/src/sessionManager.d.ts",
+      "default": "./src/sessionManager.ts"
     }
   },
   "scripts": {

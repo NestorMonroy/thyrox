@@ -107,13 +107,49 @@
       "types": "./dist/render/exportRenderer.d.ts",
       "default": "./src/render/exportRenderer.tsx"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./constants/figures": {
+      "types": "./dist/constants/figures.d.ts",
+      "default": "./src/constants/figures.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./formatters/truncate.js": {
+      "types": "./dist/formatters/truncate.d.ts",
+      "default": "./src/formatters/truncate.ts"
+    },
+    "./hyperlink.js": {
+      "types": "./dist/hyperlink.d.ts",
+      "default": "./src/hyperlink.ts"
+    },
+    "./markdown.js": {
+      "types": "./dist/markdown.d.ts",
+      "default": "./src/markdown.ts"
+    },
+    "./modifiers.js": {
+      "types": "./dist/modifiers.d.ts",
+      "default": "./src/modifiers.ts"
+    },
+    "./render-options": {
+      "types": "./dist/render-options.d.ts",
+      "default": "./src/render-options.ts"
+    },
+    "./terminal.js": {
+      "types": "./dist/terminal.d.ts",
+      "default": "./src/terminal.ts"
+    },
+    "./textHighlighting.js": {
+      "types": "./dist/textHighlighting.d.ts",
+      "default": "./src/textHighlighting.ts"
+    },
+    "./utils/sliceAnsi.js": {
+      "types": "./dist/utils/sliceAnsi.d.ts",
+      "default": "./src/utils/sliceAnsi.ts"
+    },
+    "./utils/stringUtils": {
+      "types": "./dist/utils/stringUtils.d.ts",
+      "default": "./src/utils/stringUtils.ts"
+    },
+    "./xml": {
+      "types": "./dist/xml.d.ts",
+      "default": "./src/xml.ts"
     }
   },
   "scripts": {

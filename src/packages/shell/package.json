@@ -175,13 +175,81 @@
       "types": "./dist/bash/specs/index.d.ts",
       "default": "./src/bash/specs/index.ts"
     },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./Shell.js": {
+      "types": "./dist/Shell.d.ts",
+      "default": "./src/Shell.ts"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
+    "./bash/ParsedCommand.js": {
+      "types": "./dist/bash/ParsedCommand.d.ts",
+      "default": "./src/bash/ParsedCommand.ts"
+    },
+    "./bash/ast-alias.js": {
+      "types": "./dist/bash/ast-alias.d.ts",
+      "default": "./src/bash/ast-alias.ts"
+    },
+    "./bash/commands.js": {
+      "types": "./dist/bash/commands.d.ts",
+      "default": "./src/bash/commands.ts"
+    },
+    "./bash/parser.js": {
+      "types": "./dist/bash/parser.d.ts",
+      "default": "./src/bash/parser.ts"
+    },
+    "./bash/prefix.js": {
+      "types": "./dist/bash/prefix.d.ts",
+      "default": "./src/bash/prefix.ts"
+    },
+    "./bash/shellCompletion.js": {
+      "types": "./dist/bash/shellCompletion.d.ts",
+      "default": "./src/bash/shellCompletion.ts"
+    },
+    "./bash/treeSitterAnalysis.js": {
+      "types": "./dist/bash/treeSitterAnalysis.d.ts",
+      "default": "./src/bash/treeSitterAnalysis.ts"
+    },
+    "./collapseBackgroundBashNotifications.js": {
+      "types": "./dist/collapseBackgroundBashNotifications.d.ts",
+      "default": "./src/collapseBackgroundBashNotifications.ts"
+    },
+    "./legacy/readOnlyCommandValidation.js": {
+      "types": "./dist/legacy/readOnlyCommandValidation.d.ts",
+      "default": "./src/legacy/readOnlyCommandValidation.ts"
+    },
+    "./powershell/dangerousCmdlets.js": {
+      "types": "./dist/powershell/dangerousCmdlets.d.ts",
+      "default": "./src/powershell/dangerousCmdlets.ts"
+    },
+    "./powershell/parser.js": {
+      "types": "./dist/powershell/parser.d.ts",
+      "default": "./src/powershell/parser.ts"
+    },
+    "./powershell/staticPrefix.js": {
+      "types": "./dist/powershell/staticPrefix.d.ts",
+      "default": "./src/powershell/staticPrefix.ts"
+    },
+    "./sandbox.js": {
+      "types": "./dist/sandbox.d.ts",
+      "default": "./src/sandbox.ts"
+    },
+    "./sandbox/sandbox-adapter.js": {
+      "types": "./dist/sandbox/sandbox-adapter.d.ts",
+      "default": "./src/sandbox/sandbox-adapter.ts"
+    },
+    "./shellCommand.js": {
+      "types": "./dist/shellCommand.d.ts",
+      "default": "./src/shellCommand.ts"
+    },
+    "./shellConfig.js": {
+      "types": "./dist/shellConfig.d.ts",
+      "default": "./src/shellConfig.ts"
+    },
+    "./terminal/ShellCommand.js": {
+      "types": "./dist/terminal/ShellCommand.d.ts",
+      "default": "./src/terminal/ShellCommand.ts"
+    },
+    "./terminal/terminalPanel.js": {
+      "types": "./dist/terminal/terminalPanel.d.ts",
+      "default": "./src/terminal/terminalPanel.ts"
     }
   },
   "scripts": {

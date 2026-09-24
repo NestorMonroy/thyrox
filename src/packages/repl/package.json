@@ -6,14 +6,6 @@
   "main": "./src/index.ts",
   "types": "./dist/src/index.d.ts",
   "exports": {
-    "./screens/*.js": {
-      "types": "./dist/src/screens/*.d.ts",
-      "default": "./src/screens/*.tsx"
-    },
-    "./screens/*": {
-      "types": "./dist/src/screens/*.d.ts",
-      "default": "./src/screens/*"
-    },
     "./screens/agentFleet/mountFleetView.js": {
       "types": "./dist/src/screens/agentFleet/mountFleetView.d.ts",
       "default": "./src/screens/agentFleet/mountFleetView.tsx"
@@ -25,14 +17,6 @@
     "./keybindings/KeybindingProviderSetup.js": {
       "types": "./dist/src/keybindings/KeybindingProviderSetup.d.ts",
       "default": "./src/keybindings/KeybindingProviderSetup.tsx"
-    },
-    "./keybindings/*.js": {
-      "types": "./dist/src/keybindings/*.d.ts",
-      "default": "./src/keybindings/*.ts"
-    },
-    "./keybindings/*": {
-      "types": "./dist/src/keybindings/*.d.ts",
-      "default": "./src/keybindings/*"
     },
     "./hooks/useSwarmPermissionPoller.js": {
       "types": "./dist/src/hooks/useSwarmPermissionPoller.d.ts",
@@ -741,6 +725,34 @@
     "./testing": {
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
+    },
+    "./keybindings/defaultBindings.js": {
+      "types": "./dist/src/keybindings/defaultBindings.d.ts",
+      "default": "./src/keybindings/defaultBindings.ts"
+    },
+    "./keybindings/loadUserBindings.js": {
+      "types": "./dist/src/keybindings/loadUserBindings.d.ts",
+      "default": "./src/keybindings/loadUserBindings.ts"
+    },
+    "./keybindings/reservedShortcuts.js": {
+      "types": "./dist/src/keybindings/reservedShortcuts.d.ts",
+      "default": "./src/keybindings/reservedShortcuts.ts"
+    },
+    "./keybindings/schema.js": {
+      "types": "./dist/src/keybindings/schema.d.ts",
+      "default": "./src/keybindings/schema.ts"
+    },
+    "./keybindings/shortcutFormat.js": {
+      "types": "./dist/src/keybindings/shortcutFormat.d.ts",
+      "default": "./src/keybindings/shortcutFormat.ts"
+    },
+    "./screens/Doctor.js": {
+      "types": "./dist/src/screens/Doctor.d.ts",
+      "default": "./src/screens/Doctor.tsx"
+    },
+    "./screens/REPL.js": {
+      "types": "./dist/src/screens/REPL.d.ts",
+      "default": "./src/screens/REPL.tsx"
     }
   },
   "dependencies": {

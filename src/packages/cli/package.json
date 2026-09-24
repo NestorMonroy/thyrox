@@ -25,10 +25,16 @@
     "./bg/openAgentsFromRepl.js": "./src/bg/openAgentsFromRepl.ts",
     "./bg/ptyFrame.js": "./src/bg/ptyFrame.ts",
     "./commands/version.js": "./src/commands/version.ts",
-    "./*": "./src/*.ts",
-    "./*.js": "./src/*.ts",
-    "./commands/*": "./src/commands/*.ts",
-    "./bg/*": "./src/bg/*.ts"
+    "./bg.js": "./src/bg.ts",
+    "./handlers/auth.js": "./src/handlers/auth.ts",
+    "./mcpServersHandlers.js": "./src/mcpServersHandlers.ts",
+    "./print.js": "./src/print.ts",
+    "./secureStorage/keychainPrefetch.js": "./src/secureStorage/keychainPrefetch.ts",
+    "./ssh/SSHSessionManager.js": "./src/ssh/SSHSessionManager.ts",
+    "./ssh/createSSHSession.js": "./src/ssh/createSSHSession.ts",
+    "./structuredIO.js": "./src/structuredIO.ts",
+    "./structuredIOHelper.js": "./src/structuredIOHelper.ts",
+    "./transports/HybridTransport.js": "./src/transports/HybridTransport.ts"
   },
   "scripts": {
     "test": "bun test",

@@ -8,14 +8,6 @@
     "./mode": {
       "types": "./dist/mode.d.ts",
       "default": "./src/mode.ts"
-    },
-    "./*": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
-    },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "default": "./src/*.ts"
     }
   },
   "scripts": {
