@@ -673,3 +673,47 @@ export function getClaudeMds(files: MemoryFileInfo[]): string {
   if (parts.length === 0) return ''
   return `Instructions from the codebase and the user follow. They take precedence over default behavior and must be followed as written.\n\n${parts.join('\n\n')}`
 }
+
+// ---------------------------------------------------------------------------
+// Inclusiones externas — contrato de 2.1.275 (`Eut`, `yqn`, `KOr`), no copia.
+// ---------------------------------------------------------------------------
+
+/** Un CLAUDE.md incluido con `@include` desde fuera de la raíz de la sesión. */
+export type ExternalClaudeMdInclude = { path: string; parent: string }
+
+/**
+ * Los archivos que entraron por `@include` y viven fuera de la raíz de la
+ * sesión (≙ `Eut`). La memoria de usuario no cuenta: vive fuera por diseño.
+ */
+export function getExternalClaudeMdIncludes(files: MemoryFileInfo[]): ExternalClaudeMdInclude[] {
+  const root = loaderConfig().originalCwd
+  const includes: ExternalClaudeMdInclude[] = []
+  for (const file of files) {
+    if (file.type !== 'User' && file.parent && !isWithin(file.path, root)) {
+      includes.push({ path: file.path, parent: file.parent })
+    }
+  }
+  return includes
+}
+
+/** ¿Hay alguna inclusión externa? (≙ `yqn`). */
+export function hasExternalClaudeMdIncludes(files: MemoryFileInfo[]): boolean {
+  return getExternalClaudeMdIncludes(files).length > 0
+}
+
+/**
+ * ¿Hay que mostrar el aviso de inclusiones externas? No, si el proyecto ya
+ * las aprobó o ya vio el aviso; si no, sí cuando la carga CON externas
+ * encuentra alguna (≙ `KOr`).
+ */
+export async function shouldShowClaudeMdExternalIncludesWarning(): Promise<boolean> {
+  let project: { hasClaudeMdExternalIncludesApproved?: boolean; hasClaudeMdExternalIncludesWarningShown?: boolean } = {}
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    project = (require('@thyrox/config') as { getCurrentProjectConfig: () => typeof project }).getCurrentProjectConfig()
+  } catch {
+    // Sin registro de proyecto no hay aprobación que consultar.
+  }
+  if (project.hasClaudeMdExternalIncludesApproved || project.hasClaudeMdExternalIncludesWarningShown) return false
+  return hasExternalClaudeMdIncludes(await getMemoryFiles(true))
+}

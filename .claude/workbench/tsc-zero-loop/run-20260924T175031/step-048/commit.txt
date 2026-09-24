@@ -1,0 +1,13 @@
+Port the external CLAUDE.md include helpers
+
+The /config menu and the startup dialogs import
+getExternalClaudeMdIncludes, hasExternalClaudeMdIncludes,
+shouldShowClaudeMdExternalIncludesWarning and ExternalClaudeMdInclude
+from claudemd.ts, which did not declare them. They are ported from
+2.1.275 (Eut, yqn, KOr): an include is external when it came through
+@include from outside the session root, user memory never counts, and
+the warning is skipped once the project approved external includes or
+already saw it.
+
+Annulled in turn, the user exclusion and the root containment each
+dropped exactly their test.
