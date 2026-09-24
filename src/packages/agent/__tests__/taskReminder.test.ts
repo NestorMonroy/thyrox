@@ -184,6 +184,10 @@ describe('resumenTablero — el tablero durable, sin la lista efímera', () => {
   })
 })
 
+// Los turnos sin escritura de tarea usan `Glob`, de solo lectura: el caso mide la
+// cadencia del recordatorio, no la herramienta. Con `Bash` cada turno lanzaba un
+// shell real (~110 ms, medido en `.claude/workbench/frontera-publica-de-paquetes-*`)
+// y los 23 turnos rozaban el plazo de 5 s de `bun test` bajo carga.
 describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
   test('a los 10 turnos sin escritura de tarea, el 10º request trae el recordatorio con el tablero', async () => {
     const d = dir()
@@ -191,7 +195,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     const tc = taskTools({ dbPath: db, sessionId: 'S' }).find((t) => t.name === 'TaskCreate')!
     await tc.run({ subject: 'seguir el porte de TaskUpdate' }, ctx())
     // 9 turnos con herramienta + 1 texto: el bucle llega a la iteración 10
-    const p = new RecordedProvider([...Array.from({ length: 9 }, () => usa('Bash', { command: 'true' })), texto('fin')])
+    const p = new RecordedProvider([...Array.from({ length: 9 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin')])
     await runLoop({
       cwd: d, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d,
       prompt: 'trabaja', provider: p, taskReminder: { dbPath: db, sessionId: 'S' },
@@ -209,7 +213,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     const d = dir()
     const db = join(d, 'store.sqlite3')
     // sin escritura: dónde cae el primer recordatorio
-    const sinEscritura = new RecordedProvider([...Array.from({ length: 11 }, () => usa('Bash', { command: 'true' })), texto('fin')])
+    const sinEscritura = new RecordedProvider([...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin')])
     await runLoop({
       cwd: d, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d,
       prompt: 'x', provider: sinEscritura, taskReminder: { dbPath: db, sessionId: 'S' },
@@ -222,7 +226,7 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     const db2 = join(d2, 'store.sqlite3')
     const conEscritura = new RecordedProvider([
       usa('TaskUpdate', { task_id: '999', status: 'in_progress' }),
-      ...Array.from({ length: 11 }, () => usa('Bash', { command: 'true' })), texto('fin'),
+      ...Array.from({ length: 11 }, () => usa('Glob', { pattern: '*.nada' })), texto('fin'),
     ])
     await runLoop({
       cwd: d2, model: 'claude-opus-5', system: 'h', tools: CORE_TOOLS, transcriptDir: d2,
