@@ -237,7 +237,7 @@ export const PermissionModeSchema = lazySchema(() =>
  */
 export type CanUseToolFn = (...args: any[]) => Promise<any>
 export type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = string
-export type AppState = unknown
+export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 export type Tool = unknown
 export type AgentProgress = unknown
 export type CustomAgentDefinition = unknown

@@ -7,7 +7,7 @@ import {
   TASK_TYPE_TAG,
   TOOL_USE_ID_TAG,
 } from '@thyrox/command-runtime/xml.js'
-type AppState = { tasks: Record<string, unknown> }
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import {
   isTerminalTaskStatus,
   type TaskStatus,

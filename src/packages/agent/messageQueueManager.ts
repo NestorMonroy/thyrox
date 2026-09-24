@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { Permutations } from '@thyrox/tool-registry/genericTypeUtils'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
-type AppState = unknown
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import type {
   QueueOperation,
   QueueOperationMessage,

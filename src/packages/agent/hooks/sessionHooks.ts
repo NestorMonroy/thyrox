@@ -37,7 +37,7 @@ import { HOOK_EVENTS, type HookEvent, type HookCommand } from '../types/hooks.js
 import type { Message } from '../messageShapes.js'
 import { logForDebugging } from '../internal/logging.js'
 
-type AppState = any
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 /**
  * ant `Rj6`'s dependency stand-in — ver la nota de omisión en

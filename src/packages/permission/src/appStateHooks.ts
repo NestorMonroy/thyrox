@@ -23,7 +23,7 @@
  */
 
 /** El estado de la aplicación es opaco aquí: este paquete no lo modela. */
-export type AppState = unknown
+export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 type ModuloDeEstado = {
   useAppState: <U>(selector: (state: unknown) => U) => U

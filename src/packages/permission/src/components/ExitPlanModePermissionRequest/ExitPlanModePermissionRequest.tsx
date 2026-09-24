@@ -30,7 +30,7 @@ import {
 import { generateSessionName } from '../../commands/rename/generateSessionName.js'
 import { launchUltraplan } from '@thyrox/repl/ultraplan.js'
 import { type KeyboardEvent, Box, Text } from '@anthropic/ink'
-type AppState = Record<string, unknown>
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
 import type { AllowedPrompt } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'

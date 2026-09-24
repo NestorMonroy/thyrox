@@ -28,7 +28,7 @@
  * después revienta con `TypeError` al leer `task.identity.agentName`.
  */
 
-type AppState = { tasks: Record<string, unknown> }
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 type InProcessTeammateTaskState = {
   type: 'in_process_teammate'

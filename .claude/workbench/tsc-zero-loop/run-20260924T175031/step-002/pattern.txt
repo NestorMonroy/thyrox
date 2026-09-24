@@ -1,0 +1,1 @@
+(sessionHooks\.ts|inProcessTeammateHelpers\.ts|messageQueueManager\.ts|queryContext\.ts|task/framework\.ts|gracefulShutdown\.ts|appStateCompatShim\.ts|appStateShim\.tsx|appStateHooks\.ts|adapters/appRuntime\.ts|teammateState\.ts|ExitPlanModePermissionRequest\.tsx): TS(18046|7006|2698|2339|2638):

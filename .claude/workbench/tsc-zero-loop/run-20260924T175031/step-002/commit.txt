@@ -1,0 +1,13 @@
+Point the local AppState aliases at the canonical type
+
+Second step of the agent-compiler loop, judged by tsc with the net
+policy: accepted-net, total 3733 -> 3567. Thirteen modules declared
+their own AppState as unknown, any or a partial record, so every read
+of prev.tasks, prev.mcp or prev.settings was unknown to the checker.
+The packages already depend on app-host, so each alias now names
+AppStateCompat through @thyrox/app-host/state/AppState.js (or the
+relative path inside app-host).
+
+Targets fell 43 -> 11. The revealed diagnostics are real contract
+mismatches the aliases hid (TaskState duplicated in repl, a goal hook
+state shape); they stay in the ledger for the next steps.

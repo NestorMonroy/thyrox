@@ -17,7 +17,7 @@
  * para el resto del paquete).
  */
 
-export type AppState = unknown
+export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 export function useAppState<T>(selector: (state: unknown) => T): T {
   // eslint-disable-next-line @typescript-eslint/no-require-imports

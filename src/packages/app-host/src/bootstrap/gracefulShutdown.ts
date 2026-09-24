@@ -63,7 +63,7 @@ import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   shutdownEventLoggers,
 } from '@thyrox/local-observability/compat'
-type AppState = unknown
+type AppState = import('../state/AppState.js').AppState
 import { runCleanupFunctions } from './cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'

@@ -55,7 +55,7 @@ type InProcessTeammateTaskLike = {
   onIdleCallbacks?: Array<() => void>
 }
 
-type AppState = { tasks: Record<string, InProcessTeammateTaskLike | unknown> }
+type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 /**
  * Devuelve el session ID del padre para este teammate. Para teammates
