@@ -1,0 +1,12 @@
+Type the SDK message placeholders with SDK types
+
+The user, assistant and stream-event placeholders in coreSchemas.ts
+were z.unknown(). The source's generator overrode them with the real
+types; ours derives types with z.infer, so every reader of msg.message
+got unknown. They are now z.custom<T>() of the types the published SDK
+declares (claude-agent-sdk 0.3.197 sdk.d.ts: MessageParam, BetaMessage,
+BetaRawMessageStreamEvent). With no validator z.custom accepts any
+value, so parsing is unchanged; only the inferred type is.
+
+tsc: 2449 -> 2433 (accepted-net, 19 targets -> 2; 17 revealed, in the
+ledger).

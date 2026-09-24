@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2449, "total_final": 2433, "tsc_runs": 1, "accepted": ["agent:sdk-message-placeholders"], "files_kept": ["src/packages/headless-sdk/src/coreSchemas.ts"], "outcomes": {"agent:sdk-message-placeholders": "accepted-net"}}

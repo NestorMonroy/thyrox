@@ -16,6 +16,11 @@
 
 import { z } from 'zod/v4'
 import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import type { MessageParam } from '@anthropic-ai/sdk/resources'
+import type {
+  BetaMessage,
+  BetaRawMessageStreamEvent,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 
 // ============================================================================
 // Usage & Model Types
@@ -1241,14 +1246,22 @@ export const RewindFilesResultSchema = lazySchema(() =>
 // The generation script uses TypeOverrideMap to output the correct TS type references.
 // This allows us to define SDK message types in Zod while maintaining proper typing.
 
+//
+// En este árbol el generador (`bin/generateCoreTypes.ts`) deriva los tipos con
+// `z.infer`, así que el reemplazo de tipo va en el propio schema: `z.custom<T>()`
+// sin validador acepta cualquier valor, igual que `z.unknown()`, y le da a
+// `z.infer` el tipo externo. Los tres tipos son los que publica el SDK
+// (`@anthropic-ai/claude-agent-sdk` 0.3.197, `sdk.d.ts`): `MessageParam`,
+// `BetaMessage` y `BetaRawMessageStreamEvent`.
+
 /** Placeholder for APIUserMessage from @anthropic-ai/sdk */
-export const APIUserMessagePlaceholder = lazySchema(() => z.unknown())
+export const APIUserMessagePlaceholder = lazySchema(() => z.custom<MessageParam>())
 
 /** Placeholder for APIAssistantMessage from @anthropic-ai/sdk */
-export const APIAssistantMessagePlaceholder = lazySchema(() => z.unknown())
+export const APIAssistantMessagePlaceholder = lazySchema(() => z.custom<BetaMessage>())
 
 /** Placeholder for RawMessageStreamEvent from @anthropic-ai/sdk */
-export const RawMessageStreamEventPlaceholder = lazySchema(() => z.unknown())
+export const RawMessageStreamEventPlaceholder = lazySchema(() => z.custom<BetaRawMessageStreamEvent>())
 
 /** Placeholder for UUID from crypto */
 export const UUIDPlaceholder = lazySchema(() => z.string())
