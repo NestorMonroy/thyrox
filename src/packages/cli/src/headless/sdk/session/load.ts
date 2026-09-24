@@ -2,7 +2,7 @@ import { feature } from 'bun:bundle'
 import { dirname } from 'path'
 import { randomUUID } from 'crypto'
 import type { Message, NormalizedUserMessage } from '@thyrox/agent/messageShapes'
-import type { AppStateLike as AppState } from '../../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type { SessionExternalMetadata } from '@thyrox/storage/sessionState.js'
 import {
   loadConversationForResume,

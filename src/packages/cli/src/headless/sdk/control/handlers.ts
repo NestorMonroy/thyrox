@@ -36,7 +36,7 @@ import type { ModelInfo } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { HookCallbackMatcher } from '@thyrox/agent/types/hooks.js'
 import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { PermissionMode as InternalPermissionMode } from '@thyrox/permission/permissionTypes'
-import type { AppStateLike as AppState } from '../../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
 import {
   getSessionId,

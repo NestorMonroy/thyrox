@@ -7,7 +7,7 @@ import {
   link,
 } from 'fs/promises'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
-import type { AppStateLike as AppState } from '../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { z } from 'zod/v4'
 import { getKairosActive } from '@thyrox/app-host/bootstrap/state.js'
 import { TOOL_SUMMARY_MAX_LENGTH } from '../../toolLimits.js'
