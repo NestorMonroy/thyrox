@@ -1,0 +1,14 @@
+== bridge_hooks ==
+  ok    preserva advisorModel al escribir
+  ok    declara la clave hooks
+  ok    re-aplicar es no-op
+  ok    no-op deja el mtime intacto
+  ok    las dos copias divergentes se puentean
+  ok    Stop NO se puentea por defecto
+  ok    Stop entra con --include-stop
+  ok    --include-stop suma comandos
+  ok    dry-run no escribe (control)
+  ok    dry-run anuncia que no escribió
+  ok    dry-run muestra el diff
+
+aserciones: 11  ok: 11  fallo: 0
