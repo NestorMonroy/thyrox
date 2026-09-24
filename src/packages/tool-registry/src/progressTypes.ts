@@ -20,6 +20,12 @@
  * ése es el `ToolCallProgress` de `Tool.ts`.
  */
 
+import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  ContentItem,
+  NormalizedAssistantMessage,
+  NormalizedUserMessage,
+} from '@thyrox/agent/messageShapes.js'
 /**
  * Cuerpo del evento de progreso de BashTool.
  * Se construye en `packages/tool-registry/src/tools/BashTool/BashTool.tsx:900`
@@ -86,7 +92,24 @@ export type MCPProgress = {
  * `NormalizedMessage`, angostarla se propaga a 30+ dependencias de forma de
  * mensaje), o leer de adaptadores externos (WebSearch). Se difiere.
  */
-export type AgentToolProgress = unknown
+/**
+ * El cuerpo que `AgentTool.tsx` emite en cada `onProgress`: el mensaje del
+ * subagente YA normalizado, el prompt (sólo en el primero) y su id. Un
+ * mensaje normalizado lleva su contenido como arreglo de bloques, y el del
+ * asistente lleva su `usage` — el tipo lo declara en vez de obligar a cada
+ * lector a volver a comprobarlo (memoria del lazo, paso 19: sólo el tipo, sin
+ * esto, destapaba 32 guardas en `AgentTool/UI.tsx`).
+ */
+export type AgentToolProgress = {
+  type: 'agent_progress'
+  message:
+    | (NormalizedUserMessage & { message: { content: ContentItem[] } })
+    | (NormalizedAssistantMessage & {
+        message: { content: ContentItem[]; usage: BetaUsage }
+      })
+  prompt: string
+  agentId: string
+}
 export type SkillToolProgress = unknown
 export type REPLToolProgress = unknown
 export type TaskOutputProgress = unknown

@@ -1,0 +1,9 @@
+Declare the normalized AgentTool progress payload
+
+Twenty-third step of the agent-compiler loop, accepted-net
+3044 -> 3018, and the first one proposed after reading the loop memory.
+Step 19 typed AgentToolProgress alone and revealed 32 missing guards in
+AgentTool/UI.tsx; its reflection said so. Instead of scattering
+guards, the payload type now states what AgentTool emits: normalized
+messages, whose content is a block array, and assistant messages that
+carry their usage.

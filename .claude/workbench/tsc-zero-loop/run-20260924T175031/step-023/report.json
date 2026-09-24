@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3044, "total_final": 3018, "tsc_runs": 1, "accepted": ["agent:agent-tool-progress-normalized"], "files_kept": ["src/packages/tool-registry/src/progressTypes.ts"], "outcomes": {"agent:agent-tool-progress-normalized": "accepted-net"}}
