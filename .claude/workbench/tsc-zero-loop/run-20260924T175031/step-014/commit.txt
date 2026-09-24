@@ -1,0 +1,6 @@
+Record the partial plugin types step of the tsc loop
+
+Fourteenth step: re-exporting McpServerConfig and
+BundledSkillDefinition in config/plugin/types. tsc marked it partial:
+export-from does not bind the names locally, so the file lost them
+(TS2304). Reverted; the next step imports them first.
