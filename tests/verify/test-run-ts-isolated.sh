@@ -58,6 +58,19 @@ check "un aborto: exit 1" "$CODE" "1"
 check "un aborto: nombra el archivo" "$(printf '%s' "$SALIDA" | gawk '/^-- ROJO .*d\.test\.ts$/{n++} END{print n+0}')" "1"
 check "un aborto: los otros dos siguen contando" "$(printf '%s' "$SALIDA" | gawk '/^pass=/{split($1,a,"="); print a[2]}')" "2"
 
+# 5 — el entorno del corredor, no el del que llama: `tests/run.sh` exporta
+#     PYTHONPATH y el subconjunto derivado llama a este ejecutor a secas. Sin
+#     esto, una suite que invoca un gate Python pasa en la suite y cae en el
+#     subconjunto (medido: compat.test.ts, 3 fails sin la variable, 0 con ella).
+cat > "$F/e.test.ts" <<TS
+import { expect, test } from 'bun:test'
+test('PYTHONPATH trae la fuente del proveedor', () => {
+  expect((process.env.PYTHONPATH ?? '').split(':')).toContain('$RAIZ/src')
+})
+TS
+SALIDA="$(cd "$F" && printf 'e.test.ts\n' | env -u PYTHONPATH bash "$EJECUTOR" 2>&1)"; CODE=$?
+check "sin PYTHONPATH en quien llama: el ejecutor lo exporta" "$CODE" "0"
+
 # 4 — sin archivos no hay verde: rehusa con exit 2 y sin cifra.
 SALIDA="$(cd "$F" && printf '' | bash "$EJECUTOR" 2>&1)"; CODE=$?
 check "sin archivos: rehusa con exit 2" "$CODE" "2"

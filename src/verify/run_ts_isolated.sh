@@ -34,6 +34,11 @@ if [[ ${#ARCHIVOS[@]} -eq 0 ]]; then
     exit 2
 fi
 
+# El mismo PYTHONPATH que exporta tests/run.sh: una suite que invoca un gate
+# Python no puede pasar en la suite y caer al correrla desde aqui.
+RAIZ_PROVEEDOR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export PYTHONPATH="$RAIZ_PROVEEDOR/src${PYTHONPATH:+:$PYTHONPATH}"
+
 ANCHO="${THYROX_TS_WIDTH:-$(nproc 2>/dev/null || echo 4)}"
 SALIDAS="$(mktemp -d)"
 trap 'rm -rf "$SALIDAS"' EXIT
