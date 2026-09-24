@@ -27,10 +27,16 @@ import re
 
 _ASSEMBLED = re.compile(r"\b(?:thyrox-bg|bg\.sh)\s+start\b")
 
+#: La espera de un trabajo que ya está en el ledger. Es la forma que la regla
+#: prescribe desde 2026-09-24: el trabajo va al ledger y su espera al segundo
+#: plano del cliente, que es lo único que notifica.
+_LEDGER_WAIT = re.compile(
+    r"\b(?:(?:thyrox-bg|bg\.sh)\s+wait|wait-jobs(?:\.sh)?\s+wait)\b")
+
 
 def already_assembled(command: str) -> bool:
     """¿El comando ya lanza el trabajo por el ensamblador que lo registra?"""
-    return bool(_ASSEMBLED.search(command))
+    return bool(_ASSEMBLED.search(command) or _LEDGER_WAIT.search(command))
 
 
 def detect(payload: dict) -> str | None:
@@ -50,8 +56,8 @@ def detect(payload: dict) -> str | None:
         "--memfree <tamaño> -- <comando>` y `bash bin/thyrox-bg register "
         "<nombre>`. Para N: `bin/run-task-pool --memfree <tamaño>`, lanzado a "
         "su vez con `thyrox-bg start`. Para recogerlos: `bin/wait-jobs status` "
-        "sin bloquear, y `wait-jobs wait` sólo cuando el resultado es lo "
-        "siguiente que hace falta."
+        "sin bloquear, o su espera (`thyrox-bg wait <nombre>`) con "
+        "`run_in_background`, que notifica al terminar."
     )
 
 

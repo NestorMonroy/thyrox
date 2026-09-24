@@ -12,7 +12,14 @@ import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { isFirstPartyAnthropicConnection, type ConnectionRecord } from './connections.ts'
 
-export type APIProvider = 'firstParty' | 'bedrock' | 'vertex' | 'foundry' | 'openai' | 'gemini' | 'codex'
+export type APIProvider =
+  | 'firstParty'
+  | 'bedrock'
+  | 'vertex'
+  | 'foundry'
+  | 'openai'
+  | 'gemini'
+  | 'codex'
 
 function requireGlobalConfig(): {
   connections?: ConnectionRecord[]
@@ -21,9 +28,15 @@ function requireGlobalConfig(): {
   return (require('@thyrox/config') as { getGlobalConfig: () => { connections?: ConnectionRecord[] } }).getGlobalConfig()
 }
 
-function requireInitialSettings(): { modelType?: string } {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return (require('@thyrox/config/settings') as { getInitialSettings: () => { modelType?: string } }).getInitialSettings()
+// Carga perezosa de los settings, con el nombre que la paridad fija. Si no se
+// pueden leer devuelve `{}`: la misma conducta que el `try` de antes.
+function getInitialSettings(): { modelType?: string } {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/config/settings') as { getInitialSettings: () => { modelType?: string } }).getInitialSettings()
+  } catch {
+    return {}
+  }
 }
 
 export function getAPIProvider(): APIProvider {
@@ -45,13 +58,7 @@ export function getAPIProvider(): APIProvider {
     return 'firstParty'
   }
 
-  const modelType = (() => {
-    try {
-      return requireInitialSettings().modelType
-    } catch {
-      return undefined
-    }
-  })()
+  const modelType = getInitialSettings().modelType
   if (modelType === 'openai') return 'openai'
   if (modelType === 'gemini') return 'gemini'
   if (modelType === 'codex') return 'codex'

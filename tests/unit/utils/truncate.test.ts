@@ -134,7 +134,7 @@ describe('truncatePathMiddle', () => {
     // For maxLength < 5, impl falls back to truncateToWidth(path, maxLength)
     // which truncates from the end, keeping the prefix.
     expect(truncatePathMiddle('@thyrox/repl/components/foo.ts', 4)).toBe(
-      '@cl…',
+      '@th…',
     )
   })
 

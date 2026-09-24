@@ -606,7 +606,25 @@ export type EventLoggerLike = {
     attributes: Record<string, unknown>
   }): void
 }
-let _getEventLoggerImpl: () => EventLoggerLike | null = () => null
+// CORREGIDO 2026-09-24. El default devolvía `null` porque
+// `app-host/bootstrap/state.js` «no estaba exportado»; lo está desde que se
+// cerraron los `exports`. Como NADIE llama a `setGetEventLoggerFn` en
+// producción, con `null` todo evento OTel de este paquete se descartaba
+// siempre. El default lee ahora el estado real de `app-host`, perezoso porque
+// `app-host` depende de este paquete; el setter queda para las pruebas.
+function appHostState(): {
+  getEventLogger?: () => EventLoggerLike | null
+  getPromptId?: () => string | null
+} {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return require('@thyrox/app-host/bootstrap/state.js')
+  } catch {
+    return {}
+  }
+}
+let _getEventLoggerImpl: () => EventLoggerLike | null = () =>
+  appHostState().getEventLogger?.() ?? null
 export function getEventLogger(): EventLoggerLike | null {
   return _getEventLoggerImpl()
 }
@@ -614,7 +632,8 @@ export function setGetEventLoggerFn(fn: () => EventLoggerLike | null): void {
   _getEventLoggerImpl = fn
 }
 
-let _getPromptIdImpl: () => string | undefined = () => undefined
+let _getPromptIdImpl: () => string | undefined = () =>
+  appHostState().getPromptId?.() ?? undefined
 export function getPromptId(): string | undefined {
   return _getPromptIdImpl()
 }

@@ -283,6 +283,17 @@ export type AccountInfo = {
   workspaceRole?: string | null
   organizationName?: string
   billingType?: BillingType
+  // Los campos del perfil que `fetchProfileInfo` y `refreshOAuthToken`
+  // guardan (su_/Bq_ del binario). Vivían sólo en el `AccountInfo` de
+  // `provider/internal/oauthTypes.ts`; `oauth/client.ts` escribe en este.
+  displayName?: string
+  hasExtraUsageEnabled?: boolean
+  accountCreatedAt?: string
+  subscriptionCreatedAt?: string
+  ccOnboardingFlags?: Record<string, unknown>
+  claudeCodeTrialEndsAt?: string | null
+  claudeCodeTrialDurationDays?: number | null
+  seatTier?: string | null
 }
 
 export type AuthProtocol = 'anthropic' | 'openai' | 'codex' | 'gemini'

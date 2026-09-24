@@ -70,6 +70,16 @@ print("== 3. lo que ya viaja por el ensamblador calla ==")
 check("thyrox-bg start", None,
       detect("bash bin/thyrox-bg start suite --memfree 2G -- bash tests/run.sh", True))
 
+print("== 3b. la ESPERA de un trabajo del ledger va al cliente, y calla ==")
+# Directiva del ejecutor 2026-09-24: una espera nunca en primer plano. El
+# trabajo ya esta en el ledger (thyrox-bg start); su espera es lo unico que el
+# cliente notifica. El `until` improvisado del caso 1 NO es del ledger y sigue
+# avisando.
+check("thyrox-bg wait al cliente calla", None,
+      detect("bash bin/thyrox-bg wait commitesp", True))
+check("wait-jobs wait al cliente calla", None,
+      detect("bash bin/wait-jobs wait --timeout 1800", True))
+
 print("== 4. el aviso nombra los tres ensambladores ==")
 notice = detect(EPISODE_POOL, True) or ""
 for name in ("thyrox-bg start", "register", "run-task-pool", "wait-jobs"):
