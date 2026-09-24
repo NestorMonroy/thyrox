@@ -6,5 +6,9 @@
  * mantienen mínimos — la implementación real se eliminó durante la
  * decompilación (nota verbatim de la fuente).
  */
-export type SecureStorage = unknown
-export type SecureStorageData = unknown
+// `mcp-runtime` ya depende de `@thyrox/storage`: los tipos son los de su
+// almacenamiento, no marcadores del decompilado.
+export type {
+  SecureStorage,
+  SecureStorageData,
+} from '@thyrox/storage/secureStorage/types.js'

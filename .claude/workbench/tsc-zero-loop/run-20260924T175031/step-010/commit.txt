@@ -1,0 +1,9 @@
+Give SecureStorageData the shape its writers use
+
+Tenth step of the agent-compiler loop, accepted-net 3283 -> 3242.
+storage declared SecureStorageData as Record<string, unknown> and
+mcp-runtime as unknown, so every read of mcpOAuth, pluginSecrets or
+trustedDeviceToken was untyped. The shape is derived from the writes in
+mcp-runtime/auth.ts, bridge/trustedDevice.ts and pluginOptionsStorage,
+with an index signature for keys other modules add. mcp-runtime now
+re-exports the storage types through a new package subpath.

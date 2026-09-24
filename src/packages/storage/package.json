@@ -133,6 +133,10 @@
       "types": "./dist/secureStorage/macOsKeychainStorage.d.ts",
       "default": "./src/secureStorage/macOsKeychainStorage.ts"
     },
+    "./secureStorage/types.js": {
+      "types": "./dist/secureStorage/types.d.ts",
+      "default": "./src/secureStorage/types.ts"
+    },
     "./sessionActivity.js": {
       "types": "./dist/sessionActivity.d.ts",
       "default": "./src/sessionActivity.ts"

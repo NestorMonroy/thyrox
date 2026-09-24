@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3283, "total_final": 3242, "tsc_runs": 1, "accepted": ["agent:secure-storage-data"], "files_kept": ["src/packages/mcp-runtime/src/secureStorageTypes.ts", "src/packages/storage/package.json", "src/packages/storage/src/secureStorage/types.ts"], "outcomes": {"agent:secure-storage-data": "accepted-net"}}
