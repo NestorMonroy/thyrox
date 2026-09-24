@@ -1,0 +1,309 @@
+diff --git a/src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts b/src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts
+index f727c76c..16604b53 100644
+--- a/src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts
++++ b/src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts
+@@ -75,7 +75,7 @@ describe('installOAuthTokens env var + FD coordination (ant NZH)', () => {
+     // Pin: dynamic import inside the function so the cli barrel doesn\'t
+     // eagerly pull the app-host bootstrap state module.
+     expect(fnSlice).toMatch(
+-      /const \{ getOauthTokenFromFd, setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootstrap\/state\.js'/,
++      /const \{ getOauthTokenFromFd, setOauthTokenFromFd \} = await import\(\s*\n?\s*'@thyrox\/app-host\/bootstrap\/state\.js'/,
+     )
+   })
+ 
+@@ -133,7 +133,7 @@ describe('performLogout preserveInProcessTokens flag (ant Xw_)', () => {
+ 
+   test('setOauthTokenFromFd loaded via lazy import (avoids circular dep)', () => {
+     expect(source).toMatch(
+-      /const \{ setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootstrap\/state\.js'/,
++      /const \{ setOauthTokenFromFd \} = await import\(\s*\n?\s*'@thyrox\/app-host\/bootstrap\/state\.js'/,
+     )
+   })
+ 
+diff --git a/src/packages/output/src/__tests__/modifiers.behavior.test.ts b/src/packages/output/src/__tests__/modifiers.behavior.test.ts
+index 239ac058..54c76680 100644
+--- a/src/packages/output/src/__tests__/modifiers.behavior.test.ts
++++ b/src/packages/output/src/__tests__/modifiers.behavior.test.ts
+@@ -88,7 +88,7 @@ describe('modifiers — source pins', () => {
+     // A top-level `import { isModifierPressed as ... } from '@thyrox/modifiers-napi'`
+     // would load native ffi on every startup.
+     expect(source).toMatch(
+-      /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('modifiers-napi'\)/,
++      /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('@thyrox\/modifiers-napi'\)/,
+     )
+   })
+ 
+@@ -116,7 +116,7 @@ describe('modifiers — source pins', () => {
+ 
+   test('prewarm calls .prewarm() from the native module (NOT a noop wrapper)', () => {
+     expect(source).toMatch(
+-      /const \{ prewarm \} = require\('modifiers-napi'\)[\s\S]+?prewarm\(\)/,
++      /const \{ prewarm \} = require\('@thyrox\/modifiers-napi'\)[\s\S]+?prewarm\(\)/,
+     )
+   })
+ })
+diff --git a/src/packages/permission/src/bashClassifier.ts b/src/packages/permission/src/bashClassifier.ts
+index 606e034d..45252a76 100644
+--- a/src/packages/permission/src/bashClassifier.ts
++++ b/src/packages/permission/src/bashClassifier.ts
+@@ -2,9 +2,11 @@
+  * Porte fiel de `ccnmt: packages/permission/src/bashClassifier.ts`
+  * (61 líneas, 7 exports, licencia UNLICENSED — reimplementación, no
+  * copia). Porte COMPLETO — y triple: la fuente MISMA es ya el stub
+- * externo. Su primera línea lo declara: "Stub for external builds - the
+- * classifier permissions feature is ANT-ONLY". No hay nada que bloquear
+- * aquí porque este archivo ES el punto de apagado del clasificador
++ * externo. Su primera línea lo declara, verbatim:
++ *
++ *   "Stub for external builds - the classifier permissions feature is ANT-ONLY"
++ *
++ * No hay nada que bloquear aquí porque este archivo ES el punto de apagado del clasificador
+  * semántico de Bash — el módulo entero devuelve valores neutros/negativos
+  * fijos (nunca clasifica, nunca aprueba nada por su cuenta), que es
+  * exactamente el comportamiento fail-closed que corresponde en un árbol
+diff --git a/src/packages/provider/src/authAlias.ts b/src/packages/provider/src/authAlias.ts
+index 7e9d3b6d..11faf524 100644
+--- a/src/packages/provider/src/authAlias.ts
++++ b/src/packages/provider/src/authAlias.ts
+@@ -446,17 +446,41 @@ async function _executeApiKeyHelper(isNonInteractiveSession: boolean): Promise<s
+     }
+   }
+ 
+-  try {
+-    const { stdout } = await execFileAsync('/bin/sh', ['-c', apiKeyHelper], { timeout: 10 * 60 * 1000 })
+-    const trimmed = stdout?.trim()
+-    if (!trimmed) throw new Error('did not return a value')
+-    return trimmed
+-  } catch (e) {
+-    const err = e as { killed?: boolean; code?: number; stderr?: string; message?: string }
+-    const why = err.killed ? 'timed out' : `exited ${err.code}`
+-    const stderr = err.stderr?.trim()
+-    throw new Error(stderr ? `${why}: ${stderr}` : err.message ?? why)
+-  }
++  // La forma de 2.1.275 (`chunk-xbd48fav.js`): el helper corre SIN lanzar
++  // (`Lw(n, {timeout: 600000, reject: false})`) y el fallo se compone aqui,
++  // con el stderr recortado a 500. Queda fuera, declarado: la validacion de
++  // que la salida sirva como clave (`J8r`, «returned output that cannot be
++  // used as an API key») y el `cwd` de `So()`.
++  const result = await runShellNoThrow(apiKeyHelper, { timeout: 10 * 60 * 1000 })
++  if (result.failed) {
++    const why = result.timedOut ? 'timed out' : `exited ${result.exitCode}`
++    const stderr = result.stderr && result.stderr.trim().slice(0, 500)
++    throw new Error(stderr ? `${why}: ${stderr}` : why)
++  }
++  const stdout = result.stdout?.trim()
++  if (!stdout) {
++    throw new Error('did not return a value')
++  }
++  return stdout
++}
++
++/** Un comando de shell que NO lanza: el resultado dice si fallo y por que. */
++function runShellNoThrow(
++  command: string,
++  { timeout }: { timeout: number },
++): Promise<{ failed: boolean; timedOut: boolean; exitCode: number | null; stdout: string; stderr: string }> {
++  return new Promise(resolve => {
++    execFile('/bin/sh', ['-c', command], { timeout, encoding: 'utf8' }, (error, stdout, stderr) => {
++      const err = error as (NodeJS.ErrnoException & { killed?: boolean; signal?: string | null }) | null
++      resolve({
++        failed: err !== null,
++        timedOut: err?.killed === true && err.signal === 'SIGTERM',
++        exitCode: err === null ? 0 : typeof err.code === 'number' ? err.code : null,
++        stdout: stdout ?? '',
++        stderr: stderr ?? '',
++      })
++    })
++  })
+ }
+ 
+ export function getApiKeyFromApiKeyHelperCached(): string | null {
+@@ -1061,7 +1085,7 @@ type OAuthTokensView = {
+   accessToken?: string
+   refreshToken?: string
+   expiresAt?: number
+-  scopes?: readonly string[]
++  scopes?: string[]
+   subscriptionType?: string | null
+   clientId?: string
+ }
+@@ -1157,7 +1181,9 @@ export async function withOAuthRefreshLock<T>(
+         } catch (releaseError) {
+           logError(releaseError)
+           logEvent('tengu_oauth_token_refresh_lock_release_error', {
+-            error: errorMessage(releaseError) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
++            error: errorMessage(
++              releaseError,
++            ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+           })
+         }
+       }
+@@ -1218,6 +1244,10 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force:
+         return checkAndRefreshOAuthTokenIfNeededImpl(retryCount + 1, force, baselineAccessToken)
+       }
+       logEvent('tengu_oauth_token_refresh_lock_retry_limit_reached', { maxRetries: MAX_RETRIES })
++      // Port of ant pt6 (1997.js): G6("oauth_token_refresh", "oauth_refresh_lock_timeout")
++      // — el nombre es de la build 2.1.136 que cita su suite, que no esta en
++      // este arbol. En 2.1.275 el mismo evento sale de
++      // `f("oauth_token_refresh","oauth_refresh_lock_timeout", …)` (chunk-xbd48fav.js).
+       logEvent('tengu_feature_sad', {
+         feature_name: 'oauth_token_refresh' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+         error_code: 'oauth_refresh_lock_timeout' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+@@ -1228,6 +1258,9 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force:
+     logEvent('tengu_oauth_token_refresh_lock_error', {
+       error: errorMessage(err) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     })
++    // Port of ant pt6 (1997.js): xH("oauth_token_refresh", "oauth_refresh_lock_error")
++    // — build 2.1.136, como arriba. En 2.1.275:
++    // `m("oauth_token_refresh","oauth_refresh_lock_error")` (chunk-xbd48fav.js).
+     logEvent('tengu_feature_bad', {
+       feature_name: 'oauth_token_refresh' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+       error_code: 'oauth_refresh_lock_error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+@@ -1247,10 +1280,19 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force:
+     if (isRefreshTokenDead(lockedTokens.refreshToken)) return false
+ 
+     logEvent('tengu_oauth_token_refresh_starting', {})
+-    const shouldOmitScopes = (shouldUseClaudeAIAuth(lockedTokens.scopes as string[] | undefined) || Boolean(lockedTokens.subscriptionType)) && !lockedTokens.clientId
++    // Port of ant v2.1.136 pt6 (1997.js) — cuando se omiten los scopes:
++    //   scopes: (bB(w.scopes) || w.subscriptionType) && !w.clientId ? void 0 : w.scopes
++    // Un token anterior a los scopes se reconoce por su `subscriptionType`, y
++    // uno ligado a un cliente propio conserva sus scopes tal cual: sin el
++    // `!clientId`, el refresco devolveria el conjunto por defecto.
++    const lockedSubscriptionType = lockedTokens.subscriptionType
++    const lockedClientId = lockedTokens.clientId
++    const shouldOmitScopes =
++      (shouldUseClaudeAIAuth(lockedTokens.scopes) || lockedSubscriptionType) &&
++      !lockedClientId
+     const refreshedTokens = await refreshOAuthToken(lockedTokens.refreshToken, {
+-      scopes: shouldOmitScopes ? undefined : (lockedTokens.scopes as string[] | undefined),
+-      clientId: lockedTokens.clientId,
++      scopes: shouldOmitScopes ? undefined : lockedTokens.scopes,
++      clientId: lockedClientId,
+     })
+     saveOAuthTokensIfNeeded(refreshedTokens)
+     getClaudeAIOAuthTokens.cache?.clear?.()
+@@ -1274,7 +1316,9 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force:
+     } catch (releaseError) {
+       logError(releaseError)
+       logEvent('tengu_oauth_token_refresh_lock_release_error', {
+-        error: errorMessage(releaseError) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
++        error: errorMessage(
++          releaseError,
++        ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+       })
+     }
+   }
+diff --git a/src/packages/provider/src/oauth/client.ts b/src/packages/provider/src/oauth/client.ts
+index 3aeacdfe..63e5e2d3 100644
+--- a/src/packages/provider/src/oauth/client.ts
++++ b/src/packages/provider/src/oauth/client.ts
+@@ -142,6 +142,11 @@ export function buildAuthUrl({
+ }
+ 
+ type AM = AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
++// Los comentarios `ant <fn> <emisor>` de las llamadas de abajo nombran la
++// build 2.1.136 que cita su suite (`dg6` intercambio, `Bq_` refresco, `cg6`
++// roles, `lg6` clave de API; `yH` ok, `xH` bad, `G6` sad). Esa build no esta
++// en este arbol; lo medido es 2.1.275, entre parentesis: `$nr`, `dte`, `pSt`
++// y `Fnr`, con `_` ok, `m` bad y `f` sad (chunk-xbd48fav.js).
+ function featureOk(n: string): void {
+   logEvent('tengu_feature_ok', { feature_name: n as AM })
+ }
+@@ -178,16 +183,23 @@ export async function exchangeCodeForTokens(
+   if (response.status !== 200) {
+     const reason = response.status === 401 ? 'oauth_exchange_invalid_code' : 'oauth_exchange_http_error'
+     logEvent('tengu_oauth_token_exchange_failed', { reason, status: String(response.status) })
+-    featureBad('oauth_token_exchange', reason)
++    featureBad('oauth_token_exchange', reason) // ant dg6 xH("oauth_token_exchange", reason) (2.1.275: $nr m)
+     throw new Error(
+       response.status === 401 ? 'Authentication failed: Invalid authorization code' : `Token exchange failed (${response.status}): ${response.statusText}`,
+     )
+   }
+   logEvent('tengu_oauth_token_exchange_success', {})
+-  featureOk('oauth_token_exchange')
++  featureOk('oauth_token_exchange') // ant dg6 yH (2.1.275: $nr _)
+   return response.data
+ }
+ 
++/**
++ * Port of ant Bq_ signature: `{ scopes, expiresIn, clientId }` — el nombre
++ * es de la build 2.1.136 que cita su suite, que no esta en este arbol. En
++ * 2.1.275 la funcion es `dte` (chunk-xbd48fav.js) y lleva cinco opciones mas
++ * —`skipProfileFetch`, `signal`, `telemetryContext`, `invalidScopeRetried`,
++ * `storageV5`— que este porte no tiene.
++ */
+ export async function refreshOAuthToken(
+   refreshToken: string,
+   { scopes: requestedScopes, expiresIn, clientId }: { scopes?: string[]; expiresIn?: number; clientId?: string } = {},
+@@ -252,6 +264,9 @@ export async function refreshOAuthToken(
+       }
+     }
+ 
++    // ant Bq_ return: `clientId: K`. Devolverlo hace que el siguiente
++    // refresco lo reenvie y el token siga ligado a su cliente OAuth; 2.1.275
++    // (`dte`) devuelve `clientId:s` igual.
+     return {
+       accessToken,
+       refreshToken: newRefreshToken,
+@@ -273,9 +288,9 @@ export async function refreshOAuthToken(
+     if (isInvalidGrantError(error)) {
+       markRefreshTokenDead(refreshToken)
+       logEvent('tengu_oauth_refresh_token_marked_dead_invalid_grant', {})
+-      featureBad('oauth_token_refresh', 'oauth_refresh_invalid_grant')
++      featureBad('oauth_token_refresh', 'oauth_refresh_invalid_grant') // ant Bq_ xH (2.1.275: dte m)
+     } else {
+-      featureSad('oauth_token_refresh', 'oauth_refresh_request_failed')
++      featureSad('oauth_token_refresh', 'oauth_refresh_request_failed') // ant Bq_ G6 (2.1.275: dte f)
+     }
+     throw error
+   }
+@@ -288,7 +303,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
+ 
+   if (response.status !== 200) {
+     logEvent('tengu_oauth_fetch_roles_failed', { reason: 'http_error', status: String(response.status) })
+-    featureBad('oauth_fetch_roles', 'oauth_roles_http_error')
++    featureBad('oauth_fetch_roles', 'oauth_roles_http_error') // ant cg6 xH (2.1.275: pSt m)
+     throw new Error(`Failed to fetch user roles: ${response.statusText}`)
+   }
+   const data = response.data as UserRolesResponse
+@@ -296,7 +311,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
+ 
+   if (!config.oauthAccount) {
+     logEvent('tengu_oauth_fetch_roles_failed', { reason: 'no_account' })
+-    featureBad('oauth_fetch_roles', 'oauth_roles_no_account')
++    featureBad('oauth_fetch_roles', 'oauth_roles_no_account') // ant cg6 xH (2.1.275: pSt m)
+     throw new Error('OAuth account information not found in config')
+   }
+ 
+@@ -313,7 +328,7 @@ export async function fetchAndStoreUserRoles(accessToken: string): Promise<void>
+   }))
+ 
+   logEvent('tengu_oauth_roles_stored', { org_role: data.organization_role as AM })
+-  featureOk('oauth_fetch_roles')
++  featureOk('oauth_fetch_roles') // ant cg6 yH (2.1.275: pSt _)
+ }
+ 
+ export async function createAndStoreApiKey(accessToken: string): Promise<string | null> {
+@@ -326,11 +341,11 @@ export async function createAndStoreApiKey(accessToken: string): Promise<string
+     if (apiKey) {
+       await saveApiKey(apiKey)
+       logEvent('tengu_oauth_api_key', { status: 'success' as AM, statusCode: response.status })
+-      featureOk('oauth_create_api_key')
++      featureOk('oauth_create_api_key') // ant lg6 yH (2.1.275: Fnr _)
+       return apiKey
+     }
+     logEvent('tengu_oauth_create_api_key_failed', { reason: 'empty_response' })
+-    featureBad('oauth_create_api_key', 'oauth_api_key_empty_response')
++    featureBad('oauth_create_api_key', 'oauth_api_key_empty_response') // ant lg6 xH (2.1.275: Fnr m)
+     return null
+   } catch (error) {
+     logEvent('tengu_oauth_api_key', {
+@@ -338,7 +353,7 @@ export async function createAndStoreApiKey(accessToken: string): Promise<string
+       error: (error instanceof Error ? error.message : String(error)) as AM,
+     })
+     logEvent('tengu_oauth_create_api_key_failed', { reason: 'request_failed' })
+-    featureBad('oauth_create_api_key', 'oauth_api_key_request_failed')
++    featureBad('oauth_create_api_key', 'oauth_api_key_request_failed') // ant lg6 xH (2.1.275: Fnr m)
+     throw error
+   }
+ }
