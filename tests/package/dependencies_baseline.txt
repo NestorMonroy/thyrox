@@ -161,3 +161,15 @@ provider::@thyrox/local-observability
 provider::@thyrox/output
 shell::@thyrox/app-host
 shell::@thyrox/local-observability
+
+# Herramientas internas que la build externa no embarca, congeladas por
+# ESPECIFICADOR COMPLETO (no por raiz): cada `require` va tras un `feature()`
+# de compilacion o tras `USER_TYPE === 'ant'`, y el volcado 2.1.275 no trae
+# ninguna cadena de esos flags. Son ramas muertas fieles a la referencia; la
+# misma lista la declara tests/package/sibling_exports.test.ts.
+tool-registry::@thyrox/tool-registry/tools/SleepTool/SleepTool.js
+tool-registry::@thyrox/tool-registry/tools/TerminalCaptureTool/TerminalCaptureTool.js
+tool-registry::@thyrox/tool-registry/tools/WebBrowserTool/WebBrowserTool.js
+tool-registry::@thyrox/tool-registry/tools/SnipTool/SnipTool.js
+tool-registry::@thyrox/tool-registry/tools/REPLTool/REPLTool.js
+app-host::@thyrox/tool-registry/tools/REPLTool/REPLTool.js

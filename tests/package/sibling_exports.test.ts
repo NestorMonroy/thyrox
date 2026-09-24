@@ -149,16 +149,28 @@ describe('exports de los paquetes hermanos', () => {
     for (const p of TODOS) {
       test(p.nombre, () => {
         const muertos: string[] = []
+        // Un destino bajo `dist/` es la DECLARACION emitida, que no se versiona:
+        // `emit_declarations.py` la declara precondicion de construccion, no
+        // requisito — sin ella el resolutor cae al `default`, que es la fuente.
+        // Se juzga sólo si el paquete ESTA construido: ahi un destino ausente sí
+        // es una declaracion envejecida. Sin construir, contarla mediria el
+        // contenedor, no el mapa.
+        const construido = existsSync(join(p.dir, 'dist'))
+        const vivo = (t: string) =>
+          existsSync(join(p.dir, t)) || (!construido && /^\.\/dist\//.test(t))
         for (const [sub, valor] of Object.entries(p.exports)) {
-          const t = destino(valor)
-          if (t === null || t.includes('*')) continue
-          if (!existsSync(join(p.dir, t))) muertos.push(`${sub} -> ${t}`)
+          const destinos = typeof valor === 'string' ? [valor]
+            : valor && typeof valor === 'object' ? Object.values(valor as Record<string, string>) : []
+          for (const t of destinos) {
+            if (typeof t !== 'string' || t.includes('*')) continue
+            if (!vivo(t)) muertos.push(`${sub} -> ${t}`)
+          }
         }
         // `main` y `types` son destinos igual que una entrada del mapa, y el
         // bloque no los miraba: `mcp-runtime` apuntaba `main` a un
         // `./src/index.ts` inexistente y ningun bloque lo veia.
         for (const [clave, t] of [['main', p.main], ['types', p.types]] as const) {
-          if (t && !existsSync(join(p.dir, t))) muertos.push(`${clave} -> ${t}`)
+          if (t && !vivo(t)) muertos.push(`${clave} -> ${t}`)
         }
         expect(muertos).toEqual([])
       })
@@ -179,66 +191,50 @@ describe('exports de los paquetes hermanos', () => {
     }
   })
 
-  describe('bloque 4 — cada modulo .ts/.tsx de src/ resuelve A SI MISMO por el mapa (T-9)', () => {
-    // Porte de `tests/package/exports.test.ts` (bloque 2), generalizado por
-    // paquete en vez de fijo a la raiz. Los bloques 0-3 de arriba miden las
-    // entradas QUE YA EXISTEN en el mapa; ninguno recorre el disco, asi que un
-    // archivo real sin NINGUNA entrada -- ni exacta ni por comodin -- es
-    // invisible a los cuatro. Este bloque es el que ve esa forma: recorre
-    // `src/` de cada paquete y pregunta, por archivo, si el mapa lo resuelve.
+  describe('bloque 4 — toda subruta que el arbol CONSUME resuelve por el mapa a un archivo vivo', () => {
+    // CONTRATO CAMBIADO al cerrar la superficie (`close_exports.py`). La version
+    // anterior (T-9) exigia que CADA modulo de `src/` —tests incluidos— se
+    // resolviera a si mismo por el mapa: la superficie ABIERTA que el comodin
+    // `./*` daba. Cerrar los mapas a las subrutas que se consumen la contradice
+    // por construccion: medido contra los manifiestos de antes y de despues, el
+    // criterio viejo pasaba de 11 paquetes en rojo a 25, y ninguno de los 14
+    // nuevos tenia un consumidor roto — eran modulos internos que dejaron de
+    // estar publicados, que es justo lo que el cierre busca.
     //
-    // Medido antes de escribir este bloque (T-9, no repetido aqui porque es
-    // propiedad de un arbol que cambia -- `calibration-verified-numbers.md`):
-    // 9 paquetes con archivos sin cobertura. El propio test, corrido, publica
-    // la cifra vigente.
+    // Lo que el cierre SI puede romper es a un consumidor: una subruta que el
+    // arbol importa y que el mapa ya no resuelve. Eso es lo que este bloque
+    // mide, por paquete, con la misma resolucion de Node que `close_exports`
+    // (exacta, luego el prefijo de comodin mas largo).
     //
-    // TRES CORRECCIONES sobre el porte, las tres declaradas:
-    //
-    // 1. `sourceModules` del original excluye `.tsx` (`entry.endsWith('.ts')`
-    //    solo) -- ciego a `teleport/src/remote-setup/remote-setup.tsx`, que
-    //    SI es una superficie real del paquete. Aqui se incluyen los dos.
-    // 2. `subpathFor`/`sourceModules` operan sobre la raiz del PAQUETE, no la
-    //    de thyrox -- el original es fijo a `ROOT`.
-    // 3. `src/index.ts` cuenta cubierto TAMBIEN si `.` resuelve a el, ademas
-    //    de por su propia ruta calculada (`./index`, via `subpathFor`). NO
-    //    es un colapso incondicional a `.`: `permission/src/index.ts` es un
-    //    modulo SECUNDARIO real -- su `.` apunta a `permission.ts`, no a
-    //    `index.ts` -- y sigue cubierto por su propia ruta (`./*` generico).
-    //    Colapsar siempre a `.` (primer intento de esta correccion) rompia
-    //    ese caso: `resolveSubpath(exports, '.')` daba `permission.ts`, que
-    //    NUNCA coincide con `index.ts`. El original nunca ejercito ninguna
-    //    de las dos formas porque el propio paquete `thyrox` (raiz) no
-    //    declara `.` en su mapa (se importa solo por subpaths con nombre).
-    function sourceModulesOf(pkgDir: string): string[] {
-      const srcDir = join(pkgDir, 'src')
-      if (!existsSync(srcDir)) return []
-      const out: string[] = []
+    // Metrica: especificadores literales `@thyrox/<pkg>[/<subruta>]` en el
+    // codigo de `src/` y `tests/`.
+    // Ciega a: un especificador compuesto en tiempo de ejecucion, y a un
+    // consumidor fuera de esas dos raices.
+    const ESPECIFICADOR = /(?:from\s*|import\s*\(\s*|import\s+|require\s*\(\s*|mock\.module\s*\(\s*)['"](@thyrox\/[^'"]+)['"]/g
+    const CODIGO = /\.(?:[cm]?[jt]sx?)$/
+
+    function consumos(): Map<string, Set<string>> {
+      const porPaquete = new Map<string, Set<string>>()
       const recorrer = (dir: string) => {
         for (const entry of readdirSync(dir)) {
+          if (entry === 'node_modules' || entry === 'dist' || entry.startsWith('.')) continue
           const full = join(dir, entry)
-          if (statSync(full).isDirectory()) {
-            if (entry === '__pycache__' || entry === 'node_modules') continue
-            recorrer(full)
-          } else if ((entry.endsWith('.ts') || entry.endsWith('.tsx')) && !entry.endsWith('.d.ts')) {
-            out.push(full.slice(pkgDir.length + 1))
+          if (statSync(full).isDirectory()) { recorrer(full); continue }
+          if (!CODIGO.test(entry) || entry.endsWith('.d.ts')) continue
+          for (const m of readFileSync(full, 'utf8').matchAll(ESPECIFICADOR)) {
+            const partes = m[1].split('/')
+            const nombre = partes.slice(0, 2).join('/')
+            const sub = partes.length > 2 ? './' + partes.slice(2).join('/') : '.'
+            if (!porPaquete.has(nombre)) porPaquete.set(nombre, new Set())
+            porPaquete.get(nombre)!.add(sub)
           }
         }
       }
-      recorrer(srcDir)
-      return out.sort()
+      for (const raiz of ['src', 'tests']) recorrer(join(RAIZ, raiz))
+      return porPaquete
     }
 
-    /** Misma precedencia de `/index` que el original (ver su docstring). */
-    function subpathFor(pkgDir: string, moduleRelPath: string): string {
-      const sinExt = moduleRelPath.replace(/^src\//, '').replace(/\.tsx?$/, '')
-      const base = sinExt.endsWith('/index') ? sinExt.slice(0, -'/index'.length) : null
-      const conHermano = base !== null && (
-        existsSync(join(pkgDir, 'src', `${base}.ts`)) || existsSync(join(pkgDir, 'src', `${base}.tsx`))
-      )
-      return './' + (conHermano ? sinExt : sinExt.replace(/\/index$/, ''))
-    }
-
-    /** Identica al bloque 2 de `exports.test.ts` -- exacto, luego el prefijo `*` mas largo. */
+    /** Exacta, luego el prefijo `*` mas largo — la resolucion de Node. */
     function resolveSubpath(exportsMap: Record<string, unknown>, subpath: string): string | null {
       const exacto = destino(exportsMap[subpath])
       if (exacto !== undefined && exacto !== null) return exacto
@@ -260,16 +256,49 @@ describe('exports de los paquetes hermanos', () => {
       return mejorDestino
     }
 
+    // Subrutas que el arbol nombra SIN embarcarlas, y por que no son consumo
+    // roto: cada una esta tras un `feature()` de `bun:bundle` que la build
+    // externa compila a `false` —el volcado 2.1.275 no trae ninguna cadena de
+    // esos flags— o tras un `import()` dinamico dentro de un `try`. Son ramas
+    // muertas fieles a la referencia, no destinos que el cierre rompio.
+    const NO_EMBARCADAS: Record<string, Record<string, string>> = {
+      '@thyrox/tool-registry': {
+        './tools/SleepTool/SleepTool.js': "feature('PROACTIVE') || feature('KAIROS')",
+        './tools/TerminalCaptureTool/TerminalCaptureTool.js': "feature('TERMINAL_PANEL')",
+        './tools/WebBrowserTool/WebBrowserTool.js': "feature('WEB_BROWSER_TOOL')",
+        './tools/SnipTool/SnipTool.js': "feature('HISTORY_SNIP')",
+        './tools/REPLTool/REPLTool.js': 'import() dinamico dentro de try (runAgentTelemetry)',
+      },
+    }
+
+    const CONSUMOS = consumos()
+
+    test('una excepcion que empieza a resolver deja de ser excepcion', () => {
+      // Si alguien embarca la herramienta, la entrada de arriba sobra: dejarla
+      // taparia un destino roto futuro con la razon de uno que ya no aplica.
+      const vivas: string[] = []
+      for (const [nombre, subs] of Object.entries(NO_EMBARCADAS)) {
+        const p = TODOS.find(x => x.nombre === nombre)!
+        for (const sub of Object.keys(subs)) {
+          const t = resolveSubpath(p.exports, sub)
+          if (t !== null && existsSync(join(p.dir, t))) vivas.push(`${nombre}/${sub}`)
+        }
+      }
+      expect(vivas).toEqual([])
+    })
+
+    test('el alcance no esta vacio — sin consumos el bloque pasaria sin medir', () => {
+      expect([...CONSUMOS.values()].reduce((n, s) => n + s.size, 0)).toBeGreaterThan(100)
+    })
+
     for (const p of TODOS) {
       test(p.nombre, () => {
-        const sinCubrir = sourceModulesOf(p.dir).filter(m => {
-          const destinoEsperado = './' + m
-          if (resolveSubpath(p.exports, subpathFor(p.dir, m)) === destinoEsperado) return false
-          // correccion 3: ruta alterna solo para el indice de raiz, via '.'
-          if (m === 'src/index.ts' && resolveSubpath(p.exports, '.') === destinoEsperado) return false
-          return true
+        const rotos = [...(CONSUMOS.get(p.nombre) ?? [])].filter(sub => {
+          if (NO_EMBARCADAS[p.nombre]?.[sub]) return false
+          const t = resolveSubpath(p.exports, sub)
+          return t === null || !existsSync(join(p.dir, t))
         })
-        expect(sinCubrir).toEqual([])
+        expect(rotos.sort()).toEqual([])
       })
     }
   })

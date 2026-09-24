@@ -1,0 +1,24 @@
+Reconcile the package suites with the closed exports
+
+Closing the ./* wildcards left three package suites measuring the old,
+open surface, and two of them hid real defects behind it.
+
+- sibling_exports block 4 demanded that every module of src/, tests
+  included, resolve itself by the map: the surface the wildcard gave.
+  Measured against the manifests before and after closing, that
+  criterion went from 11 red packages to 25, none of them a broken
+  consumer. The block now measures what closing can break: every
+  @thyrox/<pkg>/<subpath> the tree imports resolves to a live file. It
+  found two real ones, mcp-runtime without its "." and the
+  @thyrox/agent/query-engine that run-streaming imports, and both are
+  published now. Five tools the external build does not ship stay
+  listed with their gate, and a control fails if one starts resolving.
+- Block 2 judges a dist/ target only when that package is built: the
+  declarations are a declared build precondition, not a requirement.
+- The root manifest gains the 100 index entries its own rule derives.
+- dependencies.test read require() inside comments; calls are now read
+  from the transpiled text with dead-code elimination off, so comments
+  go and feature-gated requires stay. Its baseline also takes full
+  specifiers, so freezing one dead branch no longer freezes a package.
+- @aws-sdk/client-bedrock-runtime and client-sts, which provider
+  imports, are declared at the root with their family's range.

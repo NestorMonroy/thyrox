@@ -1,0 +1,24 @@
+-- ROJO src/packages/config/__tests__/config.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/config/__tests__/config.test.ts:
+ 98 | 
+ 99 |   test('parseSettingSourcesFlag acepta lista, recorta espacios y rechaza lo que no existe', () => {
+100 |     expect(parseSettingSourcesFlag('user,project')).toEqual(['userSettings', 'projectSettings'])
+101 |     expect(parseSettingSourcesFlag(' user , local ')).toEqual(['userSettings', 'localSettings'])
+102 |     expect(parseSettingSourcesFlag('')).toEqual([])
+103 |     expect(() => parseSettingSourcesFlag('inventada')).toThrow('fuente de settings')
+                                                             ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "fuente de settings"
+Received message: "Invalid setting source: inventada. Valid options are: user, project, local, flag, policy"
+
+      at <anonymous> (/home/user/thyrox/src/packages/config/__tests__/config.test.ts:103:56)
+(fail) fuentes y su precedencia > parseSettingSourcesFlag acepta lista, recorta espacios y rechaza lo que no existe [0.40ms]
+
+ 25 pass
+ 1 fail
+ 55 expect() calls
+Ran 26 tests across 1 file. [246.00ms]
+pass=357 fail=1 errores=0 caidas=0 archivos=19 en_rojo=1

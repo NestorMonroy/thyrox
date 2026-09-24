@@ -85,10 +85,35 @@ const DESDE = /^\s*(?:import|export)[^'"]*?from\s+['"]([^'"]+)['"]/gm
 /** `import('x')` dinámico y `require('x')` — literal, nunca computado. */
 const LLAMADA = /\b(?:import|require)\(\s*['"]([^'"]+)['"]\s*\)/g
 
+/**
+ * Las llamadas —`require(…)` e `import(…)`— se buscan en el texto SIN
+ * COMENTARIOS. `LLAMADA` sobre el fuente crudo no distingue codigo de
+ * comentario, y un `require('x')` citado en un docstring aparecia como import
+ * que no resuelve (medido: `audio-capture.node` en
+ * `voice/src/hooks/useVoice.ts:599` y `src` en `agent/agentHostBindings.ts:10`,
+ * los dos en comentarios).
+ *
+ * El texto sin comentarios lo da el transpilador de Bun, con
+ * `deadCodeElimination: false`: con la eliminacion activa evalua `feature()` de
+ * `bun:bundle` y BORRA la rama, asi que un `require` tras un flag desapareceria
+ * del censo. `Transpiler.scan` tampoco sirve: no reporta `require` en un modulo
+ * ESM (medido: `[]` para un `require` dentro de una funcion). Los estaticos se
+ * quedan en `DESDE` porque el transpilador descarta `import type`, que este
+ * censo si cuenta. Si el archivo no transpila, se cae al texto crudo.
+ */
+const SIN_COMENTARIOS = new Bun.Transpiler({ loader: 'ts', deadCodeElimination: false })
+
+function llamadas(texto: string): string[] {
+  let codigo = texto
+  try { codigo = SIN_COMENTARIOS.transformSync(texto) } catch { /* texto crudo */ }
+  return [...codigo.matchAll(LLAMADA)].map((m) => m[1] as string)
+}
+
 function especificadoresExternos(texto: string): string[] {
   const fuera: string[] = []
-  for (const patron of [DESDE, LLAMADA]) {
-    for (const [, spec] of texto.matchAll(patron)) {
+  const estaticos = [...texto.matchAll(DESDE)].map((m) => m[1] as string)
+  for (const lista of [estaticos, llamadas(texto)]) {
+    for (const spec of lista) {
       if (!spec || spec.startsWith('.') || spec.startsWith('/')) continue
       if (spec.startsWith('node:') || spec.startsWith('bun:')) continue
       // Un nombre de paquete npm no puede empezar con `-`. El único hit de
@@ -123,7 +148,10 @@ function clasificar(dir: string, conocidas: Set<string>) {
       try {
         resuelto = Bun.resolveSync(spec, dir)
       } catch {
-        noResuelven.add(raiz)
+        // El especificador COMPLETO, no su raiz: congelar `pkg::raiz` taparia
+        // cualquier subruta rota futura del mismo paquete. El baseline admite
+        // las dos granularidades (ver el filtro de abajo).
+        noResuelven.add(spec)
         continue
       }
       if (conocidas.has(raiz)) continue
@@ -172,7 +200,8 @@ describe('un tercero instalado y usado está declarado, y todo import resuelve',
 
     test(`${m.name}: todo import externo resuelve`, () => {
       const nuevos = [...clasificar(dir, conocidas).noResuelven]
-        .filter((r) => !BASELINE.has(`${nombre}::${r}`))
+        .filter((s) => !BASELINE.has(`${nombre}::${s}`)
+          && !BASELINE.has(`${nombre}::${raizDelPaquete(s)}`))
         .sort()
       expect(nuevos).toEqual([])
     })

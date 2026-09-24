@@ -220,7 +220,8 @@
     "./workflow/types.js": "./workflow/types.ts",
     "./worktreeModeEnabled.js": "./worktreeModeEnabled.ts",
     "./yaml.js": "./yaml.ts",
-    "./zodSchema/zodToJsonSchema.js": "./zodSchema/zodToJsonSchema.ts"
+    "./zodSchema/zodToJsonSchema.js": "./zodSchema/zodToJsonSchema.ts",
+    "./query-engine": "./QueryEngine.ts"
   },
   "scripts": {
     "emit": "bun run bin/emit.ts",

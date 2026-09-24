@@ -1,0 +1,7 @@
+src/packages/agent/__tests__/effort.test.ts
+src/packages/agent/__tests__/effortDisplay.test.ts
+src/packages/agent/__tests__/effortNativeVsProxy.test.ts
+src/packages/provider/__tests__/cost.test.ts
+src/packages/provider/__tests__/crossModelRead.test.ts
+tests/agents/save_result.test.ts
+tests/unit/utils/effort.test.ts
