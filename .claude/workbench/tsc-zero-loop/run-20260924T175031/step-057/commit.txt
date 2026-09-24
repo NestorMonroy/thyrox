@@ -1,0 +1,18 @@
+Emit hook progress and admit auto as a settings mode
+
+2.1.281 yields one progress message per matching hook before running
+it (type progress, data hook_progress with the display command). The
+engine never emitted it, so the aggregate's message type had no room
+for it and a consumer's progress check compared against nothing. The
+display chain is ported with it: H9 sanitizing, wm, ML, UHn and tR.
+
+The settings schema list of 2.1.281 (GN) admits auto unconditionally;
+ours stopped at the external modes, so a file with auto did not
+validate. ink compared a substituted NODE_ENV literal; it reads
+process.env.NODE_ENV again, as its source does.
+
+The loop gates change too: a diagnostic the candidate claims as a
+target no longer counts as pending elsewhere, since the fix usually
+lands on the cause and the error shows in the consumer.
+
+tsc: 2524 -> 2519 (accepted-net, 3 targets -> 0).

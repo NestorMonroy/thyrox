@@ -23,6 +23,8 @@ import { createAttachmentMessage } from './internal/queryRuntime.js'
 import { getSessionId as runtimeSessionId, getCwdState } from './internal/sessionRuntime.js'
 import { execHttpHook } from './hooks/execHttpHook.js'
 import type { AgentMessage } from './internalTypes.js'
+import { buildHookProgressMessage, type HookDisplaySource, type HookProgressMessage } from './hooks/hookProgress.js'
+import { isHookEvent } from './types/hooks.js'
 import type { PermissionUpdate } from '@thyrox/permission/permissionTypes.js'
 export interface HookBlockingError {
   blockingError: string
@@ -188,7 +190,12 @@ export type HookResult = {
 }
 
 /** Lo que cada iteración de `executeHooks` entrega al bucle. */
-export type AggregatedHookResult = Omit<HookResult, 'outcome' | 'additionalContext'> & {
+export type AggregatedHookResult = Omit<HookResult, 'outcome' | 'additionalContext' | 'message'> & {
+  /**
+   * El adjunto de un hook terminado, o el progreso de uno a punto de
+   * lanzarse: 2.1.281 emite los dos por el mismo canal.
+   */
+  message?: HookAttachmentMessage | HookProgressMessage
   additionalContexts?: string[]
 }
 
@@ -486,6 +493,13 @@ export async function* executeHooks(params: {
   const input = JSON.stringify(hookInput)
   const hookName = matchQuery ? `${event}:${matchQuery}` : event
   const cwd = typeof hookInput.cwd === 'string' ? hookInput.cwd : undefined
+  // 2.1.281: un progreso por hook que casa, ANTES de lanzarlos — el
+  // `for(let{hook:Eo}of Ft)yield{message:{type:"progress",…}}` del motor.
+  if (isHookEvent(event)) {
+    for (const hook of hooks) {
+      yield { message: buildHookProgressMessage(hook as HookDisplaySource, event, hookName, toolUseID) }
+    }
+  }
   const pending = new Map<number, Promise<{ index: number; result: HookResult }>>()
   hooks.forEach((hook, index) => {
     const work = (async (): Promise<HookResult> => {

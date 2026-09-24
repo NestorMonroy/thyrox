@@ -106,6 +106,13 @@ def main() -> int:
                      reflect.pending_outside(run, log, ["src/a.ts", "src/b.ts", "src/c.ts"]))
         assert_equal("sin memoria de patrones, nada pendiente", {},
                      reflect.pending_outside(run / "nada", log, ["src/a.ts"]))
+        # Un arreglo en la causa (otro archivo) cuenta como aplicación si la
+        # candidata declara esos diagnósticos como sus objetivos.
+        targets = ["src/c.ts: TS18046: 'w' is of type 'unknown'.",
+                   "src/c.ts: TS18046: 'q' is of type 'unknown'."]
+        assert_equal("lo que la candidata declara como objetivo no queda pendiente",
+                     {"unknown-v": {"src/b.ts": 1}},
+                     reflect.pending_outside(run, log, ["src/a.ts"], targets))
 
         # Gate 4: lo pendiente bloquea salvo que el patrón esté cerrado o el
         # archivo excluido — las dos salidas llevan su razón escrita.

@@ -39,6 +39,9 @@ describe('SettingsSchema — lo que aceptamos', () => {
 
   test('permissions con los tres modos y las capacidades del harness', () => {
     expect(PermissionsSchema().safeParse({ defaultMode: 'acceptEdits', read: 'allow', write: 'ask', execute: 'deny' }).success).toBe(true)
+    // 2.1.281 (`GN`): `auto` es un valor válido del archivo, sin condición.
+    expect(PermissionsSchema().safeParse({ defaultMode: 'auto' }).success).toBe(true)
+    expect(PermissionsSchema().safeParse({ defaultMode: 'bypass' }).success).toBe(false)
     expect(PermissionsSchema().safeParse({ write: 'quizas' }).success).toBe(false)
   })
 

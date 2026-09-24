@@ -114,15 +114,27 @@ export const HooksSchema = z.object(
 export const DecisionSchema = z.enum(['allow', 'ask', 'deny'])
 
 /**
- * Los cinco modos que el protocolo conoce, declarados AQUÍ y no importados.
+ * Los modos que el esquema de settings admite en `defaultMode`, declarados
+ * AQUÍ y no importados.
  *
  * Es lo que hace `ccnmt: packages/config/settings/types.ts:8`, y por la misma
  * razón: `@thyrox/permission` es quien los define de verdad, pero importarlos
  * pondría a `config` a depender de `permission`, que ya depende de `config`.
- * Duplicar cinco literales cuesta menos que un ciclo entre paquetes.
+ * Duplicar seis literales cuesta menos que un ciclo entre paquetes.
+ *
+ * 2.1.281 incluye `auto` sin condición (`GN`, `chunk-b93xrf5w.js`): un
+ * archivo de settings puede declararlo aunque el modo no esté activo en esta
+ * build, y quien lo lee decide si lo respeta (`settings.ts`, la guarda de
+ * `defaultMode: 'auto'` no confiable). Antes la lista era la de
+ * `EXTERNAL_PERMISSION_MODES` y un archivo con `auto` no validaba.
+ *
+ * pendiente: `...Or(e)` — los modos que aporta cada proveedor registrado
+ * (`Ft[s].permissionModes`). Este árbol no tiene ese registro de
+ * proveedores; se completa cuando exista.
  */
-const EXTERNAL_PERMISSION_MODES = [
+const SETTINGS_PERMISSION_MODES = [
   'acceptEdits',
+  'auto',
   'bypassPermissions',
   'default',
   'dontAsk',
@@ -153,7 +165,7 @@ export const PermissionsSchema = lazySchema(() => z.object({
   defaultMode: z
     .preprocess(
       value => (value === 'manual' ? 'default' : value),
-      z.enum(EXTERNAL_PERMISSION_MODES).optional(),
+      z.enum(SETTINGS_PERMISSION_MODES).optional(),
     )
     .optional(),
   read: DecisionSchema.optional(),

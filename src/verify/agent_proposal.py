@@ -104,12 +104,12 @@ def main(argv: list[str] | None = None) -> int:
         # otros archivos se nombra, para aplicarlo en bloque en vez de uno
         # por paso.
         before = args.before_log.read_text().splitlines()
-        for pattern_id, files in pending_outside(args.run, before, args.files).items():
+        for pattern_id, files in pending_outside(args.run, before, args.files, row["targets"]).items():
             for file, count in sorted(files.items(), key=lambda kv: -kv[1]):
                 print(f"pendiente {pattern_id}: {count} en {file}", file=sys.stderr)
         # Gate 4 (plan v2.2.0): no se propone otra cosa mientras un patrón
         # aprendido siga vivo fuera de la candidata sin salida declarada.
-        blocking = blocking_pending(args.run, before, args.files)
+        blocking = blocking_pending(args.run, before, args.files, row["targets"])
         if blocking:
             names = ", ".join(f"{n} ({sum(f.values())} en {len(f)} archivo(s))" for n, f in blocking.items())
             print(f"GATE 4 BLOQUEADO — patrón(es) con señal viva fuera de la candidata: {names}. "

@@ -83,10 +83,16 @@ def recall(run: Path, files: list[str]) -> dict:
     return {"reflections": reflections, "recipes": recipes}
 
 
-def pending_outside(run: Path, log_lines: list[str], files: list[str]) -> dict[str, dict[str, int]]:
+def pending_outside(run: Path, log_lines: list[str], files: list[str],
+                    targets: list[str] | None = None) -> dict[str, dict[str, int]]:
     """Por patrón aprendido, los archivos FUERA de la candidata donde su señal
     sigue viva en el log, con multiplicidad (paso 4 del plan: aplicar lo
-    aprendido a todo el código, no un archivo por paso)."""
+    aprendido a todo el código, no un archivo por paso).
+
+    Un diagnóstico que la candidata declara como objetivo no queda pendiente
+    aunque viva en otro archivo: el arreglo suele ir a la causa (el tipo, el
+    esquema) y el error se ve en el consumidor."""
+    claimed = set(targets or [])
     keys = [(m.group("file"), diagnostic_key(m)) for line in log_lines
             if (m := DIAGNOSTIC.match(line))]
     wanted = set(files)
@@ -95,21 +101,22 @@ def pending_outside(run: Path, log_lines: list[str], files: list[str]) -> dict[s
         regex = re.compile(row["signal"])
         rest: dict[str, int] = {}
         for file, key in keys:
-            if file not in wanted and regex.search(key):
+            if file not in wanted and key not in claimed and regex.search(key):
                 rest[file] = rest.get(file, 0) + 1
         if rest:
             pending[row["name"]] = rest
     return pending
 
 
-def blocking_pending(run: Path, log_lines: list[str], files: list[str]) -> dict[str, dict[str, int]]:
+def blocking_pending(run: Path, log_lines: list[str], files: list[str],
+                     targets: list[str] | None = None) -> dict[str, dict[str, int]]:
     """Gate 4: lo pendiente que bloquea. Un patrón `closed` o un archivo en su
     `exclude` salen, y las dos salidas llevan su razón escrita en la memoria
     (`tsc_sweep close|exclude --reason`); todo lo demás exige aplicar el
     patrón antes de proponer otra cosa."""
     rows = {row["name"]: row for row in _read_jsonl(run / PATTERNS)}
     blocking = {}
-    for name, found in pending_outside(run, log_lines, files).items():
+    for name, found in pending_outside(run, log_lines, files, targets).items():
         row = rows[name]
         if row.get("status") == "closed":
             continue

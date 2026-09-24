@@ -136,12 +136,13 @@ with tempfile.TemporaryDirectory() as directory:
     err = io.StringIO()
     with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
         code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
-                                    "--pattern", "TS18046", "--id", "mem2", "--run", str(run),
+                                    "--pattern", "src/c.ts: TS18046", "--id", "mem2", "--run", str(run),
                                     "src/a.ts"])
     pending = [line for line in err.getvalue().splitlines() if line.startswith("pendiente")]
+    # c.ts es objetivo declarado de la candidata: no queda pendiente.
     assert_equal("nombra cada archivo donde el patrón sigue vivo fuera, el mayor primero",
-                 ["pendiente unknown-param: 2 en src/b.ts", "pendiente unknown-param: 1 en src/c.ts",
-                  "pendiente unknown-param: 1 en src/d.ts"], pending)
+                 ["pendiente unknown-param: 2 en src/b.ts", "pendiente unknown-param: 1 en src/d.ts"],
+                 pending)
     # Gate 4: con un patrón vivo fuera, la propuesta NO sale.
     assert_equal("gate 4: lo pendiente bloquea con 4", 4, code)
     assert_equal("gate 4: dice por qué", True, "GATE 4 BLOQUEADO" in err.getvalue())
@@ -154,7 +155,7 @@ with tempfile.TemporaryDirectory() as directory:
     out = io.StringIO()
     with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(out):
         code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
-                                    "--pattern", "TS18046", "--id", "mem3", "--run", str(run),
+                                    "--pattern", "src/c.ts: TS18046", "--id", "mem3", "--run", str(run),
                                     "src/a.ts"])
     assert_equal("gate 4: con el patrón cerrado la propuesta sale", (0, True),
                  (code, '"proposal_id": "agent:mem3"' in out.getvalue()))
