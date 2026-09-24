@@ -8,6 +8,9 @@
  *   graph [--json]       grafo de imports entre modulos
  *   freshness [--root R] compara el corpus con el ejecutable vivo
  *   reflow <mod> [--out] reformatea un modulo para que sea citable
+ *   symbol <chunk> <nombre>... [--root R]
+ *                        definiciones completas de cada nombre, por arbol
+ *                        sintactico, siguiendo import/export entre chunks
  *
  * Toda salida lleva su denominador. Un conteo sin el no es un resultado: con
  * el alcance oculto, un instrumento ciego y uno correcto publican la misma
@@ -20,6 +23,7 @@ import { buildGraph } from '../src/graph.ts'
 import { writeCorpus } from '../src/corpus.ts'
 import { freshness } from '../src/freshness.ts'
 import { reflow } from '../src/reflow.ts'
+import { resolveSymbol } from '../src/symbol.ts'
 
 const BINARIO_DEFECTO = '/opt/claude-code/bin/claude'
 const CORPUS_DEFECTO = '_references/claude-code-bin'
@@ -104,6 +108,21 @@ if (orden === 'info') {
   console.error(`${nombre}: ${linea(src).length} -> ${linea(salida).length} lineas; ancho medio ${Math.round(src.length / linea(src).length)} -> ${Math.round(salida.length / linea(salida).length)}`)
   if (destino) writeFileSync(destino, salida)
   else process.stdout.write(salida)
+} else if (orden === 'symbol') {
+  const raiz = opcion(argv, '--root', `${CORPUS_DEFECTO}/2.1.275/bunfs-root`)
+  const [chunk, ...resto] = argv.slice(1)
+  const nombres = resto.filter((x, i) => !x.startsWith('--') && resto[i - 1] !== '--root')
+  if (!chunk || nombres.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')
+  if (!existsSync(`${raiz}/${chunk}`)) guard(`no existe ${raiz}/${chunk}`)
+  let ausentes = 0
+  for (const nombre of nombres) {
+    const defs = resolveSymbol(raiz, chunk, nombre)
+    if (defs.length === 0) ausentes++
+    console.log(`==== ${nombre}: ${defs.length} definicion(es) de nivel superior`)
+    for (const d of defs) console.log(`---- ${d.file} ${d.kind} ${d.name} [${d.start},${d.end})\n${d.text}`)
+  }
+  console.error(`symbol: ${nombres.length - ausentes} de ${nombres.length} nombre(s) resueltos`)
+  process.exit(ausentes > 0 ? 1 : 0)
 } else {
-  guard(`subcomando desconocido: ${orden}. Use info | extract | graph | freshness | reflow`)
+  guard(`subcomando desconocido: ${orden}. Use info | extract | graph | freshness | reflow | symbol`)
 }

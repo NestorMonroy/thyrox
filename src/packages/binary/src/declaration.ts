@@ -78,7 +78,7 @@ let lastParsed: { source: string; file: ts.SourceFile } | null = null
  * llamada y una por cada pregunta sobre el mismo texto. Un solo registro
  * basta: las llamadas llegan agrupadas por texto.
  */
-function parseSource(source: string): ts.SourceFile {
+export function parseSource(source: string): ts.SourceFile {
   if (lastParsed !== null && lastParsed.source === source) return lastParsed.file
   parseCount++
   const file = parse(source)
