@@ -38,6 +38,7 @@ beforeAll(() => {
   put('lib/barrel.ts', "export * from './mid'\nexport { present as renamed } from './values'\n")
   put('lib/nodefault.ts', 'export const onlyNamed = 1\n')
   put('lib/reexporter.ts', "export { ghostReexport } from './values'\n")
+  put('lib/greedy.ts', 'export interface Cfg {\n  event: string\n}\nexport function run(text: string, command?: string) {\n  return text + command\n}\nexport { fn } from ' + "'./values'" + '\n')
   put('node_modules/thirdparty/index.js', 'module.exports = {}\n')
   put('node_modules/thirdparty/package.json', '{"name":"thirdparty","main":"index.js"}\n')
   put(
@@ -52,6 +53,8 @@ beforeAll(() => {
       "import * as everything from '../lib/values'",
       "import { whatever } from 'thirdparty'",
       "import { x } from '../lib/does-not-exist'",
+      "import { feature } from 'bun:bundle'",
+      "import { readFileSync } from 'node:fs'",
       "// import { commentedGhost } from '../lib/values'",
       '',
     ].join('\n'),
@@ -68,6 +71,22 @@ const names = (kind: string) =>
     .sort()
 
 describe('missingNamedImports', () => {
+  test('una raíz RELATIVA resuelve igual que una absoluta', () => {
+    const previous = process.cwd()
+    process.chdir(base)
+    try {
+      const rel = missingNamedImports(['app', 'lib'])
+      expect(rel.findings.filter(f => f.kind === 'unresolved').map(f => f.name)).toEqual(['x'])
+      expect(rel.findings.filter(f => f.kind === 'missing').map(f => f.name)).toContain('ghost')
+    } finally {
+      process.chdir(previous)
+    }
+  })
+  test('los módulos integrados (bun:, node:) no se miden', () => {
+    const specs = report().findings.map(f => f.specifier)
+    expect(specs).not.toContain('bun:bundle')
+    expect(specs).not.toContain('node:fs')
+  })
   test('un nombre de valor ausente se reporta', () => {
     expect(names('missing')).toContain('ghost')
   })
@@ -108,9 +127,13 @@ describe('missingNamedImports', () => {
   test('un import comentado no cuenta', () => {
     expect(names('missing')).not.toContain('commentedGhost')
   })
+  test('una cláusula no cruza el cuerpo de un export anterior', () => {
+    const bad = report().findings.filter(f => !/^[A-Za-z_$][\w$]*$/.test(f.name))
+    expect(bad).toEqual([])
+  })
   test('publica su denominador', () => {
     const r = report()
-    expect(r.files).toBe(8)
+    expect(r.files).toBe(9)
     expect(r.checkedNames).toBeGreaterThan(10)
   })
 })

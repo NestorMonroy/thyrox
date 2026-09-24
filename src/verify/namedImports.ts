@@ -25,7 +25,7 @@
  * destino fuera de la raíz medida.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, extname, join, relative } from 'node:path'
+import { dirname, extname, join, relative, resolve as absolute } from 'node:path'
 
 export type Finding = {
   kind: 'missing' | 'unresolved'
@@ -41,8 +41,13 @@ export type Report = { findings: Finding[]; files: number; checkedNames: number 
 const CODE = new Set(['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'])
 const SKIP = new Set(['node_modules', '.git', 'dist', 'build', '__pycache__'])
 
+/** Módulos integrados del entorno: `bun:bundle` es de tiempo de construcción y
+ *  `resolveSync` no lo resuelve; ninguno es código del árbol que medir. */
+const BUILTIN = /^(bun|node):/
+
 /** `import … from '…'` y `export { … } from '…'`, con su cláusula. */
-const IMPORT_FROM = /\b(import|export)\s+(type\s+)?([^;'"]*?)\s+from\s*['"]([^'"]+)['"]/g
+const IMPORT_FROM =
+  /\b(import|export)\s+(type\s+)?((?:[A-Za-z_$][\w$]*\s*,\s*)?\{[^}]*\}|[A-Za-z_$][\w$]*|\*(?:\s+as\s+[A-Za-z_$][\w$]*)?)\s*from\s*['"]([^'"]+)['"]/g
 const STAR_FROM = /\bexport\s+(?:type\s+)?\*\s+from\s*['"]([^'"]+)['"]/g
 const TYPE_DECL = /\bexport\s+(?:declare\s+)?(?:type|interface|enum|const\s+enum|namespace|abstract\s+class|class|function|const|let|var)\s+([A-Za-z_$][\w$]*)/g
 const EXPORT_LIST = /\bexport\s+(?:type\s+)?\{([^}]*)\}/g
@@ -133,7 +138,7 @@ function codeFiles(roots: string[]): string[] {
       else if (CODE.has(extname(path)) && !path.endsWith('.d.ts')) files.push(path)
     }
   }
-  for (const root of roots) if (existsSync(root)) (statSync(root).isDirectory() ? walk(root) : files.push(root))
+  for (const root of roots.map(r => absolute(r))) if (existsSync(root)) (statSync(root).isDirectory() ? walk(root) : files.push(root))
   return files
 }
 
@@ -145,6 +150,7 @@ export function missingNamedImports(roots: string[], opts: { root?: string } = {
     const text = stripComments(readFileSync(file, 'utf8'))
     for (const m of text.matchAll(IMPORT_FROM)) {
       const [, keyword, , clause, specifier] = m
+      if (BUILTIN.test(specifier)) continue
       if (/^\s*\*/.test(clause)) continue
       const requested = requestedNames(keyword, clause)
       if (requested.length === 0) continue
