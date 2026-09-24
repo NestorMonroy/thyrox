@@ -1,0 +1,6 @@
+Record the rejected mcp slot step of the tsc loop
+
+Thirteenth step: deriving MCPServerConnection and McpCommand in
+agent/sessionStores from the AppState mcp slot. tsc rejected it (its
+targets did not fall) and the tree was reverted; the ledger keeps the
+verdict so the scheduler weighs it.
