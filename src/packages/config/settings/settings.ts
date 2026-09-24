@@ -47,7 +47,6 @@
  * - `loadManagedFileSettings`, `getManagedFileSettingsPresence`,
  *   `getPolicySettingsOrigin`, `getManagedSettingsKeysForLogging`,
  *   `getSandboxBinaryPath`, `getSettingsWithSources`,
- *   `hasSkipDangerousModePermissionPrompt`, `hasAutoModeOptIn`,
  *   `getUseAutoModeDuringPlan`, `getAutoModeConfig`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
@@ -511,3 +510,36 @@ export function getInitialSettings(): SettingsJson {
  * atrás — consumido por `../managedEnv.ts` vía `require('./settings/settings.js')`.
  */
 export const getSettings = getInitialSettings
+
+/**
+ * Las fuentes que pueden aceptar un aviso de permisos por el usuario.
+ *
+ * `projectSettings` queda FUERA a propósito: viaja con el repositorio, y un
+ * repositorio clonado no puede aceptar por quien lo abre. Es la lista que el
+ * binario 2.1.275 recorre en `sU` y en sus hermanas de la misma forma.
+ */
+const PERMISSION_PROMPT_OPT_IN_SOURCES = [
+  'userSettings',
+  'localSettings',
+  'flagSettings',
+  'policySettings',
+] as const satisfies readonly SettingSource[]
+
+function declaredInOptInSource(key: string): boolean {
+  return PERMISSION_PROMPT_OPT_IN_SOURCES.some(
+    (source) => !!(getSettingsForSource(source) as Record<string, unknown> | null)?.[key],
+  )
+}
+
+/** ¿Aceptó el usuario el aviso del modo que salta los permisos? (`sU`). */
+export function hasSkipDangerousModePermissionPrompt(): boolean {
+  return declaredInOptInSource('skipDangerousModePermissionPrompt')
+}
+
+/**
+ * ¿Aceptó el usuario el aviso del auto mode? La clave es la que escribe
+ * `AutoModeOptInDialog` y borra `resetAutoModeOptInForDefaultOffer`.
+ */
+export function hasAutoModeOptIn(): boolean {
+  return declaredInOptInSource('skipAutoPermissionPrompt')
+}

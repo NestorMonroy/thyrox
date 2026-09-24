@@ -12,6 +12,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import {
+  pathExists,
   asSystemPrompt,
   count,
   errorMessage,
@@ -201,5 +202,12 @@ describe('asSystemPrompt', () => {
   })
   test('preserva el contenido del arreglo', () => {
     expect([...asSystemPrompt(['x', 'y'])]).toEqual(['x', 'y'])
+  })
+})
+
+describe('pathExists — la consume fileHistoryCore', () => {
+  test('una ruta que existe da true y una ausente da false, sin lanzar', async () => {
+    expect(await pathExists(import.meta.path)).toBe(true)
+    expect(await pathExists(`${import.meta.path}.no-existe`)).toBe(false)
   })
 })
