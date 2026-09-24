@@ -1,0 +1,16 @@
+# commitprov
+
+## Qué se lanzó
+
+```
+bash -c cd /home/user/thyrox && GIT_AUTHOR_NAME='Nestor Monroy' GIT_AUTHOR_EMAIL='46802445+NestorMonroy@users.noreply.github.com' git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com commit -F .claude/jobs/commit-provider-20260924T050604/msg.txt -- src/packages/provider/src/authAlias.ts src/packages/provider/src/oauth/client.ts src/packages/provider/src/connections.ts src/packages/provider/src/__tests__/performLogout.behavior.test.ts src/packages/provider/src/__tests__/sessionIngressAuth.behavior.test.ts .claude/baselines/cli_typecheck_baseline.txt .claude/jobs/provider-rojos2-20260924T050542 .claude/jobs/commitotel-20260924T050242 .claude/jobs/commit-otel-* .claude/jobs/commit-provider-20260924T050604 && git push
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

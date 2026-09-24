@@ -259,6 +259,10 @@ export function inflateModelSetting(value: string | null | undefined): string | 
 
   if (connectionId !== undefined) {
     if (enabled.some(c => c.id === connectionId)) return value
+    // Stale prefix; fall through to bare search. El prefijo nombra una
+    // conexión que ya no está habilitada: devolver `value` aquí dejaría al
+    // usuario atrapado en un id huérfano sin más salida que editar
+    // settings.json, así que se sigue buscando por el id sin prefijo.
   }
 
   if (
@@ -283,6 +287,8 @@ export function inflateModelSetting(value: string | null | undefined): string | 
     }
   }
 
+  // Orphan id: ninguna conexión habilitada lo ofrece. Se devuelve intacto,
+  // sin inventar un prefijo.
   return value
 }
 

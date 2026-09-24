@@ -78,6 +78,19 @@ describe('sessionIngressAuth (Bridge/SSH token loading)', () => {
 
   test('no token → empty headers (no spurious "Bearer null" string)', () => {
     delete process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN
-    expect(getSessionIngressAuthHeaders()).toEqual({})
+    // Sin variable, la funcion cae al archivo bien conocido de CCR. En una
+    // sesion remota ese archivo EXISTE y trae un token real, asi que el caso
+    // se aisla apuntando el respaldo a una ruta que no existe.
+    const savedFile = process.env.CLAUDE_SESSION_INGRESS_TOKEN_FILE
+    const savedFd = process.env.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
+    process.env.CLAUDE_SESSION_INGRESS_TOKEN_FILE = '/no/existe/session_ingress_token'
+    delete process.env.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR
+    try {
+      expect(getSessionIngressAuthHeaders()).toEqual({})
+    } finally {
+      if (savedFile === undefined) delete process.env.CLAUDE_SESSION_INGRESS_TOKEN_FILE
+      else process.env.CLAUDE_SESSION_INGRESS_TOKEN_FILE = savedFile
+      if (savedFd !== undefined) process.env.CLAUDE_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR = savedFd
+    }
   })
 })

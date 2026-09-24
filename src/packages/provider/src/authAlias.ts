@@ -50,7 +50,8 @@ import { logEvent, type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPAT
 import { getModelStrings } from './internal/modelSupport.ts'
 import { getAPIProvider } from './providers.ts'
 import { isOAuthTokenExpired, refreshOAuthToken, shouldUseClaudeAIAuth } from './oauth/client.ts'
-import { clearRefreshTokenDeadSet, isRefreshTokenDead, markRefreshTokenDead as _markDead } from './internal/refreshTokenDeadSet.ts'
+import { getOauthProfileFromOauthToken } from './oauth/getOauthProfile.ts'
+import { clearRefreshTokenDeadSet, isRefreshTokenDead } from './internal/refreshTokenDeadSet.ts'
 import {
   getApiKeyFromFileDescriptor,
   getOAuthTokenFromFileDescriptor,
@@ -68,7 +69,6 @@ import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
 
-void _markDead // re-exportada indirectamente vía oauth/client.ts
 
 const execFileAsync = promisify(execFile)
 
@@ -183,7 +183,7 @@ export function isAnthropicAuthEnabled(): boolean {
   const { source: apiKeySource } = getAnthropicApiKeyWithSource({ skipRetrievingKeyFromApiKeyHelper: true })
   const hasExternalApiKey = apiKeySource === 'ANTHROPIC_API_KEY' || apiKeySource === 'apiKeyHelper'
 
-  const shouldDisableAuth = is3P || (Boolean(hasExternalAuthToken) && !isManagedOAuthContext()) || (hasExternalApiKey && !isManagedOAuthContext())
+  const shouldDisableAuth = is3P || !!(hasExternalAuthToken && !isManagedOAuthContext()) || (hasExternalApiKey && !isManagedOAuthContext())
 
   return !shouldDisableAuth
 }
@@ -1470,7 +1470,9 @@ export function getOtelHeadersFromHelper(): Record<string, string> {
 
   if (isOtelHeadersHelperFromProjectOrLocalSettings()) {
     const hasTrust = checkHasTrustDialogAccepted()
-    if (!hasTrust) return {}
+    if (!hasTrust) {
+      return {}
+    }
   }
 
   try {
@@ -1542,7 +1544,15 @@ export function getAccountInformation() {
   return accountInfo
 }
 
-export type OrgValidationResult = { valid: true } | { valid: false; message: string }
+// `reason` es del binario 2.1.275 (`chunk-xbd48fav.js`); opcional para los
+// consumidores que sólo leen `message`.
+export type OrgValidationResult =
+  | { valid: true }
+  | {
+      valid: false
+      reason?: 'managed_settings_invalid' | 'org_verify_failed' | 'org_pin_mismatch'
+      message: string
+    }
 
 /**
  * Valida que el token OAuth activo pertenezca a una organización permitida
@@ -1560,6 +1570,7 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   if (allowedOrgUuids.length === 0) {
     return {
       valid: false,
+      reason: 'managed_settings_invalid',
       message: `forceLoginOrgUUID in managed settings is set to an empty array.\nNo organizations are permitted. This is almost certainly a misconfiguration.\nContact your administrator.`,
     }
   }
@@ -1573,30 +1584,40 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
   const { source } = getAuthTokenSource()
   const isEnvVarToken = source === 'CLAUDE_CODE_OAUTH_TOKEN' || source === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
 
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { fetchProfileInfo } = require('./oauth/client.ts') as { fetchProfileInfo: (t: string) => Promise<{ rawProfile?: { organization: { uuid: string } } }> }
-  const profileInfo = await fetchProfileInfo(tokens.accessToken)
-  const profile = profileInfo.rawProfile
+  // Porte de 2.1.275: el perfil se pide DESPUÉS de refrescar el token, y
+  // un fallo al pedirlo rehúsa con `org_verify_failed`.
+  // `OAuthProfileResponse` es aún un marcador `unknown`: se acota a lo que se
+  // lee. Un perfil sin `organization.uuid` no verifica nada.
+  const fetched = (await getOauthProfileFromOauthToken(tokens.accessToken)) as
+    | { organization?: { uuid?: string } }
+    | undefined
+  const profile = fetched?.organization?.uuid ? fetched : undefined
   if (!profile) {
     return {
       valid: false,
+      reason: 'org_verify_failed',
       message:
         `Unable to verify organization for the current authentication token.\n` +
-        `This machine requires ${requiredPhrase} but the profile could not be fetched.\n` +
-        `This may be a network error, or the token may lack the user:profile scope required for\n` +
-        `verification (tokens from 'claude setup-token' do not include this scope).\n` +
-        `Try again, or obtain a full-scope token via 'claude auth login'.`,
+        `This machine requires ${requiredPhrase} but the token could not be validated.\n` +
+        `This may be a network error, or the token may have been revoked.\n` +
+        `Try again, or run: claude auth login`,
     }
   }
 
-  const tokenOrgUuid = profile.organization.uuid
+  const tokenOrgUuid = profile.organization?.uuid as string
   if (allowedOrgUuids.includes(tokenOrgUuid)) return { valid: true }
 
   if (isEnvVarToken) {
+    // Se nombra la variable para que el usuario sepa cuál quitar.
+    const envVarName =
+      source === 'CLAUDE_CODE_OAUTH_TOKEN'
+        ? 'CLAUDE_CODE_OAUTH_TOKEN'
+        : 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
     return {
       valid: false,
+      reason: 'org_pin_mismatch',
       message:
-        `The ${source} environment variable provides a token for a\n` +
+        `The ${envVarName} environment variable provides a token for a\n` +
         `different organization than required by this machine's managed settings.\n\n` +
         `Required: ${requiredPhrase}\n` +
         `Token organization: ${tokenOrgUuid}\n\n` +
@@ -1606,6 +1627,7 @@ export async function validateForceLoginOrg(): Promise<OrgValidationResult> {
 
   return {
     valid: false,
+    reason: 'org_pin_mismatch',
     message: `Your authentication token belongs to organization ${tokenOrgUuid},\nbut this machine requires ${requiredPhrase}.\n\nPlease log in with a permitted organization: claude auth login`,
   }
 }

@@ -134,9 +134,15 @@ export function buildAuthUrl({
   authUrl.searchParams.append('code_challenge_method', 'S256')
   authUrl.searchParams.append('state', state)
 
-  if (orgUUID) authUrl.searchParams.append('orgUUID', orgUUID)
-  if (loginHint) authUrl.searchParams.append('login_hint', loginHint)
-  if (loginMethod) authUrl.searchParams.append('login_method', loginMethod)
+  if (orgUUID) {
+    authUrl.searchParams.append('orgUUID', orgUUID)
+  }
+  if (loginHint) {
+    authUrl.searchParams.append('login_hint', loginHint)
+  }
+  if (loginMethod) {
+    authUrl.searchParams.append('login_method', loginMethod)
+  }
 
   return authUrl.toString()
 }
@@ -173,7 +179,9 @@ export async function exchangeCodeForTokens(
     code_verifier: codeVerifier,
     state,
   }
-  if (expiresIn !== undefined) requestBody.expires_in = expiresIn
+  if (expiresIn !== undefined) {
+    requestBody.expires_in = expiresIn
+  }
 
   const response = await axios.post(getOauthConfig().TOKEN_URL, requestBody, {
     headers: { 'Content-Type': 'application/json' },
@@ -210,7 +218,9 @@ export async function refreshOAuthToken(
     client_id: clientId ?? getOauthConfig().CLIENT_ID,
     scope: (requestedScopes?.length ? requestedScopes : CLAUDE_AI_OAUTH_SCOPES).join(' '),
   }
-  if (expiresIn !== undefined) requestBody.expires_in = expiresIn
+  if (expiresIn !== undefined) {
+    requestBody.expires_in = expiresIn
+  }
 
   try {
     const response = await axios.post(getOauthConfig().TOKEN_URL, requestBody, {
