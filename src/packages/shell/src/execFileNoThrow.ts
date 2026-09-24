@@ -49,7 +49,7 @@ export { execSyncWithDefaults } from './execFileNoThrowPortable.js'
 const MS_IN_SECOND = 1000
 const SECONDS_IN_MINUTE = 60
 
-type ExecFileOptions = {
+export type ExecFileOptions = {
   abortSignal?: AbortSignal
   timeout?: number
   preserveOutputOnError?: boolean
@@ -59,7 +59,7 @@ type ExecFileOptions = {
   input?: string
 }
 
-type ExecFileResult = {
+export type ExecFileResult = {
   stdout: string
   stderr: string
   code: number
@@ -114,7 +114,7 @@ export function execFileNoThrow(
   })
 }
 
-type ExecFileWithCwdOptions = {
+export type ExecFileWithCwdOptions = {
   abortSignal?: AbortSignal
   timeout?: number
   preserveOutputOnError?: boolean

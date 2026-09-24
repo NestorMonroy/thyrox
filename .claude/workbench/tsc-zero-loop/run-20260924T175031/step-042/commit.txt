@@ -1,0 +1,9 @@
+Align the plugin execFile bindings with the shell
+
+config/plugin/_deps.ts typed execFileNoThrowWithCwd with a positional
+cwd string and a narrow options object, and the installer forwarded
+that cwd positionally to the shell function, which takes it inside
+the options. At run time the cwd string landed where the options
+object goes, so every marketplace git call ran without its cwd,
+timeout, stdin and env. The bindings now take the option types that
+@thyrox/shell exports, and the installer passes the functions as is.

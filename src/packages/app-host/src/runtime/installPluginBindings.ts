@@ -515,12 +515,8 @@ export function installPluginBindings(): void {
   setGetHeadForDirFn(dir => getHeadForDir(dir))
 
   // --- subproceso
-  setExecFileNoThrowFn((cmd, args, options) =>
-    execFileNoThrow(cmd, args, options) as any,
-  )
-  setExecFileNoThrowWithCwdFn((cmd, args, cwd, options) =>
-    execFileNoThrowWithCwd(cmd, args, cwd, options) as any,
-  )
+  setExecFileNoThrowFn(execFileNoThrow)
+  setExecFileNoThrowWithCwdFn(execFileNoThrowWithCwd)
   setWhichFn(cmd => which(cmd))
 
   // --- operaciones lentas

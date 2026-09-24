@@ -64,6 +64,11 @@
  *   final para el veredicto.
  */
 
+import type {
+  ExecFileOptions,
+  ExecFileResult,
+  ExecFileWithCwdOptions,
+} from '@thyrox/shell/execFileNoThrow.js'
 import type { McpbManifestAny } from '@anthropic-ai/mcpb'
 import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
 import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
@@ -343,39 +348,36 @@ export function setGetHeadForDirFn(fn: typeof _getHeadForDir): void {
 // Ejecución de subprocesos
 // ---------------------------------------------------------------------------
 
-export type ExecResult = {
-  code: number
-  stdout: string
-  stderr: string
-}
+// Las firmas son las de `@thyrox/shell/execFileNoThrow.js`, que es lo que
+// el instalador enlaza: `execFileNoThrowWithCwd` recibe el `cwd` DENTRO de
+// las opciones, no como tercer argumento.
+export type ExecResult = ExecFileResult
 
 let _execFileNoThrow: (
   cmd: string,
   args: string[],
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileOptions,
 ) => Promise<ExecResult> = async () => ({ code: -1, stdout: '', stderr: '' })
 
 let _execFileNoThrowWithCwd: (
   cmd: string,
   args: string[],
-  cwd: string,
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileWithCwdOptions,
 ) => Promise<ExecResult> = async () => ({ code: -1, stdout: '', stderr: '' })
 
 export function execFileNoThrow(
   cmd: string,
   args: string[],
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileOptions,
 ): Promise<ExecResult> {
   return _execFileNoThrow(cmd, args, options)
 }
 export function execFileNoThrowWithCwd(
   cmd: string,
   args: string[],
-  cwd: string,
-  options?: { timeout?: number; env?: NodeJS.ProcessEnv },
+  options?: ExecFileWithCwdOptions,
 ): Promise<ExecResult> {
-  return _execFileNoThrowWithCwd(cmd, args, cwd, options)
+  return _execFileNoThrowWithCwd(cmd, args, options)
 }
 export function setExecFileNoThrowFn(fn: typeof _execFileNoThrow): void {
   _execFileNoThrow = fn
