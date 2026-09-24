@@ -1,0 +1,6 @@
+Type the mcpb manifest parser seam
+
+Seventeenth step of the agent-compiler loop, accepted-net 3188 -> 3160.
+The parseAndValidateManifestFromBytes seam in config/plugin/_deps
+returned Promise<unknown>; the injected implementation (dxt/helpers)
+returns the validated McpbManifestAny, the type mcpbHandler reads.

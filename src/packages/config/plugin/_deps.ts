@@ -64,6 +64,7 @@
  *   final para el veredicto.
  */
 
+import type { McpbManifestAny } from '@anthropic-ai/mcpb'
 import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
 import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
@@ -998,8 +999,10 @@ export function substituteArguments(
 }
 export function parseAndValidateManifestFromBytes(
   bytes: Uint8Array,
-): Promise<unknown> {
-  return _getParseAndValidateManifestFromBytes()(bytes)
+): Promise<McpbManifestAny> {
+  // La implementación inyectada es `dxt/helpers.parseAndValidateManifestFromBytes`,
+  // que devuelve el manifiesto validado.
+  return _getParseAndValidateManifestFromBytes()(bytes) as Promise<McpbManifestAny>
 }
 export const setParseFrontmatterFn = setParseFrontmatterFn_
 export const setParseAgentToolsFromFrontmatterFn =

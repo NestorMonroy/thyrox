@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3188, "total_final": 3160, "tsc_runs": 1, "accepted": ["agent:mcpb-manifest-seam"], "files_kept": ["src/packages/config/plugin/_deps.ts"], "outcomes": {"agent:mcpb-manifest-seam": "accepted-net"}}
