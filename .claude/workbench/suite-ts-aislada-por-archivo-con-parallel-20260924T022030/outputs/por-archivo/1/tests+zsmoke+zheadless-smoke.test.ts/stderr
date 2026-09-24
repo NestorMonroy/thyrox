@@ -1,0 +1,35 @@
+
+tests/smoke/headless-smoke.test.ts:
+61 | }
+62 | 
+63 | describe('smoke:headless boot', () => {
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:66:24)
+(fail) smoke:headless boot > --version prints something and exits 0 [6.47ms]
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+70 |   }, 35_000)
+71 | 
+72 |   test('--help exits 0 and prints usage', async () => {
+73 |     const r = await runCli(['--help'], 30_000)
+74 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:74:24)
+(fail) smoke:headless boot > --help exits 0 and prints usage [5.37ms]
+
+ 1 pass
+ 2 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [120.00ms]

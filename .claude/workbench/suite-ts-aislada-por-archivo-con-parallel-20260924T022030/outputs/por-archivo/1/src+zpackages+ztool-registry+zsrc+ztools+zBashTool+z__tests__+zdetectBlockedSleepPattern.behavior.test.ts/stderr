@@ -1,0 +1,17 @@
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'createPermissionRequestMessage' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1230.00ms]

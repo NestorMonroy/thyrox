@@ -1,0 +1,12 @@
+
+src/packages/shell/src/__test__/shellQuote.behavior.test.ts:
+Error: Cannot quote argument at index 1: object values are not supported
+    at <anonymous> (/home/user/thyrox/src/packages/shell/src/bash/shellQuote.ts:102:19)
+    at map (native:1:11)
+    at tryQuoteShellArgs (/home/user/thyrox/src/packages/shell/src/bash/shellQuote.ts:87:38)
+    at <anonymous> (/home/user/thyrox/src/packages/shell/src/__test__/shellQuote.behavior.test.ts:33:22)
+
+ 5 pass
+ 0 fail
+ 13 expect() calls
+Ran 5 tests across 1 file. [168.00ms]

@@ -1,0 +1,61 @@
+
+tests/smoke/bg-cycle-smoke.test.ts:
+74 | describe('smoke:bg cycle (detached)', () => {
+75 |   let short: string | undefined
+76 | 
+77 |   test('--bg-detached spawns child + writes meta.json', async () => {
+78 |     const r = await runCli(['--bg-detached', 'echo smoke'], 25_000)
+79 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:79:24)
+(fail) smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [11.32ms]
+100 |     expect(meta.status).toBe('running')
+101 |     expect(typeof meta.pid).toBe('number')
+102 |   }, 30_000)
+103 | 
+104 |   test('ps surfaces the new short', async () => {
+105 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:105:19)
+(fail) smoke:bg cycle (detached) > ps surfaces the new short [0.42ms]
+107 |     expect(r.exitCode).toBe(0)
+108 |     expect(r.stdout).toContain(short!)
+109 |   }, 20_000)
+110 | 
+111 |   test('rm removes the job dir', async () => {
+112 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:112:19)
+(fail) smoke:bg cycle (detached) > rm removes the job dir [0.29ms]
+141 | describe('smoke:bg argParse', () => {
+142 |   test('isolated home has been used (no leakage to ~/.claude/jobs)', () => {
+143 |     // The actual ~/.claude/jobs/ should not contain our smoke shorts.
+144 |     // We can't assert ABSENCE strictly (user may have other jobs) but
+145 |     // we can confirm our isolated home was where the cycle ran.
+146 |     expect(existsSync(join(ISOLATED_HOME, 'jobs'))).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:146:53)
+(fail) smoke:bg argParse > isolated home has been used (no leakage to ~/.claude/jobs) [0.08ms]
+
+ 1 pass
+ 4 fail
+ 4 expect() calls
+Ran 5 tests across 1 file. [109.00ms]

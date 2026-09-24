@@ -1,0 +1,49 @@
+
+src/packages/cli/src/__tests__/ptyFrame.test.ts:
+141 |     const fakeHeader = Buffer.alloc(5)
+142 |     fakeHeader.writeUInt32BE(1024 * 1024 * 1024, 0)
+143 |     fakeHeader.writeUInt8(DATA_TAG, 4)
+144 |     feed(fakeHeader)
+145 |     expect(errors.length).toBe(1)
+146 |     expect(errors[0]!).toMatch(/frame too large/)
+                             ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /frame too large/
+Received: "trama demasiado grande (1073741824 > 1048576)"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/src/__tests__/ptyFrame.test.ts:146:24)
+(fail) createFrameDecoder > errors on frame too large [0.33ms]
+157 |     frame.writeUInt32BE(body.length, 0)
+158 |     frame.writeUInt8(CTRL_TAG, 4)
+159 |     body.copy(frame, FRAME_HEADER_BYTES)
+160 |     feed(frame)
+161 |     expect(errors.length).toBe(1)
+162 |     expect(errors[0]!).toMatch(/bad ctrl json/)
+                             ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /bad ctrl json/
+Received: "json de control mal formado"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/src/__tests__/ptyFrame.test.ts:162:24)
+(fail) createFrameDecoder > errors on bad ctrl JSON [0.92ms]
+171 |     const frame = Buffer.alloc(5)
+172 |     frame.writeUInt32BE(0, 0)
+173 |     frame.writeUInt8(99, 4)
+174 |     feed(frame)
+175 |     expect(errors.length).toBe(1)
+176 |     expect(errors[0]!).toMatch(/unknown frame kind 99/)
+                             ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /unknown frame kind 99/
+Received: "etiqueta de trama desconocida: 99"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/src/__tests__/ptyFrame.test.ts:176:24)
+(fail) createFrameDecoder > errors on unknown tag [3.67ms]
+
+ 12 pass
+ 3 fail
+ 46 expect() calls
+Ran 15 tests across 1 file. [160.00ms]

@@ -1,0 +1,24 @@
+
+src/packages/tools/__tests__/subagent.test.ts:
+295 |     await util(p, 'TaskCreate').run({ subject: 'siembra' }, ctx(dir()))
+296 |     const db = new Database(p, { readonly: true })
+297 |     const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
+298 |     db.close()
+299 |     const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)].map((m) => m[1])
+300 |     for (const c of reales) expect(columnas).toContain(c)
+                                                   ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "submodule"
+Received: [
+  "task_id", "subject", "description", "status", "active_form", "owner", "blocks_json", "blocked_by_json",
+  "session_id", "source", "metadata_json", "created_at", "updated_at"
+]
+
+      at <anonymous> (/home/user/thyrox/src/packages/tools/__tests__/subagent.test.ts:300:46)
+(fail) tablero Task* — la asociación y el alcance por sesión (T-061) > el esquema que crea el harness es el del tablero real, columna por columna [6.07ms]
+
+ 23 pass
+ 1 fail
+ 81 expect() calls
+Ran 24 tests across 1 file. [885.00ms]

@@ -1,0 +1,21 @@
+
+src/packages/provider/src/__tests__/isAnthropicAuthEnabled.behavior.test.ts:
+59 | 
+60 |   test('external auth token / API key disables OAuth UNLESS managed (CCD/CCR) context', () => {
+61 |     const fnStart = authAliasSource.indexOf('export function isAnthropicAuthEnabled')
+62 |     const fnSlice = authAliasSource.slice(fnStart, fnStart + 2500)
+63 |     // ant: `K && !P4_()` / `T && !P4_()` — must include isManagedOAuthContext gate
+64 |     expect(fnSlice).toMatch(/hasExternalAuthToken\s*&&\s*!isManagedOAuthContext\(\)/)
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /hasExternalAuthToken\s*&&\s*!isManagedOAuthContext\(\)/
+Received: "export function isAnthropicAuthEnabled(): boolean {\n  if (isBareMode()) return false\n\n  if (readEnv('ANTHROPIC_UNIX_SOCKET')) {\n    return !!readEnv('CLAUDE_CODE_OAUTH_TOKEN')\n  }\n\n  const settings = getSettings() || {}\n  const is3P =\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_BEDROCK')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_VERTEX')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_FOUNDRY')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_ANTHROPIC_AWS')) ||\n    isEnvTruthy(readEnv('CLAUDE_CODE_USE_MANTLE')) ||\n    settings.modelType === 'openai' ||\n    settings.modelType === 'gemini' ||\n    !!readEnv('OPENAI_BASE_URL') ||\n    !!readEnv('GEMINI_BASE_URL')\n  const apiKeyHelper = settings.apiKeyHelper\n  const hasExternalAuthToken = readEnv('ANTHROPIC_AUTH_TOKEN') || apiKeyHelper || readEnv('CLAUDE_CODE_API_KEY_FILE_DESCRIPTOR')\n\n  const { source: apiKeySource } = getAnthropicApiKeyWithSource({ skipRetrievingKeyFromApiKeyHelper: true })\n  const hasExternalApiKey = apiKeySource === 'ANTHROPIC_API_KEY' || apiKeySource === 'apiKeyHelper'\n\n  const shouldDisableAuth = is3P || (Boolean(hasExternalAuthToken) && !isManagedOAuthContext()) || (hasExternalApiKey && !isManagedOAuthContext())\n\n  return !shouldDisableAuth\n}\n\n/** De dónde sale el token de auth. Ligado a `isAnthropicAuthEnabled`. */\nexport function getAuthTokenSource() {\n  if (isBareMode()) {\n    if (getConfiguredApiKeyHelper()) {\n      return { source: 'apiKeyHelper' as const, hasToken: true }\n    }\n    return { source: 'none' as const, hasToken: false }\n  }\n\n  if (readEnv('ANTHROPIC_AUTH_TOKEN') && !isManagedOAuthContext()) {\n    return { source: 'ANTHROPIC_AUTH_TOKEN' as const, hasToken: true }\n  }\n  if (readEnv('CLAUDE_CODE_OAUTH_TOKEN')) {\n    return { source: 'CLAUDE_CODE_OAUTH_TOKEN' as const, hasToken: true }\n  }\n\n  const oauthTokenFromFd = getOAuthTokenFromFileDescriptor()\n  if (oauthTokenFromFd) {\n    if (readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {\n      return { source: 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR' as const, hasToken: true }\n    }\n    return { source: 'CCR_OAUTH_TOKEN_FILE' as const, hasToken: true }\n  }\n\n  const apiKeyHelper = getConfiguredApiKeyHelper()\n  if (apiKeyHelper && !isManagedOAuthContext()) {\n    return { source: 'apiKeyHelper' as const, hasToken: true }\n  }\n\n  const oauthTokens = getClaudeAIOAuthTokens()\n  if (shouldUseClaudeAIAuth(oauthTokens?.scopes) && oauthTokens?.accessToken) {\n    return { source: 'claude.ai' as const, hasToken: true }\n  }\n\n  return { source:"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/isAnthropicAuthEnabled.behavior.test.ts:64:21)
+(fail) isAnthropicAuthEnabled / 3P detection (ant YD/vo/j2H parity) > external auth token / API key disables OAuth UNLESS managed (CCD/CCR) context [0.31ms]
+
+ 7 pass
+ 1 fail
+ 19 expect() calls
+Ran 8 tests across 1 file. [98.00ms]

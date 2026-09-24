@@ -1,0 +1,40 @@
+
+src/packages/storage/src/__tests__/sessionEnvironment.test.ts:
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment not yet supported on Windows
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from CLAUDE_ENV_FILE: /tmp/thyrox-tests-ttC8ms/session-environment-DhsQrL/env-padre.sh (20 chars)
+Session environment loaded from 3 hook file(s)
+Session environment script ready (63 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+No session environment scripts found
+Invalidating session environment cache
+Invalidating session environment cache
+No session environment scripts found
+Invalidating session environment cache
+Session environment loaded from 1 hook file(s)
+Session environment script ready (14 chars total)
+Invalidating session environment cache
+Invalidating session environment cache
+Session environment loaded from 2 hook file(s)
+Session environment script ready (26 chars total)
+Invalidating session environment cache
+
+ 10 pass
+ 0 fail
+ 15 expect() calls
+Ran 10 tests across 1 file. [162.00ms]

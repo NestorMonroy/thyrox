@@ -1,0 +1,17 @@
+
+src/packages/tool-registry/src/__tests__/fileEditUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [609.00ms]

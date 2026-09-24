@@ -1,0 +1,35 @@
+
+src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts:
+113 |   })
+114 | 
+115 |   test('_executeApiKeyHelper: throws on failure (timeout or non-zero exit)', () => {
+116 |     const fnStart = authAliasSource.indexOf('async function _executeApiKeyHelper')
+117 |     const fnSlice = authAliasSource.slice(fnStart, fnStart + 1500)
+118 |     expect(fnSlice).toMatch(/result\.timedOut\s*\?\s*'timed out'\s*:\s*`exited \$\{result\.exitCode\}`/)
+                          ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /result\.timedOut\s*\?\s*'timed out'\s*:\s*`exited \$\{result\.exitCode\}`/
+Received: "async function _executeApiKeyHelper(isNonInteractiveSession: boolean): Promise<string | null> {\n  const apiKeyHelper = getConfiguredApiKeyHelper()\n  if (!apiKeyHelper) return null\n\n  if (isApiKeyHelperFromProjectOrLocalSettings()) {\n    const hasTrust = checkHasTrustDialogAccepted()\n    if (!hasTrust && !isNonInteractiveSession) {\n      const error = new Error('Security: apiKeyHelper executed before workspace trust is confirmed.')\n      logAntError('apiKeyHelper invoked before trust check', error)\n      logEvent('tengu_apiKeyHelper_missing_trust11', {})\n      return null\n    }\n  }\n\n  try {\n    const { stdout } = await execFileAsync('/bin/sh', ['-c', apiKeyHelper], { timeout: 10 * 60 * 1000 })\n    const trimmed = stdout?.trim()\n    if (!trimmed) throw new Error('did not return a value')\n    return trimmed\n  } catch (e) {\n    const err = e as { killed?: boolean; code?: number; stderr?: string; message?: string }\n    const why = err.killed ? 'timed out' : `exited ${err.code}`\n    const stderr = err.stderr?.trim()\n    throw new Error(stderr ? `${why}: ${stderr}` : err.message ?? why)\n  }\n}\n\nexport function getApiKeyFromApiKeyHelperCached(): string | null {\n  return _apiKeyHelperCache?.value ?? null\n}\n\nexport function clearApiKeyHelperCache(): void {\n  _apiKeyHelperEpoch++\n  _apiKeyHelperCache = null\n  _apiKeyHelperInflight = null\n}\n\nexport function prefetchApiKeyFromApiKeyHelperIfSafe(isNonInteractiveSession: boolean): void {\n  if (isApiKeyHelperFromProjectOrLocalSettings() && !c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts:118:21)
+(fail) apiKeyHelper SWR cache cluster (ant VxH/HA9/MX1 parity) > _executeApiKeyHelper: throws on failure (timeout or non-zero exit) [0.28ms]
+120 |   })
+121 | 
+122 |   test('_executeApiKeyHelper: empty stdout is a failure (helper must produce a value)', () => {
+123 |     const fnStart = authAliasSource.indexOf('async function _executeApiKeyHelper')
+124 |     const fnSlice = authAliasSource.slice(fnStart, fnStart + 1500)
+125 |     expect(fnSlice).toMatch(/if\s*\(!stdout\)\s*\{?\s*\n?\s*throw new Error\('did not return a value'\)/)
+                          ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /if\s*\(!stdout\)\s*\{?\s*\n?\s*throw new Error\('did not return a value'\)/
+Received: "async function _executeApiKeyHelper(isNonInteractiveSession: boolean): Promise<string | null> {\n  const apiKeyHelper = getConfiguredApiKeyHelper()\n  if (!apiKeyHelper) return null\n\n  if (isApiKeyHelperFromProjectOrLocalSettings()) {\n    const hasTrust = checkHasTrustDialogAccepted()\n    if (!hasTrust && !isNonInteractiveSession) {\n      const error = new Error('Security: apiKeyHelper executed before workspace trust is confirmed.')\n      logAntError('apiKeyHelper invoked before trust check', error)\n      logEvent('tengu_apiKeyHelper_missing_trust11', {})\n      return null\n    }\n  }\n\n  try {\n    const { stdout } = await execFileAsync('/bin/sh', ['-c', apiKeyHelper], { timeout: 10 * 60 * 1000 })\n    const trimmed = stdout?.trim()\n    if (!trimmed) throw new Error('did not return a value')\n    return trimmed\n  } catch (e) {\n    const err = e as { killed?: boolean; code?: number; stderr?: string; message?: string }\n    const why = err.killed ? 'timed out' : `exited ${err.code}`\n    const stderr = err.stderr?.trim()\n    throw new Error(stderr ? `${why}: ${stderr}` : err.message ?? why)\n  }\n}\n\nexport function getApiKeyFromApiKeyHelperCached(): string | null {\n  return _apiKeyHelperCache?.value ?? null\n}\n\nexport function clearApiKeyHelperCache(): void {\n  _apiKeyHelperEpoch++\n  _apiKeyHelperCache = null\n  _apiKeyHelperInflight = null\n}\n\nexport function prefetchApiKeyFromApiKeyHelperIfSafe(isNonInteractiveSession: boolean): void {\n  if (isApiKeyHelperFromProjectOrLocalSettings() && !c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts:125:21)
+(fail) apiKeyHelper SWR cache cluster (ant VxH/HA9/MX1 parity) > _executeApiKeyHelper: empty stdout is a failure (helper must produce a value) [0.13ms]
+
+ 12 pass
+ 2 fail
+ 16 expect() calls
+Ran 14 tests across 1 file. [107.00ms]

@@ -1,0 +1,79 @@
+
+src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:
+55 |   test('first call emits + returns sp_-prefixed hash', () => {
+56 |     const fake = makeFakeLogger()
+57 |     setEventLogger(fake as never)
+58 |     const h = maybeEmitSystemPromptEvent('You are Claude.')
+59 |     expect(h).toMatch(/^sp_[0-9a-f]{12}$/)
+60 |     expect(fake.emitted.length).toBe(1)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:60:33)
+(fail) maybeEmitSystemPromptEvent > first call emits + returns sp_-prefixed hash [1.23ms]
+67 |     const fake = makeFakeLogger()
+68 |     setEventLogger(fake as never)
+69 |     maybeEmitSystemPromptEvent('hello')
+70 |     maybeEmitSystemPromptEvent('hello')
+71 |     maybeEmitSystemPromptEvent('hello')
+72 |     expect(fake.emitted.length).toBe(1)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:72:33)
+(fail) maybeEmitSystemPromptEvent > dedup: second call with same content does NOT re-emit [0.25ms]
+75 |   test('different content → separate emissions', () => {
+76 |     const fake = makeFakeLogger()
+77 |     setEventLogger(fake as never)
+78 |     maybeEmitSystemPromptEvent('one')
+79 |     maybeEmitSystemPromptEvent('two')
+80 |     expect(fake.emitted.length).toBe(2)
+                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:80:33)
+(fail) maybeEmitSystemPromptEvent > different content → separate emissions [0.08ms]
+91 |   test('content >60KB truncated with ant suffix', () => {
+92 |     const fake = makeFakeLogger()
+93 |     setEventLogger(fake as never)
+94 |     const huge = 'x'.repeat(70_000)
+95 |     maybeEmitSystemPromptEvent(huge)
+96 |     const a = fake.emitted[0]!.attributes
+                                ^
+TypeError: undefined is not an object (evaluating 'fake.emitted[0].attributes')
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:96:28)
+(fail) maybeEmitSystemPromptEvent > content >60KB truncated with ant suffix [0.21ms]
+106 |     setEventLogger(fake as never)
+107 |     const orig = process.env.OTEL_LOG_TOOL_DETAILS
+108 |     delete process.env.OTEL_LOG_TOOL_DETAILS
+109 |     try {
+110 |       maybeEmitSystemPromptEvent('secret content')
+111 |       expect(fake.emitted[0]!.attributes['system_prompt']).toBe('<REDACTED>')
+                                ^
+TypeError: undefined is not an object (evaluating 'fake.emitted[0].attributes')
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:111:27)
+(fail) maybeEmitSystemPromptEvent > content body redacted by default (OTEL_LOG_TOOL_DETAILS off) [0.12ms]
+119 |     setEventLogger(fake as never)
+120 |     const orig = process.env.OTEL_LOG_TOOL_DETAILS
+121 |     process.env.OTEL_LOG_TOOL_DETAILS = '1'
+122 |     try {
+123 |       maybeEmitSystemPromptEvent('visible content')
+124 |       expect(fake.emitted[0]!.attributes['system_prompt']).toBe('visible content')
+                                ^
+TypeError: undefined is not an object (evaluating 'fake.emitted[0].attributes')
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts:124:27)
+(fail) maybeEmitSystemPromptEvent > content body included when OTEL_LOG_TOOL_DETAILS=1 [0.12ms]
+
+ 4 pass
+ 6 fail
+ 12 expect() calls
+Ran 10 tests across 1 file. [291.00ms]

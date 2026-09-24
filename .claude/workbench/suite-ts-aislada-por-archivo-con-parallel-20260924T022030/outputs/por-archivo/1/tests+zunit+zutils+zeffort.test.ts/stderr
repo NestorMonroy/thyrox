@@ -1,0 +1,107 @@
+
+tests/unit/utils/effort.test.ts:
+229 | 
+230 | describe('getEffortLevelDescription', () => {
+231 |   // Wording aligned with Anthropic docs at
+232 |   // platform.claude.com/docs/en/build-with-claude/effort
+233 |   test("returns description for 'low'", () => {
+234 |     const desc = getEffortLevelDescription('low')
+                       ^
+TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("low")', 'getEffortLevelDescription' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:234:18)
+(fail) getEffortLevelDescription > returns description for 'low' [0.22ms]
+234 |     const desc = getEffortLevelDescription('low')
+235 |     expect(desc).toContain('efficient')
+236 |   })
+237 | 
+238 |   test("returns description for 'medium'", () => {
+239 |     const desc = getEffortLevelDescription('medium')
+                       ^
+TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("medium")', 'getEffortLevelDescription' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:239:18)
+(fail) getEffortLevelDescription > returns description for 'medium' [0.06ms]
+239 |     const desc = getEffortLevelDescription('medium')
+240 |     expect(desc).toContain('Balanced')
+241 |   })
+242 | 
+243 |   test("returns description for 'high'", () => {
+244 |     const desc = getEffortLevelDescription('high')
+                       ^
+TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("high")', 'getEffortLevelDescription' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:244:18)
+(fail) getEffortLevelDescription > returns description for 'high' [0.03ms]
+244 |     const desc = getEffortLevelDescription('high')
+245 |     expect(desc).toContain('default')
+246 |   })
+247 | 
+248 |   test("returns description for 'xhigh'", () => {
+249 |     const desc = getEffortLevelDescription('xhigh')
+                       ^
+TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("xhigh")', 'getEffortLevelDescription' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:249:18)
+(fail) getEffortLevelDescription > returns description for 'xhigh' [0.03ms]
+250 |     expect(desc).toContain('long-horizon')
+251 |     expect(desc).toContain('Extended reasoning')
+252 |   })
+253 | 
+254 |   test("returns description for 'max'", () => {
+255 |     const desc = getEffortLevelDescription('max')
+                       ^
+TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("max")', 'getEffortLevelDescription' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:255:18)
+(fail) getEffortLevelDescription > returns description for 'max' [0.02ms]
+259 | 
+260 | // ─── resolvePickerEffortPersistence ────────────────────────────────────
+261 | 
+262 | describe('resolvePickerEffortPersistence', () => {
+263 |   test('returns undefined when picked matches model default and no prior persistence', () => {
+264 |     const result = resolvePickerEffortPersistence(
+                         ^
+TypeError: resolvePickerEffortPersistence is not a function. (In 'resolvePickerEffortPersistence("high", "high", void 0, !1)', 'resolvePickerEffortPersistence' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:264:20)
+(fail) resolvePickerEffortPersistence > returns undefined when picked matches model default and no prior persistence [0.03ms]
+269 |     )
+270 |     expect(result).toBeUndefined()
+271 |   })
+272 | 
+273 |   test('returns picked when it differs from model default', () => {
+274 |     const result = resolvePickerEffortPersistence(
+                         ^
+TypeError: resolvePickerEffortPersistence is not a function. (In 'resolvePickerEffortPersistence("low", "high", void 0, !1)', 'resolvePickerEffortPersistence' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:274:20)
+(fail) resolvePickerEffortPersistence > returns picked when it differs from model default [0.03ms]
+279 |     )
+280 |     expect(result).toBe('low')
+281 |   })
+282 | 
+283 |   test('returns picked when priorPersisted is set (even if same as default)', () => {
+284 |     const result = resolvePickerEffortPersistence('high', 'high', 'high', false)
+                         ^
+TypeError: resolvePickerEffortPersistence is not a function. (In 'resolvePickerEffortPersistence("high", "high", "high", !1)', 'resolvePickerEffortPersistence' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:284:20)
+(fail) resolvePickerEffortPersistence > returns picked when priorPersisted is set (even if same as default) [0.02ms]
+284 |     const result = resolvePickerEffortPersistence('high', 'high', 'high', false)
+285 |     expect(result).toBe('high')
+286 |   })
+287 | 
+288 |   test('returns picked when toggledInPicker is true (even if same as default)', () => {
+289 |     const result = resolvePickerEffortPersistence(
+                         ^
+TypeError: resolvePickerEffortPersistence is not a function. (In 'resolvePickerEffortPersistence("high", "high", void 0, !0)', 'resolvePickerEffortPersistence' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:289:20)
+(fail) resolvePickerEffortPersistence > returns picked when toggledInPicker is true (even if same as default) [0.05ms]
+294 |     )
+295 |     expect(result).toBe('high')
+296 |   })
+297 | 
+298 |   test('returns undefined picked value when no explicit and matches default', () => {
+299 |     const result = resolvePickerEffortPersistence(
+                         ^
+TypeError: resolvePickerEffortPersistence is not a function. (In 'resolvePickerEffortPersistence(void 0, "high", void 0, !1)', 'resolvePickerEffortPersistence' is undefined)
+      at <anonymous> (/home/user/thyrox/tests/unit/utils/effort.test.ts:299:20)
+(fail) resolvePickerEffortPersistence > returns undefined picked value when no explicit and matches default [0.03ms]
+
+ 30 pass
+ 10 fail
+ 44 expect() calls
+Ran 40 tests across 1 file. [743.00ms]

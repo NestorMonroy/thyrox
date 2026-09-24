@@ -1,0 +1,91 @@
+
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:
+20 |   // vuelve a intentar el import dinámico.
+21 | })
+22 | 
+23 | describe('getImageProcessor — intenta el nativo primero, avisa, y cae a sharp', () => {
+24 |   test('rechaza (ningún binario instalado) con un error que menciona sharp', async () => {
+25 |     await expect(getImageProcessor()).rejects.toThrow(/sharp/i)
+                                                   ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:25:47)
+(fail) getImageProcessor — intenta el nativo primero, avisa, y cae a sharp > rechaza (ningún binario instalado) con un error que menciona sharp [3.37ms]
+25 |     await expect(getImageProcessor()).rejects.toThrow(/sharp/i)
+26 |   })
+27 | 
+28 |   test('avisa por console.warn ANTES de rechazar — el nativo se intentó y falló', async () => {
+29 |     const warnSpy = spyOn(console, 'warn')
+30 |     await expect(getImageProcessor()).rejects.toThrow()
+                                                   ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:30:47)
+(fail) getImageProcessor — intenta el nativo primero, avisa, y cae a sharp > avisa por console.warn ANTES de rechazar — el nativo se intentó y falló [0.19ms]
+36 |   test('el error final es el de resolución de `sharp`, no el de `image-processor-napi`', async () => {
+37 |     try {
+38 |       await getImageProcessor()
+39 |       throw new Error('se esperaba rechazo')
+40 |     } catch (error) {
+41 |       expect(String((error as Error).message)).toMatch(/sharp/i)
+                                                    ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /sharp/i
+Received: "se esperaba rechazo"
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:41:48)
+(fail) getImageProcessor — intenta el nativo primero, avisa, y cae a sharp > el error final es el de resolución de `sharp`, no el de `image-processor-napi` [0.18ms]
+44 |   })
+45 | })
+46 | 
+47 | describe('getImageCreator — va directo a sharp, sin intentar el nativo', () => {
+48 |   test('rechaza (sharp no instalado) con un error que menciona sharp', async () => {
+49 |     await expect(getImageCreator()).rejects.toThrow(/sharp/i)
+                                                 ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:49:45)
+(fail) getImageCreator — va directo a sharp, sin intentar el nativo > rechaza (sharp no instalado) con un error que menciona sharp [46.16ms]
+49 |     await expect(getImageCreator()).rejects.toThrow(/sharp/i)
+50 |   })
+51 | 
+52 |   test('NO avisa por console.warn — nunca intenta el binario nativo', async () => {
+53 |     const warnSpy = spyOn(console, 'warn')
+54 |     await expect(getImageCreator()).rejects.toThrow()
+                                                 ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:54:45)
+(fail) getImageCreator — va directo a sharp, sin intentar el nativo > NO avisa por console.warn — nunca intenta el binario nativo [0.23ms]
+59 | 
+60 | describe('getImageProcessor vs getImageCreator — discriminan entre sí', () => {
+61 |   test('mismo destino final (sharp), conducta previa distinta (aviso sí/no)', async () => {
+62 |     const warnSpy = spyOn(console, 'warn')
+63 | 
+64 |     await expect(getImageProcessor()).rejects.toThrow(/sharp/i)
+                                                   ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/imageProcessor.test.ts:64:47)
+(fail) getImageProcessor vs getImageCreator — discriminan entre sí > mismo destino final (sharp), conducta previa distinta (aviso sí/no) [0.18ms]
+
+ 0 pass
+ 6 fail
+ 6 expect() calls
+Ran 6 tests across 1 file. [183.00ms]

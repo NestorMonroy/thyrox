@@ -1,0 +1,35 @@
+
+src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts:
+48 |   test('packed-stale (Rule 2): connId present but NOT enabled → fall through (no return)', () => {
+49 |     // Pin the fall-through behavior: stale connId comment makes it explicit
+50 |     // that we DON'T return value here. Without the fall-through, deleting
+51 |     // a connection would trap users on the orphan packed id with no way
+52 |     // to recover except clearing settings.json.
+53 |     expect(fnSlice).toMatch(/Stale prefix; fall through to bare search/)
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /Stale prefix; fall through to bare search/
+Received: "export function inflateModelSetting(value: string | null | undefined): string | null | undefined {\n  if (value === null || value === undefined || value === '') return value\n\n  const enabled = getEnabledConnections()\n  if (enabled.length === 0) return value\n\n  const { connectionId, modelId } = unpackModelId(value)\n\n  if (connectionId !== undefined) {\n    if (enabled.some(c => c.id === connectionId)) return value\n  }\n\n  if (\n    modelId === 'opus' ||\n    modelId === 'sonnet' ||\n    modelId === 'haiku' ||\n    modelId === 'opusplan' ||\n    modelId === 'sonnet[1m]' ||\n    modelId === 'opus[1m]'\n  ) {\n    return value\n  }\n\n  const stripContextSuffix = (id: string) => id.trim().toLowerCase().replace(/\\[(1|2)m\\]$/i, '')\n  const target = stripContextSuffix(modelId)\n\n  for (const conn of enabled) {\n    for (const m of conn.models) {\n      if (stripContextSuffix(m.id) === target) {\n        return composeModelId(conn.id, modelId)\n      }\n    }\n  }\n\n  return value\n}\n\n/**\n * Etiqueta de display para un modelo de conexión. Migraciones antiguas\n * guardaban labels como `Alias (wire-id)`; se recorta ese prefijo cuando el\n * paréntesis coincide con el id.\n */\nexport function prettyModelLabel(model: ConnectionModelRecord): string {\n  const m = /^(.*?)\\s*\\((.+)\\)\\s*$/.exec(model.label.trim())\n  if (m && m[2]!.trim() === model.id) return model.id\n  return model.label\n}\n\n/** Genera un id corto único para conexiones nuevas. */\nexport function generateConnectionId(): string {\n  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'\n  let id = 'conn_'\n  for (let i = 0; i < 8; i++) {\n    id += chars[Math.floor(Math.random() * chars.length)]\n  }\n  return id\n}\n\n/** ¿Es uno de los ids de conexión OAuth bien conocidos? */\nexport function isWellKnownConnection(id: string): boolean {\n  return [CLAUDE_AI_CONNECTION_ID, CONSOLE_CONNECTION_ID, CODEX_CONNECTION_ID].includes(id)\n}\n\n// ── CRUD ────────────────────────────────────────────────────────────────\n\nexport function getConnections(): ConnectionRecord[] {\n  return requireConfig().getGlobalConfig().connections ?? []\n}\n\nexport function getConnection(id: string): ConnectionRecord | undefined {\n  return getConnections().find(c => c.id === id)\n}\n\nexport function saveConnection(connection: ConnectionRecord): void {\n  requireConfig().saveGlobalConfig(current => {\n    const existing = current.connections ?? []\n    const idx = existing.findIndex(c => c.id === connection.id)\n    const updated =\n      idx >= 0\n        ? [...existing.slice(0, idx), c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts:53:21)
+(fail) inflateModelSetting 6-rule cascade > packed-stale (Rule 2): connId present but NOT enabled → fall through (no return) [0.30ms]
+78 |       /for\s*\(const conn of enabled\)\s*\{[\s\S]*?for\s*\(const m of conn\.models\)\s*\{[\s\S]*?if\s*\(stripContextSuffix\(m\.id\) === target\)\s*\{?\s*\n?\s*return composeModelId\(conn\.id, modelId\)/,
+79 |     )
+80 |   })
+81 | 
+82 |   test('Rule 6: orphan id (no match) → return value unchanged', () => {
+83 |     expect(fnSlice).toMatch(/Orphan id[\s\S]*?return value/)
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /Orphan id[\s\S]*?return value/
+Received: "export function inflateModelSetting(value: string | null | undefined): string | null | undefined {\n  if (value === null || value === undefined || value === '') return value\n\n  const enabled = getEnabledConnections()\n  if (enabled.length === 0) return value\n\n  const { connectionId, modelId } = unpackModelId(value)\n\n  if (connectionId !== undefined) {\n    if (enabled.some(c => c.id === connectionId)) return value\n  }\n\n  if (\n    modelId === 'opus' ||\n    modelId === 'sonnet' ||\n    modelId === 'haiku' ||\n    modelId === 'opusplan' ||\n    modelId === 'sonnet[1m]' ||\n    modelId === 'opus[1m]'\n  ) {\n    return value\n  }\n\n  const stripContextSuffix = (id: string) => id.trim().toLowerCase().replace(/\\[(1|2)m\\]$/i, '')\n  const target = stripContextSuffix(modelId)\n\n  for (const conn of enabled) {\n    for (const m of conn.models) {\n      if (stripContextSuffix(m.id) === target) {\n        return composeModelId(conn.id, modelId)\n      }\n    }\n  }\n\n  return value\n}\n\n/**\n * Etiqueta de display para un modelo de conexión. Migraciones antiguas\n * guardaban labels como `Alias (wire-id)`; se recorta ese prefijo cuando el\n * paréntesis coincide con el id.\n */\nexport function prettyModelLabel(model: ConnectionModelRecord): string {\n  const m = /^(.*?)\\s*\\((.+)\\)\\s*$/.exec(model.label.trim())\n  if (m && m[2]!.trim() === model.id) return model.id\n  return model.label\n}\n\n/** Genera un id corto único para conexiones nuevas. */\nexport function generateConnectionId(): string {\n  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'\n  let id = 'conn_'\n  for (let i = 0; i < 8; i++) {\n    id += chars[Math.floor(Math.random() * chars.length)]\n  }\n  return id\n}\n\n/** ¿Es uno de los ids de conexión OAuth bien conocidos? */\nexport function isWellKnownConnection(id: string): boolean {\n  return [CLAUDE_AI_CONNECTION_ID, CONSOLE_CONNECTION_ID, CODEX_CONNECTION_ID].includes(id)\n}\n\n// ── CRUD ────────────────────────────────────────────────────────────────\n\nexport function getConnections(): ConnectionRecord[] {\n  return requireConfig().getGlobalConfig().connections ?? []\n}\n\nexport function getConnection(id: string): ConnectionRecord | undefined {\n  return getConnections().find(c => c.id === id)\n}\n\nexport function saveConnection(connection: ConnectionRecord): void {\n  requireConfig().saveGlobalConfig(current => {\n    const existing = current.connections ?? []\n    const idx = existing.findIndex(c => c.id === connection.id)\n    const updated =\n      idx >= 0\n        ? [...existing.slice(0, idx), c"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts:83:21)
+(fail) inflateModelSetting 6-rule cascade > Rule 6: orphan id (no match) → return value unchanged [0.09ms]
+
+ 7 pass
+ 2 fail
+ 16 expect() calls
+Ran 9 tests across 1 file. [121.00ms]

@@ -1,0 +1,26 @@
+
+src/packages/provider/src/__tests__/sessionIngressAuth.behavior.test.ts:
+76 |     expect(headers.Authorization).toBe('Bearer eyJhbGciOiJIUzI1NiJ9.xxx')
+77 |   })
+78 | 
+79 |   test('no token → empty headers (no spurious "Bearer null" string)', () => {
+80 |     delete process.env.CLAUDE_CODE_SESSION_ACCESS_TOKEN
+81 |     expect(getSessionIngressAuthHeaders()).toEqual({})
+                                                ^
+error: expect(received).toEqual(expected)
+
+- {}
++ {
++   "Authorization": "Bearer sk-ant-si-eyJ0eXAiOiAiS... (958 bytes truncated) ...LnKniTEbl_LytVlt6xOP9ynioDbBuNl7cbA4BEEwINOMo4mw",
++ }
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/sessionIngressAuth.behavior.test.ts:81:44)
+(fail) sessionIngressAuth (Bridge/SSH token loading) > no token → empty headers (no spurious "Bearer null" string) [0.95ms]
+
+ 6 pass
+ 1 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [277.00ms]

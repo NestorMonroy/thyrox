@@ -1,0 +1,23 @@
+
+tests/smoke/swarm-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) smoke:swarm boot > agentHostBindings teammate wires resolve to functions [1902.83ms]
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [3.69ms]
+
+ 2 pass
+ 2 fail
+ 14 expect() calls
+Ran 4 tests across 1 file. [2.06s]

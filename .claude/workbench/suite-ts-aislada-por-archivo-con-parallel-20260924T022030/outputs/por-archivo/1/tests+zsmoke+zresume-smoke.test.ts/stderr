@@ -1,0 +1,10 @@
+
+tests/smoke/resume-smoke.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) smoke:resume session persistence > bootstrap loads storage subsystem [1805.66ms]
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) smoke:resume session persistence > write+flush+read roundtrip via storage API [0.51ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1.94s]

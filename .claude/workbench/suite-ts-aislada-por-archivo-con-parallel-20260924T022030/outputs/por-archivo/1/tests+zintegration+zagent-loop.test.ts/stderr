@@ -1,0 +1,9 @@
+
+tests/integration/agent-loop.test.ts:
+SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+(fail) agent message queue e2e > enqueue + getCommandQueue round-trip [1338.30ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [1452.00ms]

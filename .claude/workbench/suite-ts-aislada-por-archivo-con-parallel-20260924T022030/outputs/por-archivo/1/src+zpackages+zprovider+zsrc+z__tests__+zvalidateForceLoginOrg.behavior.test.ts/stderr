@@ -1,0 +1,35 @@
+
+src/packages/provider/src/__tests__/validateForceLoginOrg.behavior.test.ts:
+70 | 
+71 |   test('refreshes token BEFORE hitting profile endpoint (avoids 401 storm)', () => {
+72 |     const refreshIdx = fnSlice.indexOf('checkAndRefreshOAuthTokenIfNeeded')
+73 |     const profileIdx = fnSlice.indexOf('getOauthProfileFromOauthToken')
+74 |     expect(refreshIdx).toBeGreaterThan(0)
+75 |     expect(profileIdx).toBeGreaterThan(refreshIdx)
+                            ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 927
+Received: -1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/validateForceLoginOrg.behavior.test.ts:75:24)
+(fail) validateForceLoginOrg (ant I8H parity) > refreshes token BEFORE hitting profile endpoint (avoids 401 storm) [0.26ms]
+89 |     // the comparison was against an array, never matched.
+90 |     expect(fnSlice).toMatch(/allowedOrgUuids\.includes\(tokenOrgUuid\)/)
+91 |   })
+92 | 
+93 |   test('env-var token mismatch names the env var (so user can unset it)', () => {
+94 |     expect(fnSlice).toMatch(
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /if\s*\(isEnvVarToken\)\s*\{[\s\S]*?envVarName\s*=[\s\S]*?CLAUDE_CODE_OAUTH_TOKEN/
+Received: "export async function validateForceLoginOrg(): Promise<OrgValidationResult> {\n  if (readEnv('ANTHROPIC_UNIX_SOCKET')) return { valid: true }\n  if (!isAnthropicAuthEnabled()) return { valid: true }\n\n  const requiredOrgUuidRaw = getSettingsForSource('policySettings')?.forceLoginOrgUUID as string | string[] | undefined\n  if (requiredOrgUuidRaw === undefined) return { valid: true }\n\n  const allowedOrgUuids = typeof requiredOrgUuidRaw === 'string' ? [requiredOrgUuidRaw] : requiredOrgUuidRaw\n\n  if (allowedOrgUuids.length === 0) {\n    return {\n      valid: false,\n      message: `forceLoginOrgUUID in managed settings is set to an empty array.\\nNo organizations are permitted. This is almost certainly a misconfiguration.\\nContact your administrator.`,\n    }\n  }\n\n  const requiredPhrase = allowedOrgUuids.length === 1 ? `organization ${allowedOrgUuids[0]}` : `one of these organizations: ${allowedOrgUuids.join(', ')}`\n\n  await checkAndRefreshOAuthTokenIfNeeded()\n  const tokens = getClaudeAIOAuthTokens()\n  if (!tokens) return { valid: true }\n\n  const { source } = getAuthTokenSource()\n  const isEnvVarToken = source === 'CLAUDE_CODE_OAUTH_TOKEN' || source === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'\n\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  const { fetchProfileInfo } = require('./oauth/client.ts') as { fetchProfileInfo: (t: string) => Promise<{ rawProfile?: { organization: { uuid: string } } }> }\n  const profileInfo = await fetchProfileInfo(tokens.accessToken)\n  const profile = profileInfo.rawProfile\n  if (!profile) {\n    return {\n      valid: false,\n      message:\n        `Unable to verify organization for the current authentication token.\\n` +\n        `This machine requires ${requiredPhrase} but the profile could not be fetched.\\n` +\n        `This may be a network error, or the token may lack the user:profile scope required for\\n` +\n        `verification (tokens from 'claude setup-token' do not include this scope).\\n` +\n        `Try again, or obtain a full-scope token via 'claude auth login'.`,\n    }\n  }\n\n  const tokenOrgUuid = profile.organization.uuid\n  if (allowedOrgUuids.includes(tokenOrgUuid)) return { valid: true }\n\n  if (isEnvVarToken) {\n    return {\n      valid: false,\n      message:\n        `The ${source} environment variable provides a token for a\\n` +\n        `different organization than required by this machine's managed settings.\\n\\n` +\n        `Required: ${requiredPhrase}\\n` +\n        `Token organization: ${tokenOrgUuid}\\n\\n` +\n        `Remove the environment variable or obtain a token for a permitted organization.`,\n    }\n  }\n\n  return {\n    valid: false,\n    message: `Your authentication token belongs to organization ${tokenOrgUuid},\\nbut this machine requires ${requiredPhrase}.\\n\\nPlease log in with a permitted organization: claude auth login`,\n  }\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/validateForceLoginOrg.behavior.test.ts:94:21)
+(fail) validateForceLoginOrg (ant I8H parity) > env-var token mismatch names the env var (so user can unset it) [0.96ms]
+
+ 9 pass
+ 2 fail
+ 12 expect() calls
+Ran 11 tests across 1 file. [117.00ms]

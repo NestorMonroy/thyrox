@@ -1,0 +1,35 @@
+
+tests/reference/triple.test.ts:
+195 |   test('toda raiz declarada resuelve a un directorio que existe', () => {
+196 |     // El denominador va junto al conteo: un `0 ausentes` sin decir sobre
+197 |     // cuantas raices se midio no distingue un catalogo sano de uno vacio.
+198 |     const ausentes = Object.keys(TRIPLES).filter((a) => !existsSync(resolveRoot(a)))
+199 |     expect({ ausentes, medidas: Object.keys(TRIPLES).length })
+200 |       .toEqual({ ausentes: [], medidas: 9 })
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -1,3 +1,11 @@
+  {
+-   "ausentes": [],
++   "ausentes": [
++     "odoo19c",
++     "odoo19e",
++     "odoo18c",
++     "odoo18e",
++     "ccb",
++     "ccnmt",
++     "ui-core",
++   ],
+    "medidas": 9,
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/reference/triple.test.ts:200:8)
+(fail) la raiz declarada tiene que existir y ser absoluta (#294) > toda raiz declarada resuelve a un directorio que existe [0.26ms]
+
+ 19 pass
+ 1 fail
+ 55 expect() calls
+Ran 20 tests across 1 file. [116.00ms]

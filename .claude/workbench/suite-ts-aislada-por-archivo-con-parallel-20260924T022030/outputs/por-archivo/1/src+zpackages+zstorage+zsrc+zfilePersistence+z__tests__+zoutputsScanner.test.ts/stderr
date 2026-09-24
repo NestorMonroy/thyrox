@@ -1,0 +1,11 @@
+
+src/packages/storage/src/filePersistence/__tests__/outputsScanner.test.ts:
+[file-persistence] No files found in outputs directory
+[file-persistence] Found 1 modified files since turn start (scanned 2 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+
+ 9 pass
+ 0 fail
+ 9 expect() calls
+Ran 9 tests across 1 file. [112.00ms]

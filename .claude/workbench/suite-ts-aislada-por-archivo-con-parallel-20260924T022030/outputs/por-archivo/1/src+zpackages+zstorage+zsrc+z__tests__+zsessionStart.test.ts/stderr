@@ -1,0 +1,23 @@
+
+src/packages/storage/src/__tests__/sessionStart.test.ts:
+Skipping plugin hooks - allowManagedHooksOnly is enabled
+161 | 
+162 |     expect(loadPluginHooksCalled).toBe(false)
+163 |   })
+164 | 
+165 |   test('si loadPluginHooks falla, NO propaga el error — sigue ejecutando los hooks', async () => {
+166 |     setLoadPluginHooksFn(() => Promise.reject(new Error('ETIMEDOUT')))
+                                                        ^
+error: Failed to load plugin hooks during startup: ETIMEDOUT
+      at /home/user/thyrox/src/packages/storage/src/__tests__/sessionStart.test.ts:166:51
+      at withDiagnosticsTiming (/home/user/thyrox/src/packages/storage/src/sessionStart.ts:188:10)
+      at processSessionStartHooks (/home/user/thyrox/src/packages/storage/src/sessionStart.ts:275:13)
+      at /home/user/thyrox/src/packages/storage/src/__tests__/sessionStart.test.ts:171:26
+
+Warning: Failed to load plugin hooks. SessionStart hooks from plugins will not execute. Error: ETIMEDOUT. This appears to be a network issue. Check your internet connection and try again.
+Warning: Failed to load plugin hooks. Setup hooks from plugins will not execute. Error: boom
+
+ 17 pass
+ 0 fail
+ 26 expect() calls
+Ran 17 tests across 1 file. [107.00ms]

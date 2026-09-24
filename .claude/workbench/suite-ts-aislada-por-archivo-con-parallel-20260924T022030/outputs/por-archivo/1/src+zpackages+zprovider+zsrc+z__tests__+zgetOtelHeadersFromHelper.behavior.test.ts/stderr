@@ -1,0 +1,21 @@
+
+src/packages/provider/src/__tests__/getOtelHeadersFromHelper.behavior.test.ts:
+40 |   test('debounce env-var override: CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS', () => {
+41 |     expect(fnSlice).toMatch(/CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS/)
+42 |   })
+43 | 
+44 |   test('trust gate: project/local helper requires accepted trust dialog', () => {
+45 |     expect(fnSlice).toMatch(
+                         ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /if\s*\(isOtelHeadersHelperFromProjectOrLocalSettings\(\)\)\s*\{[\s\S]*?if\s*\(!hasTrust\)\s*\{[\s\S]*?return\s*\{\}/
+Received: "export function getOtelHeadersFromHelper(): Record<string, string> {\n  const otelHeadersHelper = getConfiguredOtelHeadersHelper()\n  if (!otelHeadersHelper) return {}\n\n  const debounceMs = parseInt(readEnv('CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS') || DEFAULT_OTEL_HEADERS_DEBOUNCE_MS.toString(), 10)\n  if (cachedOtelHeaders && Date.now() - cachedOtelHeadersTimestamp < debounceMs) {\n    return cachedOtelHeaders\n  }\n\n  if (isOtelHeadersHelperFromProjectOrLocalSettings()) {\n    const hasTrust = checkHasTrustDialogAccepted()\n    if (!hasTrust) return {}\n  }\n\n  try {\n    const result = execSyncWithDefaults(otelHeadersHelper, { timeout: 30000 })?.toString().trim()\n    if (!result) throw new Error('otelHeadersHelper did not return a valid value')\n\n    const headers = jsonParse(result)\n    if (typeof headers !== 'object' || headers === null || Array.isArray(headers)) {\n      throw new Error('otelHeadersHelper must return a JSON object with string key-value pairs')\n    }\n    for (const [key, value] of Object.entries(headers)) {\n      if (typeof value !== 'string') {\n        throw new Error(`otelHeadersHelper returned non-string value for key \"${key}\": ${typeof value}`)\n      }\n    }\n\n    cachedOtelHeaders = headers as Record<string, string>\n    cachedOtelHeadersTimestamp = Date.now()\n    return cachedOtelHeaders\n  } catch (error) {\n    logError(new Error(`Error getting OpenTelemetry headers from otelHeadersHelper (in settings): ${errorMessage(error)}`))\n    throw error\n  }\n}\n\nfunction isConsumerPlan(plan: SubscriptionType): plan is 'max' | 'pro' {\n  return plan === 'max' || plan === 'pro'\n}\n\nexport function isConsumerSubscriber(): boolean {\n  const subscriptionType = getSubscriptionType()\n  return isClaudeAISubscriber() && subscriptionType !== null && isConsumerPlan(subscriptionType)\n}\n\nexport type UserAccountInfo = {\n  subscription?: string\n  tokenSource?: string\n  apiKeySource?: ApiKeySource\n  organization?: string\n  email?: string\n}\n\nexport function getAccountInformation() {\n  const apiProvider = getAPIProvider()\n  if (apiProvider !== 'firstParty') return undefined\n\n  const { source: authTokenSource } = getAuthTokenSource()\n  const accountInfo: UserAccountInfo = {}\n  if (authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN' || authTokenSource === 'CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR') {\n    accountInfo.tokenSource = authTokenSource\n  } else if (isClaudeAISubscriber()) {\n    accountInfo.subscription = getSubscriptionName()\n  } else {\n    accountInfo.tokenSource = authTokenSource\n  }\n  const { key: apiKey, source: apiKeySource } = getAnthropicApiKeyWithSource()\n  if (apiKey) {\n    accountInfo.apiKeySource = apiKeySource\n  }\n\n  if (authTokenSource === 'claude.ai' || apiKeySource === '/login managed key') {\n    const orgName = getOauthAccountInfo()?.organizationName\n    if (orgName) accountInfo.organization = orgName\n  }\n  const email = getOauthAccountInfo()?.emailAddress\n  if ((authTokenSource === 'claude.ai' || apiKeySource === '/login managed key') && ema"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/__tests__/getOtelHeadersFromHelper.behavior.test.ts:45:21)
+(fail) getOtelHeadersFromHelper (ant He6 parity) > trust gate: project/local helper requires accepted trust dialog [0.25ms]
+
+ 9 pass
+ 1 fail
+ 11 expect() calls
+Ran 10 tests across 1 file. [107.00ms]
