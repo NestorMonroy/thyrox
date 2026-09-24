@@ -1,0 +1,1 @@
+function Pn(t){return/^[\\/]{2}/.test(t)||H6(t)}

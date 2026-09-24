@@ -1,0 +1,1 @@
+function k1(e,n,r=Date.now()){return Number.isFinite(e)&&Math.abs(r-e)<n}

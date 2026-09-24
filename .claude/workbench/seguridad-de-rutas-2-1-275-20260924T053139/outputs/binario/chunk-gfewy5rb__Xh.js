@@ -1,0 +1,1 @@
+function Xh(t){if(!t.startsWith("/"))return!1;let e=[];for(let r of t.split("/")){if(r===""||r===".")continue;if(r===".."){e.pop();continue}e.push(r)}return e.length===1&&e[0].toLowerCase()==="net"}

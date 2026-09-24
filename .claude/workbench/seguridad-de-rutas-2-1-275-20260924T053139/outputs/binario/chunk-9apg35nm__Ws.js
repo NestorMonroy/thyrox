@@ -1,0 +1,1 @@
+function Ws(e){let n=0;for(let r of qge(ye())){let s=Ze(r).split(oe);if(s.length>1&&s.at(-1)==="")s.pop();let g=0;while(g<s.length&&g<e.length&&(e[g]===s[g]||g===0&&/^[a-z]:$/i.test(e[g])&&e[g].toLowerCase()===s[g].toLowerCase()))g++;if(g===s.length){let h=g;for(let y=0;y<g;y++)if(sc(s[y])===".claude"&&sc(s[y+1]??"")!=="worktrees"){h=y;break}if(h>n)n=h}}return n}
