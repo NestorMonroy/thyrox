@@ -1571,3 +1571,286 @@ export function withMemoryCorrectionHint(message: string): string {
   if (isAutoMemoryEnabledDeferred() && featureEnabledDeferred('tengu_amber_prism')) return message + MEMORY_CORRECTION_HINT
   return message
 }
+
+// ---------------------------------------------------------------------------
+// Índices de mensajes — porte de 2.1.275 (2026-09-24): `eP` y `EUt`, `d6e`
+// (subagente), la clase `_ot` con `Qke` y `finish` (vista completa, aquí sin
+// su cache incremental `Bee`), y los lectores `n3n`/`r3n`/`x$r`/`J7t`.
+// pendiente: la negativa del asesor (`Epe`, `iKe(e)==="refusal"`) como
+// causa de error de un `advisor_tool_result`; sólo cuenta aquí su bloque de
+// error explícito.
+// ---------------------------------------------------------------------------
+
+// Mensajes de forma abierta: los índices sólo leen campos concretos.
+type AnyMessage = { type: string; uuid?: string; [key: string]: any }
+type AnyBlock = { type: string; [key: string]: any }
+
+export type MessageLookups = {
+  siblingToolUseIDs: Map<string, Set<string>>
+  progressMessagesByToolUseID: Map<string, AnyMessage[]>
+  inProgressHookCounts: Map<string, Map<string, number>>
+  resolvedHookCounts: Map<string, Map<string, number>>
+  toolResultByToolUseID: Map<string, AnyMessage>
+  firstTextBlockUuidByMessageID: Map<string, string>
+  toolUseByToolUseID: Map<string, AnyBlock>
+  resolvedToolUseIDs: Set<string>
+  erroredToolUseIDs: Set<string>
+}
+
+/** `EUt`: el conjunto vacío compartido, congelado. */
+export const EMPTY_STRING_SET: ReadonlySet<string> = Object.freeze(new Set<string>())
+
+/** `eP`: índices vacíos, para las vistas que no los necesitan. */
+export const EMPTY_LOOKUPS: MessageLookups = {
+  siblingToolUseIDs: new Map(),
+  progressMessagesByToolUseID: new Map(),
+  inProgressHookCounts: new Map(),
+  resolvedHookCounts: new Map(),
+  toolResultByToolUseID: new Map(),
+  firstTextBlockUuidByMessageID: new Map(),
+  toolUseByToolUseID: new Map(),
+  resolvedToolUseIDs: new Set(),
+  erroredToolUseIDs: new Set(),
+}
+
+// Los adjuntos de resultado de hook (`qpn`).
+const HOOK_RESULT_ATTACHMENTS = new Set([
+  'hook_blocking_error',
+  'hook_cancelled',
+  'hook_error_during_execution',
+  'hook_non_blocking_error',
+  'hook_success',
+  'hook_system_message',
+  'hook_additional_context',
+  'hook_stopped_continuation',
+  'hook_deferred_tool',
+])
+
+function isHookResultAttachment(message: AnyMessage): boolean {
+  return message.type === 'attachment' && HOOK_RESULT_ATTACHMENTS.has(message.attachment?.type)
+}
+
+/** `e3n`: un bloque que cita una tool use la da por resuelta. */
+function noteToolUseReference(block: AnyBlock, resolved: Set<string>, errored: Set<string>): void {
+  if (typeof block.tool_use_id === 'string') resolved.add(block.tool_use_id)
+  if (block.type === 'advisor_tool_result' && block.content?.type === 'advisor_tool_result_error')
+    errored.add(block.tool_use_id)
+}
+
+/** `t3n`: las tool uses que ejecuta el servidor, no el cliente. */
+function isServerToolUse(block: AnyBlock): boolean {
+  return block.type === 'server_tool_use' || block.type === 'mcp_tool_use'
+}
+
+/**
+ * `$Ns` + `FNs`: una tool use de servidor sin resultado en un mensaje que ya
+ * no es el último no va a resolverse: cuenta como resuelta y fallida.
+ */
+function failOrphanServerToolUses(
+  messages: AnyMessage[],
+  last: AnyMessage | undefined,
+  resolved: Set<string>,
+  errored: Set<string>,
+): void {
+  const lastID = last?.type === 'assistant' ? last.message.id : undefined
+  for (const message of messages) {
+    if (message.type !== 'assistant' || message.message.id === lastID) continue
+    for (const block of message.message.content)
+      if (isServerToolUse(block) && !resolved.has(block.id)) {
+        resolved.add(block.id)
+        errored.add(block.id)
+      }
+  }
+}
+
+/** `d6e`: índices de la transcripción de un subagente, y lo que sigue en curso. */
+export function buildSubagentLookups(entries: Array<{ message: AnyMessage }>): {
+  lookups: MessageLookups
+  inProgressToolUseIDs: Set<string>
+} {
+  const toolUses = new Map<string, AnyBlock>()
+  const resolved = new Set<string>()
+  const errored = new Set<string>()
+  const results = new Map<string, AnyMessage>()
+  for (const { message } of entries) {
+    if (message.type === 'assistant') {
+      for (const block of message.message.content) {
+        if (block.type === 'tool_use') toolUses.set(block.id, block)
+        noteToolUseReference(block, resolved, errored)
+      }
+    } else if (message.type === 'user') {
+      for (const block of message.message.content)
+        if (block.type === 'tool_result') {
+          resolved.add(block.tool_use_id)
+          results.set(block.tool_use_id, message)
+          if (block.is_error) errored.add(block.tool_use_id)
+        }
+    }
+  }
+  const messages = entries.map(e => e.message)
+  failOrphanServerToolUses(messages, messages.at(-1), resolved, errored)
+  const inProgressToolUseIDs = new Set<string>()
+  for (const id of toolUses.keys()) if (!resolved.has(id)) inProgressToolUseIDs.add(id)
+  return {
+    lookups: {
+      ...EMPTY_LOOKUPS,
+      toolUseByToolUseID: toolUses,
+      resolvedToolUseIDs: resolved,
+      erroredToolUseIDs: errored,
+      toolResultByToolUseID: results,
+    },
+    inProgressToolUseIDs,
+  }
+}
+
+/** `Qke`: el progreso por tool use (sin latidos) y los hooks lanzados por evento. */
+function indexProgress(progressMessages: AnyMessage[]): {
+  progressMessagesByToolUseID: Map<string, AnyMessage[]>
+  inProgressHookCounts: Map<string, Map<string, number>>
+} {
+  const byToolUse = new Map<string, AnyMessage[]>()
+  const hookCounts = new Map<string, Map<string, number>>()
+  for (const message of progressMessages) {
+    if (message.data?.type === 'tool_heartbeat') continue
+    const id = message.parentToolUseID
+    const list = byToolUse.get(id)
+    if (list) list.push(message)
+    else byToolUse.set(id, [message])
+    if (message.data?.type === 'hook_progress') {
+      const event = message.data.hookEvent
+      let counts = hookCounts.get(id)
+      if (!counts) hookCounts.set(id, (counts = new Map()))
+      counts.set(event, (counts.get(event) ?? 0) + 1)
+    }
+  }
+  return { progressMessagesByToolUseID: byToolUse, inProgressHookCounts: hookCounts }
+}
+
+/**
+ * La vista completa (`_ot` alimentado como en `Bee.build`): las tool uses se
+ * toman de los mensajes mostrados; resultados, primer bloque de texto, tool
+ * uses de servidor y hooks resueltos, de los normalizados; el progreso, de
+ * los mensajes `progress`.
+ */
+export function buildMessageLookups(normalizedMessages: AnyMessage[], messages: AnyMessage[]): MessageLookups {
+  const siblingToolUseIDs = new Map<string, Set<string>>()
+  const toolUseByToolUseID = new Map<string, AnyBlock>()
+  const idsByMessage = new Map<string, Set<string>>()
+  for (const message of messages) {
+    if (message.type !== 'assistant' || !message.message.content.some((b: AnyBlock) => b.type === 'tool_use')) continue
+    const ids = new Set(idsByMessage.get(message.message.id))
+    for (const block of message.message.content)
+      if (block.type === 'tool_use') {
+        ids.add(block.id)
+        toolUseByToolUseID.set(block.id, block)
+      }
+    idsByMessage.set(message.message.id, ids)
+    for (const id of ids) siblingToolUseIDs.set(id, ids)
+  }
+
+  const toolResultByToolUseID = new Map<string, AnyMessage>()
+  const firstTextBlockUuidByMessageID = new Map<string, string>()
+  let resolvedToolUseIDs = new Set<string>()
+  let erroredToolUseIDs = new Set<string>()
+  const serverToolUses: Array<{ id: string; messageID: string }> = []
+  const resolvedHookNames = new Map<string, Map<string, Set<string>>>()
+  const resolvedHookCounts = new Map<string, Map<string, number>>()
+  for (const message of normalizedMessages) {
+    if (message.type === 'user') {
+      for (const block of message.message.content)
+        if (block.type === 'tool_result') {
+          toolResultByToolUseID.set(block.tool_use_id, message)
+          resolvedToolUseIDs.add(block.tool_use_id)
+          if (block.is_error) erroredToolUseIDs.add(block.tool_use_id)
+        }
+    } else if (message.type === 'assistant') {
+      const id = message.message.id
+      for (const block of message.message.content) {
+        if (block.type === 'text') {
+          if (!firstTextBlockUuidByMessageID.has(id) && message.uuid) firstTextBlockUuidByMessageID.set(id, message.uuid)
+        } else if (isServerToolUse(block)) serverToolUses.push({ id: block.id, messageID: id })
+        noteToolUseReference(block, resolvedToolUseIDs, erroredToolUseIDs)
+      }
+    } else if (isHookResultAttachment(message) && message.attachment.hookName !== undefined) {
+      const { toolUseID, hookEvent, hookName } = message.attachment
+      let byEvent = resolvedHookNames.get(toolUseID)
+      if (!byEvent) resolvedHookNames.set(toolUseID, (byEvent = new Map()))
+      let names = byEvent.get(hookEvent)
+      if (!names) byEvent.set(hookEvent, (names = new Set()))
+      names.add(hookName)
+      const counts = new Map(resolvedHookCounts.get(toolUseID))
+      counts.set(hookEvent, names.size)
+      resolvedHookCounts.set(toolUseID, counts)
+    }
+  }
+
+  // `finish`: la tool use de servidor que no es del último mensaje y sigue
+  // sin resultado se da por resuelta y fallida.
+  const last = messages.at(-1)
+  const lastID = last?.type === 'assistant' ? last.message.id : undefined
+  for (const { id, messageID } of serverToolUses) {
+    if (messageID === lastID || resolvedToolUseIDs.has(id)) continue
+    resolvedToolUseIDs.add(id)
+    erroredToolUseIDs.add(id)
+  }
+
+  return {
+    siblingToolUseIDs,
+    ...indexProgress(messages.filter(m => m.type === 'progress')),
+    resolvedHookCounts,
+    toolResultByToolUseID,
+    firstTextBlockUuidByMessageID,
+    toolUseByToolUseID,
+    resolvedToolUseIDs,
+    erroredToolUseIDs,
+  }
+}
+
+/** `n3n`: las tool uses hermanas de la que corresponde al mensaje. */
+export function getSiblingToolUseIDsFromLookup(message: AnyMessage, lookups: MessageLookups): ReadonlySet<string> {
+  const id = getToolUseID(message as never)
+  if (!id) return EMPTY_STRING_SET
+  return lookups.siblingToolUseIDs.get(id) ?? EMPTY_STRING_SET
+}
+
+/** `r3n`: los mensajes de progreso de la tool use del mensaje. */
+export function getProgressMessagesFromLookup(message: AnyMessage, lookups: MessageLookups): AnyMessage[] {
+  const id = getToolUseID(message as never)
+  if (!id) return []
+  return lookups.progressMessagesByToolUseID.get(id) ?? []
+}
+
+/** `x$r`: ¿quedan hooks de este evento lanzados y sin resultado? */
+export function hasUnresolvedHooksFromLookup(toolUseID: string, hookEvent: string, lookups: MessageLookups): boolean {
+  const launched = lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+  const resolved = lookups.resolvedHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+  return launched > resolved
+}
+
+/** `J7t`: todos los ids de tool use que un mensaje cita. */
+export function getToolUseIDs(message: AnyMessage): string[] {
+  switch (message.type) {
+    case 'assistant': {
+      const ids: string[] = []
+      for (const block of message.message.content)
+        if (block.type === 'tool_use' || isServerToolUse(block)) ids.push(block.id)
+        else if (typeof block.tool_use_id === 'string') ids.push(block.tool_use_id)
+      return ids
+    }
+    case 'user': {
+      const ids: string[] = []
+      if (message.sourceToolUseID) ids.push(message.sourceToolUseID)
+      for (const block of message.message.content) if (block.type === 'tool_result') ids.push(block.tool_use_id)
+      return ids
+    }
+    case 'attachment':
+    case 'system': {
+      const id = getToolUseID(message as never)
+      return id === null ? [] : [id]
+    }
+    case 'grouped_tool_use':
+      return message.messages.map((m: AnyMessage) => m.message.content[0].id)
+    default:
+      return []
+  }
+}

@@ -1279,7 +1279,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/LogoV2/LogoV2.tsx(223,41): error TS2345: Argument of type 'string' is not assignable to parameter of type '"auto" | "dark" | "light" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
 ../repl/src/components/LogoV2/LogoV2.tsx(424,45): error TS2554: Expected 1 arguments, but got 0.
 ../repl/src/components/MemoryUsageIndicator.tsx(11,7): error TS2367: This comparison appears to be unintentional because the types '"external"' and '"ant"' have no overlap.
-../repl/src/components/Message.tsx(31,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/Message.tsx(116,36): error TS2339: Property 'map' does not exist on type 'MessageContent'.
 ../repl/src/components/Message.tsx(116,41): error TS7006: Parameter '_' implicitly has an 'any' type.
@@ -1307,10 +1306,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageModel.tsx(25,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
 ../repl/src/components/MessageModel.tsx(26,22): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/MessageModel.tsx(26,23): error TS18048: 'message.message' is possibly 'undefined'.
-../repl/src/components/MessageRow.tsx(14,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/MessageRow.tsx(15,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_STRING_SET'.
-../repl/src/components/MessageRow.tsx(16,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getProgressMessagesFromLookup'.
-../repl/src/components/MessageRow.tsx(17,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getSiblingToolUseIDsFromLookup'.
 ../repl/src/components/MessageRow.tsx(70,23): error TS18048: 'msg.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(72,18): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/MessageRow.tsx(73,18): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -1328,6 +1323,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageRow.tsx(192,5): error TS18048: 'displayMsg.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(192,32): error TS2339: Property 'some' does not exist on type 'MessageContent'.
 ../repl/src/components/MessageRow.tsx(197,7): error TS2322: Type 'RenderableMessage' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
+../repl/src/components/MessageRow.tsx(205,7): error TS2322: Type 'AnyMessage[]' is not assignable to type 'ProgressMessage[]'.
 ../repl/src/components/MessageRow.tsx(261,23): error TS18048: 'm.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(262,23): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/MessageRow.tsx(262,78): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -1351,9 +1347,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageTimestamp.tsx(18,5): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageTimestamp.tsx(18,29): error TS2339: Property 'some' does not exist on type 'MessageContent'.
 ../repl/src/components/MessageTimestamp.tsx(24,39): error TS2769: No overload matches this call.
-../repl/src/components/Messages.tsx(35,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/Messages.tsx(38,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getMessagesAfterCompactBoundary'.
-../repl/src/components/Messages.tsx(40,3): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'getToolUseIDs'. Did you mean 'getToolUseID'?
 ../repl/src/components/Messages.tsx(43,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'reorderMessagesInUI'.
 ../repl/src/components/Messages.tsx(44,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'StreamingThinking'.
 ../repl/src/components/Messages.tsx(45,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'StreamingToolUse'.
@@ -1371,6 +1365,8 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/Messages.tsx(490,29): error TS18048: 'content' is possibly 'undefined'.
 ../repl/src/components/Messages.tsx(491,21): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/Messages.tsx(492,32): error TS2339: Property 'text' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+../repl/src/components/Messages.tsx(509,25): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage'.
+../repl/src/components/Messages.tsx(518,33): error TS2339: Property 'has' does not exist on type 'string[]'.
 ../repl/src/components/Messages.tsx(587,14): error TS7006: Parameter 'msg' implicitly has an 'any' type.
 ../repl/src/components/Messages.tsx(594,19): error TS7006: Parameter 'msg' implicitly has an 'any' type.
 ../repl/src/components/Messages.tsx(595,19): error TS7006: Parameter '_' implicitly has an 'any' type.
@@ -1406,7 +1402,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/PromptInput/PromptInput.tsx(3210,29): error TS18048: 'message.message' is possibly 'undefined'.
 ../repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx(279,28): error TS2345: Argument of type 'TaskState' is not assignable to parameter of type '{ [k: string]: unknown; status: string; type?: string | undefined; isBackgrounded?: boolean | undefined; }'.
 ../repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx(165,15): error TS2322: Type '"yellow" | undefined' is not assignable to type 'Color | keyof Theme | undefined'.
-../repl/src/components/PromptInput/PromptInputQueuedCommands.tsx(17,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../repl/src/components/PromptInput/PromptInputQueuedCommands.tsx(145,13): error TS2322: Type 'Message' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
 ../repl/src/components/PromptInput/useSwarmBanner.ts(81,50): error TS2345: Argument of type 'AppState' is not assignable to parameter of type 'Pick<AppStateShape, "tasks" | "viewingAgentTaskId">'.
 ../repl/src/components/PromptInput/useSwarmBanner.ts(108,41): error TS2345: Argument of type 'AppState' is not assignable to parameter of type 'AppStateShape'.
@@ -1508,8 +1503,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messageActions.tsx(386,23): error TS7006: Parameter 'b' implicitly has an 'any' type.
 ../repl/src/components/messageActions.tsx(394,13): error TS18048: 'r.message.content' is possibly 'undefined'.
 ../repl/src/components/messageActions.tsx(395,10): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../repl/src/components/messageStaticness.ts(11,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/messageStaticness.ts(13,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'hasUnresolvedHooksFromLookup'.
 ../repl/src/components/messageStaticness.ts(25,4): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
 ../repl/src/components/messageStaticness.ts(34,23): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/messageStaticness.ts(35,20): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -1517,7 +1510,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messageStaticness.ts(59,25): error TS18048: 'msg.message.content' is possibly 'undefined'.
 ../repl/src/components/messageStaticness.ts(61,20): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messageStaticness.ts(62,50): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../repl/src/components/messages/AssistantToolUseMessage.tsx(18,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(197,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(251,5): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(279,7): error TS18046: 'msg.data' is of type 'unknown'.
@@ -1530,7 +1522,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/AttachmentMessage.tsx(255,37): error TS7006: Parameter 'm' implicitly has an 'any' type.
 ../repl/src/components/messages/AttachmentMessage.tsx(325,43): error TS7006: Parameter 'id' implicitly has an 'any' type.
 ../repl/src/components/messages/AttachmentMessage.tsx(341,48): error TS7006: Parameter 's' implicitly has an 'any' type.
-../repl/src/components/messages/CollapsedReadSearchContent.tsx(17,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(103,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(103,37): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(105,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
@@ -1539,7 +1530,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(243,24): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(246,28): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(247,15): error TS2322: Type 'string | ContentBlockParam | ContentBlock' is not assignable to type '{ type: "tool_use"; id: string; name: string; input: unknown; }'.
-../repl/src/components/messages/GroupedToolUseContent.tsx(12,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(40,27): error TS18048: 'resultMsg.message.content' is possibly 'undefined'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(41,19): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(51,21): error TS18048: 'msg.message.content' is possibly 'undefined'.
@@ -1547,9 +1537,11 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/GroupedToolUseContent.tsx(55,58): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(56,54): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(57,54): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+../repl/src/components/messages/GroupedToolUseContent.tsx(59,9): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'ProgressMessage[]'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(59,57): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(67,3): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/HookProgressMessage.tsx(3,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
+../repl/src/components/messages/HookProgressMessage.tsx(22,54): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+../repl/src/components/messages/HookProgressMessage.tsx(24,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
 ../repl/src/components/messages/HookProgressMessage.tsx(61,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/SystemAPIErrorMessage.tsx(23,58): error TS18046: 'retryAttempt' is of type 'unknown'.
 ../repl/src/components/messages/SystemAPIErrorMessage.tsx(26,31): error TS18046: 'retryInMs' is of type 'unknown'.
@@ -1587,12 +1579,9 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/SystemTextMessage.tsx(500,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/SystemTextMessage.tsx(500,51): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx(79,3): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx(10,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx(45,3): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx(9,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx(21,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx(118,9): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/utils.tsx(4,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
+../repl/src/components/messages/UserToolResultMessage/utils.tsx(11,3): error TS2322: Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; } | null' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; } | null'.
 ../repl/src/components/messages/nullRenderingAttachments.ts(1,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
 ../repl/src/components/messages/nullRenderingAttachments.ts(66,41): error TS18048: 'msg.attachment' is possibly 'undefined'.
 ../repl/src/components/tasks/AsyncAgentDetailDialog.tsx(161,51): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/runtime").Tools' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").Tools'.
@@ -1634,7 +1623,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(158,52): error TS2339: Property 'recentActivities' does not exist on type '{}'.
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(161,45): error TS2339: Property 'recentActivities' does not exist on type '{}'.
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(164,49): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/runtime").Tools' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").Tools'.
-../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(23,10): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(126,27): error TS18046: 'msg.message' is of type 'unknown'.
 ../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(615,19): error TS2322: Type 'Message' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
 ../repl/src/components/tasks/renderToolActivity.tsx(31,28): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
@@ -2245,8 +2233,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1513,39): error TS18048: 'm.message.content' is possibly 'undefined'.
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1515,29): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1516,29): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../tool-registry/src/tools/AgentTool/UI.tsx(33,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildSubagentLookups'.
-../tool-registry/src/tools/AgentTool/UI.tsx(35,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(65,22): error TS18046: 'data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(68,15): error TS2571: Object is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(87,19): error TS18046: 'progressMessage.data' is of type 'unknown'.
@@ -2256,6 +2242,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/UI.tsx(177,23): error TS18046: 'msg.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(196,11): error TS18046: 'msg.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(211,11): error TS18046: 'msg.data' is of type 'unknown'.
+../tool-registry/src/tools/AgentTool/UI.tsx(280,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(296,19): error TS18046: 'pm.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(309,22): error TS18046: 'progressMessage.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(418,5): error TS2741: Property 'fallback_credit' is missing in type '{ inference_geo: null; iterations: null; speed: null; output_tokens_details: null; input_tokens: number; output_tokens: number; cache_creation_input_tokens: number | null; cache_read_input_tokens: number | null; server_tool_use: { ...; } | null; service_tier: "standard" | ... 2 more ... | null; cache_creation: { ......' but required in type 'BetaUsage'.
@@ -2265,6 +2252,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/UI.tsx(572,42): error TS2339: Property 'message' does not exist on type '{}'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(635,12): error TS18046: 'data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(642,60): error TS2339: Property 'prompt' does not exist on type '{}'.
+../tool-registry/src/tools/AgentTool/UI.tsx(660,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(698,26): error TS18046: 'processed.message.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(747,60): error TS2339: Property 'agentId' does not exist on type '{}'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(802,21): error TS18046: 'msg.data' is of type 'unknown'.
@@ -2367,8 +2355,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(649,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(732,48): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(1066,11): error TS2339: Property 'content' does not exist on type 'unknown'.
-../tool-registry/src/tools/SkillTool/UI.tsx(14,10): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildSubagentLookups'.
-../tool-registry/src/tools/SkillTool/UI.tsx(14,32): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
+../tool-registry/src/tools/SkillTool/UI.tsx(100,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/SkillTool/UI.tsx(110,26): error TS18046: 'progressMessage.data' is of type 'unknown'.
 ../tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(337,51): error TS7006: Parameter 'c' implicitly has an 'any' type.
 ../tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(338,47): error TS7006: Parameter 's' implicitly has an 'any' type.
@@ -3631,7 +3618,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/LogoV2/LogoV2.tsx(223,41): error TS2345: Argument of type 'string' is not assignable to parameter of type '"auto" | "dark" | "light" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
 ../repl/src/components/LogoV2/LogoV2.tsx(424,45): error TS2554: Expected 1 arguments, but got 0.
 ../repl/src/components/MemoryUsageIndicator.tsx(11,7): error TS2367: This comparison appears to be unintentional because the types '"external"' and '"ant"' have no overlap.
-../repl/src/components/Message.tsx(31,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/Message.tsx(116,12): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/Message.tsx(116,36): error TS2339: Property 'map' does not exist on type 'MessageContent'.
 ../repl/src/components/Message.tsx(116,41): error TS7006: Parameter '_' implicitly has an 'any' type.
@@ -3659,10 +3645,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageModel.tsx(25,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
 ../repl/src/components/MessageModel.tsx(26,22): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/MessageModel.tsx(26,23): error TS18048: 'message.message' is possibly 'undefined'.
-../repl/src/components/MessageRow.tsx(14,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/MessageRow.tsx(15,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_STRING_SET'.
-../repl/src/components/MessageRow.tsx(16,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getProgressMessagesFromLookup'.
-../repl/src/components/MessageRow.tsx(17,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getSiblingToolUseIDsFromLookup'.
 ../repl/src/components/MessageRow.tsx(70,23): error TS18048: 'msg.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(72,18): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/MessageRow.tsx(73,18): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -3680,6 +3662,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageRow.tsx(192,5): error TS18048: 'displayMsg.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(192,32): error TS2339: Property 'some' does not exist on type 'MessageContent'.
 ../repl/src/components/MessageRow.tsx(197,7): error TS2322: Type 'RenderableMessage' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
+../repl/src/components/MessageRow.tsx(205,7): error TS2322: Type 'AnyMessage[]' is not assignable to type 'ProgressMessage[]'.
 ../repl/src/components/MessageRow.tsx(261,23): error TS18048: 'm.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageRow.tsx(262,23): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/MessageRow.tsx(262,78): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -3703,9 +3686,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/MessageTimestamp.tsx(18,5): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/MessageTimestamp.tsx(18,29): error TS2339: Property 'some' does not exist on type 'MessageContent'.
 ../repl/src/components/MessageTimestamp.tsx(24,39): error TS2769: No overload matches this call.
-../repl/src/components/Messages.tsx(35,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/Messages.tsx(38,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'getMessagesAfterCompactBoundary'.
-../repl/src/components/Messages.tsx(40,3): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'getToolUseIDs'. Did you mean 'getToolUseID'?
 ../repl/src/components/Messages.tsx(43,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'reorderMessagesInUI'.
 ../repl/src/components/Messages.tsx(44,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'StreamingThinking'.
 ../repl/src/components/Messages.tsx(45,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'StreamingToolUse'.
@@ -3723,6 +3704,8 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/Messages.tsx(490,29): error TS18048: 'content' is possibly 'undefined'.
 ../repl/src/components/Messages.tsx(491,21): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/Messages.tsx(492,32): error TS2339: Property 'text' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+../repl/src/components/Messages.tsx(509,25): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage'.
+../repl/src/components/Messages.tsx(518,33): error TS2339: Property 'has' does not exist on type 'string[]'.
 ../repl/src/components/Messages.tsx(587,14): error TS7006: Parameter 'msg' implicitly has an 'any' type.
 ../repl/src/components/Messages.tsx(594,19): error TS7006: Parameter 'msg' implicitly has an 'any' type.
 ../repl/src/components/Messages.tsx(595,19): error TS7006: Parameter '_' implicitly has an 'any' type.
@@ -3758,7 +3741,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/PromptInput/PromptInput.tsx(3210,29): error TS18048: 'message.message' is possibly 'undefined'.
 ../repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx(279,28): error TS2345: Argument of type 'TaskState' is not assignable to parameter of type '{ [k: string]: unknown; status: string; type?: string | undefined; isBackgrounded?: boolean | undefined; }'.
 ../repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx(165,15): error TS2322: Type '"yellow" | undefined' is not assignable to type 'Color | keyof Theme | undefined'.
-../repl/src/components/PromptInput/PromptInputQueuedCommands.tsx(17,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../repl/src/components/PromptInput/PromptInputQueuedCommands.tsx(145,13): error TS2322: Type 'Message' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
 ../repl/src/components/PromptInput/useSwarmBanner.ts(81,50): error TS2345: Argument of type 'AppState' is not assignable to parameter of type 'Pick<AppStateShape, "tasks" | "viewingAgentTaskId">'.
 ../repl/src/components/PromptInput/useSwarmBanner.ts(108,41): error TS2345: Argument of type 'AppState' is not assignable to parameter of type 'AppStateShape'.
@@ -3860,8 +3842,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messageActions.tsx(386,23): error TS7006: Parameter 'b' implicitly has an 'any' type.
 ../repl/src/components/messageActions.tsx(394,13): error TS18048: 'r.message.content' is possibly 'undefined'.
 ../repl/src/components/messageActions.tsx(395,10): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../repl/src/components/messageStaticness.ts(11,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/messageStaticness.ts(13,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'hasUnresolvedHooksFromLookup'.
 ../repl/src/components/messageStaticness.ts(25,4): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
 ../repl/src/components/messageStaticness.ts(34,23): error TS18048: 'message.message.content' is possibly 'undefined'.
 ../repl/src/components/messageStaticness.ts(35,20): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
@@ -3869,7 +3849,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messageStaticness.ts(59,25): error TS18048: 'msg.message.content' is possibly 'undefined'.
 ../repl/src/components/messageStaticness.ts(61,20): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messageStaticness.ts(62,50): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../repl/src/components/messages/AssistantToolUseMessage.tsx(18,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(197,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(251,5): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/AssistantToolUseMessage.tsx(279,7): error TS18046: 'msg.data' is of type 'unknown'.
@@ -3882,7 +3861,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/AttachmentMessage.tsx(255,37): error TS7006: Parameter 'm' implicitly has an 'any' type.
 ../repl/src/components/messages/AttachmentMessage.tsx(325,43): error TS7006: Parameter 'id' implicitly has an 'any' type.
 ../repl/src/components/messages/AttachmentMessage.tsx(341,48): error TS7006: Parameter 's' implicitly has an 'any' type.
-../repl/src/components/messages/CollapsedReadSearchContent.tsx(17,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(103,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(103,37): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(105,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
@@ -3891,7 +3869,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(243,24): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(246,28): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/CollapsedReadSearchContent.tsx(247,15): error TS2322: Type 'string | ContentBlockParam | ContentBlock' is not assignable to type '{ type: "tool_use"; id: string; name: string; input: unknown; }'.
-../repl/src/components/messages/GroupedToolUseContent.tsx(12,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(40,27): error TS18048: 'resultMsg.message.content' is possibly 'undefined'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(41,19): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(51,21): error TS18048: 'msg.message.content' is possibly 'undefined'.
@@ -3899,9 +3876,11 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/GroupedToolUseContent.tsx(55,58): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(56,54): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(57,54): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+../repl/src/components/messages/GroupedToolUseContent.tsx(59,9): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'ProgressMessage[]'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(59,57): error TS2339: Property 'id' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../repl/src/components/messages/GroupedToolUseContent.tsx(67,3): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/HookProgressMessage.tsx(3,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
+../repl/src/components/messages/HookProgressMessage.tsx(22,54): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+../repl/src/components/messages/HookProgressMessage.tsx(24,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
 ../repl/src/components/messages/HookProgressMessage.tsx(61,11): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/SystemAPIErrorMessage.tsx(23,58): error TS18046: 'retryAttempt' is of type 'unknown'.
 ../repl/src/components/messages/SystemAPIErrorMessage.tsx(26,31): error TS18046: 'retryInMs' is of type 'unknown'.
@@ -3939,12 +3918,9 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/messages/SystemTextMessage.tsx(500,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/SystemTextMessage.tsx(500,51): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx(79,3): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx(10,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolRejectMessage.tsx(45,3): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/UserToolResultMessage.tsx(9,8): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
-../repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx(21,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
 ../repl/src/components/messages/UserToolResultMessage/UserToolSuccessMessage.tsx(118,9): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
-../repl/src/components/messages/UserToolResultMessage/utils.tsx(4,15): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildMessageLookups'.
+../repl/src/components/messages/UserToolResultMessage/utils.tsx(11,3): error TS2322: Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; } | null' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; } | null'.
 ../repl/src/components/messages/nullRenderingAttachments.ts(1,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
 ../repl/src/components/messages/nullRenderingAttachments.ts(66,41): error TS18048: 'msg.attachment' is possibly 'undefined'.
 ../repl/src/components/tasks/AsyncAgentDetailDialog.tsx(161,51): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/runtime").Tools' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").Tools'.
@@ -3986,7 +3962,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(158,52): error TS2339: Property 'recentActivities' does not exist on type '{}'.
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(161,45): error TS2339: Property 'recentActivities' does not exist on type '{}'.
 ../repl/src/components/tasks/InProcessTeammateDetailDialog.tsx(164,49): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/runtime").Tools' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").Tools'.
-../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(23,10): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(126,27): error TS18046: 'msg.message' is of type 'unknown'.
 ../repl/src/components/tasks/RemoteSessionDetailDialog.tsx(615,19): error TS2322: Type 'Message' is not assignable to type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | GroupedToolUseMessage | CollapsedReadSearchGroup'.
 ../repl/src/components/tasks/renderToolActivity.tsx(31,28): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
@@ -4597,8 +4572,6 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1513,39): error TS18048: 'm.message.content' is possibly 'undefined'.
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1515,29): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
 ../tool-registry/src/tools/AgentTool/AgentTool.tsx(1516,29): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
-../tool-registry/src/tools/AgentTool/UI.tsx(33,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildSubagentLookups'.
-../tool-registry/src/tools/AgentTool/UI.tsx(35,3): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(65,22): error TS18046: 'data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(68,15): error TS2571: Object is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(87,19): error TS18046: 'progressMessage.data' is of type 'unknown'.
@@ -4608,6 +4581,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/UI.tsx(177,23): error TS18046: 'msg.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(196,11): error TS18046: 'msg.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(211,11): error TS18046: 'msg.data' is of type 'unknown'.
+../tool-registry/src/tools/AgentTool/UI.tsx(280,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(296,19): error TS18046: 'pm.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(309,22): error TS18046: 'progressMessage.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(418,5): error TS2741: Property 'fallback_credit' is missing in type '{ inference_geo: null; iterations: null; speed: null; output_tokens_details: null; input_tokens: number; output_tokens: number; cache_creation_input_tokens: number | null; cache_read_input_tokens: number | null; server_tool_use: { ...; } | null; service_tier: "standard" | ... 2 more ... | null; cache_creation: { ......' but required in type 'BetaUsage'.
@@ -4617,6 +4591,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/AgentTool/UI.tsx(572,42): error TS2339: Property 'message' does not exist on type '{}'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(635,12): error TS18046: 'data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(642,60): error TS2339: Property 'prompt' does not exist on type '{}'.
+../tool-registry/src/tools/AgentTool/UI.tsx(660,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(698,26): error TS18046: 'processed.message.data' is of type 'unknown'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(747,60): error TS2339: Property 'agentId' does not exist on type '{}'.
 ../tool-registry/src/tools/AgentTool/UI.tsx(802,21): error TS18046: 'msg.data' is of type 'unknown'.
@@ -4719,8 +4694,7 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(649,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/command").Command[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(732,48): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
 ../tool-registry/src/tools/SkillTool/SkillTool.ts(1066,11): error TS2339: Property 'content' does not exist on type 'unknown'.
-../tool-registry/src/tools/SkillTool/UI.tsx(14,10): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'buildSubagentLookups'.
-../tool-registry/src/tools/SkillTool/UI.tsx(14,32): error TS2305: Module '"@thyrox/agent/messages.js"' has no exported member 'EMPTY_LOOKUPS'.
+../tool-registry/src/tools/SkillTool/UI.tsx(100,5): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.
 ../tool-registry/src/tools/SkillTool/UI.tsx(110,26): error TS18046: 'progressMessage.data' is of type 'unknown'.
 ../tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(337,51): error TS7006: Parameter 'c' implicitly has an 'any' type.
 ../tool-registry/src/tools/ToolSearchTool/ToolSearchTool.ts(338,47): error TS7006: Parameter 's' implicitly has an 'any' type.
@@ -4736,21 +4710,13 @@ src/transports/ccrClient.ts(748,68): error TS2345: Argument of type '{ type: "as
 ../updater/src/internal/semverCompat.ts(20,40): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
 ../updater/src/internal/semverCompat.ts(23,53): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
 ../updater/src/nativeInstaller/platform.ts(41,25): error TS18046: 'envDynamic.isMuslEnvironment' is of type 'unknown'.
-check-cli-typecheck: tsconfig.json baja: 2351 bajo un baseline de 2384 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
-check-cli-typecheck: tsconfig.tests.json baja: 2351 bajo un baseline de 2384 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: tsconfig.json baja: 2338 bajo un baseline de 2384 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: tsconfig.tests.json baja: 2338 bajo un baseline de 2384 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
 check-cli-typecheck: proyectos medidos: 2 de 2
 rutas: 342 pares de modelo, 1026 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
 cross-model-read: 0 lecturas cruzadas (superficie real auditada)
-check_bench_untracked: 0 archivo(s) fuera (alcance medido: 2 banco(s) tocado(s))
-[feature/thyrox-l6 00d7c181] Port resetTaskList from 2.1.275
- Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
- 7 files changed, 4838 insertions(+), 3 deletions(-)
- create mode 100644 .claude/jobs/commit-tasks-20260924T062112/README.md
- create mode 100644 .claude/jobs/commit-tasks-20260924T062112/manifest.jsonl
- create mode 100644 .claude/jobs/commit-tasks-20260924T062112/outputs/pid
- create mode 100644 .claude/jobs/commit-tasks-20260924T062112/outputs/salida.log
- create mode 100644 src/packages/agent/__tests__/resetTaskList.test.ts
-To https://github.com/NestorMonroy/thyrox
-   f932a401..00d7c181  feature/thyrox-l6 -> feature/thyrox-l6
-branch 'feature/thyrox-l6' set up to track 'origin/feature/thyrox-l6'.
-__BG_EXIT__=0
+check_bench_untracked: .claude/workbench/mensajes-2-1-275-20260924T062136 deja fuera 1 archivo(s) nuevo(s):
+  .claude/workbench/mensajes-2-1-275-20260924T062136/outputs/filtros.js
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 1 archivo(s) fuera (alcance medido: 3 banco(s) tocado(s))
+__BG_EXIT__=1
