@@ -1,0 +1,1 @@
+(Spinner|SpinnerMode|RGBColor|color[12])
