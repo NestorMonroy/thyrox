@@ -61,11 +61,14 @@ function makeTask(over: Partial<InProcessTeammateTaskState> = {}): InProcessTeam
     id: 't1',
     status: 'running',
     type: 'in_process_teammate',
-    // `notified` y `description` son obligatorios en TaskStateBase (ver la
-    // CORRECCIÓN 2 del docstring de types.ts) — sin estos defaults, cada
-    // `makeTask()` de este archivo fallaría el typecheck por campo faltante.
+    // Los campos obligatorios del `TaskStateBase` canónico (CORRECCIÓN 3 del
+    // docstring de types.ts) — sin estos defaults, cada `makeTask()` de este
+    // archivo fallaría el typecheck por campo faltante.
     notified: false,
     description: 'tarea de prueba',
+    startTime: 0,
+    outputFile: '',
+    outputOffset: 0,
     identity: {
       agentId: 'a1',
       agentName: 'researcher',

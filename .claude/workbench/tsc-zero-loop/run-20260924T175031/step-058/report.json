@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2519, "total_final": 2499, "tsc_runs": 1, "accepted": ["agent:swarm-canonical-task-base"], "files_kept": ["src/packages/swarm/src/tasks/__tests__/InProcessTeammateTask.test.ts", "src/packages/swarm/src/tasks/types.ts"], "outcomes": {"agent:swarm-canonical-task-base": "accepted-net"}}

@@ -64,20 +64,21 @@
  */
 
 /**
- * Envoltorio genérico mínimo de estado de tarea — el subconjunto de
- * `TaskStateBase` (adaptador de la fuente) que este archivo y sus
- * consumidores realmente leen. Ver la divergencia declarada arriba.
+ * CORRECCIÓN 3 (porte parcial, 2026-09-24): las dos correcciones de arriba
+ * mantenían una COPIA de `TaskStateBase` con 8 de sus 11 campos y `type`/
+ * `status` como `string`. El criterio «lo que algún consumidor lee» ya no la
+ * sostiene: `startTime` lo leen `Spinner.tsx`, `TeammateSpinnerLine.tsx`,
+ * `BackgroundTasksDialog.tsx` e `InProcessTeammateDetailDialog.tsx`, y el
+ * productor (`runtime/spawnInProcess.ts`) ya rellena los 11 con
+ * `createTaskStateBase`. La copia además rompía la unión de estados de tarea
+ * (`repl/tasksTypes.ts` no podía estrechar `in_process_teammate`). La fuente
+ * re-exporta el tipo canónico (`ccnmt: packages/swarm/src/adapters/
+ * appRuntime.ts:73`) y este paquete ya declara `@thyrox/tool-registry` como
+ * dependencia: se usa el canónico, como import sólo de tipo.
  */
-export interface TaskStateBase {
-  id: string
-  status: string
-  type: string
-  description: string
-  toolUseId?: string
-  endTime?: number
-  totalPausedMs?: number
-  notified: boolean
-}
+import type { TaskStateBase } from '@thyrox/tool-registry/Task.js'
+
+export type { TaskStateBase }
 
 /**
  * Identidad de teammate guardada en el estado de la tarea. Misma forma
