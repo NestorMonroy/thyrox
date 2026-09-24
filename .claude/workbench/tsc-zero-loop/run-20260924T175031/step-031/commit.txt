@@ -1,0 +1,10 @@
+Port shouldShowUserMessage from 2.1.275
+
+Thirty-first step of the agent-compiler loop, accepted-net
+2967 -> 2966. l3n and its origin check VO, read with the new AST
+symbol extractor: meta messages show only for channel, observer,
+observer-activity, slack-ping and peer origins, and transcript-only
+messages only in transcript mode.
+
+Annulment controls: dropping the meta branch, the transcript branch or
+the peer rule each fails exactly its test.

@@ -2046,3 +2046,31 @@ export function stripSignatureBlocks<M>(messages: M[]): M[] {
 export function isSystemLocalCommandMessage(message: Message): message is SystemLocalCommandMessage {
   return message.type === 'system' && (message as { subtype?: unknown }).subtype === 'local_command'
 }
+
+/**
+ * Si un origen hace visible un mensaje meta (`VO` de 2.1.275): canales,
+ * observadores, avisos de Slack y pares. Un par con `senderTaskId` siempre;
+ * sin él, según `peerVisible` (por defecto sí).
+ */
+function isVisibleOrigin(origin: unknown, peerVisible?: boolean): boolean {
+  const visible = typeof peerVisible === 'boolean' ? peerVisible : true
+  const o = origin as { kind?: unknown; senderTaskId?: unknown } | undefined
+  if (o?.kind === 'channel' || o?.kind === 'observer' || o?.kind === 'observer-activity' || o?.kind === 'slack-ping') {
+    return true
+  }
+  if (o?.kind === 'peer') return o.senderTaskId !== undefined || visible
+  return false
+}
+
+/**
+ * Si un mensaje de usuario se muestra en la vista (`l3n` de 2.1.275): los
+ * meta sólo si su origen es visible, y los marcados «sólo transcripción»
+ * sólo en modo transcripción.
+ */
+export function shouldShowUserMessage(message: Message, isTranscriptMode: boolean): boolean {
+  if (message.type !== 'user') return true
+  const m = message as { isMeta?: unknown; origin?: unknown; isVisibleInTranscriptOnly?: unknown }
+  if (m.isMeta) return isVisibleOrigin(m.origin)
+  if (m.isVisibleInTranscriptOnly && !isTranscriptMode) return false
+  return true
+}

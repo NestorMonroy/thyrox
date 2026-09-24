@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2967, "total_final": 2966, "tsc_runs": 1, "accepted": ["agent:should-show-user-message"], "files_kept": ["src/packages/agent/messages.ts"], "outcomes": {"agent:should-show-user-message": "accepted-net"}}
