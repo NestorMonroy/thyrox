@@ -12,8 +12,9 @@
  * `__tests__/promptsModelIdLeak.test.ts` ejercita —
  * `computeEnvInfo` y `computeSimpleEnvInfo`— con los helpers que ambos
  * consumen directamente (`getUnameSR`, `prependBullets`). El resto de la
- * fuente (`getSystemPrompt`, `getSessionSpecificGuidanceSection`,
- * `getScratchpadInstructions`, `CLAUDE_CODE_DOCS_MAP_URL`) queda fuera
+ * fuente (`getSessionSpecificGuidanceSection`, `getScratchpadInstructions`,
+ * `CLAUDE_CODE_DOCS_MAP_URL`) queda fuera; `getSystemPrompt` se porta al
+ * final (2026-09-24) con la forma de 2.1.275 y texto propio
  * (`enhanceSystemPromptWithEnvDetails` y `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`
  * se portan al final, 2026-09-24, desde 2.1.275): ninguno tiene consumidor en este cierre y cada uno arrastra su
  * propio arbol de paquetes hermanos. `DEFAULT_AGENT_PROMPT` si esta, al
@@ -341,4 +342,81 @@ export async function enhanceSystemPromptWithEnvDetails(
   _enabledToolNames?: ReadonlySet<string>,
 ): Promise<string[]> {
   return [...existingSystemPrompt, PEER_MESSAGE_NOTE, SUBAGENT_NOTES]
+}
+
+// ---------------------------------------------------------------------------
+// System prompt — la forma de `Zw` (2.1.275, `chunk-q2gh92k2.js`) con texto
+// propio de thyrox. De la fuente se conserva el orden: modo simple aparte,
+// secciones estáticas, la frontera dinámica y después las dinámicas.
+//
+// pendiente: las ~25 secciones condicionales de la fuente (estilo de
+// salida, modo foco, continuidad de tareas, guía de sesión por SDK,
+// banderas de GrowthBook, memoria, cuenta atrás de contexto) y su caché
+// por sección (`dy`/`UGt`). Aquí cada sección se calcula en cada llamada.
+// ---------------------------------------------------------------------------
+
+type PromptTool = { name: string }
+type PromptMcpClient = { type: string; name: string; instructions?: string }
+
+function todayIso(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+const INTRO_SECTION = [
+  'You are an agent that helps the user with software engineering work in their own repositories: reading code, changing it, running commands and explaining what you find.',
+  'Act on the codebase through the tools you are given. State facts about files, commands and results only after a tool has shown them to you in this conversation.',
+].join('\n')
+
+const WORKING_SECTION = [
+  '# How to work',
+  '- Read the relevant code before changing it, and follow the conventions of the surrounding code.',
+  '- Keep each change to what the task needs. Do not widen it on your own.',
+  '- After a change, run the checks the repository already uses and report what they printed.',
+  '- If a result contradicts what you expected, say so and report the result, not the expectation.',
+].join('\n')
+
+const CAUTION_SECTION = [
+  '# Actions that are hard to undo',
+  'Before deleting data, rewriting history, or sending anything outside this machine, confirm with the user unless they already asked for exactly that.',
+].join('\n')
+
+const COMMUNICATION_SECTION = [
+  '# Communication',
+  'Be brief and direct. Lead with the result. Use Markdown only where it helps the reader, and cite code as path:line.',
+].join('\n')
+
+function toolsSection(tools: readonly PromptTool[]): string | null {
+  if (tools.length === 0) return null
+  const names = [...new Set(tools.map(t => t.name))].sort()
+  return `# Tools\nYou can use these tools: ${names.join(', ')}. Prefer a dedicated tool over a shell command when one fits, and run independent calls in parallel.`
+}
+
+function mcpInstructionsSection(clients: readonly PromptMcpClient[] | undefined): string | null {
+  const withInstructions = (clients ?? []).filter(c => c.type === 'connected' && c.instructions?.trim())
+  if (withInstructions.length === 0) return null
+  const blocks = withInstructions.map(c => `## ${c.name}\n${c.instructions!.trim()}`)
+  return `# Instructions from connected MCP servers\n${blocks.join('\n\n')}`
+}
+
+/**
+ * El system prompt por partes. En modo simple (`CLAUDE_CODE_SIMPLE`) sólo el
+ * directorio y la fecha, como la fuente.
+ */
+export async function getSystemPrompt(
+  tools: readonly PromptTool[],
+  model: string,
+  additionalWorkingDirectories?: string[],
+  mcpClients?: readonly PromptMcpClient[],
+  options?: { excludeDynamicSections?: boolean },
+): Promise<string[]> {
+  if (isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))) {
+    return options?.excludeDynamicSections ? [] : [`CWD: ${getCwd()}\nDate: ${todayIso()}`]
+  }
+  const staticSections = [INTRO_SECTION, WORKING_SECTION, toolsSection(tools), CAUTION_SECTION, COMMUNICATION_SECTION]
+  const dynamicSections = options?.excludeDynamicSections
+    ? []
+    : [await computeEnvInfo(model, additionalWorkingDirectories), mcpInstructionsSection(mcpClients)]
+  return [...staticSections, SYSTEM_PROMPT_DYNAMIC_BOUNDARY, ...dynamicSections].filter(
+    (section): section is string => typeof section === 'string' && section.trim().length > 0,
+  )
 }
