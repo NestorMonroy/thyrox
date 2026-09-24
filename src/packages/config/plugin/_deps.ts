@@ -452,14 +452,23 @@ export function isENOENT(e: unknown): boolean {
 }
 
 /** de src/utils/slowOperations */
-let _jsonStringify: (v: unknown) => string = v => JSON.stringify(v)
-let _jsonParse: (t: string) => unknown = t => JSON.parse(t)
+// Firmas de `@thyrox/local-observability/slowOperations.js`, que es lo que
+// el instalador enlaza: el formateo (`replacer`, `space`) y el `reviver`
+// viajan hasta la función real en vez de perderse en el puente.
+type JsonStringifyFn = (
+  value: unknown,
+  replacer?: ((this: unknown, key: string, value: unknown) => unknown) | (number | string)[] | null,
+  space?: string | number,
+) => string
+type JsonParseFn = (text: string, reviver?: (this: unknown, key: string, value: unknown) => unknown) => unknown
+let _jsonStringify: JsonStringifyFn = (v, r, s) => JSON.stringify(v, r as Parameters<typeof JSON.stringify>[1], s)
+let _jsonParse: JsonParseFn = (t, r) => (r === undefined ? JSON.parse(t) : JSON.parse(t, r))
 let _clone: <T>(v: T) => T = v => JSON.parse(JSON.stringify(v))
-export function jsonStringify(v: unknown): string {
-  return _jsonStringify(v)
+export function jsonStringify(...args: Parameters<JsonStringifyFn>): string {
+  return _jsonStringify(...args)
 }
-export function jsonParse(t: string): unknown {
-  return _jsonParse(t)
+export function jsonParse(...args: Parameters<JsonParseFn>): unknown {
+  return _jsonParse(...args)
 }
 export function clone<T>(v: T): T {
   return _clone(v)
@@ -703,12 +712,16 @@ export const EFFORT_LEVELS = loadEffortLevels()
 
 // Tipos (passthroughs estructurales)
 export type ClaudeCodeHint = { id: string; message: string; cta?: string }
+// Misma forma que `@thyrox/local-observability/errorHelpers.js`: la ruta
+// del archivo y la configuración por defecto que debe usarse en su lugar.
 export class ConfigParseError extends Error {
-  readonly path?: string
-  constructor(message: string, path?: string) {
+  filePath: string
+  defaultConfig: unknown
+  constructor(message: string, filePath: string, defaultConfig: unknown) {
     super(message)
     this.name = 'ConfigParseError'
-    this.path = path
+    this.filePath = filePath
+    this.defaultConfig = defaultConfig
   }
 }
 export type FrontmatterData = Record<string, unknown>
@@ -1160,8 +1173,15 @@ const [_getUninstallPluginOp, setUninstallPluginOpFn_] = makeSetter(
 const [_getUpdatePluginOp, setUpdatePluginOpFn_] = makeSetter(
   async (..._args: unknown[]): Promise<unknown> => null,
 )
-const [_getWriteFileSync, setWriteFileSyncFn_] = makeSetter(
-  (p: string, d: string): void => getFsImplementation().writeFileSync(p, d),
+// Con las opciones de `fs.writeFileSync` (incluida `flush`), como la función
+// real de `slowOperations.js`; el respaldo sin anfitrión las ignora.
+type WriteFileSyncFn = (
+  path: string,
+  data: string,
+  options?: { encoding?: BufferEncoding; mode?: number; flag?: string; flush?: boolean },
+) => void
+const [_getWriteFileSync, setWriteFileSyncFn_] = makeSetter<WriteFileSyncFn>(
+  (p, d) => getFsImplementation().writeFileSync(p, d),
 )
 export function getSystemDirectories(): string[] {
   return _getGetSystemDirectories()()
@@ -1200,8 +1220,8 @@ export function uninstallPluginOp(...args: unknown[]): Promise<unknown> {
 export function updatePluginOp(...args: unknown[]): Promise<unknown> {
   return _getUpdatePluginOp()(...args)
 }
-export function writeFileSync(p: string, d: string): void {
-  _getWriteFileSync()(p, d)
+export function writeFileSync(...args: Parameters<WriteFileSyncFn>): void {
+  _getWriteFileSync()(...args)
 }
 export const setGetSystemDirectoriesFn = setGetSystemDirectoriesFn_
 export const setFindCanonicalGitRootFn = setFindCanonicalGitRootFn_

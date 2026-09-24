@@ -1,0 +1,11 @@
+Give the plugin JSON and write bindings real arity
+
+config/plugin/_deps.ts typed jsonStringify with one argument,
+writeFileSync with two and ConfigParseError with (message, path),
+while the marketplace manager and plugin loader call them as the
+source does: jsonStringify(value, null, 2), writeFileSync with
+{ encoding, flush }, and ConfigParseError(message, filePath,
+defaultConfig). The installer also dropped the extra arguments, so
+cache files were written unformatted and without flush. The bindings
+now carry the local-observability signatures and the installer passes
+them through.

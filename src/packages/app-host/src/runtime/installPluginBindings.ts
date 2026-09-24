@@ -435,10 +435,10 @@ export function installPluginBindings(): void {
     const { withDiagnosticsTiming } = require('@thyrox/local-observability/logging')
     return withDiagnosticsTiming(event, fn) as Promise<T>
   })
-  setWriteFileSyncFn((path: string, data: string) => {
+  setWriteFileSyncFn((path, data, options) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { writeFileSync } = require('@thyrox/local-observability/slowOperations.js')
-    writeFileSync(path, data)
+    writeFileSync(path, data, options)
   })
   setWriteToStdoutFn((data: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -520,8 +520,8 @@ export function installPluginBindings(): void {
   setWhichFn(cmd => which(cmd))
 
   // --- operaciones lentas
-  setJsonStringifyFn(v => jsonStringify(v))
-  setJsonParseFn(t => jsonParse(t) as unknown)
+  setJsonStringifyFn(jsonStringify)
+  setJsonParseFn(jsonParse)
   setCloneFn(v => clone(v))
 
   // --- telemetría
