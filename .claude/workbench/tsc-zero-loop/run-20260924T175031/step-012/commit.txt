@@ -1,0 +1,10 @@
+Type the install-github-app command state
+
+Twelfth step of the agent-compiler loop, judged by tsc with the net
+policy. types.ts was an auto-generated stub declaring State, Warning
+and Workflow as unknown. The shape is derived from what the command
+writes: INITIAL_STATE, each setState, the warnings.push calls and the
+literals in setupGitHubActions.
+
+The same commit keeps the inventory of the remaining unknown stubs
+(.claude/cache/stubs-unknown.txt) that orders the next steps.
