@@ -1,0 +1,15 @@
+Generate the SDK core types from their schemas
+
+coreTypes.generated.ts said it is generated from the Zod schemas in
+coreSchemas.ts, but it was a hand stub whose shapes had drifted from
+them: SDKUserMessageReplay was an alias of SDKUserMessage, without
+isReplay or session_id, and SDKRateLimitInfo had no status. Messages
+built to the schema (StdoutMessage) then did not fit the SDK types.
+
+bin/generateCoreTypes.ts now writes the file as z.infer of each schema
+for the file's existing public surface, with --check to catch hand
+edits. The three types without a schema move to coreTypes.manual.ts,
+declared, and are re-exported so the surface does not change.
+
+tsc: 2471 -> 2449 (accepted-net, 7 targets -> 0; 16 revealed that the
+loose stub was hiding, in the ledger).

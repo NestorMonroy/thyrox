@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2471, "total_final": 2449, "tsc_runs": 1, "accepted": ["agent:generated-core-types"], "files_kept": ["src/packages/headless-sdk/src/coreTypes.generated.ts"], "outcomes": {"agent:generated-core-types": "accepted-net"}}
