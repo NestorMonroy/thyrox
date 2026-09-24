@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3242, "total_final": 3232, "tsc_runs": 1, "accepted": ["agent:config-secure-storage"], "files_kept": ["src/packages/config/plugin/_deps.ts"], "outcomes": {"agent:config-secure-storage": "accepted-net"}}

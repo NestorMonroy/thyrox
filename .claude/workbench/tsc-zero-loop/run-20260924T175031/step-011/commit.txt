@@ -1,0 +1,6 @@
+Type the secure storage seam in config/plugin
+
+Eleventh step of the agent-compiler loop, accepted-net 3242 -> 3232.
+The getSecureStorage seam in config/plugin/_deps returned unknown, so
+mcpbHandler and pluginOptionsStorage could not read pluginSecrets. It
+now returns the storage package's SecureStorage.

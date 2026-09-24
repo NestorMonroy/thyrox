@@ -64,6 +64,7 @@
  *   final para el veredicto.
  */
 
+import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
 import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
@@ -1144,7 +1145,7 @@ const [_getWithDiagnosticsTiming, setWithDiagnosticsTimingFn_] = makeSetter(
   async <T>(_event: string, fn: () => Promise<T>): Promise<T> => fn(),
 )
 const [_getGetSecureStorage, setGetSecureStorageFn_] = makeSetter(
-  (): unknown => null,
+  (): SecureStorage | null => null,
 )
 const [_getUninstallPluginOp, setUninstallPluginOpFn_] = makeSetter(
   async (..._args: unknown[]): Promise<unknown> => null,
@@ -1182,8 +1183,9 @@ export function withDiagnosticsTiming<T>(
 ): Promise<T> {
   return _getWithDiagnosticsTiming()(event, fn)
 }
-export function getSecureStorage(): unknown {
-  return _getGetSecureStorage()()
+export function getSecureStorage(): SecureStorage {
+  // La costura empieza vacía; el arranque inyecta el almacenamiento real.
+  return _getGetSecureStorage()() as SecureStorage
 }
 export function uninstallPluginOp(...args: unknown[]): Promise<unknown> {
   return _getUninstallPluginOp()(...args)
