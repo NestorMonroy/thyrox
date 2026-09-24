@@ -1,0 +1,22 @@
+Add the judgment proposer and net policy to the tsc loop
+
+The tsc zero loop could only judge mechanical proposals: in four runs
+the compiler's code fixes got 2 of 55 accepted, none of them a root
+cause. Two pieces were missing for the agent-compiler loop.
+
+agent_proposal turns an edit the agent made in the tree into a loop
+candidate (one minimal edit per file, its HEAD base, and the targets
+the agent names with a pattern over the before log) and puts the
+file back, so the step applies it and tsc judges it, not the agent.
+Continuation lines of chained messages are skipped; a real log has
+them and the first version refused on them.
+
+The net policy (--net) keeps a lone proposal whose targets fall and
+whose total falls, and records what it reveals instead of reverting
+it: typing a contract uncovers errors tsc could not see before, and
+the strict policy reverted exactly those root-cause fixes. The
+scheduler counts accepted-net for the proposer.
+
+Annulment: dropping the total condition fails exactly its case;
+dropping the net branch fails the four that need it; not restoring
+the base fails its one case. The root baseline (3745) is recorded.
