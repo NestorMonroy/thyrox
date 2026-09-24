@@ -118,7 +118,10 @@ export type UserMessage = Message & {
     [key: string]: unknown
   }
 }
-export type NormalizedUserMessage = UserMessage
+/** Un mensaje de usuario tras `normalizeMessages`: un bloque, en arreglo. */
+export type NormalizedUserMessage = UserMessage & {
+  message: UserMessage['message'] & { content: ContentItem[] }
+}
 export type RequestStartEvent = { type: string; [key: string]: unknown }
 export type StreamEvent = { type: string; [key: string]: unknown }
 
@@ -150,7 +153,10 @@ export type MessageOrigin = string
 export type CompactMetadata = Record<string, unknown>
 export type SystemAPIErrorMessage = Message & { type: 'system' }
 export type SystemFileSnapshotMessage = Message & { type: 'system' }
-export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage
+/** Un mensaje del asistente tras `normalizeMessages`: un bloque, en arreglo. */
+export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage & {
+  message: AssistantMessage['message'] & { content: ContentItem[] }
+}
 /**
  * Un mensaje tras `normalizeMessages`: un bloque por mensaje, así que su
  * `content`, cuando hay `message`, es SIEMPRE un arreglo de bloques. El alias
@@ -216,9 +222,10 @@ export type GroupedToolUseMessage = Message & {
   displayMessage: NormalizedAssistantMessage | NormalizedUserMessage
 }
 
+// Lo que la vista pinta sale de `applyGrouping` sobre mensajes YA normalizados.
 export type RenderableMessage =
-  | AssistantMessage
-  | UserMessage
+  | NormalizedAssistantMessage
+  | NormalizedUserMessage
   | (Message & { type: 'system' })
   | (Message & { type: 'attachment'; attachment: { type: string; memories?: { path: string; content: string; mtimeMs: number }[]; [key: string]: unknown } })
   | (Message & { type: 'progress' })
@@ -226,8 +233,8 @@ export type RenderableMessage =
   | CollapsedReadSearchGroup
 
 export type CollapsibleMessage =
-  | AssistantMessage
-  | UserMessage
+  | NormalizedAssistantMessage
+  | NormalizedUserMessage
   | GroupedToolUseMessage
 
 export type CollapsedReadSearchGroup = {
