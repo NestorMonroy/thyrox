@@ -2006,3 +2006,43 @@ export function getMessagesAfterCompactBoundary<T extends AnyMessage>(messages: 
   for (let i = messages.length - 1; i >= 0; i--) if (isCompactBoundary(messages[i])) return messages.slice(i)
   return messages
 }
+
+/**
+ * Un bloque que lleva firma del modelo: `redacted_thinking`, o `thinking` con
+ * `signature` no vacía (`IUt` en 2.1.275). Las firmas están atadas al modelo
+ * que las emitió; reenviarlas a otro modelo da 400.
+ */
+function isSignedBlock(block: { type?: unknown; signature?: unknown }): boolean {
+  if (block.type === 'redacted_thinking') return true
+  return block.type === 'thinking' && typeof block.signature === 'string' && block.signature !== ''
+}
+
+/**
+ * Retira los bloques firmados de los mensajes del asistente (`OLs` de 2.1.275
+ * con un predicado que acepta todos). Si nada cambia devuelve el MISMO
+ * arreglo, para que quien compara por referencia no vea un cambio falso.
+ *
+ * El tipo del elemento queda libre: `login.tsx` lo pasa a un `setMessages`
+ * sobre `unknown[]`. DIVERGENCIA DECLARADA: 2.1.275 también ofrece la forma
+ * que sólo limpia los mensajes de un modelo dado (`ZFn`); los consumidores de
+ * este árbol llaman con los mensajes solos.
+ */
+export function stripSignatureBlocks<M>(messages: M[]): M[] {
+  let changed = false
+  const out = messages.map(message => {
+    const candidate = message as unknown as AssistantMessage
+    if (candidate?.type !== 'assistant') return message
+    const content = candidate.message.content
+    if (!Array.isArray(content)) return message
+    const kept = (content as Array<{ type?: unknown; signature?: unknown }>).filter(b => !isSignedBlock(b))
+    if (kept.length === content.length) return message
+    changed = true
+    return { ...candidate, message: { ...candidate.message, content: kept } } as unknown as M
+  })
+  return changed ? out : messages
+}
+
+/** El mensaje de sistema que deja un comando local (`Ume` de 2.1.275). */
+export function isSystemLocalCommandMessage(message: Message): message is SystemLocalCommandMessage {
+  return message.type === 'system' && (message as { subtype?: unknown }).subtype === 'local_command'
+}

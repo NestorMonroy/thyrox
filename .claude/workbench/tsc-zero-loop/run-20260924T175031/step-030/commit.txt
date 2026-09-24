@@ -1,0 +1,13 @@
+Port stripSignatureBlocks and the local command guard
+
+Thirtieth step of the agent-compiler loop, accepted-net 2969 -> 2967,
+retrying step 29 with its recorded lesson. stripSignatureBlocks is
+OLs of 2.1.275 with an accept-all predicate over IUt (signed thinking
+and redacted_thinking); it returns the same array when nothing changes.
+Its element type is left free because login.tsx hands it to a
+setMessages over unknown[]. isSystemLocalCommandMessage is Ume, read
+from chunk-1qj0na9r.js (the chunk-xbd48fav.js Ume is unrelated). No
+duplicate import this time.
+
+Annulment controls: dropping the redacted branch, the empty-signature
+check or the same-array return each fails exactly its test.

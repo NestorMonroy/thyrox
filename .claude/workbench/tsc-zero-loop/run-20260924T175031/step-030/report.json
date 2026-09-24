@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2969, "total_final": 2967, "tsc_runs": 1, "accepted": ["agent:signature-strip-v2"], "files_kept": ["src/packages/agent/messages.ts"], "outcomes": {"agent:signature-strip-v2": "accepted-net"}}
