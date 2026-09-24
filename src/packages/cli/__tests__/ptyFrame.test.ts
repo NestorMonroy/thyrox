@@ -137,7 +137,9 @@ describe('createFrameDecoder', () => {
     c.feed(cabecera)
     expect(c.frames).toEqual([])
     expect(c.errors).toHaveLength(1)
-    expect(c.errors[0]).toContain('demasiado grande')
+    // El texto es el de la referencia (`frame too large`): el contrato portado lo
+    // fija `cli/src/__tests__/ptyFrame.test.ts`, copiado de ella.
+    expect(c.errors[0]).toContain('frame too large')
   })
 
   test('ACEPTA un cuerpo de tamano exactamente el tope', () => {
