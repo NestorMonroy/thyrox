@@ -119,7 +119,7 @@ export function createFrameDecoder(
       const len = pending.readUInt32BE(0)
       if (len > FRAME_SIZE_CAP) {
         stopped = true
-        onError(`trama demasiado grande (${len} > ${FRAME_SIZE_CAP})`)
+        onError(`frame too large (${len} > ${FRAME_SIZE_CAP})`)
         return
       }
       const total = FRAME_HEADER_BYTES + len
@@ -141,13 +141,13 @@ export function createFrameDecoder(
         } catch {
           // Cubre también el cuerpo de longitud 0: `JSON.parse('')` lanza.
           stopped = true
-          onError('json de control mal formado')
+          onError('bad ctrl json')
           return
         }
         onFrame({ kind: CTRL_TAG, ctrl: parsed })
       } else {
         stopped = true
-        onError(`etiqueta de trama desconocida: ${tag}`)
+        onError(`unknown frame kind ${tag}`)
         return
       }
     }

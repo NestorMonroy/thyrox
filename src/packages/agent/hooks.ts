@@ -22,6 +22,8 @@ import { getHooksConfigFromSnapshot, shouldDisableAllHooksIncludingManaged } fro
 import { createAttachmentMessage } from './internal/queryRuntime.js'
 import { getSessionId as runtimeSessionId, getCwdState } from './internal/sessionRuntime.js'
 import { execHttpHook } from './hooks/execHttpHook.js'
+import type { AgentMessage } from './internalTypes.js'
+import type { PermissionUpdate } from '@thyrox/permission/permissionTypes.js'
 export interface HookBlockingError {
   blockingError: string
   command?: string
@@ -147,21 +149,42 @@ export type HookOutsideReplResult = {
   cancelled?: boolean
 }
 
-/** El resultado de UN hook dentro del bucle, antes de agregarse. */
+/** El adjunto que un hook deja en la conversación (`hook_success`, `hook_cancelled`…). */
+export type HookAttachmentMessage = AgentMessage & {
+  type: 'attachment'
+  attachment: { type: string; [key: string]: unknown }
+}
+
+/**
+ * La decisión de un hook `PermissionRequest` (`hookSpecificOutput.decision`):
+ * los llamadores leen `behavior` y, según él, `updatedInput`/`updatedPermissions`
+ * o `message`/`interrupt`.
+ */
+export type PermissionRequestHookDecision =
+  | { behavior: 'allow'; updatedInput?: Record<string, unknown>; updatedPermissions?: PermissionUpdate[] }
+  | { behavior: 'deny'; message?: string; interrupt?: boolean }
+
+/**
+ * El resultado de UN hook dentro del bucle, antes de agregarse.
+ *
+ * Sin firma de índice, a propósito: con `[key: string]: unknown` el `Omit` de
+ * `AggregatedHookResult` colapsa cada campo conocido a `unknown`, y los
+ * llamadores reciben `{}` donde leen `message.attachment` o `behavior`.
+ */
 export type HookResult = {
   outcome: 'success' | 'blocking' | 'non_blocking_error' | 'cancelled'
-  message?: unknown
+  message?: HookAttachmentMessage
   blockingError?: HookBlockingError
   preventContinuation?: boolean
   stopReason?: string
-  permissionBehavior?: 'allow' | 'deny' | 'ask' | 'passthrough'
+  permissionBehavior?: 'allow' | 'deny' | 'ask' | 'passthrough' | 'defer'
   hookPermissionDecisionReason?: string
+  hookSource?: string
   additionalContext?: string
   updatedInput?: Record<string, unknown>
   updatedMCPToolOutput?: unknown
-  permissionRequestResult?: unknown
+  permissionRequestResult?: PermissionRequestHookDecision
   retry?: boolean
-  [key: string]: unknown
 }
 
 /** Lo que cada iteración de `executeHooks` entrega al bucle. */
@@ -367,9 +390,9 @@ export function hasBlockingResult(results: HookOutsideReplResult[]): boolean {
   return results.some((r) => r.blocked)
 }
 
-function attachment(fields: { type: string; [key: string]: unknown }): unknown {
+function attachment(fields: { type: string; [key: string]: unknown }): HookAttachmentMessage {
   try {
-    return createAttachmentMessage(fields)
+    return createAttachmentMessage(fields) as HookAttachmentMessage
   } catch {
     // Sin host bindings instalados (un test, un proceso sin REPL) la fábrica
     // lanza: se devuelve la misma forma que su respaldo.
@@ -882,7 +905,7 @@ function commandSetting(key: 'statusLine' | 'fileSuggestion'): CommandSetting | 
  * comando, si falla o si se aborta.
  */
 export async function executeStatusLineCommand(
-  statusInput: Record<string, unknown>,
+  statusInput: unknown,
   signal?: AbortSignal,
   timeoutMs: number = DEFAULT_HOOK_TIMEOUT_MS,
   _logResult = false,
@@ -898,7 +921,7 @@ export async function executeStatusLineCommand(
 
 /** La sugerencia de archivos (`F4n`): una ruta por línea de stdout. */
 export async function executeFileSuggestionCommand(
-  input: Record<string, unknown>,
+  input: unknown,
   signal?: AbortSignal,
   timeoutMs: number = FILE_SUGGESTION_TIMEOUT_MS,
 ): Promise<string[]> {

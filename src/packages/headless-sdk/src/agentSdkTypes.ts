@@ -15,6 +15,7 @@
  * SDK builders who need control protocol types should import from
  * sdk/controlTypes.ts directly.
  */
+import type { EXIT_REASONS } from './coreTypes.js'
 
 import type {
   CallToolResult,
@@ -458,4 +459,4 @@ export async function connectRemoteControl(
   throw new Error('not implemented')
 }
 export type HookEvent = unknown;
-export type ExitReason = unknown;
+export type ExitReason = (typeof EXIT_REASONS)[number];
