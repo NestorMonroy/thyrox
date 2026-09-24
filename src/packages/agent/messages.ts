@@ -1854,3 +1854,155 @@ export function getToolUseIDs(message: AnyMessage): string[] {
       return []
   }
 }
+
+// ---------------------------------------------------------------------------
+// Filtros de reanudación — porte de 2.1.275 (2026-09-24), `chunk-q2gh92k2.js`:
+// `blr`, `_lr` (con `nEt`, `ylr`, `ILs` y la fusión `kde`) y `Oi`/`m6e`.
+// pendiente: la rama de `blr` que conserva un thinking seguido de un
+// mensaje `resumedFromIncompleteThinking`, y la telemetría de cada filtro.
+// ---------------------------------------------------------------------------
+
+function isThinkingBlock(block: AnyBlock): boolean {
+  return block.type === 'thinking' || block.type === 'redacted_thinking'
+}
+
+// `Gk`, acotado a lo que este árbol produce: mensajes que no cuentan como
+// cierre de la conversación.
+function isTrailingNoise(message: AnyMessage): boolean {
+  return message.type === 'progress' || message.type === 'system' ||
+    (message.type === 'attachment' && message.attachment?.type === 'thinking_drop')
+}
+
+/** `ILs`: los `message.id` con algún bloque que no es thinking. */
+function messageIdsWithNonThinking(messages: AnyMessage[]): Set<string> {
+  const ids = new Set<string>()
+  for (const m of messages) {
+    if (m.type !== 'assistant' || !m.message.id || !Array.isArray(m.message.content)) continue
+    if (m.message.content.some((b: AnyBlock) => !isThinkingBlock(b))) ids.add(m.message.id)
+  }
+  return ids
+}
+
+/**
+ * `blr`: quita los mensajes de asistente que sólo traen thinking cuando
+ * ningún otro fragmento del mismo `message.id` trae contenido. Con
+ * `preserveTrailing` conserva el último mensaje significativo.
+ */
+export function filterOrphanedThinkingOnlyMessages<T extends AnyMessage>(messages: T[], preserveTrailing = false): T[] {
+  let lastMeaningful = messages.length - 1
+  while (lastMeaningful >= 0 && isTrailingNoise(messages[lastMeaningful]!)) lastMeaningful--
+  let withContent: Set<string> | undefined
+  let out: T[] | undefined
+  for (let i = 0; i < messages.length; i++) {
+    const m = messages[i]!
+    const content = m.type === 'assistant' ? m.message.content : undefined
+    const orphan =
+      m.type === 'assistant' &&
+      Array.isArray(content) &&
+      content.length > 0 &&
+      content.every(isThinkingBlock) &&
+      !(m.message.id !== undefined && (withContent ??= messageIdsWithNonThinking(messages)).has(m.message.id)) &&
+      !(preserveTrailing && i === lastMeaningful)
+    if (!orphan) {
+      out?.push(m)
+      continue
+    }
+    out ??= messages.slice(0, i)
+  }
+  return out ?? messages
+}
+
+/** `nEt`: thinking opcional al inicio y luego sólo texto vacío o el marcador. */
+function isWhitespaceOnlyContent(content: AnyBlock[]): boolean {
+  let sawText = false
+  for (const block of content) {
+    if (!sawText && isThinkingBlock(block)) continue
+    if (block.type !== 'text') return false
+    const text = block.text?.trim()
+    if (text !== undefined && text !== '' && text !== NO_CONTENT_MESSAGE) return false
+    sawText = true
+  }
+  return sawText
+}
+
+/** `ylr`: los `message.id` con algún bloque con contenido real. */
+function messageIdsWithContent(messages: AnyMessage[]): Set<string> {
+  const ids = new Set<string>()
+  for (const m of messages) {
+    if (m.type !== 'assistant' || !m.message.id || !Array.isArray(m.message.content)) continue
+    const hasContent = m.message.content.some((b: AnyBlock) => {
+      if (isThinkingBlock(b)) return false
+      if (b.type !== 'text') return true
+      const text = (b.text ?? '').trim()
+      return text !== '' && text !== NO_CONTENT_MESSAGE
+    })
+    if (hasContent) ids.add(m.message.id)
+  }
+  return ids
+}
+
+/** `kde`: dos mensajes de usuario seguidos se funden, resultados primero. */
+function mergeUserPair(a: AnyMessage, b: AnyMessage): AnyMessage {
+  const blocks = (c: unknown): AnyBlock[] => (typeof c === 'string' ? [{ type: 'text', text: c }] : (c as AnyBlock[]))
+  const left = blocks(a.message.content)
+  const right = blocks(b.message.content)
+  const tail = left.at(-1)
+  const head = right[0]
+  const joined =
+    tail?.type === 'text' && head?.type === 'text'
+      ? [...left.slice(0, -1), { ...tail, text: `${tail.text}\n` }, ...right]
+      : [...left, ...right]
+  const content = [...joined.filter(x => x.type === 'tool_result'), ...joined.filter(x => x.type !== 'tool_result')]
+  return {
+    ...a,
+    ...((a.ephemeral || b.ephemeral) && { ephemeral: true }),
+    uuid: a.isMeta ? b.uuid : a.uuid,
+    message: { ...a.message, content },
+  }
+}
+
+/**
+ * `_lr`: quita los mensajes de asistente sin más que espacios (o el marcador
+ * de sin contenido), salvo que otro fragmento del mismo `message.id` traiga
+ * contenido, y funde los mensajes de usuario que quedan contiguos.
+ */
+export function filterWhitespaceOnlyAssistantMessages<T extends AnyMessage>(
+  messages: T[],
+  { mergeAdjacentUsers = true }: { mergeAdjacentUsers?: boolean } = {},
+): T[] {
+  const any = messages.some(
+    m => m.type === 'assistant' && Array.isArray(m.message.content) && m.message.content.length > 0 && isWhitespaceOnlyContent(m.message.content),
+  )
+  if (!any) return messages
+  const withContent = messageIdsWithContent(messages)
+  const kept = messages.filter(m => {
+    if (m.type !== 'assistant' || withContent.has(m.message.id)) return true
+    const content = m.message.content
+    if (!Array.isArray(content) || content.length === 0) return true
+    return !isWhitespaceOnlyContent(content)
+  })
+  if (!mergeAdjacentUsers) return kept
+  const merged: T[] = []
+  for (const m of kept) {
+    const prev = merged.at(-1)
+    if (m.type === 'user' && prev?.type === 'user' && !m.interruptedByShutdown && !prev.interruptedByShutdown)
+      merged[merged.length - 1] = mergeUserPair(prev, m) as T
+    else merged.push(m)
+  }
+  return merged
+}
+
+/** `Ra`. */
+function isCompactBoundary(message: AnyMessage | undefined): boolean {
+  return message?.type === 'system' && message.subtype === 'compact_boundary'
+}
+
+/**
+ * `Oi`: la vista desde el último `compact_boundary`, inclusive. El segundo
+ * argumento (`includeSnipped`) se acepta por la firma de los llamadores;
+ * 2.1.275 ya no lo usa.
+ */
+export function getMessagesAfterCompactBoundary<T extends AnyMessage>(messages: T[], _options?: { includeSnipped?: boolean }): T[] {
+  for (let i = messages.length - 1; i >= 0; i--) if (isCompactBoundary(messages[i])) return messages.slice(i)
+  return messages
+}
