@@ -1,0 +1,1 @@
+(stripSignatureBlocks|isSystemLocalCommandMessage|messages\.js.*(stripSignatureBlocks|isSystemLocalCommandMessage))

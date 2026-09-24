@@ -1,0 +1,7 @@
+Record the rejected signature strip step of the tsc loop
+
+Twenty-ninth step: stripSignatureBlocks and isSystemLocalCommandMessage
+ported from 2.1.275. Targets fell 2 -> 0 but tsc rejected it for a
+new diagnostic in messages.ts: a duplicated SystemLocalCommandMessage
+import. It also exposed that login.tsx passes the function to a
+setMessages over unknown[]. Lesson recorded; the next step fixes both.
