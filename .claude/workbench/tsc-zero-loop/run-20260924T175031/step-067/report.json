@@ -1,1 +1,0 @@
-{"status": "progress", "total_before": 2431, "total_final": 2419, "tsc_runs": 1, "accepted": ["agent:agent-message-universe"], "files_kept": ["src/packages/agent/QueryEngine.ts", "src/packages/agent/internalTypes.ts"], "outcomes": {"agent:agent-message-universe": "accepted-net"}}

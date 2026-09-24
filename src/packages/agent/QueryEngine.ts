@@ -42,15 +42,7 @@ import {
   fileHistoryEnabled,
   fileHistoryMakeSnapshot,
 } from './fileHistory.js'
-import type { AgentToolUseContext as ToolUseContext } from './internalTypes.js'
-import type { Message, SystemCompactBoundaryMessage } from './messageShapes.js'
-import type {
-  SDKCompactBoundaryMessage,
-  SDKMessage,
-  SDKPermissionDenial,
-  SDKStatus,
-  SDKUserMessageReplay,
-} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { AgentMessage as Message, AgentToolUseContext as ToolUseContext } from './internalTypes.js'
 import {
   cloneFileStateCache,
   type FileStateCache,
@@ -98,6 +90,11 @@ import {
 import { readEnv } from '@thyrox/config/env'
 
 type PermissionMode = string
+type SDKCompactBoundaryMessage = { type: string; [key: string]: unknown }
+type SDKMessage = { type: string; [key: string]: unknown }
+type SDKPermissionDenial = { [key: string]: unknown }
+type SDKStatus = string
+type SDKUserMessageReplay = { type: string; [key: string]: unknown }
 type NonNullableUsage = { [key: string]: unknown }
 type CanUseToolFn = (...args: unknown[]) => Promise<{
   behavior: 'allow' | 'deny' | 'ask'
@@ -120,6 +117,8 @@ type AppState = {
 }
 type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
 type AgentDefinition = { [key: string]: unknown }
+type CompactMetadata = { [key: string]: unknown }
+type SystemCompactBoundaryMessage = Message & { compactMetadata: CompactMetadata }
 type OrphanedPermission = { [key: string]: unknown }
 type AttributionState = { [key: string]: unknown }
 type ProcessUserInputContext = {

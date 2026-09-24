@@ -8,27 +8,27 @@
  * estructural mínimo — quien lo consuma en la capa de integración lo
  * satisface por tipado estructural de TypeScript, sin cast explícito.
  *
- * El archivo era AUTOCONTENIDO; desde que los alias de mensaje apuntan a
- * `messageShapes.ts` importa ese unico modulo hermano (ver abajo).
+ * El archivo es AUTOCONTENIDO: no importa nada externo. Se porta completo.
  */
-
-import type { AssistantMessage, Message } from './messageShapes.js'
 
 // ── Tipos de mensaje ────────────────────────────────────────────────────────
 
-/**
- * DIVERGENCIA DECLARADA: la fuente declara aqui una forma minima propia
- * (`type: string`, `message.content: unknown[]`) y compila con
- * `strict: false`. Con `strict: true` esa copia es un segundo universo de
- * mensajes: `QueryEngine` y los helpers del bucle hablan `Message`
- * (`messageShapes.ts`), y cada paso por una frontera entre los dos exige un
- * cast. La razon del archivo —no importar tipos de `app-compat` (V7 §8)— no
- * cubre `messageShapes.ts`, que vive en este mismo paquete. Se alias a la
- * jerarquia canonica; el nombre se conserva para los consumidores.
- */
-export type AgentMessage = Message
+/** Forma mínima de mensaje que usan los stop hooks y el query loop. */
+export type AgentMessage = {
+  type: string
+  uuid?: string
+  isApiErrorMessage?: boolean
+  message?: {
+    content: unknown[]
+    usage?: { [key: string]: number }
+  }
+  [key: string]: unknown
+}
 
-export type AgentAssistantMessage = AssistantMessage
+export type AgentAssistantMessage = AgentMessage & {
+  type: 'assistant'
+  message: { content: unknown[]; usage?: { [key: string]: number } }
+}
 
 export type AgentStreamEvent = {
   type: string
