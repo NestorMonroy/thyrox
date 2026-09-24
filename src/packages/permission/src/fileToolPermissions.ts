@@ -6,7 +6,7 @@
  * Reimplementación del contrato de 2.1.275 (`chunk-9apg35nm.js`), no copia:
  *
  *   `checkReadPermissionForTool` ≙ `_w` · `checkWritePermissionForTool` ≙ `Wy`
- *   · `checkNetworkPathRead` ≙ `k_n` · `denyOutsideWorkingDirectories` ≙ `Bs`
+ *   · `checkNetworkPathRead` ≙ `k_n` (2.1.281: `ULn`) · `denyOutsideWorkingDirectories` ≙ `Bs`
  *   · `generateSuggestions` ≙ `gyt` · `safetyCheckFields` ≙ `Au`
  *   · `getClaudeSkillScope` ≙ `ku` · `isClaudeTreeRule` ≙ `zu`
  *   · `ruleCrossesNestedClaudeDir` ≙ `Nu` · `claudeDirDepth` ≙ `Es`
@@ -49,8 +49,10 @@ import {
 import {
   checkPathSafetyForAutoEdit,
   comparableSegment,
+  automountRoot,
   isAutomountMapRoot,
   isInTrustedNetworkDirectory,
+  isKernelResolvedPath,
   isLocalWslUncPath,
   isSuspiciousWindowsPath,
   isUncPath,
@@ -378,11 +380,19 @@ export function checkNetworkPathRead(
   const path = pathOf(tool, input)
   if (path === undefined) return null
   const trusted = context.trustedNetworkDirectories
-  const automount = (p: string) => isAutomountMapRoot(p) && !isInTrustedNetworkDirectory(p, trusted)
+  const automount = (p: string) =>
+    (automountRoot(p) !== null || isAutomountMapRoot(p)) && !isInTrustedNetworkDirectory(p, trusted)
   const automountMessage = (p: string) =>
     `Claude requested permissions to read from ${p}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`
   const AUTOMOUNT_REASON = 'Automount -hosts path detected (defense-in-depth check)'
+  const kernelResolved = (p: string) => isKernelResolvedPath(p) && !isInTrustedNetworkDirectory(p, trusted)
+  const kernelResolvedTail =
+    'which is under /.vol, /.file, /.nofollow or /.resolve (paths the macOS kernel redirects) and could reach a network mount, triggering a DNS lookup and mount to a remote host.'
+  const KERNEL_RESOLVED_REASON = 'Kernel-resolved path prefix (/.vol etc.) detected (defense-in-depth check)'
+  const kernelResolvedMessage = `Claude requested permissions to read from ${path}, ${kernelResolvedTail}`
+  // La superficie `/Network` (`XT`) es constante `false` en la build de Linux.
   if (automount(path)) return ask(automountMessage(path), AUTOMOUNT_REASON)
+  if (kernelResolved(path)) return ask(kernelResolvedMessage, KERNEL_RESOLVED_REASON)
   const paths = pathsToCheck ?? getPathsForPermissionCheck(path)
   for (const p of paths) {
     if (isUncPath(p) && !isLocalWslUncPath(p) && !isInTrustedNetworkDirectory(p, trusted)) {
@@ -392,6 +402,7 @@ export function checkNetworkPathRead(
       )
     }
     if (automount(p)) return ask(automountMessage(path), AUTOMOUNT_REASON)
+    if (kernelResolved(p)) return ask(kernelResolvedMessage, KERNEL_RESOLVED_REASON)
   }
   if (tool.name === GLOB_TOOL_NAME) {
     const pattern = input.pattern
@@ -405,6 +416,12 @@ export function checkNetworkPathRead(
       return ask(
         `Claude requested permissions to glob ${pattern}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`,
         'Automount -hosts glob pattern detected (defense-in-depth check)',
+      )
+    }
+    if (typeof pattern === 'string' && kernelResolved(pattern)) {
+      return ask(
+        `Claude requested permissions to glob ${pattern}, ${kernelResolvedTail}`,
+        'Kernel-resolved path prefix (/.vol etc.) glob pattern detected (defense-in-depth check)',
       )
     }
   }

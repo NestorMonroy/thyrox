@@ -268,6 +268,30 @@ export function automountRoot(path: string): string | null {
   return value
 }
 
+const KERNEL_RESOLVED_ANYWHERE = /\/\.(?:vol|file|nofollow|resolve)(?:\/|$)/i
+const KERNEL_RESOLVED_SEGMENT = /^\.(?:vol|file|nofollow|resolve)$/i
+
+/**
+ * ¿Empieza la ruta, ya normalizada, por `/.vol`, `/.file`, `/.nofollow` o
+ * `/.resolve`? El núcleo de macOS redirige esos prefijos a otro nodo, que
+ * puede ser un montaje de red (≙ `UH`, 2.1.281).
+ */
+export function isKernelResolvedPath(path: string): boolean {
+  if (!KERNEL_RESOLVED_ANYWHERE.test(path)) return false
+  if (!path.startsWith('/')) return false
+  const stack: string[] = []
+  for (const segment of path.split('/')) {
+    if (segment === '' || segment === '.') continue
+    if (segment === '..') {
+      stack.pop()
+      continue
+    }
+    stack.push(segment)
+    if (stack.length === 1 && KERNEL_RESOLVED_SEGMENT.test(segment)) return true
+  }
+  return false
+}
+
 /** `/net` mismo, el mapa de automontaje (≙ `Xh`). */
 export function isAutomountMapRoot(path: string): boolean {
   if (!path.startsWith('/')) return false
