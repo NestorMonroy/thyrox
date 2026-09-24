@@ -1,0 +1,7 @@
+Record the rejected QueryEngine SDK-type step
+
+Swapping QueryEngine's local SDKMessage copies for the canonical types
+fixed 20 of 22 targets and revealed 30 TS2322 inside QueryEngine: its
+yields rest on other local stubs (AppState, Tools, SystemPrompt, usage
+as a loose record). The net verifier reverted it. The reflection says
+why; the placeholder typing is measured on its own next.
