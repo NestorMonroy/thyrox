@@ -43,7 +43,12 @@ export type MessageContent = string | ContentBlockParam[] | ContentBlock[]
  */
 export type TypedMessageContent = ContentItem[]
 
-export type Message = {
+/**
+ * Los campos comunes a todo mensaje. `Message` es la UNIÓN de sus variantes,
+ * como en la fuente: así `message.type === 'assistant'` estrecha a la variante
+ * que lleva `message` requerido, en vez de dejarlo opcional para todas.
+ */
+export type MessageBase = {
   type: MessageType
   uuid: UUID
   isMeta?: boolean
@@ -74,7 +79,7 @@ export type Message = {
  * SIEMPRE lleva `message`, es la respuesta del API. Se estrecha a requerido.
  * Mismo desenlace que TASK-THYROX-0228 ya fijo para `AppStateLike`.
  */
-export type AssistantMessage = Message & {
+export type AssistantMessage = MessageBase & {
   type: 'assistant'
   message: {
     role?: string
@@ -95,10 +100,17 @@ export type AssistantMessage = Message & {
  * (`repl/src/uiHelpers/groupToolUses.ts`,
  * `repl/src/processUserInput/processUserInput.ts`).
  */
-export type AttachmentMessage<_T = unknown> = Message & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
-export type ProgressMessage<T = unknown> = Message & { type: 'progress'; data: T }
-export type SystemLocalCommandMessage = Message & { type: 'system' }
-export type SystemMessage = Message & { type: 'system' }
+export type Message =
+  | UserMessage
+  | AssistantMessage
+  | AttachmentMessage
+  | ProgressMessage
+  | SystemMessage
+  | (MessageBase & { type: 'grouped_tool_use' | 'collapsed_read_search' })
+export type AttachmentMessage<_T = unknown> = MessageBase & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
+export type ProgressMessage<T = unknown> = MessageBase & { type: 'progress'; data: T }
+export type SystemLocalCommandMessage = MessageBase & { type: 'system' }
+export type SystemMessage = MessageBase & { type: 'system' }
 /**
  * DIVERGENCIA DECLARADA, misma clase y misma direccion que `AssistantMessage`
  * de arriba (TASK-THYROX-0228/0233): la fuente deja `message` opcional porque
@@ -108,7 +120,7 @@ export type SystemMessage = Message & { type: 'system' }
  * unico sitio que lo construye (`createUserMessage`) lo asigna incondicional.
  * Se estrecha a requerido en vez de sembrar `?.` en cada consumidor.
  */
-export type UserMessage = Message & {
+export type UserMessage = MessageBase & {
   type: 'user'
   message: {
     role?: string
