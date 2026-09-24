@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2550, "total_final": 2533, "tsc_runs": 1, "accepted": ["agent:control-subtypes"], "files_kept": ["src/packages/headless-sdk/src/controlSchemas.ts"], "outcomes": {"agent:control-subtypes": "accepted-net"}}

@@ -1,0 +1,10 @@
+Declare the 2.1.281 control request subtypes
+
+The stdin reader already handles end_session, channel_enable, the MCP
+and Claude OAuth requests, generate_session_title, side_question and
+remote_control, but the request union did not declare them. Every
+branch compared the subtype against an impossible literal and read
+fields off never. The field names come from the requests the 2.1.281
+executable itself sends, not from the reader.
+
+tsc: 2550 -> 2533 (accepted-net).
