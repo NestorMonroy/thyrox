@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
-from verify.tsc_reflect import blocking_pending, pending_outside, recall
+from verify.tsc_reflect import blocking_pending, recall
 
 
 def _sha(text: str) -> str:
@@ -104,12 +104,14 @@ def main(argv: list[str] | None = None) -> int:
         # otros archivos se nombra, para aplicarlo en bloque en vez de uno
         # por paso.
         before = args.before_log.read_text().splitlines()
-        for pattern_id, files in pending_outside(args.run, before, args.files, row["targets"]).items():
+        # Gate 4 (plan v2.2.0): no se propone otra cosa mientras un patrón
+        # aprendido siga vivo fuera de la candidata sin salida declarada. Sólo
+        # se lista lo que bloquea: un patrón cerrado o un archivo excluido ya
+        # tienen su razón escrita en la memoria.
+        blocking = blocking_pending(args.run, before, args.files, row["targets"])
+        for pattern_id, files in blocking.items():
             for file, count in sorted(files.items(), key=lambda kv: -kv[1]):
                 print(f"pendiente {pattern_id}: {count} en {file}", file=sys.stderr)
-        # Gate 4 (plan v2.2.0): no se propone otra cosa mientras un patrón
-        # aprendido siga vivo fuera de la candidata sin salida declarada.
-        blocking = blocking_pending(args.run, before, args.files, row["targets"])
         if blocking:
             names = ", ".join(f"{n} ({sum(f.values())} en {len(f)} archivo(s))" for n, f in blocking.items())
             print(f"GATE 4 BLOQUEADO — patrón(es) con señal viva fuera de la candidata: {names}. "
