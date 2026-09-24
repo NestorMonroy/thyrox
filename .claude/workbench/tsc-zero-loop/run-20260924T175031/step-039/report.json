@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2756, "total_final": 2748, "tsc_runs": 1, "accepted": ["agent:fs-guards-export"], "files_kept": ["src/packages/permission/src/filesystem.ts"], "outcomes": {"agent:fs-guards-export": "accepted-net"}}

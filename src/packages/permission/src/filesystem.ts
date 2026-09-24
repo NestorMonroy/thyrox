@@ -25,23 +25,17 @@
  *   `getBundledSkillsRoot` (reexportadas de `./internalPaths.ts`) — las
  *   tres, porte del contrato de 2.1.275; ver sus cabeceras
  *
- * OMITIDAS (4 de 29), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS: ninguna desde 2026-09-24. Las cuatro que lo estaban:
  *
- *   - `getClaudeSkillScope` (filesystem.ts:108-177) — sin consumidor
- *     confirmado en este pase; depende de convenciones de `.claude/skills/`
- *     no verificadas contra este árbol.
  *   - `checkReadPermissionForTool`, `checkWritePermissionForTool`,
- *     `generateSuggestions` (filesystem.ts:627-673 y 807-1785, el
- *     resto del archivo) — son las guardas de confinamiento/permiso de
- *     lectura y escritura. Cada una depende de `SandboxManager`
- *     (`@claude-code-how-works/shell/sandbox.js`, subsistema grande, no
- *     portado) o de `containsVulnerableUncPath`
- *     (`@claude-code-how-works/shell/legacy/readOnlyCommandValidation.js`,
- *     no portado), y la regla de seguridad de este pase exige que TODA
- *     guarda embarcada tenga un test negativo contra una ruta que EXISTE en
- *     disco fuera del árbol permitido — sin esas dos piezas no hay guarda
- *     real que probar así, sólo una fachada. Se omiten enteras en vez de
- *     enviarlas a medio verificar. `pathInAllowedWorkingPath` y
+ *     `generateSuggestions` y `getClaudeSkillScope` — PORTADAS el
+ *     2026-09-24 en `./fileToolPermissions.ts` desde el contrato de 2.1.275
+ *     (`_w`, `Wy`, `gyt`, `ku`), y reexportadas abajo. La omisión anterior
+ *     citaba `SandboxManager` y `containsVulnerableUncPath` como bloqueo;
+ *     en 2.1.275 ninguna de las cuatro los llama, y la guarda de UNC que
+ *     sí llaman (`k_n`) ya tenía sus predicados en `pathSafety.ts`. Sus
+ *     negativos apuntan a rutas que existen fuera del trabajo
+ *     (`__tests__/fileToolPermissions.test.ts`). `pathInAllowedWorkingPath` y
  *     `getResolvedWorkingDirPaths` (filesystem.ts:674-716) figuraban aquí
  *     por vecindad — el mismo defecto de atribución que ya se corrigió una
  *     vez para `allWorkingDirectories`/`pathInWorkingPath` (ver la
@@ -509,3 +503,9 @@ export {
   matchingRuleForInput,
   normalizePatternsToPath,
 } from './ruleMatching.js'
+export {
+  checkReadPermissionForTool,
+  checkWritePermissionForTool,
+  generateSuggestions,
+  getClaudeSkillScope,
+} from './fileToolPermissions.js'

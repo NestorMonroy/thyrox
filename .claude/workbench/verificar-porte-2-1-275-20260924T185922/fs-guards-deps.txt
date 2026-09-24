@@ -1,0 +1,133 @@
+==== On: 1 definicion(es) de nivel superior
+---- chunk-4bbpt7sc.js function On [14789,15506)
+function On(e){let n=e;if(n==="~")n=Pe().normalize("NFC");else if(n.startsWith("~/"))n=d.join(Pe().normalize("NFC"),n.slice(2));let r=new Set,i=le();if(r.add(n),Pn(n)&&!la(n)||Jr(n)||Vv(n))return Array.from(r);let o=Vh(i,n,{onCollapsedLanding:(u)=>r.add(u)});if(o!==void 0)return r.add(o),Array.from(r);try{let u=n,c=new Set,l=64;for(let p=0;p<l;p++){if(c.has(u))break;c.add(u);let h,g;try{h=i.readlinkSync(u)}catch(k){g=E(k)}if(h===void 0){if(g==="ENOENT"){if(u===n){let k=uI(i,n);if(k!==void 0)r.add(k)}}break}let m=d.isAbsolute(h)?h:d.resolve(d.dirname(u),h);if(r.add(m),Pn(m)&&!la(m)||Vv(m)||Jr(m))return Array.from(r);u=m}}catch{}let{resolvedPath:s,isSymlink:a}=Po(i,n);if(a&&s!==n)r.add(s);return Array.from(r)}
+==== Ze: 1 definicion(es) de nivel superior
+---- chunk-hbrq69f0.js function Ze [3707,4247)
+function Ze(e,r){let n=r??ne()??le().cwd();if(typeof e!=="string")throw TypeError(`Path must be a string, received ${typeof e}`);if(typeof n!=="string")throw TypeError(`Base directory must be a string, received ${typeof n}`);if(e.includes("\x00")||n.includes("\x00"))throw Error("Path contains null bytes");let i=e.trim();if(!i)return Xn(I(n));if(i==="~")return Xn(k());if(i.startsWith("~/"))return Xn(me(k(),i.slice(2)));let s=i;if(M()==="windows"&&i.match(/^\/[a-z]\//i))try{s=GRe(i)}catch{s=i}if(ue(s))return Xn(I(s));return Xn(ge(n,s))}
+==== Bs: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Bs [202621,202853)
+function Bs(e,n,r,s,g,h){if(my(e,r,n,h)||s().behavior==="allow")return null;let y=Array.from(h).join(", ");return{behavior:"deny",message:`${e} is outside ${y}; ${g.why}`,decisionReason:{type:"other",reason:g.reason},blockedPath:e}}
+==== Gs: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Gs [202333,202417)
+Gs={why:"--restricted confines the file tools to the working directory.",reason:Svt}
+==== $u: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable $u [202418,202620)
+$u={why:"the permissions.blockReadsOutsideWorkingDirectories setting blocks reads outside the working directories. Ask the user to add the directory with /add-dir, or to remove that setting.",reason:nI}
+==== NGt: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function NGt [201812,201965)
+function NGt(e){return new Set([ye(),...Array.from(e.additionalWorkingDirectories.values()).filter((n)=>n.source!=="projectSettings").map((n)=>n.path)])}
+==== _b: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function _b [201550,201629)
+function _b(e){return new Set([ye(),...e.additionalWorkingDirectories.keys()])}
+==== d_n: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function d_n [168368,168462)
+function d_n(){return qu().some((e)=>e.permissions?.blockReadsOutsideWorkingDirectories===!0)}
+==== nI: 1 definicion(es) de nivel superior
+---- chunk-q8sknw7e.js variable nI [4132,4294)
+nI="Reads outside the working directories are blocked (permissions.blockReadsOutsideWorkingDirectories). Add the directory with /add-dir, or remove that setting."
+==== my: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function my [202176,202329)
+function my(e,n,r,s=_b(n)){let g=r??On(e),h=Array.from(s).flatMap((y)=>qge(y));return g.every((y)=>h.some((w)=>Ld(y,w,{caseFold:!1,uncShapeParity:!0})))}
+==== hyt: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function hyt [223978,224045)
+function hyt(e,n){return!(n.servedCall===!0&&e.behavior==="allow")}
+==== gyt: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function gyt [223032,223454)
+function gyt(e,n,r,s){let g=!my(e,r,s);if(n==="read"&&g){let y=iU(e);return On(y).map((w)=>CTe(w,"session")).filter((w)=>w!==void 0)}let h=KFe(r);if(n==="write"||n==="create"){let y=h?[{type:"setMode",mode:"acceptEdits",destination:"session"}]:[];if(g){let w=iU(e),R=On(w);y.push({type:"addDirectories",directories:R,destination:"session"})}return y}return h?[{type:"setMode",mode:"acceptEdits",destination:"session"}]:[]}
+==== EN: 1 definicion(es) de nivel superior
+---- chunk-xbd48fav.js function EN [791265,791310)
+function EN(e){return ic(e).startsWith(Ns())}
+==== Kh: 1 definicion(es) de nivel superior
+---- chunk-4qqe0nh4.js function Kh [81653,81710)
+function Kh(){return n().sessionFlags.memoryToggledOff()}
+==== $s: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable $s [196935,197119)
+$s={behavior:"deny",message:"Cannot write to memory while it is paused. Run /pause-memory to resume automemory.",decisionReason:{type:"safetyCheck",reason:f6t,classifierApprovable:!1}}
+==== Ls: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Ls [195347,195517)
+function Ls(e){let n=_o(Ee(e)),r=_o(se(ve(),"jobs")+oe);if(!n.startsWith(r))return!1;let g=n.slice(r.length).split(oe);return g.length===2&&g[1].startsWith("adopt.json")}
+==== Fs: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Fs [197433,197687)
+Fs={behavior:"deny",message:"adopt.json is the bg-fork handoff carrier and is managed by the harness; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"adopt.json is a code-execution surface for the fork",classifierApprovable:!1}}
+==== Wr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Wr [195267,195347)
+function Wr(e){let n=Ae(e);return Du(ve()).some((r)=>n===r||n.startsWith(r+oe))}
+==== Kr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Kr [197120,197432)
+Kr={behavior:"deny",message:"~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by Claude Code; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"seed-admin git configuration is a code-execution surface for the upload",classifierApprovable:!1}}
+==== Gr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Gr [195517,195689)
+function Gr(e){let n=a.CLAUDE_CODE_HOST_CREDS_FILE;if(!n)return!1;let s=n.replace(M()==="windows"?/[\\/]+$/:/\/+$/,"")||n,g=_o(Ee(e));return On(s).some((h)=>_o(Ee(h))===g)}
+==== Vr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Vr [196692,196930)
+Vr={behavior:"deny",message:"The host credentials file is managed by the host process; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"host-creds file rewrite redirects the bearer token",classifierApprovable:!1}}
+==== Br: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Br [195689,195891)
+function Br(e){let n=p3t();if(n===null)return!1;let r=_o(Ee(e));if(n.dirs.some((s)=>{let g=_o(Ee(s));return r===g||r.startsWith(g+oe)}))return!0;return n.files.some((s)=>On(s).some((g)=>_o(Ee(g))===r))}
+==== Ur: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Ur [195895,196206)
+Ur={behavior:"deny",message:"The Anthropic profile store holds the sign-in that decides which organization policy applies; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"profile store write substitutes the credential and organization behind managed settings",classifierApprovable:!1}}
+==== zr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function zr [196207,196340)
+function zr(e){let n=Ae(e),r=se(ot(),".claude","state");return[r,se(r,"settings-review.json")].some((s)=>On(s).some((g)=>Ae(g)===n))}
+==== Hr: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js variable Hr [196344,196691)
+Hr={behavior:"deny",message:"Staged Claude Code settings changes are the owner\u2019s to review in /settings-review; the review store cannot be written directly",decisionReason:{type:"safetyCheck",reason:"settings review store write substitutes a proposal the owner is about to accept",classifierApprovable:!1,circuitBreaker:"claudeSettingsFile"}}
+==== tr: 1 definicion(es) de nivel superior
+---- chunk-cwfdaz1m.js function tr [2463,2689)
+function tr(e){let n=kxe(e);if(n.kind!=="call"||!n.toolName)return{toolName:nu(e)};if(n.rawContent===""||n.rawContent==="*")return{toolName:nu(n.toolName)};let t=Var(n.rawContent);return{toolName:nu(n.toolName),ruleContent:t}}
+==== zu: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function zu [213374,213501)
+function zu(e){return!!e&&(e.startsWith(c4t.slice(0,-2))||e.startsWith(u4t.slice(0,-2)))&&!e.includes("..")&&e.endsWith("/**")}
+==== Nu: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Nu [198692,199105)
+function Nu(e,n){let r=n.startsWith("~/.claude/")?ot():n.startsWith("/.claude/")?ye():null;if(r===null)return!1;let s=Ze(se(r,".claude")).split(oe);if(s.length>1&&s.at(-1)==="")s.pop();let g=Ze(e).split(oe);for(let h=0;h<s.length;h++)if(g[h]!==s[h]&&!(h===0&&/^[a-z]:$/i.test(g[h]??"")&&g[h].toLowerCase()===s[h].toLowerCase()))return!1;for(let h=s.length;h<g.length;h++)if(sc(g[h])===".claude")return!0;return!1}
+==== Es: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Es [198579,198692)
+function Es(e){let n=Ze(e).split(oe),r=Ws(n),s=0;for(let g=r;g<n.length;g++)if(sc(n[g])===".claude")s++;return s}
+==== VFe: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function VFe [200304,200489)
+function VFe(e){let n=e.mode==="plan"&&(e.prePlanMode==="auto"||!!e.strippedDangerousRules);return e.isRemoteMode===!0&&!e.restricted&&e.mode!=="auto"&&!n&&e.modeBeforeRewrite!=="auto"}
+==== ku: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function ku [190343,191084)
+function ku(e){let n=Ze(e),r=_o(n),s=[{dir:Ze(se(ye(),".claude","skills")),prefix:"/.claude/skills/"},{dir:Ze(se(ot(),".claude","skills")),prefix:"~/.claude/skills/"}];for(let{dir:g,prefix:h}of s){let y=_o(g);for(let w of[oe,"/"])if(r.startsWith(y+w.toLowerCase())){let R=n.slice(g.length+w.length),P=R.indexOf("/"),T=oe==="\\"?R.indexOf("\\"):-1,O=P===-1?T:T===-1?P:Math.min(P,T);if(O<=0)return null;let A=R.slice(0,O);if(!A||A==="."||A.includes(".."))return null;if(/[*?[\]]/.test(A)||A.includes("\\"))return null;if((h==="~/.claude/skills/"||nd().includes(y))&&(h1(A)||kj(A)))return null;let D=R.slice(O+1).split(/[/\\]/);if(sc(A)===".claude"||D.some((N)=>sc(N)===".claude"))return null;return{skillName:A,pattern:h+A+"/**"}}}return null}
+==== Lt: 1 definicion(es) de nivel superior
+---- chunk-xbd48fav.js variable Lt [702614,702623)
+Lt="Edit"
+==== Au: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Au [192539,192846)
+function Au(e,n){if(!n)return{classifierApprovable:e.classifierApprovable,...e.circuitBreaker&&{circuitBreaker:e.circuitBreaker},...e.also&&{also:e.also}};let r=[...e.circuitBreaker?[e.circuitBreaker]:[],...e.also??[]];return{classifierApprovable:!1,circuitBreaker:"restrictedMode",...r.length>0&&{also:r}}}
+==== Jr: 1 definicion(es) de nivel superior
+---- chunk-gfewy5rb.js function Jr [9121,9149)
+function Jr(t){return Yi(t)}
+==== Xh: 1 definicion(es) de nivel superior
+---- chunk-gfewy5rb.js function Xh [10036,10234)
+function Xh(t){if(!t.startsWith("/"))return!1;let e=[];for(let r of t.split("/")){if(r===""||r===".")continue;if(r===".."){e.pop();continue}e.push(r)}return e.length===1&&e[0].toLowerCase()==="net"}
+==== Vv: 1 definicion(es) de nivel superior
+---- chunk-gfewy5rb.js function Vv [10547,10571)
+function Vv(t){return!1}
+==== Pn: 1 definicion(es) de nivel superior
+---- chunk-gfewy5rb.js function Pn [6053,6101)
+function Pn(t){return/^[\\/]{2}/.test(t)||H6(t)}
+==== la: 1 definicion(es) de nivel superior
+---- chunk-gfewy5rb.js function la [11973,12100)
+function la(t){let e=/^[\\/]{2}wsl(?:\$|\.localhost)[\\/]([^\\/]*)/i.exec(t);return e!==null&&!/^\.{0,2}[. ]*$/.test(e[1]??"")}
+==== Ye: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Ye [227034,227123)
+function Ye(e,n){return{behavior:"ask",message:e,decisionReason:{type:"other",reason:n}}}
+==== so: 1 definicion(es) de nivel superior
+---- chunk-xbd48fav.js variable so [703447,703456)
+so="Glob"
+==== Ju: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Ju [218256,218307)
+function Ju(){return I("tengu_playful_lobster",!0)}
+==== Ys: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function Ys [218421,218475)
+function Ys(e){let n=zs();return n.size<ed&&!n.has(e)}
+==== td: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function td [218623,218710)
+function td(e){try{let n=le().statSync(e);return n.isFile()&&n.nlink>1}catch{return!1}}
+==== xs: 1 definicion(es) de nivel superior
+---- chunk-9apg35nm.js function xs [218475,218623)
+function xs(e,n,r){let s=`${r}:${e}`;if(!Ys(s))return;zs().add(s),i("tengu_playful_lobster_fired",{step:c(n),mode:b("shadow"),permissionMode:c(r)})}
+symbol: 44 de 44 nombre(s) resueltos

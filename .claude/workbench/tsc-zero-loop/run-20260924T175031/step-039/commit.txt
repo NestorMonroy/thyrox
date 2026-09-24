@@ -1,0 +1,9 @@
+Re-export the file tool guards from filesystem.ts
+
+FileReadTool, FileEditTool, GlobTool, LSPTool and the other file tools
+import checkReadPermissionForTool and checkWritePermissionForTool from
+@thyrox/permission/filesystem, as the source does, and failed to
+resolve because filesystem.ts listed them as omitted. They are now
+ported in fileToolPermissions.ts; filesystem.ts re-exports them with
+generateSuggestions and getClaudeSkillScope, and its header no longer
+lists anything as omitted.
