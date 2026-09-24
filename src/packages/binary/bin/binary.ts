@@ -21,7 +21,7 @@ import { findSection } from '../src/elf.ts'
 import { BUNFS_PREFIX, SECTION_HEADER, deriveVersion, readModuleTable } from '../src/bunfs.ts'
 import { buildGraph } from '../src/graph.ts'
 import { writeCorpus } from '../src/corpus.ts'
-import { freshness } from '../src/freshness.ts'
+import { corpusVersion, freshness } from '../src/freshness.ts'
 import { reflow } from '../src/reflow.ts'
 import { resolveSymbol } from '../src/symbol.ts'
 
@@ -109,7 +109,11 @@ if (orden === 'info') {
   if (destino) writeFileSync(destino, salida)
   else process.stdout.write(salida)
 } else if (orden === 'symbol') {
-  const raiz = opcion(argv, '--root', `${CORPUS_DEFECTO}/2.1.275/bunfs-root`)
+  // Sin `--root`, la build más reciente del corpus: un literal fijo dejaba de
+  // ser la última en cuanto se extraía otra.
+  const ultima = corpusVersion(CORPUS_DEFECTO)
+  if (!argv.includes('--root') && ultima === null) guard(`sin builds en ${CORPUS_DEFECTO}; use --root`)
+  const raiz = opcion(argv, '--root', `${CORPUS_DEFECTO}/${ultima}/bunfs-root`)
   const [chunk, ...resto] = argv.slice(1)
   const nombres = resto.filter((x, i) => !x.startsWith('--') && resto[i - 1] !== '--root')
   if (!chunk || nombres.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')

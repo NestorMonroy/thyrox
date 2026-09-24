@@ -100,3 +100,19 @@ describe.skipIf(!existsSync(join(CORPUS, 'chunk-q2gh92k2.js')))('corpus 2.1.275'
     ])
   })
 })
+
+// Sin `--root`, `symbol` lee la build MÁS RECIENTE del corpus, no una fijada
+// a mano: el literal `2.1.275` dejó de ser la última al extraer 2.1.281.
+const CORPUS_ROOT = join(import.meta.dir, '../../../../_references/claude-code-bin')
+describe.skipIf(!existsSync(join(CORPUS_ROOT, '2.1.281', 'MANIFEST.tsv')))('symbol sin --root', () => {
+  test('resuelve contra la última build del corpus', () => {
+    // `vse` sólo existe con ese nombre en 2.1.281 (en 2.1.275 era `Gge`).
+    const file = Bun.spawnSync(['sh', '-c', "grep -lF 'function vse(' *.js | head -1"], { cwd: join(CORPUS_ROOT, '2.1.281', 'bunfs-root') })
+      .stdout.toString().trim()
+    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '../bin/binary.ts'), 'symbol', file, 'vse'], {
+      cwd: join(import.meta.dir, '../../../..'),
+    })
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout.toString()).toContain('requested permissions to write to')
+  })
+})
