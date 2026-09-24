@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/binary/__tests__/declarationParseOnce.test.ts:
+18 | 
+19 | describe('declaration — un análisis por texto', () => {
+20 |   test('extractByLiteral analiza el texto una sola vez', () => {
+21 |     const before = parseCountForTesting()
+22 |     extractByLiteral(SOURCE + '\n// a', 'five_hour')
+23 |     expect(parseCountForTesting() - before).toBe(1)
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declarationParseOnce.test.ts:23:45)
+(fail) declaration — un análisis por texto > extractByLiteral analiza el texto una sola vez [13.38ms]
+27 |     const text = SOURCE + '\n// b'
+28 |     const before = parseCountForTesting()
+29 |     extractByLiteral(text, 'five_hour')
+30 |     extractByLiteral(text, 'seven_day')
+31 |     findLiteralSites(text, 'five_hour')
+32 |     expect(parseCountForTesting() - before).toBe(1)
+                                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 5
+
+      at <anonymous> (/home/user/thyrox/src/packages/binary/__tests__/declarationParseOnce.test.ts:32:45)
+(fail) declaration — un análisis por texto > preguntas sucesivas sobre el MISMO texto no lo reanalizan [4.94ms]
+
+ 1 pass
+ 2 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [336.00ms]
+
+[exit=1]

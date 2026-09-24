@@ -1,0 +1,156 @@
+2478
+--- nuevos contra base
+../agent/compaction/autoCompact.ts: error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../agent/compaction/sessionMemoryCompact.ts: error TS2345: Argument of type 'CompactableMessage[]' is not assignable to parameter of type 'Message[]'.
+../agent/compaction/sessionMemoryCompact.ts: error TS2345: Argument of type 'SystemCompactBoundaryMessage' is not assignable to parameter of type 'CompactBoundaryMessage'.
+../agent/compaction/sessionMemoryCompact.ts: error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/types/compaction").CompactionResult' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/compaction/compactUtils").CompactionResult'.
+../agent/compaction/sessionMemoryCompact.ts: error TS2353: Object literal may only specify known properties, and 'boundaryMarker' does not exist in type 'CompactionResult'.
+../agent/compaction/sessionMemoryCompact.ts: error TS2353: Object literal may only specify known properties, and 'postCompactTokenCount' does not exist in type 'CompactionResult'.
+../app-host/src/bootstrap/gracefulShutdown.ts: error TS2345: Argument of type '"fatal"' is not assignable to parameter of type '"clear" | "resume" | "other" | "logout" | "bypass_permissions_disabled" | "prompt_input_exit" | undefined'.
+../bridge/src/remoteBridgeCore.ts: error TS2345: Argument of type 'SDKResultSuccess' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+../bridge/src/remoteBridgeCore.ts: error TS2345: Argument of type 'SDKResultSuccess' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+../bridge/src/replBridge.ts: error TS2345: Argument of type 'SDKResultSuccess' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+../bridge/src/replBridge.ts: error TS2345: Argument of type 'SDKResultSuccess' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+../command-runtime/src/commands/context/context-noninteractive.ts: error TS2322: Type 'Message[]' is not assignable to type 'AgentMessage[]'.
+../command-runtime/src/commands/context/context-noninteractive.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'Message[]'.
+../command-runtime/src/commands/context/context-noninteractive.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'Message[]'.
+../command-runtime/src/commands/context/context-noninteractive.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'Message[]'.
+../command-runtime/src/commands/context/context-noninteractive.ts: error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AgentMessage[]'.
+../command-runtime/src/commands/login/login.tsx: error TS2345: Argument of type '(messages: AgentMessage[]) => AgentMessage[]' is not assignable to parameter of type '(prev: unknown[]) => unknown[]'.
+../config/plugin/core/performStartupChecks.tsx: error TS2345: Argument of type 'SetAppState' is not assignable to parameter of type 'SetAppState'.
+../config/plugin/loadPluginHooks.ts: error TS2345: Argument of type 'Partial<Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.
+../config/plugin/loadPluginHooks.ts: error TS2345: Argument of type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.
+../config/plugin/loadPluginHooks.ts: error TS2353: Object literal may only specify known properties, and 'PostToolUseFailure' does not exist in type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>'.
+../config/plugin/loadPluginHooks.ts: error TS2353: Object literal may only specify known properties, and 'PostToolUseFailure' does not exist in type 'Record<"PreToolUse" | "PostToolUse" | "UserPromptSubmit" | "SessionStart" | "SessionEnd" | "Stop" | "SubagentStart" | "SubagentStop" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch", PluginHookMatcher[]>'.
+../config/plugin/loadPluginOutputStyles.ts: error TS2322: Type '{}' is not assignable to type 'string'.
+../config/plugin/lspPluginIntegration.ts: error TS2698: Spread types may only be created from object types.
+../config/plugin/lspPluginIntegration.ts: error TS2698: Spread types may only be created from object types.
+../config/plugin/mcpPluginIntegration.ts: error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ command: string; args: string[]; request_timeout_ms?: number | undefined; type?: "stdio" | undefined; env?: Record<string, string> | undefined; } | { type: "sse"; url: string; request_timeout_ms?: number | undefined; headers?: Record<...> | undefined; headersHelper?: string | undefined; oauth?: { ...; } | undefine...'.
+../config/plugin/refresh.ts: error TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents
+../repl/src/components/DiagnosticsDisplay.tsx: error TS2339: Property 'files' does not exist on type 'never'.
+../repl/src/components/DiagnosticsDisplay.tsx: error TS2339: Property 'files' does not exist on type 'never'.
+../repl/src/components/DiagnosticsDisplay.tsx: error TS2339: Property 'files' does not exist on type 'never'.
+../repl/src/components/DiagnosticsDisplay.tsx: error TS2339: Property 'files' does not exist on type 'never'.
+../repl/src/components/Messages.tsx: error TS2554: Expected 1 arguments, but got 2.
+../repl/src/components/PromptInput/Notifications.tsx: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'Message[]'.
+../repl/src/components/PromptInput/Notifications.tsx: error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AgentMessage[]'.
+../repl/src/components/hooks/PromptDialog.tsx: error TS18046: 'request.options' is of type 'unknown'.
+../repl/src/components/hooks/PromptDialog.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS1360: Type 'string' does not satisfy the expected type '"hook_additional_context" | "hook_success" | "task_reminder" | "structured_output" | "output_style" | "hook_cancelled" | "goal_status" | "max_turns_reached" | "edited_text_file" | ... 25 more ... | "skill_discovery"'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.addedTypes' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.addedTypes' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.blockingError' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.content' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.lineEnd' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.lineStart' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.memories' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.memories' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.memories' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.messages' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skillNames' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS18046: 'attachment.skills' is of type 'unknown'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'Attachment' is not assignable to type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'Attachment' is not assignable to type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'description' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'length' does not exist on type '{}'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'map' does not exist on type '{}'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'status' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'taskId' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2339: Property 'taskType' does not exist on type 'never'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'number'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'number'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type '{} | null' is not assignable to parameter of type 'number'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type '{} | null' is not assignable to parameter of type 'number'.
+../repl/src/components/messages/AttachmentMessage.tsx: error TS2345: Argument of type '{} | null' is not assignable to parameter of type 'number'.
+../repl/src/components/tasks/BackgroundTasksDialog.tsx: error TS18046: 'InProcessTeammateTask' is of type 'unknown'.
+../repl/src/conversationRecovery.tsx: error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../repl/src/conversationRecovery.tsx: error TS2352: Conversion of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]' to type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+../repl/src/hooks/useBackgroundTaskNavigation.ts: error TS18046: 'InProcessTeammateTask' is of type 'unknown'.
+../repl/src/hooks/useReplBridge.tsx: error TS2322: Type 'unknown' is not assignable to type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 23 more ... | { ...; }'.
+../repl/src/processUserInput/processSlashCommand.tsx: error TS2322: Type '(AgentMessage | UserMessage)[]' is not assignable to type '(AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+../repl/src/processUserInput/processSlashCommand.tsx: error TS2322: Type 'CompactableMessage[]' is not assignable to type '(AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+../repl/src/processUserInput/processSlashCommand.tsx: error TS2554: Expected 6 arguments, but got 7.
+../repl/src/processUserInput/processUserInput.ts: error TS18046: 'agentMention.attachment' is of type 'unknown'.
+../repl/src/processUserInput/processUserInput.ts: error TS18046: 'm.attachment' is of type 'unknown'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type 'AgentMessage' is not assignable to parameter of type 'AssistantMessage | UserMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type 'ProcessUserInputContext' is not assignable to parameter of type 'AgentToolUseContext'.
+../repl/src/processUserInput/processUserInput.ts: error TS2367: This comparison appears to be unintentional because the types '"attachment" | undefined' and '"progress"' have no overlap.
+../repl/src/processUserInput/processUserInput.ts: error TS2677: A type predicate's type must be assignable to its parameter's type.
+../repl/src/screens/REPLView.tsx: error TS2322: Type 'unknown' is not assignable to type 'Key | null | undefined'.
+../repl/src/screens/REPLView.tsx: error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: getSystemPrompt; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+../repl/src/screens/REPLView.tsx: error TS2345: Argument of type '(old: Message[]) => (AgentMessage | SystemCompactBoundaryMessage)[]' is not assignable to parameter of type 'SetStateAction<Message[]>'.
+../repl/src/screens/REPLView.tsx: error TS2345: Argument of type 'AgentMessage[]' is not assignable to parameter of type 'Message[]'.
+../repl/src/screens/REPLView.tsx: error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AgentMessage[]'.
+../repl/src/screens/REPLView.tsx: error TS2345: Argument of type 'UserMessage' is not assignable to parameter of type 'AgentMessage'.
+../repl/src/screens/REPLView.tsx: error TS2554: Expected 1 arguments, but got 2.
+../tool-registry/src/services/toolExecution.ts: error TS2322: Type '(MessageUpdateLazy<AttachmentMessage<_T> | ProgressMessage<HookProgress>> | { message: AgentMessage; } | { ...; })[]' is not assignable to type 'MessageUpdateLazy<Message>[]'.
+../tool-registry/src/services/toolExecution.ts: error TS2322: Type '(MessageUpdateLazy<AttachmentMessage<_T> | ProgressMessage<HookProgress>> | { message: SystemStopHookSummaryMessage; } | { ...; } | { ...; })[]' is not assignable to type 'MessageUpdateLazy<Message>[]'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T> | ProgressMessage<HookProgress>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'AgentMessage' is not assignable to type 'AttachmentMessage<_T>'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts: error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../tool-registry/src/tools/AgentTool/runAgent.ts: error TS2345: Argument of type 'AgentMessage' is not assignable to parameter of type 'Message'.
+../tool-registry/src/tools/AgentTool/runAgentTelemetry.ts: error TS2307: Cannot find module '@thyrox/tool-registry/tools/REPLTool/REPLTool.js' or its corresponding type declarations.
+src/headless/sdk/session/run-streaming.ts: error TS2345: Argument of type '(f: (prev: AppStateLike) => AppStateLike) => void' is not assignable to parameter of type 'SetAppState'.
+src/headless/sdk/session/run-streaming.ts: error TS2345: Argument of type '(f: (prev: AppStateLike) => AppStateLike) => void' is not assignable to parameter of type 'SetAppState'.
+src/headless/sdk/session/run-streaming.ts: error TS2345: Argument of type 'SDKUserMessage' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+src/headless/sdk/session/run-streaming.ts: error TS2345: Argument of type 'SDKUserMessage' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+src/headless/sdk/session/run-streaming.ts: error TS2345: Argument of type 'SDKUserMessage' is not assignable to parameter of type '{ type: "user"; message: unknown; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "now" | "next" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | ... 30 more ... | { ...; }'.
+__BG_EXIT__=0

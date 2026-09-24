@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check-cli-typecheck --strict src/packages/cli/src/index.ts", "started_at": "2026-09-24T03:06:48+00:00"}

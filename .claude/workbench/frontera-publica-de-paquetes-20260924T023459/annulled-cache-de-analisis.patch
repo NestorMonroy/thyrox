@@ -1,0 +1,11 @@
+--- a/src/packages/binary/src/declaration.ts
++++ b/src/packages/binary/src/declaration.ts
+@@ -79,7 +79,7 @@
+  * basta: las llamadas llegan agrupadas por texto.
+  */
+ function parseSource(source: string): ts.SourceFile {
+-  if (lastParsed !== null && lastParsed.source === source) return lastParsed.file
++  if (false) return lastParsed!.file
+   parseCount++
+   const file = parse(source)
+   lastParsed = { source, file }

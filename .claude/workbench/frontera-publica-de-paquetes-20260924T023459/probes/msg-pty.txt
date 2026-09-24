@@ -1,0 +1,7 @@
+Align the local PTY frame test with the reference text
+
+Two suites pin the oversize message: the reference copy expects
+"frame too large" and the local red control expected the translated
+"demasiado grande". The message is part of the ported contract, so
+the local assertion follows the reference. Its other two assertions
+("json", the tag number) already accept both wordings.

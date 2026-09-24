@@ -1,0 +1,12 @@
+Record the package boundary closure and correct H-167
+
+H-THYROX-167 said no package declared exports. Re-measured at HEAD, 42
+of 42 do; 28 (29 counting the check's scope) kept the ./* wildcard.
+The finding now says so, and records that a per-package bun build does
+not see a missing sibling symbol, which the static named-import
+checker does.
+
+The progress log gains the pass: the closed boundary with its measured
+equivalence, the hook engine typing that lowered the cli ratchet to
+2407, the runner fixes, and the map of missing names (187 symbols: 42
+same-package re-exports, 26 cross-package, 121 absent from the tree).

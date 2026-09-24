@@ -1,0 +1,20 @@
+Re-export canonical same-package symbols consumers ask for
+
+namedImports.ts listed 354 names that a module is asked for and does not
+export; 42 of them are defined in another module of the same package.
+This re-exports the canonical ones, and nine cross-package types through
+keys their packages already declare.
+
+Seven candidates stay out, and the reason is measured, not a style
+call. Six came from agent/internal/queryRuntime.ts and headlessRuntime,
+bridges toward host bindings typed with the generic AgentMessage: with
+them the cli ratchet grew by 71, 70 of them in AttachmentMessage.tsx
+reading fields of a record typed unknown. The seventh, Attachment from
+loop/transcript.ts, shares the name of the attachment union and not its
+shape. getDefaultAppState also stays out: re-exporting it from
+AppState.tsx loaded AppStateCompat eagerly and broke the lazy shim that
+three suites protect (6 fails with it, 24 pass without it); its single
+consumer now imports it from AppStateStore.js, where it is canonical.
+
+Missing names drop from 354 to 292; the cli ratchet drops from 2407 to
+2387.

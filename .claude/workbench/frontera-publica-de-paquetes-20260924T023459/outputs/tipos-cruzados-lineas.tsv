@@ -1,0 +1,9 @@
+src/packages/agent/types/hooks.ts	PromptRequest	@thyrox/headless-sdk/agentSdkTypes.js
+src/packages/agent/types/hooks.ts	PromptResponse	@thyrox/headless-sdk/agentSdkTypes.js
+src/packages/cli/src/index.ts	HeadlessStoreParams	@thyrox/agent/sessionStores
+src/packages/config/plugin/_deps.ts	AgentColorName	@thyrox/tool-registry/tools/AgentTool/agentColorManager.js
+src/packages/config/plugin/_deps.ts	AgentDefinitionsResult	@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js
+src/packages/config/plugin/_deps.ts	AppState	@thyrox/tool-registry/appStateTypes
+src/packages/mcp-runtime/src/types.ts	Command	@thyrox/command-runtime/types
+src/packages/mcp-runtime/src/types.ts	Tool	@thyrox/tool-registry/runtime
+src/packages/repl/src/appStateHooks.ts	AppStateStore	@thyrox/app-host/state/AppStateStore.js

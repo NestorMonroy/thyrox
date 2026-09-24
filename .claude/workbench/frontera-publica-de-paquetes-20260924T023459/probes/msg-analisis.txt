@@ -1,0 +1,12 @@
+Parse a declaration source once per text
+
+extractByLiteral parsed the whole source twice per call (its own parse
+and findLiteralSites') and every case of declaration.test.ts parsed
+the same 5.4 MB chunk again. One extraction took 3.4 s, and under load
+the case crossed bun test's 5 s default.
+
+A single-entry cache keyed on the text serves both functions. The
+contract counts parses, not wall time. Annulment: disabling the cache
+hit drops exactly the two same-text cases; the different-text case
+holds. One extraction takes 2.1 s, and both declaration files run in
+2.65 s instead of 8.2 s.

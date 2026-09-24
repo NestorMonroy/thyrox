@@ -1,0 +1,99 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 2 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 2 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 2 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+[feature/thyrox-l6 a2083d84] Measure named imports from any root, skip bun:bundle
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 2 files changed, 33 insertions(+), 4 deletions(-)
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 80 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 80 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 80 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 9 banco(s) tocado(s))
+[feature/thyrox-l6 743a61b1] Record the package boundary and ratchet evidence
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 80 files changed, 57655 insertions(+)
+ create mode 100644 .claude/build-logs/commit-ptyframe.log
+ create mode 100644 .claude/jobs/atribuir-trinquete-20260924T023546/README.md
+ create mode 100644 .claude/jobs/atribuir-trinquete-20260924T023546/manifest.jsonl
+ create mode 100644 .claude/jobs/atribuir-trinquete-20260924T023546/outputs/pid
+ create mode 100644 .claude/jobs/atribuir-trinquete-20260924T023546/outputs/salida.log
+ create mode 100644 .claude/jobs/commit-herramientas-20260924T024733/README.md
+ create mode 100644 .claude/jobs/commit-herramientas-20260924T024733/manifest.jsonl
+ create mode 100644 .claude/jobs/commit-herramientas-20260924T024733/outputs/pid
+ create mode 100644 .claude/jobs/commit-herramientas-20260924T024733/outputs/salida.log
+ create mode 100644 .claude/jobs/commit-tipado-20260924T024429/README.md
+ create mode 100644 .claude/jobs/commit-tipado-20260924T024429/manifest.jsonl
+ create mode 100644 .claude/jobs/commit-tipado-20260924T024429/outputs/pid
+ create mode 100644 .claude/jobs/commit-tipado-20260924T024429/outputs/salida.log
+ create mode 100644 .claude/jobs/suite-l6-aislada-20260924T022725/README.md
+ create mode 100644 .claude/jobs/suite-l6-aislada-20260924T022725/manifest.jsonl
+ create mode 100644 .claude/jobs/suite-l6-aislada-20260924T022725/outputs/pid
+ create mode 100644 .claude/jobs/suite-l6-aislada-20260924T022725/outputs/salida.log
+ create mode 100644 .claude/jobs/trinquete-cli-20260924T024329/README.md
+ create mode 100644 .claude/jobs/trinquete-cli-20260924T024329/manifest.jsonl
+ create mode 100644 .claude/jobs/trinquete-cli-20260924T024329/outputs/pid
+ create mode 100644 .claude/jobs/trinquete-cli-20260924T024329/outputs/salida.log
+ create mode 100644 .claude/jobs/tsc-cli-tipado-20260924T024013/README.md
+ create mode 100644 .claude/jobs/tsc-cli-tipado-20260924T024013/manifest.jsonl
+ create mode 100644 .claude/jobs/tsc-cli-tipado-20260924T024013/outputs/pid
+ create mode 100644 .claude/jobs/tsc-cli-tipado-20260924T024013/outputs/salida.log
+ create mode 100644 .claude/jobs/tsc-cli-tipado2-20260924T024106/README.md
+ create mode 100644 .claude/jobs/tsc-cli-tipado2-20260924T024106/manifest.jsonl
+ create mode 100644 .claude/jobs/tsc-cli-tipado2-20260924T024106/outputs/pid
+ create mode 100644 .claude/jobs/tsc-cli-tipado2-20260924T024106/outputs/salida.log
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/README.md
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-destino-existente.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-destino-existente.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-precedencia-de-node.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulled-precedencia-de-node.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/annulment.jsonl
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/close_exports-before-destino-existente.py
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/close_exports-before-precedencia-de-node.py
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/manifest.jsonl
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/base.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/build-sonda/NotebookEditToolDiff.js
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/claves-explicitas.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/especificadores.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/head.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/nombres-ausentes.resumen
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/nombres-ausentes.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/pares.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/plan-cierre.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/porarchivo-base.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/porarchivo-tipado-hooks.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/resuelto-antes.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/revertir.patch
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/run-list.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/scan-formas.json
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/superficie.tsv
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/tests-en-paquetes.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/tipado-hooks.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/tocados.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/atribuir-trinquete.sh
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/clasificar-superficie.awk
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/correccion-h167.rst
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-evidencia.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-herramientas.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-nombres.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-tipado.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/msg-tsx.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/resolver.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/scan-formas.ts
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/probes/tsc-cli-conteo.sh
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-destino-existente.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/restored-precedencia-de-node.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-close-exports.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-named-imports-clausula.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-named-imports-relativo.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-named-imports.txt
+ create mode 100644 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/tests/rojo-runner-reach-tsx.txt
+ create mode 100644 .claude/workbench/rojos-ts-por-causa-20260924T023009/README.md
+ create mode 100644 .claude/workbench/rojos-ts-por-causa-20260924T023009/manifest.jsonl
+ create mode 100644 .claude/workbench/rojos-ts-por-causa-20260924T023009/outputs/archivos-en-rojo.txt
+ create mode 100644 .claude/workbench/rojos-ts-por-causa-20260924T023009/outputs/primer-error.tsv
+ create mode 100644 .claude/workbench/rojos-ts-por-causa-20260924T023009/outputs/tomatch-esperados.tsv
+__BG_EXIT__=0

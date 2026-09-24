@@ -1,0 +1,38 @@
+19	src/packages/agent/messages.ts	 EMPTY_LOOKUPS EMPTY_STRING_SET StreamingThinking StreamingToolUse buildMessageLookups buildSubagentLookups filterOrphanedThinkingOnlyMessages filterWhitespaceOnlyAssistantMessages getAssistantMessageText getProgressMessagesFromLookup getSiblingToolUseIDsFromLookup getToolUseIDs handleMessageFromStream hasSuccessfulToolCall hasUnresolvedHooksFromLookup isSystemLocalCommandMessage reorderMessagesInUI shouldShowUserMessage withMemoryCorrectionHint
+10	src/packages/permission/src/filesystem.ts	 checkEditableInternalPath checkPathSafetyForAutoEdit checkReadPermissionForTool checkReadableInternalPath checkWritePermissionForTool generateSuggestions getBundledSkillsRoot getFileReadIgnorePatterns matchingRuleForInput normalizePatternsToPath
+10	src/packages/command-runtime/src/skills/loadSkillsDir.ts	 activateConditionalSkillsForPaths addSkillDirectories clearDynamicSkills clearSkillCaches createSkillCommand discoverSkillDirsForPaths getDynamicSkills getSkillDirCommands onDynamicSkillsLoaded parseSkillFrontmatterFields
+9	src/packages/config/index.ts	 formatAutoUpdaterDisabledReason getAutoUpdaterDisabledReason getCustomApiKeyStatus getOrCreateUserID getRemoteControlAtStartup isAutoUpdaterDisabled markHasUsedAgentsFleet recordFirstStartTime shouldSkipPluginAutoupdate
+7	src/packages/storage/src/claudemd.ts	 ExternalClaudeMdInclude clearMemoryFileCaches getExternalClaudeMdIncludes getMemoryFiles hasExternalClaudeMdIncludes resetGetMemoryFilesCache shouldShowClaudeMdExternalIncludesWarning
+7	src/packages/agent/effort.ts	 getDefaultEffortForModel getDisplayedEffortLevel getEffortSuffix getEffortValueDescription getOpusDefaultEffortConfig modelSupportsEffort resolvePickerEffortPersistence
+6	src/packages/config/settings/settings.ts	 getAutoModeConfig getManagedFileSettingsPresence getManagedSettingsKeysForLogging getPolicySettingsOrigin getSettingsWithSources getUseAutoModeDuringPlan
+4	src/packages/storage/src/sessionRestore.ts	 exitRestoredWorktree restoreAgentFromSession restoreSessionStateFromLog restoreWorktreeForResume
+4	src/packages/permission/src/permissions.ts	 checkRuleBasedPermissions createPermissionRequestMessage deletePermissionRule hasPermissionsToUseTool
+4	src/packages/cli/src/entry/mode-dispatch.ts	 PendingAssistantChat PendingConnect PendingSSH runModeDispatch
+4	src/packages/agent/prompts.ts	 DEFAULT_AGENT_PROMPT SYSTEM_PROMPT_DYNAMIC_BOUNDARY enhanceSystemPromptWithEnvDetails getSystemPrompt
+4	src/packages/agent/claudeInChromeCommon.ts	 getAllBrowserDataPaths getAllNativeMessagingHostsDirs getAllWindowsRegistryKeys openInChrome
+4	src/packages/agent/claudeInChrome/common.ts	 getAllSocketPaths getSecureSocketPath getSocketDir openInChrome
+4	src/packages/agent/attachments.ts	 AgentMentionAttachment getQueuedCommandAttachments resetSentSkillNames suppressNextSkillListing
+3	src/packages/shell/src/process.ts	 registerProcessOutputErrorHandlers writeToStderr writeToStdout
+3	src/packages/permission/src/pathValidation.ts	 isDangerousRemovalPath isPathInSandboxWriteAllowlist validatePath
+3	src/packages/agent/tokenEstimation.ts	 countTokensWithAPI roughTokenCountEstimationForMessage roughTokenCountEstimationForMessages
+3	src/packages/agent/diff.ts	 countLinesChanged getPatchForDisplay getPatchFromContents
+3	src/packages/agent/compaction/compact.ts	 compactConversation createPlanAttachmentIfNeeded partialCompactConversation
+2	src/packages/permission/src/permissionTypes.ts	 ToolPermissionRulesBySource YoloClassifierResult
+2	src/packages/agent/types/hooks.ts	 HookProgress hookJSONOutputSchema
+2	src/packages/agent/toolSearch.ts	 isToolSearchEnabledOptimistic isToolSearchToolAvailable
+2	src/packages/agent/tasks.ts	 claimTask resetTaskList
+2	src/packages/agent/inProcessTeammateHelpers.ts	 handlePlanApprovalResponse setAwaitingPlanApproval
+2	src/packages/agent/context.ts	 calculateContextPercentages getModelMaxOutputTokens
+2	src/packages/agent/attribution.ts	 getAttributionTexts getEnhancedPRAttribution
+1	src/packages/provider/src/costTracker.ts	 formatCost
+1	src/packages/permission/src/permission.ts	 hasPermissionsToUseTool
+1	src/packages/permission/src/getNextPermissionMode.ts	 cyclePermissionMode
+1	src/packages/config/settings/types.ts	 ExtraKnownMarketplaceSchema
+1	src/packages/config/global/config.ts	 getMemoryPath
+1	src/packages/cli/src/testing/io.ts	 x
+1	src/packages/cli/src/index.ts	 runClaudeCode
+1	src/packages/agent/uuid.ts	 UUID
+1	src/packages/agent/sessionTools/transcriptSearch.ts	 renderableSearchText
+1	src/packages/agent/sessionTitle.ts	 generateSessionTitle
+1	src/packages/agent/promptCategory.ts	 getQuerySourceForREPL
+1	src/packages/agent/eventMetadata.ts	 extractToolInputForTelemetry

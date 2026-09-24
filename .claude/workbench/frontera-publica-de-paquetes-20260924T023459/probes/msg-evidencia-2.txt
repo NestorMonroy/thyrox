@@ -1,0 +1,5 @@
+Record the re-export batch evidence
+
+Jobs of the ratchet measurements, the TypeScript suites and the
+background commits of this block, and the bench outputs that attribute
+the ratchet growth to bridge re-exports.

@@ -1,0 +1,16 @@
+tests/corpus/test_censo_contraparte.py
+tests/lib/test-toolchain-sh.sh
+tests/lib/test-workbench-sh.sh
+tests/session/test_generate_bin.py
+tests/session/test_session_restart.py
+tests/task/test-implementation-order.sh
+tests/verify/test-eventos-hook.sh
+tests/verify/test-gitattributes.sh
+tests/verify/test-hook-script-token.sh
+tests/verify/test-premise-drift.sh
+tests/verify/test-script-naming.sh
+tests/verify/test-verificar-premisa.sh
+tests/verify/test_env_contract_keys.py
+tests/verify/test_package_root_resolution.sh
+tests/verify/test_path_arithmetic.py
+tests/verify/test_pre_commit_hook.py
