@@ -1,2 +1,2 @@
-tsconfig.json 1686
-tsconfig.tests.json 1686
+tsconfig.json 1660
+tsconfig.tests.json 1660
