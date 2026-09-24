@@ -176,7 +176,10 @@ declare -a resumen=()
 if [ "$only" != "--python-only" ] && [ "$only" != "--shell-only" ]; then
   echo "== TypeScript (bun) =="
   mapfile -t suites_ts < <(descubrir_ts)
-  if bun test "${suites_ts[@]}"; then
+  # Un proceso de `bun test` por archivo (src/verify/run_ts_isolated.sh):
+  # `mock.module` es global al proceso y, con todos los archivos en uno, un
+  # archivo contaminaba a los siguientes hasta tumbar a Bun.
+  if printf '%s\n' "${suites_ts[@]}" | bash src/verify/run_ts_isolated.sh; then
     resumen+=("TypeScript: ${#suites_ts[@]} archivo(s), en verde")
   else
     failures=$((failures + 1))
