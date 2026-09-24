@@ -12,7 +12,7 @@ import type { AgentDefinition } from '../types.ts'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')
 const REPO_ROOT = join(PACKAGE, '..', '..', '..')
-const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.258', 'claude_strings.txt')
+const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.275', 'claude_strings.txt')
 const CATALOG_FILE = join(PACKAGE, 'models.jsonl')
 
 describe('src/models.jsonl es derivado, no escrito a mano', () => {
@@ -23,7 +23,7 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
    * en H-DOCS-1003: el JSON era válido y estable y llevaba 63 booleanos
    * invertidos.
    */
-  test('coincide byte a byte con la extracción del volcado 2.1.258', () => {
+  test('coincide byte a byte con la extracción del volcado 2.1.275', () => {
     const result = Bun.spawnSync([
       'python3', join(PACKAGE, 'bin', 'extract_model_registry.py'), DUMP, '--stdout',
     ])
@@ -80,7 +80,7 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
   })
 
   test('declara su fuente y su forma', () => {
-    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.258/claude_strings.txt')
+    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.275/claude_strings.txt')
     expect(CATALOG.schema_version).toBe(2)
     expect(MODEL_IDS.length).toBe(CATALOG.models.length)
   })
@@ -168,13 +168,13 @@ describe('coste', () => {
   })
 
   test('rehúsa un modelo fuera del catálogo en vez de devolver 0', () => {
-    // Los 19 registros del 2.1.258 traen tier (medido: 0 sin tier), así que
+    // Los registros del 2.1.275 traen tier (medido: 0 sin tier), así que
     // el único camino a "sin precio" es un identificador que no existe.
     expect(() => usageCostUsd('claude-no-existe', porTurno)).toThrow()
   })
 
   test('effortCostIndex devuelve null donde el registro no lo declara', () => {
-    expect(effortCostIndex('claude-fable-5-1', 'max')).toBe(1.91)
+    expect(effortCostIndex('claude-fable-5-1', 'max')).toBe(1.74) // 2.1.275; era 1.91 en 2.1.258
     expect(effortCostIndex('claude-haiku-4-5', 'max')).toBeNull()
   })
 })

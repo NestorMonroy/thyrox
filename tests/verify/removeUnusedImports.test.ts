@@ -6,7 +6,11 @@
  * da TS6133, pero retirarlo cambia una firma o borra trabajo de un porte a
  * medias. Esa decisión no es mecánica y esta herramienta no la toma.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, setDefaultTimeout, test } from 'bun:test'
+
+// Construye un servicio de lenguaje de TypeScript: bajo la suite en paralelo
+// tarda mas que los 5 s por defecto, sin fallar solo.
+setDefaultTimeout(60_000)
 import { removeUnusedImports, semanticDiagnosticCodes } from '../../src/verify/removeUnusedImports'
 
 const files = {

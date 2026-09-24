@@ -1,0 +1,28 @@
+Clear nine red suites; align classifier and catalog
+
+- cli-arguments imported ../../packages/cli; thyrox keeps packages
+  under src/.
+- classifierOperatorModel builds the yolo prompt, which reads the auto
+  mode config, without config host bindings; it installs them.
+- triple counted as absent the roots whose clone is not in this
+  session (odoo-tools, claude-code-nestor-monroy-tools, -progress),
+  mixing "could not measure" with "declared wrong". It measures the
+  roots whose clone is present and keeps the denominator of nine.
+- The stage-1 classifier suffixes follow 2.1.275: the response must
+  begin with <block>, and the two-stage form judges the full effect of
+  the action. The fast-suffix pin follows. The four gate pins of the
+  same suite stay red: permissions.ts lacks the auto-mode gate, part
+  of the permission port that is still open.
+- models.jsonl is re-derived from the 2.1.275 dump; 2.1.258 was folded
+  into an archive and the test refused to measure. Fable 5.1 gains
+  per_turn_effort and a lower effort cost index (max 1.91 -> 1.74).
+- bunfs gains the row for 2.1.281, the build the container updated to
+  mid-session: 2249 entries, 116 948 B of table, 44 192 578 B of
+  content. Its corpus is not vendored; the reference stays 2.1.275.
+- refreshOAuthToken returns to the one-line expires_in form its pin
+  reads; the exchange function keeps the braced form its own pin reads.
+- removeUnusedImports and tscFixCensus build a TypeScript language
+  service and exceeded 5 s under the parallel suite; they get 60 s,
+  like the other three verify suites.
+
+The bench records the start of the validatePath chain port.

@@ -1,0 +1,1 @@
+Kr={behavior:"deny",message:"~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by Claude Code; it cannot be written directly",decisionReason:{type:"safetyCheck",reason:"seed-admin git configuration is a code-execution surface for the upload",classifierApprovable:!1}}

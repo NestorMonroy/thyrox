@@ -1,6 +1,13 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
+import { installConfigHostBindings } from '@thyrox/config/host'
 import { getEmptyToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { buildYoloSystemPrompt } from '../yoloSystemPrompt.js'
+
+// `buildYoloSystemPrompt` lee la config de auto mode (`getAutoModeConfig`),
+// que exige los host bindings de `@thyrox/config`.
+beforeEach(() => {
+  installConfigHostBindings({})
+})
 
 /**
  * Copia de `ccnmt: packages/permission/src/__tests__/classifierOperatorModel.contract.test.ts`

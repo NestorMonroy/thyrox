@@ -1,0 +1,3 @@
+src/packages/agent/__tests__/catalogCoverage.test.ts
+src/packages/agent/__tests__/equivalentTokens.test.ts
+src/packages/agent/__tests__/models.test.ts

@@ -69,9 +69,11 @@ describe('two-stage classifier stage-1 suffix (ant Gp5: both→fp5, fast→Mp5)'
     expect(xmlFormat).toMatch(/Block if ANY rule could apply/)
   })
 
-  test('Mp5 (fast-only) suffix stays the terse immediate-block form', () => {
+  // 2.1.275 cambió el sufijo corto: ya no es «<block> immediately», sino la
+  // exigencia de empezar la respuesta por <block> (gana el binario).
+  test('fast-only suffix: la respuesta tiene que EMPEZAR por <block> (2.1.275)', () => {
     expect(xmlFormat).toMatch(
-      /XML_S1_SUFFIX = '\\nErr on the side of blocking\. <block> immediately\.'/,
+      /XML_S1_SUFFIX =\s*'\\nErr on the side of blocking\. Your ENTIRE response MUST begin with <block>\./,
     )
   })
 

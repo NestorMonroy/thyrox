@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { Command } from '@commander-js/extra-typings'
-import { createMainProgram } from '../../packages/cli/src/entry/commander.js'
+import { createMainProgram } from '../../src/packages/cli/src/entry/commander.js'
 
 // Test Commander.js option parsing independently from main.tsx initialization.
 // main.tsx has heavy bootstrap dependencies; we test the CLI argument parsing

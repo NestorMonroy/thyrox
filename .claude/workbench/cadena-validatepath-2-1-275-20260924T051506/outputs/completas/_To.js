@@ -1,0 +1,1 @@
+function _To(e){return Object.values(e.alwaysDenyRules).some((n)=>n?.some((r)=>r===rt||r.startsWith(`${rt}(`)))}

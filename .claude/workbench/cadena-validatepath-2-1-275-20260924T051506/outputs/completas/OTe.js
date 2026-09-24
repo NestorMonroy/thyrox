@@ -1,0 +1,1 @@
+function OTe(e,n,r){if(n.blockReadsOutsideWorkingDirectories!==!0)return!1;let s=r??On(e);return!my(e,n,s,NGt(n))&&hee(e,{},s,{restricted:n.restricted,blockOutsideReads:!0,readBlockFence:!0}).behavior!=="allow"}

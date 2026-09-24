@@ -1,0 +1,1 @@
+function Rj(e){let n=Is(e);if(n===null)return!1;return n.comparePath===n.compareDir||n.comparePath.startsWith(n.prefix)&&!tq(n.comparePath,n.prefix,yM)}

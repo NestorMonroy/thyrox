@@ -51,6 +51,11 @@ const MEASURED: Record<string, { entries: number; tableBytes: number; extractedB
   // 194 * 52 = 10 088 B, exactamente lo que crece la tabla (107 016 - 96 928).
   // El contenido sube 2 200 889 B, la segunda subida seguida.
   '2.1.274': { entries: 2058, tableBytes: 107_016, extractedBytes: 41_093_696 },
+  // Medida el 2026-09-24T05:18:51 con `binary info` sobre la build viva: el contenedor se
+  // actualizo a 2.1.281 a mitad de sesion. 2249 entradas, 116 948 B de tabla
+  // (2249 * 52, paso invariante) y 44 192 578 B de contenido. El corpus de esta
+  // build NO se vendorizo en `_references/`: la referencia vigente es 2.1.275.
+  '2.1.281': { entries: 2249, tableBytes: 116_948, extractedBytes: 44_192_578 },
 }
 
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null
