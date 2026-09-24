@@ -1512,3 +1512,21 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export { filterUnresolvedToolUses } from './loop/session/reconcile.js'
+
+/**
+ * El texto de un mensaje del asistente: sus bloques de texto no vacíos,
+ * unidos por salto de línea y recortados; null si no es del asistente, si su
+ * contenido no es una lista o si no queda texto (≙ `qO` de 2.1.275).
+ */
+export function getAssistantMessageText(message: Message): string | null {
+  if (message.type !== 'assistant') return null
+  const content = message.message?.content
+  if (!Array.isArray(content)) return null
+  return (
+    content
+      .map(block => (block as { type?: string; text?: string }).type === 'text' ? ((block as { text?: string }).text ?? '') : '')
+      .filter(text => text !== '')
+      .join('\n')
+      .trim() || null
+  )
+}

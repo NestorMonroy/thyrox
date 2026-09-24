@@ -1,0 +1,1 @@
+async function n5r(){let e=bd();if(M()!=="windows"||!u8()||e.checkDependenciesProbe.cache.has(void 0))return mbe();let n=XWt();if(n)return n;let r=e.dependencyProbeGeneration,{rgPath:s,rgArgs:g}=vw(),h=await Gd.checkDependenciesAsync({command:s,args:g}),y=YWt(h);if(r===e.dependencyProbeGeneration)e.checkDependenciesProbe.cache.set(void 0,y);return y}

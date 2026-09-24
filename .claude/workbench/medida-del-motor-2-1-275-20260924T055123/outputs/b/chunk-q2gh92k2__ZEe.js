@@ -1,0 +1,1 @@
+function ZEe(e){if(e?.type==="rule"&&e.rule.ruleBehavior==="ask")return!0;if(e?.type==="subcommandResults"){for(let n of e.reasons.values())if(n.behavior==="ask"&&ZEe(n.decisionReason))return!0}return!1}

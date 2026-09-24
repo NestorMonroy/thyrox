@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bun install 2>&1 | tail -5", "started_at": "2026-09-24T05:55:05+00:00"}

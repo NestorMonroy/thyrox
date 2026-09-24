@@ -1,0 +1,5 @@
+tests/package/dependencies.test.ts
+tests/package/sibling_exports.test.ts
+src/packages/permission/src/__tests__/toolRuleMatching.test.ts
+src/packages/permission/src/__tests__/pathSafety.test.ts
+src/packages/agent/__tests__/getAssistantMessageText.test.ts

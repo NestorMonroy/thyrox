@@ -1,0 +1,541 @@
+-- ROJO src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1480.00ms]
+-- ROJO src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:
+106 |     expect(classifierDecision).toMatch(/export function isPlanModeDecision/)
+107 |     expect(classifierDecision).toMatch(/reason\?\.type === 'mode'/)
+108 |   })
+109 | 
+110 |   test('the gate triages via computeAutoModeFallback before the classifier', () => {
+111 |     expect(permissions).toMatch(/computeAutoModeFallback\(/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /computeAutoModeFallback\(/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (5 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n  permissionRuleValueToString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n\n/** Singular o plural por conteo (≙ `P`). */\nfunction pluralize(count: number, singular: string, pluralForm = `${singular}s`): string {\n  return count === 1 ? singular : pluralForm\n}\n\n/** El comando sin sus redirecciones de salida, o undefined si no se pudo (≙ `Spe`). */\nfunction commandWithoutOutputRedirections(command: string): string | undefined {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    const { extractOutputRedirections } = require('@thyrox/shell/bash/commands.js') as {\n      extractOutputRedirections: (cmd: string) => { commandWithoutRedirections: string; redirections: unknown[] }\n    }\n    const { commandWithoutRedirections, redirections } = extractOutputRedirections(command)\n    return redirections.length > 0 ? commandWithoutRedirections : command\n  } catch {\n    return undefined\n  }\n}\n\nfunction permissionModeTitleDeferred(mode: string): string {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    return (require('./PermissionMode.js') as { permissionModeTitle: (m: string) => string }).permissionModeTitle(mode)\n  } catch {\n    return mode\n  }\n}\n\ntype PermissionRequestReason = {\n  type: string\n  reason?: string\n  classifier?: string\n  hookName?: string\n  rule?: PermissionRule\n  reasons?: Map<string, { behavior: string }>\n  permissionPromptToolName?: string\n  mode?: string\n}\n\n/**\n * El texto con que se pide aprobación para usar `toolName`, según la razón\n * de la decisión (≙ `su` de 2.1.275, `chunk-q2gh92k2.js`). En la forma de\n * subcomandos, sólo cuentan los que piden o pasan de largo; en Bash se\n * muestran sin sus redirecciones de salida.\n */\nexport function createPermissionRequestMessage(toolName: string, decisionReason?: PermissionRequestReason): string {\n  if (decisionReason) {\n    if (decisionReason.type === 'classifier') {\n      return `Classifier '${decisionReason.classifier}' requires approval for this ${toolName} command: ${decisionReason.reason}`\n    }\n    switch (decisionReason.type) {\n      case 'hook':\n        return decisionReason.reason\n          ? `Hook '${decisionReason.hookName}' blocked this action: ${decisionReason.reason}`\n          : `Hook '${decisionReason.hookName}' requires approval for this ${toolName} command`\n      case 'rule': {\n        const rule = decisionReason.rule!\n        const ruleString = permissionRuleValueToString(rule.ruleValue)\n        const source = permissionRuleSourceDisplayString(rule.source)\n        return `Permission rule '${ruleString}' from ${source} requires approval for this ${toolName} command`\n      }\n      case 'subcommandResults': {\n        const parts: string[] = []\n        for (const [command, result] of decisionReason.reasons ?? new Map()) {\n          if (result.behavior !== 'ask' && result.behavior !== 'passthrough') continue\n          parts.push(toolName === 'Bash' ? (commandWithoutOutputRedirections(command) ?? command) : command)\n        }\n        if (parts.length > 0) {\n          const n = parts.length\n          return `This ${toolName} command contains multiple operations. The following ${pluralize(n, 'part')} ${pluralize(n, 'requires', 'require')} approval: ${parts.join(', ')}`\n        }\n        return `This ${toolName} command contains multiple operations that require approval`\n      }\n      case 'permissionPromptTool':\n        return `Tool '${decisionReason.permissionPromptToolName}' requires approval for this ${toolName} command`\n      case 'sandboxOverride':\n        return 'Run outside of the sandbox'\n      case 'workingDir':\n      case 'safetyCheck':\n      case 'other':\n      case 'asyncAgent':\n        return decisionReason.reason as string\n      case 'mode':\n        return `Current permission mode (${permissionModeTitleDeferred(decisionReason.mode as string)}) requires approval for this ${toolName} command`\n    }\n  }\n  return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:111:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > the gate triages via computeAutoModeFallback before the classifier [0.39ms]
+114 | 
+115 |   test('sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f)', () => {
+116 |     // `computeAutoModeFallback` devuelve null cuando sólo hay
+117 |     // `sandboxOverride`, para que llegue al clasificador; las tres razones que
+118 |     // merecen prompt devuelven una razón.
+119 |     expect(classifierDecision).toMatch(/sandboxOverride alone/)
+                                     ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /sandboxOverride alone/
+Received: "import { feature } from 'bun:bundle'\nimport { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'\nimport { ENTER_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/EnterPlanModeTool/constants.js'\nimport { EXIT_PLAN_MODE_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'\nimport { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'\nimport { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'\nimport { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'\nimport { LIST_MCP_RESOURCES_TOOL_NAME } from '@thyrox/tool-registry/tools/ListMcpResourcesTool/prompt.js'\nimport { LSP_TOOL_NAME } from '@thyrox/tool-registry/tools/LSPTool/prompt.js'\nimport { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'\nimport { SLEEP_TOOL_NAME } from '@thyrox/tool-registry/tools/SleepTool/prompt.js'\nimport { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'\nimport { TASK_GET_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskGetTool/constants.js'\nimport { TASK_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskListTool/constants.js'\nimport { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'\nimport { TASK_STOP_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskStopTool/prompt.js'\nimport { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'\nimport { TEAM_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamCreateTool/constants.js'\nimport { TEAM_DELETE_TOOL_NAME } from '@thyrox/tool-registry/tools/TeamDeleteTool/constants.js'\nimport { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'\nimport { TOOL_SEARCH_TOOL_NAME } from '@thyrox/tool-registry/tools/ToolSearchTool/prompt.js'\nimport { WORKFLOW_TOOL_NAME } from '@thyrox/tool-registry/tools/WorkflowTool/constants.js'\nimport { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifier.js'\nimport type { PermissionDecisionReason } from './permissionTypes.js'\n\n// Copia de `ccnmt: packages/permission/src/classifierDecision.ts` con los\n// comentarios traducidos; el cuerpo es el de la fuente.\n//\n// Nombres de herramienta exclusivos de ant: `require` condicional, para que Bun\n// pueda eliminarlos como código muerto en las builds externas. Las guardas\n// replican las de `tools.ts`. Mantiene las cadenas de nombre de herramienta\n// fuera de `cli.js`.\n/* eslint-disable @typescript-eslint/no-require-imports */\nconst TERMINAL_CAPTURE_TOOL_NAME = feature('TERMINAL_PANEL')\n  ? (\n      require('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/TerminalCaptureTool/prompt.js')\n    ).TERMINAL_CAPTURE_TOOL_NAME\n  : null\nconst OVERFLOW_TEST_TOOL_NAME = feature('OVERFLOW_TEST_TOOL')\n  ? (\n      require('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js') as typeof import('@thyrox/tool-registry/tools/OverflowTestTool/OverflowTestTool.js')\n    ).OVERFLOW_TEST_TOOL_NAME\n  : null\nconst VERIFY_PLAN_EXECUTION_TOOL_NAME =\n  process.env.USER_TYPE === 'ant'\n    ? (\n        require('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js') as typeof import('@thyrox/tool-registry/tools/VerifyPlanExecutionTool/constants.js')\n      ).VERIFY_PLAN_EXECUTION_TOOL_NAME\n    : null\n/* eslint-enable @typescript-eslint/no-require-imports */\n\n/**\n * Herramientas que son seguras y no necesitan que el clasificador las revise.\n * El clasificador de modo automático las usa para saltarse llamadas al API\n * innecesarias. NO incluye las herramientas de escritura y edición — de ésas\n * se ocupa el camino rápido de `acceptEdits` (permitidas dentro del CWD,\n * clasificadas fuera de él).\n */\nconst SAFE_YOLO_ALLOWLISTED_TOOLS = new Set([\n  // Operaciones de archivo de sólo lectura\n  FILE_READ_TOOL_NAME,\n  // Búsqueda, de sólo lectura\n  GREP_TOOL_NAME,\n  GLOB_TOOL_NAME,\n  LSP_TOOL_NAME,\n  TOOL_SEARCH_TOOL_NAME,\n  LIST_MCP_RESOURCES_TOOL_NAME,\n  'ReadMcpResourceTool', // sin constante exportada\n  // Gestión de tareas (sólo metadata)\n  TODO_WRITE_TOOL_NAME,\n  TASK_CREATE_TOOL_NAME,\n  TASK_GET_TOOL_NAME,\n  TASK_UPDATE_TOOL_NAME,\n  TASK_LIST_TOOL_NAME,\n  TASK_STOP_TOOL_NAME,\n  TASK_OUTPUT_TOOL_NAME,\n  // Modo plan e interfaz\n  ASK_USER_QUESTION_TOOL_NAME,\n  ENTER_PLAN_MODE_TOOL_NAME,\n  EXIT_PLAN_MODE_TOOL_NAME,\n  // Coordinación del swarm (sólo buzón interno y estado de equipo — los\n  // pares llevan sus propias comprobaciones de permiso, así que no hay\n  // elusión de seguridad real).\n  TEAM_CREATE_TOOL_NAME,\n  // Limpieza de agentes\n  TEAM_DELETE_TOOL_NAME,\n  SEND_MESSAGE_TOOL_NAME,\n  // Orquestación de workflow — cada subagente pasa por canUseTool\n  WORKFLOW_TOOL_NAME,\n  // Varios, seguros\n  SLEEP_TOOL_NAME,\n  // Herramientas seguras exclusivas de ant (las guardas replican tools.ts)\n  ...(TERMINAL_CAPTURE_TOOL_NAME ? [TERMINAL_CAPTURE_TOOL_NAME] : []),\n  ...(OVERFLOW_TEST_TOOL_NAME ? [OVERFLOW_TEST_TOOL_NAME] : []),\n  ...(VERIFY_PLAN_EXECUTION_TOOL_NAME ? [VERIFY_PLAN_EXECUTION_TOOL_NAME] : []),\n  // Herramienta interna del clasificador\n  YOLO_CLASSIFIER_TOOL_NAME,\n])\n\nexport function isAutoModeAllowlistedTool(toolName: string): boolean {\n  return SAFE_YOLO_ALLOWLISTED_TOOLS.has(toolName)\n}\n\n/**\n * Si una decisión de permiso es una regla `ask` que el usuario configuró\n * explícitamente — de forma directa, o anidada dentro de un paquete de\n * `subcommandResults` de Bash. ant `FW6` (4260.js). Ante éstas el modo\n * automático tiene que caer de vuelta al PROMPT en vez de entregárselas al\n * clasificador: el usuario dijo deliberadamente «pregúntame sobre esto», así\n * que la respuesta le toca a él darla, no a un LLM más débil adivinarla.\n */\nexport function isAskRuleDecision(\n  reason: PermissionDecisionReason | undefined,\n): boolean {\n  if (reason?.type === 'rule' && reason.rule.ruleBehavior === 'ask') {\n    return true\n  }\n  if (reason?.type === 'subcommandResults') {\n    for (const sub of reason.reasons.values()) {\n      if (sub.behavior === 'ask' && isAskRuleDecision(sub.decisionReason)) {\n        return true\n      }\n    }\n  }\n  return false\n}\n\n/**\n * Si una decisión es el piso del modo plan (ant `qMK`, 4260.js): el modo plan\n * fuerza un prompt de aprobación que el modo automático no puede resolver por\n * su cuenta con el clasificador.\n */\nexport function isPlanModeDecision(\n  reason: PermissionDecisionReason | undefined,\n): boolean {\n  return reason?.type === 'mode' && reason.mode === 'plan'\n}\n\n/**\n * Triaje puro previo al clasificador para el modo automático (ant `xaH`\n * 4260.js, el bloque `j||J||D||M||f`). Decide si una decisión debe saltarse el\n * clasificador por completo y preguntarle o denegarle al usuario en su lugar.\n * Devuelve:\n *   - 'deny-headless'        — una razón que merece prompt, pero sin prompt\n *                              disponible\n *   - {reason}               — caer de vuelta al prompt (quien llama devuelve\n *                              el resultado 'ask' y registra\n *                              tengu_auto_mode_fallback_to_ask)\n *   - null                   — seguir hacia el clasificador\n * No tiene efectos secundarios, por eso vive aquí (sin ataduras al host); el\n * `logEvent` y el retorno son de quien llama. `M` (el techo de organización de\n * MCP) queda omitido — ccb no tiene techo de organización. `sandboxOverride`\n * por sí solo NO es una caída de vuelta (la condición interactiva de ant es\n * j||D||f).\n */\nexport type AutoModeFallback =\n  | 'deny-headless'\n  | { reason: 'safety_check' | 'ask_rule' | 'plan_mode_floor' }\n  | null\n\nexport function computeAutoModeFallback(\n  reason: PermissionDecisionReason | undefined,\n  isHeadless: boolean,\n): AutoModeFallback {\n  const isNonApprovableSafetyCheck =\n    reason?.type === 'safetyCheck' && !reason.classifierApprovable\n  const isSandboxOverride = reason?.type === 'sandboxOverride'\n  const isAskRule = isAskRuleDecision(reason)\n  const isPlanFloor = isPlanModeDecision(reason)\n  if (\n    !isNonApprovableSafetyCheck &&\n    !isSandboxOverride &&\n    !isAskRule &&\n    !isPlanFloor\n  ) {\n    return null\n  }\n  if (isHeadless) return 'deny-headless'\n  if (isNonApprovableSafetyCheck) return { reason: 'safety_check' }\n  if (isAskRule) return { reason: 'ask_rule' }\n  if (isPlanFloor) return { reason: 'plan_mode_floor' }\n  // sandboxOverride por sí solo — cae hacia el clasificador.\n  return null\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:119:32)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f) [0.15ms]
+122 |       /return \{ reason: 'safety_check' \}|reason: 'safety_check'/,
+123 |     )
+124 |   })
+125 | 
+126 |   test('emits tengu_auto_mode_fallback_to_ask for every fallback reason', () => {
+127 |     expect(permissions).toMatch(/tengu_auto_mode_fallback_to_ask/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /tengu_auto_mode_fallback_to_ask/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (5 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n  permissionRuleValueToString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n\n/** Singular o plural por conteo (≙ `P`). */\nfunction pluralize(count: number, singular: string, pluralForm = `${singular}s`): string {\n  return count === 1 ? singular : pluralForm\n}\n\n/** El comando sin sus redirecciones de salida, o undefined si no se pudo (≙ `Spe`). */\nfunction commandWithoutOutputRedirections(command: string): string | undefined {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    const { extractOutputRedirections } = require('@thyrox/shell/bash/commands.js') as {\n      extractOutputRedirections: (cmd: string) => { commandWithoutRedirections: string; redirections: unknown[] }\n    }\n    const { commandWithoutRedirections, redirections } = extractOutputRedirections(command)\n    return redirections.length > 0 ? commandWithoutRedirections : command\n  } catch {\n    return undefined\n  }\n}\n\nfunction permissionModeTitleDeferred(mode: string): string {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    return (require('./PermissionMode.js') as { permissionModeTitle: (m: string) => string }).permissionModeTitle(mode)\n  } catch {\n    return mode\n  }\n}\n\ntype PermissionRequestReason = {\n  type: string\n  reason?: string\n  classifier?: string\n  hookName?: string\n  rule?: PermissionRule\n  reasons?: Map<string, { behavior: string }>\n  permissionPromptToolName?: string\n  mode?: string\n}\n\n/**\n * El texto con que se pide aprobación para usar `toolName`, según la razón\n * de la decisión (≙ `su` de 2.1.275, `chunk-q2gh92k2.js`). En la forma de\n * subcomandos, sólo cuentan los que piden o pasan de largo; en Bash se\n * muestran sin sus redirecciones de salida.\n */\nexport function createPermissionRequestMessage(toolName: string, decisionReason?: PermissionRequestReason): string {\n  if (decisionReason) {\n    if (decisionReason.type === 'classifier') {\n      return `Classifier '${decisionReason.classifier}' requires approval for this ${toolName} command: ${decisionReason.reason}`\n    }\n    switch (decisionReason.type) {\n      case 'hook':\n        return decisionReason.reason\n          ? `Hook '${decisionReason.hookName}' blocked this action: ${decisionReason.reason}`\n          : `Hook '${decisionReason.hookName}' requires approval for this ${toolName} command`\n      case 'rule': {\n        const rule = decisionReason.rule!\n        const ruleString = permissionRuleValueToString(rule.ruleValue)\n        const source = permissionRuleSourceDisplayString(rule.source)\n        return `Permission rule '${ruleString}' from ${source} requires approval for this ${toolName} command`\n      }\n      case 'subcommandResults': {\n        const parts: string[] = []\n        for (const [command, result] of decisionReason.reasons ?? new Map()) {\n          if (result.behavior !== 'ask' && result.behavior !== 'passthrough') continue\n          parts.push(toolName === 'Bash' ? (commandWithoutOutputRedirections(command) ?? command) : command)\n        }\n        if (parts.length > 0) {\n          const n = parts.length\n          return `This ${toolName} command contains multiple operations. The following ${pluralize(n, 'part')} ${pluralize(n, 'requires', 'require')} approval: ${parts.join(', ')}`\n        }\n        return `This ${toolName} command contains multiple operations that require approval`\n      }\n      case 'permissionPromptTool':\n        return `Tool '${decisionReason.permissionPromptToolName}' requires approval for this ${toolName} command`\n      case 'sandboxOverride':\n        return 'Run outside of the sandbox'\n      case 'workingDir':\n      case 'safetyCheck':\n      case 'other':\n      case 'asyncAgent':\n        return decisionReason.reason as string\n      case 'mode':\n        return `Current permission mode (${permissionModeTitleDeferred(decisionReason.mode as string)}) requires approval for this ${toolName} command`\n    }\n  }\n  return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:127:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > emits tengu_auto_mode_fallback_to_ask for every fallback reason [0.27ms]
+139 |       expect(permissions).toContain(`'${reason}'`)
+140 |     }
+141 |   })
+142 | 
+143 |   test('REPL is allowed through on transcript-too-long (ant if(H.name===e9))', () => {
+144 |     expect(permissions).toMatch(/tool\.name === REPL_TOOL_NAME/)
+                              ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /tool\.name === REPL_TOOL_NAME/
+Received: "/**\n * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`\n * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no\n * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,\n * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`\n * (`import { getDenyRuleForTool } from '@thyrox/permission/permissions'`).\n *\n * PORTADAS (11 de 17) — el bloque completo de \"reglas puras\" de la fuente\n * (líneas ~123-395), todas construidas sobre las mismas tres piezas\n * (`getPermissionRuleSources`, `toolMatchesRule`, `getToolNameForPermissionCheck`):\n *\n *   `getAllowRules` · `getDenyRules` · `getAskRules` · `toolAlwaysAllowedRule`\n *   · `getDenyRuleForTool` (el objetivo) · `getAskRuleForTool` ·\n *   `getDenyRuleForAgent` · `filterDeniedAgents` · `getRuleByContentsForTool`\n *   · `getRuleByContentsForToolName` · `permissionRuleSourceDisplayString`\n *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver\n *   abajo; antes OMITIDA por falta de consumidor)\n *\n * OMITIDAS (5 de 17), declaradas por nombre, línea y bloqueo — ninguna\n * tiene consumidor confirmado en este pase:\n *\n *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —\n *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,\n *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por\n *     `./PermissionUpdate.js` (330 líneas, no portado).\n *   - `checkRuleBasedPermissions` (permissions.ts:1107-1366, ~259 líneas) —\n *     mismo bloqueo que la anterior.\n *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por\n *     `deletePermissionRuleFromSettings` (host binding sin implementación\n *     de referencia en este árbol) y `./PermissionUpdate.js`.\n *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —\n *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.\n *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada\n *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.\n *\n * Divergencias medidas en lo portado:\n *\n * - `getPermissionRuleSources` usa `SETTING_SOURCES` de\n *   `@claude-code-how-works/config`; se repunta a `@thyrox/config`, que\n *   declara el mismo array de 5 elementos (mismos nombres — verificado\n *   leyendo `config/settings/constants.ts`). El especificador `@thyrox/*`\n *   no resuelve todavía en este árbol (falta `\"workspaces\"` en la raíz,\n *   medido con `Bun.resolveSync`), así que se usa `require()` diferido con\n *   respaldo — el mismo array escrito localmente si el require falla.\n * - `ToolPermissionContext` es un tipo inline (igual que en la fuente,\n *   comentario \"V7 §11.4 — inlined types\" en el original), pero MÁS\n *   PRECISO que el de la fuente: la fuente lo declara como\n *   `{ permissionRules: unknown; [key: string]: unknown }`, que bajo\n *   `strict`/`noUncheckedIndexedAccess` no tipa las tres propiedades que\n *   este archivo realmente indexa (`alwaysAllowRules`/`alwaysDenyRules`/\n *   `alwaysAskRules`). Es una declaración de tipo local, no cambia\n *   comportamiento en tiempo de ejecución.\n * - `Tool` es el mismo tipo inline de la fuente\n *   (`{ name: string; [key: string]: unknown }`).\n * - `permissionRuleSourceDisplayString` llama en la fuente a\n *   `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`\n *   (paquete no linkeado aquí). Se INLINEA el mismo `switch` de ocho casos\n *   verbatim (leído de `ccnmt: packages/config/settings/constants.ts:73-93`,\n *   sólo lectura), en vez de un `require()` diferido con respaldo — a\n *   diferencia de `SETTING_SOURCES` arriba, esta función SÍ tiene forma de\n *   `@thyrox/config` real que citar y copiar, así que no hace falta el\n *   patrón try/require.\n *\n * `ToolPermissionContext` se EXPORTA en este pase (no lo estaba) para que\n * `shadowedRuleDetection.ts` — mismo paquete, mismo pase — pueda pasarle\n * su propio contexto sin declarar un cuarto tipo duplicado.\n */\nimport type {\n  PermissionBehavior,\n  PermissionRule,\n  PermissionRuleSource,\n} from './permissionTypes.js'\nimport {\n  permissionRuleValueFromString,\n  permissionRuleValueToString,\n} from './permissionRuleParser.js'\n\nexport type ToolPermissionContext = {\n  alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysDenyRules: Partial<Record<PermissionRuleSource, string[]>>\n  alwaysAskRules: Partial<Record<PermissionRuleSource, string[]>>\n  [key: string]: unknown\n}\n\ntype Tool = { name: string; [key: string]: unknown }\n\nconst FALLBACK_SETTING_SOURCES = [\n  'userSettings',\n  'projectSettings',\n  'localSettings',\n  'flagSettings',\n  'policySettings',\n] as const\n\nfunction requireConfigSettingSources(): { SETTING_SOURCES: readonly string[] } {\n  // eslint-disable-next-line @typescript-eslint/no-require-imports\n  return require('@thyrox/config')\n}\n\nfunction getPermissionRuleSources(): readonly PermissionRuleSource[] {\n  let base: readonly string[]\n  try {\n    base = requireConfigSettingSources().SETTING_SOURCES\n  } catch {\n    base = FALLBACK_SETTING_SOURCES\n  }\n  return [...base, 'cliArg', 'command', 'session'] as readonly PermissionRuleSource[]\n}\n\nexport function getAllowRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAllowRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'allow' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getDenyRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysDenyRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'deny' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\nexport function getAskRules(context: ToolPermissionContext): PermissionRule[] {\n  return getPermissionRuleSources().flatMap(source =>\n    (context.alwaysAskRules[source] || []).map(ruleString => ({\n      source,\n      ruleBehavior: 'ask' as const,\n      ruleValue: permissionRuleValueFromString(ruleString),\n    })),\n  )\n}\n\n/**\n * Nombre de fuente en minúsculas para mensajes de advertencia/prompt —\n * `permissions.ts:123-131` en la fuente, que delega en\n * `getSettingSourceDisplayNameLowercase` de `@claude-code-how-works/config`.\n * Ver la divergencia declarada en el docstring del módulo: el `switch` se\n * inlinea aquí verbatim (leído de\n * `ccnmt: packages/config/settings/constants.ts:73-93`).\n */\nexport function permissionRuleSourceDisplayString(\n  source: PermissionRuleSource,\n): string {\n  switch (source) {\n    case 'userSettings':\n      return 'user settings'\n    case 'projectSettings':\n      return 'shared project settings'\n    case 'localSettings':\n      return 'project local settings'\n    case 'flagSettings':\n      return 'command line arguments'\n    case 'policySettings':\n      return 'enterprise managed settings'\n    case 'cliArg':\n      return 'CLI argument'\n    case 'command':\n      return 'command configuration'\n    case 'session':\n      return 'current session'\n  }\n}\n\nfunction mcpInfoFromString(s: string): { serverName: string; toolName: string | undefined } | null {\n  const parts = s.split('__')\n  const [mcp, server, ...rest] = parts\n  if (mcp !== 'mcp' || !server) return null\n  return { serverName: server, toolName: rest.length > 0 ? rest.join('__') : undefined }\n}\n\nfunction getToolNameForPermissionCheck(tool: {\n  name: string\n  mcpInfo?: { serverName: string; toolName: string }\n}): string {\n  if (tool.mcpInfo) return `mcp__${tool.mcpInfo.serverName}__${tool.mcpInfo.toolName}`\n  return tool.name\n}\n\n/**\n * ¿Esta regla casa esta llamada entera? Casa \"Bash\" pero no\n * \"Bash(prefix:*)\" para BashTool. También casa herramientas MCP por\n * servidor: la regla \"mcp__server1\" casa \"mcp__server1__tool1\".\n */\nfunction toolMatchesRule(\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n  rule: PermissionRule,\n): boolean {\n  if (rule.ruleValue.ruleContent !== undefined) {\n    return false\n  }\n\n  const nameForRuleMatch = getToolNameForPermissionCheck(tool)\n\n  if (rule.ruleValue.toolName === nameForRuleMatch) {\n    return true\n  }\n\n  const ruleInfo = mcpInfoFromString(rule.ruleValue.toolName)\n  const toolInfo = mcpInfoFromString(nameForRuleMatch)\n\n  return (\n    ruleInfo !== null &&\n    toolInfo !== null &&\n    (ruleInfo.toolName === undefined || ruleInfo.toolName === '*') &&\n    ruleInfo.serverName === toolInfo.serverName\n  )\n}\n\nexport function toolAlwaysAllowedRule(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAllowRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\n/**\n * ¿La herramienta está en las reglas de denegación permanente? Es el\n * objetivo de este pase — consumido por\n * `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts`.\n */\nexport function getDenyRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getDenyRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getAskRuleForTool(\n  context: ToolPermissionContext,\n  tool: Pick<Tool, 'name'> & { mcpInfo?: { serverName: string; toolName: string } },\n): PermissionRule | null {\n  return getAskRules(context).find(rule => toolMatchesRule(tool, rule)) || null\n}\n\nexport function getDenyRuleForAgent(\n  context: ToolPermissionContext,\n  agentToolName: string,\n  agentType: string,\n): PermissionRule | null {\n  return (\n    getDenyRules(context).find(\n      rule =>\n        rule.ruleValue.toolName === agentToolName &&\n        rule.ruleValue.ruleContent === agentType,\n    ) || null\n  )\n}\n\nexport function filterDeniedAgents<T extends { agentType: string }>(\n  agents: T[],\n  context: ToolPermissionContext,\n  agentToolName: string,\n): T[] {\n  const deniedAgentTypes = new Set<string>()\n  for (const rule of getDenyRules(context)) {\n    if (\n      rule.ruleValue.toolName === agentToolName &&\n      rule.ruleValue.ruleContent !== undefined\n    ) {\n      deniedAgentTypes.add(rule.ruleValue.ruleContent)\n    }\n  }\n  return agents.filter(agent => !deniedAgentTypes.has(agent.agentType))\n}\n\nexport function getRuleByContentsForTool(\n  context: ToolPermissionContext,\n  tool: Tool & { mcpInfo?: { serverName: string; toolName: string } },\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  return getRuleByContentsForToolName(context, getToolNameForPermissionCheck(tool), behavior)\n}\n\nexport function getRuleByContentsForToolName(\n  context: ToolPermissionContext,\n  toolName: string,\n  behavior: PermissionBehavior,\n): Map<string, PermissionRule> {\n  const ruleByContents = new Map<string, PermissionRule>()\n  let rules: PermissionRule[] = []\n  switch (behavior) {\n    case 'allow':\n      rules = getAllowRules(context)\n      break\n    case 'deny':\n      rules = getDenyRules(context)\n      break\n    case 'ask':\n      rules = getAskRules(context)\n      break\n  }\n  for (const rule of rules) {\n    if (\n      rule.ruleValue.toolName === toolName &&\n      rule.ruleValue.ruleContent !== undefined &&\n      rule.ruleBehavior === behavior\n    ) {\n      ruleByContents.set(rule.ruleValue.ruleContent, rule)\n    }\n  }\n  return ruleByContents\n}\n\n/** Singular o plural por conteo (≙ `P`). */\nfunction pluralize(count: number, singular: string, pluralForm = `${singular}s`): string {\n  return count === 1 ? singular : pluralForm\n}\n\n/** El comando sin sus redirecciones de salida, o undefined si no se pudo (≙ `Spe`). */\nfunction commandWithoutOutputRedirections(command: string): string | undefined {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    const { extractOutputRedirections } = require('@thyrox/shell/bash/commands.js') as {\n      extractOutputRedirections: (cmd: string) => { commandWithoutRedirections: string; redirections: unknown[] }\n    }\n    const { commandWithoutRedirections, redirections } = extractOutputRedirections(command)\n    return redirections.length > 0 ? commandWithoutRedirections : command\n  } catch {\n    return undefined\n  }\n}\n\nfunction permissionModeTitleDeferred(mode: string): string {\n  try {\n    // eslint-disable-next-line @typescript-eslint/no-require-imports\n    return (require('./PermissionMode.js') as { permissionModeTitle: (m: string) => string }).permissionModeTitle(mode)\n  } catch {\n    return mode\n  }\n}\n\ntype PermissionRequestReason = {\n  type: string\n  reason?: string\n  classifier?: string\n  hookName?: string\n  rule?: PermissionRule\n  reasons?: Map<string, { behavior: string }>\n  permissionPromptToolName?: string\n  mode?: string\n}\n\n/**\n * El texto con que se pide aprobación para usar `toolName`, según la razón\n * de la decisión (≙ `su` de 2.1.275, `chunk-q2gh92k2.js`). En la forma de\n * subcomandos, sólo cuentan los que piden o pasan de largo; en Bash se\n * muestran sin sus redirecciones de salida.\n */\nexport function createPermissionRequestMessage(toolName: string, decisionReason?: PermissionRequestReason): string {\n  if (decisionReason) {\n    if (decisionReason.type === 'classifier') {\n      return `Classifier '${decisionReason.classifier}' requires approval for this ${toolName} command: ${decisionReason.reason}`\n    }\n    switch (decisionReason.type) {\n      case 'hook':\n        return decisionReason.reason\n          ? `Hook '${decisionReason.hookName}' blocked this action: ${decisionReason.reason}`\n          : `Hook '${decisionReason.hookName}' requires approval for this ${toolName} command`\n      case 'rule': {\n        const rule = decisionReason.rule!\n        const ruleString = permissionRuleValueToString(rule.ruleValue)\n        const source = permissionRuleSourceDisplayString(rule.source)\n        return `Permission rule '${ruleString}' from ${source} requires approval for this ${toolName} command`\n      }\n      case 'subcommandResults': {\n        const parts: string[] = []\n        for (const [command, result] of decisionReason.reasons ?? new Map()) {\n          if (result.behavior !== 'ask' && result.behavior !== 'passthrough') continue\n          parts.push(toolName === 'Bash' ? (commandWithoutOutputRedirections(command) ?? command) : command)\n        }\n        if (parts.length > 0) {\n          const n = parts.length\n          return `This ${toolName} command contains multiple operations. The following ${pluralize(n, 'part')} ${pluralize(n, 'requires', 'require')} approval: ${parts.join(', ')}`\n        }\n        return `This ${toolName} command contains multiple operations that require approval`\n      }\n      case 'permissionPromptTool':\n        return `Tool '${decisionReason.permissionPromptToolName}' requires approval for this ${toolName} command`\n      case 'sandboxOverride':\n        return 'Run outside of the sandbox'\n      case 'workingDir':\n      case 'safetyCheck':\n      case 'other':\n      case 'asyncAgent':\n        return decisionReason.reason as string\n      case 'mode':\n        return `Current permission mode (${permissionModeTitleDeferred(decisionReason.mode as string)}) requires approval for this ${toolName} command`\n    }\n  }\n  return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts:144:25)
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > REPL is allowed through on transcript-too-long (ant if(H.name===e9)) [0.12ms]
+
+ 10 pass
+ 4 fail
+ 21 expect() calls
+Ran 14 tests across 1 file. [122.00ms]
+-- ROJO src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts:
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > true in an interactive session (panel is the local_agent surface) [1129.71ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at requestImportModule (2:1)
+(fail) isBgAgentPanelEnabled — ant F6H alignment > false in a non-interactive (headless) session — ant !nonInteractive guard [0.44ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > panel-agent is excluded from the footer when the panel is active [0.26ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at requestImportModule (2:1)
+(fail) shouldHideTasksFooter — panel-agent exclusion > teammate task keeps the footer logic engaged (not a panel agent) [0.18ms]
+
+ 0 pass
+ 4 fail
+Ran 4 tests across 1 file. [1242.00ms]
+-- ROJO src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at requestImportModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1477.00ms]
+-- ROJO src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1.60s]
+-- ROJO src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1486.00ms]
+-- ROJO src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1463.00ms]
+-- ROJO tests/integration/agent-loop.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/agent-loop.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) agent message queue e2e > enqueue + getCommandQueue round-trip [1735.53ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [1.85s]
+-- ROJO tests/integration/plugin-load.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/plugin-load.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) plugin loading e2e (guards against setter-shim regressions) > McpServerConfigSchema is a callable function (catches null-literal bug) [1751.73ms]
+
+ 5 pass
+ 1 fail
+ 15 expect() calls
+Ran 6 tests across 1 file. [1.87s]
+-- ROJO tests/integration/slash-commands.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/integration/slash-commands.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) slash command popup e2e > getCommands returns at least built-in commands [1621.72ms]
+3169 |   // getInlinePlugins() is a synchronous state read with no dependency on
+3170 |   // marketplace loading, so these two sources can be fetched concurrently.
+3171 |   const inlinePlugins = getInlinePlugins()
+3172 |   const [marketplaceResult, sessionResult] = await Promise.all([
+3173 |     marketplaceLoader(),
+3174 |     inlinePlugins.length > 0
+           ^
+TypeError: undefined is not an object (evaluating 'inlinePlugins.length')
+      at assemblePluginLoadResult (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3174:5)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/pluginLoader.ts:3149:12)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/src/packages/config/plugin/loadPluginCommands.ts:424:37)
+      at memoized (/home/user/thyrox/node_modules/lodash-es/memoize.js:62:23)
+      at <anonymous> (/home/user/thyrox/tests/integration/slash-commands.test.ts:51:24)
+(fail) slash command popup e2e > getPluginCommands + getPluginSkills aggregate cleanly [6.74ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1.77s]
+-- ROJO tests/package/dependencies.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/dependencies.test.ts:
+193 |     const dir = join(PAQUETES, nombre)
+194 |     const m = manifiesto(dir)
+195 |     const conocidas = new Set([...declaradas(m), ...deLaRaiz])
+196 | 
+197 |     test(`${m.name}: sus terceros instalados están en el manifiesto`, () => {
+198 |       expect([...clasificar(dir, conocidas).sinDeclarar].sort()).toEqual([])
+                                                                       ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "ignore",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/dependencies.test.ts:198:66)
+(fail) un tercero instalado y usado está declarado, y todo import resuelve > @thyrox/permission: sus terceros instalados están en el manifiesto [40.64ms]
+
+ 77 pass
+ 1 fail
+ 79 expect() calls
+Ran 78 tests across 1 file. [1.69s]
+-- ROJO tests/package/sibling_exports.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/package/sibling_exports.test.ts:
+296 |         const rotos = [...(CONSUMOS.get(p.nombre) ?? [])].filter(sub => {
+297 |           if (NO_EMBARCADAS[p.nombre]?.[sub]) return false
+298 |           const t = resolveSubpath(p.exports, sub)
+299 |           return t === null || !existsSync(join(p.dir, t))
+300 |         })
+301 |         expect(rotos.sort()).toEqual([])
+                                   ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "./settings/managedPath.js",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/package/sibling_exports.test.ts:301:30)
+(fail) exports de los paquetes hermanos > bloque 4 — toda subruta que el arbol CONSUME resuelve por el mapa a un archivo vivo > @thyrox/config [1.68ms]
+
+ 147 pass
+ 1 fail
+ 181 expect() calls
+Ran 148 tests across 1 file. [4.44s]
+-- ROJO tests/smoke/bg-cycle-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/bg-cycle-smoke.test.ts:
+74 | describe('smoke:bg cycle (detached)', () => {
+75 |   let short: string | undefined
+76 | 
+77 |   test('--bg-detached spawns child + writes meta.json', async () => {
+78 |     const r = await runCli(['--bg-detached', 'echo smoke'], 25_000)
+79 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:79:24)
+(fail) smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [27.36ms]
+100 |     expect(meta.status).toBe('running')
+101 |     expect(typeof meta.pid).toBe('number')
+102 |   }, 30_000)
+103 | 
+104 |   test('ps surfaces the new short', async () => {
+105 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:105:19)
+(fail) smoke:bg cycle (detached) > ps surfaces the new short [0.34ms]
+107 |     expect(r.exitCode).toBe(0)
+108 |     expect(r.stdout).toContain(short!)
+109 |   }, 20_000)
+110 | 
+111 |   test('rm removes the job dir', async () => {
+112 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:112:19)
+(fail) smoke:bg cycle (detached) > rm removes the job dir [0.20ms]
+141 | describe('smoke:bg argParse', () => {
+142 |   test('isolated home has been used (no leakage to ~/.claude/jobs)', () => {
+143 |     // The actual ~/.claude/jobs/ should not contain our smoke shorts.
+144 |     // We can't assert ABSENCE strictly (user may have other jobs) but
+145 |     // we can confirm our isolated home was where the cycle ran.
+146 |     expect(existsSync(join(ISOLATED_HOME, 'jobs'))).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:146:53)
+(fail) smoke:bg argParse > isolated home has been used (no leakage to ~/.claude/jobs) [0.06ms]
+
+ 1 pass
+ 4 fail
+ 4 expect() calls
+Ran 5 tests across 1 file. [149.00ms]
+-- ROJO tests/smoke/headless-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/headless-smoke.test.ts:
+61 | }
+62 | 
+63 | describe('smoke:headless boot', () => {
+64 |   test('--version prints something and exits 0', async () => {
+65 |     const r = await runCli(['--version'], 30_000)
+66 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:66:24)
+(fail) smoke:headless boot > --version prints something and exits 0 [10.16ms]
+69 |     expect(r.stdout).toMatch(/\d+\.\d+\.\d+/)
+70 |   }, 35_000)
+71 | 
+72 |   test('--help exits 0 and prints usage', async () => {
+73 |     const r = await runCli(['--help'], 30_000)
+74 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/headless-smoke.test.ts:74:24)
+(fail) smoke:headless boot > --help exits 0 and prints usage [9.24ms]
+
+ 1 pass
+ 2 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [146.00ms]
+-- ROJO tests/smoke/live-fire-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/live-fire-smoke.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) (unnamed) [1747.01ms]
+
+ 0 pass
+ 1 fail
+Ran 1 test across 1 file. [1.87s]
+-- ROJO tests/smoke/plugin-hooks-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/plugin-hooks-smoke.test.ts:
+23 |       'UserPromptSubmit',
+24 |       'PreCompact',
+25 |       'Notification',
+26 |     ]
+27 |     for (const e of queried) {
+28 |       expect(r.dispatch[e]).toBeDefined()
+                                 ^
+error: expect(received).toBeDefined()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:28:29)
+(fail) smoke:plugin dispatch path > dispatch probe ran for every queried event [1814.68ms]
+ 99 |   test('no dispatch query throws (every event handler reachable)', async () => {
+100 |     const r = await probeRuntime()
+101 |     const threwEvents = Object.entries(r.dispatch)
+102 |       .filter(([_, v]) => v.matched === -1)
+103 |       .map(([k]) => k)
+104 |     expect(threwEvents).toEqual([])
+                              ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "Stop",
++   "SubagentStop",
++   "SessionStart",
++   "PreToolUse",
++   "UserPromptSubmit",
++   "PreCompact",
++   "Notification",
++ ]
+
+- Expected  - 1
++ Received  + 9
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/plugin-hooks-smoke.test.ts:104:25)
+(fail) smoke:plugin dispatch path > no dispatch query throws (every event handler reachable) [0.56ms]
+
+ 3 pass
+ 2 fail
+ 2 expect() calls
+Ran 5 tests across 1 file. [1.95s]
+-- ROJO tests/smoke/repl-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/repl-smoke.test.ts:
+13 | import { probeRuntime } from './lib/runtime-probe.js'
+14 | 
+15 | describe('smoke:repl boot path', () => {
+16 |   test('bootstrap completes without errors', async () => {
+17 |     const r = await probeRuntime()
+18 |     expect(r.errors).toEqual([])
+                          ^
+error: expect(received).toEqual(expected)
+
+- []
++ [
++   "bootstrap import failed: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.",
++ ]
+
+- Expected  - 1
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/repl-smoke.test.ts:18:22)
+(fail) smoke:repl boot path > bootstrap completes without errors [2071.64ms]
+
+ 4 pass
+ 1 fail
+ 5 expect() calls
+Ran 5 tests across 1 file. [2.21s]
+-- ROJO tests/smoke/resume-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/resume-smoke.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) smoke:resume session persistence > bootstrap loads storage subsystem [1767.34ms]
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) smoke:resume session persistence > write+flush+read roundtrip via storage API [0.51ms]
+
+ 0 pass
+ 2 fail
+Ran 2 tests across 1 file. [1.91s]
+-- ROJO tests/smoke/swarm-smoke.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/smoke/swarm-smoke.test.ts:
+SyntaxError: Export named 'checkRuleBasedPermissions' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts'.
+(fail) smoke:swarm boot > agentHostBindings teammate wires resolve to functions [1931.61ms]
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [8.98ms]
+
+ 2 pass
+ 2 fail
+ 14 expect() calls
+Ran 4 tests across 1 file. [2.06s]
+-- ROJO tests/unit/state/replSelectors.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/state/replSelectors.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+SyntaxError: Export named 'enhanceSystemPromptWithEnvDetails' not found in module '/home/user/thyrox/src/packages/agent/prompts.ts'.
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1366.00ms]
+-- ROJO tests/unit/utils/messages.test.ts
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/messages.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'normalizeMessagesForAPI' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [363.00ms]
+pass=14891 fail=35 errores=7 caidas=0 archivos=977 en_rojo=21
+__BG_EXIT__=1

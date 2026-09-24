@@ -1,0 +1,1 @@
+function mFe(e,n){if(Uls.has(e))return!0;let r=KHn.get(e);if(r)return r(n);if(VHn.has(e))return ZHn(n);if(YHn.has(e)){let s=n?.actions;if(!Array.isArray(s)||s.length===0)return!1;return s.every(Gls)}return!1}

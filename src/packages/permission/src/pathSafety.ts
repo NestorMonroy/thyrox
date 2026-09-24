@@ -170,7 +170,7 @@ function settingsFilePathForSource(source: string): string | undefined {
 function managedSettingsDropInDir(): string | undefined {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/settings/managedPath.js') as { getManagedSettingsDropInDir: () => string }).getManagedSettingsDropInDir()
+    return (require('@thyrox/config/managedPath') as { getManagedSettingsDropInDir: () => string }).getManagedSettingsDropInDir()
   } catch {
     return undefined
   }
