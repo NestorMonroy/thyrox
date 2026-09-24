@@ -1,0 +1,16 @@
+Port the Claude in Chrome browser layer from 2.1.275
+
+claudeInChromeCommon.ts declared browser detection, the native
+messaging paths, the bridge sockets and openInChrome as omitted, and
+the setup module, the native host, the MCP server and /chrome import
+them. They are ported from chunk-g0b24p3s.js: the seven-browser
+table in detection order, the per-platform native messaging
+directories and registry keys, the socket directory and per-process
+socket, and openInChrome with its Windows App Paths resolution.
+
+getAllBrowserDataPaths no longer exists in 2.1.275 but this tree's
+extension detection uses it; it is derived from the same table, the
+parent of NativeMessagingHosts. The chrome_open_url telemetry is not
+ported. Annulled in turn, the http(s) guard, the Arc skip and the
+parent derivation each dropped exactly their test; the guard needed a
+fake browser on PATH to discriminate at all.

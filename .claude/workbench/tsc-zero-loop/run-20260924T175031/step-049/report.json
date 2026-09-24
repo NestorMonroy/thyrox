@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2602, "total_final": 2594, "tsc_runs": 1, "accepted": ["agent:chrome-common-browsers"], "files_kept": ["src/packages/agent/claudeInChromeCommon.ts"], "outcomes": {"agent:chrome-common-browsers": "accepted-net"}}
