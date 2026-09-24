@@ -49,9 +49,14 @@ done
 # propia superficie — el defecto que H-DOCS-504 registro en el gate hermano.
 if [[ "${#FILES[@]}" -gt 0 ]]; then
     TOUCHES=0
+    # El alcance es el ARBOL de paquetes, no solo el de entrada: el proyecto
+    # compila a los hermanos por sus enlaces, asi que un commit que toca
+    # `config/` o `agent/` mueve este mismo conteo. Medido 2026-09-24: con el
+    # alcance en `cli/` dos commits asi pasaron eximidos y el conteo subio de
+    # 2375 a 2428 sin que nada lo delatara.
     for f in "${FILES[@]}"; do
-        rel="${f#"$ROOT"/}"
-        case "$rel" in "$PACKAGE_REL"/*) TOUCHES=1 ;; esac
+        case "$f" in /*) abs="$f" ;; *) abs="$ROOT/$f" ;; esac
+        case "$abs" in "$PACKAGES_DIR"/*) TOUCHES=1 ;; esac
     done
     if [[ "$TOUCHES" -eq 0 ]]; then
         echo "check-cli-typecheck: sin cambios en el paquete" \

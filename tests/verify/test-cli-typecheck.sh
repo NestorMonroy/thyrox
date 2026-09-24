@@ -200,5 +200,25 @@ esac
 assert "enlace hoisted en un ancestro: el TS2307 es codigo roto, no enlace" codigo-roto "$V"
 assert "enlace hoisted en un ancestro sale 1 con --strict" 1 "$CODE"
 
+# --- alcance: el proyecto compila los HERMANOS, asi que tocarlos lo activa --
+# Medido 2026-09-24: el gate solo se activaba con archivos bajo `cli/`, y dos
+# commits que tocaron `config` y `agent` pasaron "sin cambios en el paquete"
+# mientras el mismo tsc subia de 2375 a 2428 errores.
+printf 'import { mark } from "@thyrox/linked";\nexport const v: number = mark;\n' \
+    > "$PKGS/subject/index.ts"
+scope_gate() {
+    OUT="$(CHECK_CLI_TYPECHECK_PKG_DIR="$PKGS/subject" \
+           CHECK_CLI_TYPECHECK_PACKAGES_DIR="$PKGS" \
+           CHECK_CLI_TYPECHECK_BASELINE="$T/sin-baseline.txt" \
+           bash "$GATE" --strict "$@" 2>&1)"
+    CODE=$?
+}
+scope_gate "$PKGS/linked/index.ts"
+case "$OUT" in *"sin cambios"*) V=eximido ;; *"OK"*) V=medido ;; *) V="$OUT" ;; esac
+assert "un archivo de un paquete hermano activa la medicion" medido "$V"
+scope_gate "$T/fuera/README.md"
+case "$OUT" in *"sin cambios"*) V=eximido ;; *) V="$OUT" ;; esac
+assert "un archivo fuera del arbol de paquetes sigue eximido" eximido "$V"
+
 printf '\n%d ok, %d fallo(s)\n' "$ok" "$fail"
 [ "$fail" -eq 0 ]

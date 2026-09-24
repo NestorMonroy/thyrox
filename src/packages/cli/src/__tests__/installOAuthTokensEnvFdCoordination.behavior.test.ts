@@ -75,7 +75,7 @@ describe('installOAuthTokens env var + FD coordination (ant NZH)', () => {
     // Pin: dynamic import inside the function so the cli barrel doesn\'t
     // eagerly pull the app-host bootstrap state module.
     expect(fnSlice).toMatch(
-      /const \{ getOauthTokenFromFd, setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootstrap\/state\.js'/,
+      /const \{ getOauthTokenFromFd, setOauthTokenFromFd \} = await import\(\s*\n?\s*'@thyrox\/app-host\/bootstrap\/state\.js'/,
     )
   })
 
@@ -133,7 +133,7 @@ describe('performLogout preserveInProcessTokens flag (ant Xw_)', () => {
 
   test('setOauthTokenFromFd loaded via lazy import (avoids circular dep)', () => {
     expect(source).toMatch(
-      /const \{ setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootstrap\/state\.js'/,
+      /const \{ setOauthTokenFromFd \} = await import\(\s*\n?\s*'@thyrox\/app-host\/bootstrap\/state\.js'/,
     )
   })
 

@@ -88,7 +88,7 @@ describe('modifiers — source pins', () => {
     // A top-level `import { isModifierPressed as ... } from '@thyrox/modifiers-napi'`
     // would load native ffi on every startup.
     expect(source).toMatch(
-      /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('modifiers-napi'\)/,
+      /const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('@thyrox\/modifiers-napi'\)/,
     )
   })
 
@@ -116,7 +116,7 @@ describe('modifiers — source pins', () => {
 
   test('prewarm calls .prewarm() from the native module (NOT a noop wrapper)', () => {
     expect(source).toMatch(
-      /const \{ prewarm \} = require\('modifiers-napi'\)[\s\S]+?prewarm\(\)/,
+      /const \{ prewarm \} = require\('@thyrox\/modifiers-napi'\)[\s\S]+?prewarm\(\)/,
     )
   })
 })
