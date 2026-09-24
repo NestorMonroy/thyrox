@@ -8,7 +8,7 @@ import type { Theme } from './theme-types.js'
  * Tree component — `├ │ └` connectors auto-rendered from React Context.
  *
  * Mirrors upstream `M7` from Anthropic's Claude Code CLI (v2.1.128 reference:
- * `bun-demincer/work/claude-code-how-works-how-works-2.1.128/resplit/3602.js` + `3603.js`).
+ * `bun-demincer/work/claude-code-2.1.128/resplit/3602.js` + `3603.js`).
  *
  * Usage:
  *   <Tree>

@@ -362,7 +362,7 @@ export function registerScheduleRemoteAgentsSkill(): void {
       if (environments.length === 0) {
         try {
           createdEnvironment = await createDefaultCloudEnvironment(
-            'claude-code-how-works-how-works-default',
+            'claude-code-default',
           )
           environments = [createdEnvironment]
         } catch (err) {

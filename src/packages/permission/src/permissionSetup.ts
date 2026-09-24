@@ -53,7 +53,7 @@
  *    agregación (fuera de alcance: `src/packages/config/`).
  *
  * 2. `getAutoModeUnavailableNotification` OMITE el sufijo
- *    `· #claude-code-how-works-how-works-feedback` que la fuente añade sólo
+ *    `· #claude-code-feedback` que la fuente añade sólo
  *    para `USER_TYPE === 'ant'` — un canal de feedback interno de Anthropic,
  *    sin cadena fiel que portar. MISMO precedente que `planModeV2.ts` ya
  *    declaró (su Divergencia 1) para una rama `ant` distinta. Esto NO es
@@ -763,7 +763,7 @@ export type AutoModeUnavailableReason = 'settings' | 'circuit-breaker' | 'model'
 
 /**
  * DIVERGENCIA DECLARADA. La fuente añade, sólo para `USER_TYPE === 'ant'`,
- * el sufijo `· #claude-code-how-works-how-works-feedback` — el nombre de un
+ * el sufijo `· #claude-code-feedback` — el nombre de un
  * canal de feedback interno de Anthropic, no un placeholder genérico. Se
  * omite aquí, siguiendo el MISMO precedente que `planModeV2.ts` ya declaró
  * (su Divergencia Declarada 1): la condición es de esa organización y no

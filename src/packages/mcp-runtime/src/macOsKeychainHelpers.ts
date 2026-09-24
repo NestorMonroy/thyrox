@@ -70,7 +70,7 @@ export function getUsername(): string {
   try {
     return process.env.USER || userInfo().username
   } catch {
-    return 'claude-code-how-works-how-works-user'
+    return 'claude-code-user'
   }
 }
 

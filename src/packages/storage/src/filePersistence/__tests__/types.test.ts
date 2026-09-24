@@ -15,7 +15,7 @@ describe('constantes de filePersistence', () => {
   })
 
   test('OUTPUTS_SUBDIR es el subdirectorio relativo de salidas', () => {
-    expect(OUTPUTS_SUBDIR).toBe('.claude-code-how-works-how-works/outputs')
+    expect(OUTPUTS_SUBDIR).toBe('.claude-code/outputs')
   })
 
   test('DEFAULT_UPLOAD_CONCURRENCY es 5', () => {

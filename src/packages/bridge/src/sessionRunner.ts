@@ -72,7 +72,7 @@ type SessionSpawnerDeps = {
    * binario de claude); contiene la ruta del script (process.argv[1]) para
    * instalaciones npm donde execPath es el runtime de node. Sin esto, node
    * ve --sdk-url como una opción de node y sale con "bad option:
-   * --sdk-url" (ver anthropics/claude-code-how-works-how-works#28334).
+   * --sdk-url" (ver anthropics/claude-code#28334).
    */
   scriptArgs: string[]
   env: NodeJS.ProcessEnv

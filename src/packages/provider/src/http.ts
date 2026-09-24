@@ -47,7 +47,7 @@ export function getMCPUserAgent(): string {
   const suffix = parts.length > 0 ? ` (${parts.join(', ')})` : ''
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const version = (require('../package.json') as { version: string }).version
-  return `claude-code-how-works-how-works/${version}${suffix}`
+  return `claude-code/${version}${suffix}`
 }
 
 // User-Agent para requests de WebFetch a sitios arbitrarios.

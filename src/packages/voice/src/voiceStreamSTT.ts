@@ -135,7 +135,7 @@ export async function connectVoiceStream(
   // private-api: visibility.external: true). Se apunta a ese host en
   // vez de claude.ai porque la zona CF de claude.ai usa TLS
   // fingerprinting y desafia a clientes no-navegador
-  // (anthropics/claude-code-how-works-how-works#34094). Mismo pod
+  // (anthropics/claude-code#34094). Mismo pod
   // private-api, misma auth OAuth Bearer — solo una zona CF que no nos
   // bloquea. El dictado de escritorio sigue usando claude.ai (Swift
   // URLSession tiene un fingerprint JA3 clase-navegador, asi que CF lo
@@ -546,7 +546,7 @@ export async function connectVoiceStream(
     const status = res.statusCode ?? 0
     // La implementacion de ws de Bun en Windows puede disparar este
     // evento para una respuesta exitosa 101 Switching Protocols
-    // (anthropics/claude-code-how-works-how-works#40510). 101 nunca es
+    // (anthropics/claude-code#40510). 101 nunca es
     // un rechazo — sale antes de destruir un upgrade que funciona.
     if (status === 101) {
       logForDebugging(

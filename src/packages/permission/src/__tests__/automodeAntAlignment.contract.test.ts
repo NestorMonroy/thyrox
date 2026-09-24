@@ -14,7 +14,7 @@ import { resolve } from 'path'
  * una edición futura los haga regresar. Ver
  * `memory/project_automode_full_align_ant_2150_2026_05_27.md` y la fuente de
  * ant en
- * `bun-demincer/work/claude-code-how-works-how-works-2.1.150/resplit/{3149,4260}.js`.
+ * `bun-demincer/work/claude-code-2.1.150/resplit/{3149,4260}.js`.
  *
  * Por qué a nivel de fuente: bun:test corre con las feature flags APAGADAS
  * (TRANSCRIPT_CLASSIFIER está tras una puerta) y el camino del clasificador

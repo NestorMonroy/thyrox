@@ -11,7 +11,7 @@ describe('generateKeybindingsTemplate', () => {
     const tpl = generateKeybindingsTemplate()
     const parsed = JSON.parse(tpl) as { $schema?: string }
     expect(parsed.$schema).toBe(
-      'https://www.schemastore.org/claude-code-how-works-how-works-keybindings.json',
+      'https://www.schemastore.org/claude-code-keybindings.json',
     )
   })
   test('includes $docs URL', () => {

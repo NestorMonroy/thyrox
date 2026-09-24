@@ -26,7 +26,7 @@ describe('getClientPlatform (ant v2.1.150 T2)', () => {
     ['sdk-ts', 'claude_code_sdk'],
     ['sdk-py', 'claude_code_sdk'],
     ['mcp', 'claude_code_mcp'],
-    ['claude-code-how-works-how-works-github-action', 'claude_code_github_action'],
+    ['claude-code-github-action', 'claude_code_github_action'],
     ['local-agent', 'claude_code_local_agent'],
     ['claude_in_slack', 'claude_in_slack'],
     ['cli', 'claude_code_cli'],

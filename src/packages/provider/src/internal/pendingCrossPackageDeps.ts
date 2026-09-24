@@ -24,7 +24,7 @@ import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 // otros cinco archivos fuera de alcance.
 export function getClaudeCodeUserAgent(): string {
   const version = getPackageVersion()
-  return `claude-code-how-works-how-works/${version}`
+  return `claude-code/${version}`
 }
 
 // ── ccnmt: packages/provider/src/workloadContext.ts ─────────────────────

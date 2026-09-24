@@ -15,7 +15,7 @@ import {
  *
  * The backend validates the fingerprint against its own SHA256 computation
  * using the same SALT, character indices, and version concatenation order.
- * Any drift here breaks attribution: the backend sees "claude-code-how-works-how-works" claim
+ * Any drift here breaks attribution: the backend sees "claude-code" claim
  * with mismatching fingerprint and rejects/discards the analytics record.
  */
 describe('fingerprint algorithm (backend-validated, DO NOT CHANGE)', () => {

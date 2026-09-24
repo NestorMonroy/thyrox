@@ -20,8 +20,8 @@ import { normalizeGitRemoteUrl } from '../git.ts'
  */
 describe('normalizeGitRemoteUrl (derivación de identidad del repo)', () => {
   test('formato SSH → host/owner/repo (minúsculas)', () => {
-    expect(normalizeGitRemoteUrl('git@github.com:Anthropic/claude-code-how-works-how-works.git')).toBe(
-      'github.com/anthropic/claude-code-how-works-how-works',
+    expect(normalizeGitRemoteUrl('git@github.com:Anthropic/claude-code.git')).toBe(
+      'github.com/anthropic/claude-code',
     )
   })
 
@@ -32,8 +32,8 @@ describe('normalizeGitRemoteUrl (derivación de identidad del repo)', () => {
   })
 
   test('HTTPS → host/owner/repo (minúsculas, .git eliminado)', () => {
-    expect(normalizeGitRemoteUrl('https://github.com/Anthropic/claude-code-how-works-how-works.git')).toBe(
-      'github.com/anthropic/claude-code-how-works-how-works',
+    expect(normalizeGitRemoteUrl('https://github.com/Anthropic/claude-code.git')).toBe(
+      'github.com/anthropic/claude-code',
     )
   })
 

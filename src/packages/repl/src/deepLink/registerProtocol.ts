@@ -30,9 +30,9 @@ import { getInitialSettings } from '@thyrox/config/settings'
 import { which } from '@thyrox/shell/which.js'
 import { getUserBinDir, getXDGDataHome } from '@thyrox/storage/xdg.js'
 
-export const MACOS_BUNDLE_ID = 'com.anthropic.claude-code-how-works-how-works-url-handler'
+export const MACOS_BUNDLE_ID = 'com.anthropic.claude-code-url-handler'
 const APP_NAME = 'Claude Code URL Handler'
-const DESKTOP_FILE_NAME = 'claude-code-how-works-how-works-url-handler.desktop'
+const DESKTOP_FILE_NAME = 'claude-code-url-handler.desktop'
 const MACOS_APP_NAME = 'Claude Code URL Handler.app'
 
 // Shared between register* (writes these paths/values) and

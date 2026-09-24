@@ -1,5 +1,5 @@
 // /dream skill — three sub-modes ported from upstream v2.1.123
-// (bun-demincer/work/claude-code-how-works-how-works-2.1.123/resplit/5084.js: lh3/nh3/ih3/rh3).
+// (bun-demincer/work/claude-code-2.1.123/resplit/5084.js: lh3/nh3/ih3/rh3).
 //
 //   1. /dream            — manual consolidation now (foreground; full tools)
 //   2. /dream nightly    — emit instructions telling the model to use

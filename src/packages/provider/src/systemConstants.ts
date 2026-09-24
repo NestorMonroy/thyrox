@@ -74,7 +74,7 @@ export function getClientPlatform(): string {
       return 'claude_code_sdk'
     case 'mcp':
       return 'claude_code_mcp'
-    case 'claude-code-how-works-how-works-github-action':
+    case 'claude-code-github-action':
       return 'claude_code_github_action'
     case 'local-agent':
       return 'claude_code_local_agent'

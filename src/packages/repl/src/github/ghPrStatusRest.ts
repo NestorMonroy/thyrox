@@ -66,7 +66,7 @@ export async function fetchPrStatusViaRest(input: {
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     Accept: 'application/vnd.github+json',
-    'User-Agent': 'claude-code-how-works-how-works-harbor-prism',
+    'User-Agent': 'claude-code-harbor-prism',
   }
   if (cached?.etag) headers['If-None-Match'] = cached.etag
   if (cached?.lastModified) headers['If-Modified-Since'] = cached.lastModified

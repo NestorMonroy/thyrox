@@ -6,7 +6,7 @@
  * `tengu_worktree_mode`, pero el patrón `CACHED_MAY_BE_STALE` devuelve el
  * default (`false`) en el primer arranque, antes de poblar la caché —
  * tragándose `--worktree` en silencio. Ver
- * https://github.com/anthropics/claude-code-how-works-how-works/issues/27044
+ * https://github.com/anthropics/claude-code/issues/27044
  * (cita de la fuente).
  */
 export function isWorktreeModeEnabled(): boolean {

@@ -72,7 +72,7 @@ import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import type { ReleaseChannel } from './nativeInstaller/download.js'
 
 const GCS_BUCKET_URL =
-  'https://storage.googleapis.com/claude-code-how-works-how-works-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-how-works-how-works-releases'
+  'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
 
 /** Ver docstring del módulo — sustituto local del global `MACRO` de ccnmt. */
 const MACRO = {

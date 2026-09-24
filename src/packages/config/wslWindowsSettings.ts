@@ -2,7 +2,7 @@
  * Puerto de `ccnmt: packages/config/wslWindowsSettings.ts` (140 líneas
  * fuente). Reimplementación fiel VERBATIM. Sin dependencias.
  *
- * El literal `/etc/claude-code-how-works-how-works/managed-settings.json` de
+ * El literal `/etc/claude-code/managed-settings.json` de
  * un comentario proviene tal cual de la fuente — mismo caso que
  * `managedPath.ts` y `product.ts` de este mismo pase; ver su nota.
  */

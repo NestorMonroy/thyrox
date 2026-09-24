@@ -138,7 +138,7 @@ export async function exec(
   // Sandbox temp directory - use per-user directory name to prevent multi-user permission conflicts
   const sandboxTmpDir = posixJoin(
     process.env.CLAUDE_CODE_TMPDIR || '/tmp',
-    _getSandboxTmpDirNameFn?.() ?? 'claude-code-how-works-how-works',
+    _getSandboxTmpDirNameFn?.() ?? 'claude-code',
   )
 
   const { commandString: builtCommand, cwdFilePath } =

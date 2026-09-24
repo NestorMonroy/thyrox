@@ -19,33 +19,33 @@ import { parseGitHubRepository } from '../detectRepository.js'
 
 describe('parseGitHubRepository — parseo de URL completa', () => {
   test('https://github.com/owner/repo → "owner/repo"', () => {
-    expect(parseGitHubRepository('https://github.com/anthropics/claude-code-how-works-how-works')).toBe(
-      'anthropics/claude-code-how-works-how-works',
+    expect(parseGitHubRepository('https://github.com/anthropics/claude-code')).toBe(
+      'anthropics/claude-code',
     )
   })
 
   test('https://github.com/owner/repo.git → elimina .git', () => {
     expect(
-      parseGitHubRepository('https://github.com/anthropics/claude-code-how-works-how-works.git'),
-    ).toBe('anthropics/claude-code-how-works-how-works')
+      parseGitHubRepository('https://github.com/anthropics/claude-code.git'),
+    ).toBe('anthropics/claude-code')
   })
 
   test('git@github.com:owner/repo.git → "owner/repo"', () => {
     expect(
-      parseGitHubRepository('git@github.com:anthropics/claude-code-how-works-how-works.git'),
-    ).toBe('anthropics/claude-code-how-works-how-works')
+      parseGitHubRepository('git@github.com:anthropics/claude-code.git'),
+    ).toBe('anthropics/claude-code')
   })
 
   test('ssh://git@github.com/owner/repo.git → "owner/repo"', () => {
     expect(
-      parseGitHubRepository('ssh://git@github.com/anthropics/claude-code-how-works-how-works.git'),
-    ).toBe('anthropics/claude-code-how-works-how-works')
+      parseGitHubRepository('ssh://git@github.com/anthropics/claude-code.git'),
+    ).toBe('anthropics/claude-code')
   })
 
   test('git://github.com/owner/repo.git → "owner/repo"', () => {
     expect(
-      parseGitHubRepository('git://github.com/anthropics/claude-code-how-works-how-works.git'),
-    ).toBe('anthropics/claude-code-how-works-how-works')
+      parseGitHubRepository('git://github.com/anthropics/claude-code.git'),
+    ).toBe('anthropics/claude-code')
   })
 
   test('host GHE (p. ej. github.example.com) → null', () => {
@@ -65,20 +65,20 @@ describe('parseGitHubRepository — parseo de URL completa', () => {
 
 describe('parseGitHubRepository — strings owner/repo pelados', () => {
   test('"owner/repo" plano → se devuelve tal cual', () => {
-    expect(parseGitHubRepository('anthropics/claude-code-how-works-how-works')).toBe(
-      'anthropics/claude-code-how-works-how-works',
+    expect(parseGitHubRepository('anthropics/claude-code')).toBe(
+      'anthropics/claude-code',
     )
   })
 
   test('"owner/repo.git" → elimina el sufijo .git', () => {
-    expect(parseGitHubRepository('anthropics/claude-code-how-works-how-works.git')).toBe(
-      'anthropics/claude-code-how-works-how-works',
+    expect(parseGitHubRepository('anthropics/claude-code.git')).toBe(
+      'anthropics/claude-code',
     )
   })
 
   test('el espacio en blanco se recorta antes de parsear', () => {
-    expect(parseGitHubRepository('  anthropics/claude-code-how-works-how-works  ')).toBe(
-      'anthropics/claude-code-how-works-how-works',
+    expect(parseGitHubRepository('  anthropics/claude-code  ')).toBe(
+      'anthropics/claude-code',
     )
   })
 

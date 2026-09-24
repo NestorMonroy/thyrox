@@ -9,7 +9,7 @@ import { createMainProgram } from '../../packages/cli/src/entry/commander.js'
 function createTestProgram(): Command {
   const program = new Command()
   program
-    .name('claude-code-how-works-how-works')
+    .name('claude-code')
     .description('CLI test')
     .exitOverride() // prevent process.exit during tests
     .option('-p, --print', 'pipe mode')

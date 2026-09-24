@@ -123,12 +123,12 @@ describe('isOfficialMarketplaceName — security boundary', () => {
     expect(isOfficialMarketplaceName('')).toBe(false)
   })
 
-  test('claude-code-how-works-how-works-marketplace → true', () => {
-    expect(isOfficialMarketplaceName('claude-code-how-works-how-works-marketplace')).toBe(true)
+  test('claude-code-marketplace → true', () => {
+    expect(isOfficialMarketplaceName('claude-code-marketplace')).toBe(true)
   })
 
-  test('claude-code-how-works-how-works-plugins → true', () => {
-    expect(isOfficialMarketplaceName('claude-code-how-works-how-works-plugins')).toBe(true)
+  test('claude-code-plugins → true', () => {
+    expect(isOfficialMarketplaceName('claude-code-plugins')).toBe(true)
   })
 
   test('claude-plugins-official → true', () => {
@@ -168,17 +168,17 @@ describe('isOfficialMarketplaceName — security boundary', () => {
   })
 
   test('substring of official name → false', () => {
-    expect(isOfficialMarketplaceName('claude-code-how-works-how-works')).toBe(false)
+    expect(isOfficialMarketplaceName('claude-code')).toBe(false)
   })
 
   test('superstring of official name → false', () => {
-    expect(isOfficialMarketplaceName('claude-code-how-works-how-works-marketplace-fake')).toBe(false)
+    expect(isOfficialMarketplaceName('claude-code-marketplace-fake')).toBe(false)
   })
 
   test('whitespace-padded official name → false (no trim)', () => {
-    // Documents: the function does NOT trim. ' claude-code-how-works-how-works-plugins ' is
+    // Documents: the function does NOT trim. ' claude-code-plugins ' is
     // NOT recognized as official.
-    expect(isOfficialMarketplaceName(' claude-code-how-works-how-works-plugins ')).toBe(false)
+    expect(isOfficialMarketplaceName(' claude-code-plugins ')).toBe(false)
   })
 })
 

@@ -20,7 +20,7 @@ export class SocketConnectionError extends Error {
 interface ToolRequest {
   method: string; // "execute_tool"
   params?: {
-    client_id?: string; // "desktop" | "claude-code-how-works-how-works"
+    client_id?: string; // "desktop" | "claude-code"
     tool?: string;
     args?: Record<string, unknown>;
   };

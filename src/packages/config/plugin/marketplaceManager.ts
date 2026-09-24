@@ -2533,8 +2533,8 @@ export async function refreshMarketplace(
             ? source.repo
             : redactUrlCredentials(source.url)
         const reason =
-          name === 'claude-code-how-works-how-works-plugins'
-            ? `We've deprecated "claude-code-how-works-how-works-plugins" in favor of "claude-plugins-official".`
+          name === 'claude-code-plugins'
+            ? `We've deprecated "claude-code-plugins" in favor of "claude-plugins-official".`
             : `This marketplace may have been deprecated or moved to a new location.`
         throw new Error(
           `The marketplace.json file is no longer present in this repository.\n\n` +

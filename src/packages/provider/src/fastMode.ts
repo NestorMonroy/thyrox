@@ -172,7 +172,7 @@ export function getFastModeUnavailableReason(): string | null {
     !requireBundledMode().isInBundledMode() &&
     getFeatureValue_CACHED_MAY_BE_STALE('tengu_marble_sandcastle', false)
   ) {
-    return 'Fast mode requires the native binary · Install from: https://claude.com/product/claude-code-how-works-how-works'
+    return 'Fast mode requires the native binary · Install from: https://claude.com/product/claude-code'
   }
 
   const { getIsNonInteractiveSession, getKairosActive, preferThirdPartyAuthentication } =

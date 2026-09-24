@@ -5,7 +5,7 @@
  */
 
 // Cuerpo del prompt de consolidación, portado desde upstream v2.1.123
-// `ow_()` (bun-demincer/work/claude-code-how-works-how-works-2.1.123/resplit/3891.js).
+// `ow_()` (bun-demincer/work/claude-code-2.1.123/resplit/3891.js).
 //
 // Usado por ambos:
 //   - `/dream` manual (foreground, acceso completo a herramientas)

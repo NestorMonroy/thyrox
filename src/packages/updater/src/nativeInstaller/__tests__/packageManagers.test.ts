@@ -34,22 +34,22 @@ function setExecPath(path: string): void {
 
 describe('detectBrewFormulaName (ant Vw_)', () => {
   test('extracts cask name from /opt/homebrew/Caskroom/<name>/<version>', () => {
-    setExecPath('/opt/homebrew/Caskroom/claude-code-how-works-how-works/2.1.136/claude')
-    expect(detectBrewFormulaName()).toBe('claude-code-how-works-how-works')
+    setExecPath('/opt/homebrew/Caskroom/claude-code/2.1.136/claude')
+    expect(detectBrewFormulaName()).toBe('claude-code')
   })
 
   test('extracts the @latest variant', () => {
     setExecPath(
-      '/opt/homebrew/Caskroom/claude-code-how-works-how-works@latest/2.1.137-dev/claude',
+      '/opt/homebrew/Caskroom/claude-code@latest/2.1.137-dev/claude',
     )
-    expect(detectBrewFormulaName()).toBe('claude-code-how-works-how-works@latest')
+    expect(detectBrewFormulaName()).toBe('claude-code@latest')
   })
 
   test('handles Linux Homebrew path /home/linuxbrew/.linuxbrew/Caskroom/...', () => {
     setExecPath(
-      '/home/linuxbrew/.linuxbrew/Caskroom/claude-code-how-works-how-works/2.1.136/claude',
+      '/home/linuxbrew/.linuxbrew/Caskroom/claude-code/2.1.136/claude',
     )
-    expect(detectBrewFormulaName()).toBe('claude-code-how-works-how-works')
+    expect(detectBrewFormulaName()).toBe('claude-code')
   })
 
   test('returns null when path has no /Caskroom/ segment', () => {
@@ -62,7 +62,7 @@ describe('detectBrewFormulaName (ant Vw_)', () => {
     // insensible a mayusculas en HFS+ de macOS, pero la ruta siempre viene
     // con esa caja). La expresion regular de ant SI distingue mayusculas, y
     // aqui se replica.
-    setExecPath('/opt/homebrew/caskroom/claude-code-how-works-how-works/2.1.136/claude')
+    setExecPath('/opt/homebrew/caskroom/claude-code/2.1.136/claude')
     expect(detectBrewFormulaName()).toBeNull()
   })
 
@@ -83,7 +83,7 @@ describe('detectBrewFormulaName (ant Vw_)', () => {
   })
 
   test('handles cask name with version-style chars (dot, plus, hyphen, at)', () => {
-    setExecPath('/opt/homebrew/Caskroom/claude-code-how-works-how-works-cli@1.0+beta/2.1.136/c')
-    expect(detectBrewFormulaName()).toBe('claude-code-how-works-how-works-cli@1.0+beta')
+    setExecPath('/opt/homebrew/Caskroom/claude-code-cli@1.0+beta/2.1.136/c')
+    expect(detectBrewFormulaName()).toBe('claude-code-cli@1.0+beta')
   })
 })

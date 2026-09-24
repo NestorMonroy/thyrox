@@ -5,7 +5,7 @@
  * `lodash-es` resuelve en este árbol (dependencia real, verificado) — se
  * importa estático.
  *
- * El literal `/etc/claude-code-how-works-how-works` proviene tal cual de la
+ * El literal `/etc/claude-code` proviene tal cual de la
  * fuente (`ccnmt`) — es consistente con `remote/index.ts` de este mismo
  * paquete, ya portado por un agente anterior con el mismo literal. Se
  * conserva por fidelidad y por coherencia con lo ya comprometido; no se
@@ -44,7 +44,7 @@ export const getManagedFilePath = memoize(function (): string {
     case 'windows':
       return 'C:\\Program Files\\ClaudeCode'
     default:
-      return '/etc/claude-code-how-works-how-works'
+      return '/etc/claude-code'
   }
 })
 

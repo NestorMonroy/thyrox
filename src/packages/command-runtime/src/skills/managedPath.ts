@@ -43,7 +43,7 @@ export function getManagedFilePath(): string {
       cachedManagedFilePath = 'C:\\Program Files\\ClaudeCode'
       break
     default:
-      cachedManagedFilePath = '/etc/claude-code-how-works-how-works'
+      cachedManagedFilePath = '/etc/claude-code'
   }
   return cachedManagedFilePath
 }

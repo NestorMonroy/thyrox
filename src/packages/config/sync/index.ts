@@ -39,7 +39,7 @@ function getRetryDelay(attempt: number, retryAfterHeader?: string | null, maxDel
   const base = Math.min(BASE_RETRY_DELAY_MS * 2 ** (attempt - 1), maxDelayMs)
   return base + Math.random() * 0.25 * base
 }
-function getClaudeCodeUserAgent(): string { return `claude-code-how-works-how-works/${MACRO.VERSION}` }
+function getClaudeCodeUserAgent(): string { return `claude-code/${MACRO.VERSION}` }
 import {
   type SettingsSyncFetchResult,
   type SettingsSyncUploadResult,

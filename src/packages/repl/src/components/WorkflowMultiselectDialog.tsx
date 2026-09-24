@@ -82,8 +82,8 @@ export function WorkflowMultiselectDialog({
       <Box>
         <Text dimColor>
           More workflow examples (issue triage, CI fixes, etc.) at:{' '}
-          <Link url="https://github.com/anthropics/claude-code-how-works-how-works-action/blob/main/examples/">
-            https://github.com/anthropics/claude-code-how-works-how-works-action/blob/main/examples/
+          <Link url="https://github.com/anthropics/claude-code-action/blob/main/examples/">
+            https://github.com/anthropics/claude-code-action/blob/main/examples/
           </Link>
         </Text>
       </Box>

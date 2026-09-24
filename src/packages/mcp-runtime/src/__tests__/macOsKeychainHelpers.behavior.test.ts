@@ -27,7 +27,7 @@ import {
  *  4. primeKeychainCacheFromPrefetch is a NO-OP if cache already touched
  *     (sync read wins over prefetch — authoritative path).
  *  5. getUsername has a try/catch around process.env.USER and userInfo()
- *     to NEVER throw (returns 'claude-code-how-works-how-works-user' fallback).
+ *     to NEVER throw (returns 'claude-code-user' fallback).
  *  6. NO heavy imports (no execa, execFileNoThrow, execFileNoThrowPortable
  *     etc.). The whole point of this file is to avoid pulling 58ms of
  *     init into the prefetch path.
@@ -116,14 +116,14 @@ describe('macOsKeychainHelpers', () => {
       expect(name.length).toBeGreaterThan(0)
     })
 
-    test('falls back to "claude-code-how-works-how-works-user" when both env+userInfo fail', () => {
+    test('falls back to "claude-code-user" when both env+userInfo fail', () => {
       // Hard to simulate userInfo crash in unit test; verify source has
       // the literal fallback so we don't accidentally remove it.
       const source = readFileSync(
         resolve(__dirname, '..', 'macOsKeychainHelpers.ts'),
         'utf-8',
       )
-      expect(source).toMatch(/return 'claude-code-how-works-how-works-user'/)
+      expect(source).toMatch(/return 'claude-code-user'/)
     })
   })
 })

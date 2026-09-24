@@ -46,7 +46,7 @@ describe('initializeEntrypoint', () => {
     process.argv = ['node', 'cli.js']
     process.env.CLAUDE_CODE_ACTION = '1'
     initializeEntrypoint(false)
-    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('claude-code-how-works-how-works-github-action')
+    expect(process.env.CLAUDE_CODE_ENTRYPOINT).toBe('claude-code-github-action')
   })
 
   test('no interactivo sin banderas: fija "sdk-cli"', () => {

@@ -25,7 +25,7 @@ import { readEnv } from '@thyrox/config/env/utils'
 
 const EXTENSION_DOWNLOAD_URL = 'https://claude.ai/chrome'
 const BUG_REPORT_URL =
-  'https://github.com/anthropics/claude-code-how-works-how-works/issues/new?labels=bug,claude-in-chrome'
+  'https://github.com/anthropics/claude-code/issues/new?labels=bug,claude-in-chrome'
 
 // String metadata keys safe to forward to analytics. Keys like error_message
 // are excluded because they could contain page content or user data.
@@ -108,7 +108,7 @@ export function createChromeContext(
     logger,
     socketPath: getSecureSocketPath(),
     getSocketPaths: getAllSocketPaths,
-    clientTypeId: 'claude-code-how-works-how-works',
+    clientTypeId: 'claude-code',
     onAuthenticationError: () => {
       logger.warn(
         'Authentication error occurred. Please ensure you are logged into the Claude browser extension with the same claude.ai account as Claude Code.',

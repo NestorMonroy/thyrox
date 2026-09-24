@@ -28,8 +28,8 @@ import { loadAllPlugins } from '../../pluginLoader.js'
 import { installSelectedPlugins } from '../../pluginStartupCheck.js'
 
 // Marketplace and plugin identifiers - varies by user type
-const INTERNAL_MARKETPLACE_NAME = 'claude-code-how-works-how-works-marketplace'
-const INTERNAL_MARKETPLACE_REPO = 'anthropics/claude-code-how-works-how-works-marketplace'
+const INTERNAL_MARKETPLACE_NAME = 'claude-code-marketplace'
+const INTERNAL_MARKETPLACE_REPO = 'anthropics/claude-code-marketplace'
 const OFFICIAL_MARKETPLACE_REPO = 'anthropics/claude-plugins-official'
 
 function getMarketplaceName(): string {

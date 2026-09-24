@@ -3,7 +3,7 @@
  * Reimplementación fiel VERBATIM, salvo el `require()` de `getRemoteSessionUrl`
  * (ver su docstring abajo).
  *
- * El literal `claude-code-how-works-how-works` de `PRODUCT_URL` proviene tal
+ * El literal `claude-code` de `PRODUCT_URL` proviene tal
  * cual de la fuente — es consistente con `remote/index.ts` de este mismo
  * paquete, ya portado por un agente anterior con el mismo literal. Se
  * conserva por fidelidad y coherencia con lo ya comprometido (ver el
@@ -18,7 +18,7 @@
  * cuando `workspaces` los enlace); no se toca `bridge` desde aquí.
  */
 
-export const PRODUCT_URL = 'https://claude.com/claude-code-how-works-how-works'
+export const PRODUCT_URL = 'https://claude.com/claude-code'
 
 // URLs de sesión de Claude Code Remote.
 export const CLAUDE_AI_BASE_URL = 'https://claude.ai'

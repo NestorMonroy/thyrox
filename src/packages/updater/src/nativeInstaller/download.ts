@@ -58,7 +58,7 @@ const MACRO = {
 }
 
 const GCS_BUCKET_URL =
-  'https://storage.googleapis.com/claude-code-how-works-how-works-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-how-works-how-works-releases'
+  'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
 const ARTIFACTORY_REGISTRY_URL =
   'https://artifactory.infra.ant.dev/artifactory/api/npm/npm-all/'
 
@@ -417,7 +417,7 @@ export async function downloadVersion(
 ): Promise<'npm' | 'binary'> {
   // Las versiones de fixture de test enrutan al bucket sentinela
   // privado. DCE'd en todos los builds publicados — el string
-  // 'claude-code-how-works-how-works-ci-sentinel' y la llamada a gcloud
+  // 'claude-code-ci-sentinel' y la llamada a gcloud
   // nunca existen en los binarios compilados.
   if (feature('ALLOW_TEST_VERSIONS') && /^99\.99\./.test(version)) {
     const { stdout } = await execFileNoThrowWithCwd('gcloud', [
@@ -427,7 +427,7 @@ export async function downloadVersion(
     await downloadVersionFromBinaryRepo(
       version,
       stagingPath,
-      'https://storage.googleapis.com/claude-code-how-works-how-works-ci-sentinel',
+      'https://storage.googleapis.com/claude-code-ci-sentinel',
       { headers: { Authorization: `Bearer ${stdout.trim()}` } },
     )
     return 'binary'

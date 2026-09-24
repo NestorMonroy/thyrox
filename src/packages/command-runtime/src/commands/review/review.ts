@@ -12,7 +12,7 @@ import { isUltrareviewEnabled } from './ultrareviewEnabled.js'
 // Legal pide el nombre explícito de la superficie más un link a la doc
 // visible antes de que el usuario dispare, así que la descripción lleva
 // el nombre "Claude Code on the web" + la URL.
-const CCR_TERMS_URL = 'https://code.claude.com/docs/en/claude-code-how-works-how-works-on-the-web'
+const CCR_TERMS_URL = 'https://code.claude.com/docs/en/claude-code-on-the-web'
 
 const LOCAL_REVIEW_PROMPT = (args: string) => `
       You are an expert code reviewer. Follow these steps:

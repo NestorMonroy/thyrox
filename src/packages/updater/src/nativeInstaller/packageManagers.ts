@@ -109,7 +109,7 @@ export function detectAsdf(): boolean {
  * instalarse via Homebrew, lo que pondria paquetes globales de npm bajo
  * el mismo prefijo de Homebrew (p.ej. /opt/homebrew/lib/node_modules).
  * Hay que distinguir entre:
- * - Homebrew cask: /opt/homebrew/Caskroom/claude-code-how-works-how-works/...
+ * - Homebrew cask: /opt/homebrew/Caskroom/claude-code/...
  * - npm-global (via el npm de Homebrew): /opt/homebrew/lib/node_modules/@anthropic-ai/...
  */
 export function detectHomebrew(): boolean {
@@ -135,22 +135,22 @@ export function detectHomebrew(): boolean {
 
 /**
  * Puerto de ant v2.1.136 `Vw_` (3481.js). Extrae el nombre del cask de
- * Homebrew (p.ej. `claude-code-how-works-how-works` o
- * `claude-code-how-works-how-works@latest`) de la ruta Caskroom del
+ * Homebrew (p.ej. `claude-code` o
+ * `claude-code@latest`) de la ruta Caskroom del
  * ejecutable en ejecucion. Devuelve null cuando el ejecutable no esta
  * dentro de un directorio Caskroom.
  *
  * Forma de la ruta: `/opt/homebrew/Caskroom/<cask-name>/<version>/...`
  *
  * Es la unica forma de distinguir entre usuarios que instalaron el cask
- * estable `claude-code-how-works-how-works` de los que instalaron
- * `claude-code-how-works-how-works@latest` (que sigue el canal
+ * estable `claude-code` de los que instalaron
+ * `claude-code@latest` (que sigue el canal
  * bleeding-edge). El auto-updater de gestor de paquetes usa el nombre de
  * la formula tanto para obtener la version correcta de
  * formulae.brew.sh COMO para construir el comando
  * `brew upgrade --cask <name>` correcto, ya que
- * `brew upgrade --cask claude-code-how-works-how-works` no tocara
- * `claude-code-how-works-how-works@latest`.
+ * `brew upgrade --cask claude-code` no tocara
+ * `claude-code@latest`.
  */
 export function detectBrewFormulaName(): string | null {
   const execPath = process.execPath || process.argv[0] || ''

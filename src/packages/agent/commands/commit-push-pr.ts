@@ -36,8 +36,8 @@ function getPromptContent(
   const username = readEnv('USER') || ''
 
   let prefix = ''
-  let reviewerArg = ' and `--reviewer anthropics/claude-code-how-works-how-works`'
-  let addReviewerArg = ' (and add `--add-reviewer anthropics/claude-code-how-works-how-works`)'
+  let reviewerArg = ' and `--reviewer anthropics/claude-code`'
+  let addReviewerArg = ' (and add `--add-reviewer anthropics/claude-code`)'
   let changelogSection = `
 
 ## Changelog

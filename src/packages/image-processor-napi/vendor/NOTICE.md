@@ -51,7 +51,7 @@ the alternatives:
 ```bash
 mkdir -p /tmp/ccb-fetch && cd /tmp/ccb-fetch
 for plat in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64; do
-  npm pack "@anthropic-ai/claude-code-how-works-how-works-${plat}"
+  npm pack "@anthropic-ai/claude-code-${plat}"
 done
 # Then run bun-demincer's extract.mjs (for darwin) and the binary blob
 # scanner pattern (for linux/win32; see git history for the script that

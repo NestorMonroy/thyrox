@@ -40,7 +40,7 @@ export interface ClaudeForChromeContext {
   // Optional resolver returning all available socket paths (for multi-profile support).
   // When provided, a socket pool connects to all sockets and routes by tab ID.
   getSocketPaths?: () => string[];
-  clientTypeId: string; // "desktop" | "claude-code-how-works-how-works"
+  clientTypeId: string; // "desktop" | "claude-code"
   onToolCallDisconnected: () => string;
   onAuthenticationError: () => void;
   isDisabled?: () => boolean;

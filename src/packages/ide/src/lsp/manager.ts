@@ -229,7 +229,7 @@ export function initializeLspServerManager(): void {
  * tras limpiar las cachés de plugins, para que los nuevos servidores LSP
  * de plugins recién cargados se detecten.
  *
- * Corrige https://github.com/anthropics/claude-code-how-works-how-works/issues/15521:
+ * Corrige https://github.com/anthropics/claude-code/issues/15521:
  * loadAllPlugins() está memoizado y puede llamarse muy temprano en el
  * arranque (vía el prefetch de getCommands en setup.ts) antes de que los
  * marketplaces se reconcilien, cacheando una lista de plugins vacía.

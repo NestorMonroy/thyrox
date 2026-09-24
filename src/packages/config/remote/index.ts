@@ -147,7 +147,7 @@ function getSettingsSchema(): {
 declare const MACRO: { VERSION: string } | undefined
 
 function getClaudeCodeUserAgent(): string {
-  return `claude-code-how-works-how-works/${typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'}`
+  return `claude-code/${typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'}`
 }
 
 // V11.4 — utilidades inline para evitar dependencias de src/ (comentario de

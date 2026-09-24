@@ -919,8 +919,8 @@ export function hasAccessToIDEExtensionDiffFeature(
 
 const EXTENSION_ID =
   process.env.USER_TYPE === 'ant'
-    ? 'anthropic.claude-code-how-works-how-works-internal'
-    : 'anthropic.claude-code-how-works-how-works'
+    ? 'anthropic.claude-code-internal'
+    : 'anthropic.claude-code'
 
 export async function isIDEExtensionInstalled(
   ideType: IdeType,
@@ -969,7 +969,7 @@ async function installIDEExtension(ideType: IdeType): Promise<string | null> {
         await sleep(500)
         const result = await execFileNoThrowWithCwd(
           command,
-          ['--force', '--install-extension', 'anthropic.claude-code-how-works-how-works'],
+          ['--force', '--install-extension', 'anthropic.claude-code'],
           {
             env: getInstallationEnv(),
           },
@@ -1020,7 +1020,7 @@ async function getInstalledVSCodeExtensionVersion(
   const lines = stdout?.split('\n') || []
   for (const line of lines) {
     const [extensionId, version] = line.split('@')
-    if (extensionId === 'anthropic.claude-code-how-works-how-works' && version) {
+    if (extensionId === 'anthropic.claude-code' && version) {
       return version
     }
   }
@@ -1114,7 +1114,7 @@ async function getVSCodeIDECommand(ideType: IdeType): Promise<string | null> {
   // una nueva ventana del editor en vez de correr el CLI. Pedir
   // 'code.cmd' fuerza a cross-spawn/which a saltarse Code.exe. Ver
   // microsoft/vscode#299416 (arreglado en Insiders) y
-  // anthropics/claude-code-how-works-how-works#30975.
+  // anthropics/claude-code#30975.
   const ext = getPlatform() === 'windows' ? '.cmd' : ''
   switch (ideType) {
     case 'vscode':
@@ -1523,7 +1523,7 @@ async function installFromArtifactory(command: string): Promise<string> {
 
   // Obtiene la versión desde artifactory.
   const versionUrl =
-    'https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-how-works-how-works-internal/claude-vscode-releases/stable'
+    'https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-internal/claude-vscode-releases/stable'
 
   try {
     const versionResponse = await axios.get(versionUrl, {
@@ -1538,10 +1538,10 @@ async function installFromArtifactory(command: string): Promise<string> {
     }
 
     // Descarga el archivo .vsix desde artifactory.
-    const vsixUrl = `https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-how-works-how-works-internal/claude-vscode-releases/${version}/claude-code-how-works-how-works.vsix`
+    const vsixUrl = `https://artifactory.infra.ant.dev/artifactory/armorcode-claude-code-internal/claude-vscode-releases/${version}/claude-code.vsix`
     const tempVsixPath = join(
       os.tmpdir(),
-      `claude-code-how-works-how-works-${version}-${Date.now()}.vsix`,
+      `claude-code-${version}-${Date.now()}.vsix`,
     )
 
     try {

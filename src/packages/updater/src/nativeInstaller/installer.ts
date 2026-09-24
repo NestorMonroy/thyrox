@@ -1819,9 +1819,9 @@ export async function cleanupNpmInstallations(): Promise<{
   const warnings: string[] = []
   let removed = 0
 
-  // Siempre intenta remover @anthropic-ai/claude-code-how-works-how-works
+  // Siempre intenta remover @anthropic-ai/claude-code
   const codePackageResult = await attemptNpmUninstall(
-    '@anthropic-ai/claude-code-how-works-how-works',
+    '@anthropic-ai/claude-code',
   )
   if (codePackageResult.success) {
     removed++
@@ -1833,7 +1833,7 @@ export async function cleanupNpmInstallations(): Promise<{
   }
 
   // Tambien intenta remover MACRO.PACKAGE_URL si esta definido y es distinto
-  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code-how-works-how-works') {
+  if (MACRO.PACKAGE_URL && MACRO.PACKAGE_URL !== '@anthropic-ai/claude-code') {
     const macroPackageResult = await attemptNpmUninstall(MACRO.PACKAGE_URL)
     if (macroPackageResult.success) {
       removed++

@@ -125,7 +125,7 @@ export async function preprocessCliArgv(pendings: PendingHandles): Promise<void>
     // positive signal — cheaper than importing and guessing with heuristics.
     if (
       process.platform === 'darwin' &&
-      process.env.__CFBundleIdentifier === 'com.anthropic.claude-code-how-works-how-works-url-handler'
+      process.env.__CFBundleIdentifier === 'com.anthropic.claude-code-url-handler'
     ) {
       const { enableConfigs } = await import('@thyrox/config')
       enableConfigs()

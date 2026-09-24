@@ -118,7 +118,7 @@ describe('createMovedToPluginCommand — getPromptForCommand routing', () => {
     expect(text).toContain('moved to a plugin')
     expect(text).toContain('claude plugin install my-plugin@claude-code-how-works-marketplace')
     expect(text).toContain('/my-plugin:mycmd')
-    expect(text).toContain('claude-code-how-works-how-works-marketplace/blob/main/my-plugin/README.md')
+    expect(text).toContain('claude-code-marketplace/blob/main/my-plugin/README.md')
   })
 
   test('ant install instructions interpolate pluginName + pluginCommand correctly', async () => {

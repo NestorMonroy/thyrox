@@ -16,7 +16,7 @@
  * - Windows: `HKLM\SOFTWARE\Policies\ClaudeCode` (sólo admin)
  *   y `HKCU\SOFTWARE\Policies\ClaudeCode` (escribible por usuario, menor prioridad).
  * - Linux: sin equivalente MDM (usa
- *   `/etc/claude-code-how-works-how-works/managed-settings.json` en su lugar —
+ *   `/etc/claude-code/managed-settings.json` en su lugar —
  *   literal tal cual de la fuente; ver la nota de `managedPath.ts`).
  *
  * Los settings de política usan "gana la primera fuente". Prioridad (de

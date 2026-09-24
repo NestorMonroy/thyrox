@@ -117,7 +117,7 @@ function getAuthHeaders(): {
       headers: {
         Authorization: `Bearer ${oauthTokens.accessToken}`,
         'anthropic-beta': bindings.oauthBetaHeader ?? '',
-        'User-Agent': bindings.getClaudeCodeUserAgent?.() ?? 'claude-code-how-works-how-works',
+        'User-Agent': bindings.getClaudeCodeUserAgent?.() ?? 'claude-code',
       },
     }
   }

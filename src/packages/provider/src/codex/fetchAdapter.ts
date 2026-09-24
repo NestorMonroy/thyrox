@@ -2,7 +2,7 @@
  * Codex fetch adapter.
  *
  * Architecture (mirrors openai/codex's wire format and the
- * `my-claude-code-how-works-how-works` reference impl): instead of routing Codex requests
+ * `my-claude-code` reference impl): instead of routing Codex requests
  * through a parallel `getProviderAdapter('codex')` branch, we install a
  * custom `fetch` on the Anthropic SDK client when the active connection
  * is Codex. The SDK does its normal `messages.create({...})` flow,

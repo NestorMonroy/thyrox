@@ -60,7 +60,7 @@ export function ExistingWorkflowStep({
         <Text dimColor>
           View the latest workflow template at:{' '}
           <Text color="claude">
-            https://github.com/anthropics/claude-code-how-works-how-works-action/blob/main/examples/claude.yml
+            https://github.com/anthropics/claude-code-action/blob/main/examples/claude.yml
           </Text>
         </Text>
       </Box>

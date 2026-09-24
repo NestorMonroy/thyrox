@@ -182,7 +182,7 @@ function pollSleepDetectionThresholdMs(backoff: BackoffConfig): number {
  * npm (node corriendo cli.js), process.execPath es el runtime de node —
  * el spawn hijo debe pasar la ruta del script como primer arg, si no
  * node interpreta --sdk-url como una opción de node y sale con "bad
- * option: --sdk-url". Ver anthropics/claude-code-how-works-how-works#28334.
+ * option: --sdk-url". Ver anthropics/claude-code#28334.
  */
 function spawnScriptArgs(): string[] {
   if (isInBundledMode() || !process.argv[1]) {
