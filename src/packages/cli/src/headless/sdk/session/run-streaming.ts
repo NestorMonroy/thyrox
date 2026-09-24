@@ -231,7 +231,7 @@ import {
 import { runWithWorkload, WORKLOAD_CRON } from '@thyrox/provider/workloadContext.js'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
-import type { AppStateLike as AppState } from '../../../contracts.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import {
   fileHistoryRewind,
   fileHistoryCanRestore,

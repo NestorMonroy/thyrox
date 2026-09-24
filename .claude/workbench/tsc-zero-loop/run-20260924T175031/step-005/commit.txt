@@ -1,0 +1,7 @@
+Type run-streaming with the canonical AppState
+
+Fifth step of the agent-compiler loop, accepted-net 3483 -> 3391.
+run-streaming imported the cli AppStateLike contract under the name
+AppState, so prev.mcp, currentAppState.mcp and every setAppState
+updater were unknown. cli already depends on app-host; the module now
+imports the real AppState.

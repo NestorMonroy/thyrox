@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3483, "total_final": 3391, "tsc_runs": 1, "accepted": ["agent:run-streaming-appstate"], "files_kept": ["src/packages/cli/src/headless/sdk/session/run-streaming.ts"], "outcomes": {"agent:run-streaming-appstate": "accepted-net"}}
