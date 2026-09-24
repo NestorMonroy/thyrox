@@ -152,6 +152,7 @@
         "@thyrox/tool-registry": "workspace:*",
         "@thyrox/tools": "workspace:*",
         "@thyrox/updater": "workspace:*",
+        "diff": "^8.0.4",
         "zod": "^4.3.6",
       },
     },
