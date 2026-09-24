@@ -135,10 +135,12 @@ export function fromCoreMessage(core: CoreMessage): AgentMessage {
     return { ...rest, type: 'system', content: core.content, timestamp: toIso(core.timestamp) }
   }
 
-  const body: AgentMessageBody = { ...(carriedBody ?? {}) }
-  for (const field of BODY_FIELDS) {
-    if (flat[field] !== undefined) body[field] = flat[field]
-  }
+  // Los campos planos que el core trae pisan a los del cuerpo arrastrado: son
+  // los que el core pudo cambiar.
+  const overrides = Object.fromEntries(
+    BODY_FIELDS.filter(field => flat[field] !== undefined).map(field => [field, flat[field]]),
+  )
+  const body: AgentMessageBody = { ...(carriedBody ?? {}), ...overrides }
   return { ...rest, type: core.type, message: body, timestamp: toIso(core.timestamp) }
 }
 

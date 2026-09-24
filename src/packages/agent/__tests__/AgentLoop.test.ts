@@ -11,6 +11,7 @@ import { describe, test, expect, mock, beforeEach } from 'bun:test'
 import { AgentLoop } from '../core/AgentLoop.ts'
 import { createMockDeps, END_TURN_EVENTS, createToolUseStreamEvents, createMockStream } from './fixtures/mockDeps.ts'
 import type { AgentDeps, CoreTool, ToolResult } from '../index.ts'
+import { toCoreMessage } from '../messageAdapters.ts'
 
 describe('AgentLoop', () => {
   let deps: AgentDeps
@@ -216,6 +217,44 @@ describe('AgentLoop', () => {
       expect(doneEvent.reason).toBe('error')
       expect(doneEvent.error).toBeDefined()
     }
+  })
+
+  // El provider emite su mensaje de asistente en la forma anidada del API; los
+  // deps de produccion lo aplanan con `toCoreMessage` antes de que llegue al
+  // core. Estos dos casos fijan por que eso importa: `aggregateUsage` lee el
+  // `usage` de la raiz.
+  const nestedAssistant = {
+    type: 'assistant',
+    uuid: 'a-usage',
+    message: {
+      role: 'assistant',
+      content: [{ type: 'text', text: 'hola' }],
+      usage: { input_tokens: 10, output_tokens: 4 },
+      stop_reason: 'end_turn',
+    },
+  }
+
+  async function doneUsage(event: unknown) {
+    deps.provider.stream = mock(async function* () {
+      yield event as never
+    })
+    const loop = new AgentLoop(deps)
+    let done: { type: string; reason?: string; usage?: { input_tokens: number; output_tokens: number } } | undefined
+    for await (const e of loop.run({ prompt: 'x', messages: [] })) {
+      if (e.type === 'done') done = e as typeof done
+    }
+    return done
+  }
+
+  test('the usage of an adapted provider message reaches the done event', async () => {
+    const done = await doneUsage(toCoreMessage(nestedAssistant))
+    expect(done?.reason).toBe('end_turn')
+    expect(done?.usage).toMatchObject({ input_tokens: 10, output_tokens: 4 })
+  })
+
+  test('control: the same message unadapted loses its usage (the defect before the adapters)', async () => {
+    const done = await doneUsage(nestedAssistant)
+    expect(done?.usage).toMatchObject({ input_tokens: 0, output_tokens: 0 })
   })
 
   test('missing tool returns an error tool_result', async () => {

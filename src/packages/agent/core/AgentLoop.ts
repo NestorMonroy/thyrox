@@ -149,17 +149,10 @@ export class AgentLoop {
       }
 
       turnCount++
-      // El stop_reason del mensaje de assistant puede vivir en el nivel
-      // superior (forma del provider SDK) o bajo .message (forma legada /
-      // beta de la API de Anthropic).
-      const rawAsst = assistantMessage as
-        | (CoreAssistantMessage & {
-            stop_reason?: string | null
-            message?: { stop_reason?: string | null }
-          })
-        | null
+      // El core solo recibe mensajes planos (los deps los convierten con
+      // `toCoreMessage`), asi que `stop_reason` esta en la raiz.
       const stopReason: string | null | undefined =
-        rawAsst?.stop_reason ?? rawAsst?.message?.stop_reason ?? turnState.stopReason ?? null
+        assistantMessage?.stop_reason ?? turnState.stopReason ?? null
       if (stopReason !== 'tool_use') {
         const budgetDecision = checkTokenBudget(
           budgetTracker,
@@ -424,33 +417,14 @@ export class AgentLoop {
       usage: { ...turnState.turnUsage },
       stop_reason: turnState.stopReason,
       timestamp: Date.now(),
-      message: {
-        role: 'assistant',
-        content,
-        stop_reason: turnState.stopReason,
-        usage: { ...turnState.turnUsage },
-      },
     }
   }
 
   private extractToolUses(
     message: CoreAssistantMessage | null,
   ): Array<{ id: string; name: string; input: unknown }> {
-    if (!message) return []
-    // El content de CoreAssistantMessage puede vivir en el nivel superior
-    // (forma del provider SDK) o anidado bajo .message (forma legada /
-    // beta de la API de Anthropic).
-    const raw = message as CoreAssistantMessage & {
-      content?: unknown
-      message?: { content?: unknown }
-    }
-    const content = Array.isArray(raw.content)
-      ? raw.content
-      : Array.isArray(raw.message?.content)
-        ? raw.message.content
-        : null
-    if (!content) return []
-    return content
+    if (!message || !Array.isArray(message.content)) return []
+    return message.content
       .filter(
         (block: any) =>
           typeof block === 'object' && block !== null && 'type' in block && block.type === 'tool_use',
