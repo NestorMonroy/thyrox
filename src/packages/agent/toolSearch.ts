@@ -10,9 +10,10 @@
  * `isToolResultBlockWithContent`). Los once símbolos exportados restantes
  * de la fuente NO se portan aquí, y ningún test portado los ejercita:
  *
- *   - `getAutoToolSearchCharThreshold`, `ToolSearchMode`,
- *     `getToolSearchMode`, `modelSupportsToolReference`,
- *     `isToolSearchEnabledOptimistic`, `isToolSearchToolAvailable`,
+ *   - (2026-09-24) `ToolSearchMode`, `getToolSearchMode`,
+ *     `isToolSearchEnabledOptimistic` e `isToolSearchToolAvailable` YA
+ *     están portados desde 2.1.275 (`u9e`, `Dg`, `gfe`, más `pQn`).
+ *   - `getAutoToolSearchCharThreshold`, `modelSupportsToolReference`,
  *     `isToolSearchEnabled` — la resolución de modo (variables de
  *     entorno, GrowthBook, conteo de tokens contra el modelo) depende de
  *     `@claude-code-how-works/config/feature-flags`,
@@ -44,7 +45,76 @@
  *     `carriedFromBoundary` que sólo alimentaba ese mensaje se retira con
  *     ella.
  */
+import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils.js'
+import { getAPIProvider, isFirstPartyAnthropicBaseUrl } from '@thyrox/provider/providers.js'
 import type { Message } from './messageShapes.ts'
+
+/** Los tres modos que 2.1.275 resuelve (`u9e`). */
+export type ToolSearchMode = 'tst' | 'tst-auto' | 'standard'
+
+/**
+ * `auto:N` → N acotado a 0..100; cualquier otra forma → `null` (`pQn`).
+ */
+export function parseAutoToolSearchPercentage(value: string | undefined): number | null {
+  if (!value?.startsWith('auto:')) return null
+  const n = Number.parseInt(value.slice(5), 10)
+  if (Number.isNaN(n)) return null
+  return Math.max(0, Math.min(100, n))
+}
+
+/**
+ * El forzado administrativo (`u` junto a `u9e`). En 2.1.275 sólo lo abre un
+ * `ENABLE_TOOL_SEARCH=force` de la capa administrada de entorno, y sólo con
+ * proveedor de primera parte. pendiente: esa capa administrada (y la marca
+ * hipaa que lo anula) no existe en este árbol; sin ella el forzado nunca se
+ * abre, que es la rama por defecto del binario.
+ */
+function isToolSearchForced(): boolean {
+  if (getAPIProvider() !== 'firstParty') return false
+  return false
+}
+
+/** `e_t`: las betas experimentales desactivadas, salvo forzado. */
+function experimentalBetasDisabled(): boolean {
+  return isEnvTruthy(process.env.CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS) && !isToolSearchForced()
+}
+
+/** `u9e`: el modo de búsqueda de herramientas según el entorno. */
+export function getToolSearchMode(): ToolSearchMode {
+  if (experimentalBetasDisabled()) return 'standard'
+  if (isToolSearchForced()) return 'tst'
+  const value = process.env.ENABLE_TOOL_SEARCH
+  const percentage = parseAutoToolSearchPercentage(value)
+  if (percentage === 0) return 'tst'
+  if (percentage === 100) return 'standard'
+  if (value === 'auto' || value?.startsWith('auto:')) return 'tst-auto'
+  if (isEnvTruthy(value)) return 'tst'
+  if (isEnvDefinedFalsy(value)) return 'standard'
+  return 'tst'
+}
+
+/**
+ * `Dg`: la comprobación optimista. Con proveedor de primera parte pero una
+ * URL base ajena, la herramienta sólo se ofrece si alguien lo pidió.
+ */
+export function isToolSearchEnabledOptimistic(): boolean {
+  if (getToolSearchMode() === 'standard') return false
+  if (
+    !process.env.ENABLE_TOOL_SEARCH &&
+    !isToolSearchForced() &&
+    getAPIProvider() === 'firstParty' &&
+    !(isEnvTruthy(process.env._CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL) || isFirstPartyAnthropicBaseUrl())
+  )
+    return false
+  return true
+}
+
+/** `gfe`: la herramienta ToolSearch está en la lista, por nombre o alias. */
+export function isToolSearchToolAvailable(
+  tools: ReadonlyArray<{ name: string; aliases?: readonly string[] }>,
+): boolean {
+  return tools.some(t => t.name === 'ToolSearch' || t.aliases?.includes('ToolSearch'))
+}
 
 /**
  * Verifica si un objeto es un bloque `tool_reference`.

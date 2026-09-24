@@ -1,0 +1,1 @@
+function TIn(e,n){if(!c3(e))return"model_unsupported";if(l3(We(e)))return"vertex_model_unsupported";if(!ufe(e,"tool_search_server")||!ufe(e,"tool_search"))return"foundry_deployment_unsupported";if(gfe(n))return;if(n.length===0)return"no_tools_in_request";if(!Dg())return"not_registered";return"mcp_search_unavailable"}

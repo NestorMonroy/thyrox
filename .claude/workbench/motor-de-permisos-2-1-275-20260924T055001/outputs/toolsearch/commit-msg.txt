@@ -1,0 +1,13 @@
+Port tool-search mode resolution from 2.1.275
+
+The suites that exercise the permission engine now stop at
+isToolSearchEnabledOptimistic, which toolSearch.ts declared as not
+ported. 2.1.275 resolves the mode in u9e from ENABLE_TOOL_SEARCH
+(auto, auto:N, truthy, falsy), forces standard when experimental
+betas are disabled, and Dg withholds the tool when a first-party
+provider points at a foreign base URL and nobody asked for it.
+
+The managed-environment force override is not in this tree, so it
+never opens, which is the binary's default branch; it is declared
+pending in the code. Annulment: removing the betas guard or the
+base-URL guard fails exactly its one case.

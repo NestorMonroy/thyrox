@@ -1,0 +1,1 @@
+function u9e(){if(e_t())return"standard";if(u())return"tst";let e=process.env.ENABLE_TOOL_SEARCH,r=e?pQn(e):null;if(r===0)return"tst";if(r===100)return"standard";if(m(e))return"tst-auto";if(Oe(e))return"tst";if(To(e))return"standard";return"tst"}

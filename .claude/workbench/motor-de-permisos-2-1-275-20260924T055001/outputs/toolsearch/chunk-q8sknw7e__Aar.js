@@ -1,0 +1,1 @@
+function Aar(e){let n=e.store.policy.hostToolSearchEnv;if(n!==void 0)return n.value;let s;if(e.hostManagedProvider){let r=D7e(e).settings?.env??{};for(let[i,d]of Object.entries(r)){if(i==="ENABLE_TOOL_SEARCH"){s=d;break}if(s===void 0&&i.toUpperCase()==="ENABLE_TOOL_SEARCH")s=d}}return e.store.policy.hostToolSearchEnv={value:s},s}
