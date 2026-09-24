@@ -1,0 +1,8 @@
+Write the zero-errors distance analysis
+
+Measured with the full suite and the tsc check: 2324 unique tsc
+errors (the 4648 lines count each error once per project); 19 red
+TypeScript files, 13 blocked by one missing export; 2 red Python
+suites, one a regression from this session; 1 shell suite red in
+isolation and 3 red only under load. Also assesses the
+agent-compiler loop plan against these numbers.

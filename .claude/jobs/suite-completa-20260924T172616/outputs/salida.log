@@ -6222,3 +6222,16 @@ OK
 == shell (bash) ==
 -- ROJO tests/lib/test-workbench-sh.sh
 -- ROJO tests/session/test-bg-memfree.sh
+-- SIN MEDIR (exit 2) tests/verify/test-premise-drift.sh
+-- ROJO tests/verify/test-script-naming.sh
+-- SIN MEDIR (exit 2) tests/verify/test-verificar-premisa.sh
+-- ROJO tests/verify/test_package_root_resolution.sh
+  (110 suite(s) de shell, 4 en rojo, 2 sin medir)
+
+== alcance ==
+  TypeScript: 993 archivo(s), EN ROJO
+  Python: 224 suite(s), 2 en rojo, 1 sin medir
+  shell: 110 suite(s), 4 en rojo, 2 sin medir
+
+FALLA: 3 lengua(s) en rojo
+__BG_EXIT__=1
