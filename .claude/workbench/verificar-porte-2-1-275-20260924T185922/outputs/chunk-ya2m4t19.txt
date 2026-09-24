@@ -1,0 +1,30 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT AUSENTE
+
+==== iue (1212)
+async function iue(e,r,o,n){if(r?.backend==="peer")return{confirmed:!0};let s=o?.handoff?!0:void 0,h=o?.evict?!0:void 0,u=o?.knownGone?{ok:!1,code:"ENOJOB",error:"job already gone (caller-verified)"}:await Um({proto:bl,op:"kill",short:e,handoff:s,evict:h});for(let w=0;!u.ok&&u.code==="ESTARTING"&&w<10;w++)await Z(200),u=await Um({proto:bl,op:"kill",short:e,handoff:s,evict:h});if(u.ok)return{confirmed:!0};if(u.code==="ENOJOB"||u.code==="ENOCONN"||u.code==="ETIMEOUT"){let w=await xPn(e,n);if(w.anyMatch&&u.code==="ENOJOB")return{confirmed:w.confirmed};let k=!1;if(u.code==="ENOCONN"||u.code==="ETIMEOUT"){let v;if(w.anyMatch)v=w.confirmed;else{let R=await MC({silent:!0},n),y=R.workers[e];if(y!==void 0){let g=await Sjt(y.pid,y.procStart);if(g==="zombie")if(y.procStart!==void 0&&await OT(y.pid,y.procStart)===!0){try{process.kill(-y.pid,"SIGKILL")}catch{try{process.kill(y.pid,"SIGKILL")}catch{}}v=!0}else v=!1;else v=g!=="live"}else k=u.code==="ENOCONN"&&!w.scanFailed&&!R.parseFailed&&r?.state!==void 0&&fi({state:r.state,tempo:r.tempo}),v=k}if(h&&v&&u.code==="ENOCONN"&&!k)await WW((R)=>{delete R.workers[e]},n).catch((R)=>d(R));return{confirmed:v}}return{confirmed:!0}}return{confirmed:!1,error:u.error}}
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume AUSENTE
+
+==== T3n AUSENTE

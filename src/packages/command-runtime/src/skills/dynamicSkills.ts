@@ -26,6 +26,12 @@
  *   8.3 de Windows: los dos dependen de piezas ausentes aquí.
  * - `mee` descarta y reporta patrones inválidos antes de pasarlos a
  *   `ignore`; aquí se pasan tal cual.
+ * - `lfs` devuelve `[]` cuando la sesión arrancó con una raíz de
+ *   configuración de proyecto explícita (`So()`, que es
+ *   `host.launchOptions.projectConfigRoot()`, en `chunk-4qqe0nh4.js`); este
+ *   árbol no tiene esa opción de arranque, así que la guarda no aplica.
+ *   Verificado con el extractor por parser, no por subcadena:
+ *   `.claude/workbench/verificar-porte-2-1-275-*`.
  * - Las compuertas de política (`zr('skills')`, `Tr('projectSettings')`,
  *   `Ic('skills')`) y la telemetría (`tengu_dynamic_skills_changed`) no
  *   tienen contraparte en este paquete.

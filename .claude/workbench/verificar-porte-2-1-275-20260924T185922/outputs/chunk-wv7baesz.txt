@@ -1,0 +1,30 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn (1286)
+async function Ajn(e,r,i){let n=await qC({slug:e.slug,env:e.env},"artifact_verify_read",r,{credentials:i});if(n.err!==null)return{err:n.err,...n.status!==void 0&&{status:n.status}};let s;try{s=await Pd.get(`/api/frame/diag/${e.slug}/${n.ver}`,{refreshOAuth:!0,credentials:i,headers:Od(),timeout:15000,maxContentLength:2*ce,signal:r})}catch(y){if(Ha(y))throw y;return m("artifact_verify_read","diag_request_error"),{err:"artifact diagnostics read failed (network error)"}}if(!s.ok)return m("artifact_verify_read",s.reason.replace(/-/g,"_")),{err:`artifact diagnostics unavailable: ${s.reason}`};if(s.status===404)return _("artifact_verify_read"),{err:null,state:"no_row",ver:n.ver};if(s.status<200||s.status>=300)return m("artifact_verify_read","diag_failed"),{err:`artifact diagnostics unavailable right now (HTTP ${s.status})`,status:s.status};let l=s.data??{};if(!Array.isArray(l.entries))return m("artifact_verify_read","diag_incomplete"),{err:"artifact diagnostics read failed: incomplete diagnostics response"};let h=l.entries,g=[],A=0;for(let y of h){let E;try{E=Buffer.byteLength(Pa(y)??"","utf8")}catch{continue}if(A+E>ce)continue;g.push(y),A+=E}return _("artifact_verify_read"),{err:null,state:"loaded",ver:n.ver,entries:g,truncated:l.truncated===!0,dropped:h.length-g.length}}
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT AUSENTE
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume AUSENTE
+
+==== T3n AUSENTE

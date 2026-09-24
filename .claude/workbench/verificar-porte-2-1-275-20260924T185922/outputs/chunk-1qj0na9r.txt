@@ -1,0 +1,30 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT AUSENTE
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume (70)
+function Ume(e){return e.type==="system"&&e.subtype==="local_command"}
+
+==== T3n AUSENTE

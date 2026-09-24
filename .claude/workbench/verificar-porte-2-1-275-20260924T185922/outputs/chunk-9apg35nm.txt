@@ -1,0 +1,30 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe (291)
+function BFe(e){let n=e.indexOf("/");if(n===-1)return{name:e,ownerPid:void 0,ownerProcStart:void 0};let r=e.slice(0,n),s=r.indexOf(":"),g=s===-1?r:r.slice(0,s),h=s===-1?"":r.slice(s+1),y=Number(g);return{name:e.slice(n+1),ownerPid:Number.isInteger(y)&&y>0?y:void 0,ownerProcStart:h||void 0}}
+
+==== RT AUSENTE
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume AUSENTE
+
+==== T3n AUSENTE

@@ -1,0 +1,50 @@
+==== Spt AUSENTE
+
+==== zUt AUSENTE
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT (827)
+async function RT(e,t,r,i){if(t.length===0)return[];return(await e`
+    WITH p AS (
+      SELECT principal, ordinality AS ord
+      FROM unnest(${e.array(t,"TEXT")}) WITH ORDINALITY AS t(principal)
+    ),
+    per AS (${$T(e,r)})
+    SELECT p.principal, per.period, cap.amount, cap.scope_type,
+           cap.scope_id, cap.id AS spend_limit_id,
+           coalesce(s.cents, 0) AS cents,
+           e.email, e.name, e.groups
+    FROM p
+    CROSS JOIN per
+    LEFT JOIN principal_emails e ON e.principal = p.principal
+    LEFT JOIN LATERAL caps_by_period(
+      p.principal,
+      ARRAY(SELECT jsonb_array_elements_text(coalesce(e.groups, '[]'::jsonb))),
+      ${i}
+    ) cap ON cap.period = per.period
+    LEFT JOIN spend s ON s.principal = p.principal AND s.period = per.bucket
+    ORDER BY p.ord, per.ord
+  `).map((o)=>See(o))}
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt AUSENTE
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume AUSENTE
+
+==== T3n AUSENTE

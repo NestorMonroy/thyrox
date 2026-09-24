@@ -1,0 +1,31 @@
+==== Spt AUSENTE
+
+==== zUt (1040)
+async function zUt(h,v,O,Q){let te=v.filter((ve)=>ve.old_string!=null&&ve.new_string!=null),Se=te.length===1?te[0]:void 0;if(O===void 0&&!Q){if(Se&&Se.old_string.length>=LDe)return fG(h,[Se])}try{if(O!==void 0){let Ce=te.map((xe)=>s2e(O,xe));return{patch:xB({filePath:h,fileContents:O,edits:Ce}),firstLine:Or(O),fileContent:O}}if(Q)return fG(h,te);let ve=await Hut(h);if(ve===null)return fG(h,te);try{if(!Se||Se.old_string===""){let Ne=await hFt(ve);if(Ne===null)return fG(h,te);let ze=te.map((Le)=>s2e(Ne,Le));return{patch:xB({filePath:h,fileContents:Ne,edits:ze}),firstLine:Or(Ne),fileContent:Ne}}let Ce=await Lqn(ve,Se.old_string,R4e);if(Ce.truncated||Ce.content==="")return fG(h,[Se]);let xe=s2e(Ce.content,Se),Ie=xB({filePath:h,fileContents:Ce.content,edits:[xe]});return{patch:iFt(Ie,Ce.lineOffset-1),firstLine:Ce.lineOffset===1?Or(Ce.content):null,fileContent:Ce.content}}finally{await ve.close()}}catch(ve){if(Qo(ve))t(`FileEditToolDiff: fs error computing diff for ${h}: ${ve.message}`,{level:"error"});else d(ve);return fG(h,te)}}
+
+==== Ajn AUSENTE
+
+==== lfs AUSENTE
+
+==== BFe AUSENTE
+
+==== RT AUSENTE
+
+==== iue AUSENTE
+
+==== J$r AUSENTE
+
+==== Q$r AUSENTE
+
+==== OLs AUSENTE
+
+==== IUt (740)
+function IUt(h,v){let{currentPlan:O,planEditedLocally:Q,acceptFeedback:te,trimmedFeedback:Se,hasImages:ve,imageBlocks:Ce,showClearContext:xe,keepContextRow:Ie}=v,Ne=Q?{plan:O}:{};if(h==="ultraplan")return{behavior:"deny",feedback:yqo};if(xe&&(h==="yes-bypass-permissions"||h==="yes-accept-edits"||h==="yes-auto-clear-context"))return{behavior:"deny"};if(h==="yes-accept-edits-keep-context"||h==="yes-default-keep-context"||h==="yes-resume-auto-mode"){if(Ie===null||!Iy(Ie))return{behavior:"deny"};return{behavior:"allow",updatedInput:Ne,permissionUpdates:Ie.applies,feedback:te}}if(h==="no"){if(!Se&&!ve)return null;return{behavior:"deny",feedback:Se||(ve?"(See attached image)":void 0),contentBlocks:Ce&&Ce.length>0?Ce:void 0}}return null}
+
+==== l3n AUSENTE
+
+==== VO AUSENTE
+
+==== Ume AUSENTE
+
+==== T3n AUSENTE
