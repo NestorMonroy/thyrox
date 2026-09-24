@@ -41,13 +41,14 @@ import {
   COORDINATOR_MODE_ALLOWED_TOOLS,
   CUSTOM_AGENT_DISALLOWED_TOOLS,
 } from './constants.ts'
-import type { ToolLike, ToolPermissionContextLike } from './contracts.ts'
 import { getToolRegistryHostBindings } from './host.ts'
 import { ensureToolRegistryRuntimeInstalled } from './toolRuntimeInstaller.ts'
 
-export type Tool = ToolLike
-export type ToolPermissionContext = ToolPermissionContextLike
-export type Tools = readonly Tool[]
+// Los tipos son los canónicos de `Tool.ts`: una segunda declaración
+// estructural hacía que un `Tools` de esta puerta no se pudiera pasar a
+// quien pide el de `Tool.ts`, aunque en ejecución son el mismo arreglo.
+export type { Tool, ToolPermissionContext, Tools } from './Tool.ts'
+import type { ToolPermissionContext, Tools } from './Tool.ts'
 
 const REPL_ONLY_TOOLS_TARGET = new Set<string>()
 let replOnlyToolsInitialized = false

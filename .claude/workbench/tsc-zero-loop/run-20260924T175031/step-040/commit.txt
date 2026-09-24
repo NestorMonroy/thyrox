@@ -1,0 +1,7 @@
+Use the canonical tool types in the runtime gate
+
+runtime.ts declared its own Tool, ToolPermissionContext and Tools from
+the structural contracts, so a Tools returned by getTools or
+assembleToolPool could not be passed to anything typed with the Tools
+of Tool.ts, although both are the same array at run time. The gate now
+re-exports the canonical types from Tool.ts.

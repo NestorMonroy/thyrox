@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2748, "total_final": 2720, "tsc_runs": 1, "accepted": ["agent:runtime-tools-canonical"], "files_kept": ["src/packages/tool-registry/src/runtime.ts"], "outcomes": {"agent:runtime-tools-canonical": "accepted-net"}}
