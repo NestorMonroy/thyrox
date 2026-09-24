@@ -12,7 +12,41 @@
  *      mensaje cuentan una vez), con salida temprana opcional vía
  *      `maxCount`.
  */
-import type { Message } from '../messageShapes.js'
+type ToolUseLike = { type: string; name?: string }
+
+type AssistantLikeMessage = {
+  type: 'assistant'
+  message: {
+    content?: string | readonly unknown[]
+  }
+}
+
+/**
+ * Tipo estrecho propio, como en la fuente
+ * (`ccnmt: packages/agent/internal/messageHelpers.ts:3-14`): la funcion solo
+ * lee `type` y `message.content`, asi que acepta cualquier mensaje con esa
+ * forma —el `Message` canonico y el `AgentMessage` del bucle— sin atarse a
+ * ninguno de los dos.
+ */
+type CountableMessage = {
+  type: string
+  message?: unknown
+  [key: string]: unknown
+}
+
+/**
+ * La rama comodin de la union de la fuente (`type: string`) impide que
+ * `msg.type === 'assistant'` estreche; la guarda lo hace explicito.
+ */
+function isAssistantLike(msg: CountableMessage): msg is CountableMessage & AssistantLikeMessage {
+  if (msg.type !== 'assistant') return false
+  const body = msg.message
+  return typeof body === 'object' && body !== null
+}
+
+function isToolUseLike(block: unknown): block is ToolUseLike {
+  return typeof block === 'object' && block !== null && typeof (block as { type?: unknown }).type === 'string'
+}
 
 export const SYNTHETIC_MESSAGES = new Set([
   '[Request interrupted by user]',
@@ -23,16 +57,16 @@ export const SYNTHETIC_MESSAGES = new Set([
 ])
 
 export function countToolCalls(
-  messages: Message[],
+  messages: readonly CountableMessage[],
   toolName: string,
   maxCount?: number,
 ): number {
   let count = 0
   for (const msg of messages) {
     if (!msg) continue
-    if (msg.type === 'assistant' && Array.isArray(msg.message.content)) {
+    if (isAssistantLike(msg) && Array.isArray(msg.message.content)) {
       const hasToolUse = msg.message.content.some(
-        block => block.type === 'tool_use' && block.name === toolName,
+        block => isToolUseLike(block) && block.type === 'tool_use' && block.name === toolName,
       )
       if (hasToolUse) {
         count++

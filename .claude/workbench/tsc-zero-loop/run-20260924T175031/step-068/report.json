@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2431, "total_final": 2407, "tsc_runs": 1, "accepted": ["agent:agent-message-boundary"], "files_kept": ["src/packages/agent/createDeps.ts", "src/packages/agent/internal/messageHelpers.ts", "src/packages/agent/internalTypes.ts"], "outcomes": {"agent:agent-message-boundary": "accepted-net"}}

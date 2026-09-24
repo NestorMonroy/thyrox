@@ -497,23 +497,24 @@ export function fromAgentEvent(event: { type: string; [key: string]: unknown }) 
 }
 
 /**
- * Marcadores de frontera de identidad entre `AgentMessage` (runtime del
- * agente) y `CoreMessage` (superficie del SDK). Son estructuralmente
- * idénticos hoy — el cast es un no-op— pero el conversor explícito hace la
- * frontera greppeable y permite que un refactor futuro evolucione las dos
- * formas de manera independiente sin reescribir cada call site.
+ * Frontera entre `AgentMessage` (el modelo del bucle, `internalTypes.ts`) y
+ * `CoreMessage` (el de `AgentCore`, `agentMessages.ts`). Porte de la fuente
+ * con su firma tipada (`ccnmt: packages/agent/createDeps.ts:444-450`): hasta
+ * ahora eran genericos sobre `T[]` con la razon de que ninguno de los dos
+ * tipos existia en este porte, y los dos ya existen — la version generica
+ * dejaba pasar cualquier arreglo sin nombrar la frontera.
  *
- * La fuente tipa cada uno como `(messages: AgentMessage[]): CoreMessage[]`
- * y `(messages: CoreMessage[]): AgentMessage[]`, con un cast `as` interno.
- * Ninguno de esos dos tipos existe en este porte parcial (viven en
- * `./index.ts`, que no se importó aquí); se tipan genéricos sobre `T[]` — el
- * cuerpo, la identidad y la igualdad de referencia son exactamente los
- * mismos que la fuente.
+ * Son identidad, como en la fuente: la referencia sale intacta, porque
+ * `fromCoreMessages(event.after)` devuelve al bucle los mismos objetos que
+ * entraron. Las dos formas NO son iguales —`CoreMessage` lleva `content` y
+ * `usage` en la raiz, `AgentMessage` bajo `message`— y `AgentLoop` lee las dos
+ * (`core/AgentLoop.ts:158`, `:443-445`). Convertir de verdad romperia ese
+ * viaje de ida y vuelta; es decision pendiente, no se toma aqui.
  */
-export function toCoreMessages<T>(messages: T[]): T[] {
-  return messages
+export function toCoreMessages(messages: AgentMessage[]): CoreMessage[] {
+  return messages as CoreMessage[]
 }
 
-export function fromCoreMessages<T>(messages: T[]): T[] {
-  return messages
+export function fromCoreMessages(messages: CoreMessage[]): AgentMessage[] {
+  return messages as AgentMessage[]
 }
