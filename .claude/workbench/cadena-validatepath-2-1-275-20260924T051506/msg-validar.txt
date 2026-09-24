@@ -1,0 +1,21 @@
+Port validatePath and isPathAllowed from 2.1.275
+
+Ten suites failed importing validatePath, which pathValidation.ts
+declared omitted because six filesystem.ts functions were missing.
+The previous three commits ported those from the binary; this one
+ports the chain itself from chunk-q2gh92k2.js:
+
+- isPathAllowed ($k): deny rules over every path variant, the read
+  fence (blockReadsOutsideWorkingDirectories), the internal-path
+  checks, the auto-edit safety check, the working directory, the
+  sandbox write allowlist, and last the allow rules.
+- validateGlobPattern (mTo): the glob validated at its first
+  canonically resolved ancestor.
+- validatePath (yS): what the shell would reinterpret (UNC, tilde
+  variants, expansion syntax, braces and globs in writes, '..' after
+  a directory) is refused before the resolved path is validated;
+  '..' is resolved physically, following each link before going up.
+
+Annulment: without the deny loop exactly the two deny cases fail,
+without the read fence the fence case, without the safety check the
+two safety cases.
