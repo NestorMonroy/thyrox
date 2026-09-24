@@ -1,0 +1,8 @@
+Declare the update channel and view settings keys
+
+The settings schema lacked autoUpdatesChannel, minimumVersion and
+defaultView, so reading them fell through the passthrough index
+signature as unknown. Every entry of the /config menu that showed one
+of them typed its value as {} and poisoned the Setting union for the
+whole list. The three keys now carry the schemas of 2.1.275:
+latest/stable/rc, a version string, and chat/transcript.

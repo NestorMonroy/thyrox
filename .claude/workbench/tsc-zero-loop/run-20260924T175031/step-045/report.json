@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2655, "total_final": 2617, "tsc_runs": 1, "accepted": ["agent:settings-schema-keys"], "files_kept": ["src/packages/config/settings/types.ts"], "outcomes": {"agent:settings-schema-keys": "accepted-net"}}

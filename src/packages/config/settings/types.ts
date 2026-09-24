@@ -264,6 +264,11 @@ export const SettingsSchema = lazySchema(() => z
       .optional()
       .catch(undefined),
     showThinkingSummaries: z.boolean().optional(),
+    // Esquemas de 2.1.275: el canal de auto-actualización y la versión
+    // mínima que fija, y la vista por defecto del transcript.
+    autoUpdatesChannel: z.enum(['latest', 'stable', 'rc']).optional(),
+    minimumVersion: z.string().optional(),
+    defaultView: z.enum(['chat', 'transcript']).optional(),
     fastMode: z.unknown().optional(),
     fastModePerSessionOptIn: z.boolean().optional(),
     promptSuggestionEnabled: z.boolean().optional(),
