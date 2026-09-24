@@ -1,0 +1,18 @@
+Unify AgentMessage with the canonical Message
+
+internalTypes.ts declared its own minimal message shape (type: string,
+content: unknown[]), a second message universe beside messageShapes.ts.
+QueryEngine and the loop helpers spoke one or the other, so every
+boundary between them failed under strict mode. Steps 063 and 066 tried
+to harden QueryEngine alone and were rejected for that reason.
+
+The V7 section 8 reason for the file, not importing app-compat types,
+does not cover messageShapes.ts, which lives in this package.
+AgentMessage and AgentAssistantMessage are now aliases of the canonical
+types, and QueryEngine takes Message, SystemCompactBoundaryMessage and
+the SDK message types from their canonical homes instead of local
+stubs.
+
+tsc: 2431 -> 2419. QueryEngine.ts rises by 12: those diagnostics sit on
+its remaining local stubs (AppState, Tools, usage, modelUsage) and
+belong to the next step.
