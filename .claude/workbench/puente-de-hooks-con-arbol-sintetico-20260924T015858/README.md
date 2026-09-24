@@ -13,7 +13,7 @@ No es un defecto del puente: su caso 3 medía contra los clones del HOST y exig�
 | archivo | que hace |
 |---|---|
 | caso 3 de `tests/hooks/test-bridge-hooks.sh` | construye su árbol (`kaupamex-api`, `kaupamex-docs`, `thyrox`) y apunta el puente con `THYROX_REACH_ROOT` |
-| `outputs/rojo.txt` | la suite antes: 10 de 11, `esperado=[2] obtenido=[1]` |
+| `outputs/rojo.txt` | la suite antes, de la remedición en paralelo: 10 de 11, `esperado=[2] obtenido=[1]` |
 | `outputs/verde.txt` | 11 de 11 |
 | `outputs/anulado-dedup.txt` | con el puente deduplicando por nombre de archivo: cae exactamente el caso 3 |
 
