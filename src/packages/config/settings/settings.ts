@@ -163,7 +163,7 @@ function parseSettingsFileUncached(path: string): {
 
     const ruleWarnings = filterInvalidPermissionRules(data, path)
 
-    const result = SettingsSchema.safeParse(data)
+    const result = SettingsSchema().safeParse(data)
 
     if (!result.success) {
       const errors = formatZodError(result.error, path)
@@ -279,7 +279,7 @@ function getSettingsForSourceUncached(
   if (source === 'flagSettings') {
     const inlineSettings = getConfigHostBindings().getFlagSettingsInline?.()
     if (inlineSettings) {
-      const parsed = SettingsSchema.safeParse(inlineSettings)
+      const parsed = SettingsSchema().safeParse(inlineSettings)
       if (parsed.success) {
         return mergeWith(
           fileSettings || {},
@@ -464,7 +464,7 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
       if (source === 'flagSettings') {
         const inlineSettings = getConfigHostBindings().getFlagSettingsInline?.()
         if (inlineSettings) {
-          const parsed = SettingsSchema.safeParse(inlineSettings)
+          const parsed = SettingsSchema().safeParse(inlineSettings)
           if (parsed.success) {
             mergedSettings = mergeWith(mergedSettings, parsed.data, settingsMergeCustomizer)
           }

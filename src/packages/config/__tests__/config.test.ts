@@ -14,57 +14,57 @@ import { loadSettings, mergeSettings } from '../settings/load.ts'
 
 describe('SettingsSchema — lo que aceptamos', () => {
   test('objeto vacio', () => {
-    expect(SettingsSchema.safeParse({}).success).toBe(true)
+    expect(SettingsSchema().safeParse({}).success).toBe(true)
   })
 
   test('model por identificador completo; el alias se rechaza', () => {
-    expect(SettingsSchema.safeParse({ model: 'claude-opus-5' }).success).toBe(true)
-    const alias = SettingsSchema.safeParse({ model: 'opus' })
+    expect(SettingsSchema().safeParse({ model: 'claude-opus-5' }).success).toBe(true)
+    const alias = SettingsSchema().safeParse({ model: 'opus' })
     expect(alias.success).toBe(false)
     // la razon se dice, no se deja al lector adivinarla
     expect(JSON.stringify(alias.error)).toContain('identificador completo')
   })
 
   test('hooks con matcher y comandos', () => {
-    expect(SettingsSchema.safeParse({
+    expect(SettingsSchema().safeParse({
       hooks: { PreToolUse: [{ matcher: 'Bash', hooks: [{ type: 'command', command: 'echo x', timeout: 5 }] }] },
     }).success).toBe(true)
   })
 
   test('un evento de hook que no existe se rechaza, y nombra el que falla', () => {
-    const r = SettingsSchema.safeParse({ hooks: { NoExiste: [{ hooks: [{ type: 'command', command: 'x' }] }] } })
+    const r = SettingsSchema().safeParse({ hooks: { NoExiste: [{ hooks: [{ type: 'command', command: 'x' }] }] } })
     expect(r.success).toBe(false)
     expect(JSON.stringify(r.error)).toContain('NoExiste')
   })
 
   test('permissions con los tres modos y las capacidades del harness', () => {
-    expect(PermissionsSchema.safeParse({ defaultMode: 'acceptEdits', read: 'allow', write: 'ask', execute: 'deny' }).success).toBe(true)
-    expect(PermissionsSchema.safeParse({ write: 'quizas' }).success).toBe(false)
+    expect(PermissionsSchema().safeParse({ defaultMode: 'acceptEdits', read: 'allow', write: 'ask', execute: 'deny' }).success).toBe(true)
+    expect(PermissionsSchema().safeParse({ write: 'quizas' }).success).toBe(false)
   })
 
   test('env coacciona numeros a cadena, como el cliente', () => {
-    const r = EnvironmentVariablesSchema.safeParse({ PORT: 3000 })
+    const r = EnvironmentVariablesSchema().safeParse({ PORT: 3000 })
     expect(r.success).toBe(true)
     if (r.success) expect(r.data.PORT).toBe('3000')
   })
 
   test('advisorModel exige identificador completo igual que model', () => {
-    expect(SettingsSchema.safeParse({ advisorModel: 'claude-fable-5-1' }).success).toBe(true)
-    expect(SettingsSchema.safeParse({ advisorModel: 'fable' }).success).toBe(false)
+    expect(SettingsSchema().safeParse({ advisorModel: 'claude-fable-5-1' }).success).toBe(true)
+    expect(SettingsSchema().safeParse({ advisorModel: 'fable' }).success).toBe(false)
   })
 
   test('cacheTtl solo admite los dos valores que el servicio tiene', () => {
-    expect(SettingsSchema.safeParse({ cacheTtl: '1h' }).success).toBe(true)
-    expect(SettingsSchema.safeParse({ cacheTtl: '30m' }).success).toBe(false)
+    expect(SettingsSchema().safeParse({ cacheTtl: '1h' }).success).toBe(true)
+    expect(SettingsSchema().safeParse({ cacheTtl: '30m' }).success).toBe(false)
   })
 
   test('maxTurns positivo; cero o negativo no', () => {
-    expect(SettingsSchema.safeParse({ maxTurns: 20 }).success).toBe(true)
-    expect(SettingsSchema.safeParse({ maxTurns: 0 }).success).toBe(false)
+    expect(SettingsSchema().safeParse({ maxTurns: 20 }).success).toBe(true)
+    expect(SettingsSchema().safeParse({ maxTurns: 0 }).success).toBe(false)
   })
 
   test('las claves desconocidas pasan (passthrough), como en el cliente', () => {
-    const r = SettingsSchema.safeParse({ claveNueva: 'valor' })
+    const r = SettingsSchema().safeParse({ claveNueva: 'valor' })
     expect(r.success).toBe(true)
     if (r.success) expect((r.data as Record<string, unknown>).claveNueva).toBe('valor')
   })
@@ -72,13 +72,13 @@ describe('SettingsSchema — lo que aceptamos', () => {
 
 describe('la autoría no se puede encender desde un archivo', () => {
   test('includeCoAuthoredBy admite false y rechaza true', () => {
-    expect(SettingsSchema.safeParse({ includeCoAuthoredBy: false }).success).toBe(true)
+    expect(SettingsSchema().safeParse({ includeCoAuthoredBy: false }).success).toBe(true)
     // git-author-identity.md prohibe el remolque; un settings que lo encienda
     // seria una regla derogada por un archivo de configuracion
-    expect(SettingsSchema.safeParse({ includeCoAuthoredBy: true }).success).toBe(false)
+    expect(SettingsSchema().safeParse({ includeCoAuthoredBy: true }).success).toBe(false)
   })
   test('attribution acepta las dos superficies del cliente', () => {
-    expect(SettingsSchema.safeParse({ attribution: { commit: 'x', pr: 'y' } }).success).toBe(true)
+    expect(SettingsSchema().safeParse({ attribution: { commit: 'x', pr: 'y' } }).success).toBe(true)
   })
 })
 
@@ -100,7 +100,7 @@ describe('fuentes y su precedencia', () => {
     expect(parseSettingSourcesFlag('user,project')).toEqual(['userSettings', 'projectSettings'])
     expect(parseSettingSourcesFlag(' user , local ')).toEqual(['userSettings', 'localSettings'])
     expect(parseSettingSourcesFlag('')).toEqual([])
-    expect(() => parseSettingSourcesFlag('inventada')).toThrow('fuente de settings')
+    expect(() => parseSettingSourcesFlag('inventada')).toThrow('Invalid setting source')
   })
 })
 
@@ -151,7 +151,7 @@ describe('validacion de archivos', () => {
   })
 
   test('formatZodError nombra el archivo y la ruta de la clave', () => {
-    const r = SettingsSchema.safeParse({ model: 123 })
+    const r = SettingsSchema().safeParse({ model: 123 })
     expect(r.success).toBe(false)
     if (!r.success) {
       const errores = formatZodError(r.error, 'settings.json')

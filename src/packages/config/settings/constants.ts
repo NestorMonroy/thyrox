@@ -113,7 +113,7 @@ export function parseSettingSourcesFlag(flag: string): SettingSource[] {
     const nombre = parte.trim()
     const fuente = ALIAS[nombre] ?? (SETTING_SOURCES as readonly string[]).includes(nombre) ? (ALIAS[nombre] ?? (nombre as SettingSource)) : undefined
     if (!fuente || !(SETTING_SOURCES as readonly string[]).includes(fuente)) {
-      throw new Error(`fuente de settings desconocida: '${nombre}' (válidas: ${Object.keys(ALIAS).join(', ')})`)
+      throw new Error(`Invalid setting source: ${nombre}. Valid options are: ${Object.keys(ALIAS).join(', ')}`)
     }
     return fuente
   })

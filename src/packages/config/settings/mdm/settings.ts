@@ -277,7 +277,7 @@ export function parseCommandOutputAsSettings(
   }
 
   const ruleWarnings = filterInvalidPermissionRules(data, sourcePath)
-  const parseResult = SettingsSchema.safeParse(data)
+  const parseResult = SettingsSchema().safeParse(data)
   if (!parseResult.success) {
     const errors = formatZodError(parseResult.error, sourcePath)
     return { settings: {}, errors: [...ruleWarnings, ...errors] }

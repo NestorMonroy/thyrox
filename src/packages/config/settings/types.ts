@@ -20,6 +20,7 @@
  */
 import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
+import { lazySchema } from '../internal/lazySchema.ts'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -147,7 +148,7 @@ const EXTERNAL_PERMISSION_MODES = [
  * `'manual'` se preprocesa a `'default'` porque es su alias histórico y sigue
  * apareciendo en archivos escritos por versiones anteriores.
  */
-export const PermissionsSchema = z.object({
+export const PermissionsSchema = lazySchema(() => z.object({
   defaultMode: z
     .preprocess(
       value => (value === 'manual' ? 'default' : value),
@@ -161,15 +162,15 @@ export const PermissionsSchema = z.object({
   allow: z.array(z.string()).optional(),
   deny: z.array(z.string()).optional(),
   ask: z.array(z.string()).optional(),
-})
+}))
 
 /** Un número en un `.env` es un número en JSON; el proceso sólo entiende cadenas. */
-export const EnvironmentVariablesSchema = z.record(
+export const EnvironmentVariablesSchema = lazySchema(() => z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean()]).transform((v) => String(v)),
-)
+))
 
-export const SettingsSchema = z
+export const SettingsSchema = lazySchema(() => z
   .object({
     $schema: z.string().optional(),
     model: IDENTIFICADOR_DE_MODELO.optional(),
@@ -178,9 +179,9 @@ export const SettingsSchema = z
     cacheTtl: z.enum(['5m', '1h']).optional(),
     maxTurns: z.number().int().positive().optional(),
     system: z.string().optional(),
-    permissions: PermissionsSchema.optional(),
+    permissions: PermissionsSchema().optional(),
     hooks: HooksSchema.optional(),
-    env: EnvironmentVariablesSchema.optional(),
+    env: EnvironmentVariablesSchema().optional(),
     transcriptDir: z.string().optional(),
     disableAllHooks: z.boolean().optional(),
     // El cliente las declara para PONER el remolque de autoría; aquí existen
@@ -276,10 +277,10 @@ export const SettingsSchema = z
     disableAutoMode: z.boolean().optional(),
     wslInheritsWindowsSettings: z.boolean().optional(),
   })
-  .passthrough()
+  .passthrough())
 
-export type Settings = z.infer<typeof SettingsSchema>
-export type Permissions = z.infer<typeof PermissionsSchema>
+export type Settings = z.infer<ReturnType<typeof SettingsSchema>>
+export type Permissions = z.infer<ReturnType<typeof PermissionsSchema>>
 export type HookEvent = (typeof HOOK_EVENTS)[number]
 
 /**

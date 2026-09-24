@@ -262,3 +262,32 @@ export function usageEquivalentTokens(
 export function effortCostIndex(modelId: string, level: EffortLevel): number | null {
   return MODELS[modelId]?.effort_cost_index?.[level] ?? null
 }
+
+/**
+ * El identificador canonico de un modelo: la cadena de familias de `mSe`
+ * (binario 2.1.275, `chunk-xbd48fav.js`) que reduce una variante fechada,
+ * con sufijo de contexto o con prefijo de proveedor al registro del catalogo
+ * — `claude-opus-4-7-20250101` -> `claude-opus-4-7`.
+ *
+ * Divergencia declarada: el binario consulta antes dos tablas que aqui no
+ * existen —los overrides por organizacion (`Oye`) y el mapa de perfiles de
+ * inferencia de Bedrock (`mR`/`DN`)— y cae a esta cadena cuando las dos
+ * callan, que es siempre en este arbol. Sin familia reconocida devuelve la
+ * entrada en minusculas y sin el sufijo `[1m]`.
+ */
+export function canonicalModelName(model: string): string {
+  const e = model.toLowerCase()
+  for (const family of CANONICAL_FAMILIES) if (e.includes(family)) return family
+  if (/claude-opus-4(?!-\d(?!\d))/.test(e)) return 'claude-opus-4-0'
+  if (/claude-sonnet-4(?!-\d(?!\d))/.test(e)) return 'claude-sonnet-4-0'
+  return e.replace(/\[1m\]$/, '')
+}
+
+/** El orden de `mSe`: la variante mas especifica antes que su prefijo. */
+const CANONICAL_FAMILIES = [
+  'claude-fable-5-1', 'claude-fable-5', 'claude-mythos-5-1', 'claude-mythos-5', 'claude-opus-5',
+  'claude-opus-4-8', 'claude-opus-4-7', 'claude-opus-4-6', 'claude-opus-4-5', 'claude-opus-4-1',
+  'claude-sonnet-5', 'claude-sonnet-4-6', 'claude-sonnet-4-5', 'claude-haiku-4-5',
+  'claude-3-7-sonnet', 'claude-3-5-sonnet', 'claude-3-5-haiku', 'claude-3-opus', 'claude-3-sonnet',
+  'claude-3-haiku',
+] as const

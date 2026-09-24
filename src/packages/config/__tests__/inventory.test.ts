@@ -70,7 +70,7 @@ describe('inventario de las 80 claves del cliente', () => {
     for (const k of [...consumida, ...declarada]) {
       // el esquema la acepta con su tipo; si no estuviera declarada, el
       // passthrough la dejaria pasar y el veredicto seria una mentira
-      expect(Object.keys(SettingsSchema.shape)).toContain(k === 'effortLevel' ? 'effort' : k)
+      expect(Object.keys(SettingsSchema().shape)).toContain(k === 'effortLevel' ? 'effort' : k)
     }
   })
 })

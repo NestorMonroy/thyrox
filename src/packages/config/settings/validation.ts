@@ -54,7 +54,7 @@ export function validateSettingsFileContent(content: string): ValidationResult {
   }
   // El schema público es passthrough para cargar versiones futuras. Esta
   // frontera valida una edición escrita por Thyrox y por ello es estricta.
-  const r = SettingsSchema.strict().safeParse(data)
+  const r = SettingsSchema().strict().safeParse(data)
   if (!r.success) {
     return {
       isValid: false,

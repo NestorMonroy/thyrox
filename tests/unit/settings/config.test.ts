@@ -33,9 +33,18 @@ describe('SettingsSchema', () => {
     expect(result.success).toBe(true)
   })
 
-  test('accepts model string', () => {
-    const result = SettingsSchema().safeParse({ model: 'sonnet' })
+  // Divergencia deliberada de la referencia: aqui el modelo se fija por
+  // identificador completo, nunca por alias — un alias resuelve distinto segun
+  // el proveedor, y un settings sobrevive a la sesion
+  // (`model-selection-subagents.md`). El alias se RECHAZA, y se mide.
+  test('accepts a full model identifier', () => {
+    const result = SettingsSchema().safeParse({ model: 'claude-sonnet-5' })
     expect(result.success).toBe(true)
+  })
+
+  test('rejects a model alias', () => {
+    const result = SettingsSchema().safeParse({ model: 'sonnet' })
+    expect(result.success).toBe(false)
   })
 
   test('accepts permissions block with allow rules', () => {
@@ -117,12 +126,15 @@ describe('SettingsSchema', () => {
   })
 
   test('accepts boolean settings', () => {
+    // `includeCoAuthoredBy` solo admite `false`: la regla de identidad prohibe
+    // el remolque de autoria del agente (`git-author-identity.md`).
     const result = SettingsSchema().safeParse({
-      includeCoAuthoredBy: true,
+      includeCoAuthoredBy: false,
       respectGitignore: false,
       disableAllHooks: true,
     })
     expect(result.success).toBe(true)
+    expect(SettingsSchema().safeParse({ includeCoAuthoredBy: true }).success).toBe(false)
   })
 
   test('accepts cleanupPeriodDays', () => {
@@ -431,7 +443,7 @@ describe('filterInvalidPermissionRules', () => {
 
 describe('validateSettingsFileContent', () => {
   test('accepts valid JSON settings', () => {
-    const result = validateSettingsFileContent('{"model": "sonnet"}')
+    const result = validateSettingsFileContent('{"model": "claude-sonnet-5"}')
     expect(result.isValid).toBe(true)
   })
 

@@ -76,7 +76,7 @@ export function loadSettings(specs: LoadSpec[]): LoadResult {
     for (const { key, reason } of deferredKeysPresent(data)) {
       errors.push({ file: source, path: `${path} → ${key}`, message: reason })
     }
-    const r = SettingsSchema.safeParse(data)
+    const r = SettingsSchema().safeParse(data)
     if (!r.success) {
       errors.push(...formatZodError(r.error, path))
       continue
