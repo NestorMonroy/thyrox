@@ -13,9 +13,11 @@ import {
   ChannelMessageNotificationSchema,
   findChannelEntry,
   gateChannelServer,
-  type MCPServerConnection,
   wrapChannelMessage,
 } from '@thyrox/mcp-runtime'
+// La conexión concreta (unión discriminada con `client`, `capabilities` y
+// `cleanup`), no el contrato genérico que re-exporta la raíz del paquete.
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import type { Stream } from '@thyrox/config/stream'
 import type {

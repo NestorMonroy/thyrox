@@ -1,0 +1,12 @@
+Use the concrete MCP connection type in the CLI
+
+run-streaming and control/handlers took MCPServerConnection from the
+mcp-runtime package root, which re-exports the host-agnostic contract
+(capabilities?: unknown, no client, no cleanup). The CLI reads those
+fields, and run-streaming's own *Base parameterisations are meant to
+lock the concrete shapes. Both now import the concrete discriminated
+union from @thyrox/mcp-runtime/types.js, as mcpServersHandlers already
+did. The generic contract is left as ported.
+
+tsc: 2481 -> 2471 (accepted-net, 53 targets -> 38; 5 revealed, in the
+ledger).

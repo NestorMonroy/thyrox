@@ -79,10 +79,13 @@ import {
   setupSdkMcpClients,
   setupVscodeSdkMcp,
   setMcpServerEnabled,
-  type MCPServerConnection,
   type McpSdkServerConfig,
   type ScopedMcpServerConfig,
 } from '@thyrox/mcp-runtime'
+// La conexión concreta (unión discriminada con `client`, `capabilities` y
+// `cleanup`): los `*Base` de abajo la fijan a las formas del CLI, y el
+// contrato genérico de la raíz del paquete no declara esos campos.
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import { ask } from '@thyrox/agent/query-engine'
 import { canBatchWith, joinPromptValues } from './prompt-utils.js'
 import { handleOrphanedPermissionResponse } from '../../handleOrphanedPermissionResponse.js'
