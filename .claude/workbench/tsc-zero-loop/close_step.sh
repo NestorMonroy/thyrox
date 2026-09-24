@@ -18,6 +18,7 @@ if [ "$STATUS" != progress ]; then
       || { echo "falta la reflexión de $P: bin/tsc_reflect add --run $R --id $P --step $R/$S ..." >&2; exit 3; }
   done
   EXTRA="${EXTRA:-} $R/reflections.jsonl"
+  test -e "$R/residual.jsonl" && EXTRA="$EXTRA $R/residual.jsonl"
 fi
 git add -N "$R/$S" "$J"
 OUT=$("${A[@]}" commit -q -F "$R/$S/commit.txt" -- $FILES ${EXTRA:-} "$R/$S" "$R/ledger.jsonl" "$J" 2>&1) || { echo "$OUT" | tail -20; exit 1; }
