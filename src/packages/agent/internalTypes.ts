@@ -17,14 +17,20 @@ import type { AssistantMessage, Message } from './messageShapes.js'
 // ── Tipos de mensaje ────────────────────────────────────────────────────────
 
 /**
- * DIVERGENCIA DECLARADA: la fuente declara aqui una forma minima propia
- * (`type: string`, `message.content: unknown[]`) y compila con
- * `strict: false`. Con `strict: true` esa copia es un segundo universo de
- * mensajes: `QueryEngine` y los helpers del bucle hablan `Message`
- * (`messageShapes.ts`), y cada paso por una frontera entre los dos exige un
- * cast. La razon del archivo —no importar tipos de `app-compat` (V7 §8)— no
- * cubre `messageShapes.ts`, que vive en este mismo paquete. Se alias a la
- * jerarquia canonica; el nombre se conserva para los consumidores.
+ * DIVERGENCIA DECLARADA. La fuente declara aqui una forma minima propia
+ * (`type: string`, `message.content: unknown[]`,
+ * `ccnmt: packages/agent/internalTypes.ts:16-25`) y su `QueryEngine` la
+ * importa como `Message` (`ccnmt: packages/agent/QueryEngine.ts:45`). Alli
+ * compila porque la raiz declara `"strict": false`
+ * (`ccnmt: tsconfig.json:7`); este arbol declara `"strict": true`
+ * (`tsconfig.json:8`), y con esa bandera la copia minima es un segundo
+ * universo de mensajes junto a `Message` (`messageShapes.ts`, que la fuente
+ * tambien tiene en este paquete): cada frontera entre los dos exige un cast.
+ * Medido en el lazo tsc: endurecer `QueryEngine` sin unificar subio su
+ * cuenta de 55 a 84 (paso 066); unificando, el total bajo de 2431 a 2419
+ * (paso 067). La razon del archivo —no importar tipos de `app-compat`,
+ * V7 §8— no cubre `messageShapes.ts`, que es del mismo paquete. Se conserva
+ * el nombre para los consumidores y se alias al tipo canonico.
  */
 export type AgentMessage = Message
 
