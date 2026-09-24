@@ -37,9 +37,9 @@
  *   las rutas de MEMORIA y REGLAS (`getMemoryPath`, `getManagedClaudeRulesDir`,
  *       `getUserClaudeRulesDir`) — `getMemoryPath` cuelga de `teamMemPaths`,
  *       que la fuente carga tras la bandera `TEAMMEM`.
- *   `recordFirstStartTime`, `markHasUsedAgentsFleet`,
- *       `getRemoteControlAtStartup`, `getCustomApiKeyStatus` — escritores de
- *       una clave concreta; se portan con su consumidor.
+ *   [PORTADOS 2026-09-24, en `./configMarkers.ts`] `recordFirstStartTime`,
+ *       `markHasUsedAgentsFleet`, `getRemoteControlAtStartup`,
+ *       `getCustomApiKeyStatus` — sus consumidores ya existían.
  *
  * DIVERGENCIA DECLARADA, y es la única de firma: el parámetro `filePath`
  * OPCIONAL. La fuente resuelve la ruta ella misma y, para poder probarse,
