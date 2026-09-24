@@ -118,7 +118,8 @@ if (orden === 'info') {
   for (const nombre of nombres) {
     const defs = resolveSymbol(raiz, chunk, nombre)
     if (defs.length === 0) ausentes++
-    console.log(`==== ${nombre}: ${defs.length} definicion(es) de nivel superior`)
+    const alcance = defs.length > 0 && defs.every(d => d.kind === 'method') ? 'de método de clase' : 'de nivel superior'
+    console.log(`==== ${nombre}: ${defs.length} definicion(es) ${alcance}`)
     for (const d of defs) console.log(`---- ${d.file} ${d.kind} ${d.name} [${d.start},${d.end})\n${d.text}`)
   }
   console.error(`symbol: ${nombres.length - ausentes} de ${nombres.length} nombre(s) resueltos`)

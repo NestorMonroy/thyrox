@@ -7,7 +7,8 @@
  * de 2.1.275 (hallazgo H-THYROX-172):
  *
  * 1. sólo veía `function`/`async function`: ni `var|let|const NOMBRE=`, ni
- *    `class`, ni `function*`;
+ *    `class`, ni `function*`, ni los métodos de una clase (éstos se añadieron
+ *    después, al no encontrar `refreshClients` del pool de sockets);
  * 2. tomaba la PRIMERA aparición textual, que en código minificado suele ser
  *    una función anidada homónima de otra;
  * 3. no seguía `import{…}from"…chunk"` ni los alias de `export{x as y}`;
@@ -28,7 +29,7 @@ import ts from 'typescript'
 
 import { parseSource } from './declaration.ts'
 
-export type SymbolKind = 'function' | 'variable' | 'class'
+export type SymbolKind = 'function' | 'variable' | 'class' | 'method'
 export type SymbolDefinition = {
   name: string
   kind: SymbolKind
@@ -60,6 +61,21 @@ function definitionOf(node: ts.Node, source: string, file: ts.SourceFile): Symbo
   } else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
     name = node.name.text
     kind = 'variable'
+  } else if (
+    (ts.isMethodDeclaration(node) || ts.isGetAccessorDeclaration(node) || ts.isSetAccessorDeclaration(node)) &&
+    ts.isIdentifier(node.name)
+  ) {
+    name = node.name.text
+    kind = 'method'
+  } else if (
+    ts.isPropertyDeclaration(node) &&
+    ts.isIdentifier(node.name) &&
+    node.initializer !== undefined &&
+    (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+  ) {
+    // Un campo de clase que guarda una función es, para leerlo, un método.
+    name = node.name.text
+    kind = 'method'
   }
   if (name === undefined || kind === undefined) return null
   const start = node.getStart(file)
@@ -109,7 +125,11 @@ export function resolveSymbol(root: string, chunk: string, name: string, depth =
       return resolveSymbol(root, target, local, depth + 1)
     }
   }
-  return []
+  // Ni definición de nivel superior ni import: los métodos de clase del chunk,
+  // que no se exportan por nombre y sólo se alcanzan leyendo la clase.
+  return extractSymbol(source, name)
+    .filter(d => d.kind === 'method')
+    .map(d => ({ ...d, file: chunk }))
 }
 
 /** El nombre local que `export{local as exported}` publica como `exported`. */

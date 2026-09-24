@@ -38,6 +38,18 @@ describe('extractSymbol', () => {
     ])
   })
 
+  test('reconoce los métodos de clase: normales, async, get/set y campos con función', () => {
+    const src =
+      'class P{refresh(){return this.scan()}async scan(){return[]}get size(){return 1}' +
+      'set size(v){}handler=()=>{return 2}static make(){return new P}}'
+    const found = (n: string) => extractSymbol(src, n).map(d => [d.kind, d.scope, d.text])
+    expect(found('refresh')).toEqual([['method', 'nested', 'refresh(){return this.scan()}']])
+    expect(found('scan')).toEqual([['method', 'nested', 'async scan(){return[]}']])
+    expect(found('size').map(d => d[2])).toEqual(['get size(){return 1}', 'set size(v){}'])
+    expect(found('handler')).toEqual([['method', 'nested', 'handler=()=>{return 2}']])
+    expect(found('make')).toEqual([['method', 'nested', 'static make(){return new P}']])
+  })
+
   test('un nombre ausente da una lista vacía', () => {
     expect(extractSymbol('function A(){}', 'Z')).toEqual([])
   })
@@ -62,6 +74,12 @@ describe('resolveSymbol', () => {
   test('sigue el alias local del import y el alias del export', () => {
     const [d] = resolveSymbol(root, 'chunk-a.js', 'Qa')
     expect([d!.file, d!.name, d!.text]).toEqual(['chunk-b.js', 'Zq', 'function Zq(){return 7}'])
+  })
+
+  test('sin definición de nivel superior ni import, cae a los métodos del chunk', () => {
+    writeFileSync(join(root, 'chunk-c.js'), 'class I{refreshClients(){return 1}}var refreshClientsX=0;')
+    const found = resolveSymbol(root, 'chunk-c.js', 'refreshClients')
+    expect(found.map(d => [d.file, d.kind, d.text])).toEqual([['chunk-c.js', 'method', 'refreshClients(){return 1}']])
   })
 
   test('un símbolo definido en el propio chunk no sale de él', () => {
