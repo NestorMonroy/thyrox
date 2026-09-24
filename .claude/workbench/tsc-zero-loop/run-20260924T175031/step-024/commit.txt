@@ -1,0 +1,7 @@
+Record the exhausted AppState sweep of the tsc loop
+
+Twenty-fourth step, the first run through tsc_sweep: the local-appstate
+pattern had one pending site left, agent/types/hooks.ts, and tsc
+rejected it (73 -> 73 targets). The manual steps had already covered
+every alias that carried diagnostics; the site is excluded and the
+lesson recorded.
