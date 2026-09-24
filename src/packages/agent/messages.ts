@@ -1530,3 +1530,44 @@ export function getAssistantMessageText(message: Message): string | null {
       .trim() || null
   )
 }
+
+/**
+ * La nota que acompaña un rechazo cuando la memoria automática está activa:
+ * el siguiente mensaje del usuario puede traer una corrección que conviene
+ * guardar. El texto es de este árbol; el contrato es el de `MJe`/`WO` en
+ * 2.1.275.
+ */
+export const MEMORY_CORRECTION_HINT =
+  "\n\nNote: the user's next message may explain what went wrong or how they want the work done. If it does, consider saving that preference to memory so future sessions follow it."
+
+function isAutoMemoryEnabledDeferred(): boolean {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/memory/paths') as { isAutoMemoryEnabled: () => boolean }).isAutoMemoryEnabled()
+  } catch {
+    return false
+  }
+}
+
+function featureEnabledDeferred(name: string): boolean {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { getFeatureValue_CACHED_MAY_BE_STALE } = require('@thyrox/config/feature-flags') as {
+      getFeatureValue_CACHED_MAY_BE_STALE: <T>(name: string, fallback: T) => T
+    }
+    return getFeatureValue_CACHED_MAY_BE_STALE(name, false) === true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * El mensaje de rechazo, con la nota de corrección si la memoria automática
+ * está activa y la bandera `tengu_amber_prism` también (≙ `WO` de 2.1.275).
+ * Este árbol no tiene pausa de memoria, así que sólo la desactivación la
+ * apaga.
+ */
+export function withMemoryCorrectionHint(message: string): string {
+  if (isAutoMemoryEnabledDeferred() && featureEnabledDeferred('tengu_amber_prism')) return message + MEMORY_CORRECTION_HINT
+  return message
+}
