@@ -64,14 +64,40 @@ def check(etiqueta, esperado, obtenido):
 #: `TaskCreated`/`TaskCompleted` entran con TASK-DOCS-0404: son eventos
 #: DEDICADOS del cliente, no un `PostToolUse` con matcher, y su payload trae
 #: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
-EVENTS_DECLARED = ["PreModelSwitch", "SubagentStart", "SubagentStop",
-                      "TaskCompleted", "TaskCreated"]
+#:
+#: `PreToolUse` entra el 2026-09-24: los diez detectores de
+#: `pretooluse_dispatch.py` existian y NINGUN cableado los declaraba, asi que el
+#: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
+EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SubagentStart",
+                      "SubagentStop", "TaskCompleted", "TaskCreated"]
 
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
 d = w.declared_wiring()
 check("es un settings con hooks", True, "hooks" in d)
 check("declara sus eventos, todos y solo ellos", EVENTS_DECLARED,
       sorted(d["hooks"]))
+
+print("== 1b. PreToolUse llega al despachador de los detectores ==")
+_pre = d["hooks"].get("PreToolUse", [{}])[0]
+_matcher = set(_pre.get("matcher", "").split("|"))
+check("el matcher cubre Bash y Agent, los dos despachos que se miden",
+      True, {"Bash", "Agent"} <= _matcher)
+check("el matcher cubre la escritura y la lectura de archivos",
+      True, {"Write", "Edit", "Read"} <= _matcher)
+check("el comando es el despachador del proveedor", True,
+      any(h["command"].endswith("src/hooks/pretooluse_dispatch.py")
+          for h in _pre.get("hooks", [])))
+
+# El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del
+# corredor. Medido 2026-09-24: asi, 4 de 17 detectores no cargaban y el
+# despachador lo decia por stderr, que en un hook nadie lee.
+import subprocess as _sp0, os as _os0  # noqa: E402
+_cmd = next(h["command"] for h in _pre.get("hooks", [{"command": "true"}]))
+_env0 = {k: v for k, v in _os0.environ.items() if k != "PYTHONPATH"}
+_r0 = _sp0.run(_cmd, shell=True, cwd="/", env=_env0, capture_output=True,
+               text=True, input='{"tool_name":"Bash","tool_input":{"command":"ls"}}')
+check("el comando cableado carga todos los detectores sin PYTHONPATH",
+      "", _r0.stderr.strip())
 
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [

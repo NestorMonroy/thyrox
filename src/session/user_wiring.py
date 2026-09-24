@@ -137,6 +137,24 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),
             ]}],
+            # Los diez detectores de `pretooluse_dispatch.py` —comando largo en
+            # primer plano, despacho a agente de trabajo determinista, recorrido
+            # sin cota, herramienta dedicada donde bastaba Bash…— existian y
+            # este cableado NO los declaraba: ninguna sesion podia dispararlos.
+            # Medido 2026-09-24 con los dos en la mano: `declared_wiring()` sin
+            # `PreToolUse`, y el aviso de comando largo nunca salio en una
+            # sesion que corrio un typecheck de cinco minutos en primer plano.
+            # El matcher nombra las herramientas que algun detector mide; el
+            # despachador descarta en proceso lo que no le toca.
+            "PreToolUse": [{
+                "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+                # El PYTHONPATH va en el comando: el hook corre desde el cwd de
+                # la sesion y sin el entorno del corredor, y sin el cuatro de
+                # los diecisiete detectores no cargaban (su suite lo mide).
+                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+                              f"{base}/src/hooks/pretooluse_dispatch.py",
+                              timeout=10)],
+            }],
             "SubagentStop": [{"hooks": [
                 cmd(f"node {agentes}/save_result.mjs --log-dir {resultados}"),
                 cmd(f"{delta} --stop {repos} --results-dir {resultados}"),
@@ -453,6 +471,10 @@ def _bases() -> dict:
     }
 
 
+#: Un token `NOMBRE=valor` en posicion de comando: asignacion de entorno.
+_ENV_ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+
+
 def _target_of(command: str, cwd: str | None = None,
                bases: dict | None = None) -> str | None:
     """La ruta que el comando invoca, resuelta como la resuelve el cliente.
@@ -466,6 +488,11 @@ def _target_of(command: str, cwd: str | None = None,
     base_cwd = cwd if cwd is not None else hook_cwd()
     raices = bases if bases is not None else _bases()
     for pieza in command.split():
+        # Una asignacion inicial (`VAR=valor comando`) no es el programa: el
+        # shell la exporta y ejecuta lo que sigue. Sin saltarla, un
+        # `PYTHONPATH=/ruta/src` se leia como la ruta invocada.
+        if _ENV_ASSIGNMENT.match(pieza):
+            continue
         if pieza.startswith("/"):
             return pieza
         for nombre, patron in _BASE_PREFIXES:

@@ -1,9 +1,18 @@
 # Un comando largo va a segundo plano; un subagente es otra cosa y cuesta
 
-Un comando cuya duración estimada supere el medio minuto **no se espera en
-primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
-con la barrera. El mecanismo ya está construido en este árbol y tiene tres
-piezas, una por forma del problema:
+Un comando cuya duración estimada supere los **diez segundos** **no se espera
+en primer plano ni se delega a un subagente**: se lanza como proceso y se recoge
+con la barrera.
+
+> Umbral bajado de medio minuto a diez segundos por directiva del ejecutor
+> 2026-09-24: *«si un comando tarda más de 10 s en ejecución, lo tienes que
+> mandar a 2do plano»*. Medido en la misma sesión: el aviso no podía salir en
+> ninguna, porque `declared_wiring()` no declaraba `PreToolUse` y los diez
+> detectores de `pretooluse_dispatch.py` quedaban sin cablear. Ya lo declara
+> (`tests/session/test_user_wiring.py`, caso 1b).
+
+El mecanismo ya está construido en este árbol y tiene tres piezas, una por
+forma del problema:
 
 | Forma | Pieza (dónde vive) | Se invoca | Qué hace |
 |---|---|---|---|

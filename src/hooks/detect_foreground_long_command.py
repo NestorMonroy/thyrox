@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import re
 
-#: Familias de trabajo cuya duración típica supera el medio minuto. Cada entrada
+#: Familias de trabajo cuya duración típica supera los diez segundos. Cada entrada
 #: es (etiqueta, patrón); la etiqueta se cita en el aviso para que el lector sepa
 #: qué lo disparó en vez de recibir un recordatorio genérico.
 LONG_FAMILIES: tuple[tuple[str, str], ...] = (
