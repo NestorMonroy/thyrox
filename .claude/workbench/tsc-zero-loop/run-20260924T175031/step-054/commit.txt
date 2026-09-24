@@ -1,0 +1,11 @@
+Use the ported sandbox schema in settings
+
+The settings schema declared sandbox as z.unknown(), although the
+sandbox sub-schema was already ported in schemas/sandbox.ts. Every
+reader of settings.sandbox, the shell sandbox adapter above all, saw
+{} and could not read network, filesystem or enabled. The settings
+schema now nests SandboxSettingsSchema; zod and zod/v4 resolve to the
+same 4.6.2 module here, so the nesting is sound.
+
+The sub-schema itself is still the 2.1.275 shape: 2.1.281 adds keys
+such as deniedDomains, which is tracked separately.

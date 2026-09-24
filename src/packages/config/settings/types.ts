@@ -21,6 +21,7 @@
 import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
 import { lazySchema } from '../internal/lazySchema.ts'
+import { SandboxSettingsSchema } from './schemas/sandbox.ts'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -224,7 +225,9 @@ export const SettingsSchema = lazySchema(() => z
     pluginConfigs: z.record(z.string(), z.unknown()).optional(),
     worktree: z.object({ symlinkDirectories: z.array(z.string()).optional(), sparsePaths: z.array(z.string()).optional() }).optional(),
     plansDirectory: z.string().optional(),
-    sandbox: z.unknown().optional(),
+    // El sub-esquema de sandbox ya portado; con `unknown` cada lector de
+    // `settings.sandbox` veía `{}` y no podía leer ninguna de sus claves.
+    sandbox: SandboxSettingsSchema().optional(),
     statusLine: z.object({ type: z.literal('command'), command: z.string() }).optional(),
     outputStyle: z.string().optional(),
     /**
