@@ -1,0 +1,9 @@
+Export the global config markers from @thyrox/config
+
+init.ts, the fleet dispatch, the /config menu, onboarding and the
+interactive helpers import recordFirstStartTime,
+markHasUsedAgentsFleet, getCustomApiKeyStatus and
+getRemoteControlAtStartup from the package root, as the source does.
+The index now re-exports them from global/configMarkers.ts, together
+with the resolution that names where the Remote Control value came
+from.

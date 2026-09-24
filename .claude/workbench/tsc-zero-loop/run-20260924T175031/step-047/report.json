@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2614, "total_final": 2607, "tsc_runs": 1, "accepted": ["agent:config-markers-export"], "files_kept": ["src/packages/config/index.ts"], "outcomes": {"agent:config-markers-export": "accepted-net"}}
