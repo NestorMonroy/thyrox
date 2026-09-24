@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "env THYROX_TS_WIDTH=3 bash tests/run.sh --ts-only", "started_at": "2026-09-24T03:12:17+00:00"}
