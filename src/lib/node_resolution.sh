@@ -80,6 +80,22 @@ resolved_package_dir() {
 #
 # Esta funcion NO decide entre izado y aislado — eso es TASK-THYROX-0098, y es
 # del ejecutor. Acepta los dos.
+# ¿Declara el lockfile de la raiz esta entrada anidada del workspace?
+#
+# Lee el nombre del workspace de su `package.json` y la version instalada del
+# `package.json` de la entrada, y busca la clave literal
+# `"<workspace>/<paquete>": ["<paquete>@<version>"` en `$root/bun.lock`.
+declared_in_root_lock() {
+    local owner="$1" root="$2" entry="$3" ws version
+    [[ -f "$root/bun.lock" ]] || return 1
+    ws="$(grep -oE '"name"[[:space:]]*:[[:space:]]*"[^"]+"' "$owner/package.json" 2>/dev/null \
+          | head -1 | sed -E 's/.*"([^"]+)"$/\1/')"
+    version="$(grep -oE '"version"[[:space:]]*:[[:space:]]*"[^"]+"' "$owner/node_modules/$entry/package.json" 2>/dev/null \
+               | head -1 | sed -E 's/.*"([^"]+)"$/\1/')"
+    [[ -n "$ws" && -n "$version" ]] || return 1
+    grep -qF "\"$ws/$entry\": [\"$entry@$version\"" "$root/bun.lock"
+}
+
 anchored_to_root_store() {
     local owner="${1:?anchored_to_root_store: falta el dueño}"
     local root="${2:?anchored_to_root_store: falta la raiz}"
@@ -114,10 +130,18 @@ anchored_to_root_store() {
             continue
         fi
         found=1
-        [[ "$target" == "$root/node_modules/.bun/"* ]] || return 1
+        [[ "$target" == "$root/node_modules/.bun/"* ]] && continue
+        # Linker IZADO con conflicto de versiones: Bun materializa en el
+        # jardin del workspace, como directorio real, la version que no cabe en
+        # la raiz. Esa entrada sigue anclada si —y solo si— el lockfile de la
+        # raiz la declara para ESTE workspace y con ESTA version, con la clave
+        # `<workspace>/<paquete>`. Se mide el lockfile, no la ruta: un anidado
+        # instalado contra otro lockfile trae otra version y rehusa.
+        [[ "$target" == "$owner/node_modules/"* ]] || return 1
+        declared_in_root_lock "$owner" "$root" "${target#"$owner/node_modules/"}" || return 1
     done < <(find "$owner/node_modules" -mindepth 1 -maxdepth 2 \
                   \( -type l -o -type d \) 2>/dev/null \
-             | grep -vE '/node_modules/(\.[a-z]+|@[^/]+)$')
+             | grep -vE '/node_modules/(\.[a-z]+|@[^/]+)$|/node_modules/\.bin/')
 
     # Cero entradas medibles: NO se declara anclado. Un 0 aqui no distinguiria
     # «todas anclan» de «no habia ninguna que mirar», que es el sub-patron D
