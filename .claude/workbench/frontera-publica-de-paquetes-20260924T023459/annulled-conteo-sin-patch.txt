@@ -1,0 +1,58 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/diffDisplay.test.ts:
+86 |   })
+87 | 
+88 |   test('con patch vacío cuenta el contenido nuevo entero como añadido', () => {
+89 |     const added = getTotalLinesAdded()
+90 |     countLinesChanged([], 'uno\ndos\ntres')
+91 |     expect(getTotalLinesAdded() - added).toBe(3)
+                                              ^
+error: expect(received).toBe(expected)
+
+Expected: 3
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/diffDisplay.test.ts:91:42)
+(fail) countLinesChanged > con patch vacío cuenta el contenido nuevo entero como añadido [0.20ms]
+92 |   })
+93 | 
+94 |   test('con patch vacío y contenido viejo cuenta sus líneas como retiradas', () => {
+95 |     const removed = getTotalLinesRemoved()
+96 |     countLinesChanged([], undefined, 'a\nb')
+97 |     expect(getTotalLinesRemoved() - removed).toBe(2)
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/diffDisplay.test.ts:97:46)
+(fail) countLinesChanged > con patch vacío y contenido viejo cuenta sus líneas como retiradas [0.10ms]
+ 97 |     expect(getTotalLinesRemoved() - removed).toBe(2)
+ 98 |   })
+ 99 | 
+100 |   test('emite tengu_file_changed con los dos conteos', () => {
+101 |     countLinesChanged([], 'a\nb')
+102 |     expect(events.at(-1)).toEqual({ event: 'tengu_file_changed', metadata: { lines_added: 2, lines_removed: 0 } })
+                                ^
+error: expect(received).toEqual(expected)
+
+@@ -3,3 +3,3 @@
+    "metadata": {
+-     "lines_added": 2,
++     "lines_added": 0,
+      "lines_removed": 0,
+
+- Expected  - 1
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/diffDisplay.test.ts:102:27)
+(fail) countLinesChanged > emite tengu_file_changed con los dos conteos [0.17ms]
+
+ 8 pass
+ 3 fail
+ 13 expect() calls
+Ran 11 tests across 1 file. [538.00ms]
+
+[exit=1]

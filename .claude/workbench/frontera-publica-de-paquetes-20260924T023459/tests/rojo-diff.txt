@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+tests/unit/utils/diff.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getPatchFromContents' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+src/packages/agent/__tests__/diffDisplay.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'getPatchFromContents' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 2 fail
+ 2 errors
+Ran 2 tests across 2 files. [131.00ms]
+EXIT=1

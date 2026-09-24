@@ -1,0 +1,11 @@
+--- a/src/packages/agent/diff.ts
++++ b/src/packages/agent/diff.ts
+@@ -161,7 +161,7 @@
+   const edited = edits.reduce((text, edit) => {
+     const oldText = escapeForDiff(convertLeadingTabsToSpaces(edit.old_string))
+     const newText = escapeForDiff(convertLeadingTabsToSpaces(edit.new_string))
+-    return edit.replace_all ? text.replaceAll(oldText, () => newText) : text.replace(oldText, () => newText)
++    return edit.replace_all ? text.replaceAll(oldText, () => newText) : text.replace(oldText, newText)
+   }, original)
+   const patch = structuredPatch(filePath, filePath, original, edited, undefined, undefined, {
+     context: CONTEXT_LINES,

@@ -1,0 +1,11 @@
+--- a/src/packages/agent/attribution.ts
++++ b/src/packages/agent/attribution.ts
+@@ -124,7 +124,7 @@
+   isMemoryPath: (path: string) => boolean,
+ ): { promptCount: number; memoryAccessCount: number } {
+   const boundary = entries.findLastIndex(e => e.type === 'system' && e.subtype === 'compact_boundary')
+-  const tail = boundary >= 0 ? entries.slice(boundary + 1) : entries
++  const tail = entries
+   const prompts = tail.filter(e => e.type === 'user' && !e.isSidechain && !e.isMeta && !e.isCompactSummary)
+   return {
+     promptCount: countUserPromptsInMessages(prompts as { type: string; message?: { content?: unknown } }[]),

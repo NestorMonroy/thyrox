@@ -1,0 +1,11 @@
+--- a/src/packages/agent/attribution.ts
++++ b/src/packages/agent/attribution.ts
+@@ -51,7 +51,7 @@
+ export function buildAttributionTexts(settings: AttributionSettings, modelName: string): AttributionTexts {
+   const commit = `Co-Authored-By: ${modelName} <noreply@anthropic.com>`
+   if (settings.attribution !== undefined) {
+-    return { commit: settings.attribution.commit ?? commit, pr: settings.attribution.pr ?? PR_FOOTER }
++    return { commit: settings.attribution.commit ?? '', pr: settings.attribution.pr ?? '' }
+   }
+   if (settings.includeCoAuthoredBy === false) return { commit: '', pr: '' }
+   return { commit, pr: PR_FOOTER }

@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/diffDisplay.test.ts:
+43 |     const hunks = getPatchForDisplay({
+44 |       filePath: 'a.txt',
+45 |       fileContents: 'price\n',
+46 |       edits: [{ old_string: 'price', new_string: "cost $& and $1 & more" }],
+47 |     })
+48 |     expect(lines(hunks)).toContain("+cost $& and $1 & more")
+                              ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "+cost $& and $1 & more"
+Received: [ "-price", "+cost price and $1 & more" ]
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/diffDisplay.test.ts:48:26)
+(fail) getPatchForDisplay > un $ en el texto nuevo llega literal, no como patrón de reemplazo [0.26ms]
+
+ 10 pass
+ 1 fail
+ 13 expect() calls
+Ran 11 tests across 1 file. [528.00ms]
+
+[exit=1]
