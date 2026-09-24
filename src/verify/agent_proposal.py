@@ -86,6 +86,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="corrida del lazo: antes de salir, recuerda sus reflexiones y recetas")
     parser.add_argument("files", nargs="+")
     args = parser.parse_args(argv)
+    # `build` deja cada archivo en su base; si el gate 4 bloquea después, la
+    # edición del agente tiene que volver al árbol, o se pierde.
+    edited = {file: (args.root / file).read_text() for file in args.files
+              if (args.root / file).is_file()}
     try:
         row = build(args.root, args.files, args.before_log.read_text().splitlines(), args.pattern,
                     args.id)
@@ -117,6 +121,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"GATE 4 BLOQUEADO — patrón(es) con señal viva fuera de la candidata: {names}. "
                   "Inclúyelos en la candidata o declara la salida con bin/tsc_sweep "
                   "exclude|close --reason.", file=sys.stderr)
+            for file, text in edited.items():
+                (args.root / file).write_text(text)
             return 4
     print(json.dumps(row, ensure_ascii=False))
     return 0

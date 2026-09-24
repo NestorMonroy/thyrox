@@ -146,6 +146,10 @@ with tempfile.TemporaryDirectory() as directory:
     # Gate 4: con un patrón vivo fuera, la propuesta NO sale.
     assert_equal("gate 4: lo pendiente bloquea con 4", 4, code)
     assert_equal("gate 4: dice por qué", True, "GATE 4 BLOQUEADO" in err.getvalue())
+    # El bloqueo no puede costar la edición: el árbol conserva lo que el
+    # agente escribió, para incluir lo pendiente y volver a proponer.
+    assert_equal("gate 4: la edición del agente sigue en el árbol", edited,
+                 (root / "src" / "a.ts").read_text())
 
     (run / "patterns.jsonl").write_text(json.dumps(
         {"name": "unknown-param", "signal": "TS18046", "fix": "f", "site": "", "replace": "",
