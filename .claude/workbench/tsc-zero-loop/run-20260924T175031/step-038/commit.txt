@@ -1,0 +1,8 @@
+Point permission stand-ins at the canonical context
+
+PermissionUpdate.ts and permissionSetup.ts declared their own
+ToolPermissionContext as { permissionRules: unknown; ... }, a shape the
+AppState slot never carries, so every setAppState updater that routed
+the context through applyPermissionUpdate or the setup helpers failed
+with a missing permissionRules. Both now import the tool-registry
+type that the AppState slot already uses.

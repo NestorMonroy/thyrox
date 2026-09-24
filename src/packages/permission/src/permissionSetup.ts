@@ -266,7 +266,7 @@ function isEnvTruthy(value: string | boolean | undefined): boolean {
  * `PermissionUpdate.ts`: el tipo completo vive en el consumidor, y este
  * paquete sólo necesita saber que es un objeto indexable.
  */
-type ToolPermissionContext = { permissionRules: unknown; [key: string]: unknown }
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 type ToolPermissionRulesBySource = Record<string, string[]>
 
 const AGENT_TOOL_NAME = 'Agent'

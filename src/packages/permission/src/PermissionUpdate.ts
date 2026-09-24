@@ -58,7 +58,7 @@ export type { AdditionalWorkingDirectory, WorkingDirectorySource }
 
 // V7 §11.4 — tipos inline + envoltorios de host binding (ver la propia
 // fuente, PermissionUpdate.ts:18-21).
-type ToolPermissionContext = { permissionRules: unknown; [key: string]: unknown }
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 function logForDebugging(msg: string, meta?: unknown): void {
   getPermissionHostBindings().logDebug?.(msg, meta)
 }
