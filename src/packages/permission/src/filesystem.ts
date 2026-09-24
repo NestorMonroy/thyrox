@@ -7,7 +7,7 @@
  * — más sus dependencias transitivas y un puñado de funciones puras
  * hermanas sin costo adicional.
  *
- * PORTADAS (17 de 29):
+ * PORTADAS (20 de 29):
  *
  *   `DANGEROUS_FILES` · `DANGEROUS_DIRECTORIES` · `normalizeCaseForComparison`
  *   · `relativePath` · `toPosixPath` · `getSessionMemoryDir` ·
@@ -17,9 +17,11 @@
  *   `allWorkingDirectories` · `pathInWorkingPath` (pase de 2026-09-08) ·
  *   `getResolvedWorkingDirPaths` · `pathInAllowedWorkingPath`
  *   (TASK-DOCS-0526, pase de 2026-09-09 — ver la divergencia del séptimo
- *   binding, abajo)
+ *   binding, abajo) · `matchingRuleForInput` · `getFileReadIgnorePatterns` ·
+ *   `normalizePatternsToPath` (reexportadas de `./ruleMatching.ts`, porte del
+ *   contrato de 2.1.275 — ver su cabecera)
  *
- * OMITIDAS (12 de 29), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS (9 de 29), declaradas por nombre, línea y bloqueo:
  *
  *   - `getClaudeSkillScope` (filesystem.ts:108-177) — sin consumidor
  *     confirmado en este pase; depende de convenciones de `.claude/skills/`
@@ -32,8 +34,6 @@
  *     confirmado; añade `randomBytes`/`MACRO.VERSION` sin necesidad
  *     inmediata.
  *   - `checkPathSafetyForAutoEdit`,
- *     `normalizePatternsToPath`,
- *     `getFileReadIgnorePatterns`, `matchingRuleForInput`,
  *     `checkReadPermissionForTool`, `checkWritePermissionForTool`,
  *     `generateSuggestions`, `checkEditableInternalPath`,
  *     `checkReadableInternalPath` (filesystem.ts:627-673 y 807-1785, el
@@ -500,3 +500,11 @@ export function pathInWorkingPath(path: string, workingPath: string): boolean {
   // Una relativa absoluta significa que no hay camino de uno a otro.
   return !posix.isAbsolute(relative)
 }
+
+// El compilador de reglas de archivo de 2.1.275 vive en su propio módulo;
+// los consumidores lo importan desde aquí, como en la fuente.
+export {
+  getFileReadIgnorePatterns,
+  matchingRuleForInput,
+  normalizePatternsToPath,
+} from './ruleMatching.js'

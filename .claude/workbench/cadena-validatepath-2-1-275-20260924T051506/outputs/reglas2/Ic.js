@@ -1,0 +1,1 @@
+Ic={claudemd_rule_globs:b("claudemd_rule_globs"),skill_paths:b("skill_paths"),file_suggestions_ignore:b("file_suggestions_ignore"),worktreeinclude:b("worktreeinclude"),dir_sync_folder_ignore:b("dir_sync_folder_ignore"),permission_rules:b("permission_rules")}

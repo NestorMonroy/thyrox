@@ -1,0 +1,1 @@
+function FGt(e){for(let[n,r]of Uu())if(e===n||e.startsWith(n+oe))return r+e.slice(n.length);return e}

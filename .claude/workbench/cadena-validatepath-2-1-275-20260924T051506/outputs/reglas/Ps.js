@@ -1,0 +1,1 @@
+function Ps(e,n,r){let s={patternRoot:e,pattern:n},g=n.endsWith(he)?he:"",h=n.split(he).filter((T)=>T!==""&&T!=="."),y=h.findIndex((T)=>/[*?[{]/.test(T)),w=y===-1?Math.max(0,h.length-1):y,R=De.join(e,...h.slice(0,w)),P=r.get(R);if(P===void 0)P=jn(Po(le(),M()==="windows"?GRe(R):R).resolvedPath),r.set(R,P);if(P===R)return[s];return[s,{patternRoot:P,pattern:h.slice(w).join(he)+g}]}
