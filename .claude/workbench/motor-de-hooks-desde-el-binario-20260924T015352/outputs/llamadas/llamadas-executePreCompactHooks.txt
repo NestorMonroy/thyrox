@@ -1,0 +1,47 @@
+src/packages/command-runtime/src/commands/compact/compact.ts:160:      executePreCompactHooks(
+src/packages/command-runtime/src/commands/compact/compact.ts-161-        { trigger: 'manual', customInstructions: customInstructions || null },
+src/packages/command-runtime/src/commands/compact/compact.ts-162-        context.abortController.signal,
+src/packages/command-runtime/src/commands/compact/compact.ts-163-      ),
+src/packages/command-runtime/src/commands/compact/compact.ts-164-      getCacheSharingParams(context, messages),
+src/packages/command-runtime/src/commands/compact/compact.ts-165-    ])
+src/packages/command-runtime/src/commands/compact/compact.ts-166-    const mergedInstructions = mergeHookInstructions(
+src/packages/command-runtime/src/commands/compact/compact.ts-167-      customInstructions,
+src/packages/command-runtime/src/commands/compact/compact.ts-168-      hookResult.newCustomInstructions,
+src/packages/command-runtime/src/commands/compact/compact.ts-169-    )
+src/packages/command-runtime/src/commands/compact/compact.ts-170-
+src/packages/command-runtime/src/commands/compact/compact.ts-171-    context.setStreamMode?.('requesting')
+src/packages/command-runtime/src/commands/compact/compact.ts-172-    context.setResponseLength?.(() => 0)
+src/packages/command-runtime/src/commands/compact/compact.ts-173-    context.onCompactProgress?.({ type: 'compact_start' })
+src/packages/command-runtime/src/commands/compact/compact.ts-174-
+--
+src/packages/agent/types/compaction-deps.ts:110:  executePreCompactHooks(
+src/packages/agent/types/compaction-deps.ts-111-    params: { trigger: string; customInstructions: string | null },
+src/packages/agent/types/compaction-deps.ts-112-    signal: AbortSignal,
+src/packages/agent/types/compaction-deps.ts-113-  ): Promise<{ newCustomInstructions?: string; userDisplayMessage?: string }>
+src/packages/agent/types/compaction-deps.ts-114-  executePostCompactHooks(
+src/packages/agent/types/compaction-deps.ts-115-    params: { trigger: string; compactSummary: string },
+src/packages/agent/types/compaction-deps.ts-116-    signal: AbortSignal,
+src/packages/agent/types/compaction-deps.ts-117-  ): Promise<{ userDisplayMessage?: string }>
+src/packages/agent/types/compaction-deps.ts-118-  processSessionStartHooks(source: string, options: { model: string }): Promise<CoreMessage[]>
+src/packages/agent/types/compaction-deps.ts-119-}
+src/packages/agent/types/compaction-deps.ts-120-
+src/packages/agent/types/compaction-deps.ts-121-// ── State ──
+src/packages/agent/types/compaction-deps.ts-122-
+src/packages/agent/types/compaction-deps.ts-123-export interface StateDep {
+src/packages/agent/types/compaction-deps.ts-124-  markPostCompaction(): void
+--
+src/packages/agent/compaction/deps.ts:125:  executePreCompactHooks(
+src/packages/agent/compaction/deps.ts-126-    params: { trigger: string; customInstructions: string | null },
+src/packages/agent/compaction/deps.ts-127-    signal: AbortSignal,
+src/packages/agent/compaction/deps.ts-128-  ): Promise<{ newCustomInstructions?: string; userDisplayMessage?: string }>
+src/packages/agent/compaction/deps.ts-129-  executePostCompactHooks(
+src/packages/agent/compaction/deps.ts-130-    params: { trigger: string; compactSummary: string },
+src/packages/agent/compaction/deps.ts-131-    signal: AbortSignal,
+src/packages/agent/compaction/deps.ts-132-  ): Promise<{ userDisplayMessage?: string }>
+src/packages/agent/compaction/deps.ts-133-  processSessionStartHooks(source: string, options: { model: string }): Promise<Message[]>
+src/packages/agent/compaction/deps.ts-134-}
+src/packages/agent/compaction/deps.ts-135-
+src/packages/agent/compaction/deps.ts-136-// ── State ──
+src/packages/agent/compaction/deps.ts-137-
+src/packages/agent/compaction/deps.ts-138-export interface StateDep {
+src/packages/agent/compaction/deps.ts-139-  markPostCompaction(): void

@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts:245:          const generator = executeTaskCompletedHooks(
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-246-            taskId,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-247-            existingTask.subject,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-248-            existingTask.description,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-249-            getAgentName(),
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-250-            getTeamName(),
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-251-            undefined,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-252-            context?.abortController?.signal,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-253-            undefined,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-254-            context,
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-255-          )
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-256-
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-257-          for await (const result of generator) {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-258-            if (result.blockingError) {
+src/packages/tool-registry/src/tools/TaskUpdateTool/TaskUpdateTool.ts-259-              blockingErrors.push(

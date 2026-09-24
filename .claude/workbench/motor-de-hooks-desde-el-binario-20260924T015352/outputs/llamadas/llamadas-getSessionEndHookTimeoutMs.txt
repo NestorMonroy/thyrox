@@ -1,0 +1,47 @@
+src/packages/repl/src/screens/REPLView.tsx:1790:        const sessionEndTimeoutMs = getSessionEndHookTimeoutMs();
+src/packages/repl/src/screens/REPLView.tsx-1791-        await executeSessionEndHooks('resume', {
+src/packages/repl/src/screens/REPLView.tsx-1792-          getAppState: () => store.getState(),
+src/packages/repl/src/screens/REPLView.tsx-1793-          setAppState,
+src/packages/repl/src/screens/REPLView.tsx-1794-          signal: AbortSignal.timeout(sessionEndTimeoutMs),
+src/packages/repl/src/screens/REPLView.tsx-1795-          timeoutMs: sessionEndTimeoutMs,
+src/packages/repl/src/screens/REPLView.tsx-1796-        });
+src/packages/repl/src/screens/REPLView.tsx-1797-
+src/packages/repl/src/screens/REPLView.tsx-1798-        // Process session start hooks for resume
+src/packages/repl/src/screens/REPLView.tsx-1799-        const hookMessages = await processSessionStartHooks('resume', {
+src/packages/repl/src/screens/REPLView.tsx-1800-          sessionId,
+src/packages/repl/src/screens/REPLView.tsx-1801-          agentType: mainThreadAgentDefinition?.agentType,
+src/packages/repl/src/screens/REPLView.tsx-1802-          model: mainLoopModel,
+src/packages/repl/src/screens/REPLView.tsx-1803-        });
+src/packages/repl/src/screens/REPLView.tsx-1804-
+--
+src/packages/command-runtime/src/commands/clear/conversation.ts:69:  const sessionEndTimeoutMs = getSessionEndHookTimeoutMs()
+src/packages/command-runtime/src/commands/clear/conversation.ts-70-  await executeSessionEndHooks('clear', {
+src/packages/command-runtime/src/commands/clear/conversation.ts-71-    getAppState,
+src/packages/command-runtime/src/commands/clear/conversation.ts-72-    setAppState,
+src/packages/command-runtime/src/commands/clear/conversation.ts-73-    signal: AbortSignal.timeout(sessionEndTimeoutMs),
+src/packages/command-runtime/src/commands/clear/conversation.ts-74-    timeoutMs: sessionEndTimeoutMs,
+src/packages/command-runtime/src/commands/clear/conversation.ts-75-  })
+src/packages/command-runtime/src/commands/clear/conversation.ts-76-
+src/packages/command-runtime/src/commands/clear/conversation.ts-77-  // Signal to inference that this conversation's cache can be evicted.
+src/packages/command-runtime/src/commands/clear/conversation.ts-78-  const lastRequestId = getLastMainRequestId()
+src/packages/command-runtime/src/commands/clear/conversation.ts-79-  if (lastRequestId) {
+src/packages/command-runtime/src/commands/clear/conversation.ts-80-    logEvent('tengu_cache_eviction_hint', {
+src/packages/command-runtime/src/commands/clear/conversation.ts-81-      scope:
+src/packages/command-runtime/src/commands/clear/conversation.ts-82-        'conversation_clear' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+src/packages/command-runtime/src/commands/clear/conversation.ts-83-      last_request_id:
+--
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts:559:  const sessionEndTimeoutMs = getSessionEndHookTimeoutMs()
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-560-
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-561-  // Failsafe: garantiza que el proceso salga incluso si la limpieza se
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-562-  // cuelga (p. ej. conexiones MCP). Corre cleanupTerminalModes primero
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-563-  // para que una limpieza colgada no deje la terminal sucia.
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-564-  // Presupuesto = max(5s, presupuesto del hook + 3.5s de margen para
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-565-  // limpieza y vaciado de analytics).
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-566-  failsafeTimer = setTimeout(
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-567-    code => {
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-568-      cleanupTerminalModes()
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-569-      printResumeHint()
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-570-      forceExit(code)
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-571-    },
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-572-    Math.max(5000, sessionEndTimeoutMs + 3500),
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts-573-    exitCode,

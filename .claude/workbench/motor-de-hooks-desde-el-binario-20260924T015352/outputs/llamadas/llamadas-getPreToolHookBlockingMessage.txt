@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/services/toolHooks.ts:482:          const denialMessage = getPreToolHookBlockingMessage(
+src/packages/tool-registry/src/services/toolHooks.ts-483-            `PreToolUse:${tool.name}`,
+src/packages/tool-registry/src/services/toolHooks.ts-484-            result.blockingError,
+src/packages/tool-registry/src/services/toolHooks.ts-485-          )
+src/packages/tool-registry/src/services/toolHooks.ts-486-          yield {
+src/packages/tool-registry/src/services/toolHooks.ts-487-            type: 'hookPermissionResult',
+src/packages/tool-registry/src/services/toolHooks.ts-488-            hookPermissionResult: {
+src/packages/tool-registry/src/services/toolHooks.ts-489-              behavior: 'deny',
+src/packages/tool-registry/src/services/toolHooks.ts-490-              message: denialMessage,
+src/packages/tool-registry/src/services/toolHooks.ts-491-              decisionReason: {
+src/packages/tool-registry/src/services/toolHooks.ts-492-                type: 'hook',
+src/packages/tool-registry/src/services/toolHooks.ts-493-                hookName: `PreToolUse:${tool.name}`,
+src/packages/tool-registry/src/services/toolHooks.ts-494-                reason: denialMessage,
+src/packages/tool-registry/src/services/toolHooks.ts-495-              },
+src/packages/tool-registry/src/services/toolHooks.ts-496-            },

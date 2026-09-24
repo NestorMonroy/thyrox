@@ -1,0 +1,31 @@
+src/packages/swarm/src/worktree/index.ts:837:      const hookRan = await executeWorktreeRemoveHook(worktreePath)
+src/packages/swarm/src/worktree/index.ts-838-      if (hookRan) {
+src/packages/swarm/src/worktree/index.ts-839-        logForDebugging(`Removed hook-based worktree at: ${worktreePath}`)
+src/packages/swarm/src/worktree/index.ts-840-      } else {
+src/packages/swarm/src/worktree/index.ts-841-        logForDebugging(
+src/packages/swarm/src/worktree/index.ts-842-          `No WorktreeRemove hook configured, hook-based worktree left at: ${worktreePath}`,
+src/packages/swarm/src/worktree/index.ts-843-          { level: 'warn' },
+src/packages/swarm/src/worktree/index.ts-844-        )
+src/packages/swarm/src/worktree/index.ts-845-      }
+src/packages/swarm/src/worktree/index.ts-846-    } else {
+src/packages/swarm/src/worktree/index.ts-847-      await unlinkWindowsReparsePoints(worktreePath)
+src/packages/swarm/src/worktree/index.ts-848-      // Usa un cwd original explícito porque process.chdir no actualiza
+src/packages/swarm/src/worktree/index.ts-849-      // getCwd().
+src/packages/swarm/src/worktree/index.ts-850-      const { code: removeCode, stderr: removeError } = await execFileNoThrowWithCwd(
+src/packages/swarm/src/worktree/index.ts-851-        gitExe(),
+--
+src/packages/swarm/src/worktree/index.ts:970:    const hookRan = await executeWorktreeRemoveHook(worktreePath)
+src/packages/swarm/src/worktree/index.ts-971-    if (hookRan) {
+src/packages/swarm/src/worktree/index.ts-972-      logForDebugging(`Removed hook-based agent worktree at: ${worktreePath}`)
+src/packages/swarm/src/worktree/index.ts-973-    } else {
+src/packages/swarm/src/worktree/index.ts-974-      logForDebugging(
+src/packages/swarm/src/worktree/index.ts-975-        `No WorktreeRemove hook configured, hook-based agent worktree left at: ${worktreePath}`,
+src/packages/swarm/src/worktree/index.ts-976-        { level: 'warn' },
+src/packages/swarm/src/worktree/index.ts-977-      )
+src/packages/swarm/src/worktree/index.ts-978-    }
+src/packages/swarm/src/worktree/index.ts-979-    return hookRan
+src/packages/swarm/src/worktree/index.ts-980-  }
+src/packages/swarm/src/worktree/index.ts-981-
+src/packages/swarm/src/worktree/index.ts-982-  if (!gitRoot) {
+src/packages/swarm/src/worktree/index.ts-983-    logForDebugging('Cannot remove agent worktree: no git root provided', { level: 'error' })
+src/packages/swarm/src/worktree/index.ts-984-    return false

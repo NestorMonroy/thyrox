@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/services/toolExecution.ts:1053:      for await (const result of executePermissionDeniedHooks(
+src/packages/tool-registry/src/services/toolExecution.ts-1054-        tool.name,
+src/packages/tool-registry/src/services/toolExecution.ts-1055-        toolUseID,
+src/packages/tool-registry/src/services/toolExecution.ts-1056-        processedInput,
+src/packages/tool-registry/src/services/toolExecution.ts-1057-        permissionDecision.decisionReason.reason ?? 'Permission denied',
+src/packages/tool-registry/src/services/toolExecution.ts-1058-        toolUseContext,
+src/packages/tool-registry/src/services/toolExecution.ts-1059-        permissionMode,
+src/packages/tool-registry/src/services/toolExecution.ts-1060-        toolUseContext.abortController.signal,
+src/packages/tool-registry/src/services/toolExecution.ts-1061-      )) {
+src/packages/tool-registry/src/services/toolExecution.ts-1062-        if (result.retry) hookSaysRetry = true
+src/packages/tool-registry/src/services/toolExecution.ts-1063-      }
+src/packages/tool-registry/src/services/toolExecution.ts-1064-      if (hookSaysRetry) {
+src/packages/tool-registry/src/services/toolExecution.ts-1065-        resultingMessages.push({
+src/packages/tool-registry/src/services/toolExecution.ts-1066-          message: createUserMessage({
+src/packages/tool-registry/src/services/toolExecution.ts-1067-            content:

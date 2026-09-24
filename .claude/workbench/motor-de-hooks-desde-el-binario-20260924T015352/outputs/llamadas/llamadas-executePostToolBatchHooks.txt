@@ -1,0 +1,15 @@
+src/packages/agent/query.ts:1485:        for await (const result of executePostToolBatchHooks(
+src/packages/agent/query.ts-1486-          batchToolCalls,
+src/packages/agent/query.ts-1487-          toolUseContext as unknown as CanonicalToolUseContext,
+src/packages/agent/query.ts-1488-          toolUseContext.getAppState().toolPermissionContext.mode,
+src/packages/agent/query.ts-1489-          toolUseContext.abortController.signal,
+src/packages/agent/query.ts-1490-        )) {
+src/packages/agent/query.ts-1491-          // additionalContexts surface the same way as PostToolUse: each
+src/packages/agent/query.ts-1492-          // becomes a hook_additional_context attachment for the next turn.
+src/packages/agent/query.ts-1493-          if (result.additionalContexts && result.additionalContexts.length > 0) {
+src/packages/agent/query.ts-1494-            const attachment = createAttachmentMessage({
+src/packages/agent/query.ts-1495-              type: 'hook_additional_context',
+src/packages/agent/query.ts-1496-              content: result.additionalContexts,
+src/packages/agent/query.ts-1497-              hookName: 'PostToolBatch',
+src/packages/agent/query.ts-1498-              // PostToolBatch is batch-level — no single owning tool. Use a
+src/packages/agent/query.ts-1499-              // synthetic UUID so the attachment shape matches the per-tool

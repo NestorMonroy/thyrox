@@ -1,0 +1,15 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx:1215:    for await (const hookResult of executeUserPromptExpansionHooks(
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1216-      expansionType,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1217-      command.name,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1218-      args,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1219-      command.source,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1220-      expandedPrompt,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1221-      context,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1222-      context.getAppState().toolPermissionContext.mode,
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1223-    )) {
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1224-      // additionalContext from a hook is appended to the expansion as
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1225-      // extra text blocks. blockingError surfaces in the next turn but
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1226-      // doesn't tear down expansion mid-flight (parity with ant 3706.js
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1227-      // sk7 behavior, less the print-mode `blocked` early-return which
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1228-      // would require a deeper refactor of slash command return shape).
+src/packages/repl/src/processUserInput/processSlashCommand.tsx-1229-      if (

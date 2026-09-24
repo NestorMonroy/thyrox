@@ -1,0 +1,15 @@
+src/packages/tool-registry/src/services/toolHooks.ts:56:    for await (const result of executePostToolHooks(
+src/packages/tool-registry/src/services/toolHooks.ts-57-      tool.name,
+src/packages/tool-registry/src/services/toolHooks.ts-58-      toolUseID,
+src/packages/tool-registry/src/services/toolHooks.ts-59-      toolInput,
+src/packages/tool-registry/src/services/toolHooks.ts-60-      toolOutput,
+src/packages/tool-registry/src/services/toolHooks.ts-61-      toolUseContext,
+src/packages/tool-registry/src/services/toolHooks.ts-62-      permissionMode,
+src/packages/tool-registry/src/services/toolHooks.ts-63-      toolUseContext.abortController.signal,
+src/packages/tool-registry/src/services/toolHooks.ts-64-    )) {
+src/packages/tool-registry/src/services/toolHooks.ts-65-      try {
+src/packages/tool-registry/src/services/toolHooks.ts-66-        // Check if we were aborted during hook execution
+src/packages/tool-registry/src/services/toolHooks.ts-67-        // IMPORTANT: We emit a cancelled event per hook
+src/packages/tool-registry/src/services/toolHooks.ts-68-        if (
+src/packages/tool-registry/src/services/toolHooks.ts-69-          result.message?.type === 'attachment' &&
+src/packages/tool-registry/src/services/toolHooks.ts-70-          result.message.attachment.type === 'hook_cancelled'

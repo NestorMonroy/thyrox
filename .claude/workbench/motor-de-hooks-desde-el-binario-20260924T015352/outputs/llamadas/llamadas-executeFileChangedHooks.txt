@@ -1,0 +1,15 @@
+src/packages/agent/fileChangedWatcher.ts:85:  void executeFileChangedHooks(path, event)
+src/packages/agent/fileChangedWatcher.ts-86-    .then(({ results, watchPaths, systemMessages }) => {
+src/packages/agent/fileChangedWatcher.ts-87-      if (watchPaths.length > 0) {
+src/packages/agent/fileChangedWatcher.ts-88-        updateWatchPaths(watchPaths)
+src/packages/agent/fileChangedWatcher.ts-89-      }
+src/packages/agent/fileChangedWatcher.ts-90-      for (const msg of systemMessages) {
+src/packages/agent/fileChangedWatcher.ts-91-        notifyCallback?.(msg, false)
+src/packages/agent/fileChangedWatcher.ts-92-      }
+src/packages/agent/fileChangedWatcher.ts-93-      for (const r of results) {
+src/packages/agent/fileChangedWatcher.ts-94-        if (!r.succeeded && r.output) {
+src/packages/agent/fileChangedWatcher.ts-95-          notifyCallback?.(r.output, true)
+src/packages/agent/fileChangedWatcher.ts-96-        }
+src/packages/agent/fileChangedWatcher.ts-97-      }
+src/packages/agent/fileChangedWatcher.ts-98-    })
+src/packages/agent/fileChangedWatcher.ts-99-    .catch((e: unknown) => {
