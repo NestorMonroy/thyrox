@@ -94,6 +94,21 @@ export const HOOK_EVENTS = [
 
 export type HookEvent = (typeof HOOK_EVENTS)[number]
 
+/**
+ * El cuerpo del progreso de un hook en ejecución. Forma del productor del
+ * binario 2.1.275 (`{type:"hook_progress", hookEvent, hookName, command,
+ * promptText?, statusMessage?}`): ya tiene cuatro consumidores reales
+ * (`toolHooks`, `toolExecution`, `Tool.ts`, `stopHookSpinnerSuffix`).
+ */
+export type HookProgress = {
+  type: 'hook_progress'
+  hookEvent: HookEvent
+  hookName: string
+  command: string
+  promptText?: string
+  statusMessage?: string
+}
+
 export function isHookEvent(value: string): value is HookEvent {
   return (HOOK_EVENTS as readonly string[]).includes(value)
 }
