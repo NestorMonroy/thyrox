@@ -134,8 +134,14 @@ export type UserMessage = MessageBase & {
 export type NormalizedUserMessage = UserMessage & {
   message: UserMessage['message'] & { content: ContentItem[] }
 }
-export type RequestStartEvent = { type: string; [key: string]: unknown }
-export type StreamEvent = { type: string; [key: string]: unknown }
+/** Aviso de que la peticion al modelo arranco; el spinner pasa a `requesting`. */
+export type RequestStartEvent = { type: 'stream_request_start' }
+/** Un evento crudo del stream del modelo, con el tiempo al primer token. */
+export type StreamEvent = {
+  type: 'stream_event'
+  event: { type: string; [key: string]: unknown }
+  ttftMs?: number
+}
 
 /**
  * Marcador de frontera de compactacion en el transcript. Su
@@ -159,8 +165,25 @@ export type SystemCompactBoundaryMessage = Message & {
   }
 }
 
-export type TombstoneMessage = Message
-export type ToolUseSummaryMessage = Message
+/**
+ * Lapida: retira del transcript un mensaje ya emitido (fallback de modelo o
+ * reintento en streaming). No es un `Message`: nunca entra al historial.
+ */
+export type TombstoneMessage = {
+  type: 'tombstone'
+  message: Message
+}
+/**
+ * Resumen de las herramientas de un turno para el SDK. Tampoco es un
+ * `Message`: el REPL lo ignora y sólo lo consume la salida headless.
+ */
+export type ToolUseSummaryMessage = {
+  type: 'tool_use_summary'
+  summary: string
+  precedingToolUseIds: string[]
+  uuid: UUID
+  timestamp: string
+}
 export type MessageOrigin = string
 /**
  * La forma que `createCompactBoundaryMessage` escribe (`messages.ts`) mas el

@@ -34,11 +34,7 @@ import type {
   AssistantMessage,
   Message,
   ProgressMessage,
-  RequestStartEvent,
-  StreamEvent,
   SystemCompactBoundaryMessage,
-  TombstoneMessage,
-  ToolUseSummaryMessage,
   UserMessage,
 } from '@thyrox/agent/messageShapes'
 import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
@@ -218,19 +214,14 @@ async function initializeAgentMcpServers(
   }
 }
 
-type QueryMessage =
-  | StreamEvent
-  | RequestStartEvent
-  | Message
-  | ToolUseSummaryMessage
-  | TombstoneMessage
-
 /**
  * Type guard to check if a message from query() is a recordable Message type.
  * Matches the types we want to record: assistant, user, progress, or system compact_boundary.
  */
 function isRecordableMessage(
-  msg: QueryMessage,
+  // Lo que `query()` emite es la union del modelo del bucle; la guarda sólo
+  // lee `type` y `subtype`, así que recibe esa forma mínima y no `QueryMessage`.
+  msg: { type: string; subtype?: unknown },
 ): msg is
   | AssistantMessage
   | UserMessage

@@ -557,6 +557,15 @@ export function extractTag(html: string, tagName: string): string | null {
  * del SDK — de ahi el TS2322 al construir un `UserMessage`.
  */
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import { feature } from 'bun:bundle'
+import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { isConnectorTextBlock } from '@thyrox/provider/connectorTextTypes'
+import type { SpinnerMode } from '@thyrox/repl/components/Spinner.js'
+import type {
+  RequestStartEvent,
+  StreamEvent,
+  TombstoneMessage,
+} from './messageShapes.ts'
 export type { ContentBlockParam }
 
 /**
@@ -895,7 +904,6 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { formatTokens } from '@thyrox/output/formatters'
 import type {
   MessageOrigin,
-  MessageType,
   NormalizedAssistantMessage,
   PartialCompactDirection,
   StopHookInfo,
@@ -1324,7 +1332,7 @@ export function createToolUseSummaryMessage(
   precedingToolUseIds: string[],
 ): ToolUseSummaryMessage {
   return {
-    type: 'tool_use_summary' as MessageType,
+    type: 'tool_use_summary',
     summary,
     precedingToolUseIds,
     uuid: randomUUID(),
@@ -2181,4 +2189,229 @@ export function reorderMessagesInUI<M>(messages: M[], syntheticStreamingToolUseM
   }
   out.push(...syntheticStreamingToolUseMessages)
   return out
+}
+
+/**
+ * Un tool use que el modelo esta emitiendo: su bloque de apertura y el JSON de
+ * entrada acumulado hasta ahora, todavia sin parsear.
+ */
+export type StreamingToolUse = {
+  index: number
+  contentBlock: BetaToolUseBlock
+  unparsedToolInput: string
+}
+
+/** El bloque de pensamiento visible mientras se emite y despues de cerrarse. */
+export type StreamingThinking = {
+  thinking: string
+  isStreaming: boolean
+  streamingEndedAt?: number
+}
+
+type StreamedItem =
+  | Message
+  | TombstoneMessage
+  | StreamEvent
+  | RequestStartEvent
+  | ToolUseSummaryMessage
+
+/** Los bloques de herramienta del servidor: el spinner pasa a `tool-input`. */
+const SERVER_TOOL_BLOCKS = new Set([
+  'server_tool_use',
+  'web_search_tool_result',
+  'code_execution_tool_result',
+  'mcp_tool_use',
+  'mcp_tool_result',
+  'container_upload',
+  'web_fetch_tool_result',
+  'bash_code_execution_tool_result',
+  'text_editor_code_execution_tool_result',
+  'tool_search_tool_result',
+  'compaction',
+])
+
+type StreamEventPayload = {
+  type: string
+  index?: number
+  content_block?: { type: string; [key: string]: unknown }
+  delta?: { type: string; text?: string; partial_json?: string; thinking?: string }
+}
+
+type StreamCallbacks = {
+  onMessage: (message: Message) => void
+  onUpdateLength: (newContent: string) => void
+  onSetStreamMode: (mode: SpinnerMode) => void
+  onStreamingToolUses: (f: (current: StreamingToolUse[]) => StreamingToolUse[]) => void
+  onTombstone?: (message: Message) => void
+  onStreamingThinking?: (f: (current: StreamingThinking | null) => StreamingThinking | null) => void
+  onApiMetrics?: (metrics: { ttftMs: number }) => void
+  onStreamingText?: (f: (current: string | null) => string | null) => void
+}
+
+/**
+ * Enruta cada elemento que llega del stream a la parte de la interfaz que lo
+ * pinta: los mensajes completos se entregan, los eventos de stream mueven el
+ * modo del spinner, el largo de la respuesta, el texto parcial y los tool uses
+ * en curso.
+ *
+ * Contrato de `ccnmt: packages/agent/messages.ts:3008-3179` (v2.1.88), que es
+ * el que llaman los consumidores de este arbol con argumentos posicionales. En
+ * 2.1.281 la funcion (`bcr`) solo recibe eventos de stream y trae su propio
+ * contrato; la migracion es una tarea aparte.
+ */
+export function handleMessageFromStream(
+  item: StreamedItem,
+  onMessage: StreamCallbacks['onMessage'],
+  onUpdateLength: StreamCallbacks['onUpdateLength'],
+  onSetStreamMode: StreamCallbacks['onSetStreamMode'],
+  onStreamingToolUses: StreamCallbacks['onStreamingToolUses'],
+  onTombstone?: StreamCallbacks['onTombstone'],
+  onStreamingThinking?: StreamCallbacks['onStreamingThinking'],
+  onApiMetrics?: StreamCallbacks['onApiMetrics'],
+  onStreamingText?: StreamCallbacks['onStreamingText'],
+): void {
+  const callbacks: StreamCallbacks = {
+    onMessage, onUpdateLength, onSetStreamMode, onStreamingToolUses,
+    onTombstone, onStreamingThinking, onApiMetrics, onStreamingText,
+  }
+  if (item.type === 'stream_request_start') {
+    onSetStreamMode('requesting')
+    return
+  }
+  if (item.type === 'stream_event') {
+    handleStreamEvent(item as { event: StreamEventPayload; ttftMs?: number }, callbacks)
+    return
+  }
+  deliverMessage(item, callbacks)
+}
+
+/** Un mensaje completo: se entrega, salvo la lapida (retira) y el resumen de SDK. */
+function deliverMessage(
+  item: Message | TombstoneMessage | ToolUseSummaryMessage,
+  cb: StreamCallbacks,
+): void {
+  if (item.type === 'tombstone') {
+    cb.onTombstone?.(item.message)
+    return
+  }
+  if (item.type === 'tool_use_summary') return
+  const message = item as Message
+  if (message.type === 'assistant') {
+    const content = message.message.content
+    const thinking = Array.isArray(content)
+      ? (content as readonly unknown[]).find((block): block is { type: 'thinking'; thinking: string } =>
+          typeof block === 'object' && block !== null && (block as { type?: unknown }).type === 'thinking')
+      : undefined
+    if (thinking) {
+      cb.onStreamingThinking?.(() => ({ thinking: thinking.thinking, isStreaming: false, streamingEndedAt: Date.now() }))
+    }
+  }
+  // El texto parcial se retira en el mismo lote en que llega el mensaje final,
+  // para que la vista pase de uno a otro sin hueco ni duplicado.
+  cb.onStreamingText?.(() => null)
+  cb.onMessage(message)
+}
+
+function handleStreamEvent(item: { event: StreamEventPayload; ttftMs?: number }, cb: StreamCallbacks): void {
+  const event = item.event
+  if (event.type === 'message_start' && item.ttftMs != null) cb.onApiMetrics?.({ ttftMs: item.ttftMs })
+  switch (event.type) {
+    case 'message_stop':
+      cb.onSetStreamMode('tool-use')
+      cb.onStreamingToolUses(() => [])
+      return
+    case 'content_block_start':
+      startContentBlock(event, cb)
+      return
+    case 'content_block_delta':
+      applyContentDelta(event, cb)
+      return
+    case 'content_block_stop':
+      return
+    default:
+      // message_delta y cualquier evento desconocido: el modelo sigue respondiendo.
+      cb.onSetStreamMode('responding')
+  }
+}
+
+function startContentBlock(event: StreamEventPayload, cb: StreamCallbacks): void {
+  cb.onStreamingText?.(() => null)
+  const block = event.content_block
+  if (!block) return
+  if (feature('CONNECTOR_TEXT') && isConnectorTextBlock(block)) {
+    cb.onSetStreamMode('responding')
+    return
+  }
+  if (block.type === 'thinking' || block.type === 'redacted_thinking') {
+    cb.onSetStreamMode('thinking')
+  } else if (block.type === 'text') {
+    cb.onSetStreamMode('responding')
+  } else if (block.type === 'tool_use') {
+    cb.onSetStreamMode('tool-input')
+    const index = event.index ?? 0
+    const contentBlock = block as unknown as BetaToolUseBlock
+    cb.onStreamingToolUses(current => [...current, { index, contentBlock, unparsedToolInput: '' }])
+  } else if (SERVER_TOOL_BLOCKS.has(block.type)) {
+    cb.onSetStreamMode('tool-input')
+  }
+}
+
+function applyContentDelta(event: StreamEventPayload, cb: StreamCallbacks): void {
+  const delta = event.delta
+  if (!delta) return
+  if (delta.type === 'text_delta') {
+    const text = delta.text ?? ''
+    cb.onUpdateLength(text)
+    cb.onStreamingText?.(current => (current ?? '') + text)
+  } else if (delta.type === 'input_json_delta') {
+    const json = delta.partial_json ?? ''
+    cb.onUpdateLength(json)
+    cb.onStreamingToolUses(current => {
+      const target = current.find(toolUse => toolUse.index === event.index)
+      if (!target) return current
+      return [...current.filter(toolUse => toolUse !== target), { ...target, unparsedToolInput: target.unparsedToolInput + json }]
+    })
+  } else if (delta.type === 'thinking_delta') {
+    cb.onUpdateLength(delta.thinking ?? '')
+  }
+  // signature_delta no es salida del modelo: no cuenta para el largo.
+}
+
+/**
+ * Si la llamada mas reciente a `toolName` termino sin error.
+ *
+ * Contrato de la fuente (ccnmt v2.1.88, `utils/messages.ts`): se busca hacia
+ * atras el `tool_use` mas reciente del asistente con ese nombre; despues, su
+ * `tool_result` en un mensaje de usuario. Exito es `is_error !== true`; sin
+ * llamada o sin resultado, `false`.
+ */
+export function hasSuccessfulToolCall(messages: Message[], toolName: string): boolean {
+  let toolUseId: string | undefined
+  for (let i = messages.length - 1; i >= 0 && !toolUseId; i--) {
+    const msg = messages[i]!
+    if (msg.type !== 'assistant') continue
+    const content = msg.message.content
+    if (!Array.isArray(content)) continue
+    for (const block of content as ContentItem[]) {
+      const candidate = block as { type?: string; name?: string; id?: string }
+      if (candidate.type === 'tool_use' && candidate.name === toolName) {
+        toolUseId = candidate.id
+        break
+      }
+    }
+  }
+  if (!toolUseId) return false
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i]!
+    if (msg.type !== 'user') continue
+    const content = msg.message.content
+    if (!Array.isArray(content)) continue
+    for (const block of content as ContentItem[]) {
+      const result = block as { type?: string; tool_use_id?: string; is_error?: boolean }
+      if (result.type === 'tool_result' && result.tool_use_id === toolUseId) {
+        return result.is_error !== true
+      }
+    }
+  }
+  return false
 }
