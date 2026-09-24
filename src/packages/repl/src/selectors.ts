@@ -10,10 +10,9 @@ import { isInProcessTeammateTask } from '@thyrox/swarm'
 // Selectors here only access a narrow field set; stricter types stay at
 // call sites that import from AppStateStore directly.
 type LocalAgentTaskState = { type: 'local_agent'; [key: string]: unknown }
-type AppStateShape = {
-  viewingAgentTaskId: string | null | undefined
-  tasks: Record<string, { type: string; [key: string]: unknown }>
-}
+// El estado real de la app: la forma mínima local no aceptaba el `AppState`
+// canónico (sus tareas son interfaces sin firma de índice).
+type AppStateShape = import('@thyrox/app-host/state/AppState.js').AppState
 
 /**
  * Get the currently viewed teammate task, if any.

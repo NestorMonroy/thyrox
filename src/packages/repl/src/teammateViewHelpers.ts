@@ -18,12 +18,9 @@ type LocalAgentTaskState = {
   abortController?: { abort: () => void }
   [key: string]: unknown
 }
-type AppStateShape = {
-  viewingAgentTaskId: string | undefined
-  viewSelectionMode: string
-  tasks: Record<string, { type: string; [key: string]: unknown }>
-  [key: string]: unknown
-}
+// El estado real de la app: la forma mínima local no aceptaba el `AppState`
+// canónico (sus tareas son interfaces sin firma de índice).
+type AppStateShape = import('@thyrox/app-host/state/AppState.js').AppState
 
 // Inline type check instead of importing isLocalAgentTask — breaks the
 // teammateViewHelpers → LocalAgentTask runtime edge that creates a cycle
