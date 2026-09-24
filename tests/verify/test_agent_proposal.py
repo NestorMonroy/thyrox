@@ -142,6 +142,22 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("nombra cada archivo donde el patrón sigue vivo fuera, el mayor primero",
                  ["pendiente unknown-param: 2 en src/b.ts", "pendiente unknown-param: 1 en src/c.ts",
                   "pendiente unknown-param: 1 en src/d.ts"], pending)
+    # Gate 4: con un patrón vivo fuera, la propuesta NO sale.
+    assert_equal("gate 4: lo pendiente bloquea con 4", 4, code)
+    assert_equal("gate 4: dice por qué", True, "GATE 4 BLOQUEADO" in err.getvalue())
+
+    (run / "patterns.jsonl").write_text(json.dumps(
+        {"name": "unknown-param", "signal": "TS18046", "fix": "f", "site": "", "replace": "",
+         "include": "", "exclude": [], "applied": [], "status": "closed",
+         "closed_reason": "agotado"}) + "\n")
+    (root / "src" / "a.ts").write_text(edited)
+    out = io.StringIO()
+    with contextlib.redirect_stderr(io.StringIO()), contextlib.redirect_stdout(out):
+        code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
+                                    "--pattern", "TS18046", "--id", "mem3", "--run", str(run),
+                                    "src/a.ts"])
+    assert_equal("gate 4: con el patrón cerrado la propuesta sale", (0, True),
+                 (code, '"proposal_id": "agent:mem3"' in out.getvalue()))
 
 print(f"test_agent_proposal: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

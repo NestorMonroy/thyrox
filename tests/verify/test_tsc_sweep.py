@@ -144,6 +144,23 @@ def main() -> int:
         except ValueError:
             assert_equal("site sin replace rehúsa", "ValueError", "ValueError")
 
+        # Las dos salidas del gate 4 llevan su razón escrita en la memoria.
+        print("exclude / close")
+        row = sweep.exclude_files(run, "union-member", ["src/x.ts"], "otra causa raíz")
+        assert_equal("excluye con su razón", (["src/x.ts"], {"src/x.ts": "otra causa raíz"}),
+                     (row["exclude"], row["exclude_reasons"]))
+        row = sweep.close_pattern(run, "union-member", "barrido agotado")
+        assert_equal("cierra con su razón", ("closed", "barrido agotado"),
+                     (row["status"], row["closed_reason"]))
+        for label, call in (("excluir sin razón rehúsa", lambda: sweep.exclude_files(run, "union-member", ["y"], " ")),
+                            ("cerrar sin razón rehúsa", lambda: sweep.close_pattern(run, "union-member", "")),
+                            ("cerrar un patrón ausente rehúsa", lambda: sweep.close_pattern(run, "nada", "r"))):
+            try:
+                call()
+                assert_equal(label, "ValueError", "nada")
+            except ValueError:
+                assert_equal(label, "ValueError", "ValueError")
+
     print(f"\n{'FALLAN ' + str(len(FAILURES)) if FAILURES else 'todas pasan'}")
     return 1 if FAILURES else 0
 

@@ -102,6 +102,74 @@ def pending_outside(run: Path, log_lines: list[str], files: list[str]) -> dict[s
     return pending
 
 
+def blocking_pending(run: Path, log_lines: list[str], files: list[str]) -> dict[str, dict[str, int]]:
+    """Gate 4: lo pendiente que bloquea. Un patrón `closed` o un archivo en su
+    `exclude` salen, y las dos salidas llevan su razón escrita en la memoria
+    (`tsc_sweep close|exclude --reason`); todo lo demás exige aplicar el
+    patrón antes de proponer otra cosa."""
+    rows = {row["name"]: row for row in _read_jsonl(run / PATTERNS)}
+    blocking = {}
+    for name, found in pending_outside(run, log_lines, files).items():
+        row = rows[name]
+        if row.get("status") == "closed":
+            continue
+        rest = {f: n for f, n in found.items() if f not in set(row.get("exclude", []))}
+        if rest:
+            blocking[name] = rest
+    return blocking
+
+
+def _accepted_targets(step: Path, accepted: list[str]) -> list[str]:
+    path = step / "candidates.jsonl"
+    wanted = set(accepted)
+    return [t for row in _read_jsonl(path) if row.get("proposal_id") in wanted
+            for t in row.get("targets", [])]
+
+
+def uncovered_by_memory(run: Path, step: Path) -> list[str]:
+    """Gate 3b: archivos que un paso con avance conservó sin que la memoria
+    los cubra. Cubrir exige las dos cosas: un patrón cuya señal casa con los
+    OBJETIVOS del paso (no basta con que la entrada tenga sus campos) y cuyo
+    `applied` nombra el archivo."""
+    report = json.loads((step / "report.json").read_text())
+    kept = report.get("files_kept", [])
+    if report.get("status") != "progress" or not kept:
+        return []
+    targets = _accepted_targets(step, report.get("accepted", []))
+    covered: set[str] = set()
+    for row in _read_jsonl(run / PATTERNS):
+        regex = re.compile(row["signal"])
+        if any(regex.search(t) for t in targets):
+            covered |= set(row.get("applied", []))
+    return [f for f in kept if f not in covered]
+
+
+def audit(run: Path) -> dict:
+    """Las dos preguntas de verificación del plan v2.2.0, con su denominador:
+    cuántos pasos aceptados dejaron memoria que los cubre, y cuántos aplicaron
+    un mismo patrón a más de un archivo de una vez."""
+    accepted = covered = bulk = 0
+    uncovered_steps = []
+    patterns = _read_jsonl(run / PATTERNS)
+    for report_path in sorted(run.glob("step-*/report.json")):
+        step = report_path.parent
+        report = json.loads(report_path.read_text())
+        if report.get("status") != "progress" or not report.get("files_kept"):
+            continue
+        accepted += 1
+        if uncovered_by_memory(run, step):
+            uncovered_steps.append(step.name)
+            continue
+        covered += 1
+        kept = set(report["files_kept"])
+        targets = _accepted_targets(step, report.get("accepted", []))
+        if len(kept) > 1 and any(kept <= set(p.get("applied", [])) and
+                                 any(re.search(p["signal"], t) for t in targets) for p in patterns):
+            bulk += 1
+    return {"accepted": accepted, "covered": covered, "bulk": bulk,
+            "uncovered_steps": uncovered_steps}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -115,6 +183,11 @@ def main(argv: list[str] | None = None) -> int:
     recall_p = sub.add_parser("recall", help="reflexiones y recetas de unos archivos")
     recall_p.add_argument("--run", type=Path, required=True)
     recall_p.add_argument("files", nargs="+")
+    gate_p = sub.add_parser("gate-memory", help="gate 3b: el paso deja memoria que lo cubre")
+    gate_p.add_argument("--run", type=Path, required=True)
+    gate_p.add_argument("--step", type=Path, required=True)
+    audit_p = sub.add_parser("audit", help="las dos preguntas de verificación del plan")
+    audit_p.add_argument("--run", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "add":
@@ -122,8 +195,22 @@ def main(argv: list[str] | None = None) -> int:
                       args.before_log.read_text().splitlines(),
                       (args.step / "batch.log").read_text().splitlines())
             print(json.dumps(row, ensure_ascii=False))
-        else:
+        elif args.command == "recall":
             print(json.dumps(recall(args.run, args.files), ensure_ascii=False, indent=2))
+        elif args.command == "gate-memory":
+            missing = uncovered_by_memory(args.run, args.step)
+            if missing:
+                print(f"GATE 3b BLOQUEADO — {args.step.name} conservó {len(missing)} archivo(s) sin "
+                      "un patrón cuya señal case sus objetivos y cuyo applied los nombre: "
+                      f"{' '.join(missing)}. Registra con bin/tsc_sweep add-pattern y applied.",
+                      file=sys.stderr)
+                return 4
+            print(f"gate 3b: {args.step.name} cubierto por la memoria")
+        else:
+            a = audit(args.run)
+            print(f"aceptados con avance: {a['accepted']} · cubiertos por memoria: {a['covered']} · "
+                  f"aplicaciones masivas de un patrón: {a['bulk']}")
+            print("sin memoria: " + (" ".join(a["uncovered_steps"]) or "ninguno"))
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_reflect: SIN MEDIR — {error}", file=sys.stderr)
         return 2

@@ -107,6 +107,67 @@ def main() -> int:
         assert_equal("sin memoria de patrones, nada pendiente", {},
                      reflect.pending_outside(run / "nada", log, ["src/a.ts"]))
 
+        # Gate 4: lo pendiente bloquea salvo que el patrón esté cerrado o el
+        # archivo excluido — las dos salidas llevan su razón escrita.
+        print("blocking_pending")
+        rows = [json.loads(l) for l in (run / "patterns.jsonl").read_text().splitlines()]
+        assert_equal("sin salida declarada, lo pendiente bloquea",
+                     {"unknown-v": {"src/b.ts": 1, "src/c.ts": 2}},
+                     reflect.blocking_pending(run, log, ["src/a.ts"]))
+        rows[0]["exclude"] = ["src/c.ts"]
+        rows[0]["exclude_reasons"] = {"src/c.ts": "otra causa"}
+        (run / "patterns.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+        assert_equal("un archivo excluido no bloquea", {"unknown-v": {"src/b.ts": 1}},
+                     reflect.blocking_pending(run, log, ["src/a.ts"]))
+        rows[0]["status"] = "closed"
+        rows[0]["closed_reason"] = "agotado"
+        (run / "patterns.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
+        assert_equal("un patrón cerrado no bloquea", {},
+                     reflect.blocking_pending(run, log, ["src/a.ts"]))
+
+        # Gate 3b: un paso que avanzó deja sus archivos cubiertos por un
+        # patrón cuya señal casa con SUS objetivos — no basta con 4 campos.
+        print("uncovered_by_memory")
+        mem = root_mem = run / "gate"
+        mem.mkdir()
+        step = mem / "step-009"
+        step.mkdir()
+        (step / "report.json").write_text(json.dumps(
+            {"status": "progress", "accepted": ["agent:k"], "files_kept": ["src/k.ts", "src/l.ts"]}))
+        (step / "candidates.jsonl").write_text(json.dumps(
+            {"proposal_id": "agent:k", "targets": ["src/k.ts: TS2367: literal 'k'"]}) + "\n")
+        assert_equal("sin memoria, todos los archivos quedan sin cubrir",
+                     ["src/k.ts", "src/l.ts"], reflect.uncovered_by_memory(mem, step))
+        (mem / "patterns.jsonl").write_text(json.dumps(
+            {"name": "other", "signal": "TS9999", "fix": "f", "applied": ["src/k.ts", "src/l.ts"]}) + "\n")
+        assert_equal("una entrada completa cuya señal no casa los objetivos no cubre",
+                     ["src/k.ts", "src/l.ts"], reflect.uncovered_by_memory(mem, step))
+        (mem / "patterns.jsonl").write_text(json.dumps(
+            {"name": "lit", "signal": "TS2367", "fix": "f", "applied": ["src/k.ts"]}) + "\n")
+        assert_equal("cubre sólo lo que su applied nombra", ["src/l.ts"],
+                     reflect.uncovered_by_memory(mem, step))
+        (mem / "patterns.jsonl").write_text(json.dumps(
+            {"name": "lit", "signal": "TS2367", "fix": "f", "applied": ["src/k.ts", "src/l.ts"]}) + "\n")
+        assert_equal("señal que casa y applied completo: cubierto", [],
+                     reflect.uncovered_by_memory(mem, step))
+        (step / "report.json").write_text(json.dumps(
+            {"status": "no-progress", "accepted": [], "files_kept": []}))
+        assert_equal("un paso sin avance no exige memoria", [], reflect.uncovered_by_memory(mem, step))
+
+        # Las dos preguntas de verificación del plan, con su denominador.
+        print("audit")
+        (step / "report.json").write_text(json.dumps(
+            {"status": "progress", "accepted": ["agent:k"], "files_kept": ["src/k.ts", "src/l.ts"]}))
+        other = mem / "step-010"
+        other.mkdir()
+        (other / "report.json").write_text(json.dumps(
+            {"status": "progress", "accepted": ["agent:z"], "files_kept": ["src/z.ts"]}))
+        (other / "candidates.jsonl").write_text(json.dumps(
+            {"proposal_id": "agent:z", "targets": ["src/z.ts: TS1: x"]}) + "\n")
+        assert_equal("aceptados, cubiertos por memoria, aplicaciones masivas",
+                     {"accepted": 2, "covered": 1, "bulk": 1, "uncovered_steps": ["step-010"]},
+                     reflect.audit(mem))
+
     print(f"\n{'FALLAN ' + str(len(FAILURES)) if FAILURES else 'todas pasan'}")
     return 1 if FAILURES else 0
 

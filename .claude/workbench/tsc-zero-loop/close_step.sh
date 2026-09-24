@@ -11,6 +11,12 @@ REPORT="$R/$S/report.json"
 STATUS=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['status'])" "$REPORT")
 FILES=$(python3 -c "import json,sys;print(' '.join(json.load(open(sys.argv[1]))['files_kept']))" "$REPORT")
 test -s "$R/$S/commit.txt" || { echo "falta $R/$S/commit.txt" >&2; exit 2; }
+# Gate 3b (plan v2.2.0): un paso que avanzó no se commitea sin una entrada de
+# memoria cuya señal case sus objetivos y cuyo `applied` nombre sus archivos.
+if [ "$STATUS" = progress ]; then
+  bash bin/tsc_reflect gate-memory --run "$R" --step "$R/$S" || exit 4
+fi
+test -e "$R/patterns.jsonl" && EXTRA="${EXTRA:-} $R/patterns.jsonl"
 # Reflexion: un paso que no avanzó no se cierra sin su lección escrita.
 if [ "$STATUS" != progress ]; then
   for P in $(python3 -c "import json,sys;print(' '.join(json.load(open(sys.argv[1]))['outcomes']))" "$REPORT"); do

@@ -32,6 +32,8 @@ Sin `--site`/`--replace` el patrón es NO mecánico: queda en la memoria y
 `propose` lo rehúsa.
     bin/tsc_sweep propose --run R --name N --before-log L [--split] > candidatas.jsonl
     bin/tsc_sweep applied --run R --name N archivo...
+    bin/tsc_sweep exclude --run R --name N --reason TEXTO archivo...
+    bin/tsc_sweep close --run R --name N --reason TEXTO
 """
 from __future__ import annotations
 
@@ -87,6 +89,37 @@ def mark_applied(run: Path, name: str, files: list[str]) -> dict:
     if name not in patterns:
         raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
     patterns[name]["applied"] = sorted(set(patterns[name]["applied"]) | set(files))
+    _save(run, patterns)
+    return patterns[name]
+
+
+def _require_reason(reason: str) -> str:
+    if not reason.strip():
+        raise ValueError("una salida del gate 4 sin razón escrita no se admite")
+    return reason.strip()
+
+
+def exclude_files(run: Path, name: str, files: list[str], reason: str) -> dict:
+    """Saca archivos de un patrón porque su señal casa ahí por OTRA causa."""
+    reason = _require_reason(reason)
+    patterns = load_patterns(run)
+    if name not in patterns:
+        raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
+    row = patterns[name]
+    row["exclude"] = sorted(set(row.get("exclude", [])) | set(files))
+    row["exclude_reasons"] = {**row.get("exclude_reasons", {}), **{f: reason for f in files}}
+    _save(run, patterns)
+    return row
+
+
+def close_pattern(run: Path, name: str, reason: str) -> dict:
+    """Cierra un patrón: su señal ya no pide aplicación (agotado, o demasiado
+    amplia para seguir usándola como gate)."""
+    reason = _require_reason(reason)
+    patterns = load_patterns(run)
+    if name not in patterns:
+        raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
+    patterns[name].update(status="closed", closed_reason=reason)
     _save(run, patterns)
     return patterns[name]
 
@@ -160,6 +193,15 @@ def main(argv: list[str] | None = None) -> int:
     app_p.add_argument("--run", type=Path, required=True)
     app_p.add_argument("--name", required=True)
     app_p.add_argument("files", nargs="+")
+    exc_p = sub.add_parser("exclude", help="saca archivos del patrón: su señal casa ahí por otra causa")
+    exc_p.add_argument("--run", type=Path, required=True)
+    exc_p.add_argument("--name", required=True)
+    exc_p.add_argument("--reason", required=True)
+    exc_p.add_argument("files", nargs="+")
+    close_p = sub.add_parser("close", help="cierra un patrón: su señal ya no pide aplicación")
+    close_p.add_argument("--run", type=Path, required=True)
+    close_p.add_argument("--name", required=True)
+    close_p.add_argument("--reason", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "add-pattern":
@@ -173,8 +215,13 @@ def main(argv: list[str] | None = None) -> int:
             for row in propose(args.root, patterns[args.name],
                                args.before_log.read_text().splitlines(), split=args.split):
                 print(json.dumps(row, ensure_ascii=False))
-        else:
+        elif args.command == "applied":
             print(json.dumps(mark_applied(args.run, args.name, args.files), ensure_ascii=False))
+        elif args.command == "exclude":
+            print(json.dumps(exclude_files(args.run, args.name, args.files, args.reason),
+                             ensure_ascii=False))
+        else:
+            print(json.dumps(close_pattern(args.run, args.name, args.reason), ensure_ascii=False))
     except (OSError, ValueError, KeyError, re.error, json.JSONDecodeError,
             subprocess.CalledProcessError) as error:
         print(f"tsc_sweep: REHÚSA — {error}", file=sys.stderr)
