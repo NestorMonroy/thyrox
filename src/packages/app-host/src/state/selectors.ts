@@ -23,13 +23,15 @@
  * sustituto local de `internal/pendingCrossPackageDeps.ts` — ver ese
  * archivo para la divergencia exacta y la condición de retiro.
  */
+import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
-import { isInProcessTeammateTask } from '../internal/pendingCrossPackageDeps.js'
+import { isInProcessTeammateTask } from '@thyrox/swarm'
 
-// Minimal structural shapes — the full task/state types still live in src/.
-// Selectors here only access a narrow field set; stricter types stay at
-// call sites that import from AppStateStore directly.
-type LocalAgentTaskState = { type: 'local_agent'; [key: string]: unknown }
+// (2026-09-24) La guarda viene de `@thyrox/swarm`: el symlink ya existe y
+// `require.resolve` lo resuelve desde este paquete, que era la condición de
+// retiro del sustituto local. `LocalAgentTaskState` es el canónico, como
+// import sólo de tipo: la copia estructural local (`{ type: 'local_agent' }`)
+// no tenía los campos del `TaskStateBase` y no casaba con el tipo real.
 type AppStateShape = {
   viewingAgentTaskId: string | null | undefined
   tasks: Record<string, { type: string; [key: string]: unknown }>

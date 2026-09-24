@@ -1,0 +1,15 @@
+Use the canonical LocalAgentTaskState in selectors
+
+Three files kept a structural copy of LocalAgentTaskState with a
+subset of its fields ({ type: 'local_agent' } plus an index), so the
+real type did not fit them and PromptInput could not pass it. They
+now import the canonical type as type-only, which adds no runtime
+edge toward LocalAgentTask. teammateViewHelpers carried the same copy
+with no diagnostic yet; the pattern is applied there too.
+
+app-host's selector used a stub guard returning boolean, which could
+not narrow. Its retirement condition was @thyrox/swarm resolving from
+app-host; it does now, so the real predicate replaces it.
+
+tsc: 2499 -> 2494 (accepted-net, 4 targets -> 0; 3 revealed, in the
+ledger).

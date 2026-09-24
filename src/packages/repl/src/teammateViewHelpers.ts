@@ -1,23 +1,14 @@
 import { logEvent } from '@thyrox/local-observability'
+// `LocalAgentTaskState` es el canónico, como import sólo de tipo: no crea la
+// arista de ejecución hacia LocalAgentTask que el comentario de `isLocalAgent`
+// evita. La copia estructural local tenía un subconjunto de sus campos.
+import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import { isTerminalTaskStatus } from '@thyrox/tool-registry/Task.js'
 
 // Inlined from framework.ts — importing creates a cycle through
 // BackgroundTasksDialog. Keep in sync with PANEL_GRACE_MS there.
 const PANEL_GRACE_MS = 30_000
 
-// Minimal structural shapes — full LocalAgentTaskState + AppState types live
-// at src/ call sites. We access a narrow field set; stricter types stay with
-// the caller.
-type LocalAgentTaskState = {
-  type: 'local_agent'
-  status: string
-  retain?: boolean
-  messages?: unknown
-  diskLoaded?: boolean
-  evictAfter?: number
-  abortController?: { abort: () => void }
-  [key: string]: unknown
-}
 // El estado real de la app: la forma mínima local no aceptaba el `AppState`
 // canónico (sus tareas son interfaces sin firma de índice).
 type AppStateShape = import('@thyrox/app-host/state/AppState.js').AppState

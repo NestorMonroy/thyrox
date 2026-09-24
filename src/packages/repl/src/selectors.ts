@@ -6,10 +6,10 @@
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'
 import { isInProcessTeammateTask } from '@thyrox/swarm'
 
-// Minimal structural shapes — the full task/state types still live in src/.
-// Selectors here only access a narrow field set; stricter types stay at
-// call sites that import from AppStateStore directly.
-type LocalAgentTaskState = { type: 'local_agent'; [key: string]: unknown }
+// `LocalAgentTaskState` es el canónico, como import sólo de tipo: la copia
+// estructural local no tenía los campos del `TaskStateBase` y el llamador
+// (`PromptInput`) no podía pasarle el tipo real.
+import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 // El estado real de la app: la forma mínima local no aceptaba el `AppState`
 // canónico (sus tareas son interfaces sin firma de índice).
 type AppStateShape = import('@thyrox/app-host/state/AppState.js').AppState

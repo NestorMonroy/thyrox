@@ -7,7 +7,8 @@
  * retiro — en vez de reescribir el mismo cuerpo (o el mismo `require()`
  * fallido) en cada archivo de `app-host` que lo necesita.
  *
- * 1. `isInProcessTeammateTask` — REIMPLEMENTACIÓN FIEL. El símbolo real
+ * 1. (RETIRADO 2026-09-24: `@thyrox/swarm` resuelve desde este paquete y
+ *    `state/selectors.ts` importa la guarda real.) `isInProcessTeammateTask` — REIMPLEMENTACIÓN FIEL. El símbolo real
  *    vive en `@thyrox/swarm: src/tasks/types.ts` (que SÍ lo exporta, vía
  *    `./tasks/types.js` y el barrel `.`), pero `@thyrox/swarm` NO está
  *    declarado como dependencia de `@thyrox/app-host` en su
@@ -50,14 +51,6 @@
  *    `saveCurrentProjectConfig`.
  */
 
-export function isInProcessTeammateTask(task: unknown): boolean {
-  return (
-    typeof task === 'object' &&
-    task !== null &&
-    'type' in task &&
-    (task as { type: unknown }).type === 'in_process_teammate'
-  )
-}
 
 type ProjectConfigLike = Record<string, unknown>
 type SaveCurrentProjectConfigApi = {
