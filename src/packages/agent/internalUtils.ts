@@ -10,9 +10,11 @@
  * `isBareMode` y `pathExists`. `isBareMode` **ya entra**: su bloqueo era
  * `readEnv` de `config/env`, que hoy existe en este árbol
  * (`@thyrox/config/env/utils.ts:43`) — se declaraba ausente y la medición
- * lo desmiente. `pathExists` sigue fuera: es portable pero sin consumidor.
+ * lo desmiente. `pathExists` entró el 2026-09-24: `internal/fileHistoryCore.ts`
+ * la importa, así que la razón de dejarla fuera —«sin consumidor»— caducó.
  */
 import { readEnv } from '@thyrox/config/env/utils'
+import { stat } from 'node:fs/promises'
 
 // ── Utilidades de error ────────────────────────────────────────────────────
 
@@ -150,4 +152,14 @@ export function isBareMode(): boolean {
   return (
     isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE')) || process.argv.includes('--bare')
   )
+}
+
+/** ¿Existe la ruta? De forma asíncrona y sin lanzar: un error de `stat` es «no». */
+export async function pathExists(path: string): Promise<boolean> {
+  try {
+    await stat(path)
+    return true
+  } catch {
+    return false
+  }
 }
