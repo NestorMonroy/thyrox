@@ -2,7 +2,11 @@ import { afterAll, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { auditScope } from '../../src/verify/message_shape_audit.ts'
+// La ruta del modulo es sustituible para los controles de anulacion en
+// paralelo (`src/verify/annul_parallel.sh`): cada variante es una copia.
+const { auditScope } = (await import(
+  process.env.SHAPE_AUDIT_MODULE ?? '../../src/verify/message_shape_audit.ts'
+)) as typeof import('../../src/verify/message_shape_audit.ts')
 
 // Fixture minima con los nombres reales de los alias: la familia se decide
 // por el alias del tipo, asi que un nombre inventado no ejercitaria nada.
@@ -38,6 +42,9 @@ export function readsFlatOnly(m: CoreAssistantMessage) {
 export function readsAgentNested(m: AgentMessage) {
   return m.message?.content
 }
+export function erasesCoreForSink(ms: CoreMessage[], sink: (x: never) => void) {
+  sink(ms as never)
+}
 `)
 
 const { findings, files } = auditScope(root, join(root, 'tsconfig.json'), scope)
@@ -53,10 +60,12 @@ describe('message_shape_audit', () => {
     expect(at('SHAPE001')).toEqual(['loop.ts:6'])
   })
 
-  test('SHAPE002: los dos cruces sin adaptador, no el del adaptador', () => {
-    // linea 9: evento ajeno -> Core; linea 12: Core -> Agent. El cast dentro
-    // de toCoreMessages (linea 15) es la frontera nombrada y no cuenta.
-    expect(at('SHAPE002')).toEqual(['loop.ts:9', 'loop.ts:12'])
+  test('SHAPE002: los cruces sin adaptador, no el del adaptador', () => {
+    // linea 9: evento ajeno -> Core; linea 12: Core -> Agent, contado UNA vez
+    // aunque la cadena lleve dos aserciones; linea 24: Core borrado a `never`
+    // para un sumidero ajeno. El cast dentro de toCoreMessages (linea 15) es
+    // la frontera nombrada y no cuenta.
+    expect(at('SHAPE002')).toEqual(['loop.ts:9', 'loop.ts:12', 'loop.ts:24'])
   })
 
   test('no confunde la interseccion Core & {message} con un cruce', () => {

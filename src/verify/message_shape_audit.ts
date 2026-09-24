@@ -16,9 +16,10 @@
  *             `Core*`. Un `CoreMessage` es plano; si alguien lee `.message`
  *             es porque el objeto real vino anidado, que es justo lo que el
  *             adaptador existe para impedir.
- *   SHAPE002  cruce de modelo sin adaptador: una asercion de tipo (`as`) cuyo
- *             destino es `Core*` desde un valor que no lo es, o cuyo destino
- *             es `Agent*` desde un valor `Core*`, fuera de los adaptadores.
+ *   SHAPE002  cruce de modelo sin adaptador, fuera de los adaptadores: una
+ *             asercion de tipo (`as`) cuyo destino es `Core*` desde un valor
+ *             que no lo es, o que saca un valor `Core*` a cualquier otro tipo
+ *             (`Agent*`, o `never` para pasarlo a un sumidero ajeno).
  *
  * Uso:
  *   bun src/verify/message_shape_audit.ts [--root R] [--tsconfig T] [--scope DIR]
@@ -121,20 +122,25 @@ export function auditSourceFile(
         })
       }
     }
-    if (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) {
+    // El eslabon interior de `x as unknown as T` se juzga en el exterior: la
+    // cadena es un solo cruce.
+    const innerOfChain = (ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) &&
+      (ts.isAsExpression(node.parent) || ts.isTypeAssertionExpression(node.parent))
+    if ((ts.isAsExpression(node) || ts.isTypeAssertionExpression(node)) && !innerOfChain) {
       const target = familyOf(checker, checker.getTypeFromTypeNode(node.type))
-      if (target) {
-        const source = familyOf(checker, checker.getTypeAtLocation(assertionSource(node)))
-        const crosses = (target === 'core' && source !== 'core') ||
-                        (target === 'agent' && source === 'core')
-        const inAdapter = ADAPTERS.has(enclosingFunctionName(node) ?? '')
-        if (crosses && !inAdapter) {
-          const pos = at(node)
-          findings.push({
-            file: displayPath, line: pos.line + 1, column: pos.character + 1, code: 'SHAPE002',
-            message: `model crossing without adapter: ${source ?? 'foreign'} value asserted as ${target}`,
-          })
-        }
+      const source = familyOf(checker, checker.getTypeAtLocation(assertionSource(node)))
+      // Tres formas de cruzar: algo ajeno afirmado como Core, un Core afirmado
+      // como Agent, y un Core borrado a un tipo ajeno (`as never` para pasarlo
+      // a un sumidero que espera otra forma).
+      const crosses = (target === 'core' && source !== 'core') ||
+                      (source === 'core' && target !== 'core')
+      const inAdapter = ADAPTERS.has(enclosingFunctionName(node) ?? '')
+      if (crosses && !inAdapter) {
+        const pos = at(node)
+        findings.push({
+          file: displayPath, line: pos.line + 1, column: pos.character + 1, code: 'SHAPE002',
+          message: `model crossing without adapter: ${source ?? 'foreign'} value asserted as ${target ?? checker.typeToString(checker.getTypeFromTypeNode(node.type))}`,
+        })
       }
     }
     ts.forEachChild(node, visit)
