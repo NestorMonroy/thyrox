@@ -1,0 +1,5 @@
+cs336/lecture12/lecture12-notes.tex
+agentic-rl/lecture06/lecture06-notes.tex
+llm-architect/lecture01/lecture01-notes.tex
+cs224n/lecture14/lecture14-notes.tex
+articles/fowler-harness-engineering/fowler-harness-engineering-notes.tex
