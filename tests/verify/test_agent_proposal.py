@@ -123,5 +123,25 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("recuerda la lección de su archivo", True, "leccion-de-a" in err.getvalue())
     assert_equal("no recuerda la de otro archivo", False, "leccion-ajena" in err.getvalue())
 
+    # Paso 4 del plan: un patrón conocido cuya señal sigue viva FUERA de la
+    # candidata se nombra antes de que tsc juzgue, para aplicarlo en bloque.
+    (run / "patterns.jsonl").write_text(json.dumps(
+        {"name": "unknown-param", "signal": "TS18046", "fix": "f", "site": "", "replace": "",
+         "include": "", "exclude": [], "applied": []}) + "\n")
+    (root / "before.log").write_text("\n".join(before + [
+        "src/b.ts(4,4): error TS18046: 'w' is of type 'unknown'.",
+        "src/b.ts(8,4): error TS18046: 'q' is of type 'unknown'.",
+    ]) + "\n")
+    (root / "src" / "a.ts").write_text(edited)
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
+                                    "--pattern", "TS18046", "--id", "mem2", "--run", str(run),
+                                    "src/a.ts"])
+    pending = [line for line in err.getvalue().splitlines() if line.startswith("pendiente")]
+    assert_equal("nombra cada archivo donde el patrón sigue vivo fuera, el mayor primero",
+                 ["pendiente unknown-param: 2 en src/b.ts", "pendiente unknown-param: 1 en src/c.ts",
+                  "pendiente unknown-param: 1 en src/d.ts"], pending)
+
 print(f"test_agent_proposal: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

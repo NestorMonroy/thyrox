@@ -34,12 +34,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 from verify.batch_verification import _new_diagnostics
 
 REFLECTIONS = "reflections.jsonl"
+# La memoria de patrones la escribe `tsc_sweep` (esquema `name`/`signal`);
+# aquí sólo se lee, para no importar `tsc_sweep`, que importa `agent_proposal`.
+PATTERNS = "patterns.jsonl"
 
 
 def revealed(before_lines: list[str], batch_lines: list[str]) -> list[str]:
@@ -76,6 +81,25 @@ def recall(run: Path, files: list[str]) -> dict:
             recipes.append({"step": report.parent.name,
                             "subject": commit.read_text().splitlines()[0]})
     return {"reflections": reflections, "recipes": recipes}
+
+
+def pending_outside(run: Path, log_lines: list[str], files: list[str]) -> dict[str, dict[str, int]]:
+    """Por patrón aprendido, los archivos FUERA de la candidata donde su señal
+    sigue viva en el log, con multiplicidad (paso 4 del plan: aplicar lo
+    aprendido a todo el código, no un archivo por paso)."""
+    keys = [(m.group("file"), diagnostic_key(m)) for line in log_lines
+            if (m := DIAGNOSTIC.match(line))]
+    wanted = set(files)
+    pending: dict[str, dict[str, int]] = {}
+    for row in _read_jsonl(run / PATTERNS):
+        regex = re.compile(row["signal"])
+        rest: dict[str, int] = {}
+        for file, key in keys:
+            if file not in wanted and regex.search(key):
+                rest[file] = rest.get(file, 0) + 1
+        if rest:
+            pending[row["name"]] = rest
+    return pending
 
 
 def main(argv: list[str] | None = None) -> int:

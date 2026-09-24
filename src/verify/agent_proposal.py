@@ -26,7 +26,7 @@ import sys
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
-from verify.tsc_reflect import recall
+from verify.tsc_reflect import pending_outside, recall
 
 
 def _sha(text: str) -> str:
@@ -100,6 +100,13 @@ def main(argv: list[str] | None = None) -> int:
                   file=sys.stderr)
         for item in memory["recipes"]:
             print(f"receta {item['step']}: {item['subject']}", file=sys.stderr)
+        # Paso 4 del plan: la señal de un patrón aprendido que sigue viva en
+        # otros archivos se nombra, para aplicarlo en bloque en vez de uno
+        # por paso.
+        before = args.before_log.read_text().splitlines()
+        for pattern_id, files in pending_outside(args.run, before, args.files).items():
+            for file, count in sorted(files.items(), key=lambda kv: -kv[1]):
+                print(f"pendiente {pattern_id}: {count} en {file}", file=sys.stderr)
     print(json.dumps(row, ensure_ascii=False))
     return 0
 

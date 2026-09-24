@@ -24,8 +24,12 @@ aporta (lección del paso 13 del lazo, en `reflections.jsonl`).
 
 Uso::
 
-    bin/tsc_sweep add-pattern --run R --name N --signal RE --site RE --replace T \\
-        --fix TEXTO [--include RE] [--exclude archivo ...]
+    bin/tsc_sweep add-pattern --run R --name N --signal RE --fix TEXTO \\
+        [--site RE --replace T] [--include RE] [--exclude archivo ...]
+
+Sin `--site`/`--replace` el patrón es NO mecánico: queda en la memoria y
+`agent_proposal` nombra los archivos donde su señal sigue viva, pero
+`propose` lo rehúsa.
     bin/tsc_sweep propose --run R --name N --before-log L [--split] > candidatas.jsonl
     bin/tsc_sweep applied --run R --name N archivo...
 """
@@ -58,14 +62,21 @@ def _save(run: Path, patterns: dict[str, dict]) -> None:
 
 
 def add_pattern(run: Path, pattern: dict) -> dict:
-    for key in ("name", "signal", "site", "replace", "fix"):
+    for key in ("name", "signal", "fix"):
         if not str(pattern.get(key, "")).strip():
-            raise ValueError(f"un patrón sin `{key}` no se puede barrer")
+            raise ValueError(f"un patrón sin `{key}` no enseña nada")
+    # `site` y `replace` van juntos o no van: sin ellos el patrón es memoria
+    # de un arreglo que exige juicio — se recuerda y se señala, no se barre.
+    mechanical = [bool(str(pattern.get(k, "")).strip()) for k in ("site", "replace")]
+    if mechanical[0] != mechanical[1]:
+        raise ValueError("`site` y `replace` van juntos: uno sin el otro no es una sustitución")
     re.compile(pattern["signal"])
-    re.compile(pattern["site"], re.M)
+    if mechanical[0]:
+        re.compile(pattern["site"], re.M)
     patterns = load_patterns(run)
     previous = patterns.get(pattern["name"], {})
-    row = {"include": "", "exclude": [], **pattern, "applied": previous.get("applied", [])}
+    row = {"include": "", "exclude": [], "site": "", "replace": "", **pattern,
+           "applied": previous.get("applied", [])}
     patterns[row["name"]] = row
     _save(run, patterns)
     return row
@@ -105,6 +116,9 @@ def _targets(pattern: dict, before_lines: list[str]) -> list[str]:
 
 
 def propose(root: Path, pattern: dict, before_lines: list[str], *, split: bool) -> list[dict]:
+    if not pattern.get("site"):
+        raise ValueError(f"el patrón {pattern['name']!r} no es mecánico: su arreglo exige juicio "
+                         "y se aplica con agent_proposal, que lo señala por archivo")
     found = sites(root, pattern)
     if not found:
         raise ValueError(f"el patrón {pattern['name']!r} no tiene sitios pendientes")
@@ -130,8 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     add_p = sub.add_parser("add-pattern")
     add_p.add_argument("--run", type=Path, required=True)
-    for key in ("name", "signal", "site", "replace", "fix"):
+    for key in ("name", "signal", "fix"):
         add_p.add_argument(f"--{key}", required=True)
+    add_p.add_argument("--site", default="")
+    add_p.add_argument("--replace", default="")
     add_p.add_argument("--include", default="")
     add_p.add_argument("--exclude", nargs="*", default=[])
     prop_p = sub.add_parser("propose")

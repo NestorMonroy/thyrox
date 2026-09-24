@@ -88,6 +88,25 @@ def main() -> int:
         assert_equal("archivo ajeno, sin memoria", {"reflections": [], "recipes": []},
                      reflect.recall(run, ["src/nada.ts"]))
 
+        # Paso 4 del plan: los patrones de `tsc_sweep` se indexan por SEÑAL.
+        # La propuesta nombra dónde sigue viva una señal aprendida FUERA de
+        # sus archivos, para aplicarla en bloque en vez de un paso por archivo.
+        print("pending_outside")
+        (run / "patterns.jsonl").write_text(json.dumps(
+            {"name": "unknown-v", "signal": "TS18046", "fix": "f", "site": "", "replace": "",
+             "include": "", "exclude": [], "applied": []}) + "\n" + json.dumps(
+            {"name": "ghost", "signal": "TS9999", "fix": "f", "site": "", "replace": "",
+             "include": "", "exclude": [], "applied": []}) + "\n")
+        log = BEFORE + BATCH + ["src/c.ts(1,1): error TS18046: 'w' is of type 'unknown'.",
+                                "src/c.ts(2,1): error TS18046: 'q' is of type 'unknown'."]
+        assert_equal("señal viva fuera de la candidata, con multiplicidad; la ausente no aparece",
+                     {"unknown-v": {"src/b.ts": 1, "src/c.ts": 2}},
+                     reflect.pending_outside(run, log, ["src/a.ts"]))
+        assert_equal("con todos sus archivos en la candidata, nada pendiente", {},
+                     reflect.pending_outside(run, log, ["src/a.ts", "src/b.ts", "src/c.ts"]))
+        assert_equal("sin memoria de patrones, nada pendiente", {},
+                     reflect.pending_outside(run / "nada", log, ["src/a.ts"]))
+
     print(f"\n{'FALLAN ' + str(len(FAILURES)) if FAILURES else 'todas pasan'}")
     return 1 if FAILURES else 0
 

@@ -126,6 +126,24 @@ def main() -> int:
         except ValueError:
             assert_equal("sin sitios rehúsa", "ValueError", "ValueError")
 
+        # Un patrón cuyo arreglo exige juicio (no una sustitución por línea)
+        # también es memoria: se guarda sin `site`/`replace`, y `propose` lo
+        # rehúsa nombrándolo en vez de fallar por una clave ausente.
+        print("patrón no mecánico")
+        judged = sweep.add_pattern(run, {"name": "union-member", "signal": "TS2367",
+                                         "fix": "Declarar el miembro en la unión de origen."})
+        assert_equal("se guarda sin site ni replace", ("", ""), (judged["site"], judged["replace"]))
+        try:
+            sweep.propose(root, judged, BEFORE, split=False)
+            assert_equal("propose rehúsa lo no mecánico", "ValueError", "nada")
+        except ValueError as error:
+            assert_equal("propose rehúsa lo no mecánico", True, "no es mecánico" in str(error))
+        try:
+            sweep.add_pattern(run, {"name": "half", "signal": "x", "site": "y", "fix": "z"})
+            assert_equal("site sin replace rehúsa", "ValueError", "nada")
+        except ValueError:
+            assert_equal("site sin replace rehúsa", "ValueError", "ValueError")
+
     print(f"\n{'FALLAN ' + str(len(FAILURES)) if FAILURES else 'todas pasan'}")
     return 1 if FAILURES else 0
 
