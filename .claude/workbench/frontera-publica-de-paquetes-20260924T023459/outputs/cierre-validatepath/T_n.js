@@ -1,0 +1,1 @@
+function T_n(e){if(e?.type!=="safetyCheck")return e;return{type:"other",reason:e.reason}}

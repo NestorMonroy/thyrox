@@ -1,0 +1,1 @@
+B0o=p(()=>u({memoryNote:o().regex(F0o).optional(),artifactSourceNote:o().regex($0o).optional()}

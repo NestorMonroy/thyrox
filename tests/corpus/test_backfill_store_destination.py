@@ -20,8 +20,9 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from paths import reach  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 SCRIPT = ROOT / "src" / "corpus" / "backfill_findings_history.py"
 REAL = ROOT / "agent-results" / "agent_store.sqlite3"
 

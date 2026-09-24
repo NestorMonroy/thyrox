@@ -1,0 +1,1 @@
+function VFe(e){let n=e.mode==="plan"&&(e.prePlanMode==="auto"||!!e.strippedDangerousRules);return e.isRemoteMode===!0&&!e.restricted&&e.mode!=="auto"&&!n&&e.modeBeforeRewrite!=="auto"}

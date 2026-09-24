@@ -1,0 +1,11 @@
+  ok   el arbol vivo no declara ningun evento desconocido
+  ok   un evento con typo sale con codigo 1
+  ok   la caja distinta sale con codigo 1
+  ok   un evento valido no bloquea
+  ok   sin universo derivable sale con codigo 2
+  ok   el reporte declara ambos universos
+  ok   el reporte nombra los eventos sin consumir
+  FALLA la raiz del arbol de trabajo entra en el alcance — esperado [1] obtenido [0]
+  ok   SIN MEDIR — ningun evento es exclusivo del archivo externo
+
+8 ok · 1 falla(s)

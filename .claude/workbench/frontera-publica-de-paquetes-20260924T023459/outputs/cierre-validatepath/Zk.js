@@ -1,0 +1,1 @@
+function Zk(){return ayt(ye())}

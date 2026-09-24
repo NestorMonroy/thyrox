@@ -1,0 +1,1 @@
+function KB(e,n){let r=Xn(pt(n)),s=Uv(r),g=s!==null?g2(pt(s)):null;return VB(e,r,g)}

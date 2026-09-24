@@ -1,0 +1,1 @@
+function GB(){let e=te(),n=ye(),r=e.localSettingsGitTracked?.cwd===n?e.localSettingsGitTracked.value:void 0;if(r===void 0)r=cfe(),e.setLocalSettingsGitTracked({cwd:n,value:r});return r}

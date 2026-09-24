@@ -1,0 +1,1 @@
+function r2(){if(process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR)return process.env.CLAUDE_CODE_REMOTE_MEMORY_DIR;return ve()}

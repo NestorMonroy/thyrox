@@ -20,6 +20,7 @@ import tempfile
 from pathlib import Path
 
 from verify import tsc_zero_loop as loop
+from paths import reach  # noqa: E402
 
 passed = failed = 0
 
@@ -120,7 +121,7 @@ with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)
     fixture(base)
     hook = base / ".git" / "hooks" / "pre-commit"
-    hook.write_text(f"#!/bin/sh\nPYTHONPATH={Path(loop.__file__).parents[1]} "
+    hook.write_text(f"#!/bin/sh\nPYTHONPATH={(reach.thyrox_root() / 'src')} "
                     f"exec {sys.executable} -m verify.check_bench_untracked --repo .\n")
     hook.chmod(0o755)
     run_dir = base / ".claude" / "workbench" / "loop" / "run-1"

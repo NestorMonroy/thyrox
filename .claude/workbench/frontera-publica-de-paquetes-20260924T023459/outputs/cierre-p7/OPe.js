@@ -1,0 +1,1 @@
+function OPe(e){if(!Array.isArray(e))return[];let n=[];for(let r of e){if(typeof r!=="object"||r===null)continue;let{name:s,cause:g}=r;if(typeof s==="string"&&typeof g==="string")n.push({name:s,cause:g})}return n}

@@ -1,0 +1,22 @@
+Translate identifiers that entered after the baseline
+
+The identifier gate counted 245 Spanish identifiers that landed after
+its baseline was frozen, across 39 files of src/corpus, src/paths,
+src/session and their suites. They are translated word by word with
+the previous sweep's token renamer, which never touches strings or
+comments; test names get whole English sentences instead, since a
+word-by-word gloss of a sentence is not English.
+
+Four words are names of things, not prose, and join the gate's
+technical vocabulary: clx and cch (MS-DOC and MS-XLS field names),
+bie (INEGI's databank) and sep. posterior joins it too: in
+tsc_schedule it is the Bayesian posterior, and translating it to
+"later" was a wrong rename caught by that module's own suite.
+
+Eight dict keys stay Spanish and are frozen with their reason: they
+are data, the quarter ordinals INEGI publishes and the terms the
+census counts. generate_bin.py and its suite stay out by the
+standing directive until the rest of the tree is green.
+
+Also declares THYROX_TS_WIDTH, which run_ts_isolated.sh reads, and
+regenerates bin/ for the two modules that had no wrapper.

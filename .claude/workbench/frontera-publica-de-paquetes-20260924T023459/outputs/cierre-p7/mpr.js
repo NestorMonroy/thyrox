@@ -1,0 +1,1 @@
+function mpr(){return n().host.launchOptions.todoToolsOptIn()}

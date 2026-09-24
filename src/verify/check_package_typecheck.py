@@ -44,6 +44,7 @@ import sys
 from pathlib import Path
 
 from typescript.emit_declarations import _packages, check_package
+from paths import reach  # noqa: E402
 
 #: El baseline es parametro de ESTE arbol, no del mecanismo (DEC-04). Congela
 #: la deuda heredada por paquete: una entrada listada no bloquea, una cifra que
@@ -97,7 +98,7 @@ def main(argv=None):
         print("  NO se emite un conteo: un cero aqui seria un verde falso.", file=sys.stderr)
         return 2
 
-    root = Path(os.environ.get("THYROX_ROOT", Path(__file__).resolve().parents[2]))
+    root = reach.thyrox_root()
     baseline_path = args.baseline or (root / BASELINE)
     frozen = read_baseline(baseline_path)
     if args.strict and not frozen and not args.write_baseline:

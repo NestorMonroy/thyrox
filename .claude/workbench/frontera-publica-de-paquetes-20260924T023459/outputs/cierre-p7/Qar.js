@@ -1,0 +1,1 @@
+function Qar(e){return e.type==="queued_command"&&!bte(e)&&Tvn(e)}

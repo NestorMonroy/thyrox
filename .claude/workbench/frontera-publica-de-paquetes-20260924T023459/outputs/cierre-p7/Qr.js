@@ -1,0 +1,1 @@
+function Qr(){if(!a.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS&&!t())return!1;if(!I("tengu_amber_flint",!0))return!1;return!0}

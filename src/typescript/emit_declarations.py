@@ -51,6 +51,7 @@ import subprocess
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from paths import reach  # noqa: E402
 
 #: El directorio de salida, relativo a la raiz del paquete. No se versiona: un
 #: clon fresco sin el cae al `default` del exports, que sigue siendo la fuente
@@ -755,7 +756,7 @@ def main(argv=None):
               file=sys.stderr)
         return 2
 
-    root = Path(os.environ.get("THYROX_ROOT", Path(__file__).resolve().parents[2]))
+    root = reach.thyrox_root()
     repoint = "--repoint" in argv
     wanted = [a for a in argv if not a.startswith("-")]
     if not wanted and "--all" not in argv:

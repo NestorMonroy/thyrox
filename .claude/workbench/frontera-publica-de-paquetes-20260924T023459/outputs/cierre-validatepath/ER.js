@@ -1,0 +1,1 @@
+function ER(e,i,s=100){let n=new Ku({max:s}),r=(...h)=>{let l=i(...h),o=n.get(l);if(o!==void 0)return o;let a=e(...h);return n.set(l,a),a};return r.cache={clear:()=>n.clear(),size:()=>n.size,delete:(h)=>n.delete(h),get:(h)=>n.peek(h),has:(h)=>n.has(h),set:(h,l)=>void n.set(h,l)},r}

@@ -1,0 +1,11 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 354 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 354 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 354 archivo(s) pedido(s))
+check_bench_untracked: .claude/workbench/frontera-publica-de-paquetes-20260924T023459 deja fuera 2 archivo(s) nuevo(s):
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/primer-error-actual.tsv
+  .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/rojos-no-export.txt
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 2 archivo(s) fuera (alcance medido: 10 banco(s) tocado(s))
+__BG_EXIT__=1

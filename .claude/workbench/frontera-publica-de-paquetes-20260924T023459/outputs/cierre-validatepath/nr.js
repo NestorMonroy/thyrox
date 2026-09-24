@@ -1,0 +1,1 @@
+function nr(t){let e=[];for(let r of t.split("/")){if(r===""||r===".")continue;if(r===".."){e.pop();continue}if(e.push(r),e.length===1&&e[0].toLowerCase()==="network")return!0}return!1}

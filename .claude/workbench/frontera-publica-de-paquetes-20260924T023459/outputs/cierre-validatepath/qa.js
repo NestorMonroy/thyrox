@@ -1,0 +1,1 @@
+function qa(){return ie().projects?.[kw()]?.localSettingsSeenGitTracked===!0}

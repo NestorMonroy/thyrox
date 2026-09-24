@@ -32,6 +32,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import bie_series as bie  # noqa: E402
+from paths import reach  # noqa: E402
 
 NOTE_TOSI = """/a  La  informacion a partir del primer trimestre de 2023 y del
 primer  trimestre de  2005 hasta el primer trimestre de 2020 proviene  de  la
@@ -260,7 +261,7 @@ class TestEncoding(unittest.TestCase):
 
 class TestLineSurface(unittest.TestCase):
     def _run(self, *args):
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+        wrapper = (reach.thyrox_root()
                       / "bin" / "bie_series")
         import subprocess
         return subprocess.run(["bash", str(wrapper), *args],

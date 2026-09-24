@@ -1,0 +1,1 @@
+function _2e(){if(c===null)return null;let n=process.env.CLAUDE_CODE_SESSION_KIND;return n!==void 0&&String(n).trim()==="bg"?null:c}

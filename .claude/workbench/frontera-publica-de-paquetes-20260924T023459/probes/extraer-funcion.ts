@@ -17,11 +17,26 @@ function balanced(from: number): number {
   }
   return i
 }
+// Resuelve un nombre importado a su chunk de origen (y a su nombre alli).
+function origin(name: string): [string, string] | null {
+  const re = /import\{([^}]*)\}from"\/\$bunfs\/root\/([^"]+)"/g
+  for (let m; (m = re.exec(src)); ) {
+    for (const spec of m[1].split(',')) {
+      const [a, b] = spec.split(' as ')
+      if ((b ?? a) === name) return [m[2], a]
+    }
+  }
+  return null
+}
 for (const n of names) {
   const esc = n.replace(/\$/g, '\\$')
   const re = new RegExp(`(?:async )?function ${esc}\\(|(?:var|let|const) ${esc}=|[,;]${esc}=`, 'g')
   const m = re.exec(src)
-  if (!m) { console.log(`// ${n}: NO DEFINIDA en el chunk (importada)`); continue }
+  if (!m) {
+    const o = origin(n)
+    console.log(o ? `// ${n}: importada de ${o[0]} como ${o[1]}` : `// ${n}: NO DEFINIDA ni importada`)
+    continue
+  }
   const open = src.indexOf('{', m.index)
   const semi = src.indexOf(';', m.index)
   const end = (m[0].includes('function') || (open !== -1 && open < semi && src.slice(m.index, open).includes('=>'))) ? balanced(open) + 1 : semi

@@ -2,8 +2,9 @@
 """The root install must reproduce the TypeScript workspace topology."""
 from pathlib import Path
 import tomllib
+from paths import reach  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 config = tomllib.loads((ROOT / "bunfig.toml").read_text(encoding="utf-8"))
 linker = config.get("install", {}).get("linker")
 

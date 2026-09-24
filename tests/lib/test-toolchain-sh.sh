@@ -51,11 +51,15 @@ else
 fi
 
 # Caso 4 — el consumidor se invoca por SU proyecto, no por el del proveedor.
-consumer="$(thyrox_toolchain_consumer_argv api 2>/dev/null || echo '')"
-if [[ "$consumer" == *"uv run --project"* && "$consumer" == *"kaupamex-api"* ]]; then
-  ok "el consumidor se invoca por su propio proyecto"
+# El sujeto se DERIVA del roster: estaba escrito `api`, y en un arbol sin ese
+# clon el caso media el contenedor, no el selector.
+consumer_path="$(_thyrox_delegate --paths 2>/dev/null | head -1)"
+consumer_name="${consumer_path##*[-/]}"
+consumer="$(thyrox_toolchain_consumer_argv "$consumer_name" 2>/dev/null || echo '')"
+if [[ -n "$consumer_path" && "$consumer" == "uv run --project $consumer_path python" ]]; then
+  ok "el consumidor se invoca por su propio proyecto ($consumer_name)"
 else
-  bad "esperaba 'uv run --project <ruta de api>', dio '$consumer'"
+  bad "esperaba 'uv run --project $consumer_path python', dio '$consumer'"
 fi
 
 # Caso 5 — EL DISCRIMINANTE: los dos no pueden ser el mismo interprete.

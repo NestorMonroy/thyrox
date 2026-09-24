@@ -1,0 +1,1 @@
+function mTo(e,n,r,s){let g=le(),h=pTo(e),y=pCe(h)?h:bre(n,h),w=pCe(e)?e:bre(n,e);for(;;){let{resolvedPath:O,isSymlink:L,isCanonical:B}=Po(g,w),U=qQe(w);if(B||w===y||U===w)return{...$k(O,r,s,B?[O]:void 0,B&&L&&Yrn(r)?On(w):void 0),resolvedPath:O};w=U}}

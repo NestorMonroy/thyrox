@@ -7,8 +7,9 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from paths import reach  # noqa: E402
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 SCRIPT = ROOT / "src/verify/analyze_typescript_diagnostics.py"
 
 

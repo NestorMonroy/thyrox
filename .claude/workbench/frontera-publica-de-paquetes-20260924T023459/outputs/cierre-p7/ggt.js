@@ -1,0 +1,1 @@
+function ggt(e){if(e.startsWith(W$e))return e;return`${W$e}${e}`}

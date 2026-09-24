@@ -1,0 +1,41 @@
+== primera ejecucion sin baseline: el gate REHUSA
+  FAIL exit 2, no 0
+       esperaba 2, obtuvo 1
+  ok   sin baseline NO emite ninguna cifra de cambios
+== escribir el baseline
+  FAIL el baseline aterriza
+       esperaba si, obtuvo no
+== sin cambios entre ejecuciones
+  FAIL exit 0 cuando nada cambio
+       esperaba 0, obtuvo 1
+  FAIL publica su denominador
+       esperaba si, obtuvo no
+== una ficha CAMBIA de veredicto (firme -> pide re-encuadre)
+  FAIL el cambio se detecta
+       esperaba si, obtuvo no
+  FAIL nombra la ficha que cambio
+       esperaba si, obtuvo no
+  ok   --strict sale 1 con un cambio
+== y en el sentido contrario (pide re-encuadre -> firme)
+  FAIL el cambio inverso tambien se detecta
+       esperaba si, obtuvo no
+== una ficha NUEVA no es un cambio de veredicto
+  FAIL la ficha nueva se cuenta aparte, no como cambio
+       esperaba si, obtuvo no
+== el camino POR DEFECTO se ejerce, no solo el de --tasks-dir
+  FAIL sin --tasks-dir resuelve el tablero y no revienta
+       esperaba 0, obtuvo 1
+  FAIL y publica su alcance medido
+       esperaba si, obtuvo no
+== el baseline es JSONL: un registro por linea
+tests/verify/test-premise-drift.sh: line 140: /tmp/tmp.RQ26jpKVqn/base.json: No such file or directory
+  FAIL el baseline tiene una linea por ficha (2)
+       esperaba 2, obtuvo ''
+  ok   json.load sobre el archivo entero FALLA: no es un documento unico
+  FAIL cada linea parsea por separado
+       esperaba si, obtuvo no
+== guard: sin el directorio de fichas NO se emite cifra
+  FAIL exit 2 y sin conteo
+       esperaba 2, obtuvo 1
+
+3 ok, 13 fallo(s)  (alcance medido: 16 asercion(es))

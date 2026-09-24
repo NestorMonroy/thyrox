@@ -31,8 +31,9 @@ import struct
 import sys
 import tempfile
 import unittest
+from paths import reach  # noqa: E402
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 

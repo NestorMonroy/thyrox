@@ -1,0 +1,1 @@
+function xu(e){let n=Ae(Ze(e)).replace(/[\\/]+$/,"");if(qr(n)===sc(".claude"))return!0;let r=Yr("policySettings");return K([...eo(),...Qr().map((g)=>se(g,".claude")),...r!==void 0?[Zr(r)]:[],...Ts()]).some((g)=>{if(Ae(g)===n)return!0;try{let h=le().realpathSync(g);return Ae(h)===n}catch{return!1}})}

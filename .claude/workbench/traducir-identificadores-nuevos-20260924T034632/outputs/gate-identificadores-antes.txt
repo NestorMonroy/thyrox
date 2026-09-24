@@ -1,0 +1,257 @@
+  src/corpus/archive_extract.py:109  origen  ->  español: origen
+  src/corpus/archive_extract.py:151  raiz  ->  español: raiz
+  src/corpus/archive_extract.py:156  binario  ->  español: binario
+  src/corpus/bie_series.py:77  primer  ->  español: primer
+  src/corpus/bie_series.py:77  segundo  ->  español: segundo
+  src/corpus/bie_series.py:77  tercer  ->  español: tercer
+  src/corpus/bie_series.py:77  cuarto  ->  español: cuarto
+  src/corpus/bie_series.py:224  comparables  ->  español: comparables
+  src/corpus/bie_series.py:229  sin_sujeto  ->  español: sin, sujeto
+  src/corpus/bie_series.py:267  origen  ->  español: origen
+  src/corpus/bie_series.py:276  crudo  ->  español: crudo
+  src/corpus/bie_series.py:280  sep  ->  español: sep
+  src/corpus/cfb.py:260  origen  ->  español: origen
+  src/corpus/cfb.py:220  raiz  ->  español: raiz
+  src/corpus/cfb.py:232  entrada  ->  español: entrada
+  src/corpus/doc_to_text.py:79  IDX_FC_CLX  ->  español: clx
+  src/corpus/doc_to_text.py:106  fc_clx  ->  español: clx
+  src/corpus/doc_to_text.py:106  lcb_clx  ->  español: clx
+  src/corpus/doc_to_text.py:113  clx  ->  español: clx
+  src/corpus/doc_to_text.py:157  origen  ->  español: origen
+  src/corpus/doc_to_text.py:129  comprimida  ->  español: comprimida
+  src/corpus/docx_to_text.py:160  origen  ->  español: origen
+  src/corpus/docx_to_text.py:263  declarados  ->  español: declarados
+  src/corpus/docx_to_text.py:310  raiz  ->  español: raiz
+  src/corpus/ooxml.py:44  origen  ->  español: origen
+  src/corpus/pdf_to_text.py:73  origen  ->  español: origen
+  src/corpus/pdf_to_text.py:74  binario  ->  español: binario
+  src/corpus/term_census.py:161  origen  ->  español: origen
+  src/corpus/xls_to_text.py:274  origen  ->  español: origen
+  src/corpus/xls_to_text.py:143  cch  ->  español: cch
+  src/corpus/xlsx_to_text.py:150  origen  ->  español: origen
+  src/corpus/xlsx_to_text.py:159  raiz  ->  español: raiz
+  src/hooks/detect_unbounded_wait.py:63  AVISO  ->  español: aviso
+  src/session/generate_bin.py:658  partes  ->  español: partes
+  src/session/generate_bin.py:659  indice  ->  español: indice
+  src/session/kernel_modules.py:120  numero  ->  español: numero
+  src/session/kernel_modules.py:121  indicios  ->  español: indicios
+  src/session/kernel_modules.py:149  informe  ->  español: informe
+  src/session/kernel_modules.py:130  imagen  ->  español: imagen
+  src/session/kernel_modules.py:130  longitud  ->  español: longitud
+  src/session/kernel_modules.py:130  parametros  ->  español: parametros
+  src/session/kernel_modules.py:162  ruta  ->  español: ruta
+  src/session/kernel_modules.py:162  existe  ->  español: existe
+  src/session/session_restart.py:110  salida  ->  español: salida
+  src/session/session_restart.py:167  nombre  ->  español: nombre
+  src/session/session_restart.py:167  valor  ->  español: valor
+  src/task/task_ids.py:618  sin_cita  ->  español: cita, sin
+  src/task/task_ids.py:654  capa_fila  ->  español: capa, fila
+  src/task/task_ids.py:652  existente  ->  español: existente
+  src/task/task_ids.py:652  capa_previa  ->  español: capa, previa
+  src/task/task_ids.py:657  previo  ->  español: previo
+  src/typescript/emit_declarations.py:291  recolectar  ->  español: recolectar
+  src/typescript/emit_declarations.py:159  cubos  ->  español: cubos
+  src/typescript/emit_declarations.py:289  destinos  ->  español: destinos
+  src/typescript/emit_declarations.py:308  clave  ->  español: clave
+  src/typescript/emit_declarations.py:315  salida  ->  español: salida
+  src/typescript/emit_declarations.py:336  directorios  ->  español: directorios
+  src/typescript/emit_declarations.py:337  destino  ->  español: destino
+  src/typescript/emit_declarations.py:359  raiz  ->  español: raiz
+  src/typescript/emit_declarations.py:558  ruta  ->  español: ruta
+  src/typescript/emit_declarations.py:580  relativa  ->  español: relativa
+  src/typescript/emit_declarations.py:605  fuentes  ->  español: fuentes
+  src/typescript/emit_declarations.py:610  fuente  ->  español: fuente
+  src/typescript/emit_declarations.py:652  candidatas  ->  español: candidatas
+  src/typescript/emit_declarations.py:657  candidata  ->  español: candidata
+  src/typescript/emit_declarations.py:695  ausentes  ->  español: ausentes
+  src/typescript/emit_declarations.py:744  desconocidas  ->  español: desconocidas
+  src/typescript/emit_declarations.py:161  crudo  ->  español: crudo
+  src/typescript/emit_declarations.py:291  valor  ->  español: valor
+  src/typescript/emit_declarations.py:338  directorio  ->  español: directorio
+  src/typescript/emit_declarations.py:365  cubiertos  ->  español: cubiertos
+  src/typescript/emit_declarations.py:501  dentro  ->  español: dentro
+  src/typescript/emit_declarations.py:611  comodin  ->  español: comodin
+  src/typescript/emit_declarations.py:623  sufijo  ->  español: sufijo
+  src/typescript/emit_declarations.py:626  medio  ->  español: medio
+  src/typescript/emit_declarations.py:701  declaracion  ->  español: declaracion
+  src/typescript/emit_declarations.py:510  detalle  ->  español: detalle
+  src/typescript/emit_declarations.py:622  prefijo  ->  español: prefijo
+  src/typescript/emit_declarations.py:303  anidado  ->  español: anidado
+  src/verify/check_package_typecheck.py:56  congelado  ->  español: congelado
+  src/verify/check_package_typecheck.py:59  linea  ->  español: linea
+  src/verify/check_package_typecheck.py:109  resultados  ->  español: resultados
+  src/verify/check_package_typecheck.py:116  sin_medir  ->  español: medir, sin
+  src/verify/check_package_typecheck.py:117  resultado  ->  español: resultado
+  src/verify/check_package_typecheck.py:134  medidos  ->  español: medidos
+  src/verify/check_package_typecheck.py:115  empeoran  ->  español: empeoran
+  src/verify/check_package_typecheck.py:115  propios  ->  español: propios
+  src/verify/check_package_typecheck.py:122  techo  ->  español: techo
+  src/verify/check_package_typecheck.py:123  marca  ->  español: marca
+  src/verify/check_package_typecheck.py:139  lineas  ->  español: lineas
+  src/verify/check_package_typecheck.py:63  nombre  ->  español: nombre
+  src/verify/check_package_typecheck.py:63  cifra  ->  español: cifra
+  src/verify/check_package_typecheck.py:163  ahora  ->  español: ahora
+  src/verify/check_rst_toctree.py:154  huerfanos  ->  español: huerfanos
+  src/verify/tsc_schedule.py:59  posterior  ->  español: posterior
+  tests/corpus/test_archive_extract.py:151  raiz  ->  español: raiz
+  tests/corpus/test_archive_extract.py:152  origen  ->  español: origen
+  tests/corpus/test_archive_extract.py:122  previo  ->  español: previo
+  tests/corpus/test_backfill_store_destination.py:39  test_agent_store_claude_dir_desvia_la_escritura  ->  español: desvia, escritura
+  tests/corpus/test_cfb.py:155  Grande  ->  español: grande
+  tests/corpus/test_cfb.py:188  Chico  ->  español: chico
+  tests/corpus/test_doc_to_text.py:137  test_7_a_CLX_with_properties_in_front_does_not_confuse  ->  español: clx
+  tests/corpus/test_doc_to_text.py:43  IDX_FC_CLX  ->  español: clx
+  tests/corpus/test_doc_to_text.py:59  comprimida  ->  español: comprimida
+  tests/corpus/test_doc_to_text.py:71  clx  ->  español: clx
+  tests/corpus/test_docx_charts.py:77  pares  ->  español: pares
+  tests/corpus/test_docx_charts.py:77  declarados  ->  español: declarados
+  tests/corpus/test_ooxml.py:65  _paquete  ->  español: paquete
+  tests/corpus/test_term_census.py:64  test_4_the_ENIE_does_not_fold_into_the_ENE  ->  español: ene, enie
+  tests/corpus/test_term_census.py:153  entrada  ->  español: entrada
+  tests/corpus/test_term_census.py:57  credito  ->  español: credito
+  tests/corpus/test_term_census.py:69  ano  ->  español: ano
+  tests/corpus/test_term_census.py:118  digitaliza  ->  español: digitaliza
+  tests/corpus/test_term_census.py:130  nada  ->  español: nada
+  tests/corpus/test_xls_to_text.py:32  partir  ->  español: partir
+  tests/corpus/test_xls_to_text.py:156  Otro  ->  español: otro
+  tests/hooks/test_detect_unbounded_wait.py:66  avisa  ->  español: avisa
+  tests/hooks/test_detect_unbounded_wait.py:72  SIN_COTA  ->  español: cota, sin
+  tests/hooks/test_detect_unbounded_wait.py:103  texto  ->  español: texto
+  tests/meta/test_runner_reach.py:117  LENGUA  ->  español: lengua
+  tests/paths/test_consumer_strict_optin.py:46  AQUI  ->  español: aqui
+  tests/paths/test_consumer_strict_optin.py:77  test_sin_la_declaracion_la_conducta_es_la_de_siempre  ->  español: conducta, de, declaracion, siempre, sin
+  tests/paths/test_consumer_strict_optin.py:88  test_sin_la_declaracion_lo_relativo_se_resuelve_contra_el_cwd  ->  español: contra, declaracion, el, relativo, resuelve, sin
+  tests/paths/test_consumer_strict_optin.py:104  test_declarada_rehusa_cuando_el_partida_es_el_proveedor  ->  español: cuando, declarada, el, partida, proveedor, rehusa
+  tests/paths/test_consumer_strict_optin.py:116  test_declarada_no_rehusa_sin_punto_de_partida  ->  español: de, declarada, partida, punto, rehusa, sin
+  tests/paths/test_consumer_strict_optin.py:124  test_declarada_resuelve_lo_relativo_contra_el_contenedor  ->  español: contenedor, contra, declarada, el, relativo, resuelve
+  tests/paths/test_consumer_strict_optin.py:138  test_la_absoluta_sigue_mandando_con_o_sin_declaracion  ->  español: absoluta, con, declaracion, mandando, sigue, sin
+  tests/paths/test_consumer_strict_optin.py:146  test_los_valores_que_apagan_la_clausula  ->  español: apagan, clausula, los, que, valores
+  tests/paths/test_consumer_strict_optin.py:160  test_los_valores_que_la_encienden  ->  español: encienden, los, que, valores
+  tests/paths/test_consumer_strict_optin.py:154  apagado  ->  español: apagado
+  tests/paths/test_consumer_strict_optin.py:162  encendido  ->  español: encendido
+  tests/paths/test_declaration_port.py:164  test_la_familia_por_clon_cae_al_proveedor  ->  español: cae, clon, familia, por, proveedor
+  tests/paths/test_declaration_port.py:167  test_el_consumidor_gana_sobre_el_proveedor  ->  español: consumidor, el, gana, proveedor, sobre
+  tests/paths/test_declaration_port.py:170  test_el_proceso_gana_sobre_las_dos  ->  español: dos, el, gana, las, proceso, sobre
+  tests/paths/test_declaration_port.py:174  test_el_hogar_propio_del_proveedor_no_se_filtra  ->  español: del, el, filtra, hogar, propio, proveedor
+  tests/paths/test_declaration_port.py:178  test_la_familia_de_otro_clon_no_se_filtra  ->  español: clon, de, familia, filtra, otro
+  tests/paths/test_declaration_port.py:181  test_sin_env_del_proveedor_no_hay_respaldo_ni_error  ->  español: del, hay, proveedor, respaldo, sin
+  tests/paths/test_declaration_port.py:185  test_sin_raiz_declarada_el_proveedor_es_el_hermano_del_clon  ->  español: clon, declarada, del, el, hermano, proveedor, raiz, sin
+  tests/paths/test_declaration_port.py:196  test_un_arbol_sin_proveedor_hermano_no_hereda_el_del_host  ->  español: arbol, del, el, hereda, hermano, proveedor, sin
+  tests/paths/test_declaration_port.py:202  test_env_file_declarado_apaga_la_capa_del_proveedor  ->  español: apaga, capa, declarado, del, proveedor
+  tests/paths/test_declaration_port.py:207  test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor  ->  español: clon, consumidor, desde, el, familia, por, positivo
+  tests/session/test_generate_bin.py:233  falso  ->  español: falso
+  tests/session/test_generate_bin.py:313  culpables  ->  español: culpables
+  tests/session/test_generate_bin.py:970  guarda  ->  español: guarda
+  tests/session/test_generate_bin.py:974  suelto  ->  español: suelto
+  tests/session/test_generate_bin.py:995  familia  ->  español: familia
+  tests/session/test_generate_bin.py:1000  hallados  ->  español: hallados
+  tests/session/test_generate_bin.py:1035  dependencia  ->  español: dependencia
+  tests/session/test_generate_bin.py:1070  faltan  ->  español: faltan
+  tests/session/test_generate_bin.py:1081  fugas  ->  español: fugas
+  tests/session/test_generate_bin.py:177  origen  ->  español: origen
+  tests/session/test_generate_bin.py:313  cuerpo  ->  español: cuerpo
+  tests/session/test_job_runs.py:166  hogar  ->  español: hogar
+  tests/session/test_job_runs.py:169  primera  ->  español: primera
+  tests/session/test_job_runs.py:175  lineas  ->  español: lineas
+  tests/session/test_job_runs.py:177  asentadas  ->  español: asentadas
+  tests/session/test_jobs_home.py:168  previo_cwd  ->  español: previo
+  tests/session/test_jobs_home.py:171  previo_env_file  ->  español: previo
+  tests/session/test_kernel_module_support.py:52  test_el_numero_de_llamada_es_por_arquitectura  ->  español: arquitectura, de, el, llamada, numero, por
+  tests/session/test_kernel_module_support.py:67  test_ENOSYS_es_la_unica_ausencia  ->  español: ausencia, unica
+  tests/session/test_kernel_module_support.py:90  test_los_archivos_no_deciden_nada  ->  español: archivos, deciden, los, nada
+  tests/session/test_kernel_module_support.py:109  test_la_sonda_no_puede_cargar_nada  ->  español: cargar, nada, puede, sonda
+  tests/session/test_kernel_module_support.py:121  test_el_instrumento_puede_decir_algo_QUE_NO_sea_ENOSYS  ->  español: algo, decir, el, instrumento, puede, que, sea
+  tests/session/test_kernel_module_support.py:167  test_la_familia_entera_responde_igual  ->  español: entera, familia, igual, responde
+  tests/session/test_kernel_module_support.py:33  AQUI  ->  español: aqui
+  tests/session/test_kernel_module_support.py:34  RAIZ  ->  español: raiz
+  tests/session/test_kernel_module_support.py:100  informe  ->  español: informe
+  tests/session/test_kernel_module_support.py:146  previo  ->  español: previo
+  tests/session/test_kernel_module_support.py:187  hermana  ->  español: hermana
+  tests/session/test_kernel_module_support.py:188  sujeto  ->  español: sujeto
+  tests/session/test_kernel_module_support.py:151  ausente  ->  español: ausente
+  tests/session/test_session_restart.py:75  rama  ->  español: rama
+  tests/session/test_session_restart.py:100  sin_disparar  ->  español: disparar, sin
+  tests/session/test_session_restart.py:105  veredicto  ->  español: veredicto
+  tests/session/test_session_restart.py:112  clave  ->  español: clave
+  tests/session/test_session_restart.py:119  disparando  ->  español: disparando
+  tests/session/test_session_restart.py:122  otro  ->  español: otro
+  tests/session/test_session_restart.py:131  raiz  ->  español: raiz
+  tests/session/test_session_restart.py:132  viejo  ->  español: viejo
+  tests/session/test_session_restart.py:133  nuevo_dir  ->  español: nuevo
+  tests/session/test_session_restart.py:144  elegido  ->  español: elegido
+  tests/session/test_session_restart.py:155  primero  ->  español: primero
+  tests/session/test_session_restart.py:165  solo_mencion  ->  español: mencion
+  tests/session/test_session_restart.py:175  disparo_real  ->  español: disparo
+  tests/session/test_session_restart.py:198  suelto  ->  español: suelto
+  tests/session/test_session_restart.py:205  mencion_sin_clave  ->  español: clave, mencion, sin
+  tests/session/test_session_restart.py:222  sin_archivo  ->  español: archivo, sin
+  tests/session/test_session_restart.py:228  con_archivo  ->  español: archivo, con
+  tests/session/test_transcripts_home.py:52  _escribir  ->  español: escribir
+  tests/session/test_transcripts_home.py:58  test_el_hogar_se_declara  ->  español: declara, el, hogar
+  tests/session/test_transcripts_home.py:80  test_sin_declaracion_se_compone_y_se_anota  ->  español: anota, compone, declaracion, sin
+  tests/session/test_transcripts_home.py:107  test_una_sesion_puede_tener_VARIOS_transcripts  ->  español: puede, sesion, tener, una, varios
+  tests/session/test_transcripts_home.py:130  test_el_desempate_es_uno_solo  ->  español: desempate, el, uno
+  tests/session/test_transcripts_home.py:149  test_sin_transcript_no_compone_una_ruta  ->  español: compone, ruta, sin, una
+  tests/session/test_transcripts_home.py:164  test_los_dos_consumidores_reales_coinciden  ->  español: coinciden, consumidores, dos, los, reales
+  tests/session/test_transcripts_home.py:237  test_ningun_modulo_compone_el_hogar_por_su_cuenta  ->  español: compone, cuenta, el, hogar, ningun, por
+  tests/session/test_transcripts_home.py:33  AQUI  ->  español: aqui
+  tests/session/test_transcripts_home.py:34  RAIZ  ->  español: raiz
+  tests/session/test_transcripts_home.py:65  declarado  ->  español: declarado
+  tests/session/test_transcripts_home.py:67  previo  ->  español: previo
+  tests/session/test_transcripts_home.py:118  hogar  ->  español: hogar
+  tests/session/test_transcripts_home.py:120  grande  ->  español: grande
+  tests/session/test_transcripts_home.py:121  chico  ->  español: chico
+  tests/session/test_transcripts_home.py:123  hallados  ->  español: hallados
+  tests/session/test_transcripts_home.py:142  elegido  ->  español: elegido
+  tests/session/test_transcripts_home.py:220  ocupadas  ->  español: ocupadas
+  tests/session/test_transcripts_home.py:221  nodo  ->  español: nodo
+  tests/session/test_transcripts_home.py:254  listado  ->  español: listado
+  tests/session/test_transcripts_home.py:257  archivos  ->  español: archivos
+  tests/session/test_transcripts_home.py:261  forma  ->  español: forma
+  tests/session/test_transcripts_home.py:264  duenos  ->  español: duenos
+  tests/session/test_transcripts_home.py:265  culpables  ->  español: culpables
+  tests/session/test_transcripts_home.py:266  relativo  ->  español: relativo
+  tests/session/test_transcripts_home.py:94  compuesto  ->  español: compuesto
+  tests/session/test_transcripts_home.py:98  anotadas  ->  español: anotadas
+  tests/session/test_transcripts_home.py:184  previo_dir  ->  español: previo
+  tests/session/test_transcripts_home.py:185  previo_sid  ->  español: previo
+  tests/session/test_transcripts_home.py:217  arbol  ->  español: arbol
+  tests/session/test_transcripts_home.py:225  cuerpo  ->  español: cuerpo
+  tests/session/test_transcripts_home.py:228  primero  ->  español: primero
+  tests/session/test_transcripts_home.py:269  texto  ->  español: texto
+  tests/session/test_transcripts_home.py:274  prosa  ->  español: prosa
+  tests/session/test_transcripts_home.py:189  uno  ->  español: uno
+  tests/session/test_transcripts_home.py:190  otro  ->  español: otro
+  tests/session/test_transcripts_home.py:257  linea  ->  español: linea
+  tests/session/test_transcripts_home.py:275  numero  ->  español: numero
+  tests/session/test_transcripts_home.py:199  clave  ->  español: clave
+  tests/session/test_transcripts_home.py:199  valor  ->  español: valor
+  tests/task/test_task_ids.py:382  filas3  ->  español: filas
+  tests/typescript/test_emit_declarations.py:178  enlace  ->  español: enlace
+  tests/typescript/test_emit_declarations.py:324  repuntado  ->  español: repuntado
+  tests/typescript/test_emit_declarations.py:591  forma  ->  español: forma
+  tests/typescript/test_emit_declarations.py:233  raiz  ->  español: raiz
+  tests/typescript/test_emit_declarations.py:295  derrame  ->  español: derrame
+  tests/typescript/test_emit_declarations.py:357  resultado  ->  español: resultado
+  tests/typescript/test_emit_declarations.py:359  fuera  ->  español: fuera
+  tests/typescript/test_emit_declarations.py:394  destinos  ->  español: destinos
+  tests/typescript/test_emit_declarations.py:396  ausentes  ->  español: ausentes
+  tests/typescript/test_emit_declarations.py:437  antes  ->  español: antes
+  tests/typescript/test_emit_declarations.py:473  emitidas  ->  español: emitidas
+  tests/typescript/test_emit_declarations.py:576  sobrantes  ->  español: sobrantes
+  tests/typescript/test_emit_declarations.py:594  consumidor  ->  español: consumidor
+  tests/typescript/test_emit_declarations.py:595  medido  ->  español: medido
+  tests/verify/test_check_rst_toctree.py:74  huerfanos  ->  español: huerfanos
+  tests/verify/test_package_typecheck.py:42  paquete  ->  español: paquete
+  tests/verify/test_package_typecheck.py:43  salida  ->  español: salida
+  tests/verify/test_package_typecheck.py:50  cubos  ->  español: cubos
+  tests/verify/test_package_typecheck.py:64  sin_medir  ->  español: medir, sin
+  tests/verify/test_package_typecheck.py:84  condiciones  ->  español: condiciones
+  tests/verify/test_package_typecheck.py:88  ya_repuntado  ->  español: repuntado
+  tests/verify/test_package_typecheck.py:101  entorno  ->  español: entorno
+  tests/verify/test_package_typecheck.py:102  guion  ->  español: guion
+  tests/verify/test_package_typecheck.py:104  vacio  ->  español: vacio
+  tests/verify/test_package_typecheck.py:106  corrida  ->  español: corrida
+254 identificador(es) en español (alcance medido: 492 archivo(s) .py bajo .claude/scripts/src/tests/addons/provisioners/utils; 2117 congelado(s) en baseline)
+  Cota inferior: ciega a la palabra que existe en los dos idiomas (total, final, normal).
+  Traducir la palabra, no buscarle un sinónimo: Modelo -> Model, _Base se queda _Base.

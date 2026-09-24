@@ -1,0 +1,1 @@
+function jTs(e){if(typeof e!=="string")return;let n=e.toLowerCase();return Object.hasOwn(YZn,n)?YZn[n]:void 0}

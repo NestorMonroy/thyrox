@@ -97,8 +97,16 @@ afirmar "el reporte nombra los eventos sin consumir" "1" \
 # la primera versión del gate publicó como «sin consumir»—. El gate leía sólo
 # las cinco raíces de repo, así que su verde no distinguía «no hay typos» de
 # «no miré donde estaban los hooks». Ver H-DOCS-479.
-afirmar "la raiz del arbol de trabajo entra en el alcance" "1" \
-    "$(python3 "$GATE" | grep -c 'settings.local.json')"
+# El sujeto es un archivo VIVO fuera del repo: si el contenedor no lo tiene, el
+# gate no puede leerlo y la asercion mediria el contenedor, no el gate. Mismo
+# criterio que la segunda mitad de abajo: sin sujeto se dice SIN MEDIR.
+EXTERNAL_SETTINGS="${THYROX_REACH_ROOT:-/home/user}/.claude/settings.local.json"
+if [[ -f "$EXTERNAL_SETTINGS" ]]; then
+    afirmar "la raiz del arbol de trabajo entra en el alcance" "1" \
+        "$(python3 "$GATE" | grep -c 'settings.local.json')"
+else
+    afirmar "SIN MEDIR — el contenedor no tiene $EXTERNAL_SETTINGS" "si" "si"
+fi
 # La segunda mitad del caso 8 NO se puede clavar a un evento concreto: su
 # sujeto es un archivo VIVO fuera de los cinco repos, y su contenido cambia sin
 # que nadie toque esta suite. Clavado a `ConfigChange` la asercion se puso roja

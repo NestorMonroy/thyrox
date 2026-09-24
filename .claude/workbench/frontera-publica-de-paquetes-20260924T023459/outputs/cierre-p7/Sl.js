@@ -1,0 +1,1 @@
+function Sl(e){return e.map((n)=>{if(typeof n.message.content==="string")return{...n,message:{...n.message,content:Ca(n.message.content)}};else if(Array.isArray(n.message.content)){let r=n.message.content.map((s)=>{if(s.type==="text")return{...s,text:Ca(s.text)};return s});return{...n,message:{...n.message,content:r}}}return n})}

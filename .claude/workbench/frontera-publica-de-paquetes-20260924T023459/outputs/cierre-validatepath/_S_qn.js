@@ -1,0 +1,1 @@
+function $qn(e,n){if(!tt.isSandboxingEnabled())return!1;let{allowOnly:r,denyWithinAllow:s}=tt.getFsWriteConfig(),g=n??On(e),h=r.flatMap(Vrn),y=s.flatMap(Vrn);return g.every((w)=>{for(let O of y)if(Ld(w,O))return!1;return h.some((O)=>Ld(w,O,{caseFold:!0,uncShapeParity:!0}))})}

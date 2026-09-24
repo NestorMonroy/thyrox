@@ -98,10 +98,33 @@ TREE_ROOT = str(reach.tree_root())
 #: Donde se buscan los simbolos declarados: el arbol de la aplicacion. La
 #: referencia queda fuera a proposito — que un simbolo exista en la fuente no
 #: dice nada sobre si esta portado.
-CODE_ROOTS = (
-    os.path.join(str(reach.root('api')), 'src'),
-    os.path.join(str(reach.root('api')), 'addons'),
-)
+#:
+#: Se resuelve al LEERLO, no al importar (PEP 562, la forma de
+#: ``reach.REACH_ROOTS``). Resuelto en el import, un arbol sin el clon de la
+#: aplicacion reventaba con ``KeyError`` antes de medir nada: el gate publicaba
+#: una traza —un rojo— donde lo cierto era «no hay con que medir».
+CODE_ROOT_NAME = 'api'
+
+
+class CodeRootMissing(LookupError):
+    """La raiz de la aplicacion no esta en el roster: no hay simbolos que indexar."""
+
+
+def code_roots():
+    try:
+        base = str(reach.root(CODE_ROOT_NAME))
+    except KeyError as exc:
+        raise CodeRootMissing(
+            f'la raiz de la aplicacion {CODE_ROOT_NAME!r} no esta en el arbol '
+            f'({exc.args[0]}). NO se emite un veredicto: sin su codigo, toda '
+            f'premisa se leeria como firme.') from None
+    return (os.path.join(base, 'src'), os.path.join(base, 'addons'))
+
+
+def __getattr__(name):
+    if name == 'CODE_ROOTS':
+        return code_roots()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 #: Raíces contra las que se resuelve una ruta citada en la ficha.
 #:
@@ -400,7 +423,11 @@ def main():
         print(f'verificar-premisa: sin tareas en {tasks_dir}')
         return 0
 
-    symbols, files = build_symbol_index(CODE_ROOTS)
+    try:
+        symbols, files = build_symbol_index(code_roots())
+    except CodeRootMissing as exc:
+        print(f'verificar-premisa: REHUSA — {exc}', file=sys.stderr)
+        return 2
 
     if args.ids:
         selected = [i for i in args.ids if i in tasks]

@@ -1,0 +1,1 @@
+function PEe(e){let n=e.split(M()==="windows"?/[\\/]/:"/"),r=!1;for(let s of n){if(s===""||s===".")continue;if(s===".."){if(r)return!0}else r=!0}return!1}

@@ -58,6 +58,18 @@ cat > "$TMP/fichas/2.json" <<'JSON'
  "description": "Otra descripcion sin señal de re-encuadre."}
 JSON
 
+# El detector indexa el clon de la aplicacion. Sin el, el gate rehusa con 2 y
+# es lo unico medible: el resto de casos contaria su ausencia como fallo.
+if ! python3 -c "from paths import reach; reach.root('api')" >/dev/null 2>&1; then
+    echo "== sin el clon de la aplicacion: el gate REHUSA"
+    SIN_CLON="$(python3 "$SUT" --tasks-dir "$TMP/fichas" --baseline "$TMP/base.json" 2>&1)"
+    comprobar "exit 2 sin el clon de la aplicacion" "2" "$?"
+    comprobar "nombra la raiz que falta" "si" \
+        "$(grep -q "'api'" <<<"$SIN_CLON" && echo si || echo no)"
+    echo "SIN MEDIR: falta el clon de la aplicacion"
+    [[ "${FALLO:-0}" -eq 0 ]] && exit 2 || exit 1
+fi
+
 echo "== primera ejecucion sin baseline: el gate REHUSA"
 #
 # Publicar «0 cambios» aqui seria el verde que no discrimina: ni un lector ni

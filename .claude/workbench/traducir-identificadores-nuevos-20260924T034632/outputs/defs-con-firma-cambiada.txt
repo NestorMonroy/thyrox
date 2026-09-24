@@ -1,0 +1,17 @@
+_chart_title
+_open
+_sevenz_members
+_visible_series
+blocks
+charts
+extract
+extract_with_library
+extract_with_pdftotext
+kind
+members
+open_compound
+open_package
+raw_text
+read_rows
+rows
+sheets

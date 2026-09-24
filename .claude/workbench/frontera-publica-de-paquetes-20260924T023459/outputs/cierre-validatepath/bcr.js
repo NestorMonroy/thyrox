@@ -1,0 +1,1 @@
+function bcr(){return e.getStore()?.cwd??AR()}

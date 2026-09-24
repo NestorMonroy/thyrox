@@ -1,0 +1,1 @@
+function Uu(){let e=Cj();if(e.trustedSymlinkEquivalences!==void 0)return e.trustedSymlinkEquivalences;let n=[["/private/tmp","/tmp"],["/private/var","/var"],["/private/etc","/etc"],["/usr/bin","/bin"],["/usr/lib","/lib"],["/usr/sbin","/sbin"]],r=new Map,s=le();for(let[g,h]of n)try{if(s.realpathSync(h)===g)r.set(g,h)}catch{}return e.trustedSymlinkEquivalences=r,r}

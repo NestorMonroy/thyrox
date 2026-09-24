@@ -1,0 +1,29 @@
+Close the Python and shell reds of the last full run
+
+Twelve suites were red, and most of them for one reason: this session's
+tree has only kaupamex-docs, and the suites or gates assumed the other
+clones. None of them changes what a gate measures; each makes absence a
+stated outcome instead of a failure.
+
+- verificar_premisa resolved the application root at import, so without
+  kaupamex-api it died with a KeyError: a traceback read as red. The
+  root is now resolved lazily and a missing one is refused with exit 2,
+  and check_premise_drift and the pipeline pass the refusal through.
+- toolchain.sh dropped the last line of `reach --paths`, which comes
+  without a trailing newline; with a one-root roster the consumer
+  selector saw nothing. Annulled, exactly the consumer case falls.
+- test-gitattributes seeds five synthetic repos and now declares that
+  roster; the gate had been deriving it from the real tree.
+- Suites whose subject is a clone or file this container lacks
+  (censo, eventos-hook, hook-script-token, verificar-premisa,
+  premise-drift) derive it from the roster and say SIN MEDIR when it is
+  absent. session_restart builds its own repo instead of reading
+  another session's clone.
+- test_pre_commit_hook copies check_bench_untracked.py, which the hook
+  now invokes; package_root_resolution accepts the ratchet's success
+  message.
+- Fifteen parents[N] sites that entered after the path-arithmetic
+  baseline now locate the provider with reach.thyrox_root(); the
+  sys.path bootstrap lines, which are the admitted form, stay.
+
+The tsc ratchet baseline drops from 2387 to 2375.

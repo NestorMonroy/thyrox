@@ -35,7 +35,11 @@ PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
 # eso: sin el, el commit semilla de ESTA suite fallaba y sus seis casos
 # morian en setUp. Medido: 6 de 6 rojos por deriva del fixture, no por el
 # contrato que dicen medir.
-UNCHECKED_GATES = ('check-cross-model-read.sh',)
+UNCHECKED_GATES = ('check-cross-model-read.sh', 'check_bench_untracked.py')
+# `check_bench_untracked.py` entro al hook despues (la guarda del banco a medio
+# commitear) con la misma forma: se invoca sin comprobar que exista. Sin copia,
+# el commit semilla moria con `can't open file` y los casos caian en setUp —
+# la misma deriva del fixture que el parrafo de arriba ya habia medido.
 # El gate de identidad. Viaja al fixture porque el hook lo invoca en todo
 # commit; su ausencia pondria rojos los casos que no miden identidad.
 IDENTITY_GATE = 'commit_identity.py'

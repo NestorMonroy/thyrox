@@ -46,6 +46,7 @@ import zipfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import docx_to_text  # noqa: E402
+from paths import reach  # noqa: E402
 
 W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"'
 PKG = 'xmlns="http://schemas.openxmlformats.org/package/2006/relationships"'
@@ -362,7 +363,7 @@ class TestTheOrder(unittest.TestCase):
 
 class TestLineSurface(unittest.TestCase):
     def _run(self, *args):
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+        wrapper = (reach.thyrox_root()
                       / "bin" / "docx_to_text")
         return subprocess.run(["bash", str(wrapper), *args],
                               capture_output=True, text=True)

@@ -1,0 +1,63 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 95 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 95 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 95 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+[feature/thyrox-l6 d3673b1b] Translate identifiers that entered after the baseline
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 95 files changed, 3522 insertions(+), 702 deletions(-)
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/README.md
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/manifest.jsonl
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/aplicado.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/gate-antes.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/joblog-subconjunto.tsv
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_agents_test_task_status_vocabulary.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_archive_extract.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_backfill_store_destination.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_bie_series.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_cfb.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_doc_to_text.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_docx_charts.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_docx_to_text.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_ooxml.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_term_census.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_xls_to_text.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_corpus_test_xlsx_to_text.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_docs_test_scaffold_initiative.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_hooks_test_detect_unbounded_wait.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_lib_test-toolchain-sh.sh.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_meta_test_runner_reach.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_paths_test_consumer_strict_optin.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_paths_test_declaration_port.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_generate_bin.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_job_runs.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_jobs_home.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_kernel_module_support.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_session_restart.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_session_test_transcripts_home.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_task_test_board_sync.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_task_test_census_open_tasks.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_task_test_layer_axis.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_task_test_task_ids.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_typescript_test_emit_declarations.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test-script-naming.sh.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_batch_verification.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_check_rst_toctree.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_identifier_language.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_identifier_language_baseline.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_identifier_language_corpus.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_package_root_resolution.sh.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_package_typecheck.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/log-tests_verify_test_tsc_schedule.py.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/modulos.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/plan-seco-1.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/plan-seco-2.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/plan-seco-3.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/outputs/subconjunto.txt
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/probes/lexicon_es_en.py
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/probes/overrides.py
+ create mode 100644 .claude/workbench/traducir-identificadores-nuevos-20260924T034632/probes/rename_identifiers.py
+ create mode 100755 bin/close_exports
+ create mode 100755 bin/run_ts_isolated
+__BG_EXIT__=0

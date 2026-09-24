@@ -1,0 +1,1 @@
+function Lzt(e){let n=cYr(e);if(n<=1)return"";return`This memory is ${n} days old. `+"Memories are point-in-time observations, not live state \u2014 "+"claims about code behavior or file:line citations may be outdated. Verify against current code before asserting as fact."}

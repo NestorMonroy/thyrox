@@ -61,6 +61,19 @@ if not DECL.is_file():
           f"que el censo arranca.")
     raise SystemExit(2)
 
+# Los dos sujetos del censo son clones hermanos que la sesión puede no tener:
+# el repo censado y el árbol de referencia. Sin ellos el censo rehúsa con 2
+# —correcto— y leer ese 2 como rojo publicaría «el censo falla» donde lo
+# cierto es «no había con qué medir».
+CENSADO = DOMINIO["THYROX_CENSUS_ROOT"]
+AUSENTES = [] if CENSADO in reach.reach_roots() else [f"la raíz {CENSADO!r}"]
+AUSENTES += [] if Path(REFERENCIA).is_dir() else [REFERENCIA]
+if AUSENTES:
+    print(f"REHÚSA — faltan los sujetos del censo: {', '.join(AUSENTES)}. "
+          f"Sin ellos el censo no puede medir, y un rojo aquí no diría nada "
+          f"del censo.")
+    raise SystemExit(2)
+
 
 def run(*args: str, extra_roots: str | None = REFERENCIA) -> tuple[int, str]:
     entorno = dict(os.environ)

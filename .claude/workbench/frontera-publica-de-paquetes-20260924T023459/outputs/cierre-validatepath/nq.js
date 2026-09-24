@@ -1,0 +1,1 @@
+function nq(e,n=Ns()){if(!n.endsWith(Qi)||kB(n.replace(/[/\\]+$/,"")))return!1;let r=ic(e);if(!r.startsWith(n))return!1;return!tq(r,n)}

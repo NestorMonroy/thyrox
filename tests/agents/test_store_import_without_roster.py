@@ -22,8 +22,9 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+from paths import reach  # noqa: E402
 
-THYROX = pathlib.Path(__file__).resolve().parents[2]
+THYROX = reach.thyrox_root()
 passed = failed = 0
 
 

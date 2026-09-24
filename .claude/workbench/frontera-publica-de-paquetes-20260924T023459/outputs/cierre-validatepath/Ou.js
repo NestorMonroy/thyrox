@@ -1,0 +1,1 @@
+function Ou(e,n=ne()){let r=rc(n),s=Ee(e);return s===r||s.startsWith(r+oe)}

@@ -1,0 +1,1 @@
+function PYe(e){let n=cc(e),r=dc(n);return r!==null&&!tq(n,r)}

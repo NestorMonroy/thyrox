@@ -38,6 +38,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import term_census  # noqa: E402
+from paths import reach  # noqa: E402
 
 
 class TestTheAccent(unittest.TestCase):
@@ -151,7 +152,7 @@ class TestTheOverlap(unittest.TestCase):
 
 class TestLineSurface(unittest.TestCase):
     def _run(self, *args, entry=""):
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+        wrapper = (reach.thyrox_root()
                       / "bin" / "term_census")
         return subprocess.run(["bash", str(wrapper), *args],
                               input=entry, capture_output=True, text=True)

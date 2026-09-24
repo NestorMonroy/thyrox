@@ -1,0 +1,1 @@
+function xm(){return Ee(sk(),"managed-settings.json")}

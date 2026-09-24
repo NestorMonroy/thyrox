@@ -1,0 +1,1 @@
+function j0(e){switch(e){case"projectSettings":return Ee(".claude","settings.json");case"localSettings":return Ee(".claude","settings.local.json")}}

@@ -11,13 +11,15 @@ import pathlib
 import re
 import sys
 
+from paths import reach
+
 #: Los internos que el motor usa y ningún llamador importa: se leen para la
 #: conducta (el ejecutor, el matcher, el plazo de SessionEnd).
 INTERNAL = ["executeHooks", "executeHooksOutsideREPL", "hookMatcherMatches", "parseHookOutput",
             "shouldSkipHookDueToTrust", "hasHookForEvent", "getSessionEndHookDefaultTimeoutMs",
             "SESSION_END_HOOK_TIMEOUT_MS_DEFAULT"]
 
-BIN = pathlib.Path(__file__).resolve().parents[4] / "_references/claude-code-bin/2.1.275/bunfs-root"
+BIN = reach.thyrox_root() / "_references/claude-code-bin/2.1.275/bunfs-root"
 
 
 def main() -> int:

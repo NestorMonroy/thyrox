@@ -96,7 +96,10 @@ function thyrox_toolchain_consumer_root() {
   # Las raices salen del localizador, que es su dueño. Componerlas aqui como
   # `<tree_root>/<prefijo>-<nombre>` codificaria el prefijo por segunda vez, y
   # el prefijo es declarable.
-  while IFS= read -r root; do
+  # `_thyrox_delegate` emite con `printf '%s'` —sin salto final—, y un `read`
+  # sin la segunda condicion descarta la ULTIMA linea. Con varias raices solo
+  # se perdia la ultima; con una sola, el selector no veia ninguna.
+  while IFS= read -r root || [[ -n "$root" ]]; do
     [[ "${root##*[-/]}" == "$name" ]] && { printf '%s' "$root"; return 0; }
   done < <(_thyrox_delegate --paths)
   echo "thyrox_toolchain_consumer_root: ningun clon declarado se llama '$name'" >&2

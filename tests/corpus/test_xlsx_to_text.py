@@ -22,6 +22,7 @@ import zipfile
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import xlsx_to_text  # noqa: E402
+from paths import reach  # noqa: E402
 
 NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"'
 NSR = 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"'
@@ -201,7 +202,7 @@ class TestLineSurface(unittest.TestCase):
         resuelve la raiz y exporta `PYTHONPATH`, «que es justo lo que una
         invocacion por ruta no hace».
         """
-        wrapper = (pathlib.Path(__file__).resolve().parents[2]
+        wrapper = (reach.thyrox_root()
                       / "bin" / "xlsx_to_text")
         return subprocess.run(["bash", str(wrapper), *args],
                               capture_output=True, text=True)

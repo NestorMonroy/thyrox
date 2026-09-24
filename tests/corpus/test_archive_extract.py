@@ -27,6 +27,7 @@ import unittest
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 
 from corpus import archive_extract  # noqa: E402
+from paths import reach  # noqa: E402
 
 
 def _have_sevenz() -> bool:
@@ -233,7 +234,7 @@ class TestZipAndTarWithoutBinary(unittest.TestCase):
 
 class TestLineSurface(unittest.TestCase):
     def _run(self, *args):
-        script = pathlib.Path(__file__).resolve().parents[2] / "src" / "corpus" / "archive_extract.py"
+        script = reach.thyrox_root() / "src" / "corpus" / "archive_extract.py"
         return subprocess.run([sys.executable, str(script), *args],
                               capture_output=True, text=True)
 

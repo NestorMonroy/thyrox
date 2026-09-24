@@ -1,0 +1,1 @@
+function Tvn(e){return e.verifiedSlackHumanTurn===!0&&e.isMeta!==!0&&bv(e.origin)}

@@ -1,0 +1,1 @@
+function xc(){return o(ve(),"projects")}

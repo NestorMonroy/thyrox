@@ -1,0 +1,51 @@
+=== 1. deriva el entorno del transcript ===
+  ok    lo halla
+  ok    sin ninguno, None
+=== 2. deriva repo y rama del arbol ===
+  FALLO el repo sale del remoto
+        esperado=[True] obtenido=[False]
+  FALLO y la rama del HEAD
+        esperado=[True] obtenido=[False]
+  ok    un directorio sin repo da None
+=== 3. REHUSA cuando falta una pieza ===
+  ok    sin entorno -> rehusa
+  ok    y NOMBRA la pieza que falta
+  ok    sin repo -> rehusa
+=== 4. la necesidad sale de los hooks que DISPARARON ===
+  ok    ningun gate del arbol disparo -> hace falta
+  ok    y lo dice con el conteo
+=== 5. la carga util lleva lo que create_session necesita ===
+  ok    lleva environment_id
+  ok    lleva source_url
+  ok    lleva source_revision
+  ok    lleva title
+  ok    lleva prompt
+  ok    la rama viaja como source_revision
+=== 6. ANULACION — con hooks disparando, el veredicto cambia ===
+  ok    ya no hace falta
+  ok    y los veredictos difieren
+=== 7. dos transcripts con el MISMO id: elige por evidencia ===
+  ok    elige el que tiene contenido
+  ok    y de ahi si sale el entorno
+=== 7b. sin ninguno, None y no una ruta inventada ===
+  ok    no compone una ruta
+=== 7c. ANULACION — tomar el primero daria el vacio ===
+  ok    el primero por orden es el vacio
+  ok    y el elegido NO es ese
+=== 8. la mencion en un COMANDO MIO no es un disparo ===
+  ok    mencionarlo en la linea NO cuenta como disparo
+  ok    y el conteo de coincidencias es 0
+=== 8b. y el disparo de verdad SI cuenta ===
+  ok    cuenta el comando, no la linea
+  ok    y lo cuenta una vez
+=== 8c. ANULACION — los dos casos NO dan lo mismo ===
+  ok    la forma con CLAVE gana a la mencionada antes
+  ok    una mencion SIN clave no se toma por declaracion
+  ok    sin transcript NO se afirma que haga falta
+  ok    y se declara que no se midio
+  ok    y el denominador sigue siendo cero
+  ok    con transcript SI se mide
+  ok    y ahi el veredicto es booleano
+  ok    mencion y disparo difieren
+
+OK=33 FAILED=2

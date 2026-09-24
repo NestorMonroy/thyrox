@@ -1,0 +1,1 @@
+function Dd(){let e=Cj();if(e.claudeTempDir!==void 0)return e.claudeTempDir;let n=Pl(),r=le(),s=n;try{s=r.realpathSync(n)}catch{}return e.claudeTempDir=s+Lr,e.claudeTempDir}

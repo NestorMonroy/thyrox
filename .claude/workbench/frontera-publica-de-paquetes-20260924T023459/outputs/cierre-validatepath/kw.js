@@ -1,0 +1,1 @@
+function kw(e){return ile(e??ye())}

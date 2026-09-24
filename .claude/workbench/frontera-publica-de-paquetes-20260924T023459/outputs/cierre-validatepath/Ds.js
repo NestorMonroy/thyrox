@@ -1,0 +1,1 @@
+function Ds(e,n){let r=bee();if(!r)return!1;let s=Ee(e);if(Zr(s)!==Ee(dl()))return!1;let g=qr(s);return g===`${r}.md`||g===`${r}.workshop.md`&&n?.includeWorkshopDoc===!0&&DYe()||g.startsWith(`${r}-agent-`)&&g.endsWith(".md")}

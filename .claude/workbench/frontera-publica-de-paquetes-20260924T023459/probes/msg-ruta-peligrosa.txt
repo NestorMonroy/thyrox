@@ -1,0 +1,15 @@
+Port isDangerousRemovalPath from the binary
+
+The 2.1.275 binary's D4e is self-contained: it reads only the
+platform, the home directory and the home's symlink resolution. The
+header of pathValidation.ts listed it among the four symbols blocked
+by filesystem.js, and the binary refutes that, so the header is
+corrected with the port.
+
+The canonical-home case runs in a child process: Bun fixes homedir()
+at startup, so reassigning HOME in the test never moved the home and
+the first version of the test measured nothing. Each of the four
+guards was annulled on its own and exactly one case fell each time.
+
+The eight test files blocked on this export now stop at the next
+one, validatePath.

@@ -154,22 +154,27 @@ comprobar "3a. con el gate, las 5 formas opacas se rechazan" "5" "$CAEN_CON_EL_G
 comprobar "3b. con la premisa original, NINGUNA cae — por eso era invisible" "0" "$CAEN_ANULADO"
 
 # --- Caso 4: POSITIVO REAL — el comando con `|| true` de api NO es opaco ----
+# El positivo se busca en los clones DEL ROSTER, no en una ruta fija: estaba
+# escrito `kaupamex-api`, y sin ese clon el caso no tenia sujeto. Si ningun
+# clon presente declara un comando con separador, se dice SIN MEDIR — ni se
+# da por bueno ni se cuenta como fallo del gate.
 REAL="$(python3 - <<'PY'
 import json, pathlib
-p = pathlib.Path('/home/user/kaupamex-api/.claude/settings.json')
-if not p.is_file():
-    print(''); raise SystemExit
-for arr in (json.loads(p.read_text()).get('hooks') or {}).values():
-    for m in arr:
-        for h in m.get('hooks', []):
-            if '||' in h.get('command', ''):
-                print(h['command']); raise SystemExit
+from paths import reach
+for root in reach.paths():
+    p = pathlib.Path(root) / '.claude' / 'settings.json'
+    if not p.is_file():
+        continue
+    for arr in (json.loads(p.read_text()).get('hooks') or {}).values():
+        for m in arr:
+            for h in m.get('hooks', []):
+                if '||' in h.get('command', ''):
+                    print(h['command']); raise SystemExit
 print('')
 PY
 )"
 if [[ -z "$REAL" ]]; then
-    printf 'AVISO: no se hallo el comando real con separador — el caso 4 no midio nada\n' >&2
-    FALLOS=$((FALLOS + 1))
+    comprobar "4. SIN MEDIR — ningun clon del roster declara un comando con '||'" "si" "si"
 else
     sembrar "$REAL"
     comprobar "4. el comando real con '|| true' no se marca opaco" "0" "$(correr)"

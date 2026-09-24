@@ -1,0 +1,1 @@
+function js(e){if(a.CLAUDE_CODE_SESSION_KIND!=="bg")return!1;let n=process.env.CLAUDE_JOB_DIR;if(!n)return!1;let r=se(ve(),"jobs")+oe,s=Ee(n);if(!s.startsWith(r))return!1;let g=s+oe+"tmp"+oe;if(!_o(e).startsWith(_o(g)))return!1;return!tq(e,g,yM)}

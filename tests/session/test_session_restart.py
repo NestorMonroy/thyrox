@@ -36,6 +36,7 @@ from __future__ import annotations
 import json
 import pathlib
 import sys
+import subprocess
 import tempfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
@@ -69,11 +70,20 @@ check("lo halla", "env_015bkEjtAHzZXJfrkj66aVCG", sr.environment_of(t))
 check("sin ninguno, None", None, sr.environment_of(transcript_with([{"a": 1}])))
 
 print("=== 2. deriva repo y rama del arbol ===")
-repo = sr.repository_of(pathlib.Path("/home/user/eane-emprendimiento"))
+# Un repo SINTETICO con remoto y rama declarados. La version anterior leia un
+# clon de otra sesion (`/home/user/eane-emprendimiento`): su verde dependia de
+# que el contenedor lo tuviera, y aqui no esta — media el contenedor.
+lab = pathlib.Path(tempfile.mkdtemp())
+subprocess.run(["git", "init", "-q", "-b", "rama-de-prueba", str(lab)], check=True)
+subprocess.run(["git", "-C", str(lab), "remote", "add", "origin",
+                "https://github.com/Owner/Repo-De-Prueba.git"], check=True)
+subprocess.run(["git", "-C", str(lab), "-c", "user.name=t", "-c", "user.email=t@t",
+                "commit", "-q", "--allow-empty", "-m", "seed"], check=True)
+repo = sr.repository_of(lab)
 check("el repo sale del remoto", True,
-      repo is not None and "EANE-Emprendimiento" in repo)
-branch = sr.branch_of(pathlib.Path("/home/user/eane-emprendimiento"))
-check("y la rama del HEAD", True, isinstance(branch, str) and len(branch) > 0)
+      repo is not None and "Owner/Repo-De-Prueba" in repo)
+branch = sr.branch_of(lab)
+check("y la rama del HEAD", "rama-de-prueba", branch)
 check("un directorio sin repo da None", None,
       sr.repository_of(pathlib.Path(tempfile.mkdtemp())))
 

@@ -99,8 +99,13 @@ afirmar "cli-typecheck resuelve su paquete dentro del árbol" propia "$VISTO"
 # el arbol sintetico `$T`, y una ruta relativa desde alli da 127 —el gate no
 # existe— que se leeria como «el gate fallo» en vez de «lo invoque mal».
 SAL="$(cd "$THYROX" && bash "$THYROX/src/verify/check-cli-typecheck.sh" --strict 2>&1)"; COD=$?
+# Con baseline declarado el gate veredicta por TRINQUETE, y ese camino publica
+# el denominador sin el prefijo `OK (…)`. Los dos prueban que midio los dos
+# proyectos; el unico que publica denominador SIN veredicto es el del workspace
+# sin enlazar, y por eso va primero.
 case "$SAL" in
-    *"OK (proyectos medidos: 2 de 2)"*) VISTO=mide ;;
+    *"workspace sin enlazar"*) VISTO=rehusa ;;
+    *"proyectos medidos: 2 de 2"*) VISTO=mide ;;
     *"NO ENCONTRADO"*) VISTO=rehusa ;;
     *) VISTO=otra ;;
 esac
