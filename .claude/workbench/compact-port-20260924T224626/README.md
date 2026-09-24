@@ -28,3 +28,14 @@ que cuenta como presente; la segunda columna es por eso una cota inferior de
 lo ausente.
 
 Orden de porte: de menor a mayor, cada modulo completo en un paso del lazo.
+
+## Pausa por licencia (antes de portar)
+
+Un primer intento copio en bloque el texto de la fuente a `messages.ts` y
+`provider/errors.ts`. La fuente es `UNLICENSED` (`ccnmt: package.json:8`) y su
+`ATTRIBUTION.md` pide revision manual de derechos para reutilizarla; la regla
+de porte completo manda reimplementar el patron y el contrato de lo
+propietario, sin pegar su texto. El intento se revirtio sin commitear. Los
+`outputs/*-plan*.tsv` y `*-applied.tsv` solo listan nombres de simbolos y lineas
+de import, no codigo. La forma del porte (reimplementacion nativa o copia
+autorizada) la decide el ejecutor.

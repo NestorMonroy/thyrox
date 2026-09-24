@@ -1,0 +1,189 @@
+anadido	skillSearchModules
+anadido	autoModeStateModule
+anadido	BRIEF_TOOL_NAME
+anadido	sessionTranscriptModule
+anadido	MAX_MEMORY_LINES
+anadido	MAX_MEMORY_BYTES
+anadido	FileAttachment
+anadido	CompactFileReferenceAttachment
+anadido	PDFReferenceAttachment
+anadido	AlreadyReadFileAttachment
+anadido	AgentMentionAttachment
+anadido	AsyncHookResponseAttachment
+anadido	HookAttachment
+anadido	HookPermissionDecisionAttachment
+anadido	HookSystemMessageAttachment
+anadido	HookCancelledAttachment
+anadido	HookErrorDuringExecutionAttachment
+anadido	HookSuccessAttachment
+anadido	HookNonBlockingErrorAttachment
+anadido	Attachment
+anadido	TeammateMailboxAttachment
+anadido	TeamContextAttachment
+anadido	getAttachments
+anadido	maybe
+anadido	INLINE_NOTIFICATION_MODES
+anadido	getQueuedCommandAttachments
+anadido	getAgentPendingMessageAttachments
+anadido	buildImageContentBlocks
+anadido	getPlanModeAttachmentTurnCount
+anadido	countPlanModeAttachmentsSinceLastExit
+anadido	getPlanModeAttachments
+anadido	getPlanModeExitAttachment
+anadido	getAutoModeAttachmentTurnCount
+anadido	countAutoModeAttachmentsSinceLastExit
+anadido	getAutoModeAttachments
+anadido	getAutoModeExitAttachment
+anadido	getDateChangeAttachments
+anadido	getUltrathinkEffortAttachment
+anadido	getUltraworkRequestAttachment
+anadido	getDeferredToolsDeltaAttachment
+anadido	getAgentListingDeltaAttachment
+anadido	getMcpInstructionsDeltaAttachment
+anadido	getCriticalSystemReminderAttachment
+anadido	getOutputStyleAttachment
+anadido	getSelectedLinesFromIDE
+anadido	isInstructionsMemoryType
+anadido	memoryFilesToAttachments
+anadido	getNestedMemoryAttachmentsForFile
+anadido	getOpenedFileFromIDE
+anadido	processAtMentionedFiles
+anadido	processAgentMentions
+anadido	processMcpResourceAttachments
+anadido	getChangedFiles
+anadido	getNestedMemoryAttachments
+anadido	getRelevantMemoryAttachments
+anadido	collectSurfacedMemories
+anadido	readMemoriesForSurfacing
+anadido	memoryHeader
+anadido	MemoryPrefetch
+anadido	startRelevantMemoryPrefetch
+anadido	ToolResultBlock
+anadido	isToolResultBlock
+anadido	hasToolResultContent
+anadido	collectRecentSuccessfulTools
+anadido	filterDuplicateMemoryAttachments
+anadido	getDynamicSkillAttachments
+anadido	sentSkillNames
+anadido	suppressNext
+anadido	FILTERED_LISTING_MAX
+anadido	filterToBundledAndMcp
+anadido	getSkillListingAttachments
+anadido	extractAtMentionedFiles
+anadido	extractMcpResourceMentions
+anadido	extractAgentMentions
+anadido	AtMentionedFileLines
+anadido	parseAtMentionedFileLines
+anadido	getDiagnosticAttachments
+anadido	getLSPDiagnosticAttachments
+anadido	getAttachmentMessages
+anadido	tryGetPDFReference
+anadido	generateFileAttachment
+anadido	getTodoReminderTurnCounts
+anadido	getTodoReminderAttachments
+anadido	getTaskReminderTurnCounts
+anadido	getTaskReminderAttachments
+anadido	getUnifiedTaskAttachments
+anadido	getAsyncHookResponseAttachments
+anadido	getTokenUsageAttachment
+anadido	getOutputTokenUsageAttachment
+anadido	getMaxBudgetUsdAttachment
+anadido	getVerifyPlanReminderTurnCount
+anadido	getVerifyPlanReminderAttachment
+anadido	getCompactionReminderAttachment
+anadido	getContextEfficiencyAttachment
+anadido	isFileReadDenied
+import	import { getTeammateMailboxAttachments, getTeamContextAttachment } from './attachments/mailbox.js'
+import	import { logEvent, AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
+import	import { emitAtMention } from './atMentionTelemetry.js'
+import	import { toolMatchesName, Tools, ToolUseContext, ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
+import	import { FileReadTool, MaxFileReadTokenExceededError, Output as FileReadToolOutput, readImageWithTokenBudget } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import	import { FileTooLargeError, readFileInRange } from '@thyrox/repl/readFileInRange.js'
+import	import { expandPath } from '@thyrox/storage/path.js'
+import	import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
+import	import { count, uniq } from '@thyrox/tool-registry/utils/array.js'
+import	import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import	import { readdir, stat } from 'fs/promises'
+import	import type { IDESelection } from '@thyrox/ide/hooks/useIdeSelection.js'
+import	import { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/constants.js'
+import	import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import	import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import	import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
+import	import { SKILL_TOOL_NAME } from '@thyrox/tool-registry/tools/SkillTool/constants.js'
+import	import type { TodoList } from '@thyrox/tool-registry/todo/types.js'
+import	import { Task, listTasks, getTaskListId, isTodoV2Enabled } from './tasks.js'
+import	import { getPlanFilePath, getPlan } from '@thyrox/storage/plans.js'
+import	import { getConnectedIdeName } from '@thyrox/ide/ide.js'
+import	import { getManagedAndUserConditionalRules, getMemoryFilesForNestedDirectory, getConditionalRulesForCwdLevelDirectory, MemoryFileInfo } from '@thyrox/storage/claudemd.js'
+import	import { relative } from 'path'
+import	import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import	import { logError } from '@thyrox/local-observability/log.js'
+import	import { logAntError } from '@thyrox/local-observability/debug.js'
+import	import { isENOENT, toError } from '@thyrox/local-observability/errorHelpers.js'
+import	import type { DiagnosticFile } from './services/diagnosticTracking.js'
+import	import { diagnosticTracker } from './services/diagnosticTracking.js'
+import	import type { Message, MessageOrigin } from '@thyrox/repl/replTypes/message.js'
+import	import { QueuedCommand, getImagePasteIds, isValidImagePaste } from '@thyrox/repl/textInputTypes.js'
+import	import { UUID } from 'crypto'
+import	import { getSettings } from '@thyrox/config/settings'
+import	import { getSnippetForTwoFileDiff } from '@thyrox/tool-registry/tools/FileEditTool/utils.js'
+import	import type { ContentBlockParam, ImageBlockParam, Base64ImageSource } from '@anthropic-ai/sdk/resources/messages.mjs'
+import	import { maybeResizeAndDownsampleImageBlock } from '@thyrox/storage/imageResizer.js'
+import	import type { PastedContent } from '@thyrox/config'
+import	import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js'
+import	import { getSkillToolCommands, getMcpSkillCommands } from '@thyrox/command-runtime/runtime'
+import	import type { Command } from '@thyrox/repl/replTypes/command.js'
+import	import uniqBy from 'lodash-es/uniqBy.js'
+import	import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
+import	import { formatCommandsWithinBudget } from '@thyrox/tool-registry/tools/SkillTool/prompt.js'
+import	import { getContextWindowForModel } from './context.js'
+import	import type { DiscoverySignal } from './skillSearch/signals.js'
+import	import { MAX_LINES_TO_READ, FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import	import { getDefaultFileReadingLimits } from '@thyrox/tool-registry/tools/FileReadTool/limits.js'
+import	import { cacheKeys, FileStateCache } from '@thyrox/tool-registry/fileStateCache'
+import	import { createAbortController, createChildAbortController } from './abortController.js'
+import	import { isAbortError } from '@thyrox/local-observability/errorHelpers.js'
+import	import { getFileModificationTimeAsync, isFileWithinReadSizeLimit } from '@thyrox/storage/file.js'
+import	import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import	import { filterAgentsByMcpRequirements } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import	import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import	import { formatAgentLine, shouldInjectAgentListInMessages } from '@thyrox/tool-registry/tools/AgentTool/prompt.js'
+import	import { filterDeniedAgents } from '@thyrox/permission/permissions'
+import	import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
+import	import { mcpInfoFromString } from '@thyrox/mcp-runtime/mcpStringUtils.js'
+import	import { matchingRuleForInput, pathInAllowedWorkingPath } from '@thyrox/permission/filesystem'
+import	import { generateTaskAttachments, applyTaskOffsetsAndEvictions } from './task/framework.js'
+import	import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
+import	import { drainPendingMessages } from './localAgentTask.js'
+import	import type { TaskType, TaskStatus } from '@thyrox/tool-registry/Task.js'
+import	import { getOriginalCwd, getSessionId, getSdkBetas, getTotalCostUSD, getTotalOutputTokens, getCurrentTurnTokenBudget, getTurnOutputTokens, hasExitedPlanModeInSession, setHasExitedPlanMode, needsPlanModeExitAttachment, setNeedsPlanModeExitAttachment, needsAutoModeExitAttachment, setNeedsAutoModeExitAttachment, getLastEmittedDate, setLastEmittedDate, getKairosActive } from '@thyrox/app-host/bootstrap/state.js'
+import	import type { QuerySource } from './constants/querySource.js'
+import	import { getDeferredToolsDelta, isDeferredToolsDeltaEnabled, isToolSearchEnabledOptimistic, isToolSearchToolAvailable, modelSupportsToolReference, DeferredToolsDeltaScanContext } from './toolSearch.js'
+import	import { getMcpInstructionsDelta, isMcpInstructionsDeltaEnabled, ClientSideInstruction } from '@thyrox/mcp-runtime/mcpInstructionsDelta.js'
+import	import { CLAUDE_IN_CHROME_MCP_SERVER_NAME } from './claudeInChrome/common.js'
+import	import { CHROME_TOOL_SEARCH_INSTRUCTIONS } from './claudeInChrome/prompt.js'
+import	import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import	import type { HookEvent, SyncHookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import	import { checkForAsyncHookResponses, removeDeliveredAsyncHooks } from './hooks/AsyncHookRegistry.js'
+import	import { checkForLSPDiagnostics, clearAllLSPDiagnostics } from '@thyrox/ide/lsp/LSPDiagnosticRegistry.js'
+import	import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import	import { extractTextContent, getUserMessageText, isThinkingMessage } from './messages.js'
+import	import { isHumanTurn } from './messagePredicates.js'
+import	import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import	import { feature } from 'bun:bundle'
+import	import { hasUltrathinkKeyword, isUltrathinkEnabled } from '@thyrox/provider/thinking.js'
+import	import { hasUltraworkKeyword } from '@thyrox/repl/ultraplan/keyword.js'
+import	import { isWorkflowsEnabled } from './goalStopHook.js'
+import	import { tokenCountFromLastAPIResponse, tokenCountWithEstimation } from './tokens.js'
+import	import { getEffectiveContextWindowSize, isAutoCompactEnabled } from './compaction/autoCompact.js'
+import	import { findRelevantMemories, getAutoMemPath, isAutoMemoryEnabled, memoryAge, memoryFreshnessText } from '@thyrox/memory'
+import	import { getAgentMemoryDir } from '@thyrox/memory/agentMemory'
+import	import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import	import { hasInstructionsLoadedHook, executeInstructionsLoadedHooks, HookBlockingError, InstructionsMemoryType } from './hooks.js'
+import	import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import	import { isPDFExtension } from '@thyrox/storage/pdfUtils.js'
+import	import { getLocalISODate } from './constants/common.js'
+import	import { getPDFPageCount } from '@thyrox/tool-registry/pdf.js'
+import	import { PDF_AT_MENTION_INLINE_THRESHOLD } from './constants/apiLimits.js'
+import	import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
+src/packages/agent/attachments.ts: 95 declaracion(es) anadida(s), 93 import(s) por juntar (dry-run)
