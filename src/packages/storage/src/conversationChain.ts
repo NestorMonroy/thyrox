@@ -53,18 +53,10 @@ interface ToolResultBlock {
 
 type MessageContent = string | unknown[]
 
-export interface TranscriptMessage {
-  type: 'user' | 'assistant' | 'attachment' | 'system' | string
-  uuid: UUID
-  parentUuid?: UUID
-  timestamp: string
-  message: {
-    id?: string
-    content?: MessageContent
-  }
-  subtype?: string
-  messageCount?: number
-}
+// `storage` ya depende de `@thyrox/agent`: el tipo del transcript es el
+// canónico, no un subconjunto local que diverja de él.
+import type { TranscriptMessage } from '@thyrox/agent/logsTypes.js'
+export type { TranscriptMessage }
 
 function isToolResultUserMessage(m: TranscriptMessage): boolean {
   return (

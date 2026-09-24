@@ -1,0 +1,7 @@
+Re-export the canonical TranscriptMessage in storage
+
+Third step of the agent-compiler loop, accepted-net 3567 -> 3545.
+conversationChain declared a subset TranscriptMessage because storage
+did not depend on @thyrox/agent when it was ported; it does now, and
+the subset clashed with the canonical type at every call site in
+sessionStorage (Map<UUID, TranscriptMessage> both ways).

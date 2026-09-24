@@ -1,0 +1,1 @@
+(storage/src/(sessionStorage|conversationChain)\.ts: TS2345: .*TranscriptMessage|storage/src/conversationChain\.ts: )
