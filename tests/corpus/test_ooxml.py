@@ -62,7 +62,7 @@ class TestOpening(unittest.TestCase):
 
 
 class TestRelations(unittest.TestCase):
-    def _paquete(self, path, target):
+    def _package(self, path, target):
         with zipfile.ZipFile(path, "w") as z:
             z.writestr("_rels/.rels", f'<Relationships {PKG}/>')
             z.writestr("word/_rels/document.xml.rels",
@@ -76,14 +76,14 @@ class TestRelations(unittest.TestCase):
         busca una parte que no existe."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
-            with self._paquete(f, "header1.xml") as p:
+            with self._package(f, "header1.xml") as p:
                 rels = ooxml.relationships(p, "word/document.xml")
             self.assertEqual(rels["rId7"], "word/header1.xml")
 
     def test_6_an_ABSOLUTE_Target_gets_no_prefix_appended(self):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
-            with self._paquete(f, "/word/media/x.png") as p:
+            with self._package(f, "/word/media/x.png") as p:
                 rels = ooxml.relationships(p, "word/document.xml")
             self.assertEqual(rels["rId7"], "word/media/x.png")
 

@@ -41,18 +41,18 @@ class NotOoxml(ValueError):
     """No es un paquete OOXML. No es «el paquete venia vacio»."""
 
 
-def open_package(origen, *, require: str | None = None) -> zipfile.ZipFile:
+def open_package(source, *, require: str | None = None) -> zipfile.ZipFile:
     """Abre el paquete, o REHUSA nombrando lo que falta.
 
     ``require`` es la parte obligatoria del formato concreto
     —``word/document.xml``, ``xl/workbook.xml``—. Se nombra en el rechazo
     porque mandar a mirar «el paquete» no es un remedio.
     """
-    origen = pathlib.Path(origen)
+    source = pathlib.Path(source)
     try:
-        file_path = zipfile.ZipFile(origen)
+        file_path = zipfile.ZipFile(source)
     except (zipfile.BadZipFile, OSError) as err:
-        raise NotOoxml("no es un ZIP: %s (%s)" % (origen, err)) from err
+        raise NotOoxml("no es un ZIP: %s (%s)" % (source, err)) from err
     parts = file_path.namelist()
     if PACKAGE_MANIFEST not in parts:
         file_path.close()

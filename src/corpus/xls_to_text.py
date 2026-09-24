@@ -271,10 +271,10 @@ def rows_from_stream(stream: bytes) -> list[list[str]]:
     return [per_row.get(i, []) for i in range(max(per_row) + 1)]
 
 
-def rows(origen) -> list[list[str]]:
+def rows(source) -> list[list[str]]:
     """Las filas del libro que vive dentro del archivo compuesto."""
     try:
-        document = cfb.open_compound(origen)
+        document = cfb.open_compound(source)
     except cfb.NotCompoundFile as err:
         raise NotAWorkbook(str(err)) from err
     for name_text in WORKBOOK_STREAMS:
@@ -326,14 +326,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("gathered", nargs="?", help="el .tsv de destino")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("xls_to_text: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("xls_to_text: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("             NO se emite conteo.", file=sys.stderr)
         return 2
     try:
-        row_list = rows(origen)
+        row_list = rows(source)
     except NotAWorkbook as err:
         print("xls_to_text: %s" % err, file=sys.stderr)
         print("             El sufijo del nombre NO decide.", file=sys.stderr)

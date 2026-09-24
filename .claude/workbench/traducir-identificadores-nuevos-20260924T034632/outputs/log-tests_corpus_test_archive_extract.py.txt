@@ -1,0 +1,29 @@
+test_5_an_ordinary_member_passes (__main__.TestConfinement.test_5_an_ordinary_member_passes) ... ok
+test_6_dot_dot_traversal_is_refused (__main__.TestConfinement.test_6_dot_dot_traversal_is_refused) ... ok
+test_7_BURIED_traversal_is_refused (__main__.TestConfinement.test_7_BURIED_traversal_is_refused)
+El que un `startswith('..')` no ve. Es la forma que sobrevive a la ... ok
+test_8_the_absolute_path_is_refused (__main__.TestConfinement.test_8_the_absolute_path_is_refused) ... ok
+test_9_the_sibling_with_a_shared_PREFIX_is_refused (__main__.TestConfinement.test_9_the_sibling_with_a_shared_PREFIX_is_refused)
+`/dest` y `/destino-ajeno` comparten prefijo de cadena y no de ... ok
+test_1_recognizes_7z_by_its_signature (__main__.TestFormatByContent.test_1_recognizes_7z_by_its_signature) ... ok
+test_2_recognizes_zip_by_its_signature (__main__.TestFormatByContent.test_2_recognizes_zip_by_its_signature) ... ok
+test_3_NULLIFICATION_the_name_LIES_and_the_content_does_not (__main__.TestFormatByContent.test_3_NULLIFICATION_the_name_LIES_and_the_content_does_not)
+Control de anulacion del eje: si el formato saliera del sufijo, ... ok
+test_4_what_is_not_a_compressed_file_is_DECLARED_None (__main__.TestFormatByContent.test_4_what_is_not_a_compressed_file_is_DECLARED_None) ... ok
+test_17_what_is_not_a_file_exits_2_and_NAMES_it (__main__.TestLineSurface.test_17_what_is_not_a_file_exits_2_and_NAMES_it) ... ok
+test_18_a_missing_origin_exits_2_and_emits_NO_count (__main__.TestLineSurface.test_18_a_missing_origin_exits_2_and_emits_NO_count) ... ok
+test_10_an_impostor_binary_does_NOT_count_as_an_extractor (__main__.TestProbeByConduct.test_10_an_impostor_binary_does_NOT_count_as_an_extractor)
+CONTROL POSITIVO del defecto ya cometido en este arbol: la sonda de ... ok
+test_11_without_an_extractor_it_REFUSES_and_returns_no_empty_list (__main__.TestProbeByConduct.test_11_without_an_extractor_it_REFUSES_and_returns_no_empty_list)
+Una lista vacia se lee como «el archivo no traia nada». Un cero ... ok
+test_12_members_LISTS_without_extracting (__main__.TestRealWalk.test_12_members_LISTS_without_extracting) ... skipped 'SIN SUJETO: no hay extractor de 7z en este contenedor'
+test_13_extract_delivers_the_files_with_their_content (__main__.TestRealWalk.test_13_extract_delivers_the_files_with_their_content) ... skipped 'SIN SUJETO: no hay extractor de 7z en este contenedor'
+test_14_the_target_is_created_if_it_does_not_exist (__main__.TestRealWalk.test_14_the_target_is_created_if_it_does_not_exist) ... skipped 'SIN SUJETO: no hay extractor de 7z en este contenedor'
+test_15_a_zip_opens_without_an_external_extractor (__main__.TestZipAndTarWithoutBinary.test_15_a_zip_opens_without_an_external_extractor) ... ok
+test_16_a_zip_with_traversal_is_refused_WHOLE (__main__.TestZipAndTarWithoutBinary.test_16_a_zip_with_traversal_is_refused_WHOLE)
+CONTROL POSITIVO del confinamiento por la via real, no por la ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.096s
+
+OK (skipped=3)

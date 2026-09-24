@@ -156,19 +156,19 @@ def classify_errors(output: str, package_dir) -> dict:
     hermano. Sin el, se sumaria al que no le toca.
     """
     package_dir = os.path.abspath(str(package_dir))
-    cubos = {"own": 0, "sibling": 0, "escaped": 0}
+    buckets = {"own": 0, "sibling": 0, "escaped": 0}
     for match in _LOCATED_ERROR.finditer(output):
-        crudo = match.group("file").strip()
-        if not os.path.isabs(crudo):
-            crudo = os.path.join(package_dir, crudo)
-        ruta = os.path.normpath(crudo)
-        if "node_modules" in ruta.split(os.sep):
-            cubos["sibling"] += 1
-        elif ruta.startswith(package_dir + os.sep):
-            cubos["own"] += 1
+        raw = match.group("file").strip()
+        if not os.path.isabs(raw):
+            raw = os.path.join(package_dir, raw)
+        path = os.path.normpath(raw)
+        if "node_modules" in path.split(os.sep):
+            buckets["sibling"] += 1
+        elif path.startswith(package_dir + os.sep):
+            buckets["own"] += 1
         else:
-            cubos["escaped"] += 1
-    return cubos
+            buckets["escaped"] += 1
+    return buckets
 
 
 @dataclass
@@ -286,34 +286,34 @@ def export_targets(manifest: dict):
     `repoint_manifest` reescribe, y por eso se deriva aqui en vez de mirar solo
     `main`: hay paquetes cuyo unico destino declarado vive en `exports`.
     """
-    destinos = []
+    targets = []
 
-    def recolectar(valor):
-        if isinstance(valor, str):
-            destinos.append(valor)
-        elif isinstance(valor, dict):
+    def collect(value):
+        if isinstance(value, str):
+            targets.append(value)
+        elif isinstance(value, dict):
             # De un manifiesto YA repuntado se toma solo `default`: `types`
             # apunta a `dist/`, y meterlo aqui haria que el paquete compilara
             # sus propias declaraciones y le subiria el `rootDir`. Medido:
             # `storage` daba `src` antes del repunte y `.` despues, sin que su
             # codigo cambiara — la emision entera se habria movido.
-            if "default" in valor:
-                recolectar(valor["default"])
+            if "default" in value:
+                collect(value["default"])
                 return
-            for clave, anidado in valor.items():
-                if clave == "types":
+            for key, nested in value.items():
+                if key == "types":
                     continue
-                recolectar(anidado)
+                collect(nested)
 
-    for clave in ("main", "types"):
-        recolectar(manifest.get(clave))
-    recolectar(manifest.get("exports"))
+    for key in ("main", "types"):
+        collect(manifest.get(key))
+    collect(manifest.get("exports"))
     # `dist/` es SALIDA por definicion, nunca fuente. La clave `types` de raiz
     # de un manifiesto ya repuntado apunta ahi, y sin este filtro el paquete
     # se compilaria a si mismo: `repoint_manifest` dejaria de ser idempotente
     # porque el `rootDir` que deriva cambiaria en la segunda pasada.
-    salida = f"{OUTPUT_DIR}/"
-    return [d for d in destinos if not d.lstrip("./").startswith(salida)]
+    output = f"{OUTPUT_DIR}/"
+    return [d for d in targets if not d.lstrip("./").startswith(output)]
 
 
 def _project_shape(package_dir: Path):
@@ -333,11 +333,11 @@ def _project_shape(package_dir: Path):
     se midio».
     """
     manifest = _read_manifest(package_dir)
-    directorios = []
-    for destino in export_targets(manifest):
-        directorio = entry_directory(destino)
-        if directorio and directorio not in directorios:
-            directorios.append(directorio)
+    directories = []
+    for target in export_targets(manifest):
+        directory = entry_directory(target)
+        if directory and directory not in directories:
+            directories.append(directory)
     # Un comodin ANCLADO EN LA RAIZ del paquete —`"./*": "./*.ts"`— declara
     # como superficie todo el paquete, no un directorio. `entry_directory` le
     # da `""` porque su dirname es vacio, asi que la rama de colapso lo
@@ -349,26 +349,26 @@ def _project_shape(package_dir: Path):
     # 17 vecinos por import relativo, que resuelve `.ts` antes que `.d.ts`.
     if any("*" in d and not entry_directory(d) for d in export_targets(manifest)):
         return ".", ["**/*"]
-    if not directorios:
+    if not directories:
         return ".", ["*.ts"]
     # El `rootDir` es el ANCESTRO COMUN de los directorios declarados, no el
     # primero ni la raiz del paquete. `storage` declara `src` y `src/testing`:
     # elegir la raiz subiria el `rootDir` un nivel de mas y desplazaria TODA su
     # emision dentro de `dist/`. `headless-sdk` declara `src` y `testing`, que
     # no se anidan, y ahi el ancestro comun si es el paquete.
-    raiz = os.path.commonpath(directorios) if len(directorios) > 1 else directorios[0]
-    if raiz in ("", "."):
+    root = os.path.commonpath(directories) if len(directories) > 1 else directories[0]
+    if root in ("", "."):
         # Un directorio ANIDADO en otro ya lo cubre el comodin del ancestro; se
         # descarta para no declarar el mismo archivo dos veces. `repl` declara
         # 58 destinos, 57 de ellos bajo `src`: sin este colapso el `include`
         # lista los 58 y describe el mismo programa con 58 veces mas ruido.
-        cubiertos = [d for d in directorios
+        covered = [d for d in directories
                      if not any(o != d and (d + os.sep).startswith(o + os.sep)
-                                for o in directorios)]
-        return ".", [f"{d}/**/*" for d in cubiertos]
+                                for o in directories)]
+        return ".", [f"{d}/**/*" for d in covered]
     # Un directorio que cae DENTRO de la raiz comun ya lo cubre su comodin; se
     # descarta para no declarar el mismo archivo dos veces.
-    return raiz, [f"{raiz}/**/*"]
+    return root, [f"{root}/**/*"]
 
 
 def escaping_files(package_dir: Path, root_dir=None, include=None) -> tuple:
@@ -460,10 +460,10 @@ def check_package(package_dir: Path) -> EmitResult:
         return EmitResult(package_dir.name, False, 0, f"{type(exc).__name__}: {exc}")
     finally:
         project.unlink(missing_ok=True)
-    cubos = classify_errors(output, package_dir)
+    buckets = classify_errors(output, package_dir)
     return EmitResult(package_dir.name, False, len(_ERROR_LINE.findall(output)), output,
-                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
-                      escaped_errors=cubos["escaped"], checked=True)
+                      own_errors=buckets["own"], sibling_errors=buckets["sibling"],
+                      escaped_errors=buckets["escaped"], checked=True)
 
 
 def emit_package(package_dir: Path) -> EmitResult:
@@ -497,18 +497,18 @@ def emit_package(package_dir: Path) -> EmitResult:
         # que componerla antes de preguntar si cae dentro. Sin eso el `dentro`
         # sale vacio siempre y el reintento no se toma nunca — el arreglo
         # existiria y no dispararia, que es peor que no tenerlo.
-        raiz = os.path.realpath(str(package_dir))
-        dentro = [f for f in escaping
-                  if os.path.normpath(os.path.join(raiz, f)).startswith(raiz + os.sep)]
-        if len(dentro) == len(escaping):
-            extra = sorted({f.split(os.sep)[0] for f in dentro
+        root = os.path.realpath(str(package_dir))
+        inside = [f for f in escaping
+                  if os.path.normpath(os.path.join(root, f)).startswith(root + os.sep)]
+        if len(inside) == len(escaping):
+            extra = sorted({f.split(os.sep)[0] for f in inside
                             if os.sep in f})
             root_dir = "."
             include = sorted(set(include) | {f"{d}/**/*" for d in extra if d != "."})
             escaping = escaping_files(package_dir, root_dir, include)
         if escaping:
-            detalle = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
-            return EmitResult(package_dir.name, False, 0, detalle, escaping)
+            detail = "\n".join(f"  escapa del rootDir: {f}" for f in escaping)
+            return EmitResult(package_dir.name, False, 0, detail, escaping)
 
     options = dict(COMPILER_OPTIONS)
     options["rootDir"] = root_dir
@@ -526,10 +526,10 @@ def emit_package(package_dir: Path) -> EmitResult:
 
     emitted = (package_dir / OUTPUT_DIR).is_dir() and any(
         (package_dir / OUTPUT_DIR).rglob("*.d.ts"))
-    cubos = classify_errors(output, package_dir)
+    buckets = classify_errors(output, package_dir)
     return EmitResult(package_dir.name, emitted, len(_ERROR_LINE.findall(output)), output,
-                      own_errors=cubos["own"], sibling_errors=cubos["sibling"],
-                      escaped_errors=cubos["escaped"])
+                      own_errors=buckets["own"], sibling_errors=buckets["sibling"],
+                      escaped_errors=buckets["escaped"])
 
 
 def declaration_for(source_entry: str, root_dir: str = "") -> str:
@@ -555,11 +555,11 @@ def declaration_for(source_entry: str, root_dir: str = "") -> str:
     Esa sustitucion es lo que hace que UNA entrada cubra los 240 imports por
     subpath que los consumidores de `storage` emiten.
     """
-    ruta = source_entry.lstrip("./")
-    base = ruta[: -len(".ts")] if ruta.endswith(".ts") else os.path.splitext(ruta)[0]
-    raiz = (root_dir or "").strip("./")
-    if raiz and raiz != "." and (base + "/").startswith(raiz + "/"):
-        base = base[len(raiz) + 1:]
+    path = source_entry.lstrip("./")
+    base = path[: -len(".ts")] if path.endswith(".ts") else os.path.splitext(path)[0]
+    root = (root_dir or "").strip("./")
+    if root and root != "." and (base + "/").startswith(root + "/"):
+        base = base[len(root) + 1:]
     return f"./{OUTPUT_DIR}/{base}.d.ts"
 
 
@@ -577,11 +577,11 @@ def _declaration_exists(package_dir: Path, candidate: str,
     y basta con que la expansion encuentre algo. Cero coincidencias es
     ausencia, igual que un archivo concreto que no esta.
     """
-    relativa = candidate.lstrip("./")
-    if "*" not in relativa:
-        return (package_dir / relativa).exists()
+    relative = candidate.lstrip("./")
+    if "*" not in relative:
+        return (package_dir / relative).exists()
     if source_entry is None:
-        return any(package_dir.glob(relativa))
+        return any(package_dir.glob(relative))
     # UNA coincidencia no basta. Un comodin cubre N archivos, y el defecto que
     # se quiere ver es que ALGUNOS no tengan declaracion: con `any()` el
     # primero que exista tapa a los demas y el veredicto no discrimina — el
@@ -602,31 +602,31 @@ def _declaration_exists(package_dir: Path, candidate: str,
     # `dist/src/screens/agentFleet.d.ts` rehusaba el repunte de un paquete
     # cuyas declaraciones estaban todas emitidas. Un gate que bloquea trabajo
     # correcto cuesta mas que no tenerlo.
-    fuentes = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
+    sources = sorted(f for f in package_dir.glob(patron.replace("*", "**/*", 1))
                      if f.is_file()
                      and OUTPUT_DIR not in f.relative_to(package_dir).parts)
-    if not fuentes:
-        return any(package_dir.glob(relativa))
-    for fuente in fuentes:
-        comodin = str(fuente.relative_to(package_dir))
+    if not sources:
+        return any(package_dir.glob(relative))
+    for source in sources:
+        wildcard = str(source.relative_to(package_dir))
         # Lo que la emision salta a proposito no se puede exigir aqui: sin
         # este descuento todo paquete con tests rehusaria el repunte para
         # siempre, que es el mecanismo bloqueandose a si mismo.
-        if any(fnmatch.fnmatch(comodin, patron_test) or
-               fnmatch.fnmatch("/" + comodin, patron_test.lstrip("*"))
+        if any(fnmatch.fnmatch(wildcard, patron_test) or
+               fnmatch.fnmatch("/" + wildcard, patron_test.lstrip("*"))
                for patron_test in TEST_EXCLUDE):
             continue
-        comodin = os.path.splitext(comodin)[0]
+        wildcard = os.path.splitext(wildcard)[0]
         # El comodin del destino ocupa el mismo sitio que el de la fuente: se
         # sustituye por lo que la fuente puso ahi, no por el nombre entero.
-        prefijo, _, sufijo = source_entry.lstrip("./").partition("*")
-        sufijo = os.path.splitext(sufijo)[0]
-        if not comodin.startswith(prefijo):
+        prefix, _, suffix = source_entry.lstrip("./").partition("*")
+        suffix = os.path.splitext(suffix)[0]
+        if not wildcard.startswith(prefix):
             continue
-        medio = comodin[len(prefijo):]
-        if sufijo and medio.endswith(sufijo):
-            medio = medio[: -len(sufijo)] if sufijo else medio
-        if not (package_dir / relativa.replace("*", medio, 1)).exists():
+        middle = wildcard[len(prefix):]
+        if suffix and middle.endswith(suffix):
+            middle = middle[: -len(suffix)] if suffix else middle
+        if not (package_dir / relative.replace("*", middle, 1)).exists():
             return False
     return True
 
@@ -649,14 +649,14 @@ def resolve_declaration(package_dir: Path, source_entry: str, root_dir: str):
     vacio.
     """
     package_dir = Path(package_dir)
-    candidatas = []
-    for raiz in (root_dir, "."):
-        candidata = declaration_for(source_entry, raiz)
-        if candidata not in candidatas:
-            candidatas.append(candidata)
-    for candidata in candidatas:
-        if _declaration_exists(package_dir, candidata, source_entry):
-            return candidata
+    candidates = []
+    for root in (root_dir, "."):
+        candidate = declaration_for(source_entry, root)
+        if candidate not in candidates:
+            candidates.append(candidate)
+    for candidate in candidates:
+        if _declaration_exists(package_dir, candidate, source_entry):
+            return candidate
     return None
 
 
@@ -692,27 +692,27 @@ def repoint_manifest(package_dir: Path) -> bool:
         exports = {".": exports or manifest.get("main") or "./index.ts"}
 
     repointed = {}
-    ausentes = []
+    absent = []
     for subpath, entry in exports.items():
         source_entry = entry.get("default") if isinstance(entry, dict) else entry
         if not isinstance(source_entry, str):
             repointed[subpath] = entry
             continue
-        declaracion = resolve_declaration(package_dir, source_entry, root_dir)
-        if declaracion is None:
-            ausentes.append((subpath, declaration_for(source_entry, root_dir)))
+        declaration = resolve_declaration(package_dir, source_entry, root_dir)
+        if declaration is None:
+            absent.append((subpath, declaration_for(source_entry, root_dir)))
             continue
-        repointed[subpath] = {"types": declaracion, "default": source_entry}
+        repointed[subpath] = {"types": declaration, "default": source_entry}
 
     # Un `types` que apunta al vacio no falla: tsc cae al `default`, que es
     # fuente, y el repunte queda INERTE sin emitir un byte. El unico sintoma
     # es un conteo del consumidor que no baja lo que deberia, a cuatro pasos
     # de la causa. Se rehusa entero y se nombra cada destino ausente.
-    if ausentes:
+    if absent:
         print(f"{package_dir.name}: repunte INERTE — "
-              f"{len(ausentes)} destino(s) de types no existen:", file=sys.stderr)
-        for subpath, candidata in ausentes:
-            print(f"  {subpath} -> {candidata}", file=sys.stderr)
+              f"{len(absent)} destino(s) de types no existen:", file=sys.stderr)
+        for subpath, candidate in absent:
+            print(f"  {subpath} -> {candidate}", file=sys.stderr)
         print("  Corre la emision antes del repunte: "
               "emit_declarations <paquete>", file=sys.stderr)
         return False
@@ -741,9 +741,9 @@ def main(argv=None):
         print("  y tarda, asi que no puede ser lo que pasa por teclear el nombre")
         print("  del guion sin argumentos.")
         return 0
-    desconocidas = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all")]
-    if desconocidas:
-        print(f"emit_declarations: bandera no reconocida: {' '.join(desconocidas)}",
+    unknown = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all")]
+    if unknown:
+        print(f"emit_declarations: bandera no reconocida: {' '.join(unknown)}",
               file=sys.stderr)
         print("  NO se emite nada: una bandera mal escrita no debe caer al caso",
               file=sys.stderr)

@@ -108,7 +108,7 @@ def classify(code: int) -> str:
 
 def _hints() -> dict[str, bool]:
     """Las rutas indicio, cada una con su existencia. No deciden nada."""
-    return {ruta: pathlib.Path(ruta).exists() for ruta in HINT_PATHS}
+    return {path: pathlib.Path(path).exists() for path in HINT_PATHS}
 
 
 def probe(machine: str | None = None) -> dict:
@@ -117,25 +117,25 @@ def probe(machine: str | None = None) -> dict:
     Devuelve ``{verdict, errno, errno_name, syscall, machine, hints}``. El
     veredicto sale del **errno**; los ``hints`` viajan aparte y no lo tocan.
     """
-    numero = init_module_number(machine)
-    indicios = _hints()
-    if numero is None:
+    number = init_module_number(machine)
+    hints = _hints()
+    if number is None:
         return {"verdict": "unknown", "errno": None, "errno_name": None,
                 "syscall": None, "machine": machine or platform.machine(),
-                "hints": indicios,
+                "hints": hints,
                 "reason": "arquitectura sin numero de llamada declarado; "
                           "NO se sondea un numero ajeno."}
 
     libc = ctypes.CDLL(None, use_errno=True)
-    imagen, longitud, parametros = PROBE_ARGUMENTS
+    image, length, parameters = PROBE_ARGUMENTS
     ctypes.set_errno(0)
-    libc.syscall(ctypes.c_long(numero), ctypes.c_void_p(imagen),
-                 ctypes.c_ulong(longitud), ctypes.c_char_p(parametros))
+    libc.syscall(ctypes.c_long(number), ctypes.c_void_p(image),
+                 ctypes.c_ulong(length), ctypes.c_char_p(parameters))
     code = ctypes.get_errno()
     return {"verdict": classify(code), "errno": code,
             "errno_name": errno.errorcode.get(code, str(code)),
-            "syscall": numero, "machine": machine or platform.machine(),
-            "hints": indicios}
+            "syscall": number, "machine": machine or platform.machine(),
+            "hints": hints}
 
 
 def main(argv=None) -> int:
@@ -146,21 +146,21 @@ def main(argv=None) -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args(argv)
 
-    informe = probe()
+    report = probe()
     if args.json:
-        print(json.dumps(informe, indent=2, ensure_ascii=False))
+        print(json.dumps(report, indent=2, ensure_ascii=False))
         return 0
 
-    print(f"llamada init_module: {informe['syscall']} ({informe['machine']})")
-    print(f"errno: {informe['errno_name']} ({informe['errno']})")
+    print(f"llamada init_module: {report['syscall']} ({report['machine']})")
+    print(f"errno: {report['errno_name']} ({report['errno']})")
     print("veredicto: " + {
         "absent": "el kernel NO admite modulos cargables",
         "present": "el kernel SI admite modulos cargables",
         "unknown": "NO se puede decidir con este errno",
-    }[informe["verdict"]])
+    }[report["verdict"]])
     print("\nindicios (NO deciden — se reportan aparte):")
-    for ruta, existe in informe["hints"].items():
-        print(f"  {'existe ' if existe else 'ausente'}  {ruta}")
+    for path, exists in report["hints"].items():
+        print(f"  {'exists ' if exists else 'ausente'}  {path}")
     print(f"\ncapacidad del proceso: "
           f"uid={os.getuid()} — el permiso se lee del errno, no de aqui.")
     return 0

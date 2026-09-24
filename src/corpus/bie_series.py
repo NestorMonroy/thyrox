@@ -212,21 +212,21 @@ def summarize(series: list[tuple[str, float]], note: Note) -> dict:
     instrumento ciego y uno correcto publican la misma cifra.
     """
     if not series:
-        return {"total": 0, "comparables": 0, "above": None, "max": None,
-                "min": None, "last": None, "sin_sujeto": True}
+        return {"total": 0, "comparable": 0, "above": None, "max": None,
+                "min": None, "last": None, "no_subject": True}
     last = series[-1]
     good_ones = [(p, v) for p, v in series if is_comparable(p, note)]
     if not good_ones:
-        return {"total": len(series), "comparables": 0, "above": None,
-                "max": None, "min": None, "last": last, "sin_sujeto": True}
+        return {"total": len(series), "comparable": 0, "above": None,
+                "max": None, "min": None, "last": last, "no_subject": True}
     return {
         "total": len(series),
-        "comparables": len(good_ones),
+        "comparable": len(good_ones),
         "above": sum(1 for _, v in good_ones if v > last[1]),
         "max": max(good_ones, key=lambda x: x[1]),
         "min": min(good_ones, key=lambda x: x[1]),
         "last": last,
-        "sin_sujeto": False,
+        "no_subject": False,
     }
 
 
@@ -264,7 +264,7 @@ def detect_encoding(raw: bytes) -> str:
     return "utf-16-le" if odd * 2 >= nulls else "utf-16-be"
 
 
-def read_rows(origen) -> list[list[str]]:
+def read_rows(source) -> list[list[str]]:
     """Las filas de una serie del BIE, venga en ``.xls`` o en ``.csv``.
 
     El formato se decide por los BYTES: un ``.xls`` del BIE es un contenedor
@@ -272,11 +272,11 @@ def read_rows(origen) -> list[list[str]]:
     sufijo, y el segundo leido como UTF-8 sale con un espacio entre cada
     letra — que parece corrupcion y es codificacion.
     """
-    origen = pathlib.Path(origen)
-    crudo = origen.read_bytes()
-    if crudo.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
-        return xls_to_text.rows(origen)
-    text_value = crudo.decode(detect_encoding(crudo), "replace")
+    source = pathlib.Path(source)
+    raw = source.read_bytes()
+    if raw.startswith(bytes.fromhex("D0CF11E0A1B11AE1")):
+        return xls_to_text.rows(source)
+    text_value = raw.decode(detect_encoding(raw), "replace")
     sep = "\t" if text_value.count("\t") > text_value.count(",") else ","
     return [line.split(sep) for line in text_value.splitlines()]
 
@@ -309,16 +309,16 @@ def main(argv: list[str] | None = None) -> int:
                         help="vuelca la serie con su clasificacion, en TSV")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("bie_series: no existe o no es un archivo: %s" % origen, file=sys.stderr)
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("bie_series: no existe o no es un archivo: %s" % source, file=sys.stderr)
         print("            NO se emite conteo.", file=sys.stderr)
         return 2
 
-    row_list = read_rows(origen)
+    row_list = read_rows(source)
     one_series = read_series(row_list)
     if not one_series:
-        print("bie_series: no se reconocio ningun periodo del BIE en %s" % origen,
+        print("bie_series: no se reconocio ningun periodo del BIE en %s" % source,
               file=sys.stderr)
         print("            NO se emite conteo: un 0 aqui se leeria como "
               "«la serie venia vacia».", file=sys.stderr)
@@ -356,17 +356,17 @@ def main(argv: list[str] | None = None) -> int:
     print("  perturbaciones         : %s" % (
         ", ".join("%d/%02d" % q for q in note_value.perturbed) or "ninguna"))
     print()
-    if r["sin_sujeto"]:
+    if r["no_subject"]:
         print("SIN SUJETO — ningun trimestre es comparable con el ultimo.")
         print("  (alcance medido: 0 de %d)" % r["total"])
         return 0
     print("la serie, sobre su universo COMPARABLE")
     print("  ultimo      : %s = %.4f" % r["last"])
-    print("  por encima  : %d de %d" % (r["above"], r["comparables"]))
+    print("  por encima  : %d de %d" % (r["above"], r["comparable"]))
     print("  maximo      : %s = %.4f" % r["max"])
     print("  minimo      : %s = %.4f" % r["min"])
     print("  (alcance medido: %d comparables de %d trimestres)"
-          % (r["comparables"], r["total"]))
+          % (r["comparable"], r["total"]))
     return 0
 
 

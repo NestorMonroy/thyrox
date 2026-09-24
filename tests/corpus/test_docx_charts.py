@@ -74,15 +74,15 @@ def build(path, charts=None, rels=None):
             z.writestr("word/charts/_rels/%s.rels" % series_name, body)
 
 
-def points(label, pares, declarados):
+def points(label, pairs, declared):
     """Un cache con los pares ``(idx, valor)`` que se le den."""
     body = "".join('<c:pt idx="%d"><c:v>%s</c:v></c:pt>' % par
-                     for par in pares)
+                     for par in pairs)
     return ('<c:%sCache><c:ptCount val="%d"/>%s</c:%sCache>'
-            % (label, declarados, body, label))
+            % (label, declared, body, label))
 
 
-def one_series(series_name=None, cats=None, vals=None, declarados=None):
+def one_series(series_name=None, cats=None, vals=None, declared=None):
     parts = []
     if series_name is not None:
         parts.append('<c:tx><c:strRef><c:f>Hoja1!$A$1</c:f>'
@@ -90,11 +90,11 @@ def one_series(series_name=None, cats=None, vals=None, declarados=None):
                       '<c:pt idx="0"><c:v>%s</c:v></c:pt>'
                       '</c:strCache></c:strRef></c:tx>' % series_name)
     if cats is not None:
-        n = declarados if declarados is not None else len(cats)
+        n = declared if declared is not None else len(cats)
         parts.append('<c:cat><c:strRef><c:f>Hoja1!$B$1</c:f>%s'
                       '</c:strRef></c:cat>' % points("str", cats, n))
     if vals is not None:
-        n = declarados if declarados is not None else len(vals)
+        n = declared if declared is not None else len(vals)
         parts.append('<c:val><c:numRef><c:f>Hoja1!$C$1</c:f>%s'
                       '</c:numRef></c:val>' % points("num", vals, n))
     return "<c:ser>%s</c:ser>" % "".join(parts)
@@ -120,7 +120,7 @@ class TestThePoint(unittest.TestCase):
                 cats=[(0, "Micro"), (1, "Pequenas"), (2, "Medianas"),
                       (3, "Grandes")],
                 vals=[(0, "25.3"), (2, "63.4"), (3, "88.1")],
-                declarados=4))})
+                declared=4))})
             s = docx_to_text.charts(f)[0].series[0]
             self.assertEqual(s.categories,
                              ["Micro", "Pequenas", "Medianas", "Grandes"])
@@ -132,7 +132,7 @@ class TestThePoint(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
             build(f, {"chart1.xml": bars(one_series(
-                vals=[(0, "10"), (2, "30")], declarados=3))})
+                vals=[(0, "10"), (2, "30")], declared=3))})
             self.assertEqual(docx_to_text.charts(f)[0].series[0].values,
                              [10.0, None, 30.0])
 
@@ -145,7 +145,7 @@ class TestThePoint(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
             build(f, {"chart1.xml": bars(
-                one_series(series_name="2023", vals=[], declarados=4))})
+                one_series(series_name="2023", vals=[], declared=4))})
             s = docx_to_text.charts(f)[0].series[0]
             self.assertEqual(s.declared, 4)
             self.assertEqual(s.cached, 0)
@@ -155,7 +155,7 @@ class TestThePoint(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
             build(f, {"chart1.xml": bars(one_series(
-                vals=[(0, "10"), (2, "30")], declarados=3))})
+                vals=[(0, "10"), (2, "30")], declared=3))})
             s = docx_to_text.charts(f)[0].series[0]
             self.assertEqual((s.declared, s.cached), (3, 2))
 
@@ -165,7 +165,7 @@ class TestThePoint(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.docx"
             build(f, {"chart1.xml": bars(one_series(
-                vals=[(0, "10"), (1, "#N/A"), (2, "30")], declarados=3))})
+                vals=[(0, "10"), (1, "#N/A"), (2, "30")], declared=3))})
             self.assertEqual(docx_to_text.charts(f)[0].series[0].values,
                              [10.0, None, 30.0])
 

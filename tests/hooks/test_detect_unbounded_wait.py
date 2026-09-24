@@ -63,47 +63,47 @@ def check(label: str, expected, obtained) -> None:
         FAILED += 1
 
 
-def avisa(command: str) -> bool:
+def warns(command: str) -> bool:
     """Si el detector emite aviso para ese comando."""
     return duw.detect({"tool_name": "Bash",
                        "tool_input": {"command": command}}) is not None
 
 
-SIN_COTA = ('until [ "$(grep -c x /tmp/s.out)" -ge 6 ]; do sleep 25; done; '
+WITHOUT_BOUND = ('until [ "$(grep -c x /tmp/s.out)" -ge 6 ]; do sleep 25; done; '
             'cat /tmp/s.out')
 
 print("=== 1. solo mira contenido y duerme: AVISA ===")
-check("el caso medido", True, avisa(SIN_COTA))
+check("el caso medido", True, warns(WITHOUT_BOUND))
 check("y su variante con while", True,
-      avisa('while [ ! -s /tmp/s.out ]; do sleep 5; done'))
+      warns('while [ ! -s /tmp/s.out ]; do sleep 5; done'))
 
 print("=== 2. con timeout alrededor: calla ===")
-check("timeout lo acota", False, avisa(f"timeout 300 bash -c '{SIN_COTA}'"))
+check("timeout lo acota", False, warns(f"timeout 300 bash -c '{WITHOUT_BOUND}'"))
 
 print("=== 3. mirando la marca de salida: calla ===")
 check("observar la muerte del productor basta", False,
-      avisa('until grep -q "\\[exited with code" /tmp/s.out; do sleep 5; done'))
+      warns('until grep -q "\\[exited with code" /tmp/s.out; do sleep 5; done'))
 
 print("=== 4. con los mecanismos del arbol: calla ===")
 check("marker_wait --pid", False,
-      avisa('bash bin/marker_wait --pid-only --pid 123'))
-check("wait-jobs", False, avisa('bash bin/wait-jobs wait'))
+      warns('bash bin/marker_wait --pid-only --pid 123'))
+check("wait-jobs", False, warns('bash bin/wait-jobs wait'))
 
 print("=== 5. un bucle SIN sleep no es una espera: calla ===")
 check("no avisa sobre un bucle de proceso", False,
-      avisa('while read -r linea; do echo "$linea"; done < /tmp/s.out'))
+      warns('while read -r linea; do echo "$linea"; done < /tmp/s.out'))
 check("ni sobre un for", False,
-      avisa('for f in *.py; do python3 "$f"; done'))
+      warns('for f in *.py; do python3 "$f"; done'))
 
 print("=== 6. ANULACION — si no distinguiera, 1 y 2 darian lo mismo ===")
 check("acotado y sin acotar NO coinciden",
-      True, avisa(SIN_COTA) != avisa(f"timeout 300 bash -c '{SIN_COTA}'"))
+      True, warns(WITHOUT_BOUND) != warns(f"timeout 300 bash -c '{WITHOUT_BOUND}'"))
 
 print("=== 7. el aviso NOMBRA el remedio ===")
-texto = duw.detect({"tool_name": "Bash", "tool_input": {"command": SIN_COTA}})
-check("nombra la marca de salida", True, "exited with code" in texto)
+text = duw.detect({"tool_name": "Bash", "tool_input": {"command": WITHOUT_BOUND}})
+check("nombra la marca de salida", True, "exited with code" in text)
 check("y un mecanismo del arbol", True,
-      "wait-jobs" in texto or "marker_wait" in texto)
+      "wait-jobs" in text or "marker_wait" in text)
 
 print(f"\nOK={OK} FAILED={FAILED}")
 raise SystemExit(1 if FAILED else 0)

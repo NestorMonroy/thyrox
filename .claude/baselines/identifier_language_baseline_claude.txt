@@ -2133,3 +2133,16 @@ tests/session/test_generate_bin.py::envoltorio
 tests/session/test_generate_bin.py::proceso
 tests/session/test_generate_bin.py::fallos_ciego
 tests/session/test_generate_bin.py::marcado
+# Datos en español, no identificadores: el gate cuenta la clave de un dict
+# como atributo, y aquí la clave ES el sujeto que el código lee. ORDINALS
+# parsea los trimestres que INEGI publica en español («primer trimestre»);
+# test_term_census cuenta términos españoles y probar el plegado de la ñ
+# exige la palabra española. Traducirlos cambiaría lo que se mide.
+src/corpus/bie_series.py::primer
+src/corpus/bie_series.py::segundo
+src/corpus/bie_series.py::tercer
+src/corpus/bie_series.py::cuarto
+tests/corpus/test_term_census.py::credito
+tests/corpus/test_term_census.py::ano
+tests/corpus/test_term_census.py::digitaliza
+tests/corpus/test_term_census.py::nada

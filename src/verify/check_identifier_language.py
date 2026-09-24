@@ -422,6 +422,11 @@ TECHNICAL_VOCABULARY = frozenset({
     'iban',      # estándar bancario ISO 13616
     'incoterm',  # estándar de comercio ICC
     'categ',     # la abreviatura de *category* de la referencia (`categ_id`)
+    'clx',       # campo de MS-DOC: la tabla de piezas (`fcClx`, `lcbClx`)
+    'cch',       # campo de MS-XLS: cuenta de caracteres de una cadena
+    'sep',       # la abreviatura de *separator*; el corpus la lee *septiembre*
+    'bie',       # el Banco de Informacion Economica de INEGI, un nombre propio
+    'posterior', # el termino bayesiano; se escribe igual en ingles
 })
 
 #: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no

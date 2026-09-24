@@ -1,0 +1,34 @@
+=== Caso 1: el corpus esta, o el gate no puede medir ===
+  OK   los dos lexicos cargan
+=== Caso 2 (EL QUE DISCRIMINA): atrapa espanol fuera de la lista ===
+  OK   las seis se ven
+=== Caso 3: y ninguna de las seis estaba en la lista cerrada ===
+  OK   la lista no las tenia
+=== Caso 4: no marca ingles de nuestro codigo ===
+  OK   cero falsos positivos
+=== Caso 5: el veredicto llega al gate entero ===
+  OK   rechaza el archivo
+  OK   nombra la palabra
+=== Caso 6: un archivo en ingles pasa ===
+  OK   acepta el archivo
+=== Caso 7: el vocabulario tecnico no lo marca el corpus ===
+  OK   IrActionsBase no se marca
+  OK   party_vals no se marca
+  OK   iban_check no se marca
+  OK   q no se marca
+  OK   es_MX no se marca
+  OK   root_categ no se marca
+  OK   _compute_root_categ no se marca
+=== Caso 8: EL DISCRIMINANTE — la exencion no apaga el criterio ===
+  OK   clasificar_los_metodos sigue cayendo
+  OK   una particula real sigue cayendo
+  OK   categoria (la palabra) sigue cayendo
+=== Caso 9: sin lexico el gate REHUSA — no publica un cero ===
+  OK   rehusa con 2
+  OK   nombra el remedio
+  OK   NO publica un conteo de archivos medidos
+  OK   tampoco congela a ciegas
+  OK   no dice haber escrito baseline
+  OK   con lexico el veredicto es 1, no 2
+
+23 ok, 0 fallos (alcance medido: 23 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)

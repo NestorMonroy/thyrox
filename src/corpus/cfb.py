@@ -217,7 +217,7 @@ class CompoundFile:
     def _load_directory(self, first: int):
         raw = b"".join(self._sector(s) for s in self._chain(self._fat, first))
         entries: dict[str, Entry] = {}
-        raiz = None
+        root = None
         for i in range(0, len(raw), DIR_ENTRY_SIZE):
             e = raw[i:i + DIR_ENTRY_SIZE]
             if len(e) < DIR_ENTRY_SIZE:
@@ -229,12 +229,12 @@ class CompoundFile:
             kind_value = e[66]
             start_offset = struct.unpack_from("<I", e, 116)[0]
             tam = struct.unpack_from("<I", e, 120)[0]
-            entrada = Entry(name_text, kind_value, start_offset, tam)
+            entry = Entry(name_text, kind_value, start_offset, tam)
             if kind_value == TYPE_ROOT:
-                raiz = entrada
+                root = entry
             elif kind_value == TYPE_STREAM:
-                entries[name_text] = entrada
-        return entries, raiz
+                entries[name_text] = entry
+        return entries, root
 
     # -- superficie publica ------------------------------------------------
 
@@ -257,11 +257,11 @@ class CompoundFile:
         return self._read_fat_chain(e.start, e.size)
 
 
-def open_compound(origen) -> CompoundFile:
+def open_compound(source) -> CompoundFile:
     """Abre un CFB desde una ruta, o REHUSA nombrando por que."""
-    origen = pathlib.Path(origen)
+    source = pathlib.Path(source)
     try:
-        data_bytes = origen.read_bytes()
+        data_bytes = source.read_bytes()
     except OSError as err:
-        raise NotCompoundFile("no se puede leer %s (%s)" % (origen, err)) from err
+        raise NotCompoundFile("no se puede leer %s (%s)" % (source, err)) from err
     return CompoundFile(data_bytes)

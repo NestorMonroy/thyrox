@@ -152,7 +152,7 @@ class TestVerdict(unittest.TestCase):
     def test_3_a_stream_that_does_not_exist_is_NAMED(self):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG})
+            build(f, {"Large": BIG})
             doc = cfb.open_compound(f)
             with self.assertRaises(KeyError) as box:
                 doc.stream("Workbook")
@@ -163,8 +163,8 @@ class TestBigStream(unittest.TestCase):
     def test_4_a_stream_through_the_FAT_comes_out_whole(self):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG})
-            self.assertEqual(cfb.open_compound(f).stream("Grande"), BIG)
+            build(f, {"Large": BIG})
+            self.assertEqual(cfb.open_compound(f).stream("Large"), BIG)
 
     def test_5_the_stream_is_TRIMMED_to_its_declared_size(self):
         """Un flujo ocupa sectores enteros; su ultimo sector viene relleno de
@@ -173,8 +173,8 @@ class TestBigStream(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
             data = BIG + b"cola"
-            build(f, {"Grande": data})
-            output = cfb.open_compound(f).stream("Grande")
+            build(f, {"Large": data})
+            output = cfb.open_compound(f).stream("Large")
             self.assertEqual(len(output), len(data))
             self.assertFalse(output.endswith(b"\0"))
 
@@ -185,8 +185,8 @@ class TestMiniFat(unittest.TestCase):
     def test_6_a_SMALL_stream_comes_through_the_mini_FAT(self):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG, "Chico": SMALL})
-            self.assertEqual(cfb.open_compound(f).stream("Chico"), SMALL)
+            build(f, {"Large": BIG, "Small": SMALL})
+            self.assertEqual(cfb.open_compound(f).stream("Small"), SMALL)
 
     def test_7_NULLIFICATION_reading_a_small_stream_through_the_FAT_yields_GARBAGE(self):
         """Control de anulacion, y el defecto es SILENCIOSO: el numero de
@@ -195,9 +195,9 @@ class TestMiniFat(unittest.TestCase):
         de metadatos que se leerian como cualquier otra cosa."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG, "Chico": SMALL})
+            build(f, {"Large": BIG, "Small": SMALL})
             doc = cfb.open_compound(f)
-            self.assertNotEqual(doc._read_fat_chain(doc._dir["Chico"].start,
+            self.assertNotEqual(doc._read_fat_chain(doc._dir["Small"].start,
                                                     len(SMALL)), SMALL)
 
     def test_8_the_two_coexist_in_the_SAME_file(self):
@@ -205,10 +205,10 @@ class TestMiniFat(unittest.TestCase):
         las dos tablas pasa con un archivo de un solo tipo de flujo."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG, "Chico": SMALL})
+            build(f, {"Large": BIG, "Small": SMALL})
             doc = cfb.open_compound(f)
-            self.assertEqual(doc.stream("Grande"), BIG)
-            self.assertEqual(doc.stream("Chico"), SMALL)
+            self.assertEqual(doc.stream("Large"), BIG)
+            self.assertEqual(doc.stream("Small"), SMALL)
 
 
 class TestDirectory(unittest.TestCase):
@@ -223,7 +223,7 @@ class TestDirectory(unittest.TestCase):
         desplazado desde el primer sector."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.xls"
-            build(f, {"Grande": BIG})
+            build(f, {"Large": BIG})
             self.assertEqual(cfb.open_compound(f).sector_size, 512)
 
 

@@ -161,28 +161,28 @@ class ProviderLayer(unittest.TestCase):
     def chain(self):
         return reach.production_declarations(self.consumer, provider_root=self.provider)
 
-    def test_la_familia_por_clon_cae_al_proveedor(self):
+    def test_per_clone_family_falls_back_to_provider(self):
         self.assertEqual(self.chain().declared("THYROX_CAPA_DOCS"), "del-proveedor-para-docs")
 
-    def test_el_consumidor_gana_sobre_el_proveedor(self):
+    def test_consumer_wins_over_provider(self):
         self.assertEqual(self.chain().declared("THYROX_COMPARTIDA_DOCS"), "del-consumidor")
 
-    def test_el_proceso_gana_sobre_las_dos(self):
+    def test_process_wins_over_both(self):
         os.environ["THYROX_COMPARTIDA_DOCS"] = "del-proceso"
         self.assertEqual(self.chain().declared("THYROX_COMPARTIDA_DOCS"), "del-proceso")
 
-    def test_el_hogar_propio_del_proveedor_no_se_filtra(self):
+    def test_provider_own_home_does_not_leak(self):
         """EL QUE DISCRIMINA la regresión medida: 14 suites en rojo."""
         self.assertIsNone(self.chain().declared("THYROX_CAPA_DIR"))
 
-    def test_la_familia_de_otro_clon_no_se_filtra(self):
+    def test_family_of_another_clone_does_not_leak(self):
         self.assertIsNone(self.chain().declared("THYROX_CAPA_API"))
 
-    def test_sin_env_del_proveedor_no_hay_respaldo_ni_error(self):
+    def test_without_provider_env_there_is_no_fallback_nor_error(self):
         (self.provider / ".env").unlink()
         self.assertIsNone(self.chain().declared("THYROX_CAPA_DOCS"))
 
-    def test_sin_raiz_declarada_el_proveedor_es_el_hermano_del_clon(self):
+    def test_without_declared_root_provider_is_clone_sibling(self):
         """El proveedor se busca junto al clon que pregunta, no junto al módulo.
 
         Buscarlo desde ``reach.__file__`` hacía que un árbol sintético leyera el
@@ -193,18 +193,18 @@ class ProviderLayer(unittest.TestCase):
         chain = reach.production_declarations(self.consumer)
         self.assertEqual(chain.declared("THYROX_CAPA_DOCS"), "del-proveedor-para-docs")
 
-    def test_un_arbol_sin_proveedor_hermano_no_hereda_el_del_host(self):
+    def test_tree_without_sibling_provider_does_not_inherit_host(self):
         import shutil
         shutil.rmtree(self.provider)
         chain = reach.production_declarations(self.consumer)
         self.assertIsNone(chain.declared("THYROX_WORKBENCH_DOCS"))
 
-    def test_env_file_declarado_apaga_la_capa_del_proveedor(self):
+    def test_declared_env_file_turns_off_provider_layer(self):
         """``THYROX_ENV_FILE`` declara QUÉ archivo gobierna: no se suma otro."""
         os.environ["THYROX_ENV_FILE"] = os.devnull
         self.assertIsNone(self.chain().declared("THYROX_CAPA_DOCS"))
 
-    def test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor(self):
+    def test_real_positive_per_clone_family_is_read_from_consumer(self):
         """El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
         proveedor y se pedía desde ``kaupamex-docs``."""
         provider_env = _ROOT / ".env"

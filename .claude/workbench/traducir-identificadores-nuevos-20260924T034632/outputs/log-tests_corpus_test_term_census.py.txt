@@ -1,0 +1,33 @@
+test_15_counts_over_a_file_and_publishes_the_table (__main__.TestLineSurface.test_15_counts_over_a_file_and_publishes_the_table) ... ok
+test_16_an_empty_corpus_says_NO_SUBJECT (__main__.TestLineSurface.test_16_an_empty_corpus_says_NO_SUBJECT) ... ok
+test_17_a_missing_origin_exits_2_and_emits_NO_table (__main__.TestLineSurface.test_17_a_missing_origin_exits_2_and_emits_NO_table) ... ok
+test_1_the_accent_does_NOT_split_the_count (__main__.TestTheAccent.test_1_the_accent_does_NOT_split_the_count)
+CONTROL POSITIVO del defecto que origina el modulo. Un corpus en ... ok
+test_2_searching_WITHOUT_an_accent_finds_the_accented (__main__.TestTheAccent.test_2_searching_WITHOUT_an_accent_finds_the_accented)
+Es la direccion que importa: quien escribe el patron en una ... ok
+test_3_and_searching_WITH_an_accent_finds_the_bare (__main__.TestTheAccent.test_3_and_searching_WITH_an_accent_finds_the_bare) ... ok
+test_4_n_with_tilde_does_not_fold_into_plain_n (__main__.TestTheAccent.test_4_n_with_tilde_does_not_fold_into_plain_n)
+CONTROL DE ANULACION del plegado: `n` y `n` son letras distintas ... ok
+test_10_the_prefix_is_required_explicitly (__main__.TestTheBoundary.test_10_the_prefix_is_required_explicitly)
+`digitaliza` tiene que poder alcanzar a `digitalizacion` cuando ... ok
+test_7_an_acronym_does_not_match_INSIDE_another_word (__main__.TestTheBoundary.test_7_an_acronym_does_not_match_INSIDE_another_word)
+`ERP` dentro de `SUPERPUESTO` no es una mencion. En localidad C ... ok
+test_8_the_boundary_recognizes_the_ACCENTED_letter_as_a_letter (__main__.TestTheBoundary.test_8_the_boundary_recognizes_the_ACCENTED_letter_as_a_letter)
+`Mexico` dentro de `Mexicoamericano` no es `Mexico`. Si la ... ok
+test_9_a_term_of_SEVERAL_words_is_counted_whole (__main__.TestTheBoundary.test_9_a_term_of_SEVERAL_words_is_counted_whole) ... ok
+test_14_occurrences_are_not_counted_twice (__main__.TestTheOverlap.test_14_occurrences_are_not_counted_twice) ... ok
+test_5_the_accented_UPPERCASE_also_counts (__main__.TestTheUppercase.test_5_the_accented_UPPERCASE_also_counts)
+`-i` de grep en localidad C tampoco pliega `E` con `e`: son ... ok
+test_6_case_sensitivity_can_be_required (__main__.TestTheUppercase.test_6_case_sensitivity_can_be_required)
+Hay veces que la caja ES el dato: `ERP` no es `erp`. ... ok
+test_11_a_missing_term_counts_ZERO_and_is_present (__main__.TestTheZero.test_11_a_missing_term_counts_ZERO_and_is_present)
+Un cero es un resultado, no una ausencia de fila: la tabla que ... ok
+test_12_an_EMPTY_corpus_is_not_confused_with_real_zeros (__main__.TestTheZero.test_12_an_EMPTY_corpus_is_not_confused_with_real_zeros)
+Verde sobre cero no es verde: doce ceros sobre un texto vacio no ... ok
+test_13_and_over_a_corpus_with_text_it_does_NOT_declare_it_empty (__main__.TestTheZero.test_13_and_over_a_corpus_with_text_it_does_NOT_declare_it_empty)
+CONTROL DE ANULACION del anterior. ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.114s
+
+OK

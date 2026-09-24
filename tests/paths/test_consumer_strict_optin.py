@@ -43,8 +43,8 @@ import sys
 import tempfile
 import unittest
 
-AQUI = pathlib.Path(__file__).resolve().parent
-sys.path.insert(0, str(AQUI.parent.parent / "src"))
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parent.parent / "src"))
 
 from paths import reach  # noqa: E402
 
@@ -74,7 +74,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
 
     # -- El caso central: sin declaracion, nada cambia -----------------------
 
-    def test_sin_la_declaracion_la_conducta_es_la_de_siempre(self):
+    def test_without_declaration_behavior_is_unchanged(self):
         """El DEFECTO conserva lo de hoy: devuelve el valor tal cual.
 
         Anulacion: retirar la comprobacion de la variable y aplicar las
@@ -85,7 +85,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
         self.assertEqual(reach.consumer_root(start=self.provider),
                          self.consumer)
 
-    def test_sin_la_declaracion_lo_relativo_se_resuelve_contra_el_cwd(self):
+    def test_without_declaration_relative_resolves_against_cwd(self):
         """Segunda mitad del defecto: la relativa sigue saliendo del cwd.
 
         No se afirma que esa conducta sea buena — se afirma que es la que hay,
@@ -101,7 +101,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
 
     # -- Con la declaracion: las dos clausulas -------------------------------
 
-    def test_declarada_rehusa_cuando_el_partida_es_el_proveedor(self):
+    def test_declared_refuses_when_the_start_is_the_provider(self):
         """Clausula 1. Medido el 2026-09-23 sobre un arbol real: al declarar
         la variable sin esta clausula, un gate de idioma paso de 0 a 70
         nombres. Ninguno era nuevo — dejo de leer el baseline del PROVEEDOR y
@@ -113,7 +113,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
         with self.assertRaises(reach.ConsumerUnknownError):
             reach.consumer_root(start=self.provider)
 
-    def test_declarada_no_rehusa_sin_punto_de_partida(self):
+    def test_declared_does_not_refuse_without_a_starting_point(self):
         """La clausula 1 mira `start`, no el cwd: sin punto de partida la
         declaracion manda, que es el uso normal.
         """
@@ -121,7 +121,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
         os.environ[reach.CONSUMER_STRICT_VAR] = "1"
         self.assertEqual(reach.consumer_root(), self.consumer)
 
-    def test_declarada_resuelve_lo_relativo_contra_el_contenedor(self):
+    def test_declared_resolves_relative_against_the_container(self):
         """Clausula 2, y su control de anulacion en el mismo caso: se invoca
         desde el PROVEEDOR, asi que resolver contra el cwd daria
         `<proveedor>/eane-docs` y no el hermano.
@@ -135,7 +135,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
         finally:
             os.chdir(previous)
 
-    def test_la_absoluta_sigue_mandando_con_o_sin_declaracion(self):
+    def test_absolute_still_rules_with_or_without_declaration(self):
         """Lo relativo no le quita nada a lo absoluto."""
         os.environ["THYROX_CONSUMER"] = str(self.consumer)
         os.environ[reach.CONSUMER_STRICT_VAR] = "1"
@@ -143,7 +143,7 @@ class ConsumerStrictOptIn(unittest.TestCase):
 
     # -- Que cuenta como declarada -------------------------------------------
 
-    def test_los_valores_que_apagan_la_clausula(self):
+    def test_values_that_turn_the_clause_off(self):
         """`0`, `false`, `no` y la cadena vacia NO la encienden.
 
         Se declara para que nadie descubra por accidente que
@@ -151,17 +151,17 @@ class ConsumerStrictOptIn(unittest.TestCase):
         ingenuo produciria.
         """
         os.environ["THYROX_CONSUMER"] = str(self.consumer)
-        for apagado in ("0", "false", "FALSE", "no", ""):
-            with self.subTest(valor=apagado):
-                os.environ[reach.CONSUMER_STRICT_VAR] = apagado
+        for disabled in ("0", "false", "FALSE", "no", ""):
+            with self.subTest(valor=disabled):
+                os.environ[reach.CONSUMER_STRICT_VAR] = disabled
                 self.assertEqual(reach.consumer_root(start=self.provider),
                                  self.consumer)
 
-    def test_los_valores_que_la_encienden(self):
+    def test_values_that_turn_it_on(self):
         os.environ["THYROX_CONSUMER"] = str(self.consumer)
-        for encendido in ("1", "true", "TRUE", "yes", "si"):
-            with self.subTest(valor=encendido):
-                os.environ[reach.CONSUMER_STRICT_VAR] = encendido
+        for enabled in ("1", "true", "TRUE", "yes", "si"):
+            with self.subTest(valor=enabled):
+                os.environ[reach.CONSUMER_STRICT_VAR] = enabled
                 with self.assertRaises(reach.ConsumerUnknownError):
                     reach.consumer_root(start=self.provider)
 

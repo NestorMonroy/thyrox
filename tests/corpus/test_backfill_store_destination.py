@@ -36,7 +36,7 @@ class BackfillStoreDestination(unittest.TestCase):
         if not docs.is_dir():
             self.skipTest("sin el corpus de hallazgos del consumidor")
 
-    def test_agent_store_claude_dir_desvia_la_escritura(self):
+    def test_agent_store_claude_dir_diverts_the_write(self):
         before = _sha1(REAL)
         with tempfile.TemporaryDirectory() as tmp:
             env = dict(os.environ, AGENT_STORE_CLAUDE_DIR=tmp,

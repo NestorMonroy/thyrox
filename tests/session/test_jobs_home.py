@@ -165,18 +165,18 @@ class AnclaDelArchivo(unittest.TestCase):
         api = _clon("api")
         declarado = api / "scripts" / "evidence"
         (api / ".env").write_text(f"THYROX_JOBS_API={declarado}\n")
-        previo_cwd = os.getcwd()
+        previous_cwd = os.getcwd()
         # La fixture fija `THYROX_ENV_FILE`; aqui se retira para que el `.env`
         # se encuentre por ascenso desde el cwd, que es lo que el caso mide.
-        previo_env_file = os.environ.pop("THYROX_ENV_FILE", None)
+        previous_env_file = os.environ.pop("THYROX_ENV_FILE", None)
         os.chdir(api)
         try:
             os.environ.pop("THYROX_JOBS_API", None)
             self.assertEqual(job_runs.jobs_dir(), declarado)
         finally:
-            os.chdir(previo_cwd)
-            if previo_env_file is not None:
-                os.environ["THYROX_ENV_FILE"] = previo_env_file
+            os.chdir(previous_cwd)
+            if previous_env_file is not None:
+                os.environ["THYROX_ENV_FILE"] = previous_env_file
 
 
 if __name__ == "__main__":

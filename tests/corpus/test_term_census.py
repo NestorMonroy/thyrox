@@ -61,7 +61,7 @@ class TestTheAccent(unittest.TestCase):
             term_census.count("credito simple", ["cr\u00e9dito"]),
             {"cr\u00e9dito": 1})
 
-    def test_4_the_ENIE_does_not_fold_into_the_ENE(self):
+    def test_4_n_with_tilde_does_not_fold_into_plain_n(self):
         """CONTROL DE ANULACION del plegado: `n` y `n` son letras distintas
         en espanol, no una variante de acento. Plegarlas hace que `ano` y
         `ano` se cuenten juntos, que es un error de otra clase."""
@@ -150,11 +150,11 @@ class TestTheOverlap(unittest.TestCase):
 
 
 class TestLineSurface(unittest.TestCase):
-    def _run(self, *args, entrada=""):
+    def _run(self, *args, entry=""):
         wrapper = (pathlib.Path(__file__).resolve().parents[2]
                       / "bin" / "term_census")
         return subprocess.run(["bash", str(wrapper), *args],
-                              input=entrada, capture_output=True, text=True)
+                              input=entry, capture_output=True, text=True)
 
     def test_15_counts_over_a_file_and_publishes_the_table(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -163,21 +163,21 @@ def test_settle_is_idempotent_and_its_duration_does_not_grow():
     Que lo haria fallar: retirar la guarda de `settle`. Entonces la segunda
     llamada apenda, el conteo pasa de 1 a 2 y la duracion crece.
     """
-    with tempfile.TemporaryDirectory() as hogar:
-        run = job_runs.scaffold_run(hogar, "sonda", command="bash -c :")
+    with tempfile.TemporaryDirectory() as home:
+        run = job_runs.scaffold_run(home, "sonda", command="bash -c :")
         job_runs.settle(run, 3)
-        primera = job_runs.read_manifest(run)["duration_seconds"]
+        first = job_runs.read_manifest(run)["duration_seconds"]
 
         # La MISMA llamada, dos veces mas. Es lo que `status` hace.
         job_runs.settle(run, 3)
         job_runs.settle(run, 3)
 
-        lineas = (pathlib.Path(run) / job_runs.MANIFEST_FILE_NAME).read_text(
+        lines = (pathlib.Path(run) / job_runs.MANIFEST_FILE_NAME).read_text(
             encoding="utf-8").splitlines()
-        asentadas = [l for l in lineas if '"kind": "settle"' in l]
-        assert len(asentadas) == 1, (
-            f"settle no es idempotente: {len(asentadas)} filas para un trabajo")
-        assert job_runs.read_manifest(run)["duration_seconds"] == primera, (
+        settled = [l for l in lines if '"kind": "settle"' in l]
+        assert len(settled) == 1, (
+            f"settle no es idempotente: {len(settled)} filas para un trabajo")
+        assert job_runs.read_manifest(run)["duration_seconds"] == first, (
             "la duracion publicada cambio sin que el trabajo volviera a correr")
 
 
@@ -189,8 +189,8 @@ def test_settle_forced_reasserts_and_says_so():
     corregir su codigo: ahi la segunda fila es deliberada, y se pide. Sin este
     caso la guarda no se distingue de «settle deja de funcionar».
     """
-    with tempfile.TemporaryDirectory() as hogar:
-        run = job_runs.scaffold_run(hogar, "sonda", command="bash -c :")
+    with tempfile.TemporaryDirectory() as home:
+        run = job_runs.scaffold_run(home, "sonda", command="bash -c :")
         job_runs.settle(run, 0)
         job_runs.settle(run, 7, force=True)
         assert job_runs.read_manifest(run)["exit_code"] == 7, (

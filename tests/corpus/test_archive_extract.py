@@ -119,12 +119,12 @@ class TestProbeByConduct(unittest.TestCase):
             impostor = pathlib.Path(tmp) / "7z"
             impostor.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
             impostor.chmod(0o755)
-            previo = os.environ.get("PATH")
+            previous = os.environ.get("PATH")
             os.environ["PATH"] = tmp
             try:
                 self.assertIsNone(archive_extract.sevenz_bin())
             finally:
-                os.environ["PATH"] = previo
+                os.environ["PATH"] = previous
 
     def test_11_without_an_extractor_it_REFUSES_and_returns_no_empty_list(self):
         """Una lista vacia se lee como «el archivo no traia nada». Un cero
@@ -132,13 +132,13 @@ class TestProbeByConduct(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.7z"
             f.write_bytes(b"7z\xbc\xaf\x27\x1c" + b"\x00" * 32)
-            previo = os.environ.get("PATH")
+            previous = os.environ.get("PATH")
             os.environ["PATH"] = tmp
             try:
                 with self.assertRaises(archive_extract.ExtractorMissing):
                     archive_extract.members(f)
             finally:
-                os.environ["PATH"] = previo
+                os.environ["PATH"] = previous
 
 
 class TestRealWalk(unittest.TestCase):
@@ -148,21 +148,21 @@ class TestRealWalk(unittest.TestCase):
         if not _have_sevenz():
             self.skipTest("SIN SUJETO: no hay extractor de 7z en este contenedor")
 
-    def _member_path(self, raiz: pathlib.Path) -> pathlib.Path:
-        origen = raiz / "origen"
-        (origen / "2026").mkdir(parents=True)
-        (origen / "2026" / "uno.txt").write_text("primera nota", encoding="utf-8")
-        (origen / "dos.txt").write_text("segunda nota", encoding="utf-8")
-        target = raiz / "noticias.7z"
-        subprocess.run(["7z", "a", str(target), "."], cwd=origen,
+    def _member_path(self, root: pathlib.Path) -> pathlib.Path:
+        source = root / "origen"
+        (source / "2026").mkdir(parents=True)
+        (source / "2026" / "uno.txt").write_text("primera nota", encoding="utf-8")
+        (source / "dos.txt").write_text("segunda nota", encoding="utf-8")
+        target = root / "noticias.7z"
+        subprocess.run(["7z", "a", str(target), "."], cwd=source,
                        check=True, capture_output=True)
         return target
 
     def test_12_members_LISTS_without_extracting(self):
         with tempfile.TemporaryDirectory() as tmp:
-            raiz = pathlib.Path(tmp)
-            arch = self._member_path(raiz)
-            dest = raiz / "dest"
+            root = pathlib.Path(tmp)
+            arch = self._member_path(root)
+            dest = root / "dest"
             dest.mkdir()
             names = archive_extract.members(arch)
             self.assertIn("dos.txt", names)
@@ -172,9 +172,9 @@ class TestRealWalk(unittest.TestCase):
 
     def test_13_extract_delivers_the_files_with_their_content(self):
         with tempfile.TemporaryDirectory() as tmp:
-            raiz = pathlib.Path(tmp)
-            arch = self._member_path(raiz)
-            dest = raiz / "dest"
+            root = pathlib.Path(tmp)
+            arch = self._member_path(root)
+            dest = root / "dest"
             extracted = archive_extract.extract(arch, dest)
             self.assertEqual(len(extracted), 2, "saco %s" % (extracted,))
             self.assertEqual((dest / "dos.txt").read_text(encoding="utf-8"),
@@ -184,9 +184,9 @@ class TestRealWalk(unittest.TestCase):
 
     def test_14_the_target_is_created_if_it_does_not_exist(self):
         with tempfile.TemporaryDirectory() as tmp:
-            raiz = pathlib.Path(tmp)
-            arch = self._member_path(raiz)
-            dest = raiz / "no" / "existe" / "aun"
+            root = pathlib.Path(tmp)
+            arch = self._member_path(root)
+            dest = root / "no" / "existe" / "aun"
             archive_extract.extract(arch, dest)
             self.assertTrue((dest / "dos.txt").is_file())
 
@@ -197,18 +197,18 @@ class TestZipAndTarWithoutBinary(unittest.TestCase):
     def test_15_a_zip_opens_without_an_external_extractor(self):
         import zipfile
         with tempfile.TemporaryDirectory() as tmp:
-            raiz = pathlib.Path(tmp)
-            arch = raiz / "n.zip"
+            root = pathlib.Path(tmp)
+            arch = root / "n.zip"
             with zipfile.ZipFile(arch, "w") as z:
                 z.writestr("a/b.txt", "contenido")
-            dest = raiz / "dest"
-            previo = os.environ.get("PATH")
+            dest = root / "dest"
+            previous = os.environ.get("PATH")
             os.environ["PATH"] = tmp          # sin 7z en el PATH
             try:
                 self.assertEqual(archive_extract.members(arch), ["a/b.txt"])
                 archive_extract.extract(arch, dest)
             finally:
-                os.environ["PATH"] = previo
+                os.environ["PATH"] = previous
             self.assertEqual((dest / "a" / "b.txt").read_text(encoding="utf-8"),
                              "contenido")
 
@@ -218,15 +218,15 @@ class TestZipAndTarWithoutBinary(unittest.TestCase):
         aterriza nada — ni siquiera los miembros sanos que lo acompanan."""
         import zipfile
         with tempfile.TemporaryDirectory() as tmp:
-            raiz = pathlib.Path(tmp)
-            arch = raiz / "malicioso.zip"
+            root = pathlib.Path(tmp)
+            arch = root / "malicioso.zip"
             with zipfile.ZipFile(arch, "w") as z:
                 z.writestr("sano.txt", "inocente")
                 z.writestr("../escapado.txt", "fuera")
-            dest = raiz / "dest"
+            dest = root / "dest"
             with self.assertRaises(archive_extract.UnsafeMember):
                 archive_extract.extract(arch, dest)
-            self.assertFalse((raiz / "escapado.txt").exists())
+            self.assertFalse((root / "escapado.txt").exists())
             self.assertFalse((dest / "sano.txt").exists(),
                              "escribio antes de comprobar: la guarda llega tarde")
 

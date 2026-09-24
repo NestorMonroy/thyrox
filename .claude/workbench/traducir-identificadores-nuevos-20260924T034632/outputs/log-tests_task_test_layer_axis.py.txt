@@ -1,0 +1,17 @@
+test_1_thyrox_es_un_repo_admitido (__main__.TestEjeDelIdentificador.test_1_thyrox_es_un_repo_admitido)
+Falla si thyrox sigue fuera. Es el cambio entero: con el eje en la ... ok
+test_2_los_seis_repos_del_multirepo_estan (__main__.TestEjeDelIdentificador.test_2_los_seis_repos_del_multirepo_estan)
+Falla si alguno se cae al editar. El conjunto ES la enumeracion de ... ok
+test_3_el_prefijo_de_thyrox_es_el_nombre_del_repo_en_mayuscula (__main__.TestEjeDelIdentificador.test_3_el_prefijo_de_thyrox_es_el_nombre_del_repo_en_mayuscula)
+Falla si alguien abrevia a THX o PROV. ... ok
+test_4_la_forma_canonica_admite_el_prefijo_nuevo (__main__.TestEjeDelIdentificador.test_4_la_forma_canonica_admite_el_prefijo_nuevo)
+Falla si `ID_RE` acotara la longitud de la capa. No la acota ... ok
+test_5_gen_sigue_existiendo_y_NO_es_un_repo (__main__.TestEjeDelIdentificador.test_5_gen_sigue_existiendo_y_NO_es_un_repo)
+Falla si `GEN` se cuela en LAYERS al redefinirlo. ... ok
+test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end (__main__.TestEjeDelIdentificador.test_6_acuñar_con_layer_thyrox_produce_TASK_THYROX_end_to_end)
+CONTROL DE CONDUCTA: acuña de verdad contra un store, no compone una ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.036s
+
+OK

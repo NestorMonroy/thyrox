@@ -1,0 +1,31 @@
+test_14_a_NOTE_row_is_detected (__main__.TestNotesWarning.test_14_a_NOTE_row_is_detected) ... ok
+test_15_the_SOURCE_line_also_counts (__main__.TestNotesWarning.test_15_the_SOURCE_line_also_counts) ... ok
+test_16_a_DATA_row_is_not_confused_with_a_note (__main__.TestNotesWarning.test_16_a_DATA_row_is_not_confused_with_a_note)
+El control que discrimina: sin el, un detector que devolviera ... ok
+test_17_the_dump_is_NOT_filtered (__main__.TestNotesWarning.test_17_the_dump_is_NOT_filtered)
+El detector avisa; no quita. Un volcado sin sus notas es ... ok
+test_5_a_NUMBER_is_a_double (__main__.TestNumbers.test_5_a_NUMBER_is_a_double) ... ok
+test_6_an_integer_RK_decodes (__main__.TestNumbers.test_6_an_integer_RK_decodes)
+Trampa 4: RK empaqueta un numero en 30 bits con DOS banderas. ... ok
+test_7_an_RK_with_the_HUNDREDTHS_flag_is_divided_by_100 (__main__.TestNumbers.test_7_an_RK_with_the_HUNDREDTHS_flag_is_divided_by_100)
+El bit 0 dice «esto va dividido entre cien». Ignorarlo publica ... ok
+test_8_a_NEGATIVE_RK_does_not_come_out_positive (__main__.TestNumbers.test_8_a_NEGATIVE_RK_does_not_come_out_positive)
+30 bits en complemento a dos. Un desplazamiento sin signo ... ok
+test_9_a_MULRK_carries_SEVERAL_cells (__main__.TestNumbers.test_9_a_MULRK_carries_SEVERAL_cells)
+Trampa 5: un solo registro con N celdas contiguas. Tratarlo como ... ok
+test_10_the_column_GAP_is_preserved (__main__.TestPosition.test_10_the_column_GAP_is_preserved) ... ok
+test_11_an_omitted_ROW_does_not_shift_the_following_ones (__main__.TestPosition.test_11_an_omitted_ROW_does_not_shift_the_following_ones) ... ok
+test_1_a_LABELSST_returns_its_TEXT (__main__.TestSharedStrings.test_1_a_LABELSST_returns_its_TEXT) ... ok
+test_2_NULLIFICATION_reading_the_raw_index_yields_a_NUMBER (__main__.TestSharedStrings.test_2_NULLIFICATION_reading_the_raw_index_yields_a_NUMBER)
+La trampa es traicionera por lo mismo que en el `.xlsx`: el ... ok
+test_3_a_UTF_16_string_comes_out_right (__main__.TestSharedStrings.test_3_a_UTF_16_string_comes_out_right)
+Trampa 2: el byte de banderas decide si son 1 o 2 bytes por ... ok
+test_4_an_SST_split_across_CONTINUE_is_not_truncated (__main__.TestSharedStrings.test_4_an_SST_split_across_CONTINUE_is_not_truncated)
+Trampa 3: una tabla larga se parte. El archivo real NO la parte ... ok
+test_12_a_stream_WITHOUT_BOF_REFUSES (__main__.TestVerdict.test_12_a_stream_WITHOUT_BOF_REFUSES) ... ok
+test_13_a_CFB_that_is_not_a_workbook_REFUSES_naming_the_stream (__main__.TestVerdict.test_13_a_CFB_that_is_not_a_workbook_REFUSES_naming_the_stream) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.004s
+
+OK

@@ -1,0 +1,45 @@
+test_18_charts_dumps_category_and_value_together (__main__.TestLineSurface.test_18_charts_dumps_category_and_value_together) ... ok
+test_19_without_charts_it_says_NO_SUBJECT_and_not_OK (__main__.TestLineSurface.test_19_without_charts_it_says_NO_SUBJECT_and_not_OK)
+Verde sobre cero no es verde: cero graficas no se publica como ... ok
+test_20_the_embedded_workbook_is_named_in_the_output (__main__.TestLineSurface.test_20_the_embedded_workbook_is_named_in_the_output)
+La salida tiene que decir el siguiente paso, no solo que falta: ... ok
+test_21_the_body_remains_the_default (__main__.TestLineSurface.test_21_the_body_remains_the_default)
+CONTROL DE ANULACION: el volcado del cuerpo no cambia porque se ... ok
+test_6_a_NUMERIC_category_is_not_lost (__main__.TestTheCategory.test_6_a_NUMERIC_category_is_not_lost)
+Un eje de anos es `c:numCache`, no `c:strCache`. Un lector que ... ok
+test_7_a_series_WITHOUT_categories_invents_no_axis (__main__.TestTheCategory.test_7_a_series_WITHOUT_categories_invents_no_axis) ... ok
+test_14_a_chart_WITHOUT_cache_names_its_workbook (__main__.TestTheGap.test_14_a_chart_WITHOUT_cache_names_its_workbook)
+Real en chart3, chart9 y chart10: tres de diez. El dato existe, ... ok
+test_15_a_chart_without_a_workbook_declares_it_absent (__main__.TestTheGap.test_15_a_chart_without_a_workbook_declares_it_absent)
+CONTROL DE ANULACION del anterior: el libro se lee del paquete, ... ok
+test_16_a_document_WITHOUT_charts_returns_an_empty_list (__main__.TestTheGap.test_16_a_document_WITHOUT_charts_returns_an_empty_list)
+Real: el `.docx` del calendario del INEGI trae cero. No es un ... ok
+test_10_a_title_SPLIT_across_runs_is_joined (__main__.TestTheName.test_10_a_title_SPLIT_across_runs_is_joined)
+Misma trampa que el parrafo del cuerpo: el formato corta el ... ok
+test_11_a_chart_WITHOUT_a_title_does_not_invent_one (__main__.TestTheName.test_11_a_chart_WITHOUT_a_title_does_not_invent_one) ... ok
+test_8_a_data_LABEL_does_not_become_a_series_name (__main__.TestTheName.test_8_a_data_LABEL_does_not_become_a_series_name)
+CONTROL POSITIVO de la trampa 4, medido en `chart5` del archivo ... ok
+test_8b_the_label_does_not_cover_a_name_that_IS_there (__main__.TestTheName.test_8b_the_label_does_not_cover_a_name_that_IS_there)
+CONTROL DE ANULACION del anterior: un lector que devolviera ... ok
+test_9_the_chart_TITLE_is_read_in_the_other_vocabulary (__main__.TestTheName.test_9_the_chart_TITLE_is_read_in_the_other_vocabulary)
+El titulo va en `a:t` de DrawingML, no en el espacio de la ... ok
+test_17_chart10_comes_AFTER_chart9_and_not_between_1_and_2 (__main__.TestTheOrder.test_17_chart10_comes_AFTER_chart9_and_not_between_1_and_2)
+Con 10 graficas —que es justo lo que trae el archivo real—, ... ok
+test_1_a_MISSING_point_does_not_shift_the_following_ones (__main__.TestThePoint.test_1_a_MISSING_point_does_not_shift_the_following_ones)
+CONTROL POSITIVO de la trampa 2, la que mas dano hace. ... ok
+test_2_the_gap_is_None_and_NOT_zero (__main__.TestThePoint.test_2_the_gap_is_None_and_NOT_zero)
+Un valor ausente no es un cero. Promediar la serie con ceros ... ok
+test_3_an_EMPTY_series_declares_its_gap_and_does_not_fill_it (__main__.TestThePoint.test_3_an_EMPTY_series_declares_its_gap_and_does_not_fill_it)
+Real en `chart7`: dos series con `ptCount` 4 y cero puntos. ... ok
+test_4_cached_counts_the_points_that_ARE_there (__main__.TestThePoint.test_4_cached_counts_the_points_that_ARE_there) ... ok
+test_5_an_UNREADABLE_value_does_not_bring_down_the_series (__main__.TestThePoint.test_5_an_UNREADABLE_value_does_not_bring_down_the_series)
+`c:v` puede traer `#N/A` o venir vacio. Es un hueco, no un fallo ... ok
+test_12_a_FILTERED_series_does_not_come_back (__main__.TestWhatIsNotDumped.test_12_a_FILTERED_series_does_not_come_back)
+Hermana de `w:delText` en el cuerpo: una serie que alguien ... ok
+test_13_the_ACTIVE_series_does_come_out (__main__.TestWhatIsNotDumped.test_13_the_ACTIVE_series_does_come_out)
+CONTROL DE ANULACION del anterior: sin este par, un lector que ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.230s
+
+OK

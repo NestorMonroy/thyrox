@@ -1,0 +1,2 @@
+100 aserciones
+OK: todas las aserciones pasan

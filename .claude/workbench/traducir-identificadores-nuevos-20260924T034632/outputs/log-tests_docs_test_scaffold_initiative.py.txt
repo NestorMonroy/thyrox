@@ -1,0 +1,34 @@
+=== 1. template_kind ===
+  ok    docs usa Template A
+  ok    api usa Template B
+  ok    thyrox usa Template B
+  ok    ui usa Template B
+=== 2. strip_instructions ===
+  ok    retira todo antes del separador
+  ok    sin separador -> ValueError
+=== 3. fill_placeholders ===
+  ok    submodulo mayusculas
+  ok    slug mayusculas
+  ok    fecha ISO real
+  ok    ref con slug real
+  ok    titulo sustituido
+  ok    placeholder de titulo ya no aparece
+=== 4. scaffold_initiative — Template B, mínimo DEC-AM-01 ===
+  ok    directorio con el slug correcto
+  ok    set minimo exacto (sin tareas)
+  ok    alcance trae Premisa verificada
+  ok    alcance trae :flow:
+  ok    alcance NO trae el bloque de instrucciones
+=== 5. scaffold_initiative — con with_tasks=True ===
+  ok    incluye tareas-<slug>.rst
+=== 6. scaffold_initiative — Template A (docs) ===
+  ok    Template A trae el artefacto IACT verbose
+  ok    Template A trae :audit_fuente: (exclusivo del cuerpo de A, no de B)
+  ok    Template A trae 'Resultado del Gate' (exclusivo del cuerpo de A)
+  ok    frontera declarada: <NOMBRE-UPPER>/<nombre-ref> de Template A quedan SIN sustituir — su convención real diverge de la canónica, medido contra un iniciativa real (docs: actualizar-agentic-ai-thyrox usa iniciativa-<slug>, no <slug> a secas); no se adivina un mapeo por archivo
+=== 7. rehúsa sobre un directorio ya existente ===
+  ok    segunda llamada -> FileExistsError
+=== 8. ANULACIÓN — sin strip_instructions, el bloque sobrevive ===
+  ok    anulación: el bloque de instrucciones SÍ sobrevive sin el corte
+
+OK=24 FAILED=0

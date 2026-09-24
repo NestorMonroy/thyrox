@@ -157,15 +157,15 @@ def _cell_text(cell) -> str:
     return text.replace("\t", TAB_IN_CELL).replace("\n", " ")
 
 
-def blocks(origen) -> list[str]:
+def blocks(source) -> list[str]:
     """El cuerpo como bloques, en ORDEN de documento.
 
     Un parrafo es un bloque; una fila de tabla es un bloque con sus celdas
     separadas por tabulador. Los bloques vacios se descartan.
     """
-    with ooxml.open_package(origen, require=DOCUMENT) as file_path:
-        raiz = ET.fromstring(file_path.read(DOCUMENT))
-    body = raiz.find(W + "body")
+    with ooxml.open_package(source, require=DOCUMENT) as file_path:
+        root = ET.fromstring(file_path.read(DOCUMENT))
+    body = root.find(W + "body")
     if body is None:
         return []
 
@@ -260,7 +260,7 @@ def _cache_points(node):
     if cache is None:
         return [], 0, 0
     count = cache.find(C + "ptCount")
-    declarados = int(count.get("val", "0")) if count is not None else 0
+    declared = int(count.get("val", "0")) if count is not None else 0
 
     raw_ones: dict[int, str] = {}
     for point in cache.findall(C + "pt"):
@@ -269,8 +269,8 @@ def _cache_points(node):
             continue
         raw_ones[int(point.get("idx", "0"))] = value.text or ""
 
-    length = max(declarados, max(raw_ones) + 1 if raw_ones else 0)
-    return [raw_ones.get(i) for i in range(length)], declarados, len(raw_ones)
+    length = max(declared, max(raw_ones) + 1 if raw_ones else 0)
+    return [raw_ones.get(i) for i in range(length)], declared, len(raw_ones)
 
 
 def _as_number(text):
@@ -307,10 +307,10 @@ def _series_name(one_series) -> str | None:
     return None
 
 
-def _chart_title(raiz) -> str | None:
+def _chart_title(root) -> str | None:
     """El titulo, que vive en el vocabulario de DrawingML y no en el de la
     grafica, y que el formato parte en tramos igual que un parrafo."""
-    chart = raiz.find(C + "chart")
+    chart = root.find(C + "chart")
     if chart is None:
         return None
     title_text = chart.find(C + "title")
@@ -324,7 +324,7 @@ def _chart_title(raiz) -> str | None:
     return text or None
 
 
-def _visible_series(raiz) -> list:
+def _visible_series(root) -> list:
     """Las series VIGENTES: las que cuelgan de un tipo de grafica.
 
     Una serie que alguien quito se queda cacheada dentro de un `c:extLst`,
@@ -333,7 +333,7 @@ def _visible_series(raiz) -> list:
     en el documento. Medido en el archivo real: cero. La guarda se queda.
     """
     gathered = []
-    area = raiz.find(C + "chart")
+    area = root.find(C + "chart")
     area = area.find(C + "plotArea") if area is not None else None
     if area is None:
         return gathered
@@ -348,18 +348,18 @@ def _visible_series(raiz) -> list:
 
 def _read_series(one_series) -> Series:
     cats, _, _ = _cache_points(one_series.find(C + "cat"))
-    raw_ones, declarados, cached_points = _cache_points(one_series.find(C + "val"))
-    length = max(len(cats), len(raw_ones), declarados)
+    raw_ones, declared, cached_points = _cache_points(one_series.find(C + "val"))
+    length = max(len(cats), len(raw_ones), declared)
     cats = cats + [None] * (length - len(cats))
     raw_ones = raw_ones + [None] * (length - len(raw_ones))
     return Series(name=_series_name(one_series),
                   categories=cats,
                   values=[_as_number(x) for x in raw_ones],
-                  declared=declarados,
+                  declared=declared,
                   cached=cached_points)
 
 
-def charts(origen) -> list[Chart]:
+def charts(source) -> list[Chart]:
     """Las graficas del paquete, con lo que cada una CACHEA.
 
     Una lista vacia es «este documento no trae graficas», que es legitimo
@@ -367,10 +367,10 @@ def charts(origen) -> list[Chart]:
     grafica con ``series`` vacia y ``workbook`` puesto es otra cosa: el dato
     existe y esta en el libro incrustado.
     """
-    with ooxml.open_package(origen, require=DOCUMENT) as file_path:
+    with ooxml.open_package(source, require=DOCUMENT) as file_path:
         gathered: list[Chart] = []
         for part_ref in _chart_parts(file_path):
-            raiz = ET.fromstring(file_path.read(part_ref))
+            root = ET.fromstring(file_path.read(part_ref))
             workbook_ref = None
             for path in ooxml.relationships(file_path, part_ref).values():
                 if path.lower().endswith((".xlsx", ".xls")):
@@ -378,8 +378,8 @@ def charts(origen) -> list[Chart]:
                     break
             gathered.append(Chart(
                 part=part_ref,
-                title=_chart_title(raiz),
-                series=[_read_series(s) for s in _visible_series(raiz)],
+                title=_chart_title(root),
+                series=[_read_series(s) for s in _visible_series(root)],
                 workbook=workbook_ref))
     return gathered
 
@@ -421,15 +421,15 @@ def main(argv: list[str] | None = None) -> int:
                              "en vez del cuerpo")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("docx_to_text: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("docx_to_text: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("              NO se emite conteo.", file=sys.stderr)
         return 2
     try:
-        chart_list = charts(origen) if args.charts else None
-        block_list = format_charts(chart_list) if args.charts else blocks(origen)
+        chart_list = charts(source) if args.charts else None
+        block_list = format_charts(chart_list) if args.charts else blocks(source)
     except ooxml.NotOoxml as err:
         print("docx_to_text: %s" % err, file=sys.stderr)
         print("              El sufijo del nombre NO decide.", file=sys.stderr)

@@ -175,9 +175,9 @@ def make_consumer_with_sibling(root, name, sibling, link="local"):
                   "export const mine: string = 1\n"
                   "export const use = (n: number): number => helps(n)\n")
 
-    enlace = (consumer if link == "local" else root) / "node_modules" / "@probe"
-    enlace.mkdir(parents=True, exist_ok=True)
-    (enlace / sibling).symlink_to(root / sibling, target_is_directory=True)
+    link_dir = (consumer if link == "local" else root) / "node_modules" / "@probe"
+    link_dir.mkdir(parents=True, exist_ok=True)
+    (link_dir / sibling).symlink_to(root / sibling, target_is_directory=True)
     return consumer
 
 
@@ -230,10 +230,10 @@ def main():
         check("no derrama declaraciones fuera de dist/", [], strays)
 
         # Caso 7 — el paquete que entra por la RAIZ tambien emite a dist/.
-        raiz = make_package(root, "sin-src", "")
-        mod.emit_package(raiz)
+        root_package = make_package(root, "sin-src", "")
+        mod.emit_package(root_package)
         check("el paquete con entrada en la raiz emite igual",
-              True, (raiz / "dist" / "index.d.ts").is_file())
+              True, (root_package / "dist" / "index.d.ts").is_file())
 
         # Caso 8 — repointing: el `exports` gana sobre el `types` de raiz bajo
         # `moduleResolution: bundler`, asi que reescribir solo la clave de
@@ -292,9 +292,9 @@ def main():
         # `node_modules` queda fuera del barrido: el `@types/bun` del fixture es
         # un `.d.ts` que el propio control escribe, no un derrame de la emision.
         # Contarlo confundiria el instrumento con su sujeto.
-        derrame = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
+        spill = [str(f.relative_to(root)) for f in root.rglob("*.d.ts")
                    if "dist" not in f.parts and "node_modules" not in f.parts]
-        check("y NO deja una declaracion fuera de dist/", [], derrame)
+        check("y NO deja una declaracion fuera de dist/", [], spill)
 
     # --- la declaracion CONSERVA la ruta relativa al rootDir ---------------
     #
@@ -321,11 +321,11 @@ def main():
     # programa: el paquete compilaria sus propias declaraciones y su `rootDir`
     # subiria de `src` a la raiz, moviendo toda su emision. Medido: `storage`
     # daba `src` antes del repunte y `.` despues, sin que su codigo cambiara.
-    repuntado = {"types": "./dist/index.d.ts",
+    repointed = {"types": "./dist/index.d.ts",
                  "exports": {".": {"types": "./dist/index.d.ts",
                                    "default": "./src/index.ts"}}}
     check("los destinos de un manifiesto repuntado son solo la fuente",
-          ["./src/index.ts"], mod.export_targets(repuntado))
+          ["./src/index.ts"], mod.export_targets(repointed))
 
     # --- el escape DENTRO del paquete se amplia, no se rehusa --------------
     #
@@ -354,11 +354,11 @@ def main():
         (pkg / "src" / "index.ts").write_text(
             "import { helps } from '../internal/helper.ts'\n"
             "export const use = (n: number): number => helps(n)\n", encoding="utf8")
-        resultado = mod.emit_package(pkg)
-        check("un escape DENTRO del paquete emite igual", True, resultado.emitted)
-        fuera = [str(p.relative_to(pkg)) for p in pkg.rglob("*.d.ts")
+        emit_result = mod.emit_package(pkg)
+        check("un escape DENTRO del paquete emite igual", True, emit_result.emitted)
+        outside = [str(p.relative_to(pkg)) for p in pkg.rglob("*.d.ts")
                  if "dist" not in p.parts and "node_modules" not in p.parts]
-        check("y su declaracion no sale de dist/", [], fuera)
+        check("y su declaracion no sale de dist/", [], outside)
 
     # --- y el repunte apunta a la declaracion que REALMENTE se escribio ----
     #
@@ -391,11 +391,11 @@ def main():
         mod.emit_package(pkg)
         mod.repoint_manifest(pkg)
         manifest = json.loads((pkg / "package.json").read_text(encoding="utf8"))
-        destinos = [v["types"] for v in manifest["exports"].values()
+        targets = [v["types"] for v in manifest["exports"].values()
                     if isinstance(v, dict)]
-        ausentes = [d for d in destinos if not (pkg / d.lstrip("./")).exists()]
+        absent = [d for d in targets if not (pkg / d.lstrip("./")).exists()]
         check("el repunte tras ensanchar apunta a un archivo que existe",
-              [], ausentes)
+              [], absent)
 
     # --- el comodin de raiz declara TODO el paquete como superficie --------
     #
@@ -434,9 +434,9 @@ def main():
             "exports": {".": "./src/index.ts"},
         }) + "\n", encoding="utf8")
         (pkg / "src" / "index.ts").write_text("export const x = 1\n", encoding="utf8")
-        antes = (pkg / "package.json").read_text(encoding="utf8")
+        before = (pkg / "package.json").read_text(encoding="utf8")
         check("sin dist/ el repunte rehusa", False, mod.repoint_manifest(pkg))
-        check("y NO toca el manifiesto", antes,
+        check("y NO toca el manifiesto", before,
               (pkg / "package.json").read_text(encoding="utf8"))
 
     # --- los tests del paquete NO son superficie declarada -----------------
@@ -468,14 +468,14 @@ def main():
         (pkg / "algo.spec.ts").write_text(
             "import { it } from 'bun:test'\n"
             "it('otro', () => {})\n", encoding="utf8")
-        resultado = mod.emit_package(pkg)
-        check("un paquete con tests emite igual", True, resultado.emitted)
-        emitidas = sorted(str(p.relative_to(pkg / mod.OUTPUT_DIR))
+        emit_result = mod.emit_package(pkg)
+        check("un paquete con tests emite igual", True, emit_result.emitted)
+        emitted_files = sorted(str(p.relative_to(pkg / mod.OUTPUT_DIR))
                           for p in (pkg / mod.OUTPUT_DIR).rglob("*.d.ts"))
-        check("y la declaracion del modulo si sale", True, "util.d.ts" in emitidas)
-        check("pero la del test NO", [], [e for e in emitidas
+        check("y la declaracion del modulo si sale", True, "util.d.ts" in emitted_files)
+        check("pero la del test NO", [], [e for e in emitted_files
                                           if "__tests__" in e or ".spec." in e])
-        check("y el test no aporta errores propios", 0, resultado.own_errors)
+        check("y el test no aporta errores propios", 0, emit_result.own_errors)
 
     # --- el comodin del `exports` CRUZA `/`, y el glob de Python no --------
     #
@@ -567,14 +567,14 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         pkg = make_package(root, "medido", "src")
-        antes = (pkg / "package.json").read_text(encoding="utf8")
+        before = (pkg / "package.json").read_text(encoding="utf8")
         result = mod.check_package(pkg)
         check("check_package cuenta el error del paquete", True, result.errors > 0)
         check("NO escribe dist/", False, (pkg / "dist").exists())
-        check("NO toca el manifiesto", antes,
+        check("NO toca el manifiesto", before,
               (pkg / "package.json").read_text(encoding="utf8"))
-        sobrantes = [f.name for f in pkg.glob("tsconfig*.json")]
-        check("retira su proyecto temporal", [], sobrantes)
+        leftovers = [f.name for f in pkg.glob("tsconfig*.json")]
+        check("retira su proyecto temporal", [], leftovers)
 
 
     # --- la atribucion: el conteo del paquete NO es el de su cierre ---------
@@ -588,15 +588,15 @@ def main():
     #
     # Las DOS formas de enlace se ejercitan porque el clasificador tiene que
     # sobrevivir a las dos: por prefijo de ruta, la del workspace miente.
-    for forma in ("local", "root"):
+    for form in ("local", "root"):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            consumidor = make_consumer_with_sibling(root, "consume", "hermano", forma)
-            medido = mod.check_package(consumidor)
-            check(f"[{forma}] el propio cuenta SOLO el error del paquete",
-                  1, medido.own_errors)
-            check(f"[{forma}] y el hermano se le atribuye a el",
-                  2, medido.sibling_errors)
+            consumer = make_consumer_with_sibling(root, "consume", "hermano", form)
+            measured = mod.check_package(consumer)
+            check(f"[{form}] el propio cuenta SOLO el error del paquete",
+                  1, measured.own_errors)
+            check(f"[{form}] y el hermano se le atribuye a el",
+                  2, measured.sibling_errors)
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0

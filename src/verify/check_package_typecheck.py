@@ -53,16 +53,16 @@ BASELINE = Path(".claude/baselines/package_typecheck_baseline.txt")
 
 def read_baseline(path: Path) -> dict:
     """El baseline como mapa paquete → errores propios congelados."""
-    congelado = {}
+    frozen = {}
     if not path.is_file():
-        return congelado
-    for linea in path.read_text(encoding="utf8").splitlines():
-        linea = linea.strip()
-        if not linea or linea.startswith("#"):
+        return frozen
+    for line in path.read_text(encoding="utf8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
             continue
-        nombre, _, cifra = linea.partition("\t")
-        congelado[nombre.strip()] = int(cifra.strip() or 0)
-    return congelado
+        name, _, figure = line.partition("\t")
+        frozen[name.strip()] = int(figure.strip() or 0)
+    return frozen
 
 
 def measure(root: Path, wanted, jobs: int):
@@ -75,8 +75,8 @@ def measure(root: Path, wanted, jobs: int):
     """
     targets = [p for p in _packages(root) if not wanted or p.name in wanted]
     with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-        resultados = list(pool.map(check_package, targets))
-    return sorted(resultados, key=lambda r: r.package)
+        results = list(pool.map(check_package, targets))
+    return sorted(results, key=lambda r: r.package)
 
 
 def main(argv=None):
@@ -99,69 +99,69 @@ def main(argv=None):
 
     root = Path(os.environ.get("THYROX_ROOT", Path(__file__).resolve().parents[2]))
     baseline_path = args.baseline or (root / BASELINE)
-    congelado = read_baseline(baseline_path)
-    if args.strict and not congelado and not args.write_baseline:
+    frozen = read_baseline(baseline_path)
+    if args.strict and not frozen and not args.write_baseline:
         print(f"check-package-typecheck: no hay baseline en {baseline_path}.", file=sys.stderr)
         print("  NO se emite veredicto: sin el, `--strict` no distingue deuda", file=sys.stderr)
         print("  heredada de defecto nuevo. Congelalo con --write-baseline.", file=sys.stderr)
         return 2
 
-    resultados = measure(root, set(args.packages), max(1, args.jobs))
-    if not resultados:
+    results = measure(root, set(args.packages), max(1, args.jobs))
+    if not results:
         print(f"check-package-typecheck: ningun paquete coincide con {args.packages}",
               file=sys.stderr)
         return 2
 
-    empeoran, propios = [], 0
-    sin_medir = [r for r in resultados if r.unmeasurable]
-    for resultado in resultados:
-        if resultado.unmeasurable:
-            print(f"  {resultado.verdict()}")
+    worsen, own = [], 0
+    without_measure = [r for r in results if r.unmeasurable]
+    for result in results:
+        if result.unmeasurable:
+            print(f"  {result.verdict()}")
             continue
-        propios += resultado.own_errors
-        techo = congelado.get(resultado.package)
-        marca = ""
-        if techo is not None and resultado.own_errors > techo:
-            empeoran.append((resultado.package, techo, resultado.own_errors))
-            marca = f"  <- sube desde {techo}"
-        elif techo is None and congelado:
-            marca = "  <- sin baseline"
-        print(f"  {resultado.package}: {resultado.own_errors} propio(s)"
-              f" · {resultado.sibling_errors} de hermano"
-              f" · {resultado.escaped_errors} fuera"
-              f" (total {resultado.errors}){marca}")
+        own += result.own_errors
+        ceiling = frozen.get(result.package)
+        mark = ""
+        if ceiling is not None and result.own_errors > ceiling:
+            worsen.append((result.package, ceiling, result.own_errors))
+            mark = f"  <- sube desde {ceiling}"
+        elif ceiling is None and frozen:
+            mark = "  <- sin baseline"
+        print(f"  {result.package}: {result.own_errors} propio(s)"
+              f" · {result.sibling_errors} de hermano"
+              f" · {result.escaped_errors} fuera"
+              f" (total {result.errors}){mark}")
 
-    medidos = [r for r in resultados if not r.unmeasurable]
+    measured = [r for r in results if not r.unmeasurable]
     if args.write_baseline:
         # Un paquete SIN MEDIR no entra al baseline: congelarlo con 0 seria
         # congelar la ausencia de medicion como si fuera ausencia de errores.
         baseline_path.parent.mkdir(parents=True, exist_ok=True)
-        lineas = [f"{r.package}\t{r.own_errors}" for r in medidos]
-        baseline_path.write_text("\n".join(lineas) + "\n", encoding="utf8")
+        lines = [f"{r.package}\t{r.own_errors}" for r in measured]
+        baseline_path.write_text("\n".join(lines) + "\n", encoding="utf8")
         print(f"\ncheck-package-typecheck: baseline escrito en {baseline_path} "
-              f"({len(lineas)} de {len(resultados)} paquete(s), "
-              f"{propios} error(es) propio(s))")
-        if sin_medir:
-            print(f"  {len(sin_medir)} paquete(s) quedan FUERA del baseline "
+              f"({len(lines)} de {len(results)} paquete(s), "
+              f"{own} error(es) propio(s))")
+        if without_measure:
+            print(f"  {len(without_measure)} paquete(s) quedan FUERA del baseline "
                   f"por no haberse podido medir: "
-                  f"{', '.join(r.package for r in sin_medir)}")
+                  f"{', '.join(r.package for r in without_measure)}")
         return 0
 
-    print(f"\ncheck-package-typecheck: {propios} error(es) propio(s) "
-          f"(alcance medido: {len(medidos)} de {len(resultados)} paquete(s))")
-    if sin_medir:
-        print(f"  {len(sin_medir)} SIN MEDIR: "
-              f"{', '.join(r.package for r in sin_medir)}")
+    print(f"\ncheck-package-typecheck: {own} error(es) propio(s) "
+          f"(alcance medido: {len(measured)} de {len(results)} paquete(s))")
+    if without_measure:
+        print(f"  {len(without_measure)} SIN MEDIR: "
+              f"{', '.join(r.package for r in without_measure)}")
         if args.strict:
             print("  NO se emite veredicto: el alcance esta incompleto y un 0",
                   file=sys.stderr)
             print("  aqui no distinguiria «no hay errores» de «no pude medir».",
                   file=sys.stderr)
             return 2
-    if empeoran:
-        print(f"  {len(empeoran)} paquete(s) suben sobre su baseline:")
-        for nombre, techo, ahora in empeoran:
-            print(f"    {nombre}: {techo} -> {ahora}")
+    if worsen:
+        print(f"  {len(worsen)} paquete(s) suben sobre su baseline:")
+        for name, ceiling, now in worsen:
+            print(f"    {name}: {ceiling} -> {now}")
         return 1 if args.strict else 0
     return 0
 

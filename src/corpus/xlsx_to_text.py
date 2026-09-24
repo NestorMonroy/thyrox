@@ -147,34 +147,34 @@ def column_index(ref: str) -> int:
     return n - 1
 
 
-def _open(origen) -> zipfile.ZipFile:
+def _open(source) -> zipfile.ZipFile:
     """Abre el libro por la capa compartida, que ya rehusa y nombra."""
-    return ooxml.open_package(origen, require=WORKBOOK)
+    return ooxml.open_package(source, require=WORKBOOK)
 
 
 def shared_strings(file_path: zipfile.ZipFile) -> list[str]:
     """La tabla de cadenas. Vacia si el libro no la trae — es legitimo."""
     if SHARED_STRINGS not in file_path.namelist():
         return []
-    raiz = ET.fromstring(file_path.read(SHARED_STRINGS))
+    root = ET.fromstring(file_path.read(SHARED_STRINGS))
     # Una entrada puede venir partida en varios `<r>` cuando cambia el
     # formato a media frase; se juntan sus `<t>` o la frase sale troceada.
     return ["".join(t.text or "" for t in si.iter(SML + "t"))
-            for si in raiz.iter(SML + "si")]
+            for si in root.iter(SML + "si")]
 
 
-def sheets(origen) -> list[tuple[str, str]]:
+def sheets(source) -> list[tuple[str, str]]:
     """Las hojas como ``(nombre visible, ruta dentro del paquete)``.
 
     El nombre sale de ``workbook.xml`` y la ruta del ``.rels``: el nombre del
     archivo interno (``sheet1.xml``) no es el nombre de la hoja, ni su orden
     tiene por que coincidir.
     """
-    file_path = _open(origen)
+    file_path = _open(source)
     targets = ooxml.relationships(file_path, WORKBOOK)
     sheets = []
-    raiz = ET.fromstring(file_path.read(WORKBOOK))
-    for sheet_name_value in raiz.iter(SML + "sheet"):
+    root = ET.fromstring(file_path.read(WORKBOOK))
+    for sheet_name_value in root.iter(SML + "sheet"):
         path = targets.get(sheet_name_value.get(REL + "id"))
         if path is None:
             continue
@@ -201,23 +201,23 @@ def _cell_text(cell, table: list[str]) -> str:
     return (v.text or "") if v is not None else ""
 
 
-def rows(origen, sheet: str | None = None) -> list[list[str]]:
+def rows(source, sheet: str | None = None) -> list[list[str]]:
     """Las filas de una hoja, con sus huecos conservados.
 
     ``sheet`` es el nombre visible; si se omite, la primera hoja del libro.
     """
-    file_path = _open(origen)
-    sheet_list = sheets(origen)
+    file_path = _open(source)
+    sheet_list = sheets(source)
     if not sheet_list:
         raise NotAWorkbook("el libro no declara ninguna hoja")
     path = next((r for n, r in sheet_list if n == sheet), None) if sheet else sheet_list[0][1]
     if path is None:
         raise KeyError("el libro no tiene una hoja llamada %r" % sheet)
 
-    raiz = ET.fromstring(file_path.read(path))
+    root = ET.fromstring(file_path.read(path))
     table = shared_strings(file_path)
     per_row: dict[int, list[str]] = {}
-    for row in raiz.iter(SML + "row"):
+    for row in root.iter(SML + "row"):
         # Trampa 2, eje de las filas: una fila omitida no desplaza al resto.
         try:
             index = int(row.get("r", "0")) - 1
@@ -255,14 +255,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sheet", help="el nombre visible de una hoja")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("xlsx_to_text: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("xlsx_to_text: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("              NO se emite conteo.", file=sys.stderr)
         return 2
     try:
-        sheet_list = sheets(origen)
+        sheet_list = sheets(source)
     except NotAWorkbook as err:
         print("xlsx_to_text: %s" % err, file=sys.stderr)
         print("              El sufijo del nombre NO decide.", file=sys.stderr)
@@ -272,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
     for name_text, _ in sheet_list:
         if args.sheet and name_text != args.sheet:
             continue
-        row_list = rows(origen, name_text)
+        row_list = rows(source, name_text)
         total += len(row_list)
         parts.append("### %s\n%s" % (name_text, to_tsv(row_list)))
     if args.sheet and not parts:

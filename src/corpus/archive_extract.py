@@ -106,10 +106,10 @@ class UnsafeMember(ValueError):
     """Un miembro escribiria fuera del destino."""
 
 
-def kind(origen) -> str | None:
+def kind(source) -> str | None:
     """El formato, leido de los bytes. ``None`` si no es ninguno conocido."""
-    origen = pathlib.Path(origen)
-    with origen.open("rb") as fh:
+    source = pathlib.Path(source)
+    with source.open("rb") as fh:
         head = fh.read(MAGIC_READ)
     for offset, signature, name_text in MAGIC:
         if head[offset:offset + len(signature)] == signature:
@@ -148,18 +148,18 @@ def is_confined(dest, member: str) -> bool:
     """
     if os.path.isabs(member) or member.startswith("\\"):
         return False
-    raiz = pathlib.Path(dest).resolve()
-    target = pathlib.Path(os.path.normpath(str(raiz / member)))
-    return raiz == target or raiz in target.parents
+    root = pathlib.Path(dest).resolve()
+    target = pathlib.Path(os.path.normpath(str(root / member)))
+    return root == target or root in target.parents
 
 
-def _sevenz_members(binario: str, origen: pathlib.Path) -> list[str]:
+def _sevenz_members(binary: str, source: pathlib.Path) -> list[str]:
     """Los miembros que ``7z l -slt`` declara, sin los directorios.
 
     Se usa ``-slt`` y no la tabla de columnas porque un nombre con espacios
     parte la tabla y no el par ``clave = valor``.
     """
-    output = subprocess.run([binario, "l", "-slt", "-ba", str(origen)],
+    output = subprocess.run([binary, "l", "-slt", "-ba", str(source)],
                             capture_output=True, text=True)
     if output.returncode != 0:
         raise RuntimeError(output.stderr.strip() or "7z l fallo")
@@ -175,35 +175,35 @@ def _sevenz_members(binario: str, origen: pathlib.Path) -> list[str]:
     return names
 
 
-def members(origen) -> list[str]:
+def members(source) -> list[str]:
     """Los miembros del archivo, SIN extraer nada."""
-    origen = pathlib.Path(origen)
-    format = kind(origen)
+    source = pathlib.Path(source)
+    format = kind(source)
     if format is None:
-        raise UnknownFormat("formato no reconocido: %s" % origen)
+        raise UnknownFormat("formato no reconocido: %s" % source)
     if format == "zip":
-        with zipfile.ZipFile(origen) as z:
+        with zipfile.ZipFile(source) as z:
             return [i.filename for i in z.infolist() if not i.is_dir()]
     if format == "tar":
-        with tarfile.open(origen) as t:
+        with tarfile.open(source) as t:
             return [m.name for m in t.getmembers() if m.isfile()]
-    binario = sevenz_bin()
-    if binario is None:
+    binary = sevenz_bin()
+    if binary is None:
         raise ExtractorMissing(
             "no hay extractor de 7z. Remedio: apt-get install -y p7zip-full")
-    return _sevenz_members(binario, origen)
+    return _sevenz_members(binary, source)
 
 
-def extract(origen, dest, *, only: list[str] | None = None) -> list[pathlib.Path]:
+def extract(source, dest, *, only: list[str] | None = None) -> list[pathlib.Path]:
     """Extrae a ``dest`` y devuelve los archivos que aterrizaron.
 
     **La comprobacion va ANTES de escribir el primer byte.** Validar mientras
     se extrae deja a medias un destino que ya recibio los miembros sanos que
     precedian al malicioso, y entonces el rechazo no es un rechazo.
     """
-    origen = pathlib.Path(origen)
+    source = pathlib.Path(source)
     dest = pathlib.Path(dest)
-    names = members(origen)
+    names = members(source)
     if only is not None:
         names = [n for n in names if n in set(only)]
 
@@ -213,16 +213,16 @@ def extract(origen, dest, *, only: list[str] | None = None) -> list[pathlib.Path
             raise UnsafeMember(
                 "el miembro %r escribiria fuera de %s" % (name_text, dest))
 
-    format = kind(origen)
+    format = kind(source)
     if format == "zip":
-        with zipfile.ZipFile(origen) as z:
+        with zipfile.ZipFile(source) as z:
             for name_text in names:
                 output = dest / name_text
                 output.parent.mkdir(parents=True, exist_ok=True)
                 with z.open(name_text) as src, output.open("wb") as dst:
                     shutil.copyfileobj(src, dst)
     elif format == "tar":
-        with tarfile.open(origen) as t:
+        with tarfile.open(source) as t:
             for name_text in names:
                 output = dest / name_text
                 output.parent.mkdir(parents=True, exist_ok=True)
@@ -232,8 +232,8 @@ def extract(origen, dest, *, only: list[str] | None = None) -> list[pathlib.Path
                 with src, output.open("wb") as dst:
                     shutil.copyfileobj(src, dst)
     else:
-        binario = sevenz_bin()
-        order = [binario, "x", "-y", "-o%s" % dest, str(origen)]
+        binary = sevenz_bin()
+        order = [binary, "x", "-y", "-o%s" % dest, str(source)]
         if only is not None:
             order.extend(names)
         output = subprocess.run(order, capture_output=True, text=True)
@@ -251,17 +251,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dest", help="el directorio de destino")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("archive_extract: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("archive_extract: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("                 NO se emite conteo.", file=sys.stderr)
         return 2
 
     try:
-        names = members(origen)
+        names = members(source)
     except UnknownFormat:
-        print("archive_extract: formato no reconocido por sus bytes: %s" % origen,
+        print("archive_extract: formato no reconocido por sus bytes: %s" % source,
               file=sys.stderr)
         print("                 El sufijo del nombre NO decide.", file=sys.stderr)
         return 2
@@ -278,7 +278,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     try:
-        extracted = extract(origen, args.dest)
+        extracted = extract(source, args.dest)
     except UnsafeMember as err:
         print("archive_extract: %s" % err, file=sys.stderr)
         print("                 No se extrajo NADA.", file=sys.stderr)

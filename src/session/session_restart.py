@@ -107,8 +107,8 @@ def _git(root, *args) -> str | None:
                               capture_output=True, text=True, timeout=15)
     except (OSError, subprocess.SubprocessError):
         return None
-    salida = done.stdout.strip()
-    return salida if done.returncode == 0 and salida else None
+    output = done.stdout.strip()
+    return output if done.returncode == 0 and output else None
 
 
 def repository_of(root) -> str | None:
@@ -164,10 +164,10 @@ def build_payload(*, environment, repository, branch, title, prompt) -> dict:
     Rehusa en vez de rellenar: un relevo con el entorno equivocado arranca en
     otro sitio y el fallo aparece lejos de su causa.
     """
-    missing = [nombre for nombre, valor in (
+    missing = [name for name, value in (
         ("entorno", environment), ("repositorio", repository),
         ("rama", branch), ("titulo", title), ("prompt", prompt),
-    ) if not valor]
+    ) if not value]
     if missing:
         raise RestartError(
             f"faltan {len(missing)} pieza(s) del relevo: {', '.join(missing)}. "

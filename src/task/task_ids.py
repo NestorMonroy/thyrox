@@ -615,7 +615,7 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
         # inserta sin acuñar. Saltarlas como «ya vistas» las dejaba sin cita
         # durable para siempre (medido 2026-09-23: cuatro tareas). Se acuña en
         # esa fila porque su cita es nula; una cita existente no se reasigna.
-        sin_cita = {row[0]: (row[1], row[2]) for row in conn.execute(
+        without_citation = {row[0]: (row[1], row[2]) for row in conn.execute(
             "SELECT subject, task_id, submodule FROM tasks "
             " WHERE session_id = ? AND citation_id IS NULL", (session_id,))}
         ordinal = int(conn.execute(
@@ -630,7 +630,7 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                 )
             data = json.loads(card.read_text())
             subject = data.get("subject", "")
-            if subject in vistos and subject not in sin_cita:
+            if subject in vistos and subject not in without_citation:
                 continue
             # La tarjeta del board NO trae capa (medido: sus claves son
             # blockedBy/blocks/description/id/status/subject). `--capa` es una
@@ -648,25 +648,25 @@ def ingest_board(store_path, board_dir, session_id, ordinals, layer=None) -> lis
                  f"TASK-{layer_actual.upper()}-%")
             ).fetchone()[0]
             cita = format_id(layer_actual, int(siguiente or 0) + 1)
-            if subject in sin_cita:
-                existente, capa_previa = sin_cita.pop(subject)
+            if subject in without_citation:
+                existing, layer_previous = without_citation.pop(subject)
                 # La capa declarada sustituye sólo a «no se sabe» (`gen`).
-                capa_fila = layer_actual if (capa_previa in (None, UNKNOWN_LAYER)) else capa_previa
-                if capa_fila != layer_actual:
+                layer_row = layer_actual if (layer_previous in (None, UNKNOWN_LAYER)) else layer_previous
+                if layer_row != layer_actual:
                     # La cita lleva el prefijo de la capa de SU fila.
-                    previo = conn.execute(
+                    previous = conn.execute(
                         "SELECT MAX(CAST(substr(citation_id, ?) AS INTEGER)) FROM tasks "
                         " WHERE citation_id LIKE ?",
-                        (len(f"TASK-{capa_fila.upper()}-") + 1, f"TASK-{capa_fila.upper()}-%")
+                        (len(f"TASK-{layer_row.upper()}-") + 1, f"TASK-{layer_row.upper()}-%")
                     ).fetchone()[0]
-                    cita = format_id(capa_fila, int(previo or 0) + 1)
+                    cita = format_id(layer_row, int(previous or 0) + 1)
                 conn.execute(
                     "UPDATE tasks SET citation_id = ?, submodule = ?, "
                     "  submodule_source = ?, updated_at = ? "
                     " WHERE session_id = ? AND task_id = ? AND citation_id IS NULL",
-                    (cita, capa_fila, "acuñado al ingerir el board", stamp,
-                     session_id, existente))
-                acunadas.append((str(board_id), str(existente), cita, subject))
+                    (cita, layer_row, "acuñado al ingerir el board", stamp,
+                     session_id, existing))
+                acunadas.append((str(board_id), str(existing), cita, subject))
                 continue
             ordinal += 1
             conn.execute(

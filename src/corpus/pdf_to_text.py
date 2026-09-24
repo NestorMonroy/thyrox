@@ -70,24 +70,24 @@ def _pdftotext_bin() -> str | None:
     return shutil.which(binary)
 
 
-def extract_with_pdftotext(origen: pathlib.Path, *, layout: bool = True) -> str:
-    binario = _pdftotext_bin()
-    if binario is None:
+def extract_with_pdftotext(source: pathlib.Path, *, layout: bool = True) -> str:
+    binary = _pdftotext_bin()
+    if binary is None:
         raise FileNotFoundError("pdftotext no resuelve")
-    argv = [binario]
+    argv = [binary]
     if layout:
         argv.append("-layout")
-    argv += [str(origen), "-"]
+    argv += [str(source), "-"]
     completed = subprocess.run(argv, capture_output=True, check=True)
     return completed.stdout.decode("utf-8", errors="replace")
 
 
-def extract_with_library(origen: pathlib.Path) -> str:
+def extract_with_library(source: pathlib.Path) -> str:
     """Respaldo. Solo se usa si ``pdftotext`` no esta."""
     import pdfplumber  # noqa: PLC0415 — respaldo opcional, no dependencia dura
 
     parts: list[str] = []
-    with pdfplumber.open(origen) as pdf:
+    with pdfplumber.open(source) as pdf:
         for page in pdf.pages:
             parts.append(page.extract_text() or "")
     return PAGE_BREAK.join(parts)
@@ -127,16 +127,16 @@ def main(argv: list[str] | None = None) -> int:
                         help="no preservar el trazado (sin -layout)")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        raise SystemExit(f"pdf_to_text: no existe: {origen}")
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        raise SystemExit(f"pdf_to_text: no existe: {source}")
 
     if _pdftotext_bin() is not None:
         via = "pdftotext" + ("" if args.raw else " -layout")
-        text = extract_with_pdftotext(origen, layout=not args.raw)
+        text = extract_with_pdftotext(source, layout=not args.raw)
     else:
         try:
-            text = extract_with_library(origen)
+            text = extract_with_library(source)
             via = "pdfplumber (respaldo)"
         except ImportError:
             raise SystemExit(

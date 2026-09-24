@@ -1,0 +1,34 @@
+test_1_what_is_not_a_ZIP_REFUSES (__main__.TestOpening.test_1_what_is_not_a_ZIP_REFUSES) ... ok
+test_2_a_ZIP_WITHOUT_a_package_manifest_REFUSES (__main__.TestOpening.test_2_a_ZIP_WITHOUT_a_package_manifest_REFUSES)
+El objeto EXISTE y es un zip valido, asi que el rechazo lo produce ... ok
+test_3_a_valid_package_opens (__main__.TestOpening.test_3_a_valid_package_opens) ... ok
+test_4_a_SPECIFIC_part_can_be_required (__main__.TestOpening.test_4_a_SPECIFIC_part_can_be_required)
+Cada formato tiene su parte obligatoria —`word/document.xml`, ... ok
+test_5_a_RELATIVE_Target_resolves_against_its_part (__main__.TestRelations.test_5_a_RELATIVE_Target_resolves_against_its_part)
+`Target="header1.xml"` dentro de `word/_rels/` es ... ERROR
+test_6_an_ABSOLUTE_Target_gets_no_prefix_appended (__main__.TestRelations.test_6_an_ABSOLUTE_Target_gets_no_prefix_appended) ... ERROR
+test_7_a_part_WITHOUT_rels_yields_an_empty_map_and_does_not_blow_up (__main__.TestRelations.test_7_a_part_WITHOUT_rels_yields_an_empty_map_and_does_not_blow_up) ... ok
+
+======================================================================
+ERROR: test_5_a_RELATIVE_Target_resolves_against_its_part (__main__.TestRelations.test_5_a_RELATIVE_Target_resolves_against_its_part)
+`Target="header1.xml"` dentro de `word/_rels/` es
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_ooxml.py", line 79, in test_5_a_RELATIVE_Target_resolves_against_its_part
+    with self._paquete(f, "header1.xml") as p:
+         ^^^^^^^^^^^^^
+AttributeError: 'TestRelations' object has no attribute '_paquete'
+
+======================================================================
+ERROR: test_6_an_ABSOLUTE_Target_gets_no_prefix_appended (__main__.TestRelations.test_6_an_ABSOLUTE_Target_gets_no_prefix_appended)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/corpus/test_ooxml.py", line 86, in test_6_an_ABSOLUTE_Target_gets_no_prefix_appended
+    with self._paquete(f, "/word/media/x.png") as p:
+         ^^^^^^^^^^^^^
+AttributeError: 'TestRelations' object has no attribute '_paquete'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.003s
+
+FAILED (errors=2)

@@ -49,16 +49,16 @@ def piece_table(pieces) -> bytes:
     """Un `Pcdt` con las piezas dadas: ``(cp_fin, offset, comprimida)``."""
     cps = [0] + [p[0] for p in pieces]
     body = b"".join(struct.pack("<I", cp) for cp in cps)
-    for _, offset, comprimida in pieces:
-        fc = (offset * 2) | 0x40000000 if comprimida else offset
+    for _, offset, compressed in pieces:
+        fc = (offset * 2) | 0x40000000 if compressed else offset
         body += struct.pack("<HIH", 0, fc, 0)
     return b"\x02" + struct.pack("<I", len(body)) + body
 
 
 def build_doc(path, text, *, ccp_text=None, which_table=1,
-              comprimida=True, prefix_bytes=b"", ident=0xA5EC):
+              compressed=True, prefix_bytes=b"", ident=0xA5EC):
     """Un `.doc` minimo pero REAL: su CFB, su FIB y su tabla de piezas."""
-    raw = (text.encode("cp1252") if comprimida
+    raw = (text.encode("cp1252") if compressed
              else text.encode("utf-16-le"))
     main = bytearray(TEXT_START + len(raw) + 16)
     struct.pack_into("<H", main, OFF_IDENT, ident)
@@ -68,7 +68,7 @@ def build_doc(path, text, *, ccp_text=None, which_table=1,
                      len(text) if ccp_text is None else ccp_text)
     main[TEXT_START:TEXT_START + len(raw)] = raw
 
-    clx = prefix_bytes + piece_table([(len(text), TEXT_START, comprimida)])
+    clx = prefix_bytes + piece_table([(len(text), TEXT_START, compressed)])
     table = bytearray(64) + clx
     struct.pack_into("<ii", main, OFF_RG_FC_LCB + IDX_FC_CLX * 4,
                      64, len(clx))
@@ -83,7 +83,7 @@ class TestTheEncoding(unittest.TestCase):
         como UTF-16 no falla — devuelve basura legible a medias."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.doc"
-            build_doc(f, "Plan Mexico", comprimida=True)
+            build_doc(f, "Plan Mexico", compressed=True)
             self.assertEqual(doc_to_text.raw_text(f), "Plan Mexico")
 
     def test_2_and_a_WIDE_piece_is_read_as_UTF_16(self):
@@ -95,7 +95,7 @@ class TestTheEncoding(unittest.TestCase):
         declara sin control positivo de campo."""
         with tempfile.TemporaryDirectory() as tmp:
             f = pathlib.Path(tmp) / "x.doc"
-            build_doc(f, "Plan Mexico", comprimida=False)
+            build_doc(f, "Plan Mexico", compressed=False)
             self.assertEqual(doc_to_text.raw_text(f), "Plan Mexico")
 
     def test_3_the_ACCENT_survives_cp1252(self):

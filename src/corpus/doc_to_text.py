@@ -126,11 +126,11 @@ def _piece_table(table: bytes, fc_clx: int, lcb_clx: int):
     gathered = []
     for k in range(n):
         fc = struct.unpack_from("<I", plc, (n + 1) * 4 + k * 8 + 2)[0]
-        comprimida = bool(fc & FC_COMPRESSED)
+        compressed = bool(fc & FC_COMPRESSED)
         # En una pieza comprimida el desplazamiento viene DOBLADO: se apaga
         # el bit y se divide entre dos. Sin eso se lee el doble de lejos.
-        offset = (fc & ~FC_COMPRESSED) // 2 if comprimida else fc
-        gathered.append((cps[k], cps[k + 1], offset, comprimida))
+        offset = (fc & ~FC_COMPRESSED) // 2 if compressed else fc
+        gathered.append((cps[k], cps[k + 1], offset, compressed))
     return gathered
 
 
@@ -154,9 +154,9 @@ def _strip_fields(text: str) -> str:
     return "".join(gathered)
 
 
-def raw_text(origen) -> str:
+def raw_text(source) -> str:
     """El cuerpo principal, ya decodificado y acotado a ``ccpText``."""
-    container = cfb.open_compound(origen)
+    container = cfb.open_compound(source)
     names = container.names()
     if MAIN_STREAM not in names:
         raise NotWordDocument(
@@ -177,14 +177,14 @@ def raw_text(origen) -> str:
         "<ii", main_stream, OFF_RG_FC_LCB + IDX_FC_CLX * 4)
 
     pieces = []
-    for cp_ini, cp_end, offset, comprimida in _piece_table(
+    for cp_ini, cp_end, offset, compressed in _piece_table(
             table, fc_clx, lcb_clx):
         # La cota se aplica por PIEZA, no al final: una pieza puede cruzar
         # el limite del cuerpo y llevarse medio encabezado consigo.
         if cp_ini >= ccp_text:
             continue
         length = min(cp_end, ccp_text) - cp_ini
-        if comprimida:
+        if compressed:
             raw = main_stream[offset:offset + length]
             pieces.append(raw.decode("cp1252", errors="replace"))
         else:
@@ -193,9 +193,9 @@ def raw_text(origen) -> str:
     return _strip_fields("".join(pieces))
 
 
-def blocks(origen) -> list[str]:
+def blocks(source) -> list[str]:
     """El cuerpo como parrafos, con sus tabuladores conservados."""
-    text = raw_text(origen)
+    text = raw_text(source)
     for control, replacement in CONTROL_MAP.items():
         text = text.replace(control, replacement)
     # Lo que quede por debajo de 0x20 y no este en el mapa es marca de
@@ -210,14 +210,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("gathered", nargs="?", help="el .txt de destino")
     args = parser.parse_args(argv)
 
-    origen = pathlib.Path(args.entrada)
-    if not origen.is_file():
-        print("doc_to_text: no existe o no es un archivo: %s" % origen,
+    source = pathlib.Path(args.entrada)
+    if not source.is_file():
+        print("doc_to_text: no existe o no es un archivo: %s" % source,
               file=sys.stderr)
         print("             NO se emite conteo.", file=sys.stderr)
         return 2
     try:
-        block_list = blocks(origen)
+        block_list = blocks(source)
     except (NotWordDocument, cfb.NotCompoundFile) as err:
         print("doc_to_text: %s" % err, file=sys.stderr)
         print("             El sufijo del nombre NO decide.", file=sys.stderr)

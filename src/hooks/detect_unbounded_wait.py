@@ -60,7 +60,7 @@ _BOUNDED = (
     re.compile(r"\bTaskStop\b"),
 )
 
-AVISO = (
+WARNING = (
     "GATE DE ESPERA — este bucle duerme esperando CONTENIDO y no tiene como "
     "terminar si el productor muere. Medido el 2026-09-23: dos tareas "
     "quedaron girando porque su productor salio con 144 y dejo 5 lineas de "
@@ -94,4 +94,4 @@ def detect(payload: dict) -> str | None:
     command = ((payload.get("tool_input") or {}).get("command") or "")
     if not is_wait_loop(command) or is_bounded(command):
         return None
-    return AVISO
+    return WARNING

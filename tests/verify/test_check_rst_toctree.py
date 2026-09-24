@@ -71,10 +71,10 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "index.rst").write_text(".. toctree::\n\n   vivo\n   fantasma\n", encoding="utf-8")
     (root / "vivo.rst").write_text("V\n=\n", encoding="utf-8")
     (root / "solo.rst").write_text("S\n=\n", encoding="utf-8")
-    broken, huerfanos, reachable, total = crt.audit(root)
+    broken, orphans, reachable, total = crt.audit(root)
     check("una entrada rota", 1, len(broken))
     check("la rota nombra la entrada", True, "fantasma" in broken[0])
-    check("un huerfano", [Path("solo.rst")], huerfanos)
+    check("un huerfano", [Path("solo.rst")], orphans)
     check("alcanzables: index + vivo", 2, reachable)
     check("total: los tres", 3, total)
 
@@ -89,8 +89,8 @@ with tempfile.TemporaryDirectory() as tmp:
     child.mkdir()
     (child / "index.rst").write_text("U\n=\n", encoding="utf-8")
 
-    broken, huerfanos, _, _ = crt.audit(root)
-    check("con expansion: cero huerfanos", [], huerfanos)
+    broken, orphans, _, _ = crt.audit(root)
+    check("con expansion: cero huerfanos", [], orphans)
     check("y cero entradas rotas", [], broken)
 
     original = crt.resolve
@@ -121,8 +121,8 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     (root / "index.rst").write_text(".. toctree::\n\n   tpl\n", encoding="utf-8")
     (root / "tpl.rst").write_text(TEMPLATE, encoding="utf-8")
-    broken, huerfanos, _, _ = crt.audit(root)
-    check("con el salto: la plantilla no rompe nada", ([], []), (broken, huerfanos))
+    broken, orphans, _, _ = crt.audit(root)
+    check("con el salto: la plantilla no rompe nada", ([], []), (broken, orphans))
 
     import re
     original = crt.LITERAL_DIRECTIVE
