@@ -1,0 +1,14 @@
+  ok    test_a_pervasive_token_is_dropped_by_the_frequency_cap
+  ok    test_bare_repo_jargon_is_not_a_candidate_token
+  ok    test_candidate_tokens_deduplicates_preserving_order
+  ok    test_detect_stays_silent_outside_to_finding_path
+  ok    test_detect_stays_silent_without_candidate_tokens
+  ok    test_detect_stays_silent_without_content
+  ok    test_excludes_the_initiative_being_written_into
+  ok    test_finds_a_duplicate_identifier_in_another_initiative
+  ok    test_the_dispatcher_registers_it
+  ok    test_the_frequency_cap_carries_its_own_weight
+  ok    test_the_path_anchor_reuses_detect_finding_layer_pattern
+  ok    test_the_underscore_anchor_carries_its_own_weight
+resumen: 0 fallo(s)
+EXIT=0
