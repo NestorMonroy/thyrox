@@ -78,6 +78,8 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_temp_home_write",
     "detect_bare_awk",
     "detect_client_background",
+    "detect_irreversible_operation",
+    "detect_edit_loop",
 )
 
 
@@ -146,6 +148,10 @@ def _truncate(text: str, quota: int) -> str:
     return text[:max(0, quota - len(notice))] + notice
 
 
+#: Las decisiones de permiso que un detector puede pedir, por fuerza.
+_DECISION_RANK = {"ask": 1, "deny": 2}
+
+
 def dispatch(payload: dict, detectors: Iterable[Detector]) -> dict:
     """El JSON a imprimir: un solo bloque con lo que cada detector aporte.
 
@@ -163,6 +169,8 @@ def dispatch(payload: dict, detectors: Iterable[Detector]) -> dict:
     quota = max(1, (TOTAL_BUDGET - _FORMAT_MARGIN) // len(detectors))
 
     blocks: list[str] = []
+    decision: str | None = None
+    reasons: list[str] = []
     for name, detect in detectors:
         try:
             notice = detect(payload)
@@ -170,6 +178,17 @@ def dispatch(payload: dict, detectors: Iterable[Detector]) -> dict:
             # Un detector roto se aísla. Su excepción no llega al contexto: el
             # lector no puede hacer nada con ella y el ruido tapa a los sanos.
             continue
+        # Un detector puede además PEDIR una decisión de permiso: devuelve
+        # ``{"notice", "decision"}``. Lo abrió `detect_irreversible_operation`,
+        # porque un aviso llega cuando el daño ya ocurrió. Entre varios, gana la
+        # más fuerte (``deny`` > ``ask``).
+        if isinstance(notice, dict):
+            wanted = notice.get("decision")
+            notice = notice.get("notice")
+            if wanted in _DECISION_RANK and notice:
+                if decision is None or _DECISION_RANK[wanted] > _DECISION_RANK[decision]:
+                    decision = wanted
+                reasons.append(f"[{name}] {notice}")
         if not notice or not str(notice).strip():
             continue                      # cortocircuito por vacío
         blocks.append(f"[{name}]\n{_truncate(str(notice), quota)}")
@@ -177,12 +196,14 @@ def dispatch(payload: dict, detectors: Iterable[Detector]) -> dict:
     if not blocks:
         return {}
 
-    return {
-        "hookSpecificOutput": {
-            "hookEventName": "PreToolUse",
-            "additionalContext": "\n\n".join(blocks),
-        }
+    out = {
+        "hookEventName": "PreToolUse",
+        "additionalContext": "\n\n".join(blocks),
     }
+    if decision:
+        out["permissionDecision"] = decision
+        out["permissionDecisionReason"] = _truncate("\n".join(reasons), quota)
+    return {"hookSpecificOutput": out}
 
 
 def main(stdin_text: str | None = None,

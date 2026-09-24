@@ -105,5 +105,27 @@ print("== 8. el CLI nunca rompe el flujo: entrada basura -> {} y exit 0 ==")
 code = dispatch.main(stdin_text="{{{ no es json", detectors=two)
 check("sale 0", 0, code)
 
+print("== 9. un detector puede PEDIR CONFIRMACION, no solo avisar ==")
+# Lo abre `detect_irreversible_operation`: un aviso llega cuando el daño ya
+# ocurrio. Su veredicto viaja como `permissionDecision`; los avisos de los
+# demas no se pierden.
+asks = ("pide", lambda payload: {"notice": "irreversible", "decision": "ask"})
+out = dispatch.dispatch({}, detectors=[asks, says("avisa", "aviso")])
+hso = out.get("hookSpecificOutput", {})
+check("emite la decision", "ask", hso.get("permissionDecision"))
+check("con su razon", True, "irreversible" in hso.get("permissionDecisionReason", ""))
+check("y conserva el aviso del otro", True, "aviso" in hso.get("additionalContext", ""))
+out = dispatch.dispatch({}, detectors=[says("avisa", "aviso")])
+check("sin quien la pida, no hay decision", None,
+      out["hookSpecificOutput"].get("permissionDecision"))
+denies = ("niega", lambda payload: {"notice": "no", "decision": "deny"})
+out = dispatch.dispatch({}, detectors=[asks, denies])
+check("entre ask y deny gana la mas fuerte", "deny",
+      out.get("hookSpecificOutput", {}).get("permissionDecision"))
+check("el detector irreversible esta en la lista", True,
+      "detect_irreversible_operation" in dispatch.DETECTOR_NAMES)
+check("el de edicion en bucle tambien", True,
+      "detect_edit_loop" in dispatch.DETECTOR_NAMES)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
