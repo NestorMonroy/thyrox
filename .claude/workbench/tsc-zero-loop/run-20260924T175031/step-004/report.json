@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3545, "total_final": 3483, "tsc_runs": 1, "accepted": ["agent:transcript-guard"], "files_kept": ["src/packages/storage/src/sessionStoragePredicates.ts"], "outcomes": {"agent:transcript-guard": "accepted-net"}}
