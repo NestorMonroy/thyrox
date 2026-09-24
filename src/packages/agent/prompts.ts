@@ -14,9 +14,10 @@
  * consumen directamente (`getUnameSR`, `prependBullets`). El resto de la
  * fuente (`getSystemPrompt`, `getSessionSpecificGuidanceSection`,
  * `enhanceSystemPromptWithEnvDetails`, `getScratchpadInstructions`,
- * `CLAUDE_CODE_DOCS_MAP_URL`, `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`,
- * `DEFAULT_AGENT_PROMPT`) queda fuera: ninguno tiene consumidor en este
- * cierre y cada uno arrastra su propio arbol de paquetes hermanos.
+ * `CLAUDE_CODE_DOCS_MAP_URL`, `SYSTEM_PROMPT_DYNAMIC_BOUNDARY`) queda
+ * fuera: ninguno tiene consumidor en este cierre y cada uno arrastra su
+ * propio arbol de paquetes hermanos. `DEFAULT_AGENT_PROMPT` si esta, al
+ * final: lo consume `runAgent` de tool-registry, y su texto es propio.
  *
  * EL CONTRATO QUE EL TEST FIJA (H-CCNMT: fuga de `<connId>:<modelId>` al
  * prompt): el id de modelo que llega empaquetado con su prefijo de conexion
@@ -287,3 +288,13 @@ export async function computeSimpleEnvInfo(
     ...prependBullets(envItems),
   ].join(`\n`)
 }
+
+/**
+ * El prompt de sistema de un subagente que no trae definición propia. Cumple
+ * el papel del literal que 2.1.275 pasa en `runAgent`; el texto es de este
+ * árbol, no una copia: lo que se conserva es el contrato — resolver la tarea
+ * con las herramientas disponibles y devolver un reporte breve, porque quien
+ * llamó lo retransmite.
+ */
+export const DEFAULT_AGENT_PROMPT =
+  'You are a subagent working on a task delegated by another agent. Use the tools available to you to finish the task completely, without expanding its scope. When you are done, reply with a short report of what you did and what you found; the caller relays it, so include only what matters.'

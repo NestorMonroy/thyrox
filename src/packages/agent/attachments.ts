@@ -19,6 +19,9 @@
  *     tocado. Reimplementado (no copiado) a partir del algoritmo de la
  *     fuente: mismo comportamiento observable, escrito de cero.
  *
+ *  3. `createAttachmentMessage` — el mensaje de transcripción que envuelve
+ *     un adjunto: contrato de `Kd` en 2.1.275 (`chunk-mdt3sxrw.js`).
+ *
  * NO se portan (sin consumidor en este árbol todavía): el resto del
  * orquestador — `getIdeSelectionAttachment`, `memoryFilesToAttachments`,
  * los builders de plan-mode/auto-mode/TODO reminder que consumen estas
@@ -26,7 +29,9 @@
  * cuando un test lo ejercite, no antes (mismo criterio que
  * `attachments/mailbox.ts` aplica a su propio recorte).
  */
+import { randomUUID } from 'node:crypto'
 import { dirname, parse, resolve } from 'node:path'
+import type { AttachmentMessage } from './messageShapes.js'
 
 export const TODO_REMINDER_CONFIG = {
   TURNS_SINCE_WRITE: 10,
@@ -92,4 +97,17 @@ export function getDirectoriesToProcess(
   cwdLevelDirs.reverse()
 
   return { nestedDirs, cwdLevelDirs }
+}
+
+/**
+ * Envuelve un adjunto en un mensaje de transcripción con su propio uuid y
+ * la marca de tiempo ISO de su creación (≙ `Kd` de 2.1.275).
+ */
+export function createAttachmentMessage<T extends { type: string }>(attachment: T): AttachmentMessage<T> {
+  return {
+    type: 'attachment',
+    attachment,
+    uuid: randomUUID(),
+    timestamp: new Date().toISOString(),
+  } as AttachmentMessage<T>
 }

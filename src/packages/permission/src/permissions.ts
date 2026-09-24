@@ -16,13 +16,9 @@
  *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver
  *   abajo; antes OMITIDA por falta de consumidor)
  *
- * OMITIDAS (6 de 17), declaradas por nombre, línea y bloqueo — ninguna
+ * OMITIDAS (5 de 17), declaradas por nombre, línea y bloqueo — ninguna
  * tiene consumidor confirmado en este pase:
  *
- *   - `createPermissionRequestMessage` (permissions.ts:144-220) — depende de
- *     `feature('BASH_CLASSIFIER')`/`feature('TRANSCRIPT_CLASSIFIER')` de
- *     `bun:bundle` (no resuelve en este runtime, medido con `bun -e`) y de
- *     `./PermissionMode.js` (sibling no portado en este pase).
  *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —
  *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,
  *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por
@@ -76,6 +72,7 @@ import type {
 } from './permissionTypes.js'
 import {
   permissionRuleValueFromString,
+  permissionRuleValueToString,
 } from './permissionRuleParser.js'
 
 export type ToolPermissionContext = {
@@ -309,4 +306,93 @@ export function getRuleByContentsForToolName(
     }
   }
   return ruleByContents
+}
+
+/** Singular o plural por conteo (≙ `P`). */
+function pluralize(count: number, singular: string, pluralForm = `${singular}s`): string {
+  return count === 1 ? singular : pluralForm
+}
+
+/** El comando sin sus redirecciones de salida, o undefined si no se pudo (≙ `Spe`). */
+function commandWithoutOutputRedirections(command: string): string | undefined {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { extractOutputRedirections } = require('@thyrox/shell/bash/commands.js') as {
+      extractOutputRedirections: (cmd: string) => { commandWithoutRedirections: string; redirections: unknown[] }
+    }
+    const { commandWithoutRedirections, redirections } = extractOutputRedirections(command)
+    return redirections.length > 0 ? commandWithoutRedirections : command
+  } catch {
+    return undefined
+  }
+}
+
+function permissionModeTitleDeferred(mode: string): string {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('./PermissionMode.js') as { permissionModeTitle: (m: string) => string }).permissionModeTitle(mode)
+  } catch {
+    return mode
+  }
+}
+
+type PermissionRequestReason = {
+  type: string
+  reason?: string
+  classifier?: string
+  hookName?: string
+  rule?: PermissionRule
+  reasons?: Map<string, { behavior: string }>
+  permissionPromptToolName?: string
+  mode?: string
+}
+
+/**
+ * El texto con que se pide aprobación para usar `toolName`, según la razón
+ * de la decisión (≙ `su` de 2.1.275, `chunk-q2gh92k2.js`). En la forma de
+ * subcomandos, sólo cuentan los que piden o pasan de largo; en Bash se
+ * muestran sin sus redirecciones de salida.
+ */
+export function createPermissionRequestMessage(toolName: string, decisionReason?: PermissionRequestReason): string {
+  if (decisionReason) {
+    if (decisionReason.type === 'classifier') {
+      return `Classifier '${decisionReason.classifier}' requires approval for this ${toolName} command: ${decisionReason.reason}`
+    }
+    switch (decisionReason.type) {
+      case 'hook':
+        return decisionReason.reason
+          ? `Hook '${decisionReason.hookName}' blocked this action: ${decisionReason.reason}`
+          : `Hook '${decisionReason.hookName}' requires approval for this ${toolName} command`
+      case 'rule': {
+        const rule = decisionReason.rule!
+        const ruleString = permissionRuleValueToString(rule.ruleValue)
+        const source = permissionRuleSourceDisplayString(rule.source)
+        return `Permission rule '${ruleString}' from ${source} requires approval for this ${toolName} command`
+      }
+      case 'subcommandResults': {
+        const parts: string[] = []
+        for (const [command, result] of decisionReason.reasons ?? new Map()) {
+          if (result.behavior !== 'ask' && result.behavior !== 'passthrough') continue
+          parts.push(toolName === 'Bash' ? (commandWithoutOutputRedirections(command) ?? command) : command)
+        }
+        if (parts.length > 0) {
+          const n = parts.length
+          return `This ${toolName} command contains multiple operations. The following ${pluralize(n, 'part')} ${pluralize(n, 'requires', 'require')} approval: ${parts.join(', ')}`
+        }
+        return `This ${toolName} command contains multiple operations that require approval`
+      }
+      case 'permissionPromptTool':
+        return `Tool '${decisionReason.permissionPromptToolName}' requires approval for this ${toolName} command`
+      case 'sandboxOverride':
+        return 'Run outside of the sandbox'
+      case 'workingDir':
+      case 'safetyCheck':
+      case 'other':
+      case 'asyncAgent':
+        return decisionReason.reason as string
+      case 'mode':
+        return `Current permission mode (${permissionModeTitleDeferred(decisionReason.mode as string)}) requires approval for this ${toolName} command`
+    }
+  }
+  return `Claude requested permissions to use ${toolName}, but you haven't granted it yet.`
 }

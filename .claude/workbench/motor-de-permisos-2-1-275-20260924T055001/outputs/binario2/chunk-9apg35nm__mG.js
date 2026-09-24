@@ -1,0 +1,1 @@
+function mG(e,n,r){let s={proxyExpansion:Fr(r),globMatching:!0,toolAliases:e.toolAliases};if($r(n,r,s))return!0;return("aliasSkillToolNames"in n?n.aliasSkillToolNames:void 0)?.some((h)=>$r({name:h},r,s))??!1}

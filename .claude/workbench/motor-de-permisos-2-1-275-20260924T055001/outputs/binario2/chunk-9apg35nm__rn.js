@@ -1,0 +1,1 @@
+function rn(e,n,r){let s=[];switch(r){case"allow":s=n0(e);break;case"deny":s=ad(e);break;case"ask":s=kh(e);break}let g=[];for(let h of s)if(h.ruleValue.toolName===n&&h.ruleValue.ruleContent!==void 0&&h.ruleBehavior===r)g.push(h);return g}
