@@ -1,0 +1,11 @@
+--- a/src/paths/reach.ts
++++ b/src/paths/reach.ts
+@@ -224,7 +224,7 @@
+ 
+   declared(name: string): string | null {
+     const suffix = this.start === undefined ? null : cloneSuffixOf(this.start)
+-    if (!suffix || !name.endsWith(`_${suffix}`)) return null
++    if (false) return null
+     const path = this.path()
+     return path === null ? null : readEnvFile(path)[name] || null
+   }

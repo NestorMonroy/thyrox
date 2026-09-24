@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+tests/paths/providerLayer.test.ts:
+68 |     unlinkSync(join(provider, '.env'))
+69 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_DOCS')).toBeNull()
+70 |   })
+71 |   test('THYROX_ENV_FILE declarado apaga la capa', () => {
+72 |     process.env.THYROX_ENV_FILE = '/dev/null'
+73 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_DOCS')).toBeNull()
+                                                                               ^
+error: expect(received).toBeNull()
+
+Received: "del-proveedor-para-docs"
+
+      at <anonymous> (/home/user/thyrox/tests/paths/providerLayer.test.ts:73:75)
+(fail) productionDeclarations — capa del .env del proveedor > THYROX_ENV_FILE declarado apaga la capa [0.66ms]
+
+ 7 pass
+ 1 fail
+ 8 expect() calls
+Ran 8 tests across 1 file. [118.00ms]
+
+[exit=1]

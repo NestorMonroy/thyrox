@@ -1,0 +1,12 @@
+Export PYTHONPATH from the isolated TypeScript runner
+
+tests/run.sh exports PYTHONPATH, and the derived subset calls
+run_ts_isolated.sh directly. Suites that shell out to a Python gate
+(compat.test.ts, branchIntegration.test.ts) passed in the full run and
+failed in the subset with "No module named 'verify'": measured, 3
+fails without the variable and 0 with it, with or without the reach.ts
+port.
+
+The runner now exports the provider's src the same way run.sh does.
+Its suite gains the case that removes PYTHONPATH from the caller; its
+red is persisted in the bench.

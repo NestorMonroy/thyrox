@@ -1,0 +1,11 @@
+--- a/src/paths/reach.ts
++++ b/src/paths/reach.ts
+@@ -260,7 +260,7 @@
+   const specific = new EnvFileDeclarations(start)
+   // Un `THYROX_ENV_FILE` declarado dice QUÉ archivo gobierna: sumarle otro
+   // desmentiría la declaración.
+-  if (process.env[ENV_FILE_VAR]) return new FirstOfDeclarations(new ProcessEnvironment(), specific)
++
+   const general = new ProviderEnvFileDeclarations(start)
+   // El mismo archivo no se lee como dos capas: desde dentro del proveedor la
+   // específica YA es la general.

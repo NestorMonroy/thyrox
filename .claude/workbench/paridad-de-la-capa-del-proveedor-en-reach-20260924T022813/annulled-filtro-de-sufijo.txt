@@ -1,0 +1,36 @@
+bun test v1.3.11 (af24e281)
+
+tests/paths/providerLayer.test.ts:
+53 |   test('el proceso gana sobre los dos', () => {
+54 |     process.env.THYROX_COMPARTIDA_DOCS = 'del-proceso'
+55 |     expect(productionDeclarations(consumer).declared('THYROX_COMPARTIDA_DOCS')).toBe('del-proceso')
+56 |   })
+57 |   test('el hogar propio del proveedor no se filtra', () => {
+58 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_DIR')).toBeNull()
+                                                                              ^
+error: expect(received).toBeNull()
+
+Received: "hogar-propio-del-proveedor"
+
+      at <anonymous> (/home/user/thyrox/tests/paths/providerLayer.test.ts:58:74)
+(fail) productionDeclarations — capa del .env del proveedor > el hogar propio del proveedor no se filtra [0.60ms]
+56 |   })
+57 |   test('el hogar propio del proveedor no se filtra', () => {
+58 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_DIR')).toBeNull()
+59 |   })
+60 |   test('la familia de otro clon no se filtra', () => {
+61 |     expect(productionDeclarations(consumer).declared('THYROX_CAPA_API')).toBeNull()
+                                                                              ^
+error: expect(received).toBeNull()
+
+Received: "del-proveedor-para-api"
+
+      at <anonymous> (/home/user/thyrox/tests/paths/providerLayer.test.ts:61:74)
+(fail) productionDeclarations — capa del .env del proveedor > la familia de otro clon no se filtra [0.60ms]
+
+ 6 pass
+ 2 fail
+ 8 expect() calls
+Ran 8 tests across 1 file. [106.00ms]
+
+[exit=1]

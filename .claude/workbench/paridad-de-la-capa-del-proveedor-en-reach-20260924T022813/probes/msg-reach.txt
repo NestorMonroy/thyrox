@@ -1,0 +1,16 @@
+Port the provider env layer to reach.ts
+
+reach.py reads the provider's .env as a third layer, answering only the
+asking clone's *_<SUFFIX> keys (thyrox@400fc454); reach.ts still built
+the chain from the process and the clone's own .env, so the TypeScript
+side resolved kaupamex-docs' THYROX_*_DOCS keys to nothing.
+
+ProviderEnvFileDeclarations, cloneTopOf and cloneSuffixOf follow the
+Python adapter: the provider is the sibling that carries the marker, a
+declared THYROX_ENV_FILE turns the layer off, and the same file is
+never read as two layers.
+
+Annulments: dropping the suffix filter drops exactly the two leak
+cases (the provider's own home, another clone's family); dropping the
+THYROX_ENV_FILE guard drops exactly its case. The derived subset of
+reach.ts consumers runs 124 pass, 0 fail.

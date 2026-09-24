@@ -1,0 +1,2 @@
+src/packages/agent/__tests__/compat.test.ts
+tests/coordination/branchIntegration.test.ts
