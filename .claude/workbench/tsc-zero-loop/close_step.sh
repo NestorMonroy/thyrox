@@ -11,6 +11,14 @@ REPORT="$R/$S/report.json"
 STATUS=$(python3 -c "import json,sys;print(json.load(open(sys.argv[1]))['status'])" "$REPORT")
 FILES=$(python3 -c "import json,sys;print(' '.join(json.load(open(sys.argv[1]))['files_kept']))" "$REPORT")
 test -s "$R/$S/commit.txt" || { echo "falta $R/$S/commit.txt" >&2; exit 2; }
+# Reflexion: un paso que no avanzó no se cierra sin su lección escrita.
+if [ "$STATUS" != progress ]; then
+  for P in $(python3 -c "import json,sys;print(' '.join(json.load(open(sys.argv[1]))['outcomes']))" "$REPORT"); do
+    python3 -c "import json,sys;sys.exit(0 if any(json.loads(l)['proposal_id']==sys.argv[2] for l in open(sys.argv[1])) else 1)" "$R/reflections.jsonl" "$P" 2>/dev/null \
+      || { echo "falta la reflexión de $P: bin/tsc_reflect add --run $R --id $P --step $R/$S ..." >&2; exit 3; }
+  done
+  EXTRA="${EXTRA:-} $R/reflections.jsonl"
+fi
 git add -N "$R/$S" "$J"
 OUT=$("${A[@]}" commit -q -F "$R/$S/commit.txt" -- $FILES ${EXTRA:-} "$R/$S" "$R/ledger.jsonl" "$J" 2>&1) || { echo "$OUT" | tail -20; exit 1; }
 LOW=$(echo "$OUT" | grep -oE "tsconfig.json baja: [0-9]+" | grep -oE "[0-9]+$" | head -1 || true)
