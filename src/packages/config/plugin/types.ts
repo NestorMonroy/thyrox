@@ -3,8 +3,10 @@
 // Wave-5 integrations / higher layers). Plugin types need only a thin
 // shape here; strictness regains when those subsystems are packaged.
 export type LspServerConfig = unknown
-export type McpServerConfig = unknown
-export type BundledSkillDefinition = unknown
+// Los tipos que ya existen en este paquete, no marcadores del decompilado.
+import type { McpServerConfig } from '../mcpConfigSchema.js'
+import type { BundledSkillDefinition } from './_deps.js'
+export type { BundledSkillDefinition, McpServerConfig }
 import type {
   CommandMetadata,
   PluginAuthor,

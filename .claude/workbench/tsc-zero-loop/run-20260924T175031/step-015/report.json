@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3197, "total_final": 3196, "tsc_runs": 1, "accepted": ["agent:plugin-types-bound"], "files_kept": ["src/packages/config/plugin/types.ts"], "outcomes": {"agent:plugin-types-bound": "accepted-net"}}

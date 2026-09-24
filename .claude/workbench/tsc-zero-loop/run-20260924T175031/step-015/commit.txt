@@ -1,0 +1,6 @@
+Bind the plugin config types to their definitions
+
+Fifteenth step of the agent-compiler loop, accepted-net 3197 -> 3196.
+config/plugin/types declared McpServerConfig and BundledSkillDefinition
+as unknown although both exist in the same package; it now imports and
+re-exports them (step 14 showed export-from alone does not bind them).
