@@ -1,0 +1,11 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 2256 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 2256 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 2256 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+remote: warning: See https://gh.io/lfs for more information.        
+remote: warning: File _references/claude-code-bin/2.1.281/claude_strings.txt is 51.35 MB; this is larger than GitHub's recommended maximum file size of 50.00 MB        
+remote: warning: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+0087b190 Vendor the claude-code 2.1.281 corpus
+__BG_EXIT__=0
