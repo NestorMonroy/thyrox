@@ -18,11 +18,9 @@
  * booleano (`isEnvTruthy`, importado de `./internalUtils.ts` en vez de
  * duplicarlo — ya está en este árbol con idéntica lógica).
  *
- * Recorte declarado: la fuente trae ademas `extractToolInputForTelemetry`,
- * que depende de `jsonStringify` de
- * `@claude-code-how-works/local-observability/slowOperations.js`
- * (inexistente aqui) — NO se porta: ningun caso de
- * `__tests__/eventMetadata.test.ts` la ejercita.
+ * `extractToolInputForTelemetry` se porta (2026-09-24) desde 2.1.275
+ * (`T3r` + `Dm`, `chunk-xbd48fav.js`); `JSON.stringify` sustituye al
+ * `jsonStringify` de la fuente, que no añade nada a una entrada ya recortada.
  *
  * Divergencia de tipo, acotada: los dos tipos de marca de la fuente
  * (`AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` y
@@ -96,6 +94,47 @@ export function sanitizeToolNameForAnalytics(toolName: string): string {
 /** ¿Esta activo el logueo detallado de input de tool (var. de entorno OTEL_LOG_TOOL_DETAILS)? */
 export function isToolDetailsLoggingEnabled(): boolean {
   return isEnvTruthy(process.env.OTEL_LOG_TOOL_DETAILS)
+}
+
+// Cotas del recorte de 2.1.275: cadena larga, su prefijo, profundidad,
+// elementos por nivel y longitud total del JSON.
+const LONG_STRING = 512
+const STRING_PREFIX = 128
+const MAX_DEPTH = 2
+const MAX_ITEMS = 20
+const MAX_JSON = 4096
+
+/** `Dm`: recorta un valor para telemetría sin perder su forma. */
+function truncateForTelemetry(value: unknown, depth = 0): unknown {
+  if (typeof value === 'string') {
+    if (value.length > LONG_STRING) return `${value.slice(0, STRING_PREFIX)}\u2026[${value.length} chars]`
+    return value
+  }
+  if (typeof value === 'number' || typeof value === 'boolean' || value === null || value === undefined) return value
+  if (depth >= MAX_DEPTH) return '<nested>'
+  if (Array.isArray(value)) {
+    const items: unknown[] = value.slice(0, MAX_ITEMS).map(v => truncateForTelemetry(v, depth + 1))
+    if (value.length > MAX_ITEMS) items.push(`\u2026[${value.length} items]`)
+    return items
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value).filter(([k]) => !k.startsWith('_'))
+    const kept: [string, unknown][] = entries.slice(0, MAX_ITEMS).map(([k, v]) => [k, truncateForTelemetry(v, depth + 1)])
+    if (entries.length > MAX_ITEMS) kept.push(['\u2026', `${entries.length} keys`])
+    return Object.fromEntries(kept)
+  }
+  return String(value)
+}
+
+/**
+ * `T3r`: la entrada de la herramienta como JSON acotado para el evento
+ * `tool_result`, o `undefined` si OTEL_LOG_TOOL_DETAILS no lo permite.
+ */
+export function extractToolInputForTelemetry(input: unknown): string | undefined {
+  if (!isToolDetailsLoggingEnabled()) return undefined
+  let json = JSON.stringify(truncateForTelemetry(input))
+  if (json.length > MAX_JSON) json = json.slice(0, MAX_JSON) + '\u2026[truncated]'
+  return json
 }
 
 /**
