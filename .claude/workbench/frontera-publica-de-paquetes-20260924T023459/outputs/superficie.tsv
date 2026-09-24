@@ -1,0 +1,44 @@
+clase	imports
+comodin	3544
+explicita	2887
+puerta	1323
+externo(no-@thyrox local)	0
+autoimport	8
+
+destino	puerta	explicita	comodin	subrutas-comodin
+@thyrox/agent	2	145	848	144
+@thyrox/config	141	421	443	89
+@thyrox/provider	5	3	435	86
+@thyrox/storage	0	42	381	31
+@thyrox/app-host	6	57	338	13
+@thyrox/tool-registry	8	360	283	80
+@thyrox/command-runtime	1	45	196	45
+@thyrox/permission	4	30	186	30
+@thyrox/mcp-runtime	8	7	129	19
+@thyrox/shell	1	97	87	19
+@thyrox/output	0	208	68	11
+@thyrox/bridge	2	1	32	14
+@thyrox/teleport	0	0	26	4
+@thyrox/ide	0	21	25	7
+@thyrox/memory	12	0	25	10
+@thyrox/server	0	0	14	5
+@thyrox/cli	2	3	11	9
+@thyrox/repl	0	342	10	6
+@thyrox/daemon	0	0	6	3
+@thyrox/headless-sdk	0	78	1	1
+@ant/claude-for-chrome-mcp	3	0	0	0
+@ant/computer-use-input	2	0	0	0
+@ant/computer-use-mcp	0	7	0	0
+@ant/computer-use-swift	2	0	0	0
+@anthropic/ink	764	112	0	0
+@thyrox/color-diff-napi	1	0	0	0
+@thyrox/context-compression	2	0	0	0
+@thyrox/local-observability	247	815	0	0
+@thyrox/observability	0	8	0	0
+@thyrox/plan	0	2	0	0
+@thyrox/skills	0	3	0	0
+@thyrox/stdin-napi	3	0	0	0
+@thyrox/swarm	106	37	0	0
+@thyrox/tools	0	8	0	0
+@thyrox/updater	1	23	0	0
+@thyrox/voice	0	12	0	0

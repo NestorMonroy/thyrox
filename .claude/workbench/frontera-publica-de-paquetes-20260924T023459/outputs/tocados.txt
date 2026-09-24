@@ -1,0 +1,9 @@
+src/packages/agent/__tests__/hooksEngine.test.ts
+src/packages/agent/__tests__/internalUtils.test.ts
+src/packages/agent/hooks.ts
+src/packages/agent/hooksConfigSnapshot.ts
+src/packages/agent/internalUtils.ts
+src/packages/config/__tests__/permissionPromptOptIn.test.ts
+src/packages/config/settings/settings.ts
+src/packages/provider/__tests__/classifyAPIError.test.ts
+src/packages/provider/src/errors.ts

@@ -1,0 +1,18 @@
+ok   cuenta import estático, import() dinámico, export…from y mock.module
+ok   ./*.js gana a ./* para una subruta .js (precedencia de Node)
+ok   subruta sin extensión resuelve por ./*
+ok   el comodín se retira
+ok   la puerta '.' se conserva
+ok   una subruta no consumida no se publica
+FAIL un destino inexistente no se publica y se reporta []
+ok   mock.module de un test también es consumo
+ok   un paquete sin comodín no cambia
+ok   --check con comodín vivo sale 1
+ok   sin --write no escribe
+ok   --write sale 0
+ok   --check tras cerrar sale 0
+ok   una raíz sin paquetes rehúsa con 2, sin cifra
+
+13 ok, 1 fail
+
+[exit=1]

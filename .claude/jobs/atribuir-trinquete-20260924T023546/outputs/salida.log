@@ -1,0 +1,93 @@
+  2447 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/base.txt
+  2449 .claude/workbench/frontera-publica-de-paquetes-20260924T023459/outputs/head.txt
+  4896 total
+--- nuevos en HEAD
+../app-host/src/bootstrap/gracefulShutdown.ts: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'behavior' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'behavior' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'interrupt' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'message' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'message' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'message' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'updatedInput' does not exist on type '{}'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2339: Property 'updatedPermissions' does not exist on type '{}'.
+../repl/src/components/StatusLine.tsx: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown>'.
+../repl/src/hooks/fileSuggestions.ts: error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown>'.
+../repl/src/processUserInput/processUserInput.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../repl/src/processUserInput/processUserInput.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../repl/src/processUserInput/processUserInput.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../repl/src/processUserInput/processUserInput.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../repl/src/processUserInput/processUserInput.ts: error TS2339: Property 'type' does not exist on type '{}'.
+../repl/src/processUserInput/processUserInput.ts: error TS2345: Argument of type '{}' is not assignable to parameter of type 'HookBlockingError'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type '{ [key: string]: unknown; } | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type '{ [key: string]: unknown; } | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type 'unknown' is not assignable to type '{ [key: string]: unknown; } | undefined'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type '{}' is not assignable to type 'Record<string, unknown>'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type '{}' is not assignable to type 'string'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type '{}' is not assignable to type 'string'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type '{}' is not assignable to type 'string'.
+../tool-registry/src/services/toolHooks.ts: error TS2322: Type '{}' is not assignable to type 'string'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'attachment' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'type' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'type' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'type' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2339: Property 'type' does not exist on type '{}'.
+../tool-registry/src/services/toolHooks.ts: error TS2345: Argument of type '{}' is not assignable to parameter of type 'HookBlockingError'.
+src/structuredIO.ts: error TS2339: Property 'behavior' does not exist on type '{}'.
+src/structuredIO.ts: error TS2339: Property 'behavior' does not exist on type '{}'.
+src/structuredIO.ts: error TS2339: Property 'behavior' does not exist on type '{}'.
+src/structuredIO.ts: error TS2339: Property 'message' does not exist on type '{}'.
+src/structuredIO.ts: error TS2339: Property 'updatedInput' does not exist on type '{}'.
+src/structuredIO.ts: error TS2339: Property 'updatedPermissions' does not exist on type '{}'.
+--- desaparecidos en HEAD
+../agent/fileChangedWatcher.ts: error TS2305: Module '"./hooks.js"' has no exported member 'HookOutsideReplResult'.
+../agent/fileChangedWatcher.ts: error TS2305: Module '"./hooks.js"' has no exported member 'executeCwdChangedHooks'.
+../agent/fileChangedWatcher.ts: error TS2305: Module '"./hooks.js"' has no exported member 'executeFileChangedHooks'.
+../agent/fileChangedWatcher.ts: error TS7031: Binding element 'results' implicitly has an 'any' type.
+../agent/fileChangedWatcher.ts: error TS7031: Binding element 'systemMessages' implicitly has an 'any' type.
+../agent/fileChangedWatcher.ts: error TS7031: Binding element 'watchPaths' implicitly has an 'any' type.
+../agent/internal/fileHistoryCore.ts: error TS2305: Module '"../internalUtils.js"' has no exported member 'pathExists'.
+../agent/query.ts: error TS2305: Module '"./hooks.js"' has no exported member 'executePostToolBatchHooks'.
+../app-host/src/bootstrap/gracefulShutdown.ts: error TS2339: Property 'executeSessionEndHooks' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/hooks")'.
+../app-host/src/bootstrap/gracefulShutdown.ts: error TS2339: Property 'getSessionEndHookTimeoutMs' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/hooks")'.
+../command-runtime/src/commands/clear/conversation.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeSessionEndHooks'.
+../command-runtime/src/commands/clear/conversation.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'getSessionEndHookTimeoutMs'.
+../mcp-runtime/src/utils.ts: error TS2305: Module '"@thyrox/config/settings"' has no exported member 'hasSkipDangerousModePermissionPrompt'.
+../permission/src/toolPermission/PermissionContext.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePermissionRequestHooks'.
+../provider/src/logging.ts: error TS2305: Module '"./errors.js"' has no exported member 'classifyAPIError'.
+../repl/src/components/PromptInput/PromptInput.tsx: error TS2305: Module '"@thyrox/config/settings"' has no exported member 'hasAutoModeOptIn'.
+../repl/src/components/StatusLine.tsx: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'createBaseHookInput'.
+../repl/src/components/StatusLine.tsx: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeStatusLineCommand'.
+../repl/src/hooks/fileSuggestions.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'createBaseHookInput'.
+../repl/src/hooks/fileSuggestions.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeFileSuggestionCommand'.
+../repl/src/hooks/notifs/useAutoModeUnavailableNotification.ts: error TS2305: Module '"@thyrox/config/settings"' has no exported member 'hasAutoModeOptIn'.
+../repl/src/notifier.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeNotificationHooks'.
+../repl/src/processUserInput/processSlashCommand.tsx: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeUserPromptExpansionHooks'.
+../repl/src/processUserInput/processUserInput.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeUserPromptSubmitHooks'.
+../repl/src/screens/REPLView.tsx: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeSessionEndHooks'.
+../repl/src/screens/REPLView.tsx: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'getSessionEndHookTimeoutMs'.
+../repl/src/screens/repl/backgroundAgentNotifications.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeNotificationHooks'.
+../swarm/src/install/installSwarmHost.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeWorktreeCreateHook'.
+../swarm/src/install/installSwarmHost.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeWorktreeRemoveHook'.
+../swarm/src/install/installSwarmHost.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'hasWorktreeCreateHook'.
+../tool-registry/src/services/toolExecution.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePermissionDeniedHooks'.
+../tool-registry/src/services/toolHooks.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePostToolHooks'.
+../tool-registry/src/services/toolHooks.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePostToolUseFailureHooks'.
+../tool-registry/src/services/toolHooks.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePreToolHooks'.
+../tool-registry/src/skills/skillChangeDetector.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeConfigChangeHooks'.
+../tool-registry/src/skills/skillChangeDetector.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'hasBlockingResult'.
+../tool-registry/src/tools/AgentTool/runAgent.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeSubagentStartHooks'.
+src/bg.ts: error TS2305: Module '"@thyrox/config/settings"' has no exported member 'hasAutoModeOptIn'.
+src/bg.ts: error TS2305: Module '"@thyrox/config/settings"' has no exported member 'hasSkipDangerousModePermissionPrompt'.
+src/headless/sdk/session/run-streaming.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executeNotificationHooks'.
+src/setup/setup.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'hasWorktreeCreateHook'.
+src/structuredIO.ts: error TS2305: Module '"@thyrox/agent/hooks.js"' has no exported member 'executePermissionRequestHooks'.
+sin diff en cli
+__BG_EXIT__=0

@@ -1,0 +1,11 @@
+--- a/src/typescript/close_exports.py
++++ b/src/typescript/close_exports.py
+@@ -166,7 +166,7 @@
+     exports = manifest.get("exports")
+     if not isinstance(exports, dict):
+         return Plan(exports=exports or {})
+-    wildcards = sorted((k for k in exports if "*" in k), key=_cmp_key())
++    wildcards = sorted((k for k in exports if "*" in k))
+     if not wildcards:
+         return Plan(exports=exports)
+     closed = {k: v for k, v in exports.items() if "*" not in k}

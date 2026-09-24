@@ -1,0 +1,67 @@
+src/packages/agent/__tests__/models.test.ts	error: expect(received).toBe(expected)
+src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts	SyntaxError: Export named 'getAssistantMessageText' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+src/packages/binary/__tests__/bunfs.test.ts	error: expect(received).toBeObject()
+src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/cli/src/__tests__/ptyFrame.test.ts	error: expect(received).toMatch(expected)
+src/packages/config/__tests__/pluginIdentifier.test.ts	error: expect(received).toBe(expected)
+src/packages/output/src/__tests__/modifiers.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	error: expect(received).toMatch(expected)
+src/packages/permission/src/__tests__/bashClassifierStub.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/permission/src/__tests__/classifierOperatorModel.contract.test.ts	SyntaxError: Export named 'getOrCreateUserID' not found in module '/home/user/thyrox/src/packages/config/index.ts'.
+src/packages/permission/src/__tests__/classifierTranscriptMeta.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+src/packages/permission/src/__tests__/isAutoModeAllowlistedTool.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+src/packages/permission/src/__tests__/pathValidation.test.ts	TypeError: isDangerousRemovalPath is not a function. (In 'isDangerousRemovalPath("*")', 'isDangerousRemovalPath' is undefined)
+src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/fetchProfileInfo.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/getAPIProvider.behavior.test.ts	error: expect(received).toBeGreaterThan(expected)
+src/packages/provider/src/__tests__/getOtelHeadersFromHelper.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/isAnthropicAuthEnabled.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/oauthExchange.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/performLogout.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/pt6LockTelemetry.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	error: expect(received).toMatch(expected)
+src/packages/provider/src/__tests__/refreshOAuthTokenInvalidGrant.behavior.test.ts	error: expect(received).not.toMatch(expected)
+src/packages/provider/src/__tests__/sessionIngressAuth.behavior.test.ts	error: expect(received).toEqual(expected)
+src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts	error: expect(received).toBe(expected)
+src/packages/provider/src/__tests__/validateForceLoginOrg.behavior.test.ts	error: expect(received).toBeGreaterThan(expected)
+src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+src/packages/storage/src/__tests__/extractGlobBaseDirectory.test.ts	SyntaxError: Export named 'normalizePatternsToPath' not found in module '/home/user/thyrox/src/packages/permission/src/filesystem.ts'.
+src/packages/storage/src/__tests__/path.test.ts	error: expect(received).toBe(expected)
+src/packages/tool-registry/src/__tests__/fileEditUtils.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+src/packages/tool-registry/src/__tests__/imageProcessor.test.ts	error: 
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts	SyntaxError: Export named 'createPermissionRequestMessage' not found in module '/home/user/thyrox/src/packages/permission/src/permissions.ts
+src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts	SyntaxError: Export named 'createAttachmentMessage' not found in module '/home/user/thyrox/src/packages/agent/attachments.ts'.
+src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts	SyntaxError: Export named 'startInProcessTeammate' not found in module '/home/user/thyrox/src/packages/swarm/src/index.ts'.
+src/packages/tools/__tests__/subagent.test.ts	error: expect(received).toContain(expected)
+tests/integration/agent-loop.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/integration/cli-arguments.test.ts	error: Cannot find module '../../packages/cli/src/entry/commander.js' from '/home/user/thyrox/tests/integration/cli-arguments.test.ts'
+tests/integration/plugin-load.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/integration/slash-commands.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/package/dependencies.test.ts	error: expect(received).toEqual(expected)
+tests/package/exports.test.ts	error: expect(received).toEqual(expected)
+tests/package/sibling_exports.test.ts	error: expect(received).toEqual(expected)
+tests/reference/triple.test.ts	error: expect(received).toEqual(expected)
+tests/smoke/bg-cycle-smoke.test.ts	error: expect(received).toBe(expected)
+tests/smoke/headless-smoke.test.ts	error: expect(received).toBe(expected)
+tests/smoke/live-fire-smoke.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/smoke/plugin-hooks-smoke.test.ts	error: expect(received).toBeDefined()
+tests/smoke/repl-smoke.test.ts	error: expect(received).toEqual(expected)
+tests/smoke/resume-smoke.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/smoke/swarm-smoke.test.ts	SyntaxError: Export named 'getPatchForDisplay' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/unit/settings/config.test.ts	TypeError: SettingsSchema is not a function. (In 'SettingsSchema()', 'SettingsSchema' is an instance of _)
+tests/unit/state/replSelectors.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+tests/unit/utils/diff.test.ts	SyntaxError: Export named 'getPatchFromContents' not found in module '/home/user/thyrox/src/packages/agent/diff.ts'.
+tests/unit/utils/effort.test.ts	TypeError: getEffortLevelDescription is not a function. (In 'getEffortLevelDescription("low")', 'getEffortLevelDescription' is undefined)
+tests/unit/utils/glob.test.ts	SyntaxError: Export named 'normalizePatternsToPath' not found in module '/home/user/thyrox/src/packages/permission/src/filesystem.ts'.
+tests/unit/utils/messages.test.ts	SyntaxError: Export named 'normalizeMessagesForAPI' not found in module '/home/user/thyrox/src/packages/agent/messages.ts'.
+tests/unit/utils/path.test.ts	error: expect(received).toBe(expected)
+tests/unit/utils/tokens.test.ts	SyntaxError: Export named 'roughTokenCountEstimationForMessages' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.t
+tests/unit/utils/truncate.test.ts	error: expect(received).toBe(expected)
+tests/verify/applyInferredTypes.test.ts	SIN-ERROR-RECONOCIDO
+tests/verify/facadeProposals.test.ts	SIN-ERROR-RECONOCIDO

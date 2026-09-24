@@ -1,0 +1,7 @@
+Record the package boundary and ratchet evidence
+
+Benches for the package boundary (surface census, closing plan,
+resolution pairs, named-import reports, reds of each tool) and for the
+red TypeScript classification, the jobs of the full isolated suite,
+the ratchet attribution against 74de33b1 and the commits run in the
+background, and the pre-commit log that held the ptyFrame commit.

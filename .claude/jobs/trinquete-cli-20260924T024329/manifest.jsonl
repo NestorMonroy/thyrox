@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check-cli-typecheck --strict src/packages/cli/src/bg/ptyFrame.ts", "started_at": "2026-09-24T02:43:29+00:00"}

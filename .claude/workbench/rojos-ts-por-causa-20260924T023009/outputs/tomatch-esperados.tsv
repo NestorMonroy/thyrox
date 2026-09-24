@@ -1,0 +1,39 @@
+src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts	/const \{ getOauthTokenFromFd, setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootst
+src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts	/const \{ setOauthTokenFromFd \} = await import\(\s*\n?\s*'@claude-code-how-works\/app-host\/bootstrap\/state\.js'/
+src/packages/cli/src/__tests__/ptyFrame.test.ts	/frame too large/
+src/packages/cli/src/__tests__/ptyFrame.test.ts	/bad ctrl json/
+src/packages/cli/src/__tests__/ptyFrame.test.ts	/unknown frame kind 99/
+src/packages/output/src/__tests__/modifiers.behavior.test.ts	/const \{ isModifierPressed: nativeIsModifierPressed \} =\s*\n?\s*\/\/[\s\S]*?require\('modifiers-napi'\)/
+src/packages/output/src/__tests__/modifiers.behavior.test.ts	/const \{ prewarm \} = require\('modifiers-napi'\)[\s\S]+?prewarm\(\)/
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	/XML_S1_SUFFIX = '\\nErr on the side of blocking\. <block> immediately\.'/
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	/computeAutoModeFallback\(/
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	/sandboxOverride alone/
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	/tengu_auto_mode_fallback_to_ask/
+src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts	/tool\.name === REPL_TOOL_NAME/
+src/packages/permission/src/__tests__/bashClassifierStub.behavior.test.ts	/Stub for external builds.+ANT-ONLY/i
+src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts	/result\.timedOut\s*\?\s*'timed out'\s*:\s*`exited \$\{result\.exitCode\}`/
+src/packages/provider/src/__tests__/apiKeyHelperSWR.behavior.test.ts	/if\s*\(!stdout\)\s*\{?\s*\n?\s*throw new Error\('did not return a value'\)/
+src/packages/provider/src/__tests__/fetchProfileInfo.behavior.test.ts	/seatTier\?:\s*string\s*\|\s*null/
+src/packages/provider/src/__tests__/getOtelHeadersFromHelper.behavior.test.ts	/if\s*\(isOtelHeadersHelperFromProjectOrLocalSettings\(\)\)\s*\{[\s\S]*?if\s*\(!hasTrust\)\s*\{[\s\S]*?return\s*\{\}/
+src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts	/Stale prefix; fall through to bare search/
+src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts	/Orphan id[\s\S]*?return value/
+src/packages/provider/src/__tests__/isAnthropicAuthEnabled.behavior.test.ts	/hasExternalAuthToken\s*&&\s*!isManagedOAuthContext\(\)/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant dg6 xH\("oauth_token_exchange", reason\)/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant dg6 yH/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant Bq_ xH/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant Bq_ G6/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant cg6 yH/
+src/packages/provider/src/__tests__/oauthCanonicalTelemetry.behavior.test.ts	/ant lg6 yH/
+src/packages/provider/src/__tests__/oauthExchange.behavior.test.ts	/if\s*\(orgUUID\)\s*\{[\s\S]*?append\('orgUUID',\s*orgUUID\)/
+src/packages/provider/src/__tests__/oauthExchange.behavior.test.ts	/if\s*\(expiresIn !== undefined\)\s*\{[\s\S]*?requestBody\.expires_in = expiresIn/
+src/packages/provider/src/__tests__/performLogout.behavior.test.ts	/const \{ flushTelemetry \} = await import\(\s*\n?\s*'@claude-code-how-works\/local-observability\/telemetry'/
+src/packages/provider/src/__tests__/pt6LockTelemetry.behavior.test.ts	/tengu_oauth_token_refresh_lock_release_error', \{\s*\n?\s*error: errorMessage\(\s*\n?\s*releaseError,/
+src/packages/provider/src/__tests__/pt6LockTelemetry.behavior.test.ts	/Port of ant pt6 \(1997\.js\): G6[\s\S]{0,200}?oauth_refresh_lock_timeout/
+src/packages/provider/src/__tests__/pt6LockTelemetry.behavior.test.ts	/Port of ant pt6 \(1997\.js\): xH[\s\S]{0,200}?oauth_refresh_lock_error/
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/ant Bq_ return[\s\S]{0,200}?clientId/
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/Port of ant Bq_ signature/
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/lockedSubscriptionType/
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/shouldOmitScopes =\s*\n?\s*\(shouldUseClaudeAIAuth\(lockedTokens\.scopes\) \|\| lockedSubscriptionType\) &&\s*\n?\s*!lo
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/refreshOAuthToken\(lockedTokens\.refreshToken, \{\s*\n?\s*scopes: shouldOmitScopes \? undefined : lockedTokens\.scopes,
+src/packages/provider/src/__tests__/refreshOAuthTokenClientId.behavior.test.ts	/Port of ant v2\.1\.136 pt6[\s\S]{0,500}?bB\(w\.scopes\) \|\| w\.subscriptionType/
+src/packages/provider/src/__tests__/refreshOAuthTokenInvalidGrant.behavior.test.ts	not /markRefreshTokenDead/

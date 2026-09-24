@@ -1,0 +1,20 @@
+Add tools to close package exports and check names
+
+Measured over 7 754 name-based imports outside tests: 42 of 42
+packages declare exports, but 28 keep the ./* wildcard, and 3 544
+imports (46 %) enter only through it. With the wildcard, a new
+internal path needs no manifest change, so the boundary lives in the
+file and not in the resolver.
+
+close_exports.py declares each consumed subpath as an explicit key by
+substituting into the wildcard's own pattern with Node's precedence,
+so every subpath resolves to the same file, then drops the wildcard.
+Annulments: sorting keys without Node's order drops exactly the two .js
+cases; skipping the target existence check drops exactly the missing
+target case.
+
+namedImports.ts resolves each specifier with Bun's resolver and checks
+every requested name against what the target exports in value or type,
+following export * chains. A per-package bun build does not see this:
+with siblings external it bundles the importer of getPatchForDisplay
+without a single error.
