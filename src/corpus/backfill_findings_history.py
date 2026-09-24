@@ -33,6 +33,7 @@ import argparse
 import pathlib
 import importlib.util
 import re
+import os
 import sys
 from pathlib import Path
 
@@ -171,8 +172,13 @@ def main() -> int:
         print(f"backfill-findings-history: 0 archivos hallazgo-*.rst bajo {PM_ROOT}", file=sys.stderr)
         return 1
 
-    if args.claude_dir:
-        store_dir = pathlib.Path(args.claude_dir).expanduser().resolve()
+    # ``AGENT_STORE_CLAUDE_DIR`` es el desvio que comparten los tres pasos del
+    # hook de cierre de turno (``drain_spool``, ``reconcile_store`` y este):
+    # ignorarlo aqui hacia que una prueba que desvia el hook entero escribiera
+    # igual en el store versionado del proveedor (H-THYROX-164).
+    claude_dir = args.claude_dir or os.environ.get("AGENT_STORE_CLAUDE_DIR")
+    if claude_dir:
+        store_dir = pathlib.Path(claude_dir).expanduser().resolve()
         if store_dir.name != "agent-results":
             store_dir = store_dir / "agent-results"
     else:

@@ -1,0 +1,3 @@
+CAMBIA tests/agents/test-carrete-store.sh 5a49606ca694 -> bfe16bd8248b
+EXIT=0
+__BG_EXIT__=0
