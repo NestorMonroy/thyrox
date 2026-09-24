@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/tsc_proposers > .claude/cache/proposers/candidatos.jsonl", "started_at": "2026-09-24T18:44:14+00:00"}
