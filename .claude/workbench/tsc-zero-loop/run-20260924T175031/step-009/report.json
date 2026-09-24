@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3331, "total_final": 3283, "tsc_runs": 1, "accepted": ["agent:nbformat-types"], "files_kept": ["src/packages/tool-registry/src/notebookTypes.ts"], "outcomes": {"agent:nbformat-types": "accepted-net"}}
