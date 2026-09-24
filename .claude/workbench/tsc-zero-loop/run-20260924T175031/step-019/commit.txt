@@ -1,0 +1,6 @@
+Record the partial AgentToolProgress step of the tsc loop
+
+Nineteenth step: giving AgentToolProgress the payload AgentTool emits.
+Its targets fell 87 -> 57 but it revealed 32 diagnostics, so the total
+rose 3142 -> 3144 and the net policy reverted it. The ledger keeps the
+revealed contracts for a later, wider step.
