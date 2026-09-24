@@ -44,8 +44,10 @@
  *   `@thyrox/config/settings/types.ts` ya declara
  *   (`['default', 'acceptEdits', 'bypass']`) no incluye `'auto'` — el guard
  *   sería inerte con el esquema actual.
- * - `loadManagedFileSettings`, `getManagedFileSettingsPresence`,
- *   `getPolicySettingsOrigin`, `getManagedSettingsKeysForLogging`,
+ * - `getManagedFileSettingsPresence` y `getPolicySettingsOrigin` se portan
+ *   al final (2026-09-24, `Ysr`/`wS` de 2.1.275), acotados a la capa de
+ *   archivo: las otras capas de política no existen aquí.
+ * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
  *   `getSandboxBinaryPath`, `getSettingsWithSources`,
  *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
@@ -67,6 +69,7 @@ import mergeWith from 'lodash-es/mergeWith.js'
 import { z } from 'zod'
 import {
   mkdirSync,
+  readdirSync,
   readFileSync as fsReadFileSync,
   realpathSync,
   writeFileSync as fsWriteFileSync,
@@ -78,6 +81,7 @@ import {
   type SettingsError,
 } from './validation.ts'
 import { SETTING_SOURCES, type SettingSource } from './constants.ts'
+import { getManagedFilePath } from './managedPath.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
 
@@ -620,4 +624,49 @@ export function getAutoModeConfig(
     if (merged[key].length > 0) result[key] = merged[key]
   }
   return Object.keys(result).length > 0 ? result : undefined
+}
+
+/** Un archivo de settings administrado cuenta si parsea y trae alguna clave. */
+function hasManagedSettings(path: string): boolean {
+  const { settings } = parseSettingsFile(path)
+  return settings !== null && Object.keys(settings).length > 0
+}
+
+/**
+ * `Ysr` de 2.1.275: si el directorio administrado tiene su
+ * `managed-settings.json` base y si `managed-settings.d/` aporta algún
+ * `.json` con contenido. Parámetro opcional aditivo para medirlo.
+ */
+export function getManagedFileSettingsPresence(dir: string = getManagedFilePath()): {
+  hasBase: boolean
+  hasDropIns: boolean
+} {
+  const hasBase = hasManagedSettings(join(dir, 'managed-settings.json'))
+  let hasDropIns = false
+  try {
+    const dropInDir = join(dir, 'managed-settings.d')
+    hasDropIns = readdirSync(dropInDir, { withFileTypes: true }).some(
+      entry =>
+        (entry.isFile() || entry.isSymbolicLink()) &&
+        entry.name.endsWith('.json') &&
+        !entry.name.startsWith('.') &&
+        hasManagedSettings(join(dropInDir, entry.name)),
+    )
+  } catch {}
+  return { hasBase, hasDropIns }
+}
+
+export type PolicySettingsOrigin = 'remote' | 'helper' | 'plist' | 'hklm' | 'file' | 'parent' | 'hkcu'
+
+/**
+ * `wS` de 2.1.275: la capa de la que salen los settings de política.
+ *
+ * pendiente: la fuente elige entre remota, helper, plist/HKLM, archivo,
+ * proceso padre y HKCU; aquí sólo existe la capa de archivo (ver la
+ * cabecera), así que el origen es `file` si el directorio administrado
+ * aporta algo y `null` si no.
+ */
+export function getPolicySettingsOrigin(dir?: string): PolicySettingsOrigin | null {
+  const { hasBase, hasDropIns } = getManagedFileSettingsPresence(dir)
+  return hasBase || hasDropIns ? 'file' : null
 }

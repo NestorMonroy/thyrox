@@ -26,6 +26,7 @@ export { CLIENT_SETTING_KEYS, KEY_STATUS, keysByStatus, deferredReason, deferred
 export { loadSettings, mergeSettings, type LoadResult, type LoadSpec, type MergeResult, type SourcedSettings } from './settings/load.ts'
 export { getCurrentProjectConfig, saveCurrentProjectConfig, getProjectPathForConfig,
   getGlobalConfig, saveGlobalConfig, getOrCreateUserID, isGlobalConfigKey, isProjectConfigKey, getGlobalConfigWriteCount, enableConfigs, checkHasTrustDialogAccepted, isPathTrusted, createDefaultGlobalConfig, _setGlobalConfigCacheForTesting, DEFAULT_GLOBAL_CONFIG, GLOBAL_CONFIG_KEYS, PROJECT_CONFIG_KEYS, CONFIG_WRITE_DISPLAY_THRESHOLD, NOTIFICATION_CHANNELS, type GlobalConfig, type ProjectConfig, type ConnectionRecord, type ConnectionModelRecord, type ConnectionModelEffort, type AuthProtocol, type AccountInfo, type NotificationChannel, type EditorMode, type DiffTool, type OutputStyle, type InstallMethod, type HistoryEntry, type PastedContent, type ReleaseChannel } from './global/config.ts'
+export { getAutoUpdaterDisabledReason, formatAutoUpdaterDisabledReason, isAutoUpdaterDisabled, shouldSkipPluginAutoupdate, type AutoUpdaterDisabledReason } from './global/autoUpdater.ts'
 // `global/constants.ts` no estaba en la superficie del paquete, y tres
 // consumidores ya importaban `getInvokedBinaryName` desde `@thyrox/config`
 // (repl x2, agent x1): el simbolo existe en `:59` y el barril no lo pasaba.

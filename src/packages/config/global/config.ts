@@ -31,10 +31,9 @@
  *       rancias al medirlas: los bindings `getOriginalCwd` y
  *       `findCanonicalGitRoot` ya existían, y 18 archivos en 10 paquetes la
  *       importan — `repl` no arrancaba por eso.
- *   los accesores del AUTO-UPDATER (`isAutoUpdaterDisabled`,
- *       `shouldSkipPluginAutoupdate`, `formatAutoUpdaterDisabledReason`,
- *       `getAutoUpdaterDisabledReason`) — leen `settings`, no este registro;
- *       su hogar natural es el propio `@thyrox/updater`.
+ *   [PORTADOS 2026-09-24, en `./autoUpdater.ts`] los accesores del
+ *       AUTO-UPDATER (`isAutoUpdaterDisabled`, `shouldSkipPluginAutoupdate`,
+ *       `formatAutoUpdaterDisabledReason`, `getAutoUpdaterDisabledReason`).
  *   las rutas de MEMORIA y REGLAS (`getMemoryPath`, `getManagedClaudeRulesDir`,
  *       `getUserClaudeRulesDir`) — `getMemoryPath` cuelga de `teamMemPaths`,
  *       que la fuente carga tras la bandera `TEAMMEM`.
