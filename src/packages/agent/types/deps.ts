@@ -1,6 +1,20 @@
-
-import type { CoreMessage, Usage } from './messages.js'
-import type { CoreTool, ToolResult, PermissionResult, PermissionContext, ToolExecContext } from './tools.js'
+/**
+ * Porte de `ccnmt: packages/agent/types/deps.ts` — el conjunto de
+ * dependencias inyectadas que `AgentCore`/`AgentLoop` reciben en el
+ * constructor (`AgentDeps`). Cada sub-interfaz es la frontera de un
+ * adaptador de producción: `provider` habla con el modelo, `tools` con el
+ * registro real de herramientas, `hooks` con el ciclo de vida del turno,
+ * `swarm` con el buzón de un teammate cuando el agente corre en equipo.
+ */
+import type { CoreMessage } from './messages.js'
+import type { Usage } from './messages.js'
+import type {
+  CoreTool,
+  ToolResult,
+  PermissionResult,
+  PermissionContext,
+  ToolExecContext,
+} from './tools.js'
 import type { AgentState } from './state.js'
 
 // --- Provider Dep ---
@@ -99,6 +113,7 @@ export interface SessionDep {
   getSessionId(): string
 }
 
+// --- Swarm Dep (mensajería entre teammates) ---
 
 export interface TeammateIdentity {
   name: string
@@ -145,7 +160,6 @@ export interface SwarmDep {
   mailbox: MailboxDep
   taskClaiming: TaskClaimingDep
 }
-
 
 export interface AgentDeps {
   provider: ProviderDep
