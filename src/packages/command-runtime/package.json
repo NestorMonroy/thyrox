@@ -350,6 +350,7 @@
     "@thyrox/teleport": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/updater": "workspace:*",
-    "@thyrox/voice": "workspace:*"
+    "@thyrox/voice": "workspace:*",
+    "ignore": "^7.0.8"
   }
 }

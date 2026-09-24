@@ -289,6 +289,7 @@
         "@thyrox/tool-registry": "workspace:*",
         "@thyrox/updater": "workspace:*",
         "@thyrox/voice": "workspace:*",
+        "ignore": "^7.0.8",
       },
     },
     "src/packages/config": {
