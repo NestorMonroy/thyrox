@@ -135,6 +135,14 @@
       "types": "./dist/commands/compact/index.d.ts",
       "default": "./src/commands/compact/index.ts"
     },
+    "./commands/pause-memory": {
+      "types": "./dist/commands/pause-memory/index.d.ts",
+      "default": "./src/commands/pause-memory/index.ts"
+    },
+    "./commands/pause-memory/index.js": {
+      "types": "./dist/commands/pause-memory/index.d.ts",
+      "default": "./src/commands/pause-memory/index.ts"
+    },
     "./commands/context/context-noninteractive.js": {
       "types": "./dist/commands/context/context-noninteractive.d.ts",
       "default": "./src/commands/context/context-noninteractive.ts"

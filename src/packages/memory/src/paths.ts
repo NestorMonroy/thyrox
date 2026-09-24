@@ -17,6 +17,7 @@
 import { homedir } from 'node:os'
 import { isAbsolute, join, normalize, sep } from 'node:path'
 import { readEnv } from '@thyrox/config/env/utils'
+import { isMemoryPaused } from './memoryPause.js'
 import {
   getFeatureValue_CACHED_MAY_BE_STALE,
   getInitialSettings,
@@ -26,6 +27,8 @@ import { isEnvDefinedFalsy, isEnvTruthy, sanitizePath } from './internalUtils.js
 import { getMemoryHostBindings } from './host.js'
 
 export function isAutoMemoryEnabled(): boolean {
+  // 2.1.281 (`Va`): con la memoria en pausa por `/pause-memory`, apagada.
+  if (isMemoryPaused()) return false
   const envVal = readEnv('CLAUDE_CODE_DISABLE_AUTO_MEMORY')
   if (isEnvTruthy(envVal)) return false
   if (isEnvDefinedFalsy(envVal)) return true

@@ -30,6 +30,10 @@
       "types": "./dist/src/memoryFileDetection.d.ts",
       "default": "./src/memoryFileDetection.ts"
     },
+    "./memoryPause": {
+      "types": "./dist/src/memoryPause.d.ts",
+      "default": "./src/memoryPause.ts"
+    },
     "./memoryShapeTelemetry": {
       "types": "./dist/src/memoryShapeTelemetry.d.ts",
       "default": "./src/memoryShapeTelemetry.ts"

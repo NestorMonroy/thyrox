@@ -13,10 +13,11 @@
  *
  * Divergencias declaradas:
  *
- * - Este árbol no tiene `/pause-memory` ni el indicador de sesión que lo
- *   guarda (`Kh`), así que la memoria nunca está en pausa: las dos ramas
- *   que la bloquean no pueden dispararse. No es abrir de más — la pausa no
- *   se puede activar.
+ * - (Retirada 2026-09-24.) Esta línea decía que el árbol no tenía
+ *   `/pause-memory` ni su indicador y que las dos ramas no podían
+ *   dispararse. Era una omisión, no una divergencia: el comando y el
+ *   indicador están portados de 2.1.281 (`@thyrox/memory/memoryPause`), y
+ *   las dos ramas niegan como en el binario (`vQ` → `qs`, `Mxt` → `Rr`).
  * - El documento de taller del plan (`<slug>.workshop.md`) exige que el
  *   taller esté disponible (`Ji.isAvailable()`); este árbol no lo tiene y
  *   la rama queda cerrada.
@@ -33,6 +34,7 @@ import * as nodeFs from 'node:fs'
 import { homedir } from 'node:os'
 import * as nodePath from 'node:path'
 import { getPlatform } from '@thyrox/config/platform.js'
+import { isMemoryPaused } from '@thyrox/memory/memoryPause'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { getPermissionHostBindings } from './host.js'
 import { SENSITIVE_FILES, automountRoot, comparableSegment, isUncPath } from './pathSafety.js'
@@ -53,6 +55,23 @@ export type InternalPathDecision =
 const SEP = nodePath.sep
 const PASSTHROUGH: InternalPathDecision = { behavior: 'passthrough', message: '' }
 const MEMORY_PAUSED_REASON = 'memory access blocked by /pause-memory'
+const MEMORY_PAUSED_DECISION: SafetyDecisionReason = {
+  type: 'safetyCheck',
+  reason: MEMORY_PAUSED_REASON,
+  classifierApprovable: false,
+}
+/** Escribir en la memoria con la pausa puesta (≙ `Rr`, 2.1.281). */
+export const MEMORY_WRITE_PAUSED: InternalPathDecision = {
+  behavior: 'deny',
+  message: 'Cannot write to memory while it is paused. Run /pause-memory to resume automemory.',
+  decisionReason: MEMORY_PAUSED_DECISION,
+}
+/** Leer la memoria con la pausa puesta (≙ `qs`, 2.1.281). */
+export const MEMORY_READ_PAUSED: InternalPathDecision = {
+  behavior: 'deny',
+  message: 'Cannot read memory while it is paused. Run /pause-memory to resume automemory.',
+  decisionReason: MEMORY_PAUSED_DECISION,
+}
 const AUTO_MEMORY_WRITE_REASON = 'auto memory files are allowed for writing'
 
 /** Segmentos que una ruta de la sesión no puede cruzar (≙ `USt`). */
@@ -374,6 +393,16 @@ function isAutoMemoryFile(path: string, root: string | undefined = autoMemoryDir
   return !crossesForbiddenSegment(file, root)
 }
 
+/**
+ * Cualquier ruta bajo el directorio de memoria automática, sin más
+ * condiciones (≙ `xU`: `Ps(e).startsWith(Qs())`). Es más amplio que
+ * `isAutoMemoryFile`: la pausa cubre todo lo que cuelga del directorio.
+ */
+export function isUnderAutoMemoryDir(path: string): boolean {
+  const root = autoMemoryDir()
+  return root !== undefined && normalized(path).startsWith(root)
+}
+
 /** La memoria de Cowork redirigida por variable (≙ `sle`). */
 function hasCoworkMemoryOverride(): boolean {
   return Boolean(process.env.CLAUDE_COWORK_MEMORY_PATH_OVERRIDE)
@@ -622,6 +651,7 @@ export function checkEditableInternalPath(
   if (!options?.restricted && file.endsWith('.md') && isAgentMemoryFile(file)) {
     return allowed(input, 'Agent memory files are allowed for writing')
   }
+  if (isUnderAutoMemoryDir(file) && isMemoryPaused()) return MEMORY_WRITE_PAUSED
   if (!options?.restricted && !hasCoworkMemoryOverride() && file.endsWith('.md') && isAutoMemoryFile(file)) {
     return allowed(input, AUTO_MEMORY_WRITE_REASON)
   }
@@ -654,6 +684,7 @@ export function checkReadableInternalPath(
     return checkEachPath(pathsToCheck, (p, i) => checkReadableInternalPath(p, i, undefined, options), input)
   }
   const file = normalized(path)
+  if (isUnderAutoMemoryDir(file) && isMemoryPaused()) return MEMORY_READ_PAUSED
   if (!options?.restricted && isProjectStoragePath(file, options?.blockOutsideReads ? originalCwd() : undefined)) {
     return allowed(input, 'Project directory files are allowed for reading')
   }

@@ -21,16 +21,21 @@
  *
  * Divergencias declaradas:
  *
- * - La memoria nunca está en pausa en este árbol (no hay `/pause-memory` ni
- *   `Kh`), así que la rama de `EN(y) && Kh()` de `Wy` no puede dispararse.
- * - El experimento en sombra `tengu_playful_lobster` (`Ju`/`Ys`/`td`/`xs`)
- *   sólo registra telemetría y no cambia la decisión: no se porta.
+ * - (Retirada 2026-09-24.) Decía que la memoria nunca está en pausa y que
+ *   la rama `EN(y) && Kh()` de `Wy` no podía dispararse. Era una omisión:
+ *   `/pause-memory` y su indicador están portados de 2.1.281, y la rama
+ *   niega como `ib` (`xU(h)&&Yh()` → `Rr`).
+ * - (Retirada 2026-09-24.) Decía que el experimento en sombra
+ *   `tengu_playful_lobster` no se portaba por ser sólo telemetría. Era una
+ *   omisión: este árbol tiene dónde registrar (`logEvent`), y está portado
+ *   de 2.1.281 en `playfulLobster.ts`.
  * - `servedCall` no lo fija ningún productor en este árbol; la rama que
  *   convierte la negación en consulta se porta igual, leyendo las settings.
  */
 import * as nodeFs from 'node:fs'
 import * as nodePath from 'node:path'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
+import { isMemoryPaused } from '@thyrox/memory/memoryPause'
 import { expandPath } from '@thyrox/storage/path.js'
 import {
   ADOPT_JSON_DENIED,
@@ -45,6 +50,8 @@ import {
   isProfileStorePath,
   isSeedAdminPath,
   isSettingsReviewStore,
+  isUnderAutoMemoryDir,
+  MEMORY_WRITE_PAUSED,
 } from './internalPaths.js'
 import {
   checkPathSafetyForAutoEdit,
@@ -67,6 +74,7 @@ import {
   workingDirectoriesOf,
   type PathPermissionContext,
 } from './pathValidation.js'
+import { isHardLinkedFile, isShadowExperimentOn, recordShadowFired, shouldLogShadowPath } from './playfulLobster.js'
 import { permissionRuleValueFromString } from './permissionRuleParser.js'
 import type { PermissionDecision, PermissionUpdate } from './permissionTypes.js'
 import { allPathsMatchAllowRule, escapeForIgnore, matchingRuleForInput } from './ruleMatching.js'
@@ -501,12 +509,32 @@ export function checkReadPermissionForTool(
     }
   }
 
+  // Experimento en sombra de 2.1.281 (`A` en `Jv`): se evalúa como mucho una
+  // vez por llamada y sólo si la lectura llega a permitirse por modo o por
+  // directorio de trabajo. Un fallo al medir no toca la decisión.
+  let shadow: boolean | undefined
+  const shadowFires = (): boolean => {
+    if (shadow === undefined) {
+      try {
+        const absolute = expandPath(path)
+        shadow = isShadowExperimentOn() && shouldLogShadowPath(`${context.mode}:${absolute}`) && isHardLinkedFile(absolute)
+      } catch {
+        shadow = false
+      }
+    }
+    return shadow
+  }
+
   // Poder editar implica poder leer; en plan mode se mide como en default.
   const writeContext = context.mode === 'plan' ? { ...context, mode: 'default' } : context
   const write = checkWritePermissionForTool(tool, input, writeContext as PathPermissionContext, paths)
-  if (write.behavior === 'allow') return write
+  if (write.behavior === 'allow') {
+    if (write.decisionReason?.type === 'mode' && shadowFires()) recordShadowFired(expandPath(path), 'editImpliesRead', context.mode)
+    return write
+  }
 
   if (isPathInWorkingDirectories(path, context, paths, workingDirectoriesOf(context))) {
+    if (shadowFires()) recordShadowFired(expandPath(path), 'workingDir', context.mode)
     return { behavior: 'allow', updatedInput: input, decisionReason: { type: 'mode', mode: 'default' } }
   }
 
@@ -559,6 +587,9 @@ export function checkWritePermissionForTool(
     )
     if (denied) return denied
   }
+
+  // 2.1.281 (`ib`): con la memoria en pausa, nada bajo su directorio se escribe.
+  if (isUnderAutoMemoryDir(absolute) && isMemoryPaused()) return MEMORY_WRITE_PAUSED as PermissionDecision
 
   // Los almacenes que el arnés gestiona no se escriben nunca, con ninguna regla.
   if (paths.some(isJobAdoptFile)) return ADOPT_JSON_DENIED as PermissionDecision

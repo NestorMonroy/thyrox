@@ -14,6 +14,7 @@ import copy from '@thyrox/command-runtime/commands/copy/index.js'
 import desktop from '@thyrox/repl/commands/desktop/index.js'
 import commitPushPr from '@thyrox/agent/commands/commit-push-pr.js'
 import compact from '@thyrox/command-runtime/commands/compact/index.js'
+import pauseMemory from '@thyrox/command-runtime/commands/pause-memory/index.js'
 import config from '@thyrox/repl/commands/config/index.js'
 import { context, contextNonInteractive } from '@thyrox/command-runtime/commands/context/index.js'
 import cost from '@thyrox/command-runtime/commands/cost/index.js'
@@ -273,6 +274,7 @@ const COMMANDS = memoize((): Command[] => [
   color,
   compact,
   config,
+  pauseMemory,
   copy,
   desktop,
   context,
