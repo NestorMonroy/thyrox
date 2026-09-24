@@ -91,6 +91,9 @@ comprobar(len(lista) > 0, '`run.sh --list` enumera archivos en vez de rehusar')
 print('== ninguna lengua queda fuera del alcance ==')
 for lengua, patron, raices in [
     ('TypeScript', '*.test.ts', ('tests', 'src')),
+    # `.test.tsx` tambien es un test de bun: medido, 2 en `__tests__/` de
+    # paquetes que el patron `.test.ts` dejaba fuera del alcance.
+    ('TypeScript (tsx)', '*.test.tsx', ('tests', 'src')),
     ('Python', 'test_*.py', ('tests',)),
     ('shell', 'test*.sh', ('tests',)),
 ]:
@@ -110,7 +113,9 @@ print('== el corredor no promete más lenguas de las que invoca ==')
 # cita la frase vieja. El numeral derivado cae exactamente cuando el mensaje
 # deja de corresponder al alcance real.
 NUMERAL = {1: 'una', 2: 'dos', 3: 'tres', 4: 'cuatro', 5: 'cinco'}
-lenguas = {Path(f).suffix for f in lista}
+# La lengua, no la extensión: `.tsx` es TypeScript igual que `.ts`.
+LENGUA = {'.ts': 'TypeScript', '.tsx': 'TypeScript', '.py': 'Python', '.sh': 'shell'}
+lenguas = {LENGUA.get(Path(f).suffix, Path(f).suffix) for f in lista}
 exito = [l for l in CORREDOR.read_text(encoding='utf8').splitlines()
          if l.strip().startswith('echo "OK:')]
 comprobar(len(exito) == 1, f'hay un solo mensaje de éxito ({len(exito)})')

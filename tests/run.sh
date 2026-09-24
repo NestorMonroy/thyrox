@@ -75,7 +75,7 @@ trap retirar_tmpdir EXIT
 
 # `node_modules` trae tests de terceros —198 de zod, medidos— que no son
 # nuestros: incluirlos inflaria el denominador con material que no mantenemos.
-descubrir_ts()     { find src tests -name '*.test.ts' -not -path '*/node_modules/*' | sort; }
+descubrir_ts()     { find src tests \( -name '*.test.ts' -o -name '*.test.tsx' \) -not -path '*/node_modules/*' | sort; }
 descubrir_python() { find tests -name 'test_*.py' -not -path '*/node_modules/*' | sort; }
 # `run-all.sh` y este mismo archivo son corredores, no pruebas; no empiezan por
 # `test` asi que el patron ya los excluye, y se declara para que se lea.
