@@ -5,15 +5,20 @@
 # caigan exactamente las aserciones que dependen de ella. Las variantes son
 # independientes entre si, pero editar el modulo en su sitio las obliga a ir en
 # serie (cada una restaura antes de la siguiente). Aqui cada variante escribe
-# su propia copia bajo .claude/cache/annul/<n>/ y la prueba la importa por una
+# su propia copia bajo .claude/cache/<nombre>/annul/<corrida>/<n>/ y la prueba
+# la importa por una
 # variable de entorno, asi que GNU Parallel las corre a la vez sin pisarse.
 #
 # Uso:
-#   bash src/verify/annul_parallel.sh MODULE TEST ENV_VAR VARIANTS
+#   bash src/verify/annul_parallel.sh MODULE TEST ENV_VAR VARIANTS [NAME]
 #     MODULE    el modulo bajo prueba (se copia, nunca se edita en su sitio)
 #     TEST      el archivo de bun test que lo importa desde ${ENV_VAR}
 #     ENV_VAR   la variable que la prueba lee para importar el modulo
 #     VARIANTS  un archivo: una variante por linea, `etiqueta<TAB>expresion-sed`
+#     NAME      el sujeto, que agrupa las corridas en .claude/cache/<NAME>/;
+#               por defecto el nombre del modulo sin extension, para que las
+#               corridas de dos modulos distintos no se mezclen en un solo
+#               directorio
 #
 # Sale 2 si falta algo o si una variante no cambia el modulo: una expresion
 # que no casa produce una copia identica, y su verde se leeria como «el
@@ -22,15 +27,18 @@ set -euo pipefail
 
 module="${1:?falta MODULE}"; test_file="${2:?falta TEST}"
 env_var="${3:?falta ENV_VAR}"; variants="${4:?falta VARIANTS}"
+name="${5:-$(basename "${module%.*}")}"
 for f in "$module" "$test_file" "$variants"; do
   [[ -f "$f" ]] || { echo "annul_parallel: REHUSA — no existe $f" >&2; exit 2; }
 done
 command -v parallel >/dev/null || { echo "annul_parallel: REHUSA — falta GNU parallel" >&2; exit 2; }
 
 root="$(git rev-parse --show-toplevel)"
-work="$root/.claude/cache/annul/$(date -u +%Y%m%dT%H%M%S)-$$"
+work="$root/.claude/cache/$name/annul/$(date -u +%Y%m%dT%H%M%S)-$$"
 mkdir -p "$work"
-trap 'rm -rf "$work"' EXIT
+# Al salir se borra la corrida y, solo si quedan vacios, sus padres: otra
+# corrida concurrente del mismo sujeto conserva su directorio.
+trap 'rm -rf "$work"; rmdir "${work%/*}" "${work%/*/*}" 2>/dev/null || true' EXIT
 
 run_variant() {
   local n="$1" label="$2" expr="$3"
