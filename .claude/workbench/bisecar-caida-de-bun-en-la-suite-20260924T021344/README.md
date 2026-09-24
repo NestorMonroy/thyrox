@@ -26,10 +26,23 @@ Tres hipótesis cayeron antes de medir con método: `stream.test.ts` pasa solo
 
 ## Los resultados
 
-El disparador es el `import { … } from '@anthropic-ai/sdk'` que el pase añadió
-a `src/packages/provider/src/errors.ts`, un módulo que ninguno de sus otros
-símbolos necesitaba ligar al SDK. `classifyAPIError` reconoce ahora los
-errores del SDK por su cadena de constructores, sin importarlo.
+`cual-modulo.txt` dice que la caída desaparece revirtiendo `errors.ts`, y la
+primera lectura culpó al `import` del SDK que el pase le añadió. **Falso**:
+retirado ese import —`classifyAPIError` reconoce los errores del SDK por su
+cadena de constructores— la suite completa se sigue cayendo
+(`.claude/jobs/ts-sin-import-sdk-20260924T021822/`). Revertir `errors.ts`
+entero quitaba también la exportación `classifyAPIError`, y con ella dejaba
+de cargar `logging.ts` y todo lo que cuelga de él: la sonda medía «el grafo
+nuevo carga o no», no «el import del SDK». Es el sub-patrón D con la sonda
+como sujeto.
+
+Lo que sí consta: en la corrida caída la TDZ no es de un solo módulo
+(`Stream` 15 veces, `MAX_FILES` 14) y aparece a partir de
+`tests/unit/utils/gitDiff.test.ts`; la corrida sana no tiene ninguna. Hipótesis
+vigente, sin medir aún: los 146 `mock.module` de 56 archivos, globales al
+proceso, contaminan a los archivos siguientes cuando el grafo nuevo carga.
+Se mide aislando cada archivo en su proceso
+(`suite-ts-aislada-por-archivo-con-parallel-*`).
 
 Control de partida: la suite TypeScript sin los cambios del pase
 (`.claude/jobs/ts-sin-cambios-20260924T021053/`) no se cae y da 14 119 pass,
