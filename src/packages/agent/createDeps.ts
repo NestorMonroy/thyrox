@@ -40,6 +40,13 @@ import { findToolByName } from '@thyrox/tool-registry/Tool.js'
 import { handleStopHooks } from './internal/stopHooksCore.ts'
 import { getAgentHostBindings } from './host.ts'
 import { recordTranscript } from './internal/runtimeBridges.ts'
+import {
+  fromCoreMessage,
+  fromCoreMessages,
+  isAgentMessageEvent,
+  isCoreMessage,
+  toCoreMessage,
+} from './messageAdapters.ts'
 import type {
   AgentAssistantMessage,
   AgentMessage,
@@ -163,7 +170,7 @@ class ProviderDepImpl implements ProviderDep {
     }
 
     const stream = adapter.queryStream({
-      messages: params.messages as never,
+      messages: fromCoreMessages(params.messages) as never,
       systemPrompt: systemPrompt as never,
       thinkingConfig: ctx.options.thinkingConfig as never,
       tools: ctx.options.tools as never,
@@ -172,7 +179,8 @@ class ProviderDepImpl implements ProviderDep {
     })
 
     for await (const event of stream) {
-      yield event as ProviderEvent
+      const providerEvent = event as ProviderEvent
+      yield isAgentMessageEvent(providerEvent) ? toCoreMessage(providerEvent) : providerEvent
     }
   }
 
@@ -325,16 +333,13 @@ class HookDepImpl implements HookDep {
       // Se parte la entrada en la forma (historia, cola de asistente) que
       // `handleStopHooks` espera: la cola es todo lo posterior al último
       // mensaje de usuario o sistema.
-      const ultimoNoAsistente = (messages as unknown as AgentMessage[])
-        .findLastIndex(m => m.type !== 'assistant')
+      const agentMessages = fromCoreMessages(messages)
+      const ultimoNoAsistente = agentMessages.findLastIndex(m => m.type !== 'assistant')
       const messagesForQuery =
-        ultimoNoAsistente >= 0
-          ? (messages.slice(0, ultimoNoAsistente + 1) as unknown as AgentMessage[])
-          : []
-      const assistantMessages =
-        ultimoNoAsistente >= 0
-          ? (messages.slice(ultimoNoAsistente + 1) as unknown as AgentAssistantMessage[])
-          : (messages as unknown as AgentAssistantMessage[])
+        ultimoNoAsistente >= 0 ? agentMessages.slice(0, ultimoNoAsistente + 1) : []
+      const assistantMessages = agentMessages
+        .slice(ultimoNoAsistente + 1)
+        .filter(isAgentAssistantMessage)
 
       const generator = handleStopHooks(
         messagesForQuery,
@@ -421,7 +426,7 @@ class SessionDepImpl implements SessionDep {
 
   async recordTranscript(messages: CoreMessage[]): Promise<void> {
     try {
-      await recordTranscript(messages as unknown as AgentMessage[])
+      await recordTranscript(fromCoreMessages(messages))
     } catch (e) {
       // Perder transcripts rompe reanudar y reproducir, así que el fallo se
       // registra aunque no corte el bucle.
@@ -475,15 +480,18 @@ export function createProductionDeps(params: CreateDepsParams): AgentDeps {
  * `done`     → se descarta (señala el fin del stream).
  * cualquier otro `type` → se descarta.
  */
+function isAgentAssistantMessage(message: AgentMessage): message is AgentAssistantMessage {
+  return message.type === 'assistant' && typeof message.message === 'object' && message.message !== null
+}
+
 export function fromAgentEvent(event: { type: string; [key: string]: unknown }) {
   switch (event.type) {
     case 'message': {
+      // El core emite su mensaje plano; el bucle lo recibe en su modelo.
+      // Antes se descartaba todo lo que no llevara `message` anidado, y con
+      // eso cualquier mensaje que el core hubiera creado en su propia forma.
       const msg = event.message
-      if (!msg) return undefined
-      if (typeof msg === 'object' && msg !== null && 'message' in msg) {
-        return msg
-      }
-      return undefined
+      return isCoreMessage(msg) ? fromCoreMessage(msg) : undefined
     }
     case 'stream':
       return event.event
@@ -497,24 +505,9 @@ export function fromAgentEvent(event: { type: string; [key: string]: unknown }) 
 }
 
 /**
- * Frontera entre `AgentMessage` (el modelo del bucle, `internalTypes.ts`) y
- * `CoreMessage` (el de `AgentCore`, `agentMessages.ts`). Porte de la fuente
- * con su firma tipada (`ccnmt: packages/agent/createDeps.ts:444-450`): hasta
- * ahora eran genericos sobre `T[]` con la razon de que ninguno de los dos
- * tipos existia en este porte, y los dos ya existen — la version generica
- * dejaba pasar cualquier arreglo sin nombrar la frontera.
- *
- * Son identidad, como en la fuente: la referencia sale intacta, porque
- * `fromCoreMessages(event.after)` devuelve al bucle los mismos objetos que
- * entraron. Las dos formas NO son iguales —`CoreMessage` lleva `content` y
- * `usage` en la raiz, `AgentMessage` bajo `message`— y `AgentLoop` lee las dos
- * (`core/AgentLoop.ts:158`, `:443-445`). Convertir de verdad romperia ese
- * viaje de ida y vuelta; es decision pendiente, no se toma aqui.
+ * La frontera entre `AgentMessage` (anidado, el modelo del bucle) y
+ * `CoreMessage` (plano, el de `AgentCore`) vive en `messageAdapters.ts`: la
+ * fuente la cruzaba con un cast (`ccnmt: packages/agent/createDeps.ts:444-450`)
+ * y aqui se convierte de verdad. Se reexporta con el nombre de la fuente.
  */
-export function toCoreMessages(messages: AgentMessage[]): CoreMessage[] {
-  return messages as CoreMessage[]
-}
-
-export function fromCoreMessages(messages: CoreMessage[]): AgentMessage[] {
-  return messages as AgentMessage[]
-}
+export { fromCoreMessages, toCoreMessages } from './messageAdapters.ts'

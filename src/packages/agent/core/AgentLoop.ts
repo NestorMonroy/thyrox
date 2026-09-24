@@ -18,6 +18,7 @@ import type {
   CoreContentBlock,
   Usage,
 } from '../agentMessages.ts'
+import { isCoreMessage } from '../coreMessages.ts'
 import type { CoreTool, ToolResult } from '../coreTools.ts'
 import { createBudgetTracker, checkTokenBudget } from '../internal/tokenBudget.ts'
 import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
@@ -110,11 +111,14 @@ export class AgentLoop {
 
         for await (const event of stream) {
           const eventType = event.type
-          if (eventType === 'assistant') {
-            assistantMessage = event as unknown as CoreAssistantMessage
+          // Los deps convierten a la forma plana lo que el provider emite como
+          // mensaje (`createDeps.ts`, `toCoreMessage`); aqui se comprueba en
+          // vez de afirmarse.
+          if (isCoreMessage(event) && event.type === 'assistant') {
+            assistantMessage = event
             yield { type: 'message', message: assistantMessage }
-          } else if (eventType === 'system') {
-            yield { type: 'message', message: event as unknown as CoreMessage }
+          } else if (isCoreMessage(event) && event.type === 'system') {
+            yield { type: 'message', message: event }
           } else {
             yield { type: 'stream', event }
             const rawEvent = eventType === 'stream_event'

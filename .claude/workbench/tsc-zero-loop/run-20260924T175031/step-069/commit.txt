@@ -1,0 +1,25 @@
+Route every AgentMessage/CoreMessage crossing through adapters
+
+The shape audit counted seven model crossings without an adapter. All
+of them now go through messageAdapters.ts, in both directions:
+
+- The provider hands flat core messages back to the API as the
+  nested shape it expects. Before, `params.messages as never` did it
+  by cast.
+- What the provider emits as a message reaches the core flat.
+  AgentLoop checks it with isCoreMessage instead of asserting it; the
+  guard lives in coreMessages.ts so the core does not import the
+  loop's model.
+- The stop hooks and the transcript work on the loop's model,
+  converted back.
+- fromAgentEvent converts the core's message instead of dropping any
+  message that was not nested, which discarded every message the core
+  created in its own shape.
+
+The fromAgentEvent tests pinned the old identity contract. They now
+pin the round trip: each object comes back and in order, even of types
+the core does not model.
+
+Verifiers: tsc plus message_shape_audit.ts. SHAPE002 7 -> 0. tsc and
+shape together 2417 -> 2408. Runtime suite of the loop: 75 pass, 0
+fail. One diagnostic revealed in fromCoreMessage, for the next step.

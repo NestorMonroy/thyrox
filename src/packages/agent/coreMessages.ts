@@ -108,3 +108,14 @@ export type CoreMessage =
   | CoreUserMessage
   | CoreAssistantMessage
   | CoreSystemMessage
+
+/**
+ * Un valor con forma de mensaje del core: objeto, y de uno de sus tres tipos.
+ * Vive en el core porque es el core quien lo necesita para recibir los
+ * mensajes del provider sin afirmarlos por cast (`AgentLoop.ts`).
+ */
+export function isCoreMessage(value: unknown): value is CoreMessage {
+  if (typeof value !== 'object' || value === null) return false
+  const type = (value as { type?: unknown }).type
+  return type === 'user' || type === 'assistant' || type === 'system'
+}

@@ -21,3 +21,10 @@ Fases:
   buildAssistantMessage (ciego al auditor: es escritura, no lectura) y el
   defecto de aggregateUsage, primero con una prueba en rojo.
 - E. Una sola definicion de CoreMessage dentro del core.
+- F. (destapada en la fase C) `CompactableMessage`, la interfaz de lectura
+  estrecha de la compactacion, se usa como tipo de RETORNO
+  (`compactUtils.ts:57-60, 93, 141, 209`): el bucle recupera un tipo mas
+  estrecho del que entrego (`query.ts:515, 1126`,
+  `sessionMemoryCompact.ts:603`). Arreglo: funciones genericas
+  `<T extends CompactableMessage>(messages: T[]): T[]`. Patron a registrar al
+  abrir su paso: `narrow-input-type-returned-as-output`.

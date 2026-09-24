@@ -22,6 +22,7 @@ import type {
   CoreMessage,
   Usage,
 } from './coreMessages.ts'
+export { isCoreMessage } from './coreMessages.ts'
 
 const ORIGINALS = new WeakMap<CoreMessage, AgentMessage>()
 /** El cuerpo anidado original, arrastrado por las copias que el core hace con spread. */
@@ -139,6 +140,11 @@ export function fromCoreMessage(core: CoreMessage): AgentMessage {
     if (flat[field] !== undefined) body[field] = flat[field]
   }
   return { ...rest, type: core.type, message: body, timestamp: toIso(core.timestamp) }
+}
+
+/** Un mensaje del bucle que el provider emite como evento (`assistant`, `system`). */
+export function isAgentMessageEvent(value: { type: string }): value is AgentMessage {
+  return value.type === 'assistant' || value.type === 'system'
 }
 
 export function toCoreMessages(messages: readonly AgentMessage[]): CoreMessage[] {
