@@ -93,5 +93,13 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("y al rehusar deja la edición del agente en su sitio", edited,
                  (root / "src" / "a.ts").read_text())
 
+    code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "no-log"),
+                                "--pattern", "(", "--id", "x", "src/a.ts"])
+    assert_equal("un log ausente rehúsa con 2, sin traza", 2, code)
+    (root / "before.log").write_text("\n".join(before) + "\n")
+    code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
+                                "--pattern", "(", "--id", "x", "src/a.ts"])
+    assert_equal("un patrón mal formado rehúsa con 2, sin traza", 2, code)
+
 print(f"test_agent_proposal: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

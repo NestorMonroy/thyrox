@@ -86,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         row = build(args.root, args.files, args.before_log.read_text().splitlines(), args.pattern,
                     args.id)
-    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+    except (ValueError, OSError, re.error, subprocess.CalledProcessError) as error:
         print(f"agent_proposal: REHÚSA — {error}", file=sys.stderr)
         return 2
     print(json.dumps(row, ensure_ascii=False))
