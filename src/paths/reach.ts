@@ -38,7 +38,7 @@
  */
 import { homedir } from 'node:os'
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 /** Dónde buscar el archivo de entorno, si no se declara uno explícito. */
@@ -197,6 +197,58 @@ export class FirstOfDeclarations implements ForReadingDeclarations {
 }
 
 /**
+ * Adaptador conducido: el `.env` del PROVEEDOR, sólo para la familia por clon
+ * del consumidor que pregunta — paridad con `ProviderEnvFileDeclarations` de
+ * `reach.py` (`thyrox@400fc454`).
+ *
+ * El proveedor es el HERMANO del clon que lleva el marcador, no el árbol del
+ * que se importó este módulo. Y responde sólo `*_<SUFIJO>` del clon
+ * (`kaupamex-docs` → `DOCS`): el resto del archivo son los hogares propios
+ * del proveedor, que no se filtran a un consumidor.
+ */
+export class ProviderEnvFileDeclarations implements ForReadingDeclarations {
+  constructor(private readonly start?: string, private readonly root?: string) {}
+
+  path(): string | null {
+    let root = this.root ?? null
+    if (root === null && this.start !== undefined) {
+      const top = cloneTopOf(this.start)
+      const parent = dirname(top)
+      root = readdirSync(parent).sort().map((n) => join(parent, n))
+        .find((p) => p !== top && existsSync(join(p, THYROX_MARKER))) ?? null
+    }
+    if (root === null) return null
+    const candidate = join(root, ENV_FILE_NAME)
+    return existsSync(candidate) ? candidate : null
+  }
+
+  declared(name: string): string | null {
+    const suffix = this.start === undefined ? null : cloneSuffixOf(this.start)
+    if (!suffix || !name.endsWith(`_${suffix}`)) return null
+    const path = this.path()
+    return path === null ? null : readEnvFile(path)[name] || null
+  }
+}
+
+/** La raíz del repositorio que contiene `start`: el primer `.git` al ascender. */
+export function cloneTopOf(start: string): string {
+  let here = resolve(start)
+  for (;;) {
+    if (existsSync(join(here, '.git'))) return here
+    const up = dirname(here)
+    if (up === here) return resolve(start)
+    here = up
+  }
+}
+
+/** `kaupamex-docs` -> `DOCS`; sin guion no hay sufijo. */
+export function cloneSuffixOf(start: string): string | null {
+  const name = basename(cloneTopOf(start))
+  const i = name.lastIndexOf('-')
+  return i < 0 ? null : name.slice(i + 1).toUpperCase().replace(/-/g, '_') || null
+}
+
+/**
  * El CONFIGURADOR: qué adaptadores se usan y en qué orden.
  *
  * Único sitio del módulo que decide cuáles son los adaptadores reales — el
@@ -205,7 +257,19 @@ export class FirstOfDeclarations implements ForReadingDeclarations {
  * llamador lo sustituye pasando `source`.
  */
 export function productionDeclarations(start?: string): ForReadingDeclarations {
-  return new FirstOfDeclarations(new ProcessEnvironment(), new EnvFileDeclarations(start))
+  const specific = new EnvFileDeclarations(start)
+  // Un `THYROX_ENV_FILE` declarado dice QUÉ archivo gobierna: sumarle otro
+  // desmentiría la declaración.
+  if (process.env[ENV_FILE_VAR]) return new FirstOfDeclarations(new ProcessEnvironment(), specific)
+  const general = new ProviderEnvFileDeclarations(start)
+  // El mismo archivo no se lee como dos capas: desde dentro del proveedor la
+  // específica YA es la general.
+  const specificPath = envFilePath(start)
+  const generalPath = general.path()
+  if (generalPath === null || (specificPath !== null && resolve(specificPath) === resolve(generalPath))) {
+    return new FirstOfDeclarations(new ProcessEnvironment(), specific)
+  }
+  return new FirstOfDeclarations(new ProcessEnvironment(), specific, general)
 }
 
 /**
