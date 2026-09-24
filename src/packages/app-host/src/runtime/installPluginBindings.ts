@@ -511,7 +511,7 @@ export function installPluginBindings(): void {
   setRegisterCleanupFn(fn => registerCleanup(fn))
 
   // --- git
-  setGitExeFn(() => gitExe() as any)
+  setGitExeFn(() => gitExe())
   setGetHeadForDirFn(dir => getHeadForDir(dir))
 
   // --- subproceso

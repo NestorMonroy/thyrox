@@ -321,10 +321,12 @@ export function setIsSettingSourceEnabledFn(
 // Helpers de git
 // ---------------------------------------------------------------------------
 
-let _gitExe: () => Promise<string> = async () => 'git'
+// Síncrono como el de la fuente (`storage/git.ts`): la ruta del binario se
+// memoiza allí, y los llamadores la pasan directo a `execFile`.
+let _gitExe: () => string = () => 'git'
 let _getHeadForDir: (dir: string) => Promise<string | null> = async () => null
 
-export function gitExe(): Promise<string> {
+export function gitExe(): string {
   return _gitExe()
 }
 export function getHeadForDir(dir: string): Promise<string | null> {
