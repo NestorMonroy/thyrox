@@ -338,7 +338,89 @@ class FirstOfDeclarations:
         return None
 
 
-def production_declarations(start: Path | None = None) -> ForReadingDeclarations:
+class ProviderEnvFileDeclarations:
+    """Adaptador conducido: el ``.env`` del PROVEEDOR, la capa general.
+
+    El binario del cliente combina sus fuentes de configuración por CLAVE y de
+    la más general a la más específica: aplica el ``env`` de cada fuente con
+    ``Object.assign`` en orden, así que una clave que la específica no declara
+    conserva el valor de la general (medido en 2.1.281: *«Ordered low-to-high
+    priority — later entries override earlier ones»*). Aquí la general es este
+    archivo: ``write-env.sh`` escribe en él la familia por clon
+    (``THYROX_WORKBENCH_DOCS``, ``THYROX_JOBS_DOCS``…) y se versiona, mientras
+    que el ``.env`` del consumidor no se versiona y en un clon nuevo no existe.
+    Sin esta capa, una consulta hecha desde el consumidor no leía nunca la
+    declaración que el proveedor hizo para él.
+
+    La raíz del proveedor es el HERMANO del clon que pregunta que lleva el
+    marcador —el mismo criterio con que ``thyrox_root`` reconoce al proveedor—,
+    no el árbol del que se importó este módulo: buscarlo junto a ``reach``
+    hacía que un árbol sintético leyera el ``.env`` del proveedor REAL. Y no
+    sale de ``env_value``: pedírsela a la cadena que este adaptador integra
+    sería circular. ``root`` la declara quien la conozca (un test).
+
+    Ciega a: un proveedor que no viva junto al consumidor. Ése no aporta capa.
+    """
+
+    def __init__(self, root: Path | None = None, clone_suffix: str | None = None,
+                 start: Path | None = None) -> None:
+        self.root = root
+        self.clone_suffix = clone_suffix
+        self.start = start
+
+    def path(self) -> Path | None:
+        root = self.root
+        if root is None and self.start is not None:
+            top = clone_top_of(self.start)
+            root = next((sibling for sibling in sorted(top.parent.iterdir())
+                         if sibling != top and (sibling / THYROX_MARKER).is_file()), None)
+        if root is None:
+            return None
+        candidate = root / ENV_FILE_NAME
+        return candidate if candidate.is_file() else None
+
+    def declared(self, name: str) -> str | None:
+        # Sólo la familia POR CLON del consumidor que pregunta. El resto del
+        # archivo son los hogares propios del proveedor (`THYROX_CACHE_DIR`…):
+        # tratarlos como capa general los filtraba a cada consumidor, y la
+        # suite completa lo midió con 14 suites nuevas en rojo.
+        if not self.clone_suffix or not name.endswith(f"_{self.clone_suffix}"):
+            return None
+        path = self.path()
+        if path is None:
+            return None
+        return read_env_file(path).get(name) or None
+
+
+def clone_top_of(start: Path) -> Path:
+    """La raíz del repositorio que contiene ``start``: el primer ``.git`` al ascender.
+
+    Sin ``.git`` en el ascenso —un árbol sintético— la raíz es ``start`` mismo.
+    """
+    here = Path(start).resolve()
+    return next((level for level in (here, *here.parents) if (level / ".git").exists()), here)
+
+
+def clone_suffix_of(start: Path | None) -> str | None:
+    """El sufijo de la familia por clon del repositorio que contiene ``start``.
+
+    ``kaupamex-docs`` -> ``DOCS``: lo que sigue al último guion, en mayúsculas,
+    que es como ``workbench_home_name`` compone la clave. Se busca el ``.git``
+    y no el ``.env`` porque en un clon nuevo el ``.env`` del consumidor no
+    existe, que es justo el caso que la capa del proveedor cubre. Sin guion en
+    el nombre no hay sufijo, y sin sufijo no hay capa: mejor medir de menos que
+    inventar una familia.
+    """
+    if start is None:
+        return None
+    name = clone_top_of(start).name
+    if "-" not in name:
+        return None
+    return name.rsplit("-", 1)[1].upper().replace("-", "_") or None
+
+
+def production_declarations(start: Path | None = None,
+                            provider_root: Path | None = None) -> ForReadingDeclarations:
     """El CONFIGURADOR: qué adaptadores se usan y en qué orden.
 
     Único sitio del módulo que decide cuáles son los adaptadores reales. Es el
@@ -347,7 +429,20 @@ def production_declarations(start: Path | None = None) -> ForReadingDeclarations
     una función— así que el cableado por defecto vive en este configurador y
     el llamador lo sustituye pasando ``source=``.
     """
-    return FirstOfDeclarations(ProcessEnvironment(), EnvFileDeclarations(start))
+    specific = EnvFileDeclarations(start)
+    # Un ``THYROX_ENV_FILE`` declarado dice QUÉ archivo gobierna: sumarle otro
+    # desmentiría la declaración.
+    if os.environ.get(ENV_FILE_VAR):
+        return FirstOfDeclarations(ProcessEnvironment(), specific)
+    general = ProviderEnvFileDeclarations(provider_root, clone_suffix_of(start), start)
+    # El mismo archivo no se lee como dos capas: desde dentro del proveedor la
+    # especifica YA es la general.
+    specific_path = env_file_path(start)
+    general_path = general.path()
+    if general_path is None or (specific_path is not None
+                                and specific_path.resolve() == general_path.resolve()):
+        return FirstOfDeclarations(ProcessEnvironment(), specific)
+    return FirstOfDeclarations(ProcessEnvironment(), specific, general)
 
 
 def env_value(

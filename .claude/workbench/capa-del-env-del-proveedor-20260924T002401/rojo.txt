@@ -1,0 +1,63 @@
+.....EEEFE
+======================================================================
+ERROR: test_el_consumidor_gana_sobre_el_proveedor (__main__.ProviderLayer.test_el_consumidor_gana_sobre_el_proveedor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 161, in test_el_consumidor_gana_sobre_el_proveedor
+    self.assertEqual(self.chain().declared("THYROX_CAPA_COMPARTIDA"), "del-consumidor")
+                     ^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 155, in chain
+    return reach.production_declarations(self.consumer, provider_root=self.provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: production_declarations() got an unexpected keyword argument 'provider_root'
+
+======================================================================
+ERROR: test_el_proceso_gana_sobre_las_dos (__main__.ProviderLayer.test_el_proceso_gana_sobre_las_dos)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 165, in test_el_proceso_gana_sobre_las_dos
+    self.assertEqual(self.chain().declared("THYROX_CAPA_COMPARTIDA"), "del-proceso")
+                     ^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 155, in chain
+    return reach.production_declarations(self.consumer, provider_root=self.provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: production_declarations() got an unexpected keyword argument 'provider_root'
+
+======================================================================
+ERROR: test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor (__main__.ProviderLayer.test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 158, in test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor
+    self.assertEqual(self.chain().declared("THYROX_CAPA_SOLO_PROVEEDOR"), "del-proveedor")
+                     ^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 155, in chain
+    return reach.production_declarations(self.consumer, provider_root=self.provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: production_declarations() got an unexpected keyword argument 'provider_root'
+
+======================================================================
+ERROR: test_sin_env_del_proveedor_no_hay_respaldo_ni_error (__main__.ProviderLayer.test_sin_env_del_proveedor_no_hay_respaldo_ni_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 169, in test_sin_env_del_proveedor_no_hay_respaldo_ni_error
+    self.assertIsNone(self.chain().declared("THYROX_CAPA_SOLO_PROVEEDOR"))
+                      ^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 155, in chain
+    return reach.production_declarations(self.consumer, provider_root=self.provider)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: production_declarations() got an unexpected keyword argument 'provider_root'
+
+======================================================================
+FAIL: test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor (__main__.ProviderLayer.test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor)
+El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 182, in test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor
+    self.assertEqual(reach.env_value("THYROX_WORKBENCH_DOCS", docs), declared)
+AssertionError: None != '/home/user/kaupamex-docs/.claude/eventos'
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.007s
+
+FAILED (failures=1, errors=4)
+rc=1

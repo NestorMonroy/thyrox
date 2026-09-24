@@ -1,0 +1,22 @@
+.......FF.
+======================================================================
+FAIL: test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor (__main__.ProviderLayer.test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 158, in test_la_clave_que_el_consumidor_no_declara_cae_al_proveedor
+    self.assertEqual(self.chain().declared("THYROX_CAPA_SOLO_PROVEEDOR"), "del-proveedor")
+AssertionError: None != 'del-proveedor'
+
+======================================================================
+FAIL: test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor (__main__.ProviderLayer.test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor)
+El episodio: ``THYROX_WORKBENCH_DOCS`` vive en el ``.env`` del
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/paths/test_declaration_port.py", line 182, in test_positivo_real_la_familia_por_clon_se_lee_desde_el_consumidor
+    self.assertEqual(reach.env_value("THYROX_WORKBENCH_DOCS", docs), declared)
+AssertionError: None != '/home/user/kaupamex-docs/.claude/eventos'
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.006s
+
+FAILED (failures=2)
