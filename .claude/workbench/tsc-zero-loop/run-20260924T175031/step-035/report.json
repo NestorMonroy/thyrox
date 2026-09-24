@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2960, "total_final": 2959, "tsc_runs": 1, "accepted": ["agent:normalize-return"], "files_kept": ["src/packages/agent/messages.ts"], "outcomes": {"agent:normalize-return": "accepted-net"}}

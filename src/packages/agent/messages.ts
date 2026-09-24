@@ -1400,6 +1400,8 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
   // This flag is set to true once we encounter a message with multiple content blocks,
   // and remains true for all subsequent messages in the normalization process.
   let isNewChain = false
+  // Cada rama emite un bloque por mensaje: el contenido sale como arreglo por
+  // construcción, que es la forma que `NormalizedMessage` declara.
   return messages.flatMap(message => {
     switch (message.type) {
       case 'assistant': {
@@ -1505,7 +1507,7 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
       default:
         return [message]
     }
-  })
+  }) as NormalizedMessage[]
 }
 
 

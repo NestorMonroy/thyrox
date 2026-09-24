@@ -1,0 +1,6 @@
+Declare the normalized return of normalizeMessages
+
+Thirty-fifth step of the agent-compiler loop, accepted-net
+2960 -> 2959. Every branch of normalizeMessages emits one block per
+message, so its flatMap result is NormalizedMessage[] by construction;
+the return now says so, closing the contract step 34 revealed.
