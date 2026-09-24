@@ -117,3 +117,9 @@ export function stripImagesFromMessages(messages: Message[]): Message[] {
     } as typeof message
   })
 }
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { CompactionResult } from '../types/compaction.js'
+export type { RecompactionInfo } from './compactUtils.js'
+export { ERROR_MESSAGE_INCOMPLETE_RESPONSE, ERROR_MESSAGE_NOT_ENOUGH_MESSAGES, ERROR_MESSAGE_USER_ABORT, annotateBoundaryWithPreservedSegment, buildPostCompactMessages, mergeHookInstructions } from './compactUtils.js'

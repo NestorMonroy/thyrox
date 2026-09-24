@@ -238,3 +238,7 @@ export type HookCallbackMatcher = {
   hooks: HookCallback[]
   pluginName?: string
 }
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { PromptRequest, PromptResponse } from '@thyrox/headless-sdk/agentSdkTypes.js'

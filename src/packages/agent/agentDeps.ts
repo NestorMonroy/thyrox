@@ -172,3 +172,7 @@ export interface AgentDeps {
   session: SessionDep
   swarm?: SwarmDep
 }
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { CoreMessage } from './types/messages.js'

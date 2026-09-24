@@ -85,3 +85,7 @@ export function AppStateProvider(props: {
   }
   return mod.AppStateProvider(props)
 }
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { AppStateStore } from '@thyrox/app-host/state/AppStateStore.js'

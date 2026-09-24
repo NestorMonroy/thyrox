@@ -316,3 +316,7 @@ export type PluginHookMatcher = {
   /** Formato `nombrePlugin@nombreMarketplace`. */
   pluginId: string
 }
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { HookCommand } from './schemas/hooks.js'

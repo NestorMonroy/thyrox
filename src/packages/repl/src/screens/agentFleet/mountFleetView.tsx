@@ -17,10 +17,8 @@
 import * as React from 'react'
 import { AlternateScreen } from '@anthropic/ink'
 
-import {
-  AppStateProvider,
-  getDefaultAppState,
-} from '@thyrox/app-host/state/AppState.js'
+import { AppStateProvider } from '@thyrox/app-host/state/AppState.js'
+import { getDefaultAppState } from '@thyrox/app-host/state/AppStateStore.js'
 import { VoiceProvider } from '@thyrox/voice/voiceContext.js'
 
 import { isMouseTrackingEnabled } from '../../fullscreen.js'

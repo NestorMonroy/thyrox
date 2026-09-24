@@ -23,3 +23,11 @@ export { resumeChoices, type ResumeChoice } from './resume.ts'
 // disco — recibe un `Io`, y `fsIo` es la implementacion que si lo toca.
 export { selectTests, type ImpactConfig, type Io } from './testing/impact.ts'
 export { changedPaths, fsIo } from './testing/io.ts'
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export { installCliHostBindings } from './host.js'
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { HeadlessStoreParams } from '@thyrox/agent/sessionStores'

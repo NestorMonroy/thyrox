@@ -677,3 +677,7 @@ export function _test_resetSwarmAppRuntime(): void {
   saveCurrentProjectConfig = missingBinding('saveCurrentProjectConfig')
   getAPIProvider = missingBinding('getAPIProvider')
 }
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { TaskStateBase } from '../tasks/types.js'

@@ -1284,3 +1284,16 @@ export type BundledSkillDefinition = {
 export { FILE_EDIT_TOOL_NAME } from '@thyrox/tool-registry/tools/FileEditTool/constants.js'
 export { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
 export { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/constants.js'
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { HookEvent } from '../settings/types.js'
+export type { LspServerConfig } from './types.js'
+export type { McpServerConfig } from '../mcpConfigSchema.js'
+export type { OutputStyleConfig } from '../outputStyles.js'
+
+// Tipos que sus consumidores piden aquí y que son de otro paquete; entran
+// por una clave declarada de su exports (medido con src/verify/namedImports.ts).
+export type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+export type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+export type { AppState } from '@thyrox/tool-registry/appStateTypes'

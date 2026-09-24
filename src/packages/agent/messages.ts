@@ -1508,3 +1508,7 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
   })
 }
 
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export { filterUnresolvedToolUses } from './loop/session/reconcile.js'

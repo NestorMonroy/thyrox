@@ -262,3 +262,10 @@ export { initializeTeammateContextFromSession } from './core/reconnection.js'
 export { initializeTeammateHooks } from './core/teammateInit.js'
 export { getHardcodedTeammateModelFallback } from './core/teammateModel.js'
 export { It2SetupPrompt } from './core/It2SetupPrompt.js'
+
+// La superficie que sus consumidores piden y que vive en otro módulo del
+// paquete (medido con src/verify/namedImports.ts).
+export type { PermissionResponse } from './permissions/index.js'
+export { InProcessTeammateTask, getAllInProcessTeammateTasks } from './tasks/InProcessTeammateTask.js'
+export { createPermissionRequest, sendSandboxPermissionRequestViaMailbox, sendSandboxPermissionResponseViaMailbox } from './permissions/index.js'
+export { startInProcessTeammate } from './runtime/inProcessRunner.js'
