@@ -1,0 +1,22 @@
+Port CompactionResult into the compaction module
+
+compact.ts is a partial port. Measured symbol by symbol against the
+source, it holds 3 of the 35 top-level symbols of
+ccnmt: compaction/compact.ts, 15 more live in compactUtils.ts, and 17
+are defined nowhere in the tree. To fill two of the gaps it
+re-exported homonyms instead. CompactionResult came from
+types/compaction.ts, the core's { compacted, messages }, which is a
+different concept with the same name. buildPostCompactMessages came
+from the narrow version in compactUtils.ts. So
+sessionMemoryCompact.ts, which builds the result of a summary
+compaction, typed it with the core's concept.
+
+Both are now ported as the source declares them in this module, with
+the canonical message types: CompactionResult (boundaryMarker,
+summaryMessages, attachments, hookResults, messagesToKeep and the
+token counts) and buildPostCompactMessages returning Message[].
+
+tsc: 2404 -> 2401. It reveals the next layer: the session-memory
+producer builds its boundary marker with the narrow compaction type,
+and /compact builds a partial result. The 17 missing symbols are the
+next steps.

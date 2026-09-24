@@ -11,9 +11,16 @@
  * `../messages.js` está PROHIBIDO tocar en este porte (otro agente lo
  * escribe ahora mismo).
  *
- * DIVERGENCIA DE ALCANCE, declarada: aquí sólo se porta
- * `stripImagesFromMessages`, la única función de este módulo que
- * `__tests__/stripImagesFromMessages.test.ts` ejercita. Es autocontenida —
+ * DIVERGENCIA DE ALCANCE, declarada: aquí se portan
+ * `stripImagesFromMessages` —la única función de este módulo que
+ * `__tests__/stripImagesFromMessages.test.ts` ejercita— y el contrato del
+ * resultado de una compactación con resumen: `CompactionResult` y
+ * `buildPostCompactMessages` (`ccnmt: compaction/compact.ts:300-340`). Hasta
+ * entonces este módulo reexportaba en su lugar el `CompactionResult` del core
+ * (`types/compaction.ts`, `{ compacted, messages }`: otro concepto con el mismo
+ * nombre) y la versión estrecha de `compactUtils.ts`, así que quien construía
+ * el resultado del bucle (`sessionMemoryCompact.ts`) lo tipaba con el
+ * concepto equivocado. Es autocontenida —
  * no llama a ninguna otra función del módulo fuente, sólo consume el tipo
  * `Message` de `../messageShapes.ts` (leído, no editado). El resto del
  * módulo (`compactConversation`, `partialCompactConversation`, hooks,
@@ -27,7 +34,14 @@
  * arrastrar el SDK completo, mismo criterio que `ToolResultBlockParam` en
  * `messageShapes.ts`.
  */
-import type { Message } from '../messageShapes.js'
+import type {
+  AttachmentMessage,
+  HookResultMessage,
+  Message,
+  SystemMessage,
+  UserMessage,
+} from '../messageShapes.js'
+import type { getTokenUsage } from '../tokens.js'
 
 type TextBlockLike = { type: 'text'; text: string }
 type ImageBlockLike = { type: 'image'; [key: string]: unknown }
@@ -120,6 +134,34 @@ export function stripImagesFromMessages(messages: Message[]): Message[] {
 
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
-export type { CompactionResult } from '../types/compaction.js'
 export type { RecompactionInfo } from './compactUtils.js'
-export { ERROR_MESSAGE_INCOMPLETE_RESPONSE, ERROR_MESSAGE_NOT_ENOUGH_MESSAGES, ERROR_MESSAGE_USER_ABORT, annotateBoundaryWithPreservedSegment, buildPostCompactMessages, mergeHookInstructions } from './compactUtils.js'
+export { ERROR_MESSAGE_INCOMPLETE_RESPONSE, ERROR_MESSAGE_NOT_ENOUGH_MESSAGES, ERROR_MESSAGE_USER_ABORT, annotateBoundaryWithPreservedSegment, mergeHookInstructions } from './compactUtils.js'
+
+/** El resultado de una compactación con resumen (`ccnmt: compaction/compact.ts:300-311`). */
+export interface CompactionResult {
+  boundaryMarker: SystemMessage
+  summaryMessages: UserMessage[]
+  attachments: AttachmentMessage[]
+  hookResults: HookResultMessage[]
+  messagesToKeep?: Message[]
+  userDisplayMessage?: string
+  preCompactTokenCount?: number
+  postCompactTokenCount?: number
+  truePostCompactTokenCount?: number
+  compactionUsage?: ReturnType<typeof getTokenUsage>
+}
+
+/**
+ * El arreglo de mensajes posterior a la compactación, en orden fijo para todas
+ * las rutas: frontera, resumen, mensajes conservados, adjuntos, resultados de
+ * hook (`ccnmt: compaction/compact.ts:326-340`).
+ */
+export function buildPostCompactMessages(result: CompactionResult): Message[] {
+  return [
+    result.boundaryMarker,
+    ...result.summaryMessages,
+    ...(result.messagesToKeep ?? []),
+    ...result.attachments,
+    ...result.hookResults,
+  ]
+}
