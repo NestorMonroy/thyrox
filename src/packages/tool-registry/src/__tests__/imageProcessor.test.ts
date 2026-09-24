@@ -2,16 +2,28 @@
  * Prueba de conducta para `../tools/FileReadTool/imageProcessor.js` — el
  * porte de `ccnmt: packages/tool-registry/src/tools/FileReadTool/imageProcessor.ts`.
  *
- * Ni `image-processor-napi` ni `sharp` están instalados en este árbol
- * (medido en el informe de la tarea), así que las dos funciones exportadas
- * SIEMPRE rechazan aquí — el punto de la prueba no es "resuelve una
+ * CORREGIDO 2026-09-24: esta prueba suponía que ni `image-processor-napi` ni
+ * `sharp` estaban instalados, y medía el ENTORNO. `sharp` llegó con las
+ * dependencias (`require.resolve('sharp')` resuelve), y los rechazos dejaron de
+ * ocurrir. Ahora la ausencia de los dos se simula con `mock.module`, así que las
+ * dos funciones SIEMPRE rechazan aquí — el punto de la prueba no es "resuelve una
  * imagen" sino la CONDUCTA que las distingue una de otra: sólo
  * `getImageProcessor` intenta primero el binario nativo y avisa por
  * `console.warn` antes de caer a `sharp`; `getImageCreator` va derecho a
  * `sharp`, sin aviso.
  */
 import { afterEach, describe, expect, spyOn, test } from 'bun:test'
-import { getImageCreator, getImageProcessor } from '../tools/FileReadTool/imageProcessor.js'
+
+// Los dos binarios, ausentes: sus cargadores rechazan como un import sin paquete.
+const missing = (name: string) => () =>
+  Promise.reject(new Error(`Cannot find package '${name}'`))
+const { _setImageImportersForTesting, getImageCreator, getImageProcessor } = await import(
+  '../tools/FileReadTool/imageProcessor.js'
+)
+_setImageImportersForTesting({
+  napi: missing('@thyrox/image-processor-napi'),
+  sharp: missing('sharp'),
+})
 
 afterEach(() => {
   // Ambas funciones cachean su resultado a nivel de módulo tras la PRIMERA

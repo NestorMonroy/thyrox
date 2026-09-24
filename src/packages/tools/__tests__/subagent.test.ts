@@ -13,6 +13,7 @@ import { STORE_PATH } from '@thyrox/observability/store'
 import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { alterColumns } from '../../../task/schema.ts'
 import { agentTool } from '../src/agent.ts'
 import { taskTools } from '../src/tasks.ts'
 import { readJournal } from '@thyrox/observability/journal'
@@ -296,7 +297,13 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     const db = new Database(p, { readonly: true })
     const columnas = (db.query('PRAGMA table_info(tasks)').all() as { name: string }[]).map((c) => c.name)
     db.close()
-    const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)].map((m) => m[1])
+    // El piso es el CREATE del store; las columnas que el store añade por
+    // `ALTER` (`src/task/schema.ts`, «Piso, no contrato») quedan fuera a
+    // propósito y se leen sondeando. El SQL del store real ya las incluye.
+    const migradas = new Set(alterColumns())
+    const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)]
+      .map((m) => m[1])
+      .filter((c) => !migradas.has(c!))
     for (const c of reales) expect(columnas).toContain(c)
   })
 
