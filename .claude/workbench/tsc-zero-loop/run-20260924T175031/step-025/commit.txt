@@ -1,0 +1,8 @@
+Make the query runtime binding seam callable
+
+Twenty-fifth step of the agent-compiler loop, accepted-net
+3018 -> 2984. queryRuntime intersected the host bindings with
+Record<string, unknown>, so each of the 34 dynamically named bindings
+its wrappers call was unknown and not callable (TS2349). The index now
+admits a function or nothing; each wrapper keeps its declared return
+type as the contract.

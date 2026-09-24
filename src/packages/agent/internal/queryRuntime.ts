@@ -2,8 +2,12 @@ import { randomUUID } from 'crypto'
 import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage, AgentToolUseContext } from '../internalTypes.js'
 
+// Costura dinámica: el host inyecta funciones por nombre, y cada envoltorio
+// de este módulo declara el tipo de retorno que es su contrato. El índice
+// admite «función o ausente» en vez de `unknown`, que no se puede invocar.
 type DynamicAgentBindings = ReturnType<typeof getAgentHostBindings> &
-  Record<string, unknown>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  Record<string, ((...args: any[]) => any) | undefined>
 
 type ErrorConstructor<T extends Error> = abstract new (...args: never[]) => T
 

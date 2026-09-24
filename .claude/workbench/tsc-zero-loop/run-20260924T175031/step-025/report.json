@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 3018, "total_final": 2984, "tsc_runs": 1, "accepted": ["agent:query-runtime-seam"], "files_kept": ["src/packages/agent/internal/queryRuntime.ts"], "outcomes": {"agent:query-runtime-seam": "accepted-net"}}
