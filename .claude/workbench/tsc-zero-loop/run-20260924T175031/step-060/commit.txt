@@ -1,0 +1,12 @@
+Align the root @anthropic-ai/sdk with the packages
+
+Thirteen packages declare @anthropic-ai/sdk ^0.124.0; the root kept
+^0.110.0, so every package without its own copy (cli among them)
+resolved 0.110 while repl resolved 0.124. ContentBlockParam was then
+two types. In run-streaming the batched prompt assignment failed on
+that mismatch, and the failed assignment reset command to
+QueuedCommand | undefined for the rest of the loop: one cause, a
+dozen "possibly undefined" downstream. The lockfile is regenerated
+with bun install.
+
+tsc: 2494 -> 2481 (accepted-net, 12 targets -> 0).
