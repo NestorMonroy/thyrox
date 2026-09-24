@@ -1,0 +1,6 @@
+Give the LSP config types the binary schema shape
+
+Eighteenth step of the agent-compiler loop, accepted-net 3160 -> 3142.
+ide/lsp/types.ts was a decompiled stub (unknown). The config shape
+comes from the 2.1.275 zod validator of a plugin .lsp.json; the five
+server states are the ones LSPServerInstance assigns and compares.

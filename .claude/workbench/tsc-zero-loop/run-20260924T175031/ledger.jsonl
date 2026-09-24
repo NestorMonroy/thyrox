@@ -15,3 +15,4 @@
 {"proposal_id": "agent:plugin-types-bound", "proposer": "agent", "outcome": "accepted-net", "targets_before": 177, "targets_after": 176, "new_diagnostics": [], "total_before": 3197, "total_after": 3196}
 {"proposal_id": "agent:mcp-set-servers-result", "proposer": "agent", "outcome": "accepted-net", "targets_before": 51, "targets_after": 43, "new_diagnostics": [], "total_before": 3196, "total_after": 3188}
 {"proposal_id": "agent:mcpb-manifest-seam", "proposer": "agent", "outcome": "accepted-net", "targets_before": 176, "targets_after": 148, "new_diagnostics": [], "total_before": 3188, "total_after": 3160}
+{"proposal_id": "agent:lsp-config-types", "proposer": "agent", "outcome": "accepted-net", "targets_before": 19, "targets_after": 1, "new_diagnostics": [], "total_before": 3160, "total_after": 3142}
