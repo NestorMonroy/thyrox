@@ -1,0 +1,25 @@
+Give the dispatch rule its third form: headless-pool
+
+The rule had two forms: the process, deterministic and free, and the
+subagent, a conversation with judgment. N independent items that each
+need a model, such as extracting the concepts of 365 notes, only
+existed as a loose bench script that nobody else could invoke.
+
+src/session/headless-pool.sh runs one `claude -p` per item through
+GNU Parallel. Each item gets only the template and its Item line, no
+persisted session, project settings and read-only tools, and leaves
+its JSON on disk. It refuses with exit 2 and no summary when parallel,
+claude, the template or the items are missing, or when the model is
+an alias.
+
+detect_agent_dispatch now measures only Agent/Task calls. It fired on
+a Bash call through its description the moment PreToolUse got wired.
+It suggests headless-pool when a dispatch names judgment in a
+distributive form ("para cada", "for each"). A joint decision over a
+batch stays with an agent, as the existing case fixes.
+
+Controls: dropping the alias guard fails exactly the two alias cases;
+dropping the timeout fails exactly the two timeout cases; dropping
+the tool filter or the width branch fails exactly its own case.
+
+Refs: TASK-THYROX-0249, H-THYROX-168

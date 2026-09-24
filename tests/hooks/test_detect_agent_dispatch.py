@@ -33,7 +33,8 @@ _spec.loader.exec_module(gate)
 
 
 def _detect(prompt, description=""):
-    return gate.detect({"tool_input": {"prompt": prompt,
+    return gate.detect({"tool_name": "Agent",
+                        "tool_input": {"prompt": prompt,
                                        "description": description,
                                        "subagent_type": "general-purpose"}})
 
@@ -120,6 +121,33 @@ def test_the_notice_states_the_measured_cost_asymmetry():
     assert "126 029" in notice
     assert "cero" in notice.lower()
 
+
+
+def test_stays_silent_on_a_bash_call_with_description():
+    """Un `Bash` trae `description`, y esa descripcion no es un despacho.
+
+    Medido 2026-09-24 al cablear `PreToolUse`: el aviso salio sobre una llamada
+    a `Bash` cuya descripcion decia «suite». El detector mide el tool `Agent`.
+    """
+    assert gate.detect({"tool_name": "Bash",
+                        "tool_input": {"command": "bash tests/run.sh",
+                                       "description": "Run the suite"}}) is None
+
+
+def test_suggests_the_headless_pool_for_judgment_over_many_items():
+    """La tercera forma: juicio SI, pero uno por item independiente.
+
+    Leer N notas y extraer sus conceptos exige un modelo en cada una y no
+    necesita ni el contexto del orquestador ni su anchura de subagentes: es
+    `bin/headless-pool`, una conversacion `claude -p` por item con GNU Parallel.
+    """
+    notice = _detect("Para cada una de las 365 notas, analiza y extrae sus conceptos")
+    assert notice is not None and "headless-pool" in notice
+
+
+def test_judgment_on_a_single_subject_stays_silent():
+    """Sin anchura, el juicio es para un agente, como antes."""
+    assert _detect("Analiza el diseno del motor de hooks y recomienda") is None
 
 if __name__ == "__main__":
     import sys

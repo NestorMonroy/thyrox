@@ -70,6 +70,28 @@ JUDGMENT_ROOTS = re.compile(
 )
 
 
+#: Los tools que despachan una conversacion. `Task` es el nombre anterior.
+DISPATCH_TOOLS = frozenset({"Agent", "Task"})
+
+#: Anchura declarada en el prompt: el mismo juicio repetido POR ITEM. Solo la
+#: forma distributiva explicita; «sobre los 22 archivos y decide cuales…» es un
+#: juicio CONJUNTO sobre el lote, y ese si es de un agente (su suite lo fija).
+MANY_ITEMS = re.compile(
+    r"\b(?:para\s+cada|por\s+cada|cada\s+un[oa]\s+de|for\s+each|each\s+of)\b",
+    re.IGNORECASE,
+)
+
+HEADLESS_POOL_NOTICE = (
+    "GATE DE DESPACHO — tercera forma. Este despacho pide juicio sobre N items "
+    "independientes. Un subagente lo haria con el contexto del orquestador y "
+    "ocupando su anchura; una conversacion `claude -p` por item no hereda "
+    "nada y queda en disco por item. `.claude/rules/trabajo-en-segundo-plano.md`: "
+    "`printf '%s\\n' <items> | bash bin/headless-pool --prompt <plantilla> "
+    "--out <dir> --model <claude-…>`, reparte con GNU Parallel. Si los items no "
+    "son independientes —uno necesita lo que otro concluye— ignora este aviso."
+)
+
+
 def dispatched_text(tool_input: dict) -> str:
     """El texto que describe el trabajo: el prompt más su descripción.
 
@@ -97,13 +119,22 @@ def detect(payload: dict) -> str | None:
     if not isinstance(tool_input, dict):
         return None
 
+    # Solo un despacho de subagente es sujeto. La guarda anterior confiaba en
+    # que un `Bash` no trae texto, y si lo trae: su `description`. Medido
+    # 2026-09-24 al cablear `PreToolUse`, el aviso salio sobre un `Bash`.
+    if payload.get("tool_name") not in DISPATCH_TOOLS:
+        return None
+
     text = dispatched_text(tool_input)
-    # Sin prompt no hay despacho que medir: un `Bash` o un `Write` pasan por el
-    # mismo despachador y no traen este campo.
     if not text.strip():
         return None
 
     if needs_judgment(text):
+        # La tercera forma: juicio en cada item, pero N items independientes.
+        # Eso no pide un agente con el contexto del orquestador: pide una
+        # conversacion `claude -p` por item (`bin/headless-pool`).
+        if MANY_ITEMS.search(text):
+            return HEADLESS_POOL_NOTICE
         return None
 
     families = matched_families(text)

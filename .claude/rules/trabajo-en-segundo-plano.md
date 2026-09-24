@@ -19,6 +19,7 @@ forma del problema:
 | un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
 | N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
 | la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
+| N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `claude -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
@@ -57,6 +58,44 @@ De ahí el criterio, que no es de estilo: **el agente rinde cuando el trabajo es
 ancho y exige juicio**. Una suite, un gate, un censo, un barrido determinista —
 cualquier cosa cuyo resultado no dependa de decidir nada— es un proceso, y
 despachar un agente para eso es pagar una conversación por un `exit code`.
+
+## La tercera forma: juicio por item, sin subagente
+
+Las dos formas de arriba cubren los extremos: el **proceso** —determinista,
+cero tokens— y el **subagente** —una conversación con juicio—. Entre los dos
+falta el caso que H-THYROX-168 registró: **N items independientes que sí
+exigen un modelo** —leer una nota y extraer sus conceptos, clasificar un
+hallazgo— y que no necesitan ni el contexto del orquestador ni su anchura.
+
+```bash
+printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
+    --out <banco>/outputs/<dir> --model claude-sonnet-5 [--width N] [--timeout S]
+```
+
+Cada `claude -p` recibe sólo la plantilla y su `Item:`, corre sin sesión
+persistida, con `--setting-sources project` y herramientas de lectura, y deja
+`<n>.json` en disco antes de que nadie lo resuma. El modelo va por
+identificador completo; un alias rehúsa con exit 2.
+
+Frente al subagente: **no hereda** la conversación del orquestador, **no
+ocupa** la anchura del tool `Agent` —que rechaza el lanzamiento N+1— y su
+salida es por item, no un resumen. Frente al proceso: sí paga tokens, así que
+sólo rinde cuando cada item exige juicio.
+
+**El discriminador es distributivo, no numérico.** «Para cada una de las 365
+notas, extrae sus conceptos» es esta forma; «sobre los 22 archivos, decide
+cuáles son divergencia» es un juicio **conjunto** sobre el lote, y ése es de
+un agente. `detect_agent_dispatch` lo aplica así: sugiere `headless-pool`
+cuando el despacho nombra juicio **y** una forma distributiva explícita.
+
+Antes de 2026-09-24 esto existía sólo como un guion suelto de banco
+(`notas-ai-course-aplicables-a-thyrox-*/probes/extraer-conceptos.sh`): corrió
+bien, y nadie más podía invocarlo.
+
+```bash
+bash tests/session/test-headless-pool.sh
+python3 tests/hooks/test_detect_agent_dispatch.py
+```
 
 ## Antes de elegir el instrumento de espera: ¿cómo se lanzó?
 
