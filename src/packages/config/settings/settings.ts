@@ -47,7 +47,7 @@
  * - `loadManagedFileSettings`, `getManagedFileSettingsPresence`,
  *   `getPolicySettingsOrigin`, `getManagedSettingsKeysForLogging`,
  *   `getSandboxBinaryPath`, `getSettingsWithSources`,
- *   `getUseAutoModeDuringPlan`, `getAutoModeConfig`,
+ *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
  * - Caché: `./settingsCache.ts` no existe en `@thyrox/config`. Se sustituye
@@ -64,6 +64,7 @@
  *   fs queda para un pase posterior.
  */
 import mergeWith from 'lodash-es/mergeWith.js'
+import { z } from 'zod'
 import {
   mkdirSync,
   readFileSync as fsReadFileSync,
@@ -547,3 +548,76 @@ export function hasAutoModeOptIn(): boolean {
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { SettingsJson } from './types.js'
+
+
+/**
+ * Las reglas del clasificador de auto mode — porte de `BP` (2.1.275,
+ * `chunk-v49f6nqy.js`), con su esquema `gq`.
+ *
+ * Sólo las fuentes que el repositorio NO controla aportan reglas: user, flag
+ * y policy, en ese orden, concatenadas por sección. `projectSettings` y
+ * `localSettings` se ignoran —un repositorio no puede autorizarse a sí
+ * mismo— y se avisa una sola vez por proceso si traen reglas válidas.
+ * Devuelve sólo las secciones no vacías, o `undefined` si no hay ninguna.
+ *
+ * Divergencias declaradas: el lector de fuentes es un parámetro opcional
+ * (mismo precedente que `getGlobalConfig(filePath?)`: aditivo, y compra un
+ * control sin disco); el evento de telemetría del aviso no se emite, porque
+ * `@thyrox/config` no tiene binding de telemetría; y la excepción del binario
+ * que calla el aviso de `projectSettings` en un caso (`LT()`) no se porta,
+ * porque su condición no está identificada — aquí siempre avisa.
+ */
+const AutoModeSchema = z.object({
+  allow: z.array(z.string()).optional(),
+  soft_deny: z.array(z.string()).optional(),
+  hard_deny: z.array(z.string()).optional(),
+  deny: z.array(z.string()).optional(),
+  environment: z.array(z.string()).optional(),
+})
+
+export type AutoModeConfig = {
+  allow?: string[]
+  soft_deny?: string[]
+  hard_deny?: string[]
+  environment?: string[]
+}
+
+const AUTO_MODE_TRUSTED_SOURCES = ['userSettings', 'flagSettings', 'policySettings'] as const
+const AUTO_MODE_UNTRUSTED_SOURCES = ['projectSettings', 'localSettings'] as const
+let autoModeUntrustedSourceWarned = false
+
+export function _resetAutoModeWarningForTesting(): void {
+  autoModeUntrustedSourceWarned = false
+}
+
+type AutoModeReader = (source: string) => { autoMode?: unknown } | null
+
+export function getAutoModeConfig(
+  read: AutoModeReader = source =>
+    getSettingsForSource(source as SettingSource) as { autoMode?: unknown } | null,
+): AutoModeConfig | undefined {
+  if (!autoModeUntrustedSourceWarned) {
+    for (const source of AUTO_MODE_UNTRUSTED_SOURCES) {
+      const autoMode = read(source)?.autoMode
+      if (autoMode && AutoModeSchema.safeParse(autoMode).success) {
+        autoModeUntrustedSourceWarned = true
+        tryGetConfigHostBindings().logDebug?.(
+          `settings autoMode in ${source} ignored — only user/flag/managed settings may set classifier rules (projectSettings and localSettings are repo-controllable)`,
+        )
+      }
+    }
+  }
+  const merged: Required<AutoModeConfig> = { allow: [], soft_deny: [], hard_deny: [], environment: [] }
+  for (const source of AUTO_MODE_TRUSTED_SOURCES) {
+    const parsed = AutoModeSchema.safeParse(read(source)?.autoMode)
+    if (!parsed.success) continue
+    for (const key of ['allow', 'soft_deny', 'hard_deny', 'environment'] as const) {
+      if (parsed.data[key]) merged[key].push(...parsed.data[key]!)
+    }
+  }
+  const result: AutoModeConfig = {}
+  for (const key of ['allow', 'soft_deny', 'hard_deny', 'environment'] as const) {
+    if (merged[key].length > 0) result[key] = merged[key]
+  }
+  return Object.keys(result).length > 0 ? result : undefined
+}

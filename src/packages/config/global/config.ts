@@ -38,7 +38,7 @@
  *   las rutas de MEMORIA y REGLAS (`getMemoryPath`, `getManagedClaudeRulesDir`,
  *       `getUserClaudeRulesDir`) — `getMemoryPath` cuelga de `teamMemPaths`,
  *       que la fuente carga tras la bandera `TEAMMEM`.
- *   `getOrCreateUserID`, `recordFirstStartTime`, `markHasUsedAgentsFleet`,
+ *   `recordFirstStartTime`, `markHasUsedAgentsFleet`,
  *       `getRemoteControlAtStartup`, `getCustomApiKeyStatus` — escritores de
  *       una clave concreta; se portan con su consumidor.
  *
@@ -68,6 +68,7 @@
  * declarado — la fuente declara ~15 claves más que ningún consumidor de este
  * árbol lee todavía.
  */
+import { randomBytes } from 'node:crypto'
 import { unwatchFile, watchFile } from 'node:fs'
 import memoize from 'lodash-es/memoize.js'
 import pickBy from 'lodash-es/pickBy.js'
@@ -1036,6 +1037,37 @@ const TEST_PROJECT_CONFIG_FOR_TESTING: ProjectConfig = {
  * barras hacia delante hace que `C:\Users\…` y `C:/Users/…` caigan en la
  * misma clave, que es lo único que distingue a esta ruta de un `resolve`.
  */
+/** `dg` del binario: un userID válido son 64 dígitos hex. */
+const USER_ID_PATTERN = /^[0-9a-f]{64}$/
+
+/**
+ * El userID generado en esta sesión. En el binario vive en el estado de
+ * sesión (`generatedUserID`/`setGeneratedUserID`); aquí es una variable de
+ * módulo, que dura lo mismo que un proceso. Divergencia de hogar declarada.
+ */
+let generatedUserID: string | undefined
+
+/**
+ * Porte de `P0` (2.1.275): el `userID` de la config global si es válido; si
+ * no, el ya generado en la sesión; si no, uno nuevo de 32 bytes aleatorios en
+ * hex, que se persiste en la config global antes de devolverse.
+ */
+export function getOrCreateUserID(filePath?: string): string {
+  const config = getGlobalConfig(filePath)
+  if (typeof config.userID === 'string' && USER_ID_PATTERN.test(config.userID)) {
+    return config.userID
+  }
+  if (generatedUserID) return generatedUserID
+  const userID = randomBytes(32).toString('hex')
+  generatedUserID = userID
+  saveGlobalConfig(current => ({ ...current, userID }), filePath)
+  return userID
+}
+
+export function _resetGeneratedUserIDForTesting(): void {
+  generatedUserID = undefined
+}
+
 export const getProjectPathForConfig = memoize((): string => {
   const originalCwd = getConfigHostBindings().getOriginalCwd?.() ?? process.cwd()
   const gitRoot = getConfigHostBindings().findCanonicalGitRoot?.(originalCwd)
