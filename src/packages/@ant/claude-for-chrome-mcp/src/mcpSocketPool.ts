@@ -25,6 +25,11 @@ export class McpSocketPool {
     | ((notification: { method: string; params?: Record<string, unknown> }) => void)
     | null = null;
 
+  // Un solo escaneo en vuelo: las llamadas concurrentes esperan el mismo
+  // (2.1.275, `refreshClients`/`doRefreshClients`). El seguimiento de
+  // generaciones y de clientes huérfanos de 2.1.275 no está portado.
+  private refreshPromise: Promise<void> | null = null;
+
   constructor(context: ClaudeForChromeContext) {
     this.context = context;
   }
@@ -47,7 +52,7 @@ export class McpSocketPool {
   public async ensureConnected(): Promise<boolean> {
     const { logger, serverName } = this.context;
 
-    this.refreshClients();
+    await this.refreshClients();
 
     // Try to connect any disconnected clients
     const connectPromises: Promise<boolean>[] = [];
@@ -277,9 +282,25 @@ export class McpSocketPool {
   /**
    * Scan for available sockets and create/remove clients as needed.
    */
-  private refreshClients(): void {
-    const socketPaths = this.getAvailableSocketPaths();
+  private refreshClients(): Promise<void> {
+    if (!this.refreshPromise) {
+      const pending = this.doRefreshClients().finally(() => {
+        if (this.refreshPromise === pending) this.refreshPromise = null;
+      });
+      this.refreshPromise = pending;
+    }
+    return this.refreshPromise;
+  }
+
+  private async doRefreshClients(): Promise<void> {
     const { logger, serverName } = this.context;
+    let socketPaths: string[];
+    try {
+      socketPaths = await this.getAvailableSocketPaths();
+    } catch (error) {
+      logger.info(`[${serverName}] Socket scan failed:`, error);
+      return;
+    }
 
     // Add new clients for newly discovered sockets
     for (const path of socketPaths) {
@@ -315,8 +336,8 @@ export class McpSocketPool {
     }
   }
 
-  private getAvailableSocketPaths(): string[] {
-    return this.context.getSocketPaths?.() ?? [];
+  private async getAvailableSocketPaths(): Promise<string[]> {
+    return (await this.context.getSocketPaths?.()) ?? [];
   }
 }
 
