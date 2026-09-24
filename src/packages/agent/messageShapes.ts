@@ -162,7 +162,23 @@ export type SystemCompactBoundaryMessage = Message & {
 export type TombstoneMessage = Message
 export type ToolUseSummaryMessage = Message
 export type MessageOrigin = string
-export type CompactMetadata = Record<string, unknown>
+/**
+ * La forma que `createCompactBoundaryMessage` escribe (`messages.ts`) mas el
+ * tramo preservado que la compactacion parcial anade. Antes era
+ * `Record<string, unknown>`, y cada lector tenia que re-afirmar `trigger` y
+ * `preTokens`: el unico constructor los fija, asi que se declaran aqui.
+ */
+export type CompactMetadata = {
+  trigger: 'manual' | 'auto'
+  preTokens: number
+  userContext?: string
+  messagesSummarized?: number
+  preservedSegment?: {
+    headUuid: UUID
+    anchorUuid: UUID
+    tailUuid: UUID
+  }
+}
 export type SystemAPIErrorMessage = Message & { type: 'system' }
 export type SystemFileSnapshotMessage = Message & { type: 'system' }
 /** Un mensaje del asistente tras `normalizeMessages`: un bloque, en arreglo. */

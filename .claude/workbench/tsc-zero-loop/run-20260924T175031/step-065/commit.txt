@@ -1,0 +1,16 @@
+Type CompactMetadata with the fields it carries
+
+CompactMetadata was Record<string, unknown>, so every reader had to
+re-assert trigger and preTokens; its only constructor,
+createCompactBoundaryMessage, fixes them. The alias now declares
+trigger, preTokens, userContext, messagesSummarized and the preserved
+segment, and both compact-metadata converters in mappers.ts drop their
+casts.
+
+countToolCalls took a hand-written CountableMessage union whose
+catch-all member defeated the 'assistant' narrowing; it now takes the
+canonical Message.
+
+tsc: 2433 -> 2431. Two diagnostics revealed in QueryEngine.ts, where
+the local AgentMessage stub no longer matches Message; they belong to
+the QueryEngine-wide stub replacement already pending.

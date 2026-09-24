@@ -80,7 +80,7 @@ type SDKCompactMetadata = SDKCompactBoundaryMessage['compact_metadata']
 export function toSDKCompactMetadata(
   meta: CompactMetadata,
 ): SDKCompactMetadata {
-  const seg = meta.preservedSegment as { headUuid: UUID; anchorUuid: UUID; tailUuid: UUID } | undefined
+  const seg = meta.preservedSegment
   return {
     trigger: meta.trigger,
     pre_tokens: meta.preTokens,
@@ -100,16 +100,15 @@ export function toSDKCompactMetadata(
 export function fromSDKCompactMetadata(
   meta: SDKCompactMetadata,
 ): CompactMetadata {
-  const m = meta as { preserved_segment?: { head_uuid: string; anchor_uuid: string; tail_uuid: string }; trigger?: string; pre_tokens?: number; [key: string]: unknown }
-  const seg = m.preserved_segment
+  const seg = meta.preserved_segment
   return {
-    trigger: m.trigger,
-    preTokens: m.pre_tokens,
+    trigger: meta.trigger,
+    preTokens: meta.pre_tokens,
     ...(seg && {
       preservedSegment: {
-        headUuid: seg.head_uuid,
-        anchorUuid: seg.anchor_uuid,
-        tailUuid: seg.tail_uuid,
+        headUuid: seg.head_uuid as UUID,
+        anchorUuid: seg.anchor_uuid as UUID,
+        tailUuid: seg.tail_uuid as UUID,
       },
     }),
   }

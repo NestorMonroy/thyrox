@@ -12,21 +12,7 @@
  *      mensaje cuentan una vez), con salida temprana opcional vía
  *      `maxCount`.
  */
-import type { ToolUseBlock } from '@anthropic-ai/sdk/resources/index.mjs'
-
-type AssistantLikeMessage = {
-  type: 'assistant'
-  message: {
-    content: unknown[]
-  }
-}
-
-type CountableMessage =
-  | AssistantLikeMessage
-  | {
-      type: string
-      [key: string]: unknown
-    }
+import type { Message } from '../messageShapes.js'
 
 export const SYNTHETIC_MESSAGES = new Set([
   '[Request interrupted by user]',
@@ -37,7 +23,7 @@ export const SYNTHETIC_MESSAGES = new Set([
 ])
 
 export function countToolCalls(
-  messages: CountableMessage[],
+  messages: Message[],
   toolName: string,
   maxCount?: number,
 ): number {
@@ -46,8 +32,7 @@ export function countToolCalls(
     if (!msg) continue
     if (msg.type === 'assistant' && Array.isArray(msg.message.content)) {
       const hasToolUse = msg.message.content.some(
-        (block: { type: string; name: string }): block is ToolUseBlock =>
-          block.type === 'tool_use' && block.name === toolName,
+        block => block.type === 'tool_use' && block.name === toolName,
       )
       if (hasToolUse) {
         count++
