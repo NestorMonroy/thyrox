@@ -5,7 +5,7 @@
 # caigan exactamente las aserciones que dependen de ella. Las variantes son
 # independientes entre si, pero editar el modulo en su sitio las obliga a ir en
 # serie (cada una restaura antes de la siguiente). Aqui cada variante escribe
-# su propia copia bajo .claude/cache/<nombre>/annul/<corrida>/<n>/ y la prueba
+# su propia copia bajo .claude/cache/<name>/annul/<run-id>/<index>/ y la prueba
 # la importa por una
 # variable de entorno, asi que GNU Parallel las corre a la vez sin pisarse.
 #
@@ -15,9 +15,9 @@
 #     TEST      el archivo de bun test que lo importa desde ${ENV_VAR}
 #     ENV_VAR   la variable que la prueba lee para importar el modulo
 #     VARIANTS  un archivo: una variante por linea, `etiqueta<TAB>expresion-sed`
-#     NAME      el sujeto, que agrupa las corridas en .claude/cache/<NAME>/;
+#     NAME      el sujeto, que agrupa sus ejecuciones en .claude/cache/<NAME>/;
 #               por defecto el nombre del modulo sin extension, para que las
-#               corridas de dos modulos distintos no se mezclen en un solo
+#               ejecuciones de dos modulos distintos no se mezclen en un solo
 #               directorio
 #
 # Sale 2 si falta algo o si una variante no cambia el modulo: una expresion
@@ -36,13 +36,13 @@ command -v parallel >/dev/null || { echo "annul_parallel: REHUSA — falta GNU p
 root="$(git rev-parse --show-toplevel)"
 work="$root/.claude/cache/$name/annul/$(date -u +%Y%m%dT%H%M%S)-$$"
 mkdir -p "$work"
-# Al salir se borra la corrida y, solo si quedan vacios, sus padres: otra
-# corrida concurrente del mismo sujeto conserva su directorio.
+# Al salir se borra el directorio de esta ejecucion y, solo si quedan vacios,
+# sus padres: otra ejecucion concurrente del mismo sujeto conserva el suyo.
 trap 'rm -rf "$work"; rmdir "${work%/*}" "${work%/*/*}" 2>/dev/null || true' EXIT
 
 run_variant() {
-  local n="$1" label="$2" expr="$3"
-  local dir="$WORK/$n" copy
+  local index="$1" label="$2" expr="$3"
+  local dir="$WORK/$index" copy
   mkdir -p "$dir"
   copy="$dir/$(basename "$MODULE")"
   sed -e "$expr" "$MODULE" > "$copy"
