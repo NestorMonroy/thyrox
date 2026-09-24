@@ -286,7 +286,7 @@ function workingDirSpellings(dir: string): string[] {
 }
 
 /** El cwd original y los directorios añadidos (≙ `_b`). */
-function workingDirectoriesOf(context: PathPermissionContext): Set<string> {
+export function workingDirectoriesOf(context: PathPermissionContext): Set<string> {
   return new Set([originalCwdForValidation(), ...(context.additionalWorkingDirectories?.keys() ?? [])])
 }
 
@@ -295,7 +295,7 @@ function workingDirectoriesOf(context: PathPermissionContext): Set<string> {
  * por settings de proyecto no, porque el repositorio no se concede a sí
  * mismo el alcance (≙ `NGt`).
  */
-function readFenceDirectoriesOf(context: PathPermissionContext): Set<string> {
+export function readFenceDirectoriesOf(context: PathPermissionContext): Set<string> {
   return new Set([
     originalCwdForValidation(),
     ...Array.from(context.additionalWorkingDirectories?.values() ?? [])
@@ -338,7 +338,7 @@ function isReadOutsideFence(path: string, context: PathPermissionContext, pathsT
  * ¿Abre el modo de la sesión los comandos, agentes y skills del proyecto?
  * Sólo en una sesión remota que no esté ni venga de auto mode (≙ `VFe`).
  */
-function allowsClaudeConfigForMode(context: PathPermissionContext): boolean {
+export function allowsClaudeConfigForMode(context: PathPermissionContext): boolean {
   const planFromAuto = context.mode === 'plan' && (context.prePlanMode === 'auto' || !!context.strippedDangerousRules)
   return (
     context.isRemoteMode === true &&
@@ -357,7 +357,7 @@ function asPathReason(reason: unknown): PathDecisionReason {
 }
 
 /** Una llamada servida no hereda permisos de ruta interna (≙ `hyt`). */
-function internalAllowApplies(decision: { behavior: string }, context: PathPermissionContext): boolean {
+export function internalAllowApplies(decision: { behavior: string }, context: PathPermissionContext): boolean {
   return !(context.servedCall === true && decision.behavior === 'allow')
 }
 

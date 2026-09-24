@@ -330,6 +330,9 @@ export type PermissionDecisionReason =
       type: 'safetyCheck'
       reason: string
       classifierApprovable: boolean
+      /** El disyuntor que la consulta dispara (2.1.275, `Au`/`Gge`). */
+      circuitBreaker?: string
+      also?: string[]
     }
   | {
       type: 'other'

@@ -502,7 +502,7 @@ export function isClaudeCommandSource(path: string): boolean {
  * hasta el primer `.claude` que no sea de un worktree (≙ `Ws`). Un `.claude`
  * que ya forma parte del cwd no cuenta como configuración que se escribe.
  */
-function workingDirectoryDepth(segments: string[]): number {
+export function workingDirectoryDepth(segments: string[]): number {
   let depth = 0
   const originalCwd = getOriginalCwdDeferred()
   const roots =

@@ -64,12 +64,12 @@ const SENSITIVE_FILE_NAMES = new Set(SENSITIVE_FILES.map(f => f.toLowerCase()))
 
 // ---- Decisiones fijas (≙ `Vr`, `Kr`, `Ur`, `Hr`, `Fs`, `$s`) ----
 
-const HOST_CREDENTIALS_DENIED: InternalPathDecision = {
+export const HOST_CREDENTIALS_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message: 'The host credentials file is managed by the host process; it cannot be written directly',
   decisionReason: { type: 'safetyCheck', reason: 'host-creds file rewrite redirects the bearer token', classifierApprovable: false },
 }
-const SEED_ADMIN_DENIED: InternalPathDecision = {
+export const SEED_ADMIN_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
     '~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by Claude Code; it cannot be written directly',
@@ -79,7 +79,7 @@ const SEED_ADMIN_DENIED: InternalPathDecision = {
     classifierApprovable: false,
   },
 }
-const PROFILE_STORE_DENIED: InternalPathDecision = {
+export const PROFILE_STORE_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
     'The Anthropic profile store holds the sign-in that decides which organization policy applies; it cannot be written directly',
@@ -89,7 +89,7 @@ const PROFILE_STORE_DENIED: InternalPathDecision = {
     classifierApprovable: false,
   },
 }
-const SETTINGS_REVIEW_DENIED: InternalPathDecision = {
+export const SETTINGS_REVIEW_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
     'Staged Claude Code settings changes are the owner’s to review in /settings-review; the review store cannot be written directly',
@@ -100,7 +100,7 @@ const SETTINGS_REVIEW_DENIED: InternalPathDecision = {
     circuitBreaker: 'claudeSettingsFile',
   },
 }
-const ADOPT_JSON_DENIED: InternalPathDecision = {
+export const ADOPT_JSON_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message: 'adopt.json is the bg-fork handoff carrier and is managed by the harness; it cannot be written directly',
   decisionReason: { type: 'safetyCheck', reason: 'adopt.json is a code-execution surface for the fork', classifierApprovable: false },
@@ -398,7 +398,7 @@ export function getBundledSkillsRoot(): string {
 // ---- Almacenes protegidos ----
 
 /** El archivo de credenciales que el anfitrión declara (≙ `Gr`). */
-function isHostCredentialsFile(path: string): boolean {
+export function isHostCredentialsFile(path: string): boolean {
   const declared = process.env.CLAUDE_CODE_HOST_CREDS_FILE
   if (!declared) return false
   const trimmed = declared.replace(getPlatform() === 'windows' ? /[\\/]+$/ : /\/+$/, '') || declared
@@ -422,13 +422,13 @@ function seedAdminDirectories(configHome: string): string[] {
 }
 
 /** Bajo `seed-admin` (≙ `Wr`). */
-function isSeedAdminPath(path: string): boolean {
+export function isSeedAdminPath(path: string): boolean {
   const target = comparableSessionPath(path)
   return seedAdminDirectories(claudeConfigHome()).some(dir => target === dir || target.startsWith(dir + SEP))
 }
 
 /** El almacén de revisión de settings (≙ `zr`). */
-function isSettingsReviewStore(path: string): boolean {
+export function isSettingsReviewStore(path: string): boolean {
   const target = comparableSessionPath(path)
   const stateDir = nodePath.join(homedir(), '.claude', 'state')
   return [stateDir, nodePath.join(stateDir, 'settings-review.json')].some(p =>
@@ -437,7 +437,7 @@ function isSettingsReviewStore(path: string): boolean {
 }
 
 /** `<config>/jobs/<id>/adopt.json*` (≙ `Ls`). */
-function isJobAdoptFile(path: string): boolean {
+export function isJobAdoptFile(path: string): boolean {
   const target = foldPathCase(normalized(path))
   const jobs = foldPathCase(nodePath.join(claudeConfigHome(), 'jobs') + SEP)
   if (!target.startsWith(jobs)) return false
@@ -573,7 +573,7 @@ export function getProfileStoreDenyPaths(): ProfileStoreDenyPaths | null {
 }
 
 /** Dentro del almacén de perfiles (≙ `Br`). */
-function isProfileStorePath(path: string): boolean {
+export function isProfileStorePath(path: string): boolean {
   const deny = getProfileStoreDenyPaths()
   if (deny === null) return false
   const target = foldPathCase(normalized(path))
