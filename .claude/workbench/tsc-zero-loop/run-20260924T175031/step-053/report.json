@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2587, "total_final": 2578, "tsc_runs": 1, "accepted": ["agent:legacy-query-types"], "files_kept": ["src/packages/provider/src/claudeLegacy.ts"], "outcomes": {"agent:legacy-query-types": "accepted-net"}}

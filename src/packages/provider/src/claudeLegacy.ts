@@ -97,8 +97,8 @@ type ClaudeLegacyRuntime = {
     enablePromptCaching: boolean,
     options?: { skipGlobalCacheForSystemPrompt?: boolean; querySource?: string },
   ) => TextBlockParam[]
-  queryHaiku: (...args: unknown[]) => Promise<unknown>
-  queryWithModel: (...args: unknown[]) => Promise<unknown>
+  queryHaiku: typeof import('./claudeLegacyRuntime.ts').queryHaiku
+  queryWithModel: typeof import('./claudeLegacyRuntime.ts').queryWithModel
   adjustParamsForNonStreaming: <
     T extends { max_tokens: number; thinking?: BetaMessageStreamParams['thinking'] },
   >(
@@ -214,11 +214,17 @@ export function buildSystemPromptBlocks(
   return getLegacyRuntime().buildSystemPromptBlocks(systemPrompt, enablePromptCaching, options)
 }
 
-export async function queryHaiku(...args: unknown[]): Promise<unknown> {
+// Firmas de `claudeLegacyRuntime.ts`, que es lo que el anfitrión instala:
+// un `unknown` aquí obligaba a cada llamador a adivinar la forma del mensaje.
+export async function queryHaiku(
+  ...args: Parameters<ClaudeLegacyRuntime['queryHaiku']>
+): ReturnType<ClaudeLegacyRuntime['queryHaiku']> {
   return getLegacyRuntime().queryHaiku(...args)
 }
 
-export async function queryWithModel(...args: unknown[]): Promise<unknown> {
+export async function queryWithModel(
+  ...args: Parameters<ClaudeLegacyRuntime['queryWithModel']>
+): ReturnType<ClaudeLegacyRuntime['queryWithModel']> {
   return getLegacyRuntime().queryWithModel(...args)
 }
 
