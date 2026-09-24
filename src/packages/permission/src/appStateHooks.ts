@@ -26,11 +26,11 @@
 export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
 type ModuloDeEstado = {
-  useAppState: <U>(selector: (state: unknown) => U) => U
-  useSetAppState: () => (updater: (prev: unknown) => unknown) => void
+  useAppState: <U>(selector: (state: AppState) => U) => U
+  useSetAppState: () => (updater: (prev: AppState) => AppState) => void
   useAppStateStore: () => {
-    getState: () => unknown
-    setState: (updater: (prev: unknown) => unknown) => void
+    getState: () => AppState
+    setState: (updater: (prev: AppState) => AppState) => void
     subscribe: (listener: () => void) => () => void
   }
 }
@@ -40,17 +40,17 @@ function hostStateModule(): ModuloDeEstado {
   return require('@thyrox/app-host/state/AppState.js') as ModuloDeEstado
 }
 
-export function useAppState<T>(selector: (state: unknown) => T): T {
+export function useAppState<T>(selector: (state: AppState) => T): T {
   return hostStateModule().useAppState<T>(selector)
 }
 
-export function useSetAppState(): (updater: (prev: unknown) => unknown) => void {
+export function useSetAppState(): (updater: (prev: AppState) => AppState) => void {
   return hostStateModule().useSetAppState()
 }
 
 export function useAppStateStore(): {
-  getState: () => unknown
-  setState: (updater: (prev: unknown) => unknown) => void
+  getState: () => AppState
+  setState: (updater: (prev: AppState) => AppState) => void
   subscribe: (listener: () => void) => () => void
 } {
   return hostStateModule().useAppStateStore()

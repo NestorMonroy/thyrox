@@ -19,32 +19,32 @@
 
 export type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
-export function useAppState<T>(selector: (state: unknown) => T): T {
+export function useAppState<T>(selector: (state: AppState) => T): T {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
-    useAppState: <U>(s: (state: unknown) => U) => U
+    useAppState: <U>(s: (state: AppState) => U) => U
   }
   return mod.useAppState<T>(selector)
 }
 
-export function useSetAppState(): (updater: (prev: unknown) => unknown) => void {
+export function useSetAppState(): (updater: (prev: AppState) => AppState) => void {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
-    useSetAppState: () => (updater: (prev: unknown) => unknown) => void
+    useSetAppState: () => (updater: (prev: AppState) => AppState) => void
   }
   return mod.useSetAppState()
 }
 
 export function useAppStateStore(): {
-  getState: () => unknown
-  setState: (updater: (prev: unknown) => unknown) => void
+  getState: () => AppState
+  setState: (updater: (prev: AppState) => AppState) => void
   subscribe: (listener: () => void) => () => void
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
     useAppStateStore: () => {
-      getState: () => unknown
-      setState: (updater: (prev: unknown) => unknown) => void
+      getState: () => AppState
+      setState: (updater: (prev: AppState) => AppState) => void
       subscribe: (listener: () => void) => () => void
     }
   }
