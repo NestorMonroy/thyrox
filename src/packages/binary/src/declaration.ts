@@ -69,6 +69,28 @@ function parse(source: string, name = 'payload.js'): ts.SourceFile {
   return ts.createSourceFile(name, source, ts.ScriptTarget.ESNext, true, ts.ScriptKind.JS)
 }
 
+let parseCount = 0
+let lastParsed: { source: string; file: ts.SourceFile } | null = null
+
+/**
+ * El árbol de `source`, analizado UNA vez por texto. Sobre un chunk de 5,4 MB
+ * el análisis domina el coste, y `extractByLiteral` lo pagaba dos veces por
+ * llamada y una por cada pregunta sobre el mismo texto. Un solo registro
+ * basta: las llamadas llegan agrupadas por texto.
+ */
+function parseSource(source: string): ts.SourceFile {
+  if (lastParsed !== null && lastParsed.source === source) return lastParsed.file
+  parseCount++
+  const file = parse(source)
+  lastParsed = { source, file }
+  return file
+}
+
+/** Cuántas veces se analizó un texto completo; lo lee la suite, no el código. */
+export function parseCountForTesting(): number {
+  return parseCount
+}
+
 /**
  * El texto del nodo SIN sus comillas ni su espacio a la izquierda.
  *
@@ -98,7 +120,7 @@ function nodeValue(node: ts.Node): string | null {
  * su propio texto, y eso no es un uso del dato sino prosa sobre el.
  */
 export function findLiteralSites(source: string, literal: string): LiteralSite[] {
-  const sourceFile = parse(source)
+  const sourceFile = parseSource(source)
   const sites: LiteralSite[] = []
   const visit = (node: ts.Node): void => {
     if (nodeValue(node) === literal) {
@@ -146,7 +168,7 @@ function enclosingDeclaration(sourceFile: ts.SourceFile, start: number, end: num
 
 /** Las declaraciones que contienen el literal, sin repetir. */
 export function extractByLiteral(source: string, literal: string): Declaration[] {
-  const sourceFile = parse(source)
+  const sourceFile = parseSource(source)
   const sites = findLiteralSites(source, literal)
   const seen = new Set<string>()
   const out: Declaration[] = []
