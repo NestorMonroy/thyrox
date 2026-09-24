@@ -1,0 +1,6 @@
+Open the zero-errors distance analysis
+
+Opens the bench for measuring how far the tree is from zero errors,
+and records the two jobs launched to measure it: the full suite
+(tests/run.sh) and the tsc count. Their logs are partial here and
+are recorded again when the jobs finish.
