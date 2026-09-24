@@ -17,9 +17,10 @@
  *     `swarm/teammateContext.js` + `app-host/bootstrap/state.js`); esta
  *     version resuelve solo por `CLAUDE_CODE_TASK_LIST_ID` o el id explicito
  *     que el llamador pase.
- *   - `resetTaskList()`, `claimTask()`/`claimTaskWithBusyCheck()` y sus
- *     tipos `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita
- *     y dependen del mismo sustrato ausente.
+ *   - `claimTask()`/`claimTaskWithBusyCheck()` y sus tipos
+ *     `ClaimTaskResult`/`ClaimTaskOptions` — ningun test los ejercita y
+ *     dependen del mismo sustrato ausente. (`resetTaskList` se porta al
+ *     final, 2026-09-24, desde 2.1.275.)
  *
  * AVISO RETIRADO 2026-09-08: `isTodoV2Enabled()` figuraba aqui como NO
  * portada, bloqueada en `getIsNonInteractiveSession()`. El bloqueo era REAL
@@ -700,4 +701,38 @@ export function isTodoV2Enabled(): boolean {
     return true
   }
   return !getIsNonInteractiveSession()
+}
+
+/**
+ * `e2r` de 2.1.275: vacía la lista bajo su candado, sólo si todas sus
+ * tareas están completadas (si no, `false` y no toca nada). Antes de borrar
+ * sube la marca de agua al id más alto, para que el siguiente `createTask`
+ * no reutilice un id ya visto. pendiente: el backend de almacenamiento V5
+ * de la fuente; aquí sólo existe la vía de archivos.
+ */
+export async function resetTaskList(taskListId: string): Promise<boolean> {
+  const lockPath = await ensureTaskListLockFile(taskListId)
+  const release = await acquireLock(lockPath)
+  try {
+    if ((await listTasks(taskListId)).some(t => t.status !== 'completed')) return false
+    const highest = await findHighestTaskIdFromFiles(taskListId)
+    if (highest > 0 && highest > (await readHighWaterMark(taskListId)))
+      await writeHighWaterMark(taskListId, highest)
+    let files: string[]
+    try {
+      files = await readdir(getTasksDir(taskListId))
+    } catch {
+      files = []
+    }
+    for (const file of files) {
+      if (!file.endsWith('.json') || file.startsWith('.')) continue
+      try {
+        await unlink(join(getTasksDir(taskListId), file))
+      } catch {}
+    }
+    notifyTasksUpdated()
+    return true
+  } finally {
+    await release()
+  }
 }
