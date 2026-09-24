@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2589, "total_final": 2587, "tsc_runs": 1, "accepted": ["agent:session-title"], "files_kept": ["src/packages/agent/sessionTitle.ts"], "outcomes": {"agent:session-title": "accepted-net"}}
