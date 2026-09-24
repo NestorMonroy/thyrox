@@ -1,0 +1,15 @@
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/anthropic-effective-harnesses/anthropic-effective-harnesses-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/anthropic-effective-harnesses/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/anthropic-harness-design/anthropic-harness-design-notes.tex
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/anthropic-harness-long-running/anthropic-harness-long-running-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/anthropic-harness-long-running/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/fowler-harness-engineering/fowler-harness-engineering-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/fowler-harness-engineering/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/openai-harness-engineering/openai-harness-engineering-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/openai-harness-engineering/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/inngest-agent-harness/inngest-agent-harness-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/inngest-agent-harness/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/humanlayer-skill-issue/humanlayer-skill-issue-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/humanlayer-skill-issue/content.txt
+- nota (chino): /home/user/nestormonroy/ai-course-notes/articles/langchain-improving-deep-agents/langchain-improving-deep-agents-notes.tex
+    fuente: /home/user/nestormonroy/ai-course-notes/articles/langchain-improving-deep-agents/content.txt
