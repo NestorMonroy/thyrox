@@ -61,7 +61,7 @@ export function AutoModeOptInDialog({
 
       <Select
         options={[
-          ...("external" !== 'ant'
+          ...(process.env.USER_TYPE !== 'ant'
             ? [
                 {
                   label: 'Yes, and make it my default mode',
