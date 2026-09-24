@@ -13,7 +13,10 @@ Qué haría fallar a este control:
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
+import json
 import subprocess
 import sys
 import tempfile
@@ -100,6 +103,25 @@ with tempfile.TemporaryDirectory() as directory:
     code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
                                 "--pattern", "(", "--id", "x", "src/a.ts"])
     assert_equal("un patrón mal formado rehúsa con 2, sin traza", 2, code)
+
+    # Reflexion: con --run, la propuesta LEE la memoria de sus archivos antes
+    # de salir, sin cambiar la candidata.
+    run = root / "run"
+    run.mkdir()
+    (run / "reflections.jsonl").write_text(json.dumps(
+        {"proposal_id": "agent:old", "outcome": "partial", "files": ["src/a.ts"],
+         "lesson": "leccion-de-a", "revealed": []}) + "\n" + json.dumps(
+        {"proposal_id": "agent:far", "outcome": "rejected", "files": ["src/z.ts"],
+         "lesson": "leccion-ajena", "revealed": []}) + "\n")
+    (root / "src" / "a.ts").write_text(edited)
+    err = io.StringIO()
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = agent_proposal.main(["--root", str(root), "--before-log", str(root / "before.log"),
+                                    "--pattern", "TS18046", "--id", "mem", "--run", str(run),
+                                    "src/a.ts"])
+    assert_equal("con --run la propuesta sigue saliendo", 0, code)
+    assert_equal("recuerda la lección de su archivo", True, "leccion-de-a" in err.getvalue())
+    assert_equal("no recuerda la de otro archivo", False, "leccion-ajena" in err.getvalue())
 
 print(f"test_agent_proposal: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

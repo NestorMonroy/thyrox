@@ -26,6 +26,7 @@ import sys
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
+from verify.tsc_reflect import recall
 
 
 def _sha(text: str) -> str:
@@ -81,6 +82,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--before-log", type=Path, required=True)
     parser.add_argument("--pattern", required=True, help="regex sobre `archivo: TSxxxx: mensaje`")
     parser.add_argument("--id", required=True)
+    parser.add_argument("--run", type=Path,
+                        help="corrida del lazo: antes de salir, recuerda sus reflexiones y recetas")
     parser.add_argument("files", nargs="+")
     args = parser.parse_args(argv)
     try:
@@ -89,6 +92,14 @@ def main(argv: list[str] | None = None) -> int:
     except (ValueError, OSError, re.error, subprocess.CalledProcessError) as error:
         print(f"agent_proposal: REHÚSA — {error}", file=sys.stderr)
         return 2
+    if args.run is not None:
+        # Reflexion: leer la memoria de estos archivos ANTES de que tsc juzgue.
+        memory = recall(args.run, args.files)
+        for item in memory["reflections"]:
+            print(f"memoria [{item['outcome']}] {item['proposal_id']}: {item['lesson']}",
+                  file=sys.stderr)
+        for item in memory["recipes"]:
+            print(f"receta {item['step']}: {item['subject']}", file=sys.stderr)
     print(json.dumps(row, ensure_ascii=False))
     return 0
 
