@@ -226,3 +226,22 @@ describe('settingSourceToScope — inverse of scopeToSettingSource', () => {
     expect(settingSourceToScope('flagSettings' as never)).toBe('flag')
   })
 })
+
+// El conjunto de mercados oficiales del binario 2.1.275, verbatim. thyrox
+// declaraba 8 de 14; cualquier nombre que falte aquí deja de reconocerse como
+// oficial, que es una frontera de seguridad.
+const BINARY_OFFICIAL_MARKETPLACES = [
+  'claude-code-marketplace', 'claude-code-plugins', 'claude-plugins-official',
+  'anthropic-marketplace', 'anthropic-plugins', 'agent-skills',
+  'anthropic-agent-skills', 'life-sciences', 'knowledge-work-plugins',
+  'claude-for-legal', 'claude-for-financial-services',
+  'financial-services-plugins', 'first-party-plugins', 'claude-tag-plugins',
+]
+
+describe('isOfficialMarketplaceName — el conjunto del binario 2.1.275', () => {
+  for (const name of BINARY_OFFICIAL_MARKETPLACES) {
+    test(`${name} es oficial`, () => {
+      expect(isOfficialMarketplaceName(name)).toBe(true)
+    })
+  }
+})

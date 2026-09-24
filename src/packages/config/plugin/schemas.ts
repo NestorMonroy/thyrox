@@ -16,6 +16,7 @@ import { lazySchema } from '../internal/lazySchema.js'
  * Official marketplace names that are reserved for Anthropic/Claude official use.
  * These names are allowed ONLY for official marketplaces and blocked for third parties.
  */
+// El conjunto del binario 2.1.275, en su orden. thyrox tenía 8 de los 14.
 export const ALLOWED_OFFICIAL_MARKETPLACE_NAMES = new Set([
   'claude-code-marketplace',
   'claude-code-plugins',
@@ -23,8 +24,14 @@ export const ALLOWED_OFFICIAL_MARKETPLACE_NAMES = new Set([
   'anthropic-marketplace',
   'anthropic-plugins',
   'agent-skills',
+  'anthropic-agent-skills',
   'life-sciences',
   'knowledge-work-plugins',
+  'claude-for-legal',
+  'claude-for-financial-services',
+  'financial-services-plugins',
+  'first-party-plugins',
+  'claude-tag-plugins',
 ])
 
 /**

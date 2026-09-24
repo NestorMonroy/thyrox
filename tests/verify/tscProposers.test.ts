@@ -11,7 +11,12 @@
  * - saltarse las guardas de cada proponente (nombre que el checker da sin uso,
  *   inferencia a `any`): el lazo aplicaría lo que el proponente ya rehúsa.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, setDefaultTimeout, test } from 'bun:test'
+
+// Estas pruebas compilan una fixture con `tsc`: medido en la corrida completa,
+// 5.6 a 8 s por caso bajo la carga de `run_ts_isolated`, contra los 5 s por
+// defecto de Bun. El límite se declara aquí, donde está la razón.
+setDefaultTimeout(60_000)
 import ts from 'typescript'
 import { applyProposalEdits, proposeInMemory } from '../../src/verify/tscProposers'
 import { DEFAULT_OPTIONS, applyEdits, createMemoryService } from '../../src/verify/tsLanguageService'

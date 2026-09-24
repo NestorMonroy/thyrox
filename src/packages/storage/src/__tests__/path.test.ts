@@ -1,7 +1,6 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import { homedir } from 'os'
 import { sep } from 'path'
-import { setGetCwdFn } from '../internal/pendingCrossPackageDeps.js'
 
 /**
  * `path.ts` resuelve el cwd por defecto vía `getCwd()` de
@@ -12,7 +11,15 @@ import { setGetCwdFn } from '../internal/pendingCrossPackageDeps.js'
  * que el módulo real de ccnmt no existe en este árbol. Mismos casos, mismos
  * datos, mismas expectativas — sólo cambia el mecanismo de override.
  */
-setGetCwdFn(() => '/test/cwd')
+// CORREGIDO 2026-09-24: `path.ts` ya importa el `getCwd` REAL de
+// `@thyrox/app-host/bootstrap/cwd.js`, así que el setter del sustituto local
+// no lo alcanzaba y la prueba medía el cwd del proceso. Se simula el módulo
+// real, extendiendo sus exportaciones como pide `mock.module` (es global).
+const realCwd = await import('@thyrox/app-host/bootstrap/cwd.js')
+mock.module('@thyrox/app-host/bootstrap/cwd.js', () => ({
+  ...realCwd,
+  getCwd: () => '/test/cwd',
+}))
 
 const {
   containsPathTraversal,

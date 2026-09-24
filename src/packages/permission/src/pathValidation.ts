@@ -6,18 +6,17 @@
  * `@thyrox/app-host/src/runtime/installPluginBindings.ts:355`
  * (`const { expandTilde } = require('@thyrox/permission/pathValidation.js')`).
  *
- * PORTADAS (7 de 11):
+ * PORTADAS (8 de 11):
  *
  *   `FileOperationType` · `PathCheckResult` · `ResolvedPathCheckResult`
  *   (los tres tipos, sin dependencias) · `formatDirectoryList` ·
  *   `getGlobBaseDirectory` · `expandTilde` (el objetivo del pase) ·
- *   `isDangerousRemovalPath` (contrato de `D4e` del binario 2.1.275).
+ *   `isDangerousRemovalPath` (contrato de `D4e` del binario 2.1.275) ·
+ *   `isPathInSandboxWriteAllowlist` (contrato de 2.1.275; su bloqueo,
+ *   `SandboxManager`, ya existe en `@thyrox/shell/sandbox.js`).
  *
- * OMITIDAS (4 de 11), declaradas por nombre, línea y bloqueo:
+ * OMITIDAS (3 de 11), declaradas por nombre, línea y bloqueo:
  *
- *   - `isPathInSandboxWriteAllowlist` (pathValidation.ts:93-131) —
- *     bloqueada por `SandboxManager`
- *     (`@claude-code-how-works/shell/sandbox.js`, subsistema no portado).
  *   - `isPathAllowed` (pathValidation.ts:133-262), `validateGlobPattern`
  *     (pathValidation.ts:262-324), `validatePath` (pathValidation.ts:366-478)
  *     — las tres dependen de seis funciones de `./filesystem.js`
@@ -47,7 +46,13 @@
 import { homedir } from 'node:os'
 import { dirname } from 'node:path'
 import { getPlatform } from '@thyrox/config/platform.js'
-import { getFsImplementation, safeResolvePath } from '@thyrox/storage/fsOperations.js'
+import {
+  getFsImplementation,
+  getPathsForPermissionCheck,
+  safeResolvePath,
+} from '@thyrox/storage/fsOperations.js'
+import { SandboxManager } from '@thyrox/shell/sandbox.js'
+import { pathInWorkingPath } from './filesystem.js'
 
 const MAX_DIRS_TO_LIST = 5
 const GLOB_PATTERN_REGEX = /[*?[\]{}]/
@@ -176,4 +181,44 @@ export function isDangerousRemovalPath(path: string): boolean {
   if (dirname(trimmed) === '/') return true
   if (DRIVE_CHILD.test(trimmed)) return true
   return false
+}
+
+
+/** Las rutas de configuración del sandbox ya resueltas, como la caché de sesión
+ *  del binario (`resolvedSandboxConfigPaths`). */
+const resolvedSandboxConfigPaths = new Map<string, string[]>()
+
+function resolveSandboxConfigPath(configPath: string): string[] {
+  const cached = resolvedSandboxConfigPaths.get(configPath)
+  if (cached !== undefined) return cached
+  const resolved = getPathsForPermissionCheck(configPath)
+  resolvedSandboxConfigPaths.set(configPath, resolved)
+  return resolved
+}
+
+/**
+ * Porte del contrato de 2.1.275: con el sandbox apagado, `false`. Encendido,
+ * la ruta pasa sólo si TODAS sus variantes (la ruta y sus destinos de enlace
+ * simbólico) evitan toda entrada de `denyWithinAllow` y caen dentro de alguna
+ * de `allowOnly`. Las entradas de configuración se resuelven igual, con caché.
+ *
+ * Divergencia declarada: el binario compara `deny` con caja y sólo pliega la
+ * caja en `allow`; `pathInWorkingPath` pliega en las dos donde la plataforma no
+ * distingue caja, lo que ensancha `deny` — el sentido conservador.
+ */
+export function isPathInSandboxWriteAllowlist(
+  path: string,
+  resolvedPaths?: string[],
+): boolean {
+  if (!SandboxManager.isSandboxingEnabled()) return false
+  const { allowOnly, denyWithinAllow } = SandboxManager.getFsWriteConfig()
+  const variants = resolvedPaths ?? getPathsForPermissionCheck(path)
+  const allowed = allowOnly.flatMap(resolveSandboxConfigPath)
+  const denied = denyWithinAllow.flatMap(resolveSandboxConfigPath)
+  return variants.every(variant => {
+    for (const deny of denied) {
+      if (pathInWorkingPath(variant, deny)) return false
+    }
+    return allowed.some(allow => pathInWorkingPath(variant, allow))
+  })
 }

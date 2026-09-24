@@ -1,0 +1,24 @@
+Port the sandbox write allowlist and official names
+
+isPathInSandboxWriteAllowlist was omitted from pathValidation because
+SandboxManager did not exist; it does now, in @thyrox/shell/sandbox.
+The port follows 2.1.275: false with the sandbox off; otherwise every
+variant of the path (itself and its symlink targets) must avoid every
+denyWithinAllow entry and fall inside some allowOnly entry, with the
+config entries resolved and cached. Declared divergence: the binary
+compares deny with case and folds only allow; pathInWorkingPath folds
+both where the platform ignores case, which widens deny.
+
+The official plugin marketplace set follows the binary: 14 names,
+thyrox had 8. A missing name stops being recognised as official.
+
+Test-side fixes, no behaviour change:
+- storage path.test set the cwd through the local stub, which
+  path.ts no longer reads; it now mocks the real app-host cwd module.
+- unit path.test expected a root packages/ directory; thyrox has src/.
+- three verify suites compile a fixture with tsc, 5.6 to 8 s per case
+  under the parallel runner against Bun's 5 s default; they declare
+  a 60 s limit.
+
+Controls: dropping the deny loop fails exactly the deny case;
+every -> some fails exactly the symlink-variant case.
