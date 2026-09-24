@@ -1,0 +1,9 @@
+Re-export the canonical AppState from tool-registry
+
+First step of the agent-compiler loop, judged by tsc with the net
+policy: accepted-net, total 3745 -> 3733. tool-registry declared its
+own AppState as Record<string, any>, which lacked tasks and made each
+SetAppState here incompatible with those of agent, swarm and config.
+The V7 boundary it cited no longer holds: the package already depends
+on @thyrox/app-host, and the re-export is type-only. The 38 errors it
+reveals are recorded in the step ledger as the next targets.

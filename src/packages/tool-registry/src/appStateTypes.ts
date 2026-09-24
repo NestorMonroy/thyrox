@@ -11,5 +11,9 @@
 //   - acceder a propiedades arbitrarias: `prev.someField` (era TS2339 sobre unknown)
 // Ambos son legítimos en la frontera V7 porque la forma canónica vive en
 // app-host/state — tool-registry sólo enhebra el valor.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type AppState = Record<string, any>
+// Corregido 2026-09-24: la frontera V7 ya no aplica aquí — tool-registry
+// declara `@thyrox/app-host` como dependencia. Un `Record` propio divergía del
+// `AppState` canónico (le faltaba `tasks`), y cada `SetAppState` de este paquete
+// quedaba incompatible con los de agent, swarm y config. Se reexporta el tipo
+// canónico: es `import type`, así que no añade arista de runtime.
+export type { AppState } from '@thyrox/app-host/state/AppState.js'
