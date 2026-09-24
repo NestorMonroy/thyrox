@@ -1,0 +1,49 @@
+ERROR	error: expect(received).toBe(expected)	-	src/packages/agent/__tests__/models.test.ts
+EXPORT	getAssistantMessageText	agent/messages.ts'	src/packages/agent/background/fleet/__tests__/replBridgeSeed.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts
+ERROR	error: expect(received).toBeObject()	-	src/packages/binary/__tests__/bunfs.test.ts
+ERROR	error: expect(received).toBe(expected)	-	src/packages/config/__tests__/pluginIdentifier.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/permission/src/__tests__/automodeAntAlignment.contract.test.ts
+ERROR	ConfigHostBindingsError: Config host bindings have not been installed. Install host bindin	-	src/packages/permission/src/__tests__/classifierOperatorModel.contract.test.ts
+ERROR	TypeError: isPathInSandboxWriteAllowlist is not a function. (In 'isPathInSandboxWriteAllow	-	src/packages/permission/src/__tests__/pathValidation.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/fetchProfileInfo.behavior.test.ts
+ERROR	error: expect(received).toBeGreaterThan(expected)	-	src/packages/provider/src/__tests__/getAPIProvider.behavior.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/getOtelHeadersFromHelper.behavior.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/inflateModelSetting.behavior.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/isAnthropicAuthEnabled.behavior.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/oauthExchange.behavior.test.ts
+ERROR	error: expect(received).toMatch(expected)	-	src/packages/provider/src/__tests__/performLogout.behavior.test.ts
+ERROR	error: expect(received).not.toMatch(expected)	-	src/packages/provider/src/__tests__/refreshOAuthTokenInvalidGrant.behavior.test.ts
+ERROR	error: expect(received).toEqual(expected)	-	src/packages/provider/src/__tests__/sessionIngressAuth.behavior.test.ts
+ERROR	error: expect(received).toBe(expected)	-	src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts
+ERROR	error: expect(received).toBeGreaterThan(expected)	-	src/packages/provider/src/__tests__/validateForceLoginOrg.behavior.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+EXPORT	normalizePatternsToPath	permission/src/filesystem.ts'	src/packages/storage/src/__tests__/extractGlobBaseDirectory.test.ts
+ERROR	error: expect(received).toBe(expected)	-	src/packages/storage/src/__tests__/path.test.ts
+FALLA	-	-	src/packages/swarm/__tests__/teammateInit.test.ts
+ERROR	error: 	-	src/packages/tool-registry/src/__tests__/imageProcessor.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+EXPORT	createPermissionRequestMessage	permission/src/permissions.ts'	src/packages/tool-registry/src/tools/BashTool/__tests__/detectBlockedSleepPattern.behavior.test.ts
+EXPORT	createAttachmentMessage	agent/attachments.ts'	src/packages/tool-registry/src/tools/BashTool/__tests__/pathExtractors.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	src/packages/tool-registry/src/tools/registry/providers/__tests__/BuiltInToolsProvider.test.ts
+ERROR	error: expect(received).toContain(expected)	-	src/packages/tools/__tests__/subagent.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/integration/agent-loop.test.ts
+ERROR	error: Cannot find module '../../packages/cli/src/entry/commander.js' from '/home/user/thy	-	tests/integration/cli-arguments.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/integration/plugin-load.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/integration/slash-commands.test.ts
+ERROR	error: expect(received).toEqual(expected)	-	tests/reference/triple.test.ts
+ERROR	error: expect(received).toBe(expected)	-	tests/smoke/bg-cycle-smoke.test.ts
+ERROR	error: expect(received).toBe(expected)	-	tests/smoke/headless-smoke.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/smoke/live-fire-smoke.test.ts
+ERROR	error: expect(received).toBeDefined()	-	tests/smoke/plugin-hooks-smoke.test.ts
+ERROR	error: expect(received).toEqual(expected)	-	tests/smoke/repl-smoke.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/smoke/resume-smoke.test.ts
+EXPORT	validatePath	permission/src/pathValidation.ts'	tests/smoke/swarm-smoke.test.ts
+EXPORT	createAttachmentMessage	agent/attachments.ts'	tests/unit/state/replSelectors.test.ts
+EXPORT	normalizePatternsToPath	permission/src/filesystem.ts'	tests/unit/utils/glob.test.ts
+EXPORT	normalizeMessagesForAPI	agent/messages.ts'	tests/unit/utils/messages.test.ts
+ERROR	error: expect(received).toBe(expected)	-	tests/unit/utils/path.test.ts
+ERROR	error: expect(received).toBe(expected)	-	tests/unit/utils/truncate.test.ts
+FALLA	-	-	tests/verify/applyInferredTypes.test.ts
+FALLA	-	-	tests/verify/facadeProposals.test.ts
+FALLA	-	-	tests/verify/tscProposers.test.ts

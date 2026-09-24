@@ -100,3 +100,38 @@ if __name__ == "__main__":
             traceback.print_exc()
     print(f"resumen: {_failures} fallo(s)")
     raise SystemExit(1 if _failures else 0)
+
+
+def _payload_bg(command, background):
+    return {"tool_name": "Bash",
+            "tool_input": {"command": command, "run_in_background": background}}
+
+
+def test_warns_on_a_blocking_wait_in_the_foreground():
+    """Una espera ES un comando largo (directiva del ejecutor 2026-09-24).
+
+    `thyrox-bg wait` en primer plano bloqueo el turno varios minutos: el
+    detector lo eximia porque el comando nombraba el mecanismo.
+    """
+    for command in ("timeout 580 bash bin/thyrox-bg wait ts-completa",
+                    "bash bin/wait-jobs wait --timeout 1800",
+                    "bash src/session/bg.sh wait suite",
+                    "bash bin/marker_wait log.txt --pid 12"):
+        notice = gate.detect(_payload_bg(command, False))
+        assert notice and "espera" in notice.lower(), command
+
+
+def test_a_wait_sent_to_the_client_background_stays_silent():
+    assert gate.detect(_payload_bg("bash bin/thyrox-bg wait ts-completa", True)) is None
+
+
+def test_non_blocking_ledger_commands_stay_silent():
+    for command in ("bash bin/thyrox-bg status ts", "bash bin/wait-jobs status",
+                    "bash bin/thyrox-bg start x -- bash tests/run.sh"):
+        assert gate.detect(_payload_bg(command, False)) is None, command
+
+
+def test_a_wait_named_inside_a_heredoc_body_stays_silent():
+    """El cuerpo de un heredoc es un dato que se escribe, no una orden."""
+    command = "python3 - <<'PY'\nnota = 'usa wait-jobs wait'\nPY"
+    assert gate.detect(_payload_bg(command, False)) is None

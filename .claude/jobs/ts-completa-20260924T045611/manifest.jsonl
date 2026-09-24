@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && find src tests \\( -name '*.test.ts' -o -name '*.test.tsx' \\) -not -path '*/node_modules/*' | sort | bash src/verify/run_ts_isolated.sh", "started_at": "2026-09-24T04:56:11+00:00"}

@@ -177,11 +177,15 @@ bloquea:
 |---|---|---|
 | la **notificación** del cliente cuando el trabajo termina | sola, sin pedirla | no |
 | `wait-jobs.sh status` / `pending` al ir a cerrar | cuando el turno va a terminar | no |
-| `wait-jobs.sh wait` en Bash primer plano | cuando el **resultado** es lo siguiente que se necesita | sí |
+| `thyrox-bg wait` / `wait-jobs wait` **como tarea en segundo plano del cliente** (`run_in_background`) | cuando el **resultado** es lo siguiente que se necesita | no — el cliente notifica al terminar |
 
-La tercera es legítima **sólo en ese caso**: el trabajo siguiente depende del
-resultado y no hay nada más que adelantar. Usarla justo después de lanzar
-convierte el segundo plano en un primer plano lento.
+**Una espera nunca va en primer plano**, ni siquiera cuando el resultado es lo
+siguiente que se necesita. Esta tabla permitía antes `wait-jobs wait` en Bash
+primer plano para ese caso; el ejecutor lo retiró el 2026-09-24 —*«se tiene que
+mandar en automático»*— tras un `thyrox-bg wait` que retuvo el turno varios
+minutos. El trabajo va al *ledger* con `thyrox-bg`; la espera, al segundo plano
+del cliente, que es lo único que notifica. `detect_foreground_long_command`
+avisa ya sobre una espera sin `run_in_background`.
 
 **Y ordenar no exige bloquear.** Si B depende de A, la arista se declara **al
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:

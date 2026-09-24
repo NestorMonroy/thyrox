@@ -98,12 +98,35 @@ def matched_families(command: str) -> list[str]:
             if any(re.match(pattern, head) for head in heads)]
 
 
+#: Las esperas que BLOQUEAN hasta que un trabajo termina. Nombran el
+#: mecanismo, y por eso el descuento de ``ALREADY_BACKGROUND`` las eximia:
+#: medido 2026-09-24, un ``thyrox-bg wait`` en primer plano retuvo el turno
+#: varios minutos sin aviso. Directiva del ejecutor: una espera es un comando
+#: largo; va al segundo plano del cliente, que notifica al terminar.
+#: El cuerpo de un heredoc, que se escribe como dato y no se ejecuta.
+_HEREDOC_BODY = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\1\s*(?:\n|$)", re.S)
+
+BLOCKING_WAIT = re.compile(
+    r"\b(?:(?:thyrox-bg|bg\.sh)\s+wait|wait-jobs(?:\.sh)?\s+wait|marker_wait)\b"
+)
+
+
 def detect(payload: dict) -> str | None:
     """El aviso de segundo plano si el comando lo merece, o ``None``."""
     tool_input = payload.get("tool_input") or {}
     command = tool_input.get("command")
     if not isinstance(command, str) or not command.strip():
         return None
+
+    if (BLOCKING_WAIT.search(_HEREDOC_BODY.sub("\n", command))
+            and not tool_input.get("run_in_background")):
+        return (
+            "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
+            "trabajo termine. Una espera es un comando largo: lánzala con "
+            "`run_in_background` y sigue trabajando; el cliente te notifica "
+            "cuando termina. Para mirar sin bloquear: `thyrox-bg status <nombre>` "
+            "o `wait-jobs status`."
+        )
 
     # Un comando que ya viaja por el mecanismo cumple la regla: callar.
     if ALREADY_BACKGROUND.search(command):
