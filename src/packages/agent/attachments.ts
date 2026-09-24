@@ -111,3 +111,94 @@ export function createAttachmentMessage<T extends { type: string }>(attachment: 
     timestamp: new Date().toISOString(),
   } as AttachmentMessage<T>
 }
+
+// ---------------------------------------------------------------------------
+// Estado del listado de skills — porte de 2.1.275 (2026-09-24): la clase
+// `xJn` por sesión y `VB`, `I1r`, `P1r`, `M6n`, `O6n`, `eCs`
+// (`chunk-q2gh92k2.js`). Recuerda qué skills se anunciaron a cada agente
+// (clave vacía = hilo principal) para anunciar sólo las nuevas.
+// ---------------------------------------------------------------------------
+
+type SkillListingState = {
+  sentSkillNames: Map<string, Set<string>>
+  suppressNext: boolean
+  resumeSeedNames: Set<string> | null
+}
+
+const skillListingBySession = new Map<string, SkillListingState>()
+
+// `c7`: el estado de la sesión actual; sin estado de app, una sesión única.
+function skillListingState(): SkillListingState {
+  let session = 'default'
+  try {
+    session = require('@thyrox/app-host/bootstrap/state.js').getSessionId() ?? session
+  } catch {}
+  let state = skillListingBySession.get(session)
+  if (!state) {
+    state = { sentSkillNames: new Map(), suppressNext: false, resumeSeedNames: null }
+    skillListingBySession.set(session, state)
+  }
+  return state
+}
+
+/** `VB`: olvida todo lo anunciado, la supresión y la semilla. */
+export function resetSentSkillNames(): void {
+  const state = skillListingState()
+  state.sentSkillNames.clear()
+  state.suppressNext = false
+  state.resumeSeedNames = null
+}
+
+/** `I1r`: el próximo listado del hilo principal se da por visto (p. ej. al reanudar). */
+export function suppressNextSkillListing(): void {
+  skillListingState().suppressNext = true
+}
+
+/** `P1r`: nombres que la transcripción reanudada ya anunció. */
+export function seedSentSkillNames(names: Iterable<string>): void {
+  const state = skillListingState()
+  if (state.resumeSeedNames === null) state.resumeSeedNames = new Set()
+  for (const name of names) state.resumeSeedNames.add(name)
+}
+
+/** `M6n`: olvida lo anunciado a un agente. */
+export function forgetSentSkillsForAgent(agentId: string): void {
+  skillListingState().sentSkillNames.delete(agentId)
+}
+
+/** `O6n`: olvida unos nombres en todos los agentes, y en la semilla. */
+export function forgetSentSkillNames(names: Iterable<string>): void {
+  const state = skillListingState()
+  const list = [...names]
+  for (const sent of state.sentSkillNames.values()) for (const name of list) sent.delete(name)
+  if (state.resumeSeedNames !== null) for (const name of list) state.resumeSeedNames.delete(name)
+}
+
+/**
+ * `eCs`: las skills que faltan por anunciar a ese agente, y si es el primer
+ * anuncio; `null` si no hay nada nuevo. La semilla y la supresión sólo
+ * valen para el hilo principal y se consumen al usarse.
+ */
+export function getSkillListingDelta<S extends { name: string }>(
+  agentId: string | undefined,
+  skills: S[],
+): { newSkills: S[]; isInitial: boolean } | null {
+  const state = skillListingState()
+  const key = agentId ?? ''
+  let sent = state.sentSkillNames.get(key)
+  if (!sent) state.sentSkillNames.set(key, (sent = new Set()))
+  if (state.resumeSeedNames !== null && agentId === undefined) {
+    for (const skill of skills) if (state.resumeSeedNames.has(skill.name)) sent.add(skill.name)
+    state.resumeSeedNames = null
+  }
+  if (state.suppressNext && agentId === undefined) {
+    state.suppressNext = false
+    for (const skill of skills) sent.add(skill.name)
+    return null
+  }
+  const newSkills = skills.filter(skill => !sent!.has(skill.name))
+  if (newSkills.length === 0) return null
+  const isInitial = sent.size === 0
+  for (const skill of newSkills) sent.add(skill.name)
+  return { newSkills, isInitial }
+}
