@@ -133,6 +133,18 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"{delta} --start {repos} --results-dir {resultados}"),
                 cmd(f"{registro} --start"),
             ]}],
+            # Tras compactar, el estado de trabajo (clones sin publicar,
+            # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
+            # por `PostCompact`, cuya salida solo ve el usuario (2.1.281,
+            # `BQe`). La raiz del ledger es la misma que usa `wait-jobs.sh`.
+            "SessionStart": [{
+                "matcher": "compact",
+                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+                              f"{base}/src/hooks/compact_context.py "
+                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items()))
+                              + f" --ledger-root {base}/.claude/jobs-ledger",
+                              timeout=20)],
+            }],
             "PreModelSwitch": [{"hooks": [
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),

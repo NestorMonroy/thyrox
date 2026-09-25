@@ -189,7 +189,11 @@ class JobLedger:
 
     def __init__(self, directory: Path) -> None:
         self._directory = Path(directory)
-        self._directory.mkdir(parents=True, exist_ok=True)
+        # `mkdir(exist_ok=True)` intenta la llamada aunque el directorio exista;
+        # un lector que sólo consulta un ledger ya creado no debe mutar nada
+        # (medido con `bin/assert_no_writes` en la suite de `compact_context`).
+        if not self._directory.is_dir():
+            self._directory.mkdir(parents=True, exist_ok=True)
 
     def _path_for(self, label: str) -> Path:
         # El guion original sanea la barra (`${label//\//_}`) porque el

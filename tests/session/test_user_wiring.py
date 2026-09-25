@@ -68,7 +68,7 @@ def check(etiqueta, esperado, obtenido):
 #: `PreToolUse` entra el 2026-09-24: los diez detectores de
 #: `pretooluse_dispatch.py` existian y NINGUN cableado los declaraba, asi que el
 #: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
-EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SubagentStart",
+EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SessionStart", "SubagentStart",
                       "SubagentStop", "TaskCompleted", "TaskCreated"]
 
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
@@ -98,6 +98,19 @@ _r0 = _sp0.run(_cmd, shell=True, cwd="/", env=_env0, capture_output=True,
                text=True, input='{"tool_name":"Bash","tool_input":{"command":"ls"}}')
 check("el comando cableado carga todos los detectores sin PYTHONPATH",
       "", _r0.stderr.strip())
+
+# Tras compactar, el estado de trabajo vuelve por `SessionStart` con matcher
+# `compact`: la salida de `PostCompact` sólo la ve el usuario (2.1.281, `BQe`).
+_start = next(iter(w.declared_wiring()["hooks"].get("SessionStart", [])), {})
+check("SessionStart se declara con el matcher de la compactación", "compact",
+      _start.get("matcher"))
+_cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
+check("el comando es el hook de restauración del proveedor", True,
+      "src/hooks/compact_context.py" in _cmd1)
+_r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
+               input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
+check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
+      ("{}", ""), (_r1.stdout.strip(), _r1.stderr.strip()))
 
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [

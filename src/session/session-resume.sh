@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
+# DEPRECATED: 2026-09-25 — su salida como PostCompact solo la ve el usuario y lee .thyrox/context, ausente
+# SUCESOR: src/hooks/compact_context.py (SessionStart, matcher compact)
+# HALLAZGO: H-THYROX-187
 # session-resume.sh — Hook PostCompact: re-inyecta contexto del WP activo
 # Input: JSON via stdin { "hook_event_name": "PostCompact", "compact_summary": string }
 # Output: contexto WP si compact_summary no lo menciona | nada
 # Siempre exit 0 (nunca bloquear)
 # DA-002: duplica mínima lógica de detección de WP (no hacer source de session-start.sh)
+
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/deprecated.sh"
+deprecated_guard session-resume.sh
 
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
 # y la RUTA a su declaracion. Los dos literales que el ultimo recurso
