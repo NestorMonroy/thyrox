@@ -103,6 +103,7 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | únicos por columna 2, primera ocurrencia | `awk '!arr[$2]++' archivo` |
 | suma / media de una columna | `awk '{s+=$1} END{print s}'` / `awk '{s+=$2} END{print s/NR}'` |
 | reemplazo global | `sed 's/foo/bar/g' archivo` |
+| reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |
 | recortar espacios al inicio/final | `sed 's/^[ \t]*//;s/[ \t]*$//' archivo` |
 | borrar líneas en blanco | `sed '/^$/d' archivo` |
 | líneas compartidas entre dos listados ya ordenados | `comm -12 a b` |
@@ -125,6 +126,27 @@ Su gate es `src/hooks/detect_awk_substr_target.py`, detector de
 —el ancla de awk, la exclusión del método `.sub`, y saltar cadenas y literales
 `/regex/` al separar argumentos— se probaron por anulación: retirada cada una
 cae exactamente su caso (`python3 tests/hooks/test_detect_awk_substr_target.py`).
+
+**Un texto fijo no se reemplaza con regex ni con Python.** `perl -i` y
+`sed -i` leen el texto como regex —`$`, `{` y `.` hay que escaparlos— y, con
+comillas anidadas dentro de un `bash -c` o un `eval`, el comando se rompe
+antes de ejecutarse: el 2026-09-25 un `perl -0 -i -pe 's{LEDGER="\$\{…'` murió
+con «syntax error» y se rehízo con un heredoc de Python, que es la otra forma
+cara. `bin/replace_literal` (`src/lib/replace_literal.sh`) usa gawk con
+`index()` —busca el texto literal— y `ENVIRON[...]` —entrega `OLD`/`NEW`
+intactos, sin procesar sus `\` como haría `-v`—; lee el archivo entero, así
+que `OLD` puede ocupar varias líneas; exige una sola coincidencia salvo
+`--all`, como `Edit`; y vuelca con `cat >`, que conserva inodo y permisos.
+Sale 0, 1 (0 o varias coincidencias, archivo intacto) o 2 (no pudo medir, sin
+conteo). Directiva del ejecutor 2026-09-25.
+
+Su gate es `src/hooks/detect_literal_replacement.py`, detector de
+`pretooluse_dispatch.py`: avisa cuando `perl -i`, `sed -i` o un heredoc de
+Python con `.replace(` y escritura reemplazan un texto fijo. Sus dos mitades de
+juicio —que el comando reescriba un archivo, y que el patrón no use
+construcciones de regex de verdad— se probaron por anulación
+(`python3 tests/hooks/test_detect_literal_replacement.py`;
+`bash tests/lib/test-replace-literal.sh`).
 
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
