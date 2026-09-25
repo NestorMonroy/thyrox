@@ -177,7 +177,11 @@ export async function runHeadless(
   // never runs. Subscribe directly so that settings changes (including
   // managed-settings / policy updates) are fully applied.
   settingsChangeDetector.subscribe(source => {
-    applySettingsChange(source, setAppState)
+    // applySettingsChange opera sobre SettingsChangeTarget (contrato
+    // estructural de cuatro campos, declarado en config/settings/applySettingsChange.ts);
+    // se adapta al setAppState concreto de AppState en el borde de la llamada,
+    // mismo patrón que restoreSessionStateFromLog en session/load.ts.
+    applySettingsChange(source, f => setAppState(prev => f(prev) as AppState))
 
     // In headless mode, also sync the denormalized fastMode field from
     // settings. The TUI manages fastMode via the UI so it skips this.

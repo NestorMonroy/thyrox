@@ -1290,7 +1290,9 @@ export class QueryEngine {
     let isApiError = false
 
     if (result.type === 'assistant') {
-      const lastContent = last(result.message.content)
+      const lastContent = Array.isArray(result.message.content)
+        ? last(result.message.content)
+        : undefined
       if (
         lastContent?.type === 'text' &&
         !SYNTHETIC_MESSAGES.has(lastContent.text)

@@ -135,7 +135,8 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
             session_id: getSessionId(),
             parent_tool_use_id: null,
             uuid: message.uuid,
-            timestamp: message.timestamp,
+            timestamp:
+              typeof message.timestamp === 'string' ? message.timestamp : undefined,
             isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
             // Structured tool output (not the string content sent to the
             // model — the full Output object). Rides the protobuf catchall
