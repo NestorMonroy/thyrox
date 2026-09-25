@@ -178,6 +178,14 @@ def _speculative_batch(worktrees: list[Path], rows: list[dict], tsc: list[str], 
                    "worktrees": len(worktrees)}
 
 
+def next_base(bench: Path, previous: Path | None) -> Path | None:
+    """La base del lote siguiente: el `final.log` de éste si lo escribió. Un
+    lote sin candidatas aplicadas no mide ni escribe (paso 137 murió al leerlo
+    y no exportó lo conservado)."""
+    final = bench / "final.log"
+    return final if final.is_file() else previous
+
+
 def run(args: argparse.Namespace, tsc: list[str]) -> dict:
     # Uno o varios worktrees. Con varios y la política neta, cada lote mide
     # prefijos a la vez (`prefix_speculation`); el primero es el que exporta.
@@ -250,7 +258,7 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
             except ValueError:
                 raise RuntimeError(f"el lote {batch_no} no midió: {step.stderr.strip()[-300:]}")
             kept.update(report.get("files_kept", []))
-            before_log = bench / "final.log"
+            before_log = next_base(bench, before_log)
             summary.append({"batch": batch_no, "files": len(ready), "total_before": report["total_before"],
                             "total_final": report["total_final"], "tsc_runs": report["tsc_runs"],
                             "kept": len(report.get("files_kept", []))})

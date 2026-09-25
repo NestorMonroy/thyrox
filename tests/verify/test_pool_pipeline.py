@@ -243,5 +243,20 @@ assert_equal("el paso lleva --net cuando el pipeline lo pide", True,
 assert_equal("y no lo lleva cuando no", False,
              "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=False, **base_args))
 
+# Paso 137: un lote cuyas candidatas no se aplicaron (tsc_runs 0) no escribe
+# final.log; la base siguiente sigue siendo la anterior, no un archivo que no
+# existe (el pipeline murió ahí y no exportó los 4 archivos conservados).
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    previous = base / "batch-03/final.log"
+    previous.parent.mkdir()
+    previous.write_text("x\n")
+    (base / "batch-04").mkdir()
+    assert_equal("sin final.log, la base sigue siendo la anterior", previous,
+                 pp.next_base(base / "batch-04", previous))
+    (base / "batch-04/final.log").write_text("y\n")
+    assert_equal("con final.log, la base es la del lote", base / "batch-04/final.log",
+                 pp.next_base(base / "batch-04", previous))
+
 print(f"test_pool_pipeline: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
