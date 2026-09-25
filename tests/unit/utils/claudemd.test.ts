@@ -120,7 +120,7 @@ describe('getLargeMemoryFiles', () => {
     ]
     const result = getLargeMemoryFiles(files)
     expect(result).toHaveLength(1)
-    expect(result[0].path).toBe('/big.md')
+    expect(result[0]!.path).toBe('/big.md')
   })
 
   test('returns empty array when all files are small', () => {

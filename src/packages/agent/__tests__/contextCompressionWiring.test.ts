@@ -57,14 +57,14 @@ function run(compress: boolean) {
 describe('compressToolResults en el bucle real (opt-in)', () => {
   test('APAGADO (default): el ruido de git status llega intacto al siguiente request', async () => {
     const p = await run(false)
-    const result = p.requests[1].messages.flatMap((m) => m.content)
+    const result = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { content: string }
     expect(result.content).toContain('(use "git add')
   })
 
   test('ENCENDIDO: RTK detecta git-status por el comando real y quita el ruido', async () => {
     const p = await run(true)
-    const result = p.requests[1].messages.flatMap((m) => m.content)
+    const result = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { content: string }
     expect(result.content).not.toContain('(use "git add')
     expect(result.content).toContain('modified:   a.ts')

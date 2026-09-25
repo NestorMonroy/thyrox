@@ -97,9 +97,9 @@ describe('integrate — repo sintético', () => {
     const dir = synthRepo()
     const repo: IntegrationRepo = { path: dir, source: 'source', target: 'target' }
     const [res] = integrate([repo], { collisionGate: noCollision })
-    expect(res.precondition).toBe('ok')
-    expect(res.merge).toBe('merged')
-    expect(res.mergeSha).toBeTruthy()
+    expect(res!.precondition).toBe('ok')
+    expect(res!.merge).toBe('merged')
+    expect(res!.mergeSha).toBeTruthy()
     // el commit de merge existe y su committer es jcg-admin
     const committer = execFileSync('git', ['-C', dir, 'log', '-1', '--format=%cn <%ce>'], { encoding: 'utf8' }).trim()
     expect(committer).toBe(`${EXPECTED_COMMITTER_NAME} <${EXPECTED_COMMITTER_EMAIL}>`)
@@ -112,15 +112,15 @@ describe('integrate — repo sintético', () => {
     // fusiona una vez; segunda vez debe ser up-to-date
     integrate([{ path: dir, source: 'source', target: 'target' }], { collisionGate: noCollision })
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { collisionGate: noCollision })
-    expect(res.merge).toBe('up-to-date')
+    expect(res!.merge).toBe('up-to-date')
   })
 
   test('dirty-tree: árbol sucio → no se integra', () => {
     const dir = synthRepo()
     writeFileSync(join(dir, 'sucio.txt'), 'x\n')
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { collisionGate: noCollision })
-    expect(res.precondition).toBe('dirty-tree')
-    expect(res.merge).toBe('skipped')
+    expect(res!.precondition).toBe('dirty-tree')
+    expect(res!.merge).toBe('skipped')
   })
 
   test('wrong-committer: committer ≠ jcg-admin → no se integra', () => {
@@ -129,16 +129,16 @@ describe('integrate — repo sintético', () => {
     execFileSync('git', ['-C', dir, 'config', 'user.name', 'Claude'])
     expect(committerMismatch(dir)).not.toBeNull()
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { collisionGate: noCollision })
-    expect(res.precondition).toBe('wrong-committer')
-    expect(res.merge).toBe('skipped')
+    expect(res!.precondition).toBe('wrong-committer')
+    expect(res!.merge).toBe('skipped')
   })
 
   test('gate bloqueante medido detiene el merge ANTES de fusionar', () => {
     const dir = synthRepo()
     const gateColisiona: CollisionGate = () => ({ ran: true, collisions: 2, detail: 'dos etiquetas' })
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { collisionGate: gateColisiona })
-    expect(res.merge).toBe('skipped')
-    expect(res.message).toContain('bloqueado')
+    expect(res!.merge).toBe('skipped')
+    expect(res!.message).toContain('bloqueado')
     // el árbol quedó intacto: HEAD sigue en el commit seed (sin merge)
     const log = execFileSync('git', ['-C', dir, 'log', '--oneline'], { encoding: 'utf8' }).trim().split('\n')
     expect(log.length).toBe(1)
@@ -153,9 +153,9 @@ describe('verificationPlan — lista, nunca ejecución', () => {
       { path: '/x/docs', kind: 'docs' },
     ])
     expect(plan).toHaveLength(3)
-    expect(plan[0].gates.some((g) => g.includes('pytest'))).toBe(true)
-    expect(plan[1].gates.some((g) => g.includes('jest'))).toBe(true)
-    expect(plan[2].gates.some((g) => g.includes('make html'))).toBe(true)
+    expect(plan[0]!.gates.some((g) => g.includes('pytest'))).toBe(true)
+    expect(plan[1]!.gates.some((g) => g.includes('jest'))).toBe(true)
+    expect(plan[2]!.gates.some((g) => g.includes('make html'))).toBe(true)
     for (const step of plan) expect(step.note).toContain('el disparo es del ejecutor')
   })
 })
@@ -217,10 +217,10 @@ describe('integrate — colisión de etiqueta auto-renumerada', () => {
   test('la colisión NO aborta: se renumera el lado source y se sella el merge', () => {
     const dir = synthCollisionRepo()
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }]) // resolutor por defecto
-    expect(res.merge).toBe('merged')
-    expect(res.renumbered).toHaveLength(1)
-    expect(res.renumbered[0].label).toBe('.. _h-docs-500:')
-    expect(res.renumbered[0].newLabel).toBe('.. _h-docs-501:')
+    expect(res!.merge).toBe('merged')
+    expect(res!.renumbered).toHaveLength(1)
+    expect(res!.renumbered[0]!.label).toBe('.. _h-docs-500:')
+    expect(res!.renumbered[0]!.newLabel).toBe('.. _h-docs-501:')
     // árbol fusionado: la vieja en 1 archivo (destino), la nueva en 1 (origen)
     expect(countLabel(dir, '.. _h-docs-500:')).toBe(1)
     expect(countLabel(dir, '.. _h-docs-501:')).toBe(1)
@@ -243,8 +243,8 @@ describe('integrate — colisión de etiqueta auto-renumerada', () => {
       { label: '.. _h-docs-500:', newLabel: '.. _h-docs-999:', renamed: null, refsEdited: [] },
     ]
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { labelResolver: mentiroso })
-    expect(res.merge).toBe('label-unresolved')
-    expect(res.message).toContain('renumerado incompleto')
+    expect(res!.merge).toBe('label-unresolved')
+    expect(res!.message).toContain('renumerado incompleto')
     // el árbol quedó intacto: HEAD sigue en el tip del destino (sin merge sellado)
     const parents = execFileSync('git', ['-C', dir, 'rev-list', '--parents', '-n', '1', 'HEAD'], { encoding: 'utf8' }).trim().split(' ')
     expect(parents.length).toBe(2) // commit normal, no merge
@@ -285,9 +285,9 @@ describe('integrate — conflicto de código resuelto por unión', () => {
   test('con resolutor: unión sin pérdida → resolved-unverified, sin marcadores', () => {
     const dir = synthConflictRepo()
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { conflictResolver: unionConflictResolver })
-    expect(res.merge).toBe('resolved-unverified')
-    expect(res.conflictResolution?.strategy).toBe('union')
-    expect(res.conflictResolution?.files).toContain('file.txt')
+    expect(res!.merge).toBe('resolved-unverified')
+    expect(res!.conflictResolution?.strategy).toBe('union')
+    expect(res!.conflictResolution?.files).toContain('file.txt')
     const content = execFileSync('git', ['-C', dir, 'show', 'HEAD:file.txt'], { encoding: 'utf8' })
     expect(content).not.toContain('<<<<<<<')   // sin marcadores de conflicto
     expect(content).toContain('DESTINO')        // sin pérdida: ambos lados
@@ -302,8 +302,8 @@ describe('integrate — conflicto de código resuelto por unión', () => {
   test('sin resolutor: el conflicto ABORTA (conducta segura por defecto)', () => {
     const dir = synthConflictRepo()
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }])
-    expect(res.merge).toBe('conflict')
-    expect(res.conflictFiles).toContain('file.txt')
+    expect(res!.merge).toBe('conflict')
+    expect(res!.conflictFiles).toContain('file.txt')
     expect(execFileSync('git', ['-C', dir, 'status', '--porcelain'], { encoding: 'utf8' }).trim()).toBe('')
   })
 
@@ -311,8 +311,8 @@ describe('integrate — conflicto de código resuelto por unión', () => {
     const dir = synthConflictRepo()
     const rechaza: StaticGate = () => ({ ok: false, detail: 'gate de prueba rechaza' })
     const [res] = integrate([{ path: dir, source: 'source', target: 'target' }], { conflictResolver: unionConflictResolver, staticGates: rechaza })
-    expect(res.merge).toBe('conflict')
-    expect(res.message).toContain('gate estático')
+    expect(res!.merge).toBe('conflict')
+    expect(res!.message).toContain('gate estático')
     // abortado: árbol limpio, HEAD sin merge sellado
     expect(execFileSync('git', ['-C', dir, 'status', '--porcelain'], { encoding: 'utf8' }).trim()).toBe('')
     const parents = execFileSync('git', ['-C', dir, 'rev-list', '--parents', '-n', '1', 'HEAD'], { encoding: 'utf8' }).trim().split(' ')

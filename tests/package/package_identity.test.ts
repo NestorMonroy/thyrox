@@ -110,7 +110,7 @@ describe('identidad del paquete', () => {
       // Se normalizan los backticks: `# \`@thyrox/binary\`` nombra BIEN a su
       // paquete, sólo lo formatea como código. El eje declarado es la
       // IDENTIDAD, no el formato; comparar en crudo lo desviaría al segundo.
-      const title = readme.split('\n', 1)[0].replace(/`/g, '')
+      const title = readme.split('\n', 1)[0]!.replace(/`/g, '')
       if (title !== `# ${name}`) {
         wrong.push(`${dir.slice(PACKAGES.length + 1)}: titulo=[${title}] name=[${name}]`)
       }

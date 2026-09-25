@@ -98,7 +98,7 @@ describe('el paquete aloja las utilidades de repositorio que su binario usa', ()
         // la CLI, y su cita no es la arista que este tramo cierra. El
         // `workbench` YA no necesita excepcion — #266 retiro el modulo
         // superado y el binario cita a su sucesor por ruta relativa.
-        if (m[1].includes('reference')) continue
+        if (m[1]!.includes('reference')) continue
         citas.push(`${f.slice(RAIZ.length + 1)}: ${m[1]}`)
       }
     }

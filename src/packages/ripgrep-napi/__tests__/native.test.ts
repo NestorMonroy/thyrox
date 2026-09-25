@@ -152,8 +152,8 @@ describe('searchContent', () => {
         noIgnore: true,
       })
       expect(matches).toHaveLength(2)
-      expect(matches[0].content).toContain('export function')
-      expect(matches[0].lineNumber).toBeGreaterThan(0)
+      expect(matches[0]!.content).toContain('export function')
+      expect(matches[0]!.lineNumber).toBeGreaterThan(0)
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
@@ -184,7 +184,7 @@ describe('searchContent', () => {
         noIgnore: true,
       })
       expect(matches).toHaveLength(1)
-      expect(matches[0].content).toContain('foo.bar')
+      expect(matches[0]!.content).toContain('foo.bar')
     } finally {
       rmSync(root, { recursive: true, force: true })
     }
@@ -464,7 +464,7 @@ describe('rg-equivalence regressions', () => {
       expect(matches).toHaveLength(3)
       const trunc = matches.filter(m => m.columnTruncated)
       expect(trunc).toHaveLength(1)
-      expect(trunc[0].content).toBe('')
+      expect(trunc[0]!.content).toBe('')
       // -l membership: file still present despite the long-only match.
       const files = new Set(matches.map(m => m.path))
       expect(files.size).toBe(1)

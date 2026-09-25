@@ -36,7 +36,7 @@ describe('ensamblado del prompt de sistema (T-022)', () => {
   test('el prompt base va primero y siempre', () => {
     const root = tree({ 'CLAUDE.md': 'raiz' })
     const r = assembleSystemPrompt({ root, base: 'SOY EL BASE' })
-    expect(r.sections[0].name).toBe('base')
+    expect(r.sections[0]!.name).toBe('base')
     expect(r.text.startsWith('SOY EL BASE')).toBe(true)
   })
 

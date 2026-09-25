@@ -54,7 +54,7 @@ describe('puente RST → tablero (T-062)', () => {
       '',
       '- [x] T-022 — otra',
     ].join('\n'))
-    expect(t[0].subject).toBe('Las 47 restantes: se traen por necesidad demostrada, no por paridad. La necesidad, medida por primera vez.')
+    expect(t[0]!.subject).toBe('Las 47 restantes: se traen por necesidad demostrada, no por paridad. La necesidad, medida por primera vez.')
     expect(t).toHaveLength(2)
   })
 
@@ -63,13 +63,13 @@ describe('puente RST → tablero (T-062)', () => {
       '- [ ] **T-010** — depende de **T-079** para arrancar',
       '- [ ] **T-011** — depende de ``html_editor``, que no es una tarea',
     ].join('\n'))
-    expect(t[0].blockedBy).toEqual(['T-079'])
-    expect(t[1].blockedBy).toEqual([])
+    expect(t[0]!.blockedBy).toEqual(['T-079'])
+    expect(t[1]!.blockedBy).toEqual([])
   })
 
   test('una tarea no se declara bloqueada por sí misma', () => {
     const t = parseRstTasks('- [ ] **T-010** — T-010 se cierra cuando depende de T-011')
-    expect(t[0].blockedBy).toEqual(['T-011'])
+    expect(t[0]!.blockedBy).toEqual(['T-011'])
   })
 
   test('sobre el archivo real de esta iniciativa el conteo coincide con el grep', () => {
@@ -83,7 +83,7 @@ describe('puente RST → tablero (T-062)', () => {
 
   test('la línea se conserva: sin ella el puente no puede citar de dónde salió', () => {
     const t = parseRstTasks('\n\n- [ ] T-001 — algo')
-    expect(t[0].line).toBe(3)
+    expect(t[0]!.line).toBe(3)
   })
 })
 

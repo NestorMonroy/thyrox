@@ -11,7 +11,7 @@ describe('enhanceSystemPromptWithEnvDetails', () => {
     expect(out[0]).toBe('BASE')
     expect(out).toHaveLength(3)
     expect(out[1]).toMatch(/consent|approval/i)
-    expect(out[2].startsWith('Notes:')).toBe(true)
+    expect(out[2]!.startsWith('Notes:')).toBe(true)
     expect(out[2]).toMatch(/absolute/i)
     expect(out[2]).toMatch(/emoji/i)
   })

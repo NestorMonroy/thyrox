@@ -217,9 +217,9 @@ describe('permissionUpdateSchema — las seis formas de actualizar', () => {
     // las seis ramas —incluidos `rules` y `behavior`, campos que esta carga
     // nunca declaró— y nombra ramas que no venían al caso.
     const [issue] = r.error!.issues as Array<Record<string, unknown>>
-    expect(issue.discriminator).toBe('type')
-    expect(issue.path).toEqual(['type'])
-    expect((issue.errors as unknown[]).length).toBe(0)
+    expect(issue!.discriminator).toBe('type')
+    expect(issue!.path).toEqual(['type'])
+    expect((issue!.errors as unknown[]).length).toBe(0)
   })
 
   test('15. un destino fuera de los cinco se rechaza', async () => {

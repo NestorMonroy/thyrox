@@ -55,7 +55,7 @@ function sembrar(ruta: string, filas: { id: string; subject: string; cita?: stri
 }
 
 const textoDe = (tasks: unknown[]) =>
-  (renderAttachment({ type: 'task_reminder', tasks })[0].content[0] as { text: string }).text
+  (renderAttachment({ type: 'task_reminder', tasks })[0]!.content[0] as { text: string }).text
 
 /**
  * Sólo las líneas de tarea, no el texto fijo. El recordatorio fijo YA lleva
@@ -158,8 +158,8 @@ describe('TaskList y TaskGet — la cita también donde el modelo consulta', () 
     const ruta = baseCon(false)
     sembrar(ruta, [{ id: '1', subject: 'A' }])
     const lista = JSON.parse((await util(ruta, 'TaskList').run({}, ctx)).content as string) as Record<string, unknown>[]
-    expect(lista[0].task_id).toBe('1')
-    expect('citation_id' in lista[0]).toBe(false)
+    expect(lista[0]!.task_id).toBe('1')
+    expect('citation_id' in lista[0]!).toBe(false)
     const uno = JSON.parse((await util(ruta, 'TaskGet').run({ task_id: '1' }, ctx)).content as string) as Record<string, unknown>
     expect('citation_id' in uno).toBe(false)
   })

@@ -222,7 +222,7 @@ describe('exports de los paquetes hermanos', () => {
           if (statSync(full).isDirectory()) { recorrer(full); continue }
           if (!CODIGO.test(entry) || entry.endsWith('.d.ts')) continue
           for (const m of readFileSync(full, 'utf8').matchAll(ESPECIFICADOR)) {
-            const partes = m[1].split('/')
+            const partes = m[1]!.split('/')
             const nombre = partes.slice(0, 2).join('/')
             const sub = partes.length > 2 ? './' + partes.slice(2).join('/') : '.'
             if (!porPaquete.has(nombre)) porPaquete.set(nombre, new Set())

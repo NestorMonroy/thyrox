@@ -90,8 +90,8 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
     expect(pre.leer().length).toBeGreaterThan(0)
     const cargas = post.leer()
     expect(cargas.length).toBeGreaterThan(0)
-    expect(cargas[0].trigger).toBe('micro')
-    expect(cargas[0].cleared).toBe(1)
+    expect(cargas[0]!.trigger).toBe('micro')
+    expect(cargas[0]!.cleared).toBe(1)
   })
 
   test('sin compactacion NO disparan: un hook que salta siempre no informa de nada', async () => {
@@ -121,8 +121,8 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
     expect(inicio.leer().length).toBe(1)
     const cierre = fin.leer()
     expect(cierre.length).toBe(1)
-    expect(typeof cierre[0].transcript_path).toBe('string')
-    expect(cierre[0].parent_session_id).toBe('padre')
+    expect(typeof cierre[0]!.transcript_path).toBe('string')
+    expect(cierre[0]!.parent_session_id).toBe('padre')
   })
 
   test('un PreCompact que bloquea CANCELA la compactacion', async () => {
@@ -144,7 +144,7 @@ describe('los eventos de hook que el harness emite (T-016)', () => {
       hooks: { PreCompact: [{ hooks: [{ type: 'command', command: `bash ${bloqueo}` }] }] },
     })
     // el resultado del primer Bash sigue entero en la tercera peticion
-    const resultados = p.requests[2].messages.flatMap((m) => m.content)
+    const resultados = p.requests[2]!.messages.flatMap((m) => m.content)
       .filter((b) => b.type === 'tool_result').map((b) => (b as { content: string }).content)
     expect(resultados.some((c) => c.includes('uno'))).toBe(true)
   })
@@ -167,10 +167,10 @@ describe('PreModelSwitch y PostModelSwitch (T-016)', () => {
     })
     expect(r.applied).toBe(true)
     const carga = pre.leer()[0]
-    expect(carga.from_model).toBe('claude-opus-5')
-    expect(carga.to_model).toBe('claude-fable-5-1')
-    expect(carga.prompt_cache_warm).toBe(true)
-    expect(carga.context_tokens as number).toBeGreaterThan(0)
+    expect(carga!.from_model).toBe('claude-opus-5')
+    expect(carga!.to_model).toBe('claude-fable-5-1')
+    expect(carga!.prompt_cache_warm).toBe(true)
+    expect(carga!.context_tokens as number).toBeGreaterThan(0)
     expect(post.leer().length).toBe(1)
   })
 
@@ -428,7 +428,7 @@ describe('T-017 — el tablero como emisor (TaskCreated · TaskCompleted)', () =
     const r1 = await runLoop({ ...base(d), tools: herramientas, prompt: 'x', provider: p })
     expect(r1.stop).toBe('end_turn')
     const id = JSON.parse(
-      (p.requests[1].messages.at(-1)?.content as { content: string }[])[0].content,
+      (p.requests[1]!.messages.at(-1)?.content as { content: string }[])[0]!.content,
     ).task_id as string
 
     const p2 = new RecordedProvider([

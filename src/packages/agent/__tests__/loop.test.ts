@@ -44,9 +44,9 @@ describe('runLoop — el bucle (T-006)', () => {
     expect(r.turns).toBe(2)
     // la segunda peticion lleva el tool_result con la salida real
     const segunda = p.requests[1]
-    const ultimo = segunda.messages[segunda.messages.length - 1]
-    expect(ultimo.role).toBe('user')
-    expect(JSON.stringify(ultimo.content)).toContain('desde-la-herramienta')
+    const ultimo = segunda!.messages[segunda!.messages.length - 1]
+    expect(ultimo!.role).toBe('user')
+    expect(JSON.stringify(ultimo!.content)).toContain('desde-la-herramienta')
     expect(r.stop).toBe('end_turn')
   })
 
@@ -63,7 +63,7 @@ describe('runLoop — el bucle (T-006)', () => {
     const p = new RecordedProvider([usaHerramienta('NoExiste', {}), texto('ya')])
     const r = await runLoop({ ...base(d), prompt: 'x', provider: p })
     expect(r.stop).toBe('end_turn')
-    expect(JSON.stringify(p.requests[1].messages)).toContain('NoExiste')
+    expect(JSON.stringify(p.requests[1]!.messages)).toContain('NoExiste')
   })
 
   test('el usage se acumula por turno', async () => {
@@ -94,7 +94,7 @@ describe('runLoop — el bucle (T-006)', () => {
     // reanudar: el historial previo viaja en la peticion
     const p2 = new RecordedProvider([texto('segunda')])
     await runLoop({ ...base(d), prompt: 'sigue', provider: p2, resume: r.sessionId })
-    expect(p2.requests[0].messages.map((m) => m.role)).toEqual(['user', 'assistant', 'user'])
+    expect(p2.requests[0]!.messages.map((m) => m.role)).toEqual(['user', 'assistant', 'user'])
   })
 
   test('PreToolUse con exit 2 impide la ejecucion y el modelo se entera', async () => {
@@ -106,7 +106,7 @@ describe('runLoop — el bucle (T-006)', () => {
     const p = new RecordedProvider([usaHerramienta('Bash', { command: `touch ${marca}` }), texto('entendido')])
     const r = await runLoop({ ...base(d), prompt: 'x', provider: p, hooks: { PreToolUse: [{ hooks: [{ type: 'command', command: h }] }] } })
     expect(await Bun.file(marca).exists()).toBe(false)
-    expect(JSON.stringify(p.requests[1].messages)).toContain('prohibido por el gate')
+    expect(JSON.stringify(p.requests[1]!.messages)).toContain('prohibido por el gate')
     expect(r.stop).toBe('end_turn')
   })
 
@@ -116,7 +116,7 @@ describe('runLoop — el bucle (T-006)', () => {
     const p = new RecordedProvider([usaHerramienta('Write', { file_path: marca, content: 'x' }), texto('ok')])
     await runLoop({ ...base(d), prompt: 'x', provider: p, permissions: { write: 'deny' } })
     expect(await Bun.file(marca).exists()).toBe(false)
-    expect(JSON.stringify(p.requests[1].messages)).toContain('denegado')
+    expect(JSON.stringify(p.requests[1]!.messages)).toContain('denegado')
   })
 
   test('abortar detiene el bucle y lo declara', async () => {
@@ -160,7 +160,7 @@ describe('el bucle compacta cuando el contexto crece (T-023, T-024)', () => {
     // Se mira el bloque `tool_result`, no el mensaje entero: el `tool_use` del
     // modelo repite el comando en su `input`, y eso NO lo toca la
     // microcompactacion — el modelo dijo lo que dijo.
-    const resultados = p.requests[2].messages
+    const resultados = p.requests[2]!.messages
       .flatMap((m) => m.content)
       .filter((b) => b.type === 'tool_result')
       .map((b) => (b as { content: string }).content)
@@ -176,7 +176,7 @@ describe('el bucle compacta cuando el contexto crece (T-023, T-024)', () => {
   test('sin la opcion de contexto NO compacta: es una decision, no un default', async () => {
     const p = new RecordedProvider([usaHerramienta('Bash', { command: `echo ${grande}` }), texto('listo')])
     await runLoop({ ...base(dir()), provider: p, prompt: 'corre' })
-    expect(JSON.stringify(p.requests[1].messages)).toContain(grande)
+    expect(JSON.stringify(p.requests[1]!.messages)).toContain(grande)
   })
 
   test('emite un evento cuando compacta, para que la interfaz lo pueda decir', async () => {

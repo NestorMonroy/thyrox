@@ -116,8 +116,8 @@ describe('definitionsWithMissingHomes — el gate DMAIC-control de T-006 (#54)',
 
       const problemas = definitionsWithMissingHomes([rupCoordinator], raiz)
       expect(problemas.length).toBe(1)
-      expect(problemas[0].name).toBe(rupCoordinator.name)
-      expect(problemas[0].missing.sort()).toEqual([...ausentesEsperados].sort())
+      expect(problemas[0]!.name).toBe(rupCoordinator.name)
+      expect(problemas[0]!.missing.sort()).toEqual([...ausentesEsperados].sort())
     } finally {
       rmSync(raiz, { recursive: true, force: true })
     }

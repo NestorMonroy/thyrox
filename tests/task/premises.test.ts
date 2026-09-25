@@ -61,7 +61,7 @@ describe('los cinco veredictos, y ninguno se colapsa con otro (T-055)', () => {
     expect(r.verdict).toBe('blocked')
     expect(r.reason).toContain('src/provider/sse.ts')
     expect(r.evidence).toHaveLength(1)
-    expect(r.evidence[0].held).toBe(true)
+    expect(r.evidence[0]!.held).toBe(true)
   })
 
   test('overclaimed — cerrada y su enunciado nombra lo que NO esta: el caso T-015', () => {

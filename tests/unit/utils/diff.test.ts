@@ -16,8 +16,8 @@ describe('adjustHunkLineNumbers', () => {
       },
     ] as any[]
     const result = adjustHunkLineNumbers(hunks, 10)
-    expect(result[0].oldStart).toBe(11)
-    expect(result[0].newStart).toBe(11)
+    expect(result[0]!.oldStart).toBe(11)
+    expect(result[0]!.newStart).toBe(11)
   })
 
   test('returns original hunks for zero offset', () => {
@@ -33,8 +33,8 @@ describe('adjustHunkLineNumbers', () => {
       { oldStart: 10, oldLines: 2, newStart: 10, newLines: 2, lines: [] },
     ] as any[]
     const result = adjustHunkLineNumbers(hunks, -5)
-    expect(result[0].oldStart).toBe(5)
-    expect(result[0].newStart).toBe(5)
+    expect(result[0]!.oldStart).toBe(5)
+    expect(result[0]!.newStart).toBe(5)
   })
 
   test('handles empty hunks array', () => {
@@ -50,7 +50,7 @@ describe('getPatchFromContents', () => {
       newContent: 'hello\nplanet',
     })
     expect(hunks.length).toBe(1)
-    const allLines = hunks[0].lines
+    const allLines = hunks[0]!.lines
     expect(allLines).toContain('-world')
     expect(allLines).toContain('+planet')
   })

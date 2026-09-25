@@ -113,7 +113,7 @@ function MessageImpl({
     case 'assistant':
       return (
         <Box flexDirection="column" width={containerWidth ?? '100%'}>
-          {message.message.content.map((_, index) => (
+          {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
             <AssistantMessageBlock
               key={index}
               param={_}

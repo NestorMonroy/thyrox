@@ -79,7 +79,7 @@ describe('microcompact (T-024)', () => {
     ]
     const r = microcompact(ms, { keepLast: 1 })
     expect(r.cleared).toEqual(['t2'])
-    expect((r.messages[1].content[0] as { content: string }).content).toBe('reporte del subagente')
+    expect((r.messages[1]!.content[0] as { content: string }).content).toBe('reporte del subagente')
   })
 
   test('no muta la entrada — devuelve mensajes nuevos', () => {

@@ -183,21 +183,21 @@ describe('reconcileWorkingTree (T-093)', () => {
   test('reporta el archivo sin commitear', () => {
     const d = repoConCambio()
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].dirty).toBe(true)
-    expect(r[0].porcelain.some((l) => l.includes('b.txt'))).toBe(true)
+    expect(r[0]!.dirty).toBe(true)
+    expect(r[0]!.porcelain.some((l) => l.includes('b.txt'))).toBe(true)
   })
   test('un repo limpio no está sucio', () => {
     const d = repoConCambio()
     execFileSync('git', ['-C', d, 'add', '-A'])
     execFileSync('git', ['-C', d, 'commit', '-q', '-m', 'limpio'])
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].dirty).toBe(false)
+    expect(r[0]!.dirty).toBe(false)
   })
   test('un path que no es repo se reporta como error, no rompe la barrida', () => {
     const d = dir()
     const r = reconcileWorkingTree([{ path: d }])
-    expect(r[0].error).toBeDefined()
-    expect(r[0].dirty).toBe(false)
+    expect(r[0]!.error).toBeDefined()
+    expect(r[0]!.dirty).toBe(false)
   })
 })
 

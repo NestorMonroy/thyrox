@@ -78,12 +78,12 @@ describe('fromSkillDir — el cuerpo se separa del frontmatter', () => {
     const blocks = await s.getPrompt({ args: '', messages: [] })
     expect(blocks).toHaveLength(1)
     const b = blocks[0]
-    expect(b.type).toBe('text')
-    if (b.type !== 'text') throw new Error('no es texto')
-    expect(b.text.length).toBeGreaterThan(0)
+    expect(b!.type).toBe('text')
+    if (b!.type !== 'text') throw new Error('no es texto')
+    expect(b!.text.length).toBeGreaterThan(0)
     // El delimitador y la clave del frontmatter NO cruzan al cuerpo.
-    expect(b.text.startsWith('```yml')).toBe(false)
-    expect(b.text.includes('name: cosmic')).toBe(false)
+    expect(b!.text.startsWith('```yml')).toBe(false)
+    expect(b!.text.includes('name: cosmic')).toBe(false)
   })
 })
 
@@ -116,8 +116,8 @@ describe('fromSkillDir — la definición la consume el registry (#9)', () => {
     reg.register(s)
     const blocks = await reg.invoke('cosmic', { args: '', messages: [] })
     const b = blocks[0]
-    if (b.type !== 'text') throw new Error('no es texto')
-    expect(b.text.startsWith('Base directory for this skill:')).toBe(true)
+    if (b!.type !== 'text') throw new Error('no es texto')
+    expect(b!.text.startsWith('Base directory for this skill:')).toBe(true)
     // La extracción escribió un apoyo real a disco bajo la raíz nonce.
     const written = readFileSync(join(root, 'cosmic', 'references', 'data-movements.md'), 'utf8')
     const esperado = s.files?.['references/data-movements.md']

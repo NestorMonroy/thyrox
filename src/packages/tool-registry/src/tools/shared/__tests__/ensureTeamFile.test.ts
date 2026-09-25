@@ -208,7 +208,7 @@ describe('ensureTeamFile', () => {
     // not a stub (spawnMultiAgent imports it directly, not via the swarm
     // runtime binding we installed). Just check it's populated.
     expect(rebuilt.leadSessionId).toEqual(expect.any(String))
-    expect(rebuilt.leadSessionId.length).toBeGreaterThan(0)
+    expect(rebuilt.leadSessionId!.length).toBeGreaterThan(0)
     expect(rebuilt.members).toHaveLength(2)
     const names = rebuilt.members.map(m => m.name).sort()
     expect(names).toEqual(['alpha', 'beta'])

@@ -63,7 +63,7 @@ describe('stripImagesFromMessages — image / document replacement', () => {
       },
     ])
     const result = stripImagesFromMessages([msg])
-    const content = (result[0] as typeof msg).message.content as Array<{
+    const content = (result[0] as typeof msg).message!.content as Array<{
       type: string
       text?: string
     }>
@@ -78,7 +78,7 @@ describe('stripImagesFromMessages — image / document replacement', () => {
       },
     ])
     const result = stripImagesFromMessages([msg])
-    const content = (result[0] as typeof msg).message.content as Array<{
+    const content = (result[0] as typeof msg).message!.content as Array<{
       type: string
       text?: string
     }>
@@ -95,7 +95,7 @@ describe('stripImagesFromMessages — image / document replacement', () => {
       { type: 'text', text: 'after' },
     ])
     const result = stripImagesFromMessages([msg])
-    const content = (result[0] as typeof msg).message.content as Array<{
+    const content = (result[0] as typeof msg).message!.content as Array<{
       type: string
       text?: string
     }>
@@ -123,7 +123,7 @@ describe('stripImagesFromMessages — tool_result nested media', () => {
       },
     ])
     const result = stripImagesFromMessages([msg])
-    const block = (result[0] as typeof msg).message.content as Array<{
+    const block = (result[0] as typeof msg).message!.content as Array<{
       content: Array<{ type: string; text?: string }>
     }>
     expect(block[0]?.content).toEqual([
@@ -146,7 +146,7 @@ describe('stripImagesFromMessages — tool_result nested media', () => {
       },
     ])
     const result = stripImagesFromMessages([msg])
-    const block = (result[0] as typeof msg).message.content as Array<{
+    const block = (result[0] as typeof msg).message!.content as Array<{
       content: Array<{ type: string; text?: string }>
     }>
     expect(block[0]?.content).toEqual([{ type: 'text', text: '[document]' }])

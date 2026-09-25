@@ -35,7 +35,7 @@ describe('collapseTeammateShutdowns', () => {
     const msgs = [makeShutdownMsg('1'), makeShutdownMsg('2')]
     const result = collapseTeammateShutdowns(msgs)
     expect(result).toHaveLength(1)
-    expect(result[0].attachment.type).toBe('teammate_shutdown_batch')
+    expect(result[0]!.attachment.type).toBe('teammate_shutdown_batch')
   })
 
   test('batch attachment has correct count', () => {
@@ -45,7 +45,7 @@ describe('collapseTeammateShutdowns', () => {
       makeShutdownMsg('3'),
     ]
     const result = collapseTeammateShutdowns(msgs)
-    expect(result[0].attachment.count).toBe(3)
+    expect(result[0]!.attachment.count).toBe(3)
   })
 
   test('does not collapse non-consecutive shutdowns', () => {
@@ -56,8 +56,8 @@ describe('collapseTeammateShutdowns', () => {
     ]
     const result = collapseTeammateShutdowns(msgs)
     expect(result).toHaveLength(3)
-    expect(result[0].attachment.type).toBe('task_status')
-    expect(result[2].attachment.type).toBe('task_status')
+    expect(result[0]!.attachment.type).toBe('task_status')
+    expect(result[2]!.attachment.type).toBe('task_status')
   })
 
   test('preserves non-shutdown messages between shutdowns', () => {
@@ -83,14 +83,14 @@ describe('collapseTeammateShutdowns', () => {
     ]
     const result = collapseTeammateShutdowns(msgs)
     expect(result).toHaveLength(3)
-    expect(result[1].attachment.type).toBe('teammate_shutdown_batch')
+    expect(result[1]!.attachment.type).toBe('teammate_shutdown_batch')
   })
 
   test('collapses more than 2 consecutive shutdowns', () => {
     const msgs = Array.from({ length: 5 }, (_, i) => makeShutdownMsg(String(i)))
     const result = collapseTeammateShutdowns(msgs)
     expect(result).toHaveLength(1)
-    expect(result[0].attachment.count).toBe(5)
+    expect(result[0]!.attachment.count).toBe(5)
   })
 
   test('non-teammate task_status messages are not collapsed', () => {

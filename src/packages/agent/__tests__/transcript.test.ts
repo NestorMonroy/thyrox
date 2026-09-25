@@ -53,7 +53,7 @@ describe('Transcript — JSONL append-only compatible con el cliente', () => {
     t.appendUser('tres')
     const msgs = readTranscript(ruta)
     expect(msgs.map((m) => m.role)).toEqual(['user', 'assistant', 'user'])
-    expect(msgs[1].content).toEqual([{ type: 'text', text: 'dos' }])
+    expect(msgs[1]!.content).toEqual([{ type: 'text', text: 'dos' }])
   })
 
   test('una linea corrupta no tumba la lectura: se salta y se cuenta', () => {

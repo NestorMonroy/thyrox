@@ -77,10 +77,10 @@ describe('diario de eventos (T-032)', () => {
     j.log('compaction', { kind: 'micro', cleared: 3 })
     const filas = readJournal(join(d, 'diario.jsonl'))
     expect(filas.length).toBe(2)
-    expect(filas[0].kind).toBe('turn_start')
-    expect(filas[0].sessionId).toBe('ses-1')
-    expect(typeof filas[0].timestamp).toBe('string')
-    expect(filas[1].data.cleared).toBe(3)
+    expect(filas[0]!.kind).toBe('turn_start')
+    expect(filas[0]!.sessionId).toBe('ses-1')
+    expect(typeof filas[0]!.timestamp).toBe('string')
+    expect(filas[1]!.data.cleared).toBe(3)
   })
 
   test('NUNCA rompe el flujo: un destino imposible no lanza', () => {
@@ -167,8 +167,8 @@ describe('integracion con agent_store (T-033)', () => {
     const filas = db.query('select turns, status from agent_sessions').all() as { turns: number; status: string }[]
     db.close()
     expect(filas.length).toBe(1)
-    expect(filas[0].turns).toBe(9)
-    expect(filas[0].status).toBe('completed')
+    expect(filas[0]!.turns).toBe(9)
+    expect(filas[0]!.status).toBe('completed')
   })
 })
 

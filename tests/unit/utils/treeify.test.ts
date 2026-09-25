@@ -89,7 +89,7 @@ describe('treeify', () => {
     const lines = result.split('\n')
     expect(lines.length).toBe(3)
     // Each level adds indentation
-    expect(lines[2].length).toBeGreaterThan(lines[1].length)
+    expect(lines[2]!.length).toBeGreaterThan(lines[1]!.length)
   })
 
   test('handles empty string key with string value', () => {

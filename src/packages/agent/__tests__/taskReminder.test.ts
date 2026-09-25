@@ -57,8 +57,8 @@ const primerRecordatorio = (reqs: ProviderRequest[]): number => reqs.findIndex((
 describe('renderAttachment(task_reminder) — el mismo <system-reminder> del ejecutable', () => {
   test('sin tareas: sólo el texto fijo, sin el bloque "Here are the existing tasks"', () => {
     const [m] = renderAttachment({ type: 'task_reminder', tasks: [] })
-    expect(m.isMeta).toBe(true)
-    const t = (m.content[0] as { text: string }).text
+    expect(m!.isMeta).toBe(true)
+    const t = (m!.content[0] as { text: string }).text
     expect(t.startsWith('<system-reminder>\n')).toBe(true)
     expect(t.endsWith('\n</system-reminder>')).toBe(true)
     expect(t).toContain(TASK_REMINDER_TEXT)
@@ -71,7 +71,7 @@ describe('renderAttachment(task_reminder) — el mismo <system-reminder> del eje
       tasks: [{ id: '75', status: 'pending', subject: 'Completar el porte de TaskUpdate' },
               { id: '76', status: 'in_progress', subject: 'Rediseñar el subsistema de TASK' }],
     })
-    const t = (m.content[0] as { text: string }).text
+    const t = (m!.content[0] as { text: string }).text
     expect(t).toContain('Here are the existing tasks:')
     expect(t).toContain('#75. [pending] Completar el porte de TaskUpdate')
     expect(t).toContain('#76. [in_progress] Rediseñar el subsistema de TASK')
@@ -82,7 +82,7 @@ describe('renderAttachment(task_reminder) — el mismo <system-reminder> del eje
     expect(isValidAttachment({ type: 'task_reminder', tasks: [] })).toBe(true)
     expect(isValidAttachment({ type: 'task_reminder', tasks: 'x' })).toBe(false)
     const [m] = renderAttachment({ type: 'task_reminder' })
-    expect((m.content[0] as { text: string }).text).toContain(TASK_REMINDER_TEXT)
+    expect((m!.content[0] as { text: string }).text).toContain(TASK_REMINDER_TEXT)
   })
 })
 

@@ -9,8 +9,8 @@ describe('segmentTextByHighlights', () => {
   test('returns single segment with no highlights', () => {
     const segments = segmentTextByHighlights('hello world', [])
     expect(segments).toHaveLength(1)
-    expect(segments[0].text).toBe('hello world')
-    expect(segments[0].highlight).toBeUndefined()
+    expect(segments[0]!.text).toBe('hello world')
+    expect(segments[0]!.highlight).toBeUndefined()
   })
 
   test('returns highlighted segment for single highlight', () => {
@@ -36,7 +36,7 @@ describe('segmentTextByHighlights', () => {
     ]
     const segments = segmentTextByHighlights('hello', highlights)
     expect(segments).toHaveLength(1)
-    expect(segments[0].highlight).toBeDefined()
+    expect(segments[0]!.highlight).toBeDefined()
   })
 
   // Multiple highlights
@@ -76,7 +76,7 @@ describe('segmentTextByHighlights', () => {
       { start: 0, end: 3, color: undefined, priority: 0 },
     ]
     const segments = segmentTextByHighlights('abcdef', highlights)
-    expect(segments[0].start).toBe(0)
+    expect(segments[0]!.start).toBe(0)
   })
 
   test('highlight ending at text length', () => {
@@ -91,7 +91,7 @@ describe('segmentTextByHighlights', () => {
   test('empty highlights array returns single segment', () => {
     const segments = segmentTextByHighlights('text', [])
     expect(segments).toHaveLength(1)
-    expect(segments[0].highlight).toBeUndefined()
+    expect(segments[0]!.highlight).toBeUndefined()
   })
 
   // Properties
@@ -136,6 +136,6 @@ describe('segmentTextByHighlights', () => {
     ]
     const segments = segmentTextByHighlights('abcdef', highlights)
     expect(segments).toHaveLength(1)
-    expect(segments[0].highlight).toBeUndefined()
+    expect(segments[0]!.highlight).toBeUndefined()
   })
 })

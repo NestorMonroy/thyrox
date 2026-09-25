@@ -85,7 +85,7 @@ async function instalar(encima: Record<string, unknown> = {}): Promise<void> {
     updater: (t: never) => never,
   ) => {
     setAppState(((prev: Record<string, Record<string, { type?: string }>>) => {
-      const t = prev.tasks[taskId]
+      const t = prev.tasks![taskId]
       if (!t || t.type !== 'in_process_teammate') return prev
       const u = updater(t as never)
       if ((u as unknown) === t) return prev

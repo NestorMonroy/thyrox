@@ -158,8 +158,8 @@ describe('validacion de archivos', () => {
     expect(r.success).toBe(false)
     if (!r.success) {
       const errores = formatZodError(r.error, 'settings.json')
-      expect(errores[0].file).toBe('settings.json')
-      expect(errores[0].path).toContain('model')
+      expect(errores[0]!.file).toBe('settings.json')
+      expect(errores[0]!.path).toContain('model')
     }
   })
 
@@ -197,7 +197,7 @@ describe('loadSettings — del disco, con su origen', () => {
     ])
     expect(r.settings.model).toBe('claude-opus-5')
     expect(r.errors).toHaveLength(1)
-    expect(r.errors[0].path).toContain('roto.json')
+    expect(r.errors[0]!.path).toContain('roto.json')
   })
 
   test('sin ninguna fuente devuelve settings vacios, no lanza', () => {

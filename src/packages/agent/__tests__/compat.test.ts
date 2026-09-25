@@ -31,9 +31,9 @@ describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => 
     for (const a of AGENTS) {
       const d = defs[a.name]
       expect(d).toBeTruthy()
-      expect(d.systemPrompt).toBe(a.prompt)
-      if (a.model && a.model !== 'inherit') expect(d.model).toBe(a.model)
-      if (a.maxTurns) expect(d.maxTurns).toBe(a.maxTurns)
+      expect(d!.systemPrompt).toBe(a.prompt)
+      if (a.model && a.model !== 'inherit') expect(d!.model).toBe(a.model)
+      if (a.maxTurns) expect(d!.maxTurns).toBe(a.maxTurns)
     }
   })
 
@@ -62,14 +62,14 @@ describe('las definiciones de @thyrox/agent corren como agentes (T-036)', () => 
   test('un agente real del paquete se despacha y devuelve su conclusion', async () => {
     const d = dir()
     const defs = agentDefinitionsFromRegistry(AGENTS)
-    const nombre = AGENTS[0].name
-    const p = new RecordedProvider([texto('lo que el agente concluyo', defs[nombre].model ?? 'claude-opus-5')])
+    const nombre = AGENTS[0]!.name
+    const p = new RecordedProvider([texto('lo que el agente concluyo', defs[nombre]!.model ?? 'claude-opus-5')])
     const { agentTool } = await import('@thyrox/tools/agent')
     const t = agentTool({ provider: p, transcriptDir: d, definitions: defs })
     const r = await t.run({ prompt: 'trabaja', subagent_type: nombre },
       { cwd: d, sessionId: 'padre', abort: new AbortController().signal, messages: [] })
     expect(r.isError).toBe(false)
-    expect(p.requests[0].system).toBe(AGENTS[0].prompt)
+    expect(p.requests[0]!.system).toBe(AGENTS[0]!.prompt)
   })
 })
 
@@ -134,7 +134,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
         tools: CORE_TOOLS, cwd: REPO, transcriptDir: d,
       })
       expect(r.stop).toBe('end_turn')
-      const resultado = p.requests[1].messages.flatMap((m) => m.content)
+      const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
         .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
       // El gate publica su denominador: es la señal de que midió algo, no de
       // que el instrumento estuviera mudo.
@@ -156,7 +156,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
       provider: p, model: 'claude-opus-5', system: 's', prompt: 'x',
       tools: CORE_TOOLS, cwd: d, transcriptDir: d,
     })
-    const resultado = p.requests[1].messages.flatMap((m) => m.content)
+    const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { is_error?: boolean }
     expect(resultado.is_error).toBe(true)
   })
@@ -174,7 +174,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
       permissions: { deny: ['Bash(git push:*)'] },
     })
     expect(r.stop).toBe('end_turn')
-    const resultado = p.requests[1].messages.flatMap((m) => m.content)
+    const resultado = p.requests[1]!.messages.flatMap((m) => m.content)
       .find((b) => b.type === 'tool_result') as { content: string; is_error?: boolean }
     expect(resultado.is_error).toBe(true)
     expect(resultado.content).toContain('git push')

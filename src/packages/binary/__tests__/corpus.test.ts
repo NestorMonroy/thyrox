@@ -74,7 +74,7 @@ describe('escritura del corpus', () => {
     expect(readdirSync(raiz)).toEqual([tabla!.version])
     const manifest = readFileSync(join(raiz, tabla!.version, 'MANIFEST.tsv'), 'utf8').split('\n')
     expect(manifest[0]).toBe('archivo\tbytes\ttipo\tsha256')
-    expect(manifest[1].split('\t')).toHaveLength(4)
+    expect(manifest[1]!.split('\t')).toHaveLength(4)
     expect(r.files).toBe(5)
   })
 

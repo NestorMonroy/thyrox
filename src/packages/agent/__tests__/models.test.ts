@@ -89,16 +89,16 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
 describe('el catálogo', () => {
   test('Fable 5.1 está declarado con su tier de cache_read barato', () => {
     const fable = MODELS['claude-fable-5-1']
-    expect(fable.display_name).toBe('Fable 5.1')
-    expect(fable.pricing_tier).toBe('tier_10_50_cache_read_0_25')
-    expect(fable.pricing?.cache_read).toBe(0.25)
-    expect(fable.pricing?.input).toBe(10)
+    expect(fable!.display_name).toBe('Fable 5.1')
+    expect(fable!.pricing_tier).toBe('tier_10_50_cache_read_0_25')
+    expect(fable!.pricing?.cache_read).toBe(0.25)
+    expect(fable!.pricing?.input).toBe(10)
   })
 
   /** El booleano minificado `!0` es true — el control de H-DOCS-1003. */
   test('los booleanos minificados se leen como true', () => {
-    expect(MODELS['claude-fable-5-1'].context?.native_1m).toBe(true)
-    expect(MODELS['claude-opus-5'].context?.native_1m).toBe(true)
+    expect(MODELS['claude-fable-5-1']!.context?.native_1m).toBe(true)
+    expect(MODELS['claude-opus-5']!.context?.native_1m).toBe(true)
   })
 
   test('todo tier nombrado resuelve a sus seis precios', () => {

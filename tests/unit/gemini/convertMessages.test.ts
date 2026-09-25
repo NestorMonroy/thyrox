@@ -265,7 +265,7 @@ describe('anthropicMessagesToGemini', () => {
       ],
       [] as any,
     )
-    expect(result.contents[0].parts[0]).toEqual({
+    expect(result.contents[0]!.parts[0]).toEqual({
       inlineData: { mimeType: 'image/png', data: 'ABC123' },
     })
   })

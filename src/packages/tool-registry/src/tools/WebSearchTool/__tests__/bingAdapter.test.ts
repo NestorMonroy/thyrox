@@ -116,7 +116,7 @@ describe('extractBingResults', () => {
     `
     const results = extractBingResults(html)
     expect(results).toHaveLength(1)
-    expect(results[0].title).toBe('Result with bold and italic')
+    expect(results[0]!.title).toBe('Result with bold and italic')
   })
 
   test('decodes HTML entities in titles', () => {
@@ -126,7 +126,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].title).toBe('Tom & Jerry <cartoon>')
+    expect(results[0]!.title).toBe('Tom & Jerry <cartoon>')
   })
 
   test('extracts snippet from b_lineclamp class', () => {
@@ -137,7 +137,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].snippet).toBe('Lineclamp snippet text here')
+    expect(results[0]!.snippet).toBe('Lineclamp snippet text here')
   })
 
   test('extracts snippet from b_caption paragraph fallback', () => {
@@ -150,7 +150,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].snippet).toBe('Caption paragraph text')
+    expect(results[0]!.snippet).toBe('Caption paragraph text')
   })
 
   test('extracts snippet from b_caption div fallback', () => {
@@ -161,7 +161,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].snippet).toBe('Direct caption text without p tag')
+    expect(results[0]!.snippet).toBe('Direct caption text without p tag')
   })
 
   test('returns undefined snippet when no caption exists', () => {
@@ -171,7 +171,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].snippet).toBeUndefined()
+    expect(results[0]!.snippet).toBeUndefined()
   })
 
   test('handles mixed result types and only extracts b_algo', () => {
@@ -190,8 +190,8 @@ describe('extractBingResults', () => {
     `
     const results = extractBingResults(html)
     expect(results).toHaveLength(2)
-    expect(results[0].title).toBe('Real Result')
-    expect(results[1].title).toBe('Another Result')
+    expect(results[0]!.title).toBe('Real Result')
+    expect(results[1]!.title).toBe('Another Result')
   })
 
   test('skips b_algo blocks without h2 > a structure', () => {
@@ -205,7 +205,7 @@ describe('extractBingResults', () => {
     `
     const results = extractBingResults(html)
     expect(results).toHaveLength(1)
-    expect(results[0].title).toBe('Valid Result')
+    expect(results[0]!.title).toBe('Valid Result')
   })
 
   test('handles extra whitespace in h2 > a structure', () => {
@@ -220,7 +220,7 @@ describe('extractBingResults', () => {
     `
     const results = extractBingResults(html)
     expect(results).toHaveLength(1)
-    expect(results[0].title).toBe('Whitespace  Title')
+    expect(results[0]!.title).toBe('Whitespace  Title')
   })
 
   test('handles snippet with HTML entities', () => {
@@ -231,7 +231,7 @@ describe('extractBingResults', () => {
       </li>
     `
     const results = extractBingResults(html)
-    expect(results[0].snippet).toBe('5 < 10 & 10 > 5')
+    expect(results[0]!.snippet).toBe('5 < 10 & 10 > 5')
   })
 
   test('handles real-world Bing HTML structure', () => {
@@ -273,11 +273,11 @@ describe('extractBingResults', () => {
     `
     const results = extractBingResults(html)
     expect(results).toHaveLength(2)
-    expect(results[0].title).toBe('Python Tutorial')
-    expect(results[0].url).toBe('https://docs.python.org/3/tutorial/index.html')
-    expect(results[0].snippet).toContain('Welcome to the Python Tutorial')
-    expect(results[1].title).toBe('Real Python Guide')
-    expect(results[1].snippet).toContain('ultimate Python guide')
+    expect(results[0]!.title).toBe('Python Tutorial')
+    expect(results[0]!.url).toBe('https://docs.python.org/3/tutorial/index.html')
+    expect(results[0]!.snippet).toContain('Welcome to the Python Tutorial')
+    expect(results[1]!.title).toBe('Real Python Guide')
+    expect(results[1]!.snippet).toContain('ultimate Python guide')
   })
 })
 
@@ -319,8 +319,8 @@ describe('BingSearchAdapter.search', () => {
     const adapter = await createAdapter()
     const results = await adapter.search('test query', {})
     expect(results).toHaveLength(2)
-    expect(results[0].title).toBe('Result One')
-    expect(results[1].title).toBe('Result Two')
+    expect(results[0]!.title).toBe('Result One')
+    expect(results[1]!.title).toBe('Result Two')
   })
 
   test('calls onProgress with query_update and search_results_received', async () => {
@@ -373,7 +373,7 @@ describe('BingSearchAdapter.search', () => {
       allowedDomains: ['allowed.com'],
     })
     expect(results).toHaveLength(1)
-    expect(results[0].url).toBe('https://allowed.com/a')
+    expect(results[0]!.url).toBe('https://allowed.com/a')
   })
 
   test('filters results by blockedDomains', async () => {
@@ -402,7 +402,7 @@ describe('BingSearchAdapter.search', () => {
       blockedDomains: ['spam.com'],
     })
     expect(results).toHaveLength(1)
-    expect(results[0].url).toBe('https://good.com/a')
+    expect(results[0]!.url).toBe('https://good.com/a')
   })
 
   test('filters subdomains with allowedDomains', async () => {
@@ -431,7 +431,7 @@ describe('BingSearchAdapter.search', () => {
       allowedDomains: ['example.com'],
     })
     expect(results).toHaveLength(1)
-    expect(results[0].url).toBe('https://docs.example.com/page')
+    expect(results[0]!.url).toBe('https://docs.example.com/page')
   })
 
   test('throws AbortError when signal is already aborted', async () => {
@@ -493,7 +493,7 @@ describe('BingSearchAdapter.search', () => {
     const adapter = await createAdapter()
     await adapter.search('hello world & special=chars', {})
 
-    const calledUrl = axiosGet.mock.calls[0][0] as string
+    const calledUrl = axiosGet.mock.calls[0]![0] as string
     expect(calledUrl).toContain('q=hello%20world%20%26%20special%3Dchars')
   })
 })

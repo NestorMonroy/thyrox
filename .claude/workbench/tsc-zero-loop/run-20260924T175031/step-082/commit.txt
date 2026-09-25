@@ -1,0 +1,18 @@
+Assert possibly undefined values in copied tests
+
+Step 082 of the tsc-zero loop: 2314 -> 2018 in two tsc passes.
+
+The source compiles with strict false, the tree with strict and
+noUncheckedIndexedAccess, so every indexed read in a copied test was
+TS2532 or TS18048. The non-null-in-tests proposer inserted ! at the
+end of each flagged span in 54 test files. The step also kept one
+inferred parameter annotation in Message.tsx and one sibling
+re-export of LocalCommandCall in command-runtime.
+
+All 56 edits are type-only: Bun's transpiler emits byte-identical
+output for every edited file against HEAD (transpiled.log in the
+bench), and the same comparison tells a real change apart.
+
+Memory (gate 3b): possibly-undefined-in-test covers the 54 tests,
+implicit-any-inferred-from-usage and member-missing-from-sibling-
+facade cover the other two.

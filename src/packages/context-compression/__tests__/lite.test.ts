@@ -29,8 +29,8 @@ describe('collapseWhitespace', () => {
       { role: 'assistant', content: [text('a\n\n\n\nb'), { type: 'tool_use', id: '1', name: 'X', input: {} }] },
     ])
     expect(r.applied).toBe(true)
-    expect(r.messages[0].content[0]).toEqual(text('a\n\nb'))
-    expect(r.messages[0].content[1]).toEqual({ type: 'tool_use', id: '1', name: 'X', input: {} })
+    expect(r.messages[0]!.content[0]).toEqual(text('a\n\nb'))
+    expect(r.messages[0]!.content[1]).toEqual({ type: 'tool_use', id: '1', name: 'X', input: {} })
   })
   test('sin cambios reporta applied=false', () => {
     const r = collapseWhitespace([{ role: 'user', content: [text('ya limpio')] }])
@@ -46,7 +46,7 @@ describe('compressToolResults', () => {
     const long = 'word4 '.repeat(500) // 3000 caracteres
     const r = compressToolResults([{ role: 'user', content: [toolResult(long)] }], 2000)
     expect(r.applied).toBe(true)
-    const c = r.messages[0].content[0] as { content: string }
+    const c = r.messages[0]!.content[0] as { content: string }
     expect(c.content.endsWith('\n...[truncado]')).toBe(true)
     const body = c.content.slice(0, -'\n...[truncado]'.length)
     // El invariante real NO es "termina en espacio" -- un corte que cae
@@ -62,7 +62,7 @@ describe('compressToolResults', () => {
   test('sin limite de palabra cercano, cae al corte duro (comportamiento declarado, no un bug)', () => {
     const long = 'a'.repeat(3000) // una sola "palabra" de 3000 caracteres
     const r = compressToolResults([{ role: 'user', content: [toolResult(long)] }], 2000)
-    const c = r.messages[0].content[0] as { content: string }
+    const c = r.messages[0]!.content[0] as { content: string }
     expect(c.content).toBe('a'.repeat(2000) + '\n...[truncado]')
   })
   test('no toca un tool_result mas corto que el tope', () => {

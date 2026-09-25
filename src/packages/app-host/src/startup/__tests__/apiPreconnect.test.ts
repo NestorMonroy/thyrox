@@ -47,8 +47,8 @@ describe('preconnectAnthropicApi', () => {
     preconnectAnthropicApi()
 
     expect(llamadas.length).toBe(1)
-    expect(llamadas[0][0]).toBe('https://api.anthropic.com')
-    expect(llamadas[0][1]?.method).toBe('HEAD')
+    expect(llamadas[0]![0]).toBe('https://api.anthropic.com')
+    expect(llamadas[0]![1]?.method).toBe('HEAD')
   })
 
   test('respeta ANTHROPIC_BASE_URL si está configurado', () => {

@@ -94,12 +94,12 @@ describe('cableado de Agent en src/entry/main.ts (T-058)', () => {
     const f = rs[0]
     // El control: source=harness y el tipo real — no habría fila sin el cableado
     // del storePath, y el tipo saldría mal si el input del tool_use no llegara.
-    expect(f.source).toBe('harness')
-    expect(f.subagent_type).toBe('general-purpose')
-    expect(f.status).toBe('completed')
-    expect(f.description).toBe('analisis de X')
-    expect(f.turns).toBe(1)
-    expect(f.cache_read_tokens).toBe(100)
+    expect(f!.source).toBe('harness')
+    expect(f!.subagent_type).toBe('general-purpose')
+    expect(f!.status).toBe('completed')
+    expect(f!.description).toBe('analisis de X')
+    expect(f!.turns).toBe(1)
+    expect(f!.cache_read_tokens).toBe(100)
   })
 
   test('runCli() SIN --store: el spawn corre igual, pero no se registra fila', async () => {

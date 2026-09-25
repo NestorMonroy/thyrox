@@ -24,7 +24,7 @@ describe("resolveAgentOverrides", () => {
     const agents = [makeAgent("builder", "userSettings")];
     const result = resolveAgentOverrides(agents, agents);
     expect(result).toHaveLength(1);
-    expect(result[0].overriddenBy).toBeUndefined();
+    expect(result[0]!.overriddenBy).toBeUndefined();
   });
 
   test("marks inactive agent as overridden", () => {
@@ -44,7 +44,7 @@ describe("resolveAgentOverrides", () => {
     const allAgents = [makeAgent("tester", "localSettings")];
     const activeAgents = [makeAgent("tester", "policySettings")];
     const result = resolveAgentOverrides(allAgents, activeAgents);
-    expect(result[0].overriddenBy).toBe("policySettings");
+    expect(result[0]!.overriddenBy).toBe("policySettings");
   });
 
   test("deduplicates agents by (agentType, source)", () => {
@@ -59,8 +59,8 @@ describe("resolveAgentOverrides", () => {
   test("preserves agent definition properties", () => {
     const agents = [{ agentType: "a", source: "userSettings", name: "Agent A" }];
     const result = resolveAgentOverrides(agents, agents);
-    expect(result[0].name).toBe("Agent A");
-    expect(result[0].agentType).toBe("a");
+    expect(result[0]!.name).toBe("Agent A");
+    expect(result[0]!.agentType).toBe("a");
   });
 
   test("handles empty arrays", () => {
