@@ -1,0 +1,6 @@
+receta step-011: Type the secure storage seam in config/plugin
+receta step-017: Type the mcpb manifest parser seam
+receta step-041: Make the plugin gitExe binding synchronous
+receta step-042: Align the plugin execFile bindings with the shell
+receta step-043: Give the plugin JSON and write bindings real arity
+receta step-095: Give the unzipFile facade its injected contract

@@ -1,0 +1,16 @@
+# paso-096
+
+## Qué se lanzó
+
+```
+bash -c PYTHONPATH=src python3 src/verify/tsc_zero_step.py --root . --candidates .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096/candidates.jsonl --ledger .claude/workbench/tsc-zero-loop/run-20260924T175031/ledger.jsonl --bench .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096 --before-log .claude/workbench/tsc-zero-loop/run-20260924T175031/step-095/final.log --seed 96 --net -- bash -c 'bunx tsc --noEmit -p tsconfig.json; bun src/verify/message_shape_audit.ts' > .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096/report.json; bun test src/packages/local-observability/src/__tests__/toolSpans.test.ts > .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096/pruebas.log 2>&1; tail -3 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096/pruebas.log; head -c 300 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-096/report.json
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

@@ -76,6 +76,7 @@ import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../uti
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
 import { extractDescriptionFromMarkdown as _canonicalExtractDescriptionFromMarkdown } from '../utils/markdownDescription.js'
 import { McpServerConfigSchema as _canonicalMcpServerConfigSchema } from '../mcpConfigSchema.js'
+import type { FrontmatterShell } from '../frontmatterParser.js'
 
 // ---------------------------------------------------------------------------
 // Logging / diagnóstico (reinyectado — evita imports cíclicos)
@@ -907,7 +908,7 @@ const [
   setParseSlashCommandToolsFromFrontmatterFn_,
 ] = makeSetter((_v: unknown): string[] => [])
 const [_getParseShellFrontmatter, setParseShellFrontmatterFn_] = makeSetter(
-  (_v: unknown): unknown => null,
+  (_value: unknown, _source: string): FrontmatterShell | undefined => undefined,
 )
 const [_getParseBooleanFrontmatter, setParseBooleanFrontmatterFn_] =
   makeSetter((_v: unknown): boolean | undefined => undefined)
@@ -977,8 +978,11 @@ export function parseAgentToolsFromFrontmatter(v: unknown): string[] {
 export function parseSlashCommandToolsFromFrontmatter(v: unknown): string[] {
   return _getParseSlashCommandToolsFromFrontmatter()(v)
 }
-export function parseShellFrontmatter(v: unknown): unknown {
-  return _getParseShellFrontmatter()(v)
+// Firma de la implementación inyectada (agent/frontmatterParser.ts): el
+// origen se usa para el mensaje de aviso. Ver facade-signature-diverges-
+// from-injected-impl en la memoria del lazo.
+export function parseShellFrontmatter(value: unknown, source: string): FrontmatterShell | undefined {
+  return _getParseShellFrontmatter()(value, source)
 }
 export function parseBooleanFrontmatter(v: unknown): boolean | undefined {
   return _getParseBooleanFrontmatter()(v)
@@ -1128,12 +1132,14 @@ export const setPluralFn = setPluralFn_
 
 // -- hint + estado de hint
 const [_getHasShownHintThisSession, setHasShownHintThisSessionFn_] =
-  makeSetter((_id: string): boolean => false)
+  makeSetter((): boolean => false)
 const [_getSetPendingHint, setSetPendingHintFn_] = makeSetter(
   (_hint: ClaudeCodeHint | null): void => {},
 )
-export function hasShownHintThisSession(id: string): boolean {
-  return _getHasShownHintThisSession()(id)
+// Sin argumento, como la implementación inyectada (tool-registry/claudeCodeHints.ts):
+// la marca es por sesión, no por pista.
+export function hasShownHintThisSession(): boolean {
+  return _getHasShownHintThisSession()()
 }
 export function setPendingHint(hint: ClaudeCodeHint | null): void {
   _getSetPendingHint()(hint)

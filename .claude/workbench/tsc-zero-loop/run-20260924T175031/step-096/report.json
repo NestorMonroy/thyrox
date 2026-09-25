@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1779, "total_final": 1767, "tsc_runs": 1, "accepted": ["agent:agent:ambient-tool-spans"], "files_kept": ["src/packages/config/plugin/_deps.ts", "src/packages/local-observability/src/spans.ts"], "outcomes": {"agent:agent:ambient-tool-spans": "accepted-net"}}
