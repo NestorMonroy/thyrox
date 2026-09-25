@@ -90,6 +90,9 @@ def prepare(main: Path, wt: Path) -> None:
 
 def export(wt: Path, main: Path, files: list[str]) -> None:
     for rel in files:
+        # Un porte puede crear un archivo en un directorio que el árbol
+        # principal todavía no tiene.
+        (main / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(wt / rel, main / rel)
 
 

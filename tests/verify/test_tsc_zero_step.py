@@ -370,5 +370,55 @@ with tempfile.TemporaryDirectory() as directory:
                  (True, "const a = BAD1\n", False),
                  (refused, (base / "a.ts").read_text(), (base / "ledger.jsonl").exists()))
 
+# --- Crear un archivo (porte de módulo) ---------------------------------------
+# Un porte puede traer un módulo nuevo. Su base es «ausente»: el paso lo crea
+# al aplicar y, si lo revierte, lo BORRA — un archivo vacío que quedara en el
+# árbol seguiría siendo un módulo que tsc compila.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("import { x } from './n'\nconst a = BAD1\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    text = (base / "a.ts").read_text()
+    row = {"proposal_id": "port:n", "proposer": "good", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["a.ts", "sub/n.ts"],
+           "bases": {"a.ts": sha(text), "sub/n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "a.ts", "start": text.index("BAD1"), "length": 4, "newText": "x"},
+                     {"file": "sub/n.ts", "start": 0, "length": 0, "newText": "export const x = 1\n"}]}
+    report = step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("una propuesta aceptada crea su archivo nuevo", "export const x = 1\n",
+                 (base / "sub/n.ts").read_text() if (base / "sub/n.ts").exists() else None)
+    assert_equal("y cierra su objetivo", ("progress", 1, 0), (report.status, report.total_before,
+                                                            report.total_final))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    text = (base / "a.ts").read_text()
+    row = {"proposal_id": "port:n", "proposer": "bad", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["a.ts", "n.ts"], "bases": {"a.ts": sha(text), "n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "a.ts", "start": text.index("BAD1"), "length": 4, "newText": "1"},
+                     {"file": "n.ts", "start": 0, "length": 0, "newText": "WORSE\n"}]}
+    step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                  base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("revertir una creación borra el archivo", (False, "const a = BAD1\n"),
+                 ((base / "n.ts").exists(), (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    # «Ausente» es una base como otra: si el archivo YA existe, la base cambió.
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "n.ts").write_text("const n = 0\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    row = {"proposal_id": "port:n", "proposer": "good", "targets": ["a.ts: TS9001: bad 1."],
+           "files": ["n.ts"], "bases": {"n.ts": step.ABSENT_BASE},
+           "edits": [{"file": "n.ts", "start": 0, "length": 0, "newText": "otro\n"}]}
+    step.run_step(base, [row], [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                  base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("crear sobre un archivo que ya existe no se aplica", "const n = 0\n",
+                 (base / "n.ts").read_text() if (base / "n.ts").exists() else None)
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

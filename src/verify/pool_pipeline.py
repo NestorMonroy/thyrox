@@ -34,6 +34,8 @@ from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 from verify import measure_worktree
+from verify.file_edits import apply_files
+from verify.tsc_zero_step import ABSENT_BASE
 
 HERE = Path(__file__).resolve().parent
 SILENCE = re.compile(r"\bas any\b|:\s*any\b|<any>|as unknown as|\bas never\b|@ts-ignore|@ts-expect-error")
@@ -90,6 +92,48 @@ def build_candidate(file: str, text: str, edits: list[dict], before_keys: list[s
             "bases": {file: hashlib.sha256(text.encode()).hexdigest()}}, dropped
 
 
+def build_module_candidate(unit: str, root: Path, edits: list[dict], before_keys: list[str],
+                           target_files: list[str]) -> tuple[dict | None, list[tuple[str, str]]]:
+    """El candidato de un módulo: ediciones `{file, old_string, new_string,
+    replace_all}` sobre varios archivos, aplicadas por el aplicador de la
+    herramienta `Edit` (`tool-registry/bin/applyEdits.ts`, vía `file_edits`).
+    Un archivo con una edición rechazada cae entero —en el binario falla la
+    llamada entera—. Los objetivos son los
+    diagnósticos de los archivos tocados y de los consumidores del ítem."""
+    by_file: dict[str, list[dict]] = {}
+    for edit in edits:
+        by_file.setdefault(edit.get("file", ""), []).append(edit)
+    texts: dict[str, tuple[str | None, str]] = {}
+    dropped: list[tuple[str, str]] = []
+    proposed = []
+    for file, file_edits in by_file.items():
+        if any(SILENCE.search(e.get("new_string", "")) and not SILENCE.search(e.get("old_string", ""))
+               for e in file_edits):
+            dropped.append((file, "silencia"))
+            continue
+        path = root / file
+        proposed.append({"path": file, "content": path.read_text() if file and path.is_file() else None,
+                         "edits": file_edits})
+    current = {p["path"]: p["content"] for p in proposed}
+    for file, row in apply_files(proposed).items():
+        if "error" in row:
+            dropped.append((file, row["error"]))
+        else:
+            texts[file] = (current[file], row["updatedFile"])
+    if not texts:
+        return None, dropped
+    files = sorted(texts)
+    reach = set(files) | set(target_files)
+    targets = sorted(k for k in before_keys if k.split(": ", 1)[0] in reach)
+    candidate = {
+        "proposal_id": f"agent:pool:{unit}", "proposer": "agent", "targets": targets, "files": files,
+        "edits": [{"file": f, "start": 0, "length": len(texts[f][0] or ""), "newText": texts[f][1]}
+                  for f in files],
+        "bases": {f: ABSENT_BASE if texts[f][0] is None else hashlib.sha256(texts[f][0].encode()).hexdigest()
+                  for f in files}}
+    return candidate, dropped
+
+
 def log_keys(lines: list[str]) -> list[str]:
     return [diagnostic_key(m) for m in map(DIAGNOSTIC.match, lines) if m]
 
@@ -131,7 +175,12 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
             with (bench / "candidates.jsonl").open("w") as out:
                 for file in ready:
                     edits = [e for n in grouped[file] for data in outputs.get(n, []) for e in proposal_edits(data)]
-                    candidate, _ = build_candidate(file, (wt / file).read_text(), edits, keys)
+                    if getattr(args, "unit", "file") == "module":
+                        # El ítem de un módulo es `<unidad> <entrada> [consumidores…]`.
+                        consumers = sorted({c for n in grouped[file] for c in items[n - 1].split()[2:]})
+                        candidate, _ = build_module_candidate(file, wt, edits, keys, consumers)
+                    else:
+                        candidate, _ = build_candidate(file, (wt / file).read_text(), edits, keys)
                     if candidate:
                         out.write(json.dumps(candidate, ensure_ascii=False) + "\n")
             taken.update(ready)
@@ -178,6 +227,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, required=True)
     parser.add_argument("--batch", type=int, default=20)
     parser.add_argument("--poll", type=float, default=20)
+    parser.add_argument("--unit", choices=("file", "module"), default="file",
+                        help="unidad de un ítem: un archivo, o un módulo que edita varios")
     args = parser.parse_args(argv[:split])
     result = run(args, argv[split + 1:])
     print(json.dumps({"batches": len(result["batches"]), "files_kept": len(result["files_kept"])}))

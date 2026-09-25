@@ -102,5 +102,77 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("y lo conservado vuelve al árbol principal", "const a = 1\n", (main / "src/a.ts").read_text())
     assert_equal("sin tocar lo que ningún lote tomó", "const b = BAD2\n", (main / "src/b.ts").read_text())
 
+# --- Módulo como ítem -----------------------------------------------------------
+# Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
+# consumidores que el ítem declara. Las ediciones se aplican con el porte del
+# aplicador de `Edit` del binario (`file_edits`): si una edición de un archivo
+# falla, ese archivo entero cae, como falla la llamada entera en el binario.
+
+def module_edit(file: str, old: str, new: str) -> dict:
+    return {"file": file, "old_string": old, "new_string": new}
+
+
+with tempfile.TemporaryDirectory() as directory:
+    root = Path(directory)
+    (root / "src").mkdir()
+    (root / "src/a.ts").write_text("import { x } from './n'\nconst a = BAD1\n")
+    (root / "src/c.ts").write_text("const c = BAD3\n")
+    keys = ["src/a.ts: TS1: x.", "src/c.ts: TS1: y.", "src/z.ts: TS1: z."]
+    candidate, dropped = pp.build_module_candidate("module:n", root, [
+        module_edit("src/a.ts", "BAD1", "x"),
+        module_edit("src/sub/n.ts", "", "export const x = 1\n"),
+        module_edit("src/c.ts", "NOPE", "3"),
+    ], keys, ["src/z.ts"])
+    assert_equal("el candidato toca los archivos que aplican y crea el nuevo",
+                 ["src/a.ts", "src/sub/n.ts"], candidate["files"])
+    assert_equal("un archivo con una edición que falla cae entero, con su motivo",
+                 [("src/c.ts", "String to replace not found in file.")], dropped)
+    assert_equal("el archivo nuevo lleva base ausente", "absent", candidate["bases"]["src/sub/n.ts"])
+    assert_equal("los objetivos son los de los archivos tocados y los consumidores declarados",
+                 ["src/a.ts: TS1: x.", "src/z.ts: TS1: z."], candidate["targets"])
+    new_text = {e["file"]: e["newText"] for e in candidate["edits"]}
+    assert_equal("la edición del archivo nuevo es su contenido entero", "export const x = 1\n",
+                 new_text["src/sub/n.ts"])
+    silenced, why = pp.build_module_candidate("module:n", root, [module_edit("src/a.ts", "BAD1", "x as any")],
+                                               keys, [])
+    assert_equal("una edición que silencia hace caer su archivo", (None, [("src/a.ts", "silencia")]),
+                 (silenced, why))
+    created, why = pp.build_module_candidate("module:n", root, [module_edit("src/a.ts", "", "otro\n")],
+                                              keys, [])
+    assert_equal("crear sobre un archivo existente se rechaza con el motivo del binario",
+                 (None, [("src/a.ts", "Cannot create new file - file already exists.")]), (created, why))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    main = base / "main"
+    (main / "src").mkdir(parents=True)
+    (main / "src/a.ts").write_text("const a = BAD1\n")
+    (main / "fake_tsc.py").write_text(FAKE_TSC)
+    (main / ".gitignore").write_text("node_modules\nbench\nout\n")
+    for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "base"]):
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=main, check=True)
+    (main / "node_modules").mkdir()
+    (main / "out").mkdir()
+    (main / "items.txt").write_text("module:n d/1.txt src/a.ts\n")
+    proposal_text = json.dumps({"edits": [module_edit("src/a.ts", "BAD1", "1"),
+                                          module_edit("src/port/n.ts", "", "export const n = 1\n")]})
+    (main / "out/1.json").write_text(json.dumps({"result": proposal_text}))
+    cwd = os.getcwd()
+    os.chdir(main)
+    try:
+        result = pp.run(argparse.Namespace(
+            main=Path("."), worktree=base / "wt", items=Path("items.txt"), outputs=[Path("out")],
+            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1,
+            unit="module"), [sys.executable, "fake_tsc.py"])
+    except OSError as error:
+        # Exportar un archivo nuevo sin crear su directorio muere aquí.
+        result = {"files_kept": f"murió al exportar: {type(error).__name__}"}
+    finally:
+        os.chdir(cwd)
+    assert_equal("modo módulo: se conservan los dos archivos del porte", ["src/a.ts", "src/port/n.ts"],
+                 result["files_kept"])
+    assert_equal("y el archivo nuevo llega al árbol principal, directorio incluido", "export const n = 1\n",
+                 (main / "src/port/n.ts").read_text() if (main / "src/port/n.ts").exists() else None)
+
 print(f"test_pool_pipeline: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

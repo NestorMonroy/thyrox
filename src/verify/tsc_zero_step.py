@@ -76,16 +76,39 @@ def run_tsc(root: Path, command: list[str], log: Path) -> list[str]:
     return lines
 
 
-def _apply(root: Path, row: dict) -> dict[str, str] | None:
-    """Aplica una propuesta y devuelve los textos originales, o None si alguna
-    base cambió (en ese caso no escribe nada)."""
-    originals = {}
+# Base de un archivo que la propuesta CREA (un porte de módulo trae módulos
+# nuevos). Como toda base, se comprueba: si el archivo ya existe, no se aplica.
+ABSENT_BASE = "absent"
+
+
+def _write(root: Path, file: str, text: str | None) -> None:
+    """Deja `file` con `text`; `None` es «no existía» y lo borra, porque un
+    archivo vacío seguiría siendo un módulo que tsc compila."""
+    path = root / file
+    if text is None:
+        path.unlink(missing_ok=True)
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
+def _apply(root: Path, row: dict) -> dict[str, str | None] | None:
+    """Aplica una propuesta y devuelve los textos originales (`None` para un
+    archivo que crea), o None si alguna base cambió (entonces no escribe)."""
+    originals: dict[str, str | None] = {}
     for file in row["files"]:
-        text = (root / file).read_text()
+        path = root / file
+        if row["bases"].get(file) == ABSENT_BASE:
+            if path.exists():
+                return None
+            originals[file] = None
+            continue
+        text = path.read_text()
         if _sha(text) != row["bases"].get(file):
             return None
         originals[file] = text
-    for file, text in originals.items():
+    for file, original in originals.items():
+        text = original or ""
         # En empate de posición va primero la edición POSTERIOR, para que quede
         # detrás de la anterior: `inferFromUsage` inserta la anotación y el `)`
         # en el mismo punto (el mismo orden que `tsLanguageService.applyEdits`).
@@ -93,7 +116,7 @@ def _apply(root: Path, row: dict) -> dict[str, str] | None:
         edits = [e for _, e in sorted(indexed, key=lambda pair: (-pair[1]["start"], -pair[0]))]
         for edit in edits:
             text = text[: edit["start"]] + edit["newText"] + text[edit["start"] + edit["length"]:]
-        (root / file).write_text(text)
+        _write(root, file, text)
     return originals
 
 
@@ -190,14 +213,14 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     reverted = [pid for pid in applied if outcomes[pid] not in keep]
     for pid in reverted:
         for file, text in applied[pid].items():
-            (root / file).write_text(text)
+            _write(root, file, text)
 
     revealed: dict[str, list[str]] = {}
     counter = {"n": 0}
 
-    def write(pid: str, texts: dict[str, str]) -> None:
+    def write(pid: str, texts: dict[str, str | None]) -> None:
         for file, text in texts.items():
-            (root / file).write_text(text)
+            _write(root, file, text)
 
     def settle(ids: list[str], base_lines: list[str], lines: list[str] | None) -> tuple[list[str], list[str]]:
         """El árbol tiene `ids` aplicados sobre una base limpia; devuelve lo
