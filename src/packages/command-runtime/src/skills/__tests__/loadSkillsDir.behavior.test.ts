@@ -1,8 +1,113 @@
 import { describe, expect, test } from 'bun:test'
 
+import type { Command } from '@thyrox/agent/command.js'
 import type { FrontmatterData } from '@thyrox/config/frontmatterParser.js'
 
-import { parseSkillFrontmatterFields } from '../loadSkillsDir.ts'
+import {
+  buildSkillPromptText,
+  createSkillCommand,
+  parseSkillFrontmatterFields,
+} from '../loadSkillsDir.ts'
+
+/** Estrecha un `Command` a su rama prompt, o falla nombrando el comando. */
+function asPrompt(command: Command): Command & { type: 'prompt' } {
+  if (command.type !== 'prompt') throw new Error(`${command.name} no es un comando prompt`)
+  return command
+}
+
+/** El `userFacingName` es opcional en `CommandBase`; aquí siempre se declara. */
+function userFacingName(command: Command): string {
+  if (command.userFacingName === undefined) throw new Error(`${command.name} sin userFacingName`)
+  return command.userFacingName()
+}
+
+/** Entrada mínima y válida para `createSkillCommand`; cada test sobreescribe lo suyo. */
+function skillInput(overrides: Partial<Parameters<typeof createSkillCommand>[0]> = {}) {
+  return {
+    skillName: 'demo',
+    displayName: undefined,
+    description: 'Demo skill',
+    hasUserSpecifiedDescription: true,
+    markdownContent: 'Body of demo',
+    allowedTools: ['Read'],
+    argumentHint: undefined,
+    argumentNames: [],
+    whenToUse: undefined,
+    version: undefined,
+    model: undefined,
+    disableModelInvocation: false,
+    userInvocable: true,
+    source: 'projectSettings' as const,
+    baseDir: '/skills/demo',
+    loadedFrom: 'skills' as const,
+    hooks: undefined,
+    executionContext: undefined,
+    agent: undefined,
+    paths: undefined,
+    effort: undefined,
+    shell: undefined,
+    ...overrides,
+  }
+}
+
+describe('createSkillCommand', () => {
+  test('construye un comando prompt con la identidad y el origen declarados', () => {
+    const command = asPrompt(createSkillCommand(skillInput({ paths: ['src/**'], effort: 'low', executionContext: 'fork' })))
+    expect(command.type).toBe('prompt')
+    expect(command.name).toBe('demo')
+    expect(command.description).toBe('Demo skill')
+    expect(command.source).toBe('projectSettings')
+    expect(command.loadedFrom).toBe('skills')
+    expect(command.progressMessage).toBe('running')
+    expect(command.contentLength).toBe('Body of demo'.length)
+    expect(command.skillRoot).toBe('/skills/demo')
+    expect(command.paths).toEqual(['src/**'])
+    expect(command.effort).toBe('low')
+    expect(command.context).toBe('fork')
+    expect(command.argNames).toBeUndefined()
+    expect(command.isHidden).toBe(false)
+  })
+
+  test('userFacingName prefiere displayName y cae al nombre del skill', () => {
+    expect(userFacingName(createSkillCommand(skillInput({ displayName: 'Bonito' })))).toBe('Bonito')
+    expect(userFacingName(createSkillCommand(skillInput()))).toBe('demo')
+  })
+
+  test('un skill no invocable por la persona queda oculto', () => {
+    const command = createSkillCommand(skillInput({ userInvocable: false }))
+    expect(command.isHidden).toBe(true)
+    expect(command.userInvocable).toBe(false)
+  })
+
+  test('argNames sólo se declara cuando hay nombres', () => {
+    expect(asPrompt(createSkillCommand(skillInput({ argumentNames: ['a', 'b'] }))).argNames).toEqual(['a', 'b'])
+  })
+})
+
+describe('buildSkillPromptText', () => {
+  test('antepone el directorio base y sustituye argumentos y variables', () => {
+    const text = buildSkillPromptText({
+      markdownContent: 'Run ${CLAUDE_SKILL_DIR}/x.sh with $ARGUMENTS in ${CLAUDE_SESSION_ID}',
+      baseDir: '/skills/demo',
+      args: 'fast',
+      argumentNames: [],
+    })
+    expect(text.startsWith('Base directory for this skill: /skills/demo\n\n')).toBe(true)
+    expect(text).toContain('Run /skills/demo/x.sh with fast in ')
+    expect(text).not.toContain('${CLAUDE_SESSION_ID}')
+  })
+
+  test('sin directorio base no hay prefijo ni sustitución de CLAUDE_SKILL_DIR', () => {
+    const text = buildSkillPromptText({
+      markdownContent: 'See ${CLAUDE_SKILL_DIR}',
+      baseDir: undefined,
+      args: '',
+      argumentNames: [],
+    })
+    expect(text.startsWith('Base directory')).toBe(false)
+    expect(text).toContain('${CLAUDE_SKILL_DIR}')
+  })
+})
 
 /**
  * Porte de la mitad de `loadSkillsDir.ts` que faltaba (fuente: `ccnmt:

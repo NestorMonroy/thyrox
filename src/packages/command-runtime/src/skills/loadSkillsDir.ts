@@ -13,7 +13,10 @@ import { extractDescriptionFromMarkdown } from '@thyrox/config/utils/markdownDes
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { parseUserSpecifiedModel } from '@thyrox/provider/model.js'
 import { parseSlashCommandToolsFromFrontmatter } from '@thyrox/tool-registry/markdownConfigLoader.js'
-import { parseArgumentNames } from '../argumentSubstitution.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { Command, PromptCommand } from '@thyrox/agent/command.js'
+import { parseArgumentNames, substituteArguments } from '../argumentSubstitution.js'
+import { executeShellCommandsInPrompt } from '../promptShellExecution.js'
 import { clearDynamicSkills } from './dynamicSkills.js'
 import { getManagedFilePath } from './managedPath.js'
 
@@ -337,6 +340,168 @@ export function parseSkillFrontmatterFields(
     effort,
     shell: parseShellFrontmatter(frontmatter.shell, resolvedName),
   }
+}
+
+export type LoadedFrom =
+  | 'commands_DEPRECATED'
+  | 'skills'
+  | 'plugin'
+  | 'managed'
+  | 'bundled'
+  | 'mcp'
+
+/**
+ * El texto del prompt ANTES de ejecutar los bloques de shell: prefijo del
+ * directorio base, sustitución de argumentos y de `${CLAUDE_SKILL_DIR}` /
+ * `${CLAUDE_SESSION_ID}`. En la fuente vive en línea dentro de
+ * `getPromptForCommand`; se extrae para poder medirlo sin construir un
+ * `ToolUseContext` completo (divergencia de forma, no de conducta).
+ */
+export function buildSkillPromptText({
+  markdownContent,
+  baseDir,
+  args,
+  argumentNames,
+}: {
+  markdownContent: string
+  baseDir: string | undefined
+  args: string
+  argumentNames: string[]
+}): string {
+  let finalContent = baseDir
+    ? `Base directory for this skill: ${baseDir}\n\n${markdownContent}`
+    : markdownContent
+
+  finalContent = substituteArguments(finalContent, args, true, argumentNames)
+
+  // Replace ${CLAUDE_SKILL_DIR} with the skill's own directory so bash
+  // injection (!`...`) can reference bundled scripts. Normalize backslashes
+  // to forward slashes on Windows so shell commands don't treat them as escapes.
+  if (baseDir) {
+    const skillDir =
+      process.platform === 'win32' ? baseDir.replace(/\\/g, '/') : baseDir
+    finalContent = finalContent.replace(/\$\{CLAUDE_SKILL_DIR\}/g, skillDir)
+  }
+
+  // Replace ${CLAUDE_SESSION_ID} with the current session ID
+  return finalContent.replace(/\$\{CLAUDE_SESSION_ID\}/g, getSessionId())
+}
+
+/**
+ * Creates a skill command from parsed data
+ */
+export function createSkillCommand({
+  skillName,
+  displayName,
+  description,
+  hasUserSpecifiedDescription,
+  markdownContent,
+  allowedTools,
+  argumentHint,
+  argumentNames,
+  whenToUse,
+  version,
+  model,
+  disableModelInvocation,
+  userInvocable,
+  source,
+  baseDir,
+  loadedFrom,
+  hooks,
+  executionContext,
+  agent,
+  paths,
+  effort,
+  shell,
+}: {
+  skillName: string
+  displayName: string | undefined
+  description: string
+  hasUserSpecifiedDescription: boolean
+  markdownContent: string
+  allowedTools: string[]
+  argumentHint: string | undefined
+  argumentNames: string[]
+  whenToUse: string | undefined
+  version: string | undefined
+  model: string | undefined
+  disableModelInvocation: boolean
+  userInvocable: boolean
+  source: PromptCommand['source']
+  baseDir: string | undefined
+  loadedFrom: LoadedFrom
+  hooks: HooksSettings | undefined
+  executionContext: 'inline' | 'fork' | undefined
+  agent: string | undefined
+  paths: string[] | undefined
+  effort: EffortValue | undefined
+  shell: FrontmatterShell | undefined
+}): Command {
+  return {
+    type: 'prompt',
+    name: skillName,
+    description,
+    hasUserSpecifiedDescription,
+    allowedTools,
+    argumentHint,
+    argNames: argumentNames.length > 0 ? argumentNames : undefined,
+    whenToUse,
+    version,
+    model,
+    disableModelInvocation,
+    userInvocable,
+    context: executionContext,
+    agent,
+    effort,
+    paths,
+    contentLength: markdownContent.length,
+    isHidden: !userInvocable,
+    progressMessage: 'running',
+    userFacingName(): string {
+      return displayName || skillName
+    },
+    source,
+    loadedFrom,
+    hooks,
+    skillRoot: baseDir,
+    async getPromptForCommand(args, toolUseContext) {
+      let finalContent = buildSkillPromptText({
+        markdownContent,
+        baseDir,
+        args,
+        argumentNames,
+      })
+
+      // Security: MCP skills are remote and untrusted — never execute inline
+      // shell commands (!`…` / ```! … ```) from their markdown body.
+      // ${CLAUDE_SKILL_DIR} is meaningless for MCP skills anyway.
+      if (loadedFrom !== 'mcp') {
+        finalContent = await executeShellCommandsInPrompt(
+          finalContent,
+          {
+            ...toolUseContext,
+            getAppState() {
+              const appState = toolUseContext.getAppState()
+              return {
+                ...appState,
+                toolPermissionContext: {
+                  ...appState.toolPermissionContext,
+                  alwaysAllowRules: {
+                    ...appState.toolPermissionContext.alwaysAllowRules,
+                    command: allowedTools,
+                  },
+                },
+              }
+            },
+          },
+          `/${skillName}`,
+          shell,
+        )
+      }
+
+      return [{ type: 'text', text: finalContent }]
+    },
+  } satisfies Command
 }
 
 // Skills dinámicas (porte de 2.1.275): viven en `dynamicSkills.ts` y se
