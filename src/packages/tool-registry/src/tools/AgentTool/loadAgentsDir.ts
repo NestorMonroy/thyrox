@@ -68,8 +68,9 @@ const AgentMcpServerSpecSchema = lazySchema(() =>
 )
 
 // Zod schemas for JSON agent validation
-// Note: HooksSchema is lazy so the circular chain AppState -> loadAgentsDir -> settings/types
-// is broken at module load time
+// Nota: AgentJsonSchema es lazy para romper la cadena circular AppState ->
+// loadAgentsDir -> settings/types al cargar el módulo; HooksSchema (importado
+// de @thyrox/config/types) ya es un ZodObject concreto, no un lazySchema.
 const AgentJsonSchema = lazySchema(() =>
   z.object({
     description: z.string().min(1, 'Description cannot be empty'),
@@ -85,7 +86,7 @@ const AgentJsonSchema = lazySchema(() =>
     effort: z.union([z.enum(EFFORT_LEVELS), z.number().int()]).optional(),
     permissionMode: z.enum(PERMISSION_MODES).optional(),
     mcpServers: z.array(AgentMcpServerSpecSchema()).optional(),
-    hooks: HooksSchema().optional(),
+    hooks: HooksSchema.optional(),
     maxTurns: z.number().int().positive().optional(),
     skills: z.array(z.string()).optional(),
     initialPrompt: z.string().optional(),
@@ -429,7 +430,7 @@ function parseHooksFromFrontmatter(
     return undefined
   }
 
-  const result = HooksSchema().safeParse(frontmatter.hooks)
+  const result = HooksSchema.safeParse(frontmatter.hooks)
   if (!result.success) {
     logForDebugging(
       `Invalid hooks in agent '${agentType}': ${result.error.message}`,

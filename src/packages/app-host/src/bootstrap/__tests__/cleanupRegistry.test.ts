@@ -140,13 +140,13 @@ describe('registerCleanup — return value contract', () => {
     // return type so callers can know if they double-unregistered.
     const fn = async () => {}
     const unreg = registerCleanup(fn)
-    const firstResult = unreg()
+    const firstResult: unknown = unreg()
     // Set.delete returns boolean. The fn signature says `() => void`
     // but the underlying Set.delete returns true. TypeScript erases
     // the boolean — but at runtime it's there.
     expect(firstResult === true || firstResult === undefined).toBe(true)
     // Second call returns false (already gone).
-    const secondResult = unreg()
+    const secondResult: unknown = unreg()
     expect(secondResult === false || secondResult === undefined).toBe(true)
   })
 })

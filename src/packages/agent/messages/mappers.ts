@@ -33,7 +33,7 @@ export function toInternalMessages(
         return [
           {
             type: 'assistant',
-            message: message.message,
+            message: { ...message.message },
             uuid: message.uuid,
             requestId: undefined,
             timestamp: new Date().toISOString(),
@@ -43,7 +43,7 @@ export function toInternalMessages(
         return [
           {
             type: 'user',
-            message: message.message,
+            message: { ...message.message },
             uuid: message.uuid ?? randomUUID(),
             timestamp: message.timestamp ?? new Date().toISOString(),
             isMeta: message.isSynthetic,

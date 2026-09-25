@@ -60,8 +60,9 @@ function getModelFamily(model: string): 'haiku' | 'sonnet' | 'opus' | null {
  */
 export function resolveOpenAIModel(anthropicModel: string): string {
   // Prioridad maxima: el override explicito.
-  if (readEnv('OPENAI_MODEL')) {
-    return readEnv('OPENAI_MODEL')
+  const openaiModelOverride = readEnv('OPENAI_MODEL')
+  if (openaiModelOverride) {
+    return openaiModelOverride
   }
 
   const cleanModel = anthropicModel.replace(/\[1m\]$/, '')

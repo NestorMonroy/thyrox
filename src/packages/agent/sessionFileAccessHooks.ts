@@ -5,7 +5,7 @@
  */
 import { feature } from 'bun:bundle'
 import { registerHookCallbacks } from '@thyrox/app-host/bootstrap/state.js'
-import type { HookInput, HookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { HookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
   logEvent,
@@ -20,7 +20,7 @@ import { GlobTool } from '@thyrox/tool-registry/tools/GlobTool/GlobTool.js'
 import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
 import { GrepTool } from '@thyrox/tool-registry/tools/GrepTool/GrepTool.js'
 import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
-import type { HookCallback } from './types/hooks.js'
+import type { HookCallback, HookInput } from './types/hooks.js'
 import {
   detectSessionFileType,
   detectSessionPatternType,
@@ -132,7 +132,7 @@ export function isMemoryFileAccess(
   if (
     filePath &&
     (isAutoMemFile(filePath) ||
-      (feature('TEAMMEM') && teamMemPaths!.isTeamMemFile(filePath)))
+      (feature('TEAMMEM') && teamMemPaths!.isTeamMemPath(filePath)))
   ) {
     return true
   }
@@ -186,7 +186,7 @@ async function handleSessionFileAccess(
   }
 
   // Team memory access tracking
-  if (feature('TEAMMEM') && filePath && teamMemPaths!.isTeamMemFile(filePath)) {
+  if (feature('TEAMMEM') && filePath && teamMemPaths!.isTeamMemPath(filePath)) {
     logEvent('tengu_team_mem_accessed', {
       tool: input.tool_name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       ...subagentProps,

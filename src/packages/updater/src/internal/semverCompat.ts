@@ -15,12 +15,29 @@
  * semver de npm. El fallback de npm semver siempre usa `{ loose: true }`.
  */
 
-let _npmSemver: typeof import('semver') | undefined
+/**
+ * Forma minima del modulo npm 'semver' que este archivo consume.
+ * `semver` no trae declaraciones propias y `@types/semver` no esta
+ * instalado en este arbol (medido: no existe `node_modules/@types/semver`),
+ * asi que se declara aqui el subconjunto real en vez de dejar el `any`
+ * implicito que produce `typeof import('semver')` sin declaraciones.
+ */
+interface NpmSemverModule {
+  gt(a: string, b: string, options?: { loose?: boolean }): boolean
+  gte(a: string, b: string, options?: { loose?: boolean }): boolean
+  lt(a: string, b: string, options?: { loose?: boolean }): boolean
+  lte(a: string, b: string, options?: { loose?: boolean }): boolean
+  satisfies(version: string, range: string, options?: { loose?: boolean }): boolean
+  compare(a: string, b: string, options?: { loose?: boolean }): -1 | 0 | 1
+  parse(version: string, options?: { loose?: boolean }): { version: string } | null
+}
 
-function getNpmSemver(): typeof import('semver') {
+let _npmSemver: NpmSemverModule | undefined
+
+function getNpmSemver(): NpmSemverModule {
   if (!_npmSemver) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _npmSemver = require('semver') as typeof import('semver')
+    _npmSemver = require('semver') as NpmSemverModule
   }
   return _npmSemver
 }

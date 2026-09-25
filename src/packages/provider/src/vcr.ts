@@ -59,7 +59,7 @@ export async function withVCR(
   )
 
   const dehydratedInput = mapMessages(
-    messagesForAPI.map(_ => _.message.content),
+    messagesForAPI.map((_: UserMessage | AssistantMessage) => _.message.content),
     dehydrateValue,
   )
   const filename = join(

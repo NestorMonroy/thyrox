@@ -1,4 +1,4 @@
-import type { Command } from '@thyrox/command-runtime/runtime'
+import type { Command } from '@thyrox/agent/command.js'
 
 export default {
   type: 'local-jsx',

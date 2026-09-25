@@ -9,6 +9,10 @@ import type {
   BetaToolUseBlock,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type {
+  ContentBlock,
+  ContentBlockParam,
+} from '@anthropic-ai/sdk/resources/index.mjs'
+import type {
   ProviderAssistantMessage,
   ProviderMessage,
   ProviderSystemPrompt,
@@ -38,7 +42,7 @@ export function anthropicMessagesToGemini(
         contents.push(content)
       }
 
-      const assistantContent = msg.message.content
+      const assistantContent = msg.message?.content
       if (Array.isArray(assistantContent)) {
         for (const block of assistantContent) {
           if (typeof block !== 'string' && block.type === 'tool_use') {
@@ -83,7 +87,7 @@ function convertInternalUserMessage(
   msg: ProviderUserMessage,
   toolNamesById: ReadonlyMap<string, string>,
 ): GeminiContent {
-  const content = msg.message.content
+  const content = msg.message?.content
 
   if (typeof content === 'string') {
     return {
@@ -105,7 +109,7 @@ function convertInternalUserMessage(
 }
 
 function convertUserContentBlockToGeminiParts(
-  block: string | Record<string, unknown>,
+  block: string | ContentBlockParam | ContentBlock,
   toolNamesById: ReadonlyMap<string, string>,
 ): GeminiPart[] {
   if (typeof block === 'string') {
@@ -130,20 +134,19 @@ function convertUserContentBlockToGeminiParts(
 
   // Convert an Anthropic image block into Gemini inlineData
   if (block.type === 'image') {
-    const source = block.source as Record<string, unknown> | undefined
-    if (source?.type === 'base64' && typeof source.data === 'string') {
-      const mediaType = (source.media_type as string) || 'image/png'
+    const source = block.source
+    if (source.type === 'base64') {
       return [
         {
           inlineData: {
-            mimeType: mediaType,
+            mimeType: source.media_type,
             data: source.data,
           },
         },
       ]
     }
     // Gemini does not support URL-based images directly, so fall back to text
-    if (source?.type === 'url' && typeof source.url === 'string') {
+    if (source.type === 'url') {
       return createTextGeminiParts(`[image: ${source.url}]`)
     }
   }
@@ -154,7 +157,7 @@ function convertUserContentBlockToGeminiParts(
 function convertInternalAssistantMessage(
   msg: ProviderAssistantMessage,
 ): GeminiContent {
-  const content = msg.message.content
+  const content = msg.message?.content
 
   if (typeof content === 'string') {
     return {

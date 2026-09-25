@@ -240,7 +240,10 @@ export async function ocrWindow(
     const parts = trimmed.split(',')
     if (parts.length !== 4) return emptyResult(language)
 
-    const [x, y, w, h] = parts.map(Number)
+    const x = Number(parts[0])
+    const y = Number(parts[1])
+    const w = Number(parts[2])
+    const h = Number(parts[3])
     if (!w || !h) return emptyResult(language)
 
     return ocrRegion(x, y, w, h, lang)

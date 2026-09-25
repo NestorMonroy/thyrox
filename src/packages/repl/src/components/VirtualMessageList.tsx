@@ -318,13 +318,16 @@ export function VirtualMessageList({
     [getItemHeight, messages],
   )
   useImperativeHandle(cursorNavRef, (): MessageActionsNav => {
-    const select = (m: NavigableMessage) =>
+    const select = (m: NavigableMessage) => {
+      // isVisible ya excluye 'progress' vía isNavigableMessage — invariante del flujo.
+      if (m.type === 'progress') return
       setCursor?.({
         uuid: m.uuid,
         msgType: m.type,
         expanded: false,
         toolName: toolCallOf(m)?.name,
       })
+    }
     const selIdx = selectedIndex ?? -1
     const scan = (
       from: number,

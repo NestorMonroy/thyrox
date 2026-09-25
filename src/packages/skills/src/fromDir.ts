@@ -40,7 +40,7 @@ function splitFrontmatter(raw: string): { meta: Map<string, string>; body: strin
 
   const meta = new Map<string, string>()
   for (let i = 1; i < end; i++) {
-    const line = lines[i]
+    const line = lines[i] ?? ''
     // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
     const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
     if (m && !/^\s/.test(line)) {

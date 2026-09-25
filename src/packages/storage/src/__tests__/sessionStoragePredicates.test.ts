@@ -40,7 +40,7 @@ describe('isTranscriptMessage', () => {
 
   test('arbitrary unknown type → false', () => {
     expect(
-      isTranscriptMessage({ type: 'something_new' } as Entry),
+      isTranscriptMessage({ type: 'something_new' as string } as Entry),
     ).toBe(false)
   })
 })

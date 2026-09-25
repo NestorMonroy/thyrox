@@ -63,7 +63,9 @@ export class SSETransport {
   }
 }
 
-export function parseSSEFrames(...args: any[]) {
+export function parseSSEFrames(
+  ...args: Parameters<ReturnType<typeof loadSSEModule>['parseSSEFrames']>
+) {
   return loadSSEModule().parseSSEFrames(...args)
 }
 

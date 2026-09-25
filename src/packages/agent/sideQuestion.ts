@@ -137,7 +137,7 @@ function extractSideQuestionResponse(messages: Message[]): string | null {
     const toolUse = assistantBlocks.find(b => b.type === 'tool_use')
     if (toolUse) {
       const toolName =
-        'name' in toolUse ? (toolUse as { name: string }).name : 'a tool'
+        typeof toolUse.name === 'string' ? toolUse.name : 'a tool'
       return `(The model tried to call ${toolName} instead of answering directly. Try rephrasing or ask in the main conversation.)`
     }
   }

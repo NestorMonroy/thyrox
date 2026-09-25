@@ -5,10 +5,22 @@ import type { ValidationError } from '@thyrox/config/validation'
 import { type TreeNode, treeify } from '../uiHelpers/treeify.js'
 
 /**
+ * `ValidationError` (alias de `SettingsError`) no declara `suggestion` ni
+ * `docLink`: son campos opcionales que este componente ya sabe mostrar
+ * cuando el origen del error los incluye, sin que el contrato del tipo los
+ * exija. Al ser opcionales, ensancharlos aquí no rompe a quien ya pasa un
+ * `ValidationError[]` sin esos campos.
+ */
+type ValidationErrorWithSuggestion = ValidationError & {
+  suggestion?: string
+  docLink?: string
+}
+
+/**
  * Builds a nested tree structure from dot-notation paths
  * Uses lodash setWith to avoid automatic array creation
  */
-function buildNestedTree(errors: ValidationError[]): TreeNode {
+function buildNestedTree(errors: ValidationErrorWithSuggestion[]): TreeNode {
   const tree: TreeNode = {}
 
   errors.forEach(error => {
@@ -72,7 +84,7 @@ function buildNestedTree(errors: ValidationError[]): TreeNode {
 export function ValidationErrorsList({
   errors,
 }: {
-  errors: ValidationError[]
+  errors: ValidationErrorWithSuggestion[]
 }): React.ReactNode {
   const [themeName] = useTheme()
 
@@ -81,7 +93,7 @@ export function ValidationErrorsList({
   }
 
   // Group errors by file
-  const errorsByFile = errors.reduce<Record<string, ValidationError[]>>(
+  const errorsByFile = errors.reduce<Record<string, ValidationErrorWithSuggestion[]>>(
     (acc, error) => {
       const file = error.file || '(file not specified)'
       if (!acc[file]) {

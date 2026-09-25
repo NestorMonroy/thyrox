@@ -40,7 +40,7 @@ function updateMarketplaceStatus(
       installationStatus: {
         ...prevState.plugins.installationStatus,
         marketplaces: prevState.plugins.installationStatus.marketplaces.map(
-          (m): { name: string } => {
+          m => {
             if (m.name !== name) return m
             const updated = { ...m, status, error }
             return updated

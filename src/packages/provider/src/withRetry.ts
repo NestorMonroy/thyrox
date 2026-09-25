@@ -792,8 +792,9 @@ function shouldRetry(error: APIError): boolean {
 }
 
 export function getDefaultMaxRetries(): number {
-  if (readEnv('CLAUDE_CODE_MAX_RETRIES')) {
-    return parseInt(readEnv('CLAUDE_CODE_MAX_RETRIES'), 10)
+  const maxRetriesEnv = readEnv('CLAUDE_CODE_MAX_RETRIES')
+  if (maxRetriesEnv) {
+    return parseInt(maxRetriesEnv, 10)
   }
   if (isEnvTruthy(readEnv('CLAUDE_CODE_RETRY_WATCHDOG'))) return 300
   return DEFAULT_MAX_RETRIES

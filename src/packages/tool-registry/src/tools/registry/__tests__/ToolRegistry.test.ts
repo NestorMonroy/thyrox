@@ -14,8 +14,10 @@ function makeTool(name: string, opts?: { aliases?: string[]; isEnabled?: () => b
     description: async () => `${name} description`,
     inputSchema: {} as any,
     isReadOnly: () => false,
+    maxResultSizeChars: 100_000,
     prompt: async () => '',
     userFacingName: () => name,
+    renderToolUseMessage: () => null,
     mapToolResultToToolResultBlockParam: (content, id) => ({
       type: 'tool_result',
       tool_use_id: id,

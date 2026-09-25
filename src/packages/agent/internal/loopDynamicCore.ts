@@ -265,7 +265,7 @@ export function scheduleLoopWakeup(
     chosen_delay_seconds: Number.isFinite(delaySeconds) ? delaySeconds : 0,
     clamped_delay_seconds: clamped,
     was_clamped: wasClamped,
-    reason: reason !== undefined ? reason.slice(0, 200) : undefined,
+    ...(reason !== undefined ? { reason: reason.slice(0, 200) } : {}),
   })
 
   return {

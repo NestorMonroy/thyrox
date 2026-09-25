@@ -770,7 +770,8 @@ function processUserMessage(
   }
 
   // Process each content block individually
-  for (const block of msg.message.content) {
+  const contentBlocks = Array.isArray(msg.message.content) ? msg.message.content : []
+  for (const block of contentBlocks) {
     const blockStr = jsonStringify(block)
     const blockTokens = roughTokenCountEstimation(blockStr)
 

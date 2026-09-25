@@ -22,7 +22,6 @@ import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { restoreWorktreeSession } from '@thyrox/swarm'
 import { clearMemoryFileCaches } from './claudemd.js'
 import { clearSystemPromptSections } from '@thyrox/provider/systemPromptSections'
-import { getPlansDirectory } from './plans.js'
 import type { Message } from '@thyrox/agent/messageShapes'
 import type { FileHistorySnapshot } from '@thyrox/agent/file-history'
 import type { AttributionSnapshotMessage } from '@thyrox/agent/logsTypes.js'
@@ -161,7 +160,7 @@ export function restoreSessionStateFromLog(
       const agentId = getSessionId()
       setAppState(prev => ({
         ...prev,
-        todos: { ...prev.todos, [agentId]: todos },
+        todos: { ...(prev.todos as Record<string, TodoList> | undefined), [agentId]: todos },
       }))
     }
   }
@@ -280,7 +279,6 @@ export function restoreWorktreeForResume(
   // (caches aren't populated yet there).
   clearMemoryFileCaches()
   clearSystemPromptSections()
-  getPlansDirectory.cache.clear?.()
 }
 /**
  * Undo restoreWorktreeForResume before a mid-session /resume switches to
@@ -303,7 +301,6 @@ export function exitRestoredWorktree(): void {
   // stale whether or not chdir succeeds below.
   clearMemoryFileCaches()
   clearSystemPromptSections()
-  getPlansDirectory.cache.clear?.()
 
   try {
     process.chdir(current.originalCwd)

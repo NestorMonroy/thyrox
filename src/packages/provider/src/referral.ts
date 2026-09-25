@@ -114,7 +114,7 @@ export function checkCachedPassesEligibility(): {
     }
   }
 
-  const { eligible, timestamp } = cachedEntry
+  const { eligible, timestamp } = cachedEntry as { eligible: boolean; timestamp: number }
   const now = Date.now()
   const needsRefresh = now - timestamp > CACHE_EXPIRATION_MS
 
@@ -153,7 +153,7 @@ export function getCachedReferrerReward(): ReferrerRewardInfo | null {
   if (!orgId) return null
   const config = getGlobalConfig()
   const cachedEntry = config.passesEligibilityCache?.[orgId]
-  return cachedEntry?.referrer_reward ?? null
+  return (cachedEntry as { referrer_reward?: ReferrerRewardInfo } | undefined)?.referrer_reward ?? null
 }
 
 /**
@@ -165,7 +165,7 @@ export function getCachedRemainingPasses(): number | null {
   if (!orgId) return null
   const config = getGlobalConfig()
   const cachedEntry = config.passesEligibilityCache?.[orgId]
-  return cachedEntry?.remaining_passes ?? null
+  return (cachedEntry as { remaining_passes?: number | null } | undefined)?.remaining_passes ?? null
 }
 
 /**
@@ -191,7 +191,7 @@ export async function fetchAndStorePassesEligibility(): Promise<ReferralEligibil
       const response = await fetchReferralEligibility()
 
       const cacheEntry = {
-        ...response,
+        ...(response as Record<string, unknown>),
         timestamp: Date.now(),
       }
 

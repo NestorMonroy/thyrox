@@ -9,7 +9,10 @@ import {
 } from '../../PermissionUpdate.js'
 import type { PermissionUpdateDestination } from '../../PermissionUpdateSchema.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
-import { Select } from '@thyrox/repl/components/CustomSelect/select.js'
+import {
+  Select,
+  type OptionWithDescription,
+} from '@thyrox/repl/components/CustomSelect/select.js'
 import { useExitOnCtrlCDWithKeybindings } from '@thyrox/repl/hooks/useExitOnCtrlCDWithKeybindings.js'
 import { useSearchInput } from '@anthropic/ink/search'
 import { type KeyboardEvent, Box, Text, useTerminalFocus } from '@anthropic/ink'
@@ -35,7 +38,6 @@ import type { UnreachableRule } from '../../shadowedRuleDetection.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { Pane, Tab, Tabs, useTabHeaderFocus, useTabsWidth } from '@anthropic/ink'
 import { SearchBox } from '@anthropic/ink'
-import type { Option } from '@thyrox/repl/components/ui/option.js'
 import { AddPermissionRules } from './AddPermissionRules.js'
 import { AddWorkspaceDirectory } from './AddWorkspaceDirectory.js'
 import { PermissionRuleDescription } from './PermissionRuleDescription.js'
@@ -158,7 +160,7 @@ function RuleDetails({
 }
 
 type RulesTabContentProps = {
-  options: Option[]
+  options: OptionWithDescription<string>[]
   searchQuery: string
   isSearchMode: boolean
   isFocused: boolean
@@ -222,7 +224,7 @@ function PermissionRulesTab({
   ...rulesProps
 }: {
   tab: 'allow' | 'ask' | 'deny'
-  getRulesOptions: (tab: TabType, query?: string) => { options: Option[] }
+  getRulesOptions: (tab: TabType, query?: string) => { options: OptionWithDescription<string>[] }
   handleToolSelect: (value: string, tab: TabType) => void
 } & Omit<RulesTabContentProps, 'options' | 'onSelect'>): React.ReactNode {
   return (
@@ -346,7 +348,7 @@ export function PermissionRuleList({
         }
       })()
 
-      const options: Option[] = []
+      const options: OptionWithDescription<string>[] = []
 
       // Only show "Add a new rule" for allow and deny tabs (and not when searching)
       if (tab !== 'workspace' && tab !== 'recent' && !query) {

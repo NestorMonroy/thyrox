@@ -15,6 +15,7 @@ import { inspect } from 'util'
 import { getGlobalConfig } from '@thyrox/config'
 import { StateError } from '../errors.js'
 import { getAgentHostBindings } from '../host.js'
+import type { AgentHostBindings } from '../host.js'
 import type { AgentLogOption } from '../internalTypes.js'
 import {
   getErrnoCode,
@@ -47,6 +48,29 @@ export type FileHistoryState = {
   snapshotSequence: number
 }
 
+// `host.ts` declara un subconjunto de `AgentHostBindings` (ver su nota de
+// divergencia de alcance) que aún no incluye los bindings de historial de
+// archivo que este módulo consume. Se amplía aquí, localmente, con la firma
+// exacta que la fuente (`contracts.ts`) declara para cada uno.
+type FileHistoryHostBindings = AgentHostBindings & {
+  getIsNonInteractiveSession?: () => boolean
+  getClaudeConfigHomeDir?: () => string
+  recordFileHistorySnapshot?: (
+    messageId: string,
+    snapshot: FileHistorySnapshot,
+    isSnapshotUpdate: boolean,
+  ) => Promise<void>
+  notifyVscodeFileUpdated?: (
+    filePath: string,
+    oldContent: string | null,
+    newContent: string | null,
+  ) => void
+}
+
+function getFileHistoryHostBindings(): FileHistoryHostBindings {
+  return getAgentHostBindings() as FileHistoryHostBindings
+}
+
 const MAX_SNAPSHOTS = 100
 export type DiffStats =
   | {
@@ -57,7 +81,7 @@ export type DiffStats =
   | undefined
 
 export function fileHistoryEnabled(): boolean {
-  if (getAgentHostBindings().getIsNonInteractiveSession?.() ?? false) {
+  if (getFileHistoryHostBindings().getIsNonInteractiveSession?.() ?? false) {
     return fileHistoryEnabledSdk()
   }
   return (
@@ -165,7 +189,7 @@ export async function fileHistoryTrackEdit(
       maybeDumpStateForDebug(updatedState)
 
       // Record a snapshot update since it has changed.
-      void getAgentHostBindings().recordFileHistorySnapshot?.(
+      void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
         messageId,
         updatedMostRecentSnapshot,
         true, // isSnapshotUpdate
@@ -312,7 +336,7 @@ export async function fileHistoryMakeSnapshot(
       void notifyVscodeSnapshotFilesUpdated(state, updatedState).catch(e => getAgentHostBindings().logError?.(e))
 
       // Record the file history snapshot to session storage for resume support
-      void getAgentHostBindings().recordFileHistorySnapshot?.(
+      void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
         messageId,
         newSnapshot,
         false, // isSnapshotUpdate
@@ -727,7 +751,7 @@ function getBackupFileName(filePath: string, version: number): string {
 }
 
 function resolveBackupPath(backupFileName: string, sessionId?: string): string {
-  const configDir = getAgentHostBindings().getClaudeConfigHomeDir?.() ?? ''
+  const configDir = getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? ''
   return join(
     configDir,
     'file-history',
@@ -949,7 +973,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     // All backups share the same directory: {configDir}/file-history/{sessionId}/
     // Create it once upfront instead of once per backup file
     const newBackupDir = join(
-      getAgentHostBindings().getClaudeConfigHomeDir?.() ?? '',
+      getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? '',
       'file-history',
       sessionId,
     )
@@ -1017,7 +1041,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
 
         // Record the snapshot only if we have successfully migrated the backup files
         if (!copyFailed) {
-          void getAgentHostBindings().recordFileHistorySnapshot?.(
+          void getFileHistoryHostBindings().recordFileHistorySnapshot?.(
             snapshot.messageId,
             snapshot,
             false, // isSnapshotUpdate
@@ -1090,7 +1114,7 @@ async function notifyVscodeSnapshotFilesUpdated(
 
     // Only notify if content actually changed
     if (oldContent !== newContent) {
-      getAgentHostBindings().notifyVscodeFileUpdated?.(filePath, oldContent, newContent)
+      getFileHistoryHostBindings().notifyVscodeFileUpdated?.(filePath, oldContent, newContent)
     }
   }
 }

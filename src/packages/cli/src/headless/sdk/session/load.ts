@@ -166,7 +166,12 @@ export async function loadInitialMessages(
             }
           }
         }
-        restoreSessionStateFromLog(result, setAppState)
+        // restoreSessionStateFromLog opera sobre AppStateLike (contrato
+        // estructural que storage usa para no importar el AppState real);
+        // se adapta al setAppState concreto en el borde de la llamada.
+        restoreSessionStateFromLog(result, update =>
+          setAppState(prev => update(prev) as AppState),
+        )
 
         // Restore session metadata so it's re-appended on exit via reAppendSessionMetadata
         restoreSessionMetadata(
@@ -366,7 +371,11 @@ export async function loadInitialMessages(
           await resetSessionFilePointer()
         }
       }
-      restoreSessionStateFromLog(result, setAppState)
+      // restoreSessionStateFromLog opera sobre AppStateLike; se adapta al
+      // setAppState concreto en el borde de la llamada.
+      restoreSessionStateFromLog(result, update =>
+        setAppState(prev => update(prev) as AppState),
+      )
 
       // Restore session metadata so it's re-appended on exit via reAppendSessionMetadata
       restoreSessionMetadata(

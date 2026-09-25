@@ -224,6 +224,7 @@ export async function toolToAPISchema(
       return 'F:'
     }
     if (
+      options.model &&
       getAPIProvider() === 'vertex' &&
       !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
       modelOptInForEagerStreaming(options.model, 'vertex')
@@ -231,6 +232,7 @@ export async function toolToAPISchema(
       return 'F:'
     }
     if (
+      options.model &&
       getAPIProvider() === 'bedrock' &&
       !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
       modelOptInForEagerStreaming(options.model, 'bedrock')
@@ -317,6 +319,7 @@ export async function toolToAPISchema(
     ) {
       base.eager_input_streaming = true
     } else if (
+      options.model &&
       getAPIProvider() === 'vertex' &&
       !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
       modelOptInForEagerStreaming(options.model, 'vertex')
@@ -324,6 +327,7 @@ export async function toolToAPISchema(
       // ant v2.1.133: per-model opt-in for Vertex
       base.eager_input_streaming = true
     } else if (
+      options.model &&
       getAPIProvider() === 'bedrock' &&
       !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
       modelOptInForEagerStreaming(options.model, 'bedrock')

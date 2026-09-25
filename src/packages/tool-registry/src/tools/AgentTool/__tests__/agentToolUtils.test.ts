@@ -183,7 +183,7 @@ const {
   getLastToolUseName,
 } = await import("../agentToolUtils");
 
-function makeAssistantMessage(content: any[]): any {
+function makeAssistantMessage(content: any[] | null): any {
   return { type: "assistant", message: { content } };
 }
 
@@ -263,7 +263,7 @@ describe("getLastToolUseName", () => {
   });
 
   test("handles message with null content", () => {
-    const msg = { type: "assistant", message: { content: null } };
+    const msg = makeAssistantMessage(null);
     expect(getLastToolUseName(msg)).toBeUndefined();
   });
 });

@@ -80,6 +80,9 @@ export function isNavigableMessage(msg: NavigableMessage): boolean {
           return msg.attachment.sentinel !== true
       }
       return false
+    // El spinner de streaming no tiene estado final que abrir — no navegable.
+    case 'progress':
+      return false
   }
 }
 
@@ -375,7 +378,7 @@ function copyTextOf(msg: NavigableMessage): string {
         .filter(Boolean)
         .join('\n\n')
     case 'system':
-      if ('content' in msg) return msg.content
+      if ('content' in msg) return String(msg.content)
       if ('error' in msg) return String(msg.error)
       return msg.subtype
     case 'attachment': {
@@ -388,6 +391,9 @@ function copyTextOf(msg: NavigableMessage): string {
       }
       return `[${a.type}]`
     }
+    // Sin texto propio que copiar — mismo caso que arriba.
+    case 'progress':
+      return ''
   }
 }
 

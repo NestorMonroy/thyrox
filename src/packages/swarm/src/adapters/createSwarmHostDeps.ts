@@ -104,7 +104,7 @@ function notImplemented(name: string): never {
 
 function getToolsFromContext(
   context?: Partial<ToolUseContext>,
-): readonly NonNullable<ToolUseContext['options']>['tools'] {
+): NonNullable<ToolUseContext['options']>['tools'] {
   return context?.options?.tools ?? []
 }
 
@@ -175,16 +175,17 @@ export function createSwarmHostDeps(
       async execute(tool, input, toolContext) {
         // Sin puerta de permisos inyectada, el default permite: la decisión de
         // negar es del anfitrión, y fabricarla aquí la escondería.
-        const canUseTool = options.permissions?.canUseTool
+        const permissionsCanUseTool = options.permissions?.canUseTool
+        const canUseTool = permissionsCanUseTool
           ? async (
               requestedTool: typeof tool,
               requestedInput: unknown,
               requestedContext: typeof toolContext,
             ) => {
-              const result = await options.permissions!.canUseTool(
+              const result = await permissionsCanUseTool(
                 requestedTool,
                 requestedInput,
-                requestedContext,
+                requestedContext as { mode: string; input: unknown; [key: string]: unknown },
               )
               return {
                 behavior: result.allowed ? 'allow' : 'deny',
@@ -269,8 +270,8 @@ export function createSwarmHostDeps(
       writeFile(path, content) {
         return fsWriteFile(path, content)
       },
-      mkdir(path, mkdirOptions) {
-        return mkdir(path, mkdirOptions)
+      async mkdir(path, mkdirOptions) {
+        await mkdir(path, mkdirOptions)
       },
       exists(path) {
         return Promise.resolve(existsSync(path))

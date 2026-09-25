@@ -6,12 +6,26 @@
  * The npm semver fallback always uses { loose: true }.
  */
 
-let _npmSemver: typeof import('semver') | undefined
+/**
+ * Subset de la API de `semver` que este módulo consume. Se declara a mano
+ * porque el paquete no trae tipos propios y no hay `@types/semver` instalado.
+ */
+interface NpmSemver {
+  gt(a: string, b: string, options?: { loose?: boolean }): boolean
+  gte(a: string, b: string, options?: { loose?: boolean }): boolean
+  lt(a: string, b: string, options?: { loose?: boolean }): boolean
+  lte(a: string, b: string, options?: { loose?: boolean }): boolean
+  satisfies(version: string, range: string, options?: { loose?: boolean }): boolean
+  compare(a: string, b: string, options?: { loose?: boolean }): -1 | 0 | 1
+  parse(version: string, options?: { loose?: boolean }): { version: string } | null
+}
 
-function getNpmSemver(): typeof import('semver') {
+let _npmSemver: NpmSemver | undefined
+
+function getNpmSemver(): NpmSemver {
   if (!_npmSemver) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    _npmSemver = require('semver') as typeof import('semver')
+    _npmSemver = require('semver') as NpmSemver
   }
   return _npmSemver
 }

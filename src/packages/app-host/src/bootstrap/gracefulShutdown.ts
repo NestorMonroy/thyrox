@@ -635,7 +635,7 @@ export async function gracefulShutdown(
   // Registra el rendimiento de arranque antes de que el apagado de
   // analytics vacíe/cancele timers
   try {
-    profileReport()
+    profileReport({ sessionId: getSessionId() })
   } catch {
     // Ignora errores de profiling durante el apagado
   }

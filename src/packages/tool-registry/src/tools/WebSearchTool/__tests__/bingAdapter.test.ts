@@ -479,7 +479,7 @@ describe('BingSearchAdapter.search', () => {
   })
 
   test('encodes query parameter in URL', async () => {
-    const axiosGet = mock(() => Promise.resolve({ data: SAMPLE_HTML }))
+    const axiosGet = mock((_url: string, _config?: unknown) => Promise.resolve({ data: SAMPLE_HTML }))
     mock.module('axios', () => ({
       default: {
         get: axiosGet,

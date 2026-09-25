@@ -85,6 +85,10 @@ function deriveThyroxReferences(): DerivedHit[] {
     const stripped = text.replace(TYPE_ONLY_IMPORT_RE, '')
     for (const match of stripped.matchAll(THYROX_REFERENCE_RE)) {
       const packageName = match[1]
+      // El grupo de captura es obligatorio en THYROX_REFERENCE_RE (sin `?`),
+      // así que siempre está presente en runtime; noUncheckedIndexedAccess
+      // igual tipa el acceso como opcional.
+      if (packageName === undefined) continue
       const upToMatch = stripped.slice(0, match.index ?? 0)
       const lineNumber = upToMatch.split('\n').length
       hits.push({
@@ -171,6 +175,7 @@ describe('dependencias declaradas de @thyrox/app-host', () => {
         `@thyrox/${packageName}: no declarado en dependencies de app-host ` +
           `— deuda heredada, fuera de TASK-THYROX-0005; sitio: ` +
           `${site.filePath}:${site.lineNumber}${voiceNote}`,
+        () => {},
       )
     } else {
       test(`@thyrox/${packageName} está declarado en dependencies`, () => {

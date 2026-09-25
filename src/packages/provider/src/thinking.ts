@@ -237,8 +237,9 @@ export function setThinkingTypeOverride(
 }
 
 export function shouldEnableThinkingByDefault(): boolean {
-  if (readEnv('MAX_THINKING_TOKENS')) {
-    return parseInt(readEnv('MAX_THINKING_TOKENS'), 10) > 0
+  const maxThinkingTokens = readEnv('MAX_THINKING_TOKENS')
+  if (maxThinkingTokens) {
+    return parseInt(maxThinkingTokens, 10) > 0
   }
 
   const { settings } = getSettingsWithErrors()

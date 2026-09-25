@@ -10,6 +10,7 @@ import {
 } from './hooks.js'
 import { clearCwdEnvFiles } from '@thyrox/storage/sessionEnvironment.js'
 import { getHooksConfigFromSnapshot } from './hooksConfigSnapshot.js'
+import type { HookCallbackMatcher } from './types/hooks.js'
 
 let watcher: FSWatcher | null = null
 let currentCwd: string
@@ -48,7 +49,10 @@ export function initializeFileChangedWatcher(cwd: string): void {
 function resolveWatchPaths(
   config?: ReturnType<typeof getHooksConfigFromSnapshot>,
 ): string[] {
-  const matchers = (config ?? getHooksConfigFromSnapshot())?.FileChanged ?? []
+  const matchers =
+    ((config ?? getHooksConfigFromSnapshot())?.FileChanged as
+      | HookCallbackMatcher[]
+      | undefined) ?? []
 
   // Matcher field: filenames to watch in cwd, pipe-separated (e.g. ".envrc|.env")
   const staticPaths: string[] = []

@@ -202,7 +202,9 @@ if ($proc) { [WinShow]::ShowWindow($proc.MainWindowHandle, 9) | Out-Null; [WinSh
 // ScreenshotAPI
 // ---------------------------------------------------------------------------
 
-export const screenshot: ScreenshotAPI = {
+export const screenshot: ScreenshotAPI & {
+  captureWindowTarget(titleOrHwnd: string | number): ScreenshotResult | null
+} = {
   async captureExcluding(_allowedBundleIds, _quality, _targetW, _targetH, displayId) {
     const raw = await psAsync(`
 Add-Type -AssemblyName System.Windows.Forms

@@ -85,7 +85,6 @@ import {
 } from './hooksConfigSnapshot.js'
 import {
   addSessionHook,
-  getSessionHooks,
   removeSessionHook,
 } from './hooks/sessionHooks.js'
 import type { HookCommand } from './types/hooks.js'
@@ -294,13 +293,17 @@ function buildGoalSentinelAttachment(
  * `type === 'prompt'`.
  */
 function existingGoalHooks(ctx: GoalHookContext): HookCommand[] {
+  // No se usa getSessionHooks: exige el AppState completo del app-host, y
+  // ctx.getAppState() sólo expone el subconjunto declarado en
+  // GoalHookContext. Se lee sessionHooks directamente, misma forma que
+  // clearGoalRuntimeState usa unas líneas más abajo.
   const state = ctx.getAppState()
-  const hooksMap = getSessionHooks(state, ctx.sessionId, 'Stop')
-  const stop = hooksMap.get('Stop') ?? []
+  const store = state.sessionHooks.get(ctx.sessionId)
+  const stop = store?.hooks.Stop ?? []
   const matches: HookCommand[] = []
   for (const matcher of stop) {
     if (matcher.matcher !== '' || matcher.skillRoot !== undefined) continue
-    for (const hook of matcher.hooks) {
+    for (const { hook } of matcher.hooks) {
       if (hook.type === 'prompt') matches.push(hook)
     }
   }

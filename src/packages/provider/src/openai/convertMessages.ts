@@ -121,7 +121,7 @@ function convertInternalUserMessage(
   msg: ProviderUserMessage,
 ): ChatCompletionMessageParam[] {
   const result: ChatCompletionMessageParam[] = []
-  const content = msg.message.content
+  const content = msg.message?.content
 
   if (typeof content === 'string') {
     result.push({ role: 'user', content })
@@ -197,7 +197,7 @@ function convertToolResult(
 function convertInternalAssistantMessage(
   msg: ProviderAssistantMessage,
 ): ChatCompletionMessageParam[] {
-  const content = msg.message.content
+  const content = msg.message?.content
 
   if (typeof content === 'string') {
     return [{ role: 'assistant', content }]

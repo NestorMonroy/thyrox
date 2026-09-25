@@ -17,10 +17,21 @@ import {
 
 type Msg = Parameters<typeof projectSnippedView>[0][number]
 
+/**
+ * Construye un mensaje de sistema con `subtype` arbitrario para fixtures de
+ * prueba. El parámetro tipado como `string` (no literal) evita que TS
+ * infiera el literal del argumento y lo compare contra los subtypes
+ * declarados en `SystemMessage` — el mismo objeto, sin literal inference de
+ * más.
+ */
+function systemMessageWithSubtype(subtype: string): Msg {
+  return { type: 'system', subtype } as Msg
+}
+
 describe('isSnipBoundaryMessage', () => {
   test('devuelve true para un mensaje de sistema con subtype=snip_boundary', () => {
     expect(
-      isSnipBoundaryMessage({ type: 'system', subtype: 'snip_boundary' } as Msg),
+      isSnipBoundaryMessage(systemMessageWithSubtype('snip_boundary')),
     ).toBe(true)
   })
 
@@ -56,10 +67,7 @@ describe('isSnipBoundaryMessage', () => {
 
   test('el check de subtype es match exacto de cadena (sensible a mayúsculas)', () => {
     expect(
-      isSnipBoundaryMessage({
-        type: 'system',
-        subtype: 'SNIP_BOUNDARY',
-      } as Msg),
+      isSnipBoundaryMessage(systemMessageWithSubtype('SNIP_BOUNDARY')),
     ).toBe(false)
   })
 })

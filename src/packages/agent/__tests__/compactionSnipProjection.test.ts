@@ -3,8 +3,8 @@ import { isSnipBoundaryMessage, projectSnippedView } from '../compaction/snipPro
 import type { Message } from '../messageShapes.ts'
 
 const boundary: Message = { type: 'system', subtype: 'snip_boundary' }
-const otherSystem: Message = { type: 'system', subtype: 'other' }
-const user: Message = { type: 'user' }
+const otherSystem: Message = { type: 'system', subtype: 'thinking', uuid: '00000000-0000-0000-0000-000000000000' }
+const user: Message = { type: 'user', uuid: '00000000-0000-0000-0000-000000000000', message: {} }
 
 describe('isSnipBoundaryMessage', () => {
   test('un system con subtype snip_boundary es la frontera', () => {
@@ -14,7 +14,7 @@ describe('isSnipBoundaryMessage', () => {
     expect(isSnipBoundaryMessage(otherSystem)).toBe(false)
   })
   test('un mensaje que no es system nunca lo es, aunque lleve el subtype', () => {
-    expect(isSnipBoundaryMessage({ type: 'user', subtype: 'snip_boundary' } as Message)).toBe(false)
+    expect(isSnipBoundaryMessage({ type: 'user', uuid: '00000000-0000-0000-0000-000000000000', message: {}, subtype: 'snip_boundary' })).toBe(false)
   })
 })
 

@@ -2604,7 +2604,7 @@ interface RowProps {
   prCache: FleetPrCache | undefined
   /** Per-row presence from daemon roster (busy/shell/waiting/undefined). */
   presence: FleetPresence
-  onMouseEnter: () => void
+  onMouseEnter: (() => void) | undefined
   onClick: () => void
 }
 

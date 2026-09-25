@@ -240,6 +240,20 @@ export function ExitPlanModePermissionRequest({
     ? !ultraplanSessionUrl && !ultraplanLaunching
     : false
   const usage = toolUseConfirm.assistantMessage.message.usage
+  const normalizedUsage =
+    typeof usage?.input_tokens === 'number'
+      ? {
+          input_tokens: usage.input_tokens,
+          cache_creation_input_tokens:
+            typeof usage.cache_creation_input_tokens === 'number'
+              ? usage.cache_creation_input_tokens
+              : undefined,
+          cache_read_input_tokens:
+            typeof usage.cache_read_input_tokens === 'number'
+              ? usage.cache_read_input_tokens
+              : undefined,
+        }
+      : undefined
   const { mode, isAutoModeAvailable, isBypassPermissionsModeAvailable } =
     toolPermissionContext
   const autoModeAvailableAndOptedIn =
@@ -252,7 +266,7 @@ export function ExitPlanModePermissionRequest({
         showClearContext,
         showUltraplan,
         usedPercent: showClearContext
-          ? getContextUsedPercent(usage, mode)
+          ? getContextUsedPercent(normalizedUsage, mode)
           : null,
         isAutoModeAvailable: autoModeAvailableAndOptedIn,
         isBypassPermissionsModeAvailable,

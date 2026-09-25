@@ -312,6 +312,14 @@ function InstallOnMount({
   return null
 }
 
+// LocalJSXCommandContext sólo declara dynamicMcpConfig como Record<string, unknown>
+// (escape hatch compartido); este comando conoce su forma real de configuración.
+type IdeCommandContext = LocalJSXCommandContext & {
+  options: LocalJSXCommandContext['options'] & {
+    dynamicMcpConfig?: Record<string, ScopedMcpServerConfig>
+  }
+}
+
 export async function call(
   onDone: (
     result?: string,
@@ -324,7 +332,7 @@ export async function call(
   const {
     options: { dynamicMcpConfig },
     onChangeDynamicMcpConfig,
-  } = context
+  } = context as IdeCommandContext
 
   // Handle 'open' argument
   if (args?.trim() === 'open') {

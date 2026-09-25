@@ -26,7 +26,7 @@ import {
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js'
 import { type ReadonlySettings, useSettings } from '../hooks/useSettings.js'
 import { Ansi, Box, Text } from '@anthropic/ink'
-import { getRawUtilization, isFiniteWindow } from '@thyrox/provider/claudeAiLimits.js'
+import { getRawUtilization, isFiniteWindow, type RateLimitsPayload } from '@thyrox/provider/claudeAiLimits.js'
 import type { Message } from '@thyrox/agent/messageShapes'
 import type { StatusLineCommandInput } from '../replTypes/statusLine.js'
 import type { VimMode } from '../textInputTypes.js'
@@ -94,7 +94,7 @@ function buildStatusLineCommandInput(
   const sessionId = getSessionId()
   const sessionName = getCurrentSessionTitle(sessionId)
   const rawUtil = getRawUtilization()
-  const rateLimits: StatusLineCommandInput['rate_limits'] = {
+  const rateLimits: RateLimitsPayload = {
     ...(isFiniteWindow(rawUtil.five_hour) && {
       five_hour: {
         used_percentage: rawUtil.five_hour.utilization * 100,
