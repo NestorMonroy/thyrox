@@ -245,6 +245,23 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
                                        package_root=packages if packages.is_dir() else root)
             reached |= set(new_by_file) & owned
             hit = [pid for pid in accepted if set(applied[pid]) & reached]
+            if not hit:
+                # Nada llega a lo nuevo: antes de culpar a nadie se mide la
+                # base con todo revertido. Si lo nuevo sigue, el árbol no es el
+                # que midió `--before-log`, y bisecar culparía a inocentes
+                # (paso 098: 22 pasadas, las 11 parciales culpadas por un
+                # import sin usar que ninguna tocó).
+                for pid in accepted:
+                    write(pid, applied[pid])
+                counter["n"] += 1
+                base_now = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+                drift, _ = _new_diagnostics(before_lines, base_now)
+                if drift:
+                    raise RuntimeError(
+                        f"línea base desfasada: {len(drift)} diagnóstico(s) nuevo(s) con todas las "
+                        f"propuestas revertidas; el árbol no coincide con el log previo ({drift[0]})")
+                for pid in accepted:
+                    write(pid, patched[pid])
             suspects = hit or accepted
         clean = [pid for pid in accepted if pid not in suspects]
         kept_suspects, final_lines = settle(suspects, before_lines, lines)

@@ -347,5 +347,28 @@ with tempfile.TemporaryDirectory() as directory:
                  (3, "revealed", ["fix:b.ts", "fix:c.ts", "fix:d.ts"], 1),
                  (report.tsc_runs, report.outcomes["fix:a.ts"], sorted(report.accepted), report.total_final))
 
+
+# Línea base desfasada: el árbol trae un diagnóstico (e.ts) que el log previo
+# no tiene y que ninguna propuesta alcanza. El paso rehúsa en vez de culpar,
+# y deja el árbol sin las propuestas.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "b.ts").write_text("const b = BAD2\n")
+    (base / "e.ts").write_text("const e = BAD9\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", "const a = BAD1\n", "BAD1", "1", ["a.ts: TS9001: bad 1."]),
+            proposal("fix:b.ts", "agent", "b.ts", "const b = BAD2\n", "BAD2", "2", ["b.ts: TS9001: bad 2."])]
+    stale = ["a.ts(1,1): error TS9001: bad 1.", "b.ts(1,1): error TS9001: bad 2."]
+    try:
+        step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl", base / "bench",
+                      seed=7, epsilon=0.5, alpha0=0.5, max_batch=None, before_lines=stale)
+        refused = "no rehusó"
+    except RuntimeError as error:
+        refused = "línea base desfasada" in str(error)
+    assert_equal("una línea base desfasada rehúsa y no culpa a nadie",
+                 (True, "const a = BAD1\n", False),
+                 (refused, (base / "a.ts").read_text(), (base / "ledger.jsonl").exists()))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
