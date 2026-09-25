@@ -1,14 +1,8 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/fileStateCache.test.ts`.
- * `cloneFileStateCache` clona una cache LRU vía dump/load, preservando la
- * clase concreta del original — un stub duck-typed permite probarlo sin
- * traer la implementación real de la cache.
- */
 import { describe, expect, test } from 'bun:test'
-import { cloneFileStateCache } from '../internal/fileStateCache.ts'
+import { cloneFileStateCache } from '../internal/fileStateCache.js'
 
-// Stub de la clase FileStateCache — implementa el contrato duck-type:
-// `max`, `maxSize`, `dump()`, `load()`, más un constructor de 2 argumentos.
+// Stub FileStateCache class — implements the duck-type contract:
+// `max`, `maxSize`, `dump()`, `load()`, plus a 2-arg constructor.
 class StubCache {
   readonly max: number
   readonly maxSize: number
@@ -38,26 +32,26 @@ class StubCache {
 }
 
 describe('cloneFileStateCache', () => {
-  test('devuelve una instancia nueva (no la misma referencia)', () => {
+  test('returns a new instance (not the same reference)', () => {
     const original = new StubCache(10, 1024)
     const cloned = cloneFileStateCache(original)
     expect(cloned).not.toBe(original)
   })
 
-  test('devuelve una instancia del mismo constructor', () => {
+  test('returns an instance of the same constructor', () => {
     const original = new StubCache(10, 1024)
     const cloned = cloneFileStateCache(original)
     expect(cloned).toBeInstanceOf(StubCache)
   })
 
-  test('preserva max y maxSize del original', () => {
+  test('preserves max and maxSize from the original', () => {
     const original = new StubCache(50, 4096)
     const cloned = cloneFileStateCache(original)
     expect(cloned.max).toBe(50)
     expect(cloned.maxSize).toBe(4096)
   })
 
-  test('el clon recibe las entradas volcadas', () => {
+  test('clone receives the dumped entries', () => {
     const original = new StubCache(10, 1024)
     original.set('foo', 'bar')
     original.set('baz', 'qux')
@@ -66,7 +60,7 @@ describe('cloneFileStateCache', () => {
     expect(cloned.get('baz')).toBe('qux')
   })
 
-  test('el clon es independiente — mutar el clon no afecta al original', () => {
+  test('clone is independent — mutating the clone does not affect the original', () => {
     const original = new StubCache(10, 1024)
     original.set('a', '1')
     const cloned = cloneFileStateCache(original) as StubCache
@@ -75,7 +69,7 @@ describe('cloneFileStateCache', () => {
     expect(cloned.get('b')).toBe('2')
   })
 
-  test('el clon es independiente — mutar el original tras clonar no afecta al clon', () => {
+  test('clone is independent — mutating the original after clone does not affect the clone', () => {
     const original = new StubCache(10, 1024)
     original.set('a', 'first')
     const cloned = cloneFileStateCache(original) as StubCache
@@ -83,7 +77,7 @@ describe('cloneFileStateCache', () => {
     expect(cloned.get('a')).toBe('first')
   })
 
-  test('maneja una cache original vacía', () => {
+  test('handles empty original cache', () => {
     const original = new StubCache(10, 1024)
     const cloned = cloneFileStateCache(original) as StubCache
     expect(cloned.get('anything')).toBeUndefined()
@@ -91,9 +85,9 @@ describe('cloneFileStateCache', () => {
     expect(cloned.maxSize).toBe(1024)
   })
 
-  test('clona vía el constructor de la instancia original (preserva la identidad de subclase)', () => {
-    // Test de subclase — la función usa `cache.constructor as new (...) => ...`
-    // así que las subclases se clonan al MISMO tipo de subclase, no al padre.
+  test('clones via the original instance constructor (preserves subclass identity)', () => {
+    // Subclass test — the function uses `cache.constructor as new (...) => ...`
+    // so subclasses get cloned to the SAME subclass type, not the parent.
     class SubCache extends StubCache {
       readonly subclassMarker = 'sub'
     }

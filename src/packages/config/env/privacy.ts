@@ -1,19 +1,20 @@
 /**
- * Puerto de `ccnmt: packages/config/env/privacy.ts` (37 líneas fuente).
- * Reimplementación fiel VERBATIM.
+ * V7 §8.6 — privacy-related env gates (analytics / feedback survey disable).
  *
- * Puertas de entorno relacionadas con privacidad (deshabilitar analytics /
- * encuesta de feedback). Devuelve booleanos derivados de flags de entorno
- * de proveedor cloud y de la política de telemetría instalada.
+ * Moved from src/services/privacyConfig.ts. Returns booleans derived from
+ * cloud-provider env flags and the installed telemetry policy.
  *
- * `isTelemetryDisabledForPrivacyConfig` consulta una función inyectada por
- * el host (`../privacy-level.ts`, del mismo pase); por defecto es `false`.
+ * `isTelemetryDisabled` comes from `../privacy-level.ts` (to be added in the
+ * same migration); for now it's stubbed to `false` — the dev/build-time
+ * stubbed modules register file paths that return false anyway, matching
+ * external-build DCE.
  */
-import { isEnvTruthy } from './utils.ts'
+
+import { isEnvTruthy } from './utils.js'
 
 /**
- * Sonda de "telemetría deshabilitada" inyectada por el host. Por defecto
- * `false`. La fija el módulo `privacy-level` del host.
+ * Host-injected telemetry-disabled probe. Defaults to `false`.
+ * Set by the host's privacy-level module.
  */
 let _isTelemetryDisabled: () => boolean = () => false
 

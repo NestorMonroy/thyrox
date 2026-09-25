@@ -1,36 +1,17 @@
 /**
- * Puerto fiel de
- * `ccnmt: packages/storage/src/filePersistence/outputsScanner.ts` (4272
- * bytes fuente, 4 símbolos exportados — porte completo).
- *
  * Outputs directory scanner for file persistence
  *
  * This module provides utilities to:
  * - Detect the session type from environment variables
  * - Capture turn start timestamp
  * - Find modified files by comparing file mtimes against turn start time
- *
- * Divergencias declaradas — dos dependencias de paquete hermano ausente
- * (DEC-04):
- *
- * - `logForDebugging` — la de `../internal/pendingCrossPackageDeps.js`
- *   (ya establecida por ese módulo para todo el paquete).
- * - `EnvironmentKind` (de
- *   `@claude-code-how-works/teleport/environments.js`) — la fuente de ese
- *   tipo declara `'anthropic_cloud' | 'byoc' | 'bridge'` (3 miembros);
- *   este módulo sólo reconoce dos de ellos (`'byoc'`/`'anthropic_cloud'`),
- *   así que se declara localmente sólo con esos dos — un tercer valor
- *   real ('bridge') seguiría cayendo al `null` que ya maneja el `if`, sin
- *   cambio de comportamiento observable desde aquí.
  */
 
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { logForDebugging } from '../internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import type { EnvironmentKind } from '@thyrox/teleport/environments.js'
 import type { TurnStartTime } from './types.js'
-
-/** Sustituto local del subconjunto de `EnvironmentKind` que este módulo usa. */
-export type EnvironmentKind = 'byoc' | 'anthropic_cloud'
 
 /** Shared debug logger for file persistence modules */
 export function logDebug(message: string): void {

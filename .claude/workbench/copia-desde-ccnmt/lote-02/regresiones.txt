@@ -1,0 +1,2 @@
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts

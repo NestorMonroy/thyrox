@@ -1,17 +1,16 @@
-/**
- * Combinacion de senales de aborto con vencimiento propio — porte de
- * `ccnmt: packages/agent/combinedAbortSignal.ts`.
- */
-import { createAbortController } from './abortController.ts'
+import { createAbortController } from './abortController.js'
 
 /**
- * Una senal que aborta cuando lo hace `signal`, cuando lo hace `signalB`, o
- * cuando vence `timeoutMs`. Devuelve tambien la limpieza de sus escuchas.
+ * Creates a combined AbortSignal that aborts when the input signal aborts,
+ * an optional second signal aborts, or an optional timeout elapses.
+ * Returns both the signal and a cleanup function that removes event listeners
+ * and clears the internal timeout timer.
  *
- * El vencimiento se pasa como `timeoutMs` y NO como una tercera senal creada
- * con `AbortSignal.timeout(ms)`: bajo Bun ese temporizador se finaliza de
- * forma perezosa y se acumula en memoria nativa hasta disparar. Con
- * `setTimeout`/`clearTimeout` la limpieza lo libera en el acto.
+ * Use `timeoutMs` instead of passing `AbortSignal.timeout(ms)` as a signal —
+ * under Bun, `AbortSignal.timeout` timers are finalized lazily and accumulate
+ * in native memory until they fire (measured ~2.4KB/call held for the full
+ * timeout duration). This implementation uses `setTimeout` + `clearTimeout`
+ * so the timer is freed immediately on cleanup.
  */
 export function createCombinedAbortSignal(
   signal: AbortSignal | undefined,
@@ -20,14 +19,13 @@ export function createCombinedAbortSignal(
   const { signalB, timeoutMs } = opts ?? {}
   const combined = createAbortController()
 
-  // Alguna ya abortó: la combinada nace abortada y no hay nada que limpiar.
   if (signal?.aborted || signalB?.aborted) {
     combined.abort()
     return { signal: combined.signal, cleanup: () => {} }
   }
 
   let timer: ReturnType<typeof setTimeout> | undefined
-  const abortCombined = (): void => {
+  const abortCombined = () => {
     if (timer !== undefined) clearTimeout(timer)
     combined.abort()
   }
@@ -39,7 +37,7 @@ export function createCombinedAbortSignal(
   signal?.addEventListener('abort', abortCombined)
   signalB?.addEventListener('abort', abortCombined)
 
-  const cleanup = (): void => {
+  const cleanup = () => {
     if (timer !== undefined) clearTimeout(timer)
     signal?.removeEventListener('abort', abortCombined)
     signalB?.removeEventListener('abort', abortCombined)

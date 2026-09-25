@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/permission/src/__tests__/pathSafety.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+77 | /** Segmentos que una ruta de la sesión no puede cruzar (≙ `USt`). */
+78 | const SESSION_PATH_FORBIDDEN_SEGMENTS = new Set([
+79 |   '.git', 'hooks', '.husky', '.githooks', 'node_modules', '.vscode', '.idea', 'head', 'config',
+80 |   'objects', 'refs', '.claude', 'skills', 'commands', 'agents', '.cargo', '.devcontainer', '.yarn', '.mvn',
+81 | ])
+82 | const SENSITIVE_FILE_NAMES = new Set(SENSITIVE_FILES.map(f => f.toLowerCase()))
+                                          ^
+ReferenceError: Cannot access 'SENSITIVE_FILES' before initialization.
+      at /home/user/thyrox/src/packages/permission/src/internalPaths.ts:82:38
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [1159.00ms]
+exit=1

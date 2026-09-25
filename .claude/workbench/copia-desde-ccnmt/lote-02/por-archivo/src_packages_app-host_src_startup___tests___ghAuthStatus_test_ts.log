@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:
+36 |     Bun.spawn = (cmd: string[]) => {
+37 |       expect(cmd).toEqual(['gh', 'auth', 'token'])
+38 |       return { exited: Promise.resolve(0) }
+39 |     }
+40 |     const estado = await getGhAuthStatus()
+41 |     expect(estado).toBe('authenticated')
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: "authenticated"
+Received: "not_installed"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:41:20)
+(fail) getGhAuthStatus — gh instalado > exit code 0 de `gh auth token` → authenticated [0.23ms]
+45 |     // @ts-expect-error — stub mínimo
+46 |     Bun.which = () => '/usr/bin/gh'
+47 |     // @ts-expect-error — stub mínimo del subprocess
+48 |     Bun.spawn = () => ({ exited: Promise.resolve(1) })
+49 |     const estado = await getGhAuthStatus()
+50 |     expect(estado).toBe('not_authenticated')
+                        ^
+error: expect(received).toBe(expected)
+
+Expected: "not_authenticated"
+Received: "not_installed"
+
+      at <anonymous> (/home/user/thyrox/src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts:50:20)
+(fail) getGhAuthStatus — gh instalado > exit code distinto de 0 → not_authenticated [1.60ms]
+
+ 1 pass
+ 2 fail
+ 4 expect() calls
+Ran 3 tests across 1 file. [162.00ms]
+exit=1

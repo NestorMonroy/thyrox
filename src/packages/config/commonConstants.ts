@@ -1,17 +1,9 @@
-/**
- * Puerto de `ccnmt: packages/config/commonConstants.ts` (32 líneas fuente).
- * Reimplementación fiel VERBATIM.
- *
- * `lodash-es` SÍ resuelve en este árbol (dependencia real de
- * `package.json`, verificado con `require.resolve` antes de escribir este
- * archivo) — se importa estático, sin envoltorio diferido.
- */
 import memoize from 'lodash-es/memoize.js'
-import { readEnv } from './env/utils.ts'
+import { readEnv } from './env/utils.js'
 
-// Garantiza obtener la fecha LOCAL en formato ISO.
+// This ensures you get the LOCAL date in ISO format
 export function getLocalISODate(): string {
-  // Comprueba el override de fecha (sólo para uso interno de ant).
+  // Check for ant-only date override
   const override = readEnv('CLAUDE_CODE_OVERRIDE_DATE')
   if (override) return override
 
@@ -22,20 +14,17 @@ export function getLocalISODate(): string {
   return `${year}-${month}-${day}`
 }
 
-// Memoizado para la estabilidad del prompt-cache — captura la fecha una
-// sola vez al inicio de la sesión. La ruta interactiva principal obtiene
-// este comportamiento vía `memoize(getUserContext)` en `context.ts`; el
-// modo simple (`--bare`) llama a `getSystemPrompt` por request y necesita
-// una fecha memoizada explícita para no romper el prefijo cacheado a
-// medianoche. Cuando la medianoche pasa, `getDateChangeAttachments` añade
-// la nueva fecha al final (aunque el modo simple deshabilita attachments,
-// así que el trade-off ahí es: fecha vieja tras medianoche vs. reventar la
-// caché de la conversación entera — gana la fecha vieja).
+// Memoized for prompt-cache stability — captures the date once at session start.
+// The main interactive path gets this behavior via memoize(getUserContext) in
+// context.ts; simple mode (--bare) calls getSystemPrompt per-request and needs
+// an explicit memoized date to avoid busting the cached prefix at midnight.
+// When midnight rolls over, getDateChangeAttachments appends the new date at
+// the tail (though simple mode disables attachments, so the trade-off there is:
+// stale date after midnight vs. ~entire-conversation cache bust — stale wins).
 export const getSessionStartDate = memoize(getLocalISODate)
 
-// Devuelve "Mes AAAA" (p. ej. "February 2026") en la zona horaria local del
-// usuario. Cambia mensualmente, no diariamente — se usa en prompts de
-// herramientas para minimizar la invalidación de caché.
+// Returns "Month YYYY" (e.g. "February 2026") in the user's local timezone.
+// Changes monthly, not daily — used in tool prompts to minimize cache busting.
 export function getLocalMonthYear(): string {
   const override = readEnv('CLAUDE_CODE_OVERRIDE_DATE')
   const date = override ? new Date(override) : new Date()

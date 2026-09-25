@@ -76,3 +76,22 @@ Quedan **86 copias**. Las tres pruebas vuelven a verde tras revertir.
 que se ponen rojas con la copia.
 *Ciega a:* conducta que ninguna prueba derivada ejerce; la derivación busca
 el nombre del módulo en los `import` de las pruebas.
+
+## Fase 1 — lote 02 (100 más)
+
+`source_copy_step.py`, ya con la atribución por imports: **3** pasadas de tsc
+(el lote 01 necesitó 34). 85 copiados, 8 rechazados por su propio archivo,
+7 por romper a un consumidor. tsc **2364 → 2353**.
+
+Pruebas con `pruebas_de_lote.sh` (el procedimiento del lote 01, ahora guion):
+196 derivadas, 9 fallan, **2 regresiones** frente a HEAD:
+
+- `ghAuthStatus.ts`: la copia usa `execa` y `@thyrox/shell/which.js`, y salta
+  la costura `Bun.which`/`Bun.spawn` que su prueba sustituye. Revertida
+  (`rejected-behavior`).
+- `internalRuntimeSignals`: el lote copió la **prueba** de la fuente, que
+  espera `../host.js`, y el módulo conservaba `../host.ts` porque su copia se
+  rechazó en el lote 01 por la prueba vieja. Se copia también
+  `agent/internal/runtimeSignals.ts`: el par queda idéntico a la fuente.
+
+Las dos pruebas pasan tras el ajuste; 85 copias en total.

@@ -1,15 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/replHydrationK56.test.ts`
- * (13 casos, 25 `expect`; verbatim en datos y expectativas).
- *
- * Fija el contrato de `reconstructLog` (k56) y `hydrateRepl`
- * (`../replHydration.js`): cómo se reconstruye el log de reproducción de un
- * bloque REPL a partir del historial de mensajes — apertura de un bloque en
- * cada `tool_use:REPL` real, acumulación de llamadas internas virtuales
- * (`{pendingName, resultado}`) como `calls`, detección de `threw`, y el
- * defecto que fija: un `tool_result` virtual sin `pendingName` previo se
- * descarta en vez de mal-atribuirse al bloque abierto.
- */
 import { describe, expect, test } from 'bun:test'
 import type { Message } from '../messageShapes.js'
 import { hydrateRepl, reconstructLog, REPL_TOOL_NAME } from '../replHydration.js'
@@ -93,11 +81,11 @@ function realUserToolResult(replId: string, threw: boolean): Message {
 }
 
 describe('reconstructLog (k56)', () => {
-  test('mensajes vacíos → log vacío', () => {
+  test('empty messages → empty log', () => {
     expect(reconstructLog([])).toEqual([])
   })
 
-  test('un solo bloque REPL, sin llamadas internas, sin throw', () => {
+  test('single REPL block, no inner calls, no throw', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'console.log("hi")'),
       realUserToolResult('repl-1', false),
@@ -105,7 +93,7 @@ describe('reconstructLog (k56)', () => {
     expect(log).toEqual([{ replId: 'repl-1', code: 'console.log("hi")', calls: [], threw: false }])
   })
 
-  test('bloque REPL con una llamada interna (ok)', () => {
+  test('REPL block with one inner tool call (ok)', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'await Read("a.txt")'),
       virtualToolUseAsst('Read', 'repl-1'),
@@ -117,7 +105,7 @@ describe('reconstructLog (k56)', () => {
     expect(log[0]?.threw).toBe(false)
   })
 
-  test('bloque REPL con error en llamada interna', () => {
+  test('REPL block with inner tool error', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'await Bash("false")'),
       virtualToolUseAsst('Bash', 'repl-1'),
@@ -127,7 +115,7 @@ describe('reconstructLog (k56)', () => {
     expect(log[0]?.calls).toEqual([{ kind: 'err', toolName: 'Bash', error: 'permission denied' }])
   })
 
-  test('detecta threw', () => {
+  test('detects threw', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'throw new Error("boom")'),
       realUserToolResult('repl-1', true),
@@ -135,7 +123,7 @@ describe('reconstructLog (k56)', () => {
     expect(log[0]?.threw).toBe(true)
   })
 
-  test('múltiples bloques REPL se acumulan secuencialmente', () => {
+  test('multiple REPL blocks accumulate sequentially', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'let x = 1'),
       realUserToolResult('repl-1', false),
@@ -147,7 +135,7 @@ describe('reconstructLog (k56)', () => {
     expect(log[1]?.replId).toBe('repl-2')
   })
 
-  test('mensajes tool_use que no son REPL se omiten', () => {
+  test('non-REPL tool_use messages are skipped', () => {
     const otherTool: Message = {
       type: 'assistant', isVirtual: false, uuid: 'x', timestamp: '', requestId: 'r',
       message: {
@@ -162,17 +150,17 @@ describe('reconstructLog (k56)', () => {
     expect(log).toEqual([])
   })
 
-  test('un tool_result virtual sin pendingName previo se descarta', () => {
+  test('virtual tool_result without preceding pendingName is dropped', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'x'),
-      // sin virtualToolUseAsst — pendingName nunca se fija
+      // no virtualToolUseAsst — pendingName never set
       virtualToolResultUser('Read', 'orphan'),
       realUserToolResult('repl-1', false),
     ])
     expect(log[0]?.calls).toEqual([])
   })
 
-  test('múltiples llamadas internas en un mismo bloque REPL', () => {
+  test('multiple inner calls in one REPL block', () => {
     const log = reconstructLog([
       asstReplToolUse('repl-1', 'await Read; await Bash'),
       virtualToolUseAsst('Read', 'repl-1'),
@@ -188,18 +176,18 @@ describe('reconstructLog (k56)', () => {
 })
 
 describe('hydrateRepl', () => {
-  test('se omite cuando REPLTool no está habilitado (default)', async () => {
+  test('skipped when REPLTool not enabled (default)', async () => {
     const r = await hydrateRepl({ kind: 'fork', log: [{ replId: '1', code: 'x', calls: [], threw: false }] })
     expect(r.skipped).toBe(true)
     expect(r.attempted).toBe(0)
   })
 
-  test('se omite cuando kind=fresh', async () => {
+  test('skipped when kind=fresh', async () => {
     const r = await hydrateRepl({ kind: 'fresh' }, { isReplToolEnabled: () => true })
     expect(r.skipped).toBe(true)
   })
 
-  test('corre el reproductor cuando REPLTool está habilitado', async () => {
+  test('runs replayer when REPLTool enabled', async () => {
     const replayed: string[] = []
     const r = await hydrateRepl(
       { kind: 'resume', log: [{ replId: '1', code: 'x', calls: [], threw: false }] },
@@ -217,7 +205,7 @@ describe('hydrateRepl', () => {
     expect(replayed).toEqual(['1'])
   })
 
-  test('cuenta los desenlaces drift + threw', async () => {
+  test('counts drift + threw outcomes', async () => {
     const log = [
       { replId: '1', code: 'a', calls: [], threw: false },
       { replId: '2', code: 'b', calls: [], threw: false },

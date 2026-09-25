@@ -1,23 +1,8 @@
 /**
- * Registro en memoria de qué usos de herramienta aprobó un clasificador, y de
- * cuáles están siendo comprobados ahora mismo.
- *
- * Procedencia: `ccnmt: packages/permission/src/classifierApprovals.ts`
- * (88 líneas, 10 exports). Ese árbol declara `"license": "UNLICENSED"`, así
- * que los cuerpos se **reimplementan** y no se copian.
- *
- * Lo escribe la ruta de decisión de permiso y lo lee la capa que dibuja el
- * resultado de la herramienta: por eso el estado vive en el módulo y no en el
- * contexto de una llamada.
- *
- * MEDIDO EN ESTE ÁRBOL: `feature('BASH_CLASSIFIER')` y
- * `feature('TRANSCRIPT_CLASSIFIER')` son AMBAS falsas, así que hoy todo lo que
- * está tras esos guardas es un no-op. Los guardas se portan igual —son la
- * conducta de la fuente, no un accidente— y su suite lo declara en vez de
- * fingir que mide almacenamiento.
- *
- * DIVERGENCIA DECLARADA: ninguna.
+ * Tracks which tool uses were auto-approved by classifiers.
+ * Populated from useCanUseTool.ts and permissions.ts, read from UserToolSuccessMessage.tsx.
  */
+
 import { feature } from 'bun:bundle'
 import { createSignal } from '@thyrox/config/signal'
 
@@ -38,15 +23,12 @@ export function setClassifierApproval(
   if (!feature('BASH_CLASSIFIER')) {
     return
   }
-  CLASSIFIER_APPROVALS.set(toolUseID, { classifier: 'bash', matchedRule })
+  CLASSIFIER_APPROVALS.set(toolUseID, {
+    classifier: 'bash',
+    matchedRule,
+  })
 }
 
-/**
- * Devuelve la regla que aprobó este uso, si la aprobó el clasificador de
- * shell. La comprobación del clasificador importa: los dos escriben en el
- * mismo mapa, y devolver la aprobación del otro atribuiría la decisión a quien
- * no la tomó.
- */
 export function getClassifierApproval(toolUseID: string): string | undefined {
   if (!feature('BASH_CLASSIFIER')) {
     return undefined
@@ -99,13 +81,6 @@ export function deleteClassifierApproval(toolUseID: string): void {
   CLASSIFIER_APPROVALS.delete(toolUseID)
 }
 
-/**
- * Vacía los dos registros y AVISA, sin guarda de bandera.
- *
- * La emisión incondicional es deliberada: quien dibuja el estado tiene que
- * enterarse de que ya no hay nada que dibujar, incluso si el clasificador que
- * lo pobló está apagado.
- */
 export function clearClassifierApprovals(): void {
   CLASSIFIER_APPROVALS.clear()
   CLASSIFIER_CHECKING.clear()

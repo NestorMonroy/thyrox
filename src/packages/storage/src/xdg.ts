@@ -1,20 +1,15 @@
 /**
- * Utilidades de XDG Base Directory para el instalador nativo de Claude CLI.
+ * XDG Base Directory utilities for Claude CLI Native Installer
  *
- * Implementa la especificación XDG Base Directory para organizar los
- * componentes del instalador nativo en los directorios de sistema
- * apropiados.
- *
- * Adaptación fiel de `ccnmt: packages/storage/src/xdg.ts`. `readEnv` y
- * `getAllEnv` sustituyen a `@claude-code-how-works/config/env/utils`
- * (ver `./internal/pendingCrossPackageDeps.ts`).
+ * Implements the XDG Base Directory specification for organizing
+ * native installer components across appropriate system directories.
  *
  * @see https://specifications.freedesktop.org/basedir-spec/latest/
  */
 
 import { homedir as osHomedir } from 'os'
 import { join } from 'path'
-import { getAllEnv, readEnv } from './internal/pendingCrossPackageDeps.js'
+import { getAllEnv, readEnv } from '@thyrox/config/env/utils'
 
 type EnvLike = Record<string, string | undefined>
 
@@ -31,8 +26,8 @@ function resolveOptions(options?: XDGOptions): { env: EnvLike; home: string } {
 }
 
 /**
- * Obtiene el directorio XDG state home.
- * Por defecto: ~/.local/state
+ * Get XDG state home directory
+ * Default: ~/.local/state
  */
 export function getXDGStateHome(options?: XDGOptions): string {
   const { env, home } = resolveOptions(options)
@@ -40,8 +35,8 @@ export function getXDGStateHome(options?: XDGOptions): string {
 }
 
 /**
- * Obtiene el directorio XDG cache home.
- * Por defecto: ~/.cache
+ * Get XDG cache home directory
+ * Default: ~/.cache
  */
 export function getXDGCacheHome(options?: XDGOptions): string {
   const { env, home } = resolveOptions(options)
@@ -49,8 +44,8 @@ export function getXDGCacheHome(options?: XDGOptions): string {
 }
 
 /**
- * Obtiene el directorio XDG data home.
- * Por defecto: ~/.local/share
+ * Get XDG data home directory
+ * Default: ~/.local/share
  */
 export function getXDGDataHome(options?: XDGOptions): string {
   const { env, home } = resolveOptions(options)
@@ -58,9 +53,8 @@ export function getXDGDataHome(options?: XDGOptions): string {
 }
 
 /**
- * Obtiene el directorio bin del usuario (no es XDG en sentido estricto pero
- * sigue la convención).
- * Por defecto: ~/.local/bin
+ * Get user bin directory (not technically XDG but follows the convention)
+ * Default: ~/.local/bin
  */
 export function getUserBinDir(options?: XDGOptions): string {
   const { home } = resolveOptions(options)

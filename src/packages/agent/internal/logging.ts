@@ -1,24 +1,5 @@
-/**
- * Observadores de logging del agente — porte de
- * `ccnmt: packages/agent/internal/logging.ts`.
- *
- * Cuatro funciones, todas catch-block / hot-path, que delegan en las
- * ataduras del host (`AgentHostBindings`) — con fallback a `console.*` sólo
- * donde la ausencia del host NO debe quedar en silencio.
- *
- * Tres invariantes:
- *  1. `logEvent` — delegado puro (telemetría): no-op silencioso si el host
- *     no está.
- *  2. `logError` + `logAntError` — delegan si el host está instalado;
- *     SI NO, caen a `console.error`. Nunca en silencio.
- *  3. `logForDebugging` — delegado puro (archivo de debug log): no-op
- *     silencioso si el host no está.
- *
- * La separación delegado-vs-fallback importa: que la telemetría o el debug
- * log queden a oscuras es aceptable; que un error quede a oscuras, no.
- */
-import { getAgentHostBindings } from '../host.ts'
-import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../internalTypes.ts'
+import { getAgentHostBindings } from '../host.js'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../internalTypes.js'
 
 type AgentAnalyticsMetadata = Record<
   string,

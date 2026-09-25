@@ -1,16 +1,7 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/hooks/useIDEIntegration.tsx`.
- * `getGlobalConfig`/`isEnvDefinedFalsy` — sustitutos locales; ver
- * `../internal/pendingCrossPackageDeps.js`.
- */
-import type React from 'react'
 import { useEffect } from 'react'
 import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js'
-import {
-  getGlobalConfig,
-  isEnvDefinedFalsy,
-  requireConfigEnvUtils,
-} from '../internal/pendingCrossPackageDeps.js'
+import { getGlobalConfig } from '@thyrox/config'
+import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils'
 import type { DetectedIDEInfo } from '../ide.js'
 import {
   type IDEExtensionInstallationStatus,
@@ -44,17 +35,14 @@ export function useIDEIntegration({
         return
       }
 
-      // Comprueba si el auto-connect está habilitado.
-      const { isEnvTruthy } = requireConfigEnvUtils()
+      // Check if auto-connect is enabled
       const globalConfig = getGlobalConfig()
       const autoConnectEnabled =
         (globalConfig.autoConnectIde ||
           autoConnectIdeFlag ||
           isSupportedTerminal() ||
-          // tmux/screen sobreescriben TERM_PROGRAM, rompiendo la detección
-          // de terminal, pero la variable de entorno del puerto de la
-          // extensión de IDE se hereda. Si está fijada, se conecta
-          // automáticamente de todas formas.
+          // tmux/screen overwrite TERM_PROGRAM, breaking terminal detection, but the
+          // IDE extension's port env var is inherited. If set, auto-connect anyway.
           process.env.CLAUDE_CODE_SSE_PORT ||
           ideToInstallExtension ||
           isEnvTruthy(process.env.CLAUDE_CODE_AUTO_CONNECT_IDE)) &&
@@ -65,7 +53,7 @@ export function useIDEIntegration({
       }
 
       setDynamicMcpConfig(prev => {
-        // Sólo se agrega el IDE si todavía no hay uno.
+        // Only add the IDE if we don't already have one
         if (prev?.ide) {
           return prev
         }
@@ -83,7 +71,7 @@ export function useIDEIntegration({
       })
     }
 
-    // Usa la función utilitaria.
+    // Use the new utility function
     void initializeIdeIntegration(
       addIde,
       ideToInstallExtension,

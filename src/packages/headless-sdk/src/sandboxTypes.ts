@@ -1,21 +1,15 @@
 /**
- * Puerto de `ccnmt: packages/headless-sdk/src/sandboxTypes.ts` (verbatim en
- * estructura; `lazySchema` se importa del sustituto local — ver
- * `./internal/pendingCrossPackageDeps.ts` — porque `headless-sdk` no es
- * miembro del bun workspace y no puede resolver
- * `@claude-code-how-works/tool-registry/utils/lazySchema.js` ni su
- * equivalente `@thyrox/agent`).
+ * Sandbox types for the Claude Code Agent SDK
  *
- * Tipos de sandbox para el Agent SDK. Este archivo es la única fuente de
- * verdad de los tipos de configuración de sandbox — tanto el SDK como la
- * validación de settings importan de aquí.
+ * This file is the single source of truth for sandbox configuration types.
+ * Both the SDK and the settings validation import from here.
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from './internal/pendingCrossPackageDeps.ts'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 
 /**
- * Schema de configuración de red para el sandbox.
+ * Network configuration schema for sandbox.
  */
 export const SandboxNetworkConfigSchema = lazySchema(() =>
   z
@@ -48,7 +42,7 @@ export const SandboxNetworkConfigSchema = lazySchema(() =>
 )
 
 /**
- * Schema de configuración de filesystem para el sandbox.
+ * Filesystem configuration schema for sandbox.
  */
 export const SandboxFilesystemConfigSchema = lazySchema(() =>
   z
@@ -92,7 +86,7 @@ export const SandboxFilesystemConfigSchema = lazySchema(() =>
 )
 
 /**
- * Schema de settings de sandbox.
+ * Sandbox settings schema.
  */
 export const SandboxSettingsSchema = lazySchema(() =>
   z
@@ -107,16 +101,14 @@ export const SandboxSettingsSchema = lazySchema(() =>
             'When false (default), a warning is shown and commands run unsandboxed. ' +
             'Intended for managed-settings deployments that require sandboxing as a hard gate.',
         ),
-      // Nota: enabledPlatforms es un setting no documentado, leído vía
-      // .passthrough(). Restringe el sandboxing a plataformas específicas
-      // (p. ej. ["macos"]).
+      // Note: enabledPlatforms is an undocumented setting read via .passthrough()
+      // It restricts sandboxing to specific platforms (e.g., ["macos"]).
       //
-      // Se añadió para desbloquear el rollout enterprise de NVIDIA: quieren
-      // habilitar autoAllowBashIfSandboxed pero sólo en macOS inicialmente,
-      // porque el soporte de sandbox de Linux/WSL es más nuevo y menos
-      // probado en batalla. Esto les permite fijar enabledPlatforms:
-      // ["macos"] para deshabilitar el sandbox (y el auto-allow) en otras
-      // plataformas hasta que estén listos para expandir.
+      // Added to unblock NVIDIA enterprise rollout: they want to enable
+      // autoAllowBashIfSandboxed but only on macOS initially, since Linux/WSL
+      // sandbox support is newer and less battle-tested. This allows them to
+      // set enabledPlatforms: ["macos"] to disable sandbox (and auto-allow)
+      // on other platforms until they're ready to expand.
       autoAllowBashIfSandboxed: z.boolean().optional(),
       allowUnsandboxedCommands: z
         .boolean()
@@ -151,7 +143,7 @@ export const SandboxSettingsSchema = lazySchema(() =>
     .passthrough(),
 )
 
-// Tipos inferidos de los schemas
+// Inferred types from schemas
 export type SandboxSettings = z.infer<ReturnType<typeof SandboxSettingsSchema>>
 export type SandboxNetworkConfig = NonNullable<
   z.infer<ReturnType<typeof SandboxNetworkConfigSchema>>

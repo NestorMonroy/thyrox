@@ -1,18 +1,14 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/diag-log.ts`
- * (90 líneas fuente, 100 % portado). `logForDiagnosticsNoPII` +
- * `withDiagnosticsTiming` — escribe entradas de diagnóstico (sin PII) a
- * un archivo apuntado por `$CLAUDE_CODE_DIAGNOSTICS_FILE`, consumido por
- * el gestor de entorno para monitorear el contenedor.
+ * V7 §8.12 — diag-log: `logForDiagnosticsNoPII` + `withDiagnosticsTiming`.
  *
- * `getFsImplementation` — sustituto local en
- * `internal/pendingCrossPackageDeps.ts` (subpath no exportado por
- * `@thyrox/storage`).
+ * Moved from src/utils/diagLogs.ts. Writes diagnostic entries (no PII) to
+ * a file pointed to by `$CLAUDE_CODE_DIAGNOSTICS_FILE`. Used by the
+ * environment manager to monitor container-side issues.
  */
 
 import { dirname } from 'path'
 
-import { getFsImplementation } from '../internal/pendingCrossPackageDeps.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { jsonStringify } from '../slowOperations.js'
 
 type DiagnosticLogLevel = 'debug' | 'info' | 'warn' | 'error'
@@ -25,12 +21,12 @@ type DiagnosticLogEntry = {
 }
 
 /**
- * Loguea información de diagnóstico a un archivo de log. Esta
- * información se envía vía el gestor de entorno a session-ingress para
- * monitorear problemas desde dentro del contenedor.
+ * Logs diagnostic information to a logfile. This information is sent
+ * via the environment manager to session-ingress to monitor issues from
+ * within the container.
  *
- * *Importante* — esta función NUNCA debe llamarse con PII, incluyendo
- * rutas de archivo, nombres de proyecto, nombres de repo, prompts, etc.
+ * *Important* - this function MUST NOT be called with any PII, including
+ * file paths, project names, repo names, prompts, etc.
  */
 export function logForDiagnosticsNoPII(
   level: DiagnosticLogLevel,
@@ -56,7 +52,7 @@ export function logForDiagnosticsNoPII(
       fs.mkdirSync(dirname(logFile))
       fs.appendFileSync(logFile, line)
     } catch {
-      // Falla en silencio si loguear no es posible.
+      // Silently fail if logging is not possible
     }
   }
 }
@@ -66,9 +62,8 @@ function getDiagnosticLogFile(): string | undefined {
 }
 
 /**
- * Envuelve una función async con logs de temporización de diagnóstico.
- * Loguea `{event}_started` antes de ejecutar y `{event}_completed`
- * después, con `duration_ms`.
+ * Wraps an async function with diagnostic timing logs.
+ * Logs `{event}_started` before execution and `{event}_completed` after with duration_ms.
  */
 export async function withDiagnosticsTiming<T>(
   event: string,

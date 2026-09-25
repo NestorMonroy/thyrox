@@ -1,16 +1,12 @@
-/**
- * Puerto de `ccnmt: packages/server/src/createDirectConnectSession.ts`.
- * `errorMessage`/`jsonStringify` — ver `internal/pendingCrossPackageDeps.ts`.
- */
-import {
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilitySlowOperations,
-} from './internal/pendingCrossPackageDeps.js'
+/* eslint-disable eslint-plugin-n/no-unsupported-features/node-builtins */
+
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { DirectConnectConfig } from './directConnectManager.js'
 import { connectResponseSchema } from './types.js'
 
 /**
- * Errores que lanza createDirectConnectSession cuando la conexión falla.
+ * Errors thrown by createDirectConnectSession when the connection fails.
  */
 export class DirectConnectError extends Error {
   constructor(message: string) {
@@ -20,13 +16,12 @@ export class DirectConnectError extends Error {
 }
 
 /**
- * Crea una sesión en un servidor de conexión directa.
+ * Create a session on a direct-connect server.
  *
- * Hace POST a `${serverUrl}/sessions`, valida la respuesta, y devuelve un
- * DirectConnectConfig listo para que lo use el REPL o el runner headless.
+ * Posts to `${serverUrl}/sessions`, validates the response, and returns
+ * a DirectConnectConfig ready for use by the REPL or headless runner.
  *
- * Lanza DirectConnectError ante fallos de red, HTTP, o de parseo de la
- * respuesta.
+ * Throws DirectConnectError on network, HTTP, or response-parsing failures.
  */
 export async function createDirectConnectSession({
   serverUrl,
@@ -42,9 +37,6 @@ export async function createDirectConnectSession({
   config: DirectConnectConfig
   workDir?: string
 }> {
-  const { errorMessage } = requireLocalObservabilityErrorHelpers()
-  const { jsonStringify } = requireLocalObservabilitySlowOperations()
-
   const headers: Record<string, string> = {
     'content-type': 'application/json',
   }

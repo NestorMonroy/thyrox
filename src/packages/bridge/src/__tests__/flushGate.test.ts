@@ -1,8 +1,3 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/__tests__/flushGate.test.ts`
- * (204 líneas fuente, 100% portado). Sin mocks — `FlushGate` no tiene
- * dependencias cruzadas.
- */
 import { describe, expect, test } from 'bun:test'
 import { FlushGate } from '../flushGate.js'
 
@@ -119,7 +114,7 @@ describe('FlushGate — drop()', () => {
     g.start()
     g.enqueue('a')
     g.drop()
-    // Ahora reinicia limpio.
+    // Now restart cleanly.
     g.start()
     expect(g.enqueue('b')).toBe(true)
     expect(g.end()).toEqual(['b'])
@@ -128,10 +123,9 @@ describe('FlushGate — drop()', () => {
 
 describe('FlushGate — deactivate()', () => {
   test('deactivate() clears active flag WITHOUT dropping items', () => {
-    // Crítico: la ruta de reemplazo de transporte. Los items encolados
-    // durante el flush del transporte viejo deben permanecer — el flush
-    // del transporte nuevo los drenará. Si deactivate() perdiera items,
-    // se perdería historial.
+    // Critical: transport-replacement path. Items queued during the old
+    // transport's flush must remain — the new transport's flush will
+    // drain them. If deactivate() lost items, history would be missed.
     const g = new FlushGate<string>()
     g.start()
     g.enqueue('a', 'b')
@@ -141,7 +135,7 @@ describe('FlushGate — deactivate()', () => {
   })
 
   test('after deactivate(), end() still returns the items', () => {
-    // El siguiente ciclo start()/end() debe drenar los items acarreados.
+    // The next start()/end() cycle must drain the carried-over items.
     const g = new FlushGate<string>()
     g.start()
     g.enqueue('first')
@@ -163,8 +157,8 @@ describe('FlushGate — deactivate()', () => {
     g.start()
     g.enqueue('a')
     g.deactivate()
-    expect(g.enqueue('b')).toBe(false) // no se encoló
-    expect(g.pendingCount).toBe(1) // 'b' pasó de largo
+    expect(g.enqueue('b')).toBe(false) // not queued
+    expect(g.pendingCount).toBe(1) // 'b' bypassed
   })
 })
 
@@ -183,7 +177,7 @@ describe('FlushGate — multiple flush cycles', () => {
     const g = new FlushGate<string>()
     g.start()
     g.enqueue('a')
-    g.start() // re-start — NO debe limpiar la cola
+    g.start() // re-start — should NOT clear the queue
     expect(g.pendingCount).toBe(1)
     expect(g.active).toBe(true)
   })
@@ -204,7 +198,7 @@ describe('FlushGate — generic type preservation', () => {
     g.start()
     g.enqueue(a, b)
     const drained = g.end()
-    expect(drained[0]).toBe(a) // misma referencia
+    expect(drained[0]).toBe(a) // same reference
     expect(drained[1]).toBe(b)
   })
 })

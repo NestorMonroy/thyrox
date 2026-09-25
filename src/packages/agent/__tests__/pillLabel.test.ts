@@ -1,20 +1,11 @@
-/**
- * Porte de `ccnmt: packages/agent/tasks/__tests__/pillLabel.test.ts`.
- *
- * DIVERGENCIA declarada en el import: la fuente trae `DIAMOND_FILLED`/
- * `DIAMOND_OPEN` de `@claude-code-how-works/output/constants/figures.js`,
- * un paquete hermano que este arbol no tiene. Como el alcance de este
- * porte son unicamente `tasks.ts`, `errors.ts` y `tasks/pillLabel.ts`, las
- * dos constantes se re-exportan desde `../tasks/pillLabel.ts` (ver el
- * docstring de ese modulo para el detalle completo de la divergencia).
- */
 import { describe, expect, test } from 'bun:test'
-import { DIAMOND_FILLED, DIAMOND_OPEN, getPillLabel, pillNeedsCta } from '../tasks/pillLabel.ts'
+import { getPillLabel, pillNeedsCta } from '../tasks/pillLabel.js'
+import { DIAMOND_FILLED, DIAMOND_OPEN } from '@thyrox/output/constants/figures.js'
 
-// Se suministran formas `BackgroundTaskState` sin verificacion de tipo —
-// pillLabel solo lee el discriminador + unos pocos campos especificos de
-// rama, nunca el estado de tarea completo. El cast mantiene estos fixtures
-// concisos sin traer el schema completo de estado de tarea.
+// We supply unsafe-cast `BackgroundTaskState` shapes — pillLabel only reads
+// the discriminator + a few branch-specific fields, never the full task
+// state. The cast keeps these fixtures terse without pulling in the
+// full task-state schema.
 type Task = Parameters<typeof getPillLabel>[0][number]
 
 function bash(kind: 'shell' | 'monitor' = 'shell'): Task {
@@ -150,10 +141,9 @@ describe('getPillLabel — heterogeneous fallback', () => {
     )
   })
   test('mixed types (single) — when types are NOT all same, falls back', () => {
-    // 1 tarea, pero allSameType es true (es solo un tipo) — de hecho eso
-    // toma la rama por tipo. Para forzar el fallback necesitamos ≥2
-    // tareas de tipos distintos. Este test verifica la forma del
-    // fallback.
+    // 1 task, but allSameType is true (it's only one type) — actually that
+    // takes the per-type branch. To force fallback we need ≥2 tasks with
+    // different types. This test verifies the fallback shape.
     const result = getPillLabel([
       bash('shell'),
       teammate('alpha'),

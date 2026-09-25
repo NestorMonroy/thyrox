@@ -1,11 +1,6 @@
 /**
- * Los errores tipados del agente — porte de `ccnmt: packages/agent/errors.ts`.
- *
- * Cada subclase lleva un `code` estable con prefijo `AGENT_`. El codigo es lo
- * que un consumidor puede comparar; el mensaje es prosa y cambia.
+ * V7 §6.5 — agent typed error namespace.
  */
-
-/** Raiz de la familia: aporta el `code` que las demas fijan. */
 export class AgentBaseError extends Error {
   readonly code: string
 
@@ -16,7 +11,6 @@ export class AgentBaseError extends Error {
   }
 }
 
-/** El host no expone las ataduras que el agente necesita. */
 export class HostBindingsError extends AgentBaseError {
   constructor(message: string, options?: ErrorOptions) {
     super('AGENT_HOST_BINDINGS_ERROR', message, options)
@@ -24,7 +18,6 @@ export class HostBindingsError extends AgentBaseError {
   }
 }
 
-/** El estado observado contradice al declarado. */
 export class StateError extends AgentBaseError {
   constructor(message: string, options?: ErrorOptions) {
     super('AGENT_STATE_ERROR', message, options)
@@ -33,30 +26,33 @@ export class StateError extends AgentBaseError {
 }
 
 /**
- * Bloquear esta tarea cerraria un ciclo en el grafo de dependencias.
+ * Thrown when blockTask would create a cycle in the task dependency graph.
  *
- * Un ciclo NO es un grafo lento: es un interbloqueo. Cada tarea del ciclo
- * espera a otra del mismo ciclo, asi que ninguna puede arrancar nunca. Por eso
- * se detecta al ESCRIBIR la arista y no al leer el grafo — quien la crea se
- * entera en el momento, con el camino recorrido en `path`.
+ * Cycles deadlock claimTask: every task in the cycle is blockedBy another
+ * unresolved task in the cycle, so none can ever start. Detected at
+ * write-time (not read-time filter) so the caller learns the moment they
+ * try to construct a bad graph.
+ *
+ * The `path` is the chain we walked when we found the cycle, e.g.
+ * ["A", "B", "C", "A"] — useful for the caller to fix the offending edge.
  */
 export class TaskCycleError extends AgentBaseError {
   readonly path: string[]
-
   constructor(path: string[], options?: ErrorOptions) {
-    super('AGENT_TASK_CYCLE', `blockTask would create a cycle: ${path.join(' → ')}`, options)
+    super(
+      'AGENT_TASK_CYCLE',
+      `blockTask would create a cycle: ${path.join(' → ')}`,
+      options,
+    )
     this.name = 'TaskCycleError'
     this.path = path
   }
 }
 
 /**
- * La interrupcion cooperativa del usuario, marcada con un simbolo y no con una
- * subclase de `Error`.
- *
- * La razon es que la interrupcion NO es un fallo: distinguirla de un error de
- * proveedor o de herramienta por el texto de `error.message` es fragil, y un
- * simbolo unico se compara por identidad.
+ * Agent uses a symbol marker instead of an Error subclass so callers can
+ * distinguish a cooperative user interrupt from provider/tool failures
+ * without relying on fragile `error.message` string matching.
  */
 export const UserAbort: unique symbol = Symbol('UserAbort')
 

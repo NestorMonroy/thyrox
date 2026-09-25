@@ -1,29 +1,24 @@
-/**
- * Puntero global al handle activo del bridge REPL, para que llamadores
- * fuera del árbol de React de useReplBridge (herramientas, comandos
- * slash) puedan invocar métodos del handle como subscribePR. Misma
- * justificación de un-bridge-por-proceso que bridgeDebug.ts — la clausura
- * del handle captura el sessionId y el getAccessToken que crearon la
- * sesión, y re-derivarlos independientemente (patrón BriefTool/upload.ts)
- * arriesga divergencia de token entre staging/prod.
- *
- * Se fija desde useReplBridge.tsx cuando termina el init; se limpia al
- * desmontar.
- *
- * Puerto fiel de `ccnmt: packages/bridge/src/replBridgeHandle.ts`.
- */
-
-import { updateSessionBridgeId } from './internal/pendingCrossPackageDeps.js'
+import { updateSessionBridgeId } from '@thyrox/agent/concurrentSessions.js'
 import type { ReplBridgeHandle } from './replBridge.js'
 import { toCompatSessionId } from './sessionIdCompat.js'
+
+/**
+ * Global pointer to the active REPL bridge handle, so callers outside
+ * useReplBridge's React tree (tools, slash commands) can invoke handle methods
+ * like subscribePR. Same one-bridge-per-process justification as bridgeDebug.ts
+ * — the handle's closure captures the sessionId and getAccessToken that created
+ * the session, and re-deriving those independently (BriefTool/upload.ts pattern)
+ * risks staging/prod token divergence.
+ *
+ * Set from useReplBridge.tsx when init completes; cleared on teardown.
+ */
 
 let handle: ReplBridgeHandle | null = null
 
 export function setReplBridgeHandle(h: ReplBridgeHandle | null): void {
   handle = h
-  // Publica (o limpia) nuestro bridge session ID en el registro de
-  // sesión para que otros peers locales puedan deduplicarnos de su lista
-  // de bridge — se prefiere lo local.
+  // Publish (or clear) our bridge session ID in the session record so other
+  // local peers can dedup us out of their bridge list — local is preferred.
   void updateSessionBridgeId(getSelfBridgeCompatId() ?? null).catch(() => {})
 }
 
@@ -32,9 +27,8 @@ export function getReplBridgeHandle(): ReplBridgeHandle | null {
 }
 
 /**
- * Nuestro propio bridge session ID en el formato de compat session_* que
- * la API devuelve en las respuestas de /v1/sessions — o undefined si el
- * bridge no está conectado.
+ * Our own bridge session ID in the session_* compat format the API returns
+ * in /v1/sessions responses — or undefined if bridge isn't connected.
  */
 export function getSelfBridgeCompatId(): string | undefined {
   const h = getReplBridgeHandle()

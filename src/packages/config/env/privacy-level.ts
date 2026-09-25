@@ -1,25 +1,21 @@
 /**
- * Puerto de `ccnmt: packages/config/env/privacy-level.ts` (56 líneas
- * fuente). Reimplementación fiel VERBATIM.
+ * Privacy level controls how much nonessential network traffic and telemetry
+ * Claude Code generates.
  *
- * El nivel de privacidad controla cuánto tráfico de red no esencial y
- * telemetría genera Claude Code.
- *
- * Los niveles están ordenados por restrictividad:
+ * Levels are ordered by restrictiveness:
  *   default < no-telemetry < essential-traffic
  *
- * - default:            todo habilitado.
- * - no-telemetry:       analytics/telemetría deshabilitados (Datadog,
- *                       eventos 1P, encuesta de feedback).
- * - essential-traffic:  TODO el tráfico de red no esencial deshabilitado
- *                       (telemetría + auto-updates, grove, notas de
- *                       release, capacidades de modelo, etc.).
+ * - default:            Everything enabled.
+ * - no-telemetry:       Analytics/telemetry disabled (Datadog, 1P events, feedback survey).
+ * - essential-traffic:  ALL nonessential network traffic disabled
+ *                       (telemetry + auto-updates, grove, release notes, model capabilities, etc.).
  *
- * El nivel resuelto es la señal más restrictiva entre:
+ * The resolved level is the most restrictive signal from:
  *   CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC  →  essential-traffic
  *   DISABLE_TELEMETRY                         →  no-telemetry
  */
-import { readEnv } from './utils.ts'
+
+import { readEnv } from './utils.js'
 
 type PrivacyLevel = 'default' | 'no-telemetry' | 'essential-traffic'
 
@@ -33,24 +29,24 @@ export function getPrivacyLevel(): PrivacyLevel {
   return 'default'
 }
 
-/** Verdadero cuando todo el tráfico de red no esencial debe suprimirse. */
+/**
+ * True when all nonessential network traffic should be suppressed.
+ */
 export function isEssentialTrafficOnly(): boolean {
   return getPrivacyLevel() === 'essential-traffic'
 }
 
 /**
- * Verdadero cuando telemetría/analytics debe suprimirse. Verdadero tanto en
- * `no-telemetry` como en `essential-traffic`.
+ * True when telemetry/analytics should be suppressed.
+ * True at both `no-telemetry` and `essential-traffic` levels.
  */
 export function isTelemetryDisabled(): boolean {
   return getPrivacyLevel() !== 'default'
 }
 
 /**
- * Devuelve el nombre de la variable de entorno responsable de la
- * restricción essential-traffic actual, o `null` si no hay restricción.
- * Se usa para mensajes de cara al usuario tipo "desmarca X para
- * reactivar".
+ * Returns the env var name responsible for the current essential-traffic restriction,
+ * or null if unrestricted. Used for user-facing "unset X to re-enable" messages.
  */
 export function getEssentialTrafficOnlyReason(): string | null {
   if (readEnv('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC')) {

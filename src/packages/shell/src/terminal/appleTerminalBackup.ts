@@ -1,30 +1,11 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/terminal/appleTerminalBackup.ts`
- * — respaldo y restauración de las preferencias de Terminal.app
- * (`com.apple.Terminal.plist`, vía `defaults export`/`import`) al
- * instalar el hook de shell de este harness.
- *
- * Porte COMPLETO: los cinco símbolos exportados de la fuente están
- * presentes (`markTerminalSetupInProgress`, `markTerminalSetupComplete`,
- * `getTerminalPlistPath`, `backupTerminalPreferences`,
- * `checkAndRestoreTerminalBackup`).
- *
- * Divergencia medida: `getGlobalConfig`/`saveGlobalConfig` se resuelven
- * vía `requireGlobalConfig()` — BLOQUEADO, mismo caso que
- * `terminal/iTermBackup.ts` (hermano de este módulo); ver el docstring
- * de `../internal/pendingCrossPackageDeps.ts`.
- *
- * @module
- */
-import { stat } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
-import { logError } from '@thyrox/local-observability/log.js'
+import { stat } from 'fs/promises'
+import { homedir } from 'os'
+import { join } from 'path'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { execFileNoThrow } from '../execFileNoThrow.js'
-import { requireGlobalConfig } from '../internal/pendingCrossPackageDeps.js'
-
+import { logError } from '@thyrox/local-observability/log.js'
 export function markTerminalSetupInProgress(backupPath: string): void {
-  requireGlobalConfig().saveGlobalConfig(current => ({
+  saveGlobalConfig(current => ({
     ...current,
     appleTerminalSetupInProgress: true,
     appleTerminalBackupPath: backupPath,
@@ -32,7 +13,7 @@ export function markTerminalSetupInProgress(backupPath: string): void {
 }
 
 export function markTerminalSetupComplete(): void {
-  requireGlobalConfig().saveGlobalConfig(current => ({
+  saveGlobalConfig(current => ({
     ...current,
     appleTerminalSetupInProgress: false,
   }))
@@ -42,7 +23,7 @@ function getTerminalRecoveryInfo(): {
   inProgress: boolean
   backupPath: string | null
 } {
-  const config = requireGlobalConfig().getGlobalConfig()
+  const config = getGlobalConfig()
   return {
     inProgress: config.appleTerminalSetupInProgress ?? false,
     backupPath: config.appleTerminalBackupPath || null,

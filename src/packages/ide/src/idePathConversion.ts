@@ -1,29 +1,26 @@
 /**
- * Puerto de `ccnmt: packages/ide/src/idePathConversion.ts` (verbatim — sin
- * dependencias de paquete hermano, sólo `child_process`).
- *
- * Utilidades de conversión de rutas para la comunicación con el IDE.
- * Maneja las conversiones entre el entorno de Claude y el entorno del IDE.
+ * Path conversion utilities for IDE communication
+ * Handles conversions between Claude's environment and the IDE's environment
  */
 
 import { execFileSync } from 'child_process'
 
 interface IDEPathConverter {
   /**
-   * Convierte una ruta del formato del IDE al formato local de Claude.
-   * Se usa al leer los workspace folders del lockfile del IDE.
+   * Convert path from IDE format to Claude's local format
+   * Used when reading workspace folders from IDE lockfile
    */
   toLocalPath(idePath: string): string
 
   /**
-   * Convierte una ruta del formato local de Claude al formato del IDE.
-   * Se usa al enviar rutas al IDE (showDiffInIDE, etc.).
+   * Convert path from Claude's local format to IDE format
+   * Used when sending paths to IDE (showDiffInIDE, etc.)
    */
   toIDEPath(localPath: string): string
 }
 
 /**
- * Conversor para el escenario IDE en Windows + Claude en WSL.
+ * Converter for Windows IDE + WSL Claude scenario
  */
 export class WindowsToWSLConverter implements IDEPathConverter {
   constructor(private wslDistroName: string | undefined) {}
@@ -31,29 +28,29 @@ export class WindowsToWSLConverter implements IDEPathConverter {
   toLocalPath(windowsPath: string): string {
     if (!windowsPath) return windowsPath
 
-    // Comprueba si esta ruta viene de una distro de WSL distinta.
+    // Check if this is a path from a different WSL distro
     if (this.wslDistroName) {
       const wslUncMatch = windowsPath.match(
         /^\\\\wsl(?:\.localhost|\$)\\([^\\]+)(.*)$/,
       )
       if (wslUncMatch && wslUncMatch[1] !== this.wslDistroName) {
-        // Distro distinta - wslpath fallará, así que se devuelve la ruta original.
+        // Different distro - wslpath will fail, so return original path
         return windowsPath
       }
     }
 
     try {
-      // Usa wslpath para convertir rutas de Windows a rutas de WSL.
+      // Use wslpath to convert Windows paths to WSL paths
       const result = execFileSync('wslpath', ['-u', windowsPath], {
         encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'ignore'], // wslpath escribe "wslpath: <errortext>" a stderr
+        stdio: ['pipe', 'pipe', 'ignore'], // wslpath writes "wslpath: <errortext>" to stderr
       }).trim()
 
       return result
     } catch {
-      // Si wslpath falla, se recurre a la conversión manual.
+      // If wslpath fails, fall back to manual conversion
       return windowsPath
-        .replace(/\\/g, '/') // Convierte backslashes a forward slashes
+        .replace(/\\/g, '/') // Convert backslashes to forward slashes
         .replace(/^([A-Z]):/i, (_, letter) => `/mnt/${letter.toLowerCase()}`)
     }
   }
@@ -62,22 +59,22 @@ export class WindowsToWSLConverter implements IDEPathConverter {
     if (!wslPath) return wslPath
 
     try {
-      // Usa wslpath para convertir rutas de WSL a rutas de Windows.
+      // Use wslpath to convert WSL paths to Windows paths
       const result = execFileSync('wslpath', ['-w', wslPath], {
         encoding: 'utf8',
-        stdio: ['pipe', 'pipe', 'ignore'], // wslpath escribe "wslpath: <errortext>" a stderr
+        stdio: ['pipe', 'pipe', 'ignore'], // wslpath writes "wslpath: <errortext>" to stderr
       }).trim()
 
       return result
     } catch {
-      // Si wslpath falla, se devuelve la ruta original.
+      // If wslpath fails, return the original path
       return wslPath
     }
   }
 }
 
 /**
- * Comprueba si los nombres de distro coinciden para rutas UNC de WSL.
+ * Check if distro names match for WSL UNC paths
  */
 export function checkWSLDistroMatch(
   windowsPath: string,
@@ -89,5 +86,5 @@ export function checkWSLDistroMatch(
   if (wslUncMatch) {
     return wslUncMatch[1] === wslDistroName
   }
-  return true // No es una ruta UNC de WSL, así que no hay mismatch de distro.
+  return true // Not a WSL UNC path, so no distro mismatch
 }

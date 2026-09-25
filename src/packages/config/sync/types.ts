@@ -1,21 +1,17 @@
 /**
- * Puerto de `ccnmt: packages/config/sync/types.ts` (67 líneas fuente).
- * Reimplementación fiel VERBATIM.
+ * Settings Sync Types
  *
- * Tipos de Settings Sync.
- *
- * Esquemas y tipos Zod para la API de sync de settings de usuario. Basado
- * en el contrato de API del backend de anthropic/anthropic#218817.
+ * Zod schemas and types for the user settings sync API.
+ * Based on the backend API contract from anthropic/anthropic#218817.
  */
 
 import { z } from 'zod/v4'
-import { lazySchema } from '../internal/lazySchema.ts'
+import { lazySchema } from '../internal/lazySchema.js'
 
 /**
- * Porción de contenido de los datos de sync de usuario — almacenamiento
- * plano clave-valor. Las claves son cadenas opacas (típicamente rutas de
- * archivo). Los valores son contenido de cadena UTF-8 (JSON, Markdown,
- * etc).
+ * Content portion of user sync data - flat key-value storage.
+ * Keys are opaque strings (typically file paths).
+ * Values are UTF-8 string content (JSON, Markdown, etc).
  */
 export const UserSyncContentSchema = lazySchema(() =>
   z.object({
@@ -24,14 +20,14 @@ export const UserSyncContentSchema = lazySchema(() =>
 )
 
 /**
- * Respuesta completa de GET /api/claude_code/user_settings.
+ * Full response from GET /api/claude_code/user_settings
  */
 export const UserSyncDataSchema = lazySchema(() =>
   z.object({
     userId: z.string(),
     version: z.number(),
-    lastModified: z.string(), // timestamp ISO 8601
-    checksum: z.string(), // hash MD5
+    lastModified: z.string(), // ISO 8601 timestamp
+    checksum: z.string(), // MD5 hash
     content: UserSyncContentSchema(),
   }),
 )
@@ -39,18 +35,18 @@ export const UserSyncDataSchema = lazySchema(() =>
 export type UserSyncData = z.infer<ReturnType<typeof UserSyncDataSchema>>
 
 /**
- * Resultado de obtener los settings de usuario.
+ * Result from fetching user settings
  */
 export type SettingsSyncFetchResult = {
   success: boolean
   data?: UserSyncData
-  isEmpty?: boolean // verdadero si 404 (no hay datos)
+  isEmpty?: boolean // true if 404 (no data exists)
   error?: string
   skipRetry?: boolean
 }
 
 /**
- * Resultado de subir los settings de usuario.
+ * Result from uploading user settings
  */
 export type SettingsSyncUploadResult = {
   success: boolean
@@ -60,7 +56,7 @@ export type SettingsSyncUploadResult = {
 }
 
 /**
- * Claves usadas para entradas de sync.
+ * Keys used for sync entries
  */
 export const SYNC_KEYS = {
   USER_SETTINGS: '~/.claude/settings.json',

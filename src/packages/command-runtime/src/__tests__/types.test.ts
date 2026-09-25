@@ -1,10 +1,3 @@
-/**
- * Porte de `ccnmt: packages/command-runtime/src/__tests__/types.test.ts`.
- *
- * Fija la precedencia de `getCommandName` (userFacingName sobre name, con
- * `??` y no `||` — una cadena vacía sigue ganando) y de `isCommandEnabled`
- * (default `true` cuando `isEnabled` es `undefined`, con `??` y no `||`).
- */
 import { describe, expect, test } from 'bun:test'
 import {
   getCommandName,
@@ -20,20 +13,20 @@ function makeCmd(over: Partial<CommandBase> = {}): CommandBase {
   }
 }
 
-describe('getCommandName — precedencia de userFacingName', () => {
-  test('devuelve el resultado de userFacingName() cuando está definida', () => {
+describe('getCommandName — userFacingName precedence', () => {
+  test('returns userFacingName() result when defined', () => {
     expect(
       getCommandName(makeCmd({ userFacingName: () => 'fancy-name' })),
     ).toBe('fancy-name')
   })
 
-  test('cae a .name cuando userFacingName es undefined', () => {
+  test('falls back to .name when userFacingName is undefined', () => {
     expect(getCommandName(makeCmd({ name: 'plain-name' }))).toBe('plain-name')
   })
 
-  test('userFacingName devolviendo cadena vacía igual gana (NO hay chequeo de veracidad)', () => {
-    // La función usa ?? y no ||. Una cadena vacía es no-nula → gana.
-    // CRÍTICO: un refactor a || cambiaría en silencio al fallback de .name.
+  test('userFacingName returning empty string still wins (truthy check NOT done)', () => {
+    // The function uses ?? not ||. Empty string is non-nullish → wins.
+    // CRITICAL: a refactor to || would silently swap to .name fallback.
     expect(
       getCommandName(
         makeCmd({ name: 'plain-name', userFacingName: () => '' }),
@@ -41,7 +34,7 @@ describe('getCommandName — precedencia de userFacingName', () => {
     ).toBe('')
   })
 
-  test('userFacingName se invoca fresco en cada llamada (no se cachea)', () => {
+  test('userFacingName called fresh each invocation (not cached)', () => {
     let calls = 0
     const cmd = makeCmd({
       userFacingName: () => `name-${calls++}`,
@@ -51,25 +44,25 @@ describe('getCommandName — precedencia de userFacingName', () => {
   })
 })
 
-describe('isCommandEnabled — precedencia de isEnabled', () => {
-  test('devuelve el resultado de isEnabled() cuando está definida y es true', () => {
+describe('isCommandEnabled — isEnabled precedence', () => {
+  test('returns isEnabled() result when defined and true', () => {
     expect(isCommandEnabled(makeCmd({ isEnabled: () => true }))).toBe(true)
   })
 
-  test('devuelve false cuando isEnabled() devuelve false', () => {
+  test('returns false when isEnabled() returns false', () => {
     expect(isCommandEnabled(makeCmd({ isEnabled: () => false }))).toBe(false)
   })
 
-  test('por defecto es TRUE cuando isEnabled es undefined', () => {
-    // Default crítico — los comandos sin gate explícito quedan habilitados
-    // por defecto. Un futuro ?? false deshabilitaría en silencio todo
-    // comando que carezca de isEnabled.
+  test('defaults to TRUE when isEnabled is undefined', () => {
+    // Critical default — commands without an explicit gate are
+    // enabled by default. A future ?? false would silently disable
+    // every command lacking an isEnabled.
     expect(isCommandEnabled(makeCmd())).toBe(true)
   })
 
-  test('isEnabled() se invoca fresco en cada llamada', () => {
-    // El gate puede depender de estado dinámico (env, settings). Documenta
-    // que no está memoizado.
+  test('isEnabled() called fresh each invocation', () => {
+    // The gate may depend on dynamic state (env, settings). Document
+    // that it's not memoized.
     let calls = 0
     const cmd = makeCmd({ isEnabled: () => calls++ === 0 })
     expect(isCommandEnabled(cmd)).toBe(true) // calls=0, ret true

@@ -1,44 +1,35 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/allErrors.ts` (39 líneas
- * fuente). Reimplementación fiel VERBATIM.
+ * Combines settings validation errors with MCP configuration errors.
  *
- * `SettingsWithErrors` se completa en `validation.ts` en este mismo pase
- * (ver su docstring) — la fuente ya lo declaraba ahí.
- *
- * Combina los errores de validación de settings con los errores de config
- * MCP.
- *
- * Este módulo existe para romper una dependencia circular:
+ * This module exists to break a circular dependency:
  *   settings.ts → mcp/config.ts → settings.ts
  *
- * config (hoja de Wave 1) no puede importar de mcp-runtime (integración de
- * Wave 5). La obtención de errores MCP se inyecta vía el binding
- * `ConfigHostBindings.getMcpErrorsByScope`, que el app-host conecta a
- * mcp-runtime en tiempo de composición.
+ * V7 §8.6 / §11.1: config (Wave 1 leaf) cannot import from mcp-runtime
+ * (Wave 5 integration). The MCP error retrieval is injected via the
+ * ConfigHostBindings.getMcpErrorsByScope binding, which the app-host wires
+ * to mcp-runtime at composition time.
  */
 
-import { getConfigHostBindings } from '../host.ts'
-import { getSettingsWithErrors } from './settings.ts'
-import type { SettingsWithErrors } from './validation.ts'
+import { getConfigHostBindings } from '../host.js'
+import { getSettingsWithErrors } from './settings.js'
+import type { SettingsWithErrors } from './validation.js'
 
 /**
- * Obtiene los settings fusionados con TODOS los errores de validación,
- * incluidos los errores de config MCP.
+ * Get merged settings with all validation errors, including MCP config errors.
  *
- * Usar esto en vez de `getSettingsWithErrors()` cuando haga falta el
- * conjunto completo de errores (settings + MCP). El
- * `getSettingsWithErrors()` subyacente ya no incluye errores MCP, para
- * evitar la dependencia circular.
+ * Use this instead of getSettingsWithErrors() when you need the full set of
+ * errors (settings + MCP). The underlying getSettingsWithErrors() no longer
+ * includes MCP errors to avoid the circular dependency.
  */
 export function getSettingsWithAllErrors(): SettingsWithErrors {
   const result = getSettingsWithErrors()
   const getMcpErrors = getConfigHostBindings().getMcpErrorsByScope
   if (!getMcpErrors) {
-    // El binding del host no está instalado todavía (bootstrap temprano, o
-    // corridas headless que se saltan MCP). Devuelve sólo los errores de settings.
+    // Host binding not installed yet (early bootstrap or headless runs
+    // that skip MCP). Return settings errors only.
     return result
   }
-  // El scope 'dynamic' no devuelve errores — lanza, y se fija en el arranque del cli.
+  // 'dynamic' scope does not have errors returned; it throws and is set on cli startup
   const scopes = ['user', 'project', 'local'] as const
   const mcpErrors = scopes.flatMap(scope => getMcpErrors(scope))
   return {

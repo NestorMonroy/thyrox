@@ -1,29 +1,28 @@
 import { quote } from './shellQuote.js'
 
 /**
- * Compone un prefijo de shell (ejecutable + flags opcionales) con el
- * comando a ejecutar, citando cada parte por separado.
+ * Parses a shell prefix that may contain an executable path and arguments.
  *
- * Ejemplos:
- * - "bash" → cita como 'bash'
- * - "/usr/bin/bash -c" → cita como '/usr/bin/bash' -c
- * - "C:\Program Files\Git\bin\bash.exe -c" → cita el ejecutable, deja -c
+ * Examples:
+ * - "bash" -> quotes as 'bash'
+ * - "/usr/bin/bash -c" -> quotes as '/usr/bin/bash' -c
+ * - "C:\Program Files\Git\bin\bash.exe -c" -> quotes as 'C:\Program Files\Git\bin\bash.exe' -c
  *
- * @param prefix El prefijo de shell — ejecutable y, opcionalmente, flags
- * @param command El comando a ejecutar
- * @returns El comando compuesto, con cada componente citado
+ * @param prefix The shell prefix string containing executable and optional arguments
+ * @param command The command to be executed
+ * @returns The properly formatted command string with quoted components
  */
 export function formatShellPrefixCommand(
   prefix: string,
   command: string,
 ): string {
-  // Divide en el último espacio-antes-de-guion para separar el ejecutable
-  // de sus argumentos.
+  // Split on the last space before a dash to separate executable from arguments
   const spaceBeforeDash = prefix.lastIndexOf(' -')
   if (spaceBeforeDash > 0) {
     const execPath = prefix.substring(0, spaceBeforeDash)
     const args = prefix.substring(spaceBeforeDash + 1)
     return `${quote([execPath])} ${args} ${quote([command])}`
+  } else {
+    return `${quote([prefix])} ${quote([command])}`
   }
-  return `${quote([prefix])} ${quote([command])}`
 }

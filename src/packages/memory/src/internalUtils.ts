@@ -1,13 +1,9 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/internalUtils.ts` (verbatim — sin
- * dependencias externas al paquete).
+ * Pure utility functions inlined into the memory package to avoid importing
+ * from @thyrox/app-compat. All functions here are stateless and have no
+ * external dependencies beyond node built-ins.
  *
- * Funciones utilitarias puras, incluidas en el paquete `memory` para evitar
- * importar de `@claude-code-how-works/app-compat`. Todas son sin estado y
- * sin dependencias externas más allá de los built-ins de Node.
- *
- * V7 §8 — `memory` es una hoja de Wave 2. Este archivo reemplaza imports
- * directos de:
+ * V7 §8 — memory is a Wave 2 leaf. This file replaces direct imports of:
  *   - isEnvTruthy / isEnvDefinedFalsy (envUtils.ts)
  *   - sanitizePath (sessionStoragePortable.ts)
  *   - formatFileSize (format.ts)
@@ -19,9 +15,9 @@
  *   - classifyAxiosError (errors.ts)
  */
 
-import { createHash } from 'node:crypto'
+import { createHash } from 'crypto'
 
-// ── Utilidades de entorno ────────────────────────────────────────────────────
+// ── Env utils ────────────────────────────────────────────────────────────────
 
 export function isEnvTruthy(envVar: string | boolean | undefined): boolean {
   if (!envVar) return false
@@ -38,12 +34,12 @@ export function isEnvDefinedFalsy(
   return ['0', 'false', 'no', 'off'].includes(envVar.toLowerCase().trim())
 }
 
-// ── Sanitizador de rutas ─────────────────────────────────────────────────────
+// ── Path sanitizer ────────────────────────────────────────────────────────────
 
 const MAX_SANITIZED_LENGTH = 200
 
 function _simpleHash(str: string): string {
-  // hash djb2 para el fallback fuera de Bun
+  // djb2 hash for Node.js fallback
   let h = 5381
   for (let i = 0; i < str.length; i++) {
     h = ((h << 5) + h) ^ str.charCodeAt(i)
@@ -53,9 +49,9 @@ function _simpleHash(str: string): string {
 }
 
 /**
- * Hace una cadena segura para usarla como nombre de directorio/archivo.
- * Reemplaza todo carácter no alfanumérico por un guion.
- * Para rutas que exceden MAX_SANITIZED_LENGTH, agrega un sufijo hash.
+ * Makes a string safe for use as a directory/file name.
+ * Replaces all non-alphanumeric chars with hyphens.
+ * For paths exceeding MAX_SANITIZED_LENGTH, appends a hash suffix.
  */
 export function sanitizePath(name: string): string {
   const sanitized = name.replace(/[^a-zA-Z0-9]/g, '-')
@@ -69,7 +65,7 @@ export function sanitizePath(name: string): string {
   return `${sanitized.slice(0, MAX_SANITIZED_LENGTH)}-${hash}`
 }
 
-// ── Formateador de tamaño de archivo ─────────────────────────────────────────
+// ── File size formatter ───────────────────────────────────────────────────────
 
 export function formatFileSize(sizeInBytes: number): string {
   const kb = sizeInBytes / 1024
@@ -81,13 +77,13 @@ export function formatFileSize(sizeInBytes: number): string {
   return `${gb.toFixed(1).replace(/\.0$/, '')}GB`
 }
 
-// ── Helpers de error ──────────────────────────────────────────────────────────
+// ── Error helpers ─────────────────────────────────────────────────────────────
 
 export function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
-// ── Utilidades de arreglo ────────────────────────────────────────────────────
+// ── Array utils ───────────────────────────────────────────────────────────────
 
 export function count<T>(arr: readonly T[], pred: (x: T) => unknown): number {
   let n = 0
@@ -105,7 +101,7 @@ export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-// ── Utilidades JSON ───────────────────────────────────────────────────────────
+// ── JSON utils ────────────────────────────────────────────────────────────────
 
 export function jsonStringify(value: unknown): string {
   return JSON.stringify(value) ?? 'null'
@@ -115,7 +111,7 @@ export function jsonParse<T = unknown>(text: string): T {
   return JSON.parse(text) as T
 }
 
-// ── Retraso de reintento ──────────────────────────────────────────────────────
+// ── Retry delay ───────────────────────────────────────────────────────────────
 
 const BASE_DELAY_MS = 1000
 
@@ -123,7 +119,7 @@ export function getRetryDelay(attempt: number, maxDelayMs = 32000): number {
   return Math.min(BASE_DELAY_MS * 2 ** (attempt - 1), maxDelayMs)
 }
 
-// ── Clasificador de errores de axios ──────────────────────────────────────────
+// ── Axios error classifier ────────────────────────────────────────────────────
 
 type AxiosErrorKind = 'auth' | 'timeout' | 'network' | 'http' | 'other'
 
@@ -168,7 +164,7 @@ export function classifyAxiosError(error: unknown): {
   }
 }
 
-// ── Hash de contenido ─────────────────────────────────────────────────────────
+// ── Content hash ──────────────────────────────────────────────────────────────
 
 export function sha256Hex(content: string): string {
   return 'sha256:' + createHash('sha256').update(content, 'utf8').digest('hex')

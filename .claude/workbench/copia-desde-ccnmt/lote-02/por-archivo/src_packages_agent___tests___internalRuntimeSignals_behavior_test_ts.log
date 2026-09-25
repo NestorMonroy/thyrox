@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:
+50 |     expect(source).not.toMatch(/'in_progress'/)
+51 |     expect(source).not.toMatch(/'cancelled'/)
+52 |   })
+53 | 
+54 |   test('imports getAgentHostBindings from "../host.js"', () => {
+55 |     expect(source).toMatch(
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /import \{ getAgentHostBindings \} from '\.\.\/host\.js'/
+Received: "/**\n * Tres delegados a bindings del host — porte de\n * `ccnmt: packages/agent/internal/runtimeSignals.ts`.\n *\n * Los tres se llaman desde el camino caliente de una query y avisan al host\n * (checkpoints de diagnóstico, notificaciones de ciclo de vida de comando)\n * sin bloquear si el host no instaló el binding correspondiente — de ahí el\n * `?.` en cada uno: sin binding, la llamada es un no-op silencioso, no una\n * excepción.\n *\n * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `getAgentHostBindings`\n * desde `../host.js`; aquí desde `../host.ts` — mismo módulo, extensión de\n * import ajustada a la convención ya establecida en este árbol para módulos\n * de `internal/` que importan hermanos del paquete (ver `internal/abort.ts`).\n */\nimport { getAgentHostBindings } from '../host.ts'\n\nexport function headlessProfilerCheckpoint(name: string): void {\n  getAgentHostBindings().headlessProfilerCheckpoint?.(name)\n}\n\nexport function queryCheckpoint(name: string): void {\n  getAgentHostBindings().queryCheckpoint?.(name)\n}\n\nexport function notifyCommandLifecycle(\n  uuid: string,\n  state: 'started' | 'completed',\n): void {\n  getAgentHostBindings().notifyCommandLifecycle?.(uuid, state)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:55:20)
+(fail) internal/runtimeSignals > imports getAgentHostBindings from "../host.js" [0.23ms]
+
+ 5 pass
+ 1 fail
+ 11 expect() calls
+Ran 6 tests across 1 file. [97.00ms]
+exit=1

@@ -1,30 +1,21 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/peerSessions.ts`.
- * `logForDebugging`/`errorMessage` son sustitutos — ver
- * `internal/pendingCrossPackageDeps.ts`.
- */
 import axios from 'axios'
-import {
-  errorMessage,
-  logForDebugging,
-} from './internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { validateBridgeId } from './bridgeApi.js'
 import { getBridgeAccessToken } from './bridgeConfig.js'
 import { getReplBridgeHandle } from './replBridgeHandle.js'
 import { toCompatSessionId } from './sessionIdCompat.js'
 
 /**
- * Envía un mensaje de texto plano a otra sesión de Claude vía la API del
- * bridge.
+ * Send a plain-text message to another Claude session via the bridge API.
  *
- * Lo llama SendMessageTool cuando el esquema de la dirección destino es
- * "bridge:". Usa el ReplBridgeHandle actual para derivar la identidad
- * del emisor y la URL de session ingress para el POST.
+ * Called by SendMessageTool when the target address scheme is "bridge:".
+ * Uses the current ReplBridgeHandle to derive the sender identity and
+ * the session ingress URL for the POST request.
  *
- * @param target - ID de sesión destino (de la dirección "bridge:<sessionId>")
- * @param message - Contenido de texto plano del mensaje (los mensajes
- *   estructurados se rechazan upstream)
- * @returns { ok: true } en éxito, { ok: false, error } en fallo. Nunca lanza.
+ * @param target - Target session ID (from the "bridge:<sessionId>" address)
+ * @param message - Plain text message content (structured messages are rejected upstream)
+ * @returns { ok: true } on success, { ok: false, error } on failure. Never throws.
  */
 export async function postInterClaudeMessage(
   target: string,
@@ -47,7 +38,7 @@ export async function postInterClaudeMessage(
     }
 
     const compatTarget = toCompatSessionId(normalizedTarget)
-    // Valida contra path traversal — mismo allowlist que bridgeApi.ts
+    // Validate against path traversal — same allowlist as bridgeApi.ts
     validateBridgeId(compatTarget, 'target sessionId')
     const from = toCompatSessionId(handle.bridgeSessionId)
     const baseUrl = handle.sessionIngressUrl

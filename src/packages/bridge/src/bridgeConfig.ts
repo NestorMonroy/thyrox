@@ -1,22 +1,20 @@
 /**
- * Resolución compartida de auth/URL del bridge. Consolida los overrides
- * de desarrollo CLAUDE_BRIDGE_* sólo-ant que antes estaban copiados y
- * pegados a lo largo de una docena de archivos — inboundAttachments,
- * BriefTool/upload, bridgeMain, initReplBridge, remoteBridgeCore,
- * workers del daemon, /rename, /remote-control.
+ * Shared bridge auth/URL resolution. Consolidates the ant-only
+ * CLAUDE_BRIDGE_* dev overrides that were previously copy-pasted across
+ * a dozen files — inboundAttachments, BriefTool/upload, bridgeMain,
+ * initReplBridge, remoteBridgeCore, daemon workers, /rename,
+ * /remote-control.
  *
- * Dos capas: *Override() devuelve la variable de entorno sólo-ant (o
- * undefined); las versiones sin Override caen al almacén/config OAuth
- * real. Los llamadores que componen con otra fuente de auth (p. ej. los
- * workers del daemon usando auth por IPC) usan los getters Override
- * directamente.
- *
- * Puerto fiel de `ccnmt: packages/bridge/src/bridgeConfig.ts`.
+ * Two layers: *Override() returns the ant-only env var (or undefined);
+ * the non-Override versions fall through to the real OAuth store/config.
+ * Callers that compose with a different auth source (e.g. daemon workers
+ * using IPC auth) use the Override getters directly.
  */
 
-import { getOauthConfig, getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
+import { getOauthConfig } from '@thyrox/provider/oauthConstants'
+import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
 
-/** Override de dev sólo-ant: CLAUDE_BRIDGE_OAUTH_TOKEN, si no undefined. */
+/** Ant-only dev override: CLAUDE_BRIDGE_OAUTH_TOKEN, else undefined. */
 export function getBridgeTokenOverride(): string | undefined {
   return (
     (process.env.USER_TYPE === 'ant' &&
@@ -25,7 +23,7 @@ export function getBridgeTokenOverride(): string | undefined {
   )
 }
 
-/** Override de dev sólo-ant: CLAUDE_BRIDGE_BASE_URL, si no undefined. */
+/** Ant-only dev override: CLAUDE_BRIDGE_BASE_URL, else undefined. */
 export function getBridgeBaseUrlOverride(): string | undefined {
   return (
     (process.env.USER_TYPE === 'ant' && process.env.CLAUDE_BRIDGE_BASE_URL) ||
@@ -34,16 +32,16 @@ export function getBridgeBaseUrlOverride(): string | undefined {
 }
 
 /**
- * Access token para llamadas a la API del bridge: primero el override de
- * dev, luego el keychain OAuth. Undefined significa "no ha iniciado sesión".
+ * Access token for bridge API calls: dev override first, then the OAuth
+ * keychain. Undefined means "not logged in".
  */
 export function getBridgeAccessToken(): string | undefined {
   return getBridgeTokenOverride() ?? getClaudeAIOAuthTokens()?.accessToken
 }
 
 /**
- * URL base para llamadas a la API del bridge: primero el override de dev,
- * luego la config OAuth de producción. Siempre devuelve una URL.
+ * Base URL for bridge API calls: dev override first, then the production
+ * OAuth config. Always returns a URL.
  */
 export function getBridgeBaseUrl(): string {
   return getBridgeBaseUrlOverride() ?? getOauthConfig().BASE_API_URL
