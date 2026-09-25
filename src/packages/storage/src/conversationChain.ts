@@ -51,7 +51,6 @@ interface ToolResultBlock {
   content?: unknown
 }
 
-type MessageContent = string | unknown[]
 
 // `storage` ya depende de `@thyrox/agent`: el tipo del transcript es el
 // canónico, no un subconjunto local que diverja de él.
