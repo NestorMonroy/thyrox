@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2370, "total_final": 2369, "tsc_runs": 1, "accepted": ["copy-symbols:src/packages/agent/inProcessTeammateHelpers.ts:net"], "files_kept": ["src/packages/agent/inProcessTeammateHelpers.ts"], "outcomes": {"copy-symbols:src/packages/agent/inProcessTeammateHelpers.ts:net": "accepted-net"}}

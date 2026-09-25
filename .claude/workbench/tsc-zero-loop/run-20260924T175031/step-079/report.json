@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 2369, "total_final": 2368, "tsc_runs": 1, "accepted": ["copy-symbols:src/packages/agent/sessionTools/transcriptSearch.ts:net"], "files_kept": ["src/packages/agent/sessionTools/transcriptSearch.ts"], "outcomes": {"copy-symbols:src/packages/agent/sessionTools/transcriptSearch.ts:net": "accepted-net"}}
