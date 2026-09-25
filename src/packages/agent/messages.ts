@@ -134,9 +134,21 @@ export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
  *    fuente (`messages.ts:142` y `:358`)— y `ContentBlockParam` del
  *    grupo 6.
  *
- * Los 74 restantes NO estan portados y su ausencia es deliberada, no un
+ * 10. **11 exportados** traidos por `normalizeMessagesForAPI.test.ts`:
+ *    `normalizeMessagesForAPI`, `reorderAttachmentsForAPI`,
+ *    `wrapInSystemReminder`, `wrapMessagesInSystemReminder`,
+ *    `stripToolReferenceBlocksFromUserMessage`,
+ *    `stripCallerFieldFromAssistantMessage`, `mergeUserMessages`,
+ *    `mergeUserMessagesAndToolResults`, `mergeAssistantMessages`,
+ *    `mergeUserContentBlocks` y `normalizeAttachmentForAPI` (este ultimo,
+ *    porte PARCIAL declarado en su propia cabecera), mas sus ayudantes
+ *    internos. Sus divergencias van en la cabecera de la seccion
+ *    «Normalizacion del historial para el API», al final del archivo.
+ *
+ * Los restantes NO estan portados y su ausencia es deliberada, no un
  * olvido: `porte-completo-no-parcial.md` admite el porte parcial
- * **declarado**, nunca el silencioso.
+ * **declarado**, nunca el silencioso. El conteo vigente lo publica
+ * `grep -c '^export' src/packages/agent/messages.ts`, no esta prosa.
  *
  * Por que el grupo 1 fue primero: son el unico grupo de la fuente cuyo
  * contenido ES su comportamiento. Un refactor que «simplifique la redaccion»
@@ -2414,4 +2426,1529 @@ export function hasSuccessfulToolCall(messages: Message[], toolName: string): bo
     }
   }
   return false
+}
+
+// ---------------------------------------------------------------------------
+// Normalizacion del historial para el API — porte de
+// `ccnmt: packages/agent/messages.ts:2055-2440` (`normalizeMessagesForAPI`) y
+// de los ayudantes que necesita y no tenian hogar en este arbol. Los que ya lo
+// tenian se reusan y no se duplican: `isToolSearchEnabledOptimistic` e
+// `isToolReferenceBlock` (`toolSearch.ts`), `checkStatsigFeatureGate_*`
+// (`config`), `toolMatchesName` (`tool-registry`), `normalizeToolInputForAPI`
+// (`provider/legacy/api`), `validateImagesForAPI` (`storage`),
+// `normalizeLegacyToolName` (`permission`), `isSnipRuntimeEnabled`
+// (`compaction/snipCompact`), y los dos filtros de asistente de mas arriba.
+//
+// Tres divergencias declaradas, con su razon:
+//
+// 1. `last` de `lodash-es` se sustituye por `Array.prototype.at(-1)`: misma
+//    semantica (`undefined` en arreglo vacio) sin arrastrar la dependencia.
+// 2. Los `require('./compaction/snipCompact.js')` diferidos de la fuente se
+//    resuelven como import estatico: el modulo solo importa tipos, asi que no
+//    hay ciclo que justifique diferirlo, y las reglas de este arbol prohiben
+//    importar dentro de una funcion.
+// 3. `normalizeToolInputForAPI` se resuelve por `require` diferido, con el
+//    ciclo de imports medido en su envoltorio (`normalizeToolInputForAPIDeferred`).
+// 4. Los cinco textos de error de PDF/imagen/peticion demasiado grande NO
+//    existen en `@thyrox/provider/errors.js` (ver su cabecera: leen el modo
+//    no interactivo del host, decision de frontera pendiente). La tabla de
+//    recorte se construye aqui con las DOS variantes de cada texto —la
+//    interactiva y la no interactiva—: es un superconjunto de lo que la
+//    fuente calcula en el momento de la llamada, y el mensaje sintetico se
+//    escribio con el modo vigente cuando ocurrio el error, asi que cualquiera
+//    de las dos puede ser la que haya que emparejar.
+// ---------------------------------------------------------------------------
+import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import { readEnv } from '@thyrox/config/env/utils.js'
+import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { OUTPUT_STYLE_CONFIG } from '@thyrox/config/outputStyles.js'
+import { logEvent } from '@thyrox/local-observability'
+import { logAntError } from '@thyrox/local-observability/debug.js'
+import { formatFileSize, formatNumber } from '@thyrox/output/formatters'
+import { normalizeLegacyToolName } from '@thyrox/permission/permissionRuleParser'
+import { API_PDF_MAX_PAGES, PDF_TARGET_RAW_SIZE } from '@thyrox/provider/apiLimits.js'
+import { validateImagesForAPI } from '@thyrox/storage/imageValidation.js'
+import { type Tool, type Tools, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
+import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
+import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
+import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
+import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.ts'
+import { isSnipRuntimeEnabled, SNIP_NUDGE_TEXT } from './compaction/snipCompact.ts'
+import type { AttachmentMessage, MessageContent } from './messageShapes.ts'
+import { isTodoV2Enabled } from './tasks.ts'
+import { isToolReferenceBlock, isToolSearchEnabledOptimistic } from './toolSearch.ts'
+
+/** Texto hermano que corta el `<functions>` expandido de un `tool_reference`. */
+const TOOL_REFERENCE_TURN_BOUNDARY = 'Tool loaded.'
+
+/** Un mensaje con rol de usuario o de asistente: lo unico que el API acepta. */
+type ApiMessage = UserMessage | AssistantMessage
+
+/** La carga de un adjunto tal como `AttachmentMessage` la declara. */
+type ApiAttachment = AttachmentMessage['attachment']
+
+/**
+ * El contenido en arreglo de un mensaje, o `undefined` si es cadena o falta.
+ * El cast es el mismo que `isSyntheticMessage` ya hace mas arriba:
+ * `MessageContent` es `ContentBlockParam[] | ContentBlock[]`, y una union de
+ * arreglos no ofrece `map`/`filter` con firma compatible; los lectores de esta
+ * seccion solo consultan `type` y los campos que las dos formas comparten.
+ */
+function arrayContent(content: MessageContent | undefined): ContentBlockParam[] | undefined {
+  return Array.isArray(content) ? (content as ContentBlockParam[]) : undefined
+}
+
+/** El `tool_name` de un bloque `tool_reference`, o `undefined` si no lo es. */
+function toolReferenceName(block: unknown): string | undefined {
+  if (!isToolReferenceBlock(block) || typeof block !== 'object' || block === null || !('tool_name' in block)) {
+    return undefined
+  }
+  return typeof block.tool_name === 'string' ? block.tool_name : undefined
+}
+
+/** Un bloque de thinking, en cualquiera de sus dos formas. */
+function isThinkingParam(block: { type: string }): boolean {
+  return block.type === 'thinking' || block.type === 'redacted_thinking'
+}
+
+/** Un `Record` llano: lo unico que `normalizeToolInputForAPI` sabe recortar. */
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/**
+ * `normalizeToolInputForAPI` de `@thyrox/provider/legacy/api.js`, resuelto
+ * en la llamada y no en la carga. Medido por biseccion sobre los 24 imports
+ * de esta seccion: es el UNICO que cierra un ciclo — `legacy/api` importa
+ * `agent/prompts`, `agent/context` y las herramientas del registro, y por
+ * `permission/pathSafety` vuelve a este modulo antes de que aquel termine de
+ * inicializarse (`ReferenceError: Cannot access 'SENSITIVE_FILES' before
+ * initialization` al cargar `__tests__/compat.test.ts`). Misma forma que
+ * `featureEnabledDeferred` mas arriba y que el `require` diferido de la
+ * fuente para `snipCompact`; el tipo viene de `typeof import`, que no carga
+ * nada. Si el modulo no resuelve, el input vuelve intacto: es lo que la
+ * rama `default` de la funcion real hace.
+ */
+function normalizeToolInputForAPIDeferred(tool: Tool, input: Record<string, unknown>): unknown {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const api = require('@thyrox/provider/legacy/api.js') as typeof import('@thyrox/provider/legacy/api.js')
+    return api.normalizeToolInputForAPI(tool, input)
+  } catch {
+    return input
+  }
+}
+
+/**
+ * El error sintetico que el bucle inserta cuando el API rechaza la peticion:
+ * un asistente marcado `isApiErrorMessage` y con el modelo `<synthetic>`.
+ */
+function isSyntheticApiErrorMessage(
+  message: Message,
+): message is AssistantMessage & { isApiErrorMessage: true } {
+  return (
+    message.type === 'assistant' &&
+    message.isApiErrorMessage === true &&
+    message.message.model === SYNTHETIC_MODEL
+  )
+}
+
+/** El envoltorio que marca un texto como recordatorio del sistema. */
+export function wrapInSystemReminder(content: string): string {
+  return `<system-reminder>\n${content}\n</system-reminder>`
+}
+
+/** Envuelve el contenido de cada mensaje: la cadena entera, o cada bloque de texto. */
+export function wrapMessagesInSystemReminder(messages: UserMessage[]): UserMessage[] {
+  return messages.map(msg => {
+    const content = msg.message.content
+    if (typeof content === 'string') {
+      return { ...msg, message: { ...msg.message, content: wrapInSystemReminder(content) } }
+    }
+    const blocks = arrayContent(content)
+    if (blocks) {
+      const wrappedContent = blocks.map(block =>
+        block.type === 'text' ? { ...block, text: wrapInSystemReminder(block.text) } : block,
+      )
+      return { ...msg, message: { ...msg.message, content: wrappedContent } }
+    }
+    return msg
+  })
+}
+
+/**
+ * Sube cada adjunto hasta que topa con un asistente o con un `tool_result`:
+ * asi el contexto inyectado queda justo despues del turno que lo motivo. Se
+ * construye hacia atras y se invierte una vez al final —O(N)—; un `unshift`
+ * dentro del bucle seria O(N^2).
+ */
+export function reorderAttachmentsForAPI(messages: Message[]): Message[] {
+  const result: Message[] = []
+  // Los adjuntos se acumulan al recorrer de abajo arriba, asi que este
+  // buffer los guarda en orden inverso respecto a la entrada.
+  const pendingAttachments: AttachmentMessage[] = []
+
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (!message) continue
+
+    if (message.type === 'attachment') {
+      pendingAttachments.push(message)
+      continue
+    }
+    const isStoppingPoint =
+      message.type === 'assistant' ||
+      (message.type === 'user' && arrayContent(message.message.content)?.[0]?.type === 'tool_result')
+
+    if (isStoppingPoint && pendingAttachments.length > 0) {
+      // Tope: los adjuntos se quedan aqui (van despues del tope). Ya estan
+      // invertidos, asi que tras el `reverse` final quedan en su orden
+      // original justo despues de `message`.
+      for (const attachment of pendingAttachments) result.push(attachment)
+      result.push(message)
+      pendingAttachments.length = 0
+    } else {
+      result.push(message)
+    }
+  }
+
+  // Lo que queda sube hasta el principio.
+  for (const attachment of pendingAttachments) result.push(attachment)
+
+  result.reverse()
+  return result
+}
+
+/**
+ * Retira los `tool_reference` a herramientas que ya no existen (un servidor
+ * MCP desconectado, renombrado o retirado). Sin esto el API rechaza con
+ * «Tool reference not found in available tools».
+ */
+function stripUnavailableToolReferencesFromUserMessage(
+  message: UserMessage,
+  availableToolNames: Set<string>,
+): UserMessage {
+  const content = arrayContent(message.message.content)
+  if (!content) return message
+
+  const isUnavailable = (block: unknown): boolean => {
+    const toolName = toolReferenceName(block)
+    return toolName !== undefined && !availableToolNames.has(normalizeLegacyToolName(toolName))
+  }
+
+  const hasUnavailableReference = content.some(
+    block => block.type === 'tool_result' && Array.isArray(block.content) && block.content.some(isUnavailable),
+  )
+  if (!hasUnavailableReference) return message
+
+  return {
+    ...message,
+    message: {
+      ...message.message,
+      content: content.map(block => {
+        if (block.type !== 'tool_result' || !Array.isArray(block.content)) return block
+
+        const filteredContent = block.content.filter(c => {
+          const rawToolName = toolReferenceName(c)
+          if (rawToolName === undefined) return true
+          const toolName = normalizeLegacyToolName(rawToolName)
+          const isAvailable = availableToolNames.has(toolName)
+          if (!isAvailable) {
+            logForDebugging(`Filtering out tool_reference for unavailable tool: ${toolName}`, { level: 'warn' })
+          }
+          return isAvailable
+        })
+
+        // Si no queda nada, un marcador en vez de un bloque vacio.
+        if (filteredContent.length === 0) {
+          return {
+            ...block,
+            content: [{ type: 'text' as const, text: '[Tool references removed - tools no longer available]' }],
+          }
+        }
+        return { ...block, content: filteredContent }
+      }),
+    },
+  }
+}
+
+/**
+ * Apenda la etiqueta `[id:...]` al ultimo bloque de texto de un mensaje de
+ * usuario. Solo muta la copia que va al API, no el mensaje guardado; es lo
+ * que le permite al modelo citar un mensaje al llamar a la herramienta de
+ * recorte.
+ */
+function appendMessageTagToUserMessage(message: UserMessage): UserMessage {
+  if (message.isMeta) return message
+
+  const tag = `\n[id:${deriveShortMessageId(message.uuid)}]`
+  const content = message.message.content
+
+  if (typeof content === 'string') {
+    return { ...message, message: { ...message.message, content: content + tag } }
+  }
+
+  const blocks = arrayContent(content)
+  if (!blocks || blocks.length === 0) return message
+
+  let lastTextIdx = -1
+  for (let i = blocks.length - 1; i >= 0; i--) {
+    if (blocks[i]?.type === 'text') {
+      lastTextIdx = i
+      break
+    }
+  }
+  const textBlock = blocks[lastTextIdx]
+  if (!textBlock || textBlock.type !== 'text') return message
+
+  const newContent = [...blocks]
+  newContent[lastTextIdx] = { ...textBlock, text: textBlock.text + tag }
+  return { ...message, message: { ...message.message, content: newContent } }
+}
+
+/**
+ * Retira todo `tool_reference` de los `tool_result` de un mensaje de usuario:
+ * solo son validos con la beta de busqueda de herramientas activa.
+ */
+export function stripToolReferenceBlocksFromUserMessage(message: UserMessage): UserMessage {
+  const content = arrayContent(message.message.content)
+  if (!content) return message
+
+  const hasToolReference = content.some(
+    block => block.type === 'tool_result' && Array.isArray(block.content) && block.content.some(isToolReferenceBlock),
+  )
+  if (!hasToolReference) return message
+
+  return {
+    ...message,
+    message: {
+      ...message.message,
+      content: content.map(block => {
+        if (block.type !== 'tool_result' || !Array.isArray(block.content)) return block
+        const filteredContent = block.content.filter(c => !isToolReferenceBlock(c))
+        if (filteredContent.length === 0) {
+          return {
+            ...block,
+            content: [{ type: 'text' as const, text: '[Tool references removed - tool search not enabled]' }],
+          }
+        }
+        return { ...block, content: filteredContent }
+      }),
+    },
+  }
+}
+
+/**
+ * Retira el campo `caller` de los `tool_use` de un asistente: solo es valido
+ * con la beta de busqueda de herramientas. NO normaliza el input — eso lo
+ * hace `normalizeToolInputForAPI` dentro de `normalizeMessagesForAPI`, y este
+ * ayudante corre despues, en el post-proceso por modelo.
+ */
+export function stripCallerFieldFromAssistantMessage(message: AssistantMessage): AssistantMessage {
+  const contentArr = arrayContent(message.message.content) ?? []
+  const hasCallerField = contentArr.some(
+    block => block.type === 'tool_use' && 'caller' in block && block.caller !== null,
+  )
+  if (!hasCallerField) return message
+
+  return {
+    ...message,
+    message: {
+      ...message.message,
+      content: contentArr.map(block => {
+        if (block.type !== 'tool_use') return block
+        // Solo los campos estandar del API, construidos explicitamente.
+        return { type: 'tool_use' as const, id: block.id, name: block.name, input: block.input }
+      }),
+    },
+  }
+}
+
+/** Si algun `tool_result` del arreglo lleva un `tool_reference` dentro. */
+function contentHasToolReference(content: ReadonlyArray<ContentBlockParam>): boolean {
+  return content.some(
+    block => block.type === 'tool_result' && Array.isArray(block.content) && block.content.some(isToolReferenceBlock),
+  )
+}
+
+/**
+ * Garantiza que todo texto de un mensaje de origen adjunto lleve el
+ * envoltorio `<system-reminder>`: asi el prefijo discrimina de forma fiable en
+ * el paso final (`smooshSystemReminderSiblings`). Idempotente.
+ */
+function ensureSystemReminderWrap(msg: UserMessage): UserMessage {
+  const content = msg.message.content
+  if (typeof content === 'string') {
+    if (content.startsWith('<system-reminder>')) return msg
+    return { ...msg, message: { ...msg.message, content: wrapInSystemReminder(content) } }
+  }
+  const blocks = arrayContent(content)
+  if (!blocks) return msg
+  let changed = false
+  const newContent = blocks.map(b => {
+    if (b.type === 'text' && !b.text.startsWith('<system-reminder>')) {
+      changed = true
+      return { ...b, text: wrapInSystemReminder(b.text) }
+    }
+    return b
+  })
+  return changed ? { ...msg, message: { ...msg.message, content: newContent } } : msg
+}
+
+/**
+ * Paso final: funde los textos hermanos con prefijo `<system-reminder>` en el
+ * ULTIMO `tool_result` del mismo mensaje de usuario. El texto que no es
+ * recordatorio (entrada real del usuario, `TOOL_REFERENCE_TURN_BOUNDARY`,
+ * resumenes `<collapsed>`) se deja donde esta: una frontera `Human:` antes
+ * de entrada real es correcta. Idempotente y puro.
+ */
+function smooshSystemReminderSiblings(messages: ApiMessage[]): ApiMessage[] {
+  return messages.map(msg => {
+    if (msg.type !== 'user') return msg
+    const content = arrayContent(msg.message.content)
+    if (!content) return msg
+    if (!content.some(b => b.type === 'tool_result')) return msg
+
+    const srText: TextBlockParam[] = []
+    const kept: ContentBlockParam[] = []
+    for (const b of content) {
+      if (b.type === 'text' && b.text.startsWith('<system-reminder>')) srText.push(b)
+      else kept.push(b)
+    }
+    if (srText.length === 0) return msg
+
+    // Al ULTIMO tool_result: es el adyacente en el prompt renderizado.
+    const lastTrIdx = kept.findLastIndex(b => b.type === 'tool_result')
+    const lastTr = kept[lastTrIdx]
+    if (!lastTr || lastTr.type !== 'tool_result') return msg
+    const smooshed = smooshIntoToolResult(lastTr, srText)
+    if (smooshed === null) return msg // restriccion de tool_reference — se deja
+
+    const newContent = [...kept.slice(0, lastTrIdx), smooshed, ...kept.slice(lastTrIdx + 1)]
+    return { ...msg, message: { ...msg.message, content: newContent } }
+  })
+}
+
+/**
+ * Deja solo texto en los `tool_result` con `is_error`: el API rechaza la
+ * mezcla («all content must be type text if is_error is true»). Guarda de
+ * lectura para transcripts anteriores a que `smooshIntoToolResult` filtrara
+ * por `is_error`; sin ella una sesion reanudada da 400 en cada llamada.
+ */
+function sanitizeErrorToolResultContent(messages: ApiMessage[]): ApiMessage[] {
+  return messages.map(msg => {
+    if (msg.type !== 'user') return msg
+    const content = arrayContent(msg.message.content)
+    if (!content) return msg
+
+    let changed = false
+    const newContent = content.map(b => {
+      if (b.type !== 'tool_result' || !b.is_error) return b
+      const trContent = b.content
+      if (!Array.isArray(trContent)) return b
+      if (trContent.every(c => c.type === 'text')) return b
+      changed = true
+      const texts = trContent.flatMap(c => (c.type === 'text' ? [c.text] : []))
+      const textOnly: TextBlockParam[] = texts.length > 0 ? [{ type: 'text', text: texts.join('\n\n') }] : []
+      return { ...b, content: textOnly }
+    })
+    if (!changed) return msg
+    return { ...msg, message: { ...msg.message, content: newContent } }
+  })
+}
+
+/**
+ * Mueve los textos hermanos de un mensaje con `tool_reference` al siguiente
+ * mensaje de usuario que tenga `tool_result` y NO `tool_reference`. El
+ * servidor expande la referencia a un bloque `<functions>`, y un texto
+ * hermano justo despues crea un segundo segmento de turno humano que el
+ * modelo imita emitiendo la secuencia de parada. Si no hay destino valido,
+ * los hermanos se quedan. Idempotente.
+ */
+function relocateToolReferenceSiblings(messages: ApiMessage[]): ApiMessage[] {
+  const result = [...messages]
+
+  for (let i = 0; i < result.length; i++) {
+    const msg = result[i]
+    if (!msg || msg.type !== 'user') continue
+    const content = arrayContent(msg.message.content)
+    if (!content || !contentHasToolReference(content)) continue
+
+    const textSiblings = content.filter(b => b.type === 'text')
+    if (textSiblings.length === 0) continue
+
+    // Un destino con tool_reference solo recrearia el problema una posicion
+    // mas adelante, asi que se salta.
+    let targetIdx = -1
+    for (let j = i + 1; j < result.length; j++) {
+      const cand = result[j]
+      if (!cand || cand.type !== 'user') continue
+      const cc = arrayContent(cand.message.content)
+      if (!cc || !cc.some(b => b.type === 'tool_result') || contentHasToolReference(cc)) continue
+      targetIdx = j
+      break
+    }
+    const target = result[targetIdx]
+    if (targetIdx === -1 || !target || target.type !== 'user') continue
+
+    result[i] = { ...msg, message: { ...msg.message, content: content.filter(b => b.type !== 'text') } }
+    result[targetIdx] = {
+      ...target,
+      message: {
+        ...target.message,
+        content: [...(arrayContent(target.message.content) ?? []), ...textSiblings],
+      },
+    }
+  }
+
+  return result
+}
+
+/**
+ * La tabla «texto del error sintetico → tipos de bloque a retirar del meta
+ * que lo precede». Divergencia 3 de la cabecera: las dos variantes de cada
+ * texto, porque los constructores de `provider/errors.js` no estan portados.
+ */
+function apiErrorBlockTypesToStrip(): Record<string, Set<string>> {
+  const pdfLimits = `max ${API_PDF_MAX_PAGES} pages, ${formatFileSize(PDF_TARGET_RAW_SIZE)}`
+  const requestLimits = `max ${formatFileSize(PDF_TARGET_RAW_SIZE)}`
+  const entries: Array<[string, string[]]> = [
+    [`PDF too large (${pdfLimits}). Try reading the file a different way (e.g., extract text with pdftotext).`, ['document']],
+    [`PDF too large (${pdfLimits}). Double press esc to go back and try again, or use pdftotext to convert to text first.`, ['document']],
+    ['PDF is password protected. Try using a CLI tool to extract or convert the PDF.', ['document']],
+    ['PDF is password protected. Please double press esc to edit your message and try again.', ['document']],
+    ['The PDF file was not valid. Try converting it to text first (e.g., pdftotext).', ['document']],
+    ['The PDF file was not valid. Double press esc to go back and try again with a different file.', ['document']],
+    ['Image was too large. Try resizing the image or using a different approach.', ['image']],
+    ['Image was too large. Double press esc to go back and try again with a smaller image.', ['image']],
+    [`Request too large (${requestLimits}). Try with a smaller file.`, ['document', 'image']],
+    [`Request too large (${requestLimits}). Double press esc to go back and try with a smaller file.`, ['document', 'image']],
+  ]
+  const table: Record<string, Set<string>> = {}
+  for (const [text, types] of entries) table[text] = new Set(types)
+  return table
+}
+
+/**
+ * Prepara el historial para el API: retira lo que es solo de pantalla,
+ * funde usuarios contiguos (Bedrock no admite dos seguidos), funde los
+ * fragmentos de un mismo asistente, normaliza los `tool_use`, rinde los
+ * adjuntos, y aplica los pases finales de limpieza. El orden de esos pases
+ * importa y esta comentado en cada uno.
+ */
+export function normalizeMessagesForAPI(messages: Message[], tools: Tools = []): ApiMessage[] {
+  // Los nombres disponibles, para retirar referencias a herramientas ausentes.
+  const availableToolNames = new Set(tools.map(t => t.name))
+
+  // Primero suben los adjuntos; luego se retiran los virtuales — son solo de
+  // pantalla (p. ej. las llamadas internas del REPL) y nunca llegan al API.
+  const reorderedMessages = reorderAttachmentsForAPI(messages).filter(
+    m => !((m.type === 'user' || m.type === 'assistant') && m.isVirtual),
+  )
+
+  const errorToBlockTypes = apiErrorBlockTypesToStrip()
+
+  // Mapa de recorte dirigido: uuid del meta de usuario → tipos a retirar.
+  const stripTargets = new Map<string, Set<string>>()
+  for (let i = 0; i < reorderedMessages.length; i++) {
+    const msg = reorderedMessages[i]
+    if (!msg || !isSyntheticApiErrorMessage(msg)) continue
+    const first = arrayContent(msg.message.content)?.[0]
+    const errorText = first?.type === 'text' ? first.text : undefined
+    if (!errorText) continue
+    const blockTypesToStrip = errorToBlockTypes[errorText]
+    if (!blockTypesToStrip) continue
+    // Hacia atras hasta el meta de usuario mas cercano.
+    for (let j = i - 1; j >= 0; j--) {
+      const candidate = reorderedMessages[j]
+      if (!candidate) break
+      if (candidate.type === 'user' && candidate.isMeta) {
+        const existing = stripTargets.get(candidate.uuid)
+        if (existing) {
+          for (const t of blockTypesToStrip) existing.add(t)
+        } else {
+          stripTargets.set(candidate.uuid, new Set(blockTypesToStrip))
+        }
+        break
+      }
+      // Otros errores sinteticos se saltan; un asistente o un usuario que no
+      // es meta detiene la busqueda.
+      if (isSyntheticApiErrorMessage(candidate)) continue
+      break
+    }
+  }
+
+  const result: ApiMessage[] = []
+  for (const message of reorderedMessages) {
+    if (message.type === 'progress' || isSyntheticApiErrorMessage(message)) continue
+
+    if (message.type === 'system') {
+      // Un `local_command` entra como usuario: asi el modelo puede citar la
+      // salida del comando en turnos posteriores.
+      if (!isSystemLocalCommandMessage(message)) continue
+      const userMsg = createUserMessage({ content: message.content, uuid: message.uuid, timestamp: message.timestamp })
+      const lastMessage = result.at(-1)
+      if (lastMessage?.type === 'user') {
+        result[result.length - 1] = mergeUserMessages(lastMessage, userMsg)
+        continue
+      }
+      result.push(userMsg)
+      continue
+    }
+
+    if (message.type === 'user') {
+      // Sin busqueda de herramientas se retira todo `tool_reference`; con
+      // ella, solo los que apuntan a herramientas que ya no existen.
+      let normalizedMessage = isToolSearchEnabledOptimistic()
+        ? stripUnavailableToolReferencesFromUserMessage(message, availableToolNames)
+        : stripToolReferenceBlocksFromUserMessage(message)
+
+      // Retira los `document`/`image` del meta que precedio a un error de
+      // tamano, para no reenviar el contenido problematico en cada llamada.
+      const typesToStrip = stripTargets.get(normalizedMessage.uuid)
+      if (typesToStrip && normalizedMessage.isMeta) {
+        const content = arrayContent(normalizedMessage.message.content)
+        if (content) {
+          const filtered = content.filter(block => !typesToStrip.has(block.type))
+          if (filtered.length === 0) continue // todo retirado: el mensaje se omite
+          if (filtered.length < content.length) {
+            normalizedMessage = { ...normalizedMessage, message: { ...normalizedMessage.message, content: filtered } }
+          }
+        }
+      }
+
+      // El servidor expande `tool_reference` como `<functions>...</functions>`;
+      // al final del prompt eso hace que el modelo muestree la secuencia de
+      // parada. Un texto hermano inserta una frontera de turno limpia. Va
+      // aqui —preparacion del API— para que nunca se renderice en el REPL, y
+      // se salta solo si el recorte de arriba dejo el mensaje sin
+      // referencias. Idempotente: el `startsWith` casa la forma desnuda y la
+      // etiquetada por `appendMessageTagToUserMessage`. Apagado bajo la
+      // bandera que activa `relocateToolReferenceSiblings` mas abajo.
+      if (!checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_toolref_defer_j8m')) {
+        const contentAfterStrip = arrayContent(normalizedMessage.message.content)
+        if (
+          contentAfterStrip &&
+          !contentAfterStrip.some(b => b.type === 'text' && b.text.startsWith(TOOL_REFERENCE_TURN_BOUNDARY)) &&
+          contentHasToolReference(contentAfterStrip)
+        ) {
+          normalizedMessage = {
+            ...normalizedMessage,
+            message: {
+              ...normalizedMessage.message,
+              content: [...contentAfterStrip, { type: 'text', text: TOOL_REFERENCE_TURN_BOUNDARY }],
+            },
+          }
+        }
+      }
+
+      const lastMessage = result.at(-1)
+      if (lastMessage?.type === 'user') {
+        result[result.length - 1] = mergeUserMessages(lastMessage, normalizedMessage)
+        continue
+      }
+      result.push(normalizedMessage)
+      continue
+    }
+
+    if (message.type === 'assistant') {
+      // Normaliza los inputs (p. ej. retira `plan` de ExitPlanModeV2). Sin la
+      // beta de busqueda de herramientas se retira ademas `caller`, que solo
+      // es valido con su cabecera.
+      const toolSearchEnabled = isToolSearchEnabledOptimistic()
+      const normalizedMessage: AssistantMessage = {
+        ...message,
+        message: {
+          ...message.message,
+          content: (arrayContent(message.message.content) ?? []).map(block => {
+            if (block.type !== 'tool_use') return block
+            const tool = tools.find(t => toolMatchesName(t, block.name))
+            // La fuente pasa el input sin mirar su forma; aqui solo se
+            // normaliza un `Record`, que es lo unico que las ramas de
+            // `normalizeToolInputForAPI` tocan — el resto vuelve intacto.
+            const rawInput: unknown = block.input
+            const normalizedInput = tool && isPlainRecord(rawInput) ? normalizeToolInputForAPIDeferred(tool, rawInput) : rawInput
+            const canonicalName = tool?.name ?? block.name
+
+            if (toolSearchEnabled) {
+              return { ...block, name: canonicalName, input: normalizedInput }
+            }
+            // Se retira `caller` y se conserva el resto de la metadata del
+            // proveedor (p. ej. la firma de pensamiento de Gemini).
+            const { caller: _caller, ...toolUseRest } = block
+            return { ...toolUseRest, type: 'tool_use' as const, id: block.id, name: canonicalName, input: normalizedInput }
+          }),
+        },
+      }
+
+      // Se funde con el asistente previo del mismo `message.id`, saltando
+      // los tool_result y los asistentes de otro id: los agentes concurrentes
+      // intercalan fragmentos de respuestas distintas.
+      let merged = false
+      for (let i = result.length - 1; i >= 0; i--) {
+        const msg = result[i]
+        if (!msg) break
+        if (msg.type !== 'assistant' && !isToolResultMessage(msg)) break
+        if (msg.type === 'assistant' && msg.message.id === normalizedMessage.message.id) {
+          result[i] = mergeAssistantMessages(msg, normalizedMessage)
+          merged = true
+          break
+        }
+      }
+      if (!merged) result.push(normalizedMessage)
+      continue
+    }
+
+    if (message.type === 'attachment') {
+      const rawAttachmentMessage = normalizeAttachmentForAPI(message.attachment)
+      const attachmentMessage = checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')
+        ? rawAttachmentMessage.map(ensureSystemReminderWrap)
+        : rawAttachmentMessage
+
+      const lastMessage = result.at(-1)
+      if (lastMessage?.type === 'user') {
+        result[result.length - 1] = attachmentMessage.reduce((p, c) => mergeUserMessagesAndToolResults(p, c), lastMessage)
+        continue
+      }
+      result.push(...attachmentMessage)
+    }
+    // `grouped_tool_use` y `collapsed_read_search` no llevan rama en la
+    // fuente: pasan su filtro y el `switch` los ignora. Aqui igual.
+  }
+
+  // Mueve los textos hermanos fuera de los mensajes con `tool_reference`
+  // (#21049). Tras la fusion (los hermanos ya estan en su sitio) y antes del
+  // etiquetado (las etiquetas reflejan la posicion final). Con la bandera
+  // apagada no hace nada, y la frontera inyectada arriba es el respaldo.
+  const relocated = checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_toolref_defer_j8m')
+    ? relocateToolReferenceSiblings(result)
+    : result
+
+  // Asistentes huerfanos de solo thinking (la compactacion recorto lo que
+  // habia entre una respuesta fallida y su reintento): sin esto, dos
+  // asistentes seguidos con firmas de thinking distintas dan 400.
+  const withFilteredOrphans = filterOrphanedThinkingOnlyMessages(relocated)
+
+  // El orden importa: primero el thinking final, DESPUES el filtro de solo
+  // espacios. Al reves, `[text("\n\n"), thinking(...)]` sobrevive al filtro
+  // (tiene un bloque que no es texto) y el recorte deja `[text("\n\n")]`,
+  // que el API rechaza.
+  const withFilteredThinking = filterTrailingThinkingFromLastAssistant(withFilteredOrphans)
+  const withFilteredWhitespace = filterWhitespaceOnlyAssistantMessages(withFilteredThinking)
+  const withNonEmpty = ensureNonEmptyAssistantContent(withFilteredWhitespace)
+
+  // El filtro de huerfanos no funde usuarios adyacentes (el de espacios si,
+  // pero solo cuando dispara). Se funde aqui para que el paso siguiente
+  // pueda plegar el hermano que `hoistToolResults` produce. Van juntos bajo
+  // la misma bandera: la fusion existe solo para alimentar al pliegue.
+  const smooshed = checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')
+    ? smooshSystemReminderSiblings(mergeAdjacentUserMessages(withNonEmpty))
+    : withNonEmpty
+
+  // Incondicional: transcripts anteriores a que el pliegue filtrara por
+  // `is_error`. Sin esto, una sesion reanudada con una imagen dentro de un
+  // tool_result de error da 400 para siempre.
+  const sanitized = sanitizeErrorToolResultContent(smooshed)
+
+  // Etiquetas `[id:...]` para la herramienta de recorte, tras toda fusion
+  // (asi la etiqueta coincide con el mensaje que sobrevive). En modo test no:
+  // cambian el hash del contenido y rompen la busqueda de fixtures VCR.
+  if (feature('HISTORY_SNIP') && readEnv('NODE_ENV') !== 'test' && isSnipRuntimeEnabled()) {
+    for (let i = 0; i < sanitized.length; i++) {
+      const msg = sanitized[i]
+      if (msg?.type === 'user') sanitized[i] = appendMessageTagToUserMessage(msg)
+    }
+  }
+
+  // Ninguna imagen fuera del limite del API antes de enviar.
+  validateImagesForAPI(sanitized)
+
+  return sanitized
+}
+
+/** Fusion de un usuario con los mensajes de un adjunto: pliega y luego iza. */
+export function mergeUserMessagesAndToolResults(a: UserMessage, b: UserMessage): UserMessage {
+  const lastContent = normalizeUserTextContent(a.message.content)
+  const currentContent = normalizeUserTextContent(b.message.content)
+  return {
+    ...a,
+    message: { ...a.message, content: hoistToolResults(mergeUserContentBlocks(lastContent, currentContent)) },
+  }
+}
+
+/** Dos fragmentos del mismo asistente: el contenido se concatena. */
+export function mergeAssistantMessages(a: AssistantMessage, b: AssistantMessage): AssistantMessage {
+  return {
+    ...a,
+    message: {
+      ...a.message,
+      content: [...(arrayContent(a.message.content) ?? []), ...(arrayContent(b.message.content) ?? [])],
+    },
+  }
+}
+
+/** Un mensaje de usuario que lleva algun `tool_result`. */
+function isToolResultMessage(msg: Message): boolean {
+  if (msg.type !== 'user') return false
+  return (arrayContent(msg.message.content) ?? []).some(block => block.type === 'tool_result')
+}
+
+/**
+ * Dos usuarios contiguos en uno. Conserva el uuid del que NO es meta, para
+ * que las etiquetas `[id:]` (derivadas del uuid) sean estables entre
+ * llamadas: el contexto del sistema recibe un uuid nuevo cada vez.
+ */
+export function mergeUserMessages(a: UserMessage, b: UserMessage): UserMessage {
+  const lastContent = normalizeUserTextContent(a.message.content)
+  const currentContent = normalizeUserTextContent(b.message.content)
+  // Un fundido es meta solo si TODOS sus operandos lo son. Va tras la
+  // comprobacion completa de runtime porque cambiar `isMeta` afecta a otros
+  // consumidores (el hash de fixtures VCR): solo cuando el recorte esta
+  // activo de verdad.
+  if (feature('HISTORY_SNIP') && isSnipRuntimeEnabled()) {
+    return {
+      ...a,
+      isMeta: a.isMeta && b.isMeta ? true : undefined,
+      uuid: a.isMeta ? b.uuid : a.uuid,
+      message: { ...a.message, content: hoistToolResults(joinTextAtSeam(lastContent, currentContent)) },
+    }
+  }
+  return {
+    ...a,
+    uuid: a.isMeta ? b.uuid : a.uuid,
+    message: { ...a.message, content: hoistToolResults(joinTextAtSeam(lastContent, currentContent)) },
+  }
+}
+
+/** Funde cada par de usuarios contiguos de la lista. */
+function mergeAdjacentUserMessages(msgs: ApiMessage[]): ApiMessage[] {
+  const out: ApiMessage[] = []
+  for (const m of msgs) {
+    const prev = out.at(-1)
+    if (m.type === 'user' && prev?.type === 'user') {
+      out[out.length - 1] = mergeUserMessages(prev, m)
+    } else {
+      out.push(m)
+    }
+  }
+  return out
+}
+
+/**
+ * Los `tool_result` van primero en el contenido de un usuario: si no, el API
+ * responde «tool result must follow tool use».
+ */
+function hoistToolResults(content: ContentBlockParam[]): ContentBlockParam[] {
+  const toolResults: ContentBlockParam[] = []
+  const otherBlocks: ContentBlockParam[] = []
+  for (const block of content) {
+    if (block.type === 'tool_result') toolResults.push(block)
+    else otherBlocks.push(block)
+  }
+  return [...toolResults, ...otherBlocks]
+}
+
+/**
+ * El contenido de un usuario como arreglo de bloques. La fuente lo declara
+ * `string | ContentBlockParam[]`; aqui `message.content` es opcional en la
+ * forma, y un contenido ausente se trata como vacio.
+ */
+function normalizeUserTextContent(a: MessageContent | undefined): ContentBlockParam[] {
+  if (typeof a === 'string') return [{ type: 'text', text: a }]
+  return arrayContent(a) ?? []
+}
+
+/**
+ * Concatena dos arreglos apendando `\n` al ultimo texto de `a` cuando la
+ * costura es texto-texto: el API concatena textos adyacentes sin separador,
+ * y dos prompts encolados «2 + 2» y «3 + 3» llegarian como «2 + 23 + 3». El
+ * `\n` va del lado de `a` para que ningun `startsWith` de `b` cambie — el
+ * pliegue clasifica por `startsWith('<system-reminder>')`.
+ */
+function joinTextAtSeam(a: ContentBlockParam[], b: ContentBlockParam[]): ContentBlockParam[] {
+  const lastA = a.at(-1)
+  const firstB = b[0]
+  if (lastA?.type === 'text' && firstB?.type === 'text') {
+    return [...a.slice(0, -1), { ...lastA, text: lastA.text + '\n' }, ...b]
+  }
+  return [...a, ...b]
+}
+
+/** Un elemento admitido dentro de `tool_result.content`. */
+type ToolResultContentItem = Extract<ToolResultBlockParam['content'], readonly unknown[]>[number]
+
+/**
+ * Pliega bloques dentro del contenido de un `tool_result`. Devuelve el
+ * bloque actualizado, o `null` si no se puede (un `tool_reference` no admite
+ * mezcla — ValueError del servidor).
+ *
+ * - contenido cadena/ausente + solo textos → cadena (forma heredada)
+ * - contenido arreglo con tool_reference → null
+ * - resto → arreglo, con los textos adyacentes fundidos
+ */
+function smooshIntoToolResult(tr: ToolResultBlockParam, blocks: ContentBlockParam[]): ToolResultBlockParam | null {
+  if (blocks.length === 0) return tr
+
+  const existing = tr.content
+  if (Array.isArray(existing) && existing.some(isToolReferenceBlock)) return null
+
+  // Un tool_result con is_error solo admite texto. Los hermanos de un
+  // comando encolado pueden traer imagenes; plegarlas en un error produce un
+  // transcript que da 400 en cada llamada. La imagen no se pierde: llega
+  // como turno de usuario propio.
+  let incoming = blocks
+  if (tr.is_error) {
+    incoming = incoming.filter(b => b.type === 'text')
+    if (incoming.length === 0) return tr
+  }
+
+  const incomingTexts = incoming.flatMap(b => (b.type === 'text' ? [b.text.trim()] : []))
+  const allText = incomingTexts.length === incoming.length
+
+  // Forma de cadena cuando lo existente era cadena o nada y todo lo que
+  // entra es texto: el caso comun (recordatorios de hooks en Bash/Read).
+  if (allText && (existing === undefined || typeof existing === 'string')) {
+    const joined = [(typeof existing === 'string' ? existing : '').trim(), ...incomingTexts].filter(Boolean).join('\n\n')
+    return { ...tr, content: joined }
+  }
+
+  // Caso general: a arreglo, concatenar, fundir textos adyacentes.
+  const base: ToolResultContentItem[] =
+    existing === undefined
+      ? []
+      : typeof existing === 'string'
+        ? existing.trim()
+          ? [{ type: 'text', text: existing.trim() }]
+          : []
+        : [...existing]
+
+  const merged: ToolResultContentItem[] = []
+  for (const b of [...base, ...incoming]) {
+    if (b.type === 'text') {
+      const t = b.text.trim()
+      if (!t) continue
+      const prev = merged.at(-1)
+      if (prev?.type === 'text') {
+        merged[merged.length - 1] = { ...prev, text: `${prev.text}\n\n${t}` }
+      } else {
+        merged.push({ type: 'text', text: t })
+      }
+    } else {
+      // image / search_result / document pasan tal cual. El cast es el de la
+      // fuente: `ContentBlockParam` es mas ancho que lo admitido dentro de un
+      // tool_result, y quien llama ya filtro los tool_result hermanos.
+      merged.push(b as ToolResultContentItem)
+    }
+  }
+
+  return { ...tr, content: merged }
+}
+
+/**
+ * Concatena dos contenidos de usuario. Si `a` termina en `tool_result`, los
+ * bloques de `b` se pliegan dentro de el: cualquier hermano tras un
+ * tool_result renderiza como `</function_results>\n\nHuman:`, y repetido a
+ * media conversacion ensena al modelo a emitir `Human:` en una cola desnuda
+ * (A/B: 92% → 0%).
+ */
+export function mergeUserContentBlocks(a: ContentBlockParam[], b: ContentBlockParam[]): ContentBlockParam[] {
+  const lastBlock = a.at(-1)
+  if (lastBlock?.type !== 'tool_result') return [...a, ...b]
+
+  if (!checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')) {
+    // Pliegue heredado (sin bandera): solo tool_result con contenido cadena y
+    // hermanos de solo texto → cadena unida. La precondicion garantiza que
+    // `smooshIntoToolResult` toma su rama de cadena (nunca `null`); la fuente
+    // lo afirma con `!`, aqui se comprueba.
+    if (typeof lastBlock.content === 'string' && b.every(x => x.type === 'text')) {
+      const smooshed = smooshIntoToolResult(lastBlock, b)
+      if (smooshed === null) return [...a, ...b]
+      return [...a.slice(0, -1), smooshed]
+    }
+    return [...a, ...b]
+  }
+
+  // Pliegue universal (con bandera): todo lo que no sea tool_result entra en
+  // el contenido; los tool_result de `b` siguen como hermanos (los iza
+  // `hoistToolResults` despues).
+  const toSmoosh = b.filter(x => x.type !== 'tool_result')
+  const toolResults = b.filter(x => x.type === 'tool_result')
+  if (toSmoosh.length === 0) return [...a, ...b]
+
+  const smooshed = smooshIntoToolResult(lastBlock, toSmoosh)
+  if (smooshed === null) return [...a, ...b] // restriccion de tool_reference
+
+  return [...a.slice(0, -1), smooshed, ...toolResults]
+}
+
+/**
+ * Retira los bloques de thinking finales del ULTIMO asistente: el API no
+ * admite que la respuesta a prellenar termine en thinking. Si todo era
+ * thinking, queda un marcador.
+ */
+function filterTrailingThinkingFromLastAssistant(messages: ApiMessage[]): ApiMessage[] {
+  const lastMessage = messages.at(-1)
+  if (!lastMessage || lastMessage.type !== 'assistant') return messages
+
+  const content = arrayContent(lastMessage.message.content)
+  if (!content) return messages
+  const lastBlock = content.at(-1)
+  if (!lastBlock || !isThinkingParam(lastBlock)) return messages
+
+  let lastValidIndex = content.length - 1
+  while (lastValidIndex >= 0) {
+    const block = content[lastValidIndex]
+    if (!block || !isThinkingParam(block)) break
+    lastValidIndex--
+  }
+
+  logEvent('tengu_filtered_trailing_thinking_block', {
+    messageUUID: lastMessage.uuid,
+    blocksRemoved: content.length - lastValidIndex - 1,
+    remainingBlocks: lastValidIndex + 1,
+  })
+
+  const filteredContent: ContentBlockParam[] =
+    lastValidIndex < 0
+      ? [{ type: 'text', text: '[No message content]', citations: [] }]
+      : content.slice(0, lastValidIndex + 1)
+
+  const result = [...messages]
+  result[messages.length - 1] = { ...lastMessage, message: { ...lastMessage.message, content: filteredContent } }
+  return result
+}
+
+/**
+ * Un asistente intermedio con contenido vacio recibe el centinela: el API lo
+ * rechaza vacio. El ultimo se deja (puede estar vacio para prellenar).
+ */
+function ensureNonEmptyAssistantContent(messages: ApiMessage[]): ApiMessage[] {
+  if (messages.length === 0) return messages
+
+  let hasChanges = false
+  const result = messages.map((message, index): ApiMessage => {
+    if (message.type !== 'assistant' || index === messages.length - 1) return message
+    const content = message.message.content
+    if (Array.isArray(content) && content.length === 0) {
+      hasChanges = true
+      logEvent('tengu_fixed_empty_assistant_content', { messageUUID: message.uuid, messageIndex: index })
+      return {
+        ...message,
+        message: { ...message.message, content: [{ type: 'text', text: NO_CONTENT_MESSAGE, citations: [] }] },
+      }
+    }
+    return message
+  })
+
+  return hasChanges ? result : messages
+}
+
+/** Un campo del adjunto como cadena; lo que no es cadena se lee como `''`. */
+function attachmentString(attachment: ApiAttachment, key: string): string {
+  const value = attachment[key]
+  return typeof value === 'string' ? value : ''
+}
+
+/** Un campo del adjunto como arreglo; lo que no lo es se lee como vacio. */
+function attachmentArray(attachment: ApiAttachment, key: string): unknown[] {
+  const value = attachment[key]
+  return Array.isArray(value) ? value : []
+}
+
+/** Un campo del adjunto como objeto llano, o `undefined`. */
+function attachmentRecord(attachment: ApiAttachment, key: string): Record<string, unknown> | undefined {
+  const value = attachment[key]
+  return isPlainRecord(value) ? value : undefined
+}
+
+/** Un campo de un objeto llano como cadena, o `''`. */
+function recordString(record: Record<string, unknown>, key: string): string {
+  const value = record[key]
+  return typeof value === 'string' ? value : ''
+}
+
+/** Contenido de mensaje que `createUserMessage` acepta, o `undefined`. */
+function asUserContent(value: unknown): string | ContentBlockParam[] | undefined {
+  if (typeof value === 'string') return value
+  // Un arreglo de bloques del hook: se confia en su forma, como la fuente,
+  // que lo castea a `string | ContentBlockParam[]`.
+  return Array.isArray(value) ? (value as ContentBlockParam[]) : undefined
+}
+
+/**
+ * Rinde un adjunto como los mensajes de usuario que van al API.
+ *
+ * PORTE PARCIAL DECLARADO de `ccnmt: packages/agent/messages.ts:3537-4379`
+ * (57 casos). Se portan los casos que solo necesitan `createUserMessage`,
+ * el envoltorio `<system-reminder>` y constantes que este arbol ya tiene.
+ * Los campos del adjunto se leen por nombre desde la forma abierta
+ * `{ type: string; [key: string]: unknown }` de `AttachmentMessage` —la fuente
+ * tiene un tipo por adjunto—, con lectores que degradan a `''`/`[]` en vez
+ * de fallar.
+ *
+ * Casos NO portados, cada uno con lo que lo bloquea:
+ *
+ * - `teammate_mailbox`: `formatTeammateMessages` del paquete `swarm`,
+ *   ausente aqui.
+ * - `directory`, `file`: sintetizan un par tool_use/tool_result con
+ *   `BashTool`/`FileReadTool` (`createToolUseMessage`,
+ *   `createToolResultMessage`), que no estan en este modulo.
+ * - `queued_command`: `wrapCommandText` y el origen `MessageOrigin` de la
+ *   cola, sin hogar en este arbol.
+ * - `diagnostics`: `DiagnosticTrackingService.formatDiagnosticsSummary`.
+ * - `plan_mode`, `auto_mode`: `getPlanModeInstructions` y
+ *   `getAutoModeInstructions`, constructores de prompt no portados.
+ * - `relevant_memories`: se porta solo con la cabecera almacenada
+ *   (`m.header`); el respaldo `memoryHeader(path, mtimeMs)` no existe aqui,
+ *   asi que una memoria sin cabecera guardada se rinde sin ella.
+ *
+ * Para esos casos se devuelve `[]` con un aviso por `logForDebugging`, en
+ * vez de tratarlos como desconocidos: su tipo si existe, lo que falta es
+ * su renderizador. El registro de tipo desconocido (`logAntError`) queda
+ * para los que la fuente tampoco conoce.
+ */
+export function normalizeAttachmentForAPI(attachment: ApiAttachment): UserMessage[] {
+  const meta = (content: string | ContentBlockParam[]): UserMessage => createUserMessage({ content, isMeta: true })
+  const reminder = (content: string): UserMessage[] => [meta(wrapInSystemReminder(content))]
+
+  if (isAgentSwarmsEnabled() && attachment.type === 'team_context') {
+    return [
+      meta(`<system-reminder>
+# Team Coordination
+
+You are a teammate in team "${attachmentString(attachment, 'teamName')}".
+
+**Your Identity:**
+- Name: ${attachmentString(attachment, 'agentName')}
+
+**Team Resources:**
+- Team config: ${attachmentString(attachment, 'teamConfigPath')}
+- Task list: ${attachmentString(attachment, 'taskListPath')}
+
+**Team Leader:** The team lead's name is "team-lead". Send updates and completion notifications to them.
+
+Read the team config to discover your teammates' names. Check the task list periodically. Create new tasks when work should be divided. Mark tasks resolved when complete.
+
+**IMPORTANT:** Always refer to teammates by their NAME (e.g., "team-lead", "analyzer", "researcher"), never by UUID. When messaging, use the name directly:
+
+\`\`\`json
+{
+  "to": "team-lead",
+  "message": "Your message here",
+  "summary": "Brief 5-10 word preview"
+}
+\`\`\`
+</system-reminder>`),
+    ]
+  }
+
+  // Fuera del `switch` para que el literal viva bajo la bandera de compilacion.
+  if (feature('EXPERIMENTAL_SKILL_SEARCH') && attachment.type === 'skill_discovery') {
+    const skills = attachmentArray(attachment, 'skills').filter(isPlainRecord)
+    if (skills.length === 0) return []
+    const lines = skills.map(s => `- ${recordString(s, 'name')}: ${recordString(s, 'description')}`)
+    return wrapMessagesInSystemReminder([
+      meta(
+        `Skills relevant to your task:\n\n${lines.join('\n')}\n\n` +
+          `These skills encode project-specific conventions. ` +
+          `Invoke via Skill("<name>") for complete instructions.`,
+      ),
+    ])
+  }
+
+  switch (attachment.type) {
+    case 'edited_text_file':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `Note: ${attachmentString(attachment, 'filename')} was modified, either by the user or by a linter. This change was intentional, so make sure to take it into account as you proceed (ie. don't revert it unless the user asks you to). Don't tell the user this, since they are already aware. Here are the relevant changes (shown with line numbers):\n${attachmentString(attachment, 'snippet')}`,
+        ),
+      ])
+    case 'compact_file_reference':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `Note: ${attachmentString(attachment, 'filename')} was read before the last conversation was summarized, but the contents are too large to include. Use ${FILE_READ_TOOL_NAME} tool if you need to access it.`,
+        ),
+      ])
+    case 'pdf_reference': {
+      const fileSize = typeof attachment.fileSize === 'number' ? attachment.fileSize : 0
+      return wrapMessagesInSystemReminder([
+        meta(
+          `PDF file: ${attachmentString(attachment, 'filename')} (${String(attachment.pageCount)} pages, ${formatFileSize(fileSize)}). ` +
+            `This PDF is too large to read all at once. You MUST use the ${FILE_READ_TOOL_NAME} tool with the pages parameter ` +
+            `to read specific page ranges (e.g., pages: "1-5"). Do NOT call ${FILE_READ_TOOL_NAME} without the pages parameter ` +
+            `or it will fail. Start by reading the first few pages to understand the structure, then read more as needed. ` +
+            `Maximum 20 pages per request.`,
+        ),
+      ])
+    }
+    case 'selected_lines_in_ide': {
+      const maxSelectionLength = 2000
+      const raw = attachmentString(attachment, 'content')
+      const content = raw.length > maxSelectionLength ? raw.substring(0, maxSelectionLength) + '\n... (truncated)' : raw
+      return wrapMessagesInSystemReminder([
+        meta(
+          `The user selected the lines ${String(attachment.lineStart)} to ${String(attachment.lineEnd)} from ${attachmentString(attachment, 'filename')}:\n${content}\n\nThis may or may not be related to the current task.`,
+        ),
+      ])
+    }
+    case 'opened_file_in_ide':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `The user opened the file ${attachmentString(attachment, 'filename')} in the IDE. This may or may not be related to the current task.`,
+        ),
+      ])
+    case 'plan_file_reference':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `A plan file exists from plan mode at: ${attachmentString(attachment, 'planFilePath')}\n\nPlan contents:\n\n${attachmentString(attachment, 'planContent')}\n\nIf this plan is relevant to the current work and not already complete, continue working on it.`,
+        ),
+      ])
+    case 'invoked_skills': {
+      const skills = attachmentArray(attachment, 'skills').filter(isPlainRecord)
+      if (skills.length === 0) return []
+      const skillsContent = skills
+        .map(skill => `### Skill: ${recordString(skill, 'name')}\nPath: ${recordString(skill, 'path')}\n\n${recordString(skill, 'content')}`)
+        .join('\n\n---\n\n')
+      return wrapMessagesInSystemReminder([
+        meta(`The following skills were invoked in this session. Continue to follow these guidelines:\n\n${skillsContent}`),
+      ])
+    }
+    case 'todo_reminder': {
+      const todoItems = attachmentArray(attachment, 'content')
+        .filter(isPlainRecord)
+        .map((todo, index) => `${index + 1}. [${recordString(todo, 'status')}] ${recordString(todo, 'content')}`)
+        .join('\n')
+      let message = `The TodoWrite tool hasn't been used recently. If you're working on tasks that would benefit from tracking progress, consider using the TodoWrite tool to track progress. Also consider cleaning up the todo list if has become stale and no longer matches what you are working on. Only use it if it's relevant to the current work. This is just a gentle reminder - ignore if not applicable. Make sure that you NEVER mention this reminder to the user\n`
+      if (todoItems.length > 0) message += `\n\nHere are the existing contents of your todo list:\n\n[${todoItems}]`
+      return wrapMessagesInSystemReminder([meta(message)])
+    }
+    case 'task_reminder': {
+      if (!isTodoV2Enabled()) return []
+      const taskItems = attachmentArray(attachment, 'content')
+        .filter(isPlainRecord)
+        .map(task => `#${String(task.id)}. [${recordString(task, 'status')}] ${recordString(task, 'subject')}`)
+        .join('\n')
+      let message = `The task tools haven't been used recently. If you're working on tasks that would benefit from tracking progress, consider using ${TASK_CREATE_TOOL_NAME} to add new tasks and ${TASK_UPDATE_TOOL_NAME} to update task status (set to in_progress when starting, completed when done). Also consider cleaning up the task list if it has become stale. Only use these if relevant to the current work. This is just a gentle reminder - ignore if not applicable. Make sure that you NEVER mention this reminder to the user\n`
+      if (taskItems.length > 0) message += `\n\nHere are the existing tasks:\n\n${taskItems}`
+      return wrapMessagesInSystemReminder([meta(message)])
+    }
+    case 'nested_memory': {
+      const content = attachmentRecord(attachment, 'content')
+      return wrapMessagesInSystemReminder([
+        meta(`Contents of ${content ? recordString(content, 'path') : ''}:\n\n${content ? recordString(content, 'content') : ''}`),
+      ])
+    }
+    case 'relevant_memories':
+      return wrapMessagesInSystemReminder(
+        attachmentArray(attachment, 'memories')
+          .filter(isPlainRecord)
+          .map(m => {
+            // La cabecera guardada al crear el adjunto mantiene los bytes
+            // estables entre turnos (acierto de cache). pendiente: el respaldo
+            // `memoryHeader(path, mtimeMs)` para sesiones anteriores al campo.
+            const header = recordString(m, 'header')
+            return meta(header ? `${header}\n\n${recordString(m, 'content')}` : recordString(m, 'content'))
+          }),
+      )
+    case 'dynamic_skill':
+      // Solo informativo para la UI: los skills se cargan aparte.
+      return []
+    case 'skill_listing': {
+      const content = attachmentString(attachment, 'content')
+      if (!content) return []
+      return wrapMessagesInSystemReminder([
+        meta(`The following skills are available for use with the Skill tool:\n\n${content}`),
+      ])
+    }
+    case 'output_style': {
+      const style = attachmentString(attachment, 'style')
+      const outputStyle = Object.hasOwn(OUTPUT_STYLE_CONFIG, style)
+        ? OUTPUT_STYLE_CONFIG[style as keyof typeof OUTPUT_STYLE_CONFIG]
+        : null
+      if (!outputStyle) return []
+      const turnReminder = 'turnReminder' in outputStyle && typeof outputStyle.turnReminder === 'string'
+        ? outputStyle.turnReminder
+        : 'Remember to follow the specific guidelines for this style.'
+      return wrapMessagesInSystemReminder([meta(`${outputStyle.name} output style is active. ${turnReminder}`)])
+    }
+    case 'plan_mode_reentry': {
+      const content = `## Re-entering Plan Mode
+
+You are returning to plan mode after having previously exited it. A plan file exists at ${attachmentString(attachment, 'planFilePath')} from your previous planning session.
+
+**Before proceeding with any new planning, you should:**
+1. Read the existing plan file to understand what was previously planned
+2. Evaluate the user's current request against that plan
+3. Decide how to proceed:
+   - **Different task**: If the user's request is for a different task—even if it's similar or related—start fresh by overwriting the existing plan
+   - **Same task, continuing**: If this is explicitly a continuation or refinement of the exact same task, modify the existing plan while cleaning up outdated or irrelevant sections
+4. Continue on with the plan process and most importantly you should always edit the plan file one way or the other before calling ${EXIT_PLAN_MODE_V2_TOOL_NAME}
+
+Treat this as a fresh planning session. Do not assume the existing plan is relevant without evaluating it first.`
+      return wrapMessagesInSystemReminder([meta(content)])
+    }
+    case 'plan_mode_exit': {
+      const planReference = attachment.planExists
+        ? ` The plan file is located at ${attachmentString(attachment, 'planFilePath')} if you need to reference it.`
+        : ''
+      return wrapMessagesInSystemReminder([
+        meta(`## Exited Plan Mode
+
+You have exited plan mode. You can now make edits, run tools, and take actions.${planReference}`),
+      ])
+    }
+    case 'auto_mode_exit':
+      return wrapMessagesInSystemReminder([
+        meta(`## Exited Auto Mode
+
+You have exited auto mode. The user may now want to interact more directly. You should ask clarifying questions when the approach is ambiguous rather than making assumptions.`),
+      ])
+    case 'critical_system_reminder':
+      return wrapMessagesInSystemReminder([meta(attachmentString(attachment, 'content'))])
+    case 'mcp_resource': {
+      const server = attachmentString(attachment, 'server')
+      const uri = attachmentString(attachment, 'uri')
+      const content = attachmentRecord(attachment, 'content')
+      const contents = content ? content.contents : undefined
+      if (!Array.isArray(contents) || contents.length === 0) {
+        return wrapMessagesInSystemReminder([
+          meta(`<mcp-resource server="${server}" uri="${uri}">(No content)</mcp-resource>`),
+        ])
+      }
+      // Solo el contenido de texto; lo binario se anuncia por su tipo MIME.
+      const transformedBlocks: ContentBlockParam[] = []
+      for (const item of contents) {
+        if (!isPlainRecord(item)) continue
+        if (typeof item.text === 'string') {
+          transformedBlocks.push(
+            { type: 'text', text: 'Full contents of resource:' },
+            { type: 'text', text: item.text },
+            {
+              type: 'text',
+              text: 'Do NOT read this resource again unless you think it may have changed, since you already have the full contents.',
+            },
+          )
+        } else if ('blob' in item) {
+          const mimeType = 'mimeType' in item ? String(item.mimeType) : 'application/octet-stream'
+          transformedBlocks.push({ type: 'text', text: `[Binary content: ${mimeType}]` })
+        }
+      }
+      if (transformedBlocks.length > 0) return wrapMessagesInSystemReminder([meta(transformedBlocks)])
+      // La fuente lo registra con `logMCPDebug`; aqui, con el registro de
+      // depuracion generico — no hay hogar para el registro por servidor.
+      logForDebugging(`No displayable content found in MCP resource ${uri} (server ${server}).`)
+      return wrapMessagesInSystemReminder([
+        meta(`<mcp-resource server="${server}" uri="${uri}">(No displayable content)</mcp-resource>`),
+      ])
+    }
+    case 'agent_mention':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `The user has expressed a desire to invoke the agent "${attachmentString(attachment, 'agentType')}". Please invoke the agent appropriately, passing in the required context to it. `,
+        ),
+      ])
+    case 'task_status': {
+      const status = attachmentString(attachment, 'status')
+      const description = attachmentString(attachment, 'description')
+      const taskId = attachmentString(attachment, 'taskId')
+      const deltaSummary = attachmentString(attachment, 'deltaSummary')
+      const outputFilePath = attachmentString(attachment, 'outputFilePath')
+      const displayStatus = status === 'killed' ? 'stopped' : status
+
+      // Detenida: breve, el delta no aporta.
+      if (status === 'killed') {
+        return reminder(`Task "${description}" (${taskId}) was stopped by the user.`)
+      }
+      // En curso: advertir contra un duplicado — este adjunto solo se emite
+      // tras compactar, cuando el mensaje de lanzamiento original ya no esta.
+      if (status === 'running') {
+        const parts = [`Background agent "${description}" (${taskId}) is still running.`]
+        if (deltaSummary) parts.push(`Progress: ${deltaSummary}`)
+        parts.push(
+          outputFilePath
+            ? `Do NOT spawn a duplicate. You will be notified when it completes. You can read partial output at ${outputFilePath} or send it a message with ${SEND_MESSAGE_TOOL_NAME}.`
+            : `Do NOT spawn a duplicate. You will be notified when it completes. You can check its progress with the ${TASK_OUTPUT_TOOL_NAME} tool or send it a message with ${SEND_MESSAGE_TOOL_NAME}.`,
+        )
+        return reminder(parts.join(' '))
+      }
+      // Terminada o fallida: el delta completo.
+      const messageParts: string[] = [
+        `Task ${taskId}`,
+        `(type: ${attachmentString(attachment, 'taskType')})`,
+        `(status: ${displayStatus})`,
+        `(description: ${description})`,
+      ]
+      if (deltaSummary) messageParts.push(`Delta: ${deltaSummary}`)
+      messageParts.push(
+        outputFilePath
+          ? `Read the output file to retrieve the result: ${outputFilePath}`
+          : `You can check its output using the ${TASK_OUTPUT_TOOL_NAME} tool.`,
+      )
+      return reminder(messageParts.join(' '))
+    }
+    case 'async_hook_response': {
+      const response = attachmentRecord(attachment, 'response')
+      const messages: UserMessage[] = []
+      const systemMessage = response ? asUserContent(response.systemMessage) : undefined
+      if (systemMessage) messages.push(meta(systemMessage))
+      const hookSpecificOutput = response && isPlainRecord(response.hookSpecificOutput) ? response.hookSpecificOutput : undefined
+      const additionalContext = hookSpecificOutput ? asUserContent(hookSpecificOutput.additionalContext) : undefined
+      if (additionalContext) messages.push(meta(additionalContext))
+      return wrapMessagesInSystemReminder(messages)
+    }
+    case 'token_usage':
+      return reminder(
+        `Token usage: ${String(attachment.used)}/${String(attachment.total)}; ${String(attachment.remaining)} remaining`,
+      )
+    case 'budget_usd':
+      return reminder(
+        `USD budget: $${String(attachment.used)}/$${String(attachment.total)}; $${String(attachment.remaining)} remaining`,
+      )
+    case 'output_token_usage': {
+      const turn = typeof attachment.turn === 'number' ? attachment.turn : 0
+      const session = typeof attachment.session === 'number' ? attachment.session : 0
+      const turnText =
+        typeof attachment.budget === 'number' ? `${formatNumber(turn)} / ${formatNumber(attachment.budget)}` : formatNumber(turn)
+      return reminder(`Output tokens — turn: ${turnText} · session: ${formatNumber(session)}`)
+    }
+    case 'hook_blocking_error': {
+      const blockingError = attachmentRecord(attachment, 'blockingError')
+      return reminder(
+        `${attachmentString(attachment, 'hookName')} hook blocking error from command: "${blockingError ? recordString(blockingError, 'command') : ''}": ${blockingError ? recordString(blockingError, 'blockingError') : ''}`,
+      )
+    }
+    case 'hook_success': {
+      const hookEvent = attachment.hookEvent
+      if (hookEvent !== 'SessionStart' && hookEvent !== 'UserPromptSubmit') return []
+      const content = attachmentString(attachment, 'content')
+      if (content === '') return []
+      return reminder(`${attachmentString(attachment, 'hookName')} hook success: ${content}`)
+    }
+    case 'hook_additional_context': {
+      const content = attachmentArray(attachment, 'content')
+      if (content.length === 0) return []
+      return reminder(`${attachmentString(attachment, 'hookName')} hook additional context: ${content.join('\n')}`)
+    }
+    case 'hook_stopped_continuation':
+      return reminder(
+        `${attachmentString(attachment, 'hookName')} hook stopped continuation: ${attachmentString(attachment, 'message')}`,
+      )
+    case 'compaction_reminder':
+      return wrapMessagesInSystemReminder([
+        meta(
+          'Auto-compact is enabled. When the context window is nearly full, older messages will be automatically summarized so you can continue working seamlessly. There is no need to stop or rush — you have unlimited context through automatic compaction.',
+        ),
+      ])
+    case 'context_efficiency':
+      if (feature('HISTORY_SNIP')) return wrapMessagesInSystemReminder([meta(SNIP_NUDGE_TEXT)])
+      return []
+    case 'date_change':
+      return wrapMessagesInSystemReminder([
+        meta(
+          `The date has changed. Today's date is now ${attachmentString(attachment, 'newDate')}. DO NOT mention this to the user explicitly because they are already aware.`,
+        ),
+      ])
+    case 'ultrathink_effort':
+      return wrapMessagesInSystemReminder([
+        meta(`The user has requested reasoning effort level: ${attachmentString(attachment, 'level')}. Apply this to the current turn.`),
+      ])
+    case 'ultrawork_request':
+      return wrapMessagesInSystemReminder([
+        meta('The user included the keyword "ultrawork", which means you should use the Workflow tool to fulfill their request.'),
+      ])
+    case 'deferred_tools_delta': {
+      const parts: string[] = []
+      const addedLines = attachmentArray(attachment, 'addedLines')
+      const removedNames = attachmentArray(attachment, 'removedNames')
+      if (addedLines.length > 0) {
+        parts.push(`The following deferred tools are now available via ToolSearch:\n${addedLines.join('\n')}`)
+      }
+      if (removedNames.length > 0) {
+        parts.push(
+          `The following deferred tools are no longer available (their MCP server disconnected). Do not search for them — ToolSearch will return no match:\n${removedNames.join('\n')}`,
+        )
+      }
+      return wrapMessagesInSystemReminder([meta(parts.join('\n\n'))])
+    }
+    case 'agent_listing_delta': {
+      const parts: string[] = []
+      const addedLines = attachmentArray(attachment, 'addedLines')
+      const removedTypes = attachmentArray(attachment, 'removedTypes')
+      if (addedLines.length > 0) {
+        const header = attachment.isInitial
+          ? 'Available agent types for the Agent tool:'
+          : 'New agent types are now available for the Agent tool:'
+        parts.push(`${header}\n${addedLines.join('\n')}`)
+      }
+      if (removedTypes.length > 0) {
+        parts.push(`The following agent types are no longer available:\n${removedTypes.map(t => `- ${String(t)}`).join('\n')}`)
+      }
+      if (attachment.isInitial && attachment.showConcurrencyNote) {
+        parts.push(
+          `Launch multiple agents concurrently whenever possible, to maximize performance; to do that, use a single message with multiple tool uses.`,
+        )
+      }
+      return wrapMessagesInSystemReminder([meta(parts.join('\n\n'))])
+    }
+    case 'mcp_instructions_delta': {
+      const parts: string[] = []
+      const addedBlocks = attachmentArray(attachment, 'addedBlocks')
+      const removedNames = attachmentArray(attachment, 'removedNames')
+      if (addedBlocks.length > 0) {
+        parts.push(
+          `# MCP Server Instructions\n\nThe following MCP servers have provided instructions for how to use their tools and resources:\n\n${addedBlocks.join('\n\n')}`,
+        )
+      }
+      if (removedNames.length > 0) {
+        parts.push(`The following MCP servers have disconnected. Their instructions above no longer apply:\n${removedNames.join('\n')}`)
+      }
+      return wrapMessagesInSystemReminder([meta(parts.join('\n\n'))])
+    }
+    case 'verify_plan_reminder': {
+      // La comparacion con `'true'` permite eliminar la cadena en builds
+      // externas, donde la variable vale `'false'`.
+      const toolName = readEnv('CLAUDE_CODE_VERIFY_PLAN') === 'true' ? 'VerifyPlanExecution' : ''
+      return wrapMessagesInSystemReminder([
+        meta(
+          `You have completed implementing the plan. Please call the "${toolName}" tool directly (NOT the ${AGENT_TOOL_NAME} tool or an agent) to verify that all plan items were completed correctly.`,
+        ),
+      ])
+    }
+    case 'already_read_file':
+    case 'command_permissions':
+    case 'edited_image_file':
+    case 'hook_cancelled':
+    case 'hook_error_during_execution':
+    case 'hook_non_blocking_error':
+    case 'hook_system_message':
+    case 'structured_output':
+    case 'hook_permission_decision':
+      return []
+    case 'teammate_mailbox':
+    case 'directory':
+    case 'file':
+    case 'queued_command':
+    case 'diagnostics':
+    case 'plan_mode':
+    case 'auto_mode':
+      // Los casos sin renderizador en este porte (ver la cabecera).
+      logForDebugging(`normalizeAttachmentForAPI: renderer not ported for attachment type ${attachment.type}`, {
+        level: 'warn',
+      })
+      return []
+    default:
+      break
+  }
+
+  // Adjuntos heredados ya retirados: una sesion reanudada puede traerlos, y
+  // no son un error.
+  const LEGACY_ATTACHMENT_TYPES = ['autocheckpointing', 'background_task_status', 'todo', 'task_progress', 'ultramemory']
+  if (LEGACY_ATTACHMENT_TYPES.includes(attachment.type)) return []
+
+  logAntError('normalizeAttachmentForAPI', new Error(`Unknown attachment type: ${attachment.type}`))
+  return []
 }
