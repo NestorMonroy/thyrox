@@ -1,0 +1,21 @@
+test_tsc_routes:
+  ok    las continuaciones no son diagnósticos
+  ok    archivo y código del primero
+  ok    el tipo citado dentro de un genérico se ve
+  ok    el nombre de una propiedad entre comillas no es un tipo citado
+  ok    los nombres dentro de un literal de objeto no se citan
+  ok    los de una unión y un arreglo, sí
+  ok    ni los de un tipo función
+  ok    ruta 1: códigos deterministas, aunque citen un tipo duplicado
+  ok    ruta 2: los que citan un tipo duplicado
+  ok    ruta 3: el resto
+  ok    la cola va por frecuencia, no por nombre
+  ok    cada entrada nombra sus definiciones y sus consumidores
+  ok    un nombre exportado desde dos archivos es duplicado
+  ok    una copia local de un tipo exportado cuenta como duplicado
+  ok    un nombre local que nadie exporta no cuenta
+  FALLA dos discriminantes distintos no son el mismo tipo — esperado None, obtenido ['agent/messageShapes.ts', 'agent/types/events.ts']
+  FALLA de tres SystemPrompt, sólo las dos de la misma forma son duplicado — esperado ['agent/internalUtils.ts', 'provider/systemPromptType.ts'], obtenido ['agent/internalUtils.ts', 'agent/types/deps.ts', 'provider/systemPromptType.ts']
+  FALLA un alias a import(...) no es una copia — esperado None, obtenido ['agent/hooks/sessionHooks.ts', 'agent/inProcessTeammateHelpers.ts', 'app-host/state/AppStateCompat.ts']
+  FALLA dos Props de componentes distintos no son el mismo tipo — esperado None, obtenido ['ink/AppContext.ts', 'ink/Box.tsx']
+test_tsc_routes: 19 aserciones — 15 ok, 4 falla(s)

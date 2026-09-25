@@ -1,0 +1,22 @@
+== GROUP_BY_SHAPE
+  FALLA dos discriminantes distintos no son el mismo tipo — esperado None, obtenido ['agent/messageShapes.ts', 'agent/types/events.ts']
+  FALLA de tres SystemPrompt, sólo las dos de la misma forma son duplicado — esperado ['agent/internalUtils.ts', 'provider/systemPromptType.ts'], obtenido ['agent/internalUtils.ts', 'agent/types/deps.ts', 'provider/systemPromptType.ts']
+  FALLA un alias a import(...) no es una copia — esperado None, obtenido ['agent/hooks/sessionHooks.ts', 'agent/inProcessTeammateHelpers.ts', 'app-host/state/AppStateCompat.ts']
+  FALLA dos Props de componentes distintos no son el mismo tipo — esperado None, obtenido ['ink/AppContext.ts', 'ink/Box.tsx']
+  FALLA un solo campo común (children) no encadena props distintas — esperado None, obtenido ['repl/Dialog.tsx', 'repl/Panel.tsx', 'repl/Row.tsx']
+  FALLA un nombre con más de 10 formas distintas es convención, no contrato — esperado None, obtenido ['ink/reconciler.ts', 'ui/C0.tsx', 'ui/C1.tsx', 'ui/C10.tsx', 'ui/C2.tsx', 'ui/C3.tsx', 'ui/C4.tsx', 'ui/C5.tsx', 'ui/C6.tsx', 'ui/C7.tsx', 'ui/C8.tsx', 'ui/C9.tsx', 'ui/Twin.tsx']
+test_tsc_routes: 23 aserciones — 17 ok, 6 falla(s)
+== STUB
+  FALLA un marcador Record<string, unknown> es copia reducida del contrato — esperado ['agent/types/hooks.ts', 'headless-sdk/coreTypes.generated.ts'], obtenido None
+  FALLA un marcador = unknown es copia reducida, y el = de un genérico no es el de la declaración — esperado ['permission/permissionRequestTypes.ts', 'swarm/appUi.ts'], obtenido None
+test_tsc_routes: 23 aserciones — 21 ok, 2 falla(s)
+== MAX_DISTINCT_SHAPES
+  FALLA un nombre con más de 10 formas distintas es convención, no contrato — esperado None, obtenido ['ink/reconciler.ts', 'ui/C0.tsx', 'ui/Twin.tsx']
+test_tsc_routes: 23 aserciones — 22 ok, 1 falla(s)
+== MIN_SHARED_FIELDS
+  FALLA un solo campo común (children) no encadena props distintas — esperado None, obtenido ['repl/Dialog.tsx', 'repl/Panel.tsx', 'repl/Row.tsx']
+test_tsc_routes: 23 aserciones — 22 ok, 1 falla(s)
+== generic_equals
+test_tsc_routes: 23 aserciones — 23 ok, 0 falla(s)
+== discriminant
+test_tsc_routes: 23 aserciones — 23 ok, 0 falla(s)

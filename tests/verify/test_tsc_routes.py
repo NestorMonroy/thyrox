@@ -89,8 +89,9 @@ assert_equal("cada entrada nombra sus definiciones y sus consumidores",
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     for rel, text in {
-        "pkg-a/src/types.ts": "export type Shared = { a: 1 }\nexport interface Only = {}\n",
-        "pkg-b/src/types.ts": "export interface Shared { b: 2 }\n",
+        # Una copia reducida: dos campos del contrato de tres.
+        "pkg-a/src/types.ts": "export type Shared = {\n  a: 1\n  b: 2\n}\nexport interface Only = {}\n",
+        "pkg-b/src/types.ts": "export interface Shared {\n  a: 1\n  b: 2\n  c: 3\n}\n",
         "pkg-a/src/__tests__/t.ts": "export type Only = 1\n",
         "pkg-a/node_modules/x/i.ts": "export type Only = 2\n",
         "pkg-b/dist/types.d.ts": "export type Only = 3\n",
@@ -118,6 +119,92 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("una copia local de un tipo exportado cuenta como duplicado",
                  ["agent/engine.ts", "agent/query.ts", "repl/hooks.ts"], found.get("CanUse"))
     assert_equal("un nombre local que nadie exporta no cuenta", None, found.get("Props"))
+
+# Agrupar por forma, no sólo por nombre (TASK-THYROX-0253, h-thyrox-185): en
+# el paso 134, 9 de 19 unidades eran tipos distintos con el mismo nombre. Las
+# declaraciones de abajo son las del árbol, copiadas tal cual.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for rel, text in {
+        "agent/messageShapes.ts": "export type RequestStartEvent = { type: 'stream_request_start' }\n",
+        "agent/types/events.ts": ("export interface RequestStartEvent {\n  type: 'request_start'\n"
+                                  "  turnId?: string\n  ts?: number\n  params: unknown\n}\n"),
+        "agent/types/deps.ts": "export interface SystemPrompt {\n  content: unknown\n  cacheConfig?: unknown\n}\n",
+        "agent/internalUtils.ts": "export type SystemPrompt = readonly string[] & {\n  readonly __brand: 'SystemPrompt'\n}\n",
+        "provider/systemPromptType.ts": "export type SystemPrompt = readonly string[] & {\n  readonly __brand: 'SystemPrompt'\n}\n",
+        "app-host/state/AppStateCompat.ts": "export type AppState = {\n  verbose: boolean\n}\n",
+        "agent/hooks/sessionHooks.ts": "type AppState = import('@thyrox/app-host/state/AppState.js').AppState\n",
+        "agent/inProcessTeammateHelpers.ts": "type AppState = import('@thyrox/app-host/state/AppState.js').AppState\n",
+        "ink/Box.tsx": "export type Props = Except<Styles, 'textWrap'> & {\n  readonly tabIndex?: number\n}\n",
+        "ink/AppContext.ts": "export type Props = {\n  readonly exit: (error?: Error) => void\n}\n",
+    }.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    found = tr.duplicated_types(root)
+    assert_equal("dos discriminantes distintos no son el mismo tipo", None, found.get("RequestStartEvent"))
+    assert_equal("de tres SystemPrompt, sólo las dos de la misma forma son duplicado",
+                 ["agent/internalUtils.ts", "provider/systemPromptType.ts"], found.get("SystemPrompt"))
+    assert_equal("un alias a import(...) no es una copia", None, found.get("AppState"))
+    assert_equal("dos Props de componentes distintos no son el mismo tipo", None, found.get("Props"))
+
+# Los falsos negativos y el falso positivo que destapó medir contra el árbol
+# (.claude/workbench/route2-shape-grouping-20260925T204815/compare_step134.tsv).
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for rel, text in {
+        "agent/types/hooks.ts": "export type HookJSONOutput = Record<string, unknown>\n",
+        "headless-sdk/coreTypes.generated.ts":
+            "export type HookJSONOutput = z.infer<ReturnType<typeof S.HookJSONOutputSchema>>\n",
+        "permission/permissionRequestTypes.ts": (
+            "export type ToolUseConfirm<Input extends AnyObject = AnyObject> = {\n"
+            "  assistantMessage: AssistantMessage\n  tool: Tool<Input>\n  description: string\n}\n"),
+        "swarm/appUi.ts": "export type ToolUseConfirm = unknown;\n",
+        "repl/Dialog.tsx": "export type Props = {\n  children: React.ReactNode\n  onClose: () => void\n}\n",
+        "repl/Panel.tsx": "export type Props = {\n  children: React.ReactNode\n  title: string\n}\n",
+        "repl/Row.tsx": "type Props = {\n  children: React.ReactNode\n  index: number\n}\n",
+    }.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    found = tr.duplicated_types(root)
+    assert_equal("un marcador Record<string, unknown> es copia reducida del contrato",
+                 ["agent/types/hooks.ts", "headless-sdk/coreTypes.generated.ts"], found.get("HookJSONOutput"))
+    assert_equal("un marcador = unknown es copia reducida, y el = de un genérico no es el de la declaración",
+                 ["permission/permissionRequestTypes.ts", "swarm/appUi.ts"], found.get("ToolUseConfirm"))
+    assert_equal("un solo campo común (children) no encadena props distintas", None, found.get("Props"))
+
+# Un nombre convencional (`Props`: 282 copias, 155 formas en el árbol) no es
+# un contrato aunque dos de sus copias coincidan; el siguiente nombre con más
+# formas tiene 8 (shape_group_counts.tsv del banco).
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    files = {f"ui/C{i}.tsx": f"export type Props = {{\n  f{i}a: 1\n  f{i}b: 2\n}}\n" for i in range(11)}
+    files["ui/Twin.tsx"] = "export type Props = {\n  f0a: 1\n  f0b: 2\n}\n"
+    files["ink/reconciler.ts"] = "type Props = Record<string, unknown>\n"
+    for rel, text in files.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    assert_equal("un nombre con más de 10 formas distintas es convención, no contrato",
+                 None, tr.duplicated_types(root).get("Props"))
+
+# Casos que sólo decide una mitad: la anulación de cada una los tumba solos.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for rel, text in {
+        "a/confirm.ts": "export type Confirm<I extends AnyObject = AnyObject> = {\n  tool: Tool<I>\n  input: I\n}\n",
+        "b/confirm.ts": "export type Confirm<I extends AnyObject = AnyObject> = {\n  label: string\n  color: Color\n}\n",
+        "a/event.ts": "export type Event = {\n  type: 'request_start'\n  id: string\n  ts: number\n}\n",
+        "b/event.ts": "export type Event = {\n  type: 'request_end'\n  id: string\n  ts: number\n}\n",
+    }.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    found = tr.duplicated_types(root)
+    assert_equal("el = del valor por defecto de un genérico no hace iguales dos cuerpos distintos",
+                 None, found.get("Confirm"))
+    assert_equal("mismos campos con discriminante distinto no son el mismo tipo", None, found.get("Event"))
 
 print(f"test_tsc_routes: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

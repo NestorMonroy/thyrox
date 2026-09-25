@@ -1,0 +1,20 @@
+Message	5	2	mismo nombre, otro tipo
+AppState	17	2	ya canónico, nada que unificar
+LogOption	3	2	propuso ediciones
+CompactionResult	5	3	sin salida (error_max_turns)
+FsOperations	2	0	ya canónico, el error no nace de la copia
+LoadedPlugin	2	2	propuso ediciones
+PermissionMode	7	3	sin salida (error_max_turns)
+SystemPrompt	3	2	mismo nombre, otro tipo
+AskUserQuestionTimeout	0	0	propuso ediciones
+EffortValue	4	3	mismo nombre, otro tipo
+HookJSONOutput	2	2	propuso ediciones
+MCPServerConnection	4	3	mismo nombre, otro tipo
+PermissionDecision	5	3	mismo nombre, otro tipo
+PermissionUpdate	3	0	ya canónico, el error no nace de la copia
+Props	283	0	mismo nombre, otro tipo
+RequestStartEvent	2	0	mismo nombre, otro tipo
+SystemCompactBoundaryMessage	2	0	mismo nombre, otro tipo
+ToolUseConfirm	2	2	propuso ediciones
+TranscriptMessage	2	0	mismo nombre, otro tipo
+TOTAL	340	196
