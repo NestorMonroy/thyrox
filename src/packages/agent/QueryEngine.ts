@@ -88,6 +88,7 @@ import {
   toSDKCompactMetadata,
 } from './internal/sdkMappers.js'
 import { readEnv } from '@thyrox/config/env'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 
 type PermissionMode = string
 type SDKCompactBoundaryMessage = { type: string; [key: string]: unknown }
@@ -96,10 +97,6 @@ type SDKPermissionDenial = { [key: string]: unknown }
 type SDKStatus = string
 type SDKUserMessageReplay = { type: string; [key: string]: unknown }
 type NonNullableUsage = { [key: string]: unknown }
-type CanUseToolFn = (...args: unknown[]) => Promise<{
-  behavior: 'allow' | 'deny' | 'ask'
-  updatedInput?: unknown
-}>
 type MCPServerConnection = { name?: string; [key: string]: unknown }
 type AppState = {
   toolPermissionContext: {

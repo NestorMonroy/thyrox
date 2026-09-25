@@ -129,12 +129,9 @@ import {
   type StreamingToolExecutorLike,
 } from './internal/queryRuntime.js'
 import { readEnv } from '@thyrox/config/env'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 
 const SLEEP_TOOL_NAME = 'Sleep'
-type CanUseToolFn = (...args: unknown[]) => Promise<{
-  behavior: 'allow' | 'deny' | 'ask'
-  updatedInput?: unknown
-}>
 
 type State = QueryLoopState
 
