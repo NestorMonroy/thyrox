@@ -14,6 +14,7 @@ import type {
   SDKUserMessageReplay,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
+import type { CompactMetadata, ToolUseSummaryMessage } from './messageShapes.js'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
 import { getGlobalConfig } from '@thyrox/config'
@@ -116,7 +117,6 @@ type AppState = {
 }
 type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
 type AgentDefinition = { [key: string]: unknown }
-type CompactMetadata = { [key: string]: unknown }
 type SystemCompactBoundaryMessage = Message & { compactMetadata: CompactMetadata }
 type OrphanedPermission = { [key: string]: unknown }
 type AttributionState = { [key: string]: unknown }
@@ -312,7 +312,6 @@ export class QueryEngine {
       // Track denials for SDK reporting
       if (result.behavior !== 'allow') {
         this.permissionDenials.push({
-          type: 'permission_denial',
           tool_name: sdkCompatToolName(tool.name),
           tool_use_id: toolUseID,
           tool_input: input,
@@ -1157,7 +1156,7 @@ export class QueryEngine {
           break
         }
         case 'tool_use_summary': {
-          const msg = message as Message & { summary: unknown; precedingToolUseIds: unknown }
+          const msg = message as unknown as ToolUseSummaryMessage
           // Yield tool use summary messages to SDK
           yield {
             type: 'tool_use_summary' as const,
