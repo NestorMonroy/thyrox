@@ -382,6 +382,216 @@ function thyrox_toolchain_require_gawk() {
 export -f thyrox_toolchain_require_gawk
 
 # ---------------------------------------------------------------------------
+# poppler: `pdftotext` y `pdftoppm`, los dos ejes de `require_gawk`.
+# ---------------------------------------------------------------------------
+
+# @description Los binarios de poppler. `pdftotext` ya estaba declarado (lo lee
+# `src/corpus/pdf_to_text.py`); `pdftoppm` rinde paginas a imagen para el QA
+# visual de un PDF. Declarados para que un control apunte a un nombre ausente o
+# a un binario falso sin tocar el PATH.
+export THYROX_TOOLCHAIN_PDFTOTEXT_BIN="${THYROX_TOOLCHAIN_PDFTOTEXT_BIN:-pdftotext}"
+export THYROX_TOOLCHAIN_PDFTOPPM_BIN="${THYROX_TOOLCHAIN_PDFTOPPM_BIN:-pdftoppm}"
+
+# @description El comando que instala poppler. Declarado para que un control
+# inyecte un instalador que MIENTA.
+export THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD="${THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+
+# @description El PDF de la sonda, en base64: una pagina con el texto
+# THYROX-PDF-PROBE en Helvetica, 589 bytes, con su tabla xref correcta. Va
+# dentro de la biblioteca y no se genera: generarlo exigiria TeX u otra
+# herramienta, y la sonda de poppler no puede depender de lo que no mide.
+# No lleva `${VAR:-...}`: la sonda no es parametro, y un llamador que la
+# reemplazara podria desactivar el eje de conducta.
+export THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64='JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgNTBdIC9Db250ZW50cyA0IDAgUiAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiA+PgplbmRvYmoKNCAwIG9iago8PCAvTGVuZ3RoIDQ2ID4+CnN0cmVhbQpCVCAvRjEgMTIgVGYgMTAgMjAgVGQgKFRIWVJPWC1QREYtUFJPQkUpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAwIG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2EgPj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBuIAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MCAwMDAwMCBuIAowMDAwMDAwMzM2IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+PgpzdGFydHhyZWYKNDA2CiUlRU9GCg=='
+export THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT='THYROX-PDF-PROBE'
+
+# @description ¿Hacen los dos binarios lo que se les pide sobre el PDF de la
+# sonda? Mide CONDUCTA: `pdftotext` tiene que devolver el texto y `pdftoppm`
+# tiene que ESCRIBIR una imagen no vacia; su codigo de salida no decide.
+# @noargs
+# @stderr El binario que fallo y como.
+# @exitcode 0 Los dos cumplen.
+# @exitcode 1 Alguno no.
+function thyrox_toolchain_poppler_works() {
+  local dir rc=0
+  dir="$(mktemp -d)" || return 1
+  printf '%s' "$THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64" | base64 -d > "$dir/probe.pdf" 2>/dev/null
+  if ! "$THYROX_TOOLCHAIN_PDFTOTEXT_BIN" "$dir/probe.pdf" - 2>/dev/null \
+       | grep -q "$THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT"; then
+    echo "thyrox_toolchain: '$THYROX_TOOLCHAIN_PDFTOTEXT_BIN' no extrae el texto del PDF de la sonda." >&2
+    rc=1
+  fi
+  "$THYROX_TOOLCHAIN_PDFTOPPM_BIN" -png -r 20 "$dir/probe.pdf" "$dir/page" >/dev/null 2>&1
+  if ! compgen -G "$dir/page*.png" >/dev/null || [[ ! -s "$(compgen -G "$dir/page*.png" | head -n 1)" ]]; then
+    echo "thyrox_toolchain: '$THYROX_TOOLCHAIN_PDFTOPPM_BIN' no escribio la imagen de la pagina." >&2
+    rc=1
+  fi
+  rm -rf "$dir"
+  return "$rc"
+}
+export -f thyrox_toolchain_poppler_works
+
+# @description Los binarios de poppler que no resuelven, uno por linea.
+function thyrox_toolchain_poppler_missing() {
+  local bin
+  for bin in "$THYROX_TOOLCHAIN_PDFTOTEXT_BIN" "$THYROX_TOOLCHAIN_PDFTOPPM_BIN"; do
+    command -v "$bin" >/dev/null 2>&1 || printf '%s\n' "$bin"
+  done
+}
+export -f thyrox_toolchain_poppler_missing
+
+# @description Asegura `pdftotext` y `pdftoppm` que funcionen, con los dos
+# ejes y los dos rechazos de `require_gawk`.
+#
+#   1. PRESENCIA — que los dos nombres resuelvan. Remedio: instalar poppler,
+#      opt-in con THYROX_INSTALL_POPPLER=1, y el exito se prueba
+#      re-comprobando los binarios, no leyendo el exit del instalador.
+#   2. CONDUCTA — que ESOS binarios procesen el PDF de la sonda. Un binario
+#      presente puede ser otro programa con el mismo nombre, o una version que
+#      falle sobre el PDF; su rechazo nombra el binario, no el paquete.
+# @noargs
+# @exitcode 0 Los dos resuelven y funcionan.
+# @exitcode 2 Falta alguno o alguno no funciona. REHUSA.
+function thyrox_toolchain_require_poppler() {
+  local missing
+  missing="$(thyrox_toolchain_poppler_missing)"
+  if [[ -n "$missing" ]]; then
+    if [[ "${THYROX_INSTALL_POPPLER:-}" != "1" ]]; then
+      echo "thyrox_toolchain: no resuelve: $(tr '\n' ' ' <<<"$missing")" >&2
+      echo "                  La instalacion de poppler es opt-in." >&2
+      echo "                  Reintenta con THYROX_INSTALL_POPPLER=1." >&2
+      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+      echo "                  «no hay» de «no pude medir»." >&2
+      return 2
+    fi
+    $THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD >&2 2>&1 || true
+    missing="$(thyrox_toolchain_poppler_missing)"
+    if [[ -n "$missing" ]]; then
+      echo "thyrox_toolchain: el instalador termino y sigue sin resolver: $(tr '\n' ' ' <<<"$missing")" >&2
+      echo "                  Se re-comprueban los binarios, no se lee su exit." >&2
+      return 2
+    fi
+  fi
+  if ! thyrox_toolchain_poppler_works; then
+    echo "thyrox_toolchain: los binarios resuelven, pero no procesan el PDF de la sonda." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_poppler
+
+# ---------------------------------------------------------------------------
+# TeX Live: `xelatex` y los paquetes que el consumidor declara.
+# ---------------------------------------------------------------------------
+
+# @description El compilador. Declarado para que un control apunte a un nombre
+# ausente o a un compilador falso.
+export THYROX_TOOLCHAIN_XELATEX_BIN="${THYROX_TOOLCHAIN_XELATEX_BIN:-xelatex}"
+
+# @description El documento minimo con que se sondea cuando el consumidor no
+# declara el suyo. No lleva `${VAR:-...}`: la sonda no es parametro.
+export THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC='\documentclass{article}\begin{document}THYROX\end{document}'
+
+# @description Que paquetes de TeX Live se instalan. Es parametro del
+# CONSUMIDOR, no del proveedor: thyrox no compila documentos, y cada consumidor
+# sabe que paquetes piden los suyos (idioma, tikz, fuentes). Sin declarar, el
+# minimo que da `xelatex`.
+function thyrox_toolchain_texlive_packages() {
+  printf '%s' "${THYROX_TOOLCHAIN_TEXLIVE_PACKAGES:-texlive-xetex}"
+}
+export -f thyrox_toolchain_texlive_packages
+
+# @description ¿Compila el documento declarado a un PDF no vacio? Mide
+# CONDUCTA: el codigo de salida del compilador no decide, decide el PDF.
+# Compila en un directorio temporal, con el cwd en el del documento para que
+# sus rutas relativas resuelvan, y no deja nada junto a el.
+# @arg $1 string El .tex a compilar. Por defecto, THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE
+#   o el documento minimo.
+# @stderr La primera linea de error del log, que nombra el paquete que falta.
+# @exitcode 0 Hay PDF. @exitcode 1 No lo hay.
+function thyrox_toolchain_texlive_compiles() {
+  local file="${1:-${THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE:-}}" dir base rc=0
+  dir="$(mktemp -d)" || return 1
+  if [[ -z "$file" ]]; then
+    printf '%s\n' "$THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC" > "$dir/probe.tex"
+    file="$dir/probe.tex"
+  fi
+  file="$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
+  base="$(basename "$file" .tex)"
+  (cd "$(dirname "$file")" && timeout 300 "$THYROX_TOOLCHAIN_XELATEX_BIN" \
+      -interaction=nonstopmode -halt-on-error -output-directory "$dir" "$file") >/dev/null 2>&1
+  if [[ ! -s "$dir/$base.pdf" ]]; then
+    rc=1
+    local cause
+    cause="$(grep -m1 -E '^! ' "$dir/$base.log" 2>/dev/null)"
+    echo "thyrox_toolchain: '$THYROX_TOOLCHAIN_XELATEX_BIN' no produjo el PDF de $(basename "$file")." >&2
+    [[ -n "$cause" ]] && echo "                  $cause" >&2
+  fi
+  rm -rf "$dir"
+  return "$rc"
+}
+export -f thyrox_toolchain_texlive_compiles
+
+# @description Asegura un `xelatex` que compile el documento del consumidor,
+# con los dos ejes de `require_gawk`. A diferencia de awk, el rechazo de
+# conducta SI se remedia instalando: casi siempre es un paquete que falta.
+#
+#   1. PRESENCIA — que `xelatex` resuelva. Opt-in con THYROX_INSTALL_TEXLIVE=1.
+#   2. CONDUCTA — que compile el documento declarado. Con opt-in, se instalan
+#      los paquetes declarados y se compila otra vez; el exito se prueba con el
+#      PDF, nunca con el exit del instalador.
+# @noargs
+# @exitcode 0 Compila. @exitcode 2 No resuelve o no compila. REHUSA.
+function thyrox_toolchain_require_texlive() {
+  local bin="$THYROX_TOOLCHAIN_XELATEX_BIN" installed=0
+  local cmd="${THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD:-sudo apt-get install -y --no-install-recommends $(thyrox_toolchain_texlive_packages)}"
+
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    if [[ "${THYROX_INSTALL_TEXLIVE:-}" != "1" ]]; then
+      echo "thyrox_toolchain: '$bin' no resuelve y la instalacion es opt-in." >&2
+      echo "                  Reintenta con THYROX_INSTALL_TEXLIVE=1." >&2
+      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+      echo "                  «no hay» de «no pude medir»." >&2
+      return 2
+    fi
+    $cmd >&2 2>&1 || true
+    installed=1
+    if ! command -v "$bin" >/dev/null 2>&1; then
+      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+      return 2
+    fi
+  fi
+
+  thyrox_toolchain_texlive_compiles 2>/dev/null && return 0
+  if [[ "${THYROX_INSTALL_TEXLIVE:-}" == "1" && $installed -eq 0 ]]; then
+    $cmd >&2 2>&1 || true
+    thyrox_toolchain_texlive_compiles 2>/dev/null && return 0
+  fi
+  thyrox_toolchain_texlive_compiles
+  echo "                  '$bin' resuelve, pero el documento no compila. Declara los" >&2
+  echo "                  paquetes que pide en THYROX_TOOLCHAIN_TEXLIVE_PACKAGES" >&2
+  echo "                  y reintenta con THYROX_INSTALL_TEXLIVE=1." >&2
+  return 2
+}
+export -f thyrox_toolchain_require_texlive
+
+# @description La sonda del preflight. thyrox no compila documentos: un aviso
+# en cada consumidor que no usa TeX saldria siempre y se aprenderia a ignorar,
+# y un `ok` sin medir seria un verde falso. Por eso, si el consumidor no declara
+# TeX (ni paquetes ni documento), la sonda se OMITE con exit 3 y lo dice.
+# @exitcode 0 Compila. @exitcode 2 Rehusa. @exitcode 3 Omitida: no declarado.
+function thyrox_toolchain_probe_texlive() {
+  if [[ -z "${THYROX_TOOLCHAIN_TEXLIVE_PACKAGES:-}${THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE:-}" ]]; then
+    echo "thyrox_toolchain: el consumidor no declara TeX (THYROX_TOOLCHAIN_TEXLIVE_PACKAGES" >&2
+    echo "                  ni THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE); la sonda se omite." >&2
+    return 3
+  fi
+  thyrox_toolchain_require_texlive
+}
+export -f thyrox_toolchain_probe_texlive
+
+# ---------------------------------------------------------------------------
 # Sonda de COHERENCIA entre el proxy declarado y el CA que cada familia lee.
 # ---------------------------------------------------------------------------
 
