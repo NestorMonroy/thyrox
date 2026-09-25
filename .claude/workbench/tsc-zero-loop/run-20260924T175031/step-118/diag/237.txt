@@ -1,0 +1,24 @@
+src/packages/tool-registry/src/services/toolExecution.ts(1016,27): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1006-1026 ---
+   1006          tool_use_id: toolUseID,
+   1007        },
+   1008      ]
+   1009  
+   1010      // Add image blocks at top level (not inside tool_result, which rejects non-text with is_error)
+   1011      const rejectContentBlocks =
+   1012        permissionDecision.behavior === 'ask'
+   1013          ? permissionDecision.contentBlocks
+   1014          : undefined
+   1015      if (rejectContentBlocks?.length) {
+   1016>       messageContent.push(...rejectContentBlocks)
+   1017      }
+   1018  
+   1019      // Generate sequential imagePasteIds so each image renders with a distinct label
+   1020      let rejectImageIds: number[] | undefined
+   1021      if (rejectContentBlocks?.length) {
+   1022        const imageCount = count(
+   1023          rejectContentBlocks,
+   1024          b => b.type === 'image',
+   1025        )
+   1026        if (imageCount > 0) {
+  Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name

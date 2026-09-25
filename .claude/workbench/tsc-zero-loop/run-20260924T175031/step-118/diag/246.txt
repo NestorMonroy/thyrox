@@ -1,0 +1,28 @@
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:177-197 ---
+    177      mode: selectedAgent.permissionMode ?? 'acceptEdits',
+    178    }
+    179    const workerTools = isResumedFork
+    180      ? toolUseContext.options.tools
+    181      : assembleToolPool(workerPermissionContext, appState.mcp.tools)
+    182  
+    183    const runAgentParams: Parameters<typeof runAgent>[0] = {
+    184      agentDefinition: selectedAgent,
+    185      promptMessages: [
+    186        ...resumedMessages,
+    187>       createUserMessage({ content: prompt }),
+    188      ],
+    189      toolUseContext,
+    190      canUseTool,
+    191      isAsync: true,
+    192      querySource: getQuerySourceForAgent(
+    193        selectedAgent.agentType,
+    194        isBuiltInAgent(selectedAgent),
+    195      ),
+    196      model: undefined,
+    197      // Fork resume: pass parent's system prompt (cache-identical prefix).
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.

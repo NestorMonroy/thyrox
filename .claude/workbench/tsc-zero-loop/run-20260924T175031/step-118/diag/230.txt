@@ -1,0 +1,25 @@
+src/packages/shell/src/shellCommand.ts(419,12): error TS2416: Property 'taskOutput' in type 'AbortedShellCommand' is not assignable to the same property in base type 'ShellCommandWithOutput'.
+  --- código src/packages/shell/src/shellCommand.ts:409-429 ---
+    409      maxOutputBytes,
+    410    )
+    411  }
+    412  
+    413  /**
+    414   * Static ShellCommand implementation for commands that were aborted before execution.
+    415   */
+    416  class AbortedShellCommand implements ShellCommandWithOutput {
+    417    readonly status = 'killed' as const
+    418    readonly result: Promise<ExecResult>
+    419>   readonly taskOutput: TaskOutputPort
+    420  
+    421    constructor(opts?: {
+    422      backgroundTaskId?: string
+    423      stderr?: string
+    424      code?: number
+    425    }) {
+    426      this.taskOutput = new StubTaskOutput(generateTaskId('local_bash'))
+    427      this.result = Promise.resolve({
+    428        code: opts?.code ?? 145,
+    429        stdout: '',
+  Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.
+    Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

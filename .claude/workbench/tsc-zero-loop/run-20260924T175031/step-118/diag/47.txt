@@ -1,0 +1,23 @@
+src/packages/agent/sessionTools/analyzeContext.ts(358,11): error TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/toolSearch")'.
+  --- código src/packages/agent/sessionTools/analyzeContext.ts:348-368 ---
+    348    if (builtInTools.length < 1) {
+    349      return {
+    350        builtInToolTokens: 0,
+    351        deferredBuiltinDetails: [],
+    352        deferredBuiltinTokens: 0,
+    353        systemToolDetails: [],
+    354      }
+    355    }
+    356  
+    357    // Check if tool search is enabled
+    358>   const { isToolSearchEnabled } = await import('../toolSearch.js')
+    359    const { isDeferredTool } = await import('@thyrox/tool-registry/tools/ToolSearchTool/prompt.js')
+    360    const isDeferred = await isToolSearchEnabled(
+    361      model ?? '',
+    362      tools,
+    363      getToolPermissionContext,
+    364      agentInfo?.activeAgents ?? [],
+    365      'analyzeBuiltIn',
+    366    )
+    367  
+    368    // Separate always-loaded and deferred builtin tools using dynamic isDeferredTool check

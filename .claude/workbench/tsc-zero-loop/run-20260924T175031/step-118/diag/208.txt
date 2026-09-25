@@ -1,0 +1,25 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(544,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:534-554 ---
+    534    if (
+    535      inputString !== null &&
+    536      !effectiveSkipSlash &&
+    537      inputString.startsWith('/')
+    538    ) {
+    539      const { processSlashCommand } = await import('./processSlashCommand.js')
+    540      const slashResult = await processSlashCommand(
+    541        inputString,
+    542        precedingInputBlocks,
+    543        imageContentBlocks,
+    544>       attachmentMessages,
+    545        context,
+    546        setToolJSX,
+    547        uuid,
+    548        isAlreadyProcessing,
+    549        canUseTool,
+    550      )
+    551      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    552    }
+    553  
+    554    // Log agent mention queries for analysis
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

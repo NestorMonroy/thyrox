@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2352-2372 ---
+   2352            const sdkClient = sdkClients.find(
+   2353              client => client.name === mcpRequest.server_name,
+   2354            )
+   2355            // Check client exists - dynamically added SDK servers may have
+   2356            // placeholder clients with null client until updateSdkMcp() runs
+   2357            if (
+   2358              sdkClient &&
+   2359              sdkClient.type === 'connected' &&
+   2360              sdkClient.client?.transport?.onmessage
+   2361            ) {
+   2362>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2363            }
+   2364            sendControlResponseSuccess(message)
+   2365          } else if (message.request.subtype === 'rewind_files') {
+   2366            const appState = getAppState()
+   2367            const result = await handleRewindFiles(
+   2368              message.request.user_message_id as UUID,
+   2369              appState,
+   2370              setAppState,
+   2371              message.request.dry_run ?? false,
+   2372            )

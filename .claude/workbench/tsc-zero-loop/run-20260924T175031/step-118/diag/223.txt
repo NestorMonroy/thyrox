@@ -1,0 +1,25 @@
+src/packages/repl/src/screens/REPLView.tsx(2947,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2937-2957 ---
+   2937  
+   2938        for await (const event of query({
+   2939          messages: messagesIncludingNewMessages,
+   2940          systemPrompt,
+   2941          userContext,
+   2942          systemContext,
+   2943          canUseTool,
+   2944          toolUseContext,
+   2945          querySource: getQuerySourceForREPL(),
+   2946        })) {
+   2947>         onQueryEvent(event);
+   2948        }
+   2949  
+   2950        queryCheckpoint('query_end');
+   2951  
+   2952        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2953        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2954        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2955          const entries = apiMetricsRef.current;
+   2956  
+   2957          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp

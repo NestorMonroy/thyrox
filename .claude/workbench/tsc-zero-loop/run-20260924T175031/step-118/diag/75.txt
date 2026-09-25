@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1541,17): error TS2740: Type 'FileStateCache' is missing the following properties from type 'FileStateCache': cache, get, set, has, and 6 more.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1531-1551 ---
+   1531                canUseTool,
+   1532                userSpecifiedModel: activeUserSpecifiedModel,
+   1533                fallbackModel: options.fallbackModel,
+   1534                jsonSchema: getInitJsonSchema() ?? options.jsonSchema,
+   1535                mutableMessages,
+   1536                getReadFileCache: () =>
+   1537                  pendingSeeds.size === 0
+   1538                    ? readFileState
+   1539                    : mergeFileStateCaches(readFileState, pendingSeeds),
+   1540                setReadFileCache: cache => {
+   1541>                 readFileState = cache
+   1542                  for (const [path, seed] of pendingSeeds.entries()) {
+   1543                    const existing = readFileState.get(path)
+   1544                    if (!existing || seed.timestamp > existing.timestamp) {
+   1545                      readFileState.set(path, seed)
+   1546                    }
+   1547                  }
+   1548                  pendingSeeds.clear()
+   1549                },
+   1550                customSystemPrompt: options.systemPrompt,
+   1551                appendSystemPrompt: options.appendSystemPrompt,

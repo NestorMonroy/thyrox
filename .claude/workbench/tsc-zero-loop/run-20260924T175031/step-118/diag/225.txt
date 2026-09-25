@@ -1,0 +1,25 @@
+src/packages/repl/src/screens/REPLView.tsx(3995,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3985-4005 ---
+   3985          (
+   3986            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   3987          ).resetContextCollapse();
+   3988          /* eslint-enable @typescript-eslint/no-require-imports */
+   3989        }
+   3990  
+   3991        // Restore state from the message we're rewinding to
+   3992        setAppState(prev => ({
+   3993          ...prev,
+   3994          // Restore permission mode from the message
+   3995>         toolPermissionContext:
+   3996            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   3997              ? {
+   3998                  ...prev.toolPermissionContext,
+   3999                  mode: message.permissionMode,
+   4000                }
+   4001              : prev.toolPermissionContext,
+   4002          // Clear stale prompt suggestion from previous conversation state
+   4003          promptSuggestion: {
+   4004            text: null,
+   4005            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

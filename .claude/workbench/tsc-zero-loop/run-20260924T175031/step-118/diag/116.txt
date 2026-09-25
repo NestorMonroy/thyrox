@@ -1,0 +1,23 @@
+src/packages/mcp-runtime/src/clientRuntime.ts(1614,25): error TS2322: Type '"completed"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1604-1624 ---
+   1604                          : undefined,
+   1605                      handleElicitation: context.handleElicitation,
+   1606                    })
+   1607  
+   1608                    // Emit progress when tool completes successfully
+   1609                    if (onProgress && toolUseId) {
+   1610                      onProgress({
+   1611                        toolUseID: toolUseId,
+   1612                        data: {
+   1613                          type: 'mcp_progress',
+   1614>                         status: 'completed',
+   1615                          serverName: client.name,
+   1616                          toolName: tool.name,
+   1617                          elapsedTimeMs: Date.now() - startTime,
+   1618                        },
+   1619                      })
+   1620                    }
+   1621  
+   1622                    return {
+   1623                      data: mcpResult.content,
+   1624                      ...((mcpResult._meta || mcpResult.structuredContent) && {

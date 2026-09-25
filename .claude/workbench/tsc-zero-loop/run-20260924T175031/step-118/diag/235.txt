@@ -1,0 +1,23 @@
+src/packages/storage/src/sessionStorage.ts(4663,15): error TS2304: Cannot find name 'MessageContent'.
+  --- código src/packages/storage/src/sessionStorage.ts:4653-4673 ---
+   4653  // COLISION de declaracion — enmascarada solo mientras el TS2307 impedia que
+   4654  // el import resolviera. Al declarar la dependencia en `package.json` quedo a
+   4655  // la vista. Su unico consumidor era un test, reapuntado en el mismo pase.
+   4656  
+   4657  /** El subconjunto de `Message` que `getFirstMeaningfulUserMessageTextContent` lee. */
+   4658  export interface FirstPromptMessage {
+   4659    type: string
+   4660    isMeta?: boolean
+   4661    isCompactSummary?: boolean
+   4662    message?: {
+   4663>     content?: MessageContent
+   4664    }
+   4665  }
+   4666  
+   4667  /** El subconjunto de `TranscriptMessage` que `removeExtraFields` recibe. */
+   4668  export interface RemovableFieldsMessage {
+   4669    uuid: UUID
+   4670    parentUuid?: UUID
+   4671    isSidechain?: boolean
+   4672    [key: string]: unknown
+   4673  }

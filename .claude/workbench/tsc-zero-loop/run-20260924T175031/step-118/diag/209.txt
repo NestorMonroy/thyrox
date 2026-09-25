@@ -1,0 +1,23 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(560,9): error TS18046: 'm' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:550-570 ---
+    550      )
+    551      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    552    }
+    553  
+    554    // Log agent mention queries for analysis
+    555    if (inputString !== null && mode === 'prompt') {
+    556      const trimmedInput = inputString.trim()
+    557  
+    558      const agentMention = attachmentMessages.find(
+    559        (m): m is AttachmentMessage =>
+    560>         m.attachment.type === 'agent_mention',
+    561      )
+    562  
+    563      if (agentMention) {
+    564        const agentMentionString = `@agent-${agentMention.attachment.agentType}`
+    565        const isSubagentOnly = trimmedInput === agentMentionString
+    566        const isPrefix =
+    567          trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
+    568  
+    569        // Log whenever users use @agent-<name> syntax
+    570        logEvent('tengu_subagent_at_mention', {

@@ -1,0 +1,23 @@
+src/packages/repl/src/hooksConfigManager.ts(273,11): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/hooksConfigManager.ts:263-283 ---
+    263        },
+    264      }
+    265    },
+    266    toolNames => toolNames.slice().sort().join(','),
+    267  )
+    268  
+    269  // Group hooks by event and matcher
+    270  export function groupHooksByEventAndMatcher(
+    271    appState: AppState,
+    272    toolNames: string[],
+    273> ): Record<HookEvent, Record<string, IndividualHookConfig[]>> {
+    274    const grouped: Record<HookEvent, Record<string, IndividualHookConfig[]>> = {
+    275      PreToolUse: {},
+    276      PostToolUse: {},
+    277      PostToolUseFailure: {},
+    278      PermissionDenied: {},
+    279      Notification: {},
+    280      UserPromptSubmit: {},
+    281      SessionStart: {},
+    282      SessionEnd: {},
+    283      Stop: {},

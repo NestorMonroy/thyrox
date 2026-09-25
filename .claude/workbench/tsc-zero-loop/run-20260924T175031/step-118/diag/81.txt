@@ -1,0 +1,26 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2143,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2133-2153 ---
+   2133    structuredIO.setUnexpectedResponseCallback(async message => {
+   2134      await handleOrphanedPermissionResponse({
+   2135        message,
+   2136        handledToolUseIds: handledOrphanedToolUseIds,
+   2137        onEnqueued: () => {
+   2138          // The first message of a session might be the orphaned permission
+   2139          // check rather than a user prompt, so kick off the loop.
+   2140          void run()
+   2141        },
+   2142        deps: {
+   2143>         findUnresolvedToolUse,
+   2144          enqueue,
+   2145          logDebug: logForDebugging,
+   2146        },
+   2147      })
+   2148    })
+   2149  
+   2150    // Track active OAuth flows per server so we can abort a previous flow
+   2151    // when a new mcp_authenticate request arrives for the same server.
+   2152    const activeOAuthFlows = new Map<string, AbortController>()
+   2153    // Track manual callback URL submit functions for active OAuth flows.
+  Type 'Promise<AssistantMessage | null>' is not assignable to type 'Promise<OrphanedAssistantMessage | null | undefined>'.
+    Type 'AssistantMessage | null' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+      Type 'AssistantMessage' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.

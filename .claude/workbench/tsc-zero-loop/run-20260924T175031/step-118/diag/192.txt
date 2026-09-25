@@ -1,0 +1,23 @@
+src/packages/repl/src/hooks/useReplBridge.tsx(553,26): error TS18046: 'item' is of type 'unknown'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:543-563 ---
+    543                  )
+    544                  return {
+    545                    ...prev,
+    546                    toolPermissionContext: { ...next, mode },
+    547                  }
+    548                })
+    549                // Recheck queued permission prompts now that mode changed.
+    550                setImmediate(() => {
+    551                  getLeaderToolUseConfirmQueue()?.(currentQueue => {
+    552                    currentQueue.forEach(item => {
+    553>                     void item.recheckPermission()
+    554                    })
+    555                    return currentQueue
+    556                  })
+    557                })
+    558                return { ok: true }
+    559              },
+    560              onStateChange: handleStateChange,
+    561              initialMessages: messages.length > 0 ? messages : undefined,
+    562              getMessages: () => messagesRef.current,
+    563              previouslyFlushedUUIDs: flushedUUIDsRef.current,

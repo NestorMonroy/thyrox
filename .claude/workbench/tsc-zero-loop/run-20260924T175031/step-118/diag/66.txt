@@ -1,0 +1,29 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(154,9): error TS2322: Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<unknown> | HostSessionStore<AppState>'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:144-164 ---
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+    146      },
+    147      agentCatalog: {
+    148        getDefinitions: () => agentCatalogStore.getState(),
+    149        setDefinitions: next => agentCatalogStore.setState(() => next),
+    150        refresh: () => {},
+    151      },
+    152      sessionStoreFactory: {
+    153        createHeadlessStore: params =>
+    154>         createHeadlessSessionStore(
+    155            (params ?? {
+    156              mcpClients: [],
+    157              mcpCommands: [],
+    158              mcpTools: [],
+    159              toolPermissionContext: permissionStore.getState(),
+    160              effort: undefined,
+    161              effectiveModel: null,
+    162            }) as HeadlessStoreParams,
+    163          ),
+    164      },
+  Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<AppState>'.
+    Types of property 'setState' are incompatible.
+      Type '(next: AppState) => void' is not assignable to type '(updater: (prev: AppState) => AppState) => void'.
+        Types of parameters 'next' and 'updater' are incompatible.
+          Type '(prev: AppState) => AppState' is not assignable to type 'AppState'.
+            Type '(prev: AppState) => AppState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

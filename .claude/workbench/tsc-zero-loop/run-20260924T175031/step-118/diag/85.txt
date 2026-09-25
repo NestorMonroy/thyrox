@@ -1,0 +1,23 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2717,41): error TS7006: Parameter 'submit' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2707-2727 ---
+   2707                })
+   2708  
+   2709                // Start the OAuth flow in the background
+   2710                const oauthPromise = performMCPOAuthFlow(
+   2711                  serverName,
+   2712                  config,
+   2713                  url => resolveAuthUrl!(url),
+   2714                  controller.signal,
+   2715                  {
+   2716                    skipBrowserOpen: true,
+   2717>                   onWaitingForCallback: submit => {
+   2718                      oauthCallbackSubmitters.set(serverName, submit)
+   2719                    },
+   2720                  },
+   2721                )
+   2722  
+   2723                // Wait for the auth URL (or the flow to complete without needing redirect)
+   2724                const authUrl = await Promise.race([
+   2725                  authUrlPromise,
+   2726                  oauthPromise.then(() => null as string | null),
+   2727                ])

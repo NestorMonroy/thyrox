@@ -1,0 +1,23 @@
+src/packages/agent/constants/spinnerVerbs.ts(12,39): error TS2339: Property 'verbs' does not exist on type 'string[]'.
+  --- código src/packages/agent/constants/spinnerVerbs.ts:2-22 ---
+      2  
+      3  export function getSpinnerVerbs(): string[] {
+      4    const settings = getInitialSettings()
+      5    const config = settings.spinnerVerbs
+      6    if (!config) {
+      7      return SPINNER_VERBS
+      8    }
+      9    if (config.mode === 'replace') {
+     10      return config.verbs.length > 0 ? config.verbs : SPINNER_VERBS
+     11    }
+     12>   return [...SPINNER_VERBS, ...config.verbs]
+     13  }
+     14  
+     15  // Spinner verbs for loading messages
+     16  export const SPINNER_VERBS = [
+     17    'Accomplishing',
+     18    'Actioning',
+     19    'Actualizing',
+     20    'Architecting',
+     21    'Baking',
+     22    'Beaming',

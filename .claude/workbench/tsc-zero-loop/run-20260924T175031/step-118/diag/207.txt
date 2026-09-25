@@ -1,0 +1,25 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(524,9): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:514-534 ---
+    514      : []
+    515    queryCheckpoint('query_attachment_loading_end')
+    516  
+    517    // Bash commands
+    518    if (inputString !== null && mode === 'bash') {
+    519      const { processBashCommand } = await import('./processBashCommand.js')
+    520      return addImageMetadataMessage(
+    521        await processBashCommand(
+    522          inputString,
+    523          precedingInputBlocks,
+    524>         attachmentMessages,
+    525          context,
+    526          setToolJSX,
+    527        ),
+    528        imageMetadataTexts,
+    529      )
+    530    }
+    531  
+    532    // Slash commands
+    533    // Skip for remote bridge messages — input from CCR clients is plain text
+    534    if (
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

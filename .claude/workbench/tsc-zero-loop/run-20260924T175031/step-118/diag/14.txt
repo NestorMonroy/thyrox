@@ -1,0 +1,27 @@
+src/packages/agent/hooks/execAgentHook.ts(173,9): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:163-183 ---
+    163        let turnCount = 0
+    164        let hitMaxTurns = false
+    165  
+    166        // Use query() for multi-turn execution
+    167        for await (const message of query({
+    168          messages: agentMessages,
+    169          systemPrompt,
+    170          userContext: {},
+    171          systemContext: {},
+    172          canUseTool: hasPermissionsToUseTool,
+    173>         toolUseContext: agentToolUseContext,
+    174          querySource: 'hook_agent',
+    175        })) {
+    176          // Process stream events to update response length in the spinner
+    177          handleMessageFromStream(
+    178            message,
+    179            () => {}, // onMessage - we handle messages below
+    180            newContent =>
+    181              toolUseContext.setResponseLength(
+    182                length => length + newContent.length,
+    183              ),
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

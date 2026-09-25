@@ -1,0 +1,29 @@
+src/packages/agent/query.ts(515,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:505-525 ---
+    505          consecutiveRapidRefills,
+    506        }
+    507  
+    508        const postCompactMessages = buildPostCompactMessages(compactionResult)
+    509  
+    510        for (const message of postCompactMessages) {
+    511          yield message
+    512        }
+    513  
+    514        // Continue on with the current query call using the post compact messages
+    515>       messagesForQuery = postCompactMessages
+    516      } else if (consecutiveFailures !== undefined) {
+    517        // Autocompact failed — propagate failure count so the circuit breaker
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.

@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/REPLView.tsx(3290,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3280-3300 ---
+   3280              ...updatedToolPermissionContext,
+   3281              mode: 'auto',
+   3282              prePlanMode: undefined,
+   3283            });
+   3284          }
+   3285  
+   3286          return {
+   3287            ...prev,
+   3288            initialMessage: null,
+   3289            toolPermissionContext: updatedToolPermissionContext,
+   3290>           ...(shouldStorePlanForVerification && {
+   3291              pendingPlanVerification: {
+   3292                plan: initialMsg.message.planContent!,
+   3293                verificationStarted: false,
+   3294                verificationCompleted: false,
+   3295              },
+   3296            }),
+   3297          };
+   3298        });
+   3299  
+   3300        // Create file history snapshot for code rewind

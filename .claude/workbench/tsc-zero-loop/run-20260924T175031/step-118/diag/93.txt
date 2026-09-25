@@ -1,0 +1,26 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3474,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3464-3484 ---
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467          trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474>         value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })
+   3478        // Increment prompt count for attribution tracking and save snapshot
+   3479        // The snapshot persists promptCount so it survives compaction
+   3480        if (feature('COMMIT_ATTRIBUTION')) {
+   3481          setAppState(prev => ({
+   3482            ...prev,
+   3483            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3484              void recordAttributionSnapshot(snapshot).catch(error => {
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.

@@ -1,0 +1,23 @@
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(189,66): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts:179-199 ---
+    179      expect(goalLocalCommand.name).toBe('goal')
+    180      expect(goalLocalCommand.type).toBe('local')
+    181      expect(asLocalCommand(goalLocalCommand).supportsNonInteractive).toBe(true)
+    182    })
+    183    test('review + ultrareview', async () => {
+    184      expect(reviewCommand.name).toBe('review')
+    185      expect(reviewCommand.type).toBe('prompt')
+    186      if (reviewCommand.type !== 'prompt') {
+    187        throw new Error('reviewCommand debe ser type "prompt"')
+    188      }
+    189>     const blocks = await reviewCommand.getPromptForCommand('42', undefined)
+    190      const first = blocks[0]
+    191      if (first?.type !== 'text') {
+    192        throw new Error('el primer bloque de review debe ser de tipo text')
+    193      }
+    194      expect(first.text).toContain('PR number: 42')
+    195      expect(ultrareview.name).toBe('ultrareview')
+    196      expect(ultrareview.type).toBe('local-jsx')
+    197    })
+    198    test('getGoalConditionMaxLength resuelve @thyrox/agent (ya declarado)', () => {
+    199      // command-runtime SI declara @thyrox/agent en package.json desde
