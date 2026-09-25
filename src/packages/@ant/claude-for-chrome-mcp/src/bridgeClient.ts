@@ -71,8 +71,6 @@ export class BridgeClient implements SocketClient {
   private peerConnectedWaiters: Array<(arrived: boolean) => void> = [];
   /** The request_id of the current pending pairing broadcast. */
   private pendingPairingRequestId: string | undefined;
-  /** True while a pairing broadcast is in flight and no response yet. */
-  private pairingInProgress = false;
   /** The deviceId from a previous persisted pairing. */
   private persistedDeviceId: string | undefined;
   /** Resolve callback for a blocking switchBrowser() call. */
@@ -346,7 +344,6 @@ export class BridgeClient implements SocketClient {
 
     // Multiple extensions, no valid persisted selection: broadcast and fail fast
     this.broadcastPairingRequest();
-    this.pairingInProgress = true;
   }
 
   /**
@@ -476,7 +473,6 @@ export class BridgeClient implements SocketClient {
     this.previousSelectedDeviceId = this.selectedDeviceId;
     this.selectedDeviceId = undefined;
     this.discoveryComplete = false;
-    this.pairingInProgress = false;
 
     const requestId = crypto.randomUUID();
     this.pendingPairingRequestId = requestId;
@@ -780,7 +776,6 @@ export class BridgeClient implements SocketClient {
           responseName
         ) {
           this.pendingPairingRequestId = undefined;
-          this.pairingInProgress = false;
           this.selectExtension(responseDeviceId);
           this.context.onExtensionPaired?.(responseDeviceId, responseName);
           logger.info(
@@ -1094,7 +1089,6 @@ export class BridgeClient implements SocketClient {
     this.selectedDeviceId = undefined;
     this.discoveryComplete = false;
     this.pendingPairingRequestId = undefined;
-    this.pairingInProgress = false;
     if (this.pendingSwitchResolve) {
       this.pendingSwitchResolve(null);
       this.pendingSwitchResolve = null;

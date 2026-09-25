@@ -70,7 +70,7 @@ export async function getAnthropicClient({
   model,
   fetchOverride,
   source,
-  signal,
+  signal: _signal,
 }: {
   apiKey?: string
   maxRetries: number

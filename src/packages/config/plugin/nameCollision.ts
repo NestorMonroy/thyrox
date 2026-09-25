@@ -61,37 +61,6 @@ export type CollisionEntry = {
 }
 
 /**
- * Ant `yF9` — emit `tengu_plugin_folder_shadowed`. Call once per shadowed
- * folder (the loser, not the winner). Cheap — drops on the floor when
- * telemetry is disabled.
- *
- * Component-shadow detection (ant `sc9`) is not yet wired into the loader;
- * once it is, callers should invoke this helper from the loader path that
- * detects an explicit component list collocated with a standard folder.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function _logFolderShadowed(opts: {
-  pluginName: string
-  marketplace: string | undefined
-  component: 'commands' | 'agents' | 'skills' | 'outputStyles' | 'hooks'
-}): void {
-  // Inline the redacted/hash twins ourselves — we can't import the full
-  // buildPluginTelemetryFields helper here without creating a config→
-  // tool-registry import cycle (pluginTelemetry depends on @thyrox/
-  // config/plugin/pluginIdentifier). The hashPluginId import is fine
-  // because it's a single pure function and doesn't transitively pull
-  // the config/plugin types graph back in.
-  logEvent('tengu_plugin_folder_shadowed', {
-    component:
-      opts.component as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    plugin_id_hash: hashItemName(
-      opts.pluginName,
-      opts.marketplace,
-    ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  })
-}
-
-/**
  * Ant `LzH` — emit `tengu_plugin_name_collision` once per item-name with
  * ≥2 unique sources. Byte-for-byte port of the inner loop:
  *

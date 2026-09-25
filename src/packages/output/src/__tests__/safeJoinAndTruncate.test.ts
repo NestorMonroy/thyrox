@@ -142,7 +142,6 @@ describe('EndTruncatingAccumulator — truncation on max size', () => {
     const a = new EndTruncatingAccumulator(5)
     a.append('hello!') // 6 chars, exceeds 5
     expect(a.truncated).toBe(true)
-    const beforeAppend = a.toString()
     a.append('more data')
     // toString may add a different KB count but content beyond first
     // 5 chars is dropped.

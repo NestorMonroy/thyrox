@@ -704,7 +704,6 @@ function PromptInput({
 
   const tasksSelected = footerItemSelected === 'tasks'
   const tmuxSelected = footerItemSelected === 'tmux'
-  const bagelSelected = footerItemSelected === 'bagel'
   const teamsSelected = footerItemSelected === 'teams'
   const bridgeSelected = footerItemSelected === 'bridge'
 

@@ -103,18 +103,12 @@ import {
 } from '@thyrox/mcp-runtime'
 import type {
   DynamicMcpState as DynamicMcpStateBase,
-  SdkMcpState as SdkMcpStateBase,
 } from '@thyrox/mcp-runtime'
 
 // Concrete parameterisations of the generic mcp-runtime contracts used in
 // this file — the generic `*Base` forms declare the type slots, these lock
 // them to the CLI's concrete client/tool/config shapes.
 type DynamicMcpState = DynamicMcpStateBase<
-  MCPServerConnection,
-  Tools,
-  ScopedMcpServerConfig
->
-type SdkMcpState = SdkMcpStateBase<
   MCPServerConnection,
   Tools,
   ScopedMcpServerConfig
@@ -284,9 +278,6 @@ import { sleep } from '@thyrox/config/sleep'
 
 // Dead code elimination: conditional imports
 /* eslint-disable @typescript-eslint/no-require-imports */
-const coordinatorModeModule = feature('COORDINATOR_MODE')
-  ? (require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js'))
-  : null
 const proactiveModule =
   feature('PROACTIVE') || feature('KAIROS')
     ? (require('@thyrox/agent/proactive/index.js') as typeof import('@thyrox/agent/proactive/index.js'))
@@ -294,9 +285,6 @@ const proactiveModule =
 const cronSchedulerModule = require('@thyrox/agent/scheduler') as typeof import('@thyrox/agent/scheduler')
 const cronJitterConfigModule = require('@thyrox/agent/misc/cronJitterConfig.js') as typeof import('@thyrox/agent/misc/cronJitterConfig.js')
 const cronGate = require('@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js')
-const extractMemoriesModule = feature('EXTRACT_MEMORIES')
-  ? (require('@thyrox/memory/extractMemories') as typeof import('@thyrox/memory/extractMemories'))
-  : null
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 const SHUTDOWN_TEAM_PROMPT = `<system-reminder>

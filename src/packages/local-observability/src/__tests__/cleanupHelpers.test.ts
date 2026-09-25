@@ -77,7 +77,6 @@ describe('convertFileNameToDate — ISO round-trip', () => {
     // Simulate the file-creation path: new Date().toISOString() →
     // replace : and . with - → add extension.
     const original = new Date('2026-04-30T14:30:45.789Z').toISOString()
-    const filename = original.replace(/[:.]/g, '-') + 'Z.jsonl'
     // Wait, ISO already ends with Z. Let me redo:
     const filename2 = original.replace(/:/g, '-').replace(/\./g, '-') + '.jsonl'
     const parsed = convertFileNameToDate(filename2)

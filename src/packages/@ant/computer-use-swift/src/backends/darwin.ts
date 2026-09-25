@@ -26,14 +26,6 @@ function jxaSync(script: string): string {
   return new TextDecoder().decode(result.stdout).trim()
 }
 
-function osascriptSync(script: string): string {
-  const result = Bun.spawnSync({
-    cmd: ['osascript', '-e', script],
-    stdout: 'pipe', stderr: 'pipe',
-  })
-  return new TextDecoder().decode(result.stdout).trim()
-}
-
 async function osascript(script: string): Promise<string> {
   const proc = Bun.spawn(['osascript', '-e', script], {
     stdout: 'pipe', stderr: 'pipe',

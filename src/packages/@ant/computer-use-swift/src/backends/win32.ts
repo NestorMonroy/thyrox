@@ -63,7 +63,7 @@ foreach ($s in [System.Windows.Forms.Screen]::AllScreens) {
 $result -join "|"
 `)
       return raw.split('|').filter(Boolean).map(entry => {
-        const [w, h, id, primary] = entry.split(',')
+        const [w, h, id] = entry.split(',')
         return {
           width: Number(w),
           height: Number(h),

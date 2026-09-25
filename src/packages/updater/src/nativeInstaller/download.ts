@@ -57,8 +57,6 @@ const MACRO = {
   PACKAGE_URL: process.env.CCB_PACKAGE_URL ?? '',
 }
 
-const GCS_BUCKET_URL =
-  'https://storage.googleapis.com/claude-code-dist-86c565f3-f756-42ad-8dfa-d59b1c096819/claude-code-releases'
 const ARTIFACTORY_REGISTRY_URL =
   'https://artifactory.infra.ant.dev/artifactory/api/npm/npm-all/'
 

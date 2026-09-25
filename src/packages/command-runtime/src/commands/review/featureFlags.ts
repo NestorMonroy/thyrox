@@ -18,7 +18,7 @@
  * sentido contrario: `agent` depende de `command-runtime`).
  */
 export function getFeatureValue_CACHED_MAY_BE_STALE<T>(
-  key: string,
+  _key: string,
   fallback: T,
 ): T {
   return fallback

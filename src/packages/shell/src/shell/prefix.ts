@@ -22,38 +22,6 @@ type PrefixExtractorConfig = {
 }
 
 
-function createLRUCache<K, V>(maxSize: number) {
-  const cache = new Map<K, V>()
-  return {
-    get(key: K): V | undefined {
-      const val = cache.get(key)
-      if (val !== undefined) {
-        cache.delete(key)
-        cache.set(key, val)
-      }
-      return val
-    },
-    set(key: K, value: V): void {
-      cache.delete(key)
-      cache.set(key, value)
-      if (cache.size > maxSize) {
-        const first = cache.keys().next().value
-        if (first !== undefined) cache.delete(first)
-      }
-    },
-    delete(key: K): boolean {
-      return cache.delete(key)
-    },
-    has(key: K): boolean {
-      return cache.has(key)
-    },
-    get size(): number {
-      return cache.size
-    },
-  }
-}
-
-
 /**
  */
 export function createCommandPrefixExtractor(

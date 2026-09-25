@@ -192,35 +192,6 @@ function defaultSyntaxThemeName(themeName: string): string {
   return 'GitHub'
 }
 
-// highlight.js scope → syntect Monokai Extended foreground (measured from the
-// Rust module's output so colors match the original exactly)
-const MONOKAI_SCOPES: Record<string, Color> = {
-  keyword: rgb(249, 38, 114),
-  _storage: rgb(102, 217, 239),
-  built_in: rgb(166, 226, 46),
-  type: rgb(166, 226, 46),
-  literal: rgb(190, 132, 255),
-  number: rgb(190, 132, 255),
-  string: rgb(230, 219, 116),
-  title: rgb(166, 226, 46),
-  'title.function': rgb(166, 226, 46),
-  'title.class': rgb(166, 226, 46),
-  'title.class.inherited': rgb(166, 226, 46),
-  params: rgb(253, 151, 31),
-  comment: rgb(117, 113, 94),
-  meta: rgb(117, 113, 94),
-  attr: rgb(166, 226, 46),
-  attribute: rgb(166, 226, 46),
-  variable: rgb(255, 255, 255),
-  'variable.language': rgb(255, 255, 255),
-  property: rgb(255, 255, 255),
-  operator: rgb(249, 38, 114),
-  punctuation: rgb(248, 248, 242),
-  symbol: rgb(190, 132, 255),
-  regexp: rgb(230, 219, 116),
-  subst: rgb(248, 248, 242),
-}
-
 // Custom dark theme for the TUI: lower saturation, richer gold accents, and
 // cooler blue-green contrast so code feels more refined on black backgrounds.
 const ROYAL_GOLD_DARK_SCOPES: Record<string, Color> = {

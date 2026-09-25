@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/run-task-pool --width 4 --timeout 1200 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-100/tests/commands.txt", "started_at": "2026-09-25T04:54:54+00:00"}

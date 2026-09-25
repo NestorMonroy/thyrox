@@ -116,11 +116,7 @@ function deleteLoopChainStartedAt(prompt: string): void {
   loopChainStartedAt.delete(prompt)
 }
 
-let scheduledTasksEnabled = false
-
-function setScheduledTasksEnabled(enabled: boolean): void {
-  scheduledTasksEnabled = enabled
-}
+function setScheduledTasksEnabled(_enabled: boolean): void {}
 
 /**
  * Redondea un Date hacia adelante al próximo minuto entero. Se usa para

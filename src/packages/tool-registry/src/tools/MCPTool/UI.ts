@@ -34,9 +34,6 @@ import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperat
 import type { inputSchema } from './MCPTool.js'
 import { feature } from '../../internal/pendingCrossPackageDeps.js'
 
-// Umbral para mostrar la advertencia de respuestas MCP grandes.
-const MCP_OUTPUT_WARNING_THRESHOLD_TOKENS = 10_000
-
 // En modo no-verbose, trunca los valores de entrada individuales para
 // mantener la cabecera compacta. Sigue la filosofía de BashTool: mostrar
 // lo suficiente para identificar la llamada sin volcar el payload entero.

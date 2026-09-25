@@ -5,8 +5,6 @@ import { Box, Text } from '@anthropic/ink'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { AnimatedAsterisk } from './AnimatedAsterisk.js'
 
-const MAX_SHOW_COUNT = 6
-
 export function shouldShowOpus1mMergeNotice(): boolean {
   return false
 }

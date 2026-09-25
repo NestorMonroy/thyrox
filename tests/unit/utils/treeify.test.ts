@@ -9,7 +9,7 @@ mock.module('figures', () => ({
 }))
 
 mock.module('src/ink.js', () => ({
-  color: (colorKey: string, themeName: string) => (text: string) => text,
+  color: (_colorKey: string, _themeName: string) => (text: string) => text,
 }))
 
 const { treeify } = await import('@thyrox/repl/uiHelpers/treeify.js')
