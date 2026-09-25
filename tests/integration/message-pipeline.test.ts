@@ -10,15 +10,16 @@ import {
 
 describe('Message pipeline: message structure', () => {
   test("createUserMessage returns a Message with type 'user'", () => {
-    const msg = createUserMessage('hello')
+    const msg = createUserMessage({ content: 'hello' })
     expect(msg.type).toBe('user')
     expect(msg.message.role).toBe('user')
+    expect(msg.message.content).toBe('hello')
     expect(msg.uuid).toBeTruthy()
     expect(msg.timestamp).toBeTruthy()
   })
 
   test("createAssistantMessage returns a Message with type 'assistant'", () => {
-    const msg = createAssistantMessage('response')
+    const msg = createAssistantMessage({ content: 'response' })
     expect(msg.type).toBe('assistant')
     expect(msg.message.role).toBe('assistant')
     expect(msg.uuid).toBeTruthy()
@@ -52,13 +53,13 @@ describe('Message pipeline: tag extraction', () => {
 
 describe('Message pipeline: normalization', () => {
   test('normalizeMessages returns an array', () => {
-    const msg = createUserMessage('hello')
+    const msg = createUserMessage({ content: 'hello' })
     const result = normalizeMessages([msg])
     expect(Array.isArray(result)).toBe(true)
   })
 
   test('normalizeMessages preserves at least one message for simple input', () => {
-    const msg = createUserMessage('hello')
+    const msg = createUserMessage({ content: 'hello' })
     const result = normalizeMessages([msg])
     expect(result.length).toBeGreaterThanOrEqual(1)
   })

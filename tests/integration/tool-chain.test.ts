@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { z } from 'zod/v4'
 import {
   getAllBaseTools,
   parseToolPreset,
@@ -107,19 +108,28 @@ describe('Tool chain: getTools with context', () => {
   })
 })
 
+// Los campos que `buildTool` exige y que estas pruebas no ejercitan.
+const requiredToolFields = {
+  maxResultSizeChars: 100_000,
+  prompt: async () => '',
+  renderToolUseMessage: () => null,
+  mapToolResultToToolResultBlockParam: (content: unknown, toolUseID: string) => ({
+    type: 'tool_result' as const,
+    tool_use_id: toolUseID,
+    content: String(content),
+  }),
+}
+
 // ─── buildTool + findToolByName end-to-end ─────────────────────────────
 
 describe('Tool chain: buildTool + findToolByName', () => {
   test('a built tool can be found in a custom list', () => {
     const customTool = buildTool({
       name: 'TestTool',
-      description: 'A test tool',
-      inputSchema: {
-        type: 'object' as const,
-        properties: { input: { type: 'string' } },
-        required: ['input'],
-      },
-      call: async () => ({ output: 'test' }),
+      description: async () => 'A test tool',
+      inputSchema: z.object({ input: z.string() }),
+      call: async () => ({ data: { output: 'test' } }),
+      ...requiredToolFields,
     })
 
     const found = findToolByName([customTool], 'TestTool')
@@ -129,12 +139,10 @@ describe('Tool chain: buildTool + findToolByName', () => {
   test('built tool defaults are correctly applied', () => {
     const tool = buildTool({
       name: 'MinimalTool',
-      description: 'Minimal',
-      inputSchema: {
-        type: 'object' as const,
-        properties: {},
-      },
-      call: async () => ({}),
+      description: async () => 'Minimal',
+      inputSchema: z.object({}),
+      call: async () => ({ data: {} }),
+      ...requiredToolFields,
     })
 
     expect(tool.isEnabled()).toBe(true)
