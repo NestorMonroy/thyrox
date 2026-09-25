@@ -40,7 +40,9 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-AGAINST = {"rejected", "partial"}
+#: `rejected-review` es una aceptada de tsc que la revisión de conducta tumbó
+#: (diff de la salida transpilada): cuenta en contra de su proponente.
+AGAINST = {"rejected", "partial", "rejected-review"}
 #: `revealed` tampoco cuenta: la propuesta cerró su objetivo y lo que destapa
 #: son contratos reales, que van a la cola residual (`tsc_zero_step`).
 IGNORED = {"ambiguous", "no-targets", "infrastructure", "revealed"}
