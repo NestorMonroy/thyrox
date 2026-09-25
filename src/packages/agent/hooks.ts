@@ -1536,7 +1536,11 @@ export async function execCommandHook(
             processId,
             hookId,
             shellCommand,
-            asyncResponse: parsed,
+            asyncResponse: {
+              async: true,
+              asyncTimeout:
+                typeof parsed.asyncTimeout === 'number' ? parsed.asyncTimeout : undefined,
+            },
             hookEvent,
             hookName,
             command: hook.command,

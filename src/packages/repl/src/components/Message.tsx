@@ -153,9 +153,13 @@ function MessageImpl({
       // closure so the compiler can memoize MessageImpl.
       const imageIndices: number[] = []
       let imagePosition = 0
+      // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma
+      // de indice de `MessageBase`, o sea `unknown`. Mismo estrechamiento que
+      // `PromptInput.tsx:3205`.
+      const imagePasteIds = message.imagePasteIds as number[] | undefined
       for (const param of message.message.content) {
         if (param.type === 'image') {
-          const id = message.imagePasteIds?.[imagePosition]
+          const id = imagePasteIds?.[imagePosition]
           imagePosition++
           imageIndices.push(id ?? imagePosition)
         } else {

@@ -1,0 +1,6 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+5	:	1790377948.436	    25.375	0	0	0	0	_headless_item 5 'pattern:passthrough-field-indexed-as-empty-object .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/5.txt src/packages/repl/src/components/Message.tsx'
+4	:	1790377948.402	    32.516	0	0	0	0	_headless_item 4 'pattern:untyped-passthrough-field-indexed-on-settings-json .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/4.txt src/packages/repl/src/components/Message.tsx'
+3	:	1790377948.368	    35.095	0	0	0	0	_headless_item 3 'pattern:unknown-via-in-operator-on-index-signature .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/3.txt src/packages/agent/task/framework.ts'
+2	:	1790377948.329	    85.118	0	0	0	0	_headless_item 2 'pattern:option-stub-resolves-to-unknown-301 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/2.txt src/packages/agent/query.ts'
+1	:	1790377948.314	    97.636	0	0	0	0	_headless_item 1 'pattern:provider-host-bindings-stub-falta-campo-247 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154/items/1.txt src/packages/agent/hooks.ts'
