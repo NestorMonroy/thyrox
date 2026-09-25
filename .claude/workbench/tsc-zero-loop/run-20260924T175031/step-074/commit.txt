@@ -1,0 +1,11 @@
+Record step 074: symbol copies stalled on two causes
+
+Sixteen candidates from copy_missing_symbols, none kept. Six were
+blamed for 13 diagnostics that were the copier's own, not theirs: the
+tool sits under src/verify, which the root tsconfig measures, and it
+was not strict-clean (fixed in d38c3d15). Those are retried.
+
+The other ten each removed their TS2305 but brought new diagnostics to
+their own file: ccnmt's code is not strict under this tsconfig, so a
+literal copy needs its types adapted in the same step, or the net
+policy when the total drops. The reflections record each case.
