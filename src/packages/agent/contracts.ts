@@ -1,3 +1,4 @@
+import type { Message } from './messageShapes.js'
 import type {
   ModelUsage,
   SDKAssistantMessageError,
@@ -189,7 +190,7 @@ export type AgentHostBindings = {
     [key: string]: unknown
   }>
   processUserInput?: (params: unknown) => Promise<{
-    messages: AgentMessage[]
+    messages: Message[]
     shouldQuery: boolean
     allowedTools: unknown
     model?: string
@@ -224,7 +225,7 @@ export type AgentHostBindings = {
   snipCompactIfNeeded?: (
     messages: AgentMessage[],
     options?: { force?: boolean },
-  ) => { messages: AgentMessage[]; executed: boolean } | undefined
+  ) => { messages: Message[]; executed: boolean } | undefined
 
   // ── Session storage / debug capture ─────────────────────────────────────────
   recordTranscript?: (

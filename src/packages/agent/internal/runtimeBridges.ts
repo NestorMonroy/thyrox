@@ -1,34 +1,19 @@
 import type { ClientOptions } from '@anthropic-ai/sdk'
 import { randomUUID } from 'crypto'
+import type { UUID } from 'crypto'
 import type { AgentMessage } from '../internalTypes.js'
+import type { SystemCompactBoundaryMessage } from '../messageShapes.js'
 import { getAgentHostBindings } from '../host.js'
-
-type CompactBoundaryMessage = AgentMessage & {
-  type: 'system'
-  subtype: 'compact_boundary'
-  content: string
-  isMeta: false
-  timestamp: string
-  uuid: string
-  level: 'info'
-  compactMetadata: {
-    trigger: 'manual' | 'auto'
-    preTokens: number
-    userContext?: string
-    messagesSummarized?: number
-  }
-  logicalParentUuid?: string
-}
 
 type DumpPromptsFetch = NonNullable<ClientOptions['fetch']>
 
 export function createCompactBoundaryMessage(
   trigger: 'manual' | 'auto',
   preTokens: number,
-  lastPreCompactMessageUuid?: string,
+  lastPreCompactMessageUuid?: UUID,
   userContext?: string,
   messagesSummarized?: number,
-): CompactBoundaryMessage {
+): SystemCompactBoundaryMessage {
   const created = getAgentHostBindings().createCompactBoundaryMessage?.(
     trigger,
     preTokens,
@@ -37,7 +22,7 @@ export function createCompactBoundaryMessage(
     messagesSummarized,
   )
   if (created) {
-    return created as CompactBoundaryMessage
+    return created as SystemCompactBoundaryMessage
   }
 
   return {

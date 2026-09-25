@@ -14,7 +14,7 @@ import type {
   SDKUserMessageReplay,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
-import type { CompactMetadata, ToolUseSummaryMessage } from './messageShapes.js'
+import type { CompactMetadata, Message, ToolUseSummaryMessage } from './messageShapes.js'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
 import { getGlobalConfig } from '@thyrox/config'
@@ -52,7 +52,7 @@ import {
   fileHistoryEnabled,
   fileHistoryMakeSnapshot,
 } from './fileHistory.js'
-import type { AgentMessage as Message, AgentToolUseContext as ToolUseContext } from './internalTypes.js'
+import type { AgentToolUseContext as ToolUseContext } from './internalTypes.js'
 import {
   cloneFileStateCache,
   type FileStateCache,

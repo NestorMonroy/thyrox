@@ -1,5 +1,6 @@
 import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage } from '../internalTypes.js'
+import type { Message } from '../messageShapes.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
@@ -32,7 +33,7 @@ export async function loadAllPluginsCacheOnly(): Promise<{
 }
 
 export async function processUserInput(params: unknown): Promise<{
-  messages: AgentMessage[]
+  messages: Message[]
   shouldQuery: boolean
   allowedTools: unknown
   model?: string
@@ -130,6 +131,6 @@ export function isSnipBoundaryMessage(message: AgentMessage): boolean {
 export function snipCompactIfNeeded(
   messages: AgentMessage[],
   options?: { force?: boolean },
-): { messages: AgentMessage[]; executed: boolean } | undefined {
+): { messages: Message[]; executed: boolean } | undefined {
   return getAgentHostBindings().snipCompactIfNeeded?.(messages, options)
 }
