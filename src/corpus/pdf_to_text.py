@@ -36,7 +36,8 @@ corto sin decir por que. Los dos casos estan medidos: la lista de clientes de
 un portafolio eran logotipos y no salio un solo nombre; y unas instrucciones
 academicas devolvieron contornos vectoriales.
 
-Esa frontera es el eje 2 de ``thyrox_toolchain_require_pdf_text``, y su
+Esa frontera es el eje 2 de ``bin/check-toolchain-ready`` (el eje 1, el
+extractor, lo adquiere ``thyrox_toolchain_require_pdf_text``), y su
 remedio es otro: ``apt-get install tesseract-ocr``.
 
 *Metrica:* caracteres extraidos por pagina.
@@ -141,7 +142,8 @@ def main(argv: list[str] | None = None) -> int:
         except ImportError:
             raise SystemExit(
                 "pdf_to_text: no hay extractor.\n"
-                "  Remedio, el ligero: apt-get install -y poppler-utils (718 KB)\n"
+                "  Remedio, el ligero (poppler-utils, 718 KB), desde el arbol:\n"
+                "    source src/lib/toolchain.sh && THYROX_INSTALL_PDF_TEXT=1 thyrox_toolchain_require_pdf_text\n"
                 "  Lo comprueba: bash bin/check-toolchain-ready"
             ) from None
 
@@ -159,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
         print("  Una pagina sin texto suele ser imagen o contorno vectorial.")
         print("  Esto NO hace OCR. Eje 2: bash bin/check-toolchain-ready, y")
         print("  su remedio es apt-get install -y tesseract-ocr.")
-    print(f"escrito: {destino}")
+    print(f"escrito: {out_file}")
     return 0
 
 

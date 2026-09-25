@@ -252,6 +252,43 @@ function thyrox_toolchain_require_parallel() {
 }
 export -f thyrox_toolchain_require_parallel
 
+# @description El comando que instala el extractor de texto de PDF. Declarado
+# por la misma razon que su hermano de parallel: un control necesita inyectar
+# un instalador que MIENTA para probar que el exito se re-comprueba.
+export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+
+# @description Asegura `pdftotext` (poppler-utils), el extractor primario de
+# `src/corpus/pdf_to_text.py`. Mismo contrato que
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_PDF_TEXT=1`), el rechazo no emite conteo y el exito se
+# prueba re-comprobando el binario, no leyendo el exit del instalador.
+#
+# `bin/pdf_to_text` es el envoltorio; el extractor es un binario de sistema y
+# por eso no viaja en `bin/`. Esta funcion es lo que lo hace pedible desde el
+# arbol en vez de instalarlo a mano.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_pdf_text() {
+  local bin="${THYROX_TOOLCHAIN_PDFTOTEXT_BIN:-pdftotext}"
+  command -v "$bin" >/dev/null 2>&1 && return 0
+  if [[ "${THYROX_INSTALL_PDF_TEXT:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin' (paquete poppler-utils) y la instalacion es opt-in." >&2
+    echo "                  Reintenta con THYROX_INSTALL_PDF_TEXT=1." >&2
+    echo "                  NO se emite conteo: un vacio aqui no distinguiria" >&2
+    echo "                  «el PDF no tiene texto» de «no pude extraer»." >&2
+    return 2
+  fi
+  $THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD >&2 2>&1 || true
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_pdf_text
+
 # @description El binario de `awk` que los guiones de este arbol invocan.
 #
 # El eje NO es si gawk esta instalado: es CUAL awk responde. En Debian `awk`
