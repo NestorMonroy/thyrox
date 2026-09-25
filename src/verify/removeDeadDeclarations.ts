@@ -70,6 +70,9 @@ function unusedTopLevel(fileName: string, text: string): Set<string> {
   const options: ts.CompilerOptions = {
     noUnusedLocals: true, noResolve: true, noLib: true, allowJs: true,
     jsx: ts.JsxEmit.Preserve, target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext,
+    // Todo archivo del árbol es un módulo; sin esto, uno sin import/export se
+    // analiza como script y sus nombres de primer nivel son globales.
+    moduleDetection: ts.ModuleDetectionKind.Force,
   }
   const host = ts.createCompilerHost(options)
   const original = host.getSourceFile
@@ -91,10 +94,33 @@ function unusedTopLevel(fileName: string, text: string): Set<string> {
   return names
 }
 
-function usedInSource(name: string, sourceText: string | undefined): boolean {
+/** Vivo en la fuente: la fuente lo nombra y no cae en SU racimo muerto. Un
+ * ayudante que en la fuente sólo llama otra función muerta aparece más de una
+ * vez y aun así está muerto allá (paso 101: 7 racimos cortados por contar
+ * apariciones en vez de medir el racimo de la fuente). */
+function liveInSource(name: string, sourceText: string | undefined, deadInSource: Set<string>): boolean {
   if (sourceText === undefined) return false
-  const matches = sourceText.match(new RegExp(`\\b${name.replace(/[$]/g, '\\$')}\\b`, 'g'))
-  return (matches?.length ?? 0) > 1
+  const pattern = new RegExp(`\\b${name.replace(/[$]/g, '\\$')}\\b`)
+  return pattern.test(sourceText) && !deadInSource.has(name)
+}
+
+/** El racimo muerto de un texto, hasta el punto fijo, sin consultar fuente. */
+function deadCluster(fileName: string, text: string): Set<string> {
+  const source = ts.createSourceFile(fileName, text, ts.ScriptTarget.ESNext, true)
+  const byName = new Map<string, ts.Statement[]>()
+  for (const statement of source.statements) {
+    const name = removableName(statement)
+    if (name) byName.set(name, [...(byName.get(name) ?? []), statement])
+  }
+  const removed = new Set<string>()
+  let current = text
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    const fresh = [...unusedTopLevel(fileName, current)].filter(name => byName.has(name) && !removed.has(name))
+    if (fresh.length === 0) break
+    for (const name of fresh) removed.add(name)
+    current = applyRemovals(text, [...removed].flatMap(name => byName.get(name)!))
+  }
+  return removed
 }
 
 /** Las ediciones que retiran el racimo muerto, sobre el texto original. */
@@ -105,11 +131,12 @@ export function deadDeclarationEdits(fileName: string, text: string, sourceText?
     const name = removableName(statement)
     if (name) byName.set(name, [...(byName.get(name) ?? []), statement])
   }
+  const deadInSource = sourceText === undefined ? new Set<string>() : deadCluster(fileName, sourceText)
   const removed = new Set<string>()
   let current = text
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const fresh = [...unusedTopLevel(fileName, current)]
-      .filter(name => byName.has(name) && !removed.has(name) && !usedInSource(name, sourceText))
+      .filter(name => byName.has(name) && !removed.has(name) && !liveInSource(name, sourceText, deadInSource))
     if (fresh.length === 0) break
     for (const name of fresh) removed.add(name)
     current = applyRemovals(text, [...removed].flatMap(name => byName.get(name)!))

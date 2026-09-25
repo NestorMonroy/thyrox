@@ -58,4 +58,11 @@ describe('deadDeclarationEdits', () => {
     expect(out).toContain('function dead')
     expect(out).toContain('function helper')
   })
+
+  test('el ayudante que en la fuente sólo usa otra muerta también está muerto allá', () => {
+    const source = 'function dead() { return helper() }\nfunction helper() { return 1 }\n'
+    const out = apply(CLUSTER, deadDeclarationEdits('/m.ts', CLUSTER, source))
+    expect(out).not.toContain('function dead')
+    expect(out).not.toContain('function helper')
+  })
 })
