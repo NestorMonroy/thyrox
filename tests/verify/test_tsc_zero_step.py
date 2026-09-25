@@ -305,5 +305,27 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("parcial con algo nuevo: la bisección la revierte",
                  ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
 
+
+# El control que discrimina el coste: una parcial limpia y otra que deja algo
+# nuevo en su propio archivo. La culpable no entra a la bisección: una pasada
+# de confirmación para la limpia (3 en total) y no una por mitad (4).
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    a, c = "const a = BAD1 BAD5\n", "const c = BAD6 BAD7\n"
+    (base / "a.ts").write_text(a)
+    (base / "c.ts").write_text(c)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("clean:a.ts", "agent", "a.ts", a, "BAD1 BAD5", "BAD5",
+                     ["a.ts: TS9001: bad 1.", "a.ts: TS9001: bad 5."]),
+            proposal("dirty:c.ts", "agent", "c.ts", c, "BAD6 BAD7", "BAD7 WORSE",
+                      ["c.ts: TS9001: bad 6.", "c.ts: TS9001: bad 7."])]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None,
+                           accept_partial=True)
+    assert_equal("la parcial que rompe su archivo no paga bisección",
+                 (3, "accepted-partial", "partial", "const a = BAD5\n", c),
+                 (report.tsc_runs, report.outcomes["clean:a.ts"], report.outcomes["dirty:c.ts"],
+                  (base / "a.ts").read_text(), (base / "c.ts").read_text()))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

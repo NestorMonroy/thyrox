@@ -170,11 +170,15 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
             outcomes[net_kept] = "accepted-net"
 
     # Parcial conservable: bajan sus objetivos sin llegar a cero. Se trata
-    # como una aceptada, así que `settle` la revierte (y la registra como
-    # `revealed`) si deja cualquier diagnóstico nuevo, en su archivo o fuera.
+    # como una aceptada, así que `settle` la revierte si deja algo nuevo.
+    # La que ya deja algo nuevo en sus propios archivos no entra: el
+    # verificador ya sabe que es culpable, y mandarla a `settle` cuesta
+    # ~2·log2(n) pasadas de tsc por culpable (paso 098: 13 pasadas).
     if accept_partial:
+        new_files = {d.split(": ", 1)[0] for d in report.new_diagnostics}
         for pid in applied:
-            if pid != net_kept and outcomes[pid] == "partial":
+            if pid != net_kept and outcomes[pid] == "partial" \
+                    and not new_files & set(by_id[pid]["files"]):
                 outcomes[pid] = "accepted-partial"
 
     keep = ("accepted", "accepted-net", "accepted-partial")
