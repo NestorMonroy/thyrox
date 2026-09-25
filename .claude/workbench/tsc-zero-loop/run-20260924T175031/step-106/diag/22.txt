@@ -1,0 +1,12 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(933,15): error TS2322: Type 'number | undefined' is not assignable to type 'number'.
+  Type 'undefined' is not assignable to type 'number'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1072,65): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1220,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1252,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1382,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1409,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1474,15): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1496,30): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1501,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.

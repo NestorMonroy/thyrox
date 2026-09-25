@@ -1,0 +1,24 @@
+src/packages/agent/__tests__/preModelSwitch.test.ts(25,24): error TS2345: Argument of type '{ hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(35,24): error TS2345: Argument of type '{ estimated_cache_write_usd: number; pricing: "configured"; hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(45,24): error TS2345: Argument of type '{ hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(49,19): error TS2345: Argument of type '{ prompt_cache_warm: false; hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; context_tokens: number; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(52,19): error TS2345: Argument of type '{ hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(53,19): error TS2345: Argument of type '{ to_model: string; hook_event_name: string; from_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(54,19): error TS2345: Argument of type '{ context_tokens: number; hook_event_name: string; from_model: string; to_model: string; requested_model: string; source: string; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
+src/packages/agent/__tests__/preModelSwitch.test.ts(75,24): error TS2345: Argument of type '{ to_model: string; hook_event_name: string; from_model: string; requested_model: string; source: string; context_tokens: number; prompt_cache_warm: boolean; cache_ttl: "1h"; estimated_cache_write_usd: number; pricing: "catalog"; }' is not assignable to parameter of type 'Payload'.
+  Types of property 'source' are incompatible.
+    Type 'string' is not assignable to type '"resume" | "command" | "auto" | "sdk" | "picker" | undefined'.
