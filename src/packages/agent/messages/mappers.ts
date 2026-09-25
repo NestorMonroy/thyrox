@@ -1,4 +1,3 @@
-import type { BetaContentBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { UUID } from 'crypto'
 import { randomUUID } from 'crypto'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
@@ -228,7 +227,6 @@ export function toSDKRateLimitInfo(
     return undefined
   }
   return {
-    type: 'rate_limit',
     status: limits.status,
     ...(limits.resetsAt !== undefined && { resetsAt: limits.resetsAt }),
     ...(limits.rateLimitType !== undefined && {
@@ -269,7 +267,7 @@ function normalizeAssistantMessageForSDK(
     return message.message
   }
 
-  const normalizedContent = content.map((block): BetaContentBlock => {
+  const normalizedContent = content.map(block => {
     if (block.type !== 'tool_use') {
       return block
     }

@@ -91,14 +91,17 @@ export function exportedNames(path: string, seen: Set<string> = new Set()): Set<
     // Un archivo que no transpila no aporta exports de valor; los de tipo se leen igual.
   }
   const clean = stripComments(text)
-  for (const m of clean.matchAll(TYPE_DECL)) names.add(m[1])
+  for (const m of clean.matchAll(TYPE_DECL)) if (m[1]) names.add(m[1])
   for (const m of clean.matchAll(EXPORT_LIST)) {
-    for (const part of m[1].split(',')) {
+    const list = m[1]
+    if (list === undefined) continue
+    for (const part of list.split(',')) {
       const exported = part.replace(/^\s*type\s+/, '').split(/\s+as\s+/).pop()?.trim()
       if (exported) names.add(exported)
     }
   }
   for (const m of clean.matchAll(STAR_FROM)) {
+    if (m[1] === undefined) continue
     const target = resolve(m[1], dirname(path))
     if (target && measurable(target)) for (const n of exportedNames(target, seen)) if (n !== 'default') names.add(n)
   }
@@ -114,7 +117,7 @@ function measurable(target: string): boolean {
 function requestedNames(keyword: string, clause: string): string[] {
   const out: string[] = []
   const brace = clause.match(/\{([^}]*)\}/)
-  if (brace) {
+  if (brace && brace[1] !== undefined) {
     for (const part of brace[1].split(',')) {
       const source = part.replace(/^\s*type\s+/, '').split(/\s+as\s+/)[0]?.trim()
       if (source) out.push(source)
@@ -150,6 +153,7 @@ export function missingNamedImports(roots: string[], opts: { root?: string } = {
     const text = stripComments(readFileSync(file, 'utf8'))
     for (const m of text.matchAll(IMPORT_FROM)) {
       const [, keyword, , clause, specifier] = m
+      if (keyword === undefined || clause === undefined || specifier === undefined) continue
       if (BUILTIN.test(specifier)) continue
       if (/^\s*\*/.test(clause)) continue
       const requested = requestedNames(keyword, clause)

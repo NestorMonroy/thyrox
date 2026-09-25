@@ -13,38 +13,29 @@ describe('extractTextContent — text-block joiner', () => {
   })
 
   test('single text block extracted', () => {
-    expect(extractTextContent([{ type: 'text', text: 'hello' }])).toBe('hello')
+    const block = { type: 'text', text: 'hello' }
+    expect(extractTextContent([block])).toBe('hello')
   })
 
   test('multiple text blocks joined with empty separator (default)', () => {
-    expect(
-      extractTextContent([
-        { type: 'text', text: 'a' },
-        { type: 'text', text: 'b' },
-      ]),
-    ).toBe('ab')
+    const blockA = { type: 'text', text: 'a' }
+    const blockB = { type: 'text', text: 'b' }
+    expect(extractTextContent([blockA, blockB])).toBe('ab')
   })
 
   test('custom separator joins blocks', () => {
-    expect(
-      extractTextContent(
-        [
-          { type: 'text', text: 'a' },
-          { type: 'text', text: 'b' },
-        ],
-        '\n',
-      ),
-    ).toBe('a\nb')
+    const blockA = { type: 'text', text: 'a' }
+    const blockB = { type: 'text', text: 'b' }
+    expect(extractTextContent([blockA, blockB], '\n')).toBe('a\nb')
   })
 
   test('non-text blocks filtered out', () => {
+    const keepBlock = { type: 'text', text: 'keep' }
+    const imageBlock = { type: 'image', source: { type: 'base64', data: 'x' } }
+    const toolUseBlock = { type: 'tool_use', id: 't', name: 'X', input: {} }
+    const alsoKeepBlock = { type: 'text', text: 'also-keep' }
     expect(
-      extractTextContent([
-        { type: 'text', text: 'keep' },
-        { type: 'image', source: { type: 'base64', data: 'x' } },
-        { type: 'tool_use', id: 't', name: 'X', input: {} },
-        { type: 'text', text: 'also-keep' },
-      ]),
+      extractTextContent([keepBlock, imageBlock, toolUseBlock, alsoKeepBlock]),
     ).toBe('keepalso-keep')
   })
 
@@ -60,13 +51,10 @@ describe('extractTextContent — text-block joiner', () => {
   })
 
   test('mix of valid + invalid text blocks — only undefineds drop', () => {
-    expect(
-      extractTextContent([
-        { type: 'text', text: 'a' },
-        { type: 'text' } as { type: 'text'; text: string }, // missing field
-        { type: 'text', text: 'b' },
-      ]),
-    ).toBe('ab')
+    const blockA = { type: 'text', text: 'a' }
+    const missingTextBlock = { type: 'text' } as { type: 'text'; text: string } // falta el campo text
+    const blockB = { type: 'text', text: 'b' }
+    expect(extractTextContent([blockA, missingTextBlock, blockB])).toBe('ab')
   })
 
   test('readonly arrays accepted (structural typing)', () => {

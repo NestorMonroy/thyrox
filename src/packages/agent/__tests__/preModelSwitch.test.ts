@@ -12,7 +12,7 @@ const warm = {
   from_model: 'claude-fable-5-1',
   to_model: 'claude-opus-5',
   requested_model: 'opus',
-  source: 'command',
+  source: 'command' as const,
   context_tokens: 508_503,
   prompt_cache_warm: true,
   cache_ttl: '1h' as const,

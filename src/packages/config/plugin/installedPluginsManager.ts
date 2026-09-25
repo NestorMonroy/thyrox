@@ -140,7 +140,7 @@ export function migrateToSinglePluginFile(): void {
     // Case 2: v2 absent — try reading main; ENOENT = neither exists (case 3)
     let mainContent: string
     try {
-      mainContent = fs.readFileSync(mainFilePath, { encoding: 'utf-8' })
+      mainContent = fs.readFileSync(mainFilePath, 'utf8')
     } catch (e) {
       if (!isENOENT(e)) throw e
       // Case 3: No file exists - nothing to migrate
@@ -148,7 +148,7 @@ export function migrateToSinglePluginFile(): void {
       return
     }
 
-    const mainData = jsonParse(mainContent)
+    const mainData = jsonParse(mainContent) as { version?: unknown }
     const version = typeof mainData?.version === 'number' ? mainData.version : 1
 
     if (version === 1) {
@@ -265,14 +265,14 @@ function readInstalledPluginsFileRaw(): {
 
   let fileContent: string
   try {
-    fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' })
+    fileContent = fs.readFileSync(filePath, 'utf8')
   } catch (e) {
     if (isENOENT(e)) {
       return null
     }
     throw e
   }
-  const data = jsonParse(fileContent)
+  const data = jsonParse(fileContent) as { version?: unknown }
   const version = typeof data?.version === 'number' ? data.version : 1
   return { version, data }
 }
@@ -1014,8 +1014,8 @@ function getPluginVersionFromManifest(
   const manifestPath = join(pluginCachePath, '.claude-plugin', 'plugin.json')
 
   try {
-    const manifestContent = fs.readFileSync(manifestPath, { encoding: 'utf-8' })
-    const manifest = jsonParse(manifestContent)
+    const manifestContent = fs.readFileSync(manifestPath, 'utf8')
+    const manifest = jsonParse(manifestContent) as { version?: string }
     return manifest.version || 'unknown'
   } catch {
     logForDebugging(`Could not read version from manifest for ${pluginId}`)

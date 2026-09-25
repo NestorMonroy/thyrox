@@ -351,6 +351,7 @@ function readJpegDimensions(buf: Buffer): [number, number] {
   while (i + 3 < buf.length) {
     if (buf[i] !== 0xff) break
     const marker = buf[i + 1]
+    if (marker === undefined) break
     const segLen = buf.readUInt16BE(i + 2)
     // SOF markers: C0 (baseline), C1, C2 (progressive) — all have dims at same offsets
     if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) ||

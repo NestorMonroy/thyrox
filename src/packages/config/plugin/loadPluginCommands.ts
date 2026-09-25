@@ -863,7 +863,7 @@ async function loadSkillsFromDirectory(
 export const getPluginSkills = memoize(async (): Promise<Command[]> => {
   // --bare: same gate as getPluginCommands above — honor explicit
   // --plugin-dir, skip marketplace auto-load.
-  if (isBareMode() && getInlinePlugins().length === 0) {
+  if (isBareMode() && (getInlinePlugins()?.length ?? 0) === 0) {
     return []
   }
   // Only load skills from enabled plugins

@@ -92,7 +92,7 @@ describe('buildConversationChain — basic linearization', () => {
     const b = user('u2', 'u1')
     const c = user('u3', 'u2')
     const result = buildConversationChain(toMap(a, b, c), c)
-    expect(result.map(m => m.uuid)).toEqual(['u1', 'u2', 'u3'])
+    expect(result.map(m => m.uuid as string)).toEqual(['u1', 'u2', 'u3'])
   })
 
   test('orphaned leaf (no parent in map) returns [leaf] only', () => {
@@ -135,7 +135,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
 
     const map = toMap(prev, asstA, asstB, trA, trB, next)
     const result = buildConversationChain(map, next)
-    const uuids = result.map(m => m.uuid)
+    const uuids = result.map(m => m.uuid as string)
     // All 5 messages should be in the chain (in some sensible order).
     expect(uuids).toContain('prev')
     expect(uuids).toContain('aA')
@@ -149,7 +149,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
     const a = user('u1')
     const b = user('u2', 'u1')
     const result = buildConversationChain(toMap(a, b), b)
-    expect(result.map(m => m.uuid)).toEqual(['u1', 'u2'])
+    expect(result.map(m => m.uuid as string)).toEqual(['u1', 'u2'])
   })
 
   test('empty messages map returns [leaf] (no recovery possible)', () => {
@@ -163,7 +163,7 @@ describe('buildConversationChain — parallel tool_results recovery', () => {
     const prev = user('prev')
     const asst = assistant('a1', 'prev') // no messageId
     const result = buildConversationChain(toMap(prev, asst), asst)
-    expect(result.map(m => m.uuid)).toEqual(['prev', 'a1'])
+    expect(result.map(m => m.uuid as string)).toEqual(['prev', 'a1'])
   })
 })
 

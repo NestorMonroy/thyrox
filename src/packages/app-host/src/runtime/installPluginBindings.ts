@@ -345,7 +345,7 @@ export function installPluginBindings(): void {
     const { getBuiltinPluginDefinition } = require('@thyrox/config/plugin/builtin')
     return getBuiltinPluginDefinition(id)
   })
-  setExtractDescriptionFromMarkdownFn((text: string, def: string) => {
+  setExtractDescriptionFromMarkdownFn((text: string, def?: string) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { extractDescriptionFromMarkdown } = require('@thyrox/tool-registry/markdownConfigLoader.js')
     return extractDescriptionFromMarkdown(text, def)
@@ -508,7 +508,7 @@ export function installPluginBindings(): void {
   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
   setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
   setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
-  setRegisterCleanupFn(fn => registerCleanup(fn))
+  setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
 
   // --- git
   setGitExeFn(() => gitExe())
@@ -520,13 +520,15 @@ export function installPluginBindings(): void {
   setWhichFn(cmd => which(cmd))
 
   // --- operaciones lentas
-  setJsonStringifyFn(jsonStringify)
+  setJsonStringifyFn((value, replacer, space) =>
+    jsonStringify(value, replacer as Parameters<typeof JSON.stringify>[1], space),
+  )
   setJsonParseFn(jsonParse)
   setCloneFn(v => clone(v))
 
   // --- telemetría
   setBuildPluginTelemetryFieldsFn((...args) =>
-    buildPluginTelemetryFields(...(args as any)),
+    buildPluginTelemetryFields(...args),
   )
   setClassifyPluginCommandErrorFn(error =>
     classifyPluginCommandError(error) as any,

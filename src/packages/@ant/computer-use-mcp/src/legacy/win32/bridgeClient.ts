@@ -22,7 +22,7 @@ interface BridgeResponse {
   error?: string
 }
 
-let bridgeProc: ReturnType<typeof Bun.spawn> | null = null
+let bridgeProc: Bun.Subprocess<'pipe', 'pipe', 'ignore'> | null = null
 let requestId = 0
 const pendingRequests = new Map<
   number,

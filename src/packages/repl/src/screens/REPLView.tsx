@@ -689,7 +689,7 @@ export function REPL({
   useCommandReload(isRemoteSession ? undefined : getProjectRoot(), appPlugins.commands, setLocalCommands);
 
   // Track proactive mode for tools dependency - SleepTool filters by proactive state
-  const proactiveActive = React.useSyncExternalStore(
+  const proactiveActive = React.useSyncExternalStore<boolean>(
     proactiveModule?.subscribeToProactiveChanges ?? PROACTIVE_NO_OP_SUBSCRIBE,
     proactiveModule?.isProactiveActive ?? PROACTIVE_FALSE,
   );
