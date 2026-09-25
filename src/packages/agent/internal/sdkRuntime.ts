@@ -1,8 +1,8 @@
 import type { ModelUsage, SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { FastModeState } from '../contracts.js'
+import type { FastModeState, InMemoryError } from '../contracts.js'
 import { getAgentHostBindings } from '../host.js'
 
-export function getInMemoryErrors(): unknown[] {
+export function getInMemoryErrors(): InMemoryError[] {
   return getAgentHostBindings().getInMemoryErrors?.() ?? []
 }
 

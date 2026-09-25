@@ -11,6 +11,9 @@ import type {
 
 /** `getFastModeState` de `@thyrox/provider/fastMode`: los tres estados del SDK. */
 export type FastModeState = 'off' | 'cooldown' | 'on'
+
+/** Una entrada del registro de errores en memoria. */
+export type InMemoryError = { error: string; timestamp: string }
 import type {
   AgentHookResult,
   AgentMessage,
@@ -59,7 +62,8 @@ export type AgentHostBindings = {
   logEvent?: (event: string, metadata?: Record<string, number | boolean | string>) => void
   logError?: (err: unknown) => void
   logAntError?: (message: string, err: unknown) => void
-  getInMemoryErrors?: () => unknown[]
+  /** La forma de `local-observability/src/logging/error-log.ts:67`. */
+  getInMemoryErrors?: () => InMemoryError[]
   categorizeRetryableAPIError?: (error: unknown) => SDKAssistantMessageError
   headlessProfilerCheckpoint?: (name: string) => void
   queryCheckpoint?: (name: string) => void
