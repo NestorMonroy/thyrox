@@ -124,6 +124,60 @@ def close_pattern(run: Path, name: str, reason: str) -> dict:
     return patterns[name]
 
 
+#: Umbrales del criterio de amplitud: por debajo, «acepta toda la población de
+#: su código» también lo cumple una señal precisa, y el patrón queda abierto.
+BROAD_MIN_MATCHES = 5
+BROAD_MIN_FILES = 3
+
+
+def undiscriminating(run: Path, log_lines: list[str]) -> dict[str, dict[str, int]]:
+    """Los patrones abiertos cuya señal no discrimina causa dentro de su código.
+
+    Es el control del sub-patrón D aplicado a la señal: discrimina si RECHAZA
+    al menos un diagnóstico de su mismo código en el log. Una señal que acepta
+    toda la población de sus códigos —con al menos ``BROAD_MIN_MATCHES``
+    instancias en ``BROAD_MIN_FILES`` archivos— es el código más el texto que
+    el compilador fija para él, no una causa, y barrerla aplicaría el arreglo
+    donde la causa es otra. El alcance (``include``) del patrón acota la
+    población, igual que en ``tsc_reflect.pending_outside``.
+
+    Ciega a: una señal amplia cuyo código sólo tiene hoy instancias de su
+    propia causa (no hay nada que rechazar), y a una señal precisa que el log
+    todavía no ha podido desmentir; las dos quedan abiertas.
+    """
+    rows = [row for row in load_patterns(run).values() if row.get("status") != "closed"]
+    diagnostics = [(m.group("file"), m.group("code"), diagnostic_key(m))
+                   for line in log_lines if (m := DIAGNOSTIC.match(line))]
+    broad: dict[str, dict[str, int]] = {}
+    for row in rows:
+        regex = re.compile(row["signal"])
+        scope = re.compile(row.get("include") or "")
+        in_scope = [(file, code, key) for file, code, key in diagnostics if scope.search(file)]
+        matched = [(file, code) for file, code, key in in_scope if regex.search(key)]
+        if len(matched) < BROAD_MIN_MATCHES:
+            continue
+        codes = {code for _, code in matched}
+        population = [file for file, code, _ in in_scope if code in codes]
+        files = {file for file, _ in matched}
+        if len(matched) == len(population) and len(files) >= BROAD_MIN_FILES:
+            broad[row["name"]] = {"matched": len(matched), "population": len(population),
+                                  "files": len(files)}
+    return broad
+
+
+def close_broad(run: Path, log_lines: list[str], step: str) -> tuple[dict[str, dict[str, int]], int]:
+    """Cierra los patrones de ``undiscriminating`` con una razón que cita el
+    paso y las cifras. Devuelve los cerrados y cuántos patrones abiertos se
+    evaluaron."""
+    evaluated = sum(1 for row in load_patterns(run).values() if row.get("status") != "closed")
+    broad = undiscriminating(run, log_lines)
+    for name, counts in broad.items():
+        close_pattern(run, name, f"{step}: la señal acepta {counts['matched']} de "
+                                 f"{counts['population']} diagnósticos de su código en "
+                                 f"{counts['files']} archivos; no discrimina causa")
+    return broad, evaluated
+
+
 def sites(root: Path, pattern: dict) -> list[tuple[str, str]]:
     """(archivo, texto sustituido) de cada archivo seguido donde la regla cambia algo."""
     listed = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True,
@@ -202,6 +256,11 @@ def main(argv: list[str] | None = None) -> int:
     close_p.add_argument("--run", type=Path, required=True)
     close_p.add_argument("--name", required=True)
     close_p.add_argument("--reason", required=True)
+    broad_p = sub.add_parser("close-broad",
+                             help="cierra los patrones cuya señal acepta toda la población de su código")
+    broad_p.add_argument("--run", type=Path, required=True)
+    broad_p.add_argument("--log", type=Path, required=True)
+    broad_p.add_argument("--step", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "add-pattern":
@@ -220,6 +279,11 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "exclude":
             print(json.dumps(exclude_files(args.run, args.name, args.files, args.reason),
                              ensure_ascii=False))
+        elif args.command == "close-broad":
+            closed, evaluated = close_broad(args.run, args.log.read_text().splitlines(), args.step)
+            for name, counts in sorted(closed.items()):
+                print(json.dumps({"name": name, **counts}, ensure_ascii=False))
+            print(f"close-broad: {len(closed)} cerrado(s) de {evaluated} evaluado(s)")
         else:
             print(json.dumps(close_pattern(args.run, args.name, args.reason), ensure_ascii=False))
     except (OSError, ValueError, KeyError, re.error, json.JSONDecodeError,
