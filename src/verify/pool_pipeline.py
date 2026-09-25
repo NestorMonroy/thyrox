@@ -35,6 +35,7 @@ from pathlib import Path
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 from verify import measure_worktree
 
+HERE = Path(__file__).resolve().parent
 SILENCE = re.compile(r"\bas any\b|:\s*any\b|<any>|as unknown as|\bas never\b|@ts-ignore|@ts-expect-error")
 
 
@@ -95,6 +96,10 @@ def log_keys(lines: list[str]) -> list[str]:
 
 def run(args: argparse.Namespace, tsc: list[str]) -> dict:
     main_tree, wt = args.main.resolve(), args.worktree.resolve()
+    # El paso corre con cwd en el worktree: toda ruta relativa al árbol
+    # principal se rompería ahí (el primer lote real murió así).
+    args.bench, args.items, args.ledger = args.bench.resolve(), args.items.resolve(), args.ledger.resolve()
+    args.outputs = [d.resolve() for d in args.outputs]
     measure_worktree.prepare(main_tree, wt)
     items = args.items.read_text().splitlines()
     grouped = items_by_file(items)
@@ -131,11 +136,11 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                         out.write(json.dumps(candidate, ensure_ascii=False) + "\n")
             taken.update(ready)
             step = subprocess.run(
-                [sys.executable, str(main_tree / "src/verify/tsc_zero_step.py"), "--root", str(wt),
+                [sys.executable, str(HERE / "tsc_zero_step.py"), "--root", str(wt),
                  "--candidates", str(bench / "candidates.jsonl"), "--ledger", str(args.ledger.resolve()),
                  "--bench", str(bench), "--before-log", str(before_log), "--seed", str(args.seed + batch_no),
                  "--accept-partial", "--", *tsc],
-                cwd=wt, capture_output=True, text=True, env={**os.environ, "PYTHONPATH": str(main_tree / "src")})
+                cwd=wt, capture_output=True, text=True, env={**os.environ, "PYTHONPATH": str(HERE.parent)})
             (bench / "report.json").write_text(step.stdout)
             try:
                 report = json.loads(step.stdout)
