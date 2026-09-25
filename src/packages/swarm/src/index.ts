@@ -233,6 +233,7 @@ export {
   keepWorktree,
   killTmuxSession,
   removeAgentWorktree,
+  restoreWorktreeSession,
   validateWorktreeSlug,
   worktreeBranchName,
 } from './worktree/index.js'

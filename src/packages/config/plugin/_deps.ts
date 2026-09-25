@@ -1300,7 +1300,7 @@ export { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { HookEvent } from '../settings/types.js'
-export type { LspServerConfig } from './types.js'
+export type { LspServerConfig, ScopedLspServerConfig } from './types.js'
 export type { McpServerConfig } from '../mcpConfigSchema.js'
 export type { OutputStyleConfig } from '../outputStyles.js'
 

@@ -2,9 +2,36 @@
 // definitions live in src/services/lsp, src/services/mcp, src/skills (all
 // Wave-5 integrations / higher layers). Plugin types need only a thin
 // shape here; strictness regains when those subsystems are packaged.
-export type LspServerConfig = unknown
+// La forma sale del esquema zod del `.lsp.json` (`LspServerConfigSchema`);
+// antes vivía en `@thyrox/ide`, que depende de este paquete y no al revés.
+export type LspServerConfig = {
+  command: string
+  args?: string[]
+  extensionToLanguage: Record<string, string>
+  transport?: 'stdio' | 'socket'
+  env?: Record<string, string>
+  initializationOptions?: unknown
+  settings?: unknown
+  workspaceFolder?: string
+  startupTimeout?: number
+  shutdownTimeout?: number
+  restartOnCrash?: boolean
+  maxRestarts?: number
+  diagnostics?: boolean
+}
+
+/** Una configuración de servidor LSP junto con el origen que la declaró. */
+/**
+ * `brn` de 2.1.281 le añade `scope: "dynamic"`, el plugin de origen y
+ * su `pluginSource` a cada servidor declarado por un plugin.
+ */
+export type ScopedLspServerConfig = LspServerConfig & {
+  scope?: ConfigScope
+  source?: string
+  pluginSource?: string
+}
 // Los tipos que ya existen en este paquete, no marcadores del decompilado.
-import type { McpServerConfig } from '../mcpConfigSchema.js'
+import type { ConfigScope, McpServerConfig } from '../mcpConfigSchema.js'
 import type { BundledSkillDefinition } from './_deps.js'
 export type { BundledSkillDefinition, McpServerConfig }
 import type {
