@@ -1,0 +1,10 @@
+Record loop step 098 as stalled on a stale baseline
+
+Step 098 reran eleven step-097 partials under --accept-partial plus a
+gate-4 sweep and blamed all of them over 22 tsc passes. The cause was
+not in any proposal: provider.ts had been edited outside a step, left
+an unused import, and that TS6133 appeared as new in every pass.
+
+The verifier now refuses a stale baseline (547a940f) and the same
+candidates were measured again in step 099. Each proposal carries its
+reflection; the ledger rows stay as history.
