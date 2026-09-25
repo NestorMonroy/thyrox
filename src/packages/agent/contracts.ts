@@ -1,6 +1,8 @@
 import type { Message } from './messageShapes.js'
 import type { SetAppState } from './messageQueueManager.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
 import type {
   ModelUsage,
   SDKAssistantMessageError,
@@ -208,10 +210,10 @@ export type AgentHostBindings = {
   buildSystemInitMessage?: (params: unknown) => SDKMessage
   sdkCompatToolName?: (toolName: string) => string
   handleOrphanedPermission?: (
-    orphanedPermission: unknown,
+    orphanedPermission: OrphanedPermission,
     tools: Tools,
     messages: AgentMessage[],
-    context: unknown,
+    context: ProcessUserInputContext,
   ) => AsyncGenerator<SDKMessage>
   isResultSuccessful?: (
     result: AgentMessage | undefined,

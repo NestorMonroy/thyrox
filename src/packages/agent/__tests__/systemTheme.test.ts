@@ -144,3 +144,27 @@ describe('resolveThemeSetting — caching', () => {
     expect(fn('auto')).toBe('dark') // still cached as dark
   })
 })
+
+describe('resolveThemeName — narrowing to ThemeName', () => {
+  async function freshResolveThemeName() {
+    const mod = await import('../internal/systemTheme.js?bust=' + Math.random())
+    return mod.resolveThemeName as (s: string) => string
+  }
+
+  test('a catalogued name passes through', async () => {
+    const fn = await freshResolveThemeName()
+    expect(fn('light-ansi')).toBe('light-ansi')
+  })
+
+  test('a name outside the catalogue falls to "dark", as ink getTheme does', async () => {
+    // Control de anulación: sin la guarda `isThemeName`, 'high-contrast'
+    // saldría intacto y sólo esta aserción caería.
+    const fn = await freshResolveThemeName()
+    expect(fn('high-contrast')).toBe('dark')
+  })
+
+  test('"auto" still resolves by detection (no COLORFGBG → "dark")', async () => {
+    const fn = await freshResolveThemeName()
+    expect(fn('auto')).toBe('dark')
+  })
+})

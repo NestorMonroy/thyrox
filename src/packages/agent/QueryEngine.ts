@@ -52,11 +52,10 @@ import {
   fileHistoryEnabled,
   fileHistoryMakeSnapshot,
 } from './fileHistory.js'
-import type { AgentToolUseContext as ToolUseContext } from './internalTypes.js'
-import {
-  cloneFileStateCache,
-  type FileStateCache,
-} from './internal/fileStateCache.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { FileStateCache } from '@thyrox/tool-registry/fileStateCache'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
+import { cloneFileStateCache } from './internal/fileStateCache.js'
 import {
   createCompactBoundaryMessage,
   flushSessionStorage,
@@ -91,7 +90,7 @@ import {
   getTotalCost,
 } from './internal/sdkRuntime.js'
 import { countToolCalls, SYNTHETIC_MESSAGES } from './internal/messageHelpers.js'
-import { resolveThemeSetting } from './internal/systemTheme.js'
+import { resolveThemeName } from './internal/systemTheme.js'
 import { asSystemPrompt, isBareMode, isEnvTruthy } from './internalUtils.js'
 import {
   localCommandOutputToSDKAssistantMessage,
@@ -102,39 +101,12 @@ import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
 import type { AttributionState } from './commitAttribution.js'
 
-type AgentDefinition = { [key: string]: unknown }
 /** El mensaje de frontera con su `compactMetadata` estrechado; lo fija el bridge. */
 type SystemCompactBoundaryMessage = ReturnType<typeof createCompactBoundaryMessage>
-type OrphanedPermission = { [key: string]: unknown }
-type ProcessUserInputContext = {
-  messages: Message[]
-  setMessages: (fn: (prev: Message[]) => Message[]) => void
-  onChangeAPIKey: () => void
-  handleElicitation?: ToolUseContext['handleElicitation']
-  options: Record<string, unknown>
-  renderedSystemPrompt: unknown
-  getAppState: () => AppState
-  setAppState: (f: (prev: AppState) => AppState) => void
-  abortController: AbortController
-  readFileState: FileStateCache
-  nestedMemoryAttachmentTriggers: Set<string>
-  loadedNestedMemoryPaths: Set<string>
-  dynamicSkillDirTriggers: Set<string>
-  discoveredSkillNames: Set<string>
-  setInProgressToolUseIDs: (ids: string[]) => void
-  setResponseLength: (len: number) => void
-  updateFileHistoryState: (
-    updater: (prev: FileHistoryState) => FileHistoryState,
-  ) => void
-  updateAttributionState: (
-    updater: (prev: AttributionState) => AttributionState,
-  ) => void
-  setSDKStatus?: (status: SDKStatus) => void
-  [key: string]: unknown
-}
-
 const EMPTY_USAGE: NonNullableUsage = {
   input_tokens: 0,
   cache_creation_input_tokens: 0,
@@ -400,7 +372,7 @@ export class QueryEngine {
         customSystemPrompt,
         appendSystemPrompt,
         agentDefinitions: { activeAgents: agents, allAgents: [] },
-        theme: resolveThemeSetting(getGlobalConfig().theme),
+        theme: resolveThemeName(getGlobalConfig().theme),
         maxBudgetUsd,
         taskBudget,
       },
@@ -550,7 +522,7 @@ export class QueryEngine {
         isNonInteractiveSession: true,
         customSystemPrompt,
         appendSystemPrompt,
-        theme: resolveThemeSetting(getGlobalConfig().theme),
+        theme: resolveThemeName(getGlobalConfig().theme),
         agentDefinitions: { activeAgents: agents, allAgents: [] },
         maxBudgetUsd,
         taskBudget,
