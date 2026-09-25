@@ -33,7 +33,7 @@ import time
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
-from verify import measure_worktree, prefix_speculation
+from verify import measure_worktree, prefix_speculation, tsc_reflect, tsc_sweep
 from verify.file_edits import apply_files
 from verify.tsc_zero_step import ABSENT_BASE
 from verify.tsc_zero_step import _append as append_ledger
@@ -178,6 +178,54 @@ def _speculative_batch(worktrees: list[Path], rows: list[dict], tsc: list[str], 
                    "worktrees": len(worktrees)}
 
 
+class GateBlocked(RuntimeError):
+    """Un gate del plan v2.2.0 no se cumplió: el ciclo se detiene con este
+    error explícito en vez de seguir por el camino reactivo (H-THYROX-186)."""
+
+
+# Los campos con que la plantilla de la ruta 3 pide cada patrón.
+PATTERN_FIELDS = ("patron", "senal_del_verificador", "fix_generico")
+
+
+def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str]) -> list[str]:
+    """Gate 3b, la mitad que escribe: el patrón que cada archivo conservado
+    trajo en su salida va a la memoria (`patterns.jsonl` de la corrida) con
+    los cuatro campos, y su `applied` nombra el archivo. Devuelve los motivos
+    de los patrones que no se pudieron guardar."""
+    problems = []
+    for file in kept:
+        for output in outputs_for_file.get(file, []):
+            block = re.search(r"\{.*\}", output.get("result", "") or "", re.S)
+            try:
+                patterns = json.loads(block.group(0)).get("patterns", []) if block else []
+            except ValueError:
+                patterns = []
+            for pattern in patterns or []:
+                if not all(str(pattern.get(field, "")).strip() for field in PATTERN_FIELDS):
+                    problems.append(f"{file}: patrón sin los campos {', '.join(PATTERN_FIELDS)}")
+                    continue
+                try:
+                    tsc_sweep.add_pattern(run, {"name": pattern["patron"],
+                                                "signal": pattern["senal_del_verificador"],
+                                                "fix": pattern["fix_generico"]})
+                except (ValueError, re.error) as error:
+                    problems.append(f"{file}: {pattern['patron']}: {error}")
+                    continue
+                tsc_sweep.mark_applied(run, pattern["patron"], [file])
+    return problems
+
+
+def memory_gate(run: Path, batch: Path, problems: list[str]) -> None:
+    """Gate 3b, la mitad que bloquea: todo archivo que el lote conservó tiene
+    que quedar cubierto por un patrón cuya señal casa con sus objetivos
+    (`tsc_reflect.uncovered_by_memory`)."""
+    missing = tsc_reflect.uncovered_by_memory(run, batch)
+    if missing:
+        detail = "; ".join(problems) if problems else "ninguna salida trajo un patrón válido"
+        raise GateBlocked(f"GATE 3b BLOQUEADO: {batch.name} conservó {', '.join(missing)} sin una entrada "
+                          f"de memoria que lo cubra ({detail}). No se exporta ni se continúa.")
+
+
 def next_base(bench: Path, previous: Path | None) -> Path | None:
     """La base del lote siguiente: el `final.log` de éste si lo escribió. Un
     lote sin candidatas aplicadas no mide ni escribe (paso 137 murió al leerlo
@@ -257,7 +305,13 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                 report = json.loads(step.stdout)
             except ValueError:
                 raise RuntimeError(f"el lote {batch_no} no midió: {step.stderr.strip()[-300:]}")
-            kept.update(report.get("files_kept", []))
+            kept_now = report.get("files_kept", [])
+            if kept_now and getattr(args, "unit", "file") == "file":
+                problems = record_patterns(args.ledger.parent, {
+                    file: [data for n in grouped.get(file, []) for data in outputs.get(n, [])]
+                    for file in kept_now}, kept_now)
+                memory_gate(args.ledger.parent, bench, problems)
+            kept.update(kept_now)
             before_log = next_base(bench, before_log)
             summary.append({"batch": batch_no, "files": len(ready), "total_before": report["total_before"],
                             "total_final": report["total_final"], "tsc_runs": report["tsc_runs"],
@@ -295,7 +349,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--net", action="store_true",
                         help="política neta del paso: conserva lo que baja el total aunque destape contratos")
     args = parser.parse_args(argv[:split])
-    result = run(args, argv[split + 1:])
+    try:
+        result = run(args, argv[split + 1:])
+    except GateBlocked as error:
+        # Exit 3: un gate del plan, distinto de un fallo del proceso (1).
+        print(error, file=sys.stderr)
+        return 3
     print(json.dumps({"batches": len(result["batches"]), "files_kept": len(result["files_kept"])}))
     return 0
 

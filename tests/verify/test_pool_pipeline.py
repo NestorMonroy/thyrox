@@ -88,7 +88,9 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
-    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
+    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}],
+        "patterns": [{"patron": "bad-literal", "senal_del_verificador": "TS9001: bad \\d+",
+                      "fix_generico": "sustituir BADn por n", "edits": [0]}]})}))
     cwd = os.getcwd()
     os.chdir(main)
     try:
@@ -96,12 +98,51 @@ with tempfile.TemporaryDirectory() as directory:
             main=Path("."), worktree=base / "wt", items=Path("items.txt"), outputs=[Path("out")],
             bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1),
             [sys.executable, "fake_tsc.py"])
+    except pp.GateBlocked as error:
+        result = {"files_kept": [], "blocked": str(error)}
     finally:
         os.chdir(cwd)
     assert_equal("ciclo completo: el lote mide en el worktree y conserva el arreglo", ["src/a.ts"],
                  result["files_kept"])
     assert_equal("y lo conservado vuelve al árbol principal", "const a = 1\n", (main / "src/a.ts").read_text())
     assert_equal("sin tocar lo que ningún lote tomó", "const b = BAD2\n", (main / "src/b.ts").read_text())
+    memory_file = main / "bench/patterns.jsonl"
+    memory = [json.loads(l) for l in memory_file.read_text().splitlines()] if memory_file.exists() else []
+    assert_equal("gate 3b: lo conservado deja su patrón en la memoria, con los cuatro campos",
+                 [("bad-literal", "TS9001: bad \\d+", "sustituir BADn por n", ["src/a.ts"])],
+                 [(m["name"], m["signal"], m["fix"], m["applied"]) for m in memory])
+
+# Gate 3b (plan v2.2.0; H-THYROX-186): un lote que conserva un arreglo SIN
+# patrón válido detiene el pipeline con un error explícito y no exporta.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    main = base / "main"
+    (main / "src").mkdir(parents=True)
+    (main / "src/a.ts").write_text("const a = BAD1\n")
+    (main / "fake_tsc.py").write_text(FAKE_TSC)
+    (main / ".gitignore").write_text("node_modules\nbench\nout\n")
+    for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "base"]):
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=main, check=True)
+    (main / "node_modules").mkdir()
+    (main / "out").mkdir()
+    (main / "items.txt").write_text("src/a.ts d/1.txt\n")
+    (main / "out/1.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": "BAD1", "new": "1"}]})}))
+    cwd = os.getcwd()
+    os.chdir(main)
+    try:
+        pp.run(argparse.Namespace(
+            main=Path("."), worktree=base / "wt", items=Path("items.txt"), outputs=[Path("out")],
+            bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1, batch=1, poll=0.1),
+            [sys.executable, "fake_tsc.py"])
+        blocked = ""
+    except pp.GateBlocked as error:
+        blocked = str(error)
+    finally:
+        os.chdir(cwd)
+    assert_equal("sin patrón, el gate 3b detiene el pipeline con un error explícito", True,
+                 blocked.startswith("GATE 3b BLOQUEADO") and "src/a.ts" in blocked)
+    assert_equal("y no exporta lo conservado al árbol principal", "const a = BAD1\n",
+                 (main / "src/a.ts").read_text())
 
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
