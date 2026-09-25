@@ -1,0 +1,23 @@
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(422,45): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:412-432 ---
+    412        )}
+    413        {process.env.USER_TYPE === 'ant' && !process.env.DEMO_VERSION && (
+    414          <Box paddingLeft={2} flexDirection="column">
+    415            <Text color="warning">[ANT-ONLY] Logs:</Text>
+    416            <Text dimColor>
+    417              API calls: {getDisplayPath(getDumpPromptsPath())}
+    418            </Text>
+    419            <Text dimColor>Debug logs: {getDisplayPath(getDebugLogPath())}</Text>
+    420            {isDetailedProfilingEnabled() && (
+    421              <Text dimColor>
+    422>               Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+    423              </Text>
+    424            )}
+    425          </Box>
+    426        )}
+    427        {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    428        {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    429      </>
+    430    )
+    431  }
+    432  

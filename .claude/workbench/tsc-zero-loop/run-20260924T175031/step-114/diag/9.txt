@@ -1,0 +1,49 @@
+src/packages/agent/messages/mappers.ts(134,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+  --- código src/packages/agent/messages/mappers.ts:124-144 ---
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127              error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134>             message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138              timestamp: message.timestamp,
+    139              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    140              // Structured tool output (not the string content sent to the
+    141              // model — the full Output object). Rides the protobuf catchall
+    142              // so web viewers can read things like BriefTool's file_uuid
+    143              // without it polluting model context.
+    144              ...(message.toolUseResult !== undefined
+  Types of property 'content' are incompatible.
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+src/packages/agent/messages/mappers.ts(138,13): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/messages/mappers.ts:128-148 ---
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134              message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138>             timestamp: message.timestamp,
+    139              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    140              // Structured tool output (not the string content sent to the
+    141              // model — the full Output object). Rides the protobuf catchall
+    142              // so web viewers can read things like BriefTool's file_uuid
+    143              // without it polluting model context.
+    144              ...(message.toolUseResult !== undefined
+    145                ? { tool_use_result: message.toolUseResult }
+    146                : {}),
+    147            },
+    148          ]

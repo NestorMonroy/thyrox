@@ -1,0 +1,1015 @@
+{
+ "log": ".claude/workbench/tsc-zero-loop/run-20260924T175031/step-113/attach-after.log",
+ "counts": {
+  "total": 511,
+  "deterministic": 46,
+  "shared": 102,
+  "local": 363
+ },
+ "queue": [
+  {
+   "type": "AppState",
+   "errors": 12,
+   "definitions": [
+    "app-host/src/runtime/appStateCompatShim.ts",
+    "app-host/src/state/AppStateCompat.ts",
+    "cli/src/appStateShim.tsx",
+    "mcp-runtime/src/appStateHooks.ts",
+    "permission/src/appStateHooks.ts",
+    "swarm/src/adapters/appRuntime.ts"
+   ],
+   "consumers": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts",
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/task/framework.ts",
+    "src/packages/app-host/src/runtime/runtimeHandles.ts",
+    "src/packages/cli/src/headless/sdk/session/run.ts",
+    "src/packages/repl/src/commands/plan/plan.tsx",
+    "src/packages/repl/src/components/App.tsx",
+    "src/packages/repl/src/hooks/useReplBridge.tsx",
+    "src/packages/repl/src/screens/REPLView.tsx",
+    "src/packages/tool-registry/src/tools/BashTool/UI.tsx"
+   ]
+  },
+  {
+   "type": "Command",
+   "errors": 8,
+   "definitions": [
+    "agent/command.ts",
+    "command-runtime/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/app-host/src/runtime/commandRegistryRuntime.ts",
+    "src/packages/app-host/src/runtime/runtimeHandles.ts",
+    "src/packages/cli/src/entry/commander.ts"
+   ]
+  },
+  {
+   "type": "Message",
+   "errors": 8,
+   "definitions": [
+    "agent/loop/types.ts",
+    "agent/messageShapes.ts",
+    "agent/runtime/mailbox.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/__tests__/compactionSnipProjection.test.ts",
+    "src/packages/repl/src/conversationRecovery.tsx",
+    "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts"
+   ]
+  },
+  {
+   "type": "CanUseToolFn",
+   "errors": 6,
+   "definitions": [
+    "repl/src/hooks/useCanUseTool.tsx",
+    "swarm/src/adapters/appRuntime.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/forkedAgent.ts",
+    "src/packages/agent/hooks/execAgentHook.ts",
+    "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+    "src/packages/repl/src/screens/REPLView.tsx",
+    "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts"
+   ]
+  },
+  {
+   "type": "NonNullableUsage",
+   "errors": 6,
+   "definitions": [
+    "headless-sdk/src/sdkUtilityTypes.ts",
+    "provider/src/internal/legacyRuntimeSupport.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/forkedAgent.ts"
+   ]
+  },
+  {
+   "type": "TreeNode",
+   "errors": 6,
+   "definitions": [
+    "repl/src/components/ui/TreeSelect.tsx",
+    "repl/src/uiHelpers/treeify.ts"
+   ],
+   "consumers": [
+    "tests/unit/utils/treeify.test.ts"
+   ]
+  },
+  {
+   "type": "Tool",
+   "errors": 4,
+   "definitions": [
+    "agent/loop/types.ts",
+    "provider/src/internal/legacyRuntimeSupport.ts",
+    "swarm/src/adapters/appRuntime.ts",
+    "tool-registry/src/Tool.ts"
+   ],
+   "consumers": [
+    "src/packages/cli/src/headless/sdk/control/permission-helpers.ts",
+    "src/packages/cli/src/structuredIO.ts"
+   ]
+  },
+  {
+   "type": "CompactionResult",
+   "errors": 3,
+   "definitions": [
+    "agent/compaction/compact.ts",
+    "agent/compaction/compactUtils.ts",
+    "agent/compaction/types.ts",
+    "agent/types/compaction.ts",
+    "agent/types/deps.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/__tests__/productionWiring.test.ts",
+    "src/packages/agent/query.ts"
+   ]
+  },
+  {
+   "type": "DisplayGeometry",
+   "errors": 3,
+   "definitions": [
+    "@ant/computer-use-mcp/src/executor.ts",
+    "@ant/computer-use-swift/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/@ant/computer-use-mcp/src/toolCalls.ts"
+   ]
+  },
+  {
+   "type": "LogOption",
+   "errors": 3,
+   "definitions": [
+    "agent/logsTypes.ts",
+    "local-observability/src/internal/pendingCrossPackageDeps.ts",
+    "storage/src/plans.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/conversationRecovery.tsx",
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "type": "PermissionUpdate",
+   "errors": 3,
+   "definitions": [
+    "headless-sdk/src/coreTypes.generated.ts",
+    "permission/src/permissionTypes.ts",
+    "swarm/src/adapters/appRuntime.ts"
+   ],
+   "consumers": [
+    "src/packages/app-host/src/runtime/runtimeHandles.ts",
+    "src/packages/repl/src/hooks/useDirectConnect.ts",
+    "src/packages/repl/src/hooks/useRemoteSession.ts"
+   ]
+  },
+  {
+   "type": "ResolvePrepareCaptureResult",
+   "errors": 3,
+   "definitions": [
+    "@ant/computer-use-mcp/src/executor.ts",
+    "@ant/computer-use-swift/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/@ant/computer-use-mcp/src/toolCalls.ts"
+   ]
+  },
+  {
+   "type": "SystemMessage",
+   "errors": 3,
+   "definitions": [
+    "agent/messageShapes.ts",
+    "server/src/remote/sdkMessageAdapter.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/compaction/sessionMemoryCompact.ts",
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "type": "Tools",
+   "errors": 3,
+   "definitions": [
+    "provider/src/internal/legacyRuntimeSupport.ts",
+    "tool-registry/src/Tool.ts"
+   ],
+   "consumers": [
+    "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+    "tests/integration/tool-chain.test.ts"
+   ]
+  },
+  {
+   "type": "EffortValue",
+   "errors": 2,
+   "definitions": [
+    "agent/effort.ts",
+    "agent/types.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "type": "FsOperations",
+   "errors": 2,
+   "definitions": [
+    "local-observability/src/internal/pendingCrossPackageDeps.ts",
+    "storage/src/fsOperations.ts"
+   ],
+   "consumers": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts"
+   ]
+  },
+  {
+   "type": "HostTask",
+   "errors": 2,
+   "definitions": [
+    "agent/host.ts",
+    "swarm/src/types/deps.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/internal/stopHooksCore.ts"
+   ]
+  },
+  {
+   "type": "PermissionMode",
+   "errors": 2,
+   "definitions": [
+    "@ant/claude-for-chrome-mcp/src/types.ts",
+    "agent/types.ts",
+    "bridge/src/internal/pendingCrossPackageDeps.ts",
+    "headless-sdk/src/coreTypes.generated.ts",
+    "permission/src/permissionTypes.ts",
+    "swarm/src/adapters/appRuntime.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/processUserInput/processTextPrompt.ts"
+   ]
+  },
+  {
+   "type": "SetAppState",
+   "errors": 2,
+   "definitions": [
+    "agent/messageQueueManager.ts",
+    "swarm/src/adapters/appRuntime.ts",
+    "tool-registry/src/Task.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/hooks/useSwarmInitialization.ts"
+   ]
+  },
+  {
+   "type": "SystemPrompt",
+   "errors": 2,
+   "definitions": [
+    "agent/internalUtils.ts",
+    "agent/types/deps.ts",
+    "provider/src/systemPromptType.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/query.ts"
+   ]
+  },
+  {
+   "type": "ToolResult",
+   "errors": 2,
+   "definitions": [
+    "agent/loop/types.ts",
+    "agent/types/tools.ts",
+    "tool-registry/src/Tool.ts"
+   ],
+   "consumers": [
+    "tests/integration/tool-chain.test.ts"
+   ]
+  },
+  {
+   "type": "APIProvider",
+   "errors": 1,
+   "definitions": [
+    "provider/src/providers.ts",
+    "provider/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/provider/src/model/modelStrings.ts"
+   ]
+  },
+  {
+   "type": "AgentColorName",
+   "errors": 1,
+   "definitions": [
+    "swarm/src/adapters/appRuntime.ts",
+    "swarm/src/core/teammateColors.ts",
+    "tool-registry/src/tools/AgentTool/agentColorManager.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "type": "ChannelEntry",
+   "errors": 1,
+   "definitions": [
+    "app-host/src/bootstrap/state.ts",
+    "mcp-runtime/src/compat.ts"
+   ],
+   "consumers": [
+    "src/packages/cli/src/headless/sdk/control/handlers.ts"
+   ]
+  },
+  {
+   "type": "CommandBase",
+   "errors": 1,
+   "definitions": [
+    "agent/command.ts",
+    "command-runtime/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts"
+   ]
+  },
+  {
+   "type": "ExecResult",
+   "errors": 1,
+   "definitions": [
+    "config/plugin/_deps.ts",
+    "shell/src/terminal/ShellCommand.ts",
+    "shell/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/shell/src/testing/index.ts"
+   ]
+  },
+  {
+   "type": "HookInput",
+   "errors": 1,
+   "definitions": [
+    "agent/types/hooks.ts",
+    "headless-sdk/src/coreTypes.generated.ts"
+   ],
+   "consumers": [
+    "src/packages/cli/src/structuredIO.ts"
+   ]
+  },
+  {
+   "type": "LoadedPlugin",
+   "errors": 1,
+   "definitions": [
+    "config/plugin/builtin.ts",
+    "config/plugin/types.ts"
+   ],
+   "consumers": [
+    "src/packages/config/plugin/pluginLoader.ts"
+   ]
+  },
+  {
+   "type": "MCPServerConnection",
+   "errors": 1,
+   "definitions": [
+    "agent/sessionStores.ts",
+    "mcp-runtime/src/compat.ts",
+    "mcp-runtime/src/contracts.ts",
+    "mcp-runtime/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/QueryEngine.ts"
+   ]
+  },
+  {
+   "type": "PermissionDecision",
+   "errors": 1,
+   "definitions": [
+    "permission/src/permissionTypes.ts",
+    "permission/src/ruleBasedPermissions.ts",
+    "permission/src/testing/index.ts",
+    "swarm/src/adapters/appRuntime.ts"
+   ],
+   "consumers": [
+    "src/packages/tool-registry/src/services/toolHooks.ts"
+   ]
+  },
+  {
+   "type": "Props",
+   "errors": 1,
+   "definitions": [
+    "@ant/ink/src/components/AppContext.ts",
+    "@ant/ink/src/components/Box.tsx",
+    "@ant/ink/src/components/Button.tsx",
+    "@ant/ink/src/components/Link.tsx",
+    "@ant/ink/src/components/Newline.tsx",
+    "@ant/ink/src/components/StdinContext.ts",
+    "@ant/ink/src/components/Text.tsx",
+    "@ant/ink/src/theme/ThemedBox.tsx",
+    "@ant/ink/src/theme/ThemedText.tsx",
+    "repl/src/components/Message.tsx",
+    "repl/src/components/ModelPicker.tsx",
+    "repl/src/components/TextInput.tsx",
+    "repl/src/screens/REPL.tsx",
+    "repl/src/screens/REPLView.tsx"
+   ],
+   "consumers": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "type": "ProviderQueryStreamFn",
+   "errors": 1,
+   "definitions": [
+    "provider/src/internal/providerTypes.ts",
+    "provider/src/types.ts"
+   ],
+   "consumers": [
+    "src/packages/app-host/src/providerHostSetup.ts"
+   ]
+  },
+  {
+   "type": "RequestStartEvent",
+   "errors": 1,
+   "definitions": [
+    "agent/messageShapes.ts",
+    "agent/types/events.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/QueryEngine.ts"
+   ]
+  },
+  {
+   "type": "StreamEvent",
+   "errors": 1,
+   "definitions": [
+    "agent/messageShapes.ts",
+    "agent/types/events.ts",
+    "server/src/remote/sdkMessageAdapter.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/hooks/useRemoteSession.ts"
+   ]
+  },
+  {
+   "type": "ToolPermissionContext",
+   "errors": 1,
+   "definitions": [
+    "permission/src/permissions.ts",
+    "provider/src/internal/legacyRuntimeSupport.ts",
+    "swarm/src/adapters/appUi.ts",
+    "tool-registry/src/Tool.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "type": "ToolUseConfirm",
+   "errors": 1,
+   "definitions": [
+    "permission/src/components/permissionRequestTypes.ts",
+    "swarm/src/adapters/appUi.ts"
+   ],
+   "consumers": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "type": "TranscriptMessage",
+   "errors": 1,
+   "definitions": [
+    "agent/logsTypes.ts",
+    "local-observability/src/internal/pendingCrossPackageDeps.ts"
+   ],
+   "consumers": [
+    "src/packages/storage/src/sessionStorage.ts"
+   ]
+  },
+  {
+   "type": "Usage",
+   "errors": 1,
+   "definitions": [
+    "agent/loop/types.ts",
+    "agent/models.ts",
+    "agent/types/messages.ts"
+   ],
+   "consumers": [
+    "src/packages/agent/QueryEngine.ts"
+   ]
+  }
+ ],
+ "routes": {
+  "deterministic": [
+   "src/packages/agent/compaction/autoCompact.ts(23): TS2305: Module '\"./compact.js\"' has no exported member 'compactConversation'.",
+   "src/packages/agent/compaction/sessionMemoryCompact.ts(39): TS2305: Module '\"./compact.js\"' has no exported member 'createPlanAttachmentIfNeeded'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(161): TS2305: Module '\"@thyrox/command-runtime/skills/loadSkillsDir.js\"' has no exported member 'getSkillDirCommands'.",
+   "src/packages/cli/src/entry/run-program.ts(35): TS2305: Module '\"./mode-dispatch.js\"' has no exported member 'runModeDispatch'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(7): TS2724: '\"@thyrox/config/settings\"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(792): TS7006: Parameter 'serverName' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(792): TS7006: Parameter 'message' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557): TS7006: Parameter 'serverName' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557): TS7006: Parameter 'params' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557): TS7006: Parameter 'elicitSignal' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2713): TS7006: Parameter 'url' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2717): TS7006: Parameter 'submit' implicitly has an 'any' type.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2813): TS7006: Parameter 'error' implicitly has an 'any' type.",
+   "src/packages/cli/src/structuredIO.ts(25): TS2724: '\"@thyrox/agent/types/hooks.js\"' has no exported member named 'hookJSONOutputSchema'. Did you mean 'HookJSONOutput'?",
+   "src/packages/command-runtime/src/commands/compact/compact.ts(10): TS2305: Module '\"@thyrox/agent/compaction/compact.js\"' has no exported member 'compactConversation'.",
+   "src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(2): TS2305: Module '\"./loadSkillsDir.js\"' has no exported member 'createSkillCommand'.",
+   "src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(3): TS2305: Module '\"./loadSkillsDir.js\"' has no exported member 'parseSkillFrontmatterFields'.",
+   "src/packages/config/manager.ts(15): TS2724: '\"./settings/settings.js\"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?",
+   "src/packages/config/plugin/lspPluginIntegration.ts(6): TS2724: '\"./_deps.js\"' has no exported member named 'ScopedLspServerConfig'. Did you mean 'ScopedMcpServerConfig'?",
+   "src/packages/provider/src/proxy.ts(264): TS7006: Parameter 'hostname' implicitly has an 'any' type.",
+   "src/packages/provider/src/proxy.ts(264): TS7006: Parameter 'options' implicitly has an 'any' type.",
+   "src/packages/provider/src/proxy.ts(264): TS7006: Parameter 'callback' implicitly has an 'any' type.",
+   "src/packages/provider/src/vcr.ts(25): TS2724: '\"@thyrox/agent/messages.js\"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?",
+   "src/packages/repl/src/commands/color/color.ts(53): TS7006: Parameter 'prev' implicitly has an 'any' type.",
+   "src/packages/repl/src/commands/color/color.ts(82): TS7006: Parameter 'prev' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/VirtualMessageList.tsx(178): TS7006: Parameter 'b' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/agents/generateAgent.ts(9): TS2724: '\"@thyrox/agent/messages.js\"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(6): TS2305: Module '\"@thyrox/agent/attachments.js\"' has no exported member 'Attachment'.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(63): TS7006: Parameter 'msg' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(83): TS7006: Parameter 'msg' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(83): TS7006: Parameter 'idx' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(151): TS7006: Parameter 's' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(255): TS7006: Parameter 'm' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(325): TS7006: Parameter 'id' implicitly has an 'any' type.",
+   "src/packages/repl/src/components/messages/AttachmentMessage.tsx(341): TS7006: Parameter 's' implicitly has an 'any' type.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(51): TS2724: '\"@thyrox/agent/attachments.js\"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(34): TS2305: Module '\"@thyrox/agent/attachments.js\"' has no exported member 'AgentMentionAttachment'.",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(36): TS2724: '\"@thyrox/agent/attachments.js\"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?",
+   "src/packages/repl/src/screens/REPLView.tsx(300): TS2724: '\"@thyrox/agent/promptCategory.js\"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?",
+   "src/packages/repl/src/screens/REPLView.tsx(348): TS2305: Module '\"@thyrox/agent/compaction/compact.js\"' has no exported member 'partialCompactConversation'.",
+   "src/packages/repl/src/screens/REPLView.tsx(506): TS2305: Module '\"@thyrox/agent/attachments.js\"' has no exported member 'getQueuedCommandAttachments'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2610): TS7006: Parameter 'm' implicitly has an 'any' type.",
+   "src/packages/storage/src/sessionRestore.ts(22): TS2724: '\"@thyrox/swarm\"' has no exported member named 'restoreWorktreeSession'. Did you mean 'createWorktreeForSession'?",
+   "src/packages/swarm/src/install/installSwarmHost.ts(19): TS2305: Module '\"@thyrox/agent/compaction/compact.js\"' has no exported member 'compactConversation'.",
+   "tests/agents/save_result.test.ts(17): TS7016: Could not find a declaration file for module '../../src/agents/save_result.mjs'. '/home/user/thyrox/src/agents/save_result.mjs' implicitly has an 'any' type.",
+   "tests/unit/utils/messages.test.ts(25): TS2724: '\"@thyrox/agent/messages.js\"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?"
+  ],
+  "shared": [
+   "src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts(60): TS2345: Argument of type '(prev: unknown) => unknown' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064): TS2339: Property 'label' does not exist on type 'DisplayGeometry'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064): TS2339: Property 'isPrimary' does not exist on type 'DisplayGeometry'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1969): TS2339: Property 'label' does not exist on type 'DisplayGeometry'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2081): TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2119): TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.",
+   "src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2120): TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.",
+   "src/packages/agent/QueryEngine.ts(358): TS2345: Argument of type 'MCPServerConnection[]' is not assignable to parameter of type 'readonly { name: string; }[]'.",
+   "src/packages/agent/QueryEngine.ts(385): TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: unknown) => unknown) => void'.",
+   "src/packages/agent/QueryEngine.ts(748): TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.",
+   "src/packages/agent/QueryEngine.ts(757): TS2739: Type 'NonNullableUsage' is missing the following properties from type 'Usage': input_tokens, output_tokens",
+   "src/packages/agent/QueryEngine.ts(864): TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.",
+   "src/packages/agent/QueryEngine.ts(984): TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.",
+   "src/packages/agent/QueryEngine.ts(985): TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.",
+   "src/packages/agent/QueryEngine.ts(990): TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.",
+   "src/packages/agent/QueryEngine.ts(991): TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.",
+   "src/packages/agent/QueryEngine.ts(1005): TS2322: Type 'unknown' is not assignable to type 'NonNullableUsage'.",
+   "src/packages/agent/__tests__/compactionSnipProjection.test.ts(5): TS2322: Type '{ type: \"system\"; subtype: \"snip_boundary\"; }' is not assignable to type 'Message'.",
+   "src/packages/agent/__tests__/productionWiring.test.ts(93): TS2322: Type 'Mock<(messages: unknown[]) => Promise<{ compacted: boolean; messages: unknown[]; }>>' is not assignable to type '(messages: CoreMessage[], tokenCount: number) => Promise<CompactionResult>'.",
+   "src/packages/agent/compaction/sessionMemoryCompact.ts(489): TS2322: Type 'CompactBoundaryMessage' is not assignable to type 'SystemMessage'.",
+   "src/packages/agent/forkedAgent.ts(550): TS2322: Type 'import(\"/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool\").CanUseToolFn' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/agent/forkedAgent.ts(567): TS2322: Type 'unknown' is not assignable to type 'NonNullableUsage'.",
+   "src/packages/agent/hooks/execAgentHook.ts(172): TS2322: Type '(tool: Tool, input: Record<string, unknown>, context: ToolUseContext, assistantMessage: AssistantMessage, toolUseID: string) => Promise<...>' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/agent/internal/stopHooksCore.ts(285): TS2322: Type 'AgentTask[]' is not assignable to type 'HostTask[]'.",
+   "src/packages/agent/internal/stopHooksCore.ts(678): TS2322: Type 'AgentTask[]' is not assignable to type 'HostTask[]'.",
+   "src/packages/agent/query.ts(511): TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.",
+   "src/packages/agent/query.ts(1125): TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.",
+   "src/packages/agent/query.ts(1250): TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.",
+   "src/packages/agent/task/framework.ts(53): TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+   "src/packages/agent/task/framework.ts(79): TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+   "src/packages/app-host/src/providerHostSetup.ts(62): TS2322: Type '(args: ProviderQueryArgs) => AsyncGenerator<unknown, void, any>' is not assignable to type 'ProviderQueryStreamFn'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(521): TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(524): TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(631): TS2322: Type 'Set<{ type: \"local\"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import(\"/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost\")>; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(662): TS2322: Type 'Set<{ type: \"local\"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import(\"/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear\")>; } | { ...; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(786): TS2322: Type '({ type: \"prompt\"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: string; getPromptForCommand(args: string, context: unknown): Promise<...>; } | ... 4 more ... | null)[]' is not assignable to type 'readonly Command[]'.",
+   "src/packages/app-host/src/runtime/installPluginBindings.ts(479): TS2551: Property 'writeFileSync' does not exist on type 'FsOperations'. Did you mean 'readFileSync'?",
+   "src/packages/app-host/src/runtime/installPluginBindings.ts(512): TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(68): TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(125): TS2345: Argument of type 'unknown[] | PermissionUpdate[]' is not assignable to parameter of type 'PermissionUpdate[]'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(135): TS2322: Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown> | McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(143): TS2322: Type 'PluginRuntimeSnapshot<unknown, unknown, unknown> | PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(154): TS2322: Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<unknown> | HostSessionStore<AppState>'.",
+   "src/packages/cli/src/entry/commander.ts(40): TS2322: Type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to type 'Command<[], {}, {}>'.",
+   "src/packages/cli/src/headless/sdk/control/handlers.ts(520): TS2339: Property 'dev' does not exist on type 'ChannelEntry'.",
+   "src/packages/cli/src/headless/sdk/control/permission-helpers.ts(130): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/tool-registry/src/Tool\").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1524): TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1531): TS2322: Type 'import(\"/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool\").CanUseToolFn' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/cli/src/headless/sdk/session/run.ts(180): TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void'.",
+   "src/packages/cli/src/structuredIO.ts(632): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/tool-registry/src/Tool\").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.",
+   "src/packages/cli/src/structuredIO.ts(642): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/tool-registry/src/Tool\").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.",
+   "src/packages/cli/src/structuredIO.ts(653): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/tool-registry/src/Tool\").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.",
+   "src/packages/cli/src/structuredIO.ts(670): TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.",
+   "src/packages/config/plugin/pluginLoader.ts(3191): TS2322: Type 'unknown[]' is not assignable to type 'LoadedPlugin[]'.",
+   "src/packages/provider/src/model/modelStrings.ts(28): TS7053: Element implicitly has an 'any' type because expression of type 'APIProvider' can't be used to index type '{ readonly firstParty: \"claude-3-7-sonnet-20250219\"; readonly bedrock: \"us.anthropic.claude-3-7-sonnet-20250219-v1:0\"; readonly vertex: \"claude-3-7-sonnet@20250219\"; readonly foundry: \"claude-3-7-sonnet\"; readonly openai: \"claude-3-7-sonnet-20250219\"; readonly gemini: \"claude-3-7-sonnet-20250219\"; } | ... 11 more .....'.",
+   "src/packages/repl/src/commands/plan/plan.tsx(56): TS2345: Argument of type '(prev: { toolPermissionContext: ToolPermissionContext; }) => { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; }' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+   "src/packages/repl/src/components/App.tsx(36): TS2322: Type '{ children: ReactNode; initialState: AppState; store: AppStateStore | undefined; onChangeAppState: ({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void; }' is not assignable to type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.",
+   "src/packages/repl/src/conversationRecovery.tsx(187): TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/repl/src/conversationRecovery.tsx(188): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/agent/messageShapes\").Message[]' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/agent/loop/types\").Message[]'.",
+   "src/packages/repl/src/conversationRecovery.tsx(562): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/agent/logsTypes\").LogOption' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/storage/src/plans\").LogOption'.",
+   "src/packages/repl/src/hooks/useDirectConnect.ts(105): TS2322: Type '({ type: \"addRules\"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: \"ask\" | \"deny\" | \"allow\"; destination: \"userSettings\" | \"projectSettings\" | \"localSettings\" | \"cliArg\" | \"session\"; } | ... 4 more ... | { ...; })[] | undefined' is not assignable to type 'PermissionUpdate[] | undefined'.",
+   "src/packages/repl/src/hooks/useRemoteSession.ts(316): TS2345: Argument of type 'StreamEvent' is not assignable to parameter of type 'StreamedItem'.",
+   "src/packages/repl/src/hooks/useRemoteSession.ts(351): TS2322: Type '({ type: \"addRules\"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: \"ask\" | \"deny\" | \"allow\"; destination: \"userSettings\" | \"projectSettings\" | \"localSettings\" | \"cliArg\" | \"session\"; } | ... 4 more ... | { ...; })[] | undefined' is not assignable to type 'PermissionUpdate[] | undefined'.",
+   "src/packages/repl/src/hooks/useReplBridge.tsx(536): TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.",
+   "src/packages/repl/src/hooks/useSwarmInitialization.ts(60): TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.",
+   "src/packages/repl/src/hooks/useSwarmInitialization.ts(72): TS2345: Argument of type 'SetAppState' is not assignable to parameter of type '(updater: (prev: PermissionCarryingState) => PermissionCarryingState) => void'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(951): TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(1213): TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(1342): TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(1345): TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.",
+   "src/packages/repl/src/processUserInput/processTextPrompt.ts(79): TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.",
+   "src/packages/repl/src/processUserInput/processTextPrompt.ts(92): TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.",
+   "src/packages/repl/src/screens/REPLView.tsx(1167): TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.",
+   "src/packages/repl/src/screens/REPLView.tsx(1794): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/agent/logsTypes\").LogOption' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/storage/src/plans\").LogOption'.",
+   "src/packages/repl/src/screens/REPLView.tsx(1796): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/agent/logsTypes\").LogOption' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/storage/src/plans\").LogOption'.",
+   "src/packages/repl/src/screens/REPLView.tsx(1800): TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.",
+   "src/packages/repl/src/screens/REPLView.tsx(1820): TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2381): TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2621): TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2925): TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/repl/src/screens/REPLView.tsx(5028): TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.",
+   "src/packages/shell/src/testing/index.ts(137): TS2741: Property 'taskOutput' is missing in type '{ background: () => boolean; result: Promise<ExecResult>; kill: () => void; status: \"completed\"; cleanup: () => void; }' but required in type 'ShellCommand'.",
+   "src/packages/storage/src/sessionStorage.ts(740): TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.",
+   "src/packages/tool-registry/src/services/toolHooks.ts(390): TS2322: Type 'import(\"/home/user/thyrox/src/packages/permission/src/ruleBasedPermissions\").PermissionDecision' is not assignable to type 'import(\"/home/user/thyrox/src/packages/permission/src/permissionTypes\").PermissionDecision'.",
+   "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83): TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.",
+   "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/agent/messageShapes\").Message[]' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/agent/loop/types\").Message[]'.",
+   "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(88): TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.",
+   "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(186): TS2322: Type 'AnyMessage' is not assignable to type 'Message'.",
+   "src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(187): TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.",
+   "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(731): TS2322: Type 'import(\"/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool\").CanUseToolFn' is not assignable to type 'CanUseToolFn'.",
+   "src/packages/tool-registry/src/tools/BashTool/UI.tsx(41): TS2322: Type 'unknown' is not assignable to type 'AppState'.",
+   "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(634): TS2345: Argument of type 'CommandBase & PromptCommand' is not assignable to parameter of type 'CommandBase & PromptCommand & { type: \"prompt\"; }'.",
+   "tests/integration/tool-chain.test.ts(116): TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.",
+   "tests/integration/tool-chain.test.ts(122): TS2322: Type 'Promise<{ output: string; }>' is not assignable to type 'Promise<ToolResult<any>>'.",
+   "tests/integration/tool-chain.test.ts(132): TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.",
+   "tests/integration/tool-chain.test.ts(137): TS2322: Type 'Promise<{}>' is not assignable to type 'Promise<ToolResult<any>>'.",
+   "tests/unit/utils/treeify.test.ts(50): TS2322: Type 'number' is not assignable to type 'string | TreeNode | undefined'.",
+   "tests/unit/utils/treeify.test.ts(50): TS2322: Type 'number' is not assignable to type 'string | TreeNode | undefined'.",
+   "tests/unit/utils/treeify.test.ts(50): TS2322: Type 'number' is not assignable to type 'string | TreeNode | undefined'.",
+   "tests/unit/utils/treeify.test.ts(69): TS2345: Argument of type '{ name: string; fn: () => void; }' is not assignable to parameter of type 'TreeNode'.",
+   "tests/unit/utils/treeify.test.ts(83): TS2345: Argument of type '{ fn: () => void; }' is not assignable to parameter of type 'TreeNode'.",
+   "tests/unit/utils/treeify.test.ts(104): TS2345: Argument of type '{ name: string; nested: { inner: string; }; count: number; }' is not assignable to parameter of type 'TreeNode'."
+  ],
+  "local": [
+   "src/packages/@ant/ink/src/components/Box.tsx(95): TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/components/Box.tsx(96): TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/components/Box.tsx(97): TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/components/Box.tsx(98): TS2322: Type '((event: FocusEvent) => void) | undefined' is not assignable to type '((event: FocusEvent<Element, Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/components/Box.tsx(101): TS2322: Type '((event: KeyboardEvent) => void) | undefined' is not assignable to type '((event: KeyboardEvent<Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/components/Box.tsx(102): TS2322: Type '((event: KeyboardEvent) => void) | undefined' is not assignable to type '((event: KeyboardEvent<Element>) => void) | undefined'.",
+   "src/packages/@ant/ink/src/vim/transitions.ts(251): TS2783: 'type' is specified more than once, so this usage will be overwritten.",
+   "src/packages/agent/QueryEngine.ts(317): TS18046: 'tool' is of type 'unknown'.",
+   "src/packages/agent/QueryEngine.ts(349): TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.",
+   "src/packages/agent/QueryEngine.ts(445): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AttributionState'.",
+   "src/packages/agent/QueryEngine.ts(462): TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.",
+   "src/packages/agent/QueryEngine.ts(538): TS2698: Spread types may only be created from object types.",
+   "src/packages/agent/QueryEngine.ts(599): TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.",
+   "src/packages/agent/QueryEngine.ts(622): TS18048: 'msg.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(623): TS18048: 'msg.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(624): TS18048: 'msg.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(631): TS18048: 'msg.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(655): TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.",
+   "src/packages/agent/QueryEngine.ts(718): TS2345: Argument of type 'string | undefined' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.",
+   "src/packages/agent/QueryEngine.ts(743): TS2322: Type 'Tools' is not assignable to type 'RuntimeTool[]'.",
+   "src/packages/agent/QueryEngine.ts(744): TS2322: Type 'ProcessUserInputContext' is not assignable to type 'RuntimeToolUseContext'.",
+   "src/packages/agent/QueryEngine.ts(889): TS2339: Property 'tailUuid' does not exist on type '{}'.",
+   "src/packages/agent/QueryEngine.ts(954): TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.",
+   "src/packages/agent/QueryEngine.ts(969): TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.",
+   "src/packages/agent/QueryEngine.ts(975): TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.",
+   "src/packages/agent/QueryEngine.ts(1270): TS18048: 'result.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(1270): TS2339: Property 'type' does not exist on type '{}'.",
+   "src/packages/agent/QueryEngine.ts(1316): TS18046: '_' is of type 'unknown'.",
+   "src/packages/agent/QueryEngine.ts(1335): TS18048: 'result.message' is possibly 'undefined'.",
+   "src/packages/agent/QueryEngine.ts(1337): TS2339: Property 'type' does not exist on type '{}'.",
+   "src/packages/agent/QueryEngine.ts(1338): TS2339: Property 'text' does not exist on type '{}'.",
+   "src/packages/agent/QueryEngine.ts(1340): TS2339: Property 'text' does not exist on type '{}'.",
+   "src/packages/agent/__tests__/diffDisplay.test.ts(18): TS2322: Type 'Record<string, string | number | boolean> | undefined' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/agent/__tests__/productionWiring.test.ts(78): TS2322: Type 'Mock<(name: string) => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; } | undefined>' is not assignable to type '(name: string) => CoreTool | undefined'.",
+   "src/packages/agent/__tests__/productionWiring.test.ts(79): TS2322: Type 'Mock<() => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }[]>' is not assignable to type '() => CoreTool[]'.",
+   "src/packages/agent/commands/brief.ts(16): TS2307: Cannot find module '../types/command.js' or its corresponding type declarations.",
+   "src/packages/agent/compaction/sessionMemoryCompact.ts(465): TS2554: Expected 6 arguments, but got 4.",
+   "src/packages/agent/compaction/sessionMemoryCompact.ts(490): TS2345: Argument of type 'SystemCompactBoundaryMessage' is not assignable to parameter of type 'CompactBoundaryMessage'.",
+   "src/packages/agent/constants/spinnerVerbs.ts(9): TS2339: Property 'mode' does not exist on type 'string[]'.",
+   "src/packages/agent/constants/spinnerVerbs.ts(10): TS2339: Property 'verbs' does not exist on type 'string[]'.",
+   "src/packages/agent/constants/spinnerVerbs.ts(10): TS2339: Property 'verbs' does not exist on type 'string[]'.",
+   "src/packages/agent/constants/spinnerVerbs.ts(12): TS2339: Property 'verbs' does not exist on type 'string[]'.",
+   "src/packages/agent/forkedAgent.ts(551): TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.",
+   "src/packages/agent/forkedAgent.ts(566): TS2345: Argument of type '{ [x: string]: unknown; inputTokens?: number; outputTokens?: number; cacheReadInputTokens?: number; cacheCreationInputTokens?: number; input_tokens: number; cache_creation_input_tokens: number; ... 8 more ...; cache_deleted_input_tokens?: number; }' is not assignable to parameter of type 'BetaUsage'.",
+   "src/packages/agent/hooks/AsyncHookRegistry.ts(64): TS2322: Type 'unknown' is not assignable to type 'string'.",
+   "src/packages/agent/hooks/AsyncHookRegistry.ts(110): TS2322: Type 'unknown' is not assignable to type 'string'.",
+   "src/packages/agent/hooks/execAgentHook.ts(173): TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.",
+   "src/packages/agent/hooks/execAgentHook.ts(178): TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.",
+   "src/packages/agent/hooks/execPromptHook.ts(443): TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.",
+   "src/packages/agent/hooks/execPromptHook.ts(487): TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.",
+   "src/packages/agent/internal/stopHooksCore.ts(695): TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ blockingError: string; }'.",
+   "src/packages/agent/internal/stopHooksCore.ts(708): TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ blockingError: string; }'.",
+   "src/packages/agent/messages/mappers.ts(123): TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.",
+   "src/packages/agent/messages/mappers.ts(127): TS2322: Type 'unknown' is not assignable to type '\"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | \"billing_error\" | \"rate_limit\" | \"invalid_request\" | \"server_error\" | undefined'.",
+   "src/packages/agent/messages/mappers.ts(134): TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.",
+   "src/packages/agent/messages/mappers.ts(138): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/agent/messages/mappers.ts(212): TS2740: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.",
+   "src/packages/agent/query.ts(389): TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(451): TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(452): TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(453): TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(454): TS2339: Property 'compactionUsage' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(460): TS2339: Property 'summaryMessages' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(461): TS2339: Property 'attachments' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(462): TS2339: Property 'hookResults' does not exist on type '{}'.",
+   "src/packages/agent/query.ts(518): TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.",
+   "src/packages/agent/query.ts(669): TS18046: 'appState.mcp' is of type 'unknown'.",
+   "src/packages/agent/query.ts(670): TS18046: 'appState.mcp' is of type 'unknown'.",
+   "src/packages/agent/query.ts(674): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/agent/query.ts(678): TS2322: Type '((n: { key: string; text: string; priority: string; }) => void) | undefined' is not assignable to type '((notif: unknown) => void) | undefined'.",
+   "src/packages/agent/query.ts(728): TS18046: 'message' is of type 'unknown'.",
+   "src/packages/agent/query.ts(765): TS2698: Spread types may only be created from object types.",
+   "src/packages/agent/query.ts(801): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.",
+   "src/packages/agent/query.ts(805): TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.",
+   "src/packages/agent/query.ts(807): TS18046: 'message' is of type 'unknown'.",
+   "src/packages/agent/query.ts(1130): TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.",
+   "src/packages/agent/query.ts(1247): TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.",
+   "src/packages/agent/query.ts(1430): TS18046: 'update.message.attachment' is of type 'unknown'.",
+   "src/packages/agent/query.ts(1464): TS18048: 'result.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1471): TS18048: 'toolResult.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1556): TS18048: 'result.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1557): TS18048: 'result.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1565): TS18048: 'toolResult.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1566): TS18048: 'toolResult.message' is possibly 'undefined'.",
+   "src/packages/agent/query.ts(1759): TS18046: 'tr.attachment' is of type 'unknown'.",
+   "src/packages/agent/sessionTools/analyzeContext.ts(358): TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/agent/toolSearch\")'.",
+   "src/packages/agent/sessionTools/analyzeContext.ts(633): TS2339: Property 'isToolSearchEnabled' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/agent/toolSearch\")'.",
+   "src/packages/agent/task/framework.ts(108): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/agent/task/framework.ts(109): TS2322: Type 'unknown' is not assignable to type 'string'.",
+   "src/packages/agent/task/framework.ts(299): TS2366: Function lacks ending return statement and return type does not include 'undefined'.",
+   "src/packages/agent/tasks/LocalMainSessionTask.tsx(430): TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.",
+   "src/packages/agent/tasks/LocalMainSessionTask.tsx(434): TS2322: Type 'string | undefined' is not assignable to type 'string'.",
+   "src/packages/app-host/src/bootstrap/gracefulShutdown.ts(452): TS2345: Argument of type '\"fatal\"' is not assignable to parameter of type '\"resume\" | \"clear\" | \"other\" | \"logout\" | \"prompt_input_exit\" | \"bypass_permissions_disabled\" | undefined'.",
+   "src/packages/app-host/src/launchRepl.tsx(32): TS2322: Type 'HostSessionStore<TState>' is not assignable to type 'AppStateStore'.",
+   "src/packages/app-host/src/main/startup/telemetry.ts(178): TS2339: Property 'prefersReducedMotion' does not exist on type '{}'.",
+   "src/packages/app-host/src/providerHostSetup.ts(130): TS2322: Type 'string | undefined' is not assignable to type 'string'.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(469): TS2349: This expression is not callable.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(506): TS2769: No overload matches this call.",
+   "src/packages/app-host/src/runtime/commandRegistryRuntime.ts(669): TS2677: A type predicate's type must be assignable to its parameter's type.",
+   "src/packages/app-host/src/runtime/installPluginBindings.ts(463): TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/app-host/src/runtime/installPluginBindings.ts(478): TS2345: Argument of type '{ recursive?: boolean | undefined; } | undefined' is not assignable to parameter of type '{ mode?: number | undefined; } | undefined'.",
+   "src/packages/app-host/src/runtime/installPluginBindings.ts(512): TS2322: Type '{ resolvedPath: string; isSymlink: boolean; isCanonical: boolean; }' is not assignable to type 'string'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(120): TS2322: Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.",
+   "src/packages/app-host/src/runtime/runtimeHandles.ts(149): TS2322: Type 'unknown' is not assignable to type 'AgentDefinitionsResult'.",
+   "src/packages/cli/src/handlers/util.tsx(29): TS2769: No overload matches this call.",
+   "src/packages/cli/src/headless/sdk/control/handlers.ts(225): TS2322: Type 'APIProvider' is not assignable to type '\"firstParty\" | \"bedrock\" | \"vertex\" | \"foundry\" | undefined'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164): TS18046: 'config' is of type 'unknown'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1541): TS2740: Type 'FileStateCache' is missing the following properties from type 'FileStateCache': cache, get, set, has, and 6 more.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1553): TS2328: Types of parameters 'f' and 'f' are incompatible.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1573): TS2322: Type 'string' is not assignable to type '\"compacting\"'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1600): TS2322: Type 'SDKMessage' is not assignable to type '{ type: \"assistant\"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: \"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | ... 4 more ... | undefined; } | ... 31 more ... | null'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1603): TS2345: Argument of type 'SDKMessage' is not assignable to parameter of type '{ type: \"assistant\"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: \"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | ... 4 more ... | undefined; } | ... 30 more ... | { ...; }'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(1611): TS2345: Argument of type 'SDKMessage' is not assignable to parameter of type '{ type: \"assistant\"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: \"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | ... 4 more ... | undefined; } | ... 30 more ... | { ...; }'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2070): TS2694: Namespace '\"/home/user/thyrox/src/packages/agent/scheduler\"' has no exported member 'CronScheduler'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2143): TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2144): TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: \"orphaned-permission\"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289): TS2339: Property 'content' does not exist on type '{}'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289): TS2339: Property 'uuid' does not exist on type '{}'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3302): TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: \"control_response\"; response: { subtype: \"success\"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: \"error\"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3434): TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3438): TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3467): TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3474): TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.",
+   "src/packages/cli/src/headless/sdk/session/run-streaming.ts(3475): TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.",
+   "src/packages/cli/src/setup/setup.ts(107): TS2339: Property 'captureTeammateModeSnapshot' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/swarm/src/index\")'.",
+   "src/packages/cli/src/setup/setup.ts(416): TS18046: 'envDynamic.getIsDocker' is of type 'unknown'.",
+   "src/packages/cli/src/setup/setup.ts(419): TS18046: 'envDynamic.getIsBubblewrapSandbox' is of type 'unknown'.",
+   "src/packages/cli/src/structuredIO.ts(210): TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: \"user\"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: \"next\" | \"now\" | \"later\" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.",
+   "src/packages/command-runtime/src/commands/bridge/bridge.tsx(152): TS2769: No overload matches this call.",
+   "src/packages/command-runtime/src/commands/fork/index.ts(31): TS2322: Type 'Promise<typeof import(\"/home/user/thyrox/src/packages/command-runtime/src/commands/fork/fork\")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.",
+   "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(182): TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: \"oauth\" | \"new\" | \"existing\"; step: \"error\" | \"success\" | \"warnings\" | \"api-key\" | \"check-gh\" | \"choose-repo\" | \"install-app\" | ... 4 more ... | \"creating\"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.",
+   "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(237): TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: \"oauth\" | \"new\" | \"existing\"; step: \"error\" | \"success\" | \"warnings\" | \"api-key\" | \"check-gh\" | \"choose-repo\" | \"install-app\" | ... 4 more ... | \"creating\"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.",
+   "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(708): TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: \"oauth\" | \"new\" | \"existing\"; step: \"error\" | \"success\" | \"warnings\" | \"api-key\" | \"check-gh\" | \"choose-repo\" | \"install-app\" | ... 4 more ... | \"creating\"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.",
+   "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(719): TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: \"oauth\" | \"new\" | \"existing\"; step: \"error\" | \"success\" | \"warnings\" | \"api-key\" | \"check-gh\" | \"choose-repo\" | \"install-app\" | ... 4 more ... | \"creating\"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.",
+   "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx(139): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
+   "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx(145): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
+   "src/packages/command-runtime/src/host.ts(33): TS2352: Conversion of type 'CommandRegistryHostBindings<CommandLike>' to type 'CommandRegistryHostBindings<TCommand>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/config/manager.ts(75): TS2322: Type '{} | null' is not assignable to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; } | null'.",
+   "src/packages/config/plugin/loadPluginAgents.ts(303): TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.",
+   "src/packages/config/plugin/loadPluginCommands.ts(266): TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.",
+   "src/packages/config/plugin/loadPluginCommands.ts(304): TS2322: Type '{}' is not assignable to type 'string'.",
+   "src/packages/config/plugin/loadPluginCommands.ts(479): TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.",
+   "src/packages/config/plugin/loadPluginCommands.ts(505): TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.",
+   "src/packages/config/plugin/loadPluginCommands.ts(799): TS2339: Property 'isSymbolicLink' does not exist on type '{ name: string; isFile(): boolean; isDirectory(): boolean; }'.",
+   "src/packages/config/plugin/loadPluginHooks.ts(118): TS2345: Argument of type 'Record<\"SessionStart\" | \"UserPromptSubmit\" | \"PreToolUse\" | \"PostToolUse\" | \"Stop\" | \"SessionEnd\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\" | \"SubagentStart\" | \"SubagentStop\", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.",
+   "src/packages/config/plugin/loadPluginHooks.ts(168): TS18046: 'matchers' is of type 'unknown'.",
+   "src/packages/config/plugin/loadPluginHooks.ts(176): TS2345: Argument of type 'Partial<Record<\"SessionStart\" | \"UserPromptSubmit\" | \"PreToolUse\" | \"PostToolUse\" | \"Stop\" | \"SessionEnd\" | \"PreCompact\" | \"PostCompact\" | \"PreModelSwitch\" | \"PostModelSwitch\" | \"SubagentStart\" | \"SubagentStop\", PluginHookMatcher[]>>' is not assignable to parameter of type 'unknown[]'.",
+   "src/packages/config/plugin/lspPluginIntegration.ts(243): TS2698: Spread types may only be created from object types.",
+   "src/packages/config/plugin/marketplaceHelpers.ts(164): TS2740: Type '{}' is missing the following properties from type '({ source: \"url\"; url: string; headers?: Record<string, string> | undefined; } | { source: \"github\"; repo: string; ref?: string | undefined; path?: string | undefined; sparsePaths?: string[] | undefined; } | ... 6 more ... | { ...; })[]': length, pop, push, concat, and 35 more.",
+   "src/packages/config/plugin/marketplaceHelpers.ts(176): TS2740: Type '{}' is missing the following properties from type '({ source: \"url\"; url: string; headers?: Record<string, string> | undefined; } | { source: \"github\"; repo: string; ref?: string | undefined; path?: string | undefined; sparsePaths?: string[] | undefined; } | ... 6 more ... | { ...; })[]': length, pop, push, concat, and 35 more.",
+   "src/packages/config/plugin/marketplaceHelpers.ts(184): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/config/plugin/marketplaceManager.ts(211): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
+   "src/packages/config/plugin/marketplaceManager.ts(235): TS2698: Spread types may only be created from object types.",
+   "src/packages/config/plugin/marketplaceManager.ts(1988): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
+   "src/packages/config/plugin/marketplaceManager.ts(1993): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Partial<unknown>'.",
+   "src/packages/config/plugin/marketplaceManager.ts(2628): TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.",
+   "src/packages/config/plugin/mcpbHandler.ts(424): TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.",
+   "src/packages/config/plugin/mcpbHandler.ts(870): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, number>'.",
+   "src/packages/config/plugin/orphanedPluginFilter.ts(72): TS2339: Property 'map' does not exist on type 'string'.",
+   "src/packages/config/plugin/parseMarketplaceInput.ts(126): TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.",
+   "src/packages/config/plugin/refresh.ts(133): TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents",
+   "src/packages/config/plugin/refresh.ts(176): TS2339: Property 'allAgents' does not exist on type 'unknown[]'.",
+   "src/packages/config/plugin/refresh.ts(183): TS2339: Property 'allAgents' does not exist on type 'unknown[]'.",
+   "src/packages/config/plugin/refresh.ts(188): TS2739: Type 'unknown[]' is missing the following properties from type 'AgentDefinitionsResult': activeAgents, allAgents",
+   "src/packages/config/settings/inventory.ts(160): TS2538: Type 'undefined' cannot be used as an index type.",
+   "src/packages/config/settings/inventory.ts(171): TS2532: Object is possibly 'undefined'.",
+   "src/packages/config/settings/inventory.ts(171): TS2532: Object is possibly 'undefined'.",
+   "src/packages/mcp-runtime/src/channelNotification.ts(285): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.",
+   "src/packages/mcp-runtime/src/clientRuntime.ts(1576): TS2322: Type '\"started\"' is not assignable to type '\"progress\"'.",
+   "src/packages/mcp-runtime/src/clientRuntime.ts(1614): TS2322: Type '\"completed\"' is not assignable to type '\"progress\"'.",
+   "src/packages/mcp-runtime/src/clientRuntime.ts(1655): TS2322: Type '\"failed\"' is not assignable to type '\"progress\"'.",
+   "src/packages/mcp-runtime/src/config.ts(1323): TS2322: Type '{ path: string; message: string; mcpErrorMetadata: { scope: \"user\" | \"local\" | \"project\" | \"managed\" | \"enterprise\" | \"dynamic\" | \"claudeai\"; severity: string; }; file?: string | undefined; }[]' is not assignable to type 'SettingsError[]'.",
+   "src/packages/mcp-runtime/src/config.ts(1350): TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.",
+   "src/packages/mcp-runtime/src/config.ts(1375): TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.",
+   "src/packages/mcp-runtime/src/config.ts(1421): TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.",
+   "src/packages/mcp-runtime/src/config.ts(1441): TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.",
+   "src/packages/mcp-runtime/src/config.ts(1465): TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.",
+   "src/packages/mcp-runtime/src/useManageMCPConnections.ts(528): TS2322: Type '{ kind: string; server: string; }' is not assignable to type 'string'.",
+   "src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts(29): TS2353: Object literal may only specify known properties, and 'expandPath' does not exist in type 'PermissionHostBindings'.",
+   "src/packages/permission/src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx(431): TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'AskUserQuestionTimeout | undefined'.",
+   "src/packages/permission/src/components/rules/PermissionRuleList.tsx(592): TS2739: Type 'ToolPermissionContext' is missing the following properties from type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }': mode, additionalWorkingDirectories, isBypassPermissionsModeAvailable",
+   "src/packages/permission/src/toolPermission/PermissionContext.ts(127): TS2322: Type 'string | undefined' is not assignable to type 'string'.",
+   "src/packages/permission/src/toolPermission/PermissionContext.ts(174): TS2322: Type 'import(\"/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages\").ContentBlockParam[] | undefined' is not assignable to type 'import(\"/home/user/thyrox/src/packages/permission/src/permissionTypes\").ContentBlockParam[] | undefined'.",
+   "src/packages/permission/src/toolPermission/PermissionContext.ts(205): TS2322: Type 'string | undefined' is not assignable to type 'string'.",
+   "src/packages/permission/src/toolPermission/PermissionContext.ts(275): TS2322: Type '{ contentBlocks?: ContentBlockParam[] | undefined; acceptFeedback?: string | undefined; decisionReason?: PermissionDecisionReason | undefined; behavior: \"allow\"; updatedInput: Record<...>; userModified: boolean; }' is not assignable to type 'PermissionAllowDecision'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(141): TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(152): TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(152): TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(162): TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(177): TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.",
+   "src/packages/provider/__tests__/providerStreaming.test.ts(246): TS2488: Type 'Headers' must have a '[Symbol.iterator]()' method that returns an iterator.",
+   "src/packages/provider/src/claudeLegacyRuntime.ts(575): TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | BetaUsage | undefined'.",
+   "src/packages/provider/src/gemini/streamAdapter.ts(31): TS2352: Conversion of type '{ type: \"message_start\"; message: { id: string; type: \"message\"; role: \"assistant\"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/provider/src/oauth/index.ts(183): TS2322: Type 'string | undefined' is not assignable to type 'string'.",
+   "src/packages/provider/src/openai/client.ts(83): TS2698: Spread types may only be created from object types.",
+   "src/packages/provider/src/openai/streamAdapter.ts(77): TS2352: Conversion of type '{ type: \"message_start\"; message: { id: string; type: \"message\"; role: \"assistant\"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/provider/src/proxy.ts(249): TS2315: Type 'HttpsProxyAgentOptions' is not generic.",
+   "src/packages/provider/src/proxy.ts(250): TS2315: Type 'HttpsProxyAgent' is not generic.",
+   "src/packages/provider/src/proxy.ts(254): TS2315: Type 'HttpsProxyAgentOptions' is not generic.",
+   "src/packages/provider/src/proxy.ts(269): TS2554: Expected 1 arguments, but got 2.",
+   "src/packages/provider/src/proxy.ts(273): TS2315: Type 'HttpsProxyAgentOptions' is not generic.",
+   "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(60): TS2352: Conversion of type '{ statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(67): TS2352: Conversion of type '{ apiKeyHelper: string; awsAuthRefresh: string; awsCredentialExport: string; gcpAuthRefresh: string; otelHeadersHelper: string; statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(174): TS2352: Conversion of type '{ hooks: null; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/repl/src/commands/color/color.ts(11): TS2307: Cannot find module '../../types/command.js' or its corresponding type declarations.",
+   "src/packages/repl/src/components/BridgeDialog.tsx(66): TS2769: No overload matches this call.",
+   "src/packages/repl/src/components/FastIcon.tsx(27): TS2345: Argument of type 'string' is not assignable to parameter of type '\"light\" | \"dark\" | \"auto\" | \"light-daltonized\" | \"dark-daltonized\" | \"light-ansi\" | \"dark-ansi\"'.",
+   "src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx(51): TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(90): TS2339: Property 'length' does not exist on type '{}'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(92): TS7053: Element implicitly has an 'any' type because expression of type '0' can't be used to index type '{}'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(93): TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(93): TS2339: Property 'length' does not exist on type '{}'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(207): TS2554: Expected 1 arguments, but got 0.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(221): TS2345: Argument of type 'string' is not assignable to parameter of type '\"light\" | \"dark\" | \"auto\" | \"light-daltonized\" | \"dark-daltonized\" | \"light-ansi\" | \"dark-ansi\"'.",
+   "src/packages/repl/src/components/LogoV2/LogoV2.tsx(422): TS2554: Expected 1 arguments, but got 0.",
+   "src/packages/repl/src/components/Message.tsx(116): TS18048: 'message.message.content' is possibly 'undefined'.",
+   "src/packages/repl/src/components/Message.tsx(116): TS2339: Property 'map' does not exist on type 'MessageContent'.",
+   "src/packages/repl/src/components/Message.tsx(135): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/repl/src/components/Message.tsx(158): TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.",
+   "src/packages/repl/src/components/Message.tsx(177): TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.",
+   "src/packages/repl/src/components/Message.tsx(321): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/repl/src/components/Message.tsx(323): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/repl/src/components/Message.tsx(419): TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.",
+   "src/packages/repl/src/components/Message.tsx(436): TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.",
+   "src/packages/repl/src/components/Message.tsx(459): TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: \"thinking\"; thinking: string; }'.",
+   "src/packages/repl/src/components/Message.tsx(507): TS2345: Argument of type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.",
+   "src/packages/repl/src/components/MessageRow.tsx(191): TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"system\"; subtype: \"local_command\"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.",
+   "src/packages/repl/src/components/MessageRow.tsx(204): TS2322: Type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"system\"; subtype: \"local_command\"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.",
+   "src/packages/repl/src/components/MessageRow.tsx(276): TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"system\"; subtype: \"local_command\"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.",
+   "src/packages/repl/src/components/MessageRow.tsx(304): TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"system\"; subtype: \"local_command\"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.",
+   "src/packages/repl/src/components/MessageRow.tsx(345): TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"system\"; subtype: \"local_command\"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.",
+   "src/packages/repl/src/components/PromptInput/Notifications.tsx(390): TS2322: Type '(result: AutoUpdaterResult) => void' is not assignable to type '(autoUpdaterResult: AutoUpdaterResult | null) => void'.",
+   "src/packages/repl/src/components/PromptInput/PromptInput.tsx(513): TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.",
+   "src/packages/repl/src/components/PromptInput/PromptInput.tsx(1903): TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.",
+   "src/packages/repl/src/components/PromptInput/PromptInput.tsx(3203): TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.",
+   "src/packages/repl/src/components/Settings/Config.tsx(580): TS2345: Argument of type 'number | undefined' is not assignable to parameter of type '\"never\" | \"5m\" | \"60s\" | \"10m\" | undefined'.",
+   "src/packages/repl/src/components/Settings/Config.tsx(581): TS2345: Argument of type '(prev: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }) => { ...; }' is not assignable to parameter of type 'SetStateAction<{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\" | undefined; cacheTtl?: \"5m\" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }>'.",
+   "src/packages/repl/src/components/Settings/Usage.tsx(4): TS2459: Module '\"@thyrox/provider/costTracker.js\"' declares 'formatCost' locally, but it is not exported.",
+   "src/packages/repl/src/components/Settings/questionTimeoutSetting.ts(19): TS2322: Type '\"never\" | \"5m\" | \"60s\" | \"10m\"' is not assignable to type 'number | undefined'.",
+   "src/packages/repl/src/components/Stats.tsx(816): TS2345: Argument of type 'string' is not assignable to parameter of type '\"light\" | \"dark\" | \"auto\" | \"light-daltonized\" | \"dark-daltonized\" | \"light-ansi\" | \"dark-ansi\"'.",
+   "src/packages/repl/src/components/Stats.tsx(973): TS2345: Argument of type 'string' is not assignable to parameter of type '\"light\" | \"dark\" | \"auto\" | \"light-daltonized\" | \"dark-daltonized\" | \"light-ansi\" | \"dark-ansi\"'.",
+   "src/packages/repl/src/components/StatusLine.tsx(347): TS2339: Property 'padding' does not exist on type '{ type: \"command\"; command: string; }'.",
+   "src/packages/repl/src/components/StatusLine.tsx(389): TS2339: Property 'padding' does not exist on type '{ type: \"command\"; command: string; }'.",
+   "src/packages/repl/src/components/VirtualMessageList.tsx(178): TS18046: 'p' is of type 'unknown'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(31): TS6133: 'onCancel' is declared but its value is never read.",
+   "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34): TS6133: 'steps' is declared but its value is never read.",
+   "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34): TS2315: Type 'WizardStepComponent' is not generic.",
+   "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(56): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ColorStep.tsx(13): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx(32): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStepWrapper.tsx(28): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx(13): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx(18): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MemoryStep.tsx(22): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/MethodStep.tsx(11): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ModelStep.tsx(11): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/PromptStep.tsx(13): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx(16): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/TypeStep.tsx(18): TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(196): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(199): TS2769: No overload matches this call.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(200): TS18046: 'hooks' is of type 'unknown'.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(203): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(204): TS18046: 'eventCount' is of type 'unknown'.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(272): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(291): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/components/hooks/SelectEventMode.tsx(20): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/components/hooks/SelectEventMode.tsx(21): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/components/hooks/SelectEventMode.tsx(70): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/components/hooks/SelectEventMode.tsx(81): TS18046: 'metadata' is of type 'unknown'.",
+   "src/packages/repl/src/components/messageStaticness.ts(25): TS2366: Function lacks ending return statement and return type does not include 'undefined'.",
+   "src/packages/repl/src/components/messageStaticness.ts(39): TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: \"attachment\"; attachment: { ...; }; } & { ...; })' is not assignable to parameter of type 'NormalizedMessage'.",
+   "src/packages/repl/src/components/tasks/RemoteSessionDetailDialog.tsx(615): TS2322: Type '(MessageBase & { type: \"user\"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }) | ... 18 more ... | (MessageBase & ... 1 more ... & { ...; })' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.",
+   "src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx(57): TS2339: Property 'has_claude_max' does not exist on type '{ uuid: string; email: string; display_name?: string | undefined; created_at?: string | undefined; }'.",
+   "src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx(61): TS2339: Property 'has_claude_pro' does not exist on type '{ uuid: string; email: string; display_name?: string | undefined; created_at?: string | undefined; }'.",
+   "src/packages/repl/src/hooks/useReplBridge.tsx(553): TS18046: 'item' is of type 'unknown'.",
+   "src/packages/repl/src/hooksConfigManager.ts(27): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/hooksConfigManager.ts(273): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/hooksConfigManager.ts(274): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/hooksConfigManager.ts(308): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/hooksConfigManager.ts(312): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/hooksConfigManager.ts(327): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/hooksConfigManager.ts(370): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/hooksConfigManager.ts(375): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/hooksConfigManager.ts(382): TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.",
+   "src/packages/repl/src/hooksConfigManager.ts(391): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/hooksConfigManager.ts(399): TS2538: Type 'unknown' cannot be used as an index type.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(142): TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: \"string\" | \"number\" | \"boolean\" | \"file\" | \"directory\"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(269): TS2322: Type 'AssistantMessage | NormalizedUserMessage' is not assignable to type '(MessageBase & { type: \"user\"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.",
+   "src/packages/repl/src/processUserInput/processSlashCommand.tsx(649): TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: \"string\" | \"number\" | \"boolean\" | \"file\" | \"directory\"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(525): TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(545): TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(561): TS18046: 'm' is of type 'unknown'.",
+   "src/packages/repl/src/processUserInput/processUserInput.ts(584): TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.",
+   "src/packages/repl/src/queryHelpers.ts(71): TS2769: No overload matches this call.",
+   "src/packages/repl/src/queryHelpers.ts(120): TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.",
+   "src/packages/repl/src/queryHelpers.ts(124): TS2322: Type 'unknown' is not assignable to type '\"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | \"billing_error\" | \"rate_limit\" | \"invalid_request\" | \"server_error\" | undefined'.",
+   "src/packages/repl/src/queryHelpers.ts(143): TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.",
+   "src/packages/repl/src/queryHelpers.ts(147): TS2322: Type 'unknown' is not assignable to type '\"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | \"billing_error\" | \"rate_limit\" | \"invalid_request\" | \"server_error\" | undefined'.",
+   "src/packages/repl/src/queryHelpers.ts(153): TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.",
+   "src/packages/repl/src/queryHelpers.ts(157): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/repl/src/queryHelpers.ts(217): TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.",
+   "src/packages/repl/src/queryHelpers.ts(221): TS2322: Type 'unknown' is not assignable to type 'string | undefined'.",
+   "src/packages/repl/src/queryHelpers.ts(338): TS2352: Conversion of type '{ session_id: SessionId; parent_tool_use_id: null; type: \"assistant\"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' to type '{ type: \"assistant\"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: \"unknown\" | \"max_output_tokens\" | \"authentication_failed\" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.",
+   "src/packages/repl/src/screens/REPLView.tsx(1553): TS2339: Property 'content' does not exist on type '{}'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2016): TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2022): TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2622): TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2680): TS18046: 'newMessage.data' is of type 'unknown'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2696): TS18046: 'last.data' is of type 'unknown'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2696): TS18046: 'newMessage.data' is of type 'unknown'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2782): TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2926): TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.",
+   "src/packages/repl/src/screens/REPLView.tsx(2929): TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.",
+   "src/packages/repl/src/screens/REPLView.tsx(3033): TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.",
+   "src/packages/repl/src/screens/REPLView.tsx(3272): TS2698: Spread types may only be created from object types.",
+   "src/packages/repl/src/screens/REPLView.tsx(3977): TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.",
+   "src/packages/repl/src/screens/REPLView.tsx(4017): TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.",
+   "src/packages/repl/src/screens/agentFleet/FleetView.tsx(2406): TS2322: Type '{ start: number; end: number; color: \"suggestion\"; }[]' is not assignable to type 'TextHighlight[]'.",
+   "src/packages/repl/src/screens/repl/bgDetachSignal.ts(53): TS2322: Type '\"detach\"' is not assignable to type '\"claim\" | \"exit\" | \"resize\" | \"kill\" | \"reply\" | \"heartbeat\" | \"hello\" | \"live\"'.",
+   "src/packages/shell/src/Shell.ts(70): TS2322: Type '(() => Platform) & { cache?: { clear: () => void; } | undefined; }' is not assignable to type '() => \"linux\" | \"windows\" | \"macos\"'.",
+   "src/packages/shell/src/sandbox/sandbox-adapter.ts(778): TS2339: Property 'getSandboxBinaryPath' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/config/settings/settings\")'.",
+   "src/packages/shell/src/shellCommand.ts(138): TS2416: Property 'taskOutput' in type 'ShellCommandImpl' is not assignable to the same property in base type 'ShellCommandWithOutput'.",
+   "src/packages/shell/src/shellCommand.ts(403): TS2322: Type 'ShellCommandImpl' is not assignable to type 'ShellCommandWithOutput'.",
+   "src/packages/shell/src/shellCommand.ts(419): TS2416: Property 'taskOutput' in type 'AbortedShellCommand' is not assignable to the same property in base type 'ShellCommandWithOutput'.",
+   "src/packages/shell/src/shellCommand.ts(449): TS2322: Type 'AbortedShellCommand' is not assignable to type 'ShellCommandWithOutput'.",
+   "src/packages/shell/src/shellCommand.ts(466): TS2322: Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.",
+   "src/packages/storage/src/sessionStorage.ts(94): TS2440: Import declaration conflicts with local declaration of 'SerializedMessage'.",
+   "src/packages/storage/src/sessionStorage.ts(4663): TS2304: Cannot find name 'MessageContent'.",
+   "src/packages/swarm/src/adapters/createSwarmHostDeps.ts(206): TS18046: 'tool' is of type 'unknown'.",
+   "src/packages/tool-registry/src/services/toolExecution.ts(775): TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.",
+   "src/packages/tool-registry/src/services/toolExecution.ts(1016): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/permission/src/permissionTypes\").ContentBlockParam' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages\").ContentBlockParam'.",
+   "src/packages/tool-registry/src/services/toolExecution.ts(1398): TS2345: Argument of type 'import(\"/home/user/thyrox/src/packages/permission/src/permissionTypes\").ContentBlockParam' is not assignable to parameter of type 'import(\"/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages\").ContentBlockParam'.",
+   "src/packages/tool-registry/src/services/toolExecution.ts(1405): TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.",
+   "src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts(38): TS2339: Property 'getCoordinatorAgents' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir\")'.",
+   "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(611): TS2554: Expected 1 arguments, but got 2.",
+   "src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(732): TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.",
+   "src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts(55): TS2307: Cannot find module '@thyrox/tool-registry/tools/REPLTool/REPLTool.js' or its corresponding type declarations.",
+   "src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(2): TS2307: Cannot find module '../../../utils/powershell/parser.js' or its corresponding type declarations.",
+   "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(735): TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: \"string\" | \"number\" | \"boolean\" | \"file\" | \"directory\"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.",
+   "src/packages/tool-registry/src/tools/SkillTool/UI.tsx(100): TS2345: Argument of type 'unknown[]' is not assignable to parameter of type '{ message: AnyMessage; }[]'.",
+   "src/packages/tool-registry/src/tools/SkillTool/UI.tsx(110): TS18046: 'progressMessage.data' is of type 'unknown'.",
+   "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(124): TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.",
+   "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(90): TS2554: Expected 1 arguments, but got 2.",
+   "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(102): TS2554: Expected 1 arguments, but got 2.",
+   "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(146): TS2554: Expected 0 arguments, but got 2.",
+   "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(153): TS2554: Expected 0 arguments, but got 2.",
+   "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(165): TS2554: Expected 0 arguments, but got 2.",
+   "tests/integration/context-build.test.ts(14): TS2322: Type 'string' is not assignable to type 'string[]'.",
+   "tests/integration/context-build.test.ts(23): TS2322: Type 'string' is not assignable to type 'string[]'.",
+   "tests/integration/context-build.test.ts(31): TS2322: Type 'string' is not assignable to type 'string[]'.",
+   "tests/integration/context-build.test.ts(40): TS2322: Type 'string' is not assignable to type 'string[]'.",
+   "tests/integration/context-build.test.ts(49): TS2322: Type 'string' is not assignable to type 'string[]'.",
+   "tests/integration/context-build.test.ts(100): TS2345: Argument of type '{ path: string; content: string; }[]' is not assignable to parameter of type 'MemoryFileInfo[]'.",
+   "tests/integration/message-pipeline.test.ts(13): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.",
+   "tests/integration/message-pipeline.test.ts(21): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | BetaContentBlock[]; usage?: BetaUsage | undefined; isVirtual?: true | undefined; }'.",
+   "tests/integration/message-pipeline.test.ts(28): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.",
+   "tests/integration/message-pipeline.test.ts(29): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | BetaContentBlock[]; usage?: BetaUsage | undefined; isVirtual?: true | undefined; }'.",
+   "tests/integration/message-pipeline.test.ts(55): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.",
+   "tests/integration/message-pipeline.test.ts(61): TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.",
+   "tests/smoke/lib/runtime-probe.ts(157): TS2339: Property 'getMatchingHooks' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/agent/hooks\")'.",
+   "tests/smoke/live-fire-smoke.test.ts(79): TS2339: Property 'executeStopHooks' does not exist on type 'typeof import(\"/home/user/thyrox/src/packages/agent/hooks\")'."
+  ]
+ }
+}

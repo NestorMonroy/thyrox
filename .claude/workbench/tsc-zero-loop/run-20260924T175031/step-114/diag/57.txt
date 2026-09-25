@@ -1,0 +1,48 @@
+src/packages/provider/__tests__/providerStreaming.test.ts(141,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:131-151 ---
+    131  
+    132    test('los input_json_delta se concatenan y se parsean a objeto', async () => {
+    133      const p = proveedor(() => new Response(cuerpoSse(EVENTOS_HERRAMIENTA)))
+    134      const turno = await p.send({ ...peticion, stream: true })
+    135      expect(turno.content).toEqual([{ type: 'tool_use', id: 'tu_1', name: 'Bash', input: { command: 'ls' } }])
+    136      expect(turno.stop_reason).toBe('tool_use')
+    137    })
+    138  
+    139    test('un tool_use sin ningun delta queda con input vacio, no roto', async () => {
+    140      const p = proveedor(() => new Response(cuerpoSse([
+    141>       EVENTOS_HERRAMIENTA[0],
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(152,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:142-162 ---
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+    152>       EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162        EVENTOS_TEXTO[0],
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.

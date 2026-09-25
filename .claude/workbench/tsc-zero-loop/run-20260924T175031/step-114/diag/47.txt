@@ -1,0 +1,23 @@
+src/packages/mcp-runtime/src/clientRuntime.ts(1655,25): error TS2322: Type '"failed"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1645-1665 ---
+   1645                      )
+   1646                      continue
+   1647                    }
+   1648  
+   1649                    // Emit progress when tool fails
+   1650                    if (onProgress && toolUseId) {
+   1651                      onProgress({
+   1652                        toolUseID: toolUseId,
+   1653                        data: {
+   1654                          type: 'mcp_progress',
+   1655>                         status: 'failed',
+   1656                          serverName: client.name,
+   1657                          toolName: tool.name,
+   1658                          elapsedTimeMs: Date.now() - startTime,
+   1659                        },
+   1660                      })
+   1661                    }
+   1662                    // Wrap MCP SDK errors so telemetry gets useful context
+   1663                    // instead of just "Error" or "McpError" (the constructor
+   1664                    // name). MCP SDK errors are protocol-level messages and
+   1665                    // don't contain user file paths or code.

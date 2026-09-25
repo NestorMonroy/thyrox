@@ -1,0 +1,2 @@
+src/packages/shell/src/shellCommand.ts(466,5): error TS2322: Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.
+  Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

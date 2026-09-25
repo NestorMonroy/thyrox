@@ -1,0 +1,23 @@
+src/packages/config/plugin/loadPluginCommands.ts(799,42): error TS2339: Property 'isSymbolicLink' does not exist on type '{ name: string; isFile(): boolean; isDirectory(): boolean; }'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:789-809 ---
+    789          `Failed to load skills from directory ${skillsPath}: ${e}`,
+    790          { level: 'error' },
+    791        )
+    792      }
+    793      return skills
+    794    }
+    795  
+    796    await Promise.all(
+    797      entries.map(async entry => {
+    798        // Accept both directories and symlinks (symlinks may point to skill directories)
+    799>       if (!entry.isDirectory() && !entry.isSymbolicLink()) {
+    800          return
+    801        }
+    802  
+    803        const skillDirPath = join(skillsPath, entry.name)
+    804        const skillFilePath = join(skillDirPath, 'SKILL.md')
+    805  
+    806        // Try to read SKILL.md directly; skip if it doesn't exist
+    807        let content: string
+    808        try {
+    809          content = await fs.readFile(skillFilePath, { encoding: 'utf-8' })

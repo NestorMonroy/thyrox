@@ -1,0 +1,2 @@
+src/packages/provider/src/proxy.ts(249,10): error TS2315: Type 'HttpsProxyAgentOptions' is not generic.
+src/packages/provider/src/proxy.ts(250,4): error TS2315: Type 'HttpsProxyAgent' is not generic.

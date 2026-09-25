@@ -1,0 +1,46 @@
+{
+ "reviewed": [
+  {
+   "pattern": "spread-overwrites-duplicate-literal-key",
+   "files": [
+    "src/packages/@ant/ink/src/vim/transitions.ts"
+   ]
+  },
+  {
+   "pattern": "test-array-metadata-stricter-than-optional-host-callback",
+   "files": [
+    "src/packages/agent/__tests__/diffDisplay.test.ts"
+   ]
+  },
+  {
+   "pattern": "forwarded-field-missing-from-local-result-type",
+   "files": [
+    "src/packages/agent/hooks/execPromptHook.ts"
+   ]
+  },
+  {
+   "pattern": "optional-inline-cast-field-passed-as-required-string",
+   "files": [
+    "src/packages/agent/tasks/LocalMainSessionTask.tsx"
+   ]
+  },
+  {
+   "pattern": "barrel-swarm-omite-modulo-deliberadamente",
+   "files": [
+    "src/packages/cli/src/setup/setup.ts"
+   ]
+  },
+  {
+   "pattern": "env-dynamic-property-accessed-without-narrowing",
+   "files": [
+    "src/packages/cli/src/setup/setup.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-passthrough-field-indexed-on-settings-json",
+   "files": [
+    "src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx"
+   ]
+  }
+ ]
+}

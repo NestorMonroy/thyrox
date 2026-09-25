@@ -1,0 +1,5 @@
+src/packages/repl/src/components/BridgeDialog.tsx(66,5): error TS2769: No overload matches this call.
+  Overload 1 of 3, '(text: string | QRCodeSegment[], callback: (error: Error | null | undefined, string: string) => void): void', gave the following error.
+    Object literal may only specify known properties, and 'type' does not exist in type '(error: Error | null | undefined, string: string) => void'.
+  Overload 2 of 3, '(text: string | QRCodeSegment[], options?: QRCodeToStringOptions | undefined): Promise<string>', gave the following error.
+    Object literal may only specify known properties, and 'small' does not exist in type 'QRCodeToStringOptionsOther'.

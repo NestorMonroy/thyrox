@@ -1,0 +1,1 @@
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(2,68): error TS2307: Cannot find module '../../../utils/powershell/parser.js' or its corresponding type declarations.

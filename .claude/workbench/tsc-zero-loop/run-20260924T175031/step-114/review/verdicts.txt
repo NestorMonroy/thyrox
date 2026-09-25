@@ -1,0 +1,10 @@
+0 src/packages/provider/__tests__/providerStreaming.test.ts
+0 src/packages/provider/src/__tests__/buildFetch.behavior.test.ts
+0 src/packages/provider/src/__tests__/integration.test.ts
+0 src/packages/agent/__tests__/diffDisplay.test.ts
+0 src/packages/provider/src/__tests__/oauthHelpers.test.ts
+0 src/packages/provider/src/__tests__/publicSurface.test.ts
+0 src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts
+0 src/packages/provider/src/__tests__/oauthLeafHelpers.behavior.test.ts
+0 src/packages/provider/src/oauth/__tests__/oauthErrorHelpers.test.ts
+0 tests/integration/message-pipeline.test.ts

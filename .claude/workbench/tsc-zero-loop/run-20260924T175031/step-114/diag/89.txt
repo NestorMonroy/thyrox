@@ -1,0 +1,23 @@
+src/packages/repl/src/components/VirtualMessageList.tsx(178,11): error TS18046: 'p' is of type 'unknown'.
+  --- código src/packages/repl/src/components/VirtualMessageList.tsx:168-188 ---
+    168    } else if (
+    169      msg.type === 'attachment' &&
+    170      msg.attachment.type === 'queued_command' &&
+    171      msg.attachment.commandMode !== 'task-notification' &&
+    172      !msg.attachment.isMeta
+    173    ) {
+    174      const p = msg.attachment.prompt
+    175      raw =
+    176        typeof p === 'string'
+    177          ? p
+    178>         : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
+    179    }
+    180    if (raw === null) return null
+    181  
+    182    const t = stripSystemReminders(raw)
+    183    if (t.startsWith('<') || t === '') return null
+    184    return t
+    185  }
+    186  
+    187  /**
+    188   * Virtualized message list for fullscreen mode. Split from Messages.tsx so

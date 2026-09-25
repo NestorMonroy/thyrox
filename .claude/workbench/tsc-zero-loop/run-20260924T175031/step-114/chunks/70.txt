@@ -1,0 +1,1 @@
+src/packages/repl/src/commands/color/color.ts(11,8): error TS2307: Cannot find module '../../types/command.js' or its corresponding type declarations.

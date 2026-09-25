@@ -1,0 +1,23 @@
+src/packages/config/plugin/marketplaceHelpers.ts(184,3): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/config/plugin/marketplaceHelpers.ts:174-194 ---
+    174      return null // No blocklist
+    175    }
+    176    return policySettings.blockedMarketplaces
+    177  }
+    178  
+    179  /**
+    180   * Get the custom plugin trust message from policy settings.
+    181   * Returns undefined if not configured.
+    182   */
+    183  export function getPluginTrustMessage(): string | undefined {
+    184>   return getSettingsForSource('policySettings')?.pluginTrustMessage
+    185  }
+    186  
+    187  /**
+    188   * Compare two MarketplaceSource objects for equality.
+    189   * Sources are equal if they have the same type and all relevant fields match.
+    190   */
+    191  function areSourcesEqual(a: MarketplaceSource, b: MarketplaceSource): boolean {
+    192    if (a.source !== b.source) return false
+    193  
+    194    switch (a.source) {

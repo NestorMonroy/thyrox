@@ -1,0 +1,46 @@
+tests/integration/message-pipeline.test.ts(13,35): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | ContentBlockParam[]; isMeta?: true | undefined; isVisibleInTranscriptOnly?: true | undefined; isVirtual?: true | undefined; isCompactSummary?: true | undefined; ... 8 more ...; origin?: string | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:3-23 ---
+      3    createUserMessage,
+      4    createAssistantMessage,
+      5    normalizeMessages,
+      6    extractTag,
+      7  } from '@thyrox/agent/messages.js'
+      8  
+      9  // ─── Message Structure ────────────────────────────────────────────────
+     10  
+     11  describe('Message pipeline: message structure', () => {
+     12    test("createUserMessage returns a Message with type 'user'", () => {
+     13>     const msg = createUserMessage('hello')
+     14      expect(msg.type).toBe('user')
+     15      expect(msg.message.role).toBe('user')
+     16      expect(msg.uuid).toBeTruthy()
+     17      expect(msg.timestamp).toBeTruthy()
+     18    })
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21      const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+tests/integration/message-pipeline.test.ts(21,40): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ content: string | BetaContentBlock[]; usage?: BetaUsage | undefined; isVirtual?: true | undefined; }'.
+  --- código tests/integration/message-pipeline.test.ts:11-31 ---
+     11  describe('Message pipeline: message structure', () => {
+     12    test("createUserMessage returns a Message with type 'user'", () => {
+     13      const msg = createUserMessage('hello')
+     14      expect(msg.type).toBe('user')
+     15      expect(msg.message.role).toBe('user')
+     16      expect(msg.uuid).toBeTruthy()
+     17      expect(msg.timestamp).toBeTruthy()
+     18    })
+     19  
+     20    test("createAssistantMessage returns a Message with type 'assistant'", () => {
+     21>     const msg = createAssistantMessage('response')
+     22      expect(msg.type).toBe('assistant')
+     23      expect(msg.message.role).toBe('assistant')
+     24      expect(msg.uuid).toBeTruthy()
+     25    })
+     26  
+     27    test('user and assistant messages have different UUIDs', () => {
+     28      const user = createUserMessage('hello')
+     29      const assistant = createAssistantMessage('response')
+     30      expect(user.uuid).not.toBe(assistant.uuid)
+     31    })

@@ -1,0 +1,2 @@
+src/packages/repl/src/screens/agentFleet/FleetView.tsx(2406,13): error TS2322: Type '{ start: number; end: number; color: "suggestion"; }[]' is not assignable to type 'TextHighlight[]'.
+  Property 'priority' is missing in type '{ start: number; end: number; color: "suggestion"; }' but required in type 'TextHighlight'.

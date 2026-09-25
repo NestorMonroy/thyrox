@@ -1,0 +1,53 @@
+src/packages/permission/src/toolPermission/PermissionContext.ts(205,46): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:195-215 ---
+    195                classifierDecision.type === 'classifier'
+    196              ) {
+    197                const matchedRule = classifierDecision.reason.match(
+    198                  /^Allowed by prompt rule: "(.+)"$/,
+    199                )?.[1]
+    200                if (matchedRule) {
+    201                  setClassifierApproval(toolUseID, matchedRule)
+    202                }
+    203              }
+    204              logPermissionDecision(
+    205>               { tool, input, toolUseContext, messageId, toolUseID },
+    206                { decision: 'accept', source: { type: 'classifier' } },
+    207                undefined,
+    208              )
+    209              return {
+    210                behavior: 'allow' as const,
+    211                updatedInput: updatedInput ?? input,
+    212                userModified: false,
+    213                decisionReason: classifierDecision,
+    214              }
+    215            },
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(275,7): error TS2322: Type '{ contentBlocks?: ContentBlockParam[] | undefined; acceptFeedback?: string | undefined; decisionReason?: PermissionDecisionReason | undefined; behavior: "allow"; updatedInput: Record<...>; userModified: boolean; }' is not assignable to type 'PermissionAllowDecision'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:265-285 ---
+    265      },
+    266      buildAllow(
+    267        updatedInput: Record<string, unknown>,
+    268        opts?: {
+    269          userModified?: boolean
+    270          decisionReason?: PermissionDecisionReason
+    271          acceptFeedback?: string
+    272          contentBlocks?: ContentBlockParam[]
+    273        },
+    274      ): PermissionAllowDecision {
+    275>       return {
+    276          behavior: 'allow' as const,
+    277          updatedInput,
+    278          userModified: opts?.userModified ?? false,
+    279          ...(opts?.decisionReason && { decisionReason: opts.decisionReason }),
+    280          ...(opts?.acceptFeedback && { acceptFeedback: opts.acceptFeedback }),
+    281          ...(opts?.contentBlocks &&
+    282            opts.contentBlocks.length > 0 && {
+    283              contentBlocks: opts.contentBlocks,
+    284            }),
+    285        }
+  Types of property 'contentBlocks' are incompatible.
+    Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+      Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+        Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+          Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+            Index signature for type 'string' is missing in type 'TextBlockParam'.
