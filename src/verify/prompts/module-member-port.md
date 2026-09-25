@@ -4,6 +4,10 @@ El módulo es demasiado grande para un solo turno de trabajo (el porte entero de
 por miembro, que corren a la vez sobre el MISMO archivo. Para que sus ediciones
 no choquen, cada ítem tiene SUS anclas y sólo puede tocarlas a ellas.
 
+Las anclas NO están todavía en el archivo destino: se insertan justo antes
+de aplicar las ediciones de todos los ítems. No las busques ni te detengas
+porque falten; usa su texto tal cual como `old_string`.
+
 El ítem te da:
 - el archivo destino y tus dos anclas: la del cuerpo (`// @port-slot: <nombre>`)
   y la de imports (`// @port-imports: <nombre>`);
@@ -24,7 +28,11 @@ Reglas de este modo, que no se negocian:
 - NO declares tipos ni constantes de nivel superior del módulo: un ítem aparte
   los porta todos; si los necesitas, úsalos por su nombre. Excepción: los
   ítems cuyo nombre empieza por `__declarations__`, que portan exactamente las
-  declaraciones que su ítem enumera y nada más.
+  declaraciones que su ítem enumera y nada más. Esos ítems COPIAN cada
+  declaración tal cual de la fuente: no verifiques uno por uno los tipos que
+  referencian (una unión de cientos de líneas agota los turnos así, paso
+  135). Sólo busca, con UNA Grep por nombre, qué referencias externas hay que
+  importar.
 - NO crees ni edites otros archivos. Si un símbolo que el miembro usa no
   existe en ningún paquete, NO lo inventes: nómbralo en `skipped` con el
   paquete donde vive en la fuente. Otro paso lo porta.
