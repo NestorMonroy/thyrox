@@ -298,8 +298,13 @@ def cmd_local_plan(args) -> int:
     excluded = set()
     if args.exclude:
         excluded = {line.strip() for line in args.exclude.read_text().splitlines() if line.strip()}
-    log = args.log.read_text(encoding="utf-8", errors="ignore") if args.log.is_file() else ""
-    pending = tsc_reflect.blocking_pending(args.run, log.splitlines(), [])
+    return plan_local(args.log, args.bench, args.root, args.run, excluded, args.size)
+
+
+def plan_local(log_path: Path, bench: Path, root: Path, run: Path, excluded: set[str], size: int) -> int:
+    """El plan de la ruta 3 detrás del gate 4; 2 si no hay nada que proponer."""
+    log = log_path.read_text(encoding="utf-8", errors="ignore") if log_path.is_file() else ""
+    pending = tsc_reflect.blocking_pending(run, log.splitlines(), [])
     if pending:
         # Gate 4 del plan v2.2.0: con instancias vivas de un patrón en memoria,
         # la ruta por archivo no arranca; primero se barre (H-THYROX-186).
@@ -308,22 +313,69 @@ def cmd_local_plan(args) -> int:
               f"{instances} instancia(s) viva(s) sin aplicar, excluir ni cerrar; corre antes "
               "`tsc_cycle sweep plan`", file=sys.stderr)
         return 2
-    items = local_items(log, args.root, excluded, args.size)
+    items = local_items(log, root, excluded, size)
     if not items:
-        print(f"tsc_cycle local plan: {args.log} no tiene diagnósticos locales — nada que proponer",
+        print(f"tsc_cycle local plan: {log_path} no tiene diagnósticos locales fuera de lo excluido — "
+              "nada que proponer", file=sys.stderr)
+        return 2
+    write_items(bench, items)
+    return 0
+
+
+def in_flight_files(bench: Path) -> set[str] | None:
+    """Los archivos que el paso `bench` tiene en vuelo: la primera columna de
+    su `items.txt`. `None` si no existe: sin él no se sabe qué está en vuelo."""
+    items = bench / "items.txt"
+    if not items.is_file():
+        return None
+    return {line.split()[0] for line in items.read_text().splitlines() if line.strip()}
+
+
+def cmd_local_overlap(args) -> int:
+    """El paso N+1 de la ruta 3 sobre la cola del paso N (1F1B, cs25-v6 L04):
+    planea sólo archivos disjuntos de los que el N tiene en vuelo, arranca el
+    pool ya y declara el pipeline con `--after-ok` al del N, que sólo lo
+    lanza si el N asienta con 0 — entonces el árbol principal ya tiene lo que
+    el N exportó y es la base que el N+1 mide."""
+    in_flight = in_flight_files(args.after)
+    if in_flight is None:
+        print(f"tsc_cycle local overlap: falta {args.after / 'items.txt'} — sin él no se sabe qué "
+              "tiene en vuelo el paso anterior, y adelantar podría tocar sus archivos", file=sys.stderr)
+        return 2
+    code = plan_local(args.log, args.bench, args.root, args.run, in_flight, args.size)
+    if code:
+        return code
+    planned = in_flight_files(args.bench) or set()
+    if planned & in_flight:
+        print(f"tsc_cycle local overlap: el plan toca archivos en vuelo: {sorted(planned & in_flight)}",
               file=sys.stderr)
         return 2
-    directory = args.bench / "items"
+    name, previous = args.bench.name, args.after.name
+    pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+                                     route="local")
+    run = f"cd {shlex.quote(str(THYROX))} && {shlex.join(pipeline[pipeline.index('--') + 1:])}"
+    commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
+                ["bash", "bin/wait-jobs", "register", f"{name}-pipeline", str(args.bench / "pipeline.log"),
+                 "--after-ok", f"{previous}-pipeline", "--run", run]]
+    for command in commands:
+        print(shlex.join(command))
+        if not args.dry_run:
+            subprocess.run(command, check=True, cwd=THYROX)
+    return 0
+
+
+def write_items(bench: Path, items: list[tuple[str, str]]) -> None:
+    """Un `items/<n>.txt` por ítem y el `items.txt` que el pool lee."""
+    directory = bench / "items"
     directory.mkdir(parents=True, exist_ok=True)
     lines = []
     for n, (file, text) in enumerate(items, 1):
         path = directory / f"{n}.txt"
         path.write_text(text, encoding="utf-8")
         lines.append(f"{file} {path}")
-    (args.bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    (bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"local plan: {len(items)} ítem(s) sobre {len({f for f, _ in items})} archivo(s) -> "
-          f"{args.bench / 'items.txt'}")
-    return 0
+          f"{bench / 'items.txt'}")
 
 
 def _matching_log(log: str, keep) -> str:
@@ -505,6 +557,10 @@ def cmd_modules_launch(args) -> int:
         return 2
     commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
                                route=getattr(args, "route", "modules"))
+    # Al ledger, para que la barrera los recoja y una arista `--after-ok` de
+    # `local overlap` tenga predecesor: sin registrar, `dispatch` lo reporta
+    # SIN-PREDECESOR y el paso siguiente no mide nunca.
+    commands += [["bash", "bin/thyrox-bg", "register", f"{args.bench.name}-{job}"] for job in ("pool", "pipeline")]
     for command in commands:
         print(shlex.join(command))
         if not args.dry_run:
@@ -584,6 +640,21 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="local")
+    p = lsub.add_parser("overlap", help="el paso siguiente sobre la cola del actual: archivos disjuntos, "
+                                        "pool ya y pipeline tras el OK del anterior")
+    p.add_argument("--after", type=Path, required=True, help="el bench del paso en vuelo")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--run", type=Path, required=True)
+    p.add_argument("--size", type=int, default=2)
+    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--ledger", type=Path, required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--width", type=int, default=8)
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_local_overlap)
     sweep = sub.add_parser("sweep", help="paso 4 del plan v2.2.0: un ítem por patrón de la memoria")
     wsub = sweep.add_subparsers(dest="sweep_command", required=True)
     p = wsub.add_parser("plan", help="un ítem por patrón con instancias vivas, y gate4.json")

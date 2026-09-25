@@ -449,5 +449,75 @@ with tempfile.TemporaryDirectory() as tmp:
                          "--root", str(root), "--run", str(run)])
     assert_equal("excluidas con razón, la ruta local queda libre", 0, freed)
 
+# --- local overlap: el paso N+1 empieza en la cola del paso N ---------------
+# Pipeline parallelism (cs25-v6 L04, 1F1B): el tiempo muerto entre pasos es el
+# problema. Medido en el paso 155: 206 s del pool a ancho < 8, más el hueco de
+# commit, plan y lanzamiento. El paso N+1 puede pensar (pool) sobre archivos
+# que el N no toca, pero sólo MIDE cuando el N asienta con 0: su base es la que
+# el N deja en el árbol principal.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for name in ("busy", "free"):
+        path = root / f"src/{name}.ts"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(f"line {n}" for n in range(1, 21)) + "\n")
+    (root / "run").mkdir()
+    log = root / "overlap.log"
+    log.write_text("src/busy.ts(3,1): error TS2304: Cannot find name 'a'.\n"
+                   "src/free.ts(4,1): error TS2304: Cannot find name 'b'.\n")
+    previous = root / "step-200"
+    previous.mkdir()
+    (previous / "items.txt").write_text(f"src/busy.ts {previous}/items/1.txt\n")
+    assert_equal("in_flight_files lee la primera columna de items.txt", {"src/busy.ts"},
+                 tc.in_flight_files(previous))
+
+    def cli(argv: list[str]) -> tuple[int, str, str]:
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = tc.main(argv)
+        return code, out.getvalue(), err.getvalue()
+
+    def overlap(after: Path, bench: str) -> tuple[int, str, str]:
+        return cli(["local", "overlap", "--after", str(after), "--log", str(log),
+                    "--bench", str(root / bench), "--root", str(root), "--run", str(root / "run"),
+                    "--worktree", "/wt", "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1",
+                    "--dry-run"])
+
+    code, out, _ = overlap(previous, "step-201")
+    planned = [line.split()[0] for line in (root / "step-201/items.txt").read_text().splitlines()]
+    assert_equal("el paso siguiente no planea un archivo que el anterior tiene en vuelo",
+                 (0, ["src/free.ts"]), (code, planned))
+    commands = [line for line in out.splitlines() if line.strip()]
+    edge = [line for line in commands if "wait-jobs register step-201-pipeline" in line]
+    assert_equal("el pool arranca ya, con thyrox-bg start, y queda en el ledger", (True, True),
+                 (any("thyrox-bg start step-201-pool" in line for line in commands),
+                  any("thyrox-bg register step-201-pool" in line for line in commands)))
+    assert_equal("el pipeline NO arranca: se declara la arista --after-ok al pipeline anterior",
+                 (1, True, False),
+                 (len(edge), bool(edge) and "--after-ok step-200-pipeline" in edge[0],
+                  any("thyrox-bg start step-201-pipeline" in line for line in commands)))
+    assert_equal("el comando de la arista es el pipeline de la ruta 3, con su marcador", (True, True, True),
+                 (bool(edge) and "pool_pipeline.py" in edge[0], bool(edge) and "--unit file" in edge[0],
+                  bool(edge) and "--marker" not in edge[0]))
+
+    lonely = root / "step-300"
+    lonely.mkdir()
+    code, _, err = overlap(lonely, "step-301")
+    assert_equal("sin items.txt del anterior no se sabe qué está en vuelo: rehúsa sin planear",
+                 (2, False, True), (code, (root / "step-301/items.txt").exists(), "items.txt" in err))
+
+    everything = root / "step-400"
+    everything.mkdir()
+    (everything / "items.txt").write_text("src/busy.ts x\nsrc/free.ts y\n")
+    code, _, _ = overlap(everything, "step-401")
+    assert_equal("todo en vuelo: nada disjunto que adelantar, rehúsa", (2, False),
+                 (code, (root / "step-401/items.txt").exists()))
+
+    code, out, _ = cli(["local", "launch", "--bench", str(root / "step-201"), "--worktree", "/wt",
+                        "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1", "--dry-run"])
+    assert_equal("launch registra el pool y el pipeline: sin eso una arista no tiene predecesor",
+                 (0, True, True),
+                 (code, "thyrox-bg register step-201-pool" in out, "thyrox-bg register step-201-pipeline" in out))
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
