@@ -1,2 +1,2 @@
-tsconfig.json 1071
-tsconfig.tests.json 1071
+tsconfig.json 1067
+tsconfig.tests.json 1067
