@@ -99,9 +99,14 @@ def pending_outside(run: Path, log_lines: list[str], files: list[str],
     pending: dict[str, dict[str, int]] = {}
     for row in _read_jsonl(run / PATTERNS):
         regex = re.compile(row["signal"])
+        # El `include` acota el arreglo a sus archivos (`tsc_sweep` barre sólo
+        # ahí): fuera de él la señal no es trabajo pendiente del patrón. Sin
+        # esto, un patrón de pruebas bloqueaba por los diagnósticos iguales
+        # del código de producto, donde su arreglo no aplica.
+        scope = re.compile(row.get("include") or "")
         rest: dict[str, int] = {}
         for file, key in keys:
-            if file not in wanted and key not in claimed and regex.search(key):
+            if file not in wanted and key not in claimed and scope.search(file) and regex.search(key):
                 rest[file] = rest.get(file, 0) + 1
         if rest:
             pending[row["name"]] = rest

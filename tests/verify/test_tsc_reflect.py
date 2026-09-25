@@ -106,6 +106,15 @@ def main() -> int:
                      reflect.pending_outside(run, log, ["src/a.ts", "src/b.ts", "src/c.ts"]))
         assert_equal("sin memoria de patrones, nada pendiente", {},
                      reflect.pending_outside(run / "nada", log, ["src/a.ts"]))
+        # El `include` acota el patrón: su señal fuera de él no es pendiente.
+        scoped = run / "acotado"
+        scoped.mkdir()
+        (scoped / "patterns.jsonl").write_text(json.dumps(
+            {"name": "unknown-v", "signal": "TS18046", "fix": "f", "site": "", "replace": "",
+             "include": r"c\.ts$", "exclude": [], "applied": []}) + "\n")
+        assert_equal("la señal fuera del `include` del patrón no queda pendiente",
+                     {"unknown-v": {"src/c.ts": 2}},
+                     reflect.pending_outside(scoped, log, ["src/a.ts"]))
         # Un arreglo en la causa (otro archivo) cuenta como aplicación si la
         # candidata declara esos diagnósticos como sus objetivos.
         targets = ["src/c.ts: TS18046: 'w' is of type 'unknown'.",
