@@ -1,7 +1,54 @@
 import { NO_CONTENT_MESSAGE } from './constants/messages.ts'
 import { stripIdeContextTags } from '@thyrox/output/utils/displayTags.js'
 import { escapeRegExp } from '@thyrox/output/utils/stringUtils.js'
-import { SYNTHETIC_MESSAGES } from './messagesConstants.ts'
+import { SYNTHETIC_MESSAGES, SYNTHETIC_MODEL } from './messagesConstants.ts'
+import type { AssistantMessage, ContentItem, Message, NormalizedMessage, ProgressMessage, SystemCompactBoundaryMessage, ToolResultBlockParam, ToolUseBlock, UserMessage, RequestStartEvent, StreamEvent, TombstoneMessage, MessageOrigin, NormalizedAssistantMessage, PartialCompactDirection, StopHookInfo, SystemAPIErrorMessage, SystemAgentsKilledMessage, SystemApiMetricsMessage, SystemAwaySummaryMessage, SystemBridgeStatusMessage, SystemInformationalMessage, SystemLocalCommandMessage, SystemMemorySavedMessage, SystemMessageLevel, SystemMicrocompactBoundaryMessage, SystemPermissionRetryMessage, SystemScheduledTaskFireMessage, SystemStopHookSummaryMessage, SystemTurnDurationMessage, ToolUseSummaryMessage, AttachmentMessage, MessageContent } from './messageShapes.ts'
+import { randomUUID, type UUID } from 'node:crypto'
+import {
+  COMMAND_ARGS_TAG,
+  COMMAND_MESSAGE_TAG,
+  COMMAND_NAME_TAG,
+  LOCAL_COMMAND_CAVEAT_TAG,
+  LOCAL_COMMAND_STDOUT_TAG,
+} from '@thyrox/command-runtime/xml.js'
+import type { ContentBlockParam, ContentBlock, TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+import { feature } from 'bun:bundle'
+import type { BetaToolUseBlock, BetaContentBlock, BetaUsage as Usage, BetaMessage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { isConnectorTextBlock } from '@thyrox/provider/connectorTextTypes'
+import type { SpinnerMode } from '@thyrox/repl/components/Spinner.js'
+import type { APIError } from '@anthropic-ai/sdk'
+import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { PermissionMode } from './types.ts'
+import { logForDebugging, logAntError } from '@thyrox/local-observability/debug.js'
+import { formatTokens, formatFileSize, formatNumber } from '@thyrox/output/formatters'
+import { readEnv } from '@thyrox/config/env/utils.js'
+import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { OUTPUT_STYLE_CONFIG } from '@thyrox/config/outputStyles.js'
+import { logEvent } from '@thyrox/local-observability'
+import { normalizeLegacyToolName } from '@thyrox/permission/permissionRuleParser'
+import { API_PDF_MAX_PAGES, PDF_TARGET_RAW_SIZE } from '@thyrox/provider/apiLimits.js'
+import { validateImagesForAPI } from '@thyrox/storage/imageValidation.js'
+import { type Tool, type Tools, toolMatchesName, findToolByName } from '@thyrox/tool-registry/Tool.js'
+import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
+import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
+import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
+import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
+import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
+import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
+import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.ts'
+import { isSnipRuntimeEnabled, SNIP_NUDGE_TEXT } from './compaction/snipCompact.ts'
+import { isTodoV2Enabled } from './tasks.ts'
+import { isToolReferenceBlock, isToolSearchEnabledOptimistic } from './toolSearch.ts'
+import { count } from './internalUtils.ts'
+import { logError } from '@thyrox/local-observability/logging'
+import { getStrictToolResultPairing } from '@thyrox/app-host/bootstrap/state.js'
+import type { HookEvent } from './types/hooks.ts'
+import type { AgentId } from './idTypes.ts'
+import { safeParseJSON } from '@thyrox/storage/json.js'
+import { sanitizeToolNameForAnalytics } from './eventMetadata.ts'
+import { normalizeToolInput } from '@thyrox/provider/legacy/api.js'
+import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
 
 /**
  * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
@@ -36,7 +83,6 @@ export function isEmptyMessageText(text: string): boolean {
   )
 }
 
-import type { AssistantMessage, ContentItem, Message } from './messageShapes.ts'
 
 /**
  * El ultimo mensaje de asistente del historial, o `undefined` si no hay.
@@ -272,22 +318,6 @@ export const NO_RESPONSE_REQUESTED = 'No response requested.'
 export const SYNTHETIC_TOOL_RESULT_PLACEHOLDER =
   '[Tool result missing due to internal error]'
 
-import { randomUUID, type UUID } from 'node:crypto'
-import {
-  COMMAND_ARGS_TAG,
-  COMMAND_MESSAGE_TAG,
-  COMMAND_NAME_TAG,
-  LOCAL_COMMAND_CAVEAT_TAG,
-  LOCAL_COMMAND_STDOUT_TAG,
-} from '@thyrox/command-runtime/xml.js'
-import type {
-  NormalizedMessage,
-  ProgressMessage,
-  SystemCompactBoundaryMessage,
-  ToolResultBlockParam,
-  ToolUseBlock,
-  UserMessage,
-} from './messageShapes.ts'
 
 /**
  * Construye un mensaje de rol `user`.
@@ -568,16 +598,6 @@ export function extractTag(html: string, tagName: string): string | null {
  * unificaba con el `MessageContent` de `messageShapes`, que si toma el tipo
  * del SDK — de ahi el TS2322 al construir un `UserMessage`.
  */
-import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import { feature } from 'bun:bundle'
-import type { BetaToolUseBlock } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import { isConnectorTextBlock } from '@thyrox/provider/connectorTextTypes'
-import type { SpinnerMode } from '@thyrox/repl/components/Spinner.js'
-import type {
-  RequestStartEvent,
-  StreamEvent,
-  TombstoneMessage,
-} from './messageShapes.ts'
 export type { ContentBlockParam }
 
 /**
@@ -903,38 +923,6 @@ export function isCompactBoundaryMessage(
 // llaves —que un patron de `^export <palabra>` no ve y aporta dos por lado—.
 // Ciega a: si el cuerpo del simbolo hace lo mismo que el de la fuente; el
 // conteo mide presencia del nombre, no equivalencia de conducta.
-import type { APIError } from '@anthropic-ai/sdk'
-import type {
-  BetaContentBlock,
-} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { ContentBlock } from '@anthropic-ai/sdk/resources/index.mjs'
-import type { BetaUsage as Usage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { PermissionMode } from './types.ts'
-import { SYNTHETIC_MODEL } from './messagesConstants.ts'
-import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { formatTokens } from '@thyrox/output/formatters'
-import type {
-  MessageOrigin,
-  NormalizedAssistantMessage,
-  PartialCompactDirection,
-  StopHookInfo,
-  SystemAPIErrorMessage,
-  SystemAgentsKilledMessage,
-  SystemApiMetricsMessage,
-  SystemAwaySummaryMessage,
-  SystemBridgeStatusMessage,
-  SystemInformationalMessage,
-  SystemLocalCommandMessage,
-  SystemMemorySavedMessage,
-  SystemMessageLevel,
-  SystemMicrocompactBoundaryMessage,
-  SystemPermissionRetryMessage,
-  SystemScheduledTaskFireMessage,
-  SystemStopHookSummaryMessage,
-  SystemTurnDurationMessage,
-  ToolUseSummaryMessage,
-} from './messageShapes.ts'
 function baseCreateAssistantMessage({
   content,
   isApiErrorMessage = false,
@@ -2458,29 +2446,15 @@ export function hasSuccessfulToolCall(messages: Message[], toolName: string): bo
 //    escribio con el modo vigente cuando ocurrio el error, asi que cualquiera
 //    de las dos puede ser la que haya que emparejar.
 // ---------------------------------------------------------------------------
-import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import { readEnv } from '@thyrox/config/env/utils.js'
-import { checkStatsigFeatureGate_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
-import { OUTPUT_STYLE_CONFIG } from '@thyrox/config/outputStyles.js'
-import { logEvent } from '@thyrox/local-observability'
-import { logAntError } from '@thyrox/local-observability/debug.js'
-import { formatFileSize, formatNumber } from '@thyrox/output/formatters'
-import { normalizeLegacyToolName } from '@thyrox/permission/permissionRuleParser'
-import { API_PDF_MAX_PAGES, PDF_TARGET_RAW_SIZE } from '@thyrox/provider/apiLimits.js'
-import { validateImagesForAPI } from '@thyrox/storage/imageValidation.js'
-import { type Tool, type Tools, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
-import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
-import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
-import { FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/constants.js'
-import { SEND_MESSAGE_TOOL_NAME } from '@thyrox/tool-registry/tools/SendMessageTool/constants.js'
-import { TASK_CREATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskCreateTool/constants.js'
-import { TASK_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskOutputTool/constants.js'
-import { TASK_UPDATE_TOOL_NAME } from '@thyrox/tool-registry/tools/TaskUpdateTool/constants.js'
-import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.ts'
-import { isSnipRuntimeEnabled, SNIP_NUDGE_TEXT } from './compaction/snipCompact.ts'
-import type { AttachmentMessage, MessageContent } from './messageShapes.ts'
-import { isTodoV2Enabled } from './tasks.ts'
-import { isToolReferenceBlock, isToolSearchEnabledOptimistic } from './toolSearch.ts'
+
+
+
+
+
+
+
+
+
 
 /** Texto hermano que corta el `<functions>` expandido de un `tool_reference`. */
 const TOOL_REFERENCE_TURN_BOUNDARY = 'Tool loaded.'
@@ -3952,3 +3926,760 @@ You have exited auto mode. The user may now want to interact more directly. You 
   logAntError('normalizeAttachmentForAPI', new Error(`Unknown attachment type: ${attachment.type}`))
   return []
 }
+
+// --- porte por miembros: un ancla por ítem ---
+/**
+ * Cuenta las llamadas totales a una herramienta específica en el historial de
+ * mensajes. Se detiene antes en `maxCount` por eficiencia.
+ */
+export function countToolCalls(
+  messages: Message[],
+  toolName: string,
+  maxCount?: number,
+): number {
+  let count = 0
+  for (const msg of messages) {
+    if (!msg) continue
+    if (msg.type === 'assistant' && Array.isArray(msg.message.content)) {
+      const hasToolUse = msg.message.content.some(
+        (block): block is ToolUseBlock =>
+          block.type === 'tool_use' && block.name === toolName,
+      )
+      if (hasToolUse) {
+        count++
+        if (maxCount && count >= maxCount) {
+          return count
+        }
+      }
+    }
+  }
+  return count
+}
+/**
+ * Validacion defensiva: asegura que el emparejado tool_use/tool_result sea
+ * correcto.
+ *
+ * Cubre las dos direcciones:
+ * - Hacia adelante: inserta bloques tool_result de error sinteticos para los
+ *   bloques tool_use que no tienen resultado.
+ * - Hacia atras: retira bloques tool_result huerfanos que referencian
+ *   bloques tool_use inexistentes.
+ *
+ * Registra un evento cuando se activa, para ayudar a identificar la causa
+ * raiz.
+ *
+ * Modo estricto: cuando `getStrictToolResultPairing()` es `true` (HFI opta
+ * por el al arrancar), cualquier desajuste lanza en vez de repararse. Para
+ * la recoleccion de datos de entrenamiento, una respuesta del modelo
+ * condicionada por marcadores sinteticos queda contaminada — es mejor que
+ * la trayectoria falle a gastar el tiempo de un etiquetador en un turno
+ * que sera rechazado de todas formas al enviarlo.
+ */
+export function ensureToolResultPairing(
+  messages: (UserMessage | AssistantMessage)[],
+): (UserMessage | AssistantMessage)[] {
+  const result: (UserMessage | AssistantMessage)[] = []
+  let repaired = false
+
+  // Seguimiento de IDs de tool_use entre mensajes. El seenToolUseIds por
+  // mensaje de mas abajo solo atrapaba duplicados dentro del arreglo de
+  // contenido de UN asistente (el caso fusionado por
+  // normalizeMessagesForAPI). Cuando dos asistentes con message.id
+  // DISTINTOS llevan el mismo ID de tool_use —p. ej. el manejador de
+  // huerfanos volvio a empujar un asistente ya presente en mutableMessages
+  // con un message.id nuevo, o el recorrido hacia atras de
+  // normalizeMessagesForAPI se corto en un mensaje de usuario intermedio—
+  // el duplicado vivia en entradas separadas del resultado y la API
+  // rechazaba con "tool_use ids must be unique", bloqueando la sesion
+  // (CC-1212).
+  const allSeenToolUseIds = new Set<string>()
+
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i]!
+
+    if (msg.type !== 'assistant') {
+      // Un mensaje de usuario con bloques tool_result pero SIN un mensaje de
+      // asistente previo en la salida tiene tool_results huerfanos. El
+      // adelantamiento de asistente de mas abajo solo valida la adyacencia
+      // asistente→usuario; nunca ve mensajes de usuario en el indice 0 ni
+      // mensajes de usuario precedidos por otro usuario. Esto ocurre al
+      // reanudar cuando la transcripcion arranca a mitad de turno (p. ej.
+      // messages[0] es un tool_result cuyo par de asistente fue descartado
+      // por una compactacion anterior — la API rechaza con
+      // "messages.0.content: unexpected tool_use_id").
+      if (
+        msg.type === 'user' &&
+        Array.isArray(msg.message.content) &&
+        result.at(-1)?.type !== 'assistant'
+      ) {
+        const originalContent = msg.message.content as ContentBlockParam[]
+        const stripped = originalContent.filter(block => block.type !== 'tool_result')
+        if (stripped.length !== originalContent.length) {
+          repaired = true
+          // Si al retirar se vacio el mensaje y todavia no se empujo nada,
+          // se mantiene un marcador para que la carga siga empezando con un
+          // mensaje de usuario (normalizeMessagesForAPI corre antes que
+          // nosotros, asi que messages[1] es un asistente — descartar
+          // messages[0] por completo daria una carga que empieza con
+          // asistente, un 400 distinto).
+          const content: ContentBlockParam[] | null =
+            stripped.length > 0
+              ? stripped
+              : result.length === 0
+                ? [
+                    {
+                      type: 'text' as const,
+                      text: '[Orphaned tool result removed due to conversation resume]',
+                    },
+                  ]
+                : null
+          if (content !== null) {
+            result.push({
+              ...msg,
+              message: { ...msg.message, content },
+            })
+          }
+          continue
+        }
+      }
+      result.push(msg)
+      continue
+    }
+
+    // Colecciona los IDs de tool_result del lado servidor (los bloques
+    // *_tool_result llevan tool_use_id).
+    const assistantContent = (Array.isArray(msg.message.content) ? msg.message.content : []) as ContentBlockParam[]
+    const serverResultIds = new Set<string>()
+    for (const c of assistantContent) {
+      if ('tool_use_id' in c && typeof c.tool_use_id === 'string') {
+        serverResultIds.add(c.tool_use_id)
+      }
+    }
+
+    // Deduplica bloques tool_use por ID. Compara contra el Set
+    // allSeenToolUseIds entre mensajes, asi que un duplicado en un asistente
+    // POSTERIOR (message.id distinto, no fusionado por
+    // normalizeMessagesForAPI) tambien se retira. El seenToolUseIds por
+    // mensaje solo rastrea los IDs que sobreviven de ESTE asistente — la
+    // deteccion de huerfanos/resultados faltantes de mas abajo necesita una
+    // vista por mensaje, no la acumulada.
+    //
+    // Tambien retira bloques de uso de herramienta del lado servidor
+    // (server_tool_use, mcp_tool_use) cuyos bloques de resultado viven en el
+    // MISMO mensaje de asistente. Si el flujo se interrumpio antes de que
+    // llegara el resultado, el bloque de uso no tiene su *_tool_result
+    // correspondiente y la API rechaza con, por ejemplo, "advisor tool use
+    // without corresponding advisor_tool_result".
+    const seenToolUseIds = new Set<string>()
+    const finalContent = assistantContent.filter(block => {
+      if (block.type === 'tool_use') {
+        if (allSeenToolUseIds.has(block.id)) {
+          repaired = true
+          return false
+        }
+        allSeenToolUseIds.add(block.id)
+        seenToolUseIds.add(block.id)
+      }
+      if (
+        ((block.type as string) === 'server_tool_use' || (block.type as string) === 'mcp_tool_use') &&
+        'id' in block &&
+        !serverResultIds.has(block.id)
+      ) {
+        repaired = true
+        return false
+      }
+      return true
+    })
+
+    const assistantContentChanged = finalContent.length !== assistantContent.length
+
+    // Si al retirar los usos de herramienta de servidor huerfanos se vacia
+    // el arreglo de contenido, se inserta un marcador para que la API no
+    // rechace contenido de asistente vacio.
+    if (finalContent.length === 0) {
+      finalContent.push({
+        type: 'text' as const,
+        text: '[Tool use interrupted]',
+        citations: [],
+      })
+    }
+
+    const assistantMsg = assistantContentChanged
+      ? {
+          ...msg,
+          message: { ...msg.message, content: finalContent },
+        }
+      : msg
+
+    result.push(assistantMsg)
+
+    // Recolecta los IDs de tool_use de este mensaje de asistente
+    const toolUseIds = [...seenToolUseIds]
+
+    // Revisa el siguiente mensaje en busca de tool_results que emparejen.
+    // Tambien rastrea bloques tool_result duplicados (el mismo tool_use_id
+    // apareciendo dos veces) — para transcripciones corruptas antes de que
+    // saliera el Fix 1, el manejador de huerfanos corrio hasta el final
+    // varias veces, produciendo [asst(X), user(tr_X), asst(X), user(tr_X)],
+    // que normalizeMessagesForAPI fusiona en [asst([X,X]), user([tr_X,tr_X])].
+    // La deduplicacion de tool_use de arriba retira la segunda X; sin
+    // retirar tambien el segundo tr_X, la API rechaza con un 400 de
+    // tool_result duplicado y la sesion queda atascada.
+    const nextMsg = messages[i + 1]
+    const existingToolResultIds = new Set<string>()
+    let hasDuplicateToolResults = false
+
+    if (nextMsg?.type === 'user') {
+      const nextContent = nextMsg.message.content
+      if (Array.isArray(nextContent)) {
+        const nextContentArr = nextContent as ContentBlockParam[]
+        for (const block of nextContentArr) {
+          if (block.type === 'tool_result') {
+            const trId = block.tool_use_id
+            if (existingToolResultIds.has(trId)) {
+              hasDuplicateToolResults = true
+            }
+            existingToolResultIds.add(trId)
+          }
+        }
+      }
+    }
+
+    // Encuentra los IDs de tool_result faltantes (direccion hacia adelante:
+    // tool_use sin tool_result)
+    const toolUseIdSet = new Set(toolUseIds)
+    const missingIds = toolUseIds.filter(id => !existingToolResultIds.has(id))
+
+    // Encuentra los IDs de tool_result huerfanos (direccion hacia atras:
+    // tool_result sin tool_use)
+    const orphanedIds = [...existingToolResultIds].filter(
+      id => !toolUseIdSet.has(id),
+    )
+
+    if (
+      missingIds.length === 0 &&
+      orphanedIds.length === 0 &&
+      !hasDuplicateToolResults
+    ) {
+      continue
+    }
+
+    repaired = true
+
+    // Construye bloques tool_result de error sinteticos para los IDs
+    // faltantes
+    const syntheticBlocks: ToolResultBlockParam[] = missingIds.map(id => ({
+      type: 'tool_result' as const,
+      tool_use_id: id,
+      content: SYNTHETIC_TOOL_RESULT_PLACEHOLDER,
+      is_error: true,
+    }))
+
+    if (nextMsg?.type === 'user') {
+      // El siguiente mensaje ya es de usuario - se parcha
+      let content: ContentBlockParam[] = Array.isArray(nextMsg.message.content)
+        ? (nextMsg.message.content as ContentBlockParam[])
+        : [{ type: 'text' as const, text: typeof nextMsg.message.content === 'string' ? nextMsg.message.content : '' }]
+
+      // Retira los tool_results huerfanos y deduplica IDs de tool_result
+      // repetidos
+      if (orphanedIds.length > 0 || hasDuplicateToolResults) {
+        const orphanedSet = new Set(orphanedIds)
+        const seenTrIds = new Set<string>()
+        content = content.filter(block => {
+          if (block.type === 'tool_result') {
+            const trId = block.tool_use_id
+            if (orphanedSet.has(trId)) return false
+            if (seenTrIds.has(trId)) return false
+            seenTrIds.add(trId)
+          }
+          return true
+        })
+      }
+
+      const patchedContent: ContentBlockParam[] = [...syntheticBlocks, ...content]
+
+      // Si el contenido quedo vacio tras retirar huerfanos, se omite el
+      // mensaje de usuario
+      if (patchedContent.length > 0) {
+        const patchedNext: UserMessage = {
+          ...nextMsg,
+          message: {
+            ...nextMsg.message,
+            content: patchedContent,
+          },
+        }
+        i++
+        // Anteponer sinteticos al contenido existente puede producir un
+        // hermano [tool_result, text] que el smoosh dentro de normalize
+        // nunca vio (el emparejado corre despues de normalize). Se vuelve a
+        // aplicar smoosh solo a este mensaje.
+        result.push(
+          checkStatsigFeatureGate_CACHED_MAY_BE_STALE('tengu_chair_sermon')
+            ? (smooshSystemReminderSiblings([patchedNext])[0] ?? patchedNext)
+            : patchedNext,
+        )
+      } else {
+        // El contenido quedo vacio tras retirar los tool_results huerfanos.
+        // Aun asi se necesita un mensaje de usuario aqui para mantener la
+        // alternancia de roles — si no, el marcador de asistente que
+        // acabamos de empujar quedaria seguido inmediatamente por el
+        // SIGUIENTE mensaje de asistente, que la API rechaza con un 400 de
+        // alternancia de rol (no el 400 de ID duplicado que manejamos aqui).
+        i++
+        result.push(
+          createUserMessage({
+            content: NO_CONTENT_MESSAGE,
+            isMeta: true,
+          }),
+        )
+      }
+    } else {
+      // No sigue ningun mensaje de usuario - se inserta un mensaje de
+      // usuario sintetico (solo si hay IDs faltantes)
+      if (syntheticBlocks.length > 0) {
+        result.push(
+          createUserMessage({
+            content: syntheticBlocks,
+            isMeta: true,
+          }),
+        )
+      }
+    }
+  }
+
+  if (repaired) {
+    // Captura informacion de diagnostico para ayudar a identificar la causa
+    // raiz
+    const messageTypes = messages.map((m, idx) => {
+      if (m.type === 'assistant') {
+        const contentArr = (Array.isArray(m.message.content) ? m.message.content : []) as ContentBlockParam[]
+        const toolUses = contentArr
+          .filter((b): b is Extract<ContentBlockParam, { type: 'tool_use' }> => b.type === 'tool_use')
+          .map(b => b.id)
+        const serverToolUses = contentArr
+          .filter(b => (b.type as string) === 'server_tool_use' || (b.type as string) === 'mcp_tool_use')
+          .map(b => ('id' in b ? b.id : ''))
+        const parts = [
+          `id=${m.message.id}`,
+          `tool_uses=[${toolUses.join(',')}]`,
+        ]
+        if (serverToolUses.length > 0) {
+          parts.push(`server_tool_uses=[${serverToolUses.join(',')}]`)
+        }
+        return `[${idx}] assistant(${parts.join(', ')})`
+      }
+      if (m.type === 'user' && Array.isArray(m.message.content)) {
+        const contentArr = m.message.content as ContentBlockParam[]
+        const toolResults = contentArr
+          .filter((b): b is Extract<ContentBlockParam, { type: 'tool_result' }> => b.type === 'tool_result')
+          .map(b => b.tool_use_id)
+        if (toolResults.length > 0) {
+          return `[${idx}] user(tool_results=[${toolResults.join(',')}])`
+        }
+      }
+      return `[${idx}] ${m.type}`
+    })
+
+    if (getStrictToolResultPairing()) {
+      throw new Error(
+        `ensureToolResultPairing: tool_use/tool_result pairing mismatch detected (strict mode). ` +
+          `Refusing to repair — would inject synthetic placeholders into model context. ` +
+          `Message structure: ${messageTypes.join('; ')}. See inc-4977.`,
+      )
+    }
+
+    logEvent('tengu_tool_result_pairing_repaired', {
+      messageCount: messages.length,
+      repairedMessageCount: result.length,
+      messageTypes: messageTypes.join('; '),
+    })
+    logError(
+      new Error(
+        `ensureToolResultPairing: repaired missing tool_result blocks (${messages.length} -> ${result.length} messages). Message structure: ${messageTypes.join('; ')}`,
+      ),
+    )
+  }
+
+  return result
+}
+/**
+ * Finds the index of the last compact boundary marker in the messages array
+ * @returns The index of the last compact boundary, or -1 if none found
+ */
+export function findLastCompactBoundaryIndex<
+  T extends Message | NormalizedMessage,
+>(messages: T[]): number {
+  // Scan backwards to find the most recent compact boundary
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message && isCompactBoundaryMessage(message)) {
+      return i
+    }
+  }
+  return -1 // No boundary found
+}
+
+
+/**
+ * DIVERGENCIA DECLARADA: la firma de la fuente tipa este predicado como
+ * `message is AttachmentMessage<HookAttachment>`, con `HookAttachment`
+ * importado de `attachments.ts` (aun sin portar en este arbol). El parametro
+ * de tipo de `AttachmentMessage` es puramente nominal —su alias en
+ * `messageShapes.ts` no lo usa en el cuerpo—, asi que omitirlo produce el
+ * mismo tipo estructural sin inventar el simbolo que falta.
+ */
+function isHookAttachmentMessage(
+  message: Message,
+): message is AttachmentMessage {
+  return (
+    message.type === 'attachment' &&
+    (message.attachment.type === 'hook_blocking_error' ||
+      message.attachment.type === 'hook_cancelled' ||
+      message.attachment.type === 'hook_error_during_execution' ||
+      message.attachment.type === 'hook_non_blocking_error' ||
+      message.attachment.type === 'hook_success' ||
+      message.attachment.type === 'hook_system_message' ||
+      message.attachment.type === 'hook_additional_context' ||
+      message.attachment.type === 'hook_stopped_continuation')
+  )
+}
+
+function getInProgressHookCount(
+  messages: NormalizedMessage[],
+  toolUseID: string,
+  hookEvent: HookEvent,
+): number {
+  return count(
+    messages,
+    _ =>
+      _.type === 'progress' &&
+      (_.data as { type: string; hookEvent: HookEvent }).type === 'hook_progress' &&
+      (_.data as { type: string; hookEvent: HookEvent }).hookEvent === hookEvent &&
+      _.parentToolUseID === toolUseID,
+  )
+}
+
+/**
+ * DIVERGENCIA DECLARADA, misma causa que `isHookAttachmentMessage` arriba: el
+ * predicado del `.filter()` usa `AttachmentMessage` sin el generico
+ * `HookAttachmentWithName` (top-level de este modulo, aun sin portar) — el
+ * generico es decorativo y `_.attachment.hookName` resuelve por la firma
+ * indice de `AttachmentMessage['attachment']` en ambos casos.
+ */
+function getResolvedHookCount(
+  messages: NormalizedMessage[],
+  toolUseID: string,
+  hookEvent: HookEvent,
+): number {
+  const uniqueHookNames = new Set(
+    messages
+      .filter(
+        (_): _ is AttachmentMessage =>
+          isHookAttachmentMessage(_) &&
+          _.attachment.toolUseID === toolUseID &&
+          _.attachment.hookEvent === hookEvent,
+      )
+      .map(_ => _.attachment.hookName),
+  )
+  return uniqueHookNames.size
+}
+
+export function hasUnresolvedHooks(
+  messages: NormalizedMessage[],
+  toolUseID: string,
+  hookEvent: HookEvent,
+) {
+  const inProgressHookCount = getInProgressHookCount(
+    messages,
+    toolUseID,
+    hookEvent,
+  )
+  const resolvedHookCount = getResolvedHookCount(messages, toolUseID, hookEvent)
+
+  if (inProgressHookCount > resolvedHookCount) {
+    return true
+  }
+
+  return false
+}
+
+
+
+
+export function getSiblingToolUseIDs(
+  message: NormalizedMessage,
+  messages: Message[],
+): Set<string> {
+  const toolUseID = getToolUseID(message)
+  if (!toolUseID) {
+    return new Set()
+  }
+
+  const unnormalizedMessage = messages.find(
+    (_): _ is AssistantMessage =>
+      _.type === 'assistant' &&
+      Array.isArray(_.message.content) &&
+      _.message.content.some(block => block.type === 'tool_use' && (block as ToolUseBlock).id === toolUseID),
+  )
+  if (!unnormalizedMessage) {
+    return new Set()
+  }
+
+  const messageID = unnormalizedMessage.message.id
+  const siblingMessages = messages.filter(
+    (_): _ is AssistantMessage =>
+      _.type === 'assistant' && _.message.id === messageID,
+  )
+
+  return new Set(
+    siblingMessages.flatMap(_ =>
+      Array.isArray(_.message.content)
+        ? _.message.content.filter(_ => _.type === 'tool_use').map(_ => (_ as ToolUseBlock).id)
+        : [],
+    ),
+  )
+}
+export function isThinkingMessage(message: Message): boolean {
+  if (message.type !== 'assistant') return false
+  if (!Array.isArray(message.message.content)) return false
+  return message.message.content.every(
+    block => block.type === 'thinking' || block.type === 'redacted_thinking',
+  )
+}
+export function normalizeContentFromAPI(
+  contentBlocks: BetaMessage['content'],
+  tools: Tools,
+  agentId?: AgentId,
+): BetaMessage['content'] {
+  if (!contentBlocks) {
+    return []
+  }
+  return contentBlocks.map(contentBlock => {
+    switch (contentBlock.type) {
+      case 'tool_use': {
+        if (
+          typeof contentBlock.input !== 'string' &&
+          !(typeof contentBlock.input === 'object' && contentBlock.input !== null)
+        ) {
+          // Hacemos streaming de los inputs de tool como cadenas, pero al caer al fallback llegan como objetos.
+          throw new Error('Tool use input must be a string or object')
+        }
+
+        // Con el streaming de grano fino activo, la API devuelve un JSON serializado como cadena.
+        // La API tiene un comportamiento extrano: devuelve JSONs serializados anidados, asi que hay
+        // que parsearlos de forma recursiva. Si el valor de nivel superior devuelto por la API es
+        // una cadena vacia, deberia convertirse en un objeto vacio (los valores anidados deberian quedar como cadena vacia).
+        // TODO: Esto necesita un parche porque los campos recursivos aun pueden llegar serializados.
+        let normalizedInput: unknown
+        if (typeof contentBlock.input === 'string') {
+          const parsed = safeParseJSON(contentBlock.input)
+          if (parsed === null && contentBlock.input.length > 0) {
+            // Diagnostico TET/FC-v3: el JSON de input de tool que llego por streaming no pudo
+            // parsearse. Caemos a {} lo que hace que la validacion aguas abajo
+            // vea el input vacio. El prefijo crudo solo va al log de debug — no
+            // existe todavia una columna de proto etiquetada PII para el.
+            logEvent('tengu_tool_input_json_parse_fail', {
+              toolName: sanitizeToolNameForAnalytics(contentBlock.name),
+              inputLen: contentBlock.input.length,
+            })
+            if (readEnv('USER_TYPE') === 'ant') {
+              logForDebugging(
+                `tool input JSON parse fail: ${contentBlock.input.slice(0, 200)}`,
+                { level: 'warn' },
+              )
+            }
+          }
+          normalizedInput = parsed ?? {}
+        } else {
+          normalizedInput = contentBlock.input
+        }
+
+        // Luego aplica las correcciones especificas de la tool
+        if (typeof normalizedInput === 'object' && normalizedInput !== null) {
+          const tool = findToolByName(tools, contentBlock.name)
+          if (tool) {
+            try {
+              normalizedInput = normalizeToolInput(
+                tool,
+                normalizedInput as { [key: string]: unknown },
+                agentId,
+              )
+            } catch (error) {
+              logError(new Error('Error normalizing tool input: ' + error))
+              // Mantiene el input original si la normalizacion falla
+            }
+          }
+        }
+
+        return {
+          ...contentBlock,
+          input: normalizedInput,
+        }
+      }
+      case 'text':
+        if (contentBlock.text.trim().length === 0) {
+          logEvent('tengu_model_whitespace_response', {
+            length: contentBlock.text.length,
+          })
+        }
+        // Devuelve el bloque tal cual para preservar el contenido exacto para el cacheo del prompt.
+        // Los bloques de texto vacios se manejan en la capa de presentacion y no deben
+        // alterarse aqui.
+        return contentBlock
+      case 'code_execution_tool_result':
+      case 'mcp_tool_use':
+      case 'mcp_tool_result':
+      case 'container_upload':
+        // Bloques de contenido especificos de beta - pasan tal cual
+        return contentBlock
+      case 'server_tool_use':
+        if (typeof contentBlock.input === 'string') {
+          return {
+            ...contentBlock,
+            input: (safeParseJSON(contentBlock.input) ?? {}) as {
+              [key: string]: unknown
+            },
+          }
+        }
+        return contentBlock
+      default:
+        return contentBlock
+    }
+  })
+}
+/**
+ * Strip advisor blocks from messages. The API rejects server_tool_use blocks
+ * with name "advisor" unless the advisor beta header is present.
+ */
+export function stripAdvisorBlocks(
+  messages: (UserMessage | AssistantMessage)[],
+): (UserMessage | AssistantMessage)[] {
+  let changed = false
+  const result = messages.map(msg => {
+    if (msg.type !== 'assistant') return msg
+    const content = Array.isArray(msg.message.content) ? msg.message.content : []
+    const filtered = content.filter(b => typeof b !== 'string' && !isAdvisorBlock(b))
+    if (filtered.length === content.length) return msg
+    changed = true
+    if (
+      filtered.length === 0 ||
+      filtered.every(
+        b =>
+          b.type === 'thinking' ||
+          b.type === 'redacted_thinking' ||
+          (b.type === 'text' && (!b.text || !b.text.trim())),
+      )
+    ) {
+      filtered.push({
+        type: 'text' as const,
+        text: '[Advisor response]',
+        citations: [],
+      })
+    }
+    return { ...msg, message: { ...msg.message, content: filtered } }
+  })
+  return changed ? result : messages
+}
+/**
+ * Elimina los bloques de thinking/redacted_thinking de cualquier mensaje
+ * assistant cuya conexión de origen difiere de `currentConnectionId`. La
+ * API de Anthropic ata las firmas de los bloques de thinking al contexto
+ * de autenticación (API key + organización) que las produjo — cambiar a
+ * otra conexión (Claude Account ↔ proxy Anthropic Compatible ↔ cualquier
+ * otro proveedor) hace que las firmas persistidas ya no encajen y la API
+ * rechaza con `messages.N.content.K: Invalid signature in thinking block`.
+ *
+ * `currentConnectionId === undefined` significa la ruta guiada por env
+ * (sin conexiones); en ese caso cualquier bloque de thinking de un turno
+ * etiquetado con una conexión previa es sospechoso → se elimina.
+ *
+ * Se ejecuta ANTES de `stripInvalidThinkingBlocks` para que la comprobación
+ * de forma malformada, más barata, opere sobre la lista ya recortada.
+ */
+export function stripCrossConnectionThinkingBlocks(
+  messages: Message[],
+  currentConnectionId: string | undefined,
+): Message[] {
+  let changed = false
+  // Require diferido local para evitar un ciclo estático agent → provider.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { resolveConnectionForModel } = require(
+    '@thyrox/provider/providers.js',
+  ) as typeof import('@thyrox/provider/providers.js')
+  const result = messages.map(msg => {
+    if (msg.type !== 'assistant') return msg
+    const content = msg.message.content
+    if (!Array.isArray(content)) return msg
+    const messageModel = msg.message.model as string | undefined
+    if (!messageModel) return msg
+    const messageConn = resolveConnectionForModel(messageModel)?.id
+    // Misma conexión → las firmas de thinking siguen aplicando.
+    if (messageConn === currentConnectionId) return msg
+    // Conexión distinta (o desconocida vs. conocida) → elimina thinking.
+    const filtered = content.filter(block => !isThinkingBlock(block))
+    if (filtered.length === content.length) return msg
+    changed = true
+    return {
+      ...msg,
+      message: { ...msg.message, content: filtered },
+    } as typeof msg
+  })
+  return changed ? result : messages
+}
+/**
+ * Strip thinking/redacted_thinking blocks that the Anthropic API will
+ * reject for shape reasons — empty `thinking` text, or missing
+ * `signature`. Belt-and-suspenders next to
+ * `stripCrossConnectionThinkingBlocks`: catches blocks from same-
+ * connection turns that got malformed somehow (provider bugs,
+ * partial streams, …).
+ */
+export function stripInvalidThinkingBlocks(messages: Message[]): Message[] {
+  let changed = false
+  const result = messages.map(msg => {
+    if (msg.type !== 'assistant') return msg
+    const content = msg.message.content
+    if (!Array.isArray(content)) return msg
+    const filtered = content.filter(block => {
+      if (!isThinkingBlock(block)) return true
+      const b = block as { thinking?: unknown; signature?: unknown; data?: unknown }
+      if (block.type === 'redacted_thinking') {
+        return typeof b.data === 'string' && b.data.length > 0
+      }
+      const hasText = typeof b.thinking === 'string' && b.thinking.length > 0
+      const hasSig = typeof b.signature === 'string' && b.signature.length > 0
+      return hasText && hasSig
+    })
+    if (filtered.length === content.length) return msg
+    changed = true
+    return {
+      ...msg,
+      message: { ...msg.message, content: filtered },
+    } as typeof msg
+  })
+  return changed ? result : messages
+}
+// Hook attachments that have a hookName field (excludes HookPermissionDecisionAttachment)
+// SKIPPED: HookAttachmentWithName depende de HookAttachment y
+// HookPermissionDecisionAttachment, que attachments.ts todavia no exporta.
+
+// --
+// Plan file structure experiment arms.
+// Each arm returns the full Phase 4 section so the surrounding template
+// stays a flat string interpolation with no conditionals inline.
+
+export const PLAN_PHASE4_CONTROL = `### Phase 4: Final Plan
+Goal: Write your final plan to the plan file (the only file you can edit).
+- Begin with a **Context** section: explain why this change is being made — the problem or need it addresses, what prompted it, and the intended outcome
+- Include only your recommended approach, not all alternatives
+- Ensure that the plan file is concise enough to scan quickly, but detailed enough to execute effectively
+- Include the paths of critical files to be modified
+- Reference existing functions and utilities you found that should be reused, with their file paths
+- Include a verification section describing how to test the changes end-to-end (run the code, use MCP tools, run tests)`
+
+
+
+
+
+

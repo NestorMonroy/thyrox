@@ -1,0 +1,29 @@
+146 161 nuevos 24 desaparecidos 9
++ 1 ../agent/attachments.ts: TS2304: Cannot find name 'getMemoryFilesForNestedDirectory'.
++ 3 ../agent/attachments.ts: TS2304: Cannot find name 'memoryFilesToAttachments'.
++ 1 ../agent/hooks.ts: TS2304: Cannot find name 'TypedSyncHookOutput'.
++ 2 ../agent/hooks.ts: TS2304: Cannot find name 'logForDiagnosticsNoPII'.
++ 1 ../agent/hooks.ts: TS2339: Property 'length' does not exist on type '{}'.
++ 1 ../agent/hooks.ts: TS2345: Argument of type '<unión de 2>' is not assignable to parameter of type 'string'.
++ 1 ../agent/hooks.ts: TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
++ 1 ../agent/hooks.ts: TS2724: '"./types/hooks.js"' has no exported member named 'promptRequestSchema'. Did you mean 'PromptRequest'?
++ 1 ../agent/hooks.ts: TS2724: '"@thyrox/config/settings/types.js"' has no exported member named 'SkillHookMatcher'. Did you mean 'HookMatcher'?
++ 1 ../agent/hooks.ts: TS2741: Property 'async' is missing in type 'AsyncHookJSONOutput' but required in type '{ async: true; asyncTimeout?: <unión de 2>; }'.
++ 1 ../agent/hooks.ts: TS7006: Parameter 'hook' implicitly has an 'any' type.
++ 1 ../agent/messages.ts: TS18048: '_.attachment' is possibly 'undefined'.
++ 1 ../agent/messages.ts: TS2677: A type predicate's type must be assignable to its parameter's type.
++ 1 ../repl/src/components/Message.tsx: TS2322: Type '{ [key: string]: unknown; type: string; toolUseID?: <unión de 2>; } & { [key: string]: unknown; type: string; }' is not assignable to type 'Attachment'.
++ 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS1360: Type '<unión de 33>' does not satisfy the expected type '<unión de 35>'.
++ 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS2339: Property 'paused' does not exist on type '{ type: "goal_status"; met: boolean; condition: string; sentinel?: <unión de 2>; reason?: <unión de 2>; iterations?: <unión de 2>; durationMs?: <unión de 2
++ 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS2339: Property 'truncated' does not exist on type '<unión de 2>'.
++ 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS2345: Argument of type '(msg: { text: string; from: string; color: <unión de 2>; summary: <unión de 2>; }, idx: number) => React.JSX.Element' is not assignable to parameter of type '(value: { from: strin
++ 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS2769: No overload matches this call.
++ 1 ../repl/src/screens/REPLView.tsx: TS2769: No overload matches this call.
++ 1 ../storage/src/claudemd.ts: TS2304: Cannot find name 'parseMemoryFileContent'.
+- 1 ../repl/src/components/messages/AttachmentMessage.tsx: TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+- 1 ../repl/src/processUserInput/processSlashCommand.tsx: TS2322: Type 'unknown[]' is not assignable to type '(<unión de 5>)[]'.
+- 1 ../repl/src/processUserInput/processSlashCommand.tsx: TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+- 1 ../repl/src/processUserInput/processUserInput.ts: TS18046: 'm' is of type 'unknown'.
+- 3 ../repl/src/processUserInput/processUserInput.ts: TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+- 1 ../repl/src/processUserInput/processUserInput.ts: TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+- 1 ../repl/src/screens/REPLView.tsx: TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.
