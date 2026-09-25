@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import sys
@@ -105,6 +106,73 @@ def imported_copies(cwd: Path, consumers: set[str], applied: set[str], dest: Pat
             for suffix in (".js", ".ts", ".tsx", ".mjs"):
                 name = name.removesuffix(suffix)
             found |= stems.get(name, set())
+    return found
+
+
+def _package_map(dest: Path) -> dict[str, tuple[Path, dict]]:
+    """Nombre de paquete -> (su directorio, su mapa `exports`), sin seguir
+    enlaces y podando `node_modules`: el árbol tiene cientos de enlaces de
+    workspace y un recorrido que los siga no termina (h-thyrox-29)."""
+    found: dict[str, tuple[Path, dict]] = {}
+    for root, dirs, files in os.walk(dest, followlinks=False):
+        dirs[:] = [d for d in dirs if d not in ("node_modules", "dist")]
+        if "package.json" in files:
+            try:
+                data = json.loads((Path(root) / "package.json").read_text())
+            except (OSError, ValueError):
+                continue
+            exports = data.get("exports")
+            if isinstance(data.get("name"), str):
+                found[data["name"]] = (Path(root).resolve(), exports if isinstance(exports, dict) else {})
+    return found
+
+
+def _resolve_package(spec: str, packages: dict[str, tuple[Path, dict]]) -> set[Path]:
+    """Un import de paquete del workspace resuelto por su `exports`; sin
+    entrada, por las dos formas de directorio que el árbol usa."""
+    parts = spec.split("/")
+    name = "/".join(parts[:2]) if spec.startswith("@") else parts[0]
+    if name not in packages:
+        return set()
+    root, exports = packages[name]
+    sub = spec[len(name):].lstrip("/")
+    key = "./" + sub if sub else "."
+    for candidate in (key, key.removesuffix(".js"), key + ".js"):
+        target = exports.get(candidate)
+        if isinstance(target, dict):
+            target = target.get("default") or target.get("import")
+        if isinstance(target, str):
+            return {(root / target).resolve()}
+    if not sub:
+        return set()
+    return set().union(*(_resolve_relative(base / "x", "./" + sub) for base in (root / "src", root)))
+
+
+def reachable_copies(cwd: Path, consumers: set[str], applied: set[str], dest: Path,
+                     depth: int = 6) -> set[str]:
+    """Las copias aplicadas a las que un consumidor afectado llega por la
+    cadena de imports, hasta `depth` saltos. Un tipo que se rompe en una copia
+    llega re-exportado por módulos que no se copiaron: el primer salto no lo
+    ve, y sin esto la bisección recorre el lote entero."""
+    packages = _package_map(dest)
+    paths = {(dest / rel).resolve(): rel for rel in applied}
+    frontier = {(cwd / c).resolve() for c in consumers}
+    seen = set(frontier)
+    found: set[str] = set()
+    for _ in range(depth):
+        following: set[Path] = set()
+        for path in frontier:
+            if not path.is_file():
+                continue
+            for spec in _IMPORT.findall(path.read_text(errors="ignore")):
+                targets = _resolve_relative(path, spec) if spec.startswith(".") else _resolve_package(spec, packages)
+                for target in targets:
+                    if target in paths:
+                        found.add(paths[target])
+                    if target not in seen and target.is_file():
+                        seen.add(target)
+                        following.add(target)
+        frontier = following
     return found
 
 
@@ -189,8 +257,16 @@ def run_copy_step(dest: Path, source: Path, files: list[str], before_lines: list
             for rel in suspects:
                 outcomes[rel] = "rejected-consumer"
             applied, after, new = trial, lines, remaining
+        # El residuo que ningún import directo explica se biseca, pero sólo
+        # entre las copias a las que sus consumidores llegan por la cadena de
+        # imports: en lote-06, 3 diagnósticos residuales hicieron bisecar 70
+        # copias a ~31 s por pasada. Si la bisección acotada no reproduce lo
+        # nuevo por sí sola, se cae al lote entero.
         while new and applied:
-            blamed = culprits(sorted(applied)) or sorted(applied)
+            _, by_file = _new_diagnostics(before_lines, after)
+            pool = reachable_copies(cwd, set(by_file), applied, dest) or applied
+            blamed = culprits(sorted(pool)) if pool != applied else []
+            blamed = blamed or culprits(sorted(applied)) or sorted(applied)
             for rel in blamed:
                 outcomes[rel] = "rejected-consumer"
             applied -= set(blamed)

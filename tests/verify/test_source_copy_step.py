@@ -168,8 +168,18 @@ with tempfile.TemporaryDirectory() as directory:
     (dest / "c4.ts").write_text("import { q } from './sub/p1.js'\n")
     assert_equal("un import relativo culpa a su ruta, no a la homónima", {"sub/p1.ts"},
                  step.imported_copies(dest, {"c4.ts"}, {"p1.ts", "sub/p1.ts"}, dest))
-    # batch + imports (retira p1) + bisección del residuo de 4 + confirm.
-    assert_equal("sólo el residuo se biseca", 8, report["tsc_runs"])
+    # batch + imports (retira p1) + una pasada sobre p2, la única copia a la
+    # que c2 llega por la cadena de imports + confirm.
+    assert_equal("el residuo se biseca sólo entre lo alcanzable", 4, report["tsc_runs"])
+    # La cadena cruza un paquete: su `exports` resuelve el subpath al archivo.
+    pkg = dest / "pkg"
+    (pkg / "lib").mkdir(parents=True)
+    (pkg / "package.json").write_text(json.dumps({"name": "@t/pkg", "exports": {
+        "./types.js": {"types": "./dist/types.d.ts", "default": "./lib/types.ts"}}}))
+    (pkg / "lib" / "types.ts").write_text("export type { Q } from '../../a.js'\n")
+    (dest / "c5.ts").write_text("import type { Q } from '@t/pkg/types.js'\n")
+    assert_equal("la cadena de imports cruza el `exports` de un paquete", {"a.ts"},
+                 step.reachable_copies(dest, {"c5.ts"}, {"a.ts", "b.ts"}, dest))
 
 print(f"\n{passed} ok, {failed} fallos")
 sys.exit(1 if failed else 0)
