@@ -1,0 +1,206 @@
+[
+ {
+  "name": "skillSearchModules",
+  "start": 145,
+  "end": 152,
+  "present": false
+ },
+ {
+  "name": "autoModeStateModule",
+  "start": 153,
+  "end": 251,
+  "present": false
+ },
+ {
+  "name": "BRIEF_TOOL_NAME",
+  "start": 252,
+  "end": 257,
+  "present": false
+ },
+ {
+  "name": "sessionTranscriptModule",
+  "start": 258,
+  "end": 310,
+  "present": false
+ },
+ {
+  "name": "TODO_REMINDER_CONFIG",
+  "start": 311,
+  "end": 315,
+  "present": true
+ },
+ {
+  "name": "PLAN_MODE_ATTACHMENT_CONFIG",
+  "start": 316,
+  "end": 320,
+  "present": true
+ },
+ {
+  "name": "AUTO_MODE_ATTACHMENT_CONFIG",
+  "start": 321,
+  "end": 325,
+  "present": true
+ },
+ {
+  "name": "MAX_MEMORY_LINES",
+  "start": 326,
+  "end": 326,
+  "present": false
+ },
+ {
+  "name": "MAX_MEMORY_BYTES",
+  "start": 334,
+  "end": 335,
+  "present": false
+ },
+ {
+  "name": "RELEVANT_MEMORIES_CONFIG",
+  "start": 336,
+  "end": 347,
+  "present": true
+ },
+ {
+  "name": "VERIFY_PLAN_REMINDER_CONFIG",
+  "start": 348,
+  "end": 351,
+  "present": true
+ },
+ {
+  "name": "FileAttachment",
+  "start": 352,
+  "end": 363,
+  "present": true
+ },
+ {
+  "name": "CompactFileReferenceAttachment",
+  "start": 364,
+  "end": 370,
+  "present": true
+ },
+ {
+  "name": "PDFReferenceAttachment",
+  "start": 371,
+  "end": 379,
+  "present": true
+ },
+ {
+  "name": "AlreadyReadFileAttachment",
+  "start": 380,
+  "end": 391,
+  "present": true
+ },
+ {
+  "name": "AgentMentionAttachment",
+  "start": 392,
+  "end": 396,
+  "present": false
+ },
+ {
+  "name": "AsyncHookResponseAttachment",
+  "start": 397,
+  "end": 408,
+  "present": false
+ },
+ {
+  "name": "HookAttachment",
+  "start": 409,
+  "end": 437,
+  "present": false
+ },
+ {
+  "name": "HookPermissionDecisionAttachment",
+  "start": 438,
+  "end": 444,
+  "present": false
+ },
+ {
+  "name": "HookSystemMessageAttachment",
+  "start": 445,
+  "end": 452,
+  "present": false
+ },
+ {
+  "name": "HookCancelledAttachment",
+  "start": 453,
+  "end": 461,
+  "present": false
+ },
+ {
+  "name": "HookErrorDuringExecutionAttachment",
+  "start": 462,
+  "end": 471,
+  "present": false
+ },
+ {
+  "name": "HookSuccessAttachment",
+  "start": 472,
+  "end": 484,
+  "present": false
+ },
+ {
+  "name": "HookNonBlockingErrorAttachment",
+  "start": 485,
+  "end": 496,
+  "present": false
+ },
+ {
+  "name": "Attachment",
+  "start": 497,
+  "end": 792,
+  "present": false
+ },
+ {
+  "name": "TeammateMailboxAttachment",
+  "start": 793,
+  "end": 803,
+  "present": false
+ },
+ {
+  "name": "TeamContextAttachment",
+  "start": 804,
+  "end": 812,
+  "present": false
+ },
+ {
+  "name": "INLINE_NOTIFICATION_MODES",
+  "start": 1125,
+  "end": 1126,
+  "present": false
+ },
+ {
+  "name": "MemoryPrefetch",
+  "start": 2447,
+  "end": 2455,
+  "present": false
+ },
+ {
+  "name": "ToolResultBlock",
+  "start": 2527,
+  "end": 2532,
+  "present": false
+ },
+ {
+  "name": "sentSkillNames",
+  "start": 2708,
+  "end": 2709,
+  "present": false
+ },
+ {
+  "name": "suppressNext",
+  "start": 2737,
+  "end": 2738,
+  "present": false
+ },
+ {
+  "name": "FILTERED_LISTING_MAX",
+  "start": 2742,
+  "end": 2743,
+  "present": false
+ },
+ {
+  "name": "AtMentionedFileLines",
+  "start": 2931,
+  "end": 2936,
+  "present": false
+ }
+]

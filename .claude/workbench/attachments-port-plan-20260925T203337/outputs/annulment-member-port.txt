@@ -1,0 +1,19 @@
+== aplicar cualquier edicion del destino
+  FALLA rechaza lo que no es un ancla propia, con su motivo — esperado {'g': ['otro.ts: fuera del destino', 't.ts: no reemplaza un ancla del ítem']
+  FALLA los imports de valor del mismo módulo se fusionan en uno — esperado True, obtenido False
+  FALLA un import que choca con una declaración local se retira — esperado False, obtenido True
+test_member_port: 10 aserciones — 7 ok, 3 falla(s)
+== no filtrar declaraciones locales
+  FALLA los imports de valor del mismo módulo se fusionan en uno — esperado True, obtenido False
+  FALLA un import que choca con una declaración local se retira — esperado False, obtenido True
+test_member_port: 10 aserciones — 8 ok, 2 falla(s)
+== mezclar type con valor
+  FALLA los imports de valor del mismo módulo se fusionan en uno — esperado True, obtenido False
+  FALLA el import type no se mezcla con el de valor — esperado True, obtenido False
+test_member_port: 10 aserciones — 8 ok, 2 falla(s)
+== no retirar anclas
+  FALLA las anclas sin usar se retiran — esperado (False, False), obtenido (True, True)
+test_member_port: 10 aserciones — 9 ok, 1 falla(s)
+== cortar el import multilinea
+  FALLA las anclas de imports van tras el último import, incluso multilínea — esperado True, obtenido False
+test_member_port: 10 aserciones — 9 ok, 1 falla(s)

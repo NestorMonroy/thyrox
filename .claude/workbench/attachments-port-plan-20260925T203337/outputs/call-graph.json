@@ -1,0 +1,471 @@
+{
+ "present": [
+  "createAttachmentMessage",
+  "generateFileAttachment",
+  "getAgentListingDeltaAttachment",
+  "getDeferredToolsDeltaAttachment",
+  "getDirectoriesToProcess",
+  "getMcpInstructionsDeltaAttachment",
+  "isFileReadDenied",
+  "resetSentSkillNames",
+  "suppressNextSkillListing",
+  "tryGetPDFReference"
+ ],
+ "missing": [
+  "getAttachments",
+  "maybe",
+  "getQueuedCommandAttachments",
+  "getAgentPendingMessageAttachments",
+  "buildImageContentBlocks",
+  "getPlanModeAttachmentTurnCount",
+  "countPlanModeAttachmentsSinceLastExit",
+  "getPlanModeAttachments",
+  "getPlanModeExitAttachment",
+  "getAutoModeAttachmentTurnCount",
+  "countAutoModeAttachmentsSinceLastExit",
+  "getAutoModeAttachments",
+  "getAutoModeExitAttachment",
+  "getDateChangeAttachments",
+  "getUltrathinkEffortAttachment",
+  "getUltraworkRequestAttachment",
+  "getCriticalSystemReminderAttachment",
+  "getOutputStyleAttachment",
+  "getSelectedLinesFromIDE",
+  "isInstructionsMemoryType",
+  "memoryFilesToAttachments",
+  "getNestedMemoryAttachmentsForFile",
+  "getOpenedFileFromIDE",
+  "processAtMentionedFiles",
+  "processAgentMentions",
+  "processMcpResourceAttachments",
+  "getChangedFiles",
+  "getNestedMemoryAttachments",
+  "getRelevantMemoryAttachments",
+  "collectSurfacedMemories",
+  "readMemoriesForSurfacing",
+  "memoryHeader",
+  "startRelevantMemoryPrefetch",
+  "isToolResultBlock",
+  "hasToolResultContent",
+  "collectRecentSuccessfulTools",
+  "filterDuplicateMemoryAttachments",
+  "getDynamicSkillAttachments",
+  "filterToBundledAndMcp",
+  "getSkillListingAttachments",
+  "extractAtMentionedFiles",
+  "extractMcpResourceMentions",
+  "extractAgentMentions",
+  "parseAtMentionedFileLines",
+  "getDiagnosticAttachments",
+  "getLSPDiagnosticAttachments",
+  "getAttachmentMessages",
+  "getTodoReminderTurnCounts",
+  "getTodoReminderAttachments",
+  "getTaskReminderTurnCounts",
+  "getTaskReminderAttachments",
+  "getUnifiedTaskAttachments",
+  "getAsyncHookResponseAttachments",
+  "getTokenUsageAttachment",
+  "getOutputTokenUsageAttachment",
+  "getMaxBudgetUsdAttachment",
+  "getVerifyPlanReminderTurnCount",
+  "getVerifyPlanReminderAttachment",
+  "getCompactionReminderAttachment",
+  "getContextEfficiencyAttachment"
+ ],
+ "calls": {
+  "getAttachments": [
+   "getAgentListingDeltaAttachment",
+   "getAgentPendingMessageAttachments",
+   "getAsyncHookResponseAttachments",
+   "getAttachmentMessages",
+   "getAutoModeAttachments",
+   "getAutoModeExitAttachment",
+   "getChangedFiles",
+   "getCompactionReminderAttachment",
+   "getContextEfficiencyAttachment",
+   "getCriticalSystemReminderAttachment",
+   "getDateChangeAttachments",
+   "getDeferredToolsDeltaAttachment",
+   "getDiagnosticAttachments",
+   "getDynamicSkillAttachments",
+   "getLSPDiagnosticAttachments",
+   "getMaxBudgetUsdAttachment",
+   "getMcpInstructionsDeltaAttachment",
+   "getNestedMemoryAttachments",
+   "getOpenedFileFromIDE",
+   "getOutputStyleAttachment",
+   "getOutputTokenUsageAttachment",
+   "getPlanModeAttachments",
+   "getPlanModeExitAttachment",
+   "getQueuedCommandAttachments",
+   "getSelectedLinesFromIDE",
+   "getSkillListingAttachments",
+   "getTaskReminderAttachments",
+   "getTodoReminderAttachments",
+   "getTokenUsageAttachment",
+   "getUltrathinkEffortAttachment",
+   "getUltraworkRequestAttachment",
+   "getUnifiedTaskAttachments",
+   "getVerifyPlanReminderAttachment",
+   "maybe",
+   "processAgentMentions",
+   "processAtMentionedFiles",
+   "processMcpResourceAttachments",
+   "startRelevantMemoryPrefetch"
+  ],
+  "maybe": [],
+  "getQueuedCommandAttachments": [
+   "buildImageContentBlocks"
+  ],
+  "getAgentPendingMessageAttachments": [],
+  "buildImageContentBlocks": [],
+  "getPlanModeAttachmentTurnCount": [
+   "getAttachmentMessages",
+   "hasToolResultContent"
+  ],
+  "countPlanModeAttachmentsSinceLastExit": [],
+  "getPlanModeAttachments": [
+   "countPlanModeAttachmentsSinceLastExit",
+   "getPlanModeAttachmentTurnCount"
+  ],
+  "getPlanModeExitAttachment": [],
+  "getAutoModeAttachmentTurnCount": [
+   "getAttachmentMessages",
+   "hasToolResultContent"
+  ],
+  "countAutoModeAttachmentsSinceLastExit": [],
+  "getAutoModeAttachments": [
+   "countAutoModeAttachmentsSinceLastExit",
+   "getAutoModeAttachmentTurnCount"
+  ],
+  "getAutoModeExitAttachment": [],
+  "getDateChangeAttachments": [],
+  "getUltrathinkEffortAttachment": [],
+  "getUltraworkRequestAttachment": [],
+  "getDeferredToolsDeltaAttachment": [],
+  "getAgentListingDeltaAttachment": [],
+  "getMcpInstructionsDeltaAttachment": [],
+  "getCriticalSystemReminderAttachment": [],
+  "getOutputStyleAttachment": [],
+  "getSelectedLinesFromIDE": [
+   "isFileReadDenied"
+  ],
+  "getDirectoriesToProcess": [],
+  "isInstructionsMemoryType": [],
+  "memoryFilesToAttachments": [
+   "getChangedFiles",
+   "isInstructionsMemoryType"
+  ],
+  "getNestedMemoryAttachmentsForFile": [
+   "getDirectoriesToProcess",
+   "memoryFilesToAttachments"
+  ],
+  "getOpenedFileFromIDE": [
+   "getNestedMemoryAttachmentsForFile",
+   "isFileReadDenied"
+  ],
+  "processAtMentionedFiles": [
+   "extractAtMentionedFiles",
+   "generateFileAttachment",
+   "isFileReadDenied",
+   "parseAtMentionedFileLines"
+  ],
+  "processAgentMentions": [
+   "extractAgentMentions"
+  ],
+  "processMcpResourceAttachments": [
+   "extractMcpResourceMentions"
+  ],
+  "getChangedFiles": [
+   "isFileReadDenied"
+  ],
+  "getNestedMemoryAttachments": [
+   "getNestedMemoryAttachmentsForFile"
+  ],
+  "getRelevantMemoryAttachments": [
+   "extractAgentMentions",
+   "readMemoriesForSurfacing"
+  ],
+  "collectSurfacedMemories": [],
+  "readMemoriesForSurfacing": [
+   "memoryHeader"
+  ],
+  "memoryHeader": [],
+  "startRelevantMemoryPrefetch": [
+   "collectRecentSuccessfulTools",
+   "collectSurfacedMemories",
+   "getRelevantMemoryAttachments"
+  ],
+  "isToolResultBlock": [],
+  "hasToolResultContent": [
+   "isToolResultBlock"
+  ],
+  "collectRecentSuccessfulTools": [
+   "isToolResultBlock",
+   "readMemoriesForSurfacing"
+  ],
+  "filterDuplicateMemoryAttachments": [],
+  "getDynamicSkillAttachments": [
+   "filterToBundledAndMcp"
+  ],
+  "resetSentSkillNames": [],
+  "suppressNextSkillListing": [],
+  "filterToBundledAndMcp": [],
+  "getSkillListingAttachments": [
+   "filterToBundledAndMcp"
+  ],
+  "extractAtMentionedFiles": [],
+  "extractMcpResourceMentions": [],
+  "extractAgentMentions": [],
+  "parseAtMentionedFileLines": [],
+  "getDiagnosticAttachments": [],
+  "getLSPDiagnosticAttachments": [],
+  "getAttachmentMessages": [
+   "createAttachmentMessage",
+   "getAttachments"
+  ],
+  "tryGetPDFReference": [],
+  "generateFileAttachment": [
+   "isFileReadDenied",
+   "tryGetPDFReference"
+  ],
+  "createAttachmentMessage": [],
+  "getTodoReminderTurnCounts": [],
+  "getTodoReminderAttachments": [
+   "getTodoReminderTurnCounts"
+  ],
+  "getTaskReminderTurnCounts": [],
+  "getTaskReminderAttachments": [
+   "getTaskReminderTurnCounts"
+  ],
+  "getUnifiedTaskAttachments": [],
+  "getAsyncHookResponseAttachments": [],
+  "getTokenUsageAttachment": [],
+  "getOutputTokenUsageAttachment": [],
+  "getMaxBudgetUsdAttachment": [],
+  "getVerifyPlanReminderTurnCount": [],
+  "getVerifyPlanReminderAttachment": [
+   "getVerifyPlanReminderTurnCount"
+  ],
+  "getCompactionReminderAttachment": [],
+  "getContextEfficiencyAttachment": [],
+  "isFileReadDenied": []
+ },
+ "callers": {
+  "getAgentListingDeltaAttachment": [
+   "getAttachments"
+  ],
+  "getAgentPendingMessageAttachments": [
+   "getAttachments"
+  ],
+  "getAsyncHookResponseAttachments": [
+   "getAttachments"
+  ],
+  "getAttachmentMessages": [
+   "getAttachments",
+   "getAutoModeAttachmentTurnCount",
+   "getPlanModeAttachmentTurnCount"
+  ],
+  "getAutoModeAttachments": [
+   "getAttachments"
+  ],
+  "getAutoModeExitAttachment": [
+   "getAttachments"
+  ],
+  "getChangedFiles": [
+   "getAttachments",
+   "memoryFilesToAttachments"
+  ],
+  "getCompactionReminderAttachment": [
+   "getAttachments"
+  ],
+  "getContextEfficiencyAttachment": [
+   "getAttachments"
+  ],
+  "getCriticalSystemReminderAttachment": [
+   "getAttachments"
+  ],
+  "getDateChangeAttachments": [
+   "getAttachments"
+  ],
+  "getDeferredToolsDeltaAttachment": [
+   "getAttachments"
+  ],
+  "getDiagnosticAttachments": [
+   "getAttachments"
+  ],
+  "getDynamicSkillAttachments": [
+   "getAttachments"
+  ],
+  "getLSPDiagnosticAttachments": [
+   "getAttachments"
+  ],
+  "getMaxBudgetUsdAttachment": [
+   "getAttachments"
+  ],
+  "getMcpInstructionsDeltaAttachment": [
+   "getAttachments"
+  ],
+  "getNestedMemoryAttachments": [
+   "getAttachments"
+  ],
+  "getOpenedFileFromIDE": [
+   "getAttachments"
+  ],
+  "getOutputStyleAttachment": [
+   "getAttachments"
+  ],
+  "getOutputTokenUsageAttachment": [
+   "getAttachments"
+  ],
+  "getPlanModeAttachments": [
+   "getAttachments"
+  ],
+  "getPlanModeExitAttachment": [
+   "getAttachments"
+  ],
+  "getQueuedCommandAttachments": [
+   "getAttachments"
+  ],
+  "getSelectedLinesFromIDE": [
+   "getAttachments"
+  ],
+  "getSkillListingAttachments": [
+   "getAttachments"
+  ],
+  "getTaskReminderAttachments": [
+   "getAttachments"
+  ],
+  "getTodoReminderAttachments": [
+   "getAttachments"
+  ],
+  "getTokenUsageAttachment": [
+   "getAttachments"
+  ],
+  "getUltrathinkEffortAttachment": [
+   "getAttachments"
+  ],
+  "getUltraworkRequestAttachment": [
+   "getAttachments"
+  ],
+  "getUnifiedTaskAttachments": [
+   "getAttachments"
+  ],
+  "getVerifyPlanReminderAttachment": [
+   "getAttachments"
+  ],
+  "maybe": [
+   "getAttachments"
+  ],
+  "processAgentMentions": [
+   "getAttachments"
+  ],
+  "processAtMentionedFiles": [
+   "getAttachments"
+  ],
+  "processMcpResourceAttachments": [
+   "getAttachments"
+  ],
+  "startRelevantMemoryPrefetch": [
+   "getAttachments"
+  ],
+  "buildImageContentBlocks": [
+   "getQueuedCommandAttachments"
+  ],
+  "hasToolResultContent": [
+   "getAutoModeAttachmentTurnCount",
+   "getPlanModeAttachmentTurnCount"
+  ],
+  "countPlanModeAttachmentsSinceLastExit": [
+   "getPlanModeAttachments"
+  ],
+  "getPlanModeAttachmentTurnCount": [
+   "getPlanModeAttachments"
+  ],
+  "countAutoModeAttachmentsSinceLastExit": [
+   "getAutoModeAttachments"
+  ],
+  "getAutoModeAttachmentTurnCount": [
+   "getAutoModeAttachments"
+  ],
+  "isFileReadDenied": [
+   "generateFileAttachment",
+   "getChangedFiles",
+   "getOpenedFileFromIDE",
+   "getSelectedLinesFromIDE",
+   "processAtMentionedFiles"
+  ],
+  "isInstructionsMemoryType": [
+   "memoryFilesToAttachments"
+  ],
+  "getDirectoriesToProcess": [
+   "getNestedMemoryAttachmentsForFile"
+  ],
+  "memoryFilesToAttachments": [
+   "getNestedMemoryAttachmentsForFile"
+  ],
+  "getNestedMemoryAttachmentsForFile": [
+   "getNestedMemoryAttachments",
+   "getOpenedFileFromIDE"
+  ],
+  "extractAtMentionedFiles": [
+   "processAtMentionedFiles"
+  ],
+  "generateFileAttachment": [
+   "processAtMentionedFiles"
+  ],
+  "parseAtMentionedFileLines": [
+   "processAtMentionedFiles"
+  ],
+  "extractAgentMentions": [
+   "getRelevantMemoryAttachments",
+   "processAgentMentions"
+  ],
+  "extractMcpResourceMentions": [
+   "processMcpResourceAttachments"
+  ],
+  "readMemoriesForSurfacing": [
+   "collectRecentSuccessfulTools",
+   "getRelevantMemoryAttachments"
+  ],
+  "memoryHeader": [
+   "readMemoriesForSurfacing"
+  ],
+  "collectRecentSuccessfulTools": [
+   "startRelevantMemoryPrefetch"
+  ],
+  "collectSurfacedMemories": [
+   "startRelevantMemoryPrefetch"
+  ],
+  "getRelevantMemoryAttachments": [
+   "startRelevantMemoryPrefetch"
+  ],
+  "isToolResultBlock": [
+   "collectRecentSuccessfulTools",
+   "hasToolResultContent"
+  ],
+  "filterToBundledAndMcp": [
+   "getDynamicSkillAttachments",
+   "getSkillListingAttachments"
+  ],
+  "createAttachmentMessage": [
+   "getAttachmentMessages"
+  ],
+  "getAttachments": [
+   "getAttachmentMessages"
+  ],
+  "tryGetPDFReference": [
+   "generateFileAttachment"
+  ],
+  "getTodoReminderTurnCounts": [
+   "getTodoReminderAttachments"
+  ],
+  "getTaskReminderTurnCounts": [
+   "getTaskReminderAttachments"
+  ],
+  "getVerifyPlanReminderTurnCount": [
+   "getVerifyPlanReminderAttachment"
+  ]
+ }
+}
