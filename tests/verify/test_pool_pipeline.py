@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -167,10 +168,31 @@ with tempfile.TemporaryDirectory() as directory:
                  "TS2304: Cannot find name '(\\w+)'", memory.get("missing-name", {}).get("signal"))
     assert_equal("y el patrón normalizado queda aplicado al archivo", ["src/a.ts"],
                  memory.get("missing-name", {}).get("applied"))
-    assert_equal("una señal que no casa con ningún diagnóstico del archivo no entra a la memoria", False,
-                 "predicate-chained-text" in memory)
+    # La señal del agente casaba sólo con el texto encadenado, pero su código
+    # TS2677 sí está en las claves del archivo: la memoria guarda una señal
+    # DERIVADA de esa clave (la primera línea, que es lo que el barrido
+    # compara), generalizando lo citado, y conserva la del agente.
+    derived = memory.get("predicate-chained-text", {})
+    assert_equal("una señal que sólo casa con texto encadenado entra DERIVADA de la clave del archivo",
+                 ("derived-from-key", "TS2677.*\x27NormalizedMessage\x27"),
+                 (derived.get("signal_origin"), derived.get("agent_signal")))
+    assert_equal("la señal derivada casa con la clave de su archivo y no con la de otro código", (True, False),
+                 (bool(re.search(derived.get("signal", "(?!)"), keys[1])),
+                  bool(re.search(derived.get("signal", "(?!)"), keys[0]))))
+    assert_equal("y queda aplicada al archivo", ["src/a.ts"], derived.get("applied"))
+
+    alien = {"result": json.dumps({"edits": [{"old": "x", "new": "y"}], "patterns": [
+        {"patron": "code-not-in-file", "senal_del_verificador": "TS9999: nothing",
+         "fix_generico": "nada", "edits": [0]}]})}
+    problems = pp.record_patterns(run_dir, {"src/a.ts": [alien]}, ["src/a.ts"], keys)
+    assert_equal("si el código de la señal no está en el archivo, no se deriva y no entra", False,
+                 "code-not-in-file" in pp.tsc_sweep.load_patterns(run_dir))
     assert_equal("y el motivo la nombra", True,
-                 any("predicate-chained-text" in p and "no casa" in p for p in problems))
+                 any("code-not-in-file" in p and "no casa" in p for p in problems))
+
+    quoted = pp.derived_signal(["src/a.ts: TS2304: Cannot find name \x27foo\x27."], "src/a.ts", "TS2304")
+    assert_equal("lo citado se generaliza y el resto se escapa",
+                 "TS2304: Cannot find name \x27[^\x27]+\x27\\.", quoted)
 
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los

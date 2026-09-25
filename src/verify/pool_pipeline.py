@@ -193,6 +193,36 @@ PATTERN_FIELDS = ("patron", "senal_del_verificador", "fix_generico")
 RAW_LOG_PREFIX = re.compile(r"(?<![\w-])error (?=TS\d)")
 
 
+QUOTED = re.compile(r"'[^']*'")
+METACHARACTER = re.compile(r"([.^$*+?{}\[\]\\|()])")
+
+
+def _escape(text: str) -> str:
+    """Escapa sólo los metacaracteres: la señal se lee en la memoria."""
+    return METACHARACTER.sub(r"\\\1", text)
+
+
+def derived_signal(keys: list[str], file: str, code: str) -> str | None:
+    """La señal que la clave medida ya contiene: los diagnósticos `code` de
+    `file`, sin el prefijo del archivo, con lo citado generalizado a
+    `'[^']+'` y el resto escapado. `None` si el archivo no tiene ninguno."""
+    prefix = f"{file}: "
+    shapes = []
+    for key in keys:
+        if not key.startswith(f"{prefix}{code}:"):
+            continue
+        text, parts, last = key[len(prefix):], [], 0
+        for quoted in QUOTED.finditer(text):
+            parts += [_escape(text[last:quoted.start()]), "'[^']+'"]
+            last = quoted.end()
+        shape = "".join(parts) + _escape(text[last:])
+        if shape not in shapes:
+            shapes.append(shape)
+    if not shapes:
+        return None
+    return shapes[0] if len(shapes) == 1 else "(?:" + "|".join(shapes) + ")"
+
+
 def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str],
                     keys: list[str] | None = None) -> list[str]:
     """Gate 3b, la mitad que escribe: el patrón que cada archivo conservado
@@ -218,6 +248,7 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                     problems.append(f"{file}: patrón sin los campos {', '.join(PATTERN_FIELDS)}")
                     continue
                 signal = RAW_LOG_PREFIX.sub("", pattern["senal_del_verificador"])
+                extra: dict[str, str] = {}
                 if keys is not None:
                     own = [k for k in keys if k.startswith(f"{file}: ")]
                     try:
@@ -225,14 +256,23 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                     except re.error as error:
                         problems.append(f"{file}: {pattern['patron']}: {error}")
                         continue
-                    if not matches:
+                    code = re.search(r"TS\d+", signal)
+                    fallback = derived_signal(own, file, code.group(0)) if code and not matches else None
+                    if not matches and not fallback:
                         problems.append(f"{file}: {pattern['patron']}: la señal {signal!r} no casa con "
                                         f"ninguno de los {len(own)} diagnóstico(s) del archivo")
                         continue
+                    if fallback:
+                        # La señal del agente describe el texto encadenado,
+                        # que la clave no lleva y el barrido nunca vería; su
+                        # código sí está en el archivo, así que la memoria
+                        # guarda la clave medida y conserva la del agente.
+                        extra = {"agent_signal": signal, "signal_origin": "derived-from-key"}
+                        signal = fallback
                 try:
                     tsc_sweep.add_pattern(run, {"name": pattern["patron"],
                                                 "signal": signal,
-                                                "fix": pattern["fix_generico"]})
+                                                "fix": pattern["fix_generico"], **extra})
                 except (ValueError, re.error) as error:
                     problems.append(f"{file}: {pattern['patron']}: {error}")
                     continue
