@@ -83,7 +83,7 @@ import type { TaskStateBase } from '@thyrox/tool-registry/Task.js'
  * ya los resuelve al tipo real (`AgentToolResult` de tool-registry,
  * `AgentProgress` de agent), así que se importan de ahí, como la fuente.
  */
-import type { AgentProgress, AgentToolResult } from '../adapters/appRuntime.js'
+import type { AgentProgress, AgentToolResult, Message } from '../adapters/appRuntime.js'
 
 export type { TaskStateBase }
 
@@ -135,7 +135,7 @@ export type InProcessTeammateTaskState = TaskStateBase & {
 
   // Historial de conversación para la vista con zoom (NO son mensajes de buzón)
   // Los mensajes de buzón se guardan aparte en teamContext.inProcessMailboxes
-  messages?: unknown[]
+  messages?: Message[]
 
   // IDs de uso de herramienta en ejecución (para la animación en la
   // vista de transcript)

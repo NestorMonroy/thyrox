@@ -1,0 +1,18 @@
+Point the swarm adapter's unknown aliases at real types
+
+Step 089 of the tsc-zero loop: 1898 -> 1896, accepted net.
+
+Step 088 applied the adapter-unknown-with-real-type-available pattern
+to two aliases; this applies it to the rest of the adapter: Tool,
+Task, AgentDefinition, CustomAgentDefinition, AgentContext,
+PermissionDecision, PermissionUpdate and TeammateContext now name
+the types in tool-registry, permission, agent and swarm itself, all
+packages swarm already depends on. tasks/types.ts also types an
+in-process teammate's messages as Message[], as the source does, which
+clears TeammateSpinnerLine's reads.
+
+The net gain is small because typing the aliases reveals five real
+mismatches that unknown had hidden: inProcessRunner.ts builds
+permission decisions (behavior ask/allow with contentBlocks) that do
+not fit PermissionDecision, and one test overload. They stay in the
+log as the next work. Both edits are type-only (transpiled.log).
