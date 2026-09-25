@@ -1,0 +1,47 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 15,
+   "total_before": 255,
+   "total_final": 253,
+   "tsc_runs": 2,
+   "kept": 2
+  },
+  {
+   "batch": 2,
+   "files": 24,
+   "total_before": 253,
+   "total_final": 253,
+   "tsc_runs": 1,
+   "kept": 0
+  },
+  {
+   "batch": 3,
+   "files": 16,
+   "total_before": 253,
+   "total_final": 240,
+   "tsc_runs": 2,
+   "kept": 5
+  },
+  {
+   "batch": 4,
+   "files": 8,
+   "total_before": 240,
+   "total_final": 239,
+   "tsc_runs": 2,
+   "kept": 1
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/hooks/execAgentHook.ts",
+  "src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts",
+  "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts",
+  "src/packages/repl/src/components/Message.tsx",
+  "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx",
+  "src/packages/repl/src/components/messages/AttachmentMessage.tsx",
+  "src/packages/tool-registry/src/tools/SkillTool/UI.tsx",
+  "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-120/pipeline/batch-04/final.log"
+}

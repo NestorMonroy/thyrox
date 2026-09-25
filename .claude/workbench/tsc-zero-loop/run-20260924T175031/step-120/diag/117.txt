@@ -1,0 +1,24 @@
+src/packages/repl/src/components/Message.tsx(419,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:409-429 ---
+    409            width={width}
+    410            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    411          />
+    412        )
+    413      }
+    414    }
+    415    switch (param.type) {
+    416      case 'tool_use':
+    417        return (
+    418          <AssistantToolUseMessage
+    419>           param={param}
+    420            addMargin={addMargin}
+    421            tools={tools}
+    422            commands={commands}
+    423            verbose={verbose}
+    424            inProgressToolUseIDs={inProgressToolUseIDs}
+    425            progressMessagesForMessage={progressMessagesForMessage}
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name

@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/REPLView.tsx(2616,9): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2606-2626 ---
+   2606          if (
+   2607            m.type === 'attachment' &&
+   2608            m.attachment.type === 'queued_command' &&
+   2609            m.attachment.commandMode === 'task-notification' &&
+   2610            typeof m.attachment.prompt === 'string'
+   2611          ) {
+   2612            existingPrompts.add(m.attachment.prompt);
+   2613          }
+   2614        }
+   2615        const uniqueNotifications = notificationMessages.filter(
+   2616>         m =>
+   2617            m.attachment.type === 'queued_command' &&
+   2618            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2619        );
+   2620  
+   2621        startBackgroundSession({
+   2622          messages: [...messagesRef.current, ...uniqueNotifications],
+   2623          queryParams: {
+   2624            systemPrompt,
+   2625            userContext,
+   2626            systemContext,

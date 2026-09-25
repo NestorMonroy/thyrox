@@ -1,0 +1,23 @@
+src/packages/repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:313-333 ---
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321            planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323>           timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+    332            addMargin={addMargin && !isUserContinuation}
+    333          />

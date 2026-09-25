@@ -1,0 +1,23 @@
+src/packages/repl/src/screens/REPLView.tsx(506,3): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:496-516 ---
+    496    MessageActionsKeybindings,
+    497    MessageActionsBar,
+    498    type MessageActionsState,
+    499    type MessageActionsNav,
+    500    type MessageActionCaps,
+    501  } from '../components/messageActions.js'
+    502  import { setClipboard } from '@anthropic/ink'
+    503  import type { ScrollBoxHandle } from '@anthropic/ink'
+    504  import {
+    505    createAttachmentMessage,
+    506>   getQueuedCommandAttachments,
+    507  } from '@thyrox/agent/attachments.js'
+    508  
+    509  // Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
+    510  // function identity each render, which would break composedOnScroll's memo.
+    511  const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
+    512  // Window after a user-initiated scroll during which type-into-empty does NOT
+    513  // repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+    514  // up to read the start → start typing → before this fix, snapped to bottom.
+    515  // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
+    516  const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;

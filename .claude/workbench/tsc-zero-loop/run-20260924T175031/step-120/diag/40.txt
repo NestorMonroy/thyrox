@@ -1,0 +1,32 @@
+src/packages/agent/task/framework.ts(79,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/agent/task/framework.ts:69-89 ---
+     69        },
+     70      }
+     71    })
+     72  }
+     73  
+     74  /**
+     75   * Register a new task in AppState.
+     76   */
+     77  export function registerTask(task: TaskState, setAppState: SetAppState): void {
+     78    let isReplacement = false
+     79>   setAppState(prev => {
+     80      const existing = prev.tasks[task.id]
+     81      isReplacement = existing !== undefined
+     82      // Carry forward UI-held state on re-register (resumeAgentBackground
+     83      // replaces the task; user's retain shouldn't reset). startTime keeps
+     84      // the panel sort stable; messages + diskLoaded preserve the viewed
+     85      // transcript across the replace (the user's just-appended prompt lives
+     86      // in messages and isn't on disk yet).
+     87      const merged =
+     88        existing && 'retain' in existing
+     89          ? {
+  Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: TaskState | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'TaskState | TaskState' is not assignable to type 'TaskState'.
+              Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                  Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
