@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/cache/jsxctx/despues.log 2>&1; grep -c ': error' .claude/cache/jsxctx/despues.log", "started_at": "2026-09-25T07:48:36+00:00"}
