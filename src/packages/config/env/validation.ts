@@ -1,13 +1,15 @@
 /**
- * Puerto de `ccnmt: packages/config/env/validation.ts` (47 líneas fuente).
- * Reimplementación fiel VERBATIM.
+ * V7 §8.6 — bounded-int env-var validator.
  *
- * Validador de entero acotado para variables de entorno. Valida una
- * variable de entorno contra un límite inferior/superior y devuelve un
- * resultado tipado; valores inválidos caen al default provisto con un log
- * de debug.
+ * Moved from src/utils/envValidation.ts. Validates an env var against a
+ * lower/upper bound and returns a typed result; bad values fall back to
+ * the supplied default with a debug log.
+ *
+ * Host-provided dep: `logForDebugging` injected via the config package's
+ * host bindings (set by `installConfigHostBindings`).
  */
-import { tryGetConfigHostBindings } from '../host.ts'
+
+import { tryGetConfigHostBindings } from '../host.js'
 
 export type EnvVarValidationResult = {
   effective: number

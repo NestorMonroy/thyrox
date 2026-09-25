@@ -1,0 +1,157 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:
+74 |     mod.scheduleSdkMemorySummary(fn => {
+75 |       captured = fn
+76 |     })
+77 |     expect(captured).not.toBeNull()
+78 |     captured!()
+79 |     expect(events.filter(e => e.name === 'tengu_sdk_memory_summary')).toHaveLength(1)
+                                                                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:79:71)
+(fail) scheduleSdkMemorySummary (ant hP9 + UG1) > emits exactly one tengu_sdk_memory_summary at dispose [0.78ms]
+85 |     mod.scheduleSdkMemorySummary(fn => {
+86 |       captured = fn
+87 |     })
+88 |     captured!()
+89 |     captured!()
+90 |     expect(events).toHaveLength(1)
+                        ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:90:20)
+(fail) scheduleSdkMemorySummary (ant hP9 + UG1) > emit-once latch — second dispose is no-op [0.17ms]
+111 |       captured = fn
+112 |     })
+113 |     captured!()
+114 |     const payload = captureEmit()!
+115 |     // Ant: `final_rss_bytes`, `peak_rss_bytes`, etc. — sin sufijo `_mb`.
+116 |     expect(payload.final_rss_bytes).toBeGreaterThan(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.final_rss_bytes')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:116:12)
+(fail) payload shape (ant pG1) > bytes-not-MB schema for all final/peak fields [0.26ms]
+135 |     mod.scheduleSdkMemorySummary(fn => {
+136 |       captured = fn
+137 |     })
+138 |     captured!()
+139 |     const payload = captureEmit()!
+140 |     expect(payload.peak_rss_bytes).toBe(999_999_999_999)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.peak_rss_bytes')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:140:12)
+(fail) payload shape (ant pG1) > peak_rss_bytes = max(initial, now) [0.11ms]
+149 |     mod.scheduleSdkMemorySummary(fn => {
+150 |       captured = fn
+151 |     })
+152 |     captured!()
+153 |     const payload = captureEmit()!
+154 |     expect(payload.child_count).toBe(3)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:154:12)
+(fail) payload shape (ant pG1) > child_count is monotonic; per-kind aggregate respects whitelist [0.24ms]
+173 |     mod.scheduleSdkMemorySummary(fn => {
+174 |       captured = fn
+175 |     })
+176 |     captured!()
+177 |     const payload = captureEmit()!
+178 |     expect(payload.attr_transcript_entries).toBe(5)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_transcript_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:178:12)
+(fail) payload shape (ant pG1) > attribute providers emit both entries and bytes when bytes set [0.14ms]
+192 |     mod.scheduleSdkMemorySummary(fn => {
+193 |       captured = fn
+194 |     })
+195 |     captured!()
+196 |     const payload = captureEmit()!
+197 |     expect(payload.attr_ok_entries).toBe(1)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_ok_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:197:12)
+(fail) payload shape (ant pG1) > attribute provider exception does not break emit [0.25ms]
+210 |     mod.scheduleSdkMemorySummary(disposer => {
+211 |       captured = disposer
+212 |     })
+213 |     captured!()
+214 |     const payload = captureEmit()!
+215 |     expect('attr_foo_entries' in payload).toBe(false)
+                                       ^
+TypeError: payload is not an Object. (evaluating '"attr_foo_entries" in payload')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:215:34)
+(fail) registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8) > unregister with identity match removes provider [0.14ms]
+228 |     mod.scheduleSdkMemorySummary(disposer => {
+229 |       captured = disposer
+230 |     })
+231 |     captured!()
+232 |     const payload = captureEmit()!
+233 |     expect(payload.attr_foo_entries).toBe(999)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_foo_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:233:12)
+(fail) registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8) > unregister with stale identity does NOT remove the new provider [0.09ms]
+243 |     mod.scheduleSdkMemorySummary(fn => {
+244 |       captured = fn
+245 |     })
+246 |     captured!()
+247 |     const payload = captureEmit()!
+248 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:248:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > non-SDK entrypoint never registers a child [0.16ms]
+256 |     mod.scheduleSdkMemorySummary(fn => {
+257 |       captured = fn
+258 |     })
+259 |     captured!()
+260 |     const payload = captureEmit()!
+261 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:261:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > simple mode never registers a child [0.13ms]
+270 |     mod.scheduleSdkMemorySummary(fn => {
+271 |       captured = fn
+272 |     })
+273 |     captured!()
+274 |     const payload = captureEmit()!
+275 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:275:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > non-finite or non-positive pid is rejected [0.13ms]
+283 |     mod.scheduleSdkMemorySummary(fn => {
+284 |       captured = fn
+285 |     })
+286 |     captured!()
+287 |     const payload = captureEmit()!
+288 |     expect(payload.child_count).toBe(1)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:288:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > re-tracking a still-alive pid is a no-op [0.16ms]
+297 |     mod.scheduleSdkMemorySummary(fn => {
+298 |       captured = fn
+299 |     })
+300 |     captured!()
+301 |     const payload = captureEmit()!
+302 |     expect(payload.child_rss_bytes_total).toBe(500)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_rss_bytes_total')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:302:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > dead child still contributes to total + per-kind aggregate [0.11ms]
+
+ 1 pass
+ 14 fail
+ 4 expect() calls
+Ran 15 tests across 1 file. [118.00ms]
+exit=1

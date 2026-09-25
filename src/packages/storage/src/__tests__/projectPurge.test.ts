@@ -307,7 +307,7 @@ describe('collectAllProjectsPurgeItems (ant li3)', () => {
     expect(kinds.filter(k => k === 'config-key').length).toBe(2) // /a + /b
   })
 
-  test('skips dirs that don’t exist', async () => {
+  test('skips dirs that don\u2019t exist', async () => {
     setupClaudeJson({})
     const plan = await collectAllProjectsPurgeItems()
     // No dirs were created — items is empty (no projects map either).

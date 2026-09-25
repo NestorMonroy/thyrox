@@ -13,16 +13,21 @@
  * distinct uuids). The post-pass `recoverOrphanedParallelToolResults`
  * splices siblings + their tool_results back in.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import type { UUID } from 'crypto'
-import type { TranscriptMessage } from '../conversationChain.js'
+import type { TranscriptMessage } from '@thyrox/agent/logsTypes.js'
 
-// Adaptación: la fuente (ccnmt) importa logEvent/logError de
-// @claude-code-how-works/local-observability(/logging) y los mockea aquí a
-// no-ops. Ese paquete no existe en este árbol (DEC-04: sin imports
-// cross-@thyrox/* todavía) — el puerto de conversationChain.ts define sus
-// propios logEvent/logError locales como no-ops, así que no hace falta
-// mockear nada: no hay import externo que interceptar.
+// logEvent is a global side-effect — stub it.
+const realObs = await import('@thyrox/local-observability')
+mock.module('@thyrox/local-observability', () => ({
+  ...realObs,
+  logEvent: () => {},
+}))
+const realLog = await import('@thyrox/local-observability/logging')
+mock.module('@thyrox/local-observability/logging', () => ({
+  ...realLog,
+  logError: () => {},
+}))
 
 const { buildConversationChain, checkResumeConsistency } = await import(
   '../conversationChain.js'

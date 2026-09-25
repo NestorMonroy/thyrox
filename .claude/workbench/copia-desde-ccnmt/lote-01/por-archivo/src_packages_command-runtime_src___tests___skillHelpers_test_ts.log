@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/command-runtime/src/__tests__/skillHelpers.test.ts:
+58 |       '.claude/commands',
+59 |     )
+60 |   })
+61 | 
+62 |   test('policySettings + skills → managed/.claude/skills', () => {
+63 |     expect(getSkillsPath('policySettings', 'skills')).toBe(
+                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "/etc/claude/.claude/skills"
+Received: "/etc/claude-code/.claude/skills"
+
+      at <anonymous> (/home/user/thyrox/src/packages/command-runtime/src/__tests__/skillHelpers.test.ts:63:55)
+(fail) getSkillsPath — directory mapping > policySettings + skills → managed/.claude/skills [0.24ms]
+
+ 13 pass
+ 1 fail
+ 15 expect() calls
+Ran 14 tests across 1 file. [122.00ms]
+exit=1

@@ -1,12 +1,5 @@
 /**
- * Porte fiel de `ccnmt: packages/permission/src/errors.ts` (paquete
- * `permission`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO: las seis clases exportadas de la fuente — `PermissionBaseError`,
- * `DeniedError`, `AskRequiredError`, `ContextError`, `AbortError` y
- * `HostBindingsError` — están todas presentes, con el mismo `code` y el
- * mismo `name` de cada una.
- *
- * Sin divergencias.
+ * V7 §6.5 — PermissionError typed error namespace.
  */
 export class PermissionBaseError extends Error {
   readonly code: string
@@ -39,7 +32,7 @@ export class ContextError extends PermissionBaseError {
 }
 
 export class AbortError extends PermissionBaseError {
-  constructor(message = 'Permission request aborted', options?: ErrorOptions) {
+  constructor(message: string = 'Permission request aborted', options?: ErrorOptions) {
     super('PERMISSION_ABORTED', message, options)
     this.name = 'PermissionAbortError'
   }

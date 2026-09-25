@@ -1,16 +1,5 @@
-/**
- * Fachadas del modo headless / --print — porte de
- * `ccnmt: packages/agent/internal/headlessRuntime.ts`.
- *
- * 16 fachadas sobre las ataduras del host que usa el bucle del modo
- * headless. El invariante grande: cada fachada tiene un fallback
- * determinístico cuando falta la atadura del host, calibrado para que el
- * modo headless degrade con gracia (arreglos/objetos vacíos) en vez de
- * reventar. Ninguna llama sobre el host sin `?.` — un binding ausente
- * jamás debe tirar abajo una corrida sin host cableado.
- */
-import { getAgentHostBindings } from '../host.ts'
-import type { AgentMessage } from '../internalTypes.ts'
+import { getAgentHostBindings } from '../host.js'
+import type { AgentMessage } from '../internalTypes.js'
 
 export function registerStructuredOutputEnforcement(
   setAppState: (f: (prev: unknown) => unknown) => void,

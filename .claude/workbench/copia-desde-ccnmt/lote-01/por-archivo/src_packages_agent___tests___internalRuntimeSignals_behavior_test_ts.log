@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:
+52 |     expect(source).not.toMatch(/'in_progress'/)
+53 |     expect(source).not.toMatch(/'cancelled'/)
+54 |   })
+55 | 
+56 |   test('importa getAgentHostBindings desde "../host.ts" (divergencia declarada: la fuente usa "../host.js", aquí el resto de "internal/" ya importa sus hermanos con extensión .ts)', () => {
+57 |     expect(source).toMatch(
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /import \{ getAgentHostBindings \} from '\.\.\/host\.ts'/
+Received: "import { getAgentHostBindings } from '../host.js'\n\nexport function headlessProfilerCheckpoint(name: string): void {\n  getAgentHostBindings().headlessProfilerCheckpoint?.(name)\n}\n\nexport function queryCheckpoint(name: string): void {\n  getAgentHostBindings().queryCheckpoint?.(name)\n}\n\nexport function notifyCommandLifecycle(\n  uuid: string,\n  state: 'started' | 'completed',\n): void {\n  getAgentHostBindings().notifyCommandLifecycle?.(uuid, state)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:57:20)
+(fail) internal/runtimeSignals > importa getAgentHostBindings desde "../host.ts" (divergencia declarada: la fuente usa "../host.js", aquí el resto de "internal/" ya importa sus hermanos con extensión .ts) [0.23ms]
+
+ 5 pass
+ 1 fail
+ 11 expect() calls
+Ran 6 tests across 1 file. [105.00ms]
+exit=1

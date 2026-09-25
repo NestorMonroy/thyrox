@@ -43,3 +43,36 @@ archivo en el lazo, midiendo tsc antes y después.
 tsc tras la copia: **2379**, igual que `step-073/final.log`, y sin ningún
 archivo que cambie su cuenta (`outputs/tsc-tras-copia.log`). Auditor de forma:
 0 hallazgos. Es la prueba de que la copia no tocó código.
+
+## Fase 1 — lote 01 (100 de los 550 con un solo commit)
+
+`src/verify/source_copy_step.py`, 34 pasadas de tsc:
+
+| veredicto | archivos |
+|---|---|
+| copiados | 89 |
+| rechazados: rompen su propio archivo | 8 |
+| rechazados: rompen a un consumidor | 3 |
+
+tsc se queda en 2379. Luego, las pruebas: 238 archivos derivados
+(`lote-01/pruebas-derivadas.txt`), uno por proceso, porque en un solo
+proceso `bun` 1.3.11 murió con SIGILL (exit 132) a mitad de la corrida
+(`lote-01/pruebas.log`). Por archivo fallan 7, y los 7 se corrieron sobre HEAD
+con las copias retiradas (`lote-01/base-head/`):
+
+- 4 ya fallaban en HEAD: preexistentes, no de la copia.
+- 3 pasan en HEAD y fallan con la copia. Se revierten, con veredicto
+  `rejected-behavior` en el registro:
+  - `agent/internal/runtimeSignals.ts`: la prueba fija la divergencia
+    declarada `../host.ts` y la fuente usa `../host.js`;
+  - `command-runtime/src/__tests__/skillHelpers.test.ts`: la prueba copiada
+    espera `/etc/claude/…` y la ruta gestionada del árbol es `/etc/claude-code/…`;
+  - `headless-sdk/src/sdkMemorySummary.ts`: la copia importa `logEvent` del
+    paquete y salta la costura `setLogEventFn` que la prueba inyecta.
+
+Quedan **86 copias**. Las tres pruebas vuelven a verde tras revertir.
+
+*Métrica:* diagnósticos nuevos contra el log previo; pruebas verdes en HEAD
+que se ponen rojas con la copia.
+*Ciega a:* conducta que ninguna prueba derivada ejerce; la derivación busca
+el nombre del módulo en los `import` de las pruebas.

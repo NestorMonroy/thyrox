@@ -1,21 +1,17 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/bash/specs/timeout.ts` — spec Fig
- * del comando `timeout`.
- */
 import type { CommandSpec } from '../registry.js'
 
 const timeout: CommandSpec = {
   name: 'timeout',
-  description: 'Ejecutar un comando con un límite de tiempo',
+  description: 'Run a command with a time limit',
   args: [
     {
       name: 'duration',
-      description: 'Duración antes de expirar (p. ej. 10, 5s, 2m)',
+      description: 'Duration to wait before timing out (e.g., 10, 5s, 2m)',
       isOptional: false,
     },
     {
       name: 'command',
-      description: 'Comando a ejecutar',
+      description: 'Command to run',
       isCommand: true,
     },
   ],

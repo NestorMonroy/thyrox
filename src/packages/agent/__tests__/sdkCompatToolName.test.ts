@@ -1,22 +1,9 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/sdkCompatToolName.test.ts`
- * (verbatim en casos, datos y expectativas).
- *
- * DIVERGENCIA DE IMPORT, declarada: la fuente trae `AGENT_TOOL_NAME` y
- * `LEGACY_AGENT_TOOL_NAME` de
- * `@claude-code-how-works/tool-registry/tools/AgentTool/constants.js`,
- * paquete hermano ausente en este árbol. Ese archivo (4 símbolos:
- * `AGENT_TOOL_NAME`, `LEGACY_AGENT_TOOL_NAME`, `VERIFICATION_AGENT_TYPE`,
- * `ONE_SHOT_BUILTIN_AGENT_TYPES`) se porta parcial en
- * `../messages/systemInit.ts` — sólo los dos que este test ejercita — y
- * de ahí se importan aquí también, en vez de repetir el import roto.
- */
 import { describe, expect, test } from 'bun:test'
+import { sdkCompatToolName } from '../messages/systemInit.js'
 import {
   AGENT_TOOL_NAME,
   LEGACY_AGENT_TOOL_NAME,
-  sdkCompatToolName,
-} from '../messages/systemInit.ts'
+} from '@thyrox/tool-registry/tools/AgentTool/constants.js'
 
 describe('sdkCompatToolName — backwards-compat tool-name translation', () => {
   // Why this matters: the wire format renamed Task → Agent in #19647.

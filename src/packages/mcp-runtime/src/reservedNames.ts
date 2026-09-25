@@ -1,9 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/reservedNames.ts` — sus
- * 2 exportaciones, ninguna omitida.
- */
-import { normalizeNameForMCP } from './normalization.js'
-
 const RESERVED_DESKTOP_PANE_NAMES = new Set([
   'claude browser',
   'claude preview',
@@ -21,3 +15,4 @@ export function isReservedMcpServerName(name: string): boolean {
     isReservedDesktopPaneMcpServer(name)
   )
 }
+import { normalizeNameForMCP } from './normalization.js'

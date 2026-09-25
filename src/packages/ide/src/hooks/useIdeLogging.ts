@@ -1,18 +1,9 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/hooks/useIdeLogging.ts`. `lazySchema`
- * viene de `@claude-code-how-works/tool-registry/utils/lazySchema.js` — el
- * paquete `tool-registry` no existe en este árbol; sustituto local en
- * `../internal/pendingCrossPackageDeps.js` (fábrica singleton perezosa de 3
- * líneas, sin dependencias).
- */
 import { useEffect } from 'react'
+import { logEvent } from '@thyrox/local-observability'
 import { z } from 'zod/v4'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
-import {
-  lazySchema,
-  requireLocalObservabilityRoot,
-} from '../internal/pendingCrossPackageDeps.js'
 import { getConnectedIdeClient } from '../ide.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 
 const LogEventSchema = lazySchema(() =>
   z.object({
@@ -26,16 +17,15 @@ const LogEventSchema = lazySchema(() =>
 
 export function useIdeLogging(mcpClients: MCPServerConnection[]): void {
   useEffect(() => {
-    // Se salta si no hay clientes.
+    // Skip if there are no clients
     if (!mcpClients.length) {
       return
     }
 
-    // Busca el cliente de IDE en la lista de clientes MCP.
+    // Find the IDE client from the MCP clients list
     const ideClient = getConnectedIdeClient(mcpClients)
     if (ideClient) {
-      const { logEvent } = requireLocalObservabilityRoot()
-      // Registra el handler de log event.
+      // Register the log event handler
       ideClient.client.setNotificationHandler(
         LogEventSchema(),
         notification => {

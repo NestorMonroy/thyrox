@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   addLineNumbers,
   convertLeadingTabsToSpaces,
-} from '../fileUtilities.js'
+} from '../file.ts'
 
 /**
  * Pin file-utility helpers used by the Read tool's content formatting.
@@ -11,11 +11,6 @@ import {
  * addLineNumbers is the format the MODEL SEES for every file Read. Drift
  * (e.g. different separator, wrong indentation) breaks the model's
  * ability to reference specific lines via "edit line 42".
- *
- * Porte a `../fileUtilities.js` (no `../file.js`): `file.ts` ya existe en
- * este árbol con un porte parcial previo (sólo `atomicWriteFile`) que no es
- * mío — no se toca. `addLineNumbers`/`convertLeadingTabsToSpaces` viven en
- * un módulo nuevo propio, `fileUtilities.ts`.
  */
 describe('file utility helpers', () => {
   describe('addLineNumbers', () => {

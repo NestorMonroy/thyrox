@@ -1,6 +1,4 @@
-/**
- * Puerto de `ccnmt: packages/headless-sdk/src/index.ts` (verbatim).
- * Superficie pública del subsistema headless/sdk. Reexporta `./contracts.ts`,
- * hoy vacío — ver ese archivo para el porqué.
- */
-export * from './contracts.ts'
+// V7 §8.25 — headless/sdk subsystem public surface.
+// Entry-point re-exports populated as ownership migrates from
+// src/cli/print.ts, src/cli/headless/*, and src/remote/sdkMessageAdapter.ts.
+export * from './contracts.js'

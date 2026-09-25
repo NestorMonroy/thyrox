@@ -1,0 +1,349 @@
+bun test v1.3.11 (af24e281)
+fatal: not a git repository (or any of the parent directories): .git
+
+src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:
+52 |     expect(source).not.toMatch(/'in_progress'/)
+53 |     expect(source).not.toMatch(/'cancelled'/)
+54 |   })
+55 | 
+56 |   test('importa getAgentHostBindings desde "../host.ts" (divergencia declarada: la fuente usa "../host.js", aquí el resto de "internal/" ya importa sus hermanos con extensión .ts)', () => {
+57 |     expect(source).toMatch(
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /import \{ getAgentHostBindings \} from '\.\.\/host\.ts'/
+Received: "import { getAgentHostBindings } from '../host.js'\n\nexport function headlessProfilerCheckpoint(name: string): void {\n  getAgentHostBindings().headlessProfilerCheckpoint?.(name)\n}\n\nexport function queryCheckpoint(name: string): void {\n  getAgentHostBindings().queryCheckpoint?.(name)\n}\n\nexport function notifyCommandLifecycle(\n  uuid: string,\n  state: 'started' | 'completed',\n): void {\n  getAgentHostBindings().notifyCommandLifecycle?.(uuid, state)\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/internalRuntimeSignals.behavior.test.ts:57:20)
+(fail) internal/runtimeSignals > importa getAgentHostBindings desde "../host.ts" (divergencia declarada: la fuente usa "../host.js", aquí el resto de "internal/" ya importa sus hermanos con extensión .ts) [0.46ms]
+
+src/packages/permission/__tests__/barrelAndTesting.test.ts:
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
+1. You might have mismatching versions of React and the renderer (such as React DOM)
+2. You might be breaking the Rules of Hooks
+3. You might have more than one copy of React in the same app
+See https://react.dev/link/invalid-hook-call for tips about how to debug and fix this problem.
+
+src/packages/permission/__tests__/workspaceAndRename.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Unexpected identifier "lo"
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at generateSessionName (/home/user/thyrox/src/packages/permission/src/commands/rename/generateSessionName.ts:75:22)
+
+listo
+listo
+listo, integré lo del hijo
+listo, integré lo del hijo
+segui el procedimiento del skill
+
+src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts:
+28 | // `pathInWorkingPath` expande y valida rutas por los bindings del anfitrion.
+29 | installPermissionHostBindings({ expandPath, containsPathTraversal })
+30 | 
+31 | describe('isPathInSandboxWriteAllowlist (sandbox encendido)', () => {
+32 |   test('una ruta dentro de allowOnly pasa', () => {
+33 |     expect(isPathInSandboxWriteAllowlist('/work/a.txt')).toBe(true)
+                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts:33:58)
+(fail) isPathInSandboxWriteAllowlist (sandbox encendido) > una ruta dentro de allowOnly pasa [0.36ms]
+45 |     } finally {
+46 |       variants = p => [p]
+47 |     }
+48 |   })
+49 |   test('las variantes ya resueltas del llamador se usan tal cual', () => {
+50 |     expect(isPathInSandboxWriteAllowlist('/ignorada', ['/work/b'])).toBe(true)
+                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts:50:69)
+(fail) isPathInSandboxWriteAllowlist (sandbox encendido) > las variantes ya resueltas del llamador se usan tal cual [0.07ms]
+
+src/packages/command-runtime/src/__tests__/skillHelpers.test.ts:
+58 |       '.claude/commands',
+59 |     )
+60 |   })
+61 | 
+62 |   test('policySettings + skills → managed/.claude/skills', () => {
+63 |     expect(getSkillsPath('policySettings', 'skills')).toBe(
+                                                           ^
+error: expect(received).toBe(expected)
+
+Expected: "/etc/claude/.claude/skills"
+Received: "/etc/claude-code/.claude/skills"
+
+      at <anonymous> (/home/user/thyrox/src/packages/command-runtime/src/__tests__/skillHelpers.test.ts:63:55)
+(fail) getSkillsPath — directory mapping > policySettings + skills → managed/.claude/skills [0.25ms]
+
+src/packages/storage/src/__tests__/getMemoryFiles.test.ts:
+109 |     writeFileSync(join(sub, 'excluido', 'CLAUDE.md'), 'EXCLUIDO')
+110 |     setOriginalCwd(join(sub, 'excluido'))
+111 |     try {
+112 |       resetGetMemoryFilesCache('test')
+113 |       expect((await contents()).some(c => c.startsWith('SUB'))).toBe(true)
+114 |       expect(await contents()).not.toContain('EXCLUIDO')
+                                         ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "EXCLUIDO"
+Received: [ "USUARIO", "REGLA-USUARIO", "RAIZ\n\nver @./pkg/incluido.md y @./hermano.md",
+  "PUNTO-CLAUDE", "REGLA-ANIDADA", "REGLA-PROYECTO", "LOCAL\n\nvisible", "SUB @../fuera-no.md @/home/user/thyrox/.claude/cache/claudemd-AxaPkB/fuera/externo.md\n\nen línea ` @./en-codigo.md `\n\n```\n@./en-cerca.md\n```\n\n@/home/user/thyrox/.claude/cache/claudemd-AxaPkB/fuera/enlace-entra.md @./enlace-sale.md",
+  "EXCLUIDO"
+]
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/getMemoryFiles.test.ts:114:36)
+(fail) getMemoryFiles > claudeMdExcludes deja fuera lo que casa [4.13ms]
+
+../../../../../src/packages/storage/src/__tests__/json.test.ts:
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Expected '}'
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/json.test.ts:34:12)
+
+141 | // every CC startup), so the cache never hits anyway.
+142 | const PARSE_CACHE_MAX_KEY_BYTES = 8 * 1024
+143 | 
+144 | function parseJSONUncached(json: string, shouldLogError: boolean): CachedParse {
+145 |   try {
+146 |     return { ok: true, value: JSON.parse(stripBOM(json)) }
+                                         ^
+SyntaxError: JSON Parse error: Unexpected token '}'
+      at parseJSONUncached (/home/user/thyrox/src/packages/storage/src/json.ts:146:36)
+      at memoized (/home/user/thyrox/src/packages/storage/src/json.ts:106:20)
+      at safeParseJSON (/home/user/thyrox/src/packages/storage/src/json.ts:167:11)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/json.test.ts:35:12)
+
+
+../../../../../src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:
+74 |     mod.scheduleSdkMemorySummary(fn => {
+75 |       captured = fn
+76 |     })
+77 |     expect(captured).not.toBeNull()
+78 |     captured!()
+79 |     expect(events.filter(e => e.name === 'tengu_sdk_memory_summary')).toHaveLength(1)
+                                                                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:79:71)
+(fail) scheduleSdkMemorySummary (ant hP9 + UG1) > emits exactly one tengu_sdk_memory_summary at dispose [2.41ms]
+85 |     mod.scheduleSdkMemorySummary(fn => {
+86 |       captured = fn
+87 |     })
+88 |     captured!()
+89 |     captured!()
+90 |     expect(events).toHaveLength(1)
+                        ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:90:20)
+(fail) scheduleSdkMemorySummary (ant hP9 + UG1) > emit-once latch — second dispose is no-op [0.12ms]
+111 |       captured = fn
+112 |     })
+113 |     captured!()
+114 |     const payload = captureEmit()!
+115 |     // Ant: `final_rss_bytes`, `peak_rss_bytes`, etc. — sin sufijo `_mb`.
+116 |     expect(payload.final_rss_bytes).toBeGreaterThan(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.final_rss_bytes')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:116:12)
+(fail) payload shape (ant pG1) > bytes-not-MB schema for all final/peak fields [0.15ms]
+135 |     mod.scheduleSdkMemorySummary(fn => {
+136 |       captured = fn
+137 |     })
+138 |     captured!()
+139 |     const payload = captureEmit()!
+140 |     expect(payload.peak_rss_bytes).toBe(999_999_999_999)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.peak_rss_bytes')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:140:12)
+(fail) payload shape (ant pG1) > peak_rss_bytes = max(initial, now) [0.10ms]
+149 |     mod.scheduleSdkMemorySummary(fn => {
+150 |       captured = fn
+151 |     })
+152 |     captured!()
+153 |     const payload = captureEmit()!
+154 |     expect(payload.child_count).toBe(3)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:154:12)
+(fail) payload shape (ant pG1) > child_count is monotonic; per-kind aggregate respects whitelist [0.17ms]
+173 |     mod.scheduleSdkMemorySummary(fn => {
+174 |       captured = fn
+175 |     })
+176 |     captured!()
+177 |     const payload = captureEmit()!
+178 |     expect(payload.attr_transcript_entries).toBe(5)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_transcript_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:178:12)
+(fail) payload shape (ant pG1) > attribute providers emit both entries and bytes when bytes set [0.13ms]
+192 |     mod.scheduleSdkMemorySummary(fn => {
+193 |       captured = fn
+194 |     })
+195 |     captured!()
+196 |     const payload = captureEmit()!
+197 |     expect(payload.attr_ok_entries).toBe(1)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_ok_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:197:12)
+(fail) payload shape (ant pG1) > attribute provider exception does not break emit [0.32ms]
+210 |     mod.scheduleSdkMemorySummary(disposer => {
+211 |       captured = disposer
+212 |     })
+213 |     captured!()
+214 |     const payload = captureEmit()!
+215 |     expect('attr_foo_entries' in payload).toBe(false)
+                                       ^
+TypeError: payload is not an Object. (evaluating '"attr_foo_entries" in payload')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:215:34)
+(fail) registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8) > unregister with identity match removes provider [0.14ms]
+228 |     mod.scheduleSdkMemorySummary(disposer => {
+229 |       captured = disposer
+230 |     })
+231 |     captured!()
+232 |     const payload = captureEmit()!
+233 |     expect(payload.attr_foo_entries).toBe(999)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.attr_foo_entries')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:233:12)
+(fail) registerMemoryAttribute / unregisterMemoryAttribute (ant xH8/uH8) > unregister with stale identity does NOT remove the new provider [0.12ms]
+243 |     mod.scheduleSdkMemorySummary(fn => {
+244 |       captured = fn
+245 |     })
+246 |     captured!()
+247 |     const payload = captureEmit()!
+248 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:248:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > non-SDK entrypoint never registers a child [0.18ms]
+256 |     mod.scheduleSdkMemorySummary(fn => {
+257 |       captured = fn
+258 |     })
+259 |     captured!()
+260 |     const payload = captureEmit()!
+261 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:261:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > simple mode never registers a child [0.08ms]
+270 |     mod.scheduleSdkMemorySummary(fn => {
+271 |       captured = fn
+272 |     })
+273 |     captured!()
+274 |     const payload = captureEmit()!
+275 |     expect(payload.child_count).toBe(0)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:275:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > non-finite or non-positive pid is rejected [0.08ms]
+283 |     mod.scheduleSdkMemorySummary(fn => {
+284 |       captured = fn
+285 |     })
+286 |     captured!()
+287 |     const payload = captureEmit()!
+288 |     expect(payload.child_count).toBe(1)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_count')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:288:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > re-tracking a still-alive pid is a no-op [0.11ms]
+297 |     mod.scheduleSdkMemorySummary(fn => {
+298 |       captured = fn
+299 |     })
+300 |     captured!()
+301 |     const payload = captureEmit()!
+302 |     expect(payload.child_rss_bytes_total).toBe(500)
+                 ^
+TypeError: undefined is not an object (evaluating 'payload.child_rss_bytes_total')
+      at <anonymous> (/home/user/thyrox/src/packages/headless-sdk/src/__tests__/sdkMemorySummary.test.ts:302:12)
+(fail) trackChildProcess / markChildProcessDead (ant Cc_/vP9) > dead child still contributes to total + per-kind aggregate [0.12ms]
+
+../../../../../src/packages/storage/src/filePersistence/__tests__/filePersistence.test.ts:
+[file-persistence] Persistence aborted before processing
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+[file-persistence] No files found in outputs directory
+[file-persistence] No modified files to persist
+[file-persistence] Found 10001 modified files since turn start (scanned 10001 total)
+[file-persistence] Found 10001 modified files
+[file-persistence] File count limit exceeded: 10001 > 10000
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] File persistence failed: Error: la Files API esta caida
+[file-persistence] Found 1 modified files since turn start (scanned 1 total)
+[file-persistence] Found 1 modified files
+[file-persistence] BYOC mode: uploading 1 files
+[file-persistence] BYOC persistence complete: 1 uploaded, 0 failed
+
+../../../../../src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'countTokensWithAPI' not found in module '/home/user/thyrox/src/packages/agent/tokenEstimation.ts'.
+      at requestImportModule (2:1)
+-------------------------------
+
+============================================================
+Bun v1.3.11 (af24e281) Linux x64
+Linux Kernel v6.18.44 | glibc v2.39
+CPU: sse42 popcnt avx avx2 avx512
+Args: "bun" "--smol" "test" "src/packages/@ant/claude-for-chrome-mcp/src/__tests__/mcpSocketPool.test.ts" "src/packages/@ant/ink/src/__tests__/ui-foundation.test.ts" "src/packages/@ant/ink/src/__tests__/vimTypes.behavi"...
+Features: Bun.stderr(2) Bun.stdin(2) Bun.stdout(2) abort_signal(12) bunfig dotenv fetch(4) http_server(5) jsc spawn(241) transpiler_cache(62) tsconfig(36) process_dlopen(2) 
+Builtins: "bun:test" "bun:wrap" "bun:sqlite" "node:assert" "node:async_hooks" "node:buffer" "node:child_process" "node:constants" "node:crypto" "node:dns" "node:events" "node:fs" "node:fs/promises" "node:http" "node:https" "node:module" "node:net" "node:os" "node:path" "node:path/posix" "node:path/win32" "node:perf_hooks" "node:process" "node:readline" "node:readline/promises" "node:stream" "node:stream/consumers" "node:stream/promises" "node:string_decoder" "node:timers/promises" "node:tls" "node:tty" "node:url" "node:util" "node:zlib" "node:worker_threads" "node:v8" "node:http2" "node:diagnostics_channel" 
+Elapsed: 27254ms | User: 4337ms | Sys: 1318ms
+RSS: 108.14MB | Peak: 0.31GB | Commit: 108.14MB | Faults: 37 | Machine: 14.35GB
+
+panic(main thread): Segmentation fault at address 0x18
+oh no: Bun has crashed. This indicates a bug in Bun, not your code.
+
+To send a redacted crash report to Bun's team,
+please file a GitHub issue using the link below:
+
+ https://bun.report/1.3.11/lt1af24e28ijEu1ooC48hp5E+ypR82/i6E22t/3Fky2vtF8v1vtF__ms15jEs9owsF+wn8xFsj3u0F__izrhkEms15jEmh36wF2t7y0F__A2AwB
+
+exit=132

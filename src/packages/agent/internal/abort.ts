@@ -1,17 +1,8 @@
-/**
- * Cancelación de un turno interrumpido — porte de
- * `ccnmt: packages/agent/internal/abort.ts`.
- *
- * Una interrupción a media respuesta puede dejar un mensaje de assistant con
- * bloques `tool_use` que nunca reciben su `tool_result` — la API rechaza un
- * transcript en esa forma. `createSyntheticToolResults` fabrica ese
- * `tool_result` sintético, marcado como error, para los `tool_use`
- * pendientes del ÚLTIMO mensaje de assistant (el recorrido va hacia atrás y
- * se detiene en el primer assistant que encuentra: sólo el turno más
- * reciente puede tener herramientas sin resolver).
- */
-import type { CoreContentBlock, CoreMessage } from '../coreMessages.ts'
 
+import type { CoreContentBlock, CoreMessage } from '../types/messages.js'
+
+/**
+ */
 export function createSyntheticToolResults(
   messages: CoreMessage[],
   abortReason: string = 'interrupted',
@@ -44,7 +35,8 @@ export function createSyntheticToolResults(
   return results
 }
 
-/** Wrapper trivial sobre `AbortSignal.aborted` — sin signal, nunca aborta. */
+/**
+ */
 export function shouldAbort(signal?: AbortSignal): boolean {
   return signal?.aborted ?? false
 }

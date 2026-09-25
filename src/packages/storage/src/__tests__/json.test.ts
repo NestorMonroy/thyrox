@@ -1,21 +1,9 @@
 import { describe, expect, mock, test } from 'bun:test'
 
-/**
- * DIVERGENCIA DE INFRAESTRUCTURA, declarada: la fuente mockea
- * `@claude-code-how-works/local-observability/logging` (paquete hermano
- * ausente en este árbol — medido con `ls /home/user/thyrox/src/packages/`).
- * `../json.ts` de este árbol reimplementa `logError` localmente en
- * `../logging.ts` (ver su docstring), así que el mock apunta ahí. Mismo
- * patrón que `agent/__tests__/goalStopHook.test.ts` de este árbol, que
- * mockea `'../hooksConfigSnapshot.js'` por identidad de módulo resuelto,
- * no por literal de string.
- *
- * No cuenta como cambio de caso/dato/expectativa: el mecanismo — silenciar
- * logError para que un test de "malformed JSON" no ensucie stdout — es
- * idéntico; sólo cambia DE DÓNDE se importa la función que se mockea.
- */
-const realLogging = await import('../logging.js')
-mock.module('../logging.js', () => ({
+// Spread real exports + override only logError so test failures don't
+// pollute stdout. See feedback_bun_mock_module_global_scope.md.
+const realLogging = await import('@thyrox/local-observability/logging')
+mock.module('@thyrox/local-observability/logging', () => ({
   ...realLogging,
   logError: () => {},
 }))

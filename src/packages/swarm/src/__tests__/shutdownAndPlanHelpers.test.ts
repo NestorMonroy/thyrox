@@ -22,7 +22,7 @@ import {
   isShutdownApproved,
   isShutdownRejected,
   isShutdownRequest,
-} from '../mailbox/protocolMessages.js'
+} from '../mailbox/index.js'
 
 describe('createShutdownRequestMessage', () => {
   test('returns shutdown_request type with all fields', () => {

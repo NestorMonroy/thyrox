@@ -1,16 +1,10 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/__tests__/jwtUtils.test.ts`
- * (62 líneas fuente, 100% portado). Sin mocks — `decodeJwtPayload` y
- * `decodeJwtExpiry` no tienen dependencias cruzadas.
- */
 import { describe, expect, test } from 'bun:test'
 import { decodeJwtExpiry, decodeJwtPayload } from '../jwtUtils.js'
 
-// Helper para construir un JWT falso (header.payload.signature, base64url)
+// Helper to build a fake JWT (header.payload.signature, base64url)
 function makeJwt(payload: Record<string, unknown>, prefix = ''): string {
-  const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString(
-    'base64url',
-  )
+  const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' }))
+    .toString('base64url')
   const body = Buffer.from(JSON.stringify(payload)).toString('base64url')
   const sig = 'sig'
   return prefix + `${header}.${body}.${sig}`

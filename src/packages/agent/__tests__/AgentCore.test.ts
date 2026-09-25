@@ -1,17 +1,8 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/AgentCore.test.ts`.
- *
- * `AgentCore` es la fachada del bucle: guarda estado (mensajes, turnos,
- * uso agregado, modelo, sesión) y delega el turno en `AgentLoop`. Estos
- * casos cubren la inyección de dependencias, el estado inicial explícito,
- * `setModel`, la inmutabilidad de los snapshots de `getState`/`getMessages`,
- * y que `run` produzca la secuencia de eventos esperada — incluida la
- * interrupción a media respuesta.
- */
+
 import { describe, test, expect, mock, beforeEach } from 'bun:test'
-import { AgentCore } from '../core/AgentCore.ts'
-import { createMockDeps, END_TURN_EVENTS, createMockStream } from './fixtures/mockDeps.ts'
-import type { AgentDeps } from '../index.ts'
+import { AgentCore } from '../core/AgentCore.js'
+import { createMockDeps, END_TURN_EVENTS, createMockStream } from './fixtures/mockDeps.js'
+import type { AgentDeps } from '../index.js'
 
 describe('AgentCore', () => {
   let deps: AgentDeps

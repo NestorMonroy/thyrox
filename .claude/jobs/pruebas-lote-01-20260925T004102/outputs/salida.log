@@ -1,0 +1,2 @@
+bash: line 1: 27405 Illegal instruction     timeout 1500 bun test $(cat .claude/workbench/copia-desde-ccnmt/lote-01/pruebas-derivadas.txt) > .claude/workbench/copia-desde-ccnmt/lote-01/pruebas.log 2>&1
+__BG_EXIT__=0

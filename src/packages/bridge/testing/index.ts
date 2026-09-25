@@ -1,9 +1,7 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/testing/index.ts` — dobles de
- * prueba del bridge: un runtime nulo y un handle "scripted" con
- * overrides.
- */
-import type { InitBridgeOptions, ReplBridgeHandle } from '../src/contracts.js'
+import type {
+  InitBridgeOptions,
+  ReplBridgeHandle,
+} from '../src/contracts.js'
 
 export class NullBridgeRuntime {
   async bridgeMain(_args: string[]): Promise<void> {}

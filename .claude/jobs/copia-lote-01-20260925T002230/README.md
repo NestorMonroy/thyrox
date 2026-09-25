@@ -1,0 +1,16 @@
+# copia-lote-01
+
+## Qué se lanzó
+
+```
+bash -c PYTHONPATH=src python3 src/verify/source_copy_step.py --root . --dest src/packages --source /home/user/kaupamex-docs/.claude/eventos/recibir-nestor-monroy-tools-20260827T191257/extraido/claude-code-nestor-monroy-tools/packages --files .claude/workbench/copia-desde-ccnmt/outputs/fase1.txt --before-log .claude/workbench/copia-desde-ccnmt/outputs/tsc-tras-copia.log --ledger .claude/workbench/copia-desde-ccnmt/copy-ledger.jsonl --bench .claude/workbench/copia-desde-ccnmt/lote-01 --rewrite @claude-code-how-works/=@thyrox/ --batch 100 -- bunx tsc --noEmit -p tsconfig.json > .claude/workbench/copia-desde-ccnmt/lote-01/salida.json
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

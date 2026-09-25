@@ -1,15 +1,6 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/productionWiring.test.ts`.
- *
- * Ejercita `AgentCore` con un `AgentDeps` que se acerca más a producción
- * que los mocks triviales de las otras suites: un provider de dos turnos
- * (uno con `tool_use`, otro con `end_turn`) y una herramienta `Echo` real
- * que el loop debe descubrir, ejecutar y reflejar en los eventos y en el
- * mensaje final de texto.
- */
 import { describe, test, expect, mock } from 'bun:test'
-import { AgentCore } from '../core/AgentCore.ts'
-import { createMockDeps } from './fixtures/mockDeps.ts'
+import { AgentCore } from '../core/AgentCore.js'
+import { createMockDeps } from './fixtures/mockDeps.js'
 
 describe('AgentCore production wiring', () => {
   test('runs through src/agent production adapters for tools and permissions', async () => {

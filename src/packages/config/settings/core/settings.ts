@@ -1,6 +1,4 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/core/settings.ts` (fachada
- * V7 §10.3 — "movido a `@claude-code-how-works/config/settings`").
- * Reimplementación fiel VERBATIM.
+ * V7 §10.3 facade — moved to `@thyrox/config/settings`.
  */
-export * from '../settings.ts'
+export * from '../settings.js'
