@@ -712,7 +712,11 @@ function loadEffortLevels(): readonly string[] {
 export const EFFORT_LEVELS = loadEffortLevels()
 
 // Tipos (passthroughs estructurales)
-export type ClaudeCodeHint = { id: string; message: string; cta?: string }
+// La forma real del aviso es la del protocolo (`v`, `type`, `value`, …) que
+// declara `tool-registry/claudeCodeHints.ts`; la copia de aquí había
+// inventado otra (`id`, `message`, `cta`) que nadie emite.
+import type { ClaudeCodeHint } from '@thyrox/tool-registry/claudeCodeHints.js'
+export type { ClaudeCodeHint }
 // Misma forma que `@thyrox/local-observability/errorHelpers.js`: la ruta
 // del archivo y la configuración por defecto que debe usarse en su lugar.
 export class ConfigParseError extends Error {
