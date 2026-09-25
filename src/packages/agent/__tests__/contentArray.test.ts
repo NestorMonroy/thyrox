@@ -1,80 +1,102 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/contentArray.test.ts`.
- * La colocacion tiene dos ramas y cada una con su regla; el caso limite es el
- * bloque que queda ultimo, porque ahi la insercion cambia el final del mensaje.
- */
 import { describe, expect, test } from 'bun:test'
-import { insertBlockAfterToolResults } from '../contentArray.ts'
+import { insertBlockAfterToolResults } from '../contentArray.js'
 
-const marker = { type: 'marker' }
-const toolResult = (id: string) => ({ type: 'tool_result', tool_use_id: id })
+const block = (type: string, extra: Record<string, unknown> = {}) => ({
+  type,
+  ...extra,
+})
 
-describe('insertBlockAfterToolResults — con tool_result', () => {
-  test('inserta tras el unico resultado', () => {
-    const content: unknown[] = [toolResult('a'), { type: 'text', text: 'x' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[1]).toBe(marker)
-    expect(content).toHaveLength(3)
+describe('insertBlockAfterToolResults — with tool_results', () => {
+  test('inserts after the only tool_result', () => {
+    const content: unknown[] = [block('tool_result', { id: 't1' })]
+    insertBlockAfterToolResults(content, block('cache'))
+    // Insert at end → triggers continuation append
+    expect(content).toEqual([
+      block('tool_result', { id: 't1' }),
+      block('cache'),
+      { type: 'text', text: '.' },
+    ])
   })
 
-  test('inserta tras el ULTIMO resultado cuando hay varios', () => {
-    const content: unknown[] = [toolResult('a'), toolResult('b'), { type: 'text', text: 'x' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[2]).toBe(marker)
+  test('inserts after LAST tool_result when multiple', () => {
+    const content: unknown[] = [
+      block('tool_result', { id: 't1' }),
+      block('text', { text: 'middle' }),
+      block('tool_result', { id: 't2' }),
+      block('text', { text: 'after' }),
+    ]
+    insertBlockAfterToolResults(content, block('cache'))
+    expect(content[3]).toEqual(block('cache'))
+    expect(content[4]).toEqual(block('text', { text: 'after' }))
   })
 
-  test('anade texto de continuacion cuando el bloque queda ultimo', () => {
-    const content: unknown[] = [toolResult('a')]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[1]).toBe(marker)
-    expect(content[2]).toEqual({ type: 'text', text: '.' })
+  test('inserts after tool_result and appends text continuation when result is final', () => {
+    const content: unknown[] = [
+      block('text', { text: 'first' }),
+      block('tool_result', { id: 't1' }),
+    ]
+    insertBlockAfterToolResults(content, block('cache'))
+    expect(content[content.length - 1]).toEqual({ type: 'text', text: '.' })
   })
 
-  test('NO anade continuacion cuando quedan bloques detras', () => {
-    const content: unknown[] = [toolResult('a'), { type: 'text', text: 'x' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content).toHaveLength(3)
-    expect(content[2]).toEqual({ type: 'text', text: 'x' })
+  test('does NOT append continuation when insert is followed by other blocks', () => {
+    const content: unknown[] = [
+      block('tool_result', { id: 't1' }),
+      block('text', { text: 'follow' }),
+    ]
+    insertBlockAfterToolResults(content, block('cache'))
+    // Inserted at index 1 (after tool_result). content.length now 3, insertPos=1 != length-1
+    expect(content.length).toBe(3)
+    expect(content[content.length - 1]).toEqual(block('text', { text: 'follow' }))
   })
 })
 
-describe('insertBlockAfterToolResults — sin tool_result', () => {
-  test('inserta ANTES del ultimo bloque', () => {
-    const content: unknown[] = [{ type: 'text', text: 'a' }, { type: 'text', text: 'b' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[1]).toBe(marker)
-    expect(content[2]).toEqual({ type: 'text', text: 'b' })
+describe('insertBlockAfterToolResults — no tool_results', () => {
+  test('inserts before last block', () => {
+    const content: unknown[] = [
+      block('text', { text: 'a' }),
+      block('text', { text: 'b' }),
+      block('text', { text: 'c' }),
+    ]
+    insertBlockAfterToolResults(content, block('cache'))
+    expect(content).toEqual([
+      block('text', { text: 'a' }),
+      block('text', { text: 'b' }),
+      block('cache'),
+      block('text', { text: 'c' }),
+    ])
   })
 
-  test('con un solo elemento el bloque queda primero', () => {
-    const content: unknown[] = [{ type: 'text', text: 'a' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[0]).toBe(marker)
+  test('single-element content: inserts at index 0 (becomes first)', () => {
+    const content: unknown[] = [block('text', { text: 'only' })]
+    insertBlockAfterToolResults(content, block('cache'))
+    expect(content).toEqual([block('cache'), block('text', { text: 'only' })])
   })
 
-  test('con contenido vacio inserta en el indice cero', () => {
+  test('empty content: inserts at index 0', () => {
     const content: unknown[] = []
-    insertBlockAfterToolResults(content, marker)
-    expect(content).toEqual([marker])
+    insertBlockAfterToolResults(content, block('cache'))
+    expect(content).toEqual([block('cache')])
   })
 })
 
-describe('insertBlockAfterToolResults — bordes del reconocedor', () => {
-  test('un elemento que no es objeto no cuenta como tool_result', () => {
-    const content: unknown[] = ['tool_result', { type: 'text', text: 'b' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[1]).toBe(marker)
+describe('insertBlockAfterToolResults — edge cases', () => {
+  test('non-object items in content do not match tool_result', () => {
+    const content: unknown[] = ['raw string', null, block('text', { text: 'a' })]
+    insertBlockAfterToolResults(content, block('cache'))
+    // No tool_result → before last → splice at index 2
+    expect(content).toEqual([
+      'raw string',
+      null,
+      block('cache'),
+      block('text', { text: 'a' }),
+    ])
   })
 
-  test('un objeto sin clave type no cuenta como tool_result', () => {
-    const content: unknown[] = [{ tool_use_id: 'a' }, { type: 'text', text: 'b' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[1]).toBe(marker)
-  })
-
-  test('null en el arreglo no revienta el recorrido', () => {
-    const content: unknown[] = [null, toolResult('a'), { type: 'text', text: 'b' }]
-    insertBlockAfterToolResults(content, marker)
-    expect(content[2]).toBe(marker)
+  test('item without `type` field does not match tool_result', () => {
+    const content: unknown[] = [{ id: 'no-type-here' }]
+    insertBlockAfterToolResults(content, block('cache'))
+    // Treated as no-tool-result branch
+    expect(content[0]).toEqual(block('cache'))
   })
 })

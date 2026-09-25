@@ -1,45 +1,27 @@
-/**
- * Puerto de `ccnmt: packages/shell/src/genericProcessUtils.ts` (verbatim,
- * 100 % de sus 6 exports). Implementaciones agnósticas de plataforma para
- * los equivalentes de `ps`/`pgrep`/`kill -0` que el resto del árbol
- * necesita — probes de vivacidad, cadena de ancestros, hijos y el kill de
- * subárbol completo (proceso + descendientes) para el supervisor de
- * agentes en background.
- *
- * Dependencias: `./execFileNoThrow.ts` (hermano, ya portado —
- * `execFileNoThrowWithCwd`) y `./execFileNoThrowPortable.ts` (hermano, ya
- * portado — `execSyncWithDefaults`), más
- * `@thyrox/local-observability/debug.js` (`logForDebugging`, añadida como
- * dependencia del paquete en este pase).
- */
-import { spawn } from 'node:child_process'
+import { spawn } from 'child_process'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   execFileNoThrowWithCwd,
-} from './execFileNoThrow.ts'
-import { execSyncWithDefaults } from './execFileNoThrowPortable.ts'
+  execSyncWithDefaults,
+} from './execFileNoThrow.js'
 
-// Este archivo contiene implementaciones agnósticas de plataforma de
-// comandos tipo `ps`. Al añadir código aquí, considerar:
-// - Win32, porque `ps` dentro de cygwin/WSL puede no comportarse como se
-//   espera, sobre todo al acceder a procesos del host.
-// - Unix vs BSD-style `ps` tienen opciones distintas.
+// This file contains platform-agnostic implementations of common `ps` type commands.
+// When adding new code to this file, make sure to handle:
+// - Win32, as `ps` within cygwin and WSL may not behave as expected, particularly when attempting to access processes on the host.
+// - Unix vs BSD-style `ps` have different options.
 
 /**
- * Comprueba si un proceso con el PID dado está corriendo (probe con
- * señal 0).
+ * Check if a process with the given PID is running (signal 0 probe).
  *
- * PID ≤ 1 devuelve false (0 es el grupo de proceso actual, 1 es init).
+ * PID ≤ 1 returns false (0 is current process group, 1 is init).
  *
- * Nota: `process.kill(pid, 0)` lanza EPERM cuando el proceso existe pero
- * es de otro usuario. Esto reporta tales procesos como NO corriendo, lo
- * cual es conservador para recuperación de locks (no robamos un lock
- * vivo).
+ * Note: `process.kill(pid, 0)` throws EPERM when the process exists but is
+ * owned by another user. This reports such processes as NOT running, which
+ * is conservative for lock recovery (we won't steal a live lock).
  *
- * Usar `isPidAlive` en su lugar cuando se necesite la semántica opuesta —
- * p. ej. para probes de "¿este worker en background sigue ahí para
- * recibir una señal?" donde EPERM significa "sí, el proceso existe, sólo
- * que no es nuestro para matarlo".
+ * Use `isPidAlive` instead when you need the opposite semantics — e.g. for
+ * "is this bg worker still around to receive a signal" probes where EPERM
+ * means "yes, process exists, just not ours to kill".
  */
 export function isProcessRunning(pid: number): boolean {
   if (pid <= 1) return false
@@ -52,14 +34,14 @@ export function isProcessRunning(pid: number): boolean {
 }
 
 /**
- * Probe de vivacidad — como `isProcessRunning` pero trata EPERM como vivo.
+ * Liveness probe — like `isProcessRunning` but treats EPERM as alive.
  *
- * Usar cuando sólo importa si ALGO está en el pid (p. ej. supervisión de
- * workers en background, adopción de daemons). El caso de otro usuario
- * cuenta igual como vivo porque sólo se quiere saber "¿el pid sigue
- * sosteniendo?"; no se intenta tomar un lock.
+ * Use this when you only care whether SOMETHING is at the pid (e.g. bg
+ * worker supervision, daemon adoption). The other-user case still
+ * counts as live because we just want to know "is the pid still
+ * holding"; we're not trying to take over a lock.
  *
- * PID ≤ 1 devuelve false (0 es el grupo de proceso actual, 1 es init).
+ * PID ≤ 1 returns false (0 is current process group, 1 is init).
  */
 export function isPidAlive(pid: number): boolean {
   if (pid <= 1) return false
@@ -72,17 +54,17 @@ export function isPidAlive(pid: number): boolean {
 }
 
 /**
- * Obtiene la cadena de procesos ancestros de un pid (hasta maxDepth
- * niveles).
- * @param pid - El PID de proceso inicial
- * @param maxDepth - Máximo de ancestros a obtener (default: 10)
- * @returns Array de PIDs ancestros, del padre inmediato al más lejano
+ * Gets the ancestor process chain for a given process (up to maxDepth levels)
+ * @param pid - The starting process ID
+ * @param maxDepth - Maximum number of ancestors to fetch (default: 10)
+ * @returns Array of ancestor PIDs from immediate parent to furthest ancestor
  */
 export async function getAncestorPidsAsync(
   pid: string | number,
   maxDepth = 10,
 ): Promise<number[]> {
   if (process.platform === 'win32') {
+    // For Windows, use a PowerShell script that walks the process tree
     const script = `
       $pid = ${String(pid)}
       $ancestors = @()
@@ -111,8 +93,8 @@ export async function getAncestorPidsAsync(
       .filter(p => !isNaN(p))
   }
 
-  // Para Unix, un comando de shell que sube por el árbol de procesos —
-  // una sola invocación en vez de N llamadas secuenciales.
+  // For Unix, use a shell command that walks up the process tree
+  // This uses a single process invocation instead of multiple sequential calls
   const script = `pid=${String(pid)}; for i in $(seq 1 ${maxDepth}); do ppid=$(ps -o ppid= -p $pid 2>/dev/null | tr -d ' '); if [ -z "$ppid" ] || [ "$ppid" = "0" ] || [ "$ppid" = "1" ]; then break; fi; echo $ppid; pid=$ppid; done`
 
   const result = await execFileNoThrowWithCwd('sh', ['-c', script], {
@@ -130,10 +112,10 @@ export async function getAncestorPidsAsync(
 }
 
 /**
- * Obtiene la línea de comando de un proceso dado.
- * @param pid - El PID del proceso
- * @returns La línea de comando, o null si no se encuentra
- * @deprecated Usar getAncestorCommandsAsync en su lugar
+ * Gets the command line for a given process
+ * @param pid - The process ID to get the command for
+ * @returns The command line string, or null if not found
+ * @deprecated Use getAncestorCommandsAsync instead
  */
 export function getProcessCommand(pid: string | number): string | null {
   try {
@@ -151,17 +133,17 @@ export function getProcessCommand(pid: string | number): string | null {
 }
 
 /**
- * Obtiene las líneas de comando de un proceso y sus ancestros en una sola
- * llamada.
- * @param pid - El PID de proceso inicial
- * @param maxDepth - Profundidad máxima a recorrer (default: 10)
- * @returns Array de strings de comando de la cadena de procesos
+ * Gets the command lines for a process and its ancestors in a single call
+ * @param pid - The starting process ID
+ * @param maxDepth - Maximum depth to traverse (default: 10)
+ * @returns Array of command strings for the process chain
  */
 export async function getAncestorCommandsAsync(
   pid: string | number,
   maxDepth = 10,
 ): Promise<string[]> {
   if (process.platform === 'win32') {
+    // For Windows, use a PowerShell script that walks the process tree and collects commands
     const script = `
       $currentPid = ${String(pid)}
       $commands = @()
@@ -186,8 +168,8 @@ export async function getAncestorCommandsAsync(
     return result.stdout.split('\0').filter(Boolean)
   }
 
-  // Para Unix: sube por el árbol de procesos y recolecta comandos.
-  // Usa byte nulo como separador para tolerar comandos con saltos de línea.
+  // For Unix, use a shell command that walks up the process tree and collects commands
+  // Using null byte as separator to handle commands with newlines
   const script = `currentpid=${String(pid)}; for i in $(seq 1 ${maxDepth}); do cmd=$(ps -o command= -p $currentpid 2>/dev/null); if [ -n "$cmd" ]; then printf '%s\\0' "$cmd"; fi; ppid=$(ps -o ppid= -p $currentpid 2>/dev/null | tr -d ' '); if [ -z "$ppid" ] || [ "$ppid" = "0" ] || [ "$ppid" = "1" ]; then break; fi; currentpid=$ppid; done`
 
   const result = await execFileNoThrowWithCwd('sh', ['-c', script], {
@@ -200,9 +182,9 @@ export async function getAncestorCommandsAsync(
 }
 
 /**
- * Obtiene los PIDs hijos de un proceso dado.
- * @param pid - El PID del proceso padre
- * @returns Array de PIDs hijos, como números
+ * Gets the child process IDs for a given process
+ * @param pid - The parent process ID
+ * @returns Array of child process IDs as numbers
  */
 export function getChildPids(pid: string | number): number[] {
   try {
@@ -227,16 +209,17 @@ export function getChildPids(pid: string | number): number[] {
   }
 }
 
-/** Tope duro de la enumeración `ps -A` del fallback de killProcessTree. */
+/** Hard cap on the `ps -A` enumeration used by killProcessTree's fallback. */
 const KILL_PS_ENUM_TIMEOUT_MS = 500
 
 /**
- * Telemetría de fallo para killProcessTree — el equivalente local a
- * `tengu_bash_tool_kill_error` de ant, surfaced por el log de debug ya que
- * este paquete no trae cable a statsig. `stage` distingue un group-kill
- * fallido de una enumeración `ps` fallida. `errno` sólo se registra cuando
- * parece un errno real (mayúsculas, ESRCH/EPERM/…) para no loguear objetos
- * stringificados.
+ * Port of ant v2.1.150 `VrK` (4974.js) — failure telemetry for
+ * killProcessTree. ant emits `tengu_bash_tool_kill_error` with `{stage,
+ * error_code}`; ccb's shell package has no statsig wire, so we surface the
+ * same signal through the debug log. `stage` distinguishes a failed group
+ * kill from a failed `ps` enumeration so a stuck-process report can be
+ * triaged. `errno` is only recorded when it looks like a real errno string
+ * (uppercase, ESRCH/EPERM/…) to avoid logging stringified objects.
  */
 function logKillFailure(stage: string, err: unknown): void {
   try {
@@ -252,14 +235,14 @@ function logKillFailure(stage: string, err: unknown): void {
       `killProcessTree ${stage} failed: ${errorCode ?? String(err)}`,
     )
   } catch {
-    // nunca dejar que la telemetría rompa el camino de kill
+    // never let telemetry crash the kill path
   }
 }
 
 /**
- * Enumera cada par (pid, ppid) del sistema con un único spawn de
- * `ps -A -o pid= -o ppid=` desde `/` (cwd `/` evita sostener un handle de
- * un directorio que puede estar siendo desmontado).
+ * Port of ant v2.1.150 `WOO` (4974.js) — enumerate every (pid, ppid) pair on
+ * the system via a single `ps -A -o pid= -o ppid=` spawn from `/` (cwd `/`
+ * avoids holding a handle on a directory that may be getting torn down).
  */
 function enumeratePidPairs(): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -283,11 +266,11 @@ function enumeratePidPairs(): Promise<string> {
 }
 
 /**
- * Recolecta el conjunto completo de pids descendientes de `rootPid`
- * parseando la tabla (pid, ppid) del sistema entero. Corre el spawn de
- * `ps` contra un timeout de 500ms para que un `ps` colgado no bloquee el
- * camino de kill; en timeout o fallo de spawn devuelve un set vacío (el
- * group-kill por sí solo ya cubre el caso común).
+ * Port of ant v2.1.150 `POO` (4974.js) — collect the full set of descendant
+ * pids of `rootPid` by parsing the system-wide (pid, ppid) table. Races the
+ * `ps` spawn against a 500ms timeout so a hung `ps` can't wedge the kill
+ * path; on timeout / spawn failure returns an empty set (group-kill alone
+ * still reaps the common case).
  */
 async function collectDescendantPids(rootPid: number): Promise<Set<number>> {
   let raw: string
@@ -304,7 +287,7 @@ async function collectDescendantPids(rootPid: number): Promise<Set<number>> {
     return new Set()
   }
 
-  // ppid -> [pids hijos]
+  // ppid -> [child pids]
   const childrenByParent = new Map<number, number[]>()
   for (const line of raw.split('\n')) {
     const m = line.match(/^\s*(\d+)\s+(\d+)\s*$/)
@@ -321,7 +304,7 @@ async function collectDescendantPids(rootPid: number): Promise<Set<number>> {
   while (queue.length > 0) {
     const cur = queue.shift() as number
     for (const child of childrenByParent.get(cur) ?? []) {
-      // pid > 1 protege init; salta la raíz misma y ya vistos.
+      // pid > 1 guards init; skip the root itself and already-seen pids.
       if (child > 1 && child !== rootPid && !descendants.has(child)) {
         descendants.add(child)
         queue.push(child)
@@ -332,66 +315,64 @@ async function collectDescendantPids(rootPid: number): Promise<Set<number>> {
 }
 
 async function killProcessTreeUnix(pid: number, signal: string): Promise<void> {
-  // Recolecta descendientes ANTES de matar — una vez muerto el grupo, la
-  // tabla de `ps` ya no muestra los hijos, así que procesos escapados
-  // (re-parented) no podrían recolectarse después.
+  // Collect descendants BEFORE killing — once the group dies, the ps table
+  // no longer shows the children, so escaped (re-parented) processes could
+  // not be reaped afterwards.
   const descendants = await collectDescendantPids(pid)
 
-  // 1. Group kill — el hijo se lanzó con `detached: true` (bashProvider),
-  //    así que lidera su propio grupo de proceso; `kill(-pid)` recoge todo
-  //    el grupo atómicamente en una sola syscall. Cubre la gran mayoría.
+  // 1. Group kill — the child was spawned `detached: true` (bashProvider),
+  //    so it leads its own process group; `kill(-pid)` reaps the whole group
+  //    atomically in one syscall. This handles the overwhelming majority.
   try {
     process.kill(-pid, signal)
   } catch (err) {
-    // Cae a matar al líder directamente, y reporta salvo que el proceso
-    // ya no estuviera (ESRCH es esperado en una carrera de salida normal).
+    // Fall back to killing the leader directly, then report unless the
+    // process was already gone (ESRCH is expected on a normal exit race).
     try {
       process.kill(pid, signal)
     } catch {
-      // el líder ya se había ido
+      // leader already gone
     }
     if ((err as NodeJS.ErrnoException).code !== 'ESRCH') {
       logKillFailure('group_kill', err)
     }
   }
 
-  // 2. Limpia cualquier descendiente que escapó del grupo (p. ej. daemons
-  //    doble-forkeados que llamaron setsid). Best-effort; pids ausentes
-  //    están bien.
+  // 2. Mop up any descendants that escaped the group (e.g. double-forked
+  //    daemons that called setsid). Best-effort; missing pids are fine.
   for (const child of descendants) {
     try {
       process.kill(child, signal)
     } catch {
-      // ya se había ido
+      // already gone
     }
   }
 }
 
 /**
- * Mata robustamente un proceso y todo su subárbol.
+ * Port of ant v2.1.150 `krK`/`XOO` (4974.js) — robustly kill a process and
+ * its entire subtree.
  *
- * En Unix usa group kill (`process.kill(-pid)`) como mecanismo primario —
- * atómico, una sola syscall, y correcto porque los procesos bash se lanzan
- * con `detached: true` así que el hijo es líder de su propio grupo — con
- * un barrido de descendientes derivado de `ps` como fallback para
- * escapados re-parented. En Windows no hay process groups; se recorre
- * `getChildPids` recursivamente y se señaliza cada pid.
+ * On Unix this uses process-group kill (`process.kill(-pid)`) as the primary
+ * mechanism — atomic, single syscall, and correct because ccb spawns bash
+ * `detached: true` so the child is its own group leader — with a `ps`-derived
+ * descendant sweep as a fallback for re-parented escapees. On Windows there
+ * is no process group; we recurse `getChildPids` and signal each pid.
  *
- * Fire-and-forget: la rechazo async se traga. Callers que usaban
- * `tree-kill(pid, 'SIGKILL')` pueden migrar a esto para el fast path de
- * group-kill y la telemetría de fallo.
+ * Fire-and-forget: ant's `krK` swallows the async rejection. Callers that
+ * were using `tree-kill(pid, 'SIGKILL')` can switch to this for the group-kill
+ * fast path and failure telemetry.
  */
 export function killProcessTree(
   pid: number,
   signal: NodeJS.Signals | string = 'SIGKILL',
 ): void {
-  // PID <= 1 protege el grupo actual (0) e init (1).
+  // PID <= 1 guards current-group (0) and init (1).
   if (!Number.isInteger(pid) || pid <= 1) return
 
   if (process.platform === 'win32') {
-    // No hay process groups en Windows: recorre hijos en profundidad y
-    // señaliza cada uno. getChildPids es síncrono (pgrep/CIM), se recurre
-    // inline.
+    // No process groups on Windows: walk children depth-first and signal
+    // each. getChildPids is synchronous (pgrep/CIM), so recurse inline.
     const killRec = (p: number): void => {
       for (const child of getChildPids(p)) {
         if (child > 1 && child !== p) killRec(child)
@@ -399,7 +380,7 @@ export function killProcessTree(
       try {
         process.kill(p, signal)
       } catch {
-        // ya se había ido
+        // already gone
       }
     }
     try {

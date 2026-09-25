@@ -1,263 +1,293 @@
-/**
- * Adaptado de `ccnmt: packages/swarm/src/worktree/__tests__/parsers.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { parsePRReference, validateWorktreeSlug } from '../index.js'
 
-describe('parsePRReference — URL estilo GitHub', () => {
-  test('URL básica de github.com', () => {
-    expect(parsePRReference('https://github.com/owner/repo/pull/123')).toBe(123)
+describe('parsePRReference — GitHub-style URL', () => {
+  test('basic github.com URL', () => {
+    expect(parsePRReference('https://github.com/owner/repo/pull/123')).toBe(
+      123,
+    )
   })
 
-  test('http (no https) aceptado', () => {
+  test('http (not https) accepted', () => {
     expect(parsePRReference('http://github.com/owner/repo/pull/1')).toBe(1)
   })
 
-  test('URL GHE aceptada (cualquier host empareja)', () => {
-    expect(parsePRReference('https://ghe.example.com/owner/repo/pull/42')).toBe(42)
+  test('GHE URL accepted (any host matches)', () => {
+    expect(
+      parsePRReference('https://ghe.example.com/owner/repo/pull/42'),
+    ).toBe(42)
   })
 
-  test('slash final aceptado', () => {
-    expect(parsePRReference('https://github.com/owner/repo/pull/123/')).toBe(123)
+  test('trailing slash accepted', () => {
+    expect(
+      parsePRReference('https://github.com/owner/repo/pull/123/'),
+    ).toBe(123)
   })
 
-  test('query string después de la URL aceptada', () => {
-    expect(parsePRReference('https://github.com/owner/repo/pull/123?diff=split')).toBe(123)
+  test('query string after URL accepted', () => {
+    expect(
+      parsePRReference('https://github.com/owner/repo/pull/123?diff=split'),
+    ).toBe(123)
   })
 
-  test('fragment después de la URL aceptado', () => {
-    expect(parsePRReference('https://github.com/owner/repo/pull/123#issue-123')).toBe(123)
+  test('fragment after URL accepted', () => {
+    expect(
+      parsePRReference('https://github.com/owner/repo/pull/123#issue-123'),
+    ).toBe(123)
   })
 
-  test('emparejamiento sin distinción de mayúsculas', () => {
-    // El flag /i está fijado en la regex.
-    expect(parsePRReference('HTTPS://GITHUB.COM/owner/repo/PULL/5')).toBe(5)
+  test('case-insensitive matching', () => {
+    // The /i flag is set on the regex.
+    expect(
+      parsePRReference('HTTPS://GITHUB.COM/owner/repo/PULL/5'),
+    ).toBe(5)
   })
 
-  test('número de PR multi-dígito', () => {
-    expect(parsePRReference('https://github.com/owner/repo/pull/99999')).toBe(99999)
+  test('multi-digit PR number', () => {
+    expect(
+      parsePRReference('https://github.com/owner/repo/pull/99999'),
+    ).toBe(99999)
   })
 
-  test('owner/repo con guiones aceptado', () => {
-    expect(parsePRReference('https://github.com/my-org/my-repo/pull/1')).toBe(1)
+  test('owner/repo with hyphens accepted', () => {
+    expect(
+      parsePRReference('https://github.com/my-org/my-repo/pull/1'),
+    ).toBe(1)
   })
 
-  test('owner/repo con puntos aceptado', () => {
-    // La regex es `[^/]+/[^/]+` — cualquier cosa excepto slash.
-    expect(parsePRReference('https://github.com/foo.bar/baz.qux/pull/1')).toBe(1)
+  test('owner/repo with dots accepted', () => {
+    // The regex is `[^/]+/[^/]+` — anything except slash.
+    expect(
+      parsePRReference('https://github.com/foo.bar/baz.qux/pull/1'),
+    ).toBe(1)
   })
 })
 
-describe('parsePRReference — formato #N', () => {
-  test('#123 aceptado', () => {
+describe('parsePRReference — #N format', () => {
+  test('#123 accepted', () => {
     expect(parsePRReference('#123')).toBe(123)
   })
 
-  test('#1 aceptado', () => {
+  test('#1 accepted', () => {
     expect(parsePRReference('#1')).toBe(1)
   })
 
-  test('#N multi-dígito', () => {
+  test('multi-digit #N', () => {
     expect(parsePRReference('#99999')).toBe(99999)
   })
 })
 
-describe('parsePRReference — casos de rechazo', () => {
-  test('número plano (sin #) → null', () => {
-    // Ancla: debe tener prefijo '#' o forma completa de URL.
+describe('parsePRReference — rejection cases', () => {
+  test('plain number (no #) → null', () => {
+    // Anchor: must have '#' prefix or full URL shape.
     expect(parsePRReference('123')).toBeNull()
   })
 
-  test('# sin número → null', () => {
+  test('# without number → null', () => {
     expect(parsePRReference('#')).toBeNull()
   })
 
-  test('# con no-dígito → null', () => {
+  test('# with non-digit → null', () => {
     expect(parsePRReference('#abc')).toBeNull()
   })
 
-  test('# con signo + inicial → null (deben ser dígitos planos)', () => {
+  test('# with leading + sign → null (must be plain digits)', () => {
     expect(parsePRReference('#+123')).toBeNull()
   })
 
-  test('URL de merge request de GitLab → null (forma de ruta distinta)', () => {
-    // GitLab usa /-/merge_requests/N. La regex requiere /pull/N.
-    expect(parsePRReference('https://gitlab.com/owner/repo/-/merge_requests/1')).toBeNull()
+  test('GitLab merge request URL → null (different path shape)', () => {
+    // GitLab uses /-/merge_requests/N. The regex requires /pull/N.
+    expect(
+      parsePRReference('https://gitlab.com/owner/repo/-/merge_requests/1'),
+    ).toBeNull()
   })
 
-  test('URL de pull-request de Bitbucket → null', () => {
-    expect(parsePRReference('https://bitbucket.org/owner/repo/pull-requests/1')).toBeNull()
+  test('Bitbucket pull-request URL → null', () => {
+    expect(
+      parsePRReference('https://bitbucket.org/owner/repo/pull-requests/1'),
+    ).toBeNull()
   })
 
-  test('URL con segmentos de ruta extra después del número de PR → null', () => {
-    // La regex está anclada al final (con ? o # opcional). Rutas extra fallan.
-    expect(parsePRReference('https://github.com/owner/repo/pull/123/files')).toBeNull()
+  test('URL with extra path segments after PR number → null', () => {
+    // The regex is anchored to end (with optional ? or #). Extra paths fail.
+    expect(
+      parsePRReference('https://github.com/owner/repo/pull/123/files'),
+    ).toBeNull()
   })
 
-  test('ruta relativa (no URL completa) → null', () => {
+  test('relative path (not full URL) → null', () => {
     expect(parsePRReference('/owner/repo/pull/123')).toBeNull()
   })
 
-  test('texto que contiene una URL de PR → null (anclado al inicio)', () => {
+  test('text containing PR URL → null (anchored to start)', () => {
     expect(
       parsePRReference('Check this: https://github.com/owner/repo/pull/123'),
     ).toBeNull()
   })
 
-  test('texto plano → null', () => {
+  test('plain text → null', () => {
     expect(parsePRReference('feature-branch')).toBeNull()
   })
 
-  test('string vacío → null', () => {
+  test('empty string → null', () => {
     expect(parsePRReference('')).toBeNull()
   })
 
-  test('protocolo distinto de http/https → null', () => {
-    expect(parsePRReference('ftp://github.com/owner/repo/pull/1')).toBeNull()
+  test('protocol other than http/https → null', () => {
+    expect(
+      parsePRReference('ftp://github.com/owner/repo/pull/1'),
+    ).toBeNull()
   })
 })
 
-describe('validateWorktreeSlug — frontera de seguridad', () => {
-  // CRÍTICO: el slug se une en `.claude/worktrees/<slug>` vía path.join.
-  // Sin la validación, '../../../etc/passwd' escaparía el directorio de
-  // worktrees, Y una ruta absoluta descartaría el prefijo. Este validador
-  // corre síncronamente antes de CUALQUIER efecto secundario (git, hooks).
+describe('validateWorktreeSlug — security boundary', () => {
+  // CRITICAL: the slug joins into `.claude/worktrees/<slug>` via path.join.
+  // Without the validation, '../../../etc/passwd' would escape the
+  // worktrees directory, AND an absolute path would discard the prefix.
+  // This validator runs synchronously before ANY side effects (git, hooks).
 
-  test('slug alfanumérico simple aceptado', () => {
+  test('simple alphanumeric slug accepted', () => {
     expect(() => validateWorktreeSlug('feature-foo')).not.toThrow()
   })
 
-  test('guion bajo + guion + punto permitidos', () => {
+  test('underscore + dash + dot allowed', () => {
     expect(() => validateWorktreeSlug('foo_bar.baz-1')).not.toThrow()
   })
 
-  test('sólo dígitos permitido', () => {
+  test('digits-only allowed', () => {
     expect(() => validateWorktreeSlug('123')).not.toThrow()
   })
 
-  test('anidamiento con forward-slash permitido (validación por segmento)', () => {
+  test('forward-slash nesting allowed (per-segment validation)', () => {
     expect(() => validateWorktreeSlug('user/feature-foo')).not.toThrow()
   })
 
-  test('anidamiento multi-nivel permitido', () => {
-    expect(() => validateWorktreeSlug('team/user/feature')).not.toThrow()
+  test('multi-level nesting allowed', () => {
+    expect(() =>
+      validateWorktreeSlug('team/user/feature'),
+    ).not.toThrow()
   })
 
-  // ─── Intentos de path-traversal ──────────────────────────────────────
+  // ─── Path-traversal attempts ────────────────────────────────────────
 
-  test('RECHAZA segmento literal "."', () => {
+  test('REJECTS literal "." segment', () => {
     expect(() => validateWorktreeSlug('.')).toThrow(
       /must not contain "\." or "\.\." path segments/,
     )
   })
 
-  test('RECHAZA segmento literal ".."', () => {
+  test('REJECTS literal ".." segment', () => {
     expect(() => validateWorktreeSlug('..')).toThrow(
       /must not contain "\." or "\.\." path segments/,
     )
   })
 
-  test('RECHAZA traversal "../target"', () => {
+  test('REJECTS "../target" path traversal', () => {
     expect(() => validateWorktreeSlug('../target')).toThrow()
   })
 
-  test('RECHAZA traversal ".." anidado profundo', () => {
+  test('REJECTS deeply nested ".." traversal', () => {
     expect(() => validateWorktreeSlug('a/../../etc')).toThrow()
   })
 
-  test('RECHAZA "." en medio de la ruta', () => {
+  test('REJECTS "." in middle of path', () => {
     expect(() => validateWorktreeSlug('a/./b')).toThrow()
   })
 
-  // ─── Intentos de ruta absoluta ───────────────────────────────────────
+  // ─── Absolute path attempts ─────────────────────────────────────────
 
-  test('RECHAZA slash inicial (produciría ruta absoluta)', () => {
+  test('REJECTS leading slash (would create absolute path)', () => {
     // path.join('/.claude/worktrees', '/etc') → '/etc'.
     expect(() => validateWorktreeSlug('/etc/passwd')).toThrow(
       /each "\/"-separated segment must be non-empty/,
     )
   })
 
-  test('RECHAZA especificador de unidad Windows (C:)', () => {
-    // Los dos puntos no están en la lista blanca. C:foo → segmento C:foo
-    // → falla la regex.
-    expect(() => validateWorktreeSlug('C:foo')).toThrow(/each "\/"-separated segment/)
+  test('REJECTS Windows drive specifier (C:)', () => {
+    // Colon is not in the allowlist. C:foo → C:foo segment → fails regex.
+    expect(() => validateWorktreeSlug('C:foo')).toThrow(
+      /each "\/"-separated segment/,
+    )
   })
 
-  test('RECHAZA separador de ruta backslash', () => {
-    // \ no está en la lista blanca; el segmento 'C\\Users' falla la regex.
-    expect(() => validateWorktreeSlug('C\\Users\\foo')).toThrow(/each "\/"-separated segment/)
+  test('REJECTS backslash path separator', () => {
+    // \ is not in allowlist; the segment 'C\\Users' fails the regex.
+    expect(() => validateWorktreeSlug('C\\Users\\foo')).toThrow(
+      /each "\/"-separated segment/,
+    )
   })
 
-  // ─── Límite de longitud ───────────────────────────────────────────────
+  // ─── Length limit ────────────────────────────────────────────────────
 
-  test('RECHAZA slug más largo que MAX_WORKTREE_SLUG_LENGTH (64)', () => {
+  test('REJECTS slug longer than MAX_WORKTREE_SLUG_LENGTH (64)', () => {
     const long = 'a'.repeat(65)
-    expect(() => validateWorktreeSlug(long)).toThrow(/must be 64 characters or fewer/)
+    expect(() => validateWorktreeSlug(long)).toThrow(
+      /must be 64 characters or fewer/,
+    )
   })
 
-  test('exactamente 64 caracteres aceptado (frontera)', () => {
+  test('exactly 64 chars accepted (boundary)', () => {
     const exactly64 = 'a'.repeat(64)
     expect(() => validateWorktreeSlug(exactly64)).not.toThrow()
   })
 
-  test('exactamente 65 caracteres rechazado', () => {
+  test('exactly 65 chars rejected', () => {
     const exactly65 = 'a'.repeat(65)
     expect(() => validateWorktreeSlug(exactly65)).toThrow()
   })
 
-  // ─── Intentos de caracteres especiales ────────────────────────────────
+  // ─── Special character attempts ─────────────────────────────────────
 
-  test('RECHAZA metacaracter de shell $', () => {
+  test('REJECTS shell metacharacter $', () => {
     expect(() => validateWorktreeSlug('$(rm)')).toThrow()
   })
 
-  test('RECHAZA espacios', () => {
+  test('REJECTS spaces', () => {
     expect(() => validateWorktreeSlug('foo bar')).toThrow()
   })
 
-  test('RECHAZA carácter @', () => {
+  test('REJECTS @ character', () => {
     expect(() => validateWorktreeSlug('foo@bar')).toThrow()
   })
 
-  test('RECHAZA unicode (sólo ASCII permitido)', () => {
+  test('REJECTS unicode (only ASCII allowed)', () => {
     expect(() => validateWorktreeSlug('feature中文')).toThrow()
   })
 
-  test('RECHAZA byte nulo', () => {
+  test('REJECTS null byte', () => {
     expect(() => validateWorktreeSlug('foo\0bar')).toThrow()
   })
 
-  // ─── Segmentos vacíos ───────────────────────────────────────────────
+  // ─── Empty segments ──────────────────────────────────────────────────
 
-  test('RECHAZA string vacío (split produce un único segmento vacío)', () => {
+  test('REJECTS empty string (split produces single empty segment)', () => {
     expect(() => validateWorktreeSlug('')).toThrow(
       /each "\/"-separated segment must be non-empty/,
     )
   })
 
-  test('RECHAZA slash inicial → primer segmento vacío', () => {
+  test('REJECTS leading slash → empty first segment', () => {
     expect(() => validateWorktreeSlug('/foo')).toThrow()
   })
 
-  test('RECHAZA slash final → último segmento vacío', () => {
+  test('REJECTS trailing slash → empty last segment', () => {
     expect(() => validateWorktreeSlug('foo/')).toThrow()
   })
 
-  test('RECHAZA doble-slash → segmento medio vacío', () => {
+  test('REJECTS double-slash → empty middle segment', () => {
     expect(() => validateWorktreeSlug('foo//bar')).toThrow()
   })
 
-  // ─── Frontera: cada segmento valida independientemente ────────────────
+  // ─── Boundary: each segment validates independently ──────────────────
 
-  test('segmentos válido + inválido — falla en el inválido', () => {
-    // 'good/$bad' tiene primer segmento bueno pero $ en el segundo.
+  test('valid + invalid segments — fails at the invalid one', () => {
+    // 'good/$bad' has good first segment but $ in second.
     expect(() => validateWorktreeSlug('good/$bad')).toThrow()
   })
 
-  test('todos los segmentos en el límite de longitud — total bajo el tope', () => {
-    // Frontera: lo que importa es la longitud total, no por segmento.
-    const slug = `${'a'.repeat(31)}/${'b'.repeat(31)}` // 63 caracteres.
+  test('all segments at length limit — total under cap', () => {
+    // Boundary: total length is what matters, not per-segment.
+    const slug = 'a'.repeat(31) + '/' + 'b'.repeat(31) // 63 chars
     expect(() => validateWorktreeSlug(slug)).not.toThrow()
   })
 })

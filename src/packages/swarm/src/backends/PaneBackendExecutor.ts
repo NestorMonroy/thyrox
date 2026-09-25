@@ -1,39 +1,17 @@
-/**
- * El adaptador que hace de un backend de panes un ejecutor de compañeros.
- *
- * Procedencia: `ccnmt: packages/swarm/src/backends/PaneBackendExecutor.ts`
- * (359 líneas, 2 símbolos exportados). Ese árbol declara `"license":
- * "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se copia.
- *
- * POR QUÉ EXISTE. `TeammateExecutor` es la única interfaz que el resto del
- * paquete conoce, y `InProcessBackend` ya la cumple. Sin este adaptador,
- * `getTeammateExecutor()` devolvería algo útil sólo en el modo in-process y
- * nada en tmux o iTerm2 — o sea, el llamador tendría que ramificar por modo
- * de ejecución en cada sitio.
- *
- * La correspondencia `agentId → paneId` vive en este objeto y en ningún otro
- * sitio: es lo que permite matar el pane correcto, y por eso `kill()` de
- * alguien que este ejecutor no engendró devuelve `false` en vez de adivinar.
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
-import {
-  formatAgentId,
-  getSessionId,
-  jsonStringify,
-  logForDebugging,
-  parseAgentId,
-  quote,
-  registerCleanup,
-} from '../adapters/appRuntime.js'
+import { getSessionId } from '../adapters/appRuntime.js'
 import type { ToolUseContext } from '../adapters/appRuntime.js'
-import { assignTeammateColor } from '../core/teammateColors.js'
+import { formatAgentId, parseAgentId } from '../adapters/appRuntime.js'
+import { quote } from '../adapters/appRuntime.js'
+import { registerCleanup } from '../adapters/appRuntime.js'
+import { logForDebugging } from '../adapters/appRuntime.js'
+import { jsonStringify } from '../adapters/appRuntime.js'
 import { writeToMailbox } from '../mailbox/index.js'
 import {
   buildInheritedCliFlags,
   buildInheritedEnvVars,
   getTeammateCommand,
 } from '../runtime/spawnUtils.js'
+import { assignTeammateColor } from '../core/teammateColors.js'
 import { isInsideTmux } from './detection.js'
 import type {
   BackendType,
@@ -44,25 +22,31 @@ import type {
   TeammateSpawnResult,
 } from './types.js'
 
-/** Lo que hace falta recordar de cada compañero engendrado. */
-type SpawnedTeammate = {
-  paneId: string
-  /**
-   * Si el líder estaba DENTRO de tmux al engendrarlo.
-   *
-   * Decide por qué socket se le habla después: fuera de tmux el pane vive en
-   * una sesión externa, y usar el socket equivocado deja el pane mudo sin
-   * error visible.
-   */
-  insideTmux: boolean
-}
-
+/**
+ * PaneBackendExecutor adapts a PaneBackend to the TeammateExecutor interface.
+ *
+ * This allows pane-based backends (tmux, iTerm2) to be used through the same
+ * TeammateExecutor abstraction as InProcessBackend, making getTeammateExecutor()
+ * return a meaningful executor regardless of execution mode.
+ *
+ * The adapter handles:
+ * - spawn(): Creates a pane and sends the Claude CLI command to it
+ * - sendMessage(): Writes to the teammate's file-based mailbox
+ * - terminate(): Sends a shutdown request via mailbox
+ * - kill(): Kills the pane via the backend
+ * - isActive(): Checks if the pane is still running
+ */
 export class PaneBackendExecutor implements TeammateExecutor {
   readonly type: BackendType
 
   private backend: PaneBackend
   private context: ToolUseContext | null = null
-  private spawnedTeammates: Map<string, SpawnedTeammate>
+
+  /**
+   * Track spawned teammates by agentId -> paneId mapping.
+   * This allows us to find the pane for operations like kill/terminate.
+   */
+  private spawnedTeammates: Map<string, { paneId: string; insideTmux: boolean }>
   private cleanupRegistered = false
 
   constructor(backend: PaneBackend) {
@@ -72,25 +56,29 @@ export class PaneBackendExecutor implements TeammateExecutor {
   }
 
   /**
-   * Fija el contexto de herramienta, del que sale el estado de la aplicación.
-   *
-   * Se llama ANTES de `spawn()`: sin él no se puede leer el modo de permisos
-   * que el compañero debe heredar.
+   * Sets the ToolUseContext for this executor.
+   * Must be called before spawn() to provide access to AppState and permissions.
    */
   setContext(context: ToolUseContext): void {
     this.context = context
   }
 
+  /**
+   * Checks if the underlying pane backend is available.
+   */
   async isAvailable(): Promise<boolean> {
     return this.backend.isAvailable()
   }
 
+  /**
+   * Spawns a teammate in a new pane.
+   *
+   * Creates a pane via the backend, builds the CLI command with teammate
+   * identity flags, and sends it to the pane.
+   */
   async spawn(config: TeammateSpawnConfig): Promise<TeammateSpawnResult> {
     const agentId = formatAgentId(config.name, config.teamName)
 
-    // El contexto se comprueba ANTES de tocar el backend: crear el pane y
-    // descubrir después que falta dejaría un pane huérfano en la pantalla del
-    // usuario, sin proceso dentro y sin nadie que lo recuerde.
     if (!this.context) {
       logForDebugging(
         `[PaneBackendExecutor] spawn() called without context for ${config.name}`,
@@ -104,70 +92,80 @@ export class PaneBackendExecutor implements TeammateExecutor {
     }
 
     try {
+      // Assign a unique color to this teammate
       const teammateColor = config.color ?? assignTeammateColor(agentId)
 
+      // Create a pane in the swarm view
       const { paneId, isFirstTeammate } =
         await this.backend.createTeammatePaneInSwarmView(
           config.name,
           teammateColor,
         )
 
+      // Check if we're inside tmux to determine how to send commands
       const insideTmux = await isInsideTmux()
 
-      // El borde con estado es una opción de tmux: fuera de tmux no existe, y
-      // sólo hace falta encenderla una vez por ventana.
+      // Enable pane border status on first teammate when inside tmux
       if (isFirstTeammate && insideTmux) {
         await this.backend.enablePaneBorderStatus()
       }
 
+      // Build the command to spawn Claude Code with teammate identity
       const binaryPath = getTeammateCommand()
 
+      // Build teammate identity CLI args
       const teammateArgs = [
         `--agent-id ${quote([agentId])}`,
         `--agent-name ${quote([config.name])}`,
         `--team-name ${quote([config.teamName])}`,
         `--agent-color ${quote([teammateColor])}`,
-        // Sin sesión padre declarada se hereda la viva: un compañero sin
-        // padre queda huérfano en el registro de sesiones y nadie puede
-        // reconstruir de qué tanda salió.
         `--parent-session-id ${quote([config.parentSessionId || getSessionId()])}`,
         config.planModeRequired ? '--plan-mode-required' : '',
       ]
         .filter(Boolean)
         .join(' ')
 
+      // Build CLI flags to propagate to teammate
       const appState = this.context.getAppState()
       let inheritedFlags = buildInheritedCliFlags({
         planModeRequired: config.planModeRequired,
         permissionMode: appState.toolPermissionContext.mode,
       })
 
+      // If teammate has a custom model, add --model flag (or replace inherited one)
       if (config.model) {
-        // El modelo propio SUSTITUYE al heredado. Emitir los dos deja que el
-        // analizador de argumentos del hijo decida cuál gana, y esa decisión
-        // no es nuestra ni está declarada en ningún sitio.
         inheritedFlags = inheritedFlags
           .split(' ')
           .filter(
             (flag, i, arr) => flag !== '--model' && arr[i - 1] !== '--model',
           )
           .join(' ')
+        // modelid:bare-by-construction
+        // The packed `<connId>:<modelId>` form is the canonical CLI input
+        // shape; the spawned ccb child runs `inflateModelSetting` on it at
+        // the load boundary. Not a user-display string — it's an inter-
+        // process arg, so the prefix is acceptable.
         inheritedFlags = inheritedFlags
           ? `${inheritedFlags} --model ${quote([config.model])}`
           : `--model ${quote([config.model])}`
       }
 
       const flagsStr = inheritedFlags ? ` ${inheritedFlags}` : ''
+      const workingDir = config.cwd
+
+      // Build environment variables to forward to teammate
       const envStr = buildInheritedEnvVars()
 
-      const spawnCommand = `cd ${quote([config.cwd])} && env ${envStr} ${quote([binaryPath])} ${teammateArgs}${flagsStr}`
+      const spawnCommand = `cd ${quote([workingDir])} && env ${envStr} ${quote([binaryPath])} ${teammateArgs}${flagsStr}`
 
+      // Send the command to the new pane
+      // Use swarm socket when running outside tmux (external swarm session)
       await this.backend.sendCommandToPane(paneId, spawnCommand, !insideTmux)
 
+      // Track the spawned teammate
       this.spawnedTeammates.set(agentId, { paneId, insideTmux })
 
-      // UNA sola limpieza para todos. Registrar una por compañero deja N
-      // cierres compitiendo por el mismo mapa cuando el líder recibe SIGHUP.
+      // Register cleanup to kill all panes on leader exit (e.g., SIGHUP)
       if (!this.cleanupRegistered) {
         this.cleanupRegistered = true
         registerCleanup(async () => {
@@ -181,9 +179,7 @@ export class PaneBackendExecutor implements TeammateExecutor {
         })
       }
 
-      // El encargo inicial viaja por el buzón, no por el pane: escribirlo en
-      // la terminal lo dejaría a merced de lo que el proceso hijo hiciera con
-      // su entrada estándar antes de estar listo.
+      // Send initial instructions to teammate via mailbox
       await writeToMailbox(
         config.name,
         {
@@ -198,24 +194,29 @@ export class PaneBackendExecutor implements TeammateExecutor {
         `[PaneBackendExecutor] Spawned teammate ${agentId} in pane ${paneId}`,
       )
 
-      return { success: true, agentId, paneId }
+      return {
+        success: true,
+        agentId,
+        paneId,
+      }
     } catch (error) {
-      // El líder está en medio de una tanda: una excepción que sube aborta al
-      // resto de los compañeros por el fallo de uno.
       const errorMessage =
         error instanceof Error ? error.message : String(error)
       logForDebugging(
         `[PaneBackendExecutor] Failed to spawn ${agentId}: ${errorMessage}`,
       )
-      return { success: false, agentId, error: errorMessage }
+      return {
+        success: false,
+        agentId,
+        error: errorMessage,
+      }
     }
   }
 
   /**
-   * Manda un mensaje por el buzón del compañero.
+   * Sends a message to a pane-based teammate via file-based mailbox.
    *
-   * Todos los compañeros —de pane y en proceso— comparten el mismo mensajero,
-   * así que el remitente no tiene que saber en qué modo corre el destinatario.
+   * All teammates (pane and in-process) use the same mailbox mechanism.
    */
   async sendMessage(agentId: string, message: TeammateMessage): Promise<void> {
     logForDebugging(
@@ -248,11 +249,10 @@ export class PaneBackendExecutor implements TeammateExecutor {
   }
 
   /**
-   * Pide al compañero que termine.
+   * Gracefully terminates a pane-based teammate.
    *
-   * Es una PETICIÓN, no una orden: el compañero cierra lo suyo y sale. Matarle
-   * el pane aquí le quitaría la oportunidad de dejar su trabajo persistido,
-   * que es justo lo que hace caro perderlo.
+   * For pane-based teammates, we send a shutdown request via mailbox and
+   * let the teammate process handle exit gracefully.
    */
   async terminate(agentId: string, reason?: string): Promise<boolean> {
     logForDebugging(
@@ -269,6 +269,7 @@ export class PaneBackendExecutor implements TeammateExecutor {
 
     const { agentName, teamName } = parsed
 
+    // Send shutdown request via mailbox
     const shutdownRequest = {
       type: 'shutdown_request',
       requestId: `shutdown-${agentId}-${Date.now()}`,
@@ -294,10 +295,7 @@ export class PaneBackendExecutor implements TeammateExecutor {
   }
 
   /**
-   * Mata el pane del compañero.
-   *
-   * Sólo alcanza a quien ESTE ejecutor engendró: el mapa es la única fuente de
-   * la correspondencia, y adivinar un `paneId` mataría el de otro.
+   * Force kills a pane-based teammate by killing its pane.
    */
   async kill(agentId: string): Promise<boolean> {
     logForDebugging(`[PaneBackendExecutor] kill() called for ${agentId}`)
@@ -312,14 +310,14 @@ export class PaneBackendExecutor implements TeammateExecutor {
 
     const { paneId, insideTmux } = teammateInfo
 
+    // Kill the pane via the backend
+    // Use external session socket when we spawned outside tmux
     const killed = await this.backend.killPane(paneId, !insideTmux)
 
     if (killed) {
       this.spawnedTeammates.delete(agentId)
       logForDebugging(`[PaneBackendExecutor] kill() succeeded for ${agentId}`)
     } else {
-      // Olvidarlo tras un fallo lo volvería inalcanzable para siempre: el pane
-      // sigue vivo y ya nadie sabe cuál es.
       logForDebugging(`[PaneBackendExecutor] kill() failed for ${agentId}`)
     }
 
@@ -327,28 +325,33 @@ export class PaneBackendExecutor implements TeammateExecutor {
   }
 
   /**
-   * ¿Sigue vivo el compañero?
+   * Checks if a pane-based teammate is still active.
    *
-   * PARCIAL DECLARADO, igual que en la fuente: se responde desde el mapa, no
-   * consultando al backend. El pane puede existir con el proceso muerto
-   * dentro, así que esto es una cota superior. Cerrarlo exige un método nuevo
-   * en `PaneBackend` —«¿existe este pane?»— que la fuente tampoco tiene.
+   * For pane-based teammates, we check if the pane still exists.
+   * This is a best-effort check - the pane may exist but the process inside
+   * may have exited.
    */
   async isActive(agentId: string): Promise<boolean> {
     logForDebugging(`[PaneBackendExecutor] isActive() called for ${agentId}`)
 
-    if (!this.spawnedTeammates.has(agentId)) {
+    const teammateInfo = this.spawnedTeammates.get(agentId)
+    if (!teammateInfo) {
       logForDebugging(
         `[PaneBackendExecutor] isActive(): teammate ${agentId} not found`,
       )
       return false
     }
 
+    // For now, assume active if we have a record of it
+    // A more robust check would query the backend for pane existence
+    // but that would require adding a new method to PaneBackend
     return true
   }
 }
 
-/** Envuelve un backend de panes como ejecutor de compañeros. */
+/**
+ * Creates a PaneBackendExecutor wrapping the given PaneBackend.
+ */
 export function createPaneBackendExecutor(
   backend: PaneBackend,
 ): PaneBackendExecutor {

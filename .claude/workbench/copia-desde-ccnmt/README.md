@@ -147,3 +147,23 @@ Tras revertir las cinco pasan y tsc confirma **2318**; quedan **53 copias**.
 Memoria: 53 archivos más en `file-diverged-from-source` (363 en total); el
 lote quitó 26 diagnósticos, 10 en sus propios archivos y el resto en
 consumidores.
+
+## Fase 1 — lote 06 (los últimos 75)
+
+**23** pasadas de tsc (~31 s cada una): 40 copiados, 23 rechazados por su
+archivo, 12 por un consumidor. tsc **2318 → 2314**. Pruebas: 105 derivadas,
+1 falla y ya fallaba en HEAD: 0 regresiones.
+
+Por qué 23 y no 3. Las rondas de imports bajaron lo nuevo de 63 a 3, pero
+ninguno de los tres consumidores residuales importa una copia directamente:
+el tipo roto les llega re-exportado por módulos no copiados y por
+especificadores `@thyrox/*`, que el primer salto sólo casaba por nombre.
+Sin sospechosos, se bisecaron las ~70 copias restantes. Medido sobre ese
+residuo (`reachable_copies`, commit `1297e80d`): a 1 salto no hay ninguna
+copia culpable, a 2 hay 1 de 5 alcanzables, a 3 hay 4 de 27 y a 4, 10 de 40.
+Acotar la bisección a lo alcanzable baja de ~70 a 43; lo que la acortaría
+de verdad es probar por capas de distancia, y queda sin hacer porque este
+lote cierra la fase 1 (550 de 550 decididos).
+
+Memoria: 40 archivos más en `file-diverged-from-source` (403 en total); el
+lote quitó 4 diagnósticos, los 4 en sus propios archivos.

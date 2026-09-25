@@ -1,98 +1,21 @@
-/**
- * Puerto de `ccnmt: packages/config/outputStyles.ts` (358 líneas fuente).
- * Los cuatro output styles integrados (default, Proactive, Explanatory,
- * Learning) más la carga de estilos personalizados desde markdown y de
- * plugins, y la resolución del estilo activo. Reimplementación fiel — los
- * prompts de los cuatro estilos se reproducen verbatim porque SON el
- * comportamiento (no hay forma de "reimplementar" un prompt sin cambiar lo
- * que Claude hace bajo ese estilo).
- *
- * `basename` de `path` es built-in. Repuntados vía `require()` diferido
- * (`./internal/pendingCrossPackageDeps.ts`, ya existentes en su paquete):
- * `getCwd` (app-host/bootstrap/cwd.js), `logForDebugging` (local-observability/debug.js),
- * `coerceDescriptionToString` (agent/frontmatterParser), `logError`
- * (local-observability/logging).
- *
- * `figures` (npm) — no instalado; sólo se usan `figures.star` y
- * `figures.bullet`, sustituidos por `figuresSubset` local (los mismos dos
- * glifos Unicode).
- *
- * `memoize` — `lodash-es` no instalado; sustituto local con el mismo
- * contrato (llave = primer argumento), igual que en `platform.ts`.
- *
- * BLOQUEADOS — el `require()` lanzará si se invoca:
- * - `extractDescriptionFromMarkdown`, `loadMarkdownFilesForSubdir` — de
- *   `@claude-code-how-works/tool-registry/markdownConfigLoader.js`. El
- *   paquete `tool-registry` NO EXISTE EN ABSOLUTO en este árbol (verificado
- *   con `ls src/packages/`) — no hay `@thyrox/tool-registry` que portar
- *   parcialmente. `getOutputStyleDirStyles` (el único llamador) queda
- *   bloqueado en consecuencia.
- * - `clearPluginOutputStyleCache`, `loadPluginOutputStyles` — de
- *   `./plugin/loadPluginOutputStyles.ts`, que no es uno de los 15 módulos
- *   del alcance.
- * - `getSettings` — de `./settings/settings.ts`, el mismo bloqueo de
- *   `managedEnv.ts` (ver su docstring: es el caso `@thyrox/config/settings`
- *   del brief, sin `settings/index.ts` en la fuente).
- *
- * `type OutputStyle` — la fuente la importa de `./index.js`, que a su vez
- * la re-exporta de `./global/config.ts` (`export type OutputStyle = string`,
- * verificado). `global/config.ts` no existe en este árbol; se declara el
- * tipo localmente con el mismo valor (`string`) en vez de importar un
- * módulo ausente sólo por un alias de tipo.
- */
-
+import figures from 'figures'
+import memoize from 'lodash-es/memoize.js'
 import { basename } from 'path'
+import type { OutputStyle } from './index.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { coerceDescriptionToString } from '@thyrox/agent/frontmatterParser.js'
+import { logError } from '@thyrox/local-observability/logging'
 import {
-  figuresSubset,
-  memoize,
-  requireAgentFrontmatterParser,
-  requireAppHostBootstrapCwd,
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityLogging,
-} from './internal/pendingCrossPackageDeps.js'
+  extractDescriptionFromMarkdown,
+  loadMarkdownFilesForSubdir,
+} from '@thyrox/tool-registry/markdownConfigLoader.js'
+import {
+  clearPluginOutputStyleCache,
+  loadPluginOutputStyles,
+} from './plugin/loadPluginOutputStyles.js'
 import type { SettingSource } from './settings/constants.js'
-
-/** Ver docstring del módulo — `OutputStyle = string` en la fuente. */
-export type OutputStyle = string
-
-/**
- * `extractDescriptionFromMarkdown`/`loadMarkdownFilesForSubdir` —
- * `@thyrox/tool-registry` no existe en este árbol en absoluto.
- */
-function requireToolRegistryMarkdownConfigLoader(): {
-  extractDescriptionFromMarkdown: (content: string, fallback: string) => string
-  loadMarkdownFilesForSubdir: ((
-    subdir: string,
-    cwd: string,
-  ) => Promise<
-    Array<{
-      filePath: string
-      frontmatter: Record<string, unknown>
-      content: string
-      source: SettingSource
-    }>
-  >) & { cache?: { clear: () => void } }
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@thyrox/tool-registry/markdownConfigLoader.js')
-}
-
-/** `./plugin/loadPluginOutputStyles.ts` no es uno de los 15 del alcance. */
-function requirePluginLoadPluginOutputStyles(): {
-  loadPluginOutputStyles: () => Promise<OutputStyleConfig[]>
-  clearPluginOutputStyleCache: () => void
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./plugin/loadPluginOutputStyles.js')
-}
-
-/** `./settings/settings.ts` — ver docstring del módulo. */
-function requireSettingsSettings(): {
-  getSettings: () => { outputStyle?: string } | null
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./settings/settings.js')
-}
+import { getSettings } from './settings/settings.js'
 
 export type OutputStyleConfig = {
   name: string
@@ -101,16 +24,15 @@ export type OutputStyleConfig = {
   source: SettingSource | 'built-in' | 'plugin'
   keepCodingInstructions?: boolean
   /**
-   * ant v2.1.139 4096.js MYH — recordatorio corto reinyectado en cada turno
-   * para que el comportamiento del estilo no derive en conversaciones
-   * largas. Hoy lo usa el estilo Proactive.
+   * ant v2.1.139 4096.js MYH — short reminder reinjected each turn so the
+   * style's behavior doesn't drift across long conversations. Currently
+   * used by the Proactive style.
    */
   turnReminder?: string
   /**
-   * Si es `true`, este output style se aplica automáticamente cuando el
-   * plugin está habilitado. Sólo aplica a output styles de plugin. Cuando
-   * varios plugins fuerzan output styles, sólo se elige uno (se registra
-   * vía debug).
+   * If true, this output style will be automatically applied when the plugin is enabled.
+   * Only applicable to plugin output styles.
+   * When multiple plugins have forced output styles, only one is chosen (logged via debug).
    */
   forceForPlugin?: boolean
 }
@@ -119,23 +41,22 @@ export type OutputStyles = {
   readonly [K in OutputStyle]: OutputStyleConfig | null
 }
 
-// Se usa en los modos Explanatory y Learning.
+// Used in both the Explanatory and Learning modes.
 //
-// Regla de alcance: las explicaciones educativas viven DENTRO del bloque
-// Insight. El resto de la respuesta sigue las reglas de "eficiencia de
-// salida" del prompt principal (conciso, encabeza con la acción). El
-// bloque es la válvula de escape dedicada — fuera de él, sin relajación de
-// longitud.
+// Scope rule: educational explanations live INSIDE the Insight block. The
+// rest of the response still follows the main "Output efficiency" rules
+// (concise, lead with action). The block is the dedicated escape hatch —
+// outside the block, no length relaxation.
 //
-// Regla de disparo: produce un Insight cuando escribiste código con una
-// decisión de diseño no obvia, usaste un patrón específico del proyecto, o
-// arreglaste un bug cuya causa raíz importa. Se omite en ediciones
-// triviales (rename, typo, formato). Calidad > frecuencia.
+// Trigger rule: produce an Insight when you wrote code with a non-obvious
+// design choice, used a project-specific pattern, or fixed a bug whose
+// root cause matters. Skip for trivial edits (rename, typo fix, formatting).
+// Quality > frequency.
 const EXPLANATORY_FEATURE_PROMPT = `
 ## Insights
 When you write code involving a non-obvious design choice, a project-specific pattern, or a bug whose root cause is worth explaining, surface it in a dedicated Insight block (with backticks):
 
-"\`${figuresSubset.star} Insight ─────────────────────────────────────\`
+"\`${figures.star} Insight ─────────────────────────────────────\`
 [2-3 educational points, codebase-specific where possible]
 \`─────────────────────────────────────────────────\`"
 
@@ -147,9 +68,9 @@ Rules:
 
 export const DEFAULT_OUTPUT_STYLE_NAME = 'default'
 
-// ant v2.1.139 4095.js (hh8) — cuerpo del estilo Proactive: lista de
-// directivas que reemplaza el "pregunta primero" de Default por "ejecuta,
-// minimiza interrupciones, prefiere acción sobre planificación".
+// ant v2.1.139 4095.js (hh8) — Proactive style body: directive list that
+// overrides Default's lazy-mode "ask first" behavior with "execute, minimize
+// interruptions, prefer action over planning".
 const PROACTIVE_FEATURE_PROMPT = `The user chose continuous, autonomous execution. You should:
 
 1. **Execute immediately** — Start implementing right away. Make reasonable assumptions and proceed on low-risk work.
@@ -161,11 +82,10 @@ const PROACTIVE_FEATURE_PROMPT = `The user chose continuous, autonomous executio
 
 export const OUTPUT_STYLE_CONFIG: OutputStyles = {
   [DEFAULT_OUTPUT_STYLE_NAME]: null,
-  // ant v2.1.139 4096.js MYH.Proactive — 4to output style integrado. Cuando
-  // el usuario setea `outputStyle: "Proactive"`, Claude pasa del modo lazy
-  // por defecto a modo ejecución autónoma. `keepCodingInstructions` queda
-  // en `true` para que las reglas de seguridad de uso de herramientas +
-  // reglas de código del prompt por defecto sigan aplicando.
+  // ant v2.1.139 4096.js MYH.Proactive — 4th built-in output style. When the
+  // user sets `outputStyle: "Proactive"` Claude flips from default lazy mode
+  // to autonomous-execution mode. keepCodingInstructions stays true so
+  // tool-use safety + coding rules from the default prompt still apply.
   Proactive: {
     name: 'Proactive',
     source: 'built-in',
@@ -221,7 +141,7 @@ Example TodoList flow:
 
 ### Request Format
 \`\`\`
-${figuresSubset.bullet} **Learn by Doing**
+${figures.bullet} **Learn by Doing**
 **Context:** [what's built and why this decision matters]
 **Your Task:** [specific function/section in file, mention file and TODO(human) but do not include line numbers]
 **Guidance:** [trade-offs and constraints to consider]
@@ -237,7 +157,7 @@ ${figuresSubset.bullet} **Learn by Doing**
 
 **Whole Function Example:**
 \`\`\`
-${figuresSubset.bullet} **Learn by Doing**
+${figures.bullet} **Learn by Doing**
 
 **Context:** I've set up the hint feature UI with a button that triggers the hint system. The infrastructure is ready: when clicked, it calls selectHintCell() to determine which cell to hint, then highlights that cell with a yellow background and shows possible values. The hint system needs to decide which empty cell would be most helpful to reveal to the user.
 
@@ -248,7 +168,7 @@ ${figuresSubset.bullet} **Learn by Doing**
 
 **Partial Function Example:**
 \`\`\`
-${figuresSubset.bullet} **Learn by Doing**
+${figures.bullet} **Learn by Doing**
 
 **Context:** I've built a file upload component that validates files before accepting them. The main validation logic is complete, but it needs specific handling for different file type categories in the switch statement.
 
@@ -259,7 +179,7 @@ ${figuresSubset.bullet} **Learn by Doing**
 
 **Debugging Example:**
 \`\`\`
-${figuresSubset.bullet} **Learn by Doing**
+${figures.bullet} **Learn by Doing**
 
 **Context:** The user reported that number inputs aren't working correctly in the calculator. I've identified the handleInput() function as the likely source, but need to understand what values are being processed.
 
@@ -277,26 +197,19 @@ ${EXPLANATORY_FEATURE_PROMPT}`,
 }
 
 /**
- * Carga archivos markdown de los directorios `.claude/output-styles` de
- * todo el proyecto y de `~/.claude/output-styles`, y los convierte en
- * output styles.
+ * Loads markdown files from .claude/output-styles directories throughout the project
+ * and from ~/.claude/output-styles directory and converts them to output styles.
  *
- * Cada nombre de archivo se vuelve un nombre de estilo, y el contenido del
- * archivo se vuelve el prompt del estilo. El frontmatter provee nombre y
- * descripción.
+ * Each filename becomes a style name, and the file content becomes the style prompt.
+ * The frontmatter provides name and description.
  *
- * Estructura:
- * - `.claude/output-styles/*.md` del proyecto -> estilos de proyecto
- * - `~/.claude/output-styles/*.md` de usuario -> estilos de usuario
- *   (sobreescritos por los de proyecto)
+ * Structure:
+ * - Project .claude/output-styles/*.md -> project styles
+ * - User ~/.claude/output-styles/*.md -> user styles (overridden by project styles)
  */
 export const getOutputStyleDirStyles = memoize(
   async (cwd: string): Promise<OutputStyleConfig[]> => {
-    const { logError } = requireLocalObservabilityLogging()
-    const { logForDebugging } = requireLocalObservabilityDebug()
     try {
-      const { loadMarkdownFilesForSubdir, extractDescriptionFromMarkdown } =
-        requireToolRegistryMarkdownConfigLoader()
       const markdownFiles = await loadMarkdownFilesForSubdir(
         'output-styles',
         cwd,
@@ -310,10 +223,10 @@ export const getOutputStyleDirStyles = memoize(
 
             const name = (frontmatter['name'] || styleName) as string
             const description =
-              (requireAgentFrontmatterParser().coerceDescriptionToString(
+              coerceDescriptionToString(
                 frontmatter['description'],
                 styleName,
-              ) as string | undefined) ??
+              ) ??
               extractDescriptionFromMarkdown(
                 content,
                 `Custom ${styleName} output style`,
@@ -349,7 +262,7 @@ export const getOutputStyleDirStyles = memoize(
             return null
           }
         })
-        .filter((style) => style !== null)
+        .filter(style => style !== null)
 
       return styles
     } catch (error) {
@@ -361,17 +274,17 @@ export const getOutputStyleDirStyles = memoize(
 
 export function clearOutputStyleCaches(): void {
   getOutputStyleDirStyles.cache?.clear?.()
-  requireToolRegistryMarkdownConfigLoader().loadMarkdownFilesForSubdir.cache?.clear?.()
-  requirePluginLoadPluginOutputStyles().clearPluginOutputStyleCache()
+  loadMarkdownFilesForSubdir.cache?.clear?.()
+  clearPluginOutputStyleCache()
 }
 
 export const getAllOutputStyles = memoize(async function getAllOutputStyles(
   cwd: string,
 ): Promise<{ [styleName: string]: OutputStyleConfig | null }> {
   const customStyles = await getOutputStyleDirStyles(cwd)
-  const pluginStyles = await requirePluginLoadPluginOutputStyles().loadPluginOutputStyles()
+  const pluginStyles = await loadPluginOutputStyles()
 
-  const allStyles: { [styleName: string]: OutputStyleConfig | null } = {
+  const allStyles = {
     ...OUTPUT_STYLE_CONFIG,
   }
 
@@ -385,8 +298,7 @@ export const getAllOutputStyles = memoize(async function getAllOutputStyles(
     style => style.source === 'projectSettings',
   )
 
-  // Añade estilos en orden de prioridad (menor a mayor): built-in, plugin,
-  // gestionado, usuario, proyecto.
+  // Add styles in priority order (lowest to highest): built-in, plugin, managed, user, project
   const styleGroups = [pluginStyles, userStyles, projectStyles, managedStyles]
 
   for (const styles of styleGroups) {
@@ -410,9 +322,7 @@ export function clearAllOutputStylesCache(): void {
 }
 
 export async function getOutputStyleConfig(): Promise<OutputStyleConfig | null> {
-  const allStyles = await getAllOutputStyles(
-    requireAppHostBootstrapCwd().getCwd(),
-  )
+  const allStyles = await getAllOutputStyles(getCwd())
 
   const forcedStyles = Object.values(allStyles).filter(
     (style): style is OutputStyleConfig =>
@@ -423,7 +333,6 @@ export async function getOutputStyleConfig(): Promise<OutputStyleConfig | null> 
 
   const firstForcedStyle = forcedStyles[0]
   if (firstForcedStyle) {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     if (forcedStyles.length > 1) {
       logForDebugging(
         `Multiple plugins have forced output styles: ${forcedStyles.map(s => s.name).join(', ')}. Using: ${firstForcedStyle.name}`,
@@ -436,7 +345,7 @@ export async function getOutputStyleConfig(): Promise<OutputStyleConfig | null> 
     return firstForcedStyle
   }
 
-  const settings = requireSettingsSettings().getSettings()
+  const settings = getSettings()
   const outputStyle = (settings?.outputStyle ||
     DEFAULT_OUTPUT_STYLE_NAME) as string
 
@@ -444,6 +353,6 @@ export async function getOutputStyleConfig(): Promise<OutputStyleConfig | null> 
 }
 
 export function hasCustomOutputStyle(): boolean {
-  const style = requireSettingsSettings().getSettings()?.outputStyle
+  const style = getSettings()?.outputStyle
   return style !== undefined && style !== DEFAULT_OUTPUT_STYLE_NAME
 }

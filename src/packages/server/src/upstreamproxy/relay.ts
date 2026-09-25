@@ -1,47 +1,44 @@
+/* eslint-disable eslint-plugin-n/no-unsupported-features/node-builtins */
 /**
- * Puerto de `ccnmt: packages/server/src/upstreamproxy/relay.ts`.
+ * CONNECT-over-WebSocket relay. WebSocket binary types differ across
+ * Node/Bun/ws — `ws.send(... as any)` is by-design type-system bypass
+ * for WebSocket-API compatibility (Buffer vs ArrayBufferLike vs
+ * Uint8Array all work at runtime).
  *
- * Relay CONNECT-sobre-WebSocket para el upstreamproxy de CCR.
+ * CONNECT-over-WebSocket relay for CCR upstreamproxy.
  *
- * Escucha en TCP local, acepta HTTP CONNECT de curl/gh/kubectl/etc, y
- * túnelea bytes por WebSocket hacia el endpoint de upstreamproxy de CCR.
- * El lado servidor de CCR termina el túnel, hace MITM de TLS, inyecta
- * credenciales configuradas por la organización (p. ej. DD-API-KEY), y
- * reenvía al upstream real.
+ * Listens on localhost TCP, accepts HTTP CONNECT from curl/gh/kubectl/etc,
+ * and tunnels bytes over WebSocket to the CCR upstreamproxy endpoint.
+ * The CCR server-side terminates the tunnel, MITMs TLS, injects org-configured
+ * credentials (e.g. DD-API-KEY), and forwards to the real upstream.
  *
- * POR QUÉ WebSocket y no CONNECT crudo: el ingress de CCR es GKE L7 con
- * ruteo por prefijo de path; no hay connect_matcher en cdk-constructs. El
- * túnel de session-ingress (sessions/tunnel/v1alpha/tunnel.proto) ya usa
- * este patrón.
+ * WHY WebSocket and not raw CONNECT: CCR ingress is GKE L7 with path-prefix
+ * routing; there's no connect_matcher in cdk-constructs. The session-ingress
+ * tunnel (sessions/tunnel/v1alpha/tunnel.proto) already uses this pattern.
  *
- * Protocolo: los bytes se envuelven en mensajes protobuf UpstreamProxyChunk
- * (`message UpstreamProxyChunk { bytes data = 1; }`) por compatibilidad
- * con gateway.NewWebSocketStreamAdapter del lado servidor.
- *
- * `logForDebugging`/`getWebSocketTLSOptions`/`getWebSocketProxyAgent`/
- * `getWebSocketProxyUrl` — ver `../internal/pendingCrossPackageDeps.js`.
- *
- * La rama Node usa `import('ws')` dinámico, igual que la fuente — no es
- * un rodeo mío por Rule 3 (Bun trae un shim nativo de `ws`, verificado en
- * este turno), sino la propia detección de runtime de ccnmt.
+ * Protocol: bytes are wrapped in UpstreamProxyChunk protobuf messages
+ * (`message UpstreamProxyChunk { bytes data = 1; }`) for compatibility with
+ * gateway.NewWebSocketStreamAdapter on the server side.
  */
-import { createServer, type Socket as NodeSocket } from 'node:net'
-import { requireLocalObservabilityDebug, requireProviderMtls, requireProviderProxy } from '../internal/pendingCrossPackageDeps.js'
 
-// El contenedor CCR corre detrás de un gateway de egreso — el outbound
-// directo está bloqueado, así que el upgrade de WS tiene que pasar por el
-// mismo proxy HTTP CONNECT que usa todo lo demás. El globalThis.WebSocket
-// de undici no consulta el dispatcher global para el upgrade, así que bajo
-// Node se usa el paquete ws con un agent explícito (mismo patrón que
-// SessionsWebSocket). El WebSocket nativo de Bun toma una URL de proxy
-// directo. Se precarga en startNodeRelay para que openTunnel siga siendo
-// síncrono y la máquina de estados de CONNECT no compita.
+import { createServer, type Socket as NodeSocket } from 'node:net'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getWebSocketTLSOptions } from '@thyrox/provider/mtls.js'
+import { getWebSocketProxyAgent, getWebSocketProxyUrl } from '@thyrox/provider/proxy.js'
+
+// The CCR container runs behind an egress gateway — direct outbound is
+// blocked, so the WS upgrade must go through the same HTTP CONNECT proxy
+// everything else uses. undici's globalThis.WebSocket does not consult
+// the global dispatcher for the upgrade, so under Node we use the ws package
+// with an explicit agent (same pattern as SessionsWebSocket). Bun's native
+// WebSocket takes a proxy URL directly. Preloaded in startNodeRelay so
+// openTunnel stays synchronous and the CONNECT state machine doesn't race.
 type WSCtor = typeof import('ws').default
 let nodeWSCtor: WSCtor | undefined
 
-// Intersección de la superficie que toca openTunnel. Tanto el
-// globalThis.WebSocket de undici como el paquete ws la satisfacen vía
-// handlers onX de estilo propiedad.
+// Intersection of the surface openTunnel touches. Both undici's
+// globalThis.WebSocket and the ws package satisfy this via property-style
+// onX handlers.
 type WebSocketLike = Pick<
   WebSocket,
   | 'onopen'
@@ -54,28 +51,26 @@ type WebSocketLike = Pick<
   | 'binaryType'
 >
 
-// Tope de buffer por petición de Envoy. Los payloads de Datadog de la
-// semana 1 no lo van a tocar, pero se diseña para eso para que un
-// git-push no necesite un rewrite del relay.
+// Envoy per-request buffer cap. Week-1 Datadog payloads won't hit this, but
+// design for it so git-push doesn't need a relay rewrite.
 const MAX_CHUNK_BYTES = 512 * 1024
 
-// El timeout de idle del sidecar es 50s; el ping va bien adentro de eso.
+// Sidecar idle timeout is 50s; ping well inside that.
 const PING_INTERVAL_MS = 30_000
 
 /**
- * Codifica un mensaje protobuf UpstreamProxyChunk a mano.
+ * Encode an UpstreamProxyChunk protobuf message by hand.
  *
- * Para `message UpstreamProxyChunk { bytes data = 1; }` el wire format es:
+ * For `message UpstreamProxyChunk { bytes data = 1; }` the wire format is:
  *   tag = (field_number << 3) | wire_type = (1 << 3) | 2 = 0x0a
- *   seguido del varint de longitud, seguido de los bytes.
+ *   followed by varint length, followed by the bytes.
  *
- * protobufjs sería la respuesta general; para un mensaje de un solo campo
- * bytes la codificación a mano son 10 líneas y evita una dependencia en
- * tiempo de ejecución en el hot path.
+ * protobufjs would be the general answer; for a single-field bytes message
+ * the hand encoding is 10 lines and avoids a runtime dep in the hot path.
  */
 export function encodeChunk(data: Uint8Array): Uint8Array {
   const len = data.length
-  // codificación varint de la longitud — la mayoría de los chunks caben en 1-3 bytes
+  // varint encoding of length — most chunks fit in 1–3 length bytes
   const varint: number[] = []
   let n = len
   while (n > 0x7f) {
@@ -91,8 +86,8 @@ export function encodeChunk(data: Uint8Array): Uint8Array {
 }
 
 /**
- * Decodifica un UpstreamProxyChunk. Devuelve el campo data, o null si está malformado.
- * Tolera que el servidor mande un chunk de longitud cero (semántica de keepalive).
+ * Decode an UpstreamProxyChunk. Returns the data field, or null if malformed.
+ * Tolerates the server sending a zero-length chunk (keepalive semantics).
  */
 export function decodeChunk(buf: Uint8Array): Uint8Array | null {
   if (buf.length === 0) return new Uint8Array(0)
@@ -121,29 +116,26 @@ type ConnState = {
   ws?: WebSocketLike
   connectBuf: Buffer
   pinger?: ReturnType<typeof setInterval>
-  // Bytes que llegaron después de la cabecera CONNECT pero antes de que
-  // dispare ws.onopen. TCP puede coalescer CONNECT + ClientHello en un
-  // solo paquete, y el callback data del socket puede volver a disparar
-  // mientras el handshake de WS sigue en vuelo. Ambos casos perderían
-  // bytes en silencio sin este buffer.
+  // Bytes that arrived after the CONNECT header but before ws.onopen fired.
+  // TCP can coalesce CONNECT + ClientHello into one packet, and the socket's
+  // data callback can fire again while the WS handshake is still in flight.
+  // Both cases would silently drop bytes without this buffer.
   pending: Buffer[]
   wsOpen: boolean
-  // Se fija una vez que el 200 Connection Established del servidor ya se
-  // reenvió y el túnel está cargando TLS. Después de eso, escribir un 502
-  // en texto plano corrompería el stream TLS del cliente — sólo se cierra.
+  // Set once the server's 200 Connection Established has been forwarded and
+  // the tunnel is carrying TLS. After that, writing a plaintext 502 would
+  // corrupt the client's TLS stream — just close instead.
   established: boolean
-  // onerror de WS siempre va seguido de onclose; sin esta guarda el
-  // segundo handler haría sock.end() sobre un socket ya terminado. Gana
-  // el primero que llega.
+  // WS onerror is always followed by onclose; without a guard the second
+  // handler would sock.end() an already-ended socket. First caller wins.
   closed: boolean
 }
 
 /**
- * Abstracción mínima de socket para que el parser de CONNECT y la
- * plomería del túnel WS sean agnósticas de runtime. Las implementaciones
- * manejan el backpressure de escritura internamente: sock.write() de Bun
- * hace escrituras parciales y necesita encolado explícito de la cola;
- * net.Socket de Node bufferea sin condiciones y nunca pierde bytes.
+ * Minimal socket abstraction so the CONNECT parser and WS tunnel plumbing
+ * are runtime-agnostic. Implementations handle write backpressure internally:
+ * Bun's sock.write() does partial writes and needs explicit tail-queueing;
+ * Node's net.Socket buffers unconditionally and never drops bytes.
  */
 type ClientSocket = {
   write: (data: Uint8Array | string) => void
@@ -161,23 +153,20 @@ function newConnState(): ConnState {
 }
 
 /**
- * Arranca el relay. Devuelve el puerto efímero al que se enlazó y una
- * función stop. Usa Bun.listen cuando está disponible, si no
- * net.createServer de Node — el contenedor CCR corre el CLI bajo Node, no Bun.
+ * Start the relay. Returns the ephemeral port it bound and a stop function.
+ * Uses Bun.listen when available, otherwise Node's net.createServer — the CCR
+ * container runs the CLI under Node, not Bun.
  */
 export async function startUpstreamProxyRelay(opts: {
   wsUrl: string
   sessionId: string
   token: string
 }): Promise<UpstreamProxyRelay> {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-
   const authHeader =
     'Basic ' + Buffer.from(`${opts.sessionId}:${opts.token}`).toString('base64')
-  // El upgrade de WS en sí está auth-gateado (proto authn: PRIVATE_API) —
-  // el gateway quiere el JWT de session-ingress en la petición de
-  // upgrade, separado del Proxy-Authorization que viaja dentro del
-  // CONNECT tuneleado.
+  // WS upgrade itself is auth-gated (proto authn: PRIVATE_API) — the gateway
+  // wants the session-ingress JWT on the upgrade request, separate from the
+  // Proxy-Authorization that rides inside the tunneled CONNECT.
   const wsAuthHeader = `Bearer ${opts.token}`
 
   const relay =
@@ -194,16 +183,14 @@ function startBunRelay(
   authHeader: string,
   wsAuthHeader: string,
 ): UpstreamProxyRelay {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-
-  // Los sockets TCP de Bun no auto-bufferean escrituras parciales:
-  // sock.write() devuelve el conteo de bytes realmente entregados al
-  // kernel, y el resto se descarta en silencio. Cuando el buffer del
-  // kernel se llena, se encola la cola y el handler drain la vacía. Es
-  // por-socket porque el closure del adapter sobrevive a llamadas
-  // individuales del handler.
+  // Bun TCP sockets don't auto-buffer partial writes: sock.write() returns
+  // the byte count actually handed to the kernel, and the remainder is
+  // silently dropped. When the kernel buffer fills, we queue the tail and
+  // let the drain handler flush it. Per-socket because the adapter closure
+  // outlives individual handler calls.
   type BunState = ConnState & { writeBuf: Uint8Array[] }
 
+  // eslint-disable-next-line custom-rules/require-bun-typeof-guard -- caller dispatches on typeof Bun
   const server = Bun.listen<BunState>({
     hostname: '127.0.0.1',
     port: 0,
@@ -258,26 +245,22 @@ function startBunRelay(
   }
 }
 
-// Exportado para que los tests puedan ejercitar el camino Node
-// directamente — el test runner es Bun, así que el dispatch de runtime en
-// startUpstreamProxyRelay siempre elige Bun.
+// Exported so tests can exercise the Node path directly — the test runner is
+// Bun, so the runtime dispatch in startUpstreamProxyRelay always picks Bun.
 export async function startNodeRelay(
   wsUrl: string,
   authHeader: string,
   wsAuthHeader: string,
 ): Promise<UpstreamProxyRelay> {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-
   nodeWSCtor = (await import('ws')).default
   const states = new WeakMap<NodeSocket, ConnState>()
 
   const server = createServer(sock => {
     const st = newConnState()
     states.set(sock, st)
-    // sock.write() de Node bufferea internamente — un retorno false
-    // señala backpressure pero los bytes ya están encolados, así que no
-    // hace falta rastreo de cola para la corrección. Los payloads de la
-    // semana 1 no van a estresar el buffer.
+    // Node's sock.write() buffers internally — a false return signals
+    // backpressure but the bytes are already queued, so no tail-tracking
+    // needed for correctness. Week-1 payloads won't stress the buffer.
     const adapter: ClientSocket = {
       write: payload => {
         sock.write(typeof payload === 'string' ? payload : Buffer.from(payload))
@@ -311,8 +294,8 @@ export async function startNodeRelay(
 }
 
 /**
- * Handler compartido de datos por conexión. La fase 1 acumula la
- * petición CONNECT; la fase 2 reenvía bytes del cliente por el túnel WS.
+ * Shared per-connection data handler. Phase 1 accumulates the CONNECT request;
+ * phase 2 forwards client bytes over the WS tunnel.
  */
 function handleData(
   sock: ClientSocket,
@@ -322,13 +305,14 @@ function handleData(
   authHeader: string,
   wsAuthHeader: string,
 ): void {
-  // Fase 1: acumula hasta ver la petición CONNECT completa (terminada por
-  // CRLF CRLF). curl/gh la mandan en un solo paquete, pero no se asume.
+  // Phase 1: accumulate until we've seen the full CONNECT request
+  // (terminated by CRLF CRLF). curl/gh send this in one packet, but
+  // don't assume that.
   if (!st.ws) {
     st.connectBuf = Buffer.concat([st.connectBuf, data])
     const headerEnd = st.connectBuf.indexOf('\r\n\r\n')
     if (headerEnd === -1) {
-      // Guarda contra un cliente que nunca manda CRLFCRLF.
+      // Guard against a client that never sends CRLFCRLF.
       if (st.connectBuf.length > 8192) {
         sock.write('HTTP/1.1 400 Bad Request\r\n\r\n')
         sock.end()
@@ -343,8 +327,8 @@ function handleData(
       sock.end()
       return
     }
-    // Guarda cualquier byte que haya llegado después de la cabecera
-    // CONNECT para que openTunnel lo vacíe una vez que el WS esté abierto.
+    // Stash any bytes that arrived after the CONNECT header so
+    // openTunnel can flush them once the WS is open.
     const trailing = st.connectBuf.subarray(headerEnd + 4)
     if (trailing.length > 0) {
       st.pending.push(Buffer.from(trailing))
@@ -353,8 +337,8 @@ function handleData(
     openTunnel(sock, st, firstLine, wsUrl, authHeader, wsAuthHeader)
     return
   }
-  // Fase 2: el WS ya existe. Si no está OPEN todavía, bufferea;
-  // ws.onopen lo vaciará. Una vez abierto, bombea los bytes del cliente al WS en chunks.
+  // Phase 2: WS exists. If it isn't OPEN yet, buffer; ws.onopen will
+  // flush. Once open, pump client bytes to WS in chunks.
   if (!st.wsOpen) {
     st.pending.push(Buffer.from(data))
     return
@@ -370,13 +354,10 @@ function openTunnel(
   authHeader: string,
   wsAuthHeader: string,
 ): void {
-  const { getWebSocketTLSOptions } = requireProviderMtls()
-  const { getWebSocketProxyAgent, getWebSocketProxyUrl } = requireProviderProxy()
-
-  // core/websocket/stream.go elige JSON vs binary-proto a partir de la
-  // cabecera Content-Type de la petición de upgrade (por defecto JSON).
-  // Sin application/proto el servidor hace protojson.Unmarshal de
-  // nuestros chunks binarios hechos a mano y falla en silencio con EOF.
+  // core/websocket/stream.go picks JSON vs binary-proto from the upgrade
+  // request's Content-Type header (defaults to JSON). Without application/proto
+  // the server protojson.Unmarshals our hand-encoded binary chunks and fails
+  // silently with EOF.
   const headers = {
     'Content-Type': 'application/proto',
     Authorization: wsAuthHeader,
@@ -390,32 +371,32 @@ function openTunnel(
     }) as unknown as WebSocketLike
   } else {
     ws = new globalThis.WebSocket(wsUrl, {
+      // @ts-expect-error — Bun extension; not in lib.dom WebSocket types
       headers,
       proxy: getWebSocketProxyUrl(wsUrl),
       tls: getWebSocketTLSOptions() || undefined,
-    } as unknown as string[]) as unknown as WebSocketLike
+    })
   }
   ws.binaryType = 'arraybuffer'
   st.ws = ws
 
   ws.onopen = () => {
-    // El primer chunk lleva la línea CONNECT más Proxy-Authorization
-    // para que el servidor pueda autenticar el túnel y saber host:puerto
-    // destino. El servidor responde con su propio "HTTP/1.1 200" por el
-    // túnel; sólo se reenvía.
+    // First chunk carries the CONNECT line plus Proxy-Authorization so the
+    // server can auth the tunnel and know the target host:port. Server
+    // responds with its own "HTTP/1.1 200" over the tunnel; we just pipe it.
     const head =
       `${connectLine}\r\n` + `Proxy-Authorization: ${authHeader}\r\n` + `\r\n`
-    ws.send(encodeChunk(new Uint8Array(Buffer.from(head, 'utf8'))) as never)
-    // Vacía lo que haya llegado mientras el handshake de WS estaba en
-    // vuelo — bytes finales del paquete CONNECT y cualquier callback
-    // data() que haya disparado antes de onopen.
+    ws.send(encodeChunk(new Uint8Array(Buffer.from(head, 'utf8'))) as any)
+    // Flush anything that arrived while the WS handshake was in flight —
+    // trailing bytes from the CONNECT packet and any data() callbacks that
+    // fired before onopen.
     st.wsOpen = true
     for (const buf of st.pending) {
       forwardToWs(ws, buf)
     }
     st.pending = []
-    // No todas las implementaciones de WS exponen ping(); un chunk vacío
-    // funciona como keepalive a nivel de aplicación que el servidor puede ignorar.
+    // Not all WS implementations expose ping(); empty chunk works as an
+    // application-level keepalive the server can ignore.
     st.pinger = setInterval(sendKeepalive, PING_INTERVAL_MS, ws)
   }
 
@@ -423,7 +404,7 @@ function openTunnel(
     const raw =
       ev.data instanceof ArrayBuffer
         ? new Uint8Array(ev.data)
-        : new Uint8Array(Buffer.from(ev.data as string))
+        : new Uint8Array(Buffer.from(ev.data))
     const payload = decodeChunk(raw)
     if (payload && payload.length > 0) {
       st.established = true
@@ -432,9 +413,7 @@ function openTunnel(
   }
 
   ws.onerror = ev => {
-    const msg =
-      'message' in ev ? String((ev as unknown as { message: unknown }).message) : 'websocket error'
-    const { logForDebugging } = requireLocalObservabilityDebug()
+    const msg = 'message' in ev ? String(ev.message) : 'websocket error'
     logForDebugging(`[upstreamproxy] ws error: ${msg}`)
     if (st.closed) return
     st.closed = true
@@ -455,7 +434,7 @@ function openTunnel(
 
 function sendKeepalive(ws: WebSocketLike): void {
   if (ws.readyState === WebSocket.OPEN) {
-    ws.send(encodeChunk(new Uint8Array(0)) as never)
+    ws.send(encodeChunk(new Uint8Array(0)) as any)
   }
 }
 
@@ -463,7 +442,7 @@ function forwardToWs(ws: WebSocketLike, data: Buffer): void {
   if (ws.readyState !== WebSocket.OPEN) return
   for (let off = 0; off < data.length; off += MAX_CHUNK_BYTES) {
     const slice = new Uint8Array(data.subarray(off, off + MAX_CHUNK_BYTES))
-    ws.send(encodeChunk(slice) as never)
+    ws.send(encodeChunk(slice) as any)
   }
 }
 
@@ -474,7 +453,7 @@ function cleanupConn(st: ConnState | undefined): void {
     try {
       st.ws.close()
     } catch {
-      // ya se está cerrando
+      // already closing
     }
   }
   st.ws = undefined

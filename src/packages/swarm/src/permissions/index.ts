@@ -1,47 +1,40 @@
 /**
- * Permisos sincronizados entre los agentes de una tanda.
+ * Synchronized Permission Prompts for Agent Swarms
  *
- * Procedencia: `ccnmt: packages/swarm/src/permissions/index.ts` (919 líneas,
- * 23 símbolos exportados). Ese árbol declara `"license": "UNLICENSED"`, así
- * que el cuerpo se **reimplementa** y no se copia.
+ * This module provides infrastructure for coordinating permission prompts across
+ * multiple agents in a swarm. When a worker agent needs permission for a tool use,
+ * it can forward the request to the team leader, who can then approve or deny it.
  *
- * EL PROBLEMA: un compañero que se topa con una petición de permiso no tiene
- * a quién preguntarle — el usuario está delante del líder, no de él. Así que
- * la reenvía, el líder decide, y la respuesta vuelve.
+ * The system uses the teammate mailbox for message passing:
+ * - Workers send permission requests to the leader's mailbox
+ * - Leaders send permission responses to the worker's mailbox
  *
- * DOS TRANSPORTES, y los dos siguen vivos en la fuente:
- *
- * - **Por archivos** — `permissions/pending/` y `permissions/resolved/` bajo
- *   el directorio del equipo. El líder lee la bandeja de pendientes; al
- *   resolver, la petición se MUEVE de una carpeta a la otra.
- * - **Por buzón** — el mismo mensajero que usan los compañeros para hablar
- *   entre sí, con mensajes de protocolo de petición y respuesta.
- *
- * DIVERGENCIA DECLARADA: no se importan `PermissionUpdate` como tipo de
- * anfitrión (se usa `unknown[]` en su lugar, que es lo que el esquema ya
- * declara) ni el `generateRequestId` del adaptador. El segundo es una
- * COLISIÓN de nombre: este módulo exporta el suyo, sin argumentos y con
- * prefijo propio, y traer el del anfitrión lo taparía.
+ * Flow:
+ * 1. Worker agent encounters a permission prompt
+ * 2. Worker sends a permission_request message to the leader's mailbox
+ * 3. Leader polls for mailbox messages and detects permission requests
+ * 4. User approves/denies via the leader's UI
+ * 5. Leader sends a permission_response message to the worker's mailbox
+ * 6. Worker polls mailbox for responses and continues execution
  */
-import { mkdir, readdir, readFile, unlink, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { atomicWriteFile } from '@thyrox/storage/file.js'
-import { z } from 'zod/v4'
 
+import { mkdir, readdir, readFile, unlink, writeFile } from 'fs/promises'
+import { atomicWriteFile } from '@thyrox/storage/file.js'
+import { join } from 'path'
+import { z } from 'zod/v4'
+import { logForDebugging } from '../adapters/appRuntime.js'
+import { getErrnoCode } from '../adapters/appRuntime.js'
+import { lazySchema } from '../adapters/appRuntime.js'
+import * as lockfile from '../adapters/appRuntime.js'
+import { logError } from '../adapters/appRuntime.js'
+import type { PermissionUpdate } from '../adapters/appRuntime.js'
+import { jsonParse, jsonStringify } from '../adapters/appRuntime.js'
 import {
   getAgentId,
   getAgentName,
-  getErrnoCode,
   getTeammateColor,
   getTeamName,
-  jsonParse,
-  jsonStringify,
-  lock,
-  logError,
-  logForDebugging,
 } from '../adapters/appRuntime.js'
-import { getTeamDir, readTeamFileAsync } from '../core/teamHelpers.js'
-import { lazySchema } from '../internal/lazySchema.js'
 import {
   createPermissionRequestMessage,
   createPermissionResponseMessage,
@@ -49,26 +42,46 @@ import {
   createSandboxPermissionResponseMessage,
   writeToMailbox,
 } from '../mailbox/index.js'
+import { getTeamDir, readTeamFileAsync } from '../core/teamHelpers.js'
 
-/** La forma completa de una petición de permiso de un compañero al líder. */
+/**
+ * Full request schema for a permission request from a worker to the leader
+ */
 export const SwarmPermissionRequestSchema = lazySchema(() =>
   z.object({
+    /** Unique identifier for this request */
     id: z.string(),
+    /** Worker's CLAUDE_CODE_AGENT_ID */
     workerId: z.string(),
+    /** Worker's CLAUDE_CODE_AGENT_NAME */
     workerName: z.string(),
+    /** Worker's CLAUDE_CODE_AGENT_COLOR */
     workerColor: z.string().optional(),
+    /** Team name for routing */
     teamName: z.string(),
+    /** Tool name requiring permission (e.g., "Bash", "Edit") */
     toolName: z.string(),
+    /** Original toolUseID from worker's context */
     toolUseId: z.string(),
+    /** Human-readable description of the tool use */
     description: z.string(),
+    /** Serialized tool input */
     input: z.record(z.string(), z.unknown()),
+    /** Suggested permission rules from the permission result */
     permissionSuggestions: z.array(z.unknown()),
+    /** Status of the request */
     status: z.enum(['pending', 'approved', 'rejected']),
+    /** Who resolved the request */
     resolvedBy: z.enum(['worker', 'leader']).optional(),
+    /** Timestamp when resolved */
     resolvedAt: z.number().optional(),
+    /** Rejection feedback message */
     feedback: z.string().optional(),
+    /** Modified input if changed by resolver */
     updatedInput: z.record(z.string(), z.unknown()).optional(),
+    /** "Always allow" rules applied during resolution */
     permissionUpdates: z.array(z.unknown()).optional(),
+    /** Timestamp when request was created */
     createdAt: z.number(),
   }),
 )
@@ -77,58 +90,80 @@ export type SwarmPermissionRequest = z.infer<
   ReturnType<typeof SwarmPermissionRequestSchema>
 >
 
-/** Lo que quien resuelve una petición decide sobre ella. */
+/**
+ * Resolution data returned when leader/worker resolves a request
+ */
 export type PermissionResolution = {
+  /** Decision: approved or rejected */
   decision: 'approved' | 'rejected'
+  /** Who resolved it */
   resolvedBy: 'worker' | 'leader'
+  /** Optional feedback message if rejected */
   feedback?: string
+  /** Optional updated input if the resolver modified it */
   updatedInput?: Record<string, unknown>
-  permissionUpdates?: unknown[]
+  /** Permission updates to apply (e.g., "always allow" rules) */
+  permissionUpdates?: PermissionUpdate[]
 }
 
-/** El directorio de permisos de un equipo. */
+/**
+ * Get the base directory for a team's permission requests
+ * Path: ~/.claude/teams/{teamName}/permissions/
+ */
 export function getPermissionDir(teamName: string): string {
   return join(getTeamDir(teamName), 'permissions')
 }
 
+/**
+ * Get the pending directory for a team
+ */
 function getPendingDir(teamName: string): string {
   return join(getPermissionDir(teamName), 'pending')
 }
 
+/**
+ * Get the resolved directory for a team
+ */
 function getResolvedDir(teamName: string): string {
   return join(getPermissionDir(teamName), 'resolved')
 }
 
+/**
+ * Ensure the permissions directory structure exists (async)
+ */
 async function ensurePermissionDirsAsync(teamName: string): Promise<void> {
-  for (const dir of [
-    getPermissionDir(teamName),
-    getPendingDir(teamName),
-    getResolvedDir(teamName),
-  ]) {
+  const permDir = getPermissionDir(teamName)
+  const pendingDir = getPendingDir(teamName)
+  const resolvedDir = getResolvedDir(teamName)
+
+  for (const dir of [permDir, pendingDir, resolvedDir]) {
     await mkdir(dir, { recursive: true })
   }
 }
 
+/**
+ * Get the path to a pending request file
+ */
 function getPendingRequestPath(teamName: string, requestId: string): string {
   return join(getPendingDir(teamName), `${requestId}.json`)
 }
 
+/**
+ * Get the path to a resolved request file
+ */
 function getResolvedRequestPath(teamName: string, requestId: string): string {
   return join(getResolvedDir(teamName), `${requestId}.json`)
 }
 
-/** Un identificador de petición, con su prefijo propio. */
+/**
+ * Generate a unique request ID
+ */
 export function generateRequestId(): string {
   return `perm-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
 }
 
 /**
- * Arma una petición de permiso desde la identidad de quien la hace.
- *
- * La identidad es OBLIGATORIA y su ausencia lanza: una petición sin remitente
- * no se puede enrutar de vuelta — el líder la aprobaría y la respuesta no
- * tendría a dónde ir. Fallar aquí cuesta menos que un compañero esperando
- * para siempre.
+ * Create a new SwarmPermissionRequest object
  */
 export function createPermissionRequest(params: {
   toolName: string
@@ -146,8 +181,12 @@ export function createPermissionRequest(params: {
   const workerName = params.workerName || getAgentName()
   const workerColor = params.workerColor || getTeammateColor()
 
-  if (!teamName) throw new Error('Team name is required for permission requests')
-  if (!workerId) throw new Error('Worker ID is required for permission requests')
+  if (!teamName) {
+    throw new Error('Team name is required for permission requests')
+  }
+  if (!workerId) {
+    throw new Error('Worker ID is required for permission requests')
+  }
   if (!workerName) {
     throw new Error('Worker name is required for permission requests')
   }
@@ -169,11 +208,10 @@ export function createPermissionRequest(params: {
 }
 
 /**
- * Deja una petición en la bandeja de pendientes.
+ * Write a permission request to the pending directory with file locking
+ * Called by worker agents when they need permission approval from the leader
  *
- * A diferencia de casi todo lo demás de este módulo, RELANZA el error: quien
- * pide un permiso tiene que enterarse de que su petición no llegó, porque si
- * no se quedaría esperando una respuesta que nadie va a dar.
+ * @returns The written request
  */
 export async function writePermissionRequest(
   request: SwarmPermissionRequest,
@@ -181,33 +219,40 @@ export async function writePermissionRequest(
   await ensurePermissionDirsAsync(request.teamName)
 
   const pendingPath = getPendingRequestPath(request.teamName, request.id)
-  // El cerrojo es del DIRECTORIO y no del archivo: lo que se protege es la
-  // bandeja, que varios compañeros escriben a la vez.
-  const lockFilePath = join(getPendingDir(request.teamName), '.lock')
+  const lockDir = getPendingDir(request.teamName)
+
+  // Create a directory-level lock file for atomic writes
+  const lockFilePath = join(lockDir, '.lock')
   await writeFile(lockFilePath, '', 'utf-8')
 
   let release: (() => Promise<void>) | undefined
   try {
-    release = await lock(lockFilePath)
+    release = await lockfile.lock(lockFilePath)
+
+    // Write the request file
     await atomicWriteFile(pendingPath, jsonStringify(request, null, 2))
+
     logForDebugging(
       `[PermissionSync] Wrote pending request ${request.id} from ${request.workerName} for ${request.toolName}`,
     )
+
     return request
   } catch (error) {
-    logForDebugging(`[PermissionSync] Failed to write permission request: ${error}`)
+    logForDebugging(
+      `[PermissionSync] Failed to write permission request: ${error}`,
+    )
     logError(error)
     throw error
   } finally {
-    if (release) await release()
+    if (release) {
+      await release()
+    }
   }
 }
 
 /**
- * La bandeja de pendientes del líder, de la más VIEJA a la más nueva.
- *
- * Un archivo que no valida se descarta y los demás siguen: uno corrupto no
- * puede tumbar la bandeja entera.
+ * Read all pending permission requests for a team
+ * Called by the team leader to see what requests need attention
  */
 export async function readPendingPermissions(
   teamName?: string,
@@ -224,16 +269,15 @@ export async function readPendingPermissions(
   try {
     files = await readdir(pendingDir)
   } catch (e: unknown) {
-    if (getErrnoCode(e) === 'ENOENT') return []
+    const code = getErrnoCode(e)
+    if (code === 'ENOENT') {
+      return []
+    }
     logForDebugging(`[PermissionSync] Failed to read pending requests: ${e}`)
     logError(e)
     return []
   }
 
-  // El filtro de extensión es el que manda: excluye el cerrojo y también los
-  // temporales que una escritura atómica deja al vuelo. La segunda cláusula es
-  // REDUNDANTE —`.lock` no termina en `.json`— y se conserva por fidelidad a
-  // la fuente; medido con anulación, retirarla sola no cambia ningún veredicto.
   const jsonFiles = files.filter(f => f.endsWith('.json') && f !== '.lock')
 
   const results = await Promise.all(
@@ -241,8 +285,12 @@ export async function readPendingPermissions(
       const filePath = join(pendingDir, file)
       try {
         const content = await readFile(filePath, 'utf-8')
-        const parsed = SwarmPermissionRequestSchema().safeParse(jsonParse(content))
-        if (parsed.success) return parsed.data
+        const parsed = SwarmPermissionRequestSchema().safeParse(
+          jsonParse(content),
+        )
+        if (parsed.success) {
+          return parsed.data
+        }
         logForDebugging(
           `[PermissionSync] Invalid request file ${file}: ${parsed.error.message}`,
         )
@@ -257,32 +305,45 @@ export async function readPendingPermissions(
   )
 
   const requests = results.filter(r => r !== null)
-  // El orden es el de llegada: quien lleva más esperando se atiende antes.
+
+  // Sort by creation time (oldest first)
   requests.sort((a, b) => a.createdAt - b.createdAt)
+
   return requests
 }
 
-/** La resolución de una petición, o `null` si aún no la hay. */
+/**
+ * Read a resolved permission request by ID
+ * Called by workers to check if their request has been resolved
+ *
+ * @returns The resolved request, or null if not yet resolved
+ */
 export async function readResolvedPermission(
   requestId: string,
   teamName?: string,
 ): Promise<SwarmPermissionRequest | null> {
   const team = teamName || getTeamName()
-  if (!team) return null
+  if (!team) {
+    return null
+  }
 
   const resolvedPath = getResolvedRequestPath(team, requestId)
 
   try {
     const content = await readFile(resolvedPath, 'utf-8')
     const parsed = SwarmPermissionRequestSchema().safeParse(jsonParse(content))
-    if (parsed.success) return parsed.data
+    if (parsed.success) {
+      return parsed.data
+    }
     logForDebugging(
       `[PermissionSync] Invalid resolved request ${requestId}: ${parsed.error.message}`,
     )
     return null
   } catch (e: unknown) {
-    // Que no esté resuelta todavía es el caso normal del sondeo.
-    if (getErrnoCode(e) === 'ENOENT') return null
+    const code = getErrnoCode(e)
+    if (code === 'ENOENT') {
+      return null
+    }
     logForDebugging(
       `[PermissionSync] Failed to read resolved request ${requestId}: ${e}`,
     )
@@ -292,10 +353,10 @@ export async function readResolvedPermission(
 }
 
 /**
- * Resuelve una petición: la MUEVE de pendientes a resueltas.
+ * Resolve a permission request
+ * Called by the team leader (or worker in self-resolution cases)
  *
- * Mover y no copiar es lo que impide que el líder vuelva a ver en su bandeja
- * algo que ya decidió.
+ * Writes the resolution to resolved/, removes from pending/
  */
 export async function resolvePermission(
   requestId: string,
@@ -318,14 +379,18 @@ export async function resolvePermission(
 
   let release: (() => Promise<void>) | undefined
   try {
-    release = await lock(lockFilePath)
+    release = await lockfile.lock(lockFilePath)
 
+    // Read the pending request
     let content: string
     try {
       content = await readFile(pendingPath, 'utf-8')
     } catch (e: unknown) {
-      if (getErrnoCode(e) === 'ENOENT') {
-        logForDebugging(`[PermissionSync] Pending request not found: ${requestId}`)
+      const code = getErrnoCode(e)
+      if (code === 'ENOENT') {
+        logForDebugging(
+          `[PermissionSync] Pending request not found: ${requestId}`,
+        )
         return false
       }
       throw e
@@ -339,8 +404,11 @@ export async function resolvePermission(
       return false
     }
 
+    const request = parsed.data
+
+    // Update the request with resolution data
     const resolvedRequest: SwarmPermissionRequest = {
-      ...parsed.data,
+      ...request,
       status: resolution.decision === 'approved' ? 'approved' : 'rejected',
       resolvedBy: resolution.resolvedBy,
       resolvedAt: Date.now(),
@@ -349,38 +417,43 @@ export async function resolvePermission(
       permissionUpdates: resolution.permissionUpdates,
     }
 
+    // Write to resolved directory
     await atomicWriteFile(resolvedPath, jsonStringify(resolvedRequest, null, 2))
+
+    // Remove from pending directory
     await unlink(pendingPath)
 
     logForDebugging(
       `[PermissionSync] Resolved request ${requestId} with ${resolution.decision}`,
     )
+
     return true
   } catch (error) {
     logForDebugging(`[PermissionSync] Failed to resolve request: ${error}`)
     logError(error)
     return false
   } finally {
-    if (release) await release()
+    if (release) {
+      await release()
+    }
   }
 }
 
 /**
- * Borra las resoluciones viejas.
+ * Clean up old resolved permission files
+ * Called periodically to prevent file accumulation
  *
- * La comparación es «mayor o igual» a propósito: con edad máxima cero, una
- * resolución de este mismo instante también entra — si fuera estricta, pedir
- * «límpialo todo» no limpiaría nada.
- *
- * Un archivo que no se puede leer se borra igualmente: si no se puede saber su
- * edad, dejarlo lo haría eterno.
+ * @param teamName - Team name
+ * @param maxAgeMs - Maximum age in milliseconds (default: 1 hour)
  */
 export async function cleanupOldResolutions(
   teamName?: string,
   maxAgeMs = 3600000,
 ): Promise<number> {
   const team = teamName || getTeamName()
-  if (!team) return 0
+  if (!team) {
+    return 0
+  }
 
   const resolvedDir = getResolvedDir(team)
 
@@ -388,7 +461,10 @@ export async function cleanupOldResolutions(
   try {
     files = await readdir(resolvedDir)
   } catch (e: unknown) {
-    if (getErrnoCode(e) === 'ENOENT') return 0
+    const code = getErrnoCode(e)
+    if (code === 'ENOENT') {
+      return 0
+    }
     logForDebugging(`[PermissionSync] Failed to cleanup resolutions: ${e}`)
     logError(e)
     return 0
@@ -403,6 +479,9 @@ export async function cleanupOldResolutions(
       try {
         const content = await readFile(filePath, 'utf-8')
         const request = jsonParse(content) as SwarmPermissionRequest
+
+        // Check if the resolution is old enough to clean up
+        // Use >= to handle edge case where maxAgeMs is 0 (clean up everything)
         const resolvedAt = request.resolvedAt || request.createdAt
         if (now - resolvedAt >= maxAgeMs) {
           await unlink(filePath)
@@ -411,10 +490,12 @@ export async function cleanupOldResolutions(
         }
         return 0
       } catch {
+        // If we can't parse it, clean it up anyway
         try {
           await unlink(filePath)
           return 1
         } catch {
+          // Ignore deletion errors
           return 0
         }
       }
@@ -422,28 +503,40 @@ export async function cleanupOldResolutions(
   )
 
   const cleanedCount = cleanupResults.reduce<number>((sum, n) => sum + n, 0)
+
   if (cleanedCount > 0) {
-    logForDebugging(`[PermissionSync] Cleaned up ${cleanedCount} old resolutions`)
+    logForDebugging(
+      `[PermissionSync] Cleaned up ${cleanedCount} old resolutions`,
+    )
   }
+
   return cleanedCount
 }
 
-/** La forma con la que el compañero lee la respuesta a su petición. */
+/**
+ * Legacy response type for worker polling
+ * Used for backward compatibility with worker integration code
+ */
 export type PermissionResponse = {
+  /** ID of the request this responds to */
   requestId: string
+  /** Decision: approved or denied */
   decision: 'approved' | 'denied'
+  /** Timestamp when response was created */
   timestamp: string
+  /** Optional feedback message if denied */
   feedback?: string
+  /** Optional updated input if the resolver modified it */
   updatedInput?: Record<string, unknown>
+  /** Permission updates to apply (e.g., "always allow" rules) */
   permissionUpdates?: unknown[]
 }
 
 /**
- * Sondea la respuesta a una petición.
+ * Poll for a permission response (worker-side convenience function)
+ * Converts the resolved request into a simpler response format
  *
- * TODO lo que no es «aprobado» sale como «denegado»: el compañero sólo puede
- * continuar si le dijeron que sí, y un estado que no reconozca tiene que
- * frenarlo igual que un rechazo.
+ * @returns The permission response, or null if not yet resolved
  */
 export async function pollForResponse(
   requestId: string,
@@ -451,7 +544,9 @@ export async function pollForResponse(
   teamName?: string,
 ): Promise<PermissionResponse | null> {
   const resolved = await readResolvedPermission(requestId, teamName)
-  if (!resolved) return null
+  if (!resolved) {
+    return null
+  }
 
   return {
     requestId: resolved.id,
@@ -465,7 +560,10 @@ export async function pollForResponse(
   }
 }
 
-/** Retira la respuesta ya procesada. Alias de `deleteResolvedPermission`. */
+/**
+ * Remove a worker's response after processing
+ * This is an alias for deleteResolvedPermission for backward compatibility
+ */
 export async function removeWorkerResponse(
   requestId: string,
   _agentName?: string,
@@ -475,60 +573,77 @@ export async function removeWorkerResponse(
 }
 
 /**
- * Si esta sesión es el líder del equipo.
- *
- * Sin equipo la pregunta no tiene sentido, y contestar que sí daría a una
- * sesión suelta autoridad sobre un equipo que no existe.
+ * Check if the current agent is a team leader
  */
 export function isTeamLeader(teamName?: string): boolean {
   const team = teamName || getTeamName()
-  if (!team) return false
+  if (!team) {
+    return false
+  }
 
-  // El líder no recibe identificador de agente al arrancar; el reservado se
-  // acepta por las sesiones que sí lo declaran.
+  // Team leaders don't have an agent ID set, or their ID is 'team-lead'
   const agentId = getAgentId()
+
   return !agentId || agentId === 'team-lead'
 }
 
-/** Si esta sesión es un compañero dentro de un equipo. */
+/**
+ * Check if the current agent is a worker in a swarm
+ */
 export function isSwarmWorker(): boolean {
   const teamName = getTeamName()
   const agentId = getAgentId()
+
   return !!teamName && !!agentId && !isTeamLeader()
 }
 
-/** Borra el archivo de una resolución ya consumida. */
+/**
+ * Delete a resolved permission file
+ * Called after a worker has processed the resolution
+ */
 export async function deleteResolvedPermission(
   requestId: string,
   teamName?: string,
 ): Promise<boolean> {
   const team = teamName || getTeamName()
-  if (!team) return false
+  if (!team) {
+    return false
+  }
 
   const resolvedPath = getResolvedRequestPath(team, requestId)
 
   try {
     await unlink(resolvedPath)
-    logForDebugging(`[PermissionSync] Deleted resolved permission: ${requestId}`)
+    logForDebugging(
+      `[PermissionSync] Deleted resolved permission: ${requestId}`,
+    )
     return true
   } catch (e: unknown) {
-    if (getErrnoCode(e) === 'ENOENT') return false
-    logForDebugging(`[PermissionSync] Failed to delete resolved permission: ${e}`)
+    const code = getErrnoCode(e)
+    if (code === 'ENOENT') {
+      return false
+    }
+    logForDebugging(
+      `[PermissionSync] Failed to delete resolved permission: ${e}`,
+    )
     logError(e)
     return false
   }
 }
 
+// ============================================================================
+// Mailbox-Based Permission System
+// ============================================================================
+
 /**
- * El NOMBRE del líder, que es lo que el buzón necesita.
- *
- * El roster guarda identificadores, y los buzones se indexan por nombre. Si el
- * líder no aparece en el roster se cae al nombre reservado: sin ese respaldo
- * la petición iría a un buzón llamado `undefined`.
+ * Get the leader's name from the team file
+ * This is needed to send permission requests to the leader's mailbox
  */
 export async function getLeaderName(teamName?: string): Promise<string | null> {
   const team = teamName || getTeamName()
-  if (!team) return null
+  if (!team) {
+    return null
+  }
 
   const teamFile = await readTeamFileAsync(team)
   if (!teamFile) {
@@ -536,23 +651,32 @@ export async function getLeaderName(teamName?: string): Promise<string | null> {
     return null
   }
 
-  const leadMember = teamFile.members.find(m => m.agentId === teamFile.leadAgentId)
+  const leadMember = teamFile.members.find(
+    m => m.agentId === teamFile.leadAgentId,
+  )
   return leadMember?.name || 'team-lead'
 }
 
-/** Manda la petición de permiso al buzón del líder. */
+/**
+ * Send a permission request to the leader via mailbox.
+ * This is the new mailbox-based approach that replaces the file-based pending directory.
+ *
+ * @param request - The permission request to send
+ * @returns true if the message was sent successfully
+ */
 export async function sendPermissionRequestViaMailbox(
   request: SwarmPermissionRequest,
 ): Promise<boolean> {
   const leaderName = await getLeaderName(request.teamName)
   if (!leaderName) {
     logForDebugging(
-      '[PermissionSync] Cannot send permission request: leader name not found',
+      `[PermissionSync] Cannot send permission request: leader name not found`,
     )
     return false
   }
 
   try {
+    // Create the permission request message
     const message = createPermissionRequestMessage({
       request_id: request.id,
       agent_id: request.workerName,
@@ -563,6 +687,7 @@ export async function sendPermissionRequestViaMailbox(
       permission_suggestions: request.permissionSuggestions,
     })
 
+    // Send to leader's mailbox (routes to in-process or file-based based on recipient)
     await writeToMailbox(
       leaderName,
       {
@@ -588,10 +713,14 @@ export async function sendPermissionRequestViaMailbox(
 }
 
 /**
- * Manda la respuesta al buzón del compañero.
+ * Send a permission response to a worker via mailbox.
+ * This is the new mailbox-based approach that replaces the file-based resolved directory.
  *
- * Lo aprobado viaja como éxito y lo rechazado como error: es el vocabulario
- * del protocolo, y el compañero decide por él sin volver a leer el estado.
+ * @param workerName - The worker's name to send the response to
+ * @param resolution - The permission resolution
+ * @param requestId - The original request ID
+ * @param teamName - The team name
+ * @returns true if the message was sent successfully
  */
 export async function sendPermissionResponseViaMailbox(
   workerName: string,
@@ -602,12 +731,13 @@ export async function sendPermissionResponseViaMailbox(
   const team = teamName || getTeamName()
   if (!team) {
     logForDebugging(
-      '[PermissionSync] Cannot send permission response: team name not found',
+      `[PermissionSync] Cannot send permission response: team name not found`,
     )
     return false
   }
 
   try {
+    // Create the permission response message
     const message = createPermissionResponseMessage({
       request_id: requestId,
       subtype: resolution.decision === 'approved' ? 'success' : 'error',
@@ -616,8 +746,10 @@ export async function sendPermissionResponseViaMailbox(
       permission_updates: resolution.permissionUpdates,
     })
 
+    // Get the sender name (leader's name)
     const senderName = getAgentName() || 'team-lead'
 
+    // Send to worker's mailbox (routes to in-process or file-based based on recipient)
     await writeToMailbox(
       workerName,
       {
@@ -641,16 +773,25 @@ export async function sendPermissionResponseViaMailbox(
   }
 }
 
-/** Un identificador de petición de red, con su prefijo propio. */
+// ============================================================================
+// Sandbox Permission Mailbox System
+// ============================================================================
+
+/**
+ * Generate a unique sandbox permission request ID
+ */
 export function generateSandboxRequestId(): string {
   return `sandbox-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
 }
 
 /**
- * Pide al líder permiso para alcanzar un anfitrión desde el confinamiento.
+ * Send a sandbox permission request to the leader via mailbox.
+ * Called by workers when sandbox runtime needs network access approval.
  *
- * Exige identidad completa del compañero: sin nombre, la respuesta no tendría
- * buzón al que volver.
+ * @param host - The host requesting network access
+ * @param requestId - Unique ID for this request
+ * @param teamName - Optional team name
+ * @returns true if the message was sent successfully
  */
 export async function sendSandboxPermissionRequestViaMailbox(
   host: string,
@@ -660,7 +801,7 @@ export async function sendSandboxPermissionRequestViaMailbox(
   const team = teamName || getTeamName()
   if (!team) {
     logForDebugging(
-      '[PermissionSync] Cannot send sandbox permission request: team name not found',
+      `[PermissionSync] Cannot send sandbox permission request: team name not found`,
     )
     return false
   }
@@ -668,7 +809,7 @@ export async function sendSandboxPermissionRequestViaMailbox(
   const leaderName = await getLeaderName(team)
   if (!leaderName) {
     logForDebugging(
-      '[PermissionSync] Cannot send sandbox permission request: leader name not found',
+      `[PermissionSync] Cannot send sandbox permission request: leader name not found`,
     )
     return false
   }
@@ -679,7 +820,7 @@ export async function sendSandboxPermissionRequestViaMailbox(
 
   if (!workerId || !workerName) {
     logForDebugging(
-      '[PermissionSync] Cannot send sandbox permission request: worker ID or name not found',
+      `[PermissionSync] Cannot send sandbox permission request: worker ID or name not found`,
     )
     return false
   }
@@ -693,6 +834,7 @@ export async function sendSandboxPermissionRequestViaMailbox(
       host,
     })
 
+    // Send to leader's mailbox (routes to in-process or file-based based on recipient)
     await writeToMailbox(
       leaderName,
       {
@@ -717,7 +859,17 @@ export async function sendSandboxPermissionRequestViaMailbox(
   }
 }
 
-/** Contesta la petición de red de un compañero. */
+/**
+ * Send a sandbox permission response to a worker via mailbox.
+ * Called by the leader when approving/denying a sandbox network access request.
+ *
+ * @param workerName - The worker's name to send the response to
+ * @param requestId - The original request ID
+ * @param host - The host that was approved/denied
+ * @param allow - Whether the connection is allowed
+ * @param teamName - Optional team name
+ * @returns true if the message was sent successfully
+ */
 export async function sendSandboxPermissionResponseViaMailbox(
   workerName: string,
   requestId: string,
@@ -728,7 +880,7 @@ export async function sendSandboxPermissionResponseViaMailbox(
   const team = teamName || getTeamName()
   if (!team) {
     logForDebugging(
-      '[PermissionSync] Cannot send sandbox permission response: team name not found',
+      `[PermissionSync] Cannot send sandbox permission response: team name not found`,
     )
     return false
   }
@@ -742,6 +894,7 @@ export async function sendSandboxPermissionResponseViaMailbox(
 
     const senderName = getAgentName() || 'team-lead'
 
+    // Send to worker's mailbox (routes to in-process or file-based based on recipient)
     await writeToMailbox(
       workerName,
       {

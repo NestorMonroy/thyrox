@@ -1,29 +1,24 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/teamMemorySyncWatcher.ts`
- * (verbatim — `@thyrox/local-observability` ya porta tanto el top-level
- * como `/compat`).
+ * Team Memory File Watcher
  *
- * Watcher de archivos de Team Memory.
- *
- * Vigila el directorio de memoria de equipo en busca de cambios y
- * dispara un push con debounce al servidor cuando se modifican archivos.
- * Hace un pull inicial al arrancar, y luego arranca un fs.watch a nivel
- * de directorio para que las primeras escrituras a un repo nuevo se
- * detecten.
+ * Watches the team memory directory for changes and triggers
+ * a debounced push to the server when files are modified.
+ * Performs an initial pull on startup, then starts a directory-level
+ * fs.watch so first-time writes to a fresh repo get picked up.
  */
 
 import { feature } from 'bun:bundle'
-import { type FSWatcher, watch } from 'node:fs'
-import { mkdir, stat } from 'node:fs/promises'
-import { join } from 'node:path'
+import { type FSWatcher, watch } from 'fs'
+import { mkdir, stat } from 'fs/promises'
+import { join } from 'path'
 import {
   getTeamMemPath,
   isTeamMemoryEnabled,
 } from './teamMemPaths.js'
 import { getMemoryHostBindings } from './host.js'
-// logForDebugging vía host binding, abajo.
-// errorMessage inlineado abajo.
-// getGithubRepo vía host binding, abajo.
+// logForDebugging via host binding below
+// errorMessage inlined below
+// getGithubRepo via host binding below
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability/compat'
 import {
@@ -35,7 +30,7 @@ import {
 } from './teamMemorySync.js'
 import type { TeamMemorySyncPushResult } from './teamMemSyncTypes.js'
 
-// Helpers inlineados para mantener a memory hoja de Wave-2 sin src/.
+// Inlined helpers to keep memory Wave-2 leaf src/-free.
 function errorMessage(e: unknown): string {
   if (e instanceof Error) return e.message
   return typeof e === 'string' ? e : String(e)
@@ -54,9 +49,9 @@ function registerCleanup(fn: () => void | Promise<void>): void {
   b?.registerCleanup?.(fn)
 }
 
-const DEBOUNCE_MS = 2000 // Espera 2s tras el último cambio antes de hacer push.
+const DEBOUNCE_MS = 2000 // Wait 2s after last change before pushing
 
-// ─── Estado del watcher ──────────────────────────────────────
+// ─── Watcher state ──────────────────────────────────────────
 let watcher: FSWatcher | null = null
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 let pushInProgress = false
@@ -64,24 +59,21 @@ let hasPendingChanges = false
 let currentPushPromise: Promise<void> | null = null
 let watcherStarted = false
 
-// Se fija tras un push que falló por una razón que no se autorrepara con
-// reintentos. Evita que eventos de watch por escrituras de otras sesiones
-// al dir de equipo compartido disparen un loop infinito de reintentos (BQ
-// 14-16 marzo: un dispositivo no_oauth emitió 167K eventos de push en 2.5
-// días). Se limpia con unlink — borrar el archivo es una acción de
-// recuperación para el caso too-many-entries, y para no_oauth es correcto
-// que la supresión persista hasta reiniciar la sesión.
+// Set after a push fails for a reason that can't self-heal on retry.
+// Prevents watch events from other sessions' writes to the shared team
+// dir driving an infinite retry loop (BQ Mar 14-16: one no_oauth device
+// emitted 167K push events over 2.5 days). Cleared on unlink — file deletion
+// is a recovery action for the too-many-entries case, and for no_oauth the
+// suppression persisting until session restart is correct.
 let pushSuppressedReason: string | null = null
 
 /**
- * Permanente = reintentar sin acción del usuario fallará de la misma
- * forma.
- * - no_oauth / no_repo: chequeos del cliente previos a la petición, sin
- *   código de estado.
- * - 4xx salvo 409/429: error del cliente (404 repo faltante, 413 too many
- *   entries, 403 permiso). 409 es un conflicto transitorio — el estado del
- *   servidor cambió bajo nosotros, un push fresco tras el próximo pull
- *   puede tener éxito. 429 es un rate limit — el backoff del watcher basta.
+ * Permanent = retry without user action will fail the same way.
+ * - no_oauth / no_repo: pre-request client checks, no status code
+ * - 4xx except 409/429: client error (404 missing repo, 413 too many
+ *   entries, 403 permission). 409 is a transient conflict — server state
+ *   changed under us, a fresh push after next pull can succeed. 429 is a
+ *   rate limit — watcher-driven backoff is fine.
  */
 export function isPermanentFailure(r: TeamMemorySyncPushResult): boolean {
   if (r.errorType === 'no_oauth' || r.errorType === 'no_repo') return true
@@ -97,16 +89,14 @@ export function isPermanentFailure(r: TeamMemorySyncPushResult): boolean {
   return false
 }
 
-// Estado de sync propiedad del watcher — compartido entre todas las
-// operaciones de sync.
+// Sync state owned by the watcher — shared across all sync operations.
 let syncState: SyncState | null = null
 
 /**
- * Ejecuta el push y rastrea su ciclo de vida.
- * El push es de solo lectura en disco (delta+sonda, sin escrituras de
- * merge), así que no hace falta supresión de eventos — las ediciones que
- * llegan a mitad de push tocan schedulePush() y el debounce se re-arma
- * cuando este push termina.
+ * Execute the push and track its lifecycle.
+ * Push is read-only on disk (delta+probe, no merge writes), so no event
+ * suppression is needed — edits arriving mid-push hit schedulePush() and
+ * the debounce re-arms after this push completes.
  */
 async function executePush(): Promise<void> {
   if (!syncState) {
@@ -154,8 +144,7 @@ async function executePush(): Promise<void> {
 }
 
 /**
- * Push con debounce: espera a que las escrituras se asienten, y hace push
- * una sola vez.
+ * Debounced push: waits for writes to settle, then pushes once.
  */
 function schedulePush(): void {
   if (pushSuppressedReason !== null) return
@@ -173,29 +162,24 @@ function schedulePush(): void {
 }
 
 /**
- * Arranca a vigilar el directorio de memoria de equipo en busca de
- * cambios.
+ * Start watching the team memory directory for changes.
  *
- * Usa `fs.watch({recursive: true})` sobre el directorio (no chokidar).
- * chokidar 4+ eliminó fsevents, y el fallback de `fs.watch` de Bun usa
- * kqueue, que requiere un fd abierto por archivo vigilado — con 500+
- * archivos de memoria de equipo eso son 500+ fds retenidos permanentemente
- * (confirmado vía lsof + repro).
+ * Uses `fs.watch({recursive: true})` on the directory (not chokidar).
+ * chokidar 4+ dropped fsevents, and Bun's `fs.watch` fallback uses kqueue,
+ * which requires one open fd per watched file — with 500+ team memory files
+ * that's 500+ permanently-held fds (confirmed via lsof + repro).
  *
- * `recursive: true` es necesario porque la memoria de equipo admite
- * subdirectorios (validateTeamMemKey, el walkDir de pushTeamMemory). En
- * macOS Bun usa FSEvents para recursive — fds O(1) sin importar el tamaño
- * del árbol (verificado: 2 fds para 60 archivos en 5 subdirs). En Linux
- * inotify necesita un watch por directorio — O(subdirs), sigue siendo
- * razonable (la memoria de equipo rara vez anida).
+ * `recursive: true` is required because team memory supports subdirs
+ * (validateTeamMemKey, pushTeamMemory's walkDir). On macOS Bun uses
+ * FSEvents for recursive — O(1) fds regardless of tree size (verified:
+ * 2 fds for 60 files across 5 subdirs). On Linux inotify needs one watch
+ * per directory — O(subdirs), still fine (team memory rarely nests).
  *
- * `fs.watch` sobre un directorio no distingue add/change/unlink — los tres
- * emiten `rename`. Para limpiar la supresión en la ruta de recuperación de
- * too-many-entries (el usuario borra archivos), se hace stat del nombre de
- * archivo en cada evento: ENOENT → se trata como unlink. Para la
- * supresión de `no_oauth` esto es correcto: los usuarios no_oauth no
- * borran archivos de memoria de equipo para recuperarse, reinician con
- * auth.
+ * `fs.watch` on a directory doesn't distinguish add/change/unlink — all three
+ * emit `rename`. To clear suppression on the too-many-entries recovery path
+ * (user deletes files), we stat the filename on each event: ENOENT → treat as
+ * unlink.  For `no_oauth` suppression this is correct: no_oauth users don't
+ * delete team memory files to recover, they restart with auth.
  */
 async function startFileWatcher(teamDir: string): Promise<void> {
   if (watcherStarted) {
@@ -204,9 +188,9 @@ async function startFileWatcher(teamDir: string): Promise<void> {
   watcherStarted = true
 
   try {
-    // pullTeamMemory retorna temprano sin crear el dir para repos nuevos
-    // sin contenido en el servidor (ruta isEmpty de index.ts). mkdir con
-    // recursive:true es idempotente — no hace falta chequear existencia.
+    // pullTeamMemory returns early without creating the dir for fresh repos
+    // with no server content (index.ts isEmpty path). mkdir with
+    // recursive:true is idempotent — no existence check needed.
     await mkdir(teamDir, { recursive: true })
 
     watcher = watch(
@@ -218,10 +202,9 @@ async function startFileWatcher(teamDir: string): Promise<void> {
           return
         }
         if (pushSuppressedReason !== null) {
-          // La supresión solo se limpia con unlink (acción de recuperación
-          // para too-many-entries). fs.watch no distingue unlink de
-          // add/write — se hace stat para desambiguar. ENOENT → archivo
-          // desaparecido → limpiar.
+          // Suppression is only cleared by unlink (recovery action for
+          // too-many-entries). fs.watch doesn't distinguish unlink from
+          // add/write — stat to disambiguate. ENOENT → file gone → clear.
           void stat(join(teamDir, filename)).catch(
             (err: NodeJS.ErrnoException) => {
               if (err.code !== 'ENOENT') return
@@ -250,10 +233,9 @@ async function startFileWatcher(teamDir: string): Promise<void> {
       level: 'debug',
     })
   } catch (err) {
-    // fs.watch lanza síncronamente ante ENOENT (carrera: dir borrado entre
-    // mkdir y watch) o EACCES. watcherStarted ya es true arriba, así que
-    // la ruta explícita schedulePush de notifyTeamMemoryWrite sigue
-    // funcionando.
+    // fs.watch throws synchronously on ENOENT (race: dir deleted between
+    // mkdir and watch) or EACCES. watcherStarted is already true above,
+    // so notifyTeamMemoryWrite's explicit schedulePush path still works.
     logForDebugging(
       `team-memory-watcher: failed to watch ${teamDir}: ${errorMessage(err)}`,
       { level: 'warn' },
@@ -264,28 +246,25 @@ async function startFileWatcher(teamDir: string): Promise<void> {
 }
 
 /**
- * Arranca el sistema de sync de memoria de equipo.
+ * Start the team memory sync system.
  *
- * Retorna temprano (antes de crear ningún estado) si:
- *   - el flag de build TEAMMEM está apagado
- *   - la memoria de equipo está deshabilitada (isTeamMemoryEnabled)
- *   - OAuth no está disponible (isTeamMemorySyncAvailable)
- *   - el repo actual no tiene remoto github.com
+ * Returns early (before creating any state) if:
+ *   - TEAMMEM build flag is off
+ *   - team memory is disabled (isTeamMemoryEnabled)
+ *   - OAuth is not available (isTeamMemorySyncAvailable)
+ *   - the current repo has no github.com remote
  *
- * El chequeo temprano de github.com evita un modo de fallo ruidoso donde
- * el watcher arranca, dispara ante ediciones locales, y cada push/pull
- * loguea `errorType: no_repo` para siempre. La memoria de equipo tiene
- * alcance GitHub del lado servidor, así que los remotos que no son
- * github.com nunca podrían sincronizar de todas formas.
+ * The early github.com check prevents a noisy failure mode where the
+ * watcher starts, it fires on local edits, and every push/pull
+ * logs `errorType: no_repo` forever. Team memory is GitHub-scoped on
+ * the server side, so non-github.com remotes can never sync anyway.
  *
- * Hace pull del servidor, y luego arranca el watcher de archivos
- * incondicionalmente. El watcher debe arrancar incluso cuando el servidor
- * todavía no tiene contenido (repo EAP fresco) — si no, la primera
- * escritura de memoria de equipo de Claude dependería enteramente de que
- * los hooks PostToolUse disparen notifyTeamMemoryWrite, lo cual es un
- * huevo-y-gallina: la tasa de escritura de Claude es lo bastante baja
- * como para que un partner fresco quede varado en la zona muerta de
- * arranque por días.
+ * Pulls from server, then starts the file watcher unconditionally.
+ * The watcher must start even when the server has no content yet
+ * (fresh EAP repo) — otherwise Claude's first team-memory write
+ * depends entirely on PostToolUse hooks firing notifyTeamMemoryWrite,
+ * which is a chicken-and-egg: Claude's write rate is low enough that
+ * a fresh partner can sit in the bootstrap dead zone for days.
  */
 export async function startTeamMemoryWatcher(): Promise<void> {
   if (!feature('TEAMMEM')) {
@@ -305,8 +284,8 @@ export async function startTeamMemoryWatcher(): Promise<void> {
 
   syncState = createSyncState()
 
-  // Pull inicial del servidor (corre antes de que arranque el watcher,
-  // así que sus escrituras a disco no disparan schedulePush).
+  // Initial pull from server (runs before the watcher starts, so its disk
+  // writes won't trigger schedulePush)
   let initialPullSuccess = false
   let initialFilesPulled = 0
   let serverHasContent = false
@@ -328,28 +307,26 @@ export async function startTeamMemoryWatcher(): Promise<void> {
     )
   }
 
-  // Siempre arranca el watcher. Vigilar un dir vacío es barato, y la
-  // alternativa (arranque perezoso en notifyTeamMemoryWrite) crea una zona
-  // muerta de arranque para repos frescos.
+  // Always start the watcher. Watching an empty dir is cheap,
+  // and the alternative (lazy start on notifyTeamMemoryWrite) creates
+  // a bootstrap dead zone for fresh repos.
   await startFileWatcher(getTeamMemPath())
 
   logEvent('tengu_team_mem_sync_started', {
     initial_pull_success: initialPullSuccess,
     initial_files_pulled: initialFilesPulled,
-    // Se conserva por continuidad del dashboard; ahora siempre true
-    // cuando este evento dispara.
+    // Kept for dashboard continuity; now always true when this event fires.
     watcher_started: true,
     server_has_content: serverHasContent,
   })
 }
 
 /**
- * Llamar esto cuando se escribe un archivo de memoria de equipo (p. ej.
- * desde hooks PostToolUse). Programa un push explícitamente por si
- * fs.watch se pierde la escritura — un archivo escrito en el mismo tick
- * en que arranca el watcher puede no disparar un evento, y algunas
- * plataformas coalescen escrituras sucesivas rápidas. Si el watcher sí
- * dispara, el timer de debounce simplemente se reinicia.
+ * Call this when a team memory file is written (e.g. from PostToolUse hooks).
+ * Schedules a push explicitly in case fs.watch misses the write —
+ * a file written in the same tick the watcher starts may not fire an
+ * event, and some platforms coalesce rapid successive writes.
+ * If the watcher does fire, the debounce timer just resets.
  */
 export async function notifyTeamMemoryWrite(): Promise<void> {
   if (!syncState) {
@@ -359,10 +336,10 @@ export async function notifyTeamMemoryWrite(): Promise<void> {
 }
 
 /**
- * Detiene el watcher de archivos y descarga los cambios pendientes.
- * Nota: corre dentro del presupuesto de 2s de graceful shutdown, así que
- * la descarga es best-effort — si el PUT HTTP no completa a tiempo,
- * process.exit() lo matará.
+ * Stop the file watcher and flush pending changes.
+ * Note: runs within the 2s graceful shutdown budget, so the flush
+ * is best-effort — if the HTTP PUT doesn't complete in time,
+ * process.exit() will kill it.
  */
 export async function stopTeamMemoryWatcher(): Promise<void> {
   if (debounceTimer) {
@@ -373,35 +350,34 @@ export async function stopTeamMemoryWatcher(): Promise<void> {
     watcher.close()
     watcher = null
   }
-  // Espera cualquier push en vuelo.
+  // Await any in-flight push
   if (currentPushPromise) {
     try {
       await currentPushPromise
     } catch {
-      // Ignora errores durante el shutdown.
+      // Ignore errors during shutdown
     }
   }
-  // Descarga cambios pendientes que fueron debounced pero no pusheados aún.
+  // Flush pending changes that were debounced but not yet pushed
   if (hasPendingChanges && syncState && pushSuppressedReason === null) {
     try {
       await pushTeamMemory(syncState)
     } catch {
-      // Best-effort — el shutdown puede matar esto.
+      // Best-effort — shutdown may kill this
     }
   }
 }
 
 /**
- * Solo para tests: reinicia el estado del módulo y opcionalmente siembra
- * syncState. La guarda feature('TEAMMEM') al inicio de
- * startTeamMemoryWatcher() siempre es false en bun test, así que los
- * tests no pueden fijar syncState por la ruta normal. Este helper deja que
- * los tests manejen notifyTeamMemoryWrite() / stopTeamMemoryWatcher()
- * directamente.
+ * Test-only: reset module state and optionally seed syncState.
+ * The feature('TEAMMEM') gate at the top of startTeamMemoryWatcher() is
+ * always false in bun test, so tests can't set syncState through the normal
+ * path. This helper lets tests drive notifyTeamMemoryWrite() /
+ * stopTeamMemoryWatcher() directly.
  *
- * `skipWatcher: true` marca el watcher como ya-arrancado sin arrancarlo de
- * verdad. Los tests que solo ejercitan la ruta schedulePush/flush no
- * necesitan un watcher real.
+ * `skipWatcher: true` marks the watcher as already-started without actually
+ * starting it. Tests that only exercise the schedulePush/flush path don't
+ * need a real watcher.
  */
 export function _resetWatcherStateForTesting(opts?: {
   syncState?: SyncState
@@ -419,10 +395,9 @@ export function _resetWatcherStateForTesting(opts?: {
 }
 
 /**
- * Solo para tests: arranca el fs.watch real sobre un directorio
- * especificado. Lo usa el test de regresión de conteo de fds —
- * startTeamMemoryWatcher() está condicionado por feature('TEAMMEM'), que
- * es false bajo bun test.
+ * Test-only: start the real fs.watch on a specified directory.
+ * Used by the fd-count regression test — startTeamMemoryWatcher() is gated
+ * by feature('TEAMMEM') which is false under bun test.
  */
 export function _startFileWatcherForTesting(dir: string): Promise<void> {
   return startFileWatcher(dir)

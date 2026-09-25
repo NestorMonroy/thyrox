@@ -1,38 +1,30 @@
-/**
- * Porte de
- * `ccnmt: packages/app-host/src/bootstrap/__tests__/gracefulShutdown.behavior.test.ts`.
- *
- * Son pins A NIVEL DE FUENTE de `gracefulShutdown.ts` — el handler de
- * apagado del proceso. Muchos invariantes aquí son DE VIDA O MUERTE:
- *
- *  - La limpieza en estado terminal debe correr aunque forceExit falle.
- *  - El timer de failsafe debe garantizar la salida (5s mínimo).
- *  - SIGHUP → exit 129 (128+1); SIGTERM → exit 143 (128+15) — convención UNIX.
- *  - Detector de bucle de excepciones no atrapadas: 10 en 5s → apagado.
- *  - El modo print SALTA el handler global de SIGINT (print.ts es su dueño).
- *  - Los hooks de SessionEnd acotados por getSessionEndHookTimeoutMs (settings).
- *  - Pin de signal-exit: un suscriptor no-op evita que un bug de Bun tumbe
- *    los handlers.
- *
- * Descripciones traducidas al español; los patrones `toMatch` (que son el
- * pin sobre el texto literal de la fuente) se conservan carácter por
- * carácter contra el original.
- */
 import { describe, expect, test } from 'bun:test'
 
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
-describe('gracefulShutdown — pins de fuente', () => {
+/**
+ * Source-level pins for `gracefulShutdown.ts` — handles process exit with
+ * cleanup. Many invariants here are LIFE-OR-DEATH:
+ *
+ *  - Terminal-state cleanup must happen even if forceExit fails.
+ *  - Failsafe timer must guarantee exit (5s minimum).
+ *  - SIGHUP → exit 129 (128+1); SIGTERM → exit 143 (128+15) — UNIX convention.
+ *  - Uncaught-exception loop detector: 10 within 5s → shutdown.
+ *  - Print mode SKIPS the global SIGINT handler (print.ts owns it).
+ *  - SessionEnd hooks bounded by getSessionEndHookTimeoutMs (settings).
+ *  - signal-exit pin: no-op subscriber prevents Bun bug from nuking handlers.
+ */
+describe('gracefulShutdown — source pins', () => {
   const source = readFileSync(
     resolve(__dirname, '..', 'gracefulShutdown.ts'),
     'utf-8',
   )
 
-  describe('Convenciones de código de salida (UNIX 128+señal)', () => {
+  describe('Exit code conventions (UNIX 128+signal)', () => {
     test('SIGTERM → exit 143 (128 + 15)', () => {
-      // Pin: convención UNIX estándar. Los init systems / supervisores
-      // leen esto. Cambiarlo rompe herramientas que vigilan códigos de salida.
+      // Pin: standard UNIX convention. Init systems / supervisors read
+      // this. Changing breaks tools that watch exit codes.
       expect(source).toMatch(
         /process\.on\('SIGTERM'[\s\S]+?gracefulShutdown\(143\)/,
       )
@@ -44,243 +36,237 @@ describe('gracefulShutdown — pins de fuente', () => {
       )
     })
 
-    test('SIGINT → exit 0 (iniciado por el usuario, se trata como limpio)', () => {
-      // Pin: ctrl+c es una salida limpia. Una regresión a 130 (128+2)
-      // haría que scripts de CI que distinguen "terminó normal" de
-      // "el usuario canceló" lean todo Ctrl+C como fallo.
+    test('SIGINT → exit 0 (user-initiated, treated as clean)', () => {
+      // Pin: ctrl+c is a clean exit. A regression to 130 (128+2) would
+      // make CI scripts that distinguish "completed normally" from
+      // "user cancelled" think every Ctrl+C is a failure.
       expect(source).toMatch(
         /process\.on\('SIGINT'[\s\S]+?gracefulShutdown\(0\)/,
       )
     })
   })
 
-  describe('SIGINT — salto en modo print', () => {
-    test('SIGINT retorna temprano cuando -p o --print está en argv', () => {
-      // Pin: print.ts registra su propio handler de SIGINT. El global
-      // debe saltarse en modo print para no competir con él.
+  describe('SIGINT print-mode skip', () => {
+    test('SIGINT early-return when -p or --print in argv', () => {
+      // Pin: print.ts registers its own SIGINT handler. The global one
+      // must skip in print mode to avoid racing.
       expect(source).toMatch(
         /SIGINT[\s\S]+?if \(process\.argv\.includes\('-p'\) \|\| process\.argv\.includes\('--print'\)\) \{\s*\n?\s*return/,
       )
     })
   })
 
-  describe('Timer de salida de failsafe', () => {
-    test('presupuesto de failsafe = max(5000, sessionEndTimeoutMs + 3500)', () => {
-      // Pin: un presupuesto de hooks configurado por el usuario en 10s
-      // recibe un failsafe de 13.5s — NO se trunca por el mínimo de 5s.
-      // Riesgo de regresión inversa: harcodear 5000 truncaría en silencio
-      // los presupuestos de hook fijados por el usuario.
+  describe('Failsafe exit timer', () => {
+    test('failsafe budget = max(5000, sessionEndTimeoutMs + 3500)', () => {
+      // Pin: a user-configured 10s hook budget gets 13.5s failsafe — NOT
+      // truncated by the 5s minimum. Reverse regression risk: hardcoding
+      // 5000 would silently truncate user-set hook budgets.
       expect(source).toMatch(
         /Math\.max\(5000, sessionEndTimeoutMs \+ 3500\)/,
       )
     })
 
-    test('failsafeTimer.unref() — no mantiene vivo el event loop', () => {
+    test('failsafe timer.unref() — doesn\'t keep event loop alive', () => {
       expect(source).toMatch(/failsafeTimer\.unref\(\)/)
     })
 
-    test('acción de failsafe: cleanupTerminalModes + printResumeHint + forceExit', () => {
-      // Pin: los tres pasos en este orden exacto. Terminal primero
-      // (si no, el resume hint cae en la alt screen), forceExit al final.
+    test('failsafe action: cleanupTerminalModes + printResumeHint + forceExit', () => {
+      // Pin: the three steps in this exact order. Terminal first
+      // (otherwise resume hint hits alt screen), forceExit last.
       expect(source).toMatch(
         /setTimeout\(\s*\n?\s*code => \{\s*\n?\s*cleanupTerminalModes\(\)\s*\n?\s*printResumeHint\(\)\s*\n?\s*forceExit\(code\)/,
       )
     })
   })
 
-  describe('Timeout de limpieza (2000ms)', () => {
-    test('runCleanupFunctions corre en carrera contra un timeout de 2 segundos', () => {
-      // Pin: tope de 2s en la limpieza. Una limpieza más larga cuelga
-      // la salida; una más corta trunca trabajo legítimo.
+  describe('Cleanup timeout (2000ms)', () => {
+    test('runCleanupFunctions raced against 2-second timeout', () => {
+      // Pin: 2s cap on cleanup. Longer cleanup hangs the exit; shorter
+      // truncates legitimate work.
       expect(source).toMatch(
         /setTimeout\([\s\S]{0,200}?CleanupTimeoutError[\s\S]{0,100}?2000/,
       )
     })
 
-    test('la clase CleanupTimeoutError está declarada (NO un string inline)', () => {
-      // Pin: error tipado para que el test pueda distinguir timeout de
-      // otros errores.
+    test('CleanupTimeoutError class declared (NOT inline string)', () => {
+      // Pin: typed error so test can detect timeout vs other errors.
       expect(source).toMatch(/class CleanupTimeoutError extends Error/)
     })
   })
 
-  describe('Detector de bucle de excepciones no atrapadas', () => {
-    test('EXCEPTION_LOOP_WINDOW_MS = 5_000 (ventana deslizante de 5 segundos)', () => {
-      // Pin: alineado con ant v2.1.131 (2821.js H38=5000).
+  describe('Uncaught-exception loop detector', () => {
+    test('EXCEPTION_LOOP_WINDOW_MS = 5_000 (5 second sliding window)', () => {
+      // Pin: aligned with ant v2.1.131 (2821.js H38=5000).
       expect(source).toMatch(/EXCEPTION_LOOP_WINDOW_MS = 5_000/)
     })
 
-    test('EXCEPTION_LOOP_THRESHOLD = 10 (10 excepciones en la ventana)', () => {
-      // Pin: alineado con ant v2.1.131 fo1=10.
+    test('EXCEPTION_LOOP_THRESHOLD = 10 (10 exceptions in window)', () => {
+      // Pin: aligned with ant v2.1.131 fo1=10.
       expect(source).toMatch(/EXCEPTION_LOOP_THRESHOLD = 10/)
     })
 
-    test('telemetría tengu_uncaught_exception (por excepción)', () => {
+    test('telemetry tengu_uncaught_exception (per-exception)', () => {
       expect(source).toMatch(/'tengu_uncaught_exception'/)
     })
 
-    test('telemetría tengu_uncaught_exception_loop (cuando se dispara el umbral)', () => {
+    test('telemetry tengu_uncaught_exception_loop (when threshold tripped)', () => {
       expect(source).toMatch(/'tengu_uncaught_exception_loop'/)
     })
 
-    test('errorMessageHash = sha256.slice(0, 16) (coincide con al_(H).error_message_hash de ant)', () => {
-      // Pin: formato del hash. El dashboard agrupa exactamente por esta forma.
+    test('errorMessageHash = sha256.slice(0, 16) (matches ant al_(H).error_message_hash)', () => {
+      // Pin: hash format. Dashboard groups on this exact form.
       expect(source).toMatch(
         /createHash\('sha256'\)\s*\n?\s*\.update\(error\.message \|\| ''\)\s*\n?\s*\.digest\('hex'\)\s*\n?\s*\.slice\(0, 16\)/,
       )
     })
 
-    test('el apagado por bucle dispara gracefulShutdown(1, "fatal")', () => {
+    test('loop shutdown fires gracefulShutdown(1, "fatal")', () => {
       expect(source).toMatch(/gracefulShutdown\(1, 'fatal'\)/)
     })
 
-    test('la bandera loopShutdownFired evita llamadas repetidas de apagado', () => {
-      // Pin: bandera monótona — el segundo disparo es un no-op.
+    test('loopShutdownFired guard prevents repeat shutdown calls', () => {
+      // Pin: monotonic flag — second trigger is no-op.
       expect(source).toMatch(
         /if \([\s\S]{0,80}?exceptionTimestamps\.length >= EXCEPTION_LOOP_THRESHOLD &&[\s\S]{0,80}?!loopShutdownFired\s*\n?\s*\) \{\s*\n?\s*loopShutdownFired = true/,
       )
     })
   })
 
-  describe('Workaround del bug de Bun en signal-exit v4', () => {
-    test('se registra un suscriptor no-op de onExit (fija el conteo de emisores de v4 > 0)', () => {
-      // Pin: bug documentado de Bun. Quitar onExit(() => {}) deja que
-      // v4 se descargue, lo que llama removeListener y tumba el
-      // sigaction del kernel.
+  describe('signal-exit v4 Bun bug workaround', () => {
+    test('onExit no-op subscriber registered (pins v4 emitter count > 0)', () => {
+      // Pin: documented Bun bug. Removing onExit(() => {}) lets v4
+      // unload, which calls removeListener which nukes kernel sigaction.
       expect(source).toMatch(/onExit\(\(\) => \{\}\)/)
     })
   })
 
-  describe('Limpieza de modos de terminal', () => {
-    test('cleanupTerminalModes retorna temprano cuando stdout no es una TTY', () => {
-      // Pin: evitar escribir secuencias de escape a un pipe.
+  describe('Terminal mode cleanup', () => {
+    test('cleanupTerminalModes early-returns when stdout not a TTY', () => {
+      // Pin: avoid writing escape sequences to a pipe.
       expect(source).toMatch(
         /cleanupTerminalModes\(\): void \{\s*\n?\s*if \(!process\.stdout\.isTTY\) \{\s*\n?\s*return/,
       )
     })
 
-    test('DISABLE_MOUSE_TRACKING se dispara PRIMERO (antes de salir de la alt-screen)', () => {
+    test('DISABLE_MOUSE_TRACKING fired FIRST (before alt-screen exit)', () => {
       const fn = source.match(
         /function cleanupTerminalModes[\s\S]+?\n\}/,
       )?.[0]
       expect(fn).toBeTruthy()
       const mouseIdx = fn!.indexOf('DISABLE_MOUSE_TRACKING')
       const altIdx = fn!.indexOf('EXIT_ALT_SCREEN')
-      // el mouse tracking va primero
+      // mouse tracking first
       expect(mouseIdx).toBeLessThan(altIdx)
     })
 
-    test('CLAUDE_CODE_DISABLE_TERMINAL_TITLE → salta la limpieza del título', () => {
-      // Pin: si el usuario deshabilitó los cambios de título, no
-      // limpiar su título existente al salir tampoco.
+    test('CLAUDE_CODE_DISABLE_TERMINAL_TITLE → skip clearing title', () => {
+      // Pin: if user disabled title changes, don't clear it on exit.
       expect(source).toMatch(
         /if \(!isEnvTruthy\(process\.env\.CLAUDE_CODE_DISABLE_TERMINAL_TITLE\)\)/,
       )
     })
 
-    test('camino Windows: process.title = "" (sin secuencia de escape)', () => {
-      // Pin: Windows no respeta el escape CLEAR_TERMINAL_TITLE; se usa
-      // el setter process.title de Node.js en su lugar.
+    test('Windows path: process.title = "" (no escape sequence)', () => {
+      // Pin: Windows doesn't honor CLEAR_TERMINAL_TITLE escape; use the
+      // Node.js process.title setter instead.
       expect(source).toMatch(
         /if \(process\.platform === 'win32'\) \{\s*\n?\s*process\.title = ''/,
       )
     })
   })
 
-  describe('Comportamiento del hint de reanudación', () => {
-    test('la bandera resumeHintPrinted evita la doble impresión', () => {
-      // Pin: el timer de failsafe puede llamar printResumeHint una
-      // segunda vez tras un apagado normal. Una sola vez.
+  describe('Resume-hint behavior', () => {
+    test('resumeHintPrinted guard prevents double-print', () => {
+      // Pin: failsafe timer may call printResumeHint a second time after
+      // normal shutdown. Once-only.
       expect(source).toMatch(
         /if \(resumeHintPrinted\) \{\s*\n?\s*return\s*\n?\s*\}/,
       )
     })
 
-    test('se muestra SOLO cuando isTTY && interactive && !persistenceDisabled', () => {
-      // Pin: compuerta de 3 vías. Una regresión que quite cualquiera de
-      // las tres imprimiría el hint de reanudación en sesiones no
-      // interactivas / con salida redirigida.
+    test('shown ONLY when isTTY && interactive && !persistenceDisabled', () => {
+      // Pin: 3-way gate. A regression that drops any guard would print
+      // resume hints in non-interactive / piped sessions.
       expect(source).toMatch(
         /process\.stdout\.isTTY &&[\s\S]+?getIsInteractive\(\) &&[\s\S]+?!isSessionPersistenceDisabled\(\)/,
       )
     })
 
-    test('verificación de existencia del session ID (se salta en sesiones transitorias)', () => {
-      // Pin: subcomandos como `claude update` no tienen archivo de
-      // sesión. El hint de reanudación debe saltarlos.
+    test('session ID existence check (skips for transient sessions)', () => {
+      // Pin: subcommands like `claude update` don't have a session file.
+      // Resume hint must skip them.
       expect(source).toMatch(
         /if \(!sessionIdExists\(sessionId\)\) \{\s*\n?\s*return\s*\n?\s*\}/,
       )
     })
   })
 
-  describe('Fallback de salida forzada', () => {
-    test('fallback a SIGKILL cuando process.exit() lanza EIO', () => {
-      // Pin: TTY muerta → process.exit lanza → SIGKILL.
+  describe('Force exit fallback', () => {
+    test('SIGKILL fallback when process.exit() throws EIO', () => {
+      // Pin: dead TTY → process.exit throws → SIGKILL.
       expect(source).toMatch(/process\.kill\(process\.pid, 'SIGKILL'\)/)
     })
 
-    test('el modo test re-lanza (NO SIGKILL) para que el test pueda detectar el mock', () => {
-      // Pin: camino NODE_ENV==='test'. Si no, los tests no podrían
-      // interceptar el mock de process.exit.
+    test('test mode re-throws (NOT SIGKILL) so test can detect mock', () => {
+      // Pin: NODE_ENV==='test' path. Otherwise tests can't intercept
+      // process.exit mock.
       expect(source).toMatch(
         /if \(\(process\.env\.NODE_ENV as string\) === 'test'\) \{\s*\n?\s*throw e/,
       )
     })
   })
 
-  describe('Idempotencia del apagado', () => {
-    test('la bandera shutdownInProgress evita llamadas recursivas', () => {
-      // Pin: crítico. Sin esto, un SIGINT durante la limpieza dispararía
-      // dos veces y podría causar un deadlock.
+  describe('Shutdown idempotency', () => {
+    test('shutdownInProgress flag prevents recursive calls', () => {
+      // Pin: critical. Without this, a SIGINT during cleanup would
+      // double-fire and could deadlock.
       expect(source).toMatch(
         /if \(shutdownInProgress\) \{\s*\n?\s*return\s*\n?\s*\}\s*\n?\s*shutdownInProgress = true/,
       )
     })
   })
 
-  describe('Detección de huérfanos (revocación de TTY en macOS)', () => {
-    test('verificación por intervalo de 30 segundos vía process.stdout.writable', () => {
-      // Pin: macOS revoca la TTY sin SIGHUP — se sondea en su lugar.
-      expect(source).toMatch(/30_000/) // intervalo de 30 segundos
-      // stdout.writable es la señal siempre confiable. stdin.readable solo
-      // es confiable FUERA del modo de lector nativo: cuando el lector de
-      // stdin en rust posee el fd0 (camino FleetView), App destruye
-      // process.stdin así que readable===false aunque el proceso esté vivo
-      // — activarse con eso ahí dispararía en falso y mataría a FleetView
-      // a los 30s. Ver el gate CCB_FLEET_INPROCESS_REMOUNT.
+  describe('Orphan detection (macOS TTY revocation)', () => {
+    test('30-second interval check via process.stdout.writable', () => {
+      // Pin: macOS revokes TTY without SIGHUP — we poll instead.
+      expect(source).toMatch(/30_000/) // 30 second interval
+      // stdout.writable is the always-trusted signal. stdin.readable is only
+      // trusted OUTSIDE native-reader mode: when the rust stdin reader owns
+      // fd0 (FleetView path), App destroy()s process.stdin so readable===false
+      // even though the process is alive — gating on it there would misfire
+      // and kill FleetView at 30s. See CCB_FLEET_INPROCESS_REMOUNT gate.
       expect(source).toMatch(/!process\.stdout\.writable \|\| stdinDead/)
       expect(source).toMatch(/CCB_FLEET_INPROCESS_REMOUNT/)
     })
 
-    test('la detección de huérfanos solo corre en stdin TTY (no redirigida)', () => {
+    test('orphan detection only on TTY stdin (not piped)', () => {
       expect(source).toMatch(
         /if \(process\.stdin\.isTTY\) \{\s*\n?\s*orphanCheckInterval = setInterval/,
       )
     })
 
-    test("la detección de huérfanos usa unref (no mantiene vivo el event loop)", () => {
+    test('orphan check unref\'d (doesn\'t keep event loop alive)', () => {
       expect(source).toMatch(/orphanCheckInterval\.unref\(\)/)
     })
 
-    test('la salida por huérfano usa el código 129 (equivalente a SIGHUP)', () => {
-      // Pin: huérfano == terminal perdida == semántica de SIGHUP.
+    test('orphan exits with code 129 (SIGHUP equivalent)', () => {
+      // Pin: orphan == lost terminal == SIGHUP semantics.
       expect(source).toMatch(
         /orphan_detected[\s\S]+?gracefulShutdown\(129\)/,
       )
     })
   })
 
-  describe('Telemetría de pista de desalojo de caché', () => {
-    test('emite tengu_cache_eviction_hint con el último request ID', () => {
-      // Pin: señala la invalidación de la caché de inferencia. Una
-      // regresión que quite el evento dejaría la caché envejecer.
+  describe('Cache eviction hint telemetry', () => {
+    test('emits tengu_cache_eviction_hint with last request ID', () => {
+      // Pin: signals inference cache invalidation. A regression that
+      // drops the event would let cache go stale.
       expect(source).toMatch(/'tengu_cache_eviction_hint'/)
       expect(source).toMatch(/last_request_id:/)
     })
 
-    test('se salta cuando no hay lastRequestId (p. ej. un subagente que nunca hizo una petición)', () => {
-      // Pin: compuerta con `if (lastRequestId)`.
+    test('skipped when no lastRequestId (e.g., subagent never made a request)', () => {
+      // Pin: gate on `if (lastRequestId)`.
       expect(source).toMatch(/if \(lastRequestId\) \{[\s\S]+?logEvent\('tengu_cache_eviction_hint'/)
     })
   })

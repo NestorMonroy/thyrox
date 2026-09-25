@@ -1,49 +1,37 @@
 /**
- * Puerto de `ccnmt: packages/config/policyHelper.ts` (321 líneas fuente).
- * Reimplementación fiel VERBATIM, salvo la resolución de dos deps
- * cruzadas: `logEvent` (`@thyrox/local-observability`, raíz) y
- * `logForDebugging` (`@thyrox/local-observability/debug.js`) se piden vía
- * `require()` diferido (`internal/pendingCrossPackageDeps.ts` —
- * `requireLocalObservabilityRoot`, ya existente
- * `requireLocalObservabilityDebug`), en vez de `import` estático — mismo
- * caso que el resto de este árbol: sin symlinks de workspace todavía.
+ * policyHelper — external-executable managed-settings provider.
  *
- * policyHelper — proveedor externo de settings managed vía binario
- * ejecutable.
+ * Port of ant v2.1.136 `fE_` (0686.js) + `mSH` (0687.js). Lets an
+ * enterprise admin ship a binary path through admin-owned settings
+ * sources; the CLI spawns it, parses an envelope from stdout, and
+ * merges the result into the live managed-settings cache.
  *
- * Puerto de ant v2.1.136 `fE_` (0686.js) + `mSH` (0687.js). Permite a un
- * admin de empresa embarcar una ruta de binario a través de fuentes de
- * settings controladas por admin; el CLI lanza ese binario, parsea un
- * envoltorio desde stdout, y fusiona el resultado en la caché de
- * managed-settings en vivo.
- *
- * Forma del envoltorio:
+ * Envelope shape:
  *   { managedSettings?: object,
  *     claudeMd?: string,
  *     appendSystemPrompt?: string }
  *
- * Invariantes críticos de seguridad:
- *   - La config del helper SÓLO puede venir de fuentes propiedad de admin
- *     (`plist` / `hklm` / `file`). Una fuente escribible por usuario que
- *     declarara un helper sería un bypass del sandbox. Se aplica vía
- *     `applyPolicyHelper`, que toma la cadena `source` y rechaza vía
- *     `ALLOWED_POLICY_HELPER_SOURCES` (`OZ4` de ant).
- *   - `managedSettings.policyHelper` del helper se quita al volver, para
- *     que un helper hostil no pueda re-declararse a sí mismo
- *     recursivamente.
- *   - Un tope de salida (`nI6 = 1MB` de ant) termina al hijo temprano ante
- *     overflow de stdout.
- *   - Timeout por invocación (`qZ4 = 10s` de ant) acotado por `timeoutMs`
- *     de config.
- *   - Telemetría: `xH('settings_policy_helper', code)` por cada fallo,
- *     `yH('settings_policy_helper')` al éxito.
+ * Critical safety invariants:
+ *   - Helper config MAY only come from admin-owned sources
+ *     (`plist` / `hklm` / `file`). A user-writable source declaring a
+ *     helper would be a sandbox bypass. Enforced by `applyPolicyHelper`
+ *     which takes the `source` string and rejects via
+ *     ALLOWED_POLICY_HELPER_SOURCES (ant `OZ4`).
+ *   - The helper's `managedSettings.policyHelper` is stripped on the
+ *     way back so a hostile helper can't recursively re-declare
+ *     itself.
+ *   - Output cap (ant `nI6 = 1MB`) terminates the child early on
+ *     stdout overflow.
+ *   - Per-invocation timeout (ant `qZ4 = 10s`) bounded by config
+ *     `timeoutMs`.
+ *   - Telemetry: `xH('settings_policy_helper', code)` for each
+ *     failure, `yH('settings_policy_helper')` on success.
  *
- * Mapa de identificadores de ant (referencia cruzada para futuras cacerías
- * de bugs):
- *   rAq → applyPolicyHelper        — orquestador (entrypoint de este módulo)
- *   tAq → invokePolicyHelper       — driver del subproceso hijo
+ * Ant identifier map (cross-reference for future bug hunts):
+ *   rAq → applyPolicyHelper        — orchestrator (this module's entry)
+ *   tAq → invokePolicyHelper       — child-process driver
  *   TZ4 → validateHelperPath
- *   AZ4 → schedulePolicyHelperRefresh (re-poll por intervalo)
+ *   AZ4 → schedulePolicyHelperRefresh (interval re-poll)
  *   OZ4 → ALLOWED_POLICY_HELPER_SOURCES
  *   KZ4 → policyHelperEnvelopeSchema
  *   oI6 → getPolicyHelperManagedSettings
@@ -52,7 +40,7 @@
  *   sAq → isPolicyHelperActive
  *   qZ4 → DEFAULT_POLICY_HELPER_TIMEOUT_MS (10s)
  *   nI6 → POLICY_HELPER_OUTPUT_CAP_BYTES (1MB)
- *   dfH → policyHelperState (a nivel de módulo)
+ *   dfH → policyHelperState (module-level)
  *   n6_ → refreshTimer
  *   iI6 → refreshInFlight
  */
@@ -60,22 +48,20 @@ import { spawn } from 'node:child_process'
 import { isAbsolute } from 'node:path'
 import { z } from 'zod/v4'
 import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityRoot,
-} from './internal/pendingCrossPackageDeps.ts'
+  logEvent,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+} from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
-const { logEvent } = requireLocalObservabilityRoot()
-const { logForDebugging } = requireLocalObservabilityDebug()
-
-/** `qZ4` de ant — timeout por defecto del helper. */
+/** Ant `qZ4` — default helper timeout. */
 const DEFAULT_POLICY_HELPER_TIMEOUT_MS = 10_000
 
-/** `nI6` de ant — tope de bytes de stdout antes del kill forzado. */
+/** Ant `nI6` — stdout byte cap before forced kill. */
 const POLICY_HELPER_OUTPUT_CAP_BYTES = 1_048_576
 
 /**
- * `OZ4` de ant — fuentes autorizadas a declarar un `policyHelper`. NO se
- * pueden añadir fuentes nuevas sin revisión de seguridad.
+ * Ant `OZ4` — sources allowed to declare a `policyHelper`. New
+ * sources may NOT be added without security review.
  */
 export const ALLOWED_POLICY_HELPER_SOURCES = new Set([
   'plist',
@@ -96,9 +82,8 @@ export type PolicyHelperOutput = {
 }
 
 /**
- * `KZ4` de ant — forma del envoltorio parseado del stdout del helper.
- * Objeto laxo porque el helper puede emitir campos de debug adicionales
- * que se ignoran.
+ * Ant `KZ4` — envelope shape parsed from helper stdout. Loose object
+ * because the helper may emit additional debug fields we ignore.
  */
 const policyHelperEnvelopeSchema = z.looseObject({
   managedSettings: z.unknown().optional(),
@@ -106,7 +91,7 @@ const policyHelperEnvelopeSchema = z.looseObject({
   appendSystemPrompt: z.string().optional(),
 })
 
-/** Códigos de fallo de ant — emitidos como segundo argumento de `xH(scope, code)`. */
+/** Ant failure codes — emitted as the second arg to `xH(scope, code)`. */
 export type PolicyHelperFailureCode =
   | 'bad_path'
   | 'bad_source'
@@ -118,9 +103,9 @@ export type PolicyHelperFailureCode =
   | 'refresh_failed'
 
 /**
- * Estado a nivel de módulo que espeja `dfH` de ant. Guarda la última
- * salida del helper aceptada + la config que se usó para producirla (para
- * que el loop de refresh pueda re-invocar con los mismos argumentos).
+ * Module-level state mirroring ant `dfH`. Holds the last accepted
+ * helper output + the config we used to produce it (so the refresh
+ * loop can re-invoke with the same args).
  */
 type PolicyHelperState = {
   config: PolicyHelperConfig
@@ -132,22 +117,22 @@ let refreshInFlight = false
 const refreshListeners: Set<() => void> = new Set()
 
 /**
- * `xH('settings_policy_helper', code)` de ant — evento de resultado de
- * fallo. Se envuelve aquí para que los llamadores no tengan que recordar
- * la etiqueta de scope.
+ * Ant `xH('settings_policy_helper', code)` — failure outcome event.
+ * Wrapped here so callers don't have to remember the scope tag.
  */
 function logFailure(
   code: PolicyHelperFailureCode,
   extra: Record<string, unknown> = {},
 ): void {
   logEvent('settings_policy_helper', {
-    failure_code: code,
+    failure_code:
+      code as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     ...extra,
   })
 }
 
 /**
- * `yH('settings_policy_helper')` de ant — evento de resultado de éxito.
+ * Ant `yH('settings_policy_helper')` — success outcome event.
  */
 function logSuccess(extra: Record<string, unknown> = {}): void {
   logEvent('settings_policy_helper_success', {
@@ -156,10 +141,10 @@ function logSuccess(extra: Record<string, unknown> = {}): void {
 }
 
 /**
- * `TZ4` de ant. Valida una ruta de binario helper. Devuelve `null` en
- * éxito o una cadena de error legible en fallo. Devolver el mensaje (no
- * lanzar) coincide con el contrato de ant — el llamador lo convierte en un
- * fallo `xH('bad_path')` con el mensaje embebido.
+ * Ant `TZ4`. Validate a helper-binary path. Returns null on success
+ * or a human-readable error string on failure. Returning the message
+ * (not throwing) matches ant's contract — the caller turns it into
+ * a `xH('bad_path')` failure with the message embedded.
  */
 export function validateHelperPath(path: string): string | null {
   if (!path || path.length === 0) {
@@ -175,10 +160,9 @@ export function validateHelperPath(path: string): string | null {
 }
 
 /**
- * `OZ4.has(source)` de ant. Devuelve verdadero cuando la fuente de
- * settings nombrada tiene permiso para declarar un `policyHelper`. Una
- * fuente `null` (sin procedencia) se rechaza — sólo fuentes controladas
- * por admin pueden instalar un helper.
+ * Ant `OZ4.has(source)`. Returns true when the named settings source
+ * is allowed to declare a `policyHelper`. Null source (no provenance)
+ * is rejected — only admin-controlled sources may install a helper.
  */
 export function isAdminPolicySource(source: string | null | undefined): boolean {
   if (source === null || source === undefined) return false
@@ -186,10 +170,10 @@ export function isAdminPolicySource(source: string | null | undefined): boolean 
 }
 
 /**
- * `tAq` de ant. Invoca el binario helper una vez y parsea su salida.
- * Devuelve `{output}` en éxito o `{error, code}` en fallo. El llamador
- * (`rAq` de ant / nuestro `applyPolicyHelper`) es responsable de persistir
- * el resultado y disparar la telemetría correspondiente.
+ * Ant `tAq`. Invoke the helper binary once and parse its output.
+ * Returns either `{output}` on success or `{error, code}` on failure.
+ * The caller (ant `rAq` / our `applyPolicyHelper`) is responsible for
+ * persisting the result and firing the matching telemetry.
  */
 export async function invokePolicyHelper(
   config: PolicyHelperConfig,
@@ -198,14 +182,14 @@ export async function invokePolicyHelper(
   | { error: string; code: PolicyHelperFailureCode }
 > {
   const timeoutMs = config.timeoutMs ?? DEFAULT_POLICY_HELPER_TIMEOUT_MS
-  // `f8(H.path, [], { timeout: _, maxBuffer: nI6+1, ... })` de ant devuelve
-  // `{stdout, stderr, code, error}` con stdout siendo el payload COMPLETO
-  // hasta maxBuffer. Se espeja con un loop de spawn que acumula chunks
-  // como Buffers (NO cadenas) y mide bytes vía `Buffer.byteLength` —
-  // crítico: la implementación vieja usaba
-  // `stdout.length + chunk.length` mezclando conteo de code-units de
-  // cadena JS y conteo de bytes de Buffer, lo que silenciosamente
-  // subcontaba texto UTF-8 multi-byte y dejaba que el helper excediera el tope.
+  // Ant `f8(H.path, [], { timeout: _, maxBuffer: nI6+1, ... })` returns
+  // `{stdout, stderr, code, error}` with stdout being the COMPLETE
+  // payload up to maxBuffer. We mirror with a spawn loop that
+  // accumulates chunks as Buffers (NOT strings) and measures bytes via
+  // `Buffer.byteLength` — critical: the old impl used
+  // `stdout.length + chunk.length` mixing JS string code-unit count and
+  // Buffer byte count, which silently underflows for UTF-8 multi-byte
+  // text and lets the helper exceed the cap.
   const stdoutChunks: Buffer[] = []
   const stderrChunks: Buffer[] = []
   let stdoutBytes = 0
@@ -219,10 +203,9 @@ export async function invokePolicyHelper(
       child = spawn(config.path, [], {
         env: {
           ...process.env,
-          // ant embarca `CLAUDE_CODE_VERSION` desde la constante de tiempo
-          // de build. ccb la espeja vía la variable de entorno
-          // `CLAUDE_CODE_VERSION`, así que el helper ve la versión que lo
-          // invocó.
+          // Ant ships `CLAUDE_CODE_VERSION` from the build-time const.
+          // ccb mirrors via the `CLAUDE_CODE_VERSION` env so the helper
+          // sees the version that invoked it.
           CLAUDE_CODE_VERSION: process.env.CLAUDE_CODE_VERSION ?? 'dev',
         },
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -238,17 +221,16 @@ export async function invokePolicyHelper(
       try {
         child.kill('SIGTERM')
       } catch {
-        // ya terminó
+        // already exited
       }
     }, timeoutMs)
     t.unref?.()
     child.stdout?.on('data', (chunk: Buffer) => {
-      // Acepta el chunk primero, LUEGO comprueba el tope y sale. El
-      // `f8(maxBuffer: nI6+1)` de ant semánticamente conserva hasta `nI6+1`
-      // bytes y luego el handler de close hace `byteLength > nI6` — ese
-      // byte extra es cómo discrimina "exactamente en el tope" de "por
-      // encima del tope". Se espeja deteniendo la lectura en el mismo
-      // límite.
+      // Accept the chunk first, THEN check the cap and bail. ant's
+      // `f8(maxBuffer: nI6+1)` semantically keeps up to `nI6+1` bytes
+      // and then the close handler does `byteLength > nI6` — that one
+      // extra byte is how it discriminates "exactly at cap" from
+      // "over cap". Mirror by stopping the read at the same boundary.
       stdoutChunks.push(chunk)
       stdoutBytes += chunk.length
       if (stdoutBytes > POLICY_HELPER_OUTPUT_CAP_BYTES) {
@@ -256,7 +238,7 @@ export async function invokePolicyHelper(
         try {
           child.kill('SIGTERM')
         } catch {
-          // ya terminó
+          // already exited
         }
       }
     })
@@ -267,7 +249,7 @@ export async function invokePolicyHelper(
       clearTimeout(t)
       const stdout = Buffer.concat(stdoutChunks).toString('utf-8')
       const stderr = Buffer.concat(stderrChunks).toString('utf-8')
-      // ant loguea stderr sin importar éxito/fallo, a nivel debug.
+      // Ant logs stderr regardless of success/failure with debug level.
       if (stderr) {
         logForDebugging(`policyHelper stderr: ${stderr}`)
       }
@@ -285,8 +267,8 @@ export async function invokePolicyHelper(
         })
         return
       }
-      // ant re-chequea el tope de bytes al cerrar (defensa contra que
-      // `maxBuffer=nI6+1` deje pasar un byte).
+      // Ant double-checks the byte cap on close (defends against
+      // maxBuffer=nI6+1 letting one byte slip through).
       if (Buffer.byteLength(stdout, 'utf-8') > POLICY_HELPER_OUTPUT_CAP_BYTES) {
         resolve({
           error: `stdout exceeded ${POLICY_HELPER_OUTPUT_CAP_BYTES} bytes`,
@@ -319,14 +301,13 @@ export async function invokePolicyHelper(
         })
         return
       }
-      // Construye la salida tipada. ant quita `policyHelper` del
-      // `managedSettings` devuelto para que el helper no pueda
-      // re-declararse recursivamente; hacemos lo mismo. ant además clona
-      // (`NV` = structuredClone) el `managedSettings` del helper antes de
-      // recortar, para que mutaciones sobre nuestro valor de retorno no se
-      // filtren de vuelta al envoltorio parseado. Se copia hondo vía JSON
-      // ya que se acaba de parsear desde JSON y se sabe que es
-      // plain-JSON-safe.
+      // Build typed output. ant strips `policyHelper` out of the
+      // returned `managedSettings` so the helper can't recursively
+      // re-declare itself; we do the same. Ant additionally clones
+      // (`NV` = structuredClone) the helper's managedSettings before
+      // stripping, so mutations to our return value can't bleed back
+      // into the parsed envelope. We deep-copy via JSON since we just
+      // parsed from JSON and know it's plain-JSON-safe.
       const output: PolicyHelperOutput = {}
       const ms = result.data.managedSettings
       if (ms !== undefined) {
@@ -361,13 +342,14 @@ export async function invokePolicyHelper(
 }
 
 /**
- * `rAq` de ant. Orquestador: toma los settings fusionados + la fuente de
- * la que vienen, valida que la fuente esté controlada por admin, corre
- * `validateHelperPath`, lanza el helper, persiste el resultado en el
- * estado a nivel de módulo, arma el intervalo de refresh, y devuelve
- * `null` en éxito o una cadena de error apta para mostrar al usuario.
+ * Ant `rAq`. Orchestrator: takes the merged settings + the source
+ * they came from, validates the source is admin-controlled, runs
+ * `validateHelperPath`, spawns the helper, persists the result to
+ * module-level state, sets up the refresh interval, and returns null
+ * on success or an error string suitable for displaying to the user.
  *
- * El llamador (el loader de mdm/settings) decide si expone el error.
+ * The caller (mdm/settings loader) decides whether to surface the
+ * error.
  */
 export async function applyPolicyHelper(
   settings: { policyHelper?: unknown } | null | undefined,
@@ -377,7 +359,9 @@ export async function applyPolicyHelper(
   if (!cfg) return null
   if (!isAdminPolicySource(source)) {
     logFailure('bad_source', {
-      source: source ?? 'unknown',
+      source:
+        (source ??
+          'unknown') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     logForDebugging(
       `policyHelper ignored: delivered via non-admin source '${source ?? 'unknown'}'`,
@@ -404,10 +388,10 @@ export async function applyPolicyHelper(
 }
 
 /**
- * `AZ4` de ant. Arma un `setInterval` que re-invoca al helper cada
- * `refreshIntervalMs`. La re-entrada se protege con `refreshInFlight`,
- * para que un helper lento no apile invocaciones solapadas. El timer se
- * hace `.unref()` para que nunca mantenga a Node vivo por sí solo.
+ * Ant `AZ4`. Set up a setInterval that re-invokes the helper every
+ * `refreshIntervalMs`. Re-entrance is guarded by `refreshInFlight`
+ * so a slow helper doesn't stack up overlapping invocations. The
+ * timer is `.unref()`'d so it never keeps Node alive on its own.
  */
 function schedulePolicyHelperRefresh(config: PolicyHelperConfig): void {
   if (refreshTimer) {
@@ -423,7 +407,8 @@ function schedulePolicyHelperRefresh(config: PolicyHelperConfig): void {
       .then(r => {
         if ('error' in r) {
           logFailure('refresh_failed', {
-            error_code: r.code,
+            error_code:
+              r.code as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           })
           return
         }
@@ -433,7 +418,7 @@ function schedulePolicyHelperRefresh(config: PolicyHelperConfig): void {
             try {
               fn()
             } catch {
-              // una excepción de listener no debe romper el loop de refresh.
+              // listener exception shouldn't break the refresh loop
             }
           }
         }
@@ -445,7 +430,7 @@ function schedulePolicyHelperRefresh(config: PolicyHelperConfig): void {
   refreshTimer.unref?.()
 }
 
-/** Sólo test: detiene el timer de refresh (para que el proceso de test salga). */
+/** Test-only: stop the refresh timer (so the test process exits). */
 export function stopPolicyHelperRefreshForTesting(): void {
   if (refreshTimer) {
     clearInterval(refreshTimer)
@@ -455,10 +440,10 @@ export function stopPolicyHelperRefreshForTesting(): void {
 }
 
 /**
- * Se suscribe a eventos de refresh. Devuelve una función de
- * desuscripción. ant dispara `uSH.emit("policySettings")` + `rI6.emit()`
- * — los listeners aquí cubren la misma necesidad (notificar a los
- * consumidores que `managedSettings` puede haber cambiado).
+ * Subscribe to refresh events. Returns an unsubscribe function. ant
+ * fires `uSH.emit("policySettings")` + `rI6.emit()` — listeners here
+ * cover the same need (notify consumers that managedSettings may
+ * have changed).
  */
 export function onPolicyHelperRefresh(listener: () => void): () => void {
   refreshListeners.add(listener)
@@ -467,30 +452,30 @@ export function onPolicyHelperRefresh(listener: () => void): () => void {
   }
 }
 
-/** `oI6` de ant. */
+/** Ant `oI6`. */
 export function getPolicyHelperManagedSettings():
   | Record<string, unknown>
   | null {
   return policyHelperState?.output.managedSettings ?? null
 }
 
-/** `oAq` de ant. */
+/** Ant `oAq`. */
 export function getPolicyHelperClaudeMd(): string | null {
   return policyHelperState?.output.claudeMd ?? null
 }
 
-/** `aAq` de ant. */
+/** Ant `aAq`. */
 export function getPolicyHelperAppendSystemPrompt(): string | null {
   return policyHelperState?.output.appendSystemPrompt ?? null
 }
 
-/** `sAq` de ant. */
+/** Ant `sAq`. */
 export function isPolicyHelperActive(): boolean {
   return policyHelperState !== null
 }
 
 /**
- * Sólo test: limpia el estado a nivel de módulo.
+ * Test-only: clear module-level state.
  */
 export function _resetPolicyHelperForTesting(): void {
   policyHelperState = null

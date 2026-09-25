@@ -1,47 +1,9 @@
-/**
- * El diff de git como dato: estadísticas, tramos por archivo, y el diff de un
- * solo archivo contra la base de fusión.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/gitDiff.ts` (532 líneas,
- * 11 símbolos exportados). Ese árbol declara `"license": "UNLICENSED"`, así
- * que el cuerpo se **reimplementa** —mismo nombre de módulo, mismo sitio,
- * mismos nombres y firmas— y no se copia
- * (`porte-completo-no-parcial.md`, «la licencia cambia el mecanismo, nunca la
- * fidelidad»).
- *
- * Los NUEVE bloqueos que el porte parcial de este paquete declaraba para este
- * módulo —`file.js`, `git.js`, `detectRepository.js`, `execFileNoThrow.js`,
- * `cwd.js` y el paquete `diff`— estaban los nueve resueltos al medirlos. El
- * paquete `diff` sólo entra como TIPO (`import type`), así que el módulo no lo
- * carga en tiempo de ejecución.
- *
- * DIVERGENCIA DECLARADA (una): la fuente importa `StructuredPatchHunk` del
- * paquete `diff`, que en su árbol es la versión 8 y trae sus propias
- * declaraciones. En éste la versión instalada es la 7.0.0, que NO trae ninguna
- * —ni existe `@types/diff`—, así que el tipo se declara aquí.
- *
- * No es una pérdida de fidelidad: el tipo se consume SÓLO como tipo (la fuente
- * lo importa con `import type`, así que el módulo nunca carga el paquete en
- * tiempo de ejecución), y su forma no es un detalle interno de la librería sino
- * la del encabezado de un tramo unificado. Confirmada contra el parseador de la
- * propia librería, `diff/lib/patch/parse.js:79-82`, que construye esos cinco
- * campos y hace el mismo default a 1 cuando el conteo viene omitido.
- *
- * Declararlo aquí RETIRA una dependencia en vez de añadirla: el manifiesto de
- * este paquete no necesita `diff`.
- *
- * Los 11 símbolos exportados viajan con su firma, y los cinco privados
- * —`isInTransientGitState`, `fetchUntrackedFiles`, `parseRawDiffToToolUseDiff`,
- * `getDiffRef`, `generateSyntheticDiff`— también.
- */
+import type { StructuredPatchHunk } from 'diff'
 import { access, readFile } from 'fs/promises'
 import { dirname, join, relative, sep } from 'path'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { getCachedRepository } from '@thyrox/storage/detectRepository.js'
-import {
-  execFileNoThrow,
-  execFileNoThrowWithCwd,
-} from '@thyrox/shell/execFileNoThrow.js'
+import { execFileNoThrow, execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
 import { isFileWithinReadSizeLimit } from '@thyrox/storage/file.js'
 import {
   findGitRoot,
@@ -50,22 +12,6 @@ import {
   getIsGit,
   gitExe,
 } from '@thyrox/storage/git.js'
-
-/**
- * Un tramo de un diff unificado: dónde empieza y cuántas líneas ocupa a cada
- * lado, más las líneas en crudo con su marca (`+`, `-` o espacio).
- *
- * Estructuralmente idéntico al `StructuredPatchHunk` del paquete `diff`, y por
- * eso conserva su nombre: un consumidor que reciba uno de la librería o uno de
- * aquí no distingue, que es la propiedad que hace innecesaria la dependencia.
- */
-export type StructuredPatchHunk = {
-  oldStart: number
-  oldLines: number
-  newStart: number
-  newLines: number
-  lines: string[]
-}
 
 export type GitDiffStats = {
   filesCount: number
@@ -88,32 +34,31 @@ export type GitDiffResult = {
 
 const GIT_TIMEOUT_MS = 5000
 const MAX_FILES = 50
-/** 1 MB: por encima de esto el archivo se salta entero. */
-const MAX_DIFF_SIZE_BYTES = 1_000_000
-/** El tope con que GitHub deja de cargar automáticamente. */
-const MAX_LINES_PER_FILE = 400
-/** Por encima de esto se devuelven totales y NINGÚN detalle por archivo. */
-const MAX_FILES_FOR_DETAILS = 500
+const MAX_DIFF_SIZE_BYTES = 1_000_000 // 1 MB - skip files larger than this
+const MAX_LINES_PER_FILE = 400 // GitHub's auto-load limit
+const MAX_FILES_FOR_DETAILS = 500 // Skip per-file details if more files than this
 
 /**
- * Estadísticas y tramos del árbol de trabajo contra HEAD. `null` si no hay
- * repositorio o si git falla.
+ * Fetch git diff stats and hunks comparing working tree to HEAD.
+ * Returns null if not in a git repo or if git commands fail.
  *
- * Durante una fusión, un rebase, un cherry-pick o un revert devuelve `null`:
- * el árbol de trabajo lleva cambios que ENTRARON, no cambios que alguien hizo
- * a propósito, y presentarlos como propios sería atribuirlos mal.
+ * Returns null during merge/rebase/cherry-pick/revert operations since the
+ * working tree contains incoming changes that weren't intentionally
+ * made by the user.
  */
 export async function fetchGitDiff(): Promise<GitDiffResult | null> {
   const isGit = await getIsGit()
   if (!isGit) return null
 
+  // Skip diff calculation during transient git states since the
+  // working tree contains incoming changes, not user-intentional edits
   if (await isInTransientGitState()) {
     return null
   }
 
-  // Sonda barata: `--shortstat` da los totales sin cargar contenido, así que
-  // cuesta memoria constante sea cual sea el tamaño del diff. Sirve para
-  // detectar un diff enorme ANTES de gastar en el caro.
+  // Quick probe: use --shortstat to get totals without loading all content.
+  // This is O(1) memory and lets us detect massive diffs (e.g., jj workspaces)
+  // before committing to expensive operations.
   const { stdout: shortstatOut, code: shortstatCode } = await execFileNoThrow(
     gitExe(),
     ['--no-optional-locks', 'diff', 'HEAD', '--shortstat'],
@@ -123,8 +68,8 @@ export async function fetchGitDiff(): Promise<GitDiffResult | null> {
   if (shortstatCode === 0) {
     const quickStats = parseShortstat(shortstatOut)
     if (quickStats && quickStats.filesCount > MAX_FILES_FOR_DETAILS) {
-      // Demasiados archivos: totales exactos y cero detalle, para no cargar
-      // centenares de MB en memoria por un dato que nadie va a mirar.
+      // Too many files - return accurate totals but skip per-file details
+      // to avoid loading hundreds of MB into memory
       return {
         stats: quickStats,
         perFileStats: new Map(),
@@ -133,6 +78,7 @@ export async function fetchGitDiff(): Promise<GitDiffResult | null> {
     }
   }
 
+  // Get stats via --numstat (all uncommitted changes vs HEAD)
   const { stdout: numstatOut, code: numstatCode } = await execFileNoThrow(
     gitExe(),
     ['--no-optional-locks', 'diff', 'HEAD', '--numstat'],
@@ -143,7 +89,8 @@ export async function fetchGitDiff(): Promise<GitDiffResult | null> {
 
   const { stats, perFileStats } = parseGitNumstat(numstatOut)
 
-  // Los archivos sin seguir entran por su NOMBRE, sin leer su contenido.
+  // Include untracked files (new files not yet staged)
+  // Just filenames - no content reading for performance
   const remainingSlots = MAX_FILES - perFileStats.size
   if (remainingSlots > 0) {
     const untrackedStats = await fetchUntrackedFiles(remainingSlots)
@@ -155,14 +102,14 @@ export async function fetchGitDiff(): Promise<GitDiffResult | null> {
     }
   }
 
-  // Sólo estadísticas: los tramos se piden aparte con `fetchGitDiffHunks()`
-  // para no pagar un `git diff HEAD` completo en cada sondeo.
+  // Return stats only - hunks are fetched on-demand via fetchGitDiffHunks()
+  // to avoid expensive git diff HEAD call on every poll
   return { stats, perFileStats, hunks: new Map() }
 }
 
 /**
- * Los tramos, bajo demanda. Separado de `fetchGitDiff()` justamente para que
- * el sondeo periódico no arrastre el coste del diff entero.
+ * Fetch git diff hunks on-demand (for DiffDialog).
+ * Separated from fetchGitDiff() to avoid expensive calls during polling.
  */
 export async function fetchGitDiffHunks(): Promise<
   Map<string, StructuredPatchHunk[]>
@@ -193,13 +140,10 @@ export type NumstatResult = {
 }
 
 /**
- * Lee la salida de `git diff --numstat`: `<añadidas>\t<quitadas>\t<archivo>`.
- *
- * Un binario trae `-` en las dos cifras. Cuenta como archivo y aporta CERO
- * líneas — no `NaN`, que envenenaría la suma sin error visible.
- *
- * El detalle por archivo se corta en `MAX_FILES`; el TOTAL no, porque el
- * conteo es lo que el llamador usa para decidir si vale la pena seguir.
+ * Parse git diff --numstat output into stats.
+ * Format: <added>\t<removed>\t<filename>
+ * Binary files show '-' for counts.
+ * Only stores first MAX_FILES entries in perFileStats.
  */
 export function parseGitNumstat(stdout: string): NumstatResult {
   const lines = stdout.trim().split('\n').filter(Boolean)
@@ -210,14 +154,13 @@ export function parseGitNumstat(stdout: string): NumstatResult {
 
   for (const line of lines) {
     const parts = line.split('\t')
-    // Una línea válida trae tres campos separados por tabulador.
+    // Valid numstat lines have exactly 3 tab-separated parts: added, removed, filename
     if (parts.length < 3) continue
 
     validFileCount++
     const addStr = parts[0]
     const remStr = parts[1]
-    // El nombre puede LLEVAR tabuladores: se reconstruye entero.
-    const filePath = parts.slice(2).join('\t')
+    const filePath = parts.slice(2).join('\t') // filename may contain tabs
     const isBinary = addStr === '-' || remStr === '-'
     const fileAdded = isBinary ? 0 : parseInt(addStr ?? '0', 10) || 0
     const fileRemoved = isBinary ? 0 : parseInt(remStr ?? '0', 10) || 0
@@ -225,6 +168,7 @@ export function parseGitNumstat(stdout: string): NumstatResult {
     added += fileAdded
     removed += fileRemoved
 
+    // Only store first MAX_FILES entries
     if (perFileStats.size < MAX_FILES) {
       perFileStats.set(filePath, {
         added: fileAdded,
@@ -245,14 +189,13 @@ export function parseGitNumstat(stdout: string): NumstatResult {
 }
 
 /**
- * Parte un diff unificado en tramos por archivo.
+ * Parse unified diff output into per-file hunks.
+ * Splits by "diff --git" and parses each file's hunks.
  *
- * Tres topes, y los tres importan por separado:
- *
- * - `MAX_FILES`: se corta tras esa cantidad de archivos.
- * - `MAX_DIFF_SIZE_BYTES`: un archivo por encima de 1 MB se salta ENTERO —y
- *   los que vengan después se siguen leyendo, así que saltarlo no aborta.
- * - `MAX_LINES_PER_FILE`: dentro de un archivo, las líneas se cortan ahí.
+ * Applies limits:
+ * - MAX_FILES: stop after this many files
+ * - Files >1MB: skipped entirely (not in result map)
+ * - Files ≤1MB: parsed but limited to MAX_LINES_PER_FILE lines
  */
 export function parseGitDiff(
   stdout: string,
@@ -260,22 +203,26 @@ export function parseGitDiff(
   const result = new Map<string, StructuredPatchHunk[]>()
   if (!stdout.trim()) return result
 
+  // Split by file diffs
   const fileDiffs = stdout.split(/^diff --git /m).filter(Boolean)
 
   for (const fileDiff of fileDiffs) {
+    // Stop after MAX_FILES
     if (result.size >= MAX_FILES) break
 
+    // Skip files larger than 1MB
     if (fileDiff.length > MAX_DIFF_SIZE_BYTES) {
       continue
     }
 
     const lines = fileDiff.split('\n')
 
-    // La primera línea trae `a/ruta b/ruta`: se toma el lado b.
+    // Extract filename from first line: "a/path/to/file b/path/to/file"
     const headerMatch = lines[0]?.match(/^a\/(.+?) b\/(.+)$/)
     if (!headerMatch) continue
     const filePath = headerMatch[2] ?? headerMatch[1] ?? ''
 
+    // Find and parse hunks
     const fileHunks: StructuredPatchHunk[] = []
     let currentHunk: StructuredPatchHunk | null = null
     let lineCount = 0
@@ -283,7 +230,7 @@ export function parseGitDiff(
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i] ?? ''
 
-      // Encabezado de tramo: @@ -viejoInicio,viejoN +nuevoInicio,nuevoN @@
+      // StructuredPatchHunk header: @@ -oldStart,oldLines +newStart,newLines @@
       const hunkMatch = line.match(
         /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/,
       )
@@ -301,7 +248,7 @@ export function parseGitDiff(
         continue
       }
 
-      // Metadata: marcadores de binario y encabezados de archivo.
+      // Skip binary file markers and other metadata
       if (
         line.startsWith('index ') ||
         line.startsWith('---') ||
@@ -315,6 +262,7 @@ export function parseGitDiff(
         continue
       }
 
+      // Add diff lines to current hunk (with line limit)
       if (
         currentHunk &&
         (line.startsWith('+') ||
@@ -322,20 +270,21 @@ export function parseGitDiff(
           line.startsWith(' ') ||
           line === '')
       ) {
+        // Stop adding lines once we hit the limit
         if (lineCount >= MAX_LINES_PER_FILE) {
           continue
         }
-        // `'' + line` fuerza una cadena PLANA. `split()` produce cadenas
-        // rebanadas que referencian a la madre: retener una línea mantendría
-        // viva la cadena entera de megabytes. `slice(0)` no sirve — el motor
-        // puede devolver la misma referencia.
+        // Force a flat string copy to break V8 sliced string references.
+        // When split() creates lines, V8 creates "sliced strings" that reference
+        // the parent. This keeps the entire parent string (~MBs) alive as long as
+        // any line is retained. Using '' + line forces a new flat string allocation,
+        // unlike slice(0) which V8 may optimize to return the same reference.
         currentHunk.lines.push('' + line)
         lineCount++
       }
     }
 
-    // El último tramo no lo cierra ningún encabezado siguiente: sin este
-    // empujón desaparecería, y sin error.
+    // Don't forget the last hunk
     if (currentHunk) {
       fileHunks.push(currentHunk)
     }
@@ -349,11 +298,11 @@ export function parseGitDiff(
 }
 
 /**
- * ¿Hay una fusión, un rebase, un cherry-pick o un revert a medias?
+ * Check if we're in a transient git state (merge, rebase, cherry-pick, or revert).
+ * During these operations, we skip diff calculation since the working
+ * tree contains incoming changes that weren't intentionally made.
  *
- * Se mira la PRESENCIA de los ficheros de referencia dentro del directorio de
- * git, no se lanza ningún proceso: cuatro `access` cuestan mucho menos que un
- * `git status`, y esto se consulta en cada sondeo.
+ * Uses fs.access to check for transient ref files, avoiding process spawns.
  */
 async function isInTransientGitState(): Promise<boolean> {
   const gitDir = await getGitDir(getCwd())
@@ -377,15 +326,15 @@ async function isInTransientGitState(): Promise<boolean> {
 }
 
 /**
- * Los archivos sin seguir, por su nombre. NO se lee su contenido: aparecen
- * marcados para que quien mire sepa que faltan por añadir al índice.
+ * Fetch untracked file names (no content reading).
+ * Returns file paths only - they'll be displayed with a note to stage them.
  *
- * @param maxFiles cuántos como mucho.
+ * @param maxFiles Maximum number of untracked files to include
  */
 async function fetchUntrackedFiles(
   maxFiles: number,
 ): Promise<Map<string, PerFileStats> | null> {
-  // `--exclude-standard` deja fuera lo ignorado.
+  // Get list of untracked files (excludes gitignored)
   const { stdout, code } = await execFileNoThrow(
     gitExe(),
     ['--no-optional-locks', 'ls-files', '--others', '--exclude-standard'],
@@ -399,6 +348,7 @@ async function fetchUntrackedFiles(
 
   const perFileStats = new Map<string, PerFileStats>()
 
+  // Just record filenames, no content reading
   for (const filePath of untrackedPaths.slice(0, maxFiles)) {
     perFileStats.set(filePath, {
       added: 0,
@@ -412,14 +362,14 @@ async function fetchUntrackedFiles(
 }
 
 /**
- * Lee `git diff --shortstat`, cuya forma es:
- * ` 1648 files changed, 52341 insertions(+), 8123 deletions(-)`
+ * Parse git diff --shortstat output into stats.
+ * Format: " 1648 files changed, 52341 insertions(+), 8123 deletions(-)"
  *
- * Devuelve `null` cuando la salida no es un shortstat, y esa distinción pesa:
- * `null` significa «no hubo nada que leer», que no es lo mismo que «hubo cero
- * cambios». El llamador usa la diferencia para decidir si sigue midiendo.
+ * This is O(1) memory regardless of diff size - git computes totals without
+ * loading all content. Used as a quick probe before expensive operations.
  */
 export function parseShortstat(stdout: string): GitDiffStats | null {
+  // Match: "N files changed" with optional ", N insertions(+)" and ", N deletions(-)"
   const match = stdout.match(
     /(\d+)\s+files?\s+changed(?:,\s+(\d+)\s+insertions?\(\+\))?(?:,\s+(\d+)\s+deletions?\(-\))?/,
   )
@@ -440,17 +390,17 @@ export type ToolUseDiff = {
   deletions: number
   changes: number
   patch: string
-  /** `dueño/repo` de GitHub cuando se conoce; `null` fuera de github.com. */
+  /** GitHub "owner/repo" when available (null for non-github.com or unknown repos) */
   repository: string | null
 }
 
 /**
- * El diff de UN archivo contra la base de fusión con la rama por defecto —o
- * sea, la vista que daría un pull request, no sólo el último commit.
- *
- * Si la base de fusión no se puede determinar (estando ya en la rama por
- * defecto, por ejemplo) cae a `HEAD`. Un archivo sin seguir recibe un diff
- * SINTÉTICO en el que todo es añadido. `null` fuera de un repositorio.
+ * Fetch a structured diff for a single file against the merge base with the
+ * default branch. This produces a PR-like diff showing all changes since
+ * the branch diverged. Falls back to diffing against HEAD if the merge base
+ * cannot be determined (e.g., on the default branch itself).
+ * For untracked files, generates a synthetic diff showing all additions.
+ * Returns null if not in a git repo or if git commands fail.
  */
 export async function fetchSingleFileGitDiff(
   absoluteFilePath: string,
@@ -458,10 +408,10 @@ export async function fetchSingleFileGitDiff(
   const gitRoot = findGitRoot(dirname(absoluteFilePath))
   if (!gitRoot) return null
 
-  // git habla siempre con `/`, también en Windows.
   const gitPath = relative(gitRoot, absoluteFilePath).split(sep).join('/')
   const repository = getCachedRepository()
 
+  // Check if the file is tracked by git
   const { code: lsFilesCode } = await execFileNoThrowWithCwd(
     gitExe(),
     ['--no-optional-locks', 'ls-files', '--error-unmatch', gitPath],
@@ -469,6 +419,7 @@ export async function fetchSingleFileGitDiff(
   )
 
   if (lsFilesCode === 0) {
+    // File is tracked - diff against merge base for PR-like view
     const diffRef = await getDiffRef(gitRoot)
     const { stdout, code } = await execFileNoThrowWithCwd(
       gitExe(),
@@ -483,17 +434,16 @@ export async function fetchSingleFileGitDiff(
     }
   }
 
+  // File is untracked - generate synthetic diff
   const syntheticDiff = await generateSyntheticDiff(gitPath, absoluteFilePath)
   if (!syntheticDiff) return null
   return { ...syntheticDiff, repository }
 }
 
 /**
- * Convierte un diff unificado crudo a la forma estructurada. Del parche se
- * queda SÓLO con el contenido de los tramos, desde el primer `@@`; el
- * encabezado de archivo no aporta nada a quien lo va a leer.
- *
- * `+++` y `---` se descuentan a propósito: son encabezado, no líneas.
+ * Parse raw unified diff output into the structured ToolUseDiff format.
+ * Extracts only the hunk content (starting from @@) as the patch,
+ * and counts additions/deletions.
  */
 function parseRawDiffToToolUseDiff(
   filename: string,
@@ -531,11 +481,11 @@ function parseRawDiffToToolUseDiff(
 }
 
 /**
- * Contra qué referencia diferenciar, en orden de precedencia:
- *
- * 1. `CLAUDE_CODE_BASE_REF`, que fija quien hospeda el contenedor;
- * 2. la base de fusión con la rama por defecto;
- * 3. `HEAD`, si la base de fusión no se puede calcular.
+ * Determine the best ref to diff against for a PR-like diff.
+ * Priority:
+ * 1. CLAUDE_CODE_BASE_REF env var (set externally, e.g. by CCR managed containers)
+ * 2. Merge base with the default branch (best guess)
+ * 3. HEAD (fallback if merge-base fails)
  */
 async function getDiffRef(gitRoot: string): Promise<string> {
   const baseBranch =
@@ -551,13 +501,6 @@ async function getDiffRef(gitRoot: string): Promise<string> {
   return 'HEAD'
 }
 
-/**
- * El diff de un archivo sin seguir: git no tiene con qué compararlo, así que
- * se fabrica uno en el que todas sus líneas son añadidas.
- *
- * El tope de lectura se consulta ANTES de leer: un archivo sin seguir de 500 MB
- * no se carga en memoria para descubrir después que era demasiado grande.
- */
 async function generateSyntheticDiff(
   gitPath: string,
   absoluteFilePath: string,
@@ -568,7 +511,7 @@ async function generateSyntheticDiff(
     }
     const content = await readFile(absoluteFilePath, 'utf-8')
     const lines = content.split('\n')
-    // `split` deja una línea vacía al final si el archivo acaba en salto.
+    // Remove trailing empty line from split if file ends with newline
     if (lines.length > 0 && lines.at(-1) === '') {
       lines.pop()
     }

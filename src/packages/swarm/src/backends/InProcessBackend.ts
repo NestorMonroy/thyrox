@@ -1,55 +1,11 @@
-/**
- * El ejecutor de un compañero que corre DENTRO de este proceso.
- *
- * Procedencia: `ccnmt: packages/swarm/src/backends/InProcessBackend.ts`
- * (339 líneas, 2 símbolos exportados). Ese árbol declara
- * `"license": "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se
- * copia.
- *
- * A diferencia de los respaldos de panel —`TmuxBackend`, `ITermBackend`—, un
- * compañero en proceso vive en el mismo Node.js que el líder: comparte con él
- * el cliente del API y las conexiones MCP, se comunica por el mismo buzón en
- * disco que los de panel, y se termina con un `AbortController` en vez de
- * matando un panel.
- *
- * PRECONDICIÓN: `setContext()` antes de `spawn()`. Sin contexto no hay acceso
- * al estado de la aplicación, y los cinco métodos que lo necesitan REHÚSAN
- * nombrándolo en vez de reventar con un `null` más adentro.
- *
- * DIVERGENCIA DECLARADA: ninguna en la conducta; una en el tipado, y es de la
- * capa, no de este archivo. Hay DOS declaraciones de `AppState` en este árbol
- * que no unifican:
- *
- * - `adapters/appRuntime.ts:240` lo ensancha a `unknown`;
- * - `@thyrox/tool-registry/appStateTypes.ts:15` —el que `ToolUseContext` usa—
- *   lo declara `Record<string, any>`.
- *
- * Con eso, el `setAppState` del contexto no es asignable al `SetAppState` del
- * adaptador: su retorno `Record<string, any>` no acepta el `unknown` que el
- * otro promete. Son tres sitios aquí —`spawnInProcessTeammate`,
- * `requestTeammateShutdown` y `killInProcessTeammate`—, y NO se tapan con un
- * `as`: el `as` haría desaparecer la marca dejando la causa en pie, y el
- * siguiente porte volvería a tropezar sin nada que se lo advirtiera. La causa
- * está en el ensanchamiento de `appRuntime`, que es el sujeto de la tarea #276.
- *
- * Medido antes de escribirlo: la clase entera son **27** errores en cuatro
- * archivos —14 en el hermano `runtime/inProcessRunner.ts`, 10 en
- * `__tests__/spawnInProcess.test.ts`, 2 aquí y 1 en
- * `tasks/InProcessTeammateTask.ts`—, así que es condición preexistente del
- * paquete y no algo que este archivo introduzca.
- *
- * Lo que sí resolvió limpio, y por eso no es divergencia:
- * `ToolUseContext` NO está ensanchado —se reexporta entero desde
- * `@thyrox/tool-registry/Tool.js`, con su `messages: Message[]`— así que el
- * `{ ...this.context, messages: [] }` del `spawn()` conserva su tipo, y
- * `state.tasks` resuelve sin el TS18046 que `spawnInProcess.ts:233` arrastra.
- */
 import type { ToolUseContext } from '../adapters/appRuntime.js'
 import {
-  jsonStringify,
-  logForDebugging,
-  parseAgentId,
-} from '../adapters/appRuntime.js'
+  findTeammateTaskByAgentId,
+  requestTeammateShutdown,
+} from '../tasks/InProcessTeammateTask.js'
+import { parseAgentId } from '../adapters/appRuntime.js'
+import { logForDebugging } from '../adapters/appRuntime.js'
+import { jsonStringify } from '../adapters/appRuntime.js'
 import {
   createShutdownRequestMessage,
   writeToMailbox,
@@ -59,10 +15,6 @@ import {
   killInProcessTeammate,
   spawnInProcessTeammate,
 } from '../runtime/spawnInProcess.js'
-import {
-  findTeammateTaskByAgentId,
-  requestTeammateShutdown,
-} from '../tasks/InProcessTeammateTask.js'
 import type {
   TeammateExecutor,
   TeammateMessage,
@@ -71,39 +23,51 @@ import type {
 } from './types.js'
 
 /**
- * El ejecutor en proceso, en la forma que `TeammateExecutor` declara.
+ * InProcessBackend implements TeammateExecutor for in-process teammates.
  *
- * Se obtiene por la abstracción —`getTeammateExecutor()` de `registry.ts`—,
- * no construyéndolo a mano: el registro es quien lo cachea y quien decide si
- * el modo en proceso está habilitado.
+ * Unlike pane-based backends (tmux/iTerm2), in-process teammates run in the
+ * same Node.js process with isolated context via AsyncLocalStorage. They:
+ * - Share resources (API client, MCP connections) with the leader
+ * - Communicate via file-based mailbox (same as pane-based teammates)
+ * - Are terminated via AbortController (not kill-pane)
+ *
+ * IMPORTANT: Before spawning, call setContext() to provide the ToolUseContext
+ * needed for AppState access. This is intended for use via the TeammateExecutor
+ * abstraction (getTeammateExecutor() in registry.ts).
  */
 export class InProcessBackend implements TeammateExecutor {
   readonly type = 'in-process' as const
 
   /**
-   * El contexto de uso de herramientas, para llegar al estado de la
-   * aplicación. Lo fija `setContext()` antes del primer `spawn()`.
+   * Tool use context for AppState access.
+   * Must be set via setContext() before spawn() is called.
    */
   private context: ToolUseContext | null = null
 
-  /** Declara el contexto con que este ejecutor lee y escribe el estado. */
+  /**
+   * Sets the ToolUseContext for this backend.
+   * Called by TeammateTool before spawning to provide AppState access.
+   */
   setContext(context: ToolUseContext): void {
     this.context = context
   }
 
-  /** Siempre disponible: no depende de ningún programa externo. */
+  /**
+   * In-process backend is always available (no external dependencies).
+   */
   async isAvailable(): Promise<boolean> {
     return true
   }
 
   /**
-   * Engendra un compañero en proceso y arranca su bucle.
+   * Spawns an in-process teammate.
    *
-   * Son dos pasos y el segundo es condicional:
-   * `spawnInProcessTeammate()` crea el contexto del compañero, su
-   * `AbortController` propio —no ligado al del padre— y su tarea en el estado;
-   * `startInProcessTeammate()` arranca el bucle del agente, y sólo si las tres
-   * piezas que necesita volvieron del primer paso.
+   * Uses spawnInProcessTeammate() to:
+   * 1. Create TeammateContext via createTeammateContext()
+   * 2. Create independent AbortController (not linked to parent)
+   * 3. Register teammate in AppState.tasks
+   * 4. Start agent execution via startInProcessTeammate()
+   * 5. Return spawn result with agentId, taskId, abortController
    */
   async spawn(config: TeammateSpawnConfig): Promise<TeammateSpawnResult> {
     if (!this.context) {
@@ -131,14 +95,15 @@ export class InProcessBackend implements TeammateExecutor {
       this.context,
     )
 
-    // El bucle sólo arranca con las tres piezas del engendro: sin tarea, sin
-    // contexto o sin controlador no hay nada que gobernar.
+    // If spawn succeeded, start the agent execution loop
     if (
       result.success &&
       result.taskId &&
       result.teammateContext &&
       result.abortController
     ) {
+      // Start the agent loop in the background (fire-and-forget)
+      // The prompt is passed through the task state and config
       startInProcessTeammate({
         identity: {
           agentId: result.agentId,
@@ -151,10 +116,9 @@ export class InProcessBackend implements TeammateExecutor {
         taskId: result.taskId,
         prompt: config.prompt,
         teammateContext: result.teammateContext,
-        // Se le quitan los mensajes a propósito: el compañero nunca lee
-        // `toolUseContext.messages` —`runAgent` lo sobreescribe con el suyo—,
-        // y pasarle la conversación del padre la dejaría fija en memoria
-        // durante toda la vida del compañero.
+        // Strip messages: the teammate never reads toolUseContext.messages
+        // (runAgent overrides it via createSubagentContext). Passing the
+        // parent's conversation would pin it for the teammate's lifetime.
         toolUseContext: { ...this.context, messages: [] },
         abortController: result.abortController,
         model: config.model,
@@ -179,17 +143,17 @@ export class InProcessBackend implements TeammateExecutor {
   }
 
   /**
-   * Le entrega un mensaje al compañero por su buzón en disco.
+   * Sends a message to an in-process teammate.
    *
-   * El canal es el mismo que el de los compañeros de panel: no hay atajo en
-   * memoria por vivir en el mismo proceso.
+   * All teammates use file-based mailboxes for simplicity.
    */
   async sendMessage(agentId: string, message: TeammateMessage): Promise<void> {
     logForDebugging(
       `[InProcessBackend] sendMessage() to ${agentId}: ${message.text.substring(0, 50)}...`,
     )
 
-    // El identificador tiene la forma `agentName@teamName`.
+    // Parse agentId to get agentName and teamName
+    // agentId format: "agentName@teamName" (e.g., "researcher@my-team")
     const parsed = parseAgentId(agentId)
     if (!parsed) {
       logForDebugging(`[InProcessBackend] Invalid agentId format: ${agentId}`)
@@ -200,6 +164,7 @@ export class InProcessBackend implements TeammateExecutor {
 
     const { agentName, teamName } = parsed
 
+    // Write to file-based mailbox
     await writeToMailbox(
       agentName,
       {
@@ -215,11 +180,14 @@ export class InProcessBackend implements TeammateExecutor {
   }
 
   /**
-   * Le pide al compañero que se apague, y lo marca como pedido.
+   * Gracefully terminates an in-process teammate.
    *
-   * No lo mata: le escribe la petición al buzón y deja que él decida —puede
-   * aprobarla y salir, o rechazarla y seguir—. Por eso no hace falta ningún
-   * `killPane()` como en los respaldos de panel.
+   * Sends a shutdown request message to the teammate and sets the
+   * shutdownRequested flag. The teammate processes the request and
+   * either approves (exits) or rejects (continues working).
+   *
+   * Unlike pane-based teammates, in-process teammates handle their own
+   * exit via the shutdown flow - no external killPane() is needed.
    */
   async terminate(agentId: string, reason?: string): Promise<boolean> {
     logForDebugging(
@@ -233,6 +201,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
+    // Get current AppState to find the task
     const state = this.context.getAppState()
     const task = findTeammateTaskByAgentId(agentId, state.tasks)
 
@@ -243,8 +212,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
-    // Con una petición ya en vuelo no se manda otra: devuelve `true` porque el
-    // apagado está pedido, que es lo que el llamador quería.
+    // Don't send another shutdown request if one is already pending
     if (task.shutdownRequested) {
       logForDebugging(
         `[InProcessBackend] terminate(): shutdown already requested for ${agentId}`,
@@ -252,15 +220,17 @@ export class InProcessBackend implements TeammateExecutor {
       return true
     }
 
+    // Generate deterministic request ID
     const requestId = `shutdown-${agentId}-${Date.now()}`
 
+    // Create shutdown request message
     const shutdownRequest = createShutdownRequestMessage({
       requestId,
-      // Terminar es siempre cosa del líder.
-      from: 'team-lead',
+      from: 'team-lead', // Terminate is always called by the leader
       reason,
     })
 
+    // Send to teammate's mailbox
     const teammateAgentName = task.identity.agentName
     await writeToMailbox(
       teammateAgentName,
@@ -272,6 +242,7 @@ export class InProcessBackend implements TeammateExecutor {
       task.identity.teamName,
     )
 
+    // Mark the task as shutdown requested
     requestTeammateShutdown(task.id, this.context.setAppState)
 
     logForDebugging(
@@ -282,9 +253,10 @@ export class InProcessBackend implements TeammateExecutor {
   }
 
   /**
-   * Lo mata de inmediato: aborta sus operaciones y deja su tarea en `killed`.
+   * Force kills an in-process teammate immediately.
    *
-   * Es la vía dura frente a `terminate()`, que negocia.
+   * Uses the teammate's AbortController to cancel all async operations
+   * and updates the task state to 'killed'.
    */
   async kill(agentId: string): Promise<boolean> {
     logForDebugging(`[InProcessBackend] kill() called for ${agentId}`)
@@ -296,6 +268,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
+    // Get current AppState to find the task
     const state = this.context.getAppState()
     const task = findTeammateTaskByAgentId(agentId, state.tasks)
 
@@ -306,6 +279,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
+    // Kill the teammate via the existing helper function
     const killed = killInProcessTeammate(task.id, this.context.setAppState)
 
     logForDebugging(
@@ -316,11 +290,10 @@ export class InProcessBackend implements TeammateExecutor {
   }
 
   /**
-   * Si el compañero sigue vivo: existe, su tarea está `running`, y su
-   * controlador no está abortado.
+   * Checks if an in-process teammate is still active.
    *
-   * Sin controlador se cuenta como abortado —`?? true`—, que es lo
-   * conservador: un compañero cuyo controlador se perdió no se puede gobernar.
+   * Returns true if the teammate exists, has status 'running',
+   * and its AbortController has not been aborted.
    */
   async isActive(agentId: string): Promise<boolean> {
     logForDebugging(`[InProcessBackend] isActive() called for ${agentId}`)
@@ -332,6 +305,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
+    // Get current AppState to find the task
     const state = this.context.getAppState()
     const task = findTeammateTaskByAgentId(agentId, state.tasks)
 
@@ -342,6 +316,7 @@ export class InProcessBackend implements TeammateExecutor {
       return false
     }
 
+    // Check if task is running and not aborted
     const isRunning = task.status === 'running'
     const isAborted = task.abortController?.signal.aborted ?? true
 
@@ -355,7 +330,10 @@ export class InProcessBackend implements TeammateExecutor {
   }
 }
 
-/** Construye un ejecutor en proceso. Lo consume `registry.ts`. */
+/**
+ * Factory function to create an InProcessBackend instance.
+ * Used by the registry (Task #8) to get backend instances.
+ */
 export function createInProcessBackend(): InProcessBackend {
   return new InProcessBackend()
 }

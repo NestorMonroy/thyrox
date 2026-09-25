@@ -1,33 +1,12 @@
 /**
- * Creacion de bundle git + subida para el seed-bundle de CCR.
+ * Git bundle creation + upload for CCR seed-bundle seeding.
  *
- * Flujo:
- *   1. git stash create → update-ref refs/seed/stash (lo hace alcanzable)
- *   2. git bundle create --all (empaqueta refs/seed/stash + sus objetos)
- *   3. Subida a /v1/files
- *   4. Limpieza de refs/seed/stash (no ensuciar el repo del usuario)
- *   5. El llamador fija seed_bundle_file_id en SessionContext
- *
- * Puerto de `ccnmt: packages/teleport/src/gitBundle.ts` (293 líneas
- * fuente). Cobertura: 1 de 2 símbolos exportados por la fuente —
- * `createAndUploadGitBundle` (100% de su cuerpo). El segundo símbolo de
- * la fuente, `FilesApiConfig` (tipo re-exportado desde
- * `provider/filesApi.ts`), NO existe en este árbol: medido con
- * `Bun.resolveSync("@thyrox/provider/filesApi.js", cwd)` →
- * "Cannot find module". Se declara aquí un `FilesApiConfig` LOCAL que
- * espeja la forma de la fuente (oauthToken/baseUrl/sessionId) para que la
- * firma de `createAndUploadGitBundle` no dependa de un módulo ausente; el
- * `uploadFile` real se resuelve con `require()` diferido en el único
- * punto donde se necesita, con la misma razón medida.
- *
- * Segunda divergencia declarada: `gitExe()` (whichSync('git') || 'git')
- * vive en `ccnmt: packages/storage/src/git.ts:131`, pero
- * `storage/src/git.ts` de ESTE árbol es un porte PARCIAL DECLARADO (ver
- * su propio docstring) que no lo incluye — depende de `shell/which.js`,
- * que en ese pase no estaba disponible. `shell` SÍ existe hoy
- * (`@thyrox/shell/which.js`), así que aquí se reimplementa localmente
- * `_gitExe()` con el mismo mecanismo, sin tocar el paquete `storage`
- * (fuera de las rutas asignadas a este agente).
+ * Flow:
+ *   1. git stash create → update-ref refs/seed/stash (makes it reachable)
+ *   2. git bundle create --all (packs refs/seed/stash + its objects)
+ *   3. Upload to /v1/files
+ *   4. Cleanup refs/seed/stash (don't pollute user's repo)
+ *   5. Caller sets seed_bundle_file_id on SessionContext
  */
 
 import { stat, unlink } from 'fs/promises'
@@ -36,14 +15,14 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { type FilesApiConfig, uploadFile } from '@thyrox/provider/filesApi.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
-import { whichSync } from '@thyrox/shell/which.js'
-import { findGitRoot } from '@thyrox/storage/findGitRoot.js'
+import { findGitRoot, gitExe } from '@thyrox/storage/git.js'
 import { generateTempFilePath } from '@thyrox/storage/tempfile.js'
 
-// Ajustable vía tengu_ccr_bundle_max_bytes.
+// Tunable via tengu_ccr_bundle_max_bytes.
 const DEFAULT_BUNDLE_MAX_BYTES = 100 * 1024 * 1024
 
 type BundleScope = 'all' | 'head' | 'squashed'
@@ -64,30 +43,10 @@ type BundleCreateResult =
   | { ok: true; size: number; scope: BundleScope }
   | { ok: false; error: string; failReason: BundleFailReason }
 
-/**
- * Configuracion del cliente de la Files API. Espejo local de
- * `ccnmt: packages/provider/src/filesApi.ts:59` — ese módulo no existe
- * en `@thyrox/provider` (medido arriba). Se retira en cuanto ese puerto
- * exista, sustituyendo este alias por el import real.
- */
-export type FilesApiConfig = {
-  oauthToken: string
-  baseUrl?: string
-  sessionId: string
-}
-
-let _gitExeCache: string | undefined
-
-/** Ver docstring del módulo — reimplementación local de `gitExe()`. */
-function _gitExe(): string {
-  return (_gitExeCache ??= whichSync('git') || 'git')
-}
-
-// Bundle --all → HEAD → squashed-root. HEAD descarta ramas laterales y
-// tags pero conserva el historial completo de la rama actual.
-// Squashed-root es un unico commit sin padre del arbol de HEAD (o del
-// arbol del stash si hay WIP) — sin historial, solo el snapshot. El
-// receptor necesita manejo de refs/seed/root para ese nivel.
+// Bundle --all → HEAD → squashed-root. HEAD drops side branches/tags but
+// keeps full current-branch history. Squashed-root is a single parentless
+// commit of HEAD's tree (or the stash tree if WIP exists) — no history,
+// just the snapshot. Receiver needs refs/seed/root handling for that tier.
 async function _bundleWithFallback(
   gitRoot: string,
   bundlePath: string,
@@ -95,11 +54,11 @@ async function _bundleWithFallback(
   hasStash: boolean,
   signal: AbortSignal | undefined,
 ): Promise<BundleCreateResult> {
-  // --all recoge refs/seed/stash; HEAD lo necesita explicito.
+  // --all picks up refs/seed/stash; HEAD needs it explicit.
   const extra = hasStash ? ['refs/seed/stash'] : []
   const mkBundle = (base: string) =>
     execFileNoThrowWithCwd(
-      _gitExe(),
+      gitExe(),
       ['bundle', 'create', bundlePath, base, ...extra],
       { cwd: gitRoot, abortSignal: signal },
     )
@@ -118,7 +77,7 @@ async function _bundleWithFallback(
     return { ok: true, size: allSize, scope: 'all' }
   }
 
-  // bundle create sobreescribe en el mismo sitio.
+  // bundle create overwrites in place.
   logForDebugging(
     `[gitBundle] --all bundle is ${(allSize / 1024 / 1024).toFixed(1)}MB (> ${(maxBytes / 1024 / 1024).toFixed(0)}MB), retrying HEAD-only`,
   )
@@ -136,16 +95,15 @@ async function _bundleWithFallback(
     return { ok: true, size: headSize, scope: 'head' }
   }
 
-  // Ultimo recurso: comprime a un unico commit sin padre. Usa el arbol
-  // del stash cuando hay WIP (hornea los cambios sin commitear — no se
-  // puede empaquetar la ref del stash por separado porque sus padres
-  // arrastrarian el historial de vuelta).
+  // Last resort: squash to a single parentless commit. Uses the stash tree
+  // when WIP exists (bakes uncommitted changes in — can't bundle the stash
+  // ref separately since its parents would drag history back).
   logForDebugging(
     `[gitBundle] HEAD bundle is ${(headSize / 1024 / 1024).toFixed(1)}MB, retrying squashed-root`,
   )
   const treeRef = hasStash ? 'refs/seed/stash^{tree}' : 'HEAD^{tree}'
   const commitTree = await execFileNoThrowWithCwd(
-    _gitExe(),
+    gitExe(),
     ['commit-tree', treeRef, '-m', 'seed'],
     { cwd: gitRoot, abortSignal: signal },
   )
@@ -158,12 +116,12 @@ async function _bundleWithFallback(
   }
   const squashedSha = commitTree.stdout.trim()
   await execFileNoThrowWithCwd(
-    _gitExe(),
+    gitExe(),
     ['update-ref', 'refs/seed/root', squashedSha],
     { cwd: gitRoot },
   )
   const squashResult = await execFileNoThrowWithCwd(
-    _gitExe(),
+    gitExe(),
     ['bundle', 'create', bundlePath, 'refs/seed/root'],
     { cwd: gitRoot, abortSignal: signal },
   )
@@ -187,10 +145,10 @@ async function _bundleWithFallback(
   }
 }
 
-// Empaqueta el repo y lo sube a la Files API; devuelve el file_id para
-// seed_bundle_file_id. Cadena de fallback --all → HEAD → squashed-root.
-// El WIP trackeado se captura via stash create → refs/seed/stash (o se
-// hornea en el arbol comprimido); lo no-trackeado no se captura.
+// Bundle the repo and upload to Files API; return file_id for
+// seed_bundle_file_id. --all → HEAD → squashed-root fallback chain.
+// Tracked WIP via stash create → refs/seed/stash (or baked into the
+// squashed tree); untracked not captured.
 export async function createAndUploadGitBundle(
   config: FilesApiConfig,
   opts?: { cwd?: string; signal?: AbortSignal },
@@ -201,22 +159,20 @@ export async function createAndUploadGitBundle(
     return { success: false, error: 'Not in a git repository' }
   }
 
-  // Barre refs obsoletas de una corrida previa que crasheo, antes de que
-  // --all las empaquete. Corre antes del check de repo-vacio, para que
-  // nunca se salte por un return temprano.
+  // Sweep stale refs from a crashed prior run before --all bundles them.
+  // Runs before the empty-repo check so it's never skipped by an early return.
   for (const ref of ['refs/seed/stash', 'refs/seed/root']) {
-    await execFileNoThrowWithCwd(_gitExe(), ['update-ref', '-d', ref], {
+    await execFileNoThrowWithCwd(gitExe(), ['update-ref', '-d', ref], {
       cwd: gitRoot,
     })
   }
 
-  // `git bundle create` se niega a crear un bundle vacio (exit 128), y
-  // `stash create` falla con "You do not have the initial commit yet".
-  // Chequea si hay CUALQUIER ref (no solo HEAD) para que las ramas
-  // huerfanas con commits en otro lado igual se empaqueten — `--all` las
-  // recoge sin importar HEAD.
+  // `git bundle create` refuses to create an empty bundle (exit 128), and
+  // `stash create` fails with "You do not have the initial commit yet".
+  // Check for any refs (not just HEAD) so orphan branches with commits
+  // elsewhere still bundle — `--all` packs those refs regardless of HEAD.
   const refCheck = await execFileNoThrowWithCwd(
-    _gitExe(),
+    gitExe(),
     ['for-each-ref', '--count=1', 'refs/'],
     { cwd: gitRoot },
   )
@@ -232,14 +188,14 @@ export async function createAndUploadGitBundle(
     }
   }
 
-  // stash create escribe un commit colgante — no toca refs/stash ni el
-  // working tree. Los archivos no-trackeados quedan excluidos a proposito.
+  // stash create writes a dangling commit — doesn't touch refs/stash or
+  // the working tree. Untracked files intentionally excluded.
   const stashResult = await execFileNoThrowWithCwd(
-    _gitExe(),
+    gitExe(),
     ['stash', 'create'],
     { cwd: gitRoot, abortSignal: opts?.signal },
   )
-  // exit 0 + stdout vacio = nada que stashear. Nonzero es raro; no-fatal.
+  // exit 0 + empty stdout = nothing to stash. Nonzero is rare; non-fatal.
   const wipStashSha = stashResult.code === 0 ? stashResult.stdout.trim() : ''
   const hasWip = wipStashSha !== ''
   if (stashResult.code !== 0) {
@@ -248,9 +204,9 @@ export async function createAndUploadGitBundle(
     )
   } else if (hasWip) {
     logForDebugging(`[gitBundle] Captured WIP as stash ${wipStashSha}`)
-    // env-runner lee el SHA via bundle list-heads refs/seed/stash.
+    // env-runner reads the SHA via bundle list-heads refs/seed/stash.
     await execFileNoThrowWithCwd(
-      _gitExe(),
+      gitExe(),
       ['update-ref', 'refs/seed/stash', wipStashSha],
       { cwd: gitRoot },
     )
@@ -258,7 +214,7 @@ export async function createAndUploadGitBundle(
 
   const bundlePath = generateTempFilePath('ccr-seed', '.bundle')
 
-  // git deja un archivo parcial en un exit nonzero (p.ej. repo-vacio 128).
+  // git leaves a partial file on nonzero exit (e.g. empty-repo 128).
   try {
     const maxBytes =
       getFeatureValue_CACHED_MAY_BE_STALE<number | null>(
@@ -289,38 +245,17 @@ export async function createAndUploadGitBundle(
       }
     }
 
-    // Nombre relativo fijo para que CCR pueda ubicarlo.
-    //
-    // `@thyrox/provider/filesApi.js` no existe en este árbol (medido con
-    // Bun.resolveSync, ver docstring del módulo). Se resuelve con
-    // `require()` diferido — es la ÚNICA excepción admitida a
-    // "sin lazy imports": el especificador no resuelve hoy, no una
-    // preferencia de estilo.
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const filesApi = require('@thyrox/provider/filesApi.js') as {
-      uploadFile: (
-        filePath: string,
-        relativePath: string,
-        config: FilesApiConfig,
-        opts?: { signal?: AbortSignal },
-      ) => Promise<
-        | { path: string; fileId: string; size: number; success: true }
-        | { path: string; error: string; success: false }
-      >
-    }
-    const upload = await filesApi.uploadFile(
-      bundlePath,
-      '_source_seed.bundle',
-      config,
-      { signal: opts?.signal },
-    )
+    // Fixed relativePath so CCR can locate it.
+    const upload = await uploadFile(bundlePath, '_source_seed.bundle', config, {
+      signal: opts?.signal,
+    })
 
     if (!upload.success) {
       logEvent('tengu_ccr_bundle_upload', {
         outcome:
           'failed' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
-      return { success: false, error: upload.error }
+      return { success: false, error: (upload as { success: false; error: string }).error }
     }
 
     logForDebugging(
@@ -347,10 +282,10 @@ export async function createAndUploadGitBundle(
     } catch {
       logForDebugging(`[gitBundle] Could not delete ${bundlePath} (non-fatal)`)
     }
-    // Siempre borra — tambien barre una ref obsoleta de una corrida previa
-    // que crasheo. update-ref -d en una ref inexistente sale con 0.
+    // Always delete — also sweeps a stale ref from a crashed prior run.
+    // update-ref -d on a missing ref exits 0.
     for (const ref of ['refs/seed/stash', 'refs/seed/root']) {
-      await execFileNoThrowWithCwd(_gitExe(), ['update-ref', '-d', ref], {
+      await execFileNoThrowWithCwd(gitExe(), ['update-ref', '-d', ref], {
         cwd: gitRoot,
       })
     }

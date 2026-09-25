@@ -1,57 +1,59 @@
 /**
- * Puerto de `ccnmt: packages/config/frontmatterParser.ts` (370 líneas
- * fuente). Resuelve `@thyrox/config/frontmatterParser`, que DOS forward
- * shims ya citaban con `require()` diferido sin que el archivo existiera:
- * `agent/frontmatterParser.ts` ("DIVERGENCIA DE ALCANCE, declarada… Portar
- * ese módulo es tarea de quien porte config") y `memory:
- * src/internal/pendingCrossPackageDeps.ts` (que trae su propio recorte
- * interno independiente, no afectado por este archivo). Parser de
- * frontmatter YAML para `.md` (skills, commands, agents, CLAUDE.md).
- *
- * Divergencias declaradas, ambas de nombre — el comportamiento es fiel:
- *
- * - `HooksSettings` no existe como tipo propio en
- *   `@thyrox/config/settings/types.ts` (la fuente lo trae de
- *   `./schemas/hooks.js`, no portado). Se deriva de `Settings['hooks']`
- *   (el campo ya tipado por `SettingsSchema`), mismo shape observable.
- * - El resto — `FRONTMATTER_REGEX`, `parseFrontmatter`,
- *   `splitPathInFrontmatter`, `expandBraces`,
- *   `parsePositiveIntFromFrontmatter`, `coerceDescriptionToString`,
- *   `parseBooleanFrontmatter`, `parseShellFrontmatter`,
- *   `quoteProblematicValues` — verbatim, 9 de 9 símbolos de valor + los 3
- *   tipos (`FrontmatterData`, `ParsedMarkdown`, `FrontmatterShell`).
+ * Frontmatter parser for markdown files
+ * Extracts and parses YAML frontmatter between --- delimiters
  */
+
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import type { Settings } from './settings/types.ts'
-import { parseYaml } from './yaml.ts'
+import type { HooksSettings } from './settings/types.js'
+import { parseYaml } from './yaml.js'
 
 export type FrontmatterData = {
-  // YAML puede devolver null para claves sin valor ("key:" sin nada detrás)
+  // YAML can return null for keys with no value (e.g., "key:" with nothing after)
   'allowed-tools'?: string | string[] | null
   description?: string | null
-  // Tipo de memoria: 'user', 'feedback', 'project', o 'reference'
+  // Memory type: 'user', 'feedback', 'project', or 'reference'
+  // Only applicable to memory files; narrowed via parseMemoryType() in src/memdir/memoryTypes.ts
   type?: string | null
   'argument-hint'?: string | null
   when_to_use?: string | null
   version?: string | null
-  // Sólo aplica a slash commands
+  // Only applicable to slash commands -- a string similar to a boolean env var
+  // to determine whether to make them visible to the SlashCommand tool.
   'hide-from-slash-command-tool'?: string | null
-  // Alias o nombre de modelo; 'inherit' para heredar el del padre
+  // Model alias or name (e.g., 'haiku', 'sonnet', 'opus', or specific model names)
+  // Use 'inherit' for commands to use the parent model
   model?: string | null
-  // Lista de nombres de skill separados por coma (sólo agentes)
+  // Comma-separated list of skill names to preload (only applicable to agents)
   skills?: string | null
+  // Whether users can invoke this skill by typing /skill-name
+  // 'true' = user can type /skill-name to invoke
+  // 'false' = only model can invoke via Skill tool
+  // Default depends on source: commands/ defaults to true, skills/ defaults to false
   'user-invocable'?: string | null
-  // Hooks a registrar cuando este skill se invoca
-  hooks?: Settings['hooks'] | null
-  // Nivel de esfuerzo (low/medium/high/max o entero)
+  // Hooks to register when this skill is invoked
+  // Keys are hook events (PreToolUse, PostToolUse, Stop, etc.)
+  // Values are arrays of matcher configurations with hooks
+  // Validated by HooksSchema in loadSkillsDir.ts
+  hooks?: HooksSettings | null
+  // Effort level for agents (e.g., 'low', 'medium', 'high', 'max', or an integer)
+  // Controls the thinking effort used by the agent's model
   effort?: string | null
-  // 'inline' (default) o 'fork'
+  // Execution context for skills: 'inline' (default) or 'fork' (run as sub-agent)
+  // 'inline' = skill content expands into the current conversation
+  // 'fork' = skill runs in a sub-agent with separate context and token budget
   context?: 'inline' | 'fork' | null
-  // Tipo de agente al forkear — sólo aplica con context: 'fork'
+  // Agent type to use when forked (e.g., 'Bash', 'general-purpose')
+  // Only applicable when context is 'fork'
   agent?: string | null
-  // Patrones de ruta; string separado por coma o lista YAML de strings
+  // Glob patterns for file paths this skill applies to. Accepts either a
+  // comma-separated string or a YAML list of strings.
+  // When set, the skill is only activated when the model touches matching files
+  // Uses the same format as CLAUDE.md paths frontmatter
   paths?: string | string[] | null
-  // Shell para bloques !`cmd`/```!: 'bash' (default) o 'powershell'
+  // Shell to use for !`cmd` and ```! blocks in skill/command .md content.
+  // 'bash' (default) or 'powershell'. File-scoped — applies to all !-blocks.
+  // Never consults settings.defaultShell: skills are portable across platforms,
+  // so the author picks the shell, not the reader. See docs/design/ps-shell-selection.md §5.3.
   shell?: string | null
   [key: string]: unknown
 }
@@ -61,25 +63,31 @@ export type ParsedMarkdown = {
   content: string
 }
 
-// Caracteres que exigen comillas en un valor YAML (sin comillas):
-// { } indicadores de flow mapping · * anchor/alias · [ ] flow sequence ·
-// ': ' (dos puntos + espacio) indicador de clave — rompe con "Nested
-// mappings are not allowed in compact mappings" a mitad de valor (se
-// matchea el patrón, no ':' pelado, para no tocar horas "12:34" ni
-// URLs "https://") · # comentario · & anchor · ! tag · | > block scalar
-// (sólo al inicio) · % directiva (sólo al inicio) · @ ` reservados.
+// Characters that require quoting in YAML values (when unquoted)
+// - { } are flow mapping indicators
+// - * is anchor/alias indicator
+// - [ ] are flow sequence indicators
+// - ': ' (colon followed by space) is key indicator — causes 'Nested mappings
+//   are not allowed in compact mappings' when it appears mid-value. Match the
+//   pattern rather than bare ':' so '12:34' times and 'https://' URLs stay unquoted.
+// - # is comment indicator
+// - & is anchor indicator
+// - ! is tag indicator
+// - | > are block scalar indicators (only at start)
+// - % is directive indicator (only at start)
+// - @ ` are reserved
 const YAML_SPECIAL_CHARS = /[{}[\]*&#!|>%@`]|: /
 
 /**
- * Pre-procesa el texto de frontmatter poniendo entre comillas los valores
- * con caracteres YAML especiales — permite que globs como `**\/*.{ts,tsx}`
- * se parseen sin romper.
+ * Pre-processes frontmatter text to quote values that contain special YAML characters.
+ * This allows glob patterns like **\/*.{ts,tsx} to be parsed correctly.
  */
 function quoteProblematicValues(frontmatterText: string): string {
   const lines = frontmatterText.split('\n')
   const result: string[] = []
 
   for (const line of lines) {
+    // Match simple key: value lines (not indented, not list items, not block scalars)
     const match = line.match(/^([a-zA-Z_-]+):\s+(.+)$/)
     if (match) {
       const [, key, value] = match
@@ -88,6 +96,7 @@ function quoteProblematicValues(frontmatterText: string): string {
         continue
       }
 
+      // Skip if already quoted
       if (
         (value.startsWith('"') && value.endsWith('"')) ||
         (value.startsWith("'") && value.endsWith("'"))
@@ -96,7 +105,9 @@ function quoteProblematicValues(frontmatterText: string): string {
         continue
       }
 
+      // Quote if contains special YAML characters
       if (YAML_SPECIAL_CHARS.test(value)) {
+        // Use double quotes and escape any existing double quotes
         const escaped = value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
         result.push(`${key}: "${escaped}"`)
         continue
@@ -112,7 +123,9 @@ function quoteProblematicValues(frontmatterText: string): string {
 export const FRONTMATTER_REGEX = /^---\s*\n([\s\S]*?)---\s*\n?/
 
 /**
- * Parsea contenido markdown para extraer el frontmatter y el resto.
+ * Parses markdown content to extract frontmatter and content
+ * @param markdown The raw markdown content
+ * @returns Object containing parsed frontmatter and content without frontmatter
  */
 export function parseFrontmatter(
   markdown: string,
@@ -121,6 +134,7 @@ export function parseFrontmatter(
   const match = markdown.match(FRONTMATTER_REGEX)
 
   if (!match) {
+    // No frontmatter found
     return {
       frontmatter: {},
       content: markdown,
@@ -137,6 +151,7 @@ export function parseFrontmatter(
       frontmatter = parsed
     }
   } catch {
+    // YAML parsing failed - try again after quoting problematic values
     try {
       const quotedText = quoteProblematicValues(frontmatterText)
       const parsed = parseYaml(quotedText) as FrontmatterData | null
@@ -144,6 +159,7 @@ export function parseFrontmatter(
         frontmatter = parsed
       }
     } catch (retryError) {
+      // Still failed - log for debugging so users can diagnose broken frontmatter
       const location = sourcePath ? ` in ${sourcePath}` : ''
       logForDebugging(
         `Failed to parse YAML frontmatter${location}: ${retryError instanceof Error ? retryError.message : retryError}`,
@@ -159,10 +175,16 @@ export function parseFrontmatter(
 }
 
 /**
- * Divide un string separado por comas y expande patrones de llave. Las
- * comas dentro de llaves no cuentan como separador. Acepta también una
- * lista YAML (array de strings).
- * @example splitPathInFrontmatter("a, src/*.{ts,tsx}") // ["a", "src/*.ts", "src/*.tsx"]
+ * Splits a comma-separated string and expands brace patterns.
+ * Commas inside braces are not treated as separators.
+ * Also accepts a YAML list (string array) for ergonomic frontmatter.
+ * @param input - Comma-separated string, or array of strings, with optional brace patterns
+ * @returns Array of expanded strings
+ * @example
+ * splitPathInFrontmatter("a, b") // returns ["a", "b"]
+ * splitPathInFrontmatter("a, src/*.{ts,tsx}") // returns ["a", "src/*.ts", "src/*.tsx"]
+ * splitPathInFrontmatter("{a,b}/{c,d}") // returns ["a/c", "a/d", "b/c", "b/d"]
+ * splitPathInFrontmatter(["a", "src/*.{ts,tsx}"]) // returns ["a", "src/*.ts", "src/*.tsx"]
  */
 export function splitPathInFrontmatter(input: string | string[]): string[] {
   if (Array.isArray(input)) {
@@ -171,6 +193,7 @@ export function splitPathInFrontmatter(input: string | string[]): string[] {
   if (typeof input !== 'string') {
     return []
   }
+  // Split by comma while respecting braces
   const parts: string[] = []
   let current = ''
   let braceDepth = 0
@@ -185,6 +208,7 @@ export function splitPathInFrontmatter(input: string | string[]): string[] {
       braceDepth--
       current += char
     } else if (char === ',' && braceDepth === 0) {
+      // Split here - we're at a comma outside of braces
       const trimmed = current.trim()
       if (trimmed) {
         parts.push(trimmed)
@@ -195,24 +219,30 @@ export function splitPathInFrontmatter(input: string | string[]): string[] {
     }
   }
 
+  // Add the last part
   const trimmed = current.trim()
   if (trimmed) {
     parts.push(trimmed)
   }
 
+  // Expand brace patterns in each part
   return parts
     .filter(p => p.length > 0)
     .flatMap(pattern => expandBraces(pattern))
 }
 
 /**
- * Expande patrones de llave en un glob.
- * @example expandBraces("{a,b}/{c,d}") // ["a/c", "a/d", "b/c", "b/d"]
+ * Expands brace patterns in a glob string.
+ * @example
+ * expandBraces("src/*.{ts,tsx}") // returns ["src/*.ts", "src/*.tsx"]
+ * expandBraces("{a,b}/{c,d}") // returns ["a/c", "a/d", "b/c", "b/d"]
  */
 function expandBraces(pattern: string): string[] {
+  // Find the first brace group
   const braceMatch = pattern.match(/^([^{]*)\{([^}]+)\}(.*)$/)
 
   if (!braceMatch) {
+    // No braces found, return pattern as-is
     return [pattern]
   }
 
@@ -220,11 +250,14 @@ function expandBraces(pattern: string): string[] {
   const alternatives = braceMatch[2] || ''
   const suffix = braceMatch[3] || ''
 
+  // Split alternatives by comma and expand each one
   const parts = alternatives.split(',').map(alt => alt.trim())
 
+  // Recursively expand remaining braces in suffix
   const expanded: string[] = []
   for (const part of parts) {
     const combined = prefix + part + suffix
+    // Recursively handle additional brace groups
     const furtherExpanded = expandBraces(combined)
     expanded.push(...furtherExpanded)
   }
@@ -233,7 +266,11 @@ function expandBraces(pattern: string): string[] {
 }
 
 /**
- * Parsea un entero positivo desde un valor de frontmatter (número o string).
+ * Parses a positive integer value from frontmatter.
+ * Handles both number and string representations.
+ *
+ * @param value The raw value from frontmatter (could be number, string, or undefined)
+ * @returns The parsed positive integer, or undefined if invalid or not provided
  */
 export function parsePositiveIntFromFrontmatter(
   value: unknown,
@@ -252,10 +289,17 @@ export function parsePositiveIntFromFrontmatter(
 }
 
 /**
- * Valida y coacciona un valor de `description` de frontmatter. Strings se
- * devuelven trimmed; números/booleanos se coaccionan con `String()`;
- * arrays/objetos son inválidos (se loguean y se omiten); null/undefined/
- * vacío devuelven `null`.
+ * Validate and coerce a description value from frontmatter.
+ *
+ * Strings are returned as-is (trimmed). Primitive values (numbers, booleans)
+ * are coerced to strings via String(). Non-scalar values (arrays, objects)
+ * are invalid and are logged then omitted. Null, undefined, and
+ * empty/whitespace-only strings return null so callers can fall back to
+ * a default.
+ *
+ * @param value - The raw frontmatter description value
+ * @param componentName - The skill/command/agent/style name for log messages
+ * @param pluginName - The plugin name, if this came from a plugin
  */
 export function coerceDescriptionToString(
   value: unknown,
@@ -271,6 +315,7 @@ export function coerceDescriptionToString(
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
+  // Non-scalar descriptions (arrays, objects) are invalid — log and omit
   const source = pluginName
     ? `${pluginName}:${componentName}`
     : (componentName ?? 'unknown')
@@ -281,21 +326,27 @@ export function coerceDescriptionToString(
 }
 
 /**
- * Parsea un valor booleano de frontmatter. Sólo `true` literal o `"true"`.
+ * Parse a boolean frontmatter value.
+ * Only returns true for literal true or "true" string.
  */
 export function parseBooleanFrontmatter(value: unknown): boolean {
   return value === true || value === 'true'
 }
 
-/** Valores de shell aceptados en el frontmatter `shell:` de bloques `!`. */
+/**
+ * Shell values accepted in `shell:` frontmatter for .md `!`-block execution.
+ */
 export type FrontmatterShell = 'bash' | 'powershell'
 
 const FRONTMATTER_SHELLS: readonly FrontmatterShell[] = ['bash', 'powershell']
 
 /**
- * Parsea y valida el campo `shell:` del frontmatter. `undefined` para
- * ausente/null/vacío (el caller cae a bash) o para un valor no reconocido
- * (con warning) — nunca falla la carga del skill.
+ * Parse and validate the `shell:` frontmatter field.
+ *
+ * Returns undefined for absent/null/empty (caller defaults to bash).
+ * Logs a warning and returns undefined for unrecognized values — we fall
+ * back to bash rather than failing the skill load, matching how `effort`
+ * and other fields degrade.
  */
 export function parseShellFrontmatter(
   value: unknown,

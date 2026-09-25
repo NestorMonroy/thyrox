@@ -1,33 +1,12 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/aggregates/statsCache.ts`
- * (434 líneas fuente). Caché en disco de las estadísticas de uso
- * agregadas — evita reprocesar transcripts históricos en cada
- * `aggregateClaudeCodeStats()`.
- *
- * NO PORTADO: la rama `feature('SHOT_STATS')` (3 sitios) — macro de
- * `bun:bundle` ausente en este árbol, resuelve siempre `false` fuera de
- * un build ant (mismo precedente que `slowLoggingTag.ts`). El campo
- * `shotDistribution` del tipo `PersistedStatsCache` SÍ se conserva
- * (contrato público que un futuro consumidor podría leer), pero el
- * código que lo recalcula/fuerza nunca se alcanza en este árbol.
- *
- * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * `getClaudeConfigHomeDir` (config/env/utils, no exportado),
- * `getFsImplementation` (storage/fsOperations, no exportado),
- * `ModelUsage` (tipo estructural estrecho — `headless-sdk` no existe en
- * este árbol).
- */
-
+import { feature } from 'bun:bundle'
 import { randomBytes } from 'crypto'
 import { open } from 'fs/promises'
 import { join } from 'path'
+import type { ModelUsage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import { logForDebugging } from '../debug.js'
-import {
-  getClaudeConfigHomeDir,
-  getFsImplementation,
-  type ModelUsage,
-} from '../internal/pendingCrossPackageDeps.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
 import { errorMessage } from '../errorHelpers.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logError } from '../log.js'
 import { jsonParse, jsonStringify } from '../slowOperations.js'
 import type { DailyActivity, DailyModelTokens, SessionStats } from './stats.js'
@@ -36,18 +15,22 @@ const STATS_CACHE_VERSION = 3
 const MIN_MIGRATABLE_VERSION = 1
 const STATS_CACHE_FILENAME = 'stats-cache.json'
 
-/** Lock simple en memoria para evitar operaciones concurrentes de caché. */
+/**
+ * Simple in-memory lock to prevent concurrent cache operations.
+ */
 let statsCacheLockPromise: Promise<void> | null = null
 
 /**
- * Ejecuta una función mientras se sostiene el lock de la caché de stats.
- * Sólo una operación puede sostener el lock a la vez.
+ * Execute a function while holding the stats cache lock.
+ * Only one operation can hold the lock at a time.
  */
 export async function withStatsCacheLock<T>(fn: () => Promise<T>): Promise<T> {
+  // Wait for any existing lock to be released
   while (statsCacheLockPromise) {
     await statsCacheLockPromise
   }
 
+  // Create our lock
   let releaseLock: (() => void) | undefined
   statsCacheLockPromise = new Promise<void>(resolve => {
     releaseLock = resolve
@@ -56,38 +39,38 @@ export async function withStatsCacheLock<T>(fn: () => Promise<T>): Promise<T> {
   try {
     return await fn()
   } finally {
+    // Release the lock
     statsCacheLockPromise = null
     releaseLock?.()
   }
 }
 
 /**
- * Caché de stats persistida en disco.
- * Contiene agregados históricos que no cambiarán. Todos los campos están
- * acotados para prevenir crecimiento ilimitado del archivo.
+ * Persisted stats cache stored on disk.
+ * Contains aggregated historical stats that won't change.
+ * All fields are bounded to prevent unbounded file growth.
  */
 export type PersistedStatsCache = {
   version: number
-  // Última fecha totalmente computada (formato YYYY-MM-DD). Las stats
-  // hasta e incluyendo esta fecha se consideran completas.
+  // Last date that was fully computed (YYYY-MM-DD format)
+  // Stats up to and including this date are considered complete
   lastComputedDate: string | null
-  // Agregados diarios necesarios para heatmap, streaks, tendencias
-  // (acotado por días).
+  // Daily aggregates needed for heatmap, streaks, trends (bounded by days)
   dailyActivity: DailyActivity[]
   dailyModelTokens: DailyModelTokens[]
-  // Uso de modelo agregado (acotado por número de modelos).
+  // Model usage aggregated (bounded by number of models)
   modelUsage: { [modelName: string]: ModelUsage }
-  // Agregados de sesión (reemplaza el array ilimitado sessionStats).
+  // Session aggregates (replaces unbounded sessionStats array)
   totalSessions: number
   totalMessages: number
   longestSession: SessionStats | null
-  // Primera fecha de sesión jamás registrada.
+  // First session date ever recorded
   firstSessionDate: string | null
-  // Conteos por hora para el cálculo de la hora pico (acotado a 24 entradas).
+  // Hour counts for peak hour calculation (bounded to 24 entries)
   hourCounts: { [hour: number]: number }
-  // Tiempo de especulación ahorrado en todas las sesiones.
+  // Speculation time saved across all sessions
   totalSpeculationTimeSavedMs: number
-  // Distribución de shots: mapa de conteo de shots → número de sesiones (ant-only).
+  // Shot distribution: map of shot count → number of sessions (ant-only)
   shotDistribution?: { [shotCount: number]: number }
 }
 
@@ -113,13 +96,13 @@ function getEmptyCache(): PersistedStatsCache {
 }
 
 /**
- * Migra una caché más vieja al esquema actual.
- * Devuelve `null` si la versión es desconocida o demasiado vieja para migrar.
+ * Migrate an older cache to the current schema.
+ * Returns null if the version is unknown or too old to migrate.
  *
- * Preserva agregados históricos que de otro modo se perderían cuando los
- * archivos de transcript ya envejecieron más allá de cleanupPeriodDays.
- * Los días pre-migración pueden subcontar (p. ej. v2 no tenía tokens de
- * subagente); se acepta eso en vez de descartar el historial.
+ * Preserves historical aggregates that would otherwise be lost when
+ * transcript files have already aged out past cleanupPeriodDays.
+ * Pre-migration days may undercount (e.g. v2 lacked subagent tokens);
+ * we accept that rather than drop the history.
  */
 function migrateStatsCache(
   parsed: Partial<PersistedStatsCache> & { version: number },
@@ -151,16 +134,15 @@ function migrateStatsCache(
     firstSessionDate: parsed.firstSessionDate ?? null,
     hourCounts: parsed.hourCounts ?? {},
     totalSpeculationTimeSavedMs: parsed.totalSpeculationTimeSavedMs ?? 0,
-    // Preserva undefined (no cae a {}) para que en este árbol el check
-    // de recomputación de SHOT_STATS de loadStatsCache (inalcanzable,
-    // ver docstring del módulo) mantenga la misma forma que la fuente.
+    // Preserve undefined (don't default to {}) so the SHOT_STATS recompute
+    // check in loadStatsCache fires for v1/v2 caches that lacked this field.
     shotDistribution: parsed.shotDistribution,
   }
 }
 
 /**
- * Carga la caché de stats desde disco.
- * Devuelve una caché vacía si el archivo no existe o es inválido.
+ * Load the stats cache from disk.
+ * Returns an empty cache if the file doesn't exist or is invalid.
  */
 export async function loadStatsCache(): Promise<PersistedStatsCache> {
   const fs = getFsImplementation()
@@ -170,6 +152,7 @@ export async function loadStatsCache(): Promise<PersistedStatsCache> {
     const content = await fs.readFile(cachePath, { encoding: 'utf-8' })
     const parsed = jsonParse(content) as PersistedStatsCache
 
+    // Validate version
     if (parsed.version !== STATS_CACHE_VERSION) {
       const migrated = migrateStatsCache(parsed)
       if (!migrated) {
@@ -181,11 +164,21 @@ export async function loadStatsCache(): Promise<PersistedStatsCache> {
       logForDebugging(
         `Migrated stats cache from v${parsed.version} to v${STATS_CACHE_VERSION}`,
       )
-      // Persiste la migración para no re-migrar en cada carga.
+      // Persist migration so we don't re-migrate on every load.
+      // aggregateClaudeCodeStats() skips its save when lastComputedDate is
+      // already current, so without this the on-disk file stays at the old
+      // version indefinitely.
       await saveStatsCache(migrated)
+      if (feature('SHOT_STATS') && !migrated.shotDistribution) {
+        logForDebugging(
+          'Migrated stats cache missing shotDistribution, forcing recomputation',
+        )
+        return getEmptyCache()
+      }
       return migrated
     }
 
+    // Basic validation
     if (
       !Array.isArray(parsed.dailyActivity) ||
       !Array.isArray(parsed.dailyModelTokens) ||
@@ -198,6 +191,15 @@ export async function loadStatsCache(): Promise<PersistedStatsCache> {
       return getEmptyCache()
     }
 
+    // If SHOT_STATS is enabled but cache doesn't have shotDistribution,
+    // force full recomputation to get historical shot data
+    if (feature('SHOT_STATS') && !parsed.shotDistribution) {
+      logForDebugging(
+        'Stats cache missing shotDistribution, forcing recomputation',
+      )
+      return getEmptyCache()
+    }
+
     return parsed
   } catch (error) {
     logForDebugging(`Failed to load stats cache: ${errorMessage(error)}`)
@@ -206,8 +208,8 @@ export async function loadStatsCache(): Promise<PersistedStatsCache> {
 }
 
 /**
- * Guarda la caché de stats a disco atómicamente.
- * Usa el patrón archivo-temporal + rename para prevenir corrupción.
+ * Save the stats cache to disk atomically.
+ * Uses a temp file + rename pattern to prevent corruption.
  */
 export async function saveStatsCache(
   cache: PersistedStatsCache,
@@ -217,13 +219,15 @@ export async function saveStatsCache(
   const tempPath = `${cachePath}.${randomBytes(8).toString('hex')}.tmp`
 
   try {
+    // Ensure the directory exists
     const configDir = getClaudeConfigHomeDir()
     try {
       await fs.mkdir(configDir)
     } catch {
-      // El directorio ya existe u otro error — continúa.
+      // Directory already exists or other error - proceed
     }
 
+    // Write to temp file with fsync for atomic write safety
     const content = jsonStringify(cache, null, 2)
     const handle = await open(tempPath, 'w', 0o600)
     try {
@@ -233,23 +237,25 @@ export async function saveStatsCache(
       await handle.close()
     }
 
+    // Atomic rename
     await fs.rename(tempPath, cachePath)
     logForDebugging(
       `Stats cache saved successfully (lastComputedDate: ${cache.lastComputedDate})`,
     )
   } catch (error) {
     logError(error)
+    // Clean up temp file
     try {
       await fs.unlink(tempPath)
     } catch {
-      // Ignora errores de limpieza.
+      // Ignore cleanup errors
     }
   }
 }
 
 /**
- * Mezcla nuevas stats dentro de una caché existente.
- * Se usa al añadir incrementalmente nuevos días a la caché.
+ * Merge new stats into an existing cache.
+ * Used when incrementally adding new days to the cache.
  */
 export function mergeCacheWithNewStats(
   existingCache: PersistedStatsCache,
@@ -264,6 +270,7 @@ export function mergeCacheWithNewStats(
   },
   newLastComputedDate: string,
 ): PersistedStatsCache {
+  // Merge daily activity - combine by date
   const dailyActivityMap = new Map<string, DailyActivity>()
   for (const day of existingCache.dailyActivity) {
     dailyActivityMap.set(day.date, { ...day })
@@ -279,6 +286,7 @@ export function mergeCacheWithNewStats(
     }
   }
 
+  // Merge daily model tokens - combine by date
   const dailyModelTokensMap = new Map<string, { [model: string]: number }>()
   for (const day of existingCache.dailyModelTokens) {
     dailyModelTokensMap.set(day.date, { ...day.tokensByModel })
@@ -294,6 +302,7 @@ export function mergeCacheWithNewStats(
     }
   }
 
+  // Merge model usage
   const modelUsage = { ...existingCache.modelUsage }
   for (const [model, usage] of Object.entries(newStats.modelUsage)) {
     if (modelUsage[model]) {
@@ -322,18 +331,21 @@ export function mergeCacheWithNewStats(
     }
   }
 
+  // Merge hour counts
   const hourCounts = { ...existingCache.hourCounts }
   for (const [hour, count] of Object.entries(newStats.hourCounts)) {
     const hourNum = parseInt(hour, 10)
     hourCounts[hourNum] = (hourCounts[hourNum] || 0) + count
   }
 
+  // Update session aggregates
   const totalSessions =
     existingCache.totalSessions + newStats.sessionStats.length
   const totalMessages =
     existingCache.totalMessages +
     newStats.sessionStats.reduce((sum, s) => sum + s.messageCount, 0)
 
+  // Find longest session (compare existing with new)
   let longestSession = existingCache.longestSession
   for (const session of newStats.sessionStats) {
     if (!longestSession || session.duration > longestSession.duration) {
@@ -341,6 +353,7 @@ export function mergeCacheWithNewStats(
     }
   }
 
+  // Find first session date
   let firstSessionDate = existingCache.firstSessionDate
   for (const session of newStats.sessionStats) {
     if (!firstSessionDate || session.timestamp < firstSessionDate) {
@@ -368,10 +381,25 @@ export function mergeCacheWithNewStats(
       newStats.totalSpeculationTimeSavedMs,
   }
 
+  if (feature('SHOT_STATS')) {
+    const shotDistribution: { [shotCount: number]: number } = {
+      ...(existingCache.shotDistribution || {}),
+    }
+    for (const [count, sessions] of Object.entries(
+      newStats.shotDistribution || {},
+    )) {
+      const key = parseInt(count, 10)
+      shotDistribution[key] = (shotDistribution[key] || 0) + sessions
+    }
+    result.shotDistribution = shotDistribution
+  }
+
   return result
 }
 
-/** Extrae la porción de fecha (YYYY-MM-DD) de un objeto Date. */
+/**
+ * Extract the date portion (YYYY-MM-DD) from a Date object.
+ */
 export function toDateString(date: Date): string {
   const parts = date.toISOString().split('T')
   const dateStr = parts[0]
@@ -381,12 +409,16 @@ export function toDateString(date: Date): string {
   return dateStr
 }
 
-/** Obtiene la fecha de hoy en formato YYYY-MM-DD. */
+/**
+ * Get today's date in YYYY-MM-DD format.
+ */
 export function getTodayDateString(): string {
   return toDateString(new Date())
 }
 
-/** Obtiene la fecha de ayer en formato YYYY-MM-DD. */
+/**
+ * Get yesterday's date in YYYY-MM-DD format.
+ */
 export function getYesterdayDateString(): string {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
@@ -394,8 +426,8 @@ export function getYesterdayDateString(): string {
 }
 
 /**
- * Verifica si una cadena de fecha es anterior a otra.
- * Ambas deben estar en formato YYYY-MM-DD.
+ * Check if a date string is before another date string.
+ * Both should be in YYYY-MM-DD format.
  */
 export function isDateBefore(date1: string, date2: string): boolean {
   return date1 < date2

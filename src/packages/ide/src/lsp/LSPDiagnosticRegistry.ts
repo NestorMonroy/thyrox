@@ -1,80 +1,66 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/lsp/LSPDiagnosticRegistry.ts`.
- * `DiagnosticFile` viene de `@thyrox/tool-registry/diagnosticTracking.js` —
- * sólo como TIPO (`import type`), así que se erasa en tiempo de compilación
- * y no necesita sustituto: el paquete `tool-registry` no existe en este
- * árbol, pero eso no importa para un tipo — Bun lo descarta antes de
- * intentar resolverlo (verificado: `import type` de un especificador
- * inexistente no falla en tiempo de ejecución).
- */
 import { randomUUID } from 'crypto'
 import { LRUCache } from 'lru-cache'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { DiagnosticFile } from '@thyrox/tool-registry/diagnosticTracking.js'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-  requireLocalObservabilitySlowOperations,
-} from '../internal/pendingCrossPackageDeps.js'
 
 /**
- * Notificación de diagnostic LSP pendiente.
+ * Pending LSP diagnostic notification
  */
 export type PendingLSPDiagnostic = {
-  /** Servidor que envió el diagnostic. */
+  /** Server that sent the diagnostic */
   serverName: string
-  /** Archivos con diagnostics. */
+  /** Diagnostic files */
   files: DiagnosticFile[]
-  /** Cuándo se recibió el diagnostic. */
+  /** When diagnostic was received */
   timestamp: number
-  /** Si el attachment ya se envió a la conversación. */
+  /** Whether attachment was already sent to conversation */
   attachmentSent: boolean
 }
 
 /**
- * Registro de diagnostics LSP.
+ * LSP Diagnostic Registry
  *
- * Guarda los diagnostics LSP recibidos de forma asíncrona desde los
- * servidores LSP vía notificaciones textDocument/publishDiagnostics. Sigue
- * el mismo patrón que AsyncHookRegistry para una entrega consistente de
- * attachments asíncronos.
+ * Stores LSP diagnostics received asynchronously from LSP servers via
+ * textDocument/publishDiagnostics notifications. Follows the same pattern
+ * as AsyncHookRegistry for consistent async attachment delivery.
  *
- * Patrón:
- * 1. El servidor LSP envía una notificación publishDiagnostics.
- * 2. registerPendingLSPDiagnostic() guarda el diagnostic.
- * 3. checkForLSPDiagnostics() recupera los diagnostics pendientes.
- * 4. getLSPDiagnosticAttachments() los convierte a Attachment[].
- * 5. getAttachments() los entrega a la conversación automáticamente.
+ * Pattern:
+ * 1. LSP server sends publishDiagnostics notification
+ * 2. registerPendingLSPDiagnostic() stores diagnostic
+ * 3. checkForLSPDiagnostics() retrieves pending diagnostics
+ * 4. getLSPDiagnosticAttachments() converts to Attachment[]
+ * 5. getAttachments() delivers to conversation automatically
  *
- * Similar a AsyncHookRegistry pero más simple, ya que los diagnostics
- * llegan sincrónicamente (no hace falta acumular output a lo largo del tiempo).
+ * Similar to AsyncHookRegistry but simpler since diagnostics arrive
+ * synchronously (no need to accumulate output over time).
  */
 
-// Constantes de límite de volumen.
+// Volume limiting constants
 const MAX_DIAGNOSTICS_PER_FILE = 10
 const MAX_TOTAL_DIAGNOSTICS = 30
 
-// Máximo de archivos a rastrear para deduplicación — evita crecimiento
-// ilimitado de memoria.
+// Max files to track for deduplication - prevents unbounded memory growth
 const MAX_DELIVERED_FILES = 500
 
-// Estado global del registro.
+// Global registry state
 const pendingDiagnostics = new Map<string, PendingLSPDiagnostic>()
 
-// Deduplicación entre turnos: rastrea qué diagnostics ya se entregaron.
-// Mapea el URI del archivo a un conjunto de llaves de diagnostic (hash de
-// mensaje+severidad+rango). Usa LRUCache para prevenir crecimiento
-// ilimitado en sesiones largas.
+// Cross-turn deduplication: tracks diagnostics that have been delivered
+// Maps file URI to a set of diagnostic keys (hash of message+severity+range)
+// Using LRUCache to prevent unbounded growth in long sessions
 const deliveredDiagnostics = new LRUCache<string, Set<string>>({
   max: MAX_DELIVERED_FILES,
 })
 
 /**
- * Registra diagnostics LSP recibidos de un servidor. Se entregarán como
- * attachments en la próxima query.
+ * Register LSP diagnostics received from a server.
+ * These will be delivered as attachments in the next query.
  *
- * @param serverName - Nombre del servidor LSP que envió los diagnostics.
- * @param files - Archivos con diagnostics a entregar.
+ * @param serverName - Name of LSP server that sent diagnostics
+ * @param files - Diagnostic files to deliver
  */
 export function registerPendingLSPDiagnostic({
   serverName,
@@ -83,9 +69,7 @@ export function registerPendingLSPDiagnostic({
   serverName: string
   files: DiagnosticFile[]
 }): void {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-
-  // Usa UUID para unicidad garantizada (maneja registros rápidos sucesivos).
+  // Use UUID for guaranteed uniqueness (handles rapid registrations)
   const diagnosticId = randomUUID()
 
   logForDebugging(
@@ -101,7 +85,7 @@ export function registerPendingLSPDiagnostic({
 }
 
 /**
- * Mapea la cadena de severidad a un valor numérico para ordenar.
+ * Maps severity string to numeric value for sorting.
  * Error=1, Warning=2, Info=3, Hint=4
  */
 function severityToNumber(severity: string | undefined): number {
@@ -120,8 +104,8 @@ function severityToNumber(severity: string | undefined): number {
 }
 
 /**
- * Crea una llave única para un diagnostic a partir de su contenido. Se usa
- * tanto para deduplicación dentro del mismo lote como entre turnos.
+ * Creates a unique key for a diagnostic based on its content.
+ * Used for both within-batch and cross-turn deduplication.
  */
 function createDiagnosticKey(diag: {
   message: string
@@ -130,7 +114,6 @@ function createDiagnosticKey(diag: {
   source?: string
   code?: unknown
 }): string {
-  const { jsonStringify } = requireLocalObservabilitySlowOperations()
   return jsonStringify({
     message: diag.message,
     severity: diag.severity,
@@ -141,22 +124,19 @@ function createDiagnosticKey(diag: {
 }
 
 /**
- * Deduplica diagnostics por URI de archivo y contenido del diagnostic.
- * También filtra los diagnostics ya entregados en turnos previos. Dos
- * diagnostics se consideran duplicados si comparten:
- * - URI de archivo
- * - Rango (línea/carácter de inicio y fin)
- * - Mensaje
- * - Severidad
- * - Source y code (si están presentes)
+ * Deduplicates diagnostics by file URI and diagnostic content.
+ * Also filters out diagnostics that were already delivered in previous turns.
+ * Two diagnostics are considered duplicates if they have the same:
+ * - File URI
+ * - Range (start/end line and character)
+ * - Message
+ * - Severity
+ * - Source and code (if present)
  */
 function deduplicateDiagnosticFiles(
   allFiles: DiagnosticFile[],
 ): DiagnosticFile[] {
-  const { logError } = requireLocalObservabilityLogging()
-  const { toError } = requireLocalObservabilityErrorHelpers()
-
-  // Agrupa los diagnostics por URI de archivo.
+  // Group diagnostics by file URI
   const fileMap = new Map<string, Set<string>>()
   const dedupedFiles: DiagnosticFile[] = []
 
@@ -169,14 +149,14 @@ function deduplicateDiagnosticFiles(
     const seenDiagnostics = fileMap.get(file.uri)!
     const dedupedFile = dedupedFiles.find(f => f.uri === file.uri)!
 
-    // Diagnostics ya entregados para este archivo (deduplicación entre turnos).
+    // Get previously delivered diagnostics for this file (for cross-turn dedup)
     const previouslyDelivered = deliveredDiagnostics.get(file.uri) || new Set()
 
     for (const diag of file.diagnostics) {
       try {
         const key = createDiagnosticKey(diag)
 
-        // Se salta si ya se vio en este lote O ya se entregó en turnos previos.
+        // Skip if already seen in this batch OR already delivered in previous turns
         if (seenDiagnostics.has(key) || previouslyDelivered.has(key)) {
           continue
         }
@@ -193,36 +173,32 @@ function deduplicateDiagnosticFiles(
               `Diagnostic message: ${truncatedMessage}`,
           ),
         )
-        // Se incluye el diagnostic de todas formas, para no perder información.
+        // Include the diagnostic anyway to avoid losing information
         dedupedFile.diagnostics.push(diag)
       }
     }
   }
 
-  // Filtra los archivos que quedaron sin diagnostics tras la deduplicación.
+  // Filter out files with no diagnostics after deduplication
   return dedupedFiles.filter(f => f.diagnostics.length > 0)
 }
 
 /**
- * Obtiene todos los diagnostics LSP pendientes que aún no se entregaron.
- * Deduplica los diagnostics para evitar enviar el mismo varias veces.
- * Marca los diagnostics como enviados para prevenir entrega duplicada.
+ * Get all pending LSP diagnostics that haven't been delivered yet.
+ * Deduplicates diagnostics to prevent sending the same diagnostic multiple times.
+ * Marks diagnostics as sent to prevent duplicate delivery.
  *
- * @returns Array de diagnostics pendientes listos para entrega (deduplicados).
+ * @returns Array of pending diagnostics ready for delivery (deduplicated)
  */
 export function checkForLSPDiagnostics(): Array<{
   serverName: string
   files: DiagnosticFile[]
 }> {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { logError } = requireLocalObservabilityLogging()
-  const { toError } = requireLocalObservabilityErrorHelpers()
-
   logForDebugging(
     `LSP Diagnostics: Checking registry - ${pendingDiagnostics.size} pending`,
   )
 
-  // Recoge todos los archivos con diagnostics de todas las notificaciones pendientes.
+  // Collect all diagnostic files from all pending notifications
   const allFiles: DiagnosticFile[] = []
   const serverNames = new Set<string>()
   const diagnosticsToMark: PendingLSPDiagnostic[] = []
@@ -239,21 +215,20 @@ export function checkForLSPDiagnostics(): Array<{
     return []
   }
 
-  // Deduplica los diagnostics entre todos los archivos.
+  // Deduplicate diagnostics across all files
   let dedupedFiles: DiagnosticFile[]
   try {
     dedupedFiles = deduplicateDiagnosticFiles(allFiles)
   } catch (error: unknown) {
     const err = toError(error)
     logError(new Error(`Failed to deduplicate LSP diagnostics: ${err.message}`))
-    // Se cae al conjunto sin deduplicar, para no perder diagnostics.
+    // Fall back to undedup'd files to avoid losing diagnostics
     dedupedFiles = allFiles
   }
 
-  // Sólo se marca como enviado DESPUÉS de deduplicar con éxito; luego se
-  // borra del mapa. Las entradas quedan rastreadas en el LRU de
-  // deliveredDiagnostics para deduplicación, así que no hace falta
-  // conservarlas en pendingDiagnostics tras la entrega.
+  // Only mark as sent AFTER successful deduplication, then delete from map.
+  // Entries are tracked in deliveredDiagnostics LRU for dedup, so we don't
+  // need to keep them in pendingDiagnostics after delivery.
   for (const diagnostic of diagnosticsToMark) {
     diagnostic.attachmentSent = true
   }
@@ -278,22 +253,22 @@ export function checkForLSPDiagnostics(): Array<{
     )
   }
 
-  // Aplica límite de volumen: tope por archivo y total.
+  // Apply volume limiting: cap per file and total
   let totalDiagnostics = 0
   let truncatedCount = 0
   for (const file of dedupedFiles) {
-    // Ordena por severidad (Error=1 < Warning=2 < Info=3 < Hint=4) para priorizar errores.
+    // Sort by severity (Error=1 < Warning=2 < Info=3 < Hint=4) to prioritize errors
     file.diagnostics.sort(
       (a, b) => severityToNumber(a.severity) - severityToNumber(b.severity),
     )
 
-    // Tope por archivo.
+    // Cap per file
     if (file.diagnostics.length > MAX_DIAGNOSTICS_PER_FILE) {
       truncatedCount += file.diagnostics.length - MAX_DIAGNOSTICS_PER_FILE
       file.diagnostics = file.diagnostics.slice(0, MAX_DIAGNOSTICS_PER_FILE)
     }
 
-    // Tope total.
+    // Cap total
     const remainingCapacity = MAX_TOTAL_DIAGNOSTICS - totalDiagnostics
     if (file.diagnostics.length > remainingCapacity) {
       truncatedCount += file.diagnostics.length - remainingCapacity
@@ -303,7 +278,7 @@ export function checkForLSPDiagnostics(): Array<{
     totalDiagnostics += file.diagnostics.length
   }
 
-  // Filtra los archivos que quedaron sin diagnostics tras el límite de volumen.
+  // Filter out files that ended up with no diagnostics after limiting
   dedupedFiles = dedupedFiles.filter(f => f.diagnostics.length > 0)
 
   if (truncatedCount > 0) {
@@ -312,7 +287,7 @@ export function checkForLSPDiagnostics(): Array<{
     )
   }
 
-  // Rastrea los diagnostics entregados para deduplicación entre turnos.
+  // Track delivered diagnostics for cross-turn deduplication
   for (const file of dedupedFiles) {
     if (!deliveredDiagnostics.has(file.uri)) {
       deliveredDiagnostics.set(file.uri, new Set())
@@ -322,7 +297,7 @@ export function checkForLSPDiagnostics(): Array<{
       try {
         delivered.add(createDiagnosticKey(diag))
       } catch (error: unknown) {
-        // Se loguea pero se continúa - un fallo al rastrear no debe impedir la entrega.
+        // Log but continue - failure to track shouldn't prevent delivery
         const err = toError(error)
         const truncatedMessage =
           diag.message?.substring(0, 100) || '<no message>'
@@ -341,7 +316,7 @@ export function checkForLSPDiagnostics(): Array<{
     0,
   )
 
-  // Devuelve vacío si no hay diagnostics que entregar (todos filtrados por deduplicación).
+  // Return empty if no diagnostics to deliver (all filtered by deduplication)
   if (finalCount === 0) {
     logForDebugging(
       `LSP Diagnostics: No new diagnostics to deliver (all filtered by deduplication)`,
@@ -353,7 +328,7 @@ export function checkForLSPDiagnostics(): Array<{
     `LSP Diagnostics: Delivering ${dedupedFiles.length} file(s) with ${finalCount} diagnostic(s) from ${serverNames.size} server(s)`,
   )
 
-  // Devuelve un único resultado con todos los diagnostics deduplicados.
+  // Return single result with all deduplicated diagnostics
   return [
     {
       serverName: Array.from(serverNames).join(', '),
@@ -363,13 +338,12 @@ export function checkForLSPDiagnostics(): Array<{
 }
 
 /**
- * Limpia todos los diagnostics pendientes. Se usa durante cleanup/shutdown
- * o para tests.
- * Nota: NO limpia deliveredDiagnostics - eso es para deduplicación entre
- * turnos y sólo debe limpiarse cuando se editan archivos o al resetear la sesión.
+ * Clear all pending diagnostics.
+ * Used during cleanup/shutdown or for testing.
+ * Note: Does NOT clear deliveredDiagnostics - that's for cross-turn deduplication
+ * and should only be cleared when files are edited or on session reset.
  */
 export function clearAllLSPDiagnostics(): void {
-  const { logForDebugging } = requireLocalObservabilityDebug()
   logForDebugging(
     `LSP Diagnostics: Clearing ${pendingDiagnostics.size} pending diagnostic(s)`,
   )
@@ -377,11 +351,10 @@ export function clearAllLSPDiagnostics(): void {
 }
 
 /**
- * Resetea todo el estado de diagnostics, incluido el rastreo entre turnos.
- * Se usa al resetear la sesión o para tests.
+ * Reset all diagnostic state including cross-turn tracking.
+ * Used on session reset or for testing.
  */
 export function resetAllLSPDiagnosticState(): void {
-  const { logForDebugging } = requireLocalObservabilityDebug()
   logForDebugging(
     `LSP Diagnostics: Resetting all state (${pendingDiagnostics.size} pending, ${deliveredDiagnostics.size} files tracked)`,
   )
@@ -390,14 +363,13 @@ export function resetAllLSPDiagnosticState(): void {
 }
 
 /**
- * Limpia los diagnostics entregados de un archivo específico. Debe
- * llamarse cuando se edita un archivo, para que los nuevos diagnostics de
- * ese archivo se muestren aunque coincidan con los ya entregados.
+ * Clear delivered diagnostics for a specific file.
+ * Should be called when a file is edited so that new diagnostics for that file
+ * will be shown even if they match previously delivered ones.
  *
- * @param fileUri - URI del archivo que se editó.
+ * @param fileUri - URI of the file that was edited
  */
 export function clearDeliveredDiagnosticsForFile(fileUri: string): void {
-  const { logForDebugging } = requireLocalObservabilityDebug()
   if (deliveredDiagnostics.has(fileUri)) {
     logForDebugging(
       `LSP Diagnostics: Clearing delivered diagnostics for ${fileUri}`,
@@ -407,7 +379,7 @@ export function clearDeliveredDiagnosticsForFile(fileUri: string): void {
 }
 
 /**
- * Obtiene el conteo de diagnostics pendientes (para monitoreo).
+ * Get count of pending diagnostics (for monitoring)
  */
 export function getPendingLSPDiagnosticCount(): number {
   return pendingDiagnostics.size

@@ -1,44 +1,26 @@
-/**
- * Porte de `ccnmt: packages/provider/src/context.ts` — sus 5 exportaciones
- * (`getSystemPromptInjection`, `setSystemPromptInjection`, `getGitStatus`,
- * `getSystemContext`, `getUserContext`), ninguna omitida.
- *
- * Divergencias medidas (specifier no resuelve en `@thyrox/*` hoy):
- * - `getMemoryFiles`/`getClaudeMds` (`storage/claudemd.ts`) — el archivo
- *   dest sólo trae `filterInjectedMemoryFiles`/`stripHtmlComments`/
- *   `isMemoryFilePath`/`getLargeMemoryFiles` (porte parcial, fuera de
- *   alcance). Se usa `require()` diferido apuntando al mismo subpath.
- * - `getBranch`/`getDefaultBranch`/`getIsGit`/`gitExe` (`storage/git.ts`) —
- *   el dest sólo trae `normalizeGitRemoteUrl`. `require()` diferido.
- * - `execFileNoThrow` SÍ resuelve (`@thyrox/shell/execFileNoThrow.js`) —
- *   import estático.
- * - `getAdditionalDirectoriesForClaudeMd`/`setCachedClaudeMdContent`
- *   (`app-host/bootstrap/state.js`) — zona prohibida (la escribe otro
- *   agente en paralelo esta sesión). `require()` diferido.
- * - `getLocalISODate`/`isBareMode`/`shouldIncludeGitInstructions` — no
- *   están en `@thyrox/config` hoy; sustitutos fieles en
- *   `internal/pendingCrossPackageDeps.ts`.
- * - `feature('BREAK_CACHE_COMMAND')` (`bun:bundle`) — macro de build de
- *   Bun; sin ese define en este árbol se resuelve `false` (constante
- *   local), que es el valor que el propio macro produce cuando la flag no
- *   está activa.
- */
-
+import { feature } from 'bun:bundle'
 import memoize from 'lodash-es/memoize.js'
-import { logError, logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
-import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
-import { filterInjectedMemoryFiles } from '@thyrox/storage/claudemd.js'
-import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import {
-  getLocalISODate,
-  isBareMode,
-  shouldIncludeGitInstructions,
-} from './internal/pendingCrossPackageDeps.ts'
+  getAdditionalDirectoriesForClaudeMd,
+  setCachedClaudeMdContent,
+} from '@thyrox/app-host/bootstrap/state.js'
+import { getLocalISODate } from '@thyrox/config/commonConstants.js'
+import {
+  filterInjectedMemoryFiles,
+  getClaudeMds,
+  getMemoryFiles,
+} from '@thyrox/storage/claudemd.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+import { isBareMode, isEnvTruthy } from '@thyrox/config/env/utils'
+import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { getBranch, getDefaultBranch, getIsGit, gitExe } from '@thyrox/storage/git.js'
+import { shouldIncludeGitInstructions } from '@thyrox/config/env/git-settings'
+import { logError } from '@thyrox/local-observability/logging'
+import { readEnv } from '@thyrox/config/env'
 
 const MAX_STATUS_CHARS = 2000
-const BREAK_CACHE_COMMAND = false
 
-// Inyección de system prompt para cache-breaking (estado efímero de debug).
+// System prompt injection for cache breaking (ant-only, ephemeral debugging state)
 let systemPromptInjection: string | null = null
 
 export function getSystemPromptInjection(): string | null {
@@ -47,29 +29,19 @@ export function getSystemPromptInjection(): string | null {
 
 export function setSystemPromptInjection(value: string | null): void {
   systemPromptInjection = value
+  // Clear context caches immediately when injection changes
   getUserContext.cache.clear?.()
   getSystemContext.cache.clear?.()
 }
 
-function requireGit(): {
-  getBranch: () => Promise<string>
-  getDefaultBranch: () => Promise<string>
-  getIsGit: () => Promise<boolean>
-  gitExe: () => string
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@thyrox/storage/git.js')
-}
-
 export const getGitStatus = memoize(async (): Promise<string | null> => {
   if (readEnv('NODE_ENV') === 'test') {
+    // Avoid cycles in tests
     return null
   }
 
   const startTime = Date.now()
   logForDiagnosticsNoPII('info', 'git_status_started')
-
-  const { getBranch, getDefaultBranch, getIsGit, gitExe } = requireGit()
 
   const isGitStart = Date.now()
   const isGit = await getIsGit()
@@ -93,9 +65,13 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
       execFileNoThrow(gitExe(), ['--no-optional-locks', 'status', '--short'], {
         preserveOutputOnError: false,
       }).then(({ stdout }) => stdout.trim()),
-      execFileNoThrow(gitExe(), ['--no-optional-locks', 'log', '--oneline', '-n', '5'], {
-        preserveOutputOnError: false,
-      }).then(({ stdout }) => stdout.trim()),
+      execFileNoThrow(
+        gitExe(),
+        ['--no-optional-locks', 'log', '--oneline', '-n', '5'],
+        {
+          preserveOutputOnError: false,
+        },
+      ).then(({ stdout }) => stdout.trim()),
       execFileNoThrow(gitExe(), ['config', 'user.name'], {
         preserveOutputOnError: false,
       }).then(({ stdout }) => stdout.trim()),
@@ -106,6 +82,7 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
       status_length: status.length,
     })
 
+    // Check if status exceeds character limit
     const truncatedStatus =
       status.length > MAX_STATUS_CHARS
         ? status.substring(0, MAX_STATUS_CHARS) +
@@ -134,72 +111,82 @@ export const getGitStatus = memoize(async (): Promise<string | null> => {
   }
 })
 
-/** Contexto que se antepone a cada conversación; cacheado por su duración. */
-export const getSystemContext = memoize(async (): Promise<{ [k: string]: string }> => {
-  const startTime = Date.now()
-  logForDiagnosticsNoPII('info', 'system_context_started')
+/**
+ * This context is prepended to each conversation, and cached for the duration of the conversation.
+ */
+export const getSystemContext = memoize(
+  async (): Promise<{
+    [k: string]: string
+  }> => {
+    const startTime = Date.now()
+    logForDiagnosticsNoPII('info', 'system_context_started')
 
-  const gitStatus =
-    isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) || !shouldIncludeGitInstructions()
-      ? null
-      : await getGitStatus()
+    // Skip git status in CCR (unnecessary overhead on resume) or when git instructions are disabled
+    const gitStatus =
+      isEnvTruthy(readEnv('CLAUDE_CODE_REMOTE')) ||
+      !shouldIncludeGitInstructions()
+        ? null
+        : await getGitStatus()
 
-  const injection = BREAK_CACHE_COMMAND ? getSystemPromptInjection() : null
+    // Include system prompt injection if set (for cache breaking, ant-only)
+    const injection = feature('BREAK_CACHE_COMMAND')
+      ? getSystemPromptInjection()
+      : null
 
-  logForDiagnosticsNoPII('info', 'system_context_completed', {
-    duration_ms: Date.now() - startTime,
-    has_git_status: gitStatus !== null,
-    has_injection: injection !== null,
-  })
+    logForDiagnosticsNoPII('info', 'system_context_completed', {
+      duration_ms: Date.now() - startTime,
+      has_git_status: gitStatus !== null,
+      has_injection: injection !== null,
+    })
 
-  return {
-    ...(gitStatus && { gitStatus }),
-    ...(BREAK_CACHE_COMMAND && injection ? { cacheBreaker: `[CACHE_BREAKER: ${injection}]` } : {}),
-  }
-})
+    return {
+      ...(gitStatus && { gitStatus }),
+      ...(feature('BREAK_CACHE_COMMAND') && injection
+        ? {
+            cacheBreaker: `[CACHE_BREAKER: ${injection}]`,
+          }
+        : {}),
+    }
+  },
+)
 
-function requireAppHostState(): {
-  getAdditionalDirectoriesForClaudeMd: () => string[]
-  setCachedClaudeMdContent: (content: string | null) => void
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@thyrox/app-host/bootstrap/state.js')
-}
+/**
+ * This context is prepended to each conversation, and cached for the duration of the conversation.
+ */
+export const getUserContext = memoize(
+  async (): Promise<{
+    [k: string]: string
+  }> => {
+    const startTime = Date.now()
+    logForDiagnosticsNoPII('info', 'user_context_started')
 
-function requireClaudemd(): {
-  getMemoryFiles: () => Promise<unknown[]>
-  getClaudeMds: (files: unknown[]) => string
-} {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('@thyrox/storage/claudemd.js')
-}
+    // CLAUDE_CODE_DISABLE_CLAUDE_MDS: hard off, always.
+    // --bare: skip auto-discovery (cwd walk), BUT honor explicit --add-dir.
+    // --bare means "skip what I didn't ask for", not "ignore what I asked for".
+    const shouldDisableClaudeMd =
+      isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_CLAUDE_MDS')) ||
+      (isBareMode() && getAdditionalDirectoriesForClaudeMd().length === 0)
+    // Await the async I/O (readFile/readdir directory walk) so the event
+    // loop yields naturally at the first fs.readFile.
+    const memoryFiles = shouldDisableClaudeMd ? [] : await getMemoryFiles()
+    const claudeMdFiles = filterInjectedMemoryFiles(memoryFiles).filter(
+      f => f.type !== 'AutoMem' && f.type !== 'TeamMem',
+    )
+    const claudeMd = shouldDisableClaudeMd ? null : getClaudeMds(claudeMdFiles)
+    // Cache for the auto-mode classifier (yoloClassifier.ts reads this
+    // instead of importing claudemd.ts directly, which would create a
+    // cycle through permissions/filesystem → permissions → yoloClassifier).
+    setCachedClaudeMdContent(claudeMd || null)
 
-/** Contexto que se antepone a cada conversación; cacheado por su duración. */
-export const getUserContext = memoize(async (): Promise<{ [k: string]: string }> => {
-  const startTime = Date.now()
-  logForDiagnosticsNoPII('info', 'user_context_started')
+    logForDiagnosticsNoPII('info', 'user_context_completed', {
+      duration_ms: Date.now() - startTime,
+      claudemd_length: claudeMd?.length ?? 0,
+      claudemd_disabled: Boolean(shouldDisableClaudeMd),
+    })
 
-  const { getAdditionalDirectoriesForClaudeMd, setCachedClaudeMdContent } = requireAppHostState()
-  const { getMemoryFiles, getClaudeMds } = requireClaudemd()
-
-  const shouldDisableClaudeMd =
-    isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_CLAUDE_MDS')) ||
-    (isBareMode() && getAdditionalDirectoriesForClaudeMd().length === 0)
-  const memoryFiles = shouldDisableClaudeMd ? [] : await getMemoryFiles()
-  const claudeMdFiles = filterInjectedMemoryFiles(
-    memoryFiles as Parameters<typeof filterInjectedMemoryFiles>[0],
-  ).filter(f => f.type !== 'AutoMem' && f.type !== 'TeamMem')
-  const claudeMd = shouldDisableClaudeMd ? null : getClaudeMds(claudeMdFiles)
-  setCachedClaudeMdContent(claudeMd || null)
-
-  logForDiagnosticsNoPII('info', 'user_context_completed', {
-    duration_ms: Date.now() - startTime,
-    claudemd_length: claudeMd?.length ?? 0,
-    claudemd_disabled: Boolean(shouldDisableClaudeMd),
-  })
-
-  return {
-    ...(claudeMd && { claudeMd }),
-    currentDate: `Today's date is ${getLocalISODate()}.`,
-  }
-})
+    return {
+      ...(claudeMd && { claudeMd }),
+      currentDate: `Today's date is ${getLocalISODate()}.`,
+    }
+  },
+)

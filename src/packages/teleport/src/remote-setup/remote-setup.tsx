@@ -1,57 +1,31 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/remote-setup/remote-setup.tsx`
- * (189 líneas fuente).
- *
- * Cobertura: 3 de 5 símbolos exportados/privados de la fuente —
- * `checkLoginState` (100%, misma firma, reimplementado con `Bun.spawn`
- * en vez de `execa`), `errorMessage` (100%, verbatim) y los tipos
- * `CheckResult`/`Step` (100%). Los DOS que quedan sin portar son el
- * componente JSX `Web` y el `call` que lo monta:
- *
- *   - `React`, `@anthropic/ink` (Box/Dialog/LoadingState/Text) y
- *     `@claude-code-how-works/repl/components/CustomSelect/index.js` NO
- *     existen en este árbol — medido: `find . -iname "*.tsx"` bajo
- *     `src/packages` da 0 resultados propios antes de este pase (los
- *     únicos `.tsx` del árbol son los que este mismo pase de porte
- *     crea), y no hay paquete `repl` entre los 21 de `src/packages`
- *     (thyrox es un SDK headless: agent, app-host, cli, command-runtime,
- *     config, harness, headless-sdk, local-observability, mcp-runtime,
- *     memory, observability, output, permission, plan, provider, shell,
- *     skills, storage, swarm, tools — sin capa de TUI interactiva).
- *   - `execa` tampoco está declarado como dependencia en ningún
- *     `package.json` del árbol (`grep -rn '"execa"'` → 0 hits):
- *     igual que hizo `app-host/src/startup/ghAuthStatus.ts` con el
- *     mismo bloqueo (ver su propio docstring), `checkLoginState` se
- *     reimplementa aquí con `Bun.spawn`, evitando la dependencia — y
- *     de paso deja de necesitar el stub de `execa`.
- *
- * `Web`/`call` quedan como `require()` diferido de un módulo que no
- * existe todavía (`./remote-setup-view.js`) — el bloqueo es
- * arquitectónico (falta el runtime de UI), no una preferencia de estilo;
- * es la ÚNICA excepción admitida a "sin lazy imports" bajo esta regla.
- */
-
-import { getGhAuthStatus } from '@thyrox/app-host/startup/ghAuthStatus.js'
-import type { LocalJSXCommandOnDone } from '@thyrox/command-runtime/types.js'
+import { execa } from 'execa'
+import * as React from 'react'
+import { useEffect, useState } from 'react'
+import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
+import { Box, Dialog, LoadingState, Text } from '@anthropic/ink'
 import {
+  logEvent,
+  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS as SafeString,
+} from '@thyrox/local-observability'
+import type { LocalJSXCommandOnDone } from '@thyrox/command-runtime/types'
+import { openBrowser } from '@thyrox/storage/browser.js'
+import { getGhAuthStatus } from '@thyrox/app-host/startup/ghAuthStatus.js'
+import {
+  createDefaultEnvironment,
+  getCodeWebUrl,
   type ImportTokenError,
-  RedactedGithubToken,
+  importGithubToken,
   isSignedIn,
+  RedactedGithubToken,
 } from './api.js'
 
-export type CheckResult =
+type CheckResult =
   | { status: 'not_signed_in' }
   | { status: 'has_gh_token'; token: RedactedGithubToken }
   | { status: 'gh_not_installed' }
   | { status: 'gh_not_authenticated' }
 
-/**
- * Reimplementación de `checkLoginState` con `Bun.spawn` en vez de
- * `execa` (ver docstring del módulo). `getGhAuthStatus()` ya spawnea con
- * stdout:'ignore' (telemetry-safe); aquí se spawnea una vez más con
- * stdout capturado para leer el token, igual que la fuente.
- */
-export async function checkLoginState(): Promise<CheckResult> {
+async function checkLoginState(): Promise<CheckResult> {
   if (!(await isSignedIn())) {
     return { status: 'not_signed_in' }
   }
@@ -64,16 +38,14 @@ export async function checkLoginState(): Promise<CheckResult> {
     return { status: 'gh_not_authenticated' }
   }
 
-  // ghStatus === 'authenticated'. getGhAuthStatus ya spawneó con
-  // stdout:'ignore'; spawnea una vez más con stdout capturado para leer
-  // el token.
-  const proc = Bun.spawn(['gh', 'auth', 'token'], {
+  // ghStatus === 'authenticated'. getGhAuthStatus spawns with stdout:'ignore'
+  // (telemetry-safe); spawn once more with stdout:'pipe' to read the token.
+  const { stdout } = await execa('gh', ['auth', 'token'], {
     stdout: 'pipe',
     stderr: 'ignore',
-    signal: AbortSignal.timeout(5000),
+    timeout: 5000,
+    reject: false,
   })
-  const stdout = await new Response(proc.stdout).text()
-  await proc.exited
   const trimmed = stdout.trim()
   if (!trimmed) {
     return { status: 'gh_not_authenticated' }
@@ -81,7 +53,7 @@ export async function checkLoginState(): Promise<CheckResult> {
   return { status: 'has_gh_token', token: new RedactedGithubToken(trimmed) }
 }
 
-export function errorMessage(err: ImportTokenError, codeUrl: string): string {
+function errorMessage(err: ImportTokenError, codeUrl: string): string {
   switch (err.kind) {
     case 'not_signed_in':
       return `Login failed. Please visit ${codeUrl} and login using the GitHub App`
@@ -94,27 +66,124 @@ export function errorMessage(err: ImportTokenError, codeUrl: string): string {
   }
 }
 
-export type Step =
+type Step =
   | { name: 'checking' }
   | { name: 'confirm'; token: RedactedGithubToken }
   | { name: 'uploading' }
 
-/**
- * `call` monta el componente `Web` — el flujo interactivo de
- * confirmación (Select/Dialog) que pide React + ink + el `CustomSelect`
- * de `repl`. Ninguno de los tres existe en este árbol (ver docstring del
- * módulo). Se declara con la misma firma que la fuente y se resuelve con
- * `require()` diferido hacia un módulo de vista que aún no existe —
- * fallará al invocarse hasta que exista un runtime de UI en thyrox, y
- * ese fallo es la señal correcta: no hay forma honesta de renderizar
- * JSX sin React.
- */
+function Web({ onDone }: { onDone: LocalJSXCommandOnDone }) {
+  const [step, setStep] = useState<Step>({ name: 'checking' })
+
+  useEffect(() => {
+    logEvent('tengu_remote_setup_started', {})
+    void checkLoginState().then(async result => {
+      switch (result.status) {
+        case 'not_signed_in':
+          logEvent('tengu_remote_setup_result', {
+            result: 'not_signed_in' as SafeString,
+          })
+          onDone('Not signed in to Claude. Run /login first.')
+          return
+        case 'gh_not_installed':
+        case 'gh_not_authenticated': {
+          const url = `${getCodeWebUrl()}/onboarding?step=alt-auth`
+          await openBrowser(url)
+          logEvent('tengu_remote_setup_result', {
+            result: result.status as SafeString,
+          })
+          onDone(
+            result.status === 'gh_not_installed'
+              ? `GitHub CLI not found. Install it via https://cli.github.com/, then run \`gh auth login\`, or connect GitHub on the web: ${url}`
+              : `GitHub CLI not authenticated. Run \`gh auth login\` and try again, or connect GitHub on the web: ${url}`,
+          )
+          return
+        }
+        case 'has_gh_token':
+          setStep({ name: 'confirm', token: result.token })
+      }
+    })
+    // onDone is stable across renders; intentionally not in deps.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleCancel = () => {
+    logEvent('tengu_remote_setup_result', {
+      result: 'cancelled' as SafeString,
+    })
+    onDone()
+  }
+
+  const handleConfirm = async (token: RedactedGithubToken) => {
+    setStep({ name: 'uploading' })
+
+    const result = await importGithubToken(token)
+    if (!result.ok) {
+      logEvent('tengu_remote_setup_result', {
+        result: 'import_failed' as SafeString,
+        error_kind: result.error.kind as SafeString,
+      })
+      onDone(errorMessage(result.error, getCodeWebUrl()))
+      return
+    }
+
+    // Token import succeeded. Environment creation is best-effort — if it
+    // fails, the web state machine routes to env-setup on landing, which is
+    // one extra click but still better than the OAuth dance.
+    await createDefaultEnvironment()
+
+    const url = getCodeWebUrl()
+    await openBrowser(url)
+
+    logEvent('tengu_remote_setup_result', {
+      result: 'success' as SafeString,
+    })
+    onDone(`Connected as ${result.result.github_username}. Opened ${url}`)
+  }
+
+  if (step.name === 'checking') {
+    return <LoadingState message="Checking login status…" />
+  }
+
+  if (step.name === 'uploading') {
+    return <LoadingState message="Connecting GitHub to Claude…" />
+  }
+
+  const token = step.token
+  return (
+    <Dialog
+      title="Connect Claude on the web to GitHub?"
+      onCancel={handleCancel}
+      hideInputGuide
+    >
+      <Box flexDirection="column">
+        <Text>
+          Claude on the web requires connecting to your GitHub account to clone
+          and push code on your behalf.
+        </Text>
+        <Text dimColor>
+          Your local credentials are used to authenticate with GitHub
+        </Text>
+      </Box>
+      <Select
+        options={[
+          { label: 'Continue', value: 'send' },
+          { label: 'Cancel', value: 'cancel' },
+        ]}
+        onChange={value => {
+          if (value === 'send') {
+            void handleConfirm(token)
+          } else {
+            handleCancel()
+          }
+        }}
+        onCancel={handleCancel}
+      />
+    </Dialog>
+  )
+}
+
 export async function call(
   onDone: LocalJSXCommandOnDone,
-): Promise<unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const view = require('./remote-setup-view.js') as {
-    renderWeb: (onDone: LocalJSXCommandOnDone) => Promise<unknown>
-  }
-  return view.renderWeb(onDone)
+): Promise<React.ReactNode> {
+  return <Web onDone={onDone} />
 }

@@ -1,0 +1,76 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/shell/bin/__tests__/shell.test.ts:
+shell heredoc: falta el comando a analizar (un posicional, o --stdin). NO se emite veredicto sin entrada — adivinar aquí es exactamente lo que este CLI existe para evitar.
+léxico (containsHeredoc, ciego a comillas): no
+extraídos: 0
+comando procesado (placeholders): "echo hi"
+restauración (string completo, informativa — ver docstring del módulo): coincide con el original
+{
+  "contieneLexico": true,
+  "extraidos": 1,
+  "detalle": [
+    {
+      "delimitador": "EOF",
+      "citado": false,
+      "dash": false,
+      "cuerpo": "\nx\nEOF",
+      "cuerpoBytes": 6
+    }
+  ],
+  "comandoProcesado": "cat __HEREDOC_0_3a6aeef5755143ce__",
+  "restauracionIngenua": "cat <<EOF\nx\nEOF",
+  "restauracionCoincide": true
+}
+shell quote: no hay ningún argumento que citar. NO se emite veredicto — una cadena vacía por defecto sería adivinar, no analizar.
+'echo hi'
+{"args":["--json"],"quoted":"--json"}
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 0. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 1. NO se emite veredicto.
+shell prefix: exige exactamente 2 argumentos (prefijo, comando); recibidos 3. NO se emite veredicto.
+bash -c 'echo $HOME'
+shell fig: exige exactamente 1 argumento (el nombre de comando); recibidos 0. NO se emite veredicto.
+git: sin especificación — rechazado por la validación de entrada de loadFigSpec, o el import de @withfig/autocomplete falló (el paquete no está instalado en este árbol; verificado).
+{"command":"git","spec":null}
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "0". NO se emite veredicto.
+shell stdin-peek: --timeout-ms exige un entero positivo; recibido "ni-un-numero". NO se emite veredicto.
+shell stdin-peek: no reconoce "sobra". NO se emite veredicto.
+{"simulaGha":false,"removidas":[],"agregadas":[]}
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+shell: «no-existe» no es un subcomando. NO se despacha una acción por defecto.
+
+uso: bun run bin/shell.ts <subcomando> [opciones]
+
+  heredoc [--quoted-only] [--json] (<comando> | --stdin)
+  quote [--json] [--] <arg...>
+  prefix [--] <prefijo> <comando>
+  fig [--json] <comando>
+  stdin-peek [--timeout-ms N]
+  env [--gha] [--json]
+
+Todo lo que sigue a un `--` literal se toma como posicional sin interpretar.
+
+ 27 pass
+ 0 fail
+ 51 expect() calls
+Ran 27 tests across 1 file. [494.00ms]
+exit=0

@@ -1,73 +1,41 @@
 /**
- * Tipos de mensaje del protocolo de buzón — tríos schema/factory/checker
- * para todo mensaje JSON estructurado que fluye por los buzones de los
- * teammates. Porte de
- * `ccnmt: packages/swarm/src/mailbox/protocolMessages.ts`.
+ * Mailbox protocol message types — schema/factory/checker triplets
+ * for every structured JSON message that flows through teammate
+ * inboxes. Extracted from mailbox/index.ts so the IO layer (lockfile,
+ * read/write, dedup) and the protocol layer (these schemas) can be
+ * read in isolation.
  *
- * Extraído de `mailbox/index.ts` para que la capa de E/S (lockfile,
- * lectura/escritura, dedup — BLOQUEADA en este pase, ver el hallazgo de
- * ese archivo) y la capa de protocolo (estos schemas) se puedan leer en
- * aislamiento.
+ * Adding a new protocol message: define a Schema (or plain TypeScript
+ * type), a `create*` factory, and an `is*` type-guard. If the message
+ * carries a `requestId`, writeToMailbox automatically dedupes on
+ * (type, requestId) — no extra wiring needed (see verify-mailbox-
+ * dedup-required for the architecture rule).
  *
- * Añadir un nuevo mensaje de protocolo: definir un Schema (o un tipo
- * TypeScript llano), una factoría `create*`, y un type-guard `is*`.
- *
- * `isStructuredProtocolMessage` debe mantenerse sincronizada con los
- * literales de tipo declarados aquí — el `useInboxPoller` de la fuente
- * (BLOQUEADO) depende de ella para decidir qué mensajes se enrutan a
- * handlers dedicados vs. se entregan como contexto LLM crudo.
- *
- * DOS DIVERGENCIAS DE ALCANCE, declaradas:
- *
- *  1. `jsonParse` — la fuente la importa de `adapters/appRuntime.ts`, que
- *     a su vez la enruta por un binding de runtime del host (instrumen-
- *     tación de rendimiento). Aquí es un `JSON.parse` sin instrumentar
- *     envuelto para devolver `unknown` — mismo valor de retorno y misma
- *     conducta ante JSON inválido (lanza, y cada llamador ya lo captura
- *     en su propio try/catch).
- *  2. `lazySchema`/`PermissionModeSchema` — la fuente las importa de
- *     `adapters/appRuntime.ts` (`lazySchema`, memoización trivial de una
- *     factoría) y de un binding que resuelve `PermissionModeSchema`
- *     desde `@claude-code-how-works/permission/PermissionUpdate` (no
- *     existe en este árbol; `lazySchema` se reimplementa una única vez
- *     para todo el paquete en `../internal/lazySchema.ts` — mismo patrón
- *     ya portado de forma independiente en `api: agent/internalUtils.ts:114`
- *     — y `PermissionModeSchema` se construye aquí contra los CINCO
- *     valores reales de `PermissionMode` verificados en
- *     `@thyrox/agent/types.ts` — `permission: src/permissionTypes.ts:16-20`
- *     en la fuente declara exactamente los mismos cinco como
- *     `EXTERNAL_PERMISSION_MODES`). No se acopla este paquete a
- *     `@thyrox/agent` sólo por un enum de cinco literales.
+ * isStructuredProtocolMessage's enumeration must be kept in sync with
+ * the type literals declared here; useInboxPoller relies on it to
+ * decide which messages are routed to dedicated handlers vs. delivered
+ * as raw LLM context. New types that have a leader-side handler must
+ * be added there.
  */
 
 import { z } from 'zod/v4'
 
+import {
+  PermissionModeSchema,
+  jsonParse,
+  lazySchema,
+} from '../adapters/appRuntime.js'
 import type { BackendType } from '../backends/types.js'
-import { lazySchema } from '../internal/lazySchema.js'
 
-/**
- * Reimplementación local de `PermissionModeSchema` (ver divergencia 2
- * arriba): los cinco valores que `@thyrox/agent/types.ts` (`PermissionMode`)
- * ya declara como el `PermissionMode` real del cliente.
- */
-const PermissionModeSchema = lazySchema(() =>
-  z.enum(['default', 'plan', 'acceptEdits', 'dontAsk', 'bypassPermissions']),
-)
-
-/** Reimplementación local mínima de `jsonParse` (ver divergencia 1 arriba). */
-function jsonParse(text: string): unknown {
-  return JSON.parse(text)
-}
-
-// ─── Notificación de idle ─────────────────────────────────────────
+// ─── Idle notification ────────────────────────────────────────────
 
 export type IdleNotificationMessage = {
   type: 'idle_notification'
   from: string
   timestamp: string
-  /** Por qué el agente pasó a idle */
+  /** Why the agent went idle */
   idleReason?: 'available' | 'interrupted' | 'failed'
-  /** Resumen breve del último DM enviado en este turno (si hubo) */
+  /** Brief summary of the last DM sent this turn (if any) */
   summary?: string
   completedTaskId?: string
   completedStatus?: 'resolved' | 'blocked' | 'failed'
@@ -100,22 +68,21 @@ export function isIdleNotification(
   messageText: string,
 ): IdleNotificationMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'idle_notification') {
       return parsed as IdleNotificationMessage
     }
   } catch {
-    // No es JSON o no es una notificación de idle válida
+    // Not JSON or not a valid idle notification
   }
   return null
 }
 
-// ─── Solicitud/respuesta de permiso (worker ↔ leader) ─────────────
+// ─── Permission request / response (worker ↔ leader) ──────────────
 
 /**
- * Mensaje de solicitud de permiso enviado del worker al leader vía
- * buzón. Los nombres de campo se alinean con `can_use_tool` del SDK
- * (snake_case).
+ * Permission request message sent from worker to leader via mailbox.
+ * Field names align with SDK `can_use_tool` (snake_case).
  */
 export type PermissionRequestMessage = {
   type: 'permission_request'
@@ -129,9 +96,8 @@ export type PermissionRequestMessage = {
 }
 
 /**
- * Mensaje de respuesta de permiso enviado del leader al worker vía
- * buzón. La forma refleja `ControlResponseSchema` / `ControlError-
- * ResponseSchema` del SDK.
+ * Permission response message sent from leader to worker via mailbox.
+ * Shape mirrors SDK ControlResponseSchema / ControlErrorResponseSchema.
  */
 export type PermissionResponseMessage =
   | {
@@ -201,12 +167,12 @@ export function isPermissionRequest(
   messageText: string,
 ): PermissionRequestMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'permission_request') {
       return parsed as PermissionRequestMessage
     }
   } catch {
-    // No es JSON o no es una solicitud de permiso válida
+    // Not JSON or not a valid permission request
   }
   return null
 }
@@ -215,50 +181,49 @@ export function isPermissionResponse(
   messageText: string,
 ): PermissionResponseMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'permission_response') {
       return parsed as PermissionResponseMessage
     }
   } catch {
-    // No es JSON o no es una respuesta de permiso válida
+    // Not JSON or not a valid permission response
   }
   return null
 }
 
-// ─── Solicitud/respuesta de permiso de sandbox ────────────────────
+// ─── Sandbox permission request / response ───────────────────────
 
 /**
- * Mensaje de solicitud de permiso de sandbox enviado del worker al
- * leader vía buzón. Se dispara cuando el runtime de sandbox detecta un
- * acceso de red a un host no permitido.
+ * Sandbox permission request message sent from worker to leader via mailbox.
+ * Triggered when sandbox runtime detects a network access to a non-allowed host.
  */
 export type SandboxPermissionRequestMessage = {
   type: 'sandbox_permission_request'
-  /** Identificador único de esta solicitud */
+  /** Unique identifier for this request */
   requestId: string
-  /** `CLAUDE_CODE_AGENT_ID` del worker */
+  /** Worker's CLAUDE_CODE_AGENT_ID */
   workerId: string
-  /** `CLAUDE_CODE_AGENT_NAME` del worker */
+  /** Worker's CLAUDE_CODE_AGENT_NAME */
   workerName: string
-  /** `CLAUDE_CODE_AGENT_COLOR` del worker */
+  /** Worker's CLAUDE_CODE_AGENT_COLOR */
   workerColor?: string
-  /** El patrón de host que solicita acceso de red */
+  /** The host pattern requesting network access */
   hostPattern: {
     host: string
   }
-  /** Timestamp de creación de la solicitud */
+  /** Timestamp when request was created */
   createdAt: number
 }
 
 export type SandboxPermissionResponseMessage = {
   type: 'sandbox_permission_response'
-  /** ID de la solicitud a la que responde */
+  /** ID of the request this responds to */
   requestId: string
-  /** El host que fue aprobado/denegado */
+  /** The host that was approved/denied */
   host: string
-  /** Si la conexión está permitida */
+  /** Whether the connection is allowed */
   allow: boolean
-  /** Timestamp de creación de la respuesta */
+  /** Timestamp when response was created */
   timestamp: string
 }
 
@@ -298,12 +263,12 @@ export function isSandboxPermissionRequest(
   messageText: string,
 ): SandboxPermissionRequestMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'sandbox_permission_request') {
       return parsed as SandboxPermissionRequestMessage
     }
   } catch {
-    // No es JSON o no es una solicitud de permiso de sandbox válida
+    // Not JSON or not a valid sandbox permission request
   }
   return null
 }
@@ -312,17 +277,17 @@ export function isSandboxPermissionResponse(
   messageText: string,
 ): SandboxPermissionResponseMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'sandbox_permission_response') {
       return parsed as SandboxPermissionResponseMessage
     }
   } catch {
-    // No es JSON o no es una respuesta de permiso de sandbox válida
+    // Not JSON or not a valid sandbox permission response
   }
   return null
 }
 
-// ─── Solicitud/respuesta de aprobación de plan ────────────────────
+// ─── Plan approval request / response ────────────────────────────
 
 export const PlanApprovalRequestMessageSchema = lazySchema(() =>
   z.object({
@@ -363,7 +328,7 @@ export function isPlanApprovalRequest(
     )
     if (result.success) return result.data
   } catch {
-    // No es JSON
+    // Not JSON
   }
   return null
 }
@@ -377,12 +342,12 @@ export function isPlanApprovalResponse(
     )
     if (result.success) return result.data
   } catch {
-    // No es JSON
+    // Not JSON
   }
   return null
 }
 
-// ─── Solicitud/aprobación/rechazo de shutdown ─────────────────────
+// ─── Shutdown request / approved / rejected ──────────────────────
 
 export const ShutdownRequestMessageSchema = lazySchema(() =>
   z.object({
@@ -480,7 +445,7 @@ export function isShutdownRequest(
     )
     if (result.success) return result.data
   } catch {
-    // No es JSON
+    // Not JSON
   }
   return null
 }
@@ -494,7 +459,7 @@ export function isShutdownApproved(
     )
     if (result.success) return result.data
   } catch {
-    // No es JSON
+    // Not JSON
   }
   return null
 }
@@ -508,14 +473,16 @@ export function isShutdownRejected(
     )
     if (result.success) return result.data
   } catch {
-    // No es JSON
+    // Not JSON
   }
   return null
 }
 
-// ─── Asignación de tarea ──────────────────────────────────────────
+// ─── Task assignment ─────────────────────────────────────────────
 
-/** Mensaje de asignación de tarea enviado cuando se asigna una a un teammate. */
+/**
+ * Task assignment message sent when a task is assigned to a teammate.
+ */
 export type TaskAssignmentMessage = {
   type: 'task_assignment'
   taskId: string
@@ -529,35 +496,35 @@ export function isTaskAssignment(
   messageText: string,
 ): TaskAssignmentMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'task_assignment') {
       return parsed as TaskAssignmentMessage
     }
   } catch {
-    // No es JSON o no es una asignación de tarea válida
+    // Not JSON or not a valid task assignment
   }
   return null
 }
 
-// ─── Actualización de permiso del equipo ──────────────────────────
+// ─── Team permission update ──────────────────────────────────────
 
 /**
- * Mensaje de actualización de permiso del equipo enviado del leader a
- * los teammates vía buzón. Difunde una actualización de permiso que
- * aplica a todos los teammates.
+ * Team permission update message sent from leader to teammates via
+ * mailbox. Broadcasts a permission update that applies to all
+ * teammates.
  */
 export type TeamPermissionUpdateMessage = {
   type: 'team_permission_update'
-  /** La actualización de permiso a aplicar */
+  /** The permission update to apply */
   permissionUpdate: {
     type: 'addRules'
     rules: Array<{ toolName: string; ruleContent?: string }>
     behavior: 'allow' | 'deny' | 'ask'
     destination: 'session'
   }
-  /** El path de directorio que fue permitido */
+  /** The directory path that was allowed */
   directoryPath: string
-  /** El nombre de la herramienta al que aplica */
+  /** The tool name this applies to */
   toolName: string
 }
 
@@ -565,17 +532,17 @@ export function isTeamPermissionUpdate(
   messageText: string,
 ): TeamPermissionUpdateMessage | null {
   try {
-    const parsed = jsonParse(messageText) as { type?: unknown } | null
+    const parsed = jsonParse(messageText)
     if (parsed && parsed.type === 'team_permission_update') {
       return parsed as TeamPermissionUpdateMessage
     }
   } catch {
-    // No es JSON o no es una actualización de permiso de equipo válida
+    // Not JSON or not a valid team permission update
   }
   return null
 }
 
-// ─── Solicitud de fijar modo ───────────────────────────────────────
+// ─── Mode set request ────────────────────────────────────────────
 
 export const ModeSetRequestMessageSchema = lazySchema(() =>
   z.object({
@@ -611,24 +578,23 @@ export function isModeSetRequest(
       return parsed.data
     }
   } catch {
-    // No es JSON o no es una solicitud de fijar modo válida
+    // Not JSON or not a valid mode set request
   }
   return null
 }
 
-// ─── Predicado de enrutamiento catch-all ──────────────────────────
+// ─── Catch-all routing predicate ─────────────────────────────────
 
 /**
- * `true` si `messageText` es un mensaje de protocolo estructurado con un
- * handler dedicado del lado del leader en `useInboxPoller` (BLOQUEADO en
- * este pase). Estos mensajes NO deben consumirse como contexto LLM
- * crudo — `getTeammateMailboxAttachments` (BLOQUEADO) los filtra para que
- * lleguen a sus colas propias (`workerPermissions`,
- * `workerSandboxPermissions`, etc.).
+ * True if `messageText` is a structured protocol message with a
+ * dedicated leader-side handler in useInboxPoller. Such messages
+ * must NOT be consumed as raw LLM context — getTeammateMailboxAttachments
+ * filters them out so they reach their proper queues
+ * (workerPermissions, workerSandboxPermissions, etc.).
  *
- * Mantener esta lista sincronizada con los literales de tipo exportados
- * arriba. Un tipo de mensaje de protocolo nuevo con handler dedicado debe
- * añadirse aquí, o se filtra al contexto LLM como JSON crudo.
+ * Keep this list in sync with the type literals exported above. New
+ * protocol message types that have a dedicated handler must be added
+ * here, otherwise they leak into LLM context as raw JSON.
  */
 export function isStructuredProtocolMessage(messageText: string): boolean {
   try {
