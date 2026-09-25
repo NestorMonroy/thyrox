@@ -10,6 +10,7 @@
     tsc_cycle shared plan    --log L --bench STEP [--top N]
     tsc_cycle shared launch  (mismas opciones que modules launch)
     tsc_cycle next     --log L [--root R]
+    tsc_cycle compare  ANTES DESPUES
 
 Cada fase es un subcomando que lee y escribe en el banco del paso, así una
 fase se repite sin rehacer las anteriores. `tsc_zero_loop` sigue siendo el
@@ -29,6 +30,7 @@ import sys
 from pathlib import Path
 
 from verify import tsc_reflect, tsc_routes
+from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
 
 
@@ -291,6 +293,25 @@ def cmd_next(args) -> int:
     return 0
 
 
+def cmd_compare(args) -> int:
+    """El antes y el después de una medición, con la misma comparación que
+    usa el paso (`_new_diagnostics`): un error que sólo cambió de línea no
+    cuenta como nuevo."""
+    missing = [p for p in (args.before, args.after) if not p.is_file()]
+    if missing:
+        print(f"tsc_cycle compare: no existe {missing[0]} — no se publica una cifra", file=sys.stderr)
+        return 2
+    before = args.before.read_text(encoding="utf-8", errors="ignore").splitlines()
+    after = args.after.read_text(encoding="utf-8", errors="ignore").splitlines()
+    new, _ = _new_diagnostics(before, after)
+    gone, _ = _new_diagnostics(after, before)
+    total = len(tsc_routes.parse_diagnostics("\n".join(after)))
+    print(f"total {total} desaparecidos {len(gone)} nuevos {len(new)}")
+    for line in new:
+        print(f" + {line[:200]}")
+    return 0
+
+
 def launch_commands(bench: Path, model: str, worktree: Path, ledger: Path, seed: int,
                     width: int = 8, route: str = "modules") -> list[list[str]]:
     """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
@@ -380,6 +401,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="shared")
+    p = sub.add_parser("compare", help="antes y después de una medición de tsc")
+    p.add_argument("before", type=Path)
+    p.add_argument("after", type=Path)
+    p.set_defaults(func=cmd_compare)
     p = sub.add_parser("next", help="la ruta que toca según el plan v3 (1 → 2 → 3)")
     p.add_argument("--log", type=Path, required=True)
     p.add_argument("--root", type=Path, default=THYROX)

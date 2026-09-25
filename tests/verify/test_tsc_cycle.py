@@ -297,5 +297,26 @@ assert_equal("después, la cola compartida", "shared", route_of(SHARED + LOCAL, 
 assert_equal("al final, el pool por archivo", "local", route_of(LOCAL, dup))
 assert_equal("sin diagnósticos no hay ruta", "none", route_of(""))
 
+# --- compare: el antes y el después de una medición ---------------------------
+# Suelto en `.claude/cache/cmp.py` vivía una copia de `_new_diagnostics`; la
+# comparación es la del paso, y se publica con su denominador.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.log").write_text("src/a.ts(1,1): error TS2322: x.\nsrc/b.ts(2,1): error TS2345: y.\n")
+    (base / "b.log").write_text("src/a.ts(9,1): error TS2322: x.\nsrc/c.ts(3,1): error TS2339: z.\n")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = tc.main(["compare", str(base / "a.log"), str(base / "b.log")])
+    text = out.getvalue()
+    assert_equal("compare publica total, desaparecidos y nuevos", (0, True),
+                 (code, "total 2 desaparecidos 1 nuevos 1" in text))
+    assert_equal("un error que sólo cambió de línea no cuenta como nuevo", (False, True),
+                 ("src/a.ts" in text.partition("\n")[2], "src/c.ts" in text.partition("\n")[2]))
+    (base / "empty.log").write_text("")
+    with contextlib.redirect_stderr(io.StringIO()):
+        refused = tc.main(["compare", str(base / "a.log"), str(base / "missing.log")])
+    assert_equal("un log que no existe rehúsa, no publica ceros", 2, refused)
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
