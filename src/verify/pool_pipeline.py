@@ -138,6 +138,15 @@ def log_keys(lines: list[str]) -> list[str]:
     return [diagnostic_key(m) for m in map(DIAGNOSTIC.match, lines) if m]
 
 
+def step_command(wt: Path, candidates: Path, *, ledger: Path, bench_dir: Path, before_log: Path, seed: int,
+                 tsc: list[str], net: bool = False) -> list[str]:
+    """El paso de medición de un lote. `net` es la política de la ruta 2:
+    conservar un cambio que baja el total aunque destape contratos."""
+    return [sys.executable, str(HERE / "tsc_zero_step.py"), "--root", str(wt), "--candidates", str(candidates),
+            "--ledger", str(ledger), "--bench", str(bench_dir), "--before-log", str(before_log),
+            "--seed", str(seed), "--accept-partial", *(["--net"] if net else []), "--", *tsc]
+
+
 def run(args: argparse.Namespace, tsc: list[str]) -> dict:
     main_tree, wt = args.main.resolve(), args.worktree.resolve()
     # El paso corre con cwd en el worktree: toda ruta relativa al árbol
@@ -185,10 +194,9 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                         out.write(json.dumps(candidate, ensure_ascii=False) + "\n")
             taken.update(ready)
             step = subprocess.run(
-                [sys.executable, str(HERE / "tsc_zero_step.py"), "--root", str(wt),
-                 "--candidates", str(bench / "candidates.jsonl"), "--ledger", str(args.ledger.resolve()),
-                 "--bench", str(bench), "--before-log", str(before_log), "--seed", str(args.seed + batch_no),
-                 "--accept-partial", "--", *tsc],
+                step_command(wt, bench / "candidates.jsonl", ledger=args.ledger.resolve(), bench_dir=bench,
+                             before_log=before_log, seed=args.seed + batch_no, tsc=tsc,
+                             net=getattr(args, "net", False)),
                 cwd=wt, capture_output=True, text=True, env={**os.environ, "PYTHONPATH": str(HERE.parent)})
             (bench / "report.json").write_text(step.stdout)
             try:
@@ -229,6 +237,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--poll", type=float, default=20)
     parser.add_argument("--unit", choices=("file", "module"), default="file",
                         help="unidad de un ítem: un archivo, o un módulo que edita varios")
+    parser.add_argument("--net", action="store_true",
+                        help="política neta del paso: conserva lo que baja el total aunque destape contratos")
     args = parser.parse_args(argv[:split])
     result = run(args, argv[split + 1:])
     print(json.dumps({"batches": len(result["batches"]), "files_kept": len(result["files_kept"])}))

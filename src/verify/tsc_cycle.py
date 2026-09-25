@@ -7,6 +7,9 @@
     tsc_cycle modules plan   --log L --bench STEP
     tsc_cycle modules launch --bench STEP --worktree W --ledger L --seed N
                              [--model M] [--width N] [--dry-run]
+    tsc_cycle shared plan    --log L --bench STEP [--top N]
+    tsc_cycle shared launch  (mismas opciones que modules launch)
+    tsc_cycle next     --log L [--root R]
 
 Cada fase es un subcomando que lee y escribe en el banco del paso, así una
 fase se repite sin rehacer las anteriores. `tsc_zero_loop` sigue siendo el
@@ -149,6 +152,7 @@ MISSING_EXPORT = re.compile(r"""'"(?P<module>[^"]+)"' has no exported member (?:
 MISSING_EXPORT_CODES = {"TS2305", "TS2614", "TS2724"}
 THYROX = Path(__file__).resolve().parents[2]
 MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
+SHARED_PROMPT = Path("src/verify/prompts/shared-type.md")
 
 
 def _unit_of(spec: str, consumer: str, root: Path | None, packages: dict) -> str:
@@ -207,19 +211,104 @@ def cmd_modules_plan(args) -> int:
     return 0
 
 
+def shared_units(diagnostics, duplicates: dict[str, list[str]], prefix: str) -> list[dict]:
+    """La ruta 2 como unidades: una por definición duplicada, de la más citada
+    a la menos (la cola de `classify`). Objetivos: consumidores y copias."""
+    routes = tsc_routes.classify(diagnostics, duplicates)
+    by_type: dict[str, list] = {}
+    for d in routes["shared"]:
+        by_type.setdefault(tsc_routes.shared_type(d, duplicates), []).append(d)
+    units = []
+    for entry in tsc_routes.shared_queue(routes["shared"], duplicates):
+        definitions = [f"{prefix}{f}" for f in entry["definitions"]]
+        units.append({"type": entry["type"], "definitions": definitions,
+                      "targets": sorted(set(entry["consumers"]) | set(definitions)),
+                      "diagnostics": [f"{d.file}({d.line}): error {d.code}: {d.message}"
+                                      for d in by_type[entry["type"]]]})
+    return units
+
+
+def cmd_shared_plan(args) -> int:
+    diagnostics = tsc_routes.parse_diagnostics(args.log.read_text(encoding="utf-8", errors="ignore"))
+    packages = args.root / "src" / "packages"
+    units = shared_units(diagnostics, tsc_routes.duplicated_types(packages), "src/packages/")
+    if args.top:
+        units = units[: args.top]
+    if not units:
+        print(f"tsc_cycle shared plan: {args.log} no tiene causas compartidas — nada que unificar",
+              file=sys.stderr)
+        return 2
+    items = args.bench / "items"
+    items.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for n, unit in enumerate(units, 1):
+        path = items / f"{n}.txt"
+        path.write_text(f"Tipo: {unit['type']}\nCopias:\n" + "".join(f"  {d}\n" for d in unit["definitions"])
+                        + "\n" + "\n".join(unit["diagnostics"]) + "\n", encoding="utf-8")
+        lines.append(" ".join([f"type:{unit['type']}", str(path), *unit["targets"]]))
+    (args.bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"shared plan: {len(units)} definición(es), "
+          f"{sum(len(u['diagnostics']) for u in units)} diagnóstico(s) -> {args.bench / 'items.txt'}")
+    return 0
+
+
+# Orden del plan v3 (tres rutas). Lo determinista que resuelven los
+# proponentes (`tsc_zero_loop`) es lo que no es una exportación ausente: ésa
+# es un porte y va por módulo.
+ROUTE_ORDER = ("deterministic", "modules", "shared", "local")
+ROUTE_COMMANDS = {
+    "deterministic": "bash bin/tsc_zero_loop --root . --loop-dir <paso> --seed N",
+    "modules": "bash bin/tsc_cycle modules plan --log <log> --bench <paso> && bash bin/tsc_cycle modules launch …",
+    "shared": "bash bin/tsc_cycle shared plan --log <log> --bench <paso> --top 1 && bash bin/tsc_cycle shared launch …",
+    "local": "pool por archivo: pool_pipeline --unit file (ruta 3)",
+}
+
+
+def next_route(diagnostics, duplicates: dict[str, list[str]]) -> str:
+    """La ruta que toca ahora según el plan v3: la primera con trabajo."""
+    if not diagnostics:
+        return "none"
+    routes = tsc_routes.classify(diagnostics, duplicates)
+    missing = {id(d) for d in routes["deterministic"]
+               if d.code in MISSING_EXPORT_CODES and MISSING_EXPORT.search(d.message)}
+    pending = {
+        "deterministic": [d for d in routes["deterministic"] if id(d) not in missing],
+        "modules": [d for d in routes["deterministic"] if id(d) in missing],
+        "shared": routes["shared"],
+        "local": routes["local"],
+    }
+    return next(route for route in ROUTE_ORDER if pending[route])
+
+
+def cmd_next(args) -> int:
+    diagnostics = tsc_routes.parse_diagnostics(args.log.read_text(encoding="utf-8", errors="ignore"))
+    route = next_route(diagnostics, tsc_routes.duplicated_types(args.root / "src" / "packages"))
+    if route == "none":
+        # Un log sin diagnósticos no distingue «cero» de «tsc no corrió».
+        print(f"tsc_cycle next: {args.log} sin diagnósticos — el cero lo confirma una medición", file=sys.stderr)
+        return 2
+    print(f"next: {route} — {ROUTE_COMMANDS[route]}")
+    return 0
+
+
 def launch_commands(bench: Path, model: str, worktree: Path, ledger: Path, seed: int,
-                    width: int = 8) -> list[list[str]]:
+                    width: int = 8, route: str = "modules") -> list[list[str]]:
     """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
     items, outputs = bench / "items.txt", bench / "outputs"
-    pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(MODULE_PROMPT))} --out {shlex.quote(str(outputs))}"
+    shared = route == "shared"
+    prompt = SHARED_PROMPT if shared else MODULE_PROMPT
+    pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
             f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
             f" --tools Read,Grep,Glob --max-turns 30 < {shlex.quote(str(items))}")
     pipeline = [sys.executable, "src/verify/pool_pipeline.py", "--main", ".", "--worktree", str(worktree),
                 "--items", str(items), "--outputs", str(outputs), "--bench", str(bench / "pipeline"),
-                "--ledger", str(ledger), "--seed", str(seed), "--batch", "5", "--poll", "10",
-                "--unit", "module", "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
+                "--ledger", str(ledger), "--seed", str(seed),
+                # Ruta 2: de a una y con la política neta (plan v3, paso 3):
+                # el efecto de cada unificación se mide antes de la siguiente.
+                "--batch", "1" if shared else "5", "--poll", "10", "--unit", "module",
+                *(["--net"] if shared else []), "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
     name = bench.name
     return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
             ["bash", "bin/thyrox-bg", "start", f"{name}-pipeline", "--grace", "0", "--",
@@ -231,7 +320,8 @@ def cmd_modules_launch(args) -> int:
         print(f"tsc_cycle modules launch: falta {args.bench / 'items.txt'} — corre antes `modules plan`",
               file=sys.stderr)
         return 2
-    commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width)
+    commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+                               route=getattr(args, "route", "modules"))
     for command in commands:
         print(shlex.join(command))
         if not args.dry_run:
@@ -272,7 +362,28 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--model", default="claude-sonnet-5")
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true", help="imprime los comandos sin lanzarlos")
-    p.set_defaults(func=cmd_modules_launch)
+    p.set_defaults(func=cmd_modules_launch, route="modules")
+    shared = sub.add_parser("shared", help="ruta 2: una definición duplicada por unidad, medida de a una")
+    ssub = shared.add_subparsers(dest="shared_command", required=True)
+    p = ssub.add_parser("plan", help="un ítem por definición duplicada, en el orden de la cola")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--top", type=int, help="sólo las N más citadas")
+    p.set_defaults(func=cmd_shared_plan)
+    p = ssub.add_parser("launch", help="lanza el pool y el pipeline de la ruta 2 con thyrox-bg")
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--ledger", type=Path, required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--width", type=int, default=8)
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_modules_launch, route="shared")
+    p = sub.add_parser("next", help="la ruta que toca según el plan v3 (1 → 2 → 3)")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX)
+    p.set_defaults(func=cmd_next)
     args = parser.parse_args(argv)
     return args.func(args)
 

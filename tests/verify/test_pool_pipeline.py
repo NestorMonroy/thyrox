@@ -174,5 +174,14 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("y el archivo nuevo llega al árbol principal, directorio incluido", "export const n = 1\n",
                  (main / "src/port/n.ts").read_text() if (main / "src/port/n.ts").exists() else None)
 
+# La política neta viaja hasta el paso: sin ella, unificar un tipo que
+# destapa contratos se revierte aunque baje el total.
+base_args = dict(ledger=Path("/l.jsonl"), bench_dir=Path("/b"), before_log=Path("/before.log"), seed=3,
+                 tsc=["tsc"])
+assert_equal("el paso lleva --net cuando el pipeline lo pide", True,
+             "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=True, **base_args))
+assert_equal("y no lo lleva cuando no", False,
+             "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=False, **base_args))
+
 print(f"test_pool_pipeline: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

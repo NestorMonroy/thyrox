@@ -226,5 +226,76 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("el pipeline mide en modo módulo las salidas de ese pool", (True, True),
                  ("--unit module" in pipeline_text, f"--outputs {base / 'step/outputs'}" in pipeline_text))
 
+# --- shared: la ruta 2, una definición duplicada por unidad --------------------
+# El juicio es UNO por definición —qué copia es la buena—, no uno por
+# consumidor. La unidad lleva sus copias y sus consumidores como objetivo, y
+# se mide de a una con la política neta: unificar destapa contratos, y lo que
+# decide es que baje el total.
+
+with tempfile.TemporaryDirectory() as directory:
+    root = Path(directory)
+    for rel, text in {
+        "src/packages/a/src/types.ts": "export type Foo = { a: string; b: number }\n",
+        "src/packages/b/src/local.ts": "type Foo = { a: string }\n",
+        "src/packages/c/src/types.ts": "export type Bar = { x: number }\n",
+        "src/packages/d/src/copy.ts": "export type Bar = { x: number; y?: string }\n",
+    }.items():
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text)
+    log = root / "tsc.log"
+    log.write_text("""src/packages/e/src/use.ts(1,1): error TS2322: Type 'Foo' is not assignable to type 'Foo'.
+src/packages/f/src/use.ts(2,1): error TS2345: Argument of type 'Foo' is not assignable to parameter of type 'Foo'.
+src/packages/g/src/use.ts(3,1): error TS2322: Type 'Bar' is not assignable to type 'Bar'.
+src/packages/h/src/use.ts(4,1): error TS2305: Module '"x"' has no exported member 'y'.
+""")
+    code = tc.main(["shared", "plan", "--log", str(log), "--bench", str(root / "step"), "--root", str(root)])
+    lines = (root / "step/items.txt").read_text().splitlines()
+    assert_equal("una unidad por definición, de la más citada a la menos", (0, ["type:Foo", "type:Bar"]),
+                 (code, [l.split()[0] for l in lines]))
+    assert_equal("sus objetivos son los consumidores y las copias",
+                 ["src/packages/a/src/types.ts", "src/packages/b/src/local.ts",
+                  "src/packages/e/src/use.ts", "src/packages/f/src/use.ts"], lines[0].split()[2:])
+    item = (root / "step/items/1.txt").read_text()
+    assert_equal("el ítem nombra las copias y sólo los diagnósticos que la citan", (True, True, False, False),
+                 ("src/packages/b/src/local.ts" in item, "TS2345" in item, "Bar" in item, "TS2305" in item))
+    tc.main(["shared", "plan", "--log", str(log), "--bench", str(root / "top"), "--root", str(root), "--top", "1"])
+    assert_equal("--top toma sólo la cabeza de la cola", 1,
+                 len((root / "top/items.txt").read_text().splitlines()))
+    (root / "none.log").write_text("src/packages/h/src/use.ts(4,1): error TS2305: Module '\"x\"' has no exported member 'y'.\n")
+    with contextlib.redirect_stderr(io.StringIO()):
+        none = tc.main(["shared", "plan", "--log", str(root / "none.log"), "--bench", str(root / "none"),
+                        "--root", str(root)])
+    assert_equal("sin causas compartidas, rehúsa", (2, False), (none, (root / "none/items.txt").exists()))
+
+    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+                                        ledger=Path("/run/ledger.jsonl"), seed=7, route="shared")
+    pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
+    assert_equal("la ruta 2 usa su plantilla y mide de a una con la política neta", (True, True, True),
+                 ("src/verify/prompts/shared-type.md" in pool_text, "--batch 1" in pipeline_text,
+                  "--net" in pipeline_text))
+    module_pool, module_pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5",
+                                                      worktree=Path("/wt"), ledger=Path("/run/l.jsonl"), seed=7)
+    assert_equal("la ruta de módulos no hereda la política neta", False, "--net" in " ".join(module_pipeline))
+
+# --- next: el orden del plan v3, no el que se le ocurra a quien lance ---------
+# 1 determinista (lo mecánico por proponentes, lo sin portar por módulo),
+# 2 la cabeza de la cola compartida, 3 el pool por archivo. Cero diagnósticos
+# no decide nada: lo decide la medición.
+
+def route_of(text: str, duplicates: dict[str, list[str]] | None = None) -> str:
+    return tc.next_route(tc.tsc_routes.parse_diagnostics(text), duplicates or {})
+
+
+INFER = "src/a.ts(1,1): error TS7006: Parameter 'x' implicitly has an 'any' type.\n"
+MISSING = "src/b.ts(1,1): error TS2305: Module '\"./m.js\"' has no exported member 'y'.\n"
+SHARED = "src/c.ts(1,1): error TS2322: Type 'Foo' is not assignable to type 'Foo'.\n"
+LOCAL = "src/d.ts(1,1): error TS2339: Property 'z' does not exist on type 'Q'.\n"
+dup = {"Foo": ["a/src/t.ts", "b/src/t.ts"]}
+assert_equal("lo mecánico va antes que todo", "deterministic", route_of(INFER + MISSING + SHARED + LOCAL, dup))
+assert_equal("después, los módulos sin portar", "modules", route_of(MISSING + SHARED + LOCAL, dup))
+assert_equal("después, la cola compartida", "shared", route_of(SHARED + LOCAL, dup))
+assert_equal("al final, el pool por archivo", "local", route_of(LOCAL, dup))
+assert_equal("sin diagnósticos no hay ruta", "none", route_of(""))
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
