@@ -40,15 +40,9 @@
  * cuando el clasificador está apagado, que es el caso universal aquí.
  */
 import type { PermissionMode } from './permissionTypes.js'
+import { transitionPermissionMode } from './permissionSetup.js'
 
-// V7 — tipo local angosto: sólo los tres campos que este archivo lee.
-// Mismo patrón que `permissions.ts` ya usa para su propio
-// `ToolPermissionContext` (ver su docstring).
-type ToolPermissionContext = {
-  mode: PermissionMode
-  isBypassPermissionsModeAvailable: boolean
-  isAutoModeAvailable?: boolean
-}
+import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 
 // Divergencia declarada arriba: nunca ofrece el ciclo a 'auto' en este
 // árbol — subsistema de feature-gates no portado.
@@ -104,5 +98,27 @@ export function getNextPermissionMode(
       // Cubre auto (cuando TRANSCRIPT_CLASSIFIER está activo) y cualquier
       // modo futuro — siempre cae de vuelta a default.
       return 'default'
+  }
+}
+
+/**
+ * Computes the next permission mode and prepares the context for it.
+ * Handles any context cleanup needed for the target mode (e.g., stripping
+ * dangerous permissions when entering auto mode).
+ *
+ * @returns The next mode and the context to use (with dangerous permissions stripped if needed)
+ */
+export function cyclePermissionMode(
+  toolPermissionContext: ToolPermissionContext,
+  teamContext?: { leadAgentId: string },
+): { nextMode: PermissionMode; context: ToolPermissionContext } {
+  const nextMode = getNextPermissionMode(toolPermissionContext, teamContext)
+  return {
+    nextMode,
+    context: transitionPermissionMode(
+      toolPermissionContext.mode,
+      nextMode,
+      toolPermissionContext,
+    ),
   }
 }
