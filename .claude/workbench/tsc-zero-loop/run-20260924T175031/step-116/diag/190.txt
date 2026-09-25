@@ -1,0 +1,51 @@
+src/packages/repl/src/screens/REPLView.tsx(2782,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2772-2792 ---
+   2772  
+   2773        // Extract a session title from the first real user message. One-shot
+   2774        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2775        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2776        // which was broken by SessionStart hook messages (prepended via
+   2777        // useDeferredHookMessages) and attachment messages (appended by
+   2778        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2779        // title silently fell through to the "Claude Code" default.
+   2780        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2781          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2782>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2783          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2784          // expansions (/commit → <command-message>), local-command headers
+   2785          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2786          // None of these are the user's topic; wait for real prose.
+   2787          if (
+   2788            text &&
+   2789            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2790            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2791            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2792            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2926,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2916-2936 ---
+   2916        resetTurnHookDuration();
+   2917        resetTurnToolDuration();
+   2918        resetTurnClassifierDuration();
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926>         toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929          onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

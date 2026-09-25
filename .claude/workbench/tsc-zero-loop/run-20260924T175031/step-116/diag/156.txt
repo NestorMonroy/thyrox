@@ -1,0 +1,23 @@
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(291,48): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:281-301 ---
+    281              setModeState({ mode: 'select-event' })
+    282            }}
+    283          />
+    284        )
+    285      case 'select-hook':
+    286        return (
+    287          <SelectHookMode
+    288            selectedEvent={modeState.event}
+    289            selectedMatcher={modeState.matcher}
+    290            hooksForSelectedMatcher={hooksForSelectedMatcher}
+    291>           hookEventMetadata={hookEventMetadata[modeState.event]}
+    292            onSelect={hook => {
+    293              setModeState({
+    294                mode: 'view-hook',
+    295                event: modeState.event,
+    296                hook,
+    297              })
+    298            }}
+    299            onCancel={() => {
+    300              // Go back to matcher selection or event selection
+    301              if (

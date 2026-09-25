@@ -1,0 +1,24 @@
+src/packages/repl/src/screens/agentFleet/FleetView.tsx(2406,13): error TS2322: Type '{ start: number; end: number; color: "suggestion"; }[]' is not assignable to type 'TextHighlight[]'.
+  --- código src/packages/repl/src/screens/agentFleet/FleetView.tsx:2396-2416 ---
+   2396            <TextInput
+   2397              value={dispatchBuf}
+   2398              onChange={setDispatchBuf}
+   2399              cursorOffset={dispatchCursor}
+   2400              onChangeCursorOffset={setDispatchCursor}
+   2401              placeholder="start a task in the background"
+   2402              focus={false}
+   2403              showCursor={dispatchActive}
+   2404              multiline={true}
+   2405              columns={Math.max(terminalWidth - 4, 20)}
+   2406>             highlights={dispatchHighlights.map(([start, end]) => ({
+   2407                start,
+   2408                end,
+   2409                color: 'suggestion',
+   2410              }))}
+   2411              // We pass focus={false} so TextInput's internal useInput
+   2412              // doesn't steal chords from FleetView's outer cascade.
+   2413              // But renderPlaceholder gates the inverse-cursor on
+   2414              // `focus && terminalFocus`, so when dispatchBuf === '' the
+   2415              // placeholder renders WITHOUT a cursor — the user opens
+   2416              // FleetView and sees a "cursorless" prompt. Override with
+  Property 'priority' is missing in type '{ start: number; end: number; color: "suggestion"; }' but required in type 'TextHighlight'.

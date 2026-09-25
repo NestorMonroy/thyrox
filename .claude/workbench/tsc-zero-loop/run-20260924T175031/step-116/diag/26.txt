@@ -1,0 +1,49 @@
+src/packages/agent/query.ts(671,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/query.ts:661-681 ---
+    661                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    662                hasAppendSystemPrompt:
+    663                  !!toolUseContext.options.appendSystemPrompt,
+    664                maxOutputTokensOverride,
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671>               effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675                addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+src/packages/agent/query.ts(675,15): error TS2322: Type '((n: { key: string; text: string; priority: string; }) => void) | undefined' is not assignable to type '((notif: unknown) => void) | undefined'.
+  --- código src/packages/agent/query.ts:665-685 ---
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671                effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675>               addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+    682                  },
+    683                }),
+    684              },
+    685            })) {
+  Type '(n: { key: string; text: string; priority: string; }) => void' is not assignable to type '(notif: unknown) => void'.
+    Types of parameters 'n' and 'notif' are incompatible.
+      Type 'unknown' is not assignable to type '{ key: string; text: string; priority: string; }'.

@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(4017,26): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:4007-4027 ---
+   4007          setInputMode(r.mode);
+   4008        }
+   4009  
+   4010        // Restore pasted images
+   4011        if (Array.isArray(message.message.content) && message.message.content.some(block => block.type === 'image')) {
+   4012          const imageBlocks: Array<ImageBlockParam> = message.message.content.filter(block => block.type === 'image');
+   4013          if (imageBlocks.length > 0) {
+   4014            const newPastedContents: Record<number, PastedContent> = {};
+   4015            imageBlocks.forEach((block, index) => {
+   4016              if (block.source.type === 'base64') {
+   4017>               const id = message.imagePasteIds?.[index] ?? index + 1;
+   4018                newPastedContents[id] = {
+   4019                  id,
+   4020                  type: 'image',
+   4021                  content: block.source.data,
+   4022                  mediaType: block.source.media_type,
+   4023                };
+   4024              }
+   4025            });
+   4026            setPastedContents(newPastedContents);
+   4027          }
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/screens/REPLView.tsx(5028,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:5018-5038 ---
+   5018                  </Box>
+   5019                )}
+   5020                {process.env.USER_TYPE === 'ant' && <TungstenLiveMonitor />}
+   5021                {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
+   5022                <Box flexGrow={1} />
+   5023                {showSpinner && (
+   5024                  <SpinnerWithVerb
+   5025                    mode={streamMode}
+   5026                    spinnerTip={spinnerTip}
+   5027                    responseLengthRef={responseLengthRef}
+   5028>                   apiMetricsRef={apiMetricsRef}
+   5029                    overrideMessage={spinnerMessage}
+   5030                    spinnerSuffix={stopHookSpinnerSuffix}
+   5031                    verbose={verbose}
+   5032                    loadingStartTimeRef={loadingStartTimeRef}
+   5033                    totalPausedMsRef={totalPausedMsRef}
+   5034                    pauseStartTimeRef={pauseStartTimeRef}
+   5035                    overrideColor={spinnerColor}
+   5036                    overrideShimmerColor={spinnerShimmerColor}
+   5037                    hasActiveTools={inProgressToolUseIDs.size > 0}
+   5038                    leaderIsIdle={!isLoading}
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.

@@ -1,0 +1,68 @@
+src/packages/repl/src/components/MessageRow.tsx(283,34): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:273-293 ---
+    273    if (msg.type === 'grouped_tool_use') {
+    274      return msg.messages.some(m => {
+    275        const content = m.message.content[0]
+    276        return content?.type === 'tool_use' && streamingToolUseIDs.has(content.id)
+    277      })
+    278    }
+    279    if (msg.type === 'collapsed_read_search') {
+    280      const toolIds = getToolUseIdsFromCollapsedGroup(msg)
+    281      return toolIds.some(id => streamingToolUseIDs.has(id))
+    282    }
+    283>   const toolUseID = getToolUseID(msg)
+    284    return !!toolUseID && streamingToolUseIDs.has(toolUseID)
+    285  }
+    286  
+    287  /**
+    288   * Checks if all tools in a message are resolved.
+    289   * Exported for testing.
+    290   */
+    291  function allToolsResolved(
+    292    msg: RenderableMessage,
+    293    resolvedToolUseIDs: Set<string>,
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'NormalizedMessage'.
+    Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }'. Two different types with this name exist, but they are unrelated.
+      Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.
+src/packages/repl/src/components/MessageRow.tsx(311,34): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:301-321 ---
+    301    if (msg.type === 'collapsed_read_search') {
+    302      const toolIds = getToolUseIdsFromCollapsedGroup(msg)
+    303      return toolIds.every(id => resolvedToolUseIDs.has(id))
+    304    }
+    305    if (msg.type === 'assistant') {
+    306      const block = msg.message.content[0]
+    307      if (block?.type === 'server_tool_use') {
+    308        return resolvedToolUseIDs.has(block.id)
+    309      }
+    310    }
+    311>   const toolUseID = getToolUseID(msg)
+    312    return !toolUseID || resolvedToolUseIDs.has(toolUseID)
+    313  }
+    314  
+    315  /**
+    316   * Conservative memo comparator that only bails out when we're CERTAIN
+    317   * the message won't change. Fails safe by re-rendering when uncertain.
+    318   *
+    319   * Exported for testing.
+    320   */
+    321  function areMessageRowPropsEqual(prev: Props, next: Props): boolean {
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'NormalizedMessage'.
+    Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }'. Two different types with this name exist, but they are unrelated.
+      Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.

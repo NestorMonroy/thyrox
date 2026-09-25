@@ -1,0 +1,50 @@
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(611,9): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:601-621 ---
+    601        })),
+    602      )
+    603      for (const { skillName, skill, content } of loaded) {
+    604        logForDebugging(
+    605          `[Agent: ${agentDefinition.agentType}] Preloaded skill '${skillName}'`,
+    606        )
+    607  
+    608        // Add command-message metadata so the UI shows which skill is loading
+    609        const metadata = formatSkillLoadingMetadata(
+    610          skillName,
+    611>         skill.progressMessage,
+    612        )
+    613  
+    614        initialMessages.push(
+    615          createUserMessage({
+    616            content: [{ type: 'text', text: metadata }, ...content],
+    617            isMeta: true,
+    618          }),
+    619        )
+    620      }
+    621    }
+src/packages/tool-registry/src/tools/AgentTool/runAgent.ts(732,7): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/runAgent.ts:722-742 ---
+    722    // Track the last recorded message UUID for parent chain continuity
+    723    let lastRecordedUuid: UUID | null = initialMessages.at(-1)?.uuid ?? null
+    724  
+    725    try {
+    726      for await (const message of query({
+    727        messages: initialMessages,
+    728        systemPrompt: agentSystemPrompt,
+    729        userContext: resolvedUserContext,
+    730        systemContext: resolvedSystemContext,
+    731        canUseTool,
+    732>       toolUseContext: agentToolUseContext,
+    733        querySource,
+    734        maxTurns: maxTurns ?? agentDefinition.maxTurns,
+    735      })) {
+    736        onQueryProgress?.()
+    737        // Forward subagent API request starts to parent's metrics display
+    738        // so TTFT/OTPS update during subagent execution.
+    739        if (message.type === 'stream_event') {
+    740          const streamMsg = message as Message & { event?: { type: string }; ttftMs?: number }
+    741          if (streamMsg.event?.type === 'message_start' && streamMsg.ttftMs != null) {
+    742            toolUseContext.pushApiMetricsEntry?.(streamMsg.ttftMs)
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

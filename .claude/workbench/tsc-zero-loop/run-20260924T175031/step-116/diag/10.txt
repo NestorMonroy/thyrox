@@ -1,0 +1,46 @@
+src/packages/agent/compaction/sessionMemoryCompact.ts(39,3): error TS2305: Module '"./compact.js"' has no exported member 'createPlanAttachmentIfNeeded'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:29-49 ---
+     29  } from '../SessionMemory/prompts.js'
+     30  import {
+     31    getLastSummarizedMessageId,
+     32    getSessionMemoryContent,
+     33    waitForSessionMemoryExtraction,
+     34  } from '../SessionMemory/sessionMemoryUtils.js'
+     35  import {
+     36    annotateBoundaryWithPreservedSegment,
+     37    buildPostCompactMessages,
+     38    type CompactionResult,
+     39>   createPlanAttachmentIfNeeded,
+     40  } from './compact.js'
+     41  import { estimateMessageTokens } from './microCompact.js'
+     42  import { getCompactUserSummaryMessage } from './prompt.js'
+     43  import { readEnv } from '@thyrox/config/env'
+     44  
+     45  /**
+     46   * Configuration for session memory compaction thresholds
+     47   */
+     48  export type SessionMemoryCompactConfig = {
+     49    /** Minimum tokens to preserve after compaction */
+src/packages/agent/compaction/sessionMemoryCompact.ts(465,24): error TS2554: Expected 6 arguments, but got 4.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:455-475 ---
+    455      boundaryMarker.compactMetadata.preCompactDiscoveredTools = [
+    456        ...preCompactDiscovered,
+    457      ].sort()
+    458    }
+    459  
+    460    // Truncate oversized sections to prevent session memory from consuming
+    461    // the entire post-compact token budget
+    462    const { truncatedContent, wasTruncated } =
+    463      truncateSessionMemoryForCompact(sessionMemory)
+    464  
+    465>   let summaryContent = getCompactUserSummaryMessage(
+    466      truncatedContent,
+    467      true,
+    468      transcriptPath,
+    469      true,
+    470    )
+    471  
+    472    if (wasTruncated) {
+    473      const memoryPath = getSessionMemoryPath()
+    474      summaryContent += `\n\nSome session memory sections were truncated for length. The full session memory can be viewed at: ${memoryPath}`
+    475    }

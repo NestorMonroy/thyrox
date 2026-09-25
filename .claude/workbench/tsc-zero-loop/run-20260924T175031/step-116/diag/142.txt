@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(55,21): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx:45-65 ---
+     45      () => (
+     46        <ConfirmStepWrapper
+     47          tools={tools}
+     48          existingAgents={existingAgents}
+     49          onComplete={onComplete}
+     50        />
+     51      ),
+     52    ]
+     53  
+     54    return (
+     55>     <WizardProvider<AgentWizardData>
+     56        steps={steps}
+     57        initialData={{}}
+     58        onComplete={() => {
+     59          // Wizard completion is handled by ConfirmStepWrapper
+     60          // which calls onComplete with the appropriate message
+     61        }}
+     62        onCancel={onCancel}
+     63        title="Create new agent"
+     64        showStepCounter={false}
+     65      />

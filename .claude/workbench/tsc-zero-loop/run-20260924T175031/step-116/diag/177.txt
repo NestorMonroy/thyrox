@@ -1,0 +1,48 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(951,15): error TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:941-961 ---
+    941                  ...(compactionResult.messagesToKeep ?? []),
+    942                  ...slashCommandMessages,
+    943                ],
+    944              }
+    945              // Reset microcompact state since full compact replaces all
+    946              // messages — old tool IDs are no longer relevant. Budget state
+    947              // (on toolUseContext) needs no reset: stale entries are inert
+    948              // (UUIDs never repeat, so they're never looked up).
+    949              resetMicrocompactState()
+    950              return {
+    951>               messages: buildPostCompactMessages(
+    952                  compactionResultWithSlashMessages,
+    953                ),
+    954                shouldQuery: false,
+    955                command,
+    956              }
+    957            }
+    958  
+    959            // Port of ant v2.1.136 3753.js qm5 'query' branch — local command
+    960            // returns visible stdout PLUS an invisible meta-message prompt;
+    961            // `shouldQuery:true` so the agent picks up the directive without
+  Type 'Message' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+    Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+      Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'ProgressMessage'.
+        Property 'data' is missing in type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' but required in type '{ type: "progress"; data: unknown; }'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1342,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:1332-1349 ---
+   1332      }),
+   1333      ...attachmentMessages,
+   1334      createAttachmentMessage({
+   1335        type: 'command_permissions',
+   1336        allowedTools: additionalAllowedTools,
+   1337        model: command.model,
+   1338      }),
+   1339    ]
+   1340  
+   1341    return {
+   1342>     messages, shouldQuery: true,
+   1343      allowedTools: additionalAllowedTools,
+   1344      model: command.model,
+   1345      effort: command.effort,
+   1346      command,
+   1347      ...(command.type === 'prompt' && { activeSkill: command.name }), // ant 5045.js:1623
+   1348    }
+   1349  }
+  Type 'unknown' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.

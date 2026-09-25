@@ -1,0 +1,50 @@
+src/packages/agent/__tests__/productionWiring.test.ts(78,9): error TS2322: Type 'Mock<(name: string) => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; } | undefined>' is not assignable to type '(name: string) => CoreTool | undefined'.
+  --- código src/packages/agent/__tests__/productionWiring.test.ts:68-88 ---
+     68            }
+     69            yield {
+     70              type: 'message_delta',
+     71              delta: { stop_reason: 'end_turn' },
+     72              usage: { output_tokens: 4 },
+     73            }
+     74            yield { type: 'message_stop' }
+     75          }),
+     76        },
+     77        tools: {
+     78>         find: mock((name: string) => name === 'Echo' ? echoTool : undefined),
+     79          list: mock(() => [echoTool]),
+     80          execute: mock(async (_tool: { name: string }, input: { text: string }) =>
+     81            ({ output: `echo:${input.text}` }),
+     82          ),
+     83        },
+     84        hooks: {
+     85          onTurnStart: mock(async () => {}),
+     86          onTurnEnd: mock(async () => {}),
+     87          onStop: mock(async () => ({
+     88            blockingErrors: [],
+  Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; } | undefined' is not assignable to type 'CoreTool | undefined'.
+    Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }' is missing the following properties from type 'CoreTool': description, inputSchema
+src/packages/agent/__tests__/productionWiring.test.ts(79,9): error TS2322: Type 'Mock<() => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }[]>' is not assignable to type '() => CoreTool[]'.
+  --- código src/packages/agent/__tests__/productionWiring.test.ts:69-89 ---
+     69            yield {
+     70              type: 'message_delta',
+     71              delta: { stop_reason: 'end_turn' },
+     72              usage: { output_tokens: 4 },
+     73            }
+     74            yield { type: 'message_stop' }
+     75          }),
+     76        },
+     77        tools: {
+     78          find: mock((name: string) => name === 'Echo' ? echoTool : undefined),
+     79>         list: mock(() => [echoTool]),
+     80          execute: mock(async (_tool: { name: string }, input: { text: string }) =>
+     81            ({ output: `echo:${input.text}` }),
+     82          ),
+     83        },
+     84        hooks: {
+     85          onTurnStart: mock(async () => {}),
+     86          onTurnEnd: mock(async () => {}),
+     87          onStop: mock(async () => ({
+     88            blockingErrors: [],
+     89            preventContinuation: false,
+  Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }[]' is not assignable to type 'CoreTool[]'.
+    Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }' is missing the following properties from type 'CoreTool': description, inputSchema
