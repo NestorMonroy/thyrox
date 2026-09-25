@@ -1,0 +1,11 @@
+src/packages/repl/src/hooksConfigManager.ts(27,42): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(273,11): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(274,25): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(308,32): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(312,18): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(327,34): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(370,5): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(375,55): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(382,5): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(391,33): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(399,42): error TS2538: Type 'unknown' cannot be used as an index type.

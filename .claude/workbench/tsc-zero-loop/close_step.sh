@@ -15,6 +15,9 @@ test -s "$R/$S/commit.txt" || { echo "falta $R/$S/commit.txt" >&2; exit 2; }
 # memoria cuya señal case sus objetivos y cuyo `applied` nombre sus archivos.
 if [ "$STATUS" = progress ]; then
   bash bin/tsc_reflect gate-memory --run "$R" --step "$R/$S" || exit 4
+  # Gate 4 (plan v2.2.0): con patrones abiertos, el paso revisó patrones
+  # (gate4.json) y su log final no deja instancias vivas sin salida.
+  bash bin/tsc_reflect gate-sweep --run "$R" --step "$R/$S" ${SWEEP_LOG:+--log "$SWEEP_LOG"} || exit 5
 fi
 test -e "$R/patterns.jsonl" && EXTRA="${EXTRA:-} $R/patterns.jsonl"
 # Reflexion: un paso que no avanzó no se cierra sin su lección escrita.

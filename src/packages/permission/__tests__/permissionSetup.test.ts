@@ -45,6 +45,10 @@ import {
   restoreDangerousPermissions,
   stripDangerousPermissionsForAutoMode,
 } from '../src/permissionSetup.ts'
+import {
+  getEmptyToolPermissionContext,
+  type ToolPermissionContext,
+} from '@thyrox/tool-registry/Tool.js'
 
 /** Lo que el host anota al despojar. Se vacía en cada caso. */
 let debugLog: string[] = []
@@ -55,6 +59,13 @@ function allowRule(
   ruleContent?: string,
 ): PermissionRule {
   return { source, ruleBehavior: 'allow', ruleValue: { toolName, ruleContent } }
+}
+
+/** Un contexto de permisos completo para pruebas, con overrides sobre el vacío. */
+function permissionContext(
+  overrides: Partial<ToolPermissionContext> = {},
+): ToolPermissionContext {
+  return { ...getEmptyToolPermissionContext(), ...overrides }
 }
 
 beforeEach(() => {
@@ -323,10 +334,9 @@ describe('reglas demasiado amplias — 6 casos', () => {
 
 describe('removeDangerousPermissions — 3 casos', () => {
   test('36. retira la regla del contexto por su destino', () => {
-    const context = {
-      permissionRules: {},
+    const context = permissionContext({
       alwaysAllowRules: { userSettings: ['Bash(python:*)', 'Read(**)'] },
-    }
+    })
     const dangerous = findDangerousClassifierPermissions(
       [allowRule('userSettings', 'Bash', 'python:*')],
       [],
@@ -336,10 +346,9 @@ describe('removeDangerousPermissions — 3 casos', () => {
   })
 
   test('37. una fuente que no se puede persistir se SALTA, no se retira', () => {
-    const context = {
-      permissionRules: {},
+    const context = permissionContext({
       alwaysAllowRules: { policySettings: ['Bash(*)'] },
-    }
+    })
     const dangerous = findDangerousClassifierPermissions(
       [allowRule('policySettings', 'Bash', undefined)],
       [],
@@ -350,25 +359,23 @@ describe('removeDangerousPermissions — 3 casos', () => {
   })
 
   test('38. sin nada peligroso, devuelve el mismo contexto', () => {
-    const context = { permissionRules: {}, alwaysAllowRules: {} }
+    const context = permissionContext()
     expect(removeDangerousPermissions(context, [])).toBe(context)
   })
 })
 
 describe('stripDangerousPermissionsForAutoMode — 5 casos', () => {
   test('39. sin nada peligroso, el escondite queda declarado y vacío', () => {
-    const out = stripDangerousPermissionsForAutoMode({
-      permissionRules: {},
+    const out = stripDangerousPermissionsForAutoMode(permissionContext({
       alwaysAllowRules: { userSettings: ['Read(**)'] },
-    })
+    }))
     expect(out.strippedDangerousRules).toEqual({})
   })
 
   test('40. despoja la peligrosa y la guarda en el escondite', () => {
-    const out = stripDangerousPermissionsForAutoMode({
-      permissionRules: {},
+    const out = stripDangerousPermissionsForAutoMode(permissionContext({
       alwaysAllowRules: { userSettings: ['Bash(python:*)', 'Read(**)'] },
-    })
+    }))
     expect((out.alwaysAllowRules as Record<string, string[]>).userSettings).toEqual(['Read(**)'])
     expect(out.strippedDangerousRules).toEqual({ userSettings: ['Bash(python:*)'] })
   })
@@ -382,43 +389,39 @@ describe('stripDangerousPermissionsForAutoMode — 5 casos', () => {
     // `Agent` son la misma regla —el parser descarta el `(*)` vacío— así que
     // el viaje de ida y vuelta la normaliza. Sin esto, restaurar dejaría dos
     // cadenas distintas para una sola regla.
-    const out = stripDangerousPermissionsForAutoMode({
-      permissionRules: {},
+    const out = stripDangerousPermissionsForAutoMode(permissionContext({
       alwaysAllowRules: { policySettings: ['Bash(*)'], session: ['Agent(*)'] },
-    })
+    }))
     expect(out.strippedDangerousRules).toEqual({ session: ['Agent'] })
   })
 
   test('42. deja constancia en el registro del anfitrión', () => {
-    stripDangerousPermissionsForAutoMode({
-      permissionRules: {},
+    stripDangerousPermissionsForAutoMode(permissionContext({
       alwaysAllowRules: { userSettings: ['Bash(*)'] },
-    })
+    }))
     expect(debugLog.some(m => m.includes('Bash(*)'))).toBe(true)
   })
 
   test('43. un escondite previo sobrevive si no hay nada nuevo que despojar', () => {
-    const out = stripDangerousPermissionsForAutoMode({
-      permissionRules: {},
+    const out = stripDangerousPermissionsForAutoMode(permissionContext({
       alwaysAllowRules: { userSettings: ['Read(**)'] },
       strippedDangerousRules: { userSettings: ['Bash(*)'] },
-    })
+    }))
     expect(out.strippedDangerousRules).toEqual({ userSettings: ['Bash(*)'] })
   })
 })
 
 describe('restoreDangerousPermissions — 4 casos', () => {
   test('44. sin escondite, el contexto vuelve por referencia', () => {
-    const context = { permissionRules: {}, alwaysAllowRules: {} }
+    const context = permissionContext()
     expect(restoreDangerousPermissions(context)).toBe(context)
   })
 
   test('45. devuelve la regla a su fuente y vacía el escondite', () => {
-    const out = restoreDangerousPermissions({
-      permissionRules: {},
+    const out = restoreDangerousPermissions(permissionContext({
       alwaysAllowRules: { userSettings: ['Read(**)'] },
       strippedDangerousRules: { userSettings: ['Bash(python:*)'] },
-    })
+    }))
     expect((out.alwaysAllowRules as Record<string, string[]>).userSettings).toEqual([
       'Read(**)',
       'Bash(python:*)',
@@ -427,21 +430,18 @@ describe('restoreDangerousPermissions — 4 casos', () => {
   })
 
   test('46. la segunda restauración no duplica nada', () => {
-    const once = restoreDangerousPermissions({
-      permissionRules: {},
-      alwaysAllowRules: {},
+    const once = restoreDangerousPermissions(permissionContext({
       strippedDangerousRules: { session: ['Agent(*)'] },
-    })
+    }))
     const twice = restoreDangerousPermissions(once)
     // `Agent(*)` vuelve en su forma canónica `Agent` — ver el caso 41.
     expect((twice.alwaysAllowRules as Record<string, string[]>).session).toEqual(['Agent'])
   })
 
   test('47. despojar y restaurar es la identidad sobre las reglas', () => {
-    const original = {
-      permissionRules: {},
+    const original = permissionContext({
       alwaysAllowRules: { userSettings: ['Read(**)', 'Bash(python:*)'] },
-    }
+    })
     const restored = restoreDangerousPermissions(
       stripDangerousPermissionsForAutoMode(original),
     )

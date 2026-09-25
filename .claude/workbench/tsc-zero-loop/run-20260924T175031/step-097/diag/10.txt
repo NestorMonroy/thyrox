@@ -1,0 +1,14 @@
+src/packages/daemon/src/bgDaemon.ts(327,18): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(372,21): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(519,24): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(540,18): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(574,22): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(606,17): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(624,30): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(658,20): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(690,19): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(705,19): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(753,19): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(753,24): error TS7006: Parameter 'socket' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(774,23): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/daemon/src/bgDaemon.ts(774,28): error TS7006: Parameter 'socket' implicitly has an 'any' type.

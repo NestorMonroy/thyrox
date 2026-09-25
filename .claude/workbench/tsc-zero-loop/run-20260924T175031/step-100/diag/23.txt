@@ -1,0 +1,17 @@
+src/packages/agent/__tests__/directMemberMessage.test.ts(183,12): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(183,18): error TS2493: Tuple type '[]' of length '0' has no element at index '1'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(183,23): error TS2493: Tuple type '[]' of length '0' has no element at index '2'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(184,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"alice"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"alice"' is not assignable to parameter of type 'undefined'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(185,12): error TS18048: 'msg' is possibly 'undefined'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(186,12): error TS18048: 'msg' is possibly 'undefined'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(187,19): error TS18048: 'msg' is possibly 'undefined'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(189,12): error TS18048: 'msg' is possibly 'undefined'.
+src/packages/agent/__tests__/directMemberMessage.test.ts(190,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"team-alpha"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"team-alpha"' is not assignable to parameter of type 'undefined'.

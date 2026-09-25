@@ -1,0 +1,101 @@
+src/packages/storage/src/__tests__/sessionStart.test.ts(25,41): error TS2322: Type '{ type: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' is not assignable to type 'Message'.
+  Type '{ type: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Property 'uuid' is missing in type '{ type: string; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' but required in type 'MessageBase'.
+src/packages/storage/src/__tests__/sessionStart.test.ts(123,35): error TS2345: Argument of type '() => AsyncGenerator<{ message: { texto: string; }; additionalContexts: string[]; }, void, any>' is not assignable to parameter of type '(..._args: unknown[]) => AsyncGenerator<SessionStartHookResult, any, any>'.
+  Call signature return types 'AsyncGenerator<{ message: { texto: string; }; additionalContexts: string[]; }, void, any>' and 'AsyncGenerator<SessionStartHookResult, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<{ message: { texto: string; }; additionalContexts: string[]; }, void>>' is not assignable to type 'Promise<IteratorResult<SessionStartHookResult, any>>'.
+        Type 'IteratorResult<{ message: { texto: string; }; additionalContexts: string[]; }, void>' is not assignable to type 'IteratorResult<SessionStartHookResult, any>'.
+          Type 'IteratorYieldResult<{ message: { texto: string; }; additionalContexts: string[]; }>' is not assignable to type 'IteratorResult<SessionStartHookResult, any>'.
+            Type 'IteratorYieldResult<{ message: { texto: string; }; additionalContexts: string[]; }>' is not assignable to type 'IteratorYieldResult<SessionStartHookResult>'.
+              Type '{ message: { texto: string; }; additionalContexts: string[]; }' is not assignable to type 'SessionStartHookResult'.
+                Types of property 'message' are incompatible.
+                  Type '{ texto: string; }' is not assignable to type 'Message | undefined'.
+                    Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+                      Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(131,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Message | undefined): void', gave the following error.
+    Argument of type '{ texto: string; }' is not assignable to parameter of type 'Message | undefined'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+  Overload 2 of 2, '(expected: NoInfer<Message | undefined>): void', gave the following error.
+    Argument of type '{ texto: string; }' is not assignable to parameter of type 'Message | undefined'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(132,31): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Message | undefined): void', gave the following error.
+    Argument of type '{ texto: string; }' is not assignable to parameter of type 'Message | undefined'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+  Overload 2 of 2, '(expected: NoInfer<Message | undefined>): void', gave the following error.
+    Argument of type '{ texto: string; }' is not assignable to parameter of type 'Message | undefined'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(133,23): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Message | undefined): void', gave the following error.
+    Type '"hook_additional_context"' is not assignable to type '"user" | "assistant" | "progress" | "system" | "attachment" | "grouped_tool_use" | "collapsed_read_search"'.
+  Overload 2 of 2, '(expected: NoInfer<Message | undefined>): void', gave the following error.
+    Argument of type '{ type: "hook_additional_context"; content: string[]; hookName: string; toolUseID: string; hookEvent: string; }' is not assignable to parameter of type 'Message | undefined'.
+      Types of property 'type' are incompatible.
+        Type '"hook_additional_context"' is not assignable to type '"user" | "assistant" | "progress" | "system" | "attachment" | "grouped_tool_use" | "collapsed_read_search"'.
+src/packages/storage/src/__tests__/sessionStart.test.ts(167,35): error TS2345: Argument of type '() => AsyncGenerator<{ message: { texto: string; }; }, void, any>' is not assignable to parameter of type '(..._args: unknown[]) => AsyncGenerator<SessionStartHookResult, any, any>'.
+  Call signature return types 'AsyncGenerator<{ message: { texto: string; }; }, void, any>' and 'AsyncGenerator<SessionStartHookResult, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<{ message: { texto: string; }; }, void>>' is not assignable to type 'Promise<IteratorResult<SessionStartHookResult, any>>'.
+        Type 'IteratorResult<{ message: { texto: string; }; }, void>' is not assignable to type 'IteratorResult<SessionStartHookResult, any>'.
+          Type 'IteratorYieldResult<{ message: { texto: string; }; }>' is not assignable to type 'IteratorResult<SessionStartHookResult, any>'.
+            Type 'IteratorYieldResult<{ message: { texto: string; }; }>' is not assignable to type 'IteratorYieldResult<SessionStartHookResult>'.
+              Type '{ message: { texto: string; }; }' is not assignable to type 'SessionStartHookResult'.
+                Types of property 'message' are incompatible.
+                  Type '{ texto: string; }' is not assignable to type 'Message | undefined'.
+                    Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+                      Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(173,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Message[]): void', gave the following error.
+    Type '{ texto: string; }' is not assignable to type 'Message'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+  Overload 2 of 2, '(expected: NoInfer<Message[]>): void', gave the following error.
+    Type '{ texto: string; }' is not assignable to type 'Message'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(188,28): error TS2345: Argument of type '() => AsyncGenerator<{ message: { texto: string; }; additionalContexts: string[]; }, void, any>' is not assignable to parameter of type '(..._args: unknown[]) => AsyncGenerator<SetupHookResult, any, any>'.
+  Call signature return types 'AsyncGenerator<{ message: { texto: string; }; additionalContexts: string[]; }, void, any>' and 'AsyncGenerator<SetupHookResult, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<{ message: { texto: string; }; additionalContexts: string[]; }, void>>' is not assignable to type 'Promise<IteratorResult<SetupHookResult, any>>'.
+        Type 'IteratorResult<{ message: { texto: string; }; additionalContexts: string[]; }, void>' is not assignable to type 'IteratorResult<SetupHookResult, any>'.
+          Type 'IteratorYieldResult<{ message: { texto: string; }; additionalContexts: string[]; }>' is not assignable to type 'IteratorResult<SetupHookResult, any>'.
+            Type 'IteratorYieldResult<{ message: { texto: string; }; additionalContexts: string[]; }>' is not assignable to type 'IteratorYieldResult<SetupHookResult>'.
+              Type '{ message: { texto: string; }; additionalContexts: string[]; }' is not assignable to type 'SetupHookResult'.
+                Types of property 'message' are incompatible.
+                  Type '{ texto: string; }' is not assignable to type 'Message | undefined'.
+                    Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+                      Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(194,20): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(expected: NoInfer<Message[]>): void', gave the following error.
+    Type '{ texto: string; }' is not assignable to type 'Message'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+  Overload 2 of 2, '(expected: NoInfer<Message[]>): void', gave the following error.
+    Type '"hook_additional_context"' is not assignable to type '"user" | "assistant" | "progress" | "system" | "attachment" | "grouped_tool_use" | "collapsed_read_search"'.
+src/packages/storage/src/__tests__/sessionStart.test.ts(208,28): error TS2345: Argument of type '() => AsyncGenerator<{ message: { texto: string; }; }, void, any>' is not assignable to parameter of type '(..._args: unknown[]) => AsyncGenerator<SetupHookResult, any, any>'.
+  Call signature return types 'AsyncGenerator<{ message: { texto: string; }; }, void, any>' and 'AsyncGenerator<SetupHookResult, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<IteratorResult<{ message: { texto: string; }; }, void>>' is not assignable to type 'Promise<IteratorResult<SetupHookResult, any>>'.
+        Type 'IteratorResult<{ message: { texto: string; }; }, void>' is not assignable to type 'IteratorResult<SetupHookResult, any>'.
+          Type 'IteratorYieldResult<{ message: { texto: string; }; }>' is not assignable to type 'IteratorResult<SetupHookResult, any>'.
+            Type 'IteratorYieldResult<{ message: { texto: string; }; }>' is not assignable to type 'IteratorYieldResult<SetupHookResult>'.
+              Type '{ message: { texto: string; }; }' is not assignable to type 'SetupHookResult'.
+                Types of property 'message' are incompatible.
+                  Type '{ texto: string; }' is not assignable to type 'Message | undefined'.
+                    Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+                      Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/storage/src/__tests__/sessionStart.test.ts(213,7): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Message[]): void', gave the following error.
+    Type '{ texto: string; }' is not assignable to type 'Message'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid
+  Overload 2 of 2, '(expected: NoInfer<Message[]>): void', gave the following error.
+    Type '{ texto: string; }' is not assignable to type 'Message'.
+      Type '{ texto: string; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+        Type '{ texto: string; }' is missing the following properties from type 'MessageBase': type, uuid

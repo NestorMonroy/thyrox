@@ -1,0 +1,20 @@
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(52,43): error TS18048: 'content' is possibly 'undefined'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(52,51): error TS2339: Property 'id' does not exist on type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 74 more ... | (ContainerUploadBlock & ContainerUploadBlockParam)'.
+  Property 'id' does not exist on type 'ToolResultBlockParam'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(55,50): error TS18048: 'content' is possibly 'undefined'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(55,58): error TS2339: Property 'id' does not exist on type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 74 more ... | (ContainerUploadBlock & ContainerUploadBlockParam)'.
+  Property 'id' does not exist on type 'ToolResultBlockParam'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(56,46): error TS18048: 'content' is possibly 'undefined'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(56,54): error TS2339: Property 'id' does not exist on type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 74 more ... | (ContainerUploadBlock & ContainerUploadBlockParam)'.
+  Property 'id' does not exist on type 'ToolResultBlockParam'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(57,46): error TS18048: 'content' is possibly 'undefined'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(57,54): error TS2339: Property 'id' does not exist on type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 74 more ... | (ContainerUploadBlock & ContainerUploadBlockParam)'.
+  Property 'id' does not exist on type 'ToolResultBlockParam'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(59,9): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'ProgressMessage[]'.
+  Type 'AnyMessage' is not assignable to type 'ProgressMessage'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'MessageType'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(59,49): error TS18048: 'content' is possibly 'undefined'.
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx(59,57): error TS2339: Property 'id' does not exist on type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 74 more ... | (ContainerUploadBlock & ContainerUploadBlockParam)'.
+  Property 'id' does not exist on type 'ToolResultBlockParam'.

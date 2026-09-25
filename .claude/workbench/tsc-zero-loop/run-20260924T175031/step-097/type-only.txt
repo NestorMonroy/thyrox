@@ -1,0 +1,2 @@
+src/packages/daemon/src/bgDaemon.ts
+src/packages/repl/src/components/messages/GroupedToolUseContent.tsx

@@ -18,7 +18,7 @@ import {
   injectUserMessageToTeammate,
   requestTeammateShutdown,
 } from '../InProcessTeammateTask.js'
-import type { InProcessTeammateTaskState } from '../types.js'
+import type { InProcessTeammateTaskState, TaskStateBase } from '../types.js'
 
 const TERMINAL_STATUSES = new Set(['killed', 'completed', 'error'])
 
@@ -93,11 +93,11 @@ describe('appendTeammateMessage', () => {
     install()
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: makeTask() } }
     appendTeammateMessage('t1', { type: 'user' } as never, updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect((state.tasks.t1 as InProcessTeammateTaskState).messages).toEqual([
       { type: 'user' },
-    ])
+    ] as never)
   })
 
   test('no muta la tarea cuando NO está running', () => {
@@ -105,7 +105,7 @@ describe('appendTeammateMessage', () => {
     const original = makeTask({ status: 'killed' })
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: original } }
     appendTeammateMessage('t1', { type: 'user' } as never, updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect(state.tasks.t1).toBe(original)
   })
@@ -116,7 +116,7 @@ describe('requestTeammateShutdown', () => {
     install()
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: makeTask() } }
     requestTeammateShutdown('t1', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect((state.tasks.t1 as InProcessTeammateTaskState).shutdownRequested).toBe(true)
   })
@@ -126,7 +126,7 @@ describe('requestTeammateShutdown', () => {
     const alreadyRequested = makeTask({ shutdownRequested: true })
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: alreadyRequested } }
     requestTeammateShutdown('t1', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect(state.tasks.t1).toBe(alreadyRequested)
   })
@@ -136,7 +136,7 @@ describe('requestTeammateShutdown', () => {
     const killed = makeTask({ status: 'killed' })
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: killed } }
     requestTeammateShutdown('t1', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect(state.tasks.t1).toBe(killed)
   })
@@ -147,7 +147,7 @@ describe('injectUserMessageToTeammate', () => {
     install()
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: makeTask() } }
     injectUserMessageToTeammate('t1', 'hola', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     const t = state.tasks.t1 as InProcessTeammateTaskState
     expect(t.pendingUserMessages).toEqual(['hola'])
@@ -157,10 +157,10 @@ describe('injectUserMessageToTeammate', () => {
   test('encola el mensaje cuando la tarea está idle (no terminal)', () => {
     install()
     let state: { tasks: Record<string, unknown> } = {
-      tasks: { t1: makeTask({ status: 'idle' }) },
+      tasks: { t1: makeTask({ status: 'pending' }) },
     }
     injectUserMessageToTeammate('t1', 'hola', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect((state.tasks.t1 as InProcessTeammateTaskState).pendingUserMessages).toEqual([
       'hola',
@@ -172,7 +172,7 @@ describe('injectUserMessageToTeammate', () => {
     const killed = makeTask({ status: 'killed' })
     let state: { tasks: Record<string, unknown> } = { tasks: { t1: killed } }
     injectUserMessageToTeammate('t1', 'hola', updater => {
-      state = updater(state)
+      state = updater(state as never)
     })
     expect(state.tasks.t1).toBe(killed)
   })
@@ -192,18 +192,21 @@ describe('findTeammateTaskByAgentId', () => {
 
   test('cae al fallback (primera coincidencia) si ninguna está running', () => {
     const first = makeTask({ id: 't1', status: 'killed' })
-    const second = makeTask({ id: 't2', status: 'error' })
+    const second = makeTask({ id: 't2', status: 'failed' })
     const found = findTeammateTaskByAgentId('a1', { t1: first, t2: second })
     expect(found).toBe(first)
   })
 
   test('ignora tareas de otro tipo (isInProcessTeammateTask filtra)', () => {
-    const other = {
+    const other: TaskStateBase = {
       id: 'x1',
       status: 'running',
       type: 'local_agent',
       description: 'otra tarea',
       notified: false,
+      startTime: 0,
+      outputFile: '',
+      outputOffset: 0,
     }
     const found = findTeammateTaskByAgentId('a1', { x1: other })
     expect(found).toBeUndefined()
@@ -213,12 +216,15 @@ describe('findTeammateTaskByAgentId', () => {
 describe('getAllInProcessTeammateTasks / getRunningTeammatesSorted', () => {
   test('getAllInProcessTeammateTasks filtra por tipo', () => {
     const t1 = makeTask({ id: 't1' })
-    const other = {
+    const other: TaskStateBase = {
       id: 'x1',
       status: 'running',
       type: 'local_agent',
       description: 'otra tarea',
       notified: false,
+      startTime: 0,
+      outputFile: '',
+      outputOffset: 0,
     }
     const all = getAllInProcessTeammateTasks({ t1, x1: other })
     expect(all).toEqual([t1])
@@ -241,7 +247,7 @@ describe('getAllInProcessTeammateTasks / getRunningTeammatesSorted', () => {
     const running = makeTask({ id: 't1', status: 'running' })
     const idle = makeTask({
       id: 't2',
-      status: 'idle',
+      status: 'pending',
       identity: { ...makeTask().identity, agentId: 'b@t', agentName: 'bravo' },
     })
     const sorted = getRunningTeammatesSorted({ t1: running, t2: idle })

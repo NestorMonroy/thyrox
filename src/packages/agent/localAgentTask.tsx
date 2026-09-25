@@ -106,31 +106,45 @@ export function updateProgressFromMessage(
     return
   }
   const usage = message.message.usage
-  // Keep latest input (it's cumulative in the API), sum outputs
-  tracker.latestInputTokens =
-    usage.input_tokens +
-    (usage.cache_creation_input_tokens ?? 0) +
-    (usage.cache_read_input_tokens ?? 0)
-  tracker.cumulativeOutputTokens += usage.output_tokens
-  for (const content of message.message.content) {
-    if (content.type === 'tool_use') {
-      tracker.toolUseCount++
-      // Omit StructuredOutput from preview - it's an internal tool
-      if (content.name !== SYNTHETIC_OUTPUT_TOOL_NAME) {
-        const input = content.input as Record<string, unknown>
-        const classification = tools
-          ? getToolSearchOrReadInfo(content.name, input, tools)
-          : undefined
-        tracker.recentActivities.push({
-          toolName: content.name,
-          input,
-          activityDescription: resolveActivityDescription?.(
-            content.name,
+  // Keep latest input (it's cumulative in the API), sum outputs.
+  // `usage` puede llevar la forma laxa `Record<string, unknown>` del tipo
+  // base; se lee cada campo por separado y se descarta si no es numerico.
+  if (usage) {
+    const inputTokens = usage.input_tokens
+    const cacheCreationTokens = usage.cache_creation_input_tokens
+    const cacheReadTokens = usage.cache_read_input_tokens
+    const outputTokens = usage.output_tokens
+    tracker.latestInputTokens =
+      (typeof inputTokens === 'number' ? inputTokens : 0) +
+      (typeof cacheCreationTokens === 'number' ? cacheCreationTokens : 0) +
+      (typeof cacheReadTokens === 'number' ? cacheReadTokens : 0)
+    tracker.cumulativeOutputTokens +=
+      typeof outputTokens === 'number' ? outputTokens : 0
+  }
+  // El body de un assistant message SIEMPRE es un arreglo de bloques; la
+  // rama `string` de `MessageContent` cubre otros tipos de mensaje.
+  const contentBlocks = message.message.content
+  if (Array.isArray(contentBlocks)) {
+    for (const content of contentBlocks) {
+      if (content.type === 'tool_use') {
+        tracker.toolUseCount++
+        // Omit StructuredOutput from preview - it's an internal tool
+        if (content.name !== SYNTHETIC_OUTPUT_TOOL_NAME) {
+          const input = content.input as Record<string, unknown>
+          const classification = tools
+            ? getToolSearchOrReadInfo(content.name, input, tools)
+            : undefined
+          tracker.recentActivities.push({
+            toolName: content.name,
             input,
-          ),
-          isSearch: classification?.isSearch,
-          isRead: classification?.isRead,
-        })
+            activityDescription: resolveActivityDescription?.(
+              content.name,
+              input,
+            ),
+            isSearch: classification?.isSearch,
+            isRead: classification?.isRead,
+          })
+        }
       }
     }
   }

@@ -1,0 +1,14 @@
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(7,16): error TS7016: Could not find a declaration file for module 'he'. '/home/user/thyrox/node_modules/he/he.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/he` if it exists or add a new declaration (.d.ts) file containing `declare module 'he';`
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(120,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(132,7): error TS18048: 'titleHtml' is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(136,36): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(149,31): error TS2532: Object is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(156,31): error TS2532: Object is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(163,18): error TS2532: Object is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(186,9): error TS18048: 'encoded' is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(187,13): error TS6133: 'prefix' is declared but its value is never read.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(187,22): error TS18048: 'encoded' is possibly 'undefined'.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(188,19): error TS18048: 'encoded' is possibly 'undefined'.
