@@ -1,0 +1,8 @@
+comando	exit	segundos
+grep -rl require_pdf_text /home/user/kaupamex-docs/.claude	1	0.48
+git -C /home/user/kaupamex-docs grep -l require_pdf_text -- .claude	1	0.18
+git -C /home/user/kaupamex-docs grep -l require_pdf_text HEAD -- .claude	1	0.54
+git -C /home/user/kaupamex-docs log --all --oneline -S require_pdf_text	0	15.30
+archivos en disco bajo .claude: 15556
+archivos versionados bajo .claude: 15550
+commits alcanzables (--all): 5880

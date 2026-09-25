@@ -137,5 +137,20 @@ awk_out = dispatch.dispatch(
 check("el despacho real devuelve su aviso", True,
       "AWK SUBSTR" in json.dumps(awk_out, ensure_ascii=False))
 
+for name in ("detect_parallel_opportunity", "detect_git_grep_opportunity"):
+    check(f"{name} esta en la lista", True, name in dispatch.DETECTOR_NAMES)
+registry, missing = dispatch.build_registry(dispatch.DETECTOR_DIR, dispatch.DETECTOR_NAMES)
+pickaxe_out = dispatch.dispatch(
+    {"tool_name": "Bash", "tool_input": {"command": "git log --all --oneline -S foo"}},
+    detectors=registry)
+check("el despacho real avisa del pickaxe", True,
+      "GIT GREP" in json.dumps(pickaxe_out, ensure_ascii=False))
+loop_out = dispatch.dispatch(
+    {"tool_name": "Bash",
+     "tool_input": {"command": "git ls-files | while read f; do git log --follow -1 -- $f; done"}},
+    detectors=registry)
+check("el despacho real avisa del bucle en serie", True,
+      "GNU PARALLEL" in json.dumps(loop_out, ensure_ascii=False))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

@@ -161,3 +161,22 @@ Origen: directiva del ejecutor 2026-09-12, tras confirmar que la regla
 llevaba dos meses sin script (ERR-063, 2026-09-09) y que su sucesor citado
 por ordinal (`#287`) había colisionado con otros dos sujetos en el store.
 Sucesor con cita durable: **TASK-THYROX-0016**.
+
+## Buscar y repetir: el índice de git y GNU Parallel
+
+Dos detectores de `pretooluse_dispatch.py` cubren los dos momentos en que el
+catálogo de arriba no bastaba para elegir bien:
+
+- **`detect_git_grep_opportunity`** — una pregunta de presencia va a
+  `git grep` sobre el índice, no a `grep -r` ni a `git log -S`. La medición
+  y el porqué están en `search-the-git-index.md`.
+- **`detect_parallel_opportunity`** — un `for`/`while read`/`xargs` que corre
+  un comando externo por elemento, con iteraciones independientes, va a
+  `parallel -j N -k`. Episodio: un `git log --follow` por archivo sobre 97
+  archivos no terminó en 120 s en serie; con `parallel -j8 -k`, 3 min 38 s.
+  No avisa si el cuerpo escribe el índice de git (un único escritor).
+
+```bash
+python3 tests/hooks/test_detect_git_grep_opportunity.py
+python3 tests/hooks/test_detect_parallel_opportunity.py
+```
