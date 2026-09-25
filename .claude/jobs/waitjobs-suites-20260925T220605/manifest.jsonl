@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/session/test-wait-jobs.sh tests/session/test-wait-jobs-dependency.sh; do echo \"== $t\"; bash \"$t\" 2>&1 | tail -3; done", "started_at": "2026-09-25T22:06:05+00:00"}
