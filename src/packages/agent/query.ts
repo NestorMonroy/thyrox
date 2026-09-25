@@ -722,7 +722,7 @@ async function* queryLoop(
             // assistantMessages.push below — it flows back to the API and
             // mutating it would break prompt caching (byte mismatch).
             let yieldMessage: typeof message = message
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMsg = message as AssistantMessage
               const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
               let clonedContent: typeof contentArr | undefined
@@ -759,7 +759,7 @@ async function* queryLoop(
               }
               if (clonedContent) {
                 yieldMessage = {
-                  ...message,
+                  ...(message as Record<string, unknown>),
                   message: { ...(assistantMsg.message ?? {}), content: clonedContent },
                 } as typeof message
               }
@@ -801,7 +801,7 @@ async function* queryLoop(
             if (!withheld) {
               yield yieldMessage
             }
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMessage = message as AssistantMessage
               assistantMessages.push(assistantMessage)
 
@@ -1458,6 +1458,7 @@ async function* queryLoop(
       const batchToolCalls = toolUseBlocks.map(block => {
         const toolResult = toolResults.find(result => {
           if (result.type !== 'user') return false
+          if (!result.message) return false
           const content = result.message.content
           if (!Array.isArray(content)) return false
           return (content as ToolResultBlockParam[]).some(
@@ -1465,7 +1466,9 @@ async function* queryLoop(
           )
         })
         const messageContent =
-          toolResult?.type === 'user' ? toolResult.message.content : undefined
+          toolResult?.type === 'user' && toolResult.message
+            ? toolResult.message.content
+            : undefined
         const resultContent = Array.isArray(messageContent)
           ? (messageContent as ToolResultBlockParam[]).find(
               (c): c is ToolResultBlockParam =>
@@ -1550,6 +1553,7 @@ async function* queryLoop(
         const toolResult = toolResults.find(
           result =>
             result.type === 'user' &&
+            result.message &&
             Array.isArray(result.message.content) &&
             result.message.content.some(
               content =>
@@ -1559,6 +1563,7 @@ async function* queryLoop(
         )
         const resultContent =
           toolResult?.type === 'user' &&
+          toolResult.message &&
           Array.isArray(toolResult.message.content)
             ? toolResult.message.content.find(
                 (c): c is ToolResultBlockParam =>

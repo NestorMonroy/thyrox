@@ -121,7 +121,9 @@ export function extractBingResults(html: string): SearchResult[] {
     const linkMatch = h2LinkRegex.exec(block)
     if (!linkMatch) continue
 
-    const rawUrl = decodeHtmlEntities(linkMatch[1])
+    const rawUrlMatch = linkMatch[1]
+    if (rawUrlMatch === undefined) continue
+    const rawUrl = decodeHtmlEntities(rawUrlMatch)
     const titleHtml = linkMatch[2]
     if (titleHtml === undefined) continue
 

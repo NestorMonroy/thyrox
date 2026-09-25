@@ -1183,9 +1183,10 @@ export async function execCommandHook(
   // PowerShell — ver diseño §8.1. Por ahora los hooks de PS ignoran el
   // prefijo; un CLAUDE_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
   // shell) queda como trabajo futuro.
+  const shellPrefix = readEnv('CLAUDE_CODE_SHELL_PREFIX')
   const finalCommand =
-    !execArgs && !isPowerShell && readEnv('CLAUDE_CODE_SHELL_PREFIX')
-      ? formatShellPrefixCommand(readEnv('CLAUDE_CODE_SHELL_PREFIX'), command)
+    !execArgs && !isPowerShell && shellPrefix
+      ? formatShellPrefixCommand(shellPrefix, command)
       : command
 
   const hookTimeoutMs = hook.timeout
@@ -2158,6 +2159,7 @@ function getHooksConfig(
 > {
   // HookMatcher es {matcher, hooks} sin el envoltorio de zod, así que los
   // matchers del snapshot se empujan directo sin volver a envolverlos.
+  const rawHooks = getHooksConfigFromSnapshot()?.[hookEvent]
   const hooks: Array<
     | HookMatcher
     | HookCallbackMatcher
@@ -2165,7 +2167,7 @@ function getHooksConfig(
     | PluginHookMatcher
     | SkillHookMatcher
     | SessionDerivedHookMatcher
-  > = [...(getHooksConfigFromSnapshot()?.[hookEvent] ?? [])]
+  > = Array.isArray(rawHooks) ? [...rawHooks] : []
 
   // Si sólo deben correr los hooks administrados (aplica a los registrados y a los de sesión)
   const managedOnly = shouldAllowManagedHooksOnly()
@@ -2526,8 +2528,8 @@ export async function getMatchingHooks(
  * internos y no se comprueban.
  */
 export function hasInstructionsLoadedHook(): boolean {
-  const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
-  if (snapshotHooks && snapshotHooks.length > 0) return true
+  const snapshotHooks = getHooksConfigFromSnapshot()['InstructionsLoaded']
+  if (Array.isArray(snapshotHooks) && snapshotHooks.length > 0) return true
   const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
   if (registeredHooks && registeredHooks.length > 0) return true
   return false

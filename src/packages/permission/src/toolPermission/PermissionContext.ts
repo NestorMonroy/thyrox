@@ -104,7 +104,7 @@ function createPermissionContext(
   setToolPermissionContext: (context: ToolPermissionContext) => void,
   queueOps?: PermissionQueueOps,
 ) {
-  const messageId = assistantMessage.message.id
+  const messageId = assistantMessage.message.id ?? ''
   const ctx = {
     tool,
     input,

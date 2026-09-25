@@ -82,7 +82,7 @@ export function AttachmentMessage({
     }
     return (
       <Box flexDirection="column">
-        {visibleMessages.map((msg: { text: string; from: string; color: string|undefined; summary: string|undefined }, idx: number) => {
+        {visibleMessages.map((msg, idx: number) => {
           // Try to parse as JSON for task_assignment messages
           let parsedMsg: {
             type?: string

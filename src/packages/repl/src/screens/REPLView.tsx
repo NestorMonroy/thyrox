@@ -316,7 +316,7 @@ import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/load
 import { resolveAgentTools } from '@thyrox/tool-registry/tools/AgentTool/agentToolUtils.js';
 import { resumeAgentBackground } from '@thyrox/tool-registry/tools/AgentTool/resumeAgent.js';
 import { useMainLoopModel } from '../hooks/useMainLoopModel.js';
-import { useAppState } from '../appStateHooks.js';
+import { useAppState, type AppState } from '../appStateHooks.js';
 import { useReplActions } from './repl/useReplActions.js';
 import { useReplAppState } from './repl/useReplAppState.js';
 import { useReplRuntimeViews } from './repl/useReplRuntimeViews.js';
@@ -1803,7 +1803,12 @@ export function REPL({
         }
 
         // Restore file history and attribution state from the resumed conversation
-        restoreSessionStateFromLog(log, setAppState);
+        // restoreSessionStateFromLog opera sobre AppStateLike (contrato
+        // estructural que storage usa para no importar el AppState real);
+        // se adapta al setAppState concreto en el borde de la llamada.
+        restoreSessionStateFromLog(log, update =>
+          setAppState(prev => update(prev) as AppState),
+        );
         if (log.fileHistorySnapshots) {
           void copyFileHistoryForResume(log);
         }

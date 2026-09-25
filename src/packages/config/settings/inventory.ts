@@ -166,8 +166,11 @@ export function deferredKeysPresent(data: unknown): { key: string; reason: strin
   if (typeof data !== 'object' || data === null) return []
   return Object.keys(data)
     .filter((k) => DIFERIDAS[k])
-    .map((k) => ({
-      key: k,
-      reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
-    }))
+    .map((k) => {
+      const deferred = DIFERIDAS[k]
+      return {
+        key: k,
+        reason: `${deferred?.motivo ?? ''}; todavía no se declara — entraría ${deferred?.condicion ?? ''}`,
+      }
+    })
 }

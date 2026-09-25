@@ -1161,7 +1161,7 @@ export function runHeadlessStreaming(
     const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
       {}
     for (const [name, config] of Object.entries(newConfigs)) {
-      const type = config.type
+      const type = (config as { type: string }).type
       if (
         type === undefined ||
         type === 'stdio' ||
