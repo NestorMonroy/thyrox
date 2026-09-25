@@ -174,7 +174,10 @@ catálogo de arriba no bastaba para elegir bien:
   un comando externo por elemento, con iteraciones independientes, va a
   `parallel -j N -k`. Episodio: un `git log --follow` por archivo sobre 97
   archivos no terminó en 120 s en serie; con `parallel -j8 -k`, 3 min 38 s.
-  No avisa si el cuerpo escribe el índice de git (un único escritor).
+  No avisa si el cuerpo escribe el índice de git (un único escritor), si
+  modifica en sitio un archivo que no depende de la variable del bucle (las
+  iteraciones quedan encadenadas), ni sobre un `xargs` sin `-n`/`-L`/`-I`,
+  que ya agrupa todos los argumentos en una sola invocación.
 
 ```bash
 python3 tests/hooks/test_detect_git_grep_opportunity.py

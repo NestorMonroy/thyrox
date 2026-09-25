@@ -55,6 +55,33 @@ check("una lista literal corta calla", False, "for p in api ui; do git -C $p sta
 check("xargs -P ya es paralelo", False, "git ls-files | xargs -P4 -n1 wc -l")
 check("parallel ya es la forma, aunque la línea traiga un xargs", False,
       "git ls-files | xargs -n2 echo | parallel -j8 -k 'wc -l {}'")
+# Falsos positivos reales de la sesión del 2026-09-25, cada uno con su gemelo.
+# 1. xargs sin -n/-L/-I corre UNA invocación con todos los argumentos: no hay
+#    un proceso por elemento que repartir.
+check("xargs sin -n/-L/-I agrupa en una invocación y calla", False,
+      "git ls-files -o src/hooks/shell_text.py | xargs -r grep -niE 'pel'")
+check("xargs agrupado aunque edite en sitio calla", False,
+      "echo \"$FILES\" | sort -u | xargs sed -i -e 's/a/b/g'")
+check("xargs -I corre uno por elemento y avisa", True,
+      "git ls-files | xargs -I{} cp {} dst/")
+check("xargs -L 1 corre uno por elemento y avisa", True,
+      "git ls-files | xargs -L 1 wc -l")
+# 2. Un cuerpo que modifica en sitio un archivo que no depende de la variable
+#    del bucle encadena las iteraciones: no son independientes.
+SHARED = ("for m in a b c d e; do sed -i \"$m\" $S; python3 t.py; "
+          "cp $B/original.py $S; done")
+check("un bucle que modifica un archivo común calla", False, SHARED)
+check("un bucle que modifica un archivo por elemento avisa", True,
+      "for f in a b c d e; do sed -i 's/x/y/' \"$f\"; done")
+# 3. Una lista literal se cuenta por palabras de shell, no por espacios.
+check("tres elementos citados con espacios son una lista corta", False,
+      "for m in 's/A = True/A = False/' 's/B = True/B = False/' 's/C = 1/C = 2/'; "
+      "do python3 t.py \"$m\"; done")
+# 4. El cuerpo de un heredoc es texto, no se ejecuta.
+check("un bucle dentro de un heredoc calla", False,
+      "python3 - <<'PY'\nfor f in a b c d e; do grep x \"$f\"; done\nPY")
+check("tras el heredoc, un bucle real avisa", True,
+      "cat > x <<'EOF'\ntexto\nEOF\nfor f in a b c d e; do grep x \"$f\"; done")
 check("otra herramienta no se mira", False, "")
 got = gate.detect({"tool_name": "Write", "tool_input": {"file_path": "x", "content": EPISODE}})
 if got is None:
