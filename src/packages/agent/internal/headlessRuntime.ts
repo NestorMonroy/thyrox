@@ -1,10 +1,11 @@
 import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage } from '../internalTypes.js'
 import type { Message } from '../messageShapes.js'
+import type { SetAppState } from '../messageQueueManager.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
-  setAppState: (f: (prev: unknown) => unknown) => void,
+  setAppState: SetAppState,
   sessionId: string,
 ): void {
   getAgentHostBindings().registerStructuredOutputEnforcement?.(
@@ -35,7 +36,7 @@ export async function loadAllPluginsCacheOnly(): Promise<{
 export async function processUserInput(params: unknown): Promise<{
   messages: Message[]
   shouldQuery: boolean
-  allowedTools: unknown
+  allowedTools?: string[]
   model?: string
   resultText?: string
   [key: string]: unknown

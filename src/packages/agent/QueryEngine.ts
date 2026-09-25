@@ -100,27 +100,14 @@ import {
 import { readEnv } from '@thyrox/config/env'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { AttributionState } from './commitAttribution.js'
 
-type AppState = {
-  toolPermissionContext: {
-    mode: string
-    shouldAvoidPermissionPrompts?: boolean
-    [key: string]: unknown
-  }
-  fastMode?: boolean
-  fileHistory: FileHistoryState
-  mcp?: {
-    tools?: unknown[]
-    clients?: Array<{ type?: string; [key: string]: unknown }>
-  }
-  [key: string]: unknown
-}
 type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
 type AgentDefinition = { [key: string]: unknown }
 /** El mensaje de frontera con su `compactMetadata` estrechado; lo fija el bridge. */
 type SystemCompactBoundaryMessage = ReturnType<typeof createCompactBoundaryMessage>
 type OrphanedPermission = { [key: string]: unknown }
-type AttributionState = { [key: string]: unknown }
 type ProcessUserInputContext = {
   messages: Message[]
   setMessages: (fn: (prev: Message[]) => Message[]) => void

@@ -1,4 +1,5 @@
 import type { Message } from './messageShapes.js'
+import type { SetAppState } from './messageQueueManager.js'
 import type {
   ModelUsage,
   SDKAssistantMessageError,
@@ -180,7 +181,7 @@ export type AgentHostBindings = {
   createCacheSafeParams?: (ctx: AgentREPLHookContext) => unknown
   saveCacheSafeParams?: (params: unknown) => void
   registerStructuredOutputEnforcement?: (
-    setAppState: (f: (prev: unknown) => unknown) => void,
+    setAppState: SetAppState,
     sessionId: string,
   ) => void
   getMainLoopModel?: () => string
@@ -192,7 +193,7 @@ export type AgentHostBindings = {
   processUserInput?: (params: unknown) => Promise<{
     messages: Message[]
     shouldQuery: boolean
-    allowedTools: unknown
+    allowedTools?: string[]
     model?: string
     resultText?: string
     [key: string]: unknown
