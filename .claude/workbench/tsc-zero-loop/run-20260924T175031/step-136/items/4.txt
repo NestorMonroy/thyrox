@@ -1,0 +1,9 @@
+Tipo: AgentDefinition
+Copias:
+  src/packages/agent/types.ts
+  src/packages/cli/src/headless.ts
+  src/packages/provider/src/internal/legacyRuntimeSupport.ts
+  src/packages/tools/src/agent.ts
+
+src/packages/agent/attachments.ts(2513): error TS2339: Property 'agentType' does not exist on type 'AgentDefinition'.
+src/packages/agent/attachments.ts(2524): error TS2339: Property 'agentType' does not exist on type 'AgentDefinition'.

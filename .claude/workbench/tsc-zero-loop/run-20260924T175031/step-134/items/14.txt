@@ -1,0 +1,7 @@
+Tipo: PermissionUpdate
+Copias:
+  src/packages/headless-sdk/src/coreTypes.generated.ts
+  src/packages/permission/src/permissionTypes.ts
+  src/packages/swarm/src/adapters/appRuntime.ts
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(125): error TS2345: Argument of type 'unknown[] | PermissionUpdate[]' is not assignable to parameter of type 'PermissionUpdate[]'.

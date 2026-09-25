@@ -1,0 +1,6 @@
+Tipo: RequestStartEvent
+Copias:
+  src/packages/agent/messageShapes.ts
+  src/packages/agent/types/events.ts
+
+src/packages/agent/QueryEngine.ts(822): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.

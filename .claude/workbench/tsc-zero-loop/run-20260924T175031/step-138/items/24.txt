@@ -1,0 +1,10 @@
+Módulo destino: src/packages/agent/hooks.ts
+Ítem: parseHttpHookOutput
+Ancla de cuerpo: // @port-slot: parseHttpHookOutput
+Ancla de imports: // @port-imports: parseHttpHookOutput
+Fuente (sólo lectura): /home/user/kaupamex-docs/.claude/eventos/recibir-nestor-monroy-tools-20260827T191257/extraido/claude-code-nestor-monroy-tools/packages/agent/hooks.ts
+
+Miembros a portar (nombre: líneas de la fuente):
+- parseHttpHookOutput: 521-555
+
+Otros miembros del módulo que usan (existen o los porta otro ítem; úsalos por su nombre): validateHookJson

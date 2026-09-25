@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(314,16): error TS2304: Cannot find name 'MemoryFileInfo'.
+  --- código src/packages/agent/attachments.ts:304-324 ---
+    304        itemCount: number
+    305      }
+    306    | {
+    307        type: 'task_reminder'
+    308        content: Task[]
+    309        itemCount: number
+    310      }
+    311    | {
+    312        type: 'nested_memory'
+    313        path: string
+    314>       content: MemoryFileInfo
+    315        /** Path relative to CWD at creation time, for stable display */
+    316        displayPath: string
+    317      }
+    318    | {
+    319        type: 'relevant_memories'
+    320        memories: {
+    321          path: string
+    322          content: string
+    323          mtimeMs: number
+    324          /**
+src/packages/agent/attachments.ts(359,15): error TS2304: Cannot find name 'DiscoverySignal'.
+  --- código src/packages/agent/attachments.ts:349-369 ---
+    349      }
+    350    | {
+    351        type: 'skill_listing'
+    352        content: string
+    353        skillCount: number
+    354        isInitial: boolean
+    355      }
+    356    | {
+    357        type: 'skill_discovery'
+    358        skills: { name: string; description: string; shortId?: string }[]
+    359>       signal: DiscoverySignal
+    360        source: 'native' | 'aki' | 'both'
+    361      }
+    362    | {
+    363        type: 'queued_command'
+    364        prompt: string | Array<ContentBlockParam>
+    365        source_uuid?: UUID
+    366        imagePasteIds?: number[]
+    367        /** Original queue mode — 'prompt' for user messages, 'task-notification' for system events */
+    368        commandMode?: string
+    369        /** Provenance carried from QueuedCommand so mid-turn drains preserve it */
+src/packages/agent/attachments.ts(365,21): error TS2304: Cannot find name 'UUID'.
+  --- código src/packages/agent/attachments.ts:355-375 ---
+    355      }
+    356    | {
+    357        type: 'skill_discovery'
+    358        skills: { name: string; description: string; shortId?: string }[]
+    359        signal: DiscoverySignal
+    360        source: 'native' | 'aki' | 'both'
+    361      }
+    362    | {
+    363        type: 'queued_command'
+    364        prompt: string | Array<ContentBlockParam>
+    365>       source_uuid?: UUID
+    366        imagePasteIds?: number[]
+    367        /** Original queue mode — 'prompt' for user messages, 'task-notification' for system events */
+    368        commandMode?: string
+    369        /** Provenance carried from QueuedCommand so mid-turn drains preserve it */
+    370        origin?: MessageOrigin
+    371        /** Carried from QueuedCommand.isMeta — distinguishes human-typed from system-injected */
+    372        isMeta?: boolean
+    373      }
+    374    | {
+    375        type: 'output_style'
+src/packages/agent/attachments.ts(380,14): error TS2304: Cannot find name 'DiagnosticFile'.
+  --- código src/packages/agent/attachments.ts:370-390 ---
+    370        origin?: MessageOrigin
+    371        /** Carried from QueuedCommand.isMeta — distinguishes human-typed from system-injected */
+    372        isMeta?: boolean
+    373      }
+    374    | {
+    375        type: 'output_style'
+    376        style: string
+    377      }
+    378    | {
+    379        type: 'diagnostics'
+    380>       files: DiagnosticFile[]
+    381        isNew: boolean
+    382      }
+    383    | {
+    384        type: 'plan_mode'
+    385        reminderType: 'full' | 'sparse'
+    386        isSubAgent?: boolean
+    387        planFilePath: string
+    388        planExists: boolean
+    389      }
+    390    | {

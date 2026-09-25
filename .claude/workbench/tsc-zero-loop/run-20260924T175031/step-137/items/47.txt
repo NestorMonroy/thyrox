@@ -1,0 +1,23 @@
+src/packages/mcp-runtime/src/useManageMCPConnections.ts(528,23): error TS2322: Type '{ kind: string; server: string; }' is not assignable to type 'string'.
+  --- código src/packages/mcp-runtime/src/useManageMCPConnections.ts:518-538 ---
+    518                        entry_kind:
+    519                          entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    520                        is_dev: entry?.dev ?? false,
+    521                        plugin: pluginId,
+    522                      })
+    523                      enqueue({
+    524                        mode: 'prompt',
+    525                        value: wrapChannelMessage(client.name, content, meta),
+    526                        priority: 'next',
+    527                        isMeta: true,
+    528>                       origin: { kind: 'channel', server: client.name },
+    529                        skipSlashCommands: true,
+    530                      })
+    531                    },
+    532                  )
+    533                  // Permission-reply handler — separate event, separate
+    534                  // capability. Only registers if the server declares
+    535                  // claude/channel/permission (same opt-in check as the send
+    536                  // path in interactiveHandler.ts). Server parses the user's
+    537                  // reply and emits {request_id, behavior}; no regex on our
+    538                  // side, text in the general channel can't accidentally match.

@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(421,16): error TS2304: Cannot find name 'ReadResourceResult'.
+  --- código src/packages/agent/attachments.ts:411-431 ---
+    411        type: 'plan_file_reference'
+    412        planFilePath: string
+    413        planContent: string
+    414      }
+    415    | {
+    416        type: 'mcp_resource'
+    417        server: string
+    418        uri: string
+    419        name: string
+    420        description?: string
+    421>       content: ReadResourceResult
+    422      }
+    423    | {
+    424        type: 'command_permissions'
+    425        allowedTools: string[]
+    426        model?: string
+    427      }
+    428    | AgentMentionAttachment
+    429    | {
+    430        type: 'task_status'
+    431        taskId: string
+src/packages/agent/attachments.ts(432,17): error TS2304: Cannot find name 'TaskType'.
+  --- código src/packages/agent/attachments.ts:422-442 ---
+    422      }
+    423    | {
+    424        type: 'command_permissions'
+    425        allowedTools: string[]
+    426        model?: string
+    427      }
+    428    | AgentMentionAttachment
+    429    | {
+    430        type: 'task_status'
+    431        taskId: string
+    432>       taskType: TaskType
+    433        status: TaskStatus
+    434        description: string
+    435        deltaSummary: string | null
+    436        outputFilePath?: string
+    437      }
+    438    | AsyncHookResponseAttachment
+    439    | {
+    440        type: 'token_usage'
+    441        used: number
+    442        total: number
+src/packages/agent/attachments.ts(433,15): error TS2304: Cannot find name 'TaskStatus'.
+  --- código src/packages/agent/attachments.ts:423-443 ---
+    423    | {
+    424        type: 'command_permissions'
+    425        allowedTools: string[]
+    426        model?: string
+    427      }
+    428    | AgentMentionAttachment
+    429    | {
+    430        type: 'task_status'
+    431        taskId: string
+    432        taskType: TaskType
+    433>       status: TaskStatus
+    434        description: string
+    435        deltaSummary: string | null
+    436        outputFilePath?: string
+    437      }
+    438    | AsyncHookResponseAttachment
+    439    | {
+    440        type: 'token_usage'
+    441        used: number
+    442        total: number
+    443        remaining: number
+src/packages/agent/attachments.ts(1111,7): error TS6133: 'sessionTranscriptModule' is declared but its value is never read.
+  --- código src/packages/agent/attachments.ts:1101-1121 ---
+   1101    : null
+   1102  const autoModeStateModule = feature('TRANSCRIPT_CLASSIFIER')
+   1103    ? (require('@thyrox/permission/autoModeState.js') as typeof import('@thyrox/permission/autoModeState.js'))
+   1104    : null
+   1105  const BRIEF_TOOL_NAME: string | null =
+   1106    feature('KAIROS') || feature('KAIROS_BRIEF')
+   1107      ? (
+   1108          require('@thyrox/tool-registry/tools/BriefTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/BriefTool/prompt.js')
+   1109        ).BRIEF_TOOL_NAME
+   1110      : null
+   1111> const sessionTranscriptModule = feature('KAIROS')
+   1112    ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
+   1113    : null
+   1114  const MAX_MEMORY_LINES = 200
+   1115  const MAX_MEMORY_BYTES = 4096
+   1116  const INLINE_NOTIFICATION_MODES = new Set(['prompt', 'task-notification'])
+   1117  const sentSkillNames = new Map<string, Set<string>>()
+   1118  let suppressNext = false
+   1119  const FILTERED_LISTING_MAX = 30
+   1120  async function buildImageContentBlocks(
+   1121    pastedContents: Record<number, PastedContent> | undefined,

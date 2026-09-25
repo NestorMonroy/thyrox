@@ -1041,3 +1041,11 @@
 {"proposal_id": "agent:pool:src/packages/tool-registry/src/tools/SkillTool/UI.tsx", "proposer": "agent", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 240, "total_after": 258}
 {"proposal_id": "agent:pool:src/packages/repl/src/components/Message.tsx", "proposer": "agent", "outcome": "rejected-review", "targets_before": 0, "targets_after": 0, "new_diagnostics": [], "total_before": 0, "total_after": 0}
 {"proposal_id": "agent:pool:module:src/packages/cli/src/entry/mode-dispatch.ts", "proposer": "agent", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 205, "total_after": 204}
+{"proposal_id": "agent:pool:type:AskUserQuestionTimeout", "proposer": "agent", "outcome": "accepted-net", "total_before": 191, "total_after": 187}
+{"proposal_id": "agent:pool:type:LoadedPlugin", "proposer": "agent", "outcome": "partial", "total_before": 191, "total_after": 187}
+{"proposal_id": "agent:pool:type:HookJSONOutput", "proposer": "agent", "outcome": "rejected", "total_before": 187, "total_after": 187}
+{"proposal_id": "agent:pool:type:LogOption", "proposer": "agent", "outcome": "rejected", "total_before": 187, "total_after": 187}
+{"proposal_id": "agent:pool:type:ToolUseConfirm", "proposer": "agent", "outcome": "partial", "total_before": 187, "total_after": 187}
+{"proposal_id": "agent:pool:src/packages/agent/QueryEngine.ts", "proposer": "agent", "outcome": "accepted-partial", "targets_before": 7, "targets_after": 6, "new_diagnostics": [], "total_before": 246, "total_after": 244}
+{"proposal_id": "agent:pool:src/packages/agent/messages/mappers.ts", "proposer": "agent", "outcome": "accepted-partial", "targets_before": 5, "targets_after": 4, "new_diagnostics": [], "total_before": 246, "total_after": 244}
+{"proposal_id": "agent:pool:src/packages/agent/commands/brief.ts", "proposer": "agent", "outcome": "rejected", "targets_before": 1, "targets_after": 0, "new_diagnostics": ["src/packages/agent/commands/brief.ts: TS2345: Argument of type '(prev: { isBriefOnly: boolean; }) => { isBriefOnly: boolean; }' is not assignable to parameter of type '(prev: AppState) => AppState'."], "total_before": 246, "total_after": 244}

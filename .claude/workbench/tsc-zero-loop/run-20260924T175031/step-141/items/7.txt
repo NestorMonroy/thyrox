@@ -1,0 +1,94 @@
+src/packages/agent/attachments.ts(2539,27): error TS2339: Property 'agentType' does not exist on type 'AgentDefinition'.
+  --- código src/packages/agent/attachments.ts:2529-2549 ---
+   2529  
+   2530      if (!agentDef) {
+   2531        logEvent('tengu_at_mention_agent_not_found', {})
+   2532        return null
+   2533      }
+   2534  
+   2535      logEvent('tengu_at_mention_agent_success', {})
+   2536  
+   2537      return {
+   2538        type: 'agent_mention' as const,
+   2539>       agentType: agentDef.agentType,
+   2540      }
+   2541    })
+   2542  
+   2543    return results.filter(
+   2544      (result): result is NonNullable<typeof result> => result !== null,
+   2545    )
+   2546  }
+   2547  export function extractMcpResourceMentions(content: string): string[] {
+   2548    // Extrae los recursos MCP mencionados con el símbolo @ en formato @server:uri
+   2549    // Ejemplo: "@server1:resource/path" extrae "server1:resource/path"
+src/packages/agent/attachments.ts(2719,5): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir").AgentDefinition[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/types").AgentDefinition[]'.
+  --- código src/packages/agent/attachments.ts:2709-2729 ---
+   2709    if (surfaced.totalBytes >= RELEVANT_MEMORIES_CONFIG.MAX_SESSION_BYTES) {
+   2710      return undefined
+   2711    }
+   2712  
+   2713    // Encadenado al abort del turno para que Escape cancele la sideQuery de
+   2714    // inmediato, no sólo en [Symbol.dispose] al salir de queryLoop.
+   2715    const controller = createChildAbortController(toolUseContext.abortController)
+   2716    const firedAt = Date.now()
+   2717    const promise = getRelevantMemoryAttachments(
+   2718      input,
+   2719>     toolUseContext.options.agentDefinitions.activeAgents,
+   2720      toolUseContext.readFileState,
+   2721      collectRecentSuccessfulTools(messages, lastUserMessage),
+   2722      controller.signal,
+   2723      surfaced.paths,
+   2724    ).catch(e => {
+   2725      if (!isAbortError(e)) {
+   2726        logError(e)
+   2727      }
+   2728      return []
+   2729    })
+  Type 'import("/home/user/thyrox/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir").AgentDefinition' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/types").AgentDefinition'.
+    Type 'BuiltInAgentDefinition' is missing the following properties from type 'AgentDefinition': name, description, prompt
+src/packages/agent/attachments.ts(2798,45): error TS2339: Property 'agentType' does not exist on type 'AgentDefinition'.
+  --- código src/packages/agent/attachments.ts:2788-2808 ---
+   2788    agents: AgentDefinition[],
+   2789    readFileState: FileStateCache,
+   2790    recentTools: readonly string[],
+   2791    signal: AbortSignal,
+   2792    alreadySurfaced: ReadonlySet<string>,
+   2793  ): Promise<Attachment[]> {
+   2794    // If an agent is @-mentioned, search only its memory dir (isolation).
+   2795    // Otherwise search the auto-memory dir.
+   2796    const memoryDirs = extractAgentMentions(input).flatMap(mention => {
+   2797      const agentType = mention.replace('agent-', '')
+   2798>     const agentDef = agents.find(def => def.agentType === agentType)
+   2799      return agentDef?.memory
+   2800        ? [getAgentMemoryDir(agentType, agentDef.memory)]
+   2801        : []
+   2802    })
+   2803    const dirs = memoryDirs.length > 0 ? memoryDirs : [getAutoMemPath()]
+   2804  
+   2805    const allResults = await Promise.all(
+   2806      dirs.map(dir =>
+   2807        findRelevantMemories(
+   2808          input,
+src/packages/agent/attachments.ts(2799,22): error TS2339: Property 'memory' does not exist on type 'AgentDefinition'.
+  --- código src/packages/agent/attachments.ts:2789-2809 ---
+   2789    readFileState: FileStateCache,
+   2790    recentTools: readonly string[],
+   2791    signal: AbortSignal,
+   2792    alreadySurfaced: ReadonlySet<string>,
+   2793  ): Promise<Attachment[]> {
+   2794    // If an agent is @-mentioned, search only its memory dir (isolation).
+   2795    // Otherwise search the auto-memory dir.
+   2796    const memoryDirs = extractAgentMentions(input).flatMap(mention => {
+   2797      const agentType = mention.replace('agent-', '')
+   2798      const agentDef = agents.find(def => def.agentType === agentType)
+   2799>     return agentDef?.memory
+   2800        ? [getAgentMemoryDir(agentType, agentDef.memory)]
+   2801        : []
+   2802    })
+   2803    const dirs = memoryDirs.length > 0 ? memoryDirs : [getAutoMemPath()]
+   2804  
+   2805    const allResults = await Promise.all(
+   2806      dirs.map(dir =>
+   2807        findRelevantMemories(
+   2808          input,
+   2809          dir,

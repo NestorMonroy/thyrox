@@ -1,0 +1,32 @@
+src/packages/agent/QueryEngine.ts(1293,32): error TS2769: No overload matches this call.
+  --- código src/packages/agent/QueryEngine.ts:1283-1303 ---
+   1283      // garantice — se hace visible con una guarda explícita.
+   1284      if (result === undefined) {
+   1285        return
+   1286      }
+   1287  
+   1288      // Extract the text result based on message type
+   1289      let textResult = ''
+   1290      let isApiError = false
+   1291  
+   1292      if (result.type === 'assistant') {
+   1293>       const lastContent = last(result.message.content)
+   1294        if (
+   1295          lastContent?.type === 'text' &&
+   1296          !SYNTHETIC_MESSAGES.has(lastContent.text)
+   1297        ) {
+   1298          textResult = lastContent.text
+   1299        }
+   1300        isApiError = Boolean(result.isApiErrorMessage)
+   1301      }
+   1302  
+   1303      yield {
+  Overload 1 of 2, '(array: readonly [...unknown[], ContentBlockParam]): ContentBlockParam', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+  Overload 2 of 2, '(array: List<string> | null | undefined): string | undefined', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+        'number' index signatures are incompatible.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+            Type 'TextBlockParam' is not assignable to type 'string'.

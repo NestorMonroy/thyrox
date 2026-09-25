@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(165,13): error TS2304: Cannot find name 'SyncHookJSONOutput'.
+  --- código src/packages/agent/attachments.ts:155-175 ---
+    155    type: 'agent_mention'
+    156    agentType: string
+    157  }
+    158  
+    159  export type AsyncHookResponseAttachment = {
+    160    type: 'async_hook_response'
+    161    processId: string
+    162    hookName: string
+    163    hookEvent: HookEvent | 'StatusLine' | 'FileSuggestion'
+    164    toolName?: string
+    165>   response: SyncHookJSONOutput
+    166    stdout: string
+    167    stderr: string
+    168    exitCode?: number
+    169  }
+    170  
+    171  export type HookAttachment =
+    172    | HookCancelledAttachment
+    173    | {
+    174        type: 'hook_blocking_error'
+    175        blockingError: HookBlockingError
+src/packages/agent/attachments.ts(175,22): error TS2304: Cannot find name 'HookBlockingError'.
+  --- código src/packages/agent/attachments.ts:165-185 ---
+    165    response: SyncHookJSONOutput
+    166    stdout: string
+    167    stderr: string
+    168    exitCode?: number
+    169  }
+    170  
+    171  export type HookAttachment =
+    172    | HookCancelledAttachment
+    173    | {
+    174        type: 'hook_blocking_error'
+    175>       blockingError: HookBlockingError
+    176        hookName: string
+    177        toolUseID: string
+    178        hookEvent: HookEvent
+    179      }
+    180    | HookNonBlockingErrorAttachment
+    181    | HookErrorDuringExecutionAttachment
+    182    | {
+    183        type: 'hook_stopped_continuation'
+    184        message: string
+    185        hookName: string
+src/packages/agent/attachments.ts(303,16): error TS2304: Cannot find name 'TodoList'.
+  --- código src/packages/agent/attachments.ts:293-313 ---
+    293        content: string
+    294        /** Path relative to CWD at creation time, for stable display */
+    295        displayPath: string
+    296      }
+    297    | {
+    298        type: 'opened_file_in_ide'
+    299        filename: string
+    300      }
+    301    | {
+    302        type: 'todo_reminder'
+    303>       content: TodoList
+    304        itemCount: number
+    305      }
+    306    | {
+    307        type: 'task_reminder'
+    308        content: Task[]
+    309        itemCount: number
+    310      }
+    311    | {
+    312        type: 'nested_memory'
+    313        path: string
+src/packages/agent/attachments.ts(308,16): error TS2304: Cannot find name 'Task'.
+  --- código src/packages/agent/attachments.ts:298-318 ---
+    298        type: 'opened_file_in_ide'
+    299        filename: string
+    300      }
+    301    | {
+    302        type: 'todo_reminder'
+    303        content: TodoList
+    304        itemCount: number
+    305      }
+    306    | {
+    307        type: 'task_reminder'
+    308>       content: Task[]
+    309        itemCount: number
+    310      }
+    311    | {
+    312        type: 'nested_memory'
+    313        path: string
+    314        content: MemoryFileInfo
+    315        /** Path relative to CWD at creation time, for stable display */
+    316        displayPath: string
+    317      }
+    318    | {
