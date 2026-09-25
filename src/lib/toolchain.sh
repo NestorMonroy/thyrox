@@ -591,6 +591,75 @@ function thyrox_toolchain_probe_texlive() {
 }
 export -f thyrox_toolchain_probe_texlive
 
+# @description hunspell: revisión ortográfica contra el diccionario que el
+# consumidor declara.
+#
+# Mismos ejes que GNU parallel y poppler: la instalación es opt-in
+# (THYROX_INSTALL_HUNSPELL=1), el éxito se prueba volviendo a buscar el binario
+# y la sonda mide conducta. El proveedor no supone un idioma: el consumidor
+# declara el diccionario (THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY, ruta sin
+# extensión o nombre instalado) y un par de sonda, una palabra que tiene que
+# aceptar (…_PROBE_ACCEPT) y otra que tiene que rechazar (…_PROBE_REJECT). Un
+# diccionario que acepta todo, o que rechaza todo, resuelve como binario y no
+# mide nada; por eso la sonda exige las dos mitades.
+export THYROX_TOOLCHAIN_HUNSPELL_BIN="${THYROX_TOOLCHAIN_HUNSPELL_BIN:-hunspell}"
+export THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD="${THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD:-sudo apt-get install -y hunspell}"
+
+# @description ¿Acepta el diccionario la palabra buena y rechaza la mala?
+# @exitcode 0 Las dos mitades se cumplen.
+# @exitcode 1 Alguna no, o el binario no se pudo invocar.
+function thyrox_toolchain_hunspell_works() {
+  local dictionary="${THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY:-}"
+  local accept="${THYROX_TOOLCHAIN_HUNSPELL_PROBE_ACCEPT:-}" reject="${THYROX_TOOLCHAIN_HUNSPELL_PROBE_REJECT:-}"
+  local rejected
+  rejected="$(printf '%s\n%s\n' "$accept" "$reject" \
+      | LANG=C.UTF-8 "$THYROX_TOOLCHAIN_HUNSPELL_BIN" -i utf-8 -d "$dictionary" -l 2>/dev/null)"
+  if [[ "$rejected" == *"$accept"* ]]; then
+    echo "thyrox_toolchain: hunspell con '$dictionary' rechaza '$accept', que tiene que aceptar." >&2
+    return 1
+  fi
+  if [[ "$rejected" != *"$reject"* ]]; then
+    echo "thyrox_toolchain: hunspell con '$dictionary' acepta '$reject', que tiene que rechazar." >&2
+    return 1
+  fi
+  return 0
+}
+export -f thyrox_toolchain_hunspell_works
+
+function thyrox_toolchain_require_hunspell() {
+  local bin="$THYROX_TOOLCHAIN_HUNSPELL_BIN"
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    if [[ "${THYROX_INSTALL_HUNSPELL:-}" != "1" ]]; then
+      echo "thyrox_toolchain: falta '$bin' y la instalación es opt-in." >&2
+      echo "                  Reintenta con THYROX_INSTALL_HUNSPELL=1." >&2
+      echo "                  NO se emite conteo: un cero aquí no distinguiría" >&2
+      echo "                  «no hay» de «no pude medir»." >&2
+      return 2
+    fi
+    $THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD >&2 2>&1 || true
+    if ! command -v "$bin" >/dev/null 2>&1; then
+      echo "thyrox_toolchain: el instalador terminó y '$bin' sigue sin resolver." >&2
+      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+      return 2
+    fi
+  fi
+  thyrox_toolchain_hunspell_works || return 2
+  return 0
+}
+export -f thyrox_toolchain_require_hunspell
+
+# @description La sonda del preflight: se omite (exit 3) si el consumidor no
+# declara diccionario, como la de TeX Live.
+function thyrox_toolchain_probe_hunspell() {
+  if [[ -z "${THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY:-}" ]]; then
+    echo "thyrox_toolchain: el consumidor no declara THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY;" >&2
+    echo "                  la sonda de hunspell se omite." >&2
+    return 3
+  fi
+  thyrox_toolchain_require_hunspell
+}
+export -f thyrox_toolchain_probe_hunspell
+
 # ---------------------------------------------------------------------------
 # Sonda de COHERENCIA entre el proxy declarado y el CA que cada familia lee.
 # ---------------------------------------------------------------------------

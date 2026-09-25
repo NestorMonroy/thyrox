@@ -150,6 +150,8 @@ PROBES=(
   # sale 3 y se declara omitida cuando el consumidor no lo declara.
   "poppler|aviso|thyrox_toolchain_require_poppler"
   "texlive|aviso|thyrox_toolchain_probe_texlive"
+  # hunspell tampoco lo usa thyrox: su sonda sale 3 sin diccionario declarado.
+  "hunspell|aviso|thyrox_toolchain_probe_hunspell"
 )
 
 ERRORS=0; WARNS=0; PASSED=0; SKIPPED=0
