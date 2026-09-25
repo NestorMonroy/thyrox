@@ -550,7 +550,14 @@ export function useReplBridge(
               setImmediate(() => {
                 getLeaderToolUseConfirmQueue()?.(currentQueue => {
                   currentQueue.forEach(item => {
-                    void item.recheckPermission()
+                    if (
+                      item !== null &&
+                      typeof item === 'object' &&
+                      'recheckPermission' in item &&
+                      typeof item.recheckPermission === 'function'
+                    ) {
+                      void item.recheckPermission()
+                    }
                   })
                   return currentQueue
                 })

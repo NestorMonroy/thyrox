@@ -1,6 +1,6 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import * as React from 'react'
-import { Box, Text, color, stringWidth } from '@anthropic/ink'
+import { Box, Text, color, stringWidth, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
 import { useTerminalSize } from '@anthropic/ink'
 import {
   getLayoutMode,
@@ -69,6 +69,10 @@ import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { renderModelSetting } from '@thyrox/provider/model.js'
 
 const LEFT_PANEL_MAX_WIDTH = 50
+
+function isThemeSetting(value: string): value is ThemeSetting {
+  return (THEME_SETTINGS as readonly string[]).includes(value)
+}
 
 export function LogoV2(): React.ReactNode {
   const username = getGlobalConfig().oauthAccount?.displayName ?? ''
@@ -205,7 +209,7 @@ export function LogoV2(): React.ReactNode {
             </Text>
             {isDetailedProfilingEnabled() && (
               <Text dimColor>
-                Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+                Startup Perf: {getDisplayPath(getStartupPerfLogPath(getSessionId()))}
               </Text>
             )}
           </Box>
@@ -219,7 +223,8 @@ export function LogoV2(): React.ReactNode {
   // Calculate layout and display values
   const layoutMode = getLayoutMode(columns)
 
-  const userTheme = resolveThemeSetting(getGlobalConfig().theme)
+  const rawTheme = getGlobalConfig().theme
+  const userTheme = resolveThemeSetting(isThemeSetting(rawTheme) ? rawTheme : 'dark')
   const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
   const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
 

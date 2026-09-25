@@ -1403,7 +1403,7 @@ async function checkPermissionsAndCallTool(
       if (allowContentBlocks?.length) {
         const imageCount = count(
           allowContentBlocks,
-          (b: ContentBlockParam) => b.type === 'image',
+          b => b.type === 'image',
         )
         if (imageCount > 0) {
           const startId = getNextImagePasteId(toolUseContext.messages)

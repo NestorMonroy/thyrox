@@ -24,6 +24,7 @@ import type {
   StreamEvent as AgentStreamEvent,
 } from '@thyrox/agent/messageShapes'
 import type { PermissionAskDecision } from '@thyrox/permission/permissionTypes'
+import { toExternalPermissionMode } from '@thyrox/permission/PermissionMode'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import {
@@ -351,7 +352,11 @@ export function useRemoteSession({
           behavior: 'ask',
           message:
             request.description ?? `${request.tool_name} requires permission`,
-          suggestions: request.permission_suggestions,
+          suggestions: request.permission_suggestions?.map(suggestion =>
+            suggestion.type === 'setMode'
+              ? { ...suggestion, mode: toExternalPermissionMode(suggestion.mode) }
+              : suggestion,
+          ),
           blockedPath: request.blocked_path,
         }
 

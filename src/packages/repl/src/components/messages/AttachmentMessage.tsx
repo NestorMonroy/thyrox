@@ -37,6 +37,8 @@ import { CtrlOToExpand } from '../CtrlOToExpand.js'
 import { feature } from 'bun:bundle'
 import { useSelectedMessageBg } from '../messageActions.js'
 
+type RelevantMemory = { path: string; content: string }
+
 type Props = {
   addMargin: boolean
   attachment: Attachment
@@ -80,7 +82,7 @@ export function AttachmentMessage({
     }
     return (
       <Box flexDirection="column">
-        {visibleMessages.map((msg, idx) => {
+        {visibleMessages.map((msg, idx: number) => {
           // Try to parse as JSON for task_assignment messages
           let parsedMsg: {
             type?: string
@@ -148,7 +150,7 @@ export function AttachmentMessage({
       // turn is still fresh. External users (when this un-gates) just see
       // names — shortId is undefined outside ant builds anyway.
       const names = attachment.skills
-        .map(s => (s.shortId ? `${s.name} [${s.shortId}]` : s.name))
+        .map((s: { name: string; shortId?: string }) => (s.shortId ? `${s.name} [${s.shortId}]` : s.name))
         .join(', ')
       const firstId = attachment.skills[0]?.shortId
       const hint =
@@ -252,7 +254,7 @@ export function AttachmentMessage({
             </Text>
           </Box>
           {(verbose || isTranscriptMode) &&
-            attachment.memories.map(m => (
+            attachment.memories.map((m: RelevantMemory) => (
               <Box key={m.path} flexDirection="column">
                 <MessageResponse>
                   <Text dimColor>

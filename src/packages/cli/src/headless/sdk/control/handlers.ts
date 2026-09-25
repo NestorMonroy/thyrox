@@ -512,7 +512,7 @@ export function reregisterChannelHandlerAfterReconnect(
   )
   if (gate.action !== 'register') return
 
-  const entry = findChannelEntry(connection.name, getAllowedChannels())
+  const entry = findChannelEntry(connection.name, getAllowedChannels()) as ChannelEntry | undefined
   const pluginId =
     entry?.kind === 'plugin'
       ? (`${entry.name}@${entry.marketplace}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)

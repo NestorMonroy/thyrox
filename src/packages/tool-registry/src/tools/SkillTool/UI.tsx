@@ -14,6 +14,7 @@ import type { ProgressMessage } from '@thyrox/agent/messageShapes'
 import { buildSubagentLookups, EMPTY_LOOKUPS } from '@thyrox/agent/messages.js'
 import { plural } from '@thyrox/output/utils/stringUtils.js'
 import type { inputSchema, Output, Progress } from './SkillTool.js'
+import type { AgentToolProgress } from '../../progressTypes.js'
 
 type Input = z.infer<ReturnType<typeof inputSchema>>
 
@@ -72,6 +73,23 @@ export function renderToolUseMessage(
   return displayName
 }
 
+/**
+ * Guarda: el progreso de SkillTool comparte forma con `AgentToolProgress`
+ * (mensaje normalizado del subagente), pero su tipo declarado sigue siendo
+ * `unknown` (`progressTypes.ts`). Angosta antes de pasarlo a
+ * `buildSubagentLookups`.
+ */
+function hasProgressMessage(data: unknown): data is AgentToolProgress {
+  if (typeof data !== 'object' || data === null) {
+    return false
+  }
+  if (!('message' in data)) {
+    return false
+  }
+  const msg = (data as AgentToolProgress).message
+  return msg != null && typeof msg === 'object' && 'type' in msg
+}
+
 export function renderToolUseProgressMessage(
   progressMessages: ProgressMessage<Progress>[],
   {
@@ -97,7 +115,11 @@ export function renderToolUseProgressMessage(
 
   const hiddenCount = progressMessages.length - displayedMessages.length
   const { inProgressToolUseIDs } = buildSubagentLookups(
-    progressMessages.map(pm => pm.data),
+    progressMessages
+      .filter((pm): pm is ProgressMessage<AgentToolProgress> =>
+        hasProgressMessage(pm.data),
+      )
+      .map(pm => pm.data),
   )
 
   return (
