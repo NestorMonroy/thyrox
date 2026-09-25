@@ -318,5 +318,11 @@ with tempfile.TemporaryDirectory() as directory:
         refused = tc.main(["compare", str(base / "a.log"), str(base / "missing.log")])
     assert_equal("un log que no existe rehúsa, no publica ceros", 2, refused)
 
+# El comando que `next` imprime se ejecuta tal cual: el de la ruta determinista
+# se lanzó sin proponente ni tsc tras `--` y el lazo salió 2 (paso 132).
+det = tc.ROUTE_COMMANDS["deterministic"]
+assert_equal("la ruta determinista nombra la identidad, el proponente y tsc", (True, True, True),
+             ("commit_identity env" in det, "-- bin/tsc_proposers --" in det, "bunx tsc --noEmit" in det))
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

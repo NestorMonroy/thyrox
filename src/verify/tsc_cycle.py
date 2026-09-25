@@ -259,7 +259,11 @@ def cmd_shared_plan(args) -> int:
 # es un porte y va por módulo.
 ROUTE_ORDER = ("deterministic", "modules", "shared", "local")
 ROUTE_COMMANDS = {
-    "deterministic": "bash bin/tsc_zero_loop --root . --loop-dir <paso> --seed N",
+    # Forma de `zero-loop-4` (manifiesto del trabajo): identidad del commit,
+    # proponentes y tsc tras sus dos `--`; sin ellos el lazo sale 2.
+    "deterministic": ('eval "$(bash bin/commit_identity env </dev/null)"; bash bin/tsc_zero_loop --root .'
+                      " --loop-dir <paso> --max-steps 3 --seed N -- bin/tsc_proposers --"
+                      " bunx tsc --noEmit -p tsconfig.json --pretty false"),
     "modules": "bash bin/tsc_cycle modules plan --log <log> --bench <paso> && bash bin/tsc_cycle modules launch …",
     "shared": "bash bin/tsc_cycle shared plan --log <log> --bench <paso> --top 1 && bash bin/tsc_cycle shared launch …",
     "local": "pool por archivo: pool_pipeline --unit file (ruta 3)",
