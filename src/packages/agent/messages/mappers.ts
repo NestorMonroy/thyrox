@@ -11,7 +11,7 @@ import type {
   SDKMessage,
   SDKRateLimitInfo,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { ClaudeAILimits } from '@thyrox/provider/claudeAiLimits.js'
+import type { ClaudeAILimits, UnifiedWindows } from '@thyrox/provider/claudeAiLimits.js'
 import { EXIT_PLAN_MODE_V2_TOOL_NAME } from '@thyrox/tool-registry/tools/ExitPlanModeTool/constants.js'
 import type {
   AssistantMessage,
@@ -219,9 +219,18 @@ export function localCommandOutputToSDKAssistantMessage(
 /**
  * Maps internal ClaudeAILimits to the SDK-facing SDKRateLimitInfo type,
  * stripping internal-only fields like unifiedRateLimitFallbackAvailable.
+ *
+ * Porte de `ka` de 2.1.281 (`chunk-049e548v.js`): `org_spend_cap_reached` se
+ * publica como `org_level_disabled_until`, `overageScope` como `limitScope`,
+ * `overageInUse` sólo si `includeOverageInUse` no lo apaga y las ventanas
+ * unificadas llegan por opción, no desde los límites.
  */
 export function toSDKRateLimitInfo(
   limits: ClaudeAILimits | undefined,
+  {
+    includeOverageInUse = true,
+    unifiedWindows,
+  }: { includeOverageInUse?: boolean; unifiedWindows?: UnifiedWindows } = {},
 ): SDKRateLimitInfo | undefined {
   if (!limits) {
     return undefined
@@ -242,14 +251,35 @@ export function toSDKRateLimitInfo(
       overageResetsAt: limits.overageResetsAt,
     }),
     ...(limits.overageDisabledReason !== undefined && {
-      overageDisabledReason: limits.overageDisabledReason,
+      overageDisabledReason:
+        limits.overageDisabledReason === 'org_spend_cap_reached'
+          ? 'org_level_disabled_until'
+          : limits.overageDisabledReason,
     }),
+    ...(limits.overageScope !== undefined && { limitScope: limits.overageScope }),
     ...(limits.isUsingOverage !== undefined && {
       isUsingOverage: limits.isUsingOverage,
     }),
+    ...(limits.overageInUse !== undefined &&
+      includeOverageInUse && { overageInUse: limits.overageInUse }),
     ...(limits.surpassedThreshold !== undefined && {
       surpassedThreshold: limits.surpassedThreshold,
     }),
+    ...(limits.rateLimitGraceActive === true && { rateLimitGraceActive: true }),
+    ...(limits.overagePeriodMonthly !== undefined && {
+      overagePeriodMonthly: limits.overagePeriodMonthly,
+    }),
+    ...(limits.overagePeriodChannel !== undefined && {
+      overagePeriodChannel: limits.overagePeriodChannel,
+    }),
+    ...(limits.errorCode !== undefined && { errorCode: limits.errorCode }),
+    ...(limits.canUserPurchaseCredits !== undefined && {
+      canUserPurchaseCredits: limits.canUserPurchaseCredits,
+    }),
+    ...(limits.hasChargeableSavedPaymentMethod !== undefined && {
+      hasChargeableSavedPaymentMethod: limits.hasChargeableSavedPaymentMethod,
+    }),
+    ...(unifiedWindows !== undefined && { unifiedWindows }),
   }
 }
 

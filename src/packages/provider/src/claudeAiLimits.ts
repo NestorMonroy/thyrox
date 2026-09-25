@@ -379,6 +379,7 @@ export type RateLimitType =
   | 'seven_day'
   | 'seven_day_opus'
   | 'seven_day_sonnet'
+  | 'seven_day_overage_included'
   | 'overage'
 
 /**
@@ -397,8 +398,11 @@ export type OverageDisabledReason =
   | 'group_zero_credit_limit'
   | 'member_zero_credit_limit'
   | 'org_service_level_disabled'
-  | 'org_service_zero_credit_limit'
   | 'no_limits_configured'
+  | 'fetch_error'
+  // Sólo llega por cabecera; `toSDKRateLimitInfo` lo publica como
+  // `org_level_disabled_until` (`ka`, 2.1.281).
+  | 'org_spend_cap_reached'
   | 'unknown'
 
 export type ClaudeAILimits = {
@@ -419,6 +423,33 @@ export type ClaudeAILimits = {
   overageDisabledReason?: OverageDisabledReason
   isUsingOverage?: boolean
   surpassedThreshold?: number
+  // Campos que 2.1.281 lee de las cabeceras `anthropic-ratelimit-unified-*`
+  // (`vke`, `chunk-4n4g22z6.js`) y publica al SDK (`ka`).
+  /** Alcance del tope de consumo extra: cabecera `overage-scope`. */
+  overageScope?: OverageScope
+  /** `overage-in-use` === "true": el consumo extra está cubriendo el exceso. */
+  overageInUse?: boolean
+  /** Rutas de mejora de plan, separadas por coma en `upgrade-paths`. */
+  upgradePaths?: string[]
+  /** Uso del tope mensual de servicio: `overage-period-monthly-utilization`. */
+  overagePeriodMonthly?: { utilization: number }
+  /** Uso del tope del canal: `overage-period-channel-utilization`. */
+  overagePeriodChannel?: { utilization: number }
+  /** La respuesta cae en la zona de gracia del límite. */
+  rateLimitGraceActive?: boolean
+  errorCode?: 'credits_required'
+  canUserPurchaseCredits?: boolean
+  hasChargeableSavedPaymentMethod?: boolean
+}
+
+/** Los tres valores que `mlt` acepta de `overage-scope`; cualquier otro se descarta. */
+export type OverageScope = 'service' | 'channel' | 'group_pool'
+
+/** Ventanas unificadas que el SDK publica aparte del estado vigente. */
+export type UnifiedWindows = {
+  five_hour?: { utilization: number; resetsAt: number }
+  seven_day?: { utilization: number; resetsAt: number }
+  seven_day_overage_included?: { utilization: number; resetsAt: number }
 }
 
 const INITIAL_LIMITS: ClaudeAILimits = {

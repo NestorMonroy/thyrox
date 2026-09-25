@@ -1329,25 +1329,39 @@ export const SDKUserMessageReplaySchema = lazySchema(() =>
   }),
 )
 
-export const SDKRateLimitInfoSchema = lazySchema(() =>
-  z
+export const SDKRateLimitInfoSchema = lazySchema(() => {
+  // Forma de 2.1.281 (`chunk-b7h8pwnv.js`, extraída a
+  // `.claude/workbench/rate-limit-info-port-20260925T205710/sdk-rate-limit-schema.js`).
+  const window = z.object({ utilization: z.number(), resetsAt: z.number().int() })
+  return z
     .object({
       status: z.enum(['allowed', 'allowed_warning', 'rejected']),
-      resetsAt: z.number().optional(),
+      resetsAt: z.number().int().optional(),
       rateLimitType: z
         .enum([
           'five_hour',
           'seven_day',
           'seven_day_opus',
           'seven_day_sonnet',
+          'seven_day_overage_included',
           'overage',
         ])
         .optional(),
       utilization: z.number().optional(),
+      unifiedWindows: z
+        .object({
+          five_hour: window.optional(),
+          seven_day: window.optional(),
+          seven_day_overage_included: window.optional(),
+        })
+        .optional()
+        .describe(
+          'Five-hour, weekly and overage-included weekly windows as read from the anthropic-ratelimit-unified-* headers; absent until the first response that carries them.',
+        ),
       overageStatus: z
         .enum(['allowed', 'allowed_warning', 'rejected'])
         .optional(),
-      overageResetsAt: z.number().optional(),
+      overageResetsAt: z.number().int().optional(),
       overageDisabledReason: z
         .enum([
           'overage_not_provisioned',
@@ -1360,16 +1374,24 @@ export const SDKRateLimitInfoSchema = lazySchema(() =>
           'group_zero_credit_limit',
           'member_zero_credit_limit',
           'org_service_level_disabled',
-          'org_service_zero_credit_limit',
           'no_limits_configured',
+          'fetch_error',
           'unknown',
         ])
         .optional(),
       isUsingOverage: z.boolean().optional(),
+      overageInUse: z.boolean().optional(),
       surpassedThreshold: z.number().optional(),
+      rateLimitGraceActive: z.boolean().optional(),
+      overagePeriodMonthly: z.object({ utilization: z.number() }).optional(),
+      overagePeriodChannel: z.object({ utilization: z.number() }).optional(),
+      limitScope: z.enum(['service', 'channel', 'group_pool']).optional(),
+      errorCode: z.enum(['credits_required']).optional(),
+      canUserPurchaseCredits: z.boolean().optional(),
+      hasChargeableSavedPaymentMethod: z.boolean().optional(),
     })
-    .describe('Rate limit information for claude.ai subscription users.'),
-)
+    .describe('Rate limit information for claude.ai subscription users.')
+})
 
 export const SDKAssistantMessageSchema = lazySchema(() =>
   z.object({
