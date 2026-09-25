@@ -12,7 +12,10 @@ Qué haría fallar a este control:
 - no ver una copia LOCAL (sin `export`) de un tipo exportado en otro archivo:
   paso 113, dos `type CanUseToolFn = (...args: unknown[]) => …` en `agent`
   causaban 6 errores y el clasificador no los contaba;
-- contar un nombre local que nadie exporta (`Props`, `State`): llenaría la cola.
+- contar un nombre local que nadie exporta (`Props`, `State`): llenaría la cola;
+- tomar como citado un tipo que sólo aparece DENTRO de un literal de objeto
+  impreso: paso 114, ocho errores de `ToolPermissionContext` se atribuyeron a
+  `AdditionalWorkingDirectory` porque tsc imprimía la estructura entera.
 """
 from __future__ import annotations
 
@@ -58,6 +61,15 @@ assert_equal("el tipo citado dentro de un genérico se ve", {"Promise", "Command
              tr.cited_types(diags[0].message))
 assert_equal("el nombre de una propiedad entre comillas no es un tipo citado", {"LocalOnly"},
              tr.cited_types(diags[2].message))
+
+structural = ("Type '{ mode: PermissionMode; dirs: Map<string, WorkDir> }' is not assignable to type "
+              "'ToolContext'.")
+assert_equal("los nombres dentro de un literal de objeto no se citan", {"ToolContext"},
+             tr.cited_types(structural))
+assert_equal("los de una unión y un arreglo, sí", {"Alpha", "Beta"},
+             tr.cited_types("Type 'Alpha[] | Beta' is not assignable to type 'string'."))
+assert_equal("ni los de un tipo función", {"Result"},
+             tr.cited_types("Type '(input: WorkDir) => Result' is not assignable to type 'string'."))
 
 duplicates = {"CommandModule": ["p/a.ts", "q/a.ts"], "HostBindings": ["p/h.ts", "q/h.ts"]}
 routes = tr.classify(diags, duplicates)

@@ -28,7 +28,7 @@ DETERMINISTIC = frozenset({"TS7016", "TS2305", "TS2724", "TS7006"})
 HEADER = re.compile(r"^(?P<file>[^(\s][^(]*)\((?P<line>\d+),(?P<col>\d+)\): error (?P<code>TS\d+): (?P<message>.*)$")
 # Un tipo citado es el texto entre comillas que sigue a la palabra `type`; el
 # de una propiedad (`Property 'x'`) o un módulo (`module 'x'`) no lo es.
-QUOTED_TYPE = re.compile(r"\btype '((?:[^']|'(?!\s|\.|$))*)'")
+QUOTED_TYPE = re.compile(r"\b[Tt]ype '((?:[^']|'(?!\s|\.|$))*)'")
 IDENTIFIER = re.compile(r"\b[A-Z][A-Za-z0-9_]*\b")
 EXPORTED = re.compile(r"^export (?:type|interface) ([A-Z][A-Za-z0-9_]*)", re.M)
 # Una copia LOCAL (sin `export`) de un tipo exportado en otro lado también
@@ -56,10 +56,26 @@ def parse_diagnostics(log: str) -> list[Diagnostic]:
     return found
 
 
+def outer_level(text: str) -> str:
+    """El tipo sin el interior de sus literales de objeto (`{…}`) ni de sus
+    listas de parámetros (`(…)`): lo que tsc imprime dentro es estructura, no
+    el tipo citado. Paso 114: ocho errores de `ToolPermissionContext` se
+    atribuyeron a `AdditionalWorkingDirectory`, impreso dentro de su literal."""
+    kept, depth = [], 0
+    for char in text:
+        if char in "{(":
+            depth += 1
+        elif char in "})":
+            depth = max(depth - 1, 0)
+        elif depth == 0:
+            kept.append(char)
+    return "".join(kept)
+
+
 def cited_types(message: str) -> set[str]:
     names: set[str] = set()
     for quoted in QUOTED_TYPE.findall(message):
-        names.update(IDENTIFIER.findall(quoted))
+        names.update(IDENTIFIER.findall(outer_level(quoted)))
     return names
 
 
