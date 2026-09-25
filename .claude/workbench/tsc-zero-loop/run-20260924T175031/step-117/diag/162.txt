@@ -1,0 +1,49 @@
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Property 'type' is missing in type 'Message' but required in type 'AnyMessage'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:73-93 ---
+     73      // so observability sees WHY the resume failed. ant uH() expands to
+     74      // tengu_feature_bad with feature_name + error_code.
+     75      logEvent('tengu_feature_bad', {
+     76        feature_name: 'subagent_launch' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     77        error_code: 'subagent_resume_transcript_missing' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+     78      })
+     79      throw new Error(`No transcript found for agent ID: ${agentId}`)
+     80    }
+     81    const resumedMessages = filterWhitespaceOnlyAssistantMessages(
+     82      filterOrphanedThinkingOnlyMessages(
+     83>       filterUnresolvedToolUses(transcript.messages),
+     84      ),
+     85    )
+     86    const resumedReplacementState = reconstructForSubagentResume(
+     87      toolUseContext.contentReplacementState,
+     88      resumedMessages,
+     89      transcript.contentReplacements,
+     90    )
+     91    // Best-effort: if the original worktree was removed externally, fall back
+     92    // to parent cwd rather than crashing on chdir later.
+     93    const resumedWorktreePath = meta?.worktreePath
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content

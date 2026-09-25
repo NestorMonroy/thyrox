@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(1461,27): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1451-1471 ---
+   1451      // rollup point hooks need for batch-level bookkeeping. Skipped on
+   1452      // empty batches and when aborted (the next model request never happens
+   1453      // anyway in the abort path).
+   1454      if (
+   1455        toolUseBlocks.length > 0 &&
+   1456        !toolUseContext.abortController.signal.aborted
+   1457      ) {
+   1458        const batchToolCalls = toolUseBlocks.map(block => {
+   1459          const toolResult = toolResults.find(result => {
+   1460            if (result.type !== 'user') return false
+   1461>           const content = result.message.content
+   1462            if (!Array.isArray(content)) return false
+   1463            return (content as ToolResultBlockParam[]).some(
+   1464              c => c.type === 'tool_result' && c.tool_use_id === block.id,
+   1465            )
+   1466          })
+   1467          const messageContent =
+   1468            toolResult?.type === 'user' ? toolResult.message.content : undefined
+   1469          const resultContent = Array.isArray(messageContent)
+   1470            ? (messageContent as ToolResultBlockParam[]).find(
+   1471                (c): c is ToolResultBlockParam =>
+src/packages/agent/query.ts(1468,41): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1458-1478 ---
+   1458        const batchToolCalls = toolUseBlocks.map(block => {
+   1459          const toolResult = toolResults.find(result => {
+   1460            if (result.type !== 'user') return false
+   1461            const content = result.message.content
+   1462            if (!Array.isArray(content)) return false
+   1463            return (content as ToolResultBlockParam[]).some(
+   1464              c => c.type === 'tool_result' && c.tool_use_id === block.id,
+   1465            )
+   1466          })
+   1467          const messageContent =
+   1468>           toolResult?.type === 'user' ? toolResult.message.content : undefined
+   1469          const resultContent = Array.isArray(messageContent)
+   1470            ? (messageContent as ToolResultBlockParam[]).find(
+   1471                (c): c is ToolResultBlockParam =>
+   1472                  c.type === 'tool_result' && c.tool_use_id === block.id,
+   1473              )
+   1474            : undefined
+   1475          return {
+   1476            tool_name: block.name,
+   1477            tool_input: block.input,
+   1478            tool_use_id: block.id,

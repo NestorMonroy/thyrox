@@ -1,0 +1,26 @@
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/openai/streamAdapter.ts:67-87 ---
+     67        const details = (chunk.usage as any).prompt_tokens_details
+     68        if (details?.cached_tokens) {
+     69          cachedTokens = details.cached_tokens
+     70        }
+     71      }
+     72  
+     73      // Emit message_start on first chunk
+     74      if (!started) {
+     75        started = true
+     76  
+     77>       yield {
+     78          type: 'message_start',
+     79          message: {
+     80            id: messageId,
+     81            type: 'message',
+     82            role: 'assistant',
+     83            content: [],
+     84            model,
+     85            stop_reason: null,
+     86            stop_sequence: null,
+     87            usage: {
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details

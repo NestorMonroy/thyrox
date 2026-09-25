@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3302,56): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ type: "control_response"; response: { subtype: "success"; request_id: string; response?: Record<string, unknown> | undefined; } | { subtype: "error"; request_id: string; error: string; pending_permission_requests?: { ...; }[] | undefined; }; }'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3292-3312 ---
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+   3300                      // stdin processing loop so they resolve pending
+   3301                      // permission requests from the SDK consumer.
+   3302>                     structuredIO.injectControlResponse(response)
+   3303                    },
+   3304                    onInterrupt() {
+   3305                      abortController?.abort()
+   3306                    },
+   3307                    onSetModel(model) {
+   3308                      const resolved =
+   3309                        model === 'default' ? getDefaultMainLoopModel() : model
+   3310                      activeUserSpecifiedModel = resolved
+   3311                      setMainLoopModelOverride(resolved)
+   3312                    },
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3434,11): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3424-3444 ---
+   3424        }
+   3425  
+   3426        // First prompt message implicitly initializes if not already done.
+   3427        initialized = true
+   3428  
+   3429        // Check for duplicate user message - skip if already processed
+   3430        if (message.uuid) {
+   3431          const sessionId = getSessionId() as UUID
+   3432          const existsInSession = await doesMessageExistInSession(
+   3433            sessionId,
+   3434>           message.uuid,
+   3435          )
+   3436  
+   3437          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3438          if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+   3439            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3440            // Send acknowledgment for duplicate message if replay mode is enabled
+   3441            if (options.replayUserMessages) {
+   3442              logForDebugging(
+   3443                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3444              )
