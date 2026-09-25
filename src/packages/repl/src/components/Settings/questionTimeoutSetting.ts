@@ -1,7 +1,7 @@
 import { updateSettingsForSource } from '@thyrox/config/settings'
+import type { AskUserQuestionTimeout } from '@thyrox/config/settings'
 
 const ASK_USER_QUESTION_TIMEOUTS = ['60s', '5m', '10m', 'never'] as const
-type AskUserQuestionTimeout = (typeof ASK_USER_QUESTION_TIMEOUTS)[number]
 
 export function questionTimeoutSetting(
   value: AskUserQuestionTimeout | undefined,

@@ -570,6 +570,7 @@ export function hasAutoModeOptIn(): boolean {
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { SettingsJson } from './types.js'
+export type { AskUserQuestionTimeout } from './askUserQuestionTimeout.js'
 
 
 /**

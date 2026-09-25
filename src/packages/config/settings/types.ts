@@ -24,6 +24,7 @@ import { lazySchema } from '../internal/lazySchema.ts'
 import { SandboxSettingsSchema } from './schemas/sandbox.ts'
 import { MarketplaceSourceSchema } from './schemas/marketplace.js'
 import { DynamicWorkflowSizeSchema } from './dynamicWorkflowSize.js'
+import { AskUserQuestionTimeoutSchema } from './askUserQuestionTimeout.js'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -224,7 +225,7 @@ export const SettingsSchema = lazySchema(() => z
         .optional()
         .describe('Custom file suggestion configuration for @ mentions'),
     dynamicWorkflowSize: DynamicWorkflowSizeSchema,
-    askUserQuestionTimeout: z.number().positive().optional(),
+    askUserQuestionTimeout: AskUserQuestionTimeoutSchema,
     modelType: z.string().optional(),
     availableModels: z.array(z.string()).optional(),
     modelOverrides: z
