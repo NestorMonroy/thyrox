@@ -95,7 +95,52 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # de golpe y no correrlas seria publicar un verde que no medi. La cadena de
 # respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
 # el barrido es la tarea #91.
-LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
+# El hogar del ledger tiene clave PROPIA desde H-THYROX-179:
+# THYROX_JOBS_LEDGER_DIR, la RAIZ bajo la que cada sesion recibe su
+# subdirectorio. THYROX_JOBS_DIR no servia para eso en un consumer: en
+# `job_runs.py` esa misma clave nombra el hogar de los RUNS, y un consumer que
+# la declara con ese significado mezclaria los `.job` con los runs y perderia
+# la separacion por sesion. Una clave, dos referentes.
+#
+# Precedencia, de la declaracion mas inmediata a la mas general:
+#   1. THYROX_JOBS_LEDGER_DIR exportada           -> <valor>/<sesion>
+#   2. THYROX_JOBS_DIR / KX_TRABAJOS_DIR exportadas -> <valor>, tal cual
+#      (forma heredada; la usan las suites de shell para aislar su ledger)
+#   3. THYROX_JOBS_LEDGER_DIR en el `.env`         -> <valor>/<sesion>
+#      (el que THYROX_ENV_FILE nombra, leido con `thyrox_config_value`: un
+#      `grep` propio del `.env` seria una segunda fuente de verdad)
+#   4. <thyrox>/.claude/jobs-ledger/<sesion>
+#
+# THYROX_JOBS_DIR NO se lee del `.env`, a proposito: ahi su significado es el
+# de runs, y leerla como ledger reproduciria la mezcla que esto corrige.
+_resolve_ledger() {
+    local root="${THYROX_JOBS_LEDGER_DIR:-}" code
+    if [[ -z "$root" ]]; then
+        if [[ -n "${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-}}" ]]; then
+            printf '%s' "${THYROX_JOBS_DIR:-$KX_TRABAJOS_DIR}"
+            return 0
+        fi
+        # Exit 1 de `thyrox_config_value` es «no declarada» y cae al default;
+        # cualquier otro es un fallo del mecanismo, y caer al default en
+        # silencio llevaria el ledger a donde nadie lo pidio.
+        # stdout y stderr juntos: el aviso de «sin declarar» es esperado en el
+        # exit 1 y se descarta; en cualquier otro fallo se reenvia.
+        root="$(source "$_ROOT/src/lib/reach.sh" && thyrox_config_value THYROX_JOBS_LEDGER_DIR 2>&1)"; code=$?
+        if (( code == 1 )); then
+            printf '%s' "$_ROOT/.claude/jobs-ledger/$_SESSION"
+            return 0
+        elif (( code != 0 )); then
+            echo "wait-jobs: no se pudo leer THYROX_JOBS_LEDGER_DIR (exit $code): $root" >&2
+            return 2
+        fi
+    fi
+    if [[ "$root" != /* ]]; then
+        echo "wait-jobs: THYROX_JOBS_LEDGER_DIR debe ser una ruta absoluta; se recibio '$root'." >&2
+        return 2
+    fi
+    printf '%s' "${root%/}/$_SESSION"
+}
+LEDGER="$(_resolve_ledger)" || exit 2
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 # Las dos formas de la familia: `EXIT=` del envoltorio a mano y
 # `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las
