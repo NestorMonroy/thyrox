@@ -25,7 +25,7 @@ import '@thyrox/app-host/runtime/bootstrap.js'
 
 import type { RuntimeHandles } from '@thyrox/app-host'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
-import { setThemeConfigCallbacks } from '@anthropic/ink'
+import { setThemeConfigCallbacks, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
 import { runClaudeCode } from '@thyrox/cli'
 
 import { createRuntimeHandles } from '@thyrox/app-host/runtime/runtimeHandles.js'
@@ -36,12 +36,17 @@ export { startDeferredPrefetches };
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 profileCheckpoint("main_tsx_imports_loaded");
 
+function isThemeSetting(value: string): value is ThemeSetting {
+  return (THEME_SETTINGS as readonly string[]).includes(value)
+}
+
 // Wire up theme config persistence into @anthropic/ink's ThemeProvider.
 // eslint-disable-next-line custom-rules/no-top-level-side-effects
 setThemeConfigCallbacks({
   loadTheme: () => {
     try {
-      return getGlobalConfig().theme
+      const theme = getGlobalConfig().theme
+      return isThemeSetting(theme) ? theme : 'dark'
     } catch {
       // ThemeProvider mounts before enableConfigs() in interactive startup.
       // Fall back to a safe default for first render, then later reads use config.

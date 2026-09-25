@@ -118,8 +118,10 @@ describe('yank tracking', () => {
     pushToKillRing('c')
     recordYank(0, 1)
     const popped1 = yankPop()
+    if (popped1 === null) throw new Error('yankPop returned null')
     expect(popped1.text).toBe('b')
     const popped2 = yankPop()
+    if (popped2 === null) throw new Error('yankPop returned null')
     expect(popped2.text).toBe('a')
   })
 
@@ -130,6 +132,7 @@ describe('yank tracking', () => {
     recordYank(5, 2)
     updateYankLength(4) // simulate yank insertion of 'bbbb'
     const popped = yankPop()
+    if (popped === null) throw new Error('yankPop returned null')
     // length-replacement window now covers the 4 we typed
     expect(popped.start).toBe(5)
     expect(popped.length).toBe(4)

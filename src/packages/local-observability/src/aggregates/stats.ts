@@ -52,6 +52,7 @@ import {
   isTranscriptMessage,
   type ModelUsage,
   readJSONLFile,
+  type SpeculationAcceptEntry,
   SYNTHETIC_MODEL,
   type TranscriptMessage,
 } from '../internal/pendingCrossPackageDeps.js'
@@ -242,7 +243,7 @@ async function processSessionFiles(
         if (isTranscriptMessage(entry)) {
           messages.push(entry as unknown as TranscriptMessage)
         } else if (entry.type === 'speculation-accept') {
-          totalSpeculationTimeSavedMs += entry.timeSavedMs
+          totalSpeculationTimeSavedMs += (entry as SpeculationAcceptEntry).timeSavedMs
         }
       }
 

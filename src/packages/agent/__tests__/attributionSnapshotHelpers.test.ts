@@ -180,7 +180,7 @@ describe('restoreAttributionStateFromSnapshots', () => {
 
 describe('incrementPromptCount', () => {
   test('increments by 1 + saves snapshot', () => {
-    let savedSnapshot: AttributionSnapshotMessage | null = null
+    let savedSnapshot: AttributionSnapshotMessage | null = null as AttributionSnapshotMessage | null
     const state = createEmptyAttributionState()
     const result = incrementPromptCount(state, snap => {
       savedSnapshot = snap
@@ -199,7 +199,7 @@ describe('incrementPromptCount', () => {
   })
 
   test('snapshot includes incremented count (not original)', () => {
-    let savedCount: number | null | undefined = null
+    let savedCount: number | null | undefined = null as number | null | undefined
     const state = createEmptyAttributionState()
     state.promptCount = 10
     incrementPromptCount(state, snap => {

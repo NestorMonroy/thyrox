@@ -202,7 +202,8 @@ async function callModel(prompt: string): Promise<string | null> {
       },
     })
     if (response.isApiErrorMessage) return null
-    return messages.getAssistantMessageText(response).trim() || null
+    const text = messages.getAssistantMessageText(response)
+    return text === null ? null : text.trim() || null
   } catch (e) {
     if (e instanceof APIUserAbortError) return null
     return null

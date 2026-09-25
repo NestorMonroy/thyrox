@@ -10,6 +10,7 @@ import type { Tool } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import type { LocalShellTaskState } from '@thyrox/repl/localShellTaskGuards.js'
+import type { ShellCommandWithOutput } from '@thyrox/shell/shellCommand.js'
 import type { RemoteAgentTaskState } from '../../tasks/RemoteAgentTask.js'
 import type { TaskState } from '@thyrox/repl/tasksTypes.js'
 import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
@@ -72,7 +73,10 @@ async function getTaskOutputData(task: TaskState): Promise<TaskOutput> {
   let output: string
   if (task.type === 'local_bash') {
     const bashTask = task as LocalShellTaskState
-    const taskOutputObj = bashTask.shellCommand?.taskOutput
+    // shellCommand siempre lo puebla exec(), que devuelve ShellCommandWithOutput;
+    // el campo del estado sólo declara el contrato base ShellCommand.
+    const shellCommand = bashTask.shellCommand as ShellCommandWithOutput | null
+    const taskOutputObj = shellCommand?.taskOutput
     if (taskOutputObj) {
       const stdout = await taskOutputObj.getStdout()
       const stderr = taskOutputObj.getStderr()

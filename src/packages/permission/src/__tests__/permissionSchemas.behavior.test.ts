@@ -92,7 +92,7 @@ describe('permission schemas (Zod wire-format pins)', () => {
         'localSettings',
         'session',
         'cliArg',
-      ]
+      ] as const
       for (const d of destinations) {
         expect(permissionUpdateDestinationSchema().parse(d)).toBe(d)
       }

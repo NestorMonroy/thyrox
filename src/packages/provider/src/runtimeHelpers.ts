@@ -58,7 +58,7 @@ export function normalizeContentFromAPI(
   blocks: unknown,
   _tools: ProviderTools,
   _agentId?: string,
-): ProviderMessage['message']['content'] {
+): NonNullable<ProviderMessage['message']>['content'] {
   if (!Array.isArray(blocks)) return []
   return blocks.map(block => {
     if (!block || typeof block !== 'object') return block
@@ -76,7 +76,7 @@ export function normalizeContentFromAPI(
       }
     }
     return typed
-  }) as ProviderMessage['message']['content']
+  }) as NonNullable<ProviderMessage['message']>['content']
 }
 
 export function normalizeMessagesForAPI(

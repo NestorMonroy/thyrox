@@ -111,12 +111,6 @@ export async function installPluginsForHeadless(): Promise<boolean> {
               }
             },
           }),
-        r => ({
-          installed_count: r.installed.length,
-          updated_count: r.updated.length,
-          failed_count: r.failed.length,
-          skipped_count: r.skipped.length,
-        }),
       )
 
       if (reconcileResult.skipped.length > 0) {

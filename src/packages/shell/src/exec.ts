@@ -221,7 +221,11 @@ export async function exec(
 
   // Create TaskOutput via injected factory
   const taskOutput: TaskOutputPort = _createTaskOutputFn
-    ? _createTaskOutputFn(taskId, onProgress ?? null, !usePipeMode)
+    ? _createTaskOutputFn(
+        taskId,
+        (onProgress as ((...args: unknown[]) => void) | undefined) ?? null,
+        !usePipeMode,
+      )
     : new StubTaskOutput(taskId)
 
   // In file mode, both stdout and stderr go to the same file fd.

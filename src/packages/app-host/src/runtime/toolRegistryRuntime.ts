@@ -55,6 +55,12 @@ const coordinatorModeModule = feature('COORDINATOR_MODE')
 
 let registryHostBindingsInstalled = false
 
+// REPL_ONLY_TOOLS es Set<unión de literales> en el paquete de origen; se
+// ensancha una vez a Set<string> porque tool.name es string en este árbol.
+const replOnlyToolNameSet: ReadonlySet<string> = new Set<string>(
+  REPL_ONLY_TOOLS,
+)
+
 export function installToolRegistryRuntimeBindings(): void {
   if (registryHostBindingsInstalled) return
 
@@ -108,7 +114,7 @@ export function installToolRegistryRuntimeBindings(): void {
         )
         if (replEnabled) {
           allowedTools = allowedTools.filter(
-            tool => !REPL_ONLY_TOOLS.has(tool.name),
+            tool => !replOnlyToolNameSet.has(tool.name),
           )
         }
       }

@@ -20,6 +20,7 @@
  * contrato con terceros, no del módulo.
  */
 import { describe, expect, test } from 'bun:test'
+import type { z } from 'zod/v4'
 
 describe('lazySchema — construir tarde, y una sola vez', () => {
   test('1. no construye hasta la primera llamada', async () => {
@@ -216,7 +217,7 @@ describe('permissionUpdateSchema — las seis formas de actualizar', () => {
     // ERROR. La discriminada señala `type` y para; la unión corriente reporta
     // las seis ramas —incluidos `rules` y `behavior`, campos que esta carga
     // nunca declaró— y nombra ramas que no venían al caso.
-    const [issue] = r.error!.issues as Array<Record<string, unknown>>
+    const [issue] = r.error!.issues as z.core.$ZodIssueInvalidUnion[]
     expect(issue!.discriminator).toBe('type')
     expect(issue!.path).toEqual(['type'])
     expect((issue!.errors as unknown[]).length).toBe(0)

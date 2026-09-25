@@ -39,6 +39,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (!cmd.userFacingName) {
+      throw new Error('expected userFacingName')
+    }
     expect(cmd.userFacingName()).toBe('visible-name')
   })
 
@@ -52,6 +55,9 @@ describe('createMovedToPluginCommand — shape', () => {
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
     expect(cmd.description).toBe('desc here')
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.progressMessage).toBe('in-progress')
   })
 
@@ -76,6 +82,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.contentLength).toBe(0)
   })
 })

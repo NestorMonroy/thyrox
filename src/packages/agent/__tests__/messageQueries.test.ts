@@ -15,22 +15,22 @@ import {
   getLastAssistantMessage,
   hasToolCallsInLastAssistantTurn,
 } from '../messages.js'
-import type { Message } from '../messageShapes.js'
+import type { AssistantMessage, Message, UserMessage } from '../messageShapes.js'
 
-function user(content: unknown): Message {
+function user(content: unknown): UserMessage {
   return {
     type: 'user',
     uuid: '00000000-0000-0000-0000-000000000001' as UUID,
     message: { content: content as never },
-  } as Message
+  } as UserMessage
 }
 
-function assistant(content: unknown): Message {
+function assistant(content: unknown): AssistantMessage {
   return {
     type: 'assistant',
     uuid: '00000000-0000-0000-0000-000000000002' as UUID,
     message: { content: content as never },
-  } as Message
+  } as AssistantMessage
 }
 
 describe('getLastAssistantMessage', () => {

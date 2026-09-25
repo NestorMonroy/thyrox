@@ -6,7 +6,7 @@ import {
   type AgentMemoryScope,
   loadAgentMemoryPrompt,
 } from '@thyrox/memory/agentMemory'
-import type { AgentDefinition } from './_deps.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { FILE_EDIT_TOOL_NAME } from './_deps.js'
 import { FILE_READ_TOOL_NAME } from './_deps.js'
 import { FILE_WRITE_TOOL_NAME } from './_deps.js'

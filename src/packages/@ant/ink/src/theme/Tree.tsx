@@ -83,7 +83,6 @@ function TreeBranchLine({
         <Box
           flexDirection="row"
           flexShrink={0}
-          alignSelf="stretch"
           noSelect="from-left-edge"
         >
           {connectors.map((c, i) => (

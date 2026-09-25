@@ -3,6 +3,7 @@ import {
   parseCellId,
   mapNotebookCellsToToolResult,
 } from '@thyrox/tool-registry/notebook.js'
+import type { NotebookCellSource } from '@thyrox/tool-registry/notebookTypes'
 
 // ─── parseCellId ───────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ describe('parseCellId', () => {
 
 describe('mapNotebookCellsToToolResult', () => {
   test('returns tool result with correct tool_use_id', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'code',
         source: 'print("hello")',
@@ -68,7 +69,7 @@ describe('mapNotebookCellsToToolResult', () => {
   })
 
   test('content array contains text blocks for cell content', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'code',
         source: 'x = 1',
@@ -88,7 +89,7 @@ describe('mapNotebookCellsToToolResult', () => {
   })
 
   test('merges adjacent text blocks from multiple cells', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'code',
         source: 'a = 1',
@@ -105,12 +106,14 @@ describe('mapNotebookCellsToToolResult', () => {
 
     const result = mapNotebookCellsToToolResult(data, 'tool-2')
     // Two adjacent text blocks should be merged into one
-    const textBlocks = result.content!.filter((b: any) => b.type === 'text')
+    const content = result.content!
+    if (!Array.isArray(content)) throw new Error('content esperado como array')
+    const textBlocks = content.filter((b) => b.type === 'text')
     expect(textBlocks).toHaveLength(1)
   })
 
   test('preserves image blocks without merging', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'code',
         source: 'plot()',
@@ -136,12 +139,14 @@ describe('mapNotebookCellsToToolResult', () => {
     ]
 
     const result = mapNotebookCellsToToolResult(data, 'tool-3')
-    const types = result.content!.map((b: any) => b.type)
+    const content = result.content!
+    if (!Array.isArray(content)) throw new Error('content esperado como array')
+    const types = content.map((b) => b.type)
     expect(types).toContain('image')
   })
 
   test('markdown cell includes cell_type metadata', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'markdown',
         source: '# Title',
@@ -155,7 +160,7 @@ describe('mapNotebookCellsToToolResult', () => {
   })
 
   test('non-python code cell includes language metadata', () => {
-    const data = [
+    const data: NotebookCellSource[] = [
       {
         cellType: 'code',
         source: 'val x = 1',

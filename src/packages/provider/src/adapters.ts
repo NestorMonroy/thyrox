@@ -16,6 +16,11 @@ import type {
   ProviderAdapterOverrides,
   ProviderQueryArgs,
 } from './types.js'
+import type {
+  ProviderAssistantMessage,
+  ProviderStreamEvent,
+  ProviderSystemAPIErrorMessage,
+} from './contracts.js'
 import { getProviderContextPipeline } from './contextPipeline.js'
 import { getProviderNetworkLayer } from './network.js'
 import { anthropicAuthProvider, geminiAuthProvider, openAIAuthProvider } from './auth.js'
@@ -44,6 +49,17 @@ function isAPIProviderValue(value: string): value is APIProvider {
 }
 
 /**
+ * Distingue el mensaje final de asistente del resto de eventos del stream.
+ * `ProviderStreamEvent.type` es `string` sin acotar, asi que una comparacion
+ * suelta no basta para que TS descarte esa rama de la union.
+ */
+function isProviderAssistantMessage(
+  event: ProviderStreamEvent | ProviderAssistantMessage | ProviderSystemAPIErrorMessage,
+): event is ProviderAssistantMessage {
+  return event.type === 'assistant'
+}
+
+/**
  * La forma comun de los tres adaptadores.
  *
  * El `query` por defecto se DERIVA del stream: recorre los eventos y se queda
@@ -66,9 +82,9 @@ function createAdapter(
     query:
       options.query ??
       (async args => {
-        let assistantMessage
+        let assistantMessage: ProviderAssistantMessage | undefined
         for await (const event of options.queryStream(args)) {
-          if (event.type === 'assistant') {
+          if (isProviderAssistantMessage(event)) {
             assistantMessage = event
           }
         }

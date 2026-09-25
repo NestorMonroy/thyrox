@@ -68,7 +68,7 @@ describe('isHookEqual — command type', () => {
     expect(
       isHookEqual(
         { type: 'command', command: 'echo', shell: 'bash' } as Hook,
-        { type: 'command', command: 'echo', shell: 'zsh' } as Hook,
+        { type: 'command', command: 'echo', shell: 'powershell' } as Hook,
       ),
     ).toBe(false)
   })

@@ -42,7 +42,7 @@
  * `process.cwd()`, `logError` cae a un no-op — mismo criterio que
  * `permission/src/filesystem.ts` fija con su `_b().foo?.() ?? respaldo`.
  */
-import { execFile } from 'node:child_process'
+import { execFile, type ExecException } from 'node:child_process'
 
 export { execSyncWithDefaults } from './execFileNoThrowPortable.js'
 
@@ -126,13 +126,13 @@ export type ExecFileWithCwdOptions = {
   input?: string
 }
 
-function getErrorMessage(error: NodeJS.ErrnoException, errorCode: number): string {
+function getErrorMessage(error: ExecException, errorCode: number): string {
   if (error.message) return error.message
   if (typeof error.signal === 'string') return error.signal
   return String(errorCode)
 }
 
-function getErrorCode(error: NodeJS.ErrnoException): number {
+function getErrorCode(error: ExecException): number {
   return typeof error.code === 'number' ? error.code : 1
 }
 
@@ -178,13 +178,13 @@ export function execFileNoThrowWithCwd(
         },
         (error, stdout, stderr) => {
           if (error) {
-            const errorCode = getErrorCode(error as NodeJS.ErrnoException)
+            const errorCode = getErrorCode(error)
             if (finalPreserveOutput) {
               settle({
                 stdout: stdout || '',
                 stderr: stderr || '',
                 code: errorCode,
-                error: getErrorMessage(error as NodeJS.ErrnoException, errorCode),
+                error: getErrorMessage(error, errorCode),
               })
             } else {
               settle({ stdout: '', stderr: '', code: errorCode })

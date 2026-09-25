@@ -86,7 +86,7 @@ describe('expandPastedTextRefs', () => {
   test('leaves image refs alone', () => {
     const input = 'see [Image #1] here'
     const out = expandPastedTextRefs(input, {
-      1: { id: 1, type: 'image', mediaType: 'image/png' },
+      1: { id: 1, type: 'image', content: '', mediaType: 'image/png' },
     })
     expect(out).toBe('see [Image #1] here')
   })

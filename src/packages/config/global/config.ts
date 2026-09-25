@@ -637,7 +637,6 @@ let globalConfigCache: {
   file: string | null
 } = { config: null, mtime: 0, file: null }
 
-let lastReadFileStats: { mtime: number; size: number } | null = null
 let globalConfigWriteCount = 0
 // Guard de reentrada: evita `getConfig → logEvent → getGlobalConfig →
 // getConfig` cuando el archivo está corrupto.
@@ -865,7 +864,6 @@ function startGlobalConfigFreshnessWatcher(file: string): void {
             mtime: curr.mtimeMs,
             file,
           }
-          lastReadFileStats = { mtime: curr.mtimeMs, size: curr.size }
         })
         .catch(() => {})
     },
@@ -884,7 +882,6 @@ function writeThroughGlobalConfigCache(
   file: string,
 ): void {
   globalConfigCache = { config, mtime: Date.now(), file }
-  lastReadFileStats = null
 }
 
 export function getGlobalConfig(filePath?: string): GlobalConfig {
@@ -916,9 +913,6 @@ export function getGlobalConfig(filePath?: string): GlobalConfig {
       getConfig(file, createDefaultGlobalConfig),
     )
     globalConfigCache = { config, mtime: stats?.mtimeMs ?? Date.now(), file }
-    lastReadFileStats = stats
-      ? { mtime: stats.mtimeMs, size: stats.size }
-      : null
     if (!filePath) startGlobalConfigFreshnessWatcher(file)
     return config
   } catch {

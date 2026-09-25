@@ -342,6 +342,7 @@ export function buildAPIProviderProperties(): Property[] {
       foundry: 'Microsoft Foundry',
       gemini: 'Gemini API',
       openai: 'OpenAI API',
+      codex: 'Codex',
     }[apiProvider]
     properties.push({
       label: 'API provider',

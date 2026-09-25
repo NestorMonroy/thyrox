@@ -1410,7 +1410,7 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
   let isNewChain = false
   // Cada rama emite un bloque por mensaje: el contenido sale como arreglo por
   // construcción, que es la forma que `NormalizedMessage` declara.
-  return messages.flatMap(message => {
+  return messages.flatMap((message): NormalizedMessage[] => {
     switch (message.type) {
       case 'assistant': {
         // El `switch` NO estrecha: `Message.type` esta declarado `MessageType`
@@ -1450,11 +1450,11 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
         })
       }
       case 'attachment':
-        return [message]
+        return [message] as NormalizedMessage[]
       case 'progress':
-        return [message]
+        return [message] as NormalizedMessage[]
       case 'system':
-        return [message]
+        return [message] as NormalizedMessage[]
       case 'user': {
         // Mismo cast y misma razon que la rama `assistant`. `UserMessage`
         // declara `message` requerido —DIVERGENCIA declarada en
@@ -1513,9 +1513,9 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
       // medio: un `default` intercalado es legal y se lee como si cortara las
       // ramas que le siguen.
       default:
-        return [message]
+        return [message] as NormalizedMessage[]
     }
-  }) as NormalizedMessage[]
+  })
 }
 
 
@@ -1565,7 +1565,7 @@ function featureEnabledDeferred(name: string): boolean {
     const { getFeatureValue_CACHED_MAY_BE_STALE } = require('@thyrox/config/feature-flags') as {
       getFeatureValue_CACHED_MAY_BE_STALE: <T>(name: string, fallback: T) => T
     }
-    return getFeatureValue_CACHED_MAY_BE_STALE(name, false) === true
+    return getFeatureValue_CACHED_MAY_BE_STALE<boolean>(name, false) === true
   } catch {
     return false
   }

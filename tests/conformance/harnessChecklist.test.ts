@@ -43,7 +43,7 @@ describe('el manifiesto contra el apendice A', () => {
       else if (linea.startsWith('- ') && seccion) porSeccion[seccion] = (porSeccion[seccion] ?? 0) + 1
     }
     const conVinetas = Object.entries(porSeccion).filter(([, n]) => n > 0)
-    expect(SECTIONS.length).toBe(conVinetas.length)
+    expect(conVinetas.length).toBe(SECTIONS.length)
     expect(CHECKLIST.length).toBe(conVinetas.reduce((a, [, n]) => a + n, 0))
   })
 

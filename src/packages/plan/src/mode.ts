@@ -123,7 +123,7 @@ export class PlanMode {
   private state: PlanState = 'inactive'
   readonly path: string
 
-  constructor(sessionId: string, private readonly options: PlanBackendOptions) {
+  constructor(sessionId: string, options: PlanBackendOptions) {
     this.path = planFilePath(sessionId, options)
   }
 

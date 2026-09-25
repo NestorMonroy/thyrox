@@ -299,7 +299,13 @@ export function ResumeConversation({
         result.agentColor,
       )
       if (standaloneAgentContext) {
-        setAppState(prev => ({ ...prev, standaloneAgentContext }))
+        setAppState(prev => ({
+          ...prev,
+          standaloneAgentContext: {
+            ...standaloneAgentContext,
+            color: standaloneAgentContext.color as AgentColorName | undefined,
+          },
+        }))
       }
       void updateSessionName(result.agentName)
 

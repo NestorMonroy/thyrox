@@ -42,7 +42,7 @@ import {
   FILE_UNEXPECTEDLY_MODIFIED_ERROR,
   GLOBAL_CLAUDE_FOLDER_PERMISSION_PATTERN,
 } from '../FileEditTool/constants.ts'
-import { TodoItemSchema, TodoListSchema } from '../../todo/types.ts'
+import { TodoItemSchema, TodoListSchema, type TodoList } from '../../todo/types.ts'
 import { TodoWriteTool } from '../TodoWriteTool/TodoWriteTool.ts'
 
 let estado: Record<string, any>
@@ -178,7 +178,7 @@ describe('TodoWriteTool — 8 casos', () => {
 
   test('12. no pide permiso: devuelve la entrada intacta', async () => {
     const entrada = { todos: [] }
-    const r = await TodoWriteTool.checkPermissions(entrada as never, ctx())
+    const r = await TodoWriteTool.checkPermissions(entrada as never)
     expect(r).toEqual({ behavior: 'allow', updatedInput: entrada })
   })
 
@@ -216,7 +216,7 @@ describe('TodoWriteTool — 8 casos', () => {
   test('16. pero el resultado devuelve la lista COMPLETA, no la vaciada', async () => {
     // La distinción importa: el estado se vacía para el panel; quien lee el
     // resultado tiene que ver qué se cerró.
-    const todos = [
+    const todos: TodoList = [
       { content: 'una', status: 'completed', activeForm: 'haciendo una' },
     ]
     const { data } = await TodoWriteTool.call({ todos } as never, ctx())
@@ -225,12 +225,12 @@ describe('TodoWriteTool — 8 casos', () => {
   })
 
   test('17. la lista ANTERIOR viaja en el resultado', async () => {
-    const previa = [
+    const previa: TodoList = [
       { content: 'vieja', status: 'pending', activeForm: 'haciendo vieja' },
     ]
     const c = ctx()
     await TodoWriteTool.call({ todos: previa } as never, c)
-    const nueva = [
+    const nueva: TodoList = [
       { content: 'nueva', status: 'pending', activeForm: 'haciendo nueva' },
     ]
     const { data } = await TodoWriteTool.call({ todos: nueva } as never, c)

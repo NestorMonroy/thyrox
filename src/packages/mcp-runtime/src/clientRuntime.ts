@@ -2275,9 +2275,10 @@ export async function executeTool(call: {
     args: call.input,
     meta: call.meta,
     signal,
-    setAppState: updater => {
-      void updater({ elicitation: { queue: [] } } as AppState)
-    },
+    // No-op: executeTool siempre pasa handleElicitation, así que la rama
+    // de cola de elicitation en modo REPL (dentro de callMCPToolWithUrlElicitationRetry)
+    // nunca invoca este updater.
+    setAppState: () => {},
     handleElicitation: async () => ({ action: 'cancel' }),
   })
 }

@@ -259,7 +259,7 @@ describe('createChannelPermissionCallbacks', () => {
       received = r
     })
     expect(cb.resolve('abcde', 'allow', 'tg')).toBe(true)
-    expect(received).toEqual({ behavior: 'allow', fromServer: 'tg' })
+    expect(received as { behavior: string; fromServer: string } | null).toEqual({ behavior: 'allow', fromServer: 'tg' })
   })
 
   test('resolve unknown id → false', () => {
@@ -305,7 +305,7 @@ describe('createChannelPermissionCallbacks', () => {
       result = r
     })
     cb.resolve('xyzab', 'deny', 'plugin:imessage')
-    expect(result).toEqual({ behavior: 'deny', fromServer: 'plugin:imessage' })
+    expect(result as { behavior: string; fromServer: string } | null).toEqual({ behavior: 'deny', fromServer: 'plugin:imessage' })
   })
 
   test('separate IDs are independent', () => {

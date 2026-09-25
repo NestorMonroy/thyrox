@@ -47,7 +47,7 @@ describe('extractInboundMessageFields — empty / missing content', () => {
     expect(
       extractInboundMessageFields({
         type: 'user',
-        message: { content: [] },
+        message: { content: [] as Block[] },
       } as Msg),
     ).toBeUndefined()
   })

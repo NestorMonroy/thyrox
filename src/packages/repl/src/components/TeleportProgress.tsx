@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { Root } from '@anthropic/ink'
 import { Box, Text, useAnimationFrame } from '@anthropic/ink'
 import { AppStateProvider } from '../appStateHooks.js'
+import { getDefaultAppState } from '@thyrox/app-host/state/AppStateStore.js'
 import {
   checkOutTeleportedSessionBranch,
   processMessagesForTeleportResume,
@@ -105,7 +106,7 @@ export async function teleportWithProgress(
   }
 
   root.render(
-    <AppStateProvider>
+    <AppStateProvider initialState={getDefaultAppState()}>
       <TeleportProgressWrapper />
     </AppStateProvider>,
   )

@@ -162,6 +162,7 @@ describe('createProductionDeps', () => {
       canUseTool: (async () => ({ behavior: 'ask' })) as never,
     })
     const r = await deps.permission.canUseTool({ name: 'Echo' } as never, {}, {} as never)
+    if (r.allowed) throw new Error('se esperaba allowed:false')
     expect(r.reason).not.toBe('Permission denied')
   })
 

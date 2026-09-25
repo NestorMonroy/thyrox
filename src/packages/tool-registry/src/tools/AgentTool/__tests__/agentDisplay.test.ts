@@ -1,4 +1,5 @@
 import { mock, describe, expect, test } from "bun:test";
+import type { ResolvedAgent } from "../agentDisplay";
 
 // Mock heavy deps
 mock.module("../../utils/model/agent.js", () => ({
@@ -15,8 +16,8 @@ const {
   AGENT_SOURCE_GROUPS,
 } = await import("../agentDisplay");
 
-function makeAgent(agentType: string, source: string): any {
-  return { agentType, source, name: agentType };
+function makeAgent(agentType: string, source: string, name: string = agentType): any {
+  return { agentType, source, name };
 }
 
 describe("resolveAgentOverrides", () => {
@@ -57,10 +58,11 @@ describe("resolveAgentOverrides", () => {
   });
 
   test("preserves agent definition properties", () => {
-    const agents = [{ agentType: "a", source: "userSettings", name: "Agent A" }];
+    const agents = [makeAgent("a", "userSettings", "Agent A")];
     const result = resolveAgentOverrides(agents, agents);
-    expect(result[0]!.name).toBe("Agent A");
-    expect(result[0]!.agentType).toBe("a");
+    const named = result[0]! as ResolvedAgent & { name: string };
+    expect(named.name).toBe("Agent A");
+    expect(named.agentType).toBe("a");
   });
 
   test("handles empty arrays", () => {

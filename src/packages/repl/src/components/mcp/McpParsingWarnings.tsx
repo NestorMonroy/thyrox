@@ -8,14 +8,27 @@ import {
 import type { ValidationError } from '@thyrox/config/validation'
 import { Box, Link, Text } from '@anthropic/ink'
 
+/**
+ * El productor MCP (`mcp-runtime/config.ts`) añade `mcpErrorMetadata` a cada
+ * error de scope MCP, pero el `ValidationError` compartido (`@thyrox/config/validation`)
+ * no lo declara. Se amplía sólo en este archivo, que es quien lee el campo.
+ */
+type McpValidationError = ValidationError & {
+  mcpErrorMetadata?: {
+    scope: ConfigScope
+    serverName?: string
+    severity?: 'fatal' | 'warning'
+  }
+}
+
 function McpConfigErrorSection({
   scope,
   parsingErrors,
   warnings,
 }: {
   scope: ConfigScope
-  parsingErrors: ValidationError[]
-  warnings: ValidationError[]
+  parsingErrors: McpValidationError[]
+  warnings: McpValidationError[]
 }): React.ReactNode {
   const hasErrors = parsingErrors.length > 0
   const hasWarnings = warnings.length > 0
@@ -93,7 +106,7 @@ export function McpParsingWarnings(): React.ReactNode {
         { scope: 'enterprise', config: getMcpConfigsByScope('enterprise') },
       ] satisfies Array<{
         scope: ConfigScope
-        config: { errors: ValidationError[] }
+        config: { errors: McpValidationError[] }
       }>,
     [],
   )
@@ -140,8 +153,8 @@ export function McpParsingWarnings(): React.ReactNode {
 }
 
 function filterErrors(
-  errors: ValidationError[],
+  errors: McpValidationError[],
   severity: 'fatal' | 'warning',
-): ValidationError[] {
+): McpValidationError[] {
   return errors.filter(e => e.mcpErrorMetadata?.severity === severity)
 }

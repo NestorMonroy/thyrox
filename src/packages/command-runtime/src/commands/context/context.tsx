@@ -2,6 +2,7 @@ import { feature } from 'bun:bundle'
 import * as React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
 import type { AppState } from '@thyrox/app-host/state/AppStateStore.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import { ContextVisualization } from '@thyrox/repl/components/ContextVisualization.js'
 import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
@@ -28,6 +29,18 @@ function toApiView(messages: Message[]): Message[] {
   return view
 }
 
+// LocalJSXCommandContext sólo declara dynamicMcpConfig/ideInstallationStatus/theme
+// en options; messages, getAppState y options.{mainLoopModel,tools} llegan por el
+// escape hatch [key: string]: unknown (mismo patrón que ForkCommandContext en fork.tsx).
+type ContextCommandContext = LocalJSXCommandContext & {
+  messages: Message[]
+  getAppState: () => AppState
+  options: LocalJSXCommandContext['options'] & {
+    mainLoopModel: string
+    tools: Tools
+  }
+}
+
 export async function call(
   onDone: LocalJSXCommandOnDone,
   context: LocalJSXCommandContext,
@@ -36,7 +49,7 @@ export async function call(
     messages,
     getAppState,
     options: { mainLoopModel, tools },
-  } = context
+  } = context as ContextCommandContext
 
   const apiView = toApiView(messages)
 

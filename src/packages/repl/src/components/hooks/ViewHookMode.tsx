@@ -32,7 +32,7 @@ export function ViewHookMode({
       <Box flexDirection="column" gap={1}>
         <Box flexDirection="column">
           <Text>
-            Event: <Text bold>{selectedHook.event}</Text>
+            Event: <Text bold>{String(selectedHook.event)}</Text>
           </Text>
           {eventSupportsMatcher && (
             <Text>

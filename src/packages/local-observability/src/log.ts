@@ -14,6 +14,7 @@
  */
 
 import { readdir, readFile, stat } from 'fs/promises'
+import type { Dirent } from 'fs'
 import { join } from 'path'
 
 import {
@@ -101,7 +102,7 @@ export async function getErrorLogByIndex(
 }
 
 async function loadLogList(path: string): Promise<LogOption[]> {
-  let files: Awaited<ReturnType<typeof readdir>>
+  let files: Dirent[]
   try {
     files = await readdir(path, { withFileTypes: true })
   } catch {

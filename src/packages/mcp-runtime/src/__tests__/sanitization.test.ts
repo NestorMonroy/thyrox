@@ -101,9 +101,10 @@ describe('recursivelySanitizeUnicode — arrays', () => {
 
 describe('recursivelySanitizeUnicode — objects', () => {
   test('sanitizes both keys and values', () => {
-    const result = recursivelySanitizeUnicode({
+    const input: Record<string, string> = {
       'key\u200Bone': 'val\u200Bue',
-    })
+    }
+    const result = recursivelySanitizeUnicode(input)
     expect(result).toEqual({ keyone: 'value' })
   })
   test('recurses into nested objects', () => {

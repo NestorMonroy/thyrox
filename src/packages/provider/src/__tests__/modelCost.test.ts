@@ -54,8 +54,8 @@ describe('cost tier constants — anchor to documented pricing', () => {
       webSearchRequests: 0.01,
     })
     // Fast mode = 6× the base Opus 4.6 input price.
-    expect(COST_TIER_30_150.inputTokens).toBe(COST_TIER_5_25.inputTokens * 6)
-    expect(COST_TIER_30_150.outputTokens).toBe(COST_TIER_5_25.outputTokens * 6)
+    expect(Number(COST_TIER_30_150.inputTokens)).toBe(COST_TIER_5_25.inputTokens * 6)
+    expect(Number(COST_TIER_30_150.outputTokens)).toBe(COST_TIER_5_25.outputTokens * 6)
   })
 
   test('COST_HAIKU_35 — Haiku 3.5 pricing', () => {
@@ -126,7 +126,7 @@ describe('cost tier constants — anchor to documented pricing', () => {
       COST_HAIKU_45,
     ]
     for (const t of tiers) {
-      expect(t.outputTokens).toBe(t.inputTokens * 5)
+      expect(Number(t.outputTokens)).toBe(t.inputTokens * 5)
     }
   })
 

@@ -26,7 +26,7 @@
 import * as React from 'react'
 import { useEffect, useMemo, useState } from 'react'
 import figures from 'figures'
-import { Box, Byline, Dialog, KeyboardShortcutHint, Text } from '@anthropic/ink'
+import { Box, Byline, Dialog, type KeyboardEvent, KeyboardShortcutHint, Text } from '@anthropic/ink'
 import type { Theme } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import type { Message } from '@thyrox/agent/messageShapes'

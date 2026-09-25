@@ -64,7 +64,7 @@ describe('filterToolsByServer', () => {
   })
 
   test('tool with undefined name is filtered out (no startsWith on undefined)', () => {
-    const t = { name: undefined } as Tool
+    const t = { name: undefined } as Partial<Tool> as Tool
     expect(filterToolsByServer([t], 'github')).toEqual([])
   })
 })

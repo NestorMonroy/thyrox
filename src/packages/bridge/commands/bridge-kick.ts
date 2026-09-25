@@ -1,14 +1,18 @@
 /**
  * Puerto fiel de `ccnmt: packages/bridge/commands/bridge-kick.ts`.
  * `Command`/`LocalCommandCall` son sólo-tipo (se borran al compilar, no
- * necesitan resolver) — se citan `@thyrox/command-runtime` y
- * `@thyrox/agent`, mismo convenio que el resto del árbol, aunque esos
- * paquetes aún no porten esos archivos exactos (`runtime.ts` /
- * `command.ts`).
+ * necesitan resolver).
+ *
+ * Divergencia declarada: la fuente tipa `call` con `LocalCommandCall`
+ * importado de `@claude-code-how-works/agent/command.js`. Se usa el
+ * `LocalCommandCall` propio de `@thyrox/command-runtime/runtime.js` (mismo
+ * nombre, mismo propósito, ya portado en ese paquete) porque es el tipo que
+ * `Command['load']` realmente exige — el de `@thyrox/agent` describe un
+ * `LocalJSXCommandContext` distinto y no es asignable al de
+ * `command-runtime` (mismo convenio que `cost.ts`).
  */
 import { getBridgeDebugHandle } from '../src/bridgeDebug.js'
-import type { Command } from '@thyrox/command-runtime/runtime.js'
-import type { LocalCommandCall } from '@thyrox/agent/command.js'
+import type { Command, LocalCommandCall } from '@thyrox/command-runtime/runtime.js'
 
 /**
  * Sólo-ant: inyecta estados de falla del bridge para probar

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import type { UserMessage } from '@thyrox/agent/messageShapes'
 import {
   getToolUseIDFromParentMessage,
   tagMessagesWithToolUseID,
@@ -12,9 +13,9 @@ describe('tagMessagesWithToolUseID', () => {
       { type: 'user', message: { content: 'hi' } } as Msg,
     ]
     const tagged = tagMessagesWithToolUseID(messages, 'tu_123')
-    expect((tagged[0] as { sourceToolUseID: string }).sourceToolUseID).toBe(
-      'tu_123',
-    )
+    expect(
+      (tagged[0] as UserMessage & { sourceToolUseID: string }).sourceToolUseID,
+    ).toBe('tu_123')
   })
 
   test('preserves all other fields when tagging user message', () => {
@@ -22,11 +23,11 @@ describe('tagMessagesWithToolUseID', () => {
       {
         type: 'user',
         message: { content: 'original' },
-        uuid: 'msg-uuid',
+        uuid: 'msg-uuid-0000-0000-0000',
       } as Msg,
     ]
     const tagged = tagMessagesWithToolUseID(messages, 'tu_x')
-    expect((tagged[0] as { uuid: string }).uuid).toBe('msg-uuid')
+    expect((tagged[0] as { uuid: string }).uuid).toBe('msg-uuid-0000-0000-0000')
     expect((tagged[0] as { type: string }).type).toBe('user')
   })
 
@@ -51,9 +52,9 @@ describe('tagMessagesWithToolUseID', () => {
     const userMsg: Msg = { type: 'user', message: { content: 'u' } } as Msg
     const sysMsg: Msg = { type: 'system' } as never
     const tagged = tagMessagesWithToolUseID([userMsg, sysMsg], 'tu_x')
-    expect((tagged[0] as { sourceToolUseID: string }).sourceToolUseID).toBe(
-      'tu_x',
-    )
+    expect(
+      (tagged[0] as UserMessage & { sourceToolUseID: string }).sourceToolUseID,
+    ).toBe('tu_x')
     expect(tagged[1]).toBe(sysMsg)
   })
 
@@ -153,6 +154,7 @@ describe('getToolUseIDFromParentMessage', () => {
   test('returns undefined for empty content array', () => {
     const parent = {
       type: 'assistant',
+      uuid: 'parent-uuid-0000-0000-0000',
       message: { content: [] },
     } as Parameters<typeof getToolUseIDFromParentMessage>[0]
     expect(getToolUseIDFromParentMessage(parent, 'Bash')).toBeUndefined()

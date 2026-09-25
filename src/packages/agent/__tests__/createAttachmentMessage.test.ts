@@ -11,7 +11,9 @@ describe('createAttachmentMessage (Kd)', () => {
     expect(m.type).toBe('attachment')
     expect(m.attachment).toBe(attachment)
     expect(m.uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
-    expect(new Date(m.timestamp).toISOString()).toBe(m.timestamp)
+    const { timestamp } = m
+    if (typeof timestamp !== 'string') throw new Error('timestamp debe ser string')
+    expect(new Date(timestamp).toISOString()).toBe(timestamp)
   })
   test('cada mensaje lleva su propio uuid', () => {
     expect(createAttachmentMessage({ type: 'x' }).uuid).not.toBe(createAttachmentMessage({ type: 'x' }).uuid)

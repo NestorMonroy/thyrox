@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Suspense, use } from 'react'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
+import type { IDEExtensionInstallationStatus } from '@thyrox/ide/ide.js'
 import { useIsInsideModal } from '../../modalContext.js'
 import { Box, Text, useTheme } from '@anthropic/ink'
 import { type AppState, useAppState } from '../../appStateHooks.js'
@@ -62,7 +63,10 @@ function buildSecondarySection({
     { label: 'Model', value: modelLabel },
     ...buildIDEProperties(
       mcp.clients,
-      context.options.ideInstallationStatus,
+      context.options.ideInstallationStatus as
+        | IDEExtensionInstallationStatus
+        | null
+        | undefined,
       theme,
     ),
     ...buildMcpProperties(mcp.clients, theme),

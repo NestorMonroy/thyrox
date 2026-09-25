@@ -57,12 +57,12 @@ function getDisableExtglobCommand(shellPath: string): string | null {
 
 export async function createBashShellProvider(
   shellPath: string,
-  options?: { skipSnapshot?: boolean },
+  options?: { skipSnapshot?: boolean; snapshotCtx?: import('../context.js').SnapshotContext },
 ): Promise<ShellProvider> {
   let currentSandboxTmpDir: string | undefined
-  const snapshotPromise: Promise<string | undefined> = options?.skipSnapshot
+  const snapshotPromise: Promise<string | undefined> = options?.skipSnapshot || !options?.snapshotCtx
     ? Promise.resolve(undefined)
-    : createAndSaveSnapshot(shellPath).catch(error => {
+    : createAndSaveSnapshot(shellPath, options.snapshotCtx).catch(error => {
         logForDebugging(`Failed to create shell snapshot: ${error}`)
         return undefined
       })

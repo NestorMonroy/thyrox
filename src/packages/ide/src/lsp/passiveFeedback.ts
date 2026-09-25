@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'url'
-import type { PublishDiagnosticsParams } from 'vscode-languageserver-protocol'
+import { Diagnostic, type PublishDiagnosticsParams } from 'vscode-languageserver-protocol'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { logError } from '@thyrox/local-observability/logging'
@@ -60,18 +60,8 @@ export function formatDiagnosticsForAttachment(
     uri = params.uri
   }
 
-  const diagnostics = params.diagnostics.map(
-    (diag: {
-      message: string
-      severity?: number
-      range: {
-        start: { line: number; character: number }
-        end: { line: number; character: number }
-      }
-      source?: string
-      code?: string | number
-    }) => ({
-      message: diag.message,
+  const diagnostics = params.diagnostics.map((diag: Diagnostic) => ({
+      message: Diagnostic.getMessageString(diag),
       severity: mapLSPSeverity(diag.severity),
       range: {
         start: {

@@ -17,7 +17,7 @@ import type { Message } from '../messageShapes.js'
 const userText = (text: string): Message =>
   ({
     type: 'user',
-    uuid: 'uuid',
+    uuid: 'uuid-uuid-uuid-uuid-uuid',
     message: {
       role: 'user',
       content: [{ type: 'text', text }],

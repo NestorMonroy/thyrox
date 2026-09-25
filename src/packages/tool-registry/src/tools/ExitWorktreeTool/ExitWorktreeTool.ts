@@ -14,7 +14,6 @@ import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { updateHooksConfigSnapshot } from '@thyrox/agent/hooksConfigSnapshot.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getPlansDirectory } from '@thyrox/storage/plans.js'
 import { setCwd } from '@thyrox/shell/Shell.js'
 import { saveWorktreeState } from '@thyrox/storage/sessionStorage.js'
 import {
@@ -142,7 +141,6 @@ function restoreSessionToOriginalCwd(
   saveWorktreeState(null)
   clearSystemPromptSections()
   clearMemoryFileCaches()
-  getPlansDirectory.cache.clear?.()
 }
 
 export const ExitWorktreeTool: Tool<InputSchema, Output> = buildTool({

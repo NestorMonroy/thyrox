@@ -37,7 +37,7 @@ export function SelectHookMode({
   const title =
     hookEventMetadata.matcherMetadata !== undefined
       ? `${selectedEvent} - Matcher: ${selectedMatcher || '(all)'}`
-      : selectedEvent
+      : String(selectedEvent)
 
   if (hooksForSelectedMatcher.length === 0) {
     return (

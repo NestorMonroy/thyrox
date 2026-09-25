@@ -80,7 +80,7 @@ export async function uploadUserSettingsInBackground(): Promise<void> {
       return
     }
 
-    const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+    const projectId = (await getConfigHostBindings().getRepoRemoteHash?.()) ?? null
     const localEntries = await buildEntriesFromLocalFiles(projectId)
     const remoteEntries = result.isEmpty ? {} : result.data!.content.entries
     const changedEntries = pickBy(
@@ -182,7 +182,7 @@ async function doDownloadUserSettings(
       }
 
       const entries = result.data!.content.entries
-      const projectId = await getConfigHostBindings().getRepoRemoteHash?.()
+      const projectId = (await getConfigHostBindings().getRepoRemoteHash?.()) ?? null
       const entryCount = Object.keys(entries).length
       tryGetConfigHostBindings().logDiagnostics?.('info', 'settings_sync_download_applying', {
         entryCount,
@@ -284,12 +284,6 @@ async function fetchUserSettingsOnce(): Promise<SettingsSyncFetchResult> {
   } catch (error) {
     const { kind, message } = classifyAxiosError(error)
     switch (kind) {
-      case 'auth':
-        return {
-          success: false,
-          error: 'Not authorized for settings sync',
-          skipRetry: true,
-        }
       case 'timeout':
         return { success: false, error: 'Settings sync request timeout' }
       case 'network':

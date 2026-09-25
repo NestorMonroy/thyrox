@@ -201,7 +201,7 @@ export const init = memoize(async (): Promise<void> => {
       const merged: Record<string, string> = {
         ...Object.fromEntries(
           Object.entries(process.env).filter(
-            ([, v]): v is string => typeof v === 'string',
+            (entry): entry is [string, string] => typeof entry[1] === 'string',
           ),
         ),
         ...settingsEnv,

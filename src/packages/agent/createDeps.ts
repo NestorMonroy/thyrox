@@ -54,7 +54,6 @@ import type {
 } from './internalTypes.ts'
 import type {
   AgentDeps,
-  ContextDep,
   CoreMessage,
   HookDep,
   OutputDep,
@@ -367,7 +366,7 @@ class HookDepImpl implements HookDep {
   }
 }
 
-class ContextDepImpl implements ContextDep {
+class ContextDepImpl {
   constructor(
     private readonly toolUseContext: RuntimeToolUseContext,
     private readonly overrides?: CreateDepsParams['contextOverrides'],

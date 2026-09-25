@@ -96,7 +96,9 @@ describe('drainSpool', () => {
     writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 2 } })
     writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 3 } })
     const ids: unknown[] = []
-    await drainSpool(env => ids.push((env.d as { id: number }).id))
+    await drainSpool(env => {
+      ids.push((env.d as { id: number }).id)
+    })
     expect(ids.sort()).toEqual([1, 2, 3])
   })
 
@@ -104,20 +106,26 @@ describe('drainSpool', () => {
     writeFileSync(join(SPOOL, '12345.tmp'), '{}')
     writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: {} })
     let count = 0
-    await drainSpool(() => count++)
+    await drainSpool(() => {
+      count++
+    })
     expect(count).toBe(1)
   })
 
   test('empty dir is a no-op', async () => {
     let count = 0
-    await drainSpool(() => count++)
+    await drainSpool(() => {
+      count++
+    })
     expect(count).toBe(0)
   })
 
   test('handles missing dir', async () => {
     rmSync(SPOOL, { recursive: true, force: true })
     let count = 0
-    await drainSpool(() => count++)
+    await drainSpool(() => {
+      count++
+    })
     expect(count).toBe(0)
   })
 })
