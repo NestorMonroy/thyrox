@@ -69,5 +69,39 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("un log sin diagnósticos rehúsa con exit 2", 2, code)
     assert_equal("y nombra por qué, sin publicar un cero", True, "sin diagnósticos" in stderr)
 
+with tempfile.TemporaryDirectory() as tmp:
+    import os
+    import subprocess
+    step = Path(tmp) / "step"
+    (step / "outputs").mkdir(parents=True)
+    (step / "items.txt").write_text("a.ts d/1\nb.ts d/2\nc.ts d/3\n")
+    (step / "outputs" / "1.json").write_text(json.dumps({"subtype": "success"}))
+    (step / "outputs" / "2.json").write_text(json.dumps({"subtype": "error_max_turns"}))
+    (step / "outputs" / "3.json").write_text("")
+    for n, before, after, kept in ((1, 100, 90, 3), (2, 90, 88, 1)):
+        batch = step / "pipeline" / f"batch-{n:02d}"
+        batch.mkdir(parents=True)
+        (batch / "report.json").write_text(json.dumps(
+            {"total_before": before, "total_final": after, "files_kept": ["x"] * kept}))
+    job = Path(tmp) / "job"
+    (job / "outputs").mkdir(parents=True)
+    (job / "outputs" / "pid").write_text(f"{os.getpid()}\n")
+    code, stdout, _ = run(["status", "--bench", str(step), "--job-dir", str(job)])
+    assert_equal("status sale 0", 0, code)
+    assert_equal("cuenta las salidas contra los ítems", True, "outputs=3/3" in stdout)
+    assert_equal("separa cómo terminó cada agente", True,
+                 "success=1" in stdout and "error_max_turns=1" in stdout and "unreadable=1" in stdout)
+    assert_equal("una línea por lote con su antes y después", True,
+                 "batch-01 100->90 kept=3" in stdout and "batch-02 90->88 kept=1" in stdout)
+    assert_equal("el trabajo vivo según su archivo pid", True, "job=running" in stdout)
+    dead = subprocess.Popen([sys.executable, "-c", "pass"])
+    dead.wait()
+    (job / "outputs" / "pid").write_text(f"{dead.pid}\n")
+    code, stdout, _ = run(["status", "--bench", str(step), "--job-dir", str(job)])
+    assert_equal("el trabajo terminado según su archivo pid", True, "job=ended" in stdout)
+    (job / "outputs" / "pid").unlink()
+    code, stdout, _ = run(["status", "--bench", str(step), "--job-dir", str(job)])
+    assert_equal("sin archivo pid el estado es desconocido, no «terminado»", True, "job=unknown" in stdout)
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
