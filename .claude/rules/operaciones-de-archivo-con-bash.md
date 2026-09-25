@@ -110,6 +110,14 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | aplicar un comando a cada resultado de `find`, N a la vez | `find . -name '*.log' \| xargs -P4 -I{} <comando> {}` |
 | muestreo aleatorio de N líneas | `shuf archivo \| head -n N` |
 | numerar líneas | `cat -n archivo` |
+| reemplazar dentro de un tramo de la línea (caracteres 5 a 14) | `gawk '{s=substr($0,5,10); gsub(/a/,"X",s); $0=substr($0,1,4) s substr($0,15); print}'` · sólo gawk: `gawk '{print substr($0,1,4) gensub(/a/,"X","g",substr($0,5,10)) substr($0,15)}'` · perl: `perl -pe 'substr($_,4,10) =~ s/a/X/g'` (perl cuenta desde 0; awk desde 1) |
+
+**`substr()` nunca es destino de `gsub`/`sub`, en ningún awk** (gawk, mawk,
+busybox). El tercer argumento tiene que ser asignable —una variable o un
+campo— y `substr()` devuelve una copia. No es un fallo de la versión instalada
+y no se arregla instalando otra: se extrae el tramo a una variable, se
+modifica y se vuelve a montar la línea (primera forma de la fila de arriba).
+Directiva del ejecutor 2026-09-25.
 
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
