@@ -23,6 +23,7 @@ import { z } from 'zod'
 import { lazySchema } from '../internal/lazySchema.ts'
 import { SandboxSettingsSchema } from './schemas/sandbox.ts'
 import { MarketplaceSourceSchema } from './schemas/marketplace.js'
+import { DynamicWorkflowSizeSchema } from './dynamicWorkflowSize.js'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -215,12 +216,25 @@ export const SettingsSchema = lazySchema(() => z
     respectGitignore: z.boolean().optional(),
     claudeMdExcludes: z.array(z.string()).optional(),
     cleanupPeriodDays: z.number().nonnegative().optional(),
-    fileSuggestion: z.unknown().optional(),
-    dynamicWorkflowSize: z.unknown().optional(),
+    fileSuggestion: z
+        .object({
+          type: z.literal('command'),
+          command: z.string(),
+        })
+        .optional()
+        .describe('Custom file suggestion configuration for @ mentions'),
+    dynamicWorkflowSize: DynamicWorkflowSizeSchema,
     askUserQuestionTimeout: z.number().positive().optional(),
     modelType: z.string().optional(),
     availableModels: z.array(z.string()).optional(),
-    modelOverrides: z.record(z.string(), z.unknown()).optional(),
+    modelOverrides: z
+        .record(z.string(), z.string())
+        .optional()
+        .describe(
+          'Override mapping from Anthropic model ID (e.g. "claude-opus-4-6") to provider-specific ' +
+            'model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by ' +
+            'enterprise administrators.',
+        ),
     apiKeyHelper: z.string().optional(),
     defaultShell: z.string().optional(),
     allowManagedHooksOnly: z.boolean().optional(),
@@ -232,10 +246,73 @@ export const SettingsSchema = lazySchema(() => z
     enableAllProjectMcpServers: z.boolean().optional(),
     enabledMcpjsonServers: z.array(z.string()).optional(),
     disabledMcpjsonServers: z.array(z.string()).optional(),
-    allowedMcpServers: z.array(z.unknown()).optional(),
-    deniedMcpServers: z.array(z.unknown()).optional(),
-    enabledPlugins: z.record(z.string(), z.unknown()).optional(),
-    pluginConfigs: z.record(z.string(), z.unknown()).optional(),
+    allowedMcpServers: z
+        .array(AllowedMcpServerEntrySchema())
+        .optional()
+        .describe(
+          'Enterprise allowlist of MCP servers that can be used. ' +
+            'Applies to all scopes including enterprise servers from managed-mcp.json. ' +
+            'If undefined, all servers are allowed. If empty array, no servers are allowed. ' +
+            'Denylist takes precedence - if a server is on both lists, it is denied.',
+        ),
+    deniedMcpServers: z
+        .array(DeniedMcpServerEntrySchema())
+        .optional()
+        .describe(
+          'Enterprise denylist of MCP servers that are explicitly blocked. ' +
+            'If a server is on the denylist, it will be blocked across all scopes including enterprise. ' +
+            'Denylist takes precedence over allowlist - if a server is on both lists, it is denied.',
+        ),
+    enabledPlugins: z
+        .record(
+          z.string(),
+          z.union([z.array(z.string()), z.boolean(), z.undefined()]),
+        )
+        .optional()
+        .describe(
+          'Enabled plugins using plugin-id@marketplace-id format. Example: { "formatter@anthropic-tools": true }. Also supports extended format with version constraints.',
+        ),
+    pluginConfigs: z
+        .record(
+          z.string(),
+          z.object({
+            mcpServers: z
+              .record(
+                z.string(),
+                z.record(
+                  z.string(),
+                  z.union([
+                    z.string(),
+                    z.number(),
+                    z.boolean(),
+                    z.array(z.string()),
+                  ]),
+                ),
+              )
+              .optional()
+              .describe(
+                'User configuration values for MCP servers keyed by server name',
+              ),
+            options: z
+              .record(
+                z.string(),
+                z.union([
+                  z.string(),
+                  z.number(),
+                  z.boolean(),
+                  z.array(z.string()),
+                ]),
+              )
+              .optional()
+              .describe(
+                'Non-sensitive option values from plugin manifest userConfig, keyed by option name. Sensitive values go to secure storage instead.',
+              ),
+          }),
+        )
+        .optional()
+        .describe(
+          'Per-plugin configuration including MCP server user configs, keyed by plugin ID (plugin@marketplace format)',
+        ),
     worktree: z.object({ symlinkDirectories: z.array(z.string()).optional(), sparsePaths: z.array(z.string()).optional() }).optional(),
     plansDirectory: z.string().optional(),
     // El sub-esquema de sandbox ya portado; con `unknown` cada lector de
@@ -264,10 +341,23 @@ export const SettingsSchema = lazySchema(() => z
     }).optional(),
     viewMode: z.string().optional(),
     language: z.string().optional(),
-    tui: z.unknown().optional(),
+    tui: z
+        .enum(['default', 'fullscreen'])
+        .optional()
+        .describe(
+          'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting CLAUDE_CODE_NO_FLICKER, but persistent across sessions.',
+        ),
     spinnerTipsEnabled: z.boolean().optional(),
     spinnerVerbs: z.array(z.string()).optional(),
-    spinnerTipsOverride: z.unknown().optional(),
+    spinnerTipsOverride: z
+        .object({
+          excludeDefault: z.boolean().optional(),
+          tips: z.array(z.string()),
+        })
+        .optional()
+        .describe(
+          'Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false).',
+        ),
     syntaxHighlightingDisabled: z.boolean().optional(),
     terminalTitleFromRename: z.boolean().optional(),
     prefersReducedMotion: z.boolean().optional(),
@@ -285,11 +375,22 @@ export const SettingsSchema = lazySchema(() => z
     autoUpdatesChannel: z.enum(['latest', 'stable', 'rc']).optional(),
     minimumVersion: z.string().optional(),
     defaultView: z.enum(['chat', 'transcript']).optional(),
-    fastMode: z.unknown().optional(),
+    fastMode: z
+        .boolean()
+        .optional()
+        .describe(
+          'When true, fast mode is enabled. When absent or false, fast mode is off.',
+        ),
     fastModePerSessionOptIn: z.boolean().optional(),
     promptSuggestionEnabled: z.boolean().optional(),
     showClearContextOnPlanAccept: z.boolean().optional(),
-    agent: z.unknown().optional(),
+    agent: z
+        .string()
+        .optional()
+        .describe(
+          'Name of an agent (built-in or custom) to use for the main thread. ' +
+            "Applies the agent's system prompt, tool restrictions, and model.",
+        ),
     autoMemoryEnabled: z.boolean().optional(),
     autoMemoryDirectory: z.string().optional(),
     autoDreamEnabled: z.boolean().optional(),

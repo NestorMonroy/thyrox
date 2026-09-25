@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1952, "total_final": 1895, "tsc_runs": 1, "accepted": ["agent:agent:settings-schema-from-source:reexports"], "files_kept": ["src/packages/config/settings/types.ts"], "outcomes": {"agent:agent:settings-schema-from-source:reexports": "accepted-net"}}

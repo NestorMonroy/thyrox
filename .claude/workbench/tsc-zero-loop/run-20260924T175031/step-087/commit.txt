@@ -1,0 +1,25 @@
+Type the unknown settings fields from the source
+
+Step 087 of the tsc-zero loop: 1952 -> 1921, accepted net.
+
+The settings schema, a partial port, declared eleven fields as
+z.unknown() (fileSuggestion, pluginConfigs, enabledPlugins, agent,
+...), so their readers saw unknown or {}. Each now carries its
+definition from the source schema; dynamicWorkflowSize also gets
+the import the source uses.
+
+Three attempts were discarded, and the bench keeps each:
+- intento-1: the whole source file plus a tail of our exports.
+  HooksSchema was exported twice; tsc accepted it, Bun refused the
+  module, and ten tests failed.
+- intento-2: the same with the duplicate fixed. Four tests failed:
+  the source file drops our own extensions (model by full id,
+  effort, testImpact).
+- intento-3: field by field, but its check counted any identifier as
+  known. It kept DynamicWorkflowSizeSchema unimported: TS2304 that the
+  net policy let through, and a ReferenceError at load.
+
+The kept change passes all 13 tests that use the schema, against the
+13 at HEAD (pruebas.sh).
+
+Memory (gate 3b): unknown-field-in-partial-schema.

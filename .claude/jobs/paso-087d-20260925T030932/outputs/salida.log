@@ -1,0 +1,3 @@
+{"status": "progress", "total_before": 1952, "total_final": 1921, "tsc_runs": 1, "accepted": ["agent:agent:settings-unknown-fields-from-source:value-imports"], "files_kept": ["src/packages/config/settings/types.ts"], "outcomes": {"agent:agent:settings-unknown-fields-from-source:value-imports": "acce
+pruebas: 13 · fallan con copia: 0 · regresiones: 0
+__BG_EXIT__=0
