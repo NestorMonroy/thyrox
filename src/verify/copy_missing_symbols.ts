@@ -82,7 +82,8 @@ function importBindings(statement: ts.ImportDeclaration): string[] {
 }
 
 function isExported(statement: ts.Statement): boolean {
-  return (ts.getCombinedModifierFlags(statement as ts.Declaration) & ts.ModifierFlags.Export) !== 0
+  return ts.canHaveModifiers(statement) &&
+    (ts.getModifiers(statement) ?? []).some(m => m.kind === ts.SyntaxKind.ExportKeyword)
 }
 
 /** Los identificadores que una sentencia usa, sin nombres de propiedad. */
@@ -199,9 +200,9 @@ export function planCopies(input: PlanInput): Plan {
   const byFile = new Map<string, { sourceFile: string; symbols: Set<string>; targets: string[] }>()
   const skipped: Plan['skipped'] = []
   for (const raw of input.logLines) {
-    const m = TS2305.exec(raw.trim())
-    if (!m?.groups) continue
-    const { file, message, spec, symbol } = m.groups as Record<string, string>
+    const groups = TS2305.exec(raw.trim())?.groups
+    const { file, message, spec, symbol } = groups ?? {}
+    if (!file || !message || !spec || !symbol) continue
     const importer = resolve(input.root, file)
     const resolved = ts.resolveModuleName(spec, importer, options, ts.sys).resolvedModule?.resolvedFileName
     const destFile = resolved ? resolve(resolved) : undefined
