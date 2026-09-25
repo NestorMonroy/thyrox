@@ -1,0 +1,19 @@
+Resolve teammate progress and result to real types
+
+Step 088 of the tsc-zero loop: 1921 -> 1898, accepted net.
+
+swarm's adapter declared AgentProgress and AgentToolResult as unknown,
+as the source's does, and tasks/types.ts declared an in-process
+teammate's result and progress as unknown on its own. Six REPL
+components read tokenCount, toolUseCount and recentActivities off
+those fields. Both types exist now in packages swarm already depends
+on, so the adapter points at them and tasks/types.ts imports them
+from the adapter, as the source does.
+
+The first attempt (intento-1/) changed only the adapter and moved
+nothing: the local unknown fields shadowed it. The step reveals one
+diagnostic in agent/task/framework.ts, the subset TaskState copy
+already excluded as a design decision. Both edits are type-only
+(transpiled.log).
+
+Memory (gate 3b): adapter-unknown-with-real-type-available.

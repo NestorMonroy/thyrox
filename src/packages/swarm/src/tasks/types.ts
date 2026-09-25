@@ -77,6 +77,13 @@
  * dependencia: se usa el canónico, como import sólo de tipo.
  */
 import type { TaskStateBase } from '@thyrox/tool-registry/Task.js'
+/**
+ * CORRECCIÓN 4 (2026-09-25): `result` y `progress` eran `unknown` porque el
+ * adaptador de la fuente los dejaba así. En el árbol `adapters/appRuntime.ts`
+ * ya los resuelve al tipo real (`AgentToolResult` de tool-registry,
+ * `AgentProgress` de agent), así que se importan de ahí, como la fuente.
+ */
+import type { AgentProgress, AgentToolResult } from '../adapters/appRuntime.js'
 
 export type { TaskStateBase }
 
@@ -123,8 +130,8 @@ export type InProcessTeammateTaskState = TaskStateBase & {
 
   // Estado
   error?: string
-  result?: unknown // Reusa el tipo existente ya que los teammates corren vía runAgent()
-  progress?: unknown
+  result?: AgentToolResult // Reusa el tipo existente ya que los teammates corren vía runAgent()
+  progress?: AgentProgress
 
   // Historial de conversación para la vista con zoom (NO son mensajes de buzón)
   // Los mensajes de buzón se guardan aparte en teamContext.inProcessMailboxes
