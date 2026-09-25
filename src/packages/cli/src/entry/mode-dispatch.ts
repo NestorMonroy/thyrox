@@ -13,6 +13,8 @@
  * nuevo sin manejador se ve al instante. La cascada que esto reemplaza no
  * tenía forma de decir si cubría todos sus casos.
  */
+import { homedir } from 'node:os'
+import { join } from 'node:path'
 import { checkPremisesCommand } from '../commands/checkPremises.ts'
 import { claimsCommand } from '../commands/claims.ts'
 import { configOriginCommand } from '../commands/configOrigin.ts'
@@ -21,8 +23,12 @@ import { importTasksCommand } from '../commands/importTasks.ts'
 import { selectTestsCommand } from '../commands/selectTests.ts'
 import { sessionsCommand } from '../commands/sessions.ts'
 import { workbenchCommand } from '../commands/workbench.ts'
+import { projectSlug } from '@thyrox/agent/loop/session'
+import type { RuntimeHandles } from '@thyrox/app-host'
 import { runLoop } from './runLoop.ts'
-import type { Mode, ModeKind } from './detect-mode.ts'
+import { detectMode, type Mode, type ModeKind } from './detect-mode.ts'
+import { flag } from './flags.ts'
+import type { PendingHandles } from './preprocess-argv.ts'
 import { EXIT_OK, EXIT_USAGE } from '../exitCodes.ts'
 
 /** Lo que un manejador necesita saber de la invocación. */
@@ -57,4 +63,40 @@ export const HANDLERS: Record<ModeKind, Handler> = {
 /** Corre el manejador del modo. */
 export function dispatch(ctx: CliContext): number | Promise<number> {
   return HANDLERS[ctx.mode.kind](ctx)
+}
+
+/**
+ * El contexto del puente `runModeDispatch`: `--cwd` manda sobre el del
+ * proceso y el transcript sale de ese cwd, igual que en `runCli`.
+ */
+export function modeDispatchContext(argv: string[], processCwd: string): CliContext {
+  const cwd = flag(argv, 'cwd') ?? processCwd
+  const transcriptDir = flag(argv, 'transcript-dir') ?? join(homedir(), '.harness', projectSlug(cwd))
+  return { argv, cwd, transcriptDir, mode: detectMode(argv) }
+}
+
+/**
+ * Puente entre el `.action()` de commander en `run-program.ts` —que ya trae
+ * `prompt`/`options` parseados— y esta tabla, que decide el modo leyendo las
+ * banderas crudas de `process.argv` (la misma fuente que usa `runCli`).
+ *
+ * Divergencia declarada: la referencia usa `prompt`/`options` y el resto del
+ * contexto (`runtimeHandles`, `pendingConnect`, `pendingSSH`,
+ * `pendingAssistantChat`) para construir el `ModeDispatchContext` de sus ~12
+ * modos (REPL, headless host, connect, ssh, assistant chat…). Ninguno de los
+ * siete comandos autocontenidos de `HANDLERS` los necesita hoy, así que
+ * viajan sin usarse — no se inventa un modo que no existe en `MODE_KINDS`
+ * para consumirlos.
+ */
+export async function runModeDispatch(
+  _prompt: string | undefined,
+  _options: Record<string, unknown>,
+  _context: {
+    readonly runtimeHandles: RuntimeHandles
+    readonly pendingConnect: PendingHandles['pendingConnect']
+    readonly pendingSSH: PendingHandles['pendingSSH']
+    readonly pendingAssistantChat: PendingHandles['pendingAssistantChat']
+  },
+): Promise<number> {
+  return dispatch(modeDispatchContext(process.argv.slice(2), process.cwd()))
 }
