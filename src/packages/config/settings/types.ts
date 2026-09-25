@@ -22,6 +22,7 @@ import type { HookCommand } from './schemas/hooks.js'
 import { z } from 'zod'
 import { lazySchema } from '../internal/lazySchema.ts'
 import { SandboxSettingsSchema } from './schemas/sandbox.ts'
+import { MarketplaceSourceSchema } from './schemas/marketplace.js'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -341,3 +342,27 @@ export type PluginHookMatcher = {
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { HookCommand } from './schemas/hooks.js'
+
+/**
+ * Schema for extra marketplaces defined in repository settings
+ * Same as KnownMarketplace but without lastUpdated (which is managed automatically)
+ */
+export const ExtraKnownMarketplaceSchema = lazySchema(() =>
+  z.object({
+    source: MarketplaceSourceSchema().describe(
+      'Where to fetch the marketplace from',
+    ),
+    installLocation: z
+      .string()
+      .optional()
+      .describe(
+        'Local cache path where marketplace manifest is stored (auto-generated if not provided)',
+      ),
+    autoUpdate: z
+      .boolean()
+      .optional()
+      .describe(
+        'Whether to automatically update this marketplace and its installed plugins on startup',
+      ),
+  }),
+)

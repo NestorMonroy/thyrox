@@ -74,6 +74,8 @@ import pickBy from 'lodash-es/pickBy.js'
 import { dirname, join, normalize, resolve } from 'node:path'
 import { AccessError, ParseError as ConfigParseError } from '../errors.js'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.js'
+import { getManagedFilePath } from '../settings/managedPath.js'
+import { feature } from 'bun:bundle'
 
 // La fuente inlinea estos tipos para no arrastrar el paquete que los define
 // (su comentario: «type-only imports inlined»). Se conserva el criterio.
@@ -1197,4 +1199,31 @@ export function saveCurrentProjectConfig(
     saveConfig(_getGlobalClaudeFile(), written, DEFAULT_GLOBAL_CONFIG)
     writeThroughGlobalConfigCache(written, _getGlobalClaudeFile())
   }
+}
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+const teamMemPaths = feature('TEAMMEM')
+  ? (require('@thyrox/memory/teamMemPaths') as typeof import('@thyrox/memory/teamMemPaths'))
+  : null
+export function getMemoryPath(memoryType: MemoryType): string {
+  const cwd = getConfigHostBindings().getOriginalCwd?.() ?? process.cwd()
+
+  switch (memoryType) {
+    case 'User':
+      return join(getConfigHomeDir(), 'CLAUDE.md')
+    case 'Local':
+      return join(cwd, 'CLAUDE.local.md')
+    case 'Project':
+      return join(cwd, 'CLAUDE.md')
+    case 'Managed':
+      return join(getManagedFilePath(), 'CLAUDE.md')
+    case 'AutoMem':
+      const cfgBindings = tryGetConfigHostBindings()
+      return cfgBindings.getAutoMemEntrypoint?.() ?? ''
+  }
+  // TeamMem is only a valid MemoryType when feature('TEAMMEM') is true
+  if (feature('TEAMMEM')) {
+    return teamMemPaths!.getTeamMemEntrypoint()
+  }
+  return '' // unreachable in external builds where TeamMem is not in MemoryType
 }

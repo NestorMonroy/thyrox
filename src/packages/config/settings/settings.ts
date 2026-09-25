@@ -84,6 +84,7 @@ import { SETTING_SOURCES, type SettingSource } from './constants.ts'
 import { getManagedFilePath } from './managedPath.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
+import { feature } from 'bun:bundle'
 
 // Excluye 'policySettings' (resolución MDM/remota, no portada) y
 // 'flagSettings' (sólo lectura, viene del flag/SDK) — mismo recorte que la
@@ -669,4 +670,109 @@ export type PolicySettingsOrigin = 'remote' | 'helper' | 'plist' | 'hklm' | 'fil
 export function getPolicySettingsOrigin(dir?: string): PolicySettingsOrigin | null {
   const { hasBase, hasDropIns } = getManagedFileSettingsPresence(dir)
   return hasBase || hasDropIns ? 'file' : null
+}
+
+/**
+ * Get a list of setting keys from managed settings for logging purposes.
+ * For certain nested settings (permissions, sandbox, hooks), expands to show
+ * one level of nesting (e.g., "permissions.allow"). For other settings,
+ * returns only the top-level key.
+ *
+ * @param settings The settings object to extract keys from
+ * @returns Sorted array of key paths
+ */
+export function getManagedSettingsKeysForLogging(
+  settings: SettingsJson,
+): string[] {
+  // Use .strip() to get only valid schema keys
+  const validSettings = SettingsSchema().strip().parse(settings) as Record<
+    string,
+    unknown
+  >
+  const keysToExpand = ['permissions', 'sandbox', 'hooks']
+  const allKeys: string[] = []
+
+  // Define valid nested keys for each nested setting we expand
+  const validNestedKeys: Record<string, Set<string>> = {
+    permissions: new Set([
+      'allow',
+      'deny',
+      'ask',
+      'defaultMode',
+      'disableBypassPermissionsMode',
+      ...(feature('TRANSCRIPT_CLASSIFIER') ? ['disableAutoMode'] : []),
+      'additionalDirectories',
+    ]),
+    sandbox: new Set([
+      'enabled',
+      'failIfUnavailable',
+      'allowUnsandboxedCommands',
+      'network',
+      'filesystem',
+      'ignoreViolations',
+      'excludedCommands',
+      'autoAllowBashIfSandboxed',
+      'enableWeakerNestedSandbox',
+      'enableWeakerNetworkIsolation',
+      'ripgrep',
+    ]),
+    // For hooks, we use z.record with enum keys, so we validate separately
+    hooks: new Set([
+      'PreToolUse',
+      'PostToolUse',
+      'Notification',
+      'UserPromptSubmit',
+      'SessionStart',
+      'SessionEnd',
+      'Stop',
+      'SubagentStop',
+      'PreCompact',
+      'PostCompact',
+      'TeammateIdle',
+      'TaskCreated',
+      'TaskCompleted',
+    ]),
+  }
+
+  for (const key of Object.keys(validSettings)) {
+    if (
+      keysToExpand.includes(key) &&
+      validSettings[key] &&
+      typeof validSettings[key] === 'object'
+    ) {
+      // Expand nested keys for these special settings (one level deep only)
+      const nestedObj = validSettings[key] as Record<string, unknown>
+      const validKeys = validNestedKeys[key]
+
+      if (validKeys) {
+        for (const nestedKey of Object.keys(nestedObj)) {
+          // Only include known valid nested keys
+          if (validKeys.has(nestedKey)) {
+            allKeys.push(`${key}.${nestedKey}`)
+          }
+        }
+      }
+    } else {
+      // For other settings, just use the top-level key
+      allKeys.push(key)
+    }
+  }
+
+  return allKeys.sort()
+}
+/**
+ * Returns whether plan mode should use auto mode semantics. Default true
+ * (opt-out). Returns false if any trusted source explicitly sets false.
+ * projectSettings is excluded so a malicious project can't control this.
+ */
+export function getUseAutoModeDuringPlan(): boolean {
+  if (feature('TRANSCRIPT_CLASSIFIER')) {
+    return (
+      getSettingsForSource('policySettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('flagSettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('userSettings')?.useAutoModeDuringPlan !== false &&
+      getSettingsForSource('localSettings')?.useAutoModeDuringPlan !== false
+    )
+  }
+  return true
 }

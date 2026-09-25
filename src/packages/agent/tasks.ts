@@ -61,6 +61,7 @@ import { join } from 'node:path'
 import { z } from 'zod'
 import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskCycleError } from './errors.ts'
+import * as lockfile from '@thyrox/storage/lockfile.js'
 
 // ---------------------------------------------------------------------------
 // Reimplementaciones locales de utilidades de paquetes hermanos ausentes.
@@ -734,5 +735,203 @@ export async function resetTaskList(taskListId: string): Promise<boolean> {
     return true
   } finally {
     await release()
+  }
+}
+
+// Lock options: retry with backoff so concurrent callers (multiple Claudes
+// in a swarm) wait for the lock instead of failing immediately. The sync
+// lockSync API blocked the event loop; the async API needs explicit retries
+// to achieve the same serialization semantics.
+//
+// Budget sized for ~10+ concurrent swarm agents: each critical section does
+// readdir + N×readFile + writeFile (~50-100ms on slow disks), so the last
+// caller in a 10-way race needs ~900ms. retries=30 gives ~2.6s total wait.
+const LOCK_OPTIONS = {
+  retries: {
+    retries: 30,
+    minTimeout: 5,
+    maxTimeout: 100,
+  },
+}
+export type ClaimTaskResult = {
+  success: boolean
+  reason?:
+    | 'task_not_found'
+    | 'already_claimed'
+    | 'already_resolved'
+    | 'blocked'
+    | 'agent_busy'
+  task?: Task
+  busyWithTasks?: string[] // task IDs the agent is busy with (when reason is 'agent_busy')
+  blockedByTasks?: string[] // task IDs blocking this task (when reason is 'blocked')
+}
+export type ClaimTaskOptions = {
+  /**
+   * If true, checks whether the agent is already busy (owns other open tasks)
+   * before allowing the claim. This check is performed atomically with the claim
+   * using a task-list-level lock to prevent TOCTOU race conditions.
+   */
+  checkAgentBusy?: boolean
+}
+/**
+ * Attempts to claim a task for an agent with file locking to prevent race conditions.
+ * Returns success if the task was claimed, or a reason if it wasn't.
+ *
+ * When checkAgentBusy is true, uses a task-list-level lock to atomically check
+ * if the agent owns any other open tasks before claiming.
+ */
+export async function claimTask(
+  taskListId: string,
+  taskId: string,
+  claimantAgentId: string,
+  options: ClaimTaskOptions = {},
+): Promise<ClaimTaskResult> {
+  const taskPath = getTaskPath(taskListId, taskId)
+
+  // Check existence before locking — proper-lockfile.lock throws if the
+  // target file doesn't exist, and we want a clean task_not_found result.
+  const taskBeforeLock = await getTask(taskListId, taskId)
+  if (!taskBeforeLock) {
+    return { success: false, reason: 'task_not_found' }
+  }
+
+  // If we need to check agent busy status, use task-list-level lock
+  // to prevent TOCTOU race conditions
+  if (options.checkAgentBusy) {
+    return claimTaskWithBusyCheck(taskListId, taskId, claimantAgentId)
+  }
+
+  // Otherwise, use task-level lock (original behavior)
+  let release: (() => Promise<void>) | undefined
+  try {
+    // Acquire exclusive lock on the task file
+    release = await lockfile.lock(taskPath, LOCK_OPTIONS)
+
+    // Read current task state
+    const task = await getTask(taskListId, taskId)
+    if (!task) {
+      return { success: false, reason: 'task_not_found' }
+    }
+
+    // Check if already claimed by another agent
+    if (task.owner && task.owner !== claimantAgentId) {
+      return { success: false, reason: 'already_claimed', task }
+    }
+
+    // Check if already resolved
+    if (task.status === 'completed') {
+      return { success: false, reason: 'already_resolved', task }
+    }
+
+    // Check for unresolved blockers (open or in_progress tasks block)
+    const allTasks = await listTasks(taskListId)
+    const unresolvedTaskIds = new Set(
+      allTasks.filter(t => t.status !== 'completed').map(t => t.id),
+    )
+    const blockedByTasks = task.blockedBy.filter(id =>
+      unresolvedTaskIds.has(id),
+    )
+    if (blockedByTasks.length > 0) {
+      return { success: false, reason: 'blocked', task, blockedByTasks }
+    }
+
+    // Claim the task (already holding taskPath lock — use unsafe variant)
+    const updated = await updateTaskUnsafe(taskListId, taskId, {
+      owner: claimantAgentId,
+    })
+    return { success: true, task: updated! }
+  } catch (error) {
+    logForDebugging(
+      `[Tasks] Failed to claim task ${taskId}: ${errorMessage(error)}`,
+    )
+    logError(error)
+    return { success: false, reason: 'task_not_found' }
+  } finally {
+    if (release) {
+      await release()
+    }
+  }
+}
+/**
+ * Claims a task with an atomic check for agent busy status.
+ * Uses a task-list-level lock to ensure the busy check and claim are atomic.
+ */
+async function claimTaskWithBusyCheck(
+  taskListId: string,
+  taskId: string,
+  claimantAgentId: string,
+): Promise<ClaimTaskResult> {
+  const lockPath = await ensureTaskListLockFile(taskListId)
+
+  let release: (() => Promise<void>) | undefined
+  try {
+    // Acquire exclusive lock on the task list
+    release = await lockfile.lock(lockPath, LOCK_OPTIONS)
+
+    // Read all tasks to check agent status and task state atomically
+    const allTasks = await listTasks(taskListId)
+
+    // Find the task we want to claim
+    const task = allTasks.find(t => t.id === taskId)
+    if (!task) {
+      return { success: false, reason: 'task_not_found' }
+    }
+
+    // Check if already claimed by another agent
+    if (task.owner && task.owner !== claimantAgentId) {
+      return { success: false, reason: 'already_claimed', task }
+    }
+
+    // Check if already resolved
+    if (task.status === 'completed') {
+      return { success: false, reason: 'already_resolved', task }
+    }
+
+    // Check for unresolved blockers (open or in_progress tasks block)
+    const unresolvedTaskIds = new Set(
+      allTasks.filter(t => t.status !== 'completed').map(t => t.id),
+    )
+    const blockedByTasks = task.blockedBy.filter(id =>
+      unresolvedTaskIds.has(id),
+    )
+    if (blockedByTasks.length > 0) {
+      return { success: false, reason: 'blocked', task, blockedByTasks }
+    }
+
+    // Check if agent is busy with other unresolved tasks
+    const agentOpenTasks = allTasks.filter(
+      t =>
+        t.status !== 'completed' &&
+        t.owner === claimantAgentId &&
+        t.id !== taskId,
+    )
+    if (agentOpenTasks.length > 0) {
+      return {
+        success: false,
+        reason: 'agent_busy',
+        task,
+        busyWithTasks: agentOpenTasks.map(t => t.id),
+      }
+    }
+
+    // Claim the task. Use updateTaskUnsafe since we already hold the
+    // task-list lock — calling updateTask here would attempt to acquire
+    // the per-task lock under the list lock, which deadlocks against any
+    // caller (e.g. claimTask, deleteTask cascade) holding them in the
+    // opposite order. Same pattern as the non-busyCheck branch above.
+    const updated = await updateTaskUnsafe(taskListId, taskId, {
+      owner: claimantAgentId,
+    })
+    return { success: true, task: updated! }
+  } catch (error) {
+    logForDebugging(
+      `[Tasks] Failed to claim task ${taskId} with busy check: ${errorMessage(error)}`,
+    )
+    logError(error)
+    return { success: false, reason: 'task_not_found' }
+  } finally {
+    if (release) {
+      await release()
+    }
   }
 }

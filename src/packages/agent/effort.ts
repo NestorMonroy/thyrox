@@ -446,3 +446,25 @@ export function resolvePickerEffortPersistence(
   const explicit = priorPersisted !== undefined || toggledInPicker
   return explicit || picked !== modelDefault ? picked : undefined
 }
+
+export type OpusDefaultEffortConfig = {
+  enabled: boolean
+  dialogTitle: string
+  dialogDescription: string
+}
+const OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT: OpusDefaultEffortConfig = {
+  enabled: true,
+  dialogTitle: 'We recommend medium effort for Opus',
+  dialogDescription:
+    'Effort determines how long Claude thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed.',
+}
+export function getOpusDefaultEffortConfig(): OpusDefaultEffortConfig {
+  const config = getFeatureValue_CACHED_MAY_BE_STALE(
+    'tengu_grey_step2',
+    OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT,
+  )
+  return {
+    ...OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT,
+    ...config,
+  }
+}

@@ -1,0 +1,15 @@
+Copy six missing exports from ccnmt verbatim
+
+tasks.ts, settings.ts, effort.ts, systemInit.ts, config.ts and
+types.ts lacked exports that their importers use and that ccnmt
+declares in the same file. copy_missing_symbols copied each
+declaration verbatim with the helpers and imports it needs, rewriting
+only the import alias in what it added.
+
+These six had stalled twice for someone else's diagnostics: the
+copier and its test sit under the root tsconfig, and the before-log
+predated them. Measured against a fresh baseline they are all kept in
+one tsc run. The 49 tests that import these modules pass except the
+two compat.test.ts cases that also fail on HEAD.
+
+tsc: 2379 -> 2371.
