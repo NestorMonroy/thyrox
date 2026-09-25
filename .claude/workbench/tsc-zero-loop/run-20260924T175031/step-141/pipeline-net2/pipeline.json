@@ -1,0 +1,16 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 1,
+   "total_before": 218,
+   "total_final": 198,
+   "tsc_runs": 1,
+   "kept": 1
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/attachments.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-141/pipeline-net2/batch-01/final.log"
+}

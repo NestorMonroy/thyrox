@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash src/verify/check-cli-typecheck.sh --strict src/packages/agent/QueryEngine.ts", "started_at": "2026-09-25T21:22:34+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-25T21:23:35+00:00", "duration_seconds": 61.541127}

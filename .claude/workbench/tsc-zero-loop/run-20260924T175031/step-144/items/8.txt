@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(2725,10): error TS6133: 'getPluginHookCounts' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2715-2735 ---
+   2715      )
+   2716      return filteredHooks
+   2717    } catch {
+   2718      return []
+   2719    }
+   2720  }
+   2721  /**
+   2722   * Build a map of {sanitizedPluginName: hookCount} from matched hooks.
+   2723   * Only logs actual names for official marketplace plugins; others become 'third-party'.
+   2724   */
+   2725> function getPluginHookCounts(
+   2726    hooks: MatchedHook[],
+   2727  ): Record<string, number> | undefined {
+   2728    const pluginHooks = hooks.filter(h => h.pluginId)
+   2729    if (pluginHooks.length === 0) {
+   2730      return undefined
+   2731    }
+   2732    const counts: Record<string, number> = {}
+   2733    for (const h of pluginHooks) {
+   2734      const atIndex = h.pluginId!.lastIndexOf('@')
+   2735      const isOfficial =
+src/packages/agent/hooks.ts(2756,38): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/hooks.ts:2746-2766 ---
+   2746   * para evitar construir hook inputs por cada archivo de instrucciones cuando no hay
+   2747   * ningún hook configurado.
+   2748   *
+   2749   * Comprueba tanto los hooks de settings-file (getHooksConfigFromSnapshot) como los
+   2750   * hooks registrados (plugin hooks + SDK callback hooks vía registerHookCallbacks).
+   2751   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2752   * internos y no se comprueban.
+   2753   */
+   2754  export function hasInstructionsLoadedHook(): boolean {
+   2755    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2756>   if (snapshotHooks && snapshotHooks.length > 0) return true
+   2757    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2758    if (registeredHooks && registeredHooks.length > 0) return true
+   2759    return false
+   2760  }
+   2761  function isInternalHook(matched: MatchedHook): boolean {
+   2762    return matched.hook.type === 'callback' && matched.hook.internal === true
+   2763  }
+   2764  /**
+   2765   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2766   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+src/packages/agent/hooks.ts(2761,10): error TS6133: 'isInternalHook' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2751-2771 ---
+   2751   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2752   * internos y no se comprueban.
+   2753   */
+   2754  export function hasInstructionsLoadedHook(): boolean {
+   2755    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2756    if (snapshotHooks && snapshotHooks.length > 0) return true
+   2757    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2758    if (registeredHooks && registeredHooks.length > 0) return true
+   2759    return false
+   2760  }
+   2761> function isInternalHook(matched: MatchedHook): boolean {
+   2762    return matched.hook.type === 'callback' && matched.hook.internal === true
+   2763  }
+   2764  /**
+   2765   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2766   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+   2767   * @param matcher El patrón del matcher - puede ser:
+   2768   *   - Cadena simple para coincidencia exacta (p.ej. 'Write')
+   2769   *   - Lista separada por pipes para varias coincidencias exactas (p.ej. 'Write|Edit')
+   2770   *   - Patrón regex (p.ej. '^Write.*', '.*', '^(Write|Edit)$')
+   2771   * @returns true si la query coincide con el patrón

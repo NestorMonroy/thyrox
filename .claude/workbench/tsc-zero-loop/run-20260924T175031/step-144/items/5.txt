@@ -1,0 +1,70 @@
+src/packages/agent/hooks.ts(1944,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1934-1954 ---
+   1934      cleanup()
+   1935  
+   1936      // Handle cancellation
+   1937      if (
+   1938        error instanceof Error &&
+   1939        (error.message === 'Function hook cancelled' || // V7-EXEMPT: legacy hook abort sentinel
+   1940          error.name === 'AbortError')
+   1941      ) {
+   1942        return {
+   1943          outcome: 'cancelled',
+   1944>         hook,
+   1945        }
+   1946      }
+   1947  
+   1948      // Log for monitoring
+   1949      logError(error)
+   1950      return {
+   1951        message: createAttachmentMessage({
+   1952          type: 'hook_error_during_execution',
+   1953          hookName,
+   1954          toolUseID,
+src/packages/agent/hooks.ts(1951,7): error TS2322: Type 'AgentMessage' is not assignable to type 'HookAttachmentMessage'.
+  --- código src/packages/agent/hooks.ts:1941-1961 ---
+   1941      ) {
+   1942        return {
+   1943          outcome: 'cancelled',
+   1944          hook,
+   1945        }
+   1946      }
+   1947  
+   1948      // Log for monitoring
+   1949      logError(error)
+   1950      return {
+   1951>       message: createAttachmentMessage({
+   1952          type: 'hook_error_during_execution',
+   1953          hookName,
+   1954          toolUseID,
+   1955          hookEvent,
+   1956          content:
+   1957            error instanceof Error
+   1958              ? error.message
+   1959              : 'Function hook execution error',
+   1960        }),
+   1961        outcome: 'non_blocking_error',
+  Property 'attachment' is missing in type 'AgentMessage' but required in type '{ type: "attachment"; attachment: { [key: string]: unknown; type: string; }; }'.
+src/packages/agent/hooks.ts(1966,16): error TS6133: 'executeHookCallback' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1956-1976 ---
+   1956          content:
+   1957            error instanceof Error
+   1958              ? error.message
+   1959              : 'Function hook execution error',
+   1960        }),
+   1961        outcome: 'non_blocking_error',
+   1962        hook,
+   1963      }
+   1964    }
+   1965  }
+   1966> async function executeHookCallback({
+   1967    toolUseID,
+   1968    hook,
+   1969    hookEvent,
+   1970    hookInput,
+   1971    signal,
+   1972    hookIndex,
+   1973    toolUseContext,
+   1974  }: {
+   1975    toolUseID: string
+   1976    hook: HookCallback

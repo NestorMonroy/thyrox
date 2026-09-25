@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(2851,35): error TS2304: Cannot find name 'TypedSyncHookOutput'.
+  --- código src/packages/agent/hooks.ts:2841-2861 ---
+   2841    try {
+   2842      const parsed = hookJSONOutputSchema().parse(JSON.parse(trimmed))
+   2843      if (isAsyncHookJSONOutput(parsed)) {
+   2844        return {}
+   2845      }
+   2846      if (!isSyncHookJSONOutput(parsed)) {
+   2847        return {}
+   2848      }
+   2849  
+   2850      // Cast a la interfaz tipada para acceso type-safe a propiedades
+   2851>     const typedParsed = parsed as TypedSyncHookOutput
+   2852  
+   2853      // Decisión de nivel superior: 'block' (exit code 0 + bloqueo JSON)
+   2854      if (typedParsed.decision === 'block' || result.blocked) {
+   2855        return {
+   2856          blockingError: {
+   2857            blockingError: typedParsed.reason || 'Elicitation blocked by hook',
+   2858            command: result.command,
+   2859          },
+   2860        }
+   2861      }
+src/packages/agent/hooks.ts(2899,10): error TS6133: 'parseHookOutput' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2889-2909 ---
+   2889              : 'Elicitation result blocked by hook'),
+   2890          command: result.command,
+   2891        }
+   2892      }
+   2893  
+   2894      return out
+   2895    } catch {
+   2896      return {}
+   2897    }
+   2898  }
+   2899> function parseHookOutput(stdout: string): {
+   2900    json?: HookJSONOutput
+   2901    plainText?: string
+   2902    validationError?: string
+   2903  } {
+   2904    const trimmed = stdout.trim()
+   2905    if (!trimmed.startsWith('{')) {
+   2906      logForDebugging('Hook output does not start with {, treating as plain text')
+   2907      return { plainText: stdout }
+   2908    }
+   2909  
+src/packages/agent/hooks.ts(2963,10): error TS6133: 'parseHttpHookOutput' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:2953-2973 ---
+   2953        null,
+   2954        2,
+   2955      )}`
+   2956      logForDebugging(errorMessage)
+   2957      return { plainText: stdout, validationError: errorMessage }
+   2958    } catch (e) {
+   2959      logForDebugging(`Failed to parse hook output as JSON: ${e}`)
+   2960      return { plainText: stdout }
+   2961    }
+   2962  }
+   2963> function parseHttpHookOutput(body: string): {
+   2964    json?: HookJSONOutput
+   2965    validationError?: string
+   2966  } {
+   2967    const trimmed = body.trim()
+   2968  
+   2969    if (trimmed === '') {
+   2970      const validation = hookJSONOutputSchema().safeParse({})
+   2971      if (validation.success) {
+   2972        logForDebugging(
+   2973          'HTTP hook returned empty body, treating as empty JSON object',

@@ -66,12 +66,13 @@
  * `attachments/mailbox.ts` aplica a su propio recorte).
  */
 import uniqBy from 'lodash-es/uniqBy.js'
-import { randomUUID } from 'node:crypto'
+import { randomUUID, type UUID } from 'node:crypto'
 import { dirname, parse, relative, resolve } from 'node:path'
 import type { AttachmentMessage, Message, MessageOrigin } from './messageShapes.js'
 import { logEvent } from '@thyrox/local-observability'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { Tools, ToolPermissionContext, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { TaskType, TaskStatus } from '@thyrox/tool-registry/Task.js'
 import { FileReadTool, MaxFileReadTokenExceededError, type Output as FileReadToolOutput, readImageWithTokenBudget } from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
 import { MAX_LINES_TO_READ, FILE_READ_TOOL_NAME } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
 import { getPDFPageCount } from '@thyrox/tool-registry/pdf.js'
@@ -79,10 +80,12 @@ import { FileTooLargeError, readFileInRange } from '@thyrox/repl/readFileInRange
 import { getFileModificationTimeAsync } from '@thyrox/storage/file.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { isPDFExtension } from '@thyrox/storage/pdfUtils.js'
+import type { MemoryFileInfo } from '@thyrox/storage/claudemd.js'
 import { PDF_AT_MENTION_INLINE_THRESHOLD } from '@thyrox/provider/apiLimits.js'
 import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import { matchingRuleForInput, pathInAllowedWorkingPath } from '@thyrox/permission/filesystem'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import type { ReadResourceResult } from '@modelcontextprotocol/sdk/types.js'
 import { type ClientSideInstruction, getMcpInstructionsDelta, isMcpInstructionsDeltaEnabled } from '@thyrox/mcp-runtime/mcpInstructionsDelta'
 import { isToolSearchEnabledOptimistic, isToolSearchToolAvailable } from './toolSearch.js'
 import { CLAUDE_IN_CHROME_MCP_SERVER_NAME } from './claudeInChromeCommon.js'
@@ -96,6 +99,7 @@ import { isHumanTurn } from './messagePredicates.js'
 import { uniq } from '@thyrox/tool-registry/utils/array.js'
 import type { FileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import type { Command } from './command'
+import type { DiscoverySignal } from './skillSearch/signals.js'
 import { checkForAsyncHookResponses, removeDeliveredAsyncHooks } from './hooks/AsyncHookRegistry.js'
 import { logForDebugging, logError, logAntError } from './internal/logging.js'
 import { jsonStringify, isENOENT, isEnvTruthy } from './internalUtils.js'
@@ -114,7 +118,7 @@ import { getLocalISODate } from '@thyrox/config/commonConstants.js'
 import { flushOnDateChange } from './sessionTranscript/sessionTranscript.js'
 import { toolMatchesName } from '@thyrox/tool-registry/Tool.js'
 import { BASH_TOOL_NAME } from '@thyrox/tool-registry/tools/BashTool/toolName.js'
-import { diagnosticTracker } from '@thyrox/tool-registry/diagnosticTracking.js'
+import { diagnosticTracker, type DiagnosticFile } from '@thyrox/tool-registry/diagnosticTracking.js'
 import { readdir, stat } from 'node:fs/promises'
 import { checkForLSPDiagnostics, clearAllLSPDiagnostics } from '@thyrox/ide/lsp/LSPDiagnosticRegistry.js'
 import { toError, isAbortError } from '@thyrox/local-observability/errorHelpers.js'
@@ -130,7 +134,7 @@ import { TODO_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/TodoWriteTool/
 import { hasUltrathinkKeyword, isUltrathinkEnabled } from '@thyrox/provider/thinking.js'
 import { applyTaskOffsetsAndEvictions, generateTaskAttachments } from './task/framework.js'
 import { getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
-import type { AgentDefinition } from './types.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { memoryAge, memoryFreshnessText } from '@thyrox/memory/memoryAge'
 import { isAutoMemoryEnabled, getAutoMemPath } from '@thyrox/memory/paths'
 import { createChildAbortController, createAbortController } from './abortController.js'
@@ -142,6 +146,10 @@ import { getSkillToolCommands, getMcpSkillCommands } from '@thyrox/command-runti
 import { expandPath } from '@thyrox/storage/path.js'
 import { emitAtMention } from './atMentionTelemetry.js'
 import type { HookEvent } from './types/hooks.js'
+import type { SyncHookJSONOutput } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { HookBlockingError } from './hooks.js'
+import type { Task } from './tasks.js'
+import type { TodoList } from '@thyrox/tool-registry/todo/types.js'
 import { isWorkflowsEnabled } from './goalStopHook.js'
 import { isAgentSwarmsEnabled } from './agentSwarmsEnabled.js'
 import { drainPendingMessages } from './localAgentTask.js'
@@ -1108,9 +1116,6 @@ const BRIEF_TOOL_NAME: string | null =
         require('@thyrox/tool-registry/tools/BriefTool/prompt.js') as typeof import('@thyrox/tool-registry/tools/BriefTool/prompt.js')
       ).BRIEF_TOOL_NAME
     : null
-const sessionTranscriptModule = feature('KAIROS')
-  ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
-  : null
 const MAX_MEMORY_LINES = 200
 const MAX_MEMORY_BYTES = 4096
 const INLINE_NOTIFICATION_MODES = new Set(['prompt', 'task-notification'])
@@ -1154,7 +1159,7 @@ export function collectRecentSuccessfulTools(
     const m = messages[i]
     if (!m) continue
     if (isHumanTurn(m) && m !== lastUserMessage) break
-    if (m.type === 'assistant' && typeof m.message.content !== 'string') {
+    if (m.type === 'assistant' && m.message.content !== undefined && typeof m.message.content !== 'string') {
       for (const block of m.message.content) {
         if (block.type === 'tool_use') useIdToName.set(block.id, block.name)
       }
