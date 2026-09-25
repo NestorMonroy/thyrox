@@ -177,5 +177,11 @@ with tempfile.TemporaryDirectory() as directory:
     declared = next(t for t in texts if "__declarations__" in t)
     assert_equal("las declaraciones se listan con su rango, JSDoc incluido", True, "- Kind: 1-2" in declared)
 
+# Un ítem partido deja el nombre dos veces en items.txt (paso 135: el 12 y su
+# sucesor 52 se llaman `getAttachments`); su ancla se inserta una sola vez.
+twice_anchor = mp.insert_anchors("import { a } from './a.js'\n", ["f", "g", "f"])
+assert_equal("un nombre repetido lleva una sola ancla de cada clase", (1, 1),
+             (twice_anchor.count("// @port-slot: f\n"), twice_anchor.count("// @port-imports: f\n")))
+
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

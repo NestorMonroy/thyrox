@@ -52,7 +52,9 @@ def _import_statements(lines: list[str]) -> list[tuple[int, int]]:
 
 
 def insert_anchors(text: str, names: list[str]) -> str:
-    """Las anclas de imports tras el último `import`; las de cuerpo, al final."""
+    """Las anclas de imports tras el último `import`; las de cuerpo, al final.
+    Un nombre repetido (un ítem partido) lleva una sola ancla."""
+    names = list(dict.fromkeys(names))
     lines = text.split("\n")
     spans = _import_statements(lines)
     at = spans[-1][1] + 1 if spans else 0
