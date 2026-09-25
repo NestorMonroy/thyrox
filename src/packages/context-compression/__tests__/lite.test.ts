@@ -56,7 +56,7 @@ describe('compressToolResults', () => {
     // whitespace.
     const before = long[body.length - 1]
     const after = long[body.length]
-    expect(!/\S/.test(before) || !/\S/.test(after)).toBe(true)
+    expect(!/\S/.test(before!) || !/\S/.test(after!)).toBe(true)
     expect(body.length).toBeLessThanOrEqual(2000)
   })
   test('sin limite de palabra cercano, cae al corte duro (comportamiento declarado, no un bug)', () => {

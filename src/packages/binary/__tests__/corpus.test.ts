@@ -86,8 +86,8 @@ describe('escritura del corpus', () => {
     const [, ...filas] = readFileSync(join(raiz, tabla!.version, 'MANIFEST.tsv'), 'utf8').trim().split('\n')
     for (const fila of filas) {
       const [archivo, , , sha] = fila.split('\t')
-      const real = new Bun.CryptoHasher('sha256').update(readFileSync(join(raiz, tabla!.version, archivo))).digest('hex')
-      expect(real).toBe(sha)
+      const real = new Bun.CryptoHasher('sha256').update(readFileSync(join(raiz, tabla!.version, archivo!))).digest('hex')
+      expect(real).toBe(sha!)
     }
   })
 

@@ -82,7 +82,7 @@ describe('la sangria refleja el anidamiento', () => {
     const salida = reflow('function f(){if(a){b()}}').split('\n')
     const sangria = (l: string) => l.length - l.trimStart().length
     const cuerpo = salida.filter(l => l.includes('b()'))[0]
-    expect(sangria(cuerpo)).toBeGreaterThan(0)
+    expect(sangria(cuerpo!)).toBeGreaterThan(0)
   })
 
   test('el cierre vuelve al nivel de su apertura', () => {
@@ -90,7 +90,7 @@ describe('la sangria refleja el anidamiento', () => {
     const abre = salida.findIndex(l => l.includes('function f()'))
     const cierra = salida.length - 1 - [...salida].reverse().findIndex(l => l.trim() === '}')
     const sangria = (l: string) => l.length - l.trimStart().length
-    expect(sangria(salida[cierra])).toBe(sangria(salida[abre]))
+    expect(sangria(salida[cierra]!)).toBe(sangria(salida[abre]!))
   })
 })
 

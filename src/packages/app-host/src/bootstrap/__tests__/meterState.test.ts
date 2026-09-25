@@ -178,14 +178,14 @@ describe("meterState — counter snapshot (setMeter factory calls)", () => {
 
     setMeter(fakeMeter(), createCounter);
 
-    expect(getSessionCounter()).toBe(produced[0]);
-    expect(getLocCounter()).toBe(produced[1]);
-    expect(getPrCounter()).toBe(produced[2]);
-    expect(getCommitCounter()).toBe(produced[3]);
-    expect(getCostCounter()).toBe(produced[4]);
-    expect(getTokenCounter()).toBe(produced[5]);
-    expect(getCodeEditToolDecisionCounter()).toBe(produced[6]);
-    expect(getActiveTimeCounter()).toBe(produced[7]);
+    expect(getSessionCounter()).toBe(produced[0]!);
+    expect(getLocCounter()).toBe(produced[1]!);
+    expect(getPrCounter()).toBe(produced[2]!);
+    expect(getCommitCounter()).toBe(produced[3]!);
+    expect(getCostCounter()).toBe(produced[4]!);
+    expect(getTokenCounter()).toBe(produced[5]!);
+    expect(getCodeEditToolDecisionCounter()).toBe(produced[6]!);
+    expect(getActiveTimeCounter()).toBe(produced[7]!);
   });
 });
 

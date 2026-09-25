@@ -126,7 +126,7 @@ describe('el registro', () => {
     for (const rule of RULES) {
       const declarados = new Set((rule.parameters ?? []).map((p) => p.name))
       const usados = [...rule.body.matchAll(/\{\{([A-Za-z][A-Za-z0-9_]*)\}\}/g)].map((m) => m[1])
-      for (const nombre of usados) expect(declarados.has(nombre)).toBe(true)
+      for (const nombre of usados) expect(declarados.has(nombre!)).toBe(true)
     }
   })
 

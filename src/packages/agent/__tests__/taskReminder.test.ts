@@ -203,8 +203,8 @@ describe('bucle — la inyección periódica del tablero (DEC-TASK-01)', () => {
     // el gate es 10/10: antes del 10º request no hay recordatorio
     expect(TURNS_SINCE_WRITE).toBe(10)
     expect(TURNS_BETWEEN_REMINDERS).toBe(10)
-    expect(reminderEn(p.requests[8])).toBeNull()
-    const t = reminderEn(p.requests[9])
+    expect(reminderEn(p.requests[8]!)).toBeNull()
+    const t = reminderEn(p.requests[9]!)
     expect(t).not.toBeNull()
     expect(t!).toContain('#1. [pending] seguir el porte de TaskUpdate')
   })

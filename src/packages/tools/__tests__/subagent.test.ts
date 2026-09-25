@@ -304,7 +304,7 @@ describe('tablero Task* — la asociación y el alcance por sesión (T-061)', ()
     const reales = [...ddlReal().matchAll(/^\s{2,}([a-z_]+)\s+TEXT/gm)]
       .map((m) => m[1])
       .filter((c) => !migradas.has(c!))
-    for (const c of reales) expect(columnas).toContain(c)
+    for (const c of reales) expect(columnas).toContain(c!)
   })
 
   test('el id es el ordinal siguiente del tablero, no un UUID', async () => {

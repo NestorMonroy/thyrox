@@ -211,7 +211,7 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
     // traer el tablero. Con el gate de 10+10 intacto, la primera ocasión
     // sería la petición 11 — que este recorrido nunca alcanza.
     expect(p.requests.length).toBeGreaterThanOrEqual(2)
-    expect(traeTablero(p.requests[1])).toBe(true)
+    expect(traeTablero(p.requests[1]!)).toBe(true)
   })
 
   test('5. el control: sin compactación, el turno 2 NO lo trae', async () => {
@@ -233,6 +233,6 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
       maxTurns: 4,
     })
     expect(p.requests.length).toBeGreaterThanOrEqual(2)
-    expect(traeTablero(p.requests[1])).toBe(false)
+    expect(traeTablero(p.requests[1]!)).toBe(false)
   })
 })

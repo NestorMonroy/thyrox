@@ -76,7 +76,7 @@ function arbol(): string {
 function promptRegistrado(dirTranscript: string): string {
   const archivos = readdirSync(dirTranscript).filter((f) => f.endsWith('.jsonl'))
   expect(archivos.length).toBeGreaterThanOrEqual(1)
-  const lineas = readFileSync(join(dirTranscript, archivos[0]), 'utf8').trim().split('\n')
+  const lineas = readFileSync(join(dirTranscript, archivos[0]!), 'utf8').trim().split('\n')
   const linea = lineas
     .map((l) => JSON.parse(l) as { type?: string; subtype?: string; content?: string })
     .find((l) => l.type === 'system' && l.subtype === 'system_prompt')

@@ -191,7 +191,7 @@ describe('identidad del paquete', () => {
       for (const file of sourceFiles(dir)) {
         for (const m of readFileSync(file, 'utf-8').matchAll(patron)) {
           if (declarados.has(m[1])) continue
-          huerfanos.set(m[1], (huerfanos.get(m[1]) ?? 0) + 1)
+          huerfanos.set(m[1]!, (huerfanos.get(m[1]!) ?? 0) + 1)
         }
       }
     }

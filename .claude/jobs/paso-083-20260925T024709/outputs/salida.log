@@ -1,0 +1,5 @@
+base: 2018
+tsc_proposers: 17 propuesta(s) · non-null-in-tests 14 · infer-from-usage 3 · objetivos 39
+{'total_before': 2018, 'total_final': 1991, 'tsc_runs': 2, 'accepted': ['non-null-in-tests:src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts', 'non-null-in-tests:src/packages/binary/__tests__/reflow.test.ts', 'non-null-in-tests:src/packages/agent/__tests__/contextGovernance.test.ts', 'non-null-in-tests:src/packages/agent/__tests__/taskReminder.test.ts', 'non-null-in-tests:src/packages/binary/__tests__/corpus.test.ts', 'non-null-in-tests:src/packages/context-compression/__tests__/lite.test.ts', 'non-null-in-tests:src/packages/provider/src/__tests__/withRetryClassification.behavior.test.ts', 'non-null-in-tests:tests/package/package_identity.test.ts', 'non-null-in-tests:src/packages/cli/__tests__/systemPromptLayering.test.ts', 'non-null-in-tests:src/packages/tools/__tests__/subagent.test.ts', 'non-null-in-tests:src/packages/tools/__tests__/tools.test.ts', 'non-null-in-tests:tests/rules/markdown.test.ts']}
+12 de 12 idénticos al transpilar
+__BG_EXIT__=0
