@@ -17,6 +17,7 @@ import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { findToolByName } from '@thyrox/tool-registry/Tool.js'
 import type { Message as MessageType } from '@thyrox/agent/messageShapes'
 import type { PermissionAskDecision } from '@thyrox/permission/permissionTypes'
+import { toExternalPermissionMode } from '@thyrox/permission/PermissionMode'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import type { RemoteMessageContent } from '@thyrox/teleport/api.js'
@@ -102,7 +103,11 @@ export function useDirectConnect({
           behavior: 'ask',
           message:
             request.description ?? `${request.tool_name} requires permission`,
-          suggestions: request.permission_suggestions,
+          suggestions: request.permission_suggestions?.map(suggestion =>
+            suggestion.type === 'setMode'
+              ? { ...suggestion, mode: toExternalPermissionMode(suggestion.mode) }
+              : suggestion,
+          ),
           blockedPath: request.blocked_path,
         }
 

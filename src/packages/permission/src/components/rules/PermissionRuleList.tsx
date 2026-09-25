@@ -586,10 +586,15 @@ export function PermissionRuleList({
     void deletePermissionRule({
       rule: selectedRule,
       initialContext: toolPermissionContext,
-      setToolPermissionContext(toolPermissionContext) {
+      setToolPermissionContext(updatedContext) {
         setAppState(prev => ({
           ...prev,
-          toolPermissionContext,
+          toolPermissionContext: {
+            ...prev.toolPermissionContext,
+            alwaysAllowRules: updatedContext.alwaysAllowRules,
+            alwaysDenyRules: updatedContext.alwaysDenyRules,
+            alwaysAskRules: updatedContext.alwaysAskRules,
+          },
         }))
       },
     })

@@ -952,9 +952,21 @@ async function getMessagesForSlashCommand(
             // (UUIDs never repeat, so they're never looked up).
             resetMicrocompactState()
             return {
+              // `buildPostCompactMessages` (de `agent/compaction/compact.js`) declara
+              // su retorno como `Message[]`, la unión COMPLETA de
+              // `messageShapes.ts` — incluye 'grouped_tool_use' y
+              // 'collapsed_read_search', dos variantes SÓLO de UI que
+              // `groupToolUses.ts`/`collapseReadSearch.ts` sintetizan para
+              // pantalla y que nunca entran a un `CompactionResult`: sus
+              // campos (`boundaryMarker`, `summaryMessages`,
+              // `messagesToKeep`, `attachments`, `hookResults`) salen de la
+              // conversación real o de mensajes creados en este mismo
+              // módulo, ninguno de esos dos tipos. Mismo criterio que la
+              // aserción de `compactionResult` arriba: el tipo es más ancho
+              // que lo que el valor puede contener en runtime.
               messages: buildPostCompactMessages(
                 compactionResultWithSlashMessages,
-              ),
+              ) as ProcessUserInputBaseResult['messages'],
               shouldQuery: false,
               command,
             }

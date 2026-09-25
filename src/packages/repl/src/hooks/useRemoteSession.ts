@@ -19,7 +19,10 @@ import { useSetAppState } from '../appStateHooks.js'
 import type { AppState } from '../appStateHooks.js'
 import type { Tool } from '@thyrox/tool-registry/Tool.js'
 import { findToolByName } from '@thyrox/tool-registry/Tool.js'
-import type { Message as MessageType } from '@thyrox/agent/messageShapes'
+import type {
+  Message as MessageType,
+  StreamEvent as AgentStreamEvent,
+} from '@thyrox/agent/messageShapes'
 import type { PermissionAskDecision } from '@thyrox/permission/permissionTypes'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
@@ -313,7 +316,7 @@ export function useRemoteSession({
           // Process streaming events to update UI in real-time
           if (setStreamingToolUses && setStreamMode) {
             handleMessageFromStream(
-              converted.event,
+              converted.event as AgentStreamEvent,
               message => setMessages(prev => [...prev, message]),
               () => {
                 // No-op for response length - remote sessions don't track this

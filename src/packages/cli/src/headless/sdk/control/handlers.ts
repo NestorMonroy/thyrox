@@ -55,7 +55,7 @@ import {
   getAllOutputStyles,
 } from '@thyrox/config/outputStyles.js'
 import { getAccountInformation } from '@thyrox/provider/authAlias.js'
-import { getAPIProvider } from '@thyrox/provider/providers.js'
+import { type APIProvider, getAPIProvider } from '@thyrox/provider/providers.js'
 import {
   isFastModeEnabled,
   isFastModeAvailable,
@@ -77,6 +77,24 @@ import { StructuredIO } from '../../../structuredIO.js'
 type ChannelNotificationParams = {
   content: string
   meta?: Record<string, string>
+}
+
+// El schema del protocolo (AccountInfoSchema) sólo declara los cuatro
+// backends que se resuelven por login OAuth; un proveedor de MODELO alterno
+// (openai/gemini/codex) no es un backend de cuenta y se representa como
+// ausente, igual que el resto de los campos bajo un 3P provider.
+function toAccountApiProvider(
+  provider: APIProvider,
+): 'firstParty' | 'bedrock' | 'vertex' | 'foundry' | undefined {
+  switch (provider) {
+    case 'firstParty':
+    case 'bedrock':
+    case 'vertex':
+    case 'foundry':
+      return provider
+    default:
+      return undefined
+  }
 }
 
 export async function handleInitializeRequest(
@@ -222,7 +240,7 @@ export async function handleInitializeRequest(
       // getAccountInformation() returns undefined under 3P providers, so the
       // other fields are all absent. apiProvider disambiguates "not logged
       // in" (firstParty + tokenSource:none) from "3P, login not applicable".
-      apiProvider: getAPIProvider(),
+      apiProvider: toAccountApiProvider(getAPIProvider()),
     },
     pid: process.pid,
   }

@@ -564,7 +564,7 @@ export async function runForkedAgent({
           streamMsg.event.usage
         ) {
           const turnUsage = updateUsage({ ...EMPTY_USAGE }, streamMsg.event.usage)
-          totalUsage = accumulateUsage(totalUsage, turnUsage)
+          totalUsage = accumulateUsage(totalUsage, turnUsage) as NonNullableUsage
         }
         continue
       }

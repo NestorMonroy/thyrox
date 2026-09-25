@@ -772,7 +772,7 @@ async function checkPermissionsAndCallTool(
     tool,
     processedInput,
     toolUseID,
-    assistantMessage.message.id,
+    messageId,
     requestId,
     mcpServerType,
     mcpServerBaseUrl,

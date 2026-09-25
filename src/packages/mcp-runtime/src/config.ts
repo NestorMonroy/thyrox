@@ -1337,7 +1337,7 @@ export function parseMcpConfig(params: {
     return {
       config: null,
       errors: schemaResult.error.issues.map(issue => ({
-        ...(filePath && { file: filePath }),
+        file: filePath || '',
         path: issue.path.join('.'),
         message: 'Does not adhere to MCP server configuration schema',
         mcpErrorMetadata: {
@@ -1349,7 +1349,7 @@ export function parseMcpConfig(params: {
   }
 
   // Validate each server and expand variables if requested
-  const errors: ValidationError[] = []
+  const errors: McpValidationError[] = []
   const validatedServers: Record<string, McpServerConfig> = {}
 
   for (const [name, config] of Object.entries(schemaResult.data.mcpServers)) {
@@ -1360,7 +1360,7 @@ export function parseMcpConfig(params: {
 
       if (missingVars.length > 0) {
         errors.push({
-          ...(filePath && { file: filePath }),
+          file: filePath || '',
           path: `mcpServers.${name}`,
           message: `Missing environment variables: ${missingVars.join(', ')}`,
           suggestion: `Set the following environment variables: ${missingVars.join(', ')}`,
@@ -1385,7 +1385,7 @@ export function parseMcpConfig(params: {
         configToCheck.command.endsWith('/npx'))
     ) {
       errors.push({
-        ...(filePath && { file: filePath }),
+        file: filePath || '',
         path: `mcpServers.${name}`,
         message: `Windows requires 'cmd /c' wrapper to execute npx`,
         suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,

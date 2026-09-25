@@ -35,6 +35,19 @@ export function useSwarmInitialization(
   useEffect(() => {
     if (!enabled) return
     if (isAgentSwarmsEnabled()) {
+      // `initializeTeammateHooks` declara su propio tipo de estado
+      // (`PermissionCarryingState`, no exportado por @thyrox/swarm) en vez
+      // de indexar el `AppState` real del anfitrión. El adaptador traduce
+      // entre los dos sin cambiar el valor: `prev` es el `AppState` real
+      // (estructuralmente asignable a la forma más amplia que el updater
+      // exige) y lo que el updater devuelve YA es ese mismo `AppState` en
+      // tiempo de ejecución -- el propio módulo sólo hace `{...prev, ...}`.
+      const setTeammateHooksState: (
+        updater: (
+          prev: Record<string, unknown> & { toolPermissionContext?: unknown },
+        ) => Record<string, unknown> & { toolPermissionContext?: unknown },
+      ) => void = updater => setAppState(prev => updater(prev) as AppState)
+
       // Check if this is a resumed agent session (from --resume or /resume)
       // Resumed sessions have teamName/agentName stored in transcript messages
       const firstMessage = initialMessages?.[0]
@@ -57,7 +70,7 @@ export function useSwarmInitialization(
           (m: { name: string }) => m.name === agentName,
         )
         if (member) {
-          initializeTeammateHooks(setAppState, getSessionId(), {
+          initializeTeammateHooks(setTeammateHooksState, getSessionId(), {
             teamName,
             agentId: member.agentId,
             agentName,
@@ -69,7 +82,7 @@ export function useSwarmInitialization(
         // and included in initialState, so we only need to initialize hooks here
         const context = getDynamicTeamContext?.()
         if (context?.teamName && context?.agentId && context?.agentName) {
-          initializeTeammateHooks(setAppState, getSessionId(), {
+          initializeTeammateHooks(setTeammateHooksState, getSessionId(), {
             teamName: context.teamName,
             agentId: context.agentId,
             agentName: context.agentName,

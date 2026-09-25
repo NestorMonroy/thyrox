@@ -34,6 +34,7 @@ import {
   getStartupPerfLogPath,
   isDetailedProfilingEnabled,
 } from '@thyrox/app-host/startup/startupProfiler.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { EmergencyTip } from './EmergencyTip.js'
 import { PowerupBanner } from '@thyrox/command-runtime/commands/powerup/PowerupBanner.js'
 import { VoiceModeNotice } from './VoiceModeNotice.js'
@@ -419,7 +420,7 @@ export function LogoV2(): React.ReactNode {
           <Text dimColor>Debug logs: {getDisplayPath(getDebugLogPath())}</Text>
           {isDetailedProfilingEnabled() && (
             <Text dimColor>
-              Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+              Startup Perf: {getDisplayPath(getStartupPerfLogPath(getSessionId()))}
             </Text>
           )}
         </Box>

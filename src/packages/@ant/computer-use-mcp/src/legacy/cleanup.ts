@@ -1,4 +1,5 @@
 import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { AppState } from '@thyrox/tool-registry/appStateTypes'
 
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
@@ -57,13 +58,12 @@ export async function cleanupComputerUseAfterTurn(
     await Promise.race([unhide, timeout.promise]).finally(() =>
       clearTimeout(timer),
     )
-    ctx.setAppState((prev: unknown) => {
-      const slice = prev as ComputerUseAppStateSlice
-      if (slice.computerUseMcpState?.hiddenDuringTurn === undefined) return prev
+    ctx.setAppState((prev: AppState) => {
+      if (prev.computerUseMcpState?.hiddenDuringTurn === undefined) return prev
       return {
-        ...(slice as object),
+        ...prev,
         computerUseMcpState: {
-          ...slice.computerUseMcpState,
+          ...prev.computerUseMcpState,
           hiddenDuringTurn: undefined,
         },
       }
