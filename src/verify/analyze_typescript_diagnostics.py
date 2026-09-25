@@ -23,12 +23,53 @@ MISSING_EXPORT = re.compile(
 )
 
 
+_QUOTED = re.compile(r"'([^']*)'")
+_MORE = re.compile(r"^\.\.\. (\d+) more \.\.\.$")
+_OPEN, _CLOSE = "<{([", ">})]"
+
+
+def _union_members(text: str) -> list[str] | None:
+    """Los miembros de primer nivel de una unión, o None si no lo es."""
+    members, depth, start = [], 0, 0
+    for i, char in enumerate(text):
+        if char in _OPEN:
+            depth += 1
+        elif char in _CLOSE:
+            depth -= 1
+        elif depth == 0 and text.startswith(" | ", i):
+            members.append(text[start:i])
+            start = i + 3
+    members.append(text[start:])
+    return members if len(members) > 1 else None
+
+
+def _stable_type(segment: re.Match[str]) -> str:
+    """tsc imprime una unión en el orden en que creó sus tipos, que cambia
+    entre programas, y la trunca con `... k more ...`: el mismo diagnóstico
+    sale con otro texto. Lo que no cambia es cuántos miembros tiene."""
+    members = _union_members(segment.group(1))
+    if members is None:
+        return segment.group(0)
+    total = 0
+    for member in members:
+        more = _MORE.match(member)
+        total += int(more.group(1)) if more else 1
+    return f"'<unión de {total}>'"
+
+
 def diagnostic_key(match: re.Match[str]) -> str:
-    """Identidad estable de un diagnóstico, sin coordenadas volátiles."""
+    """Identidad estable de un diagnóstico, sin coordenadas volátiles. Es el
+    texto que leen las señales de la memoria: no se normaliza."""
     return (
         f"{match.group('file')}: {match.group('code')}: "
         f"{match.group('message')}"
     )
+
+
+def stable_key(key: str) -> str:
+    """La clave para COMPARAR dos pasadas: las uniones, reducidas a su
+    tamaño. Sólo la usa el verificador; las señales leen `diagnostic_key`."""
+    return _QUOTED.sub(_stable_type, key)
 
 
 def analyze(lines: Iterable[str]) -> dict[str, object]:
