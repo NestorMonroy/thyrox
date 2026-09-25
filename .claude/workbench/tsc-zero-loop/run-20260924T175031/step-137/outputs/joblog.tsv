@@ -41,3 +41,4 @@ Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
 42	:	1790371077.083	    43.197	0	0	0	0	_headless_item 42 'src/packages/config/plugin/mcpbHandler.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-137/items/42.txt'
 43	:	1790371083.513	    39.010	0	0	0	0	_headless_item 43 'src/packages/config/plugin/orphanedPluginFilter.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-137/items/43.txt'
 39	:	1790371036.767	   106.667	0	0	0	0	_headless_item 39 'src/packages/command-runtime/src/commands/fork/index.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-137/items/39.txt'
+41	:	1790371055.009	   105.523	0	0	0	0	_headless_item 41 'src/packages/config/plugin/marketplaceManager.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-137/items/41.txt'
