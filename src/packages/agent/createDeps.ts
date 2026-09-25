@@ -36,7 +36,7 @@
 import { getProviderAdapter, getProviderContextPipeline } from '@thyrox/provider'
 import '@thyrox/provider/providerHostSetup'
 import { logError } from '@thyrox/local-observability/logging'
-import { findToolByName, type Tool, type ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { findToolByName, type Tool, type Tools, type ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { handleStopHooks } from './internal/stopHooksCore.ts'
 import { getAgentHostBindings } from './host.ts'
@@ -78,7 +78,7 @@ type RuntimeTool = Tool
 type RuntimeToolUseContext = ToolUseContext
 
 export interface CreateDepsParams {
-  tools: RuntimeTool[]
+  tools: Tools
   toolUseContext: RuntimeToolUseContext
   canUseTool: CanUseToolFn
   emitFn?: (event: unknown) => void
@@ -158,14 +158,12 @@ class ProviderDepImpl implements ProviderDep {
 
 class ToolDepImpl implements ToolDep {
   constructor(
-    private readonly tools: RuntimeTool[],
+    private readonly tools: Tools,
     private readonly toolUseContext: RuntimeToolUseContext,
   ) {}
 
   find(name: string) {
-    const tool = findToolByName(this.tools as never, name) as
-      | RuntimeTool
-      | undefined
+    const tool = findToolByName(this.tools, name)
     return tool ? this.toCoreTool(tool) : undefined
   }
 
@@ -178,9 +176,7 @@ class ToolDepImpl implements ToolDep {
     input: unknown,
     context: { toolUseId: string },
   ) {
-    const realTool = findToolByName(this.tools as never, tool.name) as
-      | RuntimeTool
-      | undefined
+    const realTool = findToolByName(this.tools, tool.name)
     if (!realTool) {
       return { output: `Tool not found: ${tool.name}`, error: true }
     }
@@ -228,13 +224,11 @@ class PermissionDepImpl implements PermissionDep {
   constructor(
     private readonly canUseToolFn: CanUseToolFn,
     private readonly toolUseContext: RuntimeToolUseContext,
-    private readonly tools: RuntimeTool[],
+    private readonly tools: Tools,
   ) {}
 
   async canUseTool(tool: { name: string }, input: unknown): Promise<PermissionResult> {
-    const realTool = findToolByName(this.tools as never, tool.name) as
-      | RuntimeTool
-      | undefined
+    const realTool = findToolByName(this.tools, tool.name)
     if (!realTool) {
       return { allowed: false, reason: `Unknown tool: ${tool.name}` }
     }
