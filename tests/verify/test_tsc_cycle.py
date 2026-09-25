@@ -113,7 +113,7 @@ with tempfile.TemporaryDirectory() as tmp:
     git = lambda *a: subprocess.run(["git", "-C", str(root), *a], check=True, capture_output=True)
     git("init", "-q")
     (root / "src" / "k.ts").write_text("const k = BAD\n")
-    git("add", "."); git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "base")
+    git("add", "."); git("-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "commit", "-q", "-m", "base")
     (root / "src" / "k.ts").write_text("const k = FIXED_BY_AGENT\n")
     run_dir = root / "run"
     step = run_dir / "step-9"
@@ -276,6 +276,15 @@ src/packages/h/src/use.ts(4,1): error TS2305: Module '"x"' has no exported membe
     module_pool, module_pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5",
                                                       worktree=Path("/wt"), ledger=Path("/run/l.jsonl"), seed=7)
     assert_equal("la ruta de módulos no hereda la política neta", False, "--net" in " ".join(module_pipeline))
+    # N=2 worktrees en la ruta 2: dos tsc a la vez rinden 1.77x
+    # (tsc-two-concurrent-*), y el lote toma N unidades para medirlas en prefijos.
+    _, two = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=[Path("/wt1"), Path("/wt2")],
+                                ledger=Path("/run/l.jsonl"), seed=7, route="shared")
+    assert_equal("la ruta 2 pasa los dos worktrees y un lote de su tamaño", (2, True),
+                 (two.count("--worktree"), "--batch 2" in " ".join(two)))
+    _, module_two = tc.launch_commands(root / "step", model="claude-sonnet-5",
+                                       worktree=[Path("/wt1"), Path("/wt2")], ledger=Path("/run/l.jsonl"), seed=7)
+    assert_equal("la de módulos no especula: sólo el primero", 1, module_two.count("--worktree"))
 
 # --- next: el orden del plan v3, no el que se le ocurra a quien lance ---------
 # 1 determinista (lo mecánico por proponentes, lo sin portar por módulo),

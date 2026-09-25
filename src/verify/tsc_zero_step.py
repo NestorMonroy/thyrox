@@ -135,6 +135,25 @@ def _queued(residual: Path) -> set[tuple[str, str]]:
     return {(row["proposal_id"], json.dumps(row["bases"], sort_keys=True)) for row in _read_jsonl(residual)}
 
 
+def net_outcome(before_lines: list[str], after_lines: list[str], row: dict) -> tuple[str, list[str]]:
+    """La política neta sobre UNA propuesta: se conserva si bajan sus
+    objetivos y baja el total; lo que destapa EN OTROS ARCHIVOS se registra y
+    no se revierte. Lo nuevo en los archivos que la propuesta edita la tumba:
+    esos son suyos, y un error ahí es la propuesta incompleta, no un contrato
+    destapado. Las dos veces que la neta conservó código roto fue así (pasos
+    087 y 094, intento 1: un nombre sin importar y una propiedad de clase
+    renombrada). Devuelve el veredicto y lo nuevo que dejó."""
+    report = verify_proposals(before_lines, after_lines, [
+        Proposal(row["proposal_id"], row["proposer"], frozenset(row["targets"]), frozenset(row["files"]))])
+    verdict = report.verdicts[0]
+    own = set(row["files"])
+    breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
+    if (not breaks_own and verdict.targets_after < verdict.targets_before
+            and report.total_after < report.total_before):
+        return "accepted-net", report.new_diagnostics
+    return verdict.outcome, verdict.new_diagnostics
+
+
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
              before_lines: list[str] | None = None, net: bool = False,
@@ -177,20 +196,12 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
         for pid in applied])
     outcomes.update({v.proposal_id: v.outcome for v in report.verdicts})
     # Política neta: sólo con una propuesta por lote, porque el total no se
-    # puede repartir entre varias. Se conserva si bajan sus objetivos y baja el
-    # total; lo que destapa EN OTROS ARCHIVOS se registra y no se revierte.
-    # Lo nuevo en los archivos que la propuesta edita la tumba: esos son suyos,
-    # y un error ahí es la propuesta incompleta, no un contrato destapado. Las
-    # dos veces que la neta conservó código roto fue así (pasos 087 y 094,
-    # intento 1: un nombre sin importar y una propiedad de clase renombrada).
+    # puede repartir entre varias (`net_outcome`).
     net_kept: str | None = None
     if net and len(applied) == 1 and len(report.verdicts) == 1:
-        verdict = report.verdicts[0]
-        own = set(by_id[verdict.proposal_id]["files"])
-        breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
-        if (not breaks_own and verdict.targets_after < verdict.targets_before
-                and report.total_after < report.total_before):
-            net_kept = verdict.proposal_id
+        pid = report.verdicts[0].proposal_id
+        if net_outcome(before_lines, after_lines, by_id[pid])[0] == "accepted-net":
+            net_kept = pid
             outcomes[net_kept] = "accepted-net"
 
     # Parcial conservable: bajan sus objetivos sin llegar a cero. Se trata

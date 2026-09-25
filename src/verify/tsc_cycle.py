@@ -327,23 +327,28 @@ def cmd_compare(args) -> int:
     return 0
 
 
-def launch_commands(bench: Path, model: str, worktree: Path, ledger: Path, seed: int,
+def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
                     width: int = 8, route: str = "modules") -> list[list[str]]:
     """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
     items, outputs = bench / "items.txt", bench / "outputs"
     shared = route == "shared"
+    worktrees = worktree if isinstance(worktree, list) else [worktree]
+    # Sólo la ruta 2 especula: con su política neta, N worktrees miden N
+    # prefijos a la vez (`prefix_speculation`). La de módulos usa el primero.
+    worktrees = worktrees if shared else worktrees[:1]
     prompt = SHARED_PROMPT if shared else MODULE_PROMPT
     pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
             f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
             f" --tools Read,Grep,Glob --max-turns 30 < {shlex.quote(str(items))}")
-    pipeline = [sys.executable, "src/verify/pool_pipeline.py", "--main", ".", "--worktree", str(worktree),
+    pipeline = [sys.executable, "src/verify/pool_pipeline.py", "--main", ".",
+                *[arg for wt in worktrees for arg in ("--worktree", str(wt))],
                 "--items", str(items), "--outputs", str(outputs), "--bench", str(bench / "pipeline"),
                 "--ledger", str(ledger), "--seed", str(seed),
                 # Ruta 2: de a una y con la política neta (plan v3, paso 3):
                 # el efecto de cada unificación se mide antes de la siguiente.
-                "--batch", "1" if shared else "5", "--poll", "10", "--unit", "module",
+                "--batch", str(len(worktrees)) if shared else "5", "--poll", "10", "--unit", "module",
                 *(["--net"] if shared else []), "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
     name = bench.name
     return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
@@ -409,7 +414,8 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_shared_plan)
     p = ssub.add_parser("launch", help="lanza el pool y el pipeline de la ruta 2 con thyrox-bg")
     p.add_argument("--bench", type=Path, required=True)
-    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--worktree", type=Path, action="append", required=True,
+                   help="repetible: dos worktrees miden dos prefijos a la vez")
     p.add_argument("--ledger", type=Path, required=True)
     p.add_argument("--seed", type=int, required=True)
     p.add_argument("--model", default="claude-sonnet-5")

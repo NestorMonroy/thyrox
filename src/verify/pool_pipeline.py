@@ -33,9 +33,10 @@ import time
 from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
-from verify import measure_worktree
+from verify import measure_worktree, prefix_speculation
 from verify.file_edits import apply_files
 from verify.tsc_zero_step import ABSENT_BASE
+from verify.tsc_zero_step import _append as append_ledger
 
 HERE = Path(__file__).resolve().parent
 SILENCE = re.compile(r"\bas any\b|:\s*any\b|<any>|as unknown as|\bas never\b|@ts-ignore|@ts-expect-error")
@@ -147,13 +148,48 @@ def step_command(wt: Path, candidates: Path, *, ledger: Path, bench_dir: Path, b
             "--seed", str(seed), "--accept-partial", *(["--net"] if net else []), "--", *tsc]
 
 
+def _speculative_batch(worktrees: list[Path], rows: list[dict], tsc: list[str], bench: Path, before_log: Path,
+                       ledger: Path, taken: set[str], kept: set[str], batch_no: int) -> tuple[Path, dict]:
+    """Un lote de la ruta 2 en N worktrees: mide los prefijos a la vez y
+    decide cada unidad contra el log del prefijo anterior. Lo que queda sin
+    decidir —medido encima de un rechazo, o fuera del prefijo por cruzar
+    archivos— se libera para la ronda siguiente."""
+    before_lines = before_log.read_text().splitlines()
+    prefix = prefix_speculation.disjoint_prefix(rows, len(worktrees))
+    decision = prefix_speculation.run_round(worktrees, prefix, tsc, bench, before_lines)
+    in_prefix = {row["proposal_id"] for row in prefix}
+    for row in decision.undecided + [r for r in rows if r["proposal_id"] not in in_prefix]:
+        taken.difference_update(row["files"])
+    by_id = {row["proposal_id"]: row for row in prefix}
+    kept_files = sorted({f for pid in decision.kept for f in by_id[pid]["files"]})
+    kept.update(kept_files)
+    total_before = sum(1 for m in map(DIAGNOSTIC.match, before_lines) if m)
+    total_final = sum(1 for m in map(DIAGNOSTIC.match, decision.final_lines) if m)
+    append_ledger(ledger, [{"proposal_id": pid, "proposer": by_id[pid]["proposer"], "outcome": outcome,
+                            "total_before": total_before, "total_after": total_final}
+                           for pid, outcome in decision.outcomes.items()])
+    final = bench / "final.log"
+    final.write_text("\n".join(decision.final_lines) + "\n")
+    (bench / "report.json").write_text(json.dumps({"kept": decision.kept, "outcomes": decision.outcomes,
+                                                   "undecided": [r["proposal_id"] for r in decision.undecided],
+                                                   "files_kept": kept_files}, ensure_ascii=False))
+    return final, {"batch": batch_no, "files": len(prefix), "total_before": total_before,
+                   "total_final": total_final, "tsc_runs": len(prefix), "kept": len(kept_files),
+                   "worktrees": len(worktrees)}
+
+
 def run(args: argparse.Namespace, tsc: list[str]) -> dict:
-    main_tree, wt = args.main.resolve(), args.worktree.resolve()
+    # Uno o varios worktrees. Con varios y la política neta, cada lote mide
+    # prefijos a la vez (`prefix_speculation`); el primero es el que exporta.
+    worktrees = [w.resolve() for w in (args.worktree if isinstance(args.worktree, list) else [args.worktree])]
+    main_tree, wt = args.main.resolve(), worktrees[0]
+    speculative = len(worktrees) > 1 and getattr(args, "net", False)
     # El paso corre con cwd en el worktree: toda ruta relativa al árbol
     # principal se rompería ahí (el primer lote real murió así).
     args.bench, args.items, args.ledger = args.bench.resolve(), args.items.resolve(), args.ledger.resolve()
     args.outputs = [d.resolve() for d in args.outputs]
-    measure_worktree.prepare(main_tree, wt)
+    for worktree in worktrees:
+        measure_worktree.prepare(main_tree, worktree)
     items = args.items.read_text().splitlines()
     grouped = items_by_file(items)
     taken: set[str] = set()
@@ -171,6 +207,8 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                     outputs.setdefault(n, []).append(data)
         ready = ready_files(grouped, finished, taken)
         done = len(finished) == len(items)
+        if speculative:
+            ready = ready[:len(worktrees)]
         if ready and (len(ready) >= args.batch or done):
             batch_no += 1
             bench = args.bench / f"batch-{batch_no:02d}"
@@ -181,6 +219,7 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                 result = subprocess.run(tsc, cwd=wt, capture_output=True, text=True)
                 before.write_text(result.stdout)
                 before_log, keys = before, log_keys(result.stdout.splitlines())
+            rows: list[dict] = []
             with (bench / "candidates.jsonl").open("w") as out:
                 for file in ready:
                     edits = [e for n in grouped[file] for data in outputs.get(n, []) for e in proposal_edits(data)]
@@ -191,8 +230,15 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                     else:
                         candidate, _ = build_candidate(file, (wt / file).read_text(), edits, keys)
                     if candidate:
+                        rows.append(candidate)
                         out.write(json.dumps(candidate, ensure_ascii=False) + "\n")
             taken.update(ready)
+            if speculative:
+                before_log, entry = _speculative_batch(worktrees, rows, tsc, bench, before_log, args.ledger,
+                                                       taken, kept, batch_no)
+                summary.append(entry)
+                print(json.dumps(entry), flush=True)
+                continue
             step = subprocess.run(
                 step_command(wt, bench / "candidates.jsonl", ledger=args.ledger.resolve(), bench_dir=bench,
                              before_log=before_log, seed=args.seed + batch_no, tsc=tsc,
@@ -227,7 +273,8 @@ def main(argv: list[str] | None = None) -> int:
     split = argv.index("--")
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--main", type=Path, required=True)
-    parser.add_argument("--worktree", type=Path, required=True)
+    parser.add_argument("--worktree", type=Path, action="append", required=True,
+                        help="repetible: con más de uno y --net, cada lote mide prefijos a la vez")
     parser.add_argument("--items", type=Path, required=True)
     parser.add_argument("--outputs", type=Path, action="append", required=True)
     parser.add_argument("--bench", type=Path, required=True)

@@ -1,0 +1,11 @@
+test_measure_worktree:
+  ok    el paquete del workspace resuelve al src/ del worktree
+  ok    el paquete de terceros se enlaza al principal, no se copia
+  ok    el node_modules anidado se enlaza entero
+  ok    el worktree trae los cambios sin commitear del principal
+  ok    y sus archivos nuevos sin seguir
+  ok    export copia lo aceptado al principal
+  ok    sync deja el worktree igual al principal otra vez
+  ok    un paquete nuevo en un alcance ya reflejado también se refleja
+  ok    y el que ya estaba sigue
+test_measure_worktree: 9 aserciones — 9 ok, 0 falla(s)

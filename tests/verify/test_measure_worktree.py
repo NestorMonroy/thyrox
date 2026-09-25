@@ -32,7 +32,7 @@ def assert_equal(name: str, expected, obtained) -> None:
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=cwd, check=True,
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=cwd, check=True,
                    capture_output=True)
 
 

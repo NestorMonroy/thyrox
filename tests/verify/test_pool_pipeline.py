@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -83,7 +84,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "fake_tsc.py").write_text(FAKE_TSC)
     (main / ".gitignore").write_text("node_modules\nbench\nout\n")
     for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "base"]):
-        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=main, check=True)
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=main, check=True)
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("src/a.ts d/1.txt\n")
@@ -150,7 +151,7 @@ with tempfile.TemporaryDirectory() as directory:
     (main / "fake_tsc.py").write_text(FAKE_TSC)
     (main / ".gitignore").write_text("node_modules\nbench\nout\n")
     for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "base"]):
-        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=main, check=True)
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=main, check=True)
     (main / "node_modules").mkdir()
     (main / "out").mkdir()
     (main / "items.txt").write_text("module:n d/1.txt src/a.ts\n")
@@ -173,6 +174,65 @@ with tempfile.TemporaryDirectory() as directory:
                  result["files_kept"])
     assert_equal("y el archivo nuevo llega al árbol principal, directorio incluido", "export const n = 1\n",
                  (main / "src/port/n.ts").read_text() if (main / "src/port/n.ts").exists() else None)
+
+# --- N worktrees: la ruta 2 mide prefijos en paralelo (`prefix_speculation`) --
+# Dos tsc a la vez rinden 1.77x en 4 núcleos (tsc-two-concurrent-*). Con dos
+# worktrees y la política neta, el lote toma dos unidades: el worktree 2 mide
+# `a+b` mientras el 1 mide `a`. `b` deja un error nuevo en su propio archivo:
+# se rechaza contra el log de `a`, y `c` entra en la ronda siguiente.
+def speculative_run(bad: str, directory: str) -> tuple[dict, Path, Path]:
+    """El pipeline con dos worktrees sobre `a`, `b` y `c`. La unidad `bad`
+    deja un error nuevo en su propio archivo. `ready_files` ordena por
+    nombre, así que el prefijo de la primera ronda es siempre `[a, b]`."""
+    base = Path(directory)
+    main = base / "main"
+    (main / "src").mkdir(parents=True)
+    for name, number in (("a", 1), ("b", 2), ("c", 3)):
+        (main / f"src/{name}.ts").write_text(f"const {name} = BAD{number}\n")
+    (main / "fake_tsc.py").write_text(FAKE_TSC)
+    (main / ".gitignore").write_text("node_modules\nbench\nout\n")
+    for args in (["init", "-q"], ["add", "."], ["commit", "-qm", "base"]):
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=main, check=True)
+    (main / "node_modules").mkdir()
+    (main / "out").mkdir()
+    edits = {name: (f"BAD{n}", "BAD9" if name == bad else str(n)) for n, name in enumerate("abc", 1)}
+    (main / "items.txt").write_text("".join(f"src/{name}.ts d/{n}.txt\n" for n, name in enumerate("abc", 1)))
+    for n, name in enumerate("abc", 1):
+        old, new = edits[name]
+        (main / f"out/{n}.json").write_text(json.dumps({"result": json.dumps({"edits": [{"old": old, "new": new}]})}))
+    cwd = os.getcwd()
+    os.chdir(main)
+    try:
+        result = pp.run(argparse.Namespace(
+            main=Path("."), worktree=[base / "wt1", base / "wt2"], items=Path("items.txt"),
+            outputs=[Path("out")], bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1,
+            batch=2, poll=0.1, net=True), [sys.executable, "fake_tsc.py"])
+    finally:
+        os.chdir(cwd)
+    return result, main, base
+
+
+# Cada corrida en su TemporaryDirectory: se borra exactamente ese directorio.
+# (La limpieza anterior borraba `base.parent`, que era /tmp: H-THYROX-184.)
+with tempfile.TemporaryDirectory() as directory:
+    result, main, base = speculative_run(bad="b", directory=directory)
+    assert_equal("dos worktrees: se conservan a y c, no b", ["src/a.ts", "src/c.ts"], result["files_kept"])
+    assert_equal("y llegan al árbol principal", ("const a = 1\n", "const b = BAD2\n", "const c = 3\n"),
+                 tuple((main / f"src/{n}.ts").read_text() for n in "abc"))
+    assert_equal("el primer lote midió dos prefijos a la vez", True, (main / "bench/batch-01/prefix-2.log").exists())
+    assert_equal("los dos worktrees terminan iguales", (base / "wt1/src/c.ts").read_text(),
+                 (base / "wt2/src/c.ts").read_text())
+    ledger_rows = [json.loads(line) for line in (main / "bench/ledger.jsonl").read_text().splitlines()]
+    assert_equal("el ledger registra cada decisión", {"agent:pool:src/a.ts": "accepted-net",
+                                                      "agent:pool:src/b.ts": "rejected",
+                                                      "agent:pool:src/c.ts": "accepted-net"},
+                 {row["proposal_id"]: row["outcome"] for row in ledger_rows})
+# La mala es `a`, la primera del prefijo: se rechaza, y `b`, medido encima de
+# `a`, queda sin decidir. Tiene que volver en la ronda siguiente, no perderse.
+with tempfile.TemporaryDirectory() as directory:
+    result, main, base = speculative_run(bad="a", directory=directory)
+    assert_equal("lo medido encima de un rechazo vuelve y se decide después", ["src/b.ts", "src/c.ts"],
+                 result["files_kept"])
 
 # La política neta viaja hasta el paso: sin ella, unificar un tipo que
 # destapa contratos se revierte aunque baje el total.
