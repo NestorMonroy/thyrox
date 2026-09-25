@@ -1063,3 +1063,5 @@
 {"proposal_id": "agent:pool:src/packages/agent/attachments/mailbox.ts", "proposer": "agent", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 246, "total_after": 216}
 {"proposal_id": "agent:pool:src/packages/provider/src/claudeAiLimits.ts", "proposer": "agent", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 246, "total_after": 216}
 {"proposal_id": "agent:pool:src/packages/storage/src/claudemd.ts", "proposer": "agent", "outcome": "accepted-partial", "targets_before": 10, "targets_after": 2, "new_diagnostics": [], "total_before": 234, "total_after": 226}
+{"proposal_id": "agent:pool:module:src/packages/agent/types/hooks.ts", "proposer": "agent", "outcome": "accepted-partial", "targets_before": 10, "targets_after": 7, "new_diagnostics": [], "total_before": 196, "total_after": 193}
+{"proposal_id": "agent:pool:module:src/packages/config/settings/types.ts", "proposer": "agent", "outcome": "accepted-partial", "targets_before": 10, "targets_after": 7, "new_diagnostics": [], "total_before": 196, "total_after": 193}

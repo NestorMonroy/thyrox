@@ -1,0 +1,4 @@
+Módulo: src/packages/config/settings/types.ts
+Miembros que faltan: SkillHookMatcher
+
+src/packages/agent/hooks.ts(67): error TS2724: '"@thyrox/config/settings/types.js"' has no exported member named 'SkillHookMatcher'. Did you mean 'HookMatcher'?

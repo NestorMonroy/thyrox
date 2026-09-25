@@ -452,6 +452,19 @@ export type PluginHookMatcher = {
   pluginId: string
 }
 
+/**
+ * Un matcher de hook aportado por un skill — `ccnmt: packages/config/
+ * settings/types.ts:1140`. Lo distingue de un matcher de plugin la presencia
+ * de `skillRoot` en vez de `pluginRoot`/`pluginId`; `hooks.ts` los discrimina
+ * por esa clave al ejecutar.
+ */
+export type SkillHookMatcher = {
+  matcher?: string
+  hooks: HookCommand[]
+  skillRoot: string
+  skillName: string
+}
+
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { HookCommand } from './schemas/hooks.js'

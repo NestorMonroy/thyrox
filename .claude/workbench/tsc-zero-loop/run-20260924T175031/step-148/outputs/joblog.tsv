@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790376110.384	    16.323	0	0	0	0	_headless_item 2 'module:src/packages/config/settings/types.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-148/items/2.txt src/packages/agent/hooks.ts'
+1	:	1790376110.367	    68.241	0	0	0	0	_headless_item 1 'module:src/packages/agent/types/hooks.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-148/items/1.txt src/packages/agent/hooks.ts'
