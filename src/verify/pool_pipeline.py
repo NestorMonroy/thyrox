@@ -187,11 +187,24 @@ class GateBlocked(RuntimeError):
 PATTERN_FIELDS = ("patron", "senal_del_verificador", "fix_generico")
 
 
-def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str]) -> list[str]:
+#: El prefijo que el log crudo de tsc pone antes del código y que la clave de
+#: diagnóstico (`diagnostic_key`) no lleva: una señal que lo copia no casa
+#: con nada.
+RAW_LOG_PREFIX = re.compile(r"(?<![\w-])error (?=TS\d)")
+
+
+def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str],
+                    keys: list[str] | None = None) -> list[str]:
     """Gate 3b, la mitad que escribe: el patrón que cada archivo conservado
     trajo en su salida va a la memoria (`patterns.jsonl` de la corrida) con
     los cuatro campos, y su `applied` nombra el archivo. Devuelve los motivos
-    de los patrones que no se pudieron guardar."""
+    de los patrones que no se pudieron guardar.
+
+    Con `keys` (las claves de diagnóstico de antes del lote) cada señal se
+    valida contra los diagnósticos de SU archivo: una que no casa con ninguno
+    no cubre lo conservado y ensuciaría la memoria, así que no entra y el
+    motivo la nombra. Antes se quita el prefijo `error ` que el log crudo
+    lleva y la clave no (medido en el paso 155)."""
     problems = []
     for file in kept:
         for output in outputs_for_file.get(file, []):
@@ -204,9 +217,21 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                 if not all(str(pattern.get(field, "")).strip() for field in PATTERN_FIELDS):
                     problems.append(f"{file}: patrón sin los campos {', '.join(PATTERN_FIELDS)}")
                     continue
+                signal = RAW_LOG_PREFIX.sub("", pattern["senal_del_verificador"])
+                if keys is not None:
+                    own = [k for k in keys if k.startswith(f"{file}: ")]
+                    try:
+                        matches = [k for k in own if re.search(signal, k)]
+                    except re.error as error:
+                        problems.append(f"{file}: {pattern['patron']}: {error}")
+                        continue
+                    if not matches:
+                        problems.append(f"{file}: {pattern['patron']}: la señal {signal!r} no casa con "
+                                        f"ninguno de los {len(own)} diagnóstico(s) del archivo")
+                        continue
                 try:
                     tsc_sweep.add_pattern(run, {"name": pattern["patron"],
-                                                "signal": pattern["senal_del_verificador"],
+                                                "signal": signal,
                                                 "fix": pattern["fix_generico"]})
                 except (ValueError, re.error) as error:
                     problems.append(f"{file}: {pattern['patron']}: {error}")
@@ -331,7 +356,7 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
             if kept_now and getattr(args, "unit", "file") == "file":
                 problems = record_patterns(args.ledger.parent, {
                     file: [data for n in grouped.get(file, []) for data in outputs.get(n, [])]
-                    for file in kept_now}, kept_now)
+                    for file in kept_now}, kept_now, keys)
                 memory_gate(args.ledger.parent, bench, problems)
             if getattr(args, "unit", "file") == "module":
                 for unit in ready:

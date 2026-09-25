@@ -144,6 +144,34 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("y no exporta lo conservado al árbol principal", "const a = BAD1\n",
                  (main / "src/a.ts").read_text())
 
+# Gate 3b, la validación de la señal (paso 155): los agentes trajeron sus
+# patrones con los cuatro campos y aun así ninguno cubría lo conservado. Dos
+# formas medidas: `error TS2304: …` copia el prefijo del log crudo, que la
+# clave de diagnóstico no lleva; y `TS2677.*'NormalizedMessage'` busca texto
+# que sólo está en las líneas encadenadas. La primera se normaliza; la segunda
+# no casa con ningún diagnóstico del archivo, no entra a la memoria, y el
+# motivo lo dice.
+with tempfile.TemporaryDirectory() as directory:
+    run_dir = Path(directory)
+    keys = ["src/a.ts: TS2304: Cannot find name 'foo'.",
+            "src/a.ts: TS2677: A type predicate's type must be assignable to its parameter's type.",
+            "src/b.ts: TS2304: Cannot find name 'bar'."]
+    output = {"result": json.dumps({"edits": [{"old": "x", "new": "y"}], "patterns": [
+        {"patron": "missing-name", "senal_del_verificador": "error TS2304: Cannot find name '(\\w+)'",
+         "fix_generico": "importar el símbolo", "edits": [0]},
+        {"patron": "predicate-chained-text", "senal_del_verificador": "TS2677.*'NormalizedMessage'",
+         "fix_generico": "estrechar el predicado", "edits": [0]}]})}
+    problems = pp.record_patterns(run_dir, {"src/a.ts": [output]}, ["src/a.ts"], keys)
+    memory = pp.tsc_sweep.load_patterns(run_dir)
+    assert_equal("el prefijo 'error ' del log crudo se quita de la señal",
+                 "TS2304: Cannot find name '(\\w+)'", memory.get("missing-name", {}).get("signal"))
+    assert_equal("y el patrón normalizado queda aplicado al archivo", ["src/a.ts"],
+                 memory.get("missing-name", {}).get("applied"))
+    assert_equal("una señal que no casa con ningún diagnóstico del archivo no entra a la memoria", False,
+                 "predicate-chained-text" in memory)
+    assert_equal("y el motivo la nombra", True,
+                 any("predicate-chained-text" in p and "no casa" in p for p in problems))
+
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
 # consumidores que el ítem declara. Las ediciones se aplican con el porte del
