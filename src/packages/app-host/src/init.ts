@@ -68,11 +68,8 @@
  */
 import { profileCheckpoint } from './startup/startupProfiler.js'
 import './bootstrap/state.js'
-import type { Attributes, MetricOptions } from '@opentelemetry/api'
 import memoize from 'lodash-es/memoize.js'
 import { getIsNonInteractiveSession } from './bootstrap/state.js'
-import type { AttributedCounter } from './bootstrap/state.js'
-import { getSessionCounter, setMeter } from './bootstrap/state.js'
 import { shutdownLspServerManager } from '@thyrox/ide/lsp/manager.js'
 import { populateOAuthAccountInfoIfNeeded } from '@thyrox/provider/oauth/client.js'
 import {
@@ -112,14 +109,11 @@ import {
 // ~400KB de módulos OpenTelemetry + protobuf hasta que la telemetría realmente se inicializa.
 // Los exporters gRPC (~700KB vía @grpc/grpc-js) se cargan perezosamente aún más adentro, en instrumentation.ts.
 import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
-import { getTelemetryAttributes } from '@thyrox/local-observability/telemetry'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
 import { initSentry } from '@thyrox/local-observability/sentry.js'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
 
-// Rastrea si la telemetría ya se inicializó, para evitar doble inicialización
-let telemetryInitialized = false
 
 export const init = memoize(async (): Promise<void> => {
   const initStartTime = Date.now()
@@ -412,56 +406,4 @@ export function initializeTelemetryAfterTrust(): void {
   return
 }
 
-async function doInitializeTelemetry(): Promise<void> {
-  if (telemetryInitialized) {
-    // Ya inicializada, nada que hacer
-    return
-  }
 
-  // Fija la bandera antes de inicializar, para evitar doble inicialización
-  telemetryInitialized = true
-  try {
-    await setMeterState()
-  } catch (error) {
-    // Resetea la bandera ante un fallo, para que llamadas subsecuentes puedan reintentar
-    telemetryInitialized = false
-    throw error
-  }
-}
-
-async function setMeterState(): Promise<void> {
-  // Carga perezosa de instrumentation para diferir ~400KB de OpenTelemetry + protobuf
-  const { initializeTelemetry } = await import(
-    '@thyrox/local-observability/telemetry'
-  )
-  // Inicializa telemetría OTLP de cliente (métricas, logs, traces)
-  const meter = await initializeTelemetry()
-  if (meter) {
-    // Crea función factory para contadores atribuidos
-    const createAttributedCounter = (
-      name: string,
-      options: MetricOptions,
-    ): AttributedCounter => {
-      const counter = meter?.createCounter(name, options)
-
-      return {
-        add(value: number, additionalAttributes: Attributes = {}) {
-          // Siempre trae atributos de telemetría frescos para asegurar que estén al día
-          const currentAttributes = getTelemetryAttributes()
-          const mergedAttributes = {
-            ...currentAttributes,
-            ...additionalAttributes,
-          }
-          counter?.add(value, mergedAttributes)
-        },
-      }
-    }
-
-    setMeter(meter, createAttributedCounter)
-
-    // Incrementa el contador de sesión aquí porque el camino de telemetría de
-    // arranque corre antes de que esta inicialización asíncrona termine, así
-    // que el contador sería null ahí.
-    getSessionCounter()?.add(1)
-  }
-}
