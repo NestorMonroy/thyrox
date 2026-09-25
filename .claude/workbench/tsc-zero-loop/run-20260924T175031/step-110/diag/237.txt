@@ -1,0 +1,40 @@
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx(57,23): error TS2339: Property 'has_claude_max' does not exist on type '{ uuid: string; email: string; display_name?: string | undefined; created_at?: string | undefined; }'.
+  --- código src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:47-66 ---
+     47  async function getExistingClaudeSubscription(): Promise<'Max' | 'Pro' | null> {
+     48    // If already using subscription auth, there is nothing to switch to
+     49    if (isClaudeAISubscriber()) {
+     50      return null
+     51    }
+     52    const profile = await getOauthProfileFromApiKey()
+     53    if (!profile) {
+     54      return null
+     55    }
+     56  
+     57>   if (profile.account.has_claude_max) {
+     58      return 'Max'
+     59    }
+     60  
+     61    if (profile.account.has_claude_pro) {
+     62      return 'Pro'
+     63    }
+     64  
+     65    return null
+     66  }
+src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx(61,23): error TS2339: Property 'has_claude_pro' does not exist on type '{ uuid: string; email: string; display_name?: string | undefined; created_at?: string | undefined; }'.
+  --- código src/packages/repl/src/hooks/notifs/useCanSwitchToExistingSubscription.tsx:51-66 ---
+     51    }
+     52    const profile = await getOauthProfileFromApiKey()
+     53    if (!profile) {
+     54      return null
+     55    }
+     56  
+     57    if (profile.account.has_claude_max) {
+     58      return 'Max'
+     59    }
+     60  
+     61>   if (profile.account.has_claude_pro) {
+     62      return 'Pro'
+     63    }
+     64  
+     65    return null
+     66  }

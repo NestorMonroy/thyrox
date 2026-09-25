@@ -1,0 +1,28 @@
+src/packages/ide/src/lsp/passiveFeedback.ts(64,5): error TS2345: Argument of type '(diag: { message: string; severity?: number; range: { start: { line: number; character: number; }; end: { line: number; character: number; }; }; source?: string; code?: string | number; }) => { ...; }' is not assignable to parameter of type '(value: Diagnostic, index: number, array: Diagnostic[]) => { message: string; severity: "Error" | "Warning" | "Info" | "Hint"; range: { start: { line: number; character: number; }; end: { ...; }; }; source: string | undefined; code: string | undefined; }'.
+  --- código src/packages/ide/src/lsp/passiveFeedback.ts:54-74 ---
+     54      const err = toError(error)
+     55      logError(err)
+     56      logForDebugging(
+     57        `Failed to convert URI to file path: ${params.uri}. Error: ${err.message}. Using original URI as fallback.`,
+     58      )
+     59      // Gracefully fallback to original URI - LSP servers may send malformed URIs
+     60      uri = params.uri
+     61    }
+     62  
+     63    const diagnostics = params.diagnostics.map(
+     64>     (diag: {
+     65        message: string
+     66        severity?: number
+     67        range: {
+     68          start: { line: number; character: number }
+     69          end: { line: number; character: number }
+     70        }
+     71        source?: string
+     72        code?: string | number
+     73      }) => ({
+     74        message: diag.message,
+  Types of parameters 'diag' and 'value' are incompatible.
+    Type 'Diagnostic' is not assignable to type '{ message: string; severity?: number | undefined; range: { start: { line: number; character: number; }; end: { line: number; character: number; }; }; source?: string | undefined; code?: string | number | undefined; }'.
+      Types of property 'message' are incompatible.
+        Type 'string | MarkupContent' is not assignable to type 'string'.
+          Type 'MarkupContent' is not assignable to type 'string'.

@@ -1,0 +1,4 @@
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(31,3): error TS6133: 'onCancel' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34,9): error TS6133: 'steps' is declared but its value is never read.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(34,16): error TS2315: Type 'WizardStepComponent' is not generic.
+src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx(56,21): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.

@@ -1,0 +1,27 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(81,32): error TS18046: 'metadata' is of type 'unknown'.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:71-90 ---
+     71                  return {
+     72                    label:
+     73                      count > 0 ? (
+     74                        <Text>
+     75                          {name} <Text color="suggestion">({count})</Text>
+     76                        </Text>
+     77                      ) : (
+     78                        name
+     79                      ),
+     80                    value: name,
+     81>                   description: metadata.summary,
+     82                  }
+     83                },
+     84              )}
+     85            />
+     86          </Box>
+     87        </Box>
+     88      </Dialog>
+     89    )
+     90  }

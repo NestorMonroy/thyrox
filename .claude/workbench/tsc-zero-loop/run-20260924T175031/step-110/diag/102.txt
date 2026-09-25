@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/terminalSetup/index.ts(20,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/terminalSetup")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/terminalSetup/index.ts:10-23 ---
+     10  }
+     11  
+     12  const terminalSetup = {
+     13    type: 'local-jsx',
+     14    name: 'terminal-setup',
+     15    description:
+     16      env.terminal === 'Apple_Terminal'
+     17        ? 'Enable Option+Enter key binding for newlines and visual bell'
+     18        : 'Install Shift+Enter key binding for newlines',
+     19    isHidden: env.terminal !== null && env.terminal in NATIVE_CSIU_TERMINALS,
+     20>   load: () => import('@thyrox/repl/terminalSetup.js'),
+     21  } satisfies Command
+     22  
+     23  export default terminalSetup
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/terminalSetup")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; ... 4 more ...; resume?: ((sessionId: `${string}-${string}-${string}-${string}-${string}`, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<...>) ...' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

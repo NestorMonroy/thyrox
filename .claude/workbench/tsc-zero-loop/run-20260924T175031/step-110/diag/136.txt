@@ -1,0 +1,93 @@
+src/packages/mcp-runtime/src/clientRuntime.ts(1576,21): error TS2322: Type '"started"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1566-1586 ---
+   1566                const meta = toolUseId
+   1567                  ? { 'claudecode/toolUseId': toolUseId }
+   1568                  : {}
+   1569  
+   1570                // Emit progress when tool starts
+   1571                if (onProgress && toolUseId) {
+   1572                  onProgress({
+   1573                    toolUseID: toolUseId,
+   1574                    data: {
+   1575                      type: 'mcp_progress',
+   1576>                     status: 'started',
+   1577                      serverName: client.name,
+   1578                      toolName: tool.name,
+   1579                    },
+   1580                  })
+   1581                }
+   1582  
+   1583                const startTime = Date.now()
+   1584                const MAX_SESSION_RETRIES = 1
+   1585                for (let attempt = 0; ; attempt++) {
+   1586                  try {
+src/packages/mcp-runtime/src/clientRuntime.ts(1614,25): error TS2322: Type '"completed"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1604-1624 ---
+   1604                          : undefined,
+   1605                      handleElicitation: context.handleElicitation,
+   1606                    })
+   1607  
+   1608                    // Emit progress when tool completes successfully
+   1609                    if (onProgress && toolUseId) {
+   1610                      onProgress({
+   1611                        toolUseID: toolUseId,
+   1612                        data: {
+   1613                          type: 'mcp_progress',
+   1614>                         status: 'completed',
+   1615                          serverName: client.name,
+   1616                          toolName: tool.name,
+   1617                          elapsedTimeMs: Date.now() - startTime,
+   1618                        },
+   1619                      })
+   1620                    }
+   1621  
+   1622                    return {
+   1623                      data: mcpResult.content,
+   1624                      ...((mcpResult._meta || mcpResult.structuredContent) && {
+src/packages/mcp-runtime/src/clientRuntime.ts(1655,25): error TS2322: Type '"failed"' is not assignable to type '"progress"'.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:1645-1665 ---
+   1645                      )
+   1646                      continue
+   1647                    }
+   1648  
+   1649                    // Emit progress when tool fails
+   1650                    if (onProgress && toolUseId) {
+   1651                      onProgress({
+   1652                        toolUseID: toolUseId,
+   1653                        data: {
+   1654                          type: 'mcp_progress',
+   1655>                         status: 'failed',
+   1656                          serverName: client.name,
+   1657                          toolName: tool.name,
+   1658                          elapsedTimeMs: Date.now() - startTime,
+   1659                        },
+   1660                      })
+   1661                    }
+   1662                    // Wrap MCP SDK errors so telemetry gets useful context
+   1663                    // instead of just "Error" or "McpError" (the constructor
+   1664                    // name). MCP SDK errors are protocol-level messages and
+   1665                    // don't contain user file paths or code.
+src/packages/mcp-runtime/src/clientRuntime.ts(2279,20): error TS2352: Conversion of type '{ elicitation: { queue: never[]; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/mcp-runtime/src/clientRuntime.ts:2269-2289 ---
+   2269    const signal = call.signal ?? AbortSignal.timeout(getMcpToolTimeoutMs())
+   2270  
+   2271    return callMCPToolWithUrlElicitationRetry({
+   2272      client: connectedClient,
+   2273      clientConnection: connection,
+   2274      tool: call.toolName,
+   2275      args: call.input,
+   2276      meta: call.meta,
+   2277      signal,
+   2278      setAppState: updater => {
+   2279>       void updater({ elicitation: { queue: [] } } as AppState)
+   2280      },
+   2281      handleElicitation: async () => ({ action: 'cancel' }),
+   2282    })
+   2283  }
+   2284  
+   2285  /**
+   2286   * Transform result content from an MCP tool or MCP prompt into message blocks
+   2287   */
+   2288  export async function transformResultContent(
+   2289    resultContent: PromptMessage['content'],
+  Type '{ elicitation: { queue: never[]; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.

@@ -1,0 +1,28 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/components/messageStaticness.ts(39,38): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "attachment"; attachment: { ...; }; } & { ...; })' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/messageStaticness.ts:29-49 ---
+     29    switch (message.type) {
+     30      case 'attachment':
+     31      case 'user':
+     32      case 'assistant': {
+     33        if (message.type === 'assistant') {
+     34          const block = message.message.content[0]
+     35          if (block?.type === 'server_tool_use') {
+     36            return lookups.resolvedToolUseIDs.has(block.id)
+     37          }
+     38        }
+     39>       const toolUseID = getToolUseID(message)
+     40        if (!toolUseID) {
+     41          return true
+     42        }
+     43        if (streamingToolUseIDs.has(toolUseID)) {
+     44          return false
+     45        }
+     46        if (inProgressToolUseIDs.has(toolUseID)) {
+     47          return false
+     48        }
+     49        if (hasUnresolvedHooksFromLookup(toolUseID, 'PostToolUse', lookups)) {

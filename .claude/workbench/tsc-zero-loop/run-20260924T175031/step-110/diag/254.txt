@@ -1,0 +1,46 @@
+src/packages/shell/src/execFileNoThrow.ts(131,20): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.
+  --- código src/packages/shell/src/execFileNoThrow.ts:121-141 ---
+    121    maxBuffer?: number
+    122    cwd?: string
+    123    env?: NodeJS.ProcessEnv
+    124    shell?: boolean | string | undefined
+    125    stdin?: 'ignore' | 'inherit' | 'pipe'
+    126    input?: string
+    127  }
+    128  
+    129  function getErrorMessage(error: NodeJS.ErrnoException, errorCode: number): string {
+    130    if (error.message) return error.message
+    131>   if (typeof error.signal === 'string') return error.signal
+    132    return String(errorCode)
+    133  }
+    134  
+    135  function getErrorCode(error: NodeJS.ErrnoException): number {
+    136    return typeof error.code === 'number' ? error.code : 1
+    137  }
+    138  
+    139  export function execFileNoThrowWithCwd(
+    140    file: string,
+    141    args: string[],
+src/packages/shell/src/execFileNoThrow.ts(131,54): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.
+  --- código src/packages/shell/src/execFileNoThrow.ts:121-141 ---
+    121    maxBuffer?: number
+    122    cwd?: string
+    123    env?: NodeJS.ProcessEnv
+    124    shell?: boolean | string | undefined
+    125    stdin?: 'ignore' | 'inherit' | 'pipe'
+    126    input?: string
+    127  }
+    128  
+    129  function getErrorMessage(error: NodeJS.ErrnoException, errorCode: number): string {
+    130    if (error.message) return error.message
+    131>   if (typeof error.signal === 'string') return error.signal
+    132    return String(errorCode)
+    133  }
+    134  
+    135  function getErrorCode(error: NodeJS.ErrnoException): number {
+    136    return typeof error.code === 'number' ? error.code : 1
+    137  }
+    138  
+    139  export function execFileNoThrowWithCwd(
+    140    file: string,
+    141    args: string[],

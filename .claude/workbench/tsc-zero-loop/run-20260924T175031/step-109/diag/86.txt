@@ -1,0 +1,22 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/components/MessageModel.tsx(25,32): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/components/MessageModel.tsx:15-29 ---
+     15      isTranscriptMode &&
+     16      message.type === 'assistant' &&
+     17      message.message.model &&
+     18      message.message.content.some((c: { type: string }) => c.type === 'text')
+     19  
+     20    if (!shouldShowModel) {
+     21      return null
+     22    }
+     23  
+     24    return (
+     25>     <Box minWidth={stringWidth(message.message.model) + 8}>
+     26        <Text dimColor>{message.message.model}</Text>
+     27      </Box>
+     28    )
+     29  }

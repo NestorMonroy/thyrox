@@ -1,0 +1,5 @@
+tests/unit/utils/controlMessageCompat.test.ts(80,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { requestId: string; other: string; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; other: string; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ requestId: string; other: string; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; other: string; }'. Did you mean to write 'requestId'?

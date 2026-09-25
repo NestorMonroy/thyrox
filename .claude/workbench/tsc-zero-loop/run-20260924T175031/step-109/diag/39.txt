@@ -1,0 +1,101 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2362,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2352-2372 ---
+   2352            const sdkClient = sdkClients.find(
+   2353              client => client.name === mcpRequest.server_name,
+   2354            )
+   2355            // Check client exists - dynamically added SDK servers may have
+   2356            // placeholder clients with null client until updateSdkMcp() runs
+   2357            if (
+   2358              sdkClient &&
+   2359              sdkClient.type === 'connected' &&
+   2360              sdkClient.client?.transport?.onmessage
+   2361            ) {
+   2362>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2363            }
+   2364            sendControlResponseSuccess(message)
+   2365          } else if (message.request.subtype === 'rewind_files') {
+   2366            const appState = getAppState()
+   2367            const result = await handleRewindFiles(
+   2368              message.request.user_message_id as UUID,
+   2369              appState,
+   2370              setAppState,
+   2371              message.request.dry_run ?? false,
+   2372            )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,29): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3279-3299 ---
+   3279                // onStateChange('failed', detail) before returning null.
+   3280                // Capture so the control-response error is actionable
+   3281                // ("/login", "disabled by your organization's policy", etc.)
+   3282                // instead of a generic "initialization failed".
+   3283                let bridgeFailureDetail: string | undefined
+   3284                try {
+   3285                  const handle = await initReplBridge({
+   3286                    onInboundMessage(msg) {
+   3287                      const fields = extractInboundMessageFields(msg)
+   3288                      if (!fields) return
+   3289>                     const { content, uuid } = fields
+   3290                      enqueue({
+   3291                        value: content,
+   3292                        mode: 'prompt' as const,
+   3293                        uuid,
+   3294                        skipSlashCommands: true,
+   3295                      })
+   3296                      void run()
+   3297                    },
+   3298                    onPermissionResponse(response) {
+   3299                      // Forward bridge permission responses into the

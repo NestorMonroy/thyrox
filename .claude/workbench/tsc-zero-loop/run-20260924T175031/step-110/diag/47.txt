@@ -1,0 +1,46 @@
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts(452,32): error TS2345: Argument of type '"fatal"' is not assignable to parameter of type '"resume" | "clear" | "other" | "logout" | "prompt_input_exit" | "bypass_permissions_disabled" | undefined'.
+  --- código src/packages/app-host/src/bootstrap/gracefulShutdown.ts:442-462 ---
+    442            error.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    443          ...(errorMessageHash && {
+    444            error_message_hash:
+    445              errorMessageHash as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    446          }),
+    447        })
+    448        logForDiagnosticsNoPII('error', 'uncaught_exception_loop', {
+    449          count: String(exceptionTimestamps.length),
+    450          window_ms: String(EXCEPTION_LOOP_WINDOW_MS),
+    451        })
+    452>       void gracefulShutdown(1, 'fatal')
+    453      }
+    454    })
+    455  
+    456    // Registra rechazos de promesa no manejados para observabilidad de
+    457    // contenedor y analytics
+    458    process.on('unhandledRejection', reason => {
+    459      const errorName =
+    460        reason instanceof Error
+    461          ? reason.name
+    462          : typeof reason === 'string'
+src/packages/app-host/src/bootstrap/gracefulShutdown.ts(638,5): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/app-host/src/bootstrap/gracefulShutdown.ts:628-648 ---
+    628        signal: AbortSignal.timeout(sessionEndTimeoutMs),
+    629        timeoutMs: sessionEndTimeoutMs,
+    630      })
+    631    } catch {
+    632      // Ignora excepciones del hook SessionEnd (incluido AbortError por timeout)
+    633    }
+    634  
+    635    // Registra el rendimiento de arranque antes de que el apagado de
+    636    // analytics vacíe/cancele timers
+    637    try {
+    638>     profileReport()
+    639    } catch {
+    640      // Ignora errores de profiling durante el apagado
+    641    }
+    642  
+    643    // Señala a inferencia que la caché de esta sesión puede desalojarse.
+    644    // Se dispara antes del vaciado de analytics para que el evento llegue
+    645    // al pipeline.
+    646    const lastRequestId = getLastMainRequestId()
+    647    if (lastRequestId) {
+    648      logEvent('tengu_cache_eviction_hint', {

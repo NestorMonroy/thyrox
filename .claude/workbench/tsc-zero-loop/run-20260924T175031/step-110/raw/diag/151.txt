@@ -1,0 +1,1 @@
+src/packages/permission/src/toolPermission/permissionLogging.ts(99,5): error TS2322: Type 'string' is not assignable to type 'number | boolean | undefined'.

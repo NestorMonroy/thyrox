@@ -1,0 +1,24 @@
+src/packages/cli/src/entry/main.tsx(42,3): error TS2322: Type '() => string' is not assignable to type '() => "light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/cli/src/entry/main.tsx:32-52 ---
+     32  import { startDeferredPrefetches } from '@thyrox/app-host/main/startup/context.js'
+     33  
+     34  export { startDeferredPrefetches };
+     35  
+     36  // eslint-disable-next-line custom-rules/no-top-level-side-effects
+     37  profileCheckpoint("main_tsx_imports_loaded");
+     38  
+     39  // Wire up theme config persistence into @anthropic/ink's ThemeProvider.
+     40  // eslint-disable-next-line custom-rules/no-top-level-side-effects
+     41  setThemeConfigCallbacks({
+     42>   loadTheme: () => {
+     43      try {
+     44        return getGlobalConfig().theme
+     45      } catch {
+     46        // ThemeProvider mounts before enableConfigs() in interactive startup.
+     47        // Fall back to a safe default for first render, then later reads use config.
+     48        return 'dark'
+     49      }
+     50    },
+     51    saveTheme: setting => {
+     52      try {
+  Type 'string' is not assignable to type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.

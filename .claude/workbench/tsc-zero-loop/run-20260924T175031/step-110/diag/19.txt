@@ -1,0 +1,52 @@
+src/packages/agent/__tests__/snipProjection.test.ts(23,29): error TS2352: Conversion of type '{ type: "system"; subtype: "snip_boundary"; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/snipProjection.test.ts:13-33 ---
+     13  import {
+     14    isSnipBoundaryMessage,
+     15    projectSnippedView,
+     16  } from '../compaction/snipProjection.ts'
+     17  
+     18  type Msg = Parameters<typeof projectSnippedView>[0][number]
+     19  
+     20  describe('isSnipBoundaryMessage', () => {
+     21    test('devuelve true para un mensaje de sistema con subtype=snip_boundary', () => {
+     22      expect(
+     23>       isSnipBoundaryMessage({ type: 'system', subtype: 'snip_boundary' } as Msg),
+     24      ).toBe(true)
+     25    })
+     26  
+     27    test('devuelve false para un mensaje de sistema con otro subtype', () => {
+     28      expect(
+     29        isSnipBoundaryMessage({
+     30          type: 'system',
+     31          subtype: 'compact_boundary',
+     32        } as Msg),
+     33      ).toBe(false)
+  Type '{ type: "system"; subtype: "snip_boundary"; }' is not comparable to type 'SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | SystemFileSnapshotMessage | ... 11 more ... | SystemThinkingMessage'.
+    Type '{ type: "system"; subtype: "snip_boundary"; }' is not comparable to type 'SystemThinkingMessage'.
+      Property 'uuid' is missing in type '{ type: "system"; subtype: "snip_boundary"; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/snipProjection.test.ts(59,29): error TS2352: Conversion of type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/snipProjection.test.ts:49-69 ---
+     49        } as never),
+     50      ).toBe(false)
+     51    })
+     52  
+     53    test('devuelve false para mensajes de user', () => {
+     54      expect(isSnipBoundaryMessage({ type: 'user' } as never)).toBe(false)
+     55    })
+     56  
+     57    test('el check de subtype es match exacto de cadena (sensible a mayúsculas)', () => {
+     58      expect(
+     59>       isSnipBoundaryMessage({
+     60          type: 'system',
+     61          subtype: 'SNIP_BOUNDARY',
+     62        } as Msg),
+     63      ).toBe(false)
+     64    })
+     65  })
+     66  
+     67  describe('projectSnippedView', () => {
+     68    // Contrato: devuelve la porción desde el límite en adelante. Si no hay
+     69    // límite, devuelve el input completo sin cambios. Crítico para la
+  Type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' is not comparable to type 'SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | SystemFileSnapshotMessage | ... 11 more ... | SystemThinkingMessage'.
+    Type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' is not comparable to type 'SystemThinkingMessage'.
+      Property 'uuid' is missing in type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' but required in type 'MessageBase'.

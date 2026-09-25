@@ -1,0 +1,40 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+patron: regex-capture-group-possibly-undefined
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+
+patron: length-on-possibly-undefined-getter-stub
+senal_del_verificador: TS2532: Object is possibly 'undefined'\.
+fix_generico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/command-runtime/src/skills/bundled/keybindings.ts(42,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/command-runtime/src/skills/bundled/keybindings.ts:32-52 ---
+     32   */
+     33  function generateActionsTable(): string {
+     34    // Build a lookup: action -> { keys, context }
+     35    const actionInfo: Record<string, { keys: string[]; context: string }> = {}
+     36    for (const block of DEFAULT_BINDINGS) {
+     37      for (const [key, action] of Object.entries(block.bindings)) {
+     38        if (action) {
+     39          if (!actionInfo[action as string]) {
+     40            actionInfo[action as string] = { keys: [], context: block.context }
+     41          }
+     42>         actionInfo[action as string].keys.push(key)
+     43        }
+     44      }
+     45    }
+     46  
+     47    return markdownTable(
+     48      ['Action', 'Default Key(s)', 'Context'],
+     49      KEYBINDING_ACTIONS.map(action => {
+     50        const info = actionInfo[action]
+     51        const keys = info ? info.keys.map(k => `\`${k}\``).join(', ') : '(none)'
+     52        const context = info ? info.context : inferContextFromAction(action)

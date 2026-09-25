@@ -1,0 +1,23 @@
+tests/smoke/lib/runtime-probe.ts(157,13): error TS2339: Property 'getMatchingHooks' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/agent/hooks")'.
+  --- código tests/smoke/lib/runtime-probe.ts:147-167 ---
+    147      }
+    148    } catch (e) {
+    149      errors.push(`agent host bindings probe failed: ${(e as Error).message}`)
+    150    }
+    151  
+    152    // Dispatch probe — for each event we care about, ask getMatchingHooks
+    153    // whether it can find any dispatchable matchers. This goes one layer
+    154    // deeper than just reading STATE: it exercises hookSettings → matcher
+    155    // resolution → trust check, the same path the real dispatcher takes.
+    156    try {
+    157>     const { getMatchingHooks } = await import('@thyrox/agent/hooks.js')
+    158      const eventStubInputs: Array<[string, Record<string, unknown>]> = [
+    159        ['Stop', { hook_event_name: 'Stop', stop_hook_active: false }],
+    160        [
+    161          'SubagentStop',
+    162          {
+    163            hook_event_name: 'SubagentStop',
+    164            stop_hook_active: false,
+    165            agent_id: 'probe-stub',
+    166            agent_type: 'probe',
+    167            agent_transcript_path: '',

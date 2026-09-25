@@ -1,0 +1,23 @@
+src/packages/cli/src/entry/runLoop.ts(106,29): error TS2504: Type 'ReadableStream<Uint8Array<ArrayBuffer>>' must have a '[Symbol.asyncIterator]()' method that returns an async iterator.
+  --- código src/packages/cli/src/entry/runLoop.ts:96-116 ---
+     96  function outputStyleOf(argv: string[]): OutputStyle {
+     97    const v = flag(argv, 'output-style') ?? 'text'
+     98    if (!(OUTPUT_STYLES as readonly string[]).includes(v)) {
+     99      throw new Error(`--output-style desconocido: ${v}. Los válidos son: ${OUTPUT_STYLES.join(', ')}`)
+    100    }
+    101    return v as OutputStyle
+    102  }
+    103  
+    104  async function* stdinLines(): AsyncGenerator<string> {
+    105    let rest = ''
+    106>   for await (const chunk of Bun.stdin.stream()) {
+    107      rest += new TextDecoder().decode(chunk)
+    108      let corte = rest.indexOf('\n')
+    109      while (corte >= 0) {
+    110        yield rest.slice(0, corte)
+    111        rest = rest.slice(corte + 1)
+    112        corte = rest.indexOf('\n')
+    113      }
+    114    }
+    115    if (rest) yield rest
+    116  }

@@ -1,0 +1,13 @@
+src/packages/command-runtime/src/commands/goal/index.ts(49,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goal")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goal")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: { getAppState: () => { activeGoal?: { condition: string; iterations: number; setAt: number; tokensAtStart: number; lastReason?: string | undefined; paused?: boolean | undefined; } | undefined; }; setAppState: (updater: (prev: any) => any) => void; setMessages: (updater: (prev...' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type '{ getAppState: () => { activeGoal?: { condition: string; iterations: number; setAt: number; tokensAtStart: number; lastReason?: string | undefined; paused?: boolean | undefined; } | undefined; }; setAppState: (updater: (prev: any) => any) => void; setMessages: (updater: (prev: any[]) => any[]) => void; messages?: Me...': getAppState, setAppState
+src/packages/command-runtime/src/commands/goal/index.ts(72,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goalLocal")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goalLocal")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

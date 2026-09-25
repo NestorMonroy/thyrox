@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts(165,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts(189,23): error TS2339: Property 'cache' does not exist on type '() => string'.

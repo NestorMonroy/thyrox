@@ -1,0 +1,22 @@
+src/packages/config/plugin/commands/reload-plugins/index.ts(15,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/config/plugin/commands/reload-plugins/reload-plugins")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/config/plugin/commands/reload-plugins/index.ts:5-18 ---
+      5  import type { Command } from '@thyrox/command-runtime/runtime'
+      6  
+      7  const reloadPlugins = {
+      8    type: 'local',
+      9    name: 'reload-plugins',
+     10    description: 'Activate pending plugin changes in the current session',
+     11    // SDK callers use query.reloadPlugins() (control request) instead of
+     12    // sending this as a text prompt — that returns structured data
+     13    // (commands, agents, plugins, mcpServers) for UI updates.
+     14    supportsNonInteractive: false,
+     15>   load: () => import('./reload-plugins.js'),
+     16  } satisfies Command
+     17  
+     18  export default reloadPlugins
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/config/plugin/commands/reload-plugins/reload-plugins")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

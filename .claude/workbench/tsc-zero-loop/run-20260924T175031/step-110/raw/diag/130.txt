@@ -1,0 +1,10 @@
+src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts(262,30): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts(308,28): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '{ behavior: string; fromServer: string; }' is not assignable to parameter of type 'null'.

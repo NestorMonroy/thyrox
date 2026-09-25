@@ -1,0 +1,23 @@
+src/packages/command-runtime/src/commands/clear/caches.ts(26,10): error TS2724: '"../../skills/loadSkillsDir.js"' has no exported member named 'clearDynamicSkills'. Did you mean 'getDynamicSkills'?
+  --- código src/packages/command-runtime/src/commands/clear/caches.ts:16-36 ---
+     16    setSystemPromptInjection,
+     17  } from '@thyrox/provider/context.js'
+     18  import { clearFileSuggestionCaches } from '@thyrox/repl/hooks/fileSuggestions.js'
+     19  import { clearAllPendingCallbacks } from '@thyrox/repl/hooks/useSwarmPermissionPoller.js'
+     20  import { clearAllDumpState } from '@thyrox/provider/dumpPrompts.js'
+     21  import { resetPromptCacheBreakDetection } from '@thyrox/provider/promptCacheBreakDetection.js'
+     22  import { clearAllSessions } from '@thyrox/provider/sessionIngress.js'
+     23  import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js'
+     24  import { resetAllLSPDiagnosticState } from '@thyrox/ide/lsp/LSPDiagnosticRegistry.js'
+     25  import { clearTrackedMagicDocs } from '@thyrox/agent/MagicDocs/magicDocs.js'
+     26> import { clearDynamicSkills } from '../../skills/loadSkillsDir.js'
+     27  import { resetSentSkillNames } from '@thyrox/agent/attachments.js'
+     28  import { clearCommandPrefixCaches } from '@thyrox/shell/bash/commands.js'
+     29  import { resetGetMemoryFilesCache } from '@thyrox/storage/claudemd.js'
+     30  import { clearRepositoryCaches } from '@thyrox/storage/detectRepository.js'
+     31  import { clearResolveGitDirCache } from '@thyrox/config/gitFilesystem.js'
+     32  import { clearStoredImagePaths } from '@thyrox/tool-registry/imageStore.js'
+     33  import { clearSessionEnvVars } from '@thyrox/storage/sessionEnvVars.js'
+     34  import { readEnv } from '@thyrox/config/env/utils'
+     35  
+     36  /**

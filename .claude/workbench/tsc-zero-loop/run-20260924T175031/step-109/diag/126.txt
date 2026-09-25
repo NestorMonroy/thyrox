@@ -1,0 +1,213 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+patron: regex-capture-group-possibly-undefined
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: length-on-possibly-undefined-getter-stub
+senal_del_verificador: TS2532: Object is possibly 'undefined'\.
+fix_generico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(120,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:110-130 ---
+    110    const results: SearchResult[] = []
+    111  
+    112    const algoBlockRegex = /<li\s+class="b_algo"[^>]*>([\s\S]*?)<\/li>/gi
+    113    let blockMatch: RegExpExecArray | null
+    114  
+    115    while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
+    116      const block = blockMatch[1]
+    117  
+    118      // Extract the primary link from <h2><a href="...">...</a></h2>
+    119      const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
+    120>     const linkMatch = h2LinkRegex.exec(block)
+    121      if (!linkMatch) continue
+    122  
+    123      const rawUrl = decodeHtmlEntities(linkMatch[1])
+    124      const titleHtml = linkMatch[2]
+    125  
+    126      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    127      // or skip Bing-internal / relative links
+    128      const url = resolveBingUrl(rawUrl)
+    129      if (!url) continue
+    130  
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(132,7): error TS18048: 'titleHtml' is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:122-142 ---
+    122  
+    123      const rawUrl = decodeHtmlEntities(linkMatch[1])
+    124      const titleHtml = linkMatch[2]
+    125  
+    126      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    127      // or skip Bing-internal / relative links
+    128      const url = resolveBingUrl(rawUrl)
+    129      if (!url) continue
+    130  
+    131      const title = decodeHtmlEntities(
+    132>       titleHtml.replace(/<[^>]+>/g, '').trim(),
+    133      )
+    134  
+    135      // Extract snippet: try b_lineclamp → b_caption <p> → b_caption fallback
+    136      const snippet = extractSnippet(block)
+    137  
+    138      results.push({ title, url, snippet })
+    139    }
+    140  
+    141    return results
+    142  }
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(136,36): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:126-146 ---
+    126      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    127      // or skip Bing-internal / relative links
+    128      const url = resolveBingUrl(rawUrl)
+    129      if (!url) continue
+    130  
+    131      const title = decodeHtmlEntities(
+    132        titleHtml.replace(/<[^>]+>/g, '').trim(),
+    133      )
+    134  
+    135      // Extract snippet: try b_lineclamp → b_caption <p> → b_caption fallback
+    136>     const snippet = extractSnippet(block)
+    137  
+    138      results.push({ title, url, snippet })
+    139    }
+    140  
+    141    return results
+    142  }
+    143  
+    144  function extractSnippet(block: string): string | undefined {
+    145    // 1. Try <p class="b_lineclamp...">
+    146    const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(149,31): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:139-159 ---
+    139    }
+    140  
+    141    return results
+    142  }
+    143  
+    144  function extractSnippet(block: string): string | undefined {
+    145    // 1. Try <p class="b_lineclamp...">
+    146    const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
+    147    let match = lineclampRegex.exec(block)
+    148    if (match) {
+    149>     return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    150    }
+    151  
+    152    // 2. Try <p> inside b_caption
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(156,31): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:146-166 ---
+    146    const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
+    147    let match = lineclampRegex.exec(block)
+    148    if (match) {
+    149      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    150    }
+    151  
+    152    // 2. Try <p> inside b_caption
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156>     return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+    160    const fallbackRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+    161    const fallbackMatch = fallbackRegex.exec(block)
+    162    if (fallbackMatch) {
+    163      const text = fallbackMatch[1].replace(/<[^>]+>/g, '').trim()
+    164      if (text) return decodeHtmlEntities(text)
+    165    }
+    166  
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(163,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:153-173 ---
+    153    const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
+    154    match = captionPRegex.exec(block)
+    155    if (match) {
+    156      return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    157    }
+    158  
+    159    // 3. Fallback: any text inside b_caption <div>
+    160    const fallbackRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i
+    161    const fallbackMatch = fallbackRegex.exec(block)
+    162    if (fallbackMatch) {
+    163>     const text = fallbackMatch[1].replace(/<[^>]+>/g, '').trim()
+    164      if (text) return decodeHtmlEntities(text)
+    165    }
+    166  
+    167    return undefined
+    168  }
+    169  
+    170  export const decodeHtmlEntities = he.decode
+    171  
+    172  /**
+    173   * Resolve a Bing redirect URL to the actual target URL.
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(186,9): error TS18048: 'encoded' is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:176-196 ---
+    176   * Returns `undefined` for Bing-internal or relative links that should be skipped.
+    177   */
+    178  export function resolveBingUrl(rawUrl: string): string | undefined {
+    179    // Skip relative / anchor links
+    180    if (rawUrl.startsWith('/') || rawUrl.startsWith('#')) return undefined
+    181  
+    182    // Try to extract the `u` parameter from Bing redirect URLs
+    183    const uMatch = rawUrl.match(/[?&]u=([a-zA-Z0-9+/_=-]+)/)
+    184    if (uMatch) {
+    185      const encoded = uMatch[1]
+    186>     if (encoded.length >= 3) {
+    187        const b64 = encoded.slice(2)
+    188        try {
+    189          // Base64url decode (pad as needed)
+    190          const padded = b64.replace(/-/g, '+').replace(/_/g, '/')
+    191          const decoded = Buffer.from(padded, 'base64').toString('utf-8')
+    192          if (decoded.startsWith('http')) return decoded
+    193        } catch {
+    194          // Fall through — not a valid base64 redirect
+    195        }
+    196      }
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(187,19): error TS18048: 'encoded' is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:177-197 ---
+    177   */
+    178  export function resolveBingUrl(rawUrl: string): string | undefined {
+    179    // Skip relative / anchor links
+    180    if (rawUrl.startsWith('/') || rawUrl.startsWith('#')) return undefined
+    181  
+    182    // Try to extract the `u` parameter from Bing redirect URLs
+    183    const uMatch = rawUrl.match(/[?&]u=([a-zA-Z0-9+/_=-]+)/)
+    184    if (uMatch) {
+    185      const encoded = uMatch[1]
+    186      if (encoded.length >= 3) {
+    187>       const b64 = encoded.slice(2)
+    188        try {
+    189          // Base64url decode (pad as needed)
+    190          const padded = b64.replace(/-/g, '+').replace(/_/g, '/')
+    191          const decoded = Buffer.from(padded, 'base64').toString('utf-8')
+    192          if (decoded.startsWith('http')) return decoded
+    193        } catch {
+    194          // Fall through — not a valid base64 redirect
+    195        }
+    196      }
+    197    }

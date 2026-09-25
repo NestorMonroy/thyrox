@@ -1,0 +1,23 @@
+src/packages/bridge/src/internal/pendingCrossPackageDeps.ts(2017,16): error TS2304: Cannot find name 'randomInt'.
+  --- código src/packages/bridge/src/internal/pendingCrossPackageDeps.ts:2007-2027 ---
+   2007    'phoenix',
+   2008    'river',
+   2009    'summit',
+   2010    'thicket',
+   2011    'unicorn',
+   2012    'willow',
+   2013    'zephyr',
+   2014  ]
+   2015  
+   2016  function pickRandomSlugWord<T>(array: readonly T[]): T {
+   2017>   return array[randomInt(array.length)]!
+   2018  }
+   2019  
+   2020  export function generateShortWordSlug(): string {
+   2021    return `${pickRandomSlugWord(SLUG_ADJECTIVES)}-${pickRandomSlugWord(SLUG_NOUNS)}`
+   2022  }
+   2023  
+   2024  /**
+   2025   * `getCurrentSessionTitle` — de
+   2026   * `@claude-code-how-works/storage/sessionStorage.ts`. Es exactamente
+   2027   * la razón declarada por la que `initReplBridge.ts` se separó de

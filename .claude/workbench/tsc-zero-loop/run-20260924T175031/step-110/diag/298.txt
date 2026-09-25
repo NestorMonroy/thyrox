@@ -1,0 +1,27 @@
+tests/conformance/harnessChecklist.test.ts(46,34): error TS2769: No overload matches this call.
+  --- código tests/conformance/harnessChecklist.test.ts:36-56 ---
+     36      // lo dice en vez de dejar el manifiesto atras en silencio.
+     37      const texto = readFileSync(APPENDIX, 'utf8')
+     38      let seccion = ''
+     39      const porSeccion: Record<string, number> = {}
+     40      for (const linea of texto.split('\n')) {
+     41        const m = /^## (A\.\d+)/.exec(linea)
+     42        if (m) seccion = m[1]!
+     43        else if (linea.startsWith('- ') && seccion) porSeccion[seccion] = (porSeccion[seccion] ?? 0) + 1
+     44      }
+     45      const conVinetas = Object.entries(porSeccion).filter(([, n]) => n > 0)
+     46>     expect(SECTIONS.length).toBe(conVinetas.length)
+     47      expect(CHECKLIST.length).toBe(conVinetas.reduce((a, [, n]) => a + n, 0))
+     48    })
+     49  
+     50    test('2. cada predicado cita su seccion de origen y su texto verbatim', () => {
+     51      const texto = readFileSync(APPENDIX, 'utf8')
+     52      const sinAnclar = CHECKLIST.filter((p: Predicate) => !texto.includes(p.question))
+     53      // Un predicado parafraseado deja de ser el de la fuente: mide otra cosa
+     54      // con el mismo rotulo, que es el sub-patron A.
+     55      expect(sinAnclar.map(p => p.id)).toEqual([])
+     56    })
+  Overload 1 of 2, '(expected: 8): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '8'.
+  Overload 2 of 2, '(expected: 8): void', gave the following error.
+    Argument of type 'number' is not assignable to parameter of type '8'.

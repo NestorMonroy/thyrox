@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/provider/src/__tests__/integration.test.ts(151,29): error TS18046: 'event.message' is of type 'unknown'.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:141-161 ---
+    141    beforeEach(() => {
+    142      installTestHostBindings()
+    143      process.env.OPENAI_API_KEY = 'provider-test'
+    144    })
+    145  
+    146    test('anthropic adapter path resolves without override', async () => {
+    147      const adapter = getProviderAdapter('firstParty')
+    148      const output: string[] = []
+    149      for await (const event of adapter.queryStream(buildQueryArgs(fetch) as any)) {
+    150        if (event.type === 'assistant') {
+    151>         for (const block of event.message.content as any[]) {
+    152            if (block.type === 'text') output.push(block.text)
+    153          }
+    154        }
+    155      }
+    156      expect(output.join('')).toContain('provider-anthropic-test')
+    157    })
+    158  
+    159    test('openai adapter supports streaming + deferred tool filtering', async () => {
+    160      const adapter = getProviderAdapter('openai')
+    161      const output: string[] = []
+src/packages/provider/src/__tests__/integration.test.ts(166,29): error TS18046: 'event.message' is of type 'unknown'.
+  --- código src/packages/provider/src/__tests__/integration.test.ts:156-176 ---
+    156      expect(output.join('')).toContain('provider-anthropic-test')
+    157    })
+    158  
+    159    test('openai adapter supports streaming + deferred tool filtering', async () => {
+    160      const adapter = getProviderAdapter('openai')
+    161      const output: string[] = []
+    162      for await (const event of adapter.queryStream(
+    163        buildQueryArgs(createOpenAIMockFetch()) as any,
+    164      )) {
+    165        if (event.type === 'assistant') {
+    166>         for (const block of event.message.content as any[]) {
+    167            if (block.type === 'text') output.push(block.text)
+    168          }
+    169        }
+    170      }
+    171      expect(output.join('')).toContain('provider-openai-test')
+    172    })
+    173  
+    174    test('openai adapter normalizes errors into assistant api-error messages', async () => {
+    175      const adapter = getProviderAdapter('openai')
+    176      const badFetch = (async () =>

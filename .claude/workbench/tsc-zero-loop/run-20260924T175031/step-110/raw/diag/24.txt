@@ -1,0 +1,1 @@
+src/packages/agent/commands/tasks/tasks.tsx(10,33): error TS2740: Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

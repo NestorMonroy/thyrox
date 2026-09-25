@@ -1,0 +1,4 @@
+src/packages/agent/__tests__/fixtures/mockDeps.ts(38,7): error TS2322: Type 'Mock<() => Promise<{ allowed: boolean; }>>' is not assignable to type '(tool: CoreTool, input: unknown, context: PermissionContext) => Promise<PermissionResult>'.
+  Type 'Promise<{ allowed: boolean; }>' is not assignable to type 'Promise<PermissionResult>'.
+    Type '{ allowed: boolean; }' is not assignable to type 'PermissionResult'.
+      Property 'reason' is missing in type '{ allowed: boolean; }' but required in type '{ allowed: false; reason: string; }'.

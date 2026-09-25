@@ -1,0 +1,11 @@
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(15,13): error TS2352: Conversion of type 'UserMessage | AttachmentMessage<_T> | SystemMessage | undefined' to type '{ sourceToolUseID: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'sourceToolUseID' is missing in type 'SystemThinkingMessage' but required in type '{ sourceToolUseID: string; }'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(22,7): error TS2352: Conversion of type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' to type 'UserMessage | AttachmentMessage<_T> | SystemMessage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; message: { content: string; }; uuid: "msg-uuid"; }' is not comparable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type '"msg-uuid"' is not comparable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(54,13): error TS2352: Conversion of type 'UserMessage | AttachmentMessage<_T> | SystemMessage | undefined' to type '{ sourceToolUseID: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'sourceToolUseID' is missing in type 'SystemThinkingMessage' but required in type '{ sourceToolUseID: string; }'.
+src/packages/tool-registry/src/tools/__tests__/utils.test.ts(154,20): error TS2352: Conversion of type '{ type: "assistant"; message: { content: never[]; }; }' to type 'AssistantMessage' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'uuid' is missing in type '{ type: "assistant"; message: { content: never[]; }; }' but required in type 'MessageBase'.

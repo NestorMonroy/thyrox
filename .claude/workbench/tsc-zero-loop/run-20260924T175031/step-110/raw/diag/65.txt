@@ -1,0 +1,3 @@
+src/packages/cli/src/entry/preprocess-argv.ts(17,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingAssistantChat'.
+src/packages/cli/src/entry/preprocess-argv.ts(18,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingConnect'.
+src/packages/cli/src/entry/preprocess-argv.ts(19,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingSSH'.

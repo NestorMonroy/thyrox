@@ -1,0 +1,101 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/permission/src/components/FallbackPermissionRequest.tsx(56,15): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FallbackPermissionRequest.tsx:46-66 ---
+     46  
+     47    const handleSelect = useCallback(
+     48      (value: FallbackOptionValue, feedback?: string) => {
+     49        switch (value) {
+     50          case 'yes':
+     51            void logUnaryEvent({
+     52              completion_type: 'tool_use_single',
+     53              event: 'accept',
+     54              metadata: {
+     55                language_name: 'none',
+     56>               message_id: toolUseConfirm.assistantMessage.message.id,
+     57                platform: env.platform,
+     58              },
+     59            })
+     60            toolUseConfirm.onAllow(toolUseConfirm.input, [], feedback)
+     61            onDone()
+     62            break
+     63          case 'yes-dont-ask-again': {
+     64            void logUnaryEvent({
+     65              completion_type: 'tool_use_single',
+     66              event: 'accept',
+src/packages/permission/src/components/FallbackPermissionRequest.tsx(69,15): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FallbackPermissionRequest.tsx:59-79 ---
+     59            })
+     60            toolUseConfirm.onAllow(toolUseConfirm.input, [], feedback)
+     61            onDone()
+     62            break
+     63          case 'yes-dont-ask-again': {
+     64            void logUnaryEvent({
+     65              completion_type: 'tool_use_single',
+     66              event: 'accept',
+     67              metadata: {
+     68                language_name: 'none',
+     69>               message_id: toolUseConfirm.assistantMessage.message.id,
+     70                platform: env.platform,
+     71              },
+     72            })
+     73  
+     74            toolUseConfirm.onAllow(toolUseConfirm.input, [
+     75              {
+     76                type: 'addRules',
+     77                rules: [
+     78                  {
+     79                    toolName: toolUseConfirm.tool.name,
+src/packages/permission/src/components/FallbackPermissionRequest.tsx(95,15): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FallbackPermissionRequest.tsx:85-105 ---
+     85            ])
+     86            onDone()
+     87            break
+     88          }
+     89          case 'no':
+     90            void logUnaryEvent({
+     91              completion_type: 'tool_use_single',
+     92              event: 'reject',
+     93              metadata: {
+     94                language_name: 'none',
+     95>               message_id: toolUseConfirm.assistantMessage.message.id,
+     96                platform: env.platform,
+     97              },
+     98            })
+     99            toolUseConfirm.onReject(feedback)
+    100            onReject()
+    101            onDone()
+    102            break
+    103        }
+    104      },
+    105      [toolUseConfirm, onDone, onReject],
+src/packages/permission/src/components/FallbackPermissionRequest.tsx(114,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/FallbackPermissionRequest.tsx:104-124 ---
+    104      },
+    105      [toolUseConfirm, onDone, onReject],
+    106    )
+    107  
+    108    const handleCancel = useCallback(() => {
+    109      void logUnaryEvent({
+    110        completion_type: 'tool_use_single',
+    111        event: 'reject',
+    112        metadata: {
+    113          language_name: 'none',
+    114>         message_id: toolUseConfirm.assistantMessage.message.id,
+    115          platform: env.platform,
+    116        },
+    117      })
+    118      toolUseConfirm.onReject()
+    119      onReject()
+    120      onDone()
+    121    }, [toolUseConfirm, onDone, onReject])
+    122  
+    123    const originalCwd = getOriginalCwd()
+    124    const showAlwaysAllowOptions = shouldShowAlwaysAllowOptions()

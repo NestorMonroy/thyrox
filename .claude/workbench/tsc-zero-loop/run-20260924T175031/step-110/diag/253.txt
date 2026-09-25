@@ -1,0 +1,26 @@
+src/packages/shell/src/exec.ts(224,35): error TS2345: Argument of type '((lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void) | null' is not assignable to parameter of type '((...args: unknown[]) => void) | null'.
+  --- código src/packages/shell/src/exec.ts:214-234 ---
+    214    const envOverrides = await provider.getEnvironmentOverrides(command)
+    215  
+    216    // When onStdout is provided, use pipe mode
+    217    const usePipeMode = !!onStdout
+    218    const taskId = generateTaskId('local_bash')
+    219    const taskOutputDir = ctx.getTaskOutputDir()
+    220    await mkdir(taskOutputDir, { recursive: true })
+    221  
+    222    // Create TaskOutput via injected factory
+    223    const taskOutput: TaskOutputPort = _createTaskOutputFn
+    224>     ? _createTaskOutputFn(taskId, onProgress ?? null, !usePipeMode)
+    225      : new StubTaskOutput(taskId)
+    226  
+    227    // In file mode, both stdout and stderr go to the same file fd.
+    228    let outputHandle: FileHandle | undefined
+    229    if (!usePipeMode && taskOutput.path) {
+    230      const O_NOFOLLOW = fsConstants.O_NOFOLLOW ?? 0
+    231      outputHandle = await open(
+    232        taskOutput.path,
+    233        process.platform === 'win32'
+    234          ? 'w'
+  Type '(lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void' is not assignable to type '(...args: unknown[]) => void'.
+    Types of parameters 'lastLines' and 'args' are incompatible.
+      Type 'unknown' is not assignable to type 'string'.

@@ -1,0 +1,30 @@
+tests/unit/gemini/streamAdapter.test.ts(9,5): error TS2322: Type '() => { next(): Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>; }' is not assignable to type '() => AsyncIterator<GeminiStreamChunk, any, any>'.
+  --- código tests/unit/gemini/streamAdapter.test.ts:1-19 ---
+      1  import { describe, expect, test } from 'bun:test'
+      2  import { adaptGeminiStreamToAnthropic } from '@thyrox/provider'
+      3  import type { GeminiStreamChunk } from '@thyrox/provider/gemini/types.js'
+      4  
+      5  function mockStream(
+      6    chunks: GeminiStreamChunk[],
+      7  ): AsyncIterable<GeminiStreamChunk> {
+      8    return {
+      9>     [Symbol.asyncIterator]() {
+     10        let index = 0
+     11        return {
+     12          async next() {
+     13            if (index >= chunks.length) {
+     14              return { done: true, value: undefined }
+     15            }
+     16            return { done: false, value: chunks[index++] }
+     17          },
+     18        }
+     19      },
+  Call signature return types '{ next(): Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>; }' and 'AsyncIterator<GeminiStreamChunk, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>' is not assignable to type 'Promise<IteratorResult<GeminiStreamChunk, any>>'.
+        Type '{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorResult<GeminiStreamChunk, any>'.
+          Type '{ done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorResult<GeminiStreamChunk, any>'.
+            Type '{ done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorYieldResult<GeminiStreamChunk>'.
+              Types of property 'value' are incompatible.
+                Type 'GeminiStreamChunk | undefined' is not assignable to type 'GeminiStreamChunk'.
+                  Type 'undefined' is not assignable to type 'GeminiStreamChunk'.

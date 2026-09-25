@@ -1,0 +1,27 @@
+src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts(97,67): error TS2769: No overload matches this call.
+  --- código src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts:87-107 ---
+     87      test('accepts exactly 5 destinations', () => {
+     88        // Pin: the 5 known scopes. Settings layering hardcodes this.
+     89        const destinations = [
+     90          'userSettings',
+     91          'projectSettings',
+     92          'localSettings',
+     93          'session',
+     94          'cliArg',
+     95        ]
+     96        for (const d of destinations) {
+     97>         expect(permissionUpdateDestinationSchema().parse(d)).toBe(d)
+     98        }
+     99      })
+    100  
+    101      test('rejects "global" / "remote" / typos', () => {
+    102        // Pin: "global" is a common typo for "userSettings".
+    103        expect(() =>
+    104          permissionUpdateDestinationSchema().parse('global'),
+    105        ).toThrow()
+    106        expect(() =>
+    107          permissionUpdateDestinationSchema().parse('remote'),
+  Overload 1 of 2, '(expected: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"'.
+  Overload 2 of 2, '(expected: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"'.

@@ -1,0 +1,1 @@
+src/packages/repl/src/components/InvalidConfigDialog.tsx(89,8): error TS2741: Property 'initialState' is missing in type '{ children: Element; }' but required in type '{ initialState: AppState; children: ReactNode; }'.

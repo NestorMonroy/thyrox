@@ -1,0 +1,28 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/internal/loopDynamicCore.ts(268,5): error TS2322: Type 'string | undefined' is not assignable to type 'string | number | boolean'.
+  --- código src/packages/agent/internal/loopDynamicCore.ts:258-278 ---
+    258      createdAt,
+    259      kind: 'loop',
+    260    })
+    261    setLoopChainStartedAt(prompt, { startedAt, lastScheduledFor: targetMs })
+    262    setScheduledTasksEnabled(true)
+    263  
+    264    logEvent('tengu_loop_dynamic_wakeup_scheduled', {
+    265      chosen_delay_seconds: Number.isFinite(delaySeconds) ? delaySeconds : 0,
+    266      clamped_delay_seconds: clamped,
+    267      was_clamped: wasClamped,
+    268>     reason: reason !== undefined ? reason.slice(0, 200) : undefined,
+    269    })
+    270  
+    271    return {
+    272      scheduledFor: targetMs,
+    273      clampedDelaySeconds: clamped,
+    274      wasClamped,
+    275    }
+    276  }
+    277  
+    278  /**

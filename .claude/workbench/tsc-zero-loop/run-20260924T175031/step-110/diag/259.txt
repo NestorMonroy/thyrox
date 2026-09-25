@@ -1,0 +1,24 @@
+src/packages/storage/src/plans.ts(509,34): error TS2352: Conversion of type 'typeof import("/home/user/thyrox-medicion/src/packages/storage/src/sessionStorage")' to type '{ recordTranscript: (messages: unknown[]) => Promise<void>; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/storage/src/plans.ts:499-516 ---
+    499        isMeta: true,
+    500        timestamp: new Date().toISOString(),
+    501        uuid: randomUUID(),
+    502        snapshotFiles,
+    503      }
+    504  
+    505      // `recordTranscript` no existe todavía en el porte parcial de
+    506      // `./sessionStorage.js` de este árbol (ver docstring del archivo) —
+    507      // la llamada revienta con TypeError, capturado por el catch de
+    508      // afuera. Ese es el comportamiento observado y el que se prueba.
+    509>     const { recordTranscript } = (await import('./sessionStorage.js')) as {
+    510        recordTranscript: (messages: unknown[]) => Promise<void>
+    511      }
+    512      await recordTranscript([message])
+    513    } catch (error) {
+    514      logError(error)
+    515    }
+    516  }
+  The types returned by 'recordTranscript(...)' are incompatible between these types.
+    Type 'Promise<`${string}-${string}-${string}-${string}-${string}` | null>' is not comparable to type 'Promise<void>'.
+      Type '`${string}-${string}-${string}-${string}-${string}` | null' is not comparable to type 'void'.
+        Type '`${string}-${string}-${string}-${string}-${string}`' is not comparable to type 'void'.

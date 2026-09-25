@@ -1,0 +1,24 @@
+src/packages/agent/__tests__/stopHookBlockCap.test.ts(143,14): error TS2339: Property 'nextTurnCount' does not exist on type 'StopHookBlockDecision'.
+  --- código src/packages/agent/__tests__/stopHookBlockCap.test.ts:133-153 ---
+    133  
+    134    test('maxTurns se chequea contra nextTurnCount, no contra el actual', () => {
+    135      // turnCount 4, maxTurns 5 → nextTurnCount 5, no > 5 → sigue continue.
+    136      const d = evaluateStopHookBlockOutcome({
+    137        turnCount: 4,
+    138        blockingCount: 0,
+    139        maxTurns: 5,
+    140        blockCapEnv: undefined,
+    141      })
+    142      expect(d.kind).toBe('continue')
+    143>     expect(d.nextTurnCount).toBe(5)
+    144    })
+    145  
+    146    test('max_turns gana cuando tanto maxTurns como el cap dispararían', () => {
+    147      // Orden de ant: el chequeo de maxTurns precede al chequeo del cap.
+    148      const d = evaluateStopHookBlockOutcome({
+    149        turnCount: 10,
+    150        blockingCount: 20, // el cap dispararía (21 > 8)
+    151        maxTurns: 5, // pero maxTurns dispara primero (11 > 5)
+    152        blockCapEnv: undefined,
+    153      })
+  Property 'nextTurnCount' does not exist on type '{ kind: "cap_exceeded"; nextBlockingCount: number; }'.

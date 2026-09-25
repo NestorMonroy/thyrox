@@ -1,0 +1,24 @@
+src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx(165,15): error TS2322: Type '"yellow" | undefined' is not assignable to type 'Color | keyof Theme | undefined'.
+  --- código src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx:155-175 ---
+    155    const truncatedDescription = item.description
+    156      ? truncateToWidth(item.description.replace(/\s+/g, ' '), descriptionWidth)
+    157      : ''
+    158  
+    159    return (
+    160      <Text wrap="truncate">
+    161        <Text color={textColor} dimColor={shouldDim}>
+    162          {paddedDisplayText}
+    163        </Text>
+    164        {tagText ? (
+    165>         <Text color={item.tag === 'local' ? 'yellow' : undefined} dimColor={item.tag !== 'local'}>
+    166            {tagText}
+    167          </Text>
+    168        ) : null}
+    169        <Text
+    170          color={isSelected ? 'suggestion' : undefined}
+    171          dimColor={!isSelected}
+    172        >
+    173          {truncatedDescription}
+    174        </Text>
+    175      </Text>
+  Type '"yellow"' is not assignable to type 'Color | keyof Theme | undefined'.

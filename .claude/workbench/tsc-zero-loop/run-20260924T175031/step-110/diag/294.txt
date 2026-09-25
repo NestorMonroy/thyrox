@@ -1,0 +1,108 @@
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(42,40): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts:32-52 ---
+     32    })
+     33  
+     34    test('"green" maps to theme color', () => {
+     35      const result = toInkColor('green')
+     36      expect(result).not.toContain('ansi:')
+     37    })
+     38  })
+     39  
+     40  describe('toInkColor — unknown color fallback', () => {
+     41    test('unknown color gets "ansi:" prefix', () => {
+     42>     expect(toInkColor('hotpink')).toBe('ansi:hotpink')
+     43    })
+     44  
+     45    test('hex-style color string gets "ansi:" prefix', () => {
+     46      expect(toInkColor('#ff00ff')).toBe('ansi:#ff00ff')
+     47    })
+     48  
+     49    test('uppercase known color name → fallback (case-sensitive lookup)', () => {
+     50      // Critical: agent color name lookup is case-sensitive. 'RED' is
+     51      // NOT a known agent color → falls through to ansi: prefix.
+     52      // Catches a refactor that adds .toLowerCase() to the lookup.
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:hotpink"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:hotpink"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(46,40): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts:36-56 ---
+     36      expect(result).not.toContain('ansi:')
+     37    })
+     38  })
+     39  
+     40  describe('toInkColor — unknown color fallback', () => {
+     41    test('unknown color gets "ansi:" prefix', () => {
+     42      expect(toInkColor('hotpink')).toBe('ansi:hotpink')
+     43    })
+     44  
+     45    test('hex-style color string gets "ansi:" prefix', () => {
+     46>     expect(toInkColor('#ff00ff')).toBe('ansi:#ff00ff')
+     47    })
+     48  
+     49    test('uppercase known color name → fallback (case-sensitive lookup)', () => {
+     50      // Critical: agent color name lookup is case-sensitive. 'RED' is
+     51      // NOT a known agent color → falls through to ansi: prefix.
+     52      // Catches a refactor that adds .toLowerCase() to the lookup.
+     53      expect(toInkColor('RED')).toBe('ansi:RED')
+     54    })
+     55  
+     56    test('color with whitespace → ansi:fallback (no trim applied)', () => {
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:#ff00ff"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:#ff00ff"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(53,36): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts:43-63 ---
+     43    })
+     44  
+     45    test('hex-style color string gets "ansi:" prefix', () => {
+     46      expect(toInkColor('#ff00ff')).toBe('ansi:#ff00ff')
+     47    })
+     48  
+     49    test('uppercase known color name → fallback (case-sensitive lookup)', () => {
+     50      // Critical: agent color name lookup is case-sensitive. 'RED' is
+     51      // NOT a known agent color → falls through to ansi: prefix.
+     52      // Catches a refactor that adds .toLowerCase() to the lookup.
+     53>     expect(toInkColor('RED')).toBe('ansi:RED')
+     54    })
+     55  
+     56    test('color with whitespace → ansi:fallback (no trim applied)', () => {
+     57      expect(toInkColor(' red ')).toBe('ansi: red ')
+     58    })
+     59  })
+     60  
+     61  describe('toInkColor — return type', () => {
+     62    test('always returns a non-empty string for non-falsy input', () => {
+     63      const samples = ['red', 'unknown', '#abc', 'RED']
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:RED"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:RED"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(57,38): error TS2769: No overload matches this call.
+  --- código src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts:47-67 ---
+     47    })
+     48  
+     49    test('uppercase known color name → fallback (case-sensitive lookup)', () => {
+     50      // Critical: agent color name lookup is case-sensitive. 'RED' is
+     51      // NOT a known agent color → falls through to ansi: prefix.
+     52      // Catches a refactor that adds .toLowerCase() to the lookup.
+     53      expect(toInkColor('RED')).toBe('ansi:RED')
+     54    })
+     55  
+     56    test('color with whitespace → ansi:fallback (no trim applied)', () => {
+     57>     expect(toInkColor(' red ')).toBe('ansi: red ')
+     58    })
+     59  })
+     60  
+     61  describe('toInkColor — return type', () => {
+     62    test('always returns a non-empty string for non-falsy input', () => {
+     63      const samples = ['red', 'unknown', '#abc', 'RED']
+     64      for (const s of samples) {
+     65        const result = toInkColor(s)
+     66        expect(typeof result).toBe('string')
+     67        expect((result as string).length).toBeGreaterThan(0)
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi: red "' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi: red "' is not assignable to parameter of type 'Color | keyof Theme | undefined'.

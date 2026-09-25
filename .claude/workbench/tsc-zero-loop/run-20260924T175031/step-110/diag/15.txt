@@ -1,0 +1,26 @@
+src/packages/agent/__tests__/fixtures/mockDeps.ts(38,7): error TS2322: Type 'Mock<() => Promise<{ allowed: boolean; }>>' is not assignable to type '(tool: CoreTool, input: unknown, context: PermissionContext) => Promise<PermissionResult>'.
+  --- código src/packages/agent/__tests__/fixtures/mockDeps.ts:28-48 ---
+     28          yield { type: 'message_stop' }
+     29        }),
+     30        getModel: mock(() => 'test-model'),
+     31      },
+     32      tools: {
+     33        find: mock(() => undefined),
+     34        list: mock(() => []),
+     35        execute: mock(async () => ({ output: 'mock tool result' })),
+     36      },
+     37      permission: {
+     38>       canUseTool: mock(async () => ({ allowed: true })),
+     39      },
+     40      output: {
+     41        emit: mock(() => {}),
+     42      },
+     43      hooks: {
+     44        onTurnStart: mock(async () => {}),
+     45        onTurnEnd: mock(async () => {}),
+     46        onStop: mock(async () => ({
+     47          blockingErrors: [],
+     48          preventContinuation: false,
+  Type 'Promise<{ allowed: boolean; }>' is not assignable to type 'Promise<PermissionResult>'.
+    Type '{ allowed: boolean; }' is not assignable to type 'PermissionResult'.
+      Property 'reason' is missing in type '{ allowed: boolean; }' but required in type '{ allowed: false; reason: string; }'.

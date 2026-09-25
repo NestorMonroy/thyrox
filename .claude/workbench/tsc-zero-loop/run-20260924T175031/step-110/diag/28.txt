@@ -1,0 +1,52 @@
+src/packages/agent/createDeps.ts(397,9): error TS2416: Property 'getUserContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  --- código src/packages/agent/createDeps.ts:387-407 ---
+    387    }
+    388  
+    389    getSystemPrompt(): SystemPrompt[] {
+    390      if (this.overrides?.systemPrompt) return this.overrides.systemPrompt
+    391      if (this.toolUseContext.renderedSystemPrompt) {
+    392        return [this.toolUseContext.renderedSystemPrompt as SystemPrompt]
+    393      }
+    394      return []
+    395    }
+    396  
+    397>   async getUserContext(): Promise<Record<string, string>> {
+    398      if (this.overrides?.userContext) return this.overrides.userContext
+    399      try {
+    400        return await this.pipeline().getUserContext()
+    401      } catch (e) {
+    402        // Un fallo al construir el contexto no debe tumbar el bucle, pero
+    403        // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+    404        // cambian la conducta del prompt en silencio.
+    405        logError(e)
+    406        return {}
+    407      }
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.
+src/packages/agent/createDeps.ts(410,9): error TS2416: Property 'getSystemContext' in type 'ContextDepImpl' is not assignable to the same property in base type 'ContextDep'.
+  --- código src/packages/agent/createDeps.ts:400-420 ---
+    400        return await this.pipeline().getUserContext()
+    401      } catch (e) {
+    402        // Un fallo al construir el contexto no debe tumbar el bucle, pero
+    403        // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+    404        // cambian la conducta del prompt en silencio.
+    405        logError(e)
+    406        return {}
+    407      }
+    408    }
+    409  
+    410>   async getSystemContext(): Promise<Record<string, string>> {
+    411      if (this.overrides?.systemContext) return this.overrides.systemContext
+    412      try {
+    413        return await this.pipeline().getSystemContext()
+    414      } catch (e) {
+    415        logError(e)
+    416        return {}
+    417      }
+    418    }
+    419  }
+    420  
+  Type '() => Promise<Record<string, string>>' is not assignable to type '() => Record<string, string>'.
+    Type 'Promise<Record<string, string>>' is not assignable to type 'Record<string, string>'.
+      Index signature for type 'string' is missing in type 'Promise<Record<string, string>>'.

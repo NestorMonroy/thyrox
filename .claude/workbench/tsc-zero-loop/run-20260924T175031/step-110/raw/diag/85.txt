@@ -1,0 +1,2 @@
+src/packages/command-runtime/src/commands/fork/index.ts(31,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/fork/fork")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  Property 'call' is missing in type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/fork/fork")' but required in type 'LocalJSXCommandModule'.

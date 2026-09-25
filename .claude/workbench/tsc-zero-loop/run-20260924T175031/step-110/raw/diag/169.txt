@@ -1,0 +1,2 @@
+src/packages/provider/src/vcr.ts(25,10): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?
+src/packages/provider/src/vcr.ts(62,24): error TS7006: Parameter '_' implicitly has an 'any' type.

@@ -1,0 +1,27 @@
+src/packages/provider/src/imageDimensionStrip.ts(142,68): error TS2345: Argument of type 'MediaBlockStripTarget' is not assignable to parameter of type 'Required<Pick<MediaBlockStripTarget, "messageIdx" | "contentIdx">> & Pick<MediaBlockStripTarget, "kind">'.
+  --- código src/packages/provider/src/imageDimensionStrip.ts:132-152 ---
+    132      ...coords,
+    133      kind: 'image',
+    134    })
+    135  }
+    136  
+    137  export function stripMediaBlockFromMessages(
+    138    messages: readonly Anthropic.MessageParam[],
+    139    target: MediaBlockStripTarget,
+    140  ): readonly Anthropic.MessageParam[] {
+    141    if (target.messageIdx !== undefined && target.contentIdx !== undefined) {
+    142>     const targeted = stripTargetedMediaBlockFromMessages(messages, target)
+    143      if (targeted !== messages) return targeted
+    144    }
+    145    return stripLatestMediaBlockFromMessages(messages, target.kind)
+    146  }
+    147  
+    148  function stripTargetedMediaBlockFromMessages(
+    149    messages: readonly Anthropic.MessageParam[],
+    150    target: Required<Pick<MediaBlockStripTarget, 'messageIdx' | 'contentIdx'>> &
+    151      Pick<MediaBlockStripTarget, 'kind'>,
+    152  ): readonly Anthropic.MessageParam[] {
+  Type 'MediaBlockStripTarget' is not assignable to type 'Required<Pick<MediaBlockStripTarget, "messageIdx" | "contentIdx">>'.
+    Types of property 'messageIdx' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number'.
+        Type 'undefined' is not assignable to type 'number'.

@@ -1,0 +1,40 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+patron: regex-capture-group-possibly-undefined
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Con `noUncheckedIndexedAccess`, `match[n]` de un `RegExpMatchArray` se tipa `string | undefined` aunque el grupo de captura sea obligatorio en el patrón. Dentro del `if (m)` que ya confirma el match, usar `(m[n] ?? '<default>').metodo()` en vez de indexar directo — el default nunca se alcanza en la práctica porque el grupo siempre casa junto con `m`, pero satisface el tipo sin `!` ni cambiar la conducta.
+
+patron: length-on-possibly-undefined-getter-stub
+senal_del_verificador: TS2532: Object is possibly 'undefined'\.
+fix_generico: Cuando un valor viene de un getter cuyo stub por defecto devuelve `undefined` (p. ej. `_getX: () => T | undefined = () => undefined`, sobreescrito luego por `setGetXFn` desde el host) y el sitio de uso accede a una propiedad como `.length` sin comprobar, se usa encadenamiento opcional con un valor por defecto que reproduce la semántica de 'vacío' que el stub ya representa: `(x()?.length ?? 0)` en vez de `x().length`. No cambia la conducta para el caso real (siempre poblado antes de esta llamada) y evita el crash latente del caso por defecto.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/binary/src/freshness.ts(55,10): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/binary/src/freshness.ts:45-65 ---
+     45   * comparador deja el orden sin definir, y con eso el gate publico esa carpeta
+     46   * como la build mas alta teniendo 2.1.258 en disco.
+     47   */
+     48  function comparaVersion(a: string, b: string): number {
+     49    const pa = SEMVER.exec(a)!
+     50    const pb = SEMVER.exec(b)!
+     51    for (let i = 1; i <= 3; i++) {
+     52      const d = Number(pa[i]) - Number(pb[i])
+     53      if (d !== 0) return d
+     54    }
+     55>   return pa[4].localeCompare(pb[4])
+     56  }
+     57  
+     58  /**
+     59   * Compara y **nombra el motivo**. Un booleano solo no dice que hacer, y ese
+     60   * silencio es lo que dejo el corpus tres builds atras.
+     61   */
+     62  export function freshness(root: string, live: string): Freshness {
+     63    const corpus = corpusVersion(root)
+     64    if (corpus === null) {
+     65      return { corpus, live, stale: true, reason: `sin corpus en ${root}; extraer ${live}` }

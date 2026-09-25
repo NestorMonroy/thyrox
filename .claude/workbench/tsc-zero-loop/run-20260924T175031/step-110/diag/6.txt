@@ -1,0 +1,23 @@
+src/packages/@ant/ink/src/theme/Tree.tsx(86,11): error TS2322: Type '"stretch"' is not assignable to type '"auto" | "flex-start" | "center" | "flex-end" | undefined'.
+  --- código src/packages/@ant/ink/src/theme/Tree.tsx:76-96 ---
+     76  }: {
+     77    connectors: Connector[]
+     78    children: React.ReactNode
+     79  }): React.ReactNode {
+     80    return (
+     81      <Box flexDirection="row">
+     82        {connectors.length > 0 && (
+     83          <Box
+     84            flexDirection="row"
+     85            flexShrink={0}
+     86>           alignSelf="stretch"
+     87            noSelect="from-left-edge"
+     88          >
+     89            {connectors.map((c, i) => (
+     90              <Box key={i} width={2}>
+     91                <Text dimColor>{CONNECTOR_GLYPHS[c]}</Text>
+     92              </Box>
+     93            ))}
+     94          </Box>
+     95        )}
+     96        <Box flexGrow={1} flexShrink={1}>

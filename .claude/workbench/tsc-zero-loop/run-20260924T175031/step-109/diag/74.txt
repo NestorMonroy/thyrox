@@ -1,0 +1,32 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/provider/src/oauth/index.ts(183,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/provider/src/oauth/index.ts:173-193 ---
+    173    }
+    174  
+    175    private formatTokens(
+    176      response: OAuthTokenExchangeResponse,
+    177      subscriptionType: SubscriptionType | null,
+    178      rateLimitTier: RateLimitTier | null,
+    179      profile?: OAuthProfileResponse,
+    180    ): OAuthTokens {
+    181      return {
+    182        accessToken: response.access_token,
+    183>       refreshToken: response.refresh_token,
+    184        expiresAt: Date.now() + response.expires_in * 1000,
+    185        scopes: client.parseScopes(response.scope),
+    186        subscriptionType,
+    187        rateLimitTier,
+    188        profile,
+    189        tokenAccount: response.account
+    190          ? {
+    191              uuid: response.account.uuid,
+    192              emailAddress: response.account.email_address,
+    193              organizationUuid: response.organization?.uuid,

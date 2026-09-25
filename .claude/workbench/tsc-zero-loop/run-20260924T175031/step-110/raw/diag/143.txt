@@ -1,0 +1,18 @@
+src/packages/permission/src/__tests__/memoryPausePermissions.test.ts(52,51): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: InternalPathDecision): void', gave the following error.
+    Type '{ type: string; reason: string; classifierApprovable: boolean; }' is not assignable to type 'SafetyDecisionReason'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type '"safetyCheck"'.
+  Overload 2 of 2, '(expected: NoInfer<InternalPathDecision>): void', gave the following error.
+    Argument of type '{ behavior: "deny"; message: string; decisionReason: { type: string; reason: string; classifierApprovable: boolean; }; }' is not assignable to parameter of type 'InternalPathDecision'.
+      The types of 'decisionReason.type' are incompatible between these types.
+        Type 'string' is not assignable to type '"safetyCheck"'.
+src/packages/permission/src/__tests__/memoryPausePermissions.test.ts(56,51): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: InternalPathDecision): void', gave the following error.
+    Type '{ type: string; reason: string; classifierApprovable: boolean; }' is not assignable to type 'SafetyDecisionReason'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type '"safetyCheck"'.
+  Overload 2 of 2, '(expected: NoInfer<InternalPathDecision>): void', gave the following error.
+    Argument of type '{ behavior: "deny"; message: string; decisionReason: { type: string; reason: string; classifierApprovable: boolean; }; }' is not assignable to parameter of type 'InternalPathDecision'.
+      The types of 'decisionReason.type' are incompatible between these types.
+        Type 'string' is not assignable to type '"safetyCheck"'.

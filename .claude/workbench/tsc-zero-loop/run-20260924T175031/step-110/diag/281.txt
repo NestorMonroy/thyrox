@@ -1,0 +1,24 @@
+src/packages/tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.
+  --- código src/packages/tool-registry/src/tools/BashTool/UI.tsx:31-51 ---
+     31    onBackground,
+     32  }: {
+     33    onBackground?: () => void
+     34  } = {}): React.ReactElement | null {
+     35    const store = useAppStateStore()
+     36    const setAppState = useSetAppState()
+     37  
+     38    // Handler for task:background - background all foreground tasks
+     39    const handleBackground = React.useCallback(() => {
+     40      // Background ALL foreground bash tasks
+     41>     backgroundAll(() => store.getState(), setAppState)
+     42      // Also call the optional callback (used for non-bash tasks like agents)
+     43      onBackground?.()
+     44    }, [store, setAppState, onBackground])
+     45  
+     46    useKeybinding('task:background', handleBackground, {
+     47      context: 'Task',
+     48    })
+     49  
+     50    // Get the configured shortcut for task:background
+     51    const baseShortcut = useShortcutDisplay('task:background', 'Task', 'ctrl+b')
+  Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

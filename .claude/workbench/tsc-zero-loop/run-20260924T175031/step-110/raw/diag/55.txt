@@ -1,0 +1,4 @@
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(18,5): error TS2578: Unused '@ts-expect-error' directive.
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(20,5): error TS2578: Unused '@ts-expect-error' directive.
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(33,5): error TS2578: Unused '@ts-expect-error' directive.
+src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts(45,5): error TS2578: Unused '@ts-expect-error' directive.

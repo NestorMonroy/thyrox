@@ -1,0 +1,15 @@
+src/packages/agent/__tests__/agentContextGuards.test.ts(148,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"Explore"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"Explore"' is not assignable to parameter of type 'undefined'.
+src/packages/agent/__tests__/agentContextGuards.test.ts(157,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+src/packages/agent/__tests__/agentContextGuards.test.ts(164,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.

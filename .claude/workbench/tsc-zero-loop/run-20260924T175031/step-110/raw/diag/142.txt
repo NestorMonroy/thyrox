@@ -1,0 +1,1 @@
+src/packages/permission/src/__tests__/dangerousPatterns.test.ts(54,22): error TS2345: Argument of type 'string' is not assignable to parameter of type '"python3" | "bash" | "deno" | "node" | "ruby" | "python" | "python2" | "tsx" | "perl" | "php" | "lua" | "npx" | "bunx" | "npm run" | "yarn run" | "pnpm run" | "bun run" | "sh" | "ssh"'.

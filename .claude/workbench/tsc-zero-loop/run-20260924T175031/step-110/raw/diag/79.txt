@@ -1,0 +1,1 @@
+src/packages/command-runtime/src/commands/compact/compact.ts(10,3): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'compactConversation'.

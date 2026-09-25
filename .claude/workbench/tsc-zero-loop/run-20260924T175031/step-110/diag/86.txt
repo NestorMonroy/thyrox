@@ -1,0 +1,48 @@
+src/packages/command-runtime/src/commands/goal/index.ts(49,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goal")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/goal/index.ts:39-59 ---
+     39    return requireAgentGoalStopHook().GOAL_CONDITION_MAX_LENGTH
+     40  }
+     41  
+     42  const goalJsxCommand: Command = {
+     43    type: 'local-jsx',
+     44    name: 'goal',
+     45    description: 'Set, pause, resume, or view a goal — keep working until it is met',
+     46    argumentHint: '[<condition> | clear | pause | resume]',
+     47    immediate: true,
+     48    isEnabled: () => requireAgentGoalStopHook().isGoalCommandEnabled(),
+     49>   load: () => import('./goal.js'),
+     50  }
+     51  
+     52  export default goalJsxCommand
+     53  
+     54  export const goalLocalCommand: Command = {
+     55    type: 'local',
+     56    name: 'goal',
+     57    supportsNonInteractive: true,
+     58    description: 'Set, pause, resume, or view a goal — keep working until it is met',
+     59    argumentHint: '[<condition> | clear | pause | resume]',
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goal")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: { getAppState: () => { activeGoal?: { condition: string; iterations: number; setAt: number; tokensAtStart: number; lastReason?: string | undefined; paused?: boolean | undefined; } | undefined; }; setAppState: (updater: (prev: any) => any) => void; setMessages: (updater: (prev...' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type '{ getAppState: () => { activeGoal?: { condition: string; iterations: number; setAt: number; tokensAtStart: number; lastReason?: string | undefined; paused?: boolean | undefined; } | undefined; }; setAppState: (updater: (prev: any) => any) => void; setMessages: (updater: (prev: any[]) => any[]) => void; messages?: Me...': getAppState, setAppState
+src/packages/command-runtime/src/commands/goal/index.ts(72,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goalLocal")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/goal/index.ts:62-73 ---
+     62    get isHidden() {
+     63      return !requireAppHostBootstrapSessionMode().getIsNonInteractiveSession()
+     64    },
+     65    // Feature flag Y (no-interactivo O workspace remoto).
+     66    isEnabled: () => {
+     67      const { isGoalCommandEnabled } = requireAgentGoalStopHook()
+     68      const { getIsNonInteractiveSession, getIsRemoteMode } =
+     69        requireAppHostBootstrapSessionMode()
+     70      return isGoalCommandEnabled() && (getIsNonInteractiveSession() || getIsRemoteMode())
+     71    },
+     72>   load: () => import('./goalLocal.js'),
+     73  }
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/command-runtime/src/commands/goal/goalLocal")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'import("/home/user/thyrox-medicion/src/packages/command-runtime/src/types").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox-medicion/src/packages/agent/command").LocalJSXCommandContext'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

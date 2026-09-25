@@ -1,0 +1,26 @@
+src/packages/permission/__tests__/permissionSchemas.test.ts(219,21): error TS2352: Conversion of type '$ZodIssue[]' to type 'Record<string, unknown>[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/permission/__tests__/permissionSchemas.test.ts:209-229 ---
+    209        type: 'inventado',
+    210        destination: 'session',
+    211      })
+    212      expect(r.success).toBe(false)
+    213  
+    214      // `.success === false` NO discrimina, y se midió: con `z.union` corriente
+    215      // el veredicto es idéntico. Lo que separa una forma de la otra es el
+    216      // ERROR. La discriminada señala `type` y para; la unión corriente reporta
+    217      // las seis ramas —incluidos `rules` y `behavior`, campos que esta carga
+    218      // nunca declaró— y nombra ramas que no venían al caso.
+    219>     const [issue] = r.error!.issues as Array<Record<string, unknown>>
+    220      expect(issue!.discriminator).toBe('type')
+    221      expect(issue!.path).toEqual(['type'])
+    222      expect((issue!.errors as unknown[]).length).toBe(0)
+    223    })
+    224  
+    225    test('15. un destino fuera de los cinco se rechaza', async () => {
+    226      const { permissionUpdateSchema, permissionUpdateDestinationSchema } =
+    227        await import('../src/PermissionUpdateSchema.ts')
+    228      for (const d of [
+    229        'userSettings',
+  Type '$ZodIssue' is not comparable to type 'Record<string, unknown>'.
+    Type '$ZodIssueCustom' is not comparable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type '$ZodIssueCustom'.

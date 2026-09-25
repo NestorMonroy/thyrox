@@ -1,0 +1,46 @@
+src/packages/config/plugin/loadPluginOutputStyles.ts(74,7): error TS2322: Type '{}' is not assignable to type 'string'.
+  --- código src/packages/config/plugin/loadPluginOutputStyles.ts:64-84 ---
+     64      const forceRaw = frontmatter['force-for-plugin']
+     65      const forceForPlugin =
+     66        forceRaw === true || forceRaw === 'true'
+     67          ? true
+     68          : forceRaw === false || forceRaw === 'false'
+     69            ? false
+     70            : undefined
+     71  
+     72      return {
+     73        name,
+     74>       description,
+     75        prompt: markdownContent.trim(),
+     76        source: 'plugin',
+     77        forceForPlugin,
+     78      }
+     79    } catch (error) {
+     80      logForDebugging(`Failed to load output style from ${filePath}: ${error}`, {
+     81        level: 'error',
+     82      })
+     83      return null
+     84    }
+src/packages/config/plugin/loadPluginOutputStyles.ts(147,30): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/loadPluginOutputStyles.ts:137-157 ---
+    137                  plugin.name,
+    138                  loadedPaths,
+    139                )
+    140                allStyles.push(...styles)
+    141  
+    142                if (styles.length > 0) {
+    143                  logForDebugging(
+    144                    `Loaded ${styles.length} output styles from plugin ${plugin.name} custom path: ${stylePath}`,
+    145                  )
+    146                }
+    147>             } else if (stats.isFile() && stylePath.endsWith('.md')) {
+    148                // Load single output style file
+    149                const style = await loadOutputStyleFromFile(
+    150                  stylePath,
+    151                  plugin.name,
+    152                  loadedPaths,
+    153                )
+    154                if (style) {
+    155                  allStyles.push(style)
+    156                  logForDebugging(
+    157                    `Loaded output style from plugin ${plugin.name} custom file: ${stylePath}`,

@@ -1,0 +1,25 @@
+src/packages/bridge/src/__tests__/inboundMessages.test.ts(48,35): error TS2352: Conversion of type '{ type: "user"; message: { content: never[]; }; }' to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/bridge/src/__tests__/inboundMessages.test.ts:38-58 ---
+     38      expect(
+     39        extractInboundMessageFields({
+     40          type: 'user',
+     41          message: { content: '' },
+     42        } as Msg),
+     43      ).toBeUndefined()
+     44    })
+     45  
+     46    test('returns undefined when content is empty array', () => {
+     47      expect(
+     48>       extractInboundMessageFields({
+     49          type: 'user',
+     50          message: { content: [] },
+     51        } as Msg),
+     52      ).toBeUndefined()
+     53    })
+     54  })
+     55  
+     56  describe('extractInboundMessageFields — string content', () => {
+     57    test('extracts string content unchanged', () => {
+     58      const result = extractInboundMessageFields({
+  Type '{ type: "user"; message: { content: never[]; }; }' is not comparable to type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; } | { ...; }'.
+    Type '{ type: "user"; message: { content: never[]; }; }' is missing the following properties from type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; uuid: string; session_id: string; isReplay: true; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | ... 2 more ... | undefined; timestamp?: string | undefined; }': parent_tool_use_id, uuid, session_id, isReplay

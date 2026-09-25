@@ -1,0 +1,55 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/hooks/useReplBridge.tsx(234,59): error TS2345: Argument of type 'string | ContentBlockParam[]' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:224-244 ---
+    224                // Dynamic import keeps the bridge code out of non-BRIDGE_MODE builds.
+    225                const { resolveAndPrepend } = await import(
+    226                  '@thyrox/bridge/inboundAttachments.js'
+    227                )
+    228                let sanitized = fields.content
+    229                if (feature('KAIROS_GITHUB_WEBHOOKS')) {
+    230                  /* eslint-disable @typescript-eslint/no-require-imports */
+    231                  const { sanitizeInboundWebhookContent } =
+    232                    require('@thyrox/bridge/webhookSanitizer.js') as typeof import('@thyrox/bridge/webhookSanitizer.js')
+    233                  /* eslint-enable @typescript-eslint/no-require-imports */
+    234>                 sanitized = sanitizeInboundWebhookContent(fields.content)
+    235                }
+    236                const content = await resolveAndPrepend(msg, sanitized)
+    237  
+    238                const preview =
+    239                  typeof content === 'string'
+    240                    ? content.slice(0, 80)
+    241                    : `[${content.length} content blocks]`
+    242                logForDebugging(
+    243                  `[bridge:repl] Injecting inbound user message: ${preview}${uuid ? ` uuid=${uuid}` : ''}`,
+    244                )
+src/packages/repl/src/hooks/useReplBridge.tsx(550,26): error TS18046: 'item' is of type 'unknown'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:540-560 ---
+    540                  )
+    541                  return {
+    542                    ...prev,
+    543                    toolPermissionContext: { ...next, mode },
+    544                  }
+    545                })
+    546                // Recheck queued permission prompts now that mode changed.
+    547                setImmediate(() => {
+    548                  getLeaderToolUseConfirmQueue()?.(currentQueue => {
+    549                    currentQueue.forEach(item => {
+    550>                     void item.recheckPermission()
+    551                    })
+    552                    return currentQueue
+    553                  })
+    554                })
+    555                return { ok: true }
+    556              },
+    557              onStateChange: handleStateChange,
+    558              initialMessages: messages.length > 0 ? messages : undefined,
+    559              getMessages: () => messagesRef.current,
+    560              previouslyFlushedUUIDs: flushedUUIDsRef.current,

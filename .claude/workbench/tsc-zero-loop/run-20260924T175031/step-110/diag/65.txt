@@ -1,0 +1,69 @@
+src/packages/cli/src/entry/preprocess-argv.ts(17,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingAssistantChat'.
+  --- código src/packages/cli/src/entry/preprocess-argv.ts:7-27 ---
+      7   * `runModeDispatch` via the `ModeDispatchContext`.
+      8   *
+      9   * These blocks are intentionally separate from `runModeDispatch` because
+     10   * they must mutate `process.argv` while commander is still unaware of the
+     11   * subcommand tree.
+     12   */
+     13  
+     14  import { feature } from 'bun:bundle'
+     15  import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+     16  import type {
+     17>   PendingAssistantChat,
+     18    PendingConnect,
+     19    PendingSSH,
+     20  } from './mode-dispatch.js'
+     21  
+     22  export type PendingHandles = {
+     23    pendingConnect: PendingConnect | undefined
+     24    pendingSSH: PendingSSH | undefined
+     25    pendingAssistantChat: PendingAssistantChat | undefined
+     26  }
+     27  
+src/packages/cli/src/entry/preprocess-argv.ts(18,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingConnect'.
+  --- código src/packages/cli/src/entry/preprocess-argv.ts:8-28 ---
+      8   *
+      9   * These blocks are intentionally separate from `runModeDispatch` because
+     10   * they must mutate `process.argv` while commander is still unaware of the
+     11   * subcommand tree.
+     12   */
+     13  
+     14  import { feature } from 'bun:bundle'
+     15  import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+     16  import type {
+     17    PendingAssistantChat,
+     18>   PendingConnect,
+     19    PendingSSH,
+     20  } from './mode-dispatch.js'
+     21  
+     22  export type PendingHandles = {
+     23    pendingConnect: PendingConnect | undefined
+     24    pendingSSH: PendingSSH | undefined
+     25    pendingAssistantChat: PendingAssistantChat | undefined
+     26  }
+     27  
+     28  /**
+src/packages/cli/src/entry/preprocess-argv.ts(19,3): error TS2305: Module '"./mode-dispatch.js"' has no exported member 'PendingSSH'.
+  --- código src/packages/cli/src/entry/preprocess-argv.ts:9-29 ---
+      9   * These blocks are intentionally separate from `runModeDispatch` because
+     10   * they must mutate `process.argv` while commander is still unaware of the
+     11   * subcommand tree.
+     12   */
+     13  
+     14  import { feature } from 'bun:bundle'
+     15  import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
+     16  import type {
+     17    PendingAssistantChat,
+     18    PendingConnect,
+     19>   PendingSSH,
+     20  } from './mode-dispatch.js'
+     21  
+     22  export type PendingHandles = {
+     23    pendingConnect: PendingConnect | undefined
+     24    pendingSSH: PendingSSH | undefined
+     25    pendingAssistantChat: PendingAssistantChat | undefined
+     26  }
+     27  
+     28  /**
+     29   * Build the feature-gated pending-handle objects that `preprocessCliArgv`

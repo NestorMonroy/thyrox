@@ -1,0 +1,27 @@
+src/packages/agent/__tests__/createMessageHelpers.test.ts(106,28): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/createMessageHelpers.test.ts:96-116 ---
+     96  describe('createProgressMessage', () => {
+     97    test('returns a progress message with given toolUseID and data', () => {
+     98      const m = createProgressMessage({
+     99        toolUseID: 'tu_1',
+    100        parentToolUseID: 'tu_parent',
+    101        data: { type: 'bash', stdout: 'hello' } as never,
+    102      })
+    103      expect(m.type).toBe('progress')
+    104      expect(m.toolUseID).toBe('tu_1')
+    105      expect(m.parentToolUseID).toBe('tu_parent')
+    106>     expect(m.data).toEqual({ type: 'bash', stdout: 'hello' })
+    107    })
+    108  
+    109    test('uuid + timestamp are auto-generated', () => {
+    110      const m = createProgressMessage({
+    111        toolUseID: 'tu_1',
+    112        parentToolUseID: 'tu_parent',
+    113        data: {} as never,
+    114      })
+    115      expect(m.uuid).toBeDefined()
+    116      expect(typeof m.uuid).toBe('string')
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ type: string; stdout: string; }' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '{ type: string; stdout: string; }' is not assignable to parameter of type 'undefined'.

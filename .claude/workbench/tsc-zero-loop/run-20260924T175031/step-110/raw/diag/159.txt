@@ -1,0 +1,1 @@
+src/packages/provider/src/claudeLegacyRuntime.ts(575,61): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | BetaUsage | undefined'.

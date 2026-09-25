@@ -1,0 +1,2 @@
+src/packages/config/plugin/loadPluginOutputStyles.ts(74,7): error TS2322: Type '{}' is not assignable to type 'string'.
+src/packages/config/plugin/loadPluginOutputStyles.ts(147,30): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.

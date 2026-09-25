@@ -1,0 +1,6 @@
+src/packages/app-host/src/runtime/bootstrap.ts(131,9): error TS2322: Type 'InteractiveSessionStore' is not assignable to type 'HostSessionStore'.
+  Types of property 'setState' are incompatible.
+    Type '(next: AppState) => void' is not assignable to type '(updater: (prev: unknown) => unknown) => void'.
+      Types of parameters 'next' and 'updater' are incompatible.
+        Type '(prev: unknown) => unknown' is not assignable to type 'AppState'.
+          Type '(prev: unknown) => unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

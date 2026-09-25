@@ -1,0 +1,24 @@
+src/packages/repl/src/hooks/useSSHSession.ts(101,11): error TS2345: Argument of type 'SSHPermissionRequest' is not assignable to parameter of type '{ subtype: "can_use_tool"; tool_name: string; input: Record<string, unknown>; tool_use_id: string; permission_suggestions?: ({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | ... 1 more ... | "allow"; destination: "userSettings" | ... 3 more ... | "session"; } | ...'.
+  --- código src/packages/repl/src/hooks/useSSHSession.ts:91-111 ---
+     91        onPermissionRequest: (request, requestId) => {
+     92          logForDebugging(
+     93            `[useSSHSession] permission request: ${request.tool_name}`,
+     94          )
+     95  
+     96          const tool =
+     97            findToolByName(toolsRef.current, request.tool_name) ??
+     98            createToolStub(request.tool_name)
+     99  
+    100          const syntheticMessage = createSyntheticAssistantMessage(
+    101>           request,
+    102            requestId,
+    103          )
+    104  
+    105          const permissionResult: PermissionAskDecision = {
+    106            behavior: 'ask',
+    107            message:
+    108              request.description ?? `${request.tool_name} requires permission`,
+    109            suggestions: request.permission_suggestions,
+    110            blockedPath: request.blocked_path,
+    111          }
+  Property 'subtype' is missing in type 'SSHPermissionRequest' but required in type '{ subtype: "can_use_tool"; tool_name: string; input: Record<string, unknown>; tool_use_id: string; permission_suggestions?: ({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | ... 1 more ... | "allow"; destination: "userSettings" | ... 3 more ... | "session"; } | ...'.

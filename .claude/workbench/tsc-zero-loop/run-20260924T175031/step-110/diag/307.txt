@@ -1,0 +1,138 @@
+tests/unit/utils/collapseTeammateShutdowns.test.ts(38,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:28-48 ---
+     28      const msgs = [makeShutdownMsg()]
+     29      const result = collapseTeammateShutdowns(msgs)
+     30      expect(result).toHaveLength(1)
+     31      expect(result[0]).toEqual(msgs[0])
+     32    })
+     33  
+     34    test('collapses consecutive shutdown messages into batch', () => {
+     35      const msgs = [makeShutdownMsg('1'), makeShutdownMsg('2')]
+     36      const result = collapseTeammateShutdowns(msgs)
+     37      expect(result).toHaveLength(1)
+     38>     expect(result[0]!.attachment.type).toBe('teammate_shutdown_batch')
+     39    })
+     40  
+     41    test('batch attachment has correct count', () => {
+     42      const msgs = [
+     43        makeShutdownMsg('1'),
+     44        makeShutdownMsg('2'),
+     45        makeShutdownMsg('3'),
+     46      ]
+     47      const result = collapseTeammateShutdowns(msgs)
+     48      expect(result[0]!.attachment.count).toBe(3)
+tests/unit/utils/collapseTeammateShutdowns.test.ts(48,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:38-58 ---
+     38      expect(result[0]!.attachment.type).toBe('teammate_shutdown_batch')
+     39    })
+     40  
+     41    test('batch attachment has correct count', () => {
+     42      const msgs = [
+     43        makeShutdownMsg('1'),
+     44        makeShutdownMsg('2'),
+     45        makeShutdownMsg('3'),
+     46      ]
+     47      const result = collapseTeammateShutdowns(msgs)
+     48>     expect(result[0]!.attachment.count).toBe(3)
+     49    })
+     50  
+     51    test('does not collapse non-consecutive shutdowns', () => {
+     52      const msgs = [
+     53        makeShutdownMsg('1'),
+     54        makeNonShutdownMsg(),
+     55        makeShutdownMsg('2'),
+     56      ]
+     57      const result = collapseTeammateShutdowns(msgs)
+     58      expect(result).toHaveLength(3)
+tests/unit/utils/collapseTeammateShutdowns.test.ts(59,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:49-69 ---
+     49    })
+     50  
+     51    test('does not collapse non-consecutive shutdowns', () => {
+     52      const msgs = [
+     53        makeShutdownMsg('1'),
+     54        makeNonShutdownMsg(),
+     55        makeShutdownMsg('2'),
+     56      ]
+     57      const result = collapseTeammateShutdowns(msgs)
+     58      expect(result).toHaveLength(3)
+     59>     expect(result[0]!.attachment.type).toBe('task_status')
+     60      expect(result[2]!.attachment.type).toBe('task_status')
+     61    })
+     62  
+     63    test('preserves non-shutdown messages between shutdowns', () => {
+     64      const msgs = [
+     65        makeShutdownMsg('1'),
+     66        makeNonShutdownMsg(),
+     67        makeShutdownMsg('2'),
+     68      ]
+     69      const result = collapseTeammateShutdowns(msgs)
+tests/unit/utils/collapseTeammateShutdowns.test.ts(60,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:50-70 ---
+     50  
+     51    test('does not collapse non-consecutive shutdowns', () => {
+     52      const msgs = [
+     53        makeShutdownMsg('1'),
+     54        makeNonShutdownMsg(),
+     55        makeShutdownMsg('2'),
+     56      ]
+     57      const result = collapseTeammateShutdowns(msgs)
+     58      expect(result).toHaveLength(3)
+     59      expect(result[0]!.attachment.type).toBe('task_status')
+     60>     expect(result[2]!.attachment.type).toBe('task_status')
+     61    })
+     62  
+     63    test('preserves non-shutdown messages between shutdowns', () => {
+     64      const msgs = [
+     65        makeShutdownMsg('1'),
+     66        makeNonShutdownMsg(),
+     67        makeShutdownMsg('2'),
+     68      ]
+     69      const result = collapseTeammateShutdowns(msgs)
+     70      expect(result[1]).toEqual(makeNonShutdownMsg())
+tests/unit/utils/collapseTeammateShutdowns.test.ts(86,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:76-96 ---
+     76  
+     77    test('handles mixed message types', () => {
+     78      const msgs = [
+     79        makeNonShutdownMsg(),
+     80        makeShutdownMsg('1'),
+     81        makeShutdownMsg('2'),
+     82        makeNonShutdownMsg(),
+     83      ]
+     84      const result = collapseTeammateShutdowns(msgs)
+     85      expect(result).toHaveLength(3)
+     86>     expect(result[1]!.attachment.type).toBe('teammate_shutdown_batch')
+     87    })
+     88  
+     89    test('collapses more than 2 consecutive shutdowns', () => {
+     90      const msgs = Array.from({ length: 5 }, (_, i) => makeShutdownMsg(String(i)))
+     91      const result = collapseTeammateShutdowns(msgs)
+     92      expect(result).toHaveLength(1)
+     93      expect(result[0]!.attachment.count).toBe(5)
+     94    })
+     95  
+     96    test('non-teammate task_status messages are not collapsed', () => {
+tests/unit/utils/collapseTeammateShutdowns.test.ts(93,12): error TS2571: Object is of type 'unknown'.
+  --- código tests/unit/utils/collapseTeammateShutdowns.test.ts:83-103 ---
+     83      ]
+     84      const result = collapseTeammateShutdowns(msgs)
+     85      expect(result).toHaveLength(3)
+     86      expect(result[1]!.attachment.type).toBe('teammate_shutdown_batch')
+     87    })
+     88  
+     89    test('collapses more than 2 consecutive shutdowns', () => {
+     90      const msgs = Array.from({ length: 5 }, (_, i) => makeShutdownMsg(String(i)))
+     91      const result = collapseTeammateShutdowns(msgs)
+     92      expect(result).toHaveLength(1)
+     93>     expect(result[0]!.attachment.count).toBe(5)
+     94    })
+     95  
+     96    test('non-teammate task_status messages are not collapsed', () => {
+     97      const nonTeammate: any = {
+     98        type: 'attachment',
+     99        uuid: 'x',
+    100        timestamp: Date.now(),
+    101        attachment: {
+    102          type: 'task_status',
+    103          taskType: 'subagent',

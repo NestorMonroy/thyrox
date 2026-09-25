@@ -1,0 +1,27 @@
+src/packages/repl/src/components/MessageTimestamp.tsx(24,39): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/components/MessageTimestamp.tsx:14-34 ---
+     14    const shouldShowTimestamp =
+     15      isTranscriptMode &&
+     16      message.timestamp &&
+     17      message.type === 'assistant' &&
+     18      message.message.content.some((c: { type: string }) => c.type === 'text')
+     19  
+     20    if (!shouldShowTimestamp) {
+     21      return null
+     22    }
+     23  
+     24>   const formattedTimestamp = new Date(message.timestamp).toLocaleTimeString(
+     25      'en-US',
+     26      {
+     27        hour: '2-digit',
+     28        minute: '2-digit',
+     29        hour12: true,
+     30      },
+     31    )
+     32  
+     33    return (
+     34      <Box minWidth={stringWidth(formattedTimestamp)}>
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.

@@ -1,0 +1,6 @@
+src/packages/repl/src/commands/files/index.ts(9,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/files/files")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/files/files")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(_args: string, context: ToolUseContext) => Promise<LocalCommandResult>' is not assignable to type 'LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

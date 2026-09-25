@@ -1,0 +1,24 @@
+src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts(67,15): error TS2352: Conversion of type '{ name: undefined; }' to type 'Tool' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts:57-77 ---
+     57      // by the normalizer's [a-zA-Z0-9_-] allowlist).
+     58      const tools = [tool('mcp__my-server__do_thing')]
+     59      expect(filterToolsByServer(tools, 'my-server')).toHaveLength(1)
+     60    })
+     61  
+     62    test('empty tools array returns empty', () => {
+     63      expect(filterToolsByServer([], 'github')).toEqual([])
+     64    })
+     65  
+     66    test('tool with undefined name is filtered out (no startsWith on undefined)', () => {
+     67>     const t = { name: undefined } as Tool
+     68      expect(filterToolsByServer([t], 'github')).toEqual([])
+     69    })
+     70  })
+     71  
+     72  describe('commandBelongsToServer — mcp__ AND server: prefixes', () => {
+     73    test('mcp__server__cmd matches', () => {
+     74      expect(commandBelongsToServer(cmd('mcp__github__test'), 'github')).toBe(true)
+     75    })
+     76  
+     77    test('server:cmd (skill format) matches', () => {
+  Type '{ name: undefined; }' is missing the following properties from type 'Tool': call, description, inputSchema, isConcurrencySafe, and 9 more.

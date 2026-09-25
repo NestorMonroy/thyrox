@@ -1,0 +1,23 @@
+src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx(151,22): error TS2322: Type '"green"' is not assignable to type 'Color | keyof Theme | undefined'.
+  --- código src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx:141-161 ---
+    141        },
+    142      },
+    143      { context: 'Select' },
+    144    );
+    145  
+    146    return (
+    147      <Dialog title="Remote Control Server" onCancel={handleContinue} hideInputGuide>
+    148        <Box flexDirection="column" gap={1}>
+    149          <Text>
+    150            Remote Control Server is{' '}
+    151>           <Text bold color="green">
+    152              running
+    153            </Text>
+    154            {daemonProcess ? ` (PID: ${daemonProcess.pid})` : ''}
+    155          </Text>
+    156          {logPreview.length > 0 && (
+    157            <Box flexDirection="column">
+    158              <Text dimColor>Recent logs:</Text>
+    159              {logPreview.map((line, i) => (
+    160                <Text key={i} dimColor>
+    161                  {line}

@@ -1,0 +1,6 @@
+src/packages/mcp-runtime/src/api.ts(40,3): error TS2322: Type '{ clients: TMcpConfig[]; tools: unknown[]; commands: TMcpTool[]; }' is not assignable to type '{ clients: TMcpConnection[]; tools: TMcpTool[]; commands: TMcpCommand[]; }'.
+  Types of property 'clients' are incompatible.
+    Type 'TMcpConfig[]' is not assignable to type 'TMcpConnection[]'.
+      Type 'TMcpConfig' is not assignable to type 'TMcpConnection'.
+        'TMcpConnection' could be instantiated with an arbitrary type which could be unrelated to 'TMcpConfig'.
+src/packages/mcp-runtime/src/api.ts(41,5): error TS2558: Expected 5 type arguments, but got 6.

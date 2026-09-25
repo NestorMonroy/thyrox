@@ -1,0 +1,46 @@
+src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts(165,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts:155-175 ---
+    155            `Path "${absPath}" is not in \`git worktree list\`. Use \`name\` to create a new worktree, or pass an existing worktree path.`,
+    156          )
+    157        }
+    158        process.chdir(absPath)
+    159        setCwd(absPath)
+    160        setOriginalCwd(absPath)
+    161        // We didn't create a session here — leave session storage untouched.
+    162        // Just clear caches so subsequent reads reflect the new cwd.
+    163        clearSystemPromptSections()
+    164        clearMemoryFileCaches()
+    165>       getPlansDirectory.cache.clear?.()
+    166        logEvent('tengu_worktree_entered_existing', {
+    167          mid_session: true,
+    168        })
+    169        return {
+    170          data: {
+    171            worktreePath: absPath,
+    172            message: `Entered existing worktree at ${absPath}. The session is now working in the worktree.`,
+    173          },
+    174        }
+    175      }
+src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts(189,23): error TS2339: Property 'cache' does not exist on type '() => string'.
+  --- código src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts:179-199 ---
+    179      const worktreeSession = await createWorktreeForSession(getSessionId(), slug)
+    180  
+    181      process.chdir(worktreeSession.worktreePath)
+    182      setCwd(worktreeSession.worktreePath)
+    183      setOriginalCwd(getCwd())
+    184      saveWorktreeState(worktreeSession)
+    185      // Clear cached system prompt sections so env_info_simple recomputes with worktree context
+    186      clearSystemPromptSections()
+    187      // Clear memoized caches that depend on CWD
+    188      clearMemoryFileCaches()
+    189>     getPlansDirectory.cache.clear?.()
+    190  
+    191      logEvent('tengu_worktree_created', {
+    192        mid_session: true,
+    193      })
+    194  
+    195      const branchInfo = worktreeSession.worktreeBranch
+    196        ? ` on branch ${worktreeSession.worktreeBranch}`
+    197        : ''
+    198  
+    199      return {

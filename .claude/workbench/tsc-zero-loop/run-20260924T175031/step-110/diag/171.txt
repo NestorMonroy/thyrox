@@ -1,0 +1,26 @@
+src/packages/repl/src/__tests__/isHookEqual.test.ts(71,9): error TS2352: Conversion of type '{ type: "command"; command: string; shell: "zsh"; }' to type '{ type: "command"; command: string; args?: string[] | undefined; if?: string | undefined; shell?: "powershell" | "bash" | undefined; timeout?: number | undefined; statusMessage?: string | undefined; once?: boolean | undefined; async?: boolean | undefined; asyncRewake?: boolean | undefined; } | { ...; } | { ...; } | ...' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/isHookEqual.test.ts:61-81 ---
+     61          { type: 'command', command: 'echo' } as Hook,
+     62          { type: 'command', command: 'echo', shell: 'bash' } as Hook,
+     63        ),
+     64      ).toBe(true)
+     65    })
+     66  
+     67    test('different shells → false', () => {
+     68      expect(
+     69        isHookEqual(
+     70          { type: 'command', command: 'echo', shell: 'bash' } as Hook,
+     71>         { type: 'command', command: 'echo', shell: 'zsh' } as Hook,
+     72        ),
+     73      ).toBe(false)
+     74    })
+     75  
+     76    test('same command + different `if` → false (if is part of identity)', () => {
+     77      // Documented: if is part of hook identity. Same command with
+     78      // different conditions = distinct hooks.
+     79      expect(
+     80        isHookEqual(
+     81          { type: 'command', command: 'echo', if: 'a' } as Hook,
+  Type '{ type: "command"; command: string; shell: "zsh"; }' is not comparable to type '{ type: "command"; command: string; args?: string[] | undefined; if?: string | undefined; shell?: "powershell" | "bash" | undefined; timeout?: number | undefined; statusMessage?: string | undefined; once?: boolean | undefined; async?: boolean | undefined; asyncRewake?: boolean | undefined; }'.
+    Types of property 'shell' are incompatible.
+      Type '"zsh"' is not comparable to type '"powershell" | "bash" | undefined'.

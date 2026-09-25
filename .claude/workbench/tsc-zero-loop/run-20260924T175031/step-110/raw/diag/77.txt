@@ -1,0 +1,1 @@
+src/packages/command-runtime/src/commands/clear/caches.ts(26,10): error TS2724: '"../../skills/loadSkillsDir.js"' has no exported member named 'clearDynamicSkills'. Did you mean 'getDynamicSkills'?

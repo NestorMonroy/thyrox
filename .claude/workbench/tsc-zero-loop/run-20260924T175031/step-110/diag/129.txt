@@ -1,0 +1,25 @@
+src/packages/local-observability/src/log.ts(106,5): error TS2322: Type 'Dirent<string>[]' is not assignable to type 'Dirent<NonSharedBuffer>[]'.
+  --- código src/packages/local-observability/src/log.ts:96-116 ---
+     96  export async function getErrorLogByIndex(
+     97    index: number,
+     98  ): Promise<LogOption | null> {
+     99    const logs = await loadErrorLogs()
+    100    return logs[index] || null
+    101  }
+    102  
+    103  async function loadLogList(path: string): Promise<LogOption[]> {
+    104    let files: Awaited<ReturnType<typeof readdir>>
+    105    try {
+    106>     files = await readdir(path, { withFileTypes: true })
+    107    } catch {
+    108      logError(new Error(`No logs found at ${path}`))
+    109      return []
+    110    }
+    111    const logData = await Promise.all(
+    112      files.map(async (file, i) => {
+    113        const fullPath = join(path, String(file.name))
+    114        const content = await readFile(fullPath, { encoding: 'utf8' })
+    115        const messages = jsonParse(content) as SerializedMessage[]
+    116        const firstMessage = messages[0]
+  Type 'Dirent<string>' is not assignable to type 'Dirent<NonSharedBuffer>'.
+    Type 'string' is not assignable to type 'NonSharedBuffer'.

@@ -1,0 +1,3 @@
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(43,36): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(60,38): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/mcp/McpParsingWarnings.tsx(146,31): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.

@@ -1,0 +1,10 @@
+src/packages/agent/__tests__/createAttachmentMessage.test.ts(14,21): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/packages/agent/__tests__/createAttachmentMessage.test.ts(14,54): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: string): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(expected: string): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string'.

@@ -1,0 +1,25 @@
+src/packages/tool-registry/src/tools/McpAuthTool/McpAuthTool.ts(174,15): error TS2322: Type '{ name: string; }[]' is not assignable to type 'MCPServerConnection[]'.
+  --- código src/packages/tool-registry/src/tools/McpAuthTool/McpAuthTool.ts:164-184 ---
+    164        // prefijo mcp__<server>__.
+    165        void oauthPromise
+    166          .then(async () => {
+    167            clearMcpAuthCache()
+    168            const result = await reconnectMcpServerImpl(serverName, config)
+    169            const prefix = getMcpPrefix(serverName)
+    170            setAppState(prev => ({
+    171              ...prev,
+    172              mcp: {
+    173                ...prev.mcp,
+    174>               clients: prev.mcp.clients.map((c: { name: string }) =>
+    175                  c.name === serverName ? result.client : c,
+    176                ),
+    177                tools: [
+    178                  ...reject(prev.mcp.tools, t => t.name?.startsWith(prefix)),
+    179                  ...result.tools,
+    180                ],
+    181                commands: [
+    182                  ...reject(prev.mcp.commands, c => c.name?.startsWith(prefix)),
+    183                  ...result.commands,
+    184                ],
+  Type '{ name: string; }' is not assignable to type 'MCPServerConnection'.
+    Type '{ name: string; }' is missing the following properties from type 'DisabledMCPServer': type, config

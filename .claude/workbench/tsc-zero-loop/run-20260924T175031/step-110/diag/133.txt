@@ -1,0 +1,50 @@
+src/packages/mcp-runtime/src/api.ts(40,3): error TS2322: Type '{ clients: TMcpConfig[]; tools: unknown[]; commands: TMcpTool[]; }' is not assignable to type '{ clients: TMcpConnection[]; tools: TMcpTool[]; commands: TMcpCommand[]; }'.
+  --- código src/packages/mcp-runtime/src/api.ts:30-50 ---
+     30    TMcpCommand,
+     31    TMcpConfig,
+     32    TMcpConnection,
+     33  >(
+     34    mcpConfigs: Record<string, TMcpConfig>,
+     35  ): Promise<{
+     36    clients: TMcpConnection[]
+     37    tools: TMcpTool[]
+     38    commands: TMcpCommand[]
+     39  }> {
+     40>   return getMcpRuntimeHostBindings<
+     41      unknown,
+     42      TMcpTool,
+     43      TMcpCommand,
+     44      unknown,
+     45      TMcpConfig,
+     46      TMcpConnection
+     47    >().prefetchAllMcpResources(mcpConfigs)
+     48  }
+     49  
+     50  export async function connectAll<TMcpConfig, TMcpConnection>(
+  Types of property 'clients' are incompatible.
+    Type 'TMcpConfig[]' is not assignable to type 'TMcpConnection[]'.
+      Type 'TMcpConfig' is not assignable to type 'TMcpConnection'.
+        'TMcpConnection' could be instantiated with an arbitrary type which could be unrelated to 'TMcpConfig'.
+src/packages/mcp-runtime/src/api.ts(41,5): error TS2558: Expected 5 type arguments, but got 6.
+  --- código src/packages/mcp-runtime/src/api.ts:31-51 ---
+     31    TMcpConfig,
+     32    TMcpConnection,
+     33  >(
+     34    mcpConfigs: Record<string, TMcpConfig>,
+     35  ): Promise<{
+     36    clients: TMcpConnection[]
+     37    tools: TMcpTool[]
+     38    commands: TMcpCommand[]
+     39  }> {
+     40    return getMcpRuntimeHostBindings<
+     41>     unknown,
+     42      TMcpTool,
+     43      TMcpCommand,
+     44      unknown,
+     45      TMcpConfig,
+     46      TMcpConnection
+     47    >().prefetchAllMcpResources(mcpConfigs)
+     48  }
+     49  
+     50  export async function connectAll<TMcpConfig, TMcpConnection>(
+     51    configs: Record<string, TMcpConfig>,

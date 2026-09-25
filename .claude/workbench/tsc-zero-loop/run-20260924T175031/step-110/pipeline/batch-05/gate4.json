@@ -1,0 +1,28 @@
+{
+ "reviewed": [
+  {
+   "pattern": "closure-assigned-let-narrowed-to-initializer",
+   "files": [
+    "src/packages/mcp-runtime/src/__tests__/channelPermissions.test.ts"
+   ]
+  },
+  {
+   "pattern": "unknown-typed-property-used-as-index",
+   "files": [
+    "src/packages/repl/src/components/IdeOnboardingDialog.tsx"
+   ]
+  },
+  {
+   "pattern": "app-state-provider-sin-initial-state",
+   "files": [
+    "src/packages/repl/src/components/InvalidConfigDialog.tsx"
+   ]
+  },
+  {
+   "pattern": "css-color-literal-not-in-color-type",
+   "files": [
+    "src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx"
+   ]
+  }
+ ]
+}

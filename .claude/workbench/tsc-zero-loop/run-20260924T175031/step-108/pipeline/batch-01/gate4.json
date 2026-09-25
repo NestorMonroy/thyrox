@@ -1,0 +1,166 @@
+{
+ "reviewed": [
+  {
+   "pattern": "ts-expect-error-vuelto-innecesario-por-actualizacion-de-tipos",
+   "files": [
+    "src/packages/@ant/ink/src/core/ink.tsx"
+   ]
+  },
+  {
+   "pattern": "callback-node-sin-null-en-el-tipo-de-error",
+   "files": [
+    "src/packages/@ant/ink/src/core/ink.tsx"
+   ]
+  },
+  {
+   "pattern": "cast-a-shape-that-does-not-overlap-an-index-signature-type",
+   "files": [
+    "src/packages/agent/__tests__/messageFactories.test.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-adapter-method-widens-contract-literal",
+   "files": [
+    "src/packages/agent/createDeps.ts"
+   ]
+  },
+  {
+   "pattern": "host-bindings-subset-lags-contracts",
+   "files": [
+    "src/packages/agent/internal/cronTasksCore.ts"
+   ]
+  },
+  {
+   "pattern": "optional-set-app-state-invoked-without-guard",
+   "files": [
+    "src/packages/agent/internal/stopHooksCore.ts"
+   ]
+  },
+  {
+   "pattern": "missing-second-argument-in-test-call",
+   "files": [
+    "src/packages/color-diff-napi/src/__tests__/color-diff.test.ts"
+   ]
+  },
+  {
+   "pattern": "concrete-config-fn-assigned-to-erased-unknown-bindings",
+   "files": [
+    "src/packages/mcp-runtime/src/runtimeHostSetup.ts"
+   ]
+  },
+  {
+   "pattern": "fixture-de-contexto-desincronizada-del-tipo-real",
+   "files": [
+    "src/packages/permission/__tests__/PermissionUpdate.test.ts"
+   ]
+  },
+  {
+   "pattern": "union-member-property-access-without-narrowing",
+   "files": [
+    "src/packages/permission/src/__tests__/permissionUpdatePure.test.ts"
+   ]
+  },
+  {
+   "pattern": "test-uses-config-connectionrecord-instead-of-module-own",
+   "files": [
+    "src/packages/provider/src/__tests__/connections.test.ts"
+   ]
+  },
+  {
+   "pattern": "attachment-union-type-not-ported",
+   "files": [
+    "src/packages/repl/src/components/DiagnosticsDisplay.tsx"
+   ]
+  },
+  {
+   "pattern": "campo-suggestion-doclink-ausente-en-port-recortado-de-settingserror",
+   "files": [
+    "src/packages/repl/src/components/ValidationErrorsList.tsx"
+   ]
+  },
+  {
+   "pattern": "instance-field-used-without-declaration",
+   "files": [
+    "src/packages/repl/src/fileIndex/index.ts"
+   ]
+  },
+  {
+   "pattern": "hook-event-stub-unknown-as-index",
+   "files": [
+    "src/packages/repl/src/hooksSettings.ts"
+   ]
+  },
+  {
+   "pattern": "boolean-passed-as-fleet-outcome-arg",
+   "files": [
+    "src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "content-block-param-imported-from-sdk-not-from-consuming-package",
+   "files": [
+    "src/packages/swarm/src/runtime/inProcessRunner.ts"
+   ]
+  },
+  {
+   "pattern": "state-setter-callback-narrowed-past-unknown-stub",
+   "files": [
+    "src/packages/swarm/src/runtime/inProcessRunner.ts"
+   ]
+  },
+  {
+   "pattern": "nullable-let-narrowing-lost-before-return",
+   "files": [
+    "src/packages/swarm/src/worktree/index.ts"
+   ]
+  },
+  {
+   "pattern": "implicit-any-callback-on-loosely-typed-host-binding",
+   "files": [
+    "src/packages/swarm/src/worktree/index.ts"
+   ]
+  },
+  {
+   "pattern": "built-in-agent-getsystemprompt-missing-tooluse-context-arg",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts"
+   ]
+  },
+  {
+   "pattern": "test-calls-hook-with-extra-context-arg-not-in-its-arity",
+   "files": [
+    "src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts"
+   ]
+  },
+  {
+   "pattern": "nullary-tool-hook-called-with-stray-context-arg-in-test",
+   "files": [
+    "src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts"
+   ]
+  },
+  {
+   "pattern": "single-arg-tool-hook-called-with-extra-context-arg-in-test",
+   "files": [
+    "src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts"
+   ]
+  },
+  {
+   "pattern": "defaultable-tool-method-called-with-no-args",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts"
+   ]
+  },
+  {
+   "pattern": "tool-optional-render-methods-called-uniformly-in-array",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts"
+   ]
+  },
+  {
+   "pattern": "tool-call-missing-canusetool-and-parentmessage",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts"
+   ]
+  }
+ ]
+}

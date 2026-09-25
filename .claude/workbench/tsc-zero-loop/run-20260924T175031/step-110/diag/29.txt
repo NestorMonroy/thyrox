@@ -1,0 +1,23 @@
+src/packages/agent/hooks/registerFrontmatterHooks.ts(56,48): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '"SessionStart" | "UserPromptSubmit" | "UserPromptExpansion" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "SubagentStart" | "SubagentStop" | ... 17 more ... | "CwdChanged"'.
+  --- código src/packages/agent/hooks/registerFrontmatterHooks.ts:46-66 ---
+     46  
+     47      for (const matcherConfig of matchers) {
+     48        const matcher = matcherConfig.matcher ?? ''
+     49        const hooksArray = matcherConfig.hooks
+     50  
+     51        if (!hooksArray || hooksArray.length === 0) {
+     52          continue
+     53        }
+     54  
+     55        for (const hook of hooksArray) {
+     56>         addSessionHook(setAppState, sessionId, targetEvent, matcher, hook)
+     57          hookCount++
+     58        }
+     59      }
+     60    }
+     61  
+     62    if (hookCount > 0) {
+     63      logForDebugging(
+     64        `Registered ${hookCount} frontmatter hook(s) from ${sourceName} for session ${sessionId}`,
+     65      )
+     66    }

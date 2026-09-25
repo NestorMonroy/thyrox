@@ -1,0 +1,20 @@
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(42,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:hotpink"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:hotpink"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(46,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:#ff00ff"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:#ff00ff"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(53,36): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:RED"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi:RED"' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+src/packages/tool-registry/src/utils/__tests__/inkColor.test.ts(57,38): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi: red "' is not assignable to parameter of type 'Color | keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: Color | keyof Theme | undefined): void', gave the following error.
+    Argument of type '"ansi: red "' is not assignable to parameter of type 'Color | keyof Theme | undefined'.

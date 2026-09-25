@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts(38,15): error TS2339: Property 'getCoordinatorAgents' does not exist on type 'typeof import("/home/user/thyrox-medicion/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir")'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts:28-48 ---
+     28    ) {
+     29      return []
+     30    }
+     31  
+     32    // Use lazy require inside the function body to avoid circular dependency
+     33    // issues at module init time. The coordinatorMode module depends on tools
+     34    // which depend on AgentTool which imports this file.
+     35    if (feature('COORDINATOR_MODE')) {
+     36      if (isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)) {
+     37        /* eslint-disable @typescript-eslint/no-require-imports */
+     38>       const { getCoordinatorAgents } =
+     39          require('./loadAgentsDir.js') as typeof import('./loadAgentsDir.js')
+     40        /* eslint-enable @typescript-eslint/no-require-imports */
+     41        return getCoordinatorAgents()
+     42      }
+     43    }
+     44  
+     45    const agents: AgentDefinition[] = [
+     46      GENERAL_PURPOSE_AGENT,
+     47      STATUSLINE_SETUP_AGENT,
+     48    ]

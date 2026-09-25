@@ -1,0 +1,27 @@
+tests/unit/utils/textHighlighting.test.ts(104,48): error TS2769: No overload matches this call.
+  --- código tests/unit/utils/textHighlighting.test.ts:94-114 ---
+     94      expect(segments[0]!.highlight).toBeUndefined()
+     95    })
+     96  
+     97    // Properties
+     98    test('preserves highlight color property', () => {
+     99      const highlights: TextHighlight[] = [
+    100        { start: 0, end: 3, color: 'primary' as any, priority: 0 },
+    101      ]
+    102      const segments = segmentTextByHighlights('abc', highlights)
+    103      const highlighted = segments.find(s => s.highlight)
+    104>     expect(highlighted?.highlight?.color).toBe('primary')
+    105    })
+    106  
+    107    test('preserves highlight priority property', () => {
+    108      const highlights: TextHighlight[] = [
+    109        { start: 0, end: 3, color: undefined, priority: 5 },
+    110      ]
+    111      const segments = segmentTextByHighlights('abc', highlights)
+    112      const highlighted = segments.find(s => s.highlight)
+    113      expect(highlighted?.highlight?.priority).toBe(5)
+    114    })
+  Overload 1 of 2, '(expected: keyof Theme | undefined): void', gave the following error.
+    Argument of type '"primary"' is not assignable to parameter of type 'keyof Theme | undefined'.
+  Overload 2 of 2, '(expected: keyof Theme | undefined): void', gave the following error.
+    Argument of type '"primary"' is not assignable to parameter of type 'keyof Theme | undefined'.
