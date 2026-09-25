@@ -80,8 +80,7 @@ import { FileTooLargeError, readFileInRange } from '@thyrox/repl/readFileInRange
 import { getFileModificationTimeAsync } from '@thyrox/storage/file.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { isPDFExtension } from '@thyrox/storage/pdfUtils.js'
-import { getConditionalRulesForCwdLevelDirectory, type MemoryFileInfo } from '@thyrox/storage/claudemd.js'
-import { getManagedAndUserConditionalRules } from '@thyrox/storage/claudemd.js'
+import { getConditionalRulesForCwdLevelDirectory, type MemoryFileInfo, getManagedAndUserConditionalRules } from '@thyrox/storage/claudemd.js'
 import { PDF_AT_MENTION_INLINE_THRESHOLD } from '@thyrox/provider/apiLimits.js'
 import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import { matchingRuleForInput, pathInAllowedWorkingPath } from '@thyrox/permission/filesystem'
@@ -157,6 +156,8 @@ import { drainPendingMessages } from './localAgentTask.js'
 import { getSettings } from '@thyrox/config/settings'
 import { hasUltraworkKeyword } from '@thyrox/repl/ultraplan/keyword.js'
 import { getTeamContextAttachment, getTeammateMailboxAttachments } from './attachments/mailbox.js'
+import { hasInstructionsLoadedHook, executeInstructionsLoadedHooks, type InstructionsMemoryType } from './hooks.js'
+
 
 
 
@@ -3434,3 +3435,93 @@ function getTodoReminderTurnCounts(messages: Message[]): {
 // `executeInstructionsLoadedHooks` (`ccnmt: packages/agent/hooks.ts:4704-4780`),
 // que ese archivo aún no publica en este árbol (cero coincidencias en `src/`).
 // Se traen cuando `hooks.ts` porte esos tres símbolos.
+
+// --- porte por miembros: un ancla por ítem ---
+/**
+ * Converts memory files to attachments, filtering out already-loaded files.
+ *
+ * @param memoryFiles The memory files to convert
+ * @param toolUseContext The tool use context (for tracking loaded files)
+ * @returns Array of nested memory attachments
+ */
+function isInstructionsMemoryType(
+  type: MemoryFileInfo['type'],
+): type is InstructionsMemoryType {
+  return (
+    type === 'User' ||
+    type === 'Project' ||
+    type === 'Local' ||
+    type === 'Managed'
+  )
+}
+
+/** Exported for testing — regression guard for LRU-eviction re-injection. */
+export function memoryFilesToAttachments(
+  memoryFiles: MemoryFileInfo[],
+  toolUseContext: ToolUseContext,
+  triggerFilePath?: string,
+): Attachment[] {
+  const attachments: Attachment[] = []
+  const shouldFireHook = hasInstructionsLoadedHook()
+
+  for (const memoryFile of memoryFiles) {
+    // Dedup: loadedNestedMemoryPaths is a non-evicting Set; readFileState
+    // is a 100-entry LRU that drops entries in busy sessions, so relying
+    // on it alone re-injects the same CLAUDE.md on every eviction cycle.
+    if (toolUseContext.loadedNestedMemoryPaths?.has(memoryFile.path)) {
+      continue
+    }
+    if (!toolUseContext.readFileState.has(memoryFile.path)) {
+      attachments.push({
+        type: 'nested_memory',
+        path: memoryFile.path,
+        content: memoryFile,
+        displayPath: relative(getCwd(), memoryFile.path),
+      })
+      toolUseContext.loadedNestedMemoryPaths?.add(memoryFile.path)
+
+      // Mark as loaded in readFileState — this provides cross-function and
+      // cross-turn dedup via the .has() check above.
+      //
+      // When the injected content doesn't match disk (stripped HTML comments,
+      // stripped frontmatter, truncated MEMORY.md), cache the RAW disk bytes
+      // with `isPartialView: true`. Edit/Write see the flag and require a real
+      // Read first; getChangedFiles sees real content + undefined offset/limit
+      // so mid-session change detection still works.
+      toolUseContext.readFileState.set(memoryFile.path, {
+        content: memoryFile.contentDiffersFromDisk
+          ? (memoryFile.rawContent ?? memoryFile.content)
+          : memoryFile.content,
+        timestamp: Date.now(),
+        offset: undefined,
+        limit: undefined,
+        isPartialView: memoryFile.contentDiffersFromDisk,
+      })
+
+
+      // Fire InstructionsLoaded hook for audit/observability (fire-and-forget)
+      if (shouldFireHook && isInstructionsMemoryType(memoryFile.type)) {
+        const loadReason = memoryFile.globs
+          ? 'path_glob_match'
+          : memoryFile.parent
+            ? 'include'
+            : 'nested_traversal'
+        void executeInstructionsLoadedHooks(
+          memoryFile.path,
+          memoryFile.type,
+          loadReason,
+          {
+            globs: memoryFile.globs,
+            triggerFilePath,
+            parentFilePath: memoryFile.parent,
+          },
+        )
+      }
+    }
+  }
+
+  return attachments
+}
+const sessionTranscriptModule = feature('KAIROS')
+  ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
+  : null

@@ -53,6 +53,17 @@ import { safePicomatch, safeIgnoreMatch } from './safePatternMatch.js'
 import { pathInWorkingPath } from '@thyrox/permission/filesystem'
 import { normalizePathForComparison } from './file.js'
 import { getOriginalCwd } from './sessionPaths.js'
+import type { InstructionsLoadReason, InstructionsMemoryType } from '@thyrox/agent/hooks.js'
+import {
+  parseFrontmatter,
+  splitPathInFrontmatter,
+} from '@thyrox/config/frontmatterParser.js'
+import { Lexer } from 'marked'
+import { expandPath } from './path.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+
+
+
 
 
 
@@ -1158,3 +1169,506 @@ function resolveExcludePatterns(patterns: string[]): string[] {
   return expanded
 }
 
+// --- porte por miembros: un ancla por ítem ---
+function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+  if (!shouldFireHook) return undefined
+  shouldFireHook = false
+  const reason = nextEagerLoadReason
+  nextEagerLoadReason = 'session_start'
+  return reason
+}
+// Extrae referencias de inclusión @path de tokens ya lexeados y las
+// resuelve a rutas absolutas. Salta los tokens html para que los @paths
+// dentro de comentarios de bloque se ignoren — quien llama puede pasar
+// tokens previos al strip.
+// El parámetro se tipa como `MarkdownToken[]` (no `ReturnType<Lexer['lex']>`
+// de la fuente): `marked` no es dependencia de `@thyrox/storage`, y el
+// cuerpo ya trataba `tokens` como `MarkdownToken[]` al final.
+function extractIncludePathsFromTokens(
+  tokens: MarkdownToken[],
+  basePath: string,
+): string[] {
+  const absolutePaths = new Set<string>()
+
+  // Extrae @paths de un texto y agrega las rutas resueltas a absolutePaths.
+  function extractPathsFromText(textContent: string) {
+    const includeRegex = /(?:^|\s)@((?:[^\s\\]|\\ )+)/g
+    let match
+    while ((match = includeRegex.exec(textContent)) !== null) {
+      let path = match[1]
+      if (!path) continue
+
+      // Quita identificadores de fragmento (#heading, #section-name, etc.)
+      const hashIndex = path.indexOf('#')
+      if (hashIndex !== -1) {
+        path = path.substring(0, hashIndex)
+      }
+      if (!path) continue
+
+      // Desescapa los espacios en la ruta
+      path = path.replace(/\\ /g, ' ')
+
+      // Acepta @path, @./path, @~/path, o @/path
+      if (path) {
+        const isValidPath =
+          path.startsWith('./') ||
+          path.startsWith('~/') ||
+          (path.startsWith('/') && path !== '/') ||
+          (!path.startsWith('@') &&
+            !path.match(/^[#%^&*()]+/) &&
+            path.match(/^[a-zA-Z0-9._-]/))
+
+        if (isValidPath) {
+          const resolvedPath = expandPath(path, dirname(basePath))
+          absolutePaths.add(resolvedPath)
+        }
+      }
+    }
+  }
+
+  // Procesa elementos recursivamente para encontrar nodos de texto
+  function processElements(elements: MarkdownToken[]) {
+    for (const element of elements) {
+      if (element.type === 'code' || element.type === 'codespan') {
+        continue
+      }
+
+      // Para tokens html que contienen comentarios, quita los tramos de
+      // comentario y revisa el residuo por @paths (p. ej.
+      // `<!-- note --> @./file.md`). Otros tokens html (etiquetas que no son
+      // comentario) se saltan por completo.
+      if (element.type === 'html') {
+        const raw = element.raw || ''
+        const trimmed = raw.trimStart()
+        if (trimmed.startsWith('<!--') && trimmed.includes('-->')) {
+          const commentSpan = /<!--[\s\S]*?-->/g
+          const residue = raw.replace(commentSpan, '')
+          if (residue.trim().length > 0) {
+            extractPathsFromText(residue)
+          }
+        }
+        continue
+      }
+
+      // Procesa nodos de texto
+      if (element.type === 'text') {
+        extractPathsFromText(element.text || '')
+      }
+
+      // Recurre en los tokens hijos
+      if (element.tokens) {
+        processElements(element.tokens)
+      }
+
+      // Manejo especial para estructuras de lista
+      if (element.items) {
+        processElements(element.items)
+      }
+    }
+  }
+
+  processElements(tokens)
+  return [...absolutePaths]
+}
+/**
+ * Obtiene los archivos de memoria de un único directorio anidado (entre el
+ * CWD y el destino). Carga CLAUDE.md, reglas incondicionales y reglas
+ * condicionales de ese directorio.
+ *
+ * @param dir El directorio a procesar
+ * @param targetPath La ruta del archivo objetivo (para el matching de reglas condicionales)
+ * @param processedPaths Conjunto de rutas ya procesadas (se muta)
+ * @returns Array de objetos MemoryFileInfo
+ */
+export async function getMemoryFilesForNestedDirectory(
+  dir: string,
+  targetPath: string,
+  processedPaths: Set<string>,
+): Promise<MemoryFileInfo[]> {
+  const config = loaderConfig()
+  const result: MemoryFileInfo[] = []
+
+  // Procesa los archivos de memoria del proyecto (CLAUDE.md y .claude/CLAUDE.md)
+  if (config.projectEnabled) {
+    const projectPath = join(dir, 'CLAUDE.md')
+    result.push(
+      ...(await processMemoryFile(
+        projectPath,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
+    const dotClaudePath = join(dir, '.claude', 'CLAUDE.md')
+    result.push(
+      ...(await processMemoryFile(
+        dotClaudePath,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
+  }
+
+  // Procesa el archivo de memoria local (CLAUDE.local.md)
+  if (config.localEnabled) {
+    const localPath = join(dir, 'CLAUDE.local.md')
+    result.push(
+      ...(await processMemoryFile(localPath, 'Local', processedPaths, false)),
+    )
+  }
+
+  const rulesDir = join(dir, '.claude', 'rules')
+
+  // Procesa las reglas incondicionales del proyecto en .claude/rules/*.md, que no se cargaron de forma anticipada.
+  // Usa un set de processedPaths separado para no marcar los archivos de reglas condicionales como procesados
+  const unconditionalProcessedPaths = new Set(processedPaths)
+  result.push(
+    ...(await processMdRules({
+      rulesDir,
+      type: 'Project',
+      processedPaths: unconditionalProcessedPaths,
+      includeExternal: false,
+      conditionalRule: false,
+    })),
+  )
+
+  // Procesa las reglas condicionales del proyecto en .claude/rules/*.md
+  result.push(
+    ...(await processConditionedMdRules(
+      targetPath,
+      rulesDir,
+      'Project',
+      processedPaths,
+      false,
+    )),
+  )
+
+  // processedPaths se siembra con las rutas incondicionales para los directorios subsiguientes
+  for (const path of unconditionalProcessedPaths) {
+    processedPaths.add(path)
+  }
+
+  return result
+}
+function isInstructionsMemoryType(
+  type: MemoryType,
+): type is InstructionsMemoryType {
+  return (
+    type === 'User' ||
+    type === 'Project' ||
+    type === 'Local' ||
+    type === 'Managed'
+  )
+}
+/**
+ * Parsea el contenido crudo para extraer tanto el contenido como los
+ * patrones de glob del frontmatter.
+ * @param rawContent Contenido crudo del archivo con frontmatter
+ * @returns Objeto con content y globs (undefined si no hay paths o el patrón es match-all)
+ */
+function parseFrontmatterPaths(rawContent: string): {
+  content: string
+  paths?: string[]
+} {
+  const { frontmatter, content } = parseFrontmatter(rawContent)
+
+  if (!frontmatter.paths) {
+    return { content }
+  }
+
+  const patterns = splitPathInFrontmatter(frontmatter.paths)
+    .map(pattern => {
+      // Quita el sufijo /** - la librería de ignore trata 'path' como coincidente
+      // tanto con el propio path como con todo lo que contiene
+      return pattern.endsWith('/**') ? pattern.slice(0, -3) : pattern
+    })
+    .filter((p: string) => p.length > 0)
+
+  // Si todos los patrones son ** (match-all), se trata como sin globs (undefined)
+  // Esto significa que el archivo aplica a todos los paths
+  if (patterns.length === 0 || patterns.every((p: string) => p === '**')) {
+    return { content }
+  }
+
+  return { content, paths: patterns }
+}
+/**
+ * Analiza el contenido crudo de un archivo de memoria en un `MemoryFileInfo`.
+ * Función pura — sin I/O.
+ *
+ * Cuando se da `includeBasePath`, las rutas `@include` se resuelven en el
+ * mismo paso de lexer y se devuelven junto al archivo parseado, para que
+ * `processMemoryFile` no tenga que analizar el mismo contenido dos veces.
+ *
+ * pendiente: el truncado de `MEMORY.md` para `AutoMem`/`TeamMem`
+ * (`truncateEntrypointContent`, `@claude-code-how-works/memory/memdir`) no se
+ * aplica — ese símbolo vive en `@thyrox/memory/memdir.ts` pero el paquete no
+ * expone `./memdir` en su `exports` map ni es dependencia declarada de
+ * `@thyrox/storage` (`node_modules/@thyrox/memory` no está enlazado desde
+ * este paquete); la misma ausencia que ya declara la cabecera de este
+ * archivo para `stripHtmlComments` y `filterInjectedMemoryFiles`.
+ */
+function parseMemoryFileContent(
+  rawContent: string,
+  filePath: string,
+  type: MemoryType,
+  includeBasePath?: string,
+): { info: MemoryFileInfo | null; includePaths: string[] } {
+  // Salta archivos no-texto para no cargar datos binarios (imágenes, PDFs…) en memoria.
+  const ext = extname(filePath).toLowerCase()
+  if (ext && !TEXT_FILE_EXTENSIONS.has(ext)) {
+    logForDebugging(`Skipping non-text file in @include: ${filePath}`)
+    return { info: null, includePaths: [] }
+  }
+
+  const { content: withoutFrontmatter, paths } =
+    parseFrontmatterPaths(rawContent)
+
+  // Un solo lex para que strip y la extracción de @include compartan tokens.
+  // gfm:false lo exige la extracción (para que ~/ruta no tokenice como
+  // tachado) y no afecta al strip (los bloques HTML son regla CommonMark).
+  const hasComment = withoutFrontmatter.includes('<!--')
+  const tokens =
+    hasComment || includeBasePath !== undefined
+      ? new Lexer({ gfm: false }).lex(withoutFrontmatter)
+      : undefined
+
+  // Sólo se reconstruye vía tokens cuando de verdad hay un comentario que
+  // quitar — marked normaliza \r\n al lexear, así que ir y volver por
+  // token.raw invertiría un archivo CRLF sin comentarios en
+  // contentDiffersFromDisk de forma espuria.
+  const strippedContent =
+    hasComment && tokens
+      ? stripHtmlCommentsFromTokens(tokens).content
+      : withoutFrontmatter
+
+  const includePaths =
+    tokens && includeBasePath !== undefined
+      ? extractIncludePathsFromTokens(tokens, includeBasePath)
+      : []
+
+  const finalContent = strippedContent
+
+  // Cubre el strip de frontmatter y el strip de comentarios HTML.
+  const contentDiffersFromDisk = finalContent !== rawContent
+  return {
+    info: {
+      path: filePath,
+      type,
+      content: finalContent,
+      globs: paths,
+      contentDiffersFromDisk,
+      rawContent: contentDiffersFromDisk ? rawContent : undefined,
+    },
+    includePaths,
+  }
+}
+/**
+ * Quita los comentarios HTML de los tokens de `marked`, conservando el resto
+ * de la línea que CommonMark incluye en el bloque. Porte de
+ * `ccnmt: packages/storage/src/claudemd.ts:312-343`; lo llama
+ * `parseMemoryFileContent`. Se trae ahora que `marked` es dependencia
+ * declarada de `@thyrox/storage`.
+ */
+function stripHtmlCommentsFromTokens(tokens: ReturnType<Lexer['lex']>): {
+  content: string
+  stripped: boolean
+} {
+  let result = ''
+  let stripped = false
+
+  // Un comentario HTML bien formado. No codicioso para que varios comentarios
+  // en la misma línea se emparejen por separado; [\s\S] para cruzar saltos.
+  const commentSpan = /<!--[\s\S]*?-->/g
+
+  for (const token of tokens) {
+    if (token.type === 'html') {
+      const trimmed = token.raw.trimStart()
+      if (trimmed.startsWith('<!--') && trimmed.includes('-->')) {
+        // En CommonMark un bloque HTML de tipo 2 termina en la LÍNEA que
+        // contiene `-->`: lo que siga en esa línea pertenece al token. Se
+        // quitan sólo los comentarios y se conserva el residuo.
+        const residue = token.raw.replace(commentSpan, '')
+        stripped = true
+        if (residue.trim().length > 0) {
+          result += residue
+        }
+        continue
+      }
+    }
+    result += token.raw
+  }
+
+  return { content: result, stripped }
+}
+// `teamMemPaths` depende de `feature('TEAMMEM')` (macro `bun:bundle`) y de
+// `require('@claude-code-how-works/memory/teamMemPaths')`, un módulo externo
+// ausente en este monorepo. La macro nunca evalúa a `true` fuera del build de
+// ant (mismo precedente que `sessionStoragePredicates.ts`/
+// `filePersistence.ts`: GATEO OMITIDO, constante), así que se porta
+// directamente la rama `null` que esa condición siempre toma aquí.
+const teamMemPaths = null
+
+let hasLoggedInitialLoad = false
+
+const MEMORY_INSTRUCTION_PROMPT =
+  'Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written.'
+
+// File extensions that are allowed for @include directives
+// This prevents binary files (images, PDFs, etc.) from being loaded into memory
+const TEXT_FILE_EXTENSIONS = new Set([
+  // Markdown and text
+  '.md',
+  '.txt',
+  '.text',
+  // Data formats
+  '.json',
+  '.yaml',
+  '.yml',
+  '.toml',
+  '.xml',
+  '.csv',
+  // Web
+  '.html',
+  '.htm',
+  '.css',
+  '.scss',
+  '.sass',
+  '.less',
+  // JavaScript/TypeScript
+  '.js',
+  '.ts',
+  '.tsx',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.mts',
+  '.cts',
+  // Python
+  '.py',
+  '.pyi',
+  '.pyw',
+  // Ruby
+  '.rb',
+  '.erb',
+  '.rake',
+  // Go
+  '.go',
+  // Rust
+  '.rs',
+  // Java/Kotlin/Scala
+  '.java',
+  '.kt',
+  '.kts',
+  '.scala',
+  // C/C++
+  '.c',
+  '.cpp',
+  '.cc',
+  '.cxx',
+  '.h',
+  '.hpp',
+  '.hxx',
+  // C#
+  '.cs',
+  // Swift
+  '.swift',
+  // Shell
+  '.sh',
+  '.bash',
+  '.zsh',
+  '.fish',
+  '.ps1',
+  '.bat',
+  '.cmd',
+  // Config
+  '.env',
+  '.ini',
+  '.cfg',
+  '.conf',
+  '.config',
+  '.properties',
+  // Database
+  '.sql',
+  '.graphql',
+  '.gql',
+  // Protocol
+  '.proto',
+  // Frontend frameworks
+  '.vue',
+  '.svelte',
+  '.astro',
+  // Templating
+  '.ejs',
+  '.hbs',
+  '.pug',
+  '.jade',
+  // Other languages
+  '.php',
+  '.pl',
+  '.pm',
+  '.lua',
+  '.r',
+  '.R',
+  '.dart',
+  '.ex',
+  '.exs',
+  '.erl',
+  '.hrl',
+  '.clj',
+  '.cljs',
+  '.cljc',
+  '.edn',
+  '.hs',
+  '.lhs',
+  '.elm',
+  '.ml',
+  '.mli',
+  '.f',
+  '.f90',
+  '.f95',
+  '.for',
+  // Build files
+  '.cmake',
+  '.make',
+  '.makefile',
+  '.gradle',
+  '.sbt',
+  // Documentation
+  '.rst',
+  '.adoc',
+  '.asciidoc',
+  '.org',
+  '.tex',
+  '.latex',
+  // Lock files (often text-based)
+  '.lock',
+  // Misc
+  '.log',
+  '.diff',
+  '.patch',
+])
+
+type MarkdownToken = {
+  type: string
+  text?: string
+  href?: string
+  tokens?: MarkdownToken[]
+  raw?: string
+  items?: MarkdownToken[]
+}
+
+// Load reason to report for top-level (non-included) files on the next eager
+// getMemoryFiles() pass. Set to 'compact' by resetGetMemoryFilesCache when
+// compaction clears the cache, so the InstructionsLoaded hook reports the
+// reload correctly instead of misreporting it as 'session_start'. One-shot:
+// reset to 'session_start' after being read.
+let nextEagerLoadReason: InstructionsLoadReason = 'session_start'
+
+// Whether the InstructionsLoaded hook should fire on the next cache miss.
+// true initially (for session_start), consumed after firing, re-enabled only
+// by resetGetMemoryFilesCache(). Callers that only need cache invalidation
+// for correctness (e.g. worktree enter/exit, settings sync, /memory dialog)
+// should use clearMemoryFileCaches() instead to avoid spurious hook fires.
+let shouldFireHook = true
