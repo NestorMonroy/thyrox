@@ -129,7 +129,7 @@ export function isTeamMemPath(filePath: string): boolean {
 
 export async function validateTeamMemWritePath(
   filePath: string,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<string> {
   if (filePath.includes('\0')) {
     throw new PathTraversalError(`Null byte in path: "${filePath}"`)
@@ -150,7 +150,7 @@ export async function validateTeamMemWritePath(
   return resolvedPath
 }
 
-export async function validateTeamMemKey(key: string, signal?: AbortSignal): Promise<string> {
+export async function validateTeamMemKey(key: string, _signal?: AbortSignal): Promise<string> {
   const safeKey = sanitizePathKey(key)
   const filePath = join(getTeamMemPath(), safeKey)
   return validateTeamMemWritePath(filePath)

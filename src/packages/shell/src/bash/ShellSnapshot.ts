@@ -410,7 +410,7 @@ async function getSnapshotScript(
 export const createAndSaveSnapshot = async (
   binShell: string,
   ctx: SnapshotContext,
-  signal?: AbortSignal,
+  _signal?: AbortSignal,
 ): Promise<string | undefined> => {
   const shellType = binShell.includes('zsh')
     ? 'zsh'
