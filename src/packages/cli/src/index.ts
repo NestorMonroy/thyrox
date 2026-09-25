@@ -31,3 +31,5 @@ export { installCliHostBindings } from './host.js'
 // Tipos que sus consumidores piden aquí y que son de otro paquete; entran
 // por una clave declarada de su exports (medido con src/verify/namedImports.ts).
 export type { HeadlessStoreParams } from '@thyrox/agent/sessionStores'
+
+export { runClaudeCode } from './entry/run-cli.js'

@@ -1,0 +1,2 @@
+src/packages/cli/src/index.ts(35,10): error TS2305: Module '"./entry/run-cli.js"' has no exported member 'runClaudeCode'.
+src/packages/cli/src/entry/run-cli.ts(1,1): error TS2305: Module '"./detect-mode.ts"' has no exported member 'detectRuntimeMode'.

@@ -1,0 +1,17 @@
+Finish the countTokensWithAPI and runClaudeCode copies
+
+Both were one link short in step 080, and are now kept:
+
+- tokenEstimation.ts gets countTokensWithAPI verbatim from ccnmt, plus
+  the ./model/bedrock.js key in provider's closed exports map, which
+  the copy imports. One line is adapted: the source casts message
+  content to the API's block unions, which are interfaces without an
+  index signature and so do not fit this file's Block; it now casts to
+  the Content the function declares.
+- The runClaudeCode chain: cli/src/index.ts re-exports it, run-cli.ts
+  declares it and detect-mode.ts gets the detectRuntimeMode it calls,
+  all three verbatim.
+
+The four tests that import these modules pass.
+
+tsc: 2367 -> 2364.

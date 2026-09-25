@@ -245,6 +245,10 @@
       "types": "./dist/model/antModels.d.ts",
       "default": "./src/model/antModels.ts"
     },
+    "./model/bedrock.js": {
+      "types": "./dist/model/bedrock.d.ts",
+      "default": "./src/model/bedrock.ts"
+    },
     "./model/check1mAccess.js": {
       "types": "./dist/model/check1mAccess.d.ts",
       "default": "./src/model/check1mAccess.ts"
