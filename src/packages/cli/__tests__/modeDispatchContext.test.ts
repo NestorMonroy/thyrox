@@ -1,32 +1,35 @@
 /**
- * El contexto de una invocación se construye en UN sitio (`modeDispatchContext`) y lo
- * usan las dos entradas: `runCli` y el puente `runModeDispatch` que llama el
- * `.action()` de commander. Antes el puente armaba el suyo y perdía `--cwd`:
- * la misma línea de comandos resolvía otro directorio según por dónde
- * entrara.
+ * El contexto del puente `runModeDispatch`, el `.action()` de commander.
+ *
+ * Ese camino ya tiene su implementación de directorio: `setup()` lo fija con
+ * `setCwd` y se lee con `getCwd()` (`app-host/bootstrap/cwd.ts`), que además
+ * respeta `runWithCwdOverride` para que agentes concurrentes vean cada uno el
+ * suyo. `--cwd` es una bandera de `runCli`, no de commander. Las dos versiones
+ * anteriores del puente se saltaban esa implementación: la del pool leía
+ * `process.cwd()` y la de la primera revisión re-parseaba `--cwd`.
  */
 import { describe, expect, test } from 'bun:test'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
 import { modeDispatchContext } from '../src/entry/mode-dispatch.ts'
 
 describe('modeDispatchContext', () => {
-  test('respeta --cwd, como runCli', () => {
-    const ctx = modeDispatchContext(['--cwd', '/tmp/otro', 'sessions'], '/de/proceso')
-    expect(ctx.cwd).toBe('/tmp/otro')
+  test('el directorio sale de getCwd(), con su override por contexto async', () => {
+    const ctx = runWithCwdOverride('/tmp/agente-a', () => modeDispatchContext(['sessions']))
+    expect(ctx.cwd).toBe('/tmp/agente-a')
   })
 
-  test('sin --cwd usa el del proceso', () => {
-    expect(modeDispatchContext(['sessions'], '/de/proceso').cwd).toBe('/de/proceso')
+  test('--cwd no es de este camino: no se re-parsea', () => {
+    const ctx = runWithCwdOverride('/tmp/agente-a', () => modeDispatchContext(['--cwd', '/tmp/otro']))
+    expect(ctx.cwd).toBe('/tmp/agente-a')
   })
 
-  test('el transcript sale del cwd resuelto, no del proceso', () => {
-    const ctx = modeDispatchContext(['--cwd', '/tmp/otro'], '/de/proceso')
-    expect(ctx.transcriptDir.startsWith(join(homedir(), '.harness'))).toBe(true)
-    expect(ctx.transcriptDir).toBe(modeDispatchContext(['--cwd', '/tmp/otro'], '/tmp/otro').transcriptDir)
+  test('el transcript sale de ese directorio', () => {
+    const a = runWithCwdOverride('/tmp/agente-a', () => modeDispatchContext([]))
+    const b = runWithCwdOverride('/tmp/agente-b', () => modeDispatchContext([]))
+    expect(a.transcriptDir).not.toBe(b.transcriptDir)
   })
 
   test('--transcript-dir manda sobre el derivado', () => {
-    expect(modeDispatchContext(['--transcript-dir', '/t'], '/x').transcriptDir).toBe('/t')
+    expect(modeDispatchContext(['--transcript-dir', '/t']).transcriptDir).toBe('/t')
   })
 })

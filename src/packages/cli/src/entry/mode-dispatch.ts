@@ -24,6 +24,7 @@ import { selectTestsCommand } from '../commands/selectTests.ts'
 import { sessionsCommand } from '../commands/sessions.ts'
 import { workbenchCommand } from '../commands/workbench.ts'
 import { projectSlug } from '@thyrox/agent/loop/session'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { RuntimeHandles } from '@thyrox/app-host'
 import { runLoop } from './runLoop.ts'
 import { detectMode, type Mode, type ModeKind } from './detect-mode.ts'
@@ -66,11 +67,13 @@ export function dispatch(ctx: CliContext): number | Promise<number> {
 }
 
 /**
- * El contexto del puente `runModeDispatch`: `--cwd` manda sobre el del
- * proceso y el transcript sale de ese cwd, igual que en `runCli`.
+ * El contexto del puente `runModeDispatch`. El directorio es el que el camino
+ * de commander ya fijó —`setup()` llama a `setCwd`— y se lee con `getCwd()`,
+ * que además respeta `runWithCwdOverride` para agentes concurrentes. `--cwd`
+ * es una bandera de `runCli`, no de este camino, y no se re-parsea.
  */
-export function modeDispatchContext(argv: string[], processCwd: string): CliContext {
-  const cwd = flag(argv, 'cwd') ?? processCwd
+export function modeDispatchContext(argv: string[]): CliContext {
+  const cwd = getCwd()
   const transcriptDir = flag(argv, 'transcript-dir') ?? join(homedir(), '.harness', projectSlug(cwd))
   return { argv, cwd, transcriptDir, mode: detectMode(argv) }
 }
@@ -98,5 +101,5 @@ export async function runModeDispatch(
     readonly pendingAssistantChat: PendingHandles['pendingAssistantChat']
   },
 ): Promise<number> {
-  return dispatch(modeDispatchContext(process.argv.slice(2), process.cwd()))
+  return dispatch(modeDispatchContext(process.argv.slice(2)))
 }
