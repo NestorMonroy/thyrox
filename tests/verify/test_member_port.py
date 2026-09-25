@@ -73,6 +73,17 @@ assert_equal("los imports de valor del mismo módulo se fusionan en uno",
 assert_equal("el import type no se mezcla con el de valor", True, "import type { T } from './a.js'" in merged)
 assert_equal("un import que choca con una declaración local se retira", False,
              "existing } from" in merged or "existing, " in merged.split("export const existing")[0])
+# El mismo nombre desde dos módulos (h-thyrox-185, paso 135: `logError` de
+# `./internal/logging.js` y de `@thyrox/local-observability/log.js`) es TS2300;
+# gana el primero, que es el import que el archivo ya tenía.
+twice = mp.merge_imports("import { logError, a } from './internal/logging.js'\n"
+                         "import { logError } from '@thyrox/local-observability/log.js'\n"
+                         "import type { Message } from './messageShapes.js'\n"
+                         "import type { Message } from './messageShapes.ts'\nconst z = 1")
+assert_equal("un nombre importado desde dos módulos queda sólo en el primero",
+             ["import { logError, a } from './internal/logging.js'",
+              "import type { Message } from './messageShapes.js'"],
+             [l for l in twice.splitlines() if l.startswith("import")])
 clean = mp.strip_anchors(mp.insert_anchors(BASE, ["h"]))
 assert_equal("las anclas sin usar se retiran", (False, False),
              ("@port-slot" in clean, "@port-imports" in clean))
@@ -92,6 +103,32 @@ assert_equal("assemble deja el archivo sin anclas, con lo aplicado y los imports
              ("@port-" in final, "export const g = 2" in final, "import { a, x } from './a.js'" in final,
               final_report["applied"]))
 assert_equal("y nombra los ítems sin propuesta", ["h"], final_report["missing"])
+
+# Qué número original lleva cada salida de cada ola (paso 135, ola 3: pasada
+# sola con su mapa, se leyó como si numerara todos los ítems desde 1).
+assert_equal("la primera ola sin mapa numera todos los ítems; las siguientes, su mapa",
+             [[1, 2, 3], [2, 3]], mp.wave_numbers(2, [[2, 3]], 3))
+try:
+    aligned = mp.wave_numbers(2, [[2], [1, 3]], 3)
+except ValueError as error:
+    aligned = str(error)
+assert_equal("con un mapa por ola, cada ola usa el suyo, también la primera", [[2], [1, 3]], aligned)
+try:
+    mp.wave_numbers(3, [[1]], 3)
+    mismatched = False
+except ValueError:
+    mismatched = True
+assert_equal("un número de mapas que no cuadra con las olas se rehúsa", True, mismatched)
+
+# Un ancla que es prefijo de otra (paso 135: `getNestedMemoryAttachments` y
+# `getNestedMemoryAttachmentsForFile`) se reconoce por línea entera, no por
+# subcadena.
+prefixed = mp.insert_anchors("import { a } from './a.js'\n", ["getNested", "getNestedForFile"])
+text, report = mp.apply_outputs(prefixed, "t.ts", {"getNested": {"edits": [
+    {"file": "t.ts", "old_string": "// @port-slot: getNested", "new_string": "export const getNested = 1"}]}})
+assert_equal("un ancla prefijo de otra se aplica sólo sobre su línea",
+             (["getNested"], True, True),
+             (report["applied"], "export const getNested = 1" in text, "// @port-slot: getNestedForFile" in text))
 
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

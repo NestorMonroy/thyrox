@@ -76,6 +76,12 @@ def read_outputs(directory: Path, names: list[str]) -> dict[str, dict]:
     return proposals
 
 
+def _anchor_line(anchor: str) -> re.Pattern[str]:
+    """Un ancla es una línea entera: `getNested` no debe casar dentro de
+    `getNestedForFile`."""
+    return re.compile(rf"^{re.escape(anchor)}$", re.M)
+
+
 def apply_outputs(text: str, target: str, proposals: dict[str, dict]) -> tuple[str, dict]:
     """Aplica de cada propuesta sólo las ediciones que reemplazan un ancla del
     propio ítem en el archivo destino."""
@@ -88,12 +94,13 @@ def apply_outputs(text: str, target: str, proposals: dict[str, dict]) -> tuple[s
                 reason = f"{edit.get('file')}: fuera del destino"
             elif edit.get("old_string") not in own:
                 reason = f"{target}: no reemplaza un ancla del ítem"
-            elif text.count(edit["old_string"]) != 1:
+            elif len(_anchor_line(edit["old_string"]).findall(text)) != 1:
                 reason = f"{target}: el ancla no está una sola vez"
             if reason:
                 report["rejected"].setdefault(name, []).append(reason)
                 continue
-            text = text.replace(edit["old_string"], edit.get("new_string", ""), 1)
+            replacement = edit.get("new_string", "")
+            text = _anchor_line(edit["old_string"]).sub(lambda _: replacement, text, count=1)
         if name not in report["rejected"]:
             report["applied"].append(name)
     return text, report
@@ -112,6 +119,8 @@ def merge_imports(text: str) -> str:
         return text
     local = set(_LOCAL_DECLARATION.findall(text))
     merged: dict[tuple[str, str], list[str]] = {}
+    # Un mismo nombre importado desde dos módulos es TS2300: gana el primero.
+    bound: set[str] = set()
     keep: list[str] = []
     for start, end in spans:
         statement = "\n".join(lines[start:end + 1])
@@ -123,8 +132,10 @@ def merge_imports(text: str) -> str:
         key = ((match.group(1) or "").strip(), match.group(3))
         names = merged.setdefault(key, [])
         for specifier in (s.strip() for s in match.group(2).split(",")):
-            if specifier and specifier not in names and _local_name(specifier) not in local:
+            name = _local_name(specifier) if specifier else ""
+            if specifier and specifier not in names and name not in local and name not in bound:
                 names.append(specifier)
+                bound.add(name)
     rebuilt = keep + [f"import {kind + ' ' if kind else ''}{{ {', '.join(names)} }} from {module}"
                       for (kind, module), names in merged.items() if names]
     first = spans[0][0]
@@ -156,6 +167,16 @@ def item_name(item_file: Path) -> str:
     raise ValueError(f"{item_file}: sin línea 'Ítem:'")
 
 
+def wave_numbers(waves: int, maps: list[list[int]], items: int) -> list[list[int]]:
+    """El número original de cada salida, por ola. Con un mapa por ola, cada
+    una usa el suyo; con uno menos, la primera numera todos los ítems."""
+    if len(maps) == waves:
+        return maps
+    if len(maps) == waves - 1:
+        return [list(range(1, items + 1)), *maps]
+    raise ValueError(f"{len(maps)} mapa(s) para {waves} ola(s): se esperan {waves} o {waves - 1}")
+
+
 def main(argv: list[str] | None = None) -> int:
     """`member_port.py assemble --target F --items items.txt --outputs D [--outputs D2 --map M]`.
 
@@ -176,8 +197,8 @@ def main(argv: list[str] | None = None) -> int:
     lines = args.items.read_text().splitlines()
     names = [item_name(Path(line.split()[1])) for line in lines]
     proposals: dict[str, dict] = {}
-    for wave, directory in enumerate(args.outputs):
-        numbers = json.loads(args.map[wave - 1].read_text()) if wave else list(range(1, len(names) + 1))
+    numbering = wave_numbers(len(args.outputs), [json.loads(m.read_text()) for m in args.map], len(names))
+    for directory, numbers in zip(args.outputs, numbering):
         wave_names = [names[n - 1] for n in numbers]
         for name, proposal in read_outputs(directory, wave_names).items():
             if any("@port-" in (e.get("old_string") or "") for e in proposal.get("edits", []) or []):
