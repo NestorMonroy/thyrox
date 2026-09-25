@@ -2613,7 +2613,7 @@ export function REPL({
         }
       }
       const uniqueNotifications = notificationMessages.filter(
-        m =>
+(        m: { attachment: { type: string; prompt: string; }; }) =>
           m.attachment.type === 'queued_command' &&
           (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
       );

@@ -1,0 +1,2 @@
+{"proposal_id": "infer-from-usage:src/packages/repl/src/components/messages/AttachmentMessage.tsx", "proposer": "infer-from-usage", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 193, "total_after": 191}
+{"proposal_id": "infer-from-usage:src/packages/repl/src/screens/REPLView.tsx", "proposer": "infer-from-usage", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 193, "total_after": 191}
