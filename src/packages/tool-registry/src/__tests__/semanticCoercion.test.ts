@@ -171,7 +171,7 @@ describe('objectGroupBy', () => {
   })
 
   test('Set as iterable input works', () => {
-    const result = objectGroupBy(new Set([1, 2, 3]), n => 'all')
+    const result = objectGroupBy(new Set([1, 2, 3]), _n => 'all')
     expect(result.all).toHaveLength(3)
   })
 

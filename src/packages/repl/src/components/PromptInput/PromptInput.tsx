@@ -455,7 +455,7 @@ function PromptInput({
   const tmuxFooterVisible =
     process.env.USER_TYPE === 'ant' && hasTungstenSession
   // WebBrowser pill — visible when a browser is open
-  const bagelFooterVisible = useAppState(s =>
+  const bagelFooterVisible = useAppState(_s =>
         false,
   )
   const teamContext = useAppState(s => s.teamContext)

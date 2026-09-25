@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 1815, "total_final": 1787, "tsc_runs": 1, "accepted": ["agent:agent:unused-params-as-in-source-bulk:ast"], "files_kept": ["src/packages/@ant/computer-use-mcp/src/legacy/executorCrossPlatform.ts", "src/packages/@ant/computer-use-mcp/src/legacy/platforms/win32.ts__BG_EXIT__=0

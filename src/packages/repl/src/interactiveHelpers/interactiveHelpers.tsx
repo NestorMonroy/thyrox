@@ -153,7 +153,7 @@ export async function showSetupScreens(
   root: Root,
   permissionMode: PermissionMode,
   allowDangerouslySkipPermissions: boolean,
-  commands?: Command[],
+  _commands?: Command[],
   claudeInChrome?: boolean,
   devChannels?: ChannelEntry[],
 ): Promise<boolean> {

@@ -138,7 +138,7 @@ export const display: DisplayAPI = {
 // ---------------------------------------------------------------------------
 
 export const apps: AppsAPI = {
-  async prepareDisplay(allowlistBundleIds, surrogateHost, _displayId) {
+  async prepareDisplay(allowlistBundleIds, _surrogateHost, _displayId) {
     const FINDER_BUNDLE_ID = 'com.apple.finder'
     const hidden: string[] = []
     let activated = ''

@@ -77,7 +77,7 @@ describe('AgentCore production wiring', () => {
       tools: {
         find: mock((name: string) => name === 'Echo' ? echoTool : undefined),
         list: mock(() => [echoTool]),
-        execute: mock(async (tool: { name: string }, input: { text: string }) =>
+        execute: mock(async (_tool: { name: string }, input: { text: string }) =>
           ({ output: `echo:${input.text}` }),
         ),
       },

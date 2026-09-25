@@ -413,7 +413,7 @@ const screenshot: ScreenshotPlatform = {
     )
   },
 
-  async captureRegion(x, y, w, h) {
+  async captureRegion(_x, _y, _w, _h) {
     // When HWND is bound, the window IS the region (matches macOS behavior)
     if (boundHwnd) {
       const result = await this.captureWindow?.(String(boundHwnd))

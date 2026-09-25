@@ -50,7 +50,7 @@ export function applyCoordinatorToolFilter(tools: Tools): Tools {
 export function mergeAndFilterTools(
   initialTools: Tools,
   assembled: Tools,
-  mode: ToolPermissionContext['mode'],
+  _mode: ToolPermissionContext['mode'],
 ): Tools {
   // Merge initialTools on top — they take precedence in deduplication.
   // Partition-sort for prompt-cache stability: built-ins must stay a
