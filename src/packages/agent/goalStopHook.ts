@@ -33,12 +33,9 @@
  *     (`tokensAtStart`, el delta en `renderActiveGoalStatus` bajo
  *     try/catch, y los deltas de pause/resume que ningún test verifica en
  *     detalle).
- *   - `AttachmentMessage` — la fuente lo importa de `./messageShapes.js`.
- *     `../messageShapes.ts` de este árbol es un porte MÍNIMO (ver su propio
- *     docstring) que aún no lo declara, y ese archivo pertenece a otro
- *     agente de esta misma tanda — no se edita. Se declara aquí, localmente,
- *     con la forma exacta de la fuente
- *     (`ccnmt: packages/agent/messageShapes.ts:53`).
+ *   - `AttachmentMessage` se importa de `./messageShapes.js`, como en la
+ *     fuente. Hasta 2026-09-25 se declaraba aquí porque aquel archivo aún no
+ *     lo tenía; ya lo tiene, y la copia local competía con él.
  *   - `readEnv` — la fuente envuelve `isEnvTruthy`/`isEnvDefinedFalsy` con
  *     `readEnv('VAR')` de `@claude-code-how-works/config/env/utils`. Las
  *     versiones de este árbol (`../internalUtils.ts`) ya aceptan
@@ -88,17 +85,13 @@ import {
   removeSessionHook,
 } from './hooks/sessionHooks.js'
 import type { HookCommand } from './types/hooks.js'
-import type { Message } from './messageShapes.js'
+import type { AttachmentMessage, Message } from './messageShapes.js'
 
 /**
  * ant `dYK` transporta este tipo desde `./messageShapes.js`; aquí se
  * declara localmente — ver la nota de divergencia del docstring del
  * módulo.
  */
-export type AttachmentMessage<_T = unknown> = Message & {
-  type: 'attachment'
-  attachment: { type: string; [key: string]: unknown }
-}
 
 /**
  * ant `nf()` — divergencia declarada arriba: contador local mínimo, sin
