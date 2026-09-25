@@ -1,0 +1,28 @@
+patron: tool-provider-discover-not-awaited
+senal_del_verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+fix_generico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/collapseReadSearch.ts(943,45): error TS2488: Type '{ path: string; content: string; mtimeMs: number; }[] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/tool-registry/src/collapseReadSearch.ts:933-953 ---
+    933        msg.attachment.type === 'relevant_memories'
+    934      ) {
+    935        // Absorb auto-injected memory attachments so "recalled N memories"
+    936        // renders inline with "ran N bash commands" instead of as a separate
+    937        // ⏺ block. Do NOT add paths to readFilePaths/memoryReadFilePaths —
+    938        // that would poison the readOperationCount fallback (bash-only reads
+    939        // have no paths; adding memory paths makes readFilePaths.size > 0 and
+    940        // suppresses the fallback). createCollapsedGroup adds .length to
+    941        // memoryReadCount after the readCount subtraction instead.
+    942        currentGroup.relevantMemories ??= []
+    943>       currentGroup.relevantMemories.push(...msg.attachment.memories)
+    944      } else if (shouldSkipMessage(msg)) {
+    945        // Don't flush the group for skippable messages (thinking, attachments, system)
+    946        // If a group is in progress, defer these messages to output after the collapsed group
+    947        // This preserves the visual ordering where the collapsed badge appears at the position
+    948        // of the first tool use, not displaced by intervening skippable messages.
+    949        // Exception: nested_memory attachments are pushed through even during a group so
+    950        // ⎿ Loaded lines cluster tightly instead of being split by the badge's marginTop.
+    951        if (
+    952          currentGroup.messages.length > 0 &&
+    953          !(msg.type === 'attachment' && msg.attachment.type === 'nested_memory')

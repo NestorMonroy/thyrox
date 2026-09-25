@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/messageActions.tsx(386,13): error TS18046: 'p' is of type 'unknown'.
+  --- código src/packages/repl/src/components/messageActions.tsx:376-396 ---
+    376      case 'system':
+    377        if ('content' in msg) return msg.content
+    378        if ('error' in msg) return String(msg.error)
+    379        return msg.subtype
+    380      case 'attachment': {
+    381        const a = msg.attachment
+    382        if (a.type === 'queued_command') {
+    383          const p = a.prompt
+    384          return typeof p === 'string'
+    385            ? p
+    386>           : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
+    387        }
+    388        return `[${a.type}]`
+    389      }
+    390    }
+    391  }
+    392  
+    393  function toolResultText(r: NormalizedUserMessage): string {
+    394    const b = r.message.content[0]
+    395    if (b?.type !== 'tool_result') return ''
+    396    const c = b.content

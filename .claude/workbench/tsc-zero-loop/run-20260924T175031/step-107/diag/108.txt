@@ -1,0 +1,97 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/CompactSummary.tsx(34,42): error TS2339: Property 'messagesSummarized' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/CompactSummary.tsx:24-44 ---
+     24          <Box flexDirection="row">
+     25            <Box minWidth={2}>
+     26              <Text color="text">{BLACK_CIRCLE}</Text>
+     27            </Box>
+     28            <Box flexDirection="column">
+     29              <Text bold>Summarized conversation</Text>
+     30              {!isTranscriptMode && (
+     31                <MessageResponse>
+     32                  <Box flexDirection="column">
+     33                    <Text dimColor>
+     34>                     Summarized {metadata.messagesSummarized} messages{' '}
+     35                      {metadata.direction === 'up_to'
+     36                        ? 'up to this point'
+     37                        : 'from this point'}
+     38                    </Text>
+     39                    {metadata.userContext && (
+     40                      <Text dimColor>
+     41                        Context: {'\u201c'}
+     42                        {metadata.userContext}
+     43                        {'\u201d'}
+     44                      </Text>
+src/packages/repl/src/components/CompactSummary.tsx(35,31): error TS2339: Property 'direction' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/CompactSummary.tsx:25-45 ---
+     25            <Box minWidth={2}>
+     26              <Text color="text">{BLACK_CIRCLE}</Text>
+     27            </Box>
+     28            <Box flexDirection="column">
+     29              <Text bold>Summarized conversation</Text>
+     30              {!isTranscriptMode && (
+     31                <MessageResponse>
+     32                  <Box flexDirection="column">
+     33                    <Text dimColor>
+     34                      Summarized {metadata.messagesSummarized} messages{' '}
+     35>                     {metadata.direction === 'up_to'
+     36                        ? 'up to this point'
+     37                        : 'from this point'}
+     38                    </Text>
+     39                    {metadata.userContext && (
+     40                      <Text dimColor>
+     41                        Context: {'\u201c'}
+     42                        {metadata.userContext}
+     43                        {'\u201d'}
+     44                      </Text>
+     45                    )}
+src/packages/repl/src/components/CompactSummary.tsx(39,29): error TS2339: Property 'userContext' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/CompactSummary.tsx:29-49 ---
+     29              <Text bold>Summarized conversation</Text>
+     30              {!isTranscriptMode && (
+     31                <MessageResponse>
+     32                  <Box flexDirection="column">
+     33                    <Text dimColor>
+     34                      Summarized {metadata.messagesSummarized} messages{' '}
+     35                      {metadata.direction === 'up_to'
+     36                        ? 'up to this point'
+     37                        : 'from this point'}
+     38                    </Text>
+     39>                   {metadata.userContext && (
+     40                      <Text dimColor>
+     41                        Context: {'\u201c'}
+     42                        {metadata.userContext}
+     43                        {'\u201d'}
+     44                      </Text>
+     45                    )}
+     46                    <Text dimColor>
+     47                      <ConfigurableShortcutHint
+     48                        action="app:toggleTranscript"
+     49                        context="Global"
+src/packages/repl/src/components/CompactSummary.tsx(42,33): error TS2339: Property 'userContext' does not exist on type '{}'.
+  --- código src/packages/repl/src/components/CompactSummary.tsx:32-52 ---
+     32                  <Box flexDirection="column">
+     33                    <Text dimColor>
+     34                      Summarized {metadata.messagesSummarized} messages{' '}
+     35                      {metadata.direction === 'up_to'
+     36                        ? 'up to this point'
+     37                        : 'from this point'}
+     38                    </Text>
+     39                    {metadata.userContext && (
+     40                      <Text dimColor>
+     41                        Context: {'\u201c'}
+     42>                       {metadata.userContext}
+     43                        {'\u201d'}
+     44                      </Text>
+     45                    )}
+     46                    <Text dimColor>
+     47                      <ConfigurableShortcutHint
+     48                        action="app:toggleTranscript"
+     49                        context="Global"
+     50                        fallback="ctrl+o"
+     51                        description="expand history"
+     52                        parens

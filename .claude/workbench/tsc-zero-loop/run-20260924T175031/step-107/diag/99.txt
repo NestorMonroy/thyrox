@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/plugin/officialMarketplaceGcs.ts(130,20): error TS18046: 'modes' is of type 'unknown'.
+  --- código src/packages/config/plugin/officialMarketplaceGcs.ts:120-140 ---
+    120      const staging = `${installLocation}.staging`
+    121      await rm(staging, { recursive: true, force: true })
+    122      await mkdir(staging, { recursive: true })
+    123      for (const [arcPath, data] of Object.entries(files)) {
+    124        if (!arcPath.startsWith(ARC_PREFIX)) continue
+    125        const rel = arcPath.slice(ARC_PREFIX.length)
+    126        if (!rel || rel.endsWith('/')) continue // prefix dir entry or subdir entry
+    127        const dest = join(staging, rel)
+    128        await mkdir(dirname(dest), { recursive: true })
+    129        await writeFile(dest, data)
+    130>       const mode = modes[arcPath]
+    131        if (mode && mode & 0o111) {
+    132          // Only chmod when an exec bit is set — skip plain files to save syscalls.
+    133          // Swallow EPERM/ENOTSUP (NFS root_squash, some FUSE mounts) — losing +x
+    134          // is the pre-PR behavior and better than aborting mid-extraction.
+    135          await chmod(dest, mode & 0o777).catch(() => {})
+    136        }
+    137      }
+    138      await writeFile(join(staging, '.gcs-sha'), sha)
+    139  
+    140      // Atomic swap: rm old, rename staging. Brief window where installLocation

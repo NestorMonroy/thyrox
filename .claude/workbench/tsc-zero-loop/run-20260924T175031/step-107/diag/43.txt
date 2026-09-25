@@ -1,0 +1,74 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/promptSuggestionSpeculation.tsx(255,49): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:245-265 ---
+    245      // (query.ts createUserInterruptionMessage). Strip it so it isn't surfaced
+    246      // to the model as real user input.
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255>       if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256        const content = msg.message.content.filter(keep)
+    257        if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+src/packages/repl/src/promptSuggestionSpeculation.tsx(256,23): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:246-266 ---
+    246      // to the model as real user input.
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255        if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256>       const content = msg.message.content.filter(keep)
+    257        if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+    266        return { ...msg, message: { ...msg.message, content } } as typeof msg
+src/packages/repl/src/promptSuggestionSpeculation.tsx(257,30): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:247-267 ---
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255        if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256        const content = msg.message.content.filter(keep)
+    257>       if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+    266        return { ...msg, message: { ...msg.message, content } } as typeof msg
+    267      })

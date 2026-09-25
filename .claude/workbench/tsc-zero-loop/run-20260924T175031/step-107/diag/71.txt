@@ -1,0 +1,51 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/messages/HookProgressMessage.tsx(22,54): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/components/messages/HookProgressMessage.tsx:12-32 ---
+     12    isTranscriptMode?: boolean
+     13  }
+     14  
+     15  export function HookProgressMessage({
+     16    hookEvent,
+     17    lookups,
+     18    toolUseID,
+     19    isTranscriptMode,
+     20  }: Props): React.ReactNode {
+     21    const inProgressHookCount =
+     22>     lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     23    const resolvedHookCount =
+     24      lookups.resolvedHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     25    if (inProgressHookCount === 0) {
+     26      return null
+     27    }
+     28  
+     29    if (hookEvent === 'PreToolUse' || hookEvent === 'PostToolUse') {
+     30      // In transcript mode, show a static summary since messages never re-render
+     31      // (so a transient "Running..." would get stuck).
+     32      if (isTranscriptMode) {
+src/packages/repl/src/components/messages/HookProgressMessage.tsx(24,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/components/messages/HookProgressMessage.tsx:14-34 ---
+     14  
+     15  export function HookProgressMessage({
+     16    hookEvent,
+     17    lookups,
+     18    toolUseID,
+     19    isTranscriptMode,
+     20  }: Props): React.ReactNode {
+     21    const inProgressHookCount =
+     22      lookups.inProgressHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     23    const resolvedHookCount =
+     24>     lookups.resolvedHookCounts.get(toolUseID)?.get(hookEvent) ?? 0
+     25    if (inProgressHookCount === 0) {
+     26      return null
+     27    }
+     28  
+     29    if (hookEvent === 'PreToolUse' || hookEvent === 'PostToolUse') {
+     30      // In transcript mode, show a static summary since messages never re-render
+     31      // (so a transient "Running..." would get stuck).
+     32      if (isTranscriptMode) {
+     33        return (
+     34          <MessageResponse>

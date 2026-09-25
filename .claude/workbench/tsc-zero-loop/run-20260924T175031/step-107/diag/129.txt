@@ -1,0 +1,28 @@
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/storage/src/sessionRestore.ts(164,18): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/storage/src/sessionRestore.ts:154-174 ---
+    154    }
+    155  
+    156    // Restore TodoWrite state from transcript (SDK/non-interactive only).
+    157    // Interactive mode uses file-backed v2 tasks, so AppState.todos is unused there.
+    158    if (!isTodoV2Enabled() && result.messages && result.messages.length > 0) {
+    159      const todos = extractTodosFromTranscript(result.messages)
+    160      if (todos.length > 0) {
+    161        const agentId = getSessionId()
+    162        setAppState(prev => ({
+    163          ...prev,
+    164>         todos: { ...prev.todos, [agentId]: todos },
+    165        }))
+    166      }
+    167    }
+    168  
+    169    // Port of ant v2.1.136 5037.js E0_/cP6 — restore active /goal from the
+    170    // resumed transcript. The Stop hook and AppState.activeGoal both need
+    171    // to be rebuilt so the resumed session resumes its goal-loop behaviour.
+    172    // Gated on `tengu_maple_tide` (isGoalCommandEnabled) so dogfood sessions
+    173    // skip the cost when the feature is off.
+    174    if (isGoalCommandEnabled() && result.messages) {

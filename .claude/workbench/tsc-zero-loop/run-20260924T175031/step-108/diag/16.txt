@@ -1,0 +1,155 @@
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(5,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:1-15 ---
+      1  import { relative } from 'path'
+      2  import React from 'react'
+      3  import { Box, Text } from '@anthropic/ink'
+      4  import { DiagnosticTrackingService } from '@thyrox/tool-registry/diagnosticTracking.js'
+      5> import type { Attachment } from '@thyrox/agent/attachments.js'
+      6  import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+      7  import { CtrlOToExpand } from './CtrlOToExpand.js'
+      8  import { MessageResponse } from './MessageResponse.js'
+      9  
+     10  type DiagnosticsAttachment = Extract<Attachment, { type: 'diagnostics' }>
+     11  
+     12  type DiagnosticsDisplayProps = {
+     13    attachment: DiagnosticsAttachment
+     14    verbose: boolean
+     15  }
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(26,6): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:16-36 ---
+     16  
+     17  export function DiagnosticsDisplay({
+     18    attachment,
+     19    verbose,
+     20  }: DiagnosticsDisplayProps): React.ReactNode {
+     21    // Only show if there are diagnostics to report
+     22    if (attachment.files.length === 0) return null
+     23  
+     24    // Count total issues
+     25    const totalIssues = attachment.files.reduce(
+     26>     (sum, file) => sum + file.diagnostics.length,
+     27      0,
+     28    )
+     29  
+     30    const fileCount = attachment.files.length
+     31  
+     32    if (verbose) {
+     33      // Show all diagnostics in verbose mode (ctrl+o)
+     34      return (
+     35        <Box flexDirection="column">
+     36          {attachment.files.map((file, fileIndex) => (
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(26,11): error TS7006: Parameter 'file' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:16-36 ---
+     16  
+     17  export function DiagnosticsDisplay({
+     18    attachment,
+     19    verbose,
+     20  }: DiagnosticsDisplayProps): React.ReactNode {
+     21    // Only show if there are diagnostics to report
+     22    if (attachment.files.length === 0) return null
+     23  
+     24    // Count total issues
+     25    const totalIssues = attachment.files.reduce(
+     26>     (sum, file) => sum + file.diagnostics.length,
+     27      0,
+     28    )
+     29  
+     30    const fileCount = attachment.files.length
+     31  
+     32    if (verbose) {
+     33      // Show all diagnostics in verbose mode (ctrl+o)
+     34      return (
+     35        <Box flexDirection="column">
+     36          {attachment.files.map((file, fileIndex) => (
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(36,32): error TS7006: Parameter 'file' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:26-46 ---
+     26      (sum, file) => sum + file.diagnostics.length,
+     27      0,
+     28    )
+     29  
+     30    const fileCount = attachment.files.length
+     31  
+     32    if (verbose) {
+     33      // Show all diagnostics in verbose mode (ctrl+o)
+     34      return (
+     35        <Box flexDirection="column">
+     36>         {attachment.files.map((file, fileIndex) => (
+     37            <React.Fragment key={fileIndex}>
+     38              <MessageResponse>
+     39                <Text dimColor wrap="wrap">
+     40                  <Text bold>
+     41                    {relative(
+     42                      getCwd(),
+     43                      file.uri
+     44                        .replace('file://', '')
+     45                        .replace('_claude_fs_right:', ''),
+     46                    )}
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(36,38): error TS7006: Parameter 'fileIndex' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:26-46 ---
+     26      (sum, file) => sum + file.diagnostics.length,
+     27      0,
+     28    )
+     29  
+     30    const fileCount = attachment.files.length
+     31  
+     32    if (verbose) {
+     33      // Show all diagnostics in verbose mode (ctrl+o)
+     34      return (
+     35        <Box flexDirection="column">
+     36>         {attachment.files.map((file, fileIndex) => (
+     37            <React.Fragment key={fileIndex}>
+     38              <MessageResponse>
+     39                <Text dimColor wrap="wrap">
+     40                  <Text bold>
+     41                    {relative(
+     42                      getCwd(),
+     43                      file.uri
+     44                        .replace('file://', '')
+     45                        .replace('_claude_fs_right:', ''),
+     46                    )}
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(58,36): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:48-68 ---
+     48                  <Text dimColor>
+     49                    {file.uri.startsWith('file://')
+     50                      ? '(file://)'
+     51                      : file.uri.startsWith('_claude_fs_right:')
+     52                        ? '(claude_fs_right)'
+     53                        : `(${file.uri.split(':')[0]})`}
+     54                  </Text>
+     55                  :
+     56                </Text>
+     57              </MessageResponse>
+     58>             {file.diagnostics.map((diagnostic, diagIndex) => (
+     59                <MessageResponse key={diagIndex}>
+     60                  <Text dimColor wrap="wrap">
+     61                    {'  '}
+     62                    {DiagnosticTrackingService.getSeveritySymbol(
+     63                      diagnostic.severity,
+     64                    )}
+     65                    {' [Line '}
+     66                    {diagnostic.range.start.line + 1}:
+     67                    {diagnostic.range.start.character + 1}
+     68                    {'] '}
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(58,48): error TS7006: Parameter 'diagIndex' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/DiagnosticsDisplay.tsx:48-68 ---
+     48                  <Text dimColor>
+     49                    {file.uri.startsWith('file://')
+     50                      ? '(file://)'
+     51                      : file.uri.startsWith('_claude_fs_right:')
+     52                        ? '(claude_fs_right)'
+     53                        : `(${file.uri.split(':')[0]})`}
+     54                  </Text>
+     55                  :
+     56                </Text>
+     57              </MessageResponse>
+     58>             {file.diagnostics.map((diagnostic, diagIndex) => (
+     59                <MessageResponse key={diagIndex}>
+     60                  <Text dimColor wrap="wrap">
+     61                    {'  '}
+     62                    {DiagnosticTrackingService.getSeveritySymbol(
+     63                      diagnostic.severity,
+     64                    )}
+     65                    {' [Line '}
+     66                    {diagnostic.range.start.line + 1}:
+     67                    {diagnostic.range.start.character + 1}
+     68                    {'] '}

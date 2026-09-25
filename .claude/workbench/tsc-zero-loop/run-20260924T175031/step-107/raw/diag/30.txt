@@ -1,0 +1,6 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts(29,33): error TS2353: Object literal may only specify known properties, and 'expandPath' does not exist in type 'PermissionHostBindings'.

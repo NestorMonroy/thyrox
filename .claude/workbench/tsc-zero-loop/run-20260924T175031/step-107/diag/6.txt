@@ -1,0 +1,35 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/settings/inventory.ts(171,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }

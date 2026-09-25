@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/hooks/apiQueryHookHelper.ts(120,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/agent/hooks/apiQueryHookHelper.ts:110-130 ---
+    110        // Parse response
+    111        const content = extractTextContent(Array.isArray(response.message.content) ? response.message.content : []).trim()
+    112  
+    113        try {
+    114          const result = config.parseResponse(content, context)
+    115          config.logResult(
+    116            {
+    117              type: 'success',
+    118              queryName: config.name,
+    119              result,
+    120>             messageId: response.message.id,
+    121              model,
+    122              uuid,
+    123            },
+    124            context,
+    125          )
+    126        } catch (error) {
+    127          config.logResult(
+    128            {
+    129              type: 'error',
+    130              queryName: config.name,
+  Type 'undefined' is not assignable to type 'string'.

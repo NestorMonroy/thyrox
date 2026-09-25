@@ -1,0 +1,29 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/gemini/modelMapping.ts(14,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/provider/src/gemini/modelMapping.ts:4-24 ---
+      4  
+      5  function getModelFamily(model: string): 'haiku' | 'sonnet' | 'opus' | null {
+      6    if (/haiku/i.test(model)) return 'haiku'
+      7    if (/opus/i.test(model)) return 'opus'
+      8    if (/sonnet/i.test(model)) return 'sonnet'
+      9    return null
+     10  }
+     11  
+     12  export function resolveGeminiModel(anthropicModel: string): string {
+     13    if (readEnv('GEMINI_MODEL')) {
+     14>     return readEnv('GEMINI_MODEL')
+     15    }
+     16  
+     17    // Strip the connection-routing prefix before any further mapping. The
+     18    // packed `<connId>:<modelId>` form is ccb-internal; the Gemini API URL
+     19    // can't carry that prefix or it 404s. Same boundary the Anthropic adapter
+     20    // uses (claudeLegacyRuntime.ts:1070).
+     21    const bareModel = unpackModelId(anthropicModel).modelId
+     22    const cleanModel = bareModel.replace(/\[1m\]$/i, '')
+     23    const family = getModelFamily(cleanModel)
+     24  
+  Type 'undefined' is not assignable to type 'string'.

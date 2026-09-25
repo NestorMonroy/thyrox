@@ -1,0 +1,24 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/@ant/computer-use-swift/src/backends/win32.ts(256,3): error TS2353: Object literal may only specify known properties, and 'captureWindowTarget' does not exist in type 'ScreenshotAPI'.
+  --- código src/packages/@ant/computer-use-swift/src/backends/win32.ts:246-262 ---
+    246      const firstComma = raw.indexOf(',')
+    247      const secondComma = raw.indexOf(',', firstComma + 1)
+    248      const base64 = raw.slice(secondComma + 1)
+    249      return { base64, width: w, height: h }
+    250    },
+    251  
+    252    /**
+    253     * Capture a specific window by title or HWND using PrintWindow.
+    254     * Works even for occluded or background windows.
+    255     */
+    256>   captureWindowTarget(titleOrHwnd: string | number): ScreenshotResult | null {
+    257      if (typeof titleOrHwnd === 'number') {
+    258        return captureWindowByHwnd(titleOrHwnd)
+    259      }
+    260      return captureWindow(titleOrHwnd)
+    261    },
+    262  }

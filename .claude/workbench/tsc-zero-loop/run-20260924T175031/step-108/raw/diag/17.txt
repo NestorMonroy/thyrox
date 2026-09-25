@@ -1,0 +1,8 @@
+src/packages/swarm/src/worktree/index.ts(374,5): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/packages/swarm/src/worktree/index.ts(431,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/packages/swarm/src/worktree/index.ts(432,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/packages/swarm/src/worktree/index.ts(438,45): error TS7006: Parameter 'dir' implicitly has an 'any' type.
+src/packages/swarm/src/worktree/index.ts(771,28): error TS7006: Parameter 'current' implicitly has an 'any' type.
+src/packages/swarm/src/worktree/index.ts(794,30): error TS7006: Parameter 'current' implicitly has an 'any' type.
+src/packages/swarm/src/worktree/index.ts(857,30): error TS7006: Parameter 'current' implicitly has an 'any' type.

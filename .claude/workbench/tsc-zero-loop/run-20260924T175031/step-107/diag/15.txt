@@ -1,0 +1,28 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/context-compression/src/lite.ts(112,39): error TS18048: 'm' is possibly 'undefined'.
+  --- código src/packages/context-compression/src/lite.ts:102-122 ---
+    102    return JSON.stringify(m.content)
+    103  }
+    104  
+    105  /** Quita un mensaje consecutivo con el MISMO rol y el MISMO contenido exacto que el anterior. */
+    106  export function removeRedundantContent(messages: Message[]): { messages: Message[]; applied: boolean } {
+    107    let applied = false
+    108    const out: Message[] = []
+    109    for (let i = 0; i < messages.length; i++) {
+    110      const m = messages[i]
+    111      const previous = i > 0 ? messages[i - 1] : undefined
+    112>     if (previous && previous.role === m.role && contentKey(previous) === contentKey(m)) {
+    113        applied = true
+    114        continue
+    115      }
+    116      out.push(m)
+    117    }
+    118    return { messages: out, applied }
+    119  }
+    120  
+    121  export type LiteResult = { messages: Message[]; appliedTechniques: string[] }
+    122  

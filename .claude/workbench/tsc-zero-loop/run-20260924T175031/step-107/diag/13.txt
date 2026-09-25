@@ -1,0 +1,74 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/internal/abort.ts(14,9): error TS18048: 'msg' is possibly 'undefined'.
+  --- código src/packages/agent/internal/abort.ts:4-24 ---
+      4  /**
+      5   */
+      6  export function createSyntheticToolResults(
+      7    messages: CoreMessage[],
+      8    abortReason: string = 'interrupted',
+      9  ): CoreContentBlock[] {
+     10    const results: CoreContentBlock[] = []
+     11  
+     12    for (let i = messages.length - 1; i >= 0; i--) {
+     13      const msg = messages[i]
+     14>     if (msg.type === 'assistant' && Array.isArray(msg.content)) {
+     15        for (const block of msg.content) {
+     16          if (
+     17            typeof block === 'object' &&
+     18            block !== null &&
+     19            'type' in block &&
+     20            block.type === 'tool_use' &&
+     21            'id' in block
+     22          ) {
+     23            results.push({
+     24              type: 'tool_result',
+src/packages/agent/internal/abort.ts(14,51): error TS18048: 'msg' is possibly 'undefined'.
+  --- código src/packages/agent/internal/abort.ts:4-24 ---
+      4  /**
+      5   */
+      6  export function createSyntheticToolResults(
+      7    messages: CoreMessage[],
+      8    abortReason: string = 'interrupted',
+      9  ): CoreContentBlock[] {
+     10    const results: CoreContentBlock[] = []
+     11  
+     12    for (let i = messages.length - 1; i >= 0; i--) {
+     13      const msg = messages[i]
+     14>     if (msg.type === 'assistant' && Array.isArray(msg.content)) {
+     15        for (const block of msg.content) {
+     16          if (
+     17            typeof block === 'object' &&
+     18            block !== null &&
+     19            'type' in block &&
+     20            block.type === 'tool_use' &&
+     21            'id' in block
+     22          ) {
+     23            results.push({
+     24              type: 'tool_result',
+src/packages/agent/internal/abort.ts(15,27): error TS18048: 'msg' is possibly 'undefined'.
+  --- código src/packages/agent/internal/abort.ts:5-25 ---
+      5   */
+      6  export function createSyntheticToolResults(
+      7    messages: CoreMessage[],
+      8    abortReason: string = 'interrupted',
+      9  ): CoreContentBlock[] {
+     10    const results: CoreContentBlock[] = []
+     11  
+     12    for (let i = messages.length - 1; i >= 0; i--) {
+     13      const msg = messages[i]
+     14      if (msg.type === 'assistant' && Array.isArray(msg.content)) {
+     15>       for (const block of msg.content) {
+     16          if (
+     17            typeof block === 'object' &&
+     18            block !== null &&
+     19            'type' in block &&
+     20            block.type === 'tool_use' &&
+     21            'id' in block
+     22          ) {
+     23            results.push({
+     24              type: 'tool_result',
+     25              tool_use_id: block.id as string,

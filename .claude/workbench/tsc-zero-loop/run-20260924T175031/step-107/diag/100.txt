@@ -1,0 +1,143 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/plugin/pluginAutoupdate.ts(118,11): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:108-128 ---
+    108  async function updatePlugin(
+    109    pluginId: string,
+    110    installations: Array<{ scope: PluginScope; projectPath?: string }>,
+    111  ): Promise<string | null> {
+    112    let wasUpdated = false
+    113  
+    114    for (const { scope } of installations) {
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118>       if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121            `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123        } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125            `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+src/packages/config/plugin/pluginAutoupdate.ts(118,30): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:108-128 ---
+    108  async function updatePlugin(
+    109    pluginId: string,
+    110    installations: Array<{ scope: PluginScope; projectPath?: string }>,
+    111  ): Promise<string | null> {
+    112    let wasUpdated = false
+    113  
+    114    for (const { scope } of installations) {
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118>       if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121            `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123        } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125            `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+src/packages/config/plugin/pluginAutoupdate.ts(121,58): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:111-131 ---
+    111  ): Promise<string | null> {
+    112    let wasUpdated = false
+    113  
+    114    for (const { scope } of installations) {
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118        if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121>           `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123        } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125            `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+    129      } catch (error) {
+    130        logForDebugging(
+    131          `Plugin autoupdate: error updating ${pluginId}: ${errorMessage(error)}`,
+src/packages/config/plugin/pluginAutoupdate.ts(121,82): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:111-131 ---
+    111  ): Promise<string | null> {
+    112    let wasUpdated = false
+    113  
+    114    for (const { scope } of installations) {
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118        if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121>           `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123        } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125            `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+    129      } catch (error) {
+    130        logForDebugging(
+    131          `Plugin autoupdate: error updating ${pluginId}: ${errorMessage(error)}`,
+src/packages/config/plugin/pluginAutoupdate.ts(123,19): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:113-133 ---
+    113  
+    114    for (const { scope } of installations) {
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118        if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121            `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123>       } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125            `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+    129      } catch (error) {
+    130        logForDebugging(
+    131          `Plugin autoupdate: error updating ${pluginId}: ${errorMessage(error)}`,
+    132          { level: 'warn' },
+    133        )
+src/packages/config/plugin/pluginAutoupdate.ts(125,63): error TS18046: 'result' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginAutoupdate.ts:115-135 ---
+    115      try {
+    116        const result = await updatePluginOp(pluginId, scope)
+    117  
+    118        if (result.success && !result.alreadyUpToDate) {
+    119          wasUpdated = true
+    120          logForDebugging(
+    121            `Plugin autoupdate: updated ${pluginId} from ${result.oldVersion} to ${result.newVersion}`,
+    122          )
+    123        } else if (!result.alreadyUpToDate) {
+    124          logForDebugging(
+    125>           `Plugin autoupdate: failed to update ${pluginId}: ${result.message}`,
+    126            { level: 'warn' },
+    127          )
+    128        }
+    129      } catch (error) {
+    130        logForDebugging(
+    131          `Plugin autoupdate: error updating ${pluginId}: ${errorMessage(error)}`,
+    132          { level: 'warn' },
+    133        )
+    134      }
+    135    }

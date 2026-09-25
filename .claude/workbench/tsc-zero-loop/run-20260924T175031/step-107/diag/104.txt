@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/authAlias.ts(995,67): error TS2339: Property 'subscriptionType' does not exist on type '{}'.
+  --- código src/packages/provider/src/authAlias.ts:985-1005 ---
+    985  
+    986    try {
+    987      const storageData = secureStorage.read() || {}
+    988      const existingOauth = storageData.claudeAiOauth
+    989  
+    990      storageData.claudeAiOauth = {
+    991        accessToken: tokens.accessToken,
+    992        refreshToken: tokens.refreshToken,
+    993        expiresAt: tokens.expiresAt,
+    994        scopes: tokens.scopes,
+    995>       subscriptionType: tokens.subscriptionType ?? existingOauth?.subscriptionType ?? null,
+    996        rateLimitTier: tokens.rateLimitTier ?? existingOauth?.rateLimitTier ?? null,
+    997      }
+    998  
+    999      const updateStatus = secureStorage.update(storageData)
+   1000  
+   1001      if (updateStatus.success) {
+   1002        logEvent('tengu_oauth_tokens_saved', { storageBackend })
+   1003      } else {
+   1004        logEvent('tengu_oauth_tokens_save_failed', { storageBackend })
+   1005      }
+src/packages/provider/src/authAlias.ts(996,61): error TS2339: Property 'rateLimitTier' does not exist on type '{}'.
+  --- código src/packages/provider/src/authAlias.ts:986-1006 ---
+    986    try {
+    987      const storageData = secureStorage.read() || {}
+    988      const existingOauth = storageData.claudeAiOauth
+    989  
+    990      storageData.claudeAiOauth = {
+    991        accessToken: tokens.accessToken,
+    992        refreshToken: tokens.refreshToken,
+    993        expiresAt: tokens.expiresAt,
+    994        scopes: tokens.scopes,
+    995        subscriptionType: tokens.subscriptionType ?? existingOauth?.subscriptionType ?? null,
+    996>       rateLimitTier: tokens.rateLimitTier ?? existingOauth?.rateLimitTier ?? null,
+    997      }
+    998  
+    999      const updateStatus = secureStorage.update(storageData)
+   1000  
+   1001      if (updateStatus.success) {
+   1002        logEvent('tengu_oauth_tokens_saved', { storageBackend })
+   1003      } else {
+   1004        logEvent('tengu_oauth_tokens_save_failed', { storageBackend })
+   1005      }
+   1006  

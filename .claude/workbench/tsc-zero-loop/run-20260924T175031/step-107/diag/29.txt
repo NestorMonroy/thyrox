@@ -1,0 +1,120 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/mcp-runtime/src/config.ts(1350,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1340-1360 ---
+   1340      let configToCheck = config
+   1341  
+   1342      if (expandVars) {
+   1343        const { expanded, missingVars } = expandEnvVars(config)
+   1344  
+   1345        if (missingVars.length > 0) {
+   1346          errors.push({
+   1347            ...(filePath && { file: filePath }),
+   1348            path: `mcpServers.${name}`,
+   1349            message: `Missing environment variables: ${missingVars.join(', ')}`,
+   1350>           suggestion: `Set the following environment variables: ${missingVars.join(', ')}`,
+   1351            mcpErrorMetadata: {
+   1352              scope,
+   1353              serverName: name,
+   1354              severity: 'warning',
+   1355            },
+   1356          })
+   1357        }
+   1358  
+   1359        configToCheck = expanded
+   1360      }
+src/packages/mcp-runtime/src/config.ts(1375,9): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1365-1385 ---
+   1365        (!configToCheck.type || configToCheck.type === 'stdio') &&
+   1366        ('command' in configToCheck) &&
+   1367        (configToCheck.command === 'npx' ||
+   1368          configToCheck.command.endsWith('\\npx') ||
+   1369          configToCheck.command.endsWith('/npx'))
+   1370      ) {
+   1371        errors.push({
+   1372          ...(filePath && { file: filePath }),
+   1373          path: `mcpServers.${name}`,
+   1374          message: `Windows requires 'cmd /c' wrapper to execute npx`,
+   1375>         suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,
+   1376          mcpErrorMetadata: {
+   1377            scope,
+   1378            serverName: name,
+   1379            severity: 'warning',
+   1380          },
+   1381        })
+   1382      }
+   1383  
+   1384      validatedServers[name] = configToCheck
+   1385    }
+src/packages/mcp-runtime/src/config.ts(1421,13): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1411-1431 ---
+   1411    } catch (error: unknown) {
+   1412      const code = getErrnoCode(error)
+   1413      if (code === 'ENOENT') {
+   1414        return {
+   1415          config: null,
+   1416          errors: [
+   1417            {
+   1418              file: filePath,
+   1419              path: '',
+   1420              message: `MCP config file not found: ${filePath}`,
+   1421>             suggestion: 'Check that the file path is correct',
+   1422              mcpErrorMetadata: {
+   1423                scope,
+   1424                severity: 'fatal',
+   1425              },
+   1426            },
+   1427          ],
+   1428        }
+   1429      }
+   1430      logForDebugging(
+   1431        `MCP config read error for ${filePath} (scope=${scope}): ${error}`,
+src/packages/mcp-runtime/src/config.ts(1441,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1431-1451 ---
+   1431        `MCP config read error for ${filePath} (scope=${scope}): ${error}`,
+   1432        { level: 'error' },
+   1433      )
+   1434      return {
+   1435        config: null,
+   1436        errors: [
+   1437          {
+   1438            file: filePath,
+   1439            path: '',
+   1440            message: `Failed to read file: ${error}`,
+   1441>           suggestion: 'Check file permissions and ensure the file exists',
+   1442            mcpErrorMetadata: {
+   1443              scope,
+   1444              severity: 'fatal',
+   1445            },
+   1446          },
+   1447        ],
+   1448      }
+   1449    }
+   1450  
+   1451    const parsedJson = safeParseJSON(configContent)
+src/packages/mcp-runtime/src/config.ts(1465,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1455-1475 ---
+   1455        `MCP config is not valid JSON: ${filePath} (scope=${scope}, length=${configContent.length}, first100=${jsonStringify(configContent.slice(0, 100))})`,
+   1456        { level: 'error' },
+   1457      )
+   1458      return {
+   1459        config: null,
+   1460        errors: [
+   1461          {
+   1462            file: filePath,
+   1463            path: '',
+   1464            message: `MCP config is not a valid JSON`,
+   1465>           suggestion: 'Fix the JSON syntax errors in the file',
+   1466            mcpErrorMetadata: {
+   1467              scope,
+   1468              severity: 'fatal',
+   1469            },
+   1470          },
+   1471        ],
+   1472      }
+   1473    }
+   1474  
+   1475    return parseMcpConfig({

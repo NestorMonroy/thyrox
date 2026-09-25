@@ -1,0 +1,214 @@
+run-task-pool: 52 trabajo(s), anchura 4, logs en /home/user/thyrox/.claude/build-logs/job-20260925T061953
+  job-20260925T061953/job-001 pid 10602   cd src/packages/agent/__tests__ && timeout 180 bun test AgentLoop.test.ts > /home/user/thyrox/.claude/cache/t107/1.log 2>&1; echo "$? src/packages/agent/__tests__/AgentLoop.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-002 pid 10640   cd src/packages/agent/__tests__ && timeout 180 bun test abort.test.ts > /home/user/thyrox/.claude/cache/t107/2.log 2>&1; echo "$? src/packages/agent/__tests__/abort.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-003 pid 10664   cd src/packages/agent/__tests__ && timeout 180 bun test attributionSnapshotHelpers.test.ts > /home/user/thyrox/.claude/cache/t107/3.log 2>&1; echo "$? src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-004 pid 10688   cd src/packages/agent/__tests__ && timeout 180 bun test compat.test.ts > /home/user/thyrox/.claude/cache/t107/4.log 2>&1; echo "$? src/packages/agent/__tests__/compat.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-005 pid 10712   cd src/packages/agent/__tests__ && timeout 180 bun test contextOutputAndPercentages.test.ts > /home/user/thyrox/.claude/cache/t107/5.log 2>&1; echo "$? src/packages/agent/__tests__/contextOutputAndPercentages.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-006 pid 10735   cd src/packages/agent/__tests__ && timeout 180 bun test hooksEvents.test.ts > /home/user/thyrox/.claude/cache/t107/6.log 2>&1; echo "$? src/packages/agent/__tests__/hooksEvents.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-007 pid 10866   cd src/packages/agent/__tests__ && timeout 180 bun test tee.test.ts > /home/user/thyrox/.claude/cache/t107/7.log 2>&1; echo "$? src/packages/agent/__tests__/tee.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-008 pid 10905   cd src/packages/agent/workflow/__tests__ && timeout 180 bun test engine.test.ts > /home/user/thyrox/.claude/cache/t107/8.log 2>&1; echo "$? src/packages/agent/workflow/__tests__/engine.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-009 pid 10934   cd src/packages/app-host/src/__tests__ && timeout 180 bun test packageHostSetupResolution.test.ts > /home/user/thyrox/.claude/cache/t107/9.log 2>&1; echo "$? src/packages/app-host/src/__tests__/packageHostSetupResolution.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-010 pid 11719   cd src/packages/app-host/src/commands/__tests__ && timeout 180 bun test init-verifiers.test.ts > /home/user/thyrox/.claude/cache/t107/10.log 2>&1; echo "$? src/packages/app-host/src/commands/__tests__/init-verifiers.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-011 pid 11749   cd src/packages/app-host/src/main/startup/__tests__ && timeout 180 bun test context.test.ts > /home/user/thyrox/.claude/cache/t107/11.log 2>&1; echo "$? src/packages/app-host/src/main/startup/__tests__/context.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-012 pid 11783   cd src/packages/command-runtime/src/__tests__ && timeout 180 bun test createMovedToPluginCommand.test.ts > /home/user/thyrox/.claude/cache/t107/12.log 2>&1; echo "$? src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-013 pid 11826   cd src/packages/config/__tests__ && timeout 180 bun test envUtils.test.ts > /home/user/thyrox/.claude/cache/t107/13.log 2>&1; echo "$? src/packages/config/__tests__/envUtils.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-014 pid 11862   cd src/packages/context-compression/__tests__ && timeout 180 bun test lite.test.ts > /home/user/thyrox/.claude/cache/t107/14.log 2>&1; echo "$? src/packages/context-compression/__tests__/lite.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-015 pid 11907   cd src/packages/mcp-runtime/src/__tests__ && timeout 180 bun test InProcessTransport.test.ts > /home/user/thyrox/.claude/cache/t107/15.log 2>&1; echo "$? src/packages/mcp-runtime/src/__tests__/InProcessTransport.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-016 pid 11936   cd src/packages/mcp-runtime/src/__tests__ && timeout 180 bun test utilsHelpers.test.ts > /home/user/thyrox/.claude/cache/t107/16.log 2>&1; echo "$? src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-017 pid 11973   cd src/packages/mcp-runtime/src/__tests__ && timeout 180 bun test utilsHelpers2.test.ts > /home/user/thyrox/.claude/cache/t107/17.log 2>&1; echo "$? src/packages/mcp-runtime/src/__tests__/utilsHelpers2.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-018 pid 12016   cd src/packages/memory/src/__tests__ && timeout 180 bun test consolidationPrompt.test.ts > /home/user/thyrox/.claude/cache/t107/18.log 2>&1; echo "$? src/packages/memory/src/__tests__/consolidationPrompt.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-019 pid 12638   cd src/packages/permission/src/__tests__ && timeout 180 bun test memoryPausePermissions.test.ts > /home/user/thyrox/.claude/cache/t107/19.log 2>&1; echo "$? src/packages/permission/src/__tests__/memoryPausePermissions.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-020 pid 12672   cd src/packages/provider/__tests__ && timeout 180 bun test geminiModelMapping.test.ts > /home/user/thyrox/.claude/cache/t107/20.log 2>&1; echo "$? src/packages/provider/__tests__/geminiModelMapping.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-021 pid 12720   cd src/packages/provider/__tests__ && timeout 180 bun test geminiSourcePinning.test.ts > /home/user/thyrox/.claude/cache/t107/21.log 2>&1; echo "$? src/packages/provider/__tests__/geminiSourcePinning.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-022 pid 13388   cd src/packages/provider/__tests__ && timeout 180 bun test openaiModelMapping.test.ts > /home/user/thyrox/.claude/cache/t107/22.log 2>&1; echo "$? src/packages/provider/__tests__/openaiModelMapping.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-023 pid 13422   cd src/packages/provider/__tests__ && timeout 180 bun test openaiModelMappingSourcePinning.test.ts > /home/user/thyrox/.claude/cache/t107/23.log 2>&1; echo "$? src/packages/provider/__tests__/openaiModelMappingSourcePinning.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-024 pid 13461   cd src/packages/provider/src/__tests__ && timeout 180 bun test describeHowToDisableAuthTokenSource.test.ts > /home/user/thyrox/.claude/cache/t107/24.log 2>&1; echo "$? src/packages/provider/src/__tests__/describeHowToDisableAuthTokenSource.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-025 pid 13506   cd src/packages/provider/src/__tests__ && timeout 180 bun test extraUsage.test.ts > /home/user/thyrox/.claude/cache/t107/25.log 2>&1; echo "$? src/packages/provider/src/__tests__/extraUsage.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-026 pid 13544   cd src/packages/provider/src/__tests__ && timeout 180 bun test formatCreditAmount.test.ts > /home/user/thyrox/.claude/cache/t107/26.log 2>&1; echo "$? src/packages/provider/src/__tests__/formatCreditAmount.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-027 pid 13886   cd src/packages/provider/src/__tests__ && timeout 180 bun test gatewayModelDiscovery.test.ts > /home/user/thyrox/.claude/cache/t107/27.log 2>&1; echo "$? src/packages/provider/src/__tests__/gatewayModelDiscovery.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-028 pid 13908   cd src/packages/provider/src/__tests__ && timeout 180 bun test geminiModelMapping.test.ts > /home/user/thyrox/.claude/cache/t107/28.log 2>&1; echo "$? src/packages/provider/src/__tests__/geminiModelMapping.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-029 pid 13938   cd src/packages/provider/src/__tests__ && timeout 180 bun test missingAntExports.behavior.test.ts > /home/user/thyrox/.claude/cache/t107/29.log 2>&1; echo "$? src/packages/provider/src/__tests__/missingAntExports.behavior.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-030 pid 13968   cd src/packages/provider/src/__tests__ && timeout 180 bun test openaiModelMapping.test.ts > /home/user/thyrox/.claude/cache/t107/30.log 2>&1; echo "$? src/packages/provider/src/__tests__/openaiModelMapping.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-031 pid 14010   cd src/packages/repl/src/__tests__ && timeout 180 bun test extraUsage.test.ts > /home/user/thyrox/.claude/cache/t107/31.log 2>&1; echo "$? src/packages/repl/src/__tests__/extraUsage.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-032 pid 14033   cd src/packages/repl/src/__tests__ && timeout 180 bun test isNonSpacePrintable.test.ts > /home/user/thyrox/.claude/cache/t107/32.log 2>&1; echo "$? src/packages/repl/src/__tests__/isNonSpacePrintable.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-033 pid 14061   cd src/packages/repl/src/__tests__ && timeout 180 bun test managedSettingsSecurity.test.ts > /home/user/thyrox/.claude/cache/t107/33.log 2>&1; echo "$? src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-034 pid 14084   cd src/packages/skills/__tests__ && timeout 180 bun test skillsFromDir.test.ts > /home/user/thyrox/.claude/cache/t107/34.log 2>&1; echo "$? src/packages/skills/__tests__/skillsFromDir.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-035 pid 14169   cd src/packages/storage/src/__tests__ && timeout 180 bun test filePureHelpers.test.ts > /home/user/thyrox/.claude/cache/t107/35.log 2>&1; echo "$? src/packages/storage/src/__tests__/filePureHelpers.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-036 pid 14194   cd src/packages/tool-registry/src/__tests__ && timeout 180 bun test fileEditUtils.test.ts > /home/user/thyrox/.claude/cache/t107/36.log 2>&1; echo "$? src/packages/tool-registry/src/__tests__/fileEditUtils.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-037 pid 14224   cd src/packages/tool-registry/src/__tests__ && timeout 180 bun test taskAndConfigHome.test.ts > /home/user/thyrox/.claude/cache/t107/37.log 2>&1; echo "$? src/packages/tool-registry/src/__tests__/taskAndConfigHome.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-038 pid 14250   cd src/packages/tool-registry/src/tools/AgentTool/__tests__ && timeout 180 bun test agentDisplay.test.ts > /home/user/thyrox/.claude/cache/t107/38.log 2>&1; echo "$? src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-039 pid 14298   cd src/packages/tool-registry/src/tools/BashTool/__tests__ && timeout 180 bun test createContentSummary.test.ts > /home/user/thyrox/.claude/cache/t107/39.log 2>&1; echo "$? src/packages/tool-registry/src/tools/BashTool/__tests__/createContentSummary.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-040 pid 14321   cd src/packages/tool-registry/src/tools/BashTool/__tests__ && timeout 180 bun test parseDataUri.test.ts > /home/user/thyrox/.claude/cache/t107/40.log 2>&1; echo "$? src/packages/tool-registry/src/tools/BashTool/__tests__/parseDataUri.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-041 pid 14346   cd src/packages/tool-registry/src/tools/BashTool/__tests__ && timeout 180 bun test stripEmptyLines.test.ts > /home/user/thyrox/.claude/cache/t107/41.log 2>&1; echo "$? src/packages/tool-registry/src/tools/BashTool/__tests__/stripEmptyLines.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-042 pid 14371   cd src/packages/tool-registry/src/tools/FileEditTool/__tests__ && timeout 180 bun test utils.test.ts > /home/user/thyrox/.claude/cache/t107/42.log 2>&1; echo "$? src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-043 pid 14423   cd src/packages/tool-registry/src/tools/ListMcpResourcesTool/__tests__ && timeout 180 bun test UI.test.ts > /home/user/thyrox/.claude/cache/t107/43.log 2>&1; echo "$? src/packages/tool-registry/src/tools/ListMcpResourcesTool/__tests__/UI.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-044 pid 14447   cd src/packages/tool-registry/src/tools/MCPTool/__tests__ && timeout 180 bun test UI.test.ts > /home/user/thyrox/.claude/cache/t107/44.log 2>&1; echo "$? src/packages/tool-registry/src/tools/MCPTool/__tests__/UI.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-045 pid 14472   cd src/packages/tool-registry/src/tools/ReadMcpResourceTool/__tests__ && timeout 180 bun test UI.test.ts > /home/user/thyrox/.claude/cache/t107/45.log 2>&1; echo "$? src/packages/tool-registry/src/tools/ReadMcpResourceTool/__tests__/UI.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-046 pid 14497   cd src/packages/tool-registry/src/tools/__tests__ && timeout 180 bun test utils.test.ts > /home/user/thyrox/.claude/cache/t107/46.log 2>&1; echo "$? src/packages/tool-registry/src/tools/__tests__/utils.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-047 pid 14524   cd src/packages/tools/__tests__ && timeout 180 bun test subagent.test.ts > /home/user/thyrox/.claude/cache/t107/47.log 2>&1; echo "$? src/packages/tools/__tests__/subagent.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-048 pid 14550   cd tests/smoke && timeout 180 bun test swarm-smoke.test.ts > /home/user/thyrox/.claude/cache/t107/48.log 2>&1; echo "$? tests/smoke/swarm-smoke.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-049 pid 14577   cd tests/unit/utils && timeout 180 bun test effort.test.ts > /home/user/thyrox/.claude/cache/t107/49.log 2>&1; echo "$? tests/unit/utils/effort.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-050 pid 14607   cd tests/unit/utils && timeout 180 bun test envUtils.test.ts > /home/user/thyrox/.claude/cache/t107/50.log 2>&1; echo "$? tests/unit/utils/envUtils.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-051 pid 14648   cd tests/unit/utils && timeout 180 bun test glob.test.ts > /home/user/thyrox/.claude/cache/t107/51.log 2>&1; echo "$? tests/unit/utils/glob.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+  job-20260925T061953/job-052 pid 14672   cd tests/verify && timeout 180 bun test staleSubstitutes.test.ts > /home/user/thyrox/.claude/cache/t107/52.log 2>&1; echo "$? tests/verify/staleSubstitutes.test.ts" >> /home/user/thyrox/.claude/cache/t107/verdicts.txt
+run-task-pool: lanzados 52 de 52; esperando en PRIMER PLANO (timeout 1200s)
+asentado: job-20260925T061953_job-001 -> OK (2 de 53)
+asentado: job-20260925T061953_job-002 -> OK (3 de 53)
+asentado: job-20260925T061953_job-003 -> OK (4 de 53)
+asentado: job-20260925T061953_job-004 -> OK (5 de 53)
+asentado: job-20260925T061953_job-005 -> OK (6 de 53)
+asentado: job-20260925T061953_job-006 -> OK (7 de 53)
+asentado: job-20260925T061953_job-007 -> OK (8 de 53)
+asentado: job-20260925T061953_job-008 -> OK (9 de 53)
+asentado: job-20260925T061953_job-009 -> OK (10 de 53)
+asentado: job-20260925T061953_job-010 -> OK (11 de 53)
+asentado: job-20260925T061953_job-011 -> OK (12 de 53)
+asentado: job-20260925T061953_job-012 -> OK (13 de 53)
+asentado: job-20260925T061953_job-013 -> OK (14 de 53)
+asentado: job-20260925T061953_job-014 -> OK (15 de 53)
+asentado: job-20260925T061953_job-015 -> OK (16 de 53)
+asentado: job-20260925T061953_job-016 -> OK (17 de 53)
+asentado: job-20260925T061953_job-017 -> OK (18 de 53)
+asentado: job-20260925T061953_job-018 -> OK (19 de 53)
+asentado: job-20260925T061953_job-019 -> OK (20 de 53)
+asentado: job-20260925T061953_job-020 -> OK (21 de 53)
+asentado: job-20260925T061953_job-021 -> OK (22 de 53)
+asentado: job-20260925T061953_job-022 -> OK (23 de 53)
+asentado: job-20260925T061953_job-023 -> OK (24 de 53)
+asentado: job-20260925T061953_job-024 -> OK (25 de 53)
+asentado: job-20260925T061953_job-025 -> OK (26 de 53)
+asentado: job-20260925T061953_job-026 -> OK (27 de 53)
+asentado: job-20260925T061953_job-027 -> OK (28 de 53)
+asentado: job-20260925T061953_job-028 -> OK (29 de 53)
+asentado: job-20260925T061953_job-029 -> OK (30 de 53)
+asentado: job-20260925T061953_job-030 -> OK (31 de 53)
+asentado: job-20260925T061953_job-031 -> OK (32 de 53)
+asentado: job-20260925T061953_job-032 -> OK (33 de 53)
+asentado: job-20260925T061953_job-033 -> OK (34 de 53)
+asentado: job-20260925T061953_job-034 -> OK (35 de 53)
+asentado: job-20260925T061953_job-035 -> OK (36 de 53)
+asentado: job-20260925T061953_job-036 -> OK (37 de 53)
+asentado: job-20260925T061953_job-037 -> OK (38 de 53)
+asentado: job-20260925T061953_job-038 -> OK (39 de 53)
+asentado: job-20260925T061953_job-039 -> OK (40 de 53)
+asentado: job-20260925T061953_job-040 -> OK (41 de 53)
+asentado: job-20260925T061953_job-041 -> OK (42 de 53)
+asentado: job-20260925T061953_job-042 -> OK (43 de 53)
+asentado: job-20260925T061953_job-043 -> OK (44 de 53)
+asentado: job-20260925T061953_job-044 -> OK (45 de 53)
+asentado: job-20260925T061953_job-045 -> OK (46 de 53)
+asentado: job-20260925T061953_job-046 -> OK (47 de 53)
+asentado: job-20260925T061953_job-047 -> OK (48 de 53)
+asentado: job-20260925T061953_job-048 -> OK (49 de 53)
+asentado: job-20260925T061953_job-049 -> OK (50 de 53)
+asentado: job-20260925T061953_job-050 -> OK (51 de 53)
+asentado: job-20260925T061953_job-052 -> OK (52 de 53)
+asentado: job-20260925T061953_job-051 -> OK (52 de 53)
+== 53 trabajos asentados ==
+OLVIDADO job-20260925T061953
+       | (vacío — no emitió nada)
+OK     job-20260925T061953_job-001
+       | EXIT=0
+OK     job-20260925T061953_job-002
+       | EXIT=0
+OK     job-20260925T061953_job-003
+       | EXIT=0
+OK     job-20260925T061953_job-004
+       | EXIT=0
+OK     job-20260925T061953_job-005
+       | EXIT=0
+OK     job-20260925T061953_job-006
+       | EXIT=0
+OK     job-20260925T061953_job-007
+       | EXIT=0
+OK     job-20260925T061953_job-008
+       | EXIT=0
+OK     job-20260925T061953_job-009
+       | EXIT=0
+OK     job-20260925T061953_job-010
+       | EXIT=0
+OK     job-20260925T061953_job-011
+       | EXIT=0
+OK     job-20260925T061953_job-012
+       | EXIT=0
+OK     job-20260925T061953_job-013
+       | EXIT=0
+OK     job-20260925T061953_job-014
+       | EXIT=0
+OK     job-20260925T061953_job-015
+       | EXIT=0
+OK     job-20260925T061953_job-016
+       | EXIT=0
+OK     job-20260925T061953_job-017
+       | EXIT=0
+OK     job-20260925T061953_job-018
+       | EXIT=0
+OK     job-20260925T061953_job-019
+       | EXIT=0
+OK     job-20260925T061953_job-020
+       | EXIT=0
+OK     job-20260925T061953_job-021
+       | EXIT=0
+OK     job-20260925T061953_job-022
+       | EXIT=0
+OK     job-20260925T061953_job-023
+       | EXIT=0
+OK     job-20260925T061953_job-024
+       | EXIT=0
+OK     job-20260925T061953_job-025
+       | EXIT=0
+OK     job-20260925T061953_job-026
+       | EXIT=0
+OK     job-20260925T061953_job-027
+       | EXIT=0
+OK     job-20260925T061953_job-028
+       | EXIT=0
+OK     job-20260925T061953_job-029
+       | EXIT=0
+OK     job-20260925T061953_job-030
+       | EXIT=0
+OK     job-20260925T061953_job-031
+       | EXIT=0
+OK     job-20260925T061953_job-032
+       | EXIT=0
+OK     job-20260925T061953_job-033
+       | EXIT=0
+OK     job-20260925T061953_job-034
+       | EXIT=0
+OK     job-20260925T061953_job-035
+       | EXIT=0
+OK     job-20260925T061953_job-036
+       | EXIT=0
+OK     job-20260925T061953_job-037
+       | EXIT=0
+OK     job-20260925T061953_job-038
+       | EXIT=0
+OK     job-20260925T061953_job-039
+       | EXIT=0
+OK     job-20260925T061953_job-040
+       | EXIT=0
+OK     job-20260925T061953_job-041
+       | EXIT=0
+OK     job-20260925T061953_job-042
+       | EXIT=0
+OK     job-20260925T061953_job-043
+       | EXIT=0
+OK     job-20260925T061953_job-044
+       | EXIT=0
+OK     job-20260925T061953_job-045
+       | EXIT=0
+OK     job-20260925T061953_job-046
+       | EXIT=0
+OK     job-20260925T061953_job-047
+       | EXIT=0
+OK     job-20260925T061953_job-048
+       | EXIT=0
+OK     job-20260925T061953_job-049
+       | EXIT=0
+OK     job-20260925T061953_job-050
+       | EXIT=0
+OK     job-20260925T061953_job-051
+       | EXIT=0
+OK     job-20260925T061953_job-052
+       | EXIT=0
+__BG_EXIT__=0

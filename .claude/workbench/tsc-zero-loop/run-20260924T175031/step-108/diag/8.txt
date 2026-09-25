@@ -1,0 +1,175 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1072,65): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1062-1082 ---
+   1062  
+   1063      // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+   1064      // `<claude-code-hint />` tag to stderr (merged into stdout here). Scan,
+   1065      // record for useClaudeCodeHintRecommendation to surface, then strip
+   1066      // so the model never sees the tag — a zero-token side channel.
+   1067      // Stripping runs unconditionally (subagent output must stay clean too);
+   1068      // only the dialog recording is main-thread-only.
+   1069      const extracted = extractClaudeCodeHints(strippedStdout, input.command)
+   1070      strippedStdout = extracted.stripped
+   1071      if (isMainThread && extracted.hints.length > 0) {
+   1072>       for (const hint of extracted.hints) maybeRecordPluginHint(hint)
+   1073      }
+   1074  
+   1075      let isImage = isImageOutput(strippedStdout)
+   1076  
+   1077      // Cap image dimensions + size if present (CC-304 — see
+   1078      // resizeShellImageOutput). Scope the decoded buffer so it can be reclaimed
+   1079      // before we build the output Out object.
+   1080      let compressedStdout = strippedStdout
+   1081      if (isImage) {
+   1082        const resized = await resizeShellImageOutput(
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1220,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1210-1230 ---
+   1210  
+   1211    // Start the command execution
+   1212    const resultPromise = shellCommand.result
+   1213  
+   1214    // Helper to spawn a background task and return its ID
+   1215    async function spawnBackgroundTask(): Promise<string> {
+   1216      const handle = await spawnShellTask(
+   1217        {
+   1218          command,
+   1219          description: description || command,
+   1220>         shellCommand,
+   1221          toolUseId,
+   1222          agentId,
+   1223        },
+   1224        {
+   1225          abortController,
+   1226          getAppState: () => {
+   1227            // We don't have direct access to getAppState here, but spawn doesn't
+   1228            // actually use it during the spawn process
+   1229            throw new Error(
+   1230              'getAppState not available in runShellCommand context',
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1252,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1242-1262 ---
+   1242      backgroundFn?: (shellId: string) => void,
+   1243    ): void {
+   1244      // If a foreground task is already registered (via registerForeground in the
+   1245      // progress loop), background it in-place instead of re-spawning. Re-spawning
+   1246      // would overwrite tasks[taskId], emit a duplicate task_started SDK event,
+   1247      // and leak the first cleanup callback.
+   1248      if (foregroundTaskId) {
+   1249        if (
+   1250          !backgroundExistingForegroundTask(
+   1251            foregroundTaskId,
+   1252>           shellCommand,
+   1253            description || command,
+   1254            setAppState,
+   1255            toolUseId,
+   1256          )
+   1257        ) {
+   1258          return
+   1259        }
+   1260        backgroundShellId = foregroundTaskId
+   1261        logEvent(eventName, {
+   1262          command_type: getCommandTypeForLogging(command),
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1382,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1372-1392 ---
+   1372          code: 0,
+   1373          interrupted: false,
+   1374          backgroundTaskId: backgroundShellId,
+   1375          assistantAutoBackgrounded,
+   1376        }
+   1377      }
+   1378    }
+   1379  
+   1380    // Start polling the output file for progress. The poller's #tick calls
+   1381    // onProgress every second, which resolves progressSignal below.
+   1382>   TaskOutput.startPolling(shellCommand.taskOutput.taskId)
+   1383  
+   1384    // Progress loop: wake is driven by the shared poller calling onProgress,
+   1385    // which resolves the progressSignal.
+   1386    try {
+   1387      while (true) {
+   1388        const progressSignal = createProgressSignal()
+   1389        const result = await Promise.race([resultPromise, progressSignal])
+   1390  
+   1391        if (result !== null) {
+   1392          // Race: backgrounding fired (15s timer / onTimeout / Ctrl+B) but the
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1409,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1399-1419 ---
+   1399          // Check result.backgroundTaskId (not the closure var) to also cover
+   1400          // Ctrl+B, which calls shellCommand.background() directly.
+   1401          if (result.backgroundTaskId !== undefined) {
+   1402            markTaskNotified(result.backgroundTaskId, setAppState)
+   1403            const fixedResult: ExecResult = {
+   1404              ...result,
+   1405              backgroundTaskId: undefined,
+   1406            }
+   1407            // Mirror ShellCommand.#handleExit's large-output branch that was
+   1408            // skipped because #backgroundTaskId was set.
+   1409>           const { taskOutput } = shellCommand
+   1410            if (taskOutput.stdoutToFile && !taskOutput.outputFileRedundant) {
+   1411              fixedResult.outputFilePath = taskOutput.path
+   1412              fixedResult.outputFileSize = taskOutput.outputFileSize
+   1413              fixedResult.outputTaskId = taskOutput.taskId
+   1414            }
+   1415            shellCommand.cleanup()
+   1416            return fixedResult
+   1417          }
+   1418          // Command has completed - return the actual result
+   1419          // If we registered as a foreground task, unregister it
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1474,15): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1464-1484 ---
+   1464          backgroundShellId === undefined &&
+   1465          elapsedSeconds >= PROGRESS_THRESHOLD_MS / 1000 &&
+   1466          setToolJSX
+   1467        ) {
+   1468          // Register this command as a foreground task so it can be backgrounded via Ctrl+B
+   1469          if (!foregroundTaskId) {
+   1470            foregroundTaskId = registerForeground(
+   1471              {
+   1472                command,
+   1473                description: description || command,
+   1474>               shellCommand,
+   1475                agentId,
+   1476              },
+   1477              setAppState,
+   1478              toolUseId,
+   1479            )
+   1480          }
+   1481  
+   1482          setToolJSX({
+   1483            jsx: <BackgroundHint />,
+   1484            shouldHidePromptInput: false,
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1496,30): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1486-1503 ---
+   1486            showSpinner: true,
+   1487          })
+   1488        }
+   1489        yield {
+   1490          type: 'progress',
+   1491          fullOutput,
+   1492          output: lastProgressOutput,
+   1493          elapsedTimeSeconds: elapsedSeconds,
+   1494          totalLines: lastTotalLines,
+   1495          totalBytes: lastTotalBytes,
+   1496>         taskId: shellCommand.taskOutput.taskId,
+   1497          ...(timeout ? { timeoutMs } : undefined),
+   1498        }
+   1499      }
+   1500    } finally {
+   1501      TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1502    }
+   1503  }
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1501,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1491-1503 ---
+   1491          fullOutput,
+   1492          output: lastProgressOutput,
+   1493          elapsedTimeSeconds: elapsedSeconds,
+   1494          totalLines: lastTotalLines,
+   1495          totalBytes: lastTotalBytes,
+   1496          taskId: shellCommand.taskOutput.taskId,
+   1497          ...(timeout ? { timeoutMs } : undefined),
+   1498        }
+   1499      }
+   1500    } finally {
+   1501>     TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1502    }
+   1503  }

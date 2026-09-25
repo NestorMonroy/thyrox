@@ -1,0 +1,68 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(53,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts:43-63 ---
+     43  export function getSpinnerFramesCycle(): readonly string[] {
+     44    const base = getSpinnerFrames()
+     45    return [...base, ...[...base].reverse()]
+     46  }
+     47  
+     48  /**
+     49   * Steady non-animated glyph used for in-progress sub-rows (PR child rows,
+     50   * frame child rows). Source: ant Vs3 = () => ezH[4] = "✻".
+     51   */
+     52  export function getSteadyGlyph(): string {
+     53>   return getSpinnerFrames()[4]
+     54  }
+     55  
+     56  /**
+     57   * Completed glyph used for done-band rows. Source: ant Ns3 = () => ezH[1] = "✢".
+     58   */
+     59  export function getCompletedGlyph(): string {
+     60    return getSpinnerFrames()[1]
+     61  }
+     62  
+     63  /**
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(60,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts:50-70 ---
+     50   * frame child rows). Source: ant Vs3 = () => ezH[4] = "✻".
+     51   */
+     52  export function getSteadyGlyph(): string {
+     53    return getSpinnerFrames()[4]
+     54  }
+     55  
+     56  /**
+     57   * Completed glyph used for done-band rows. Source: ant Ns3 = () => ezH[1] = "✢".
+     58   */
+     59  export function getCompletedGlyph(): string {
+     60>   return getSpinnerFrames()[1]
+     61  }
+     62  
+     63  /**
+     64   * Pick the current animated frame for a row at the given time.
+     65   * Source: ant Cs3 (5092.js:605-613).
+     66   */
+     67  export function pickSpinnerFrame(nowMs: number): string {
+     68    const cycle = getSpinnerFramesCycle()
+     69    return cycle[Math.floor(nowMs / SPINNER_FRAME_MS) % cycle.length]
+     70  }
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts(69,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts:59-70 ---
+     59  export function getCompletedGlyph(): string {
+     60    return getSpinnerFrames()[1]
+     61  }
+     62  
+     63  /**
+     64   * Pick the current animated frame for a row at the given time.
+     65   * Source: ant Cs3 (5092.js:605-613).
+     66   */
+     67  export function pickSpinnerFrame(nowMs: number): string {
+     68    const cycle = getSpinnerFramesCycle()
+     69>   return cycle[Math.floor(nowMs / SPINNER_FRAME_MS) % cycle.length]
+     70  }
+  Type 'undefined' is not assignable to type 'string'.

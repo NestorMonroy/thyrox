@@ -1,0 +1,141 @@
+src/packages/repl/src/hooksSettings.ts(215,43): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksSettings.ts:205-225 ---
+    205    // Create a priority map based on SOURCES order (lower index = higher priority)
+    206    const sourcePriority = SOURCES.reduce(
+    207      (acc, source, index) => {
+    208        acc[source] = index
+    209        return acc
+    210      },
+    211      {} as Record<EditableSettingSource, number>,
+    212    )
+    213  
+    214    return [...matchers].sort((a, b) => {
+    215>     const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
+    216      const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    217  
+    218      const aSources = Array.from(new Set(aHooks.map(h => h.source)))
+    219      const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+src/packages/repl/src/hooksSettings.ts(216,43): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksSettings.ts:206-226 ---
+    206    const sourcePriority = SOURCES.reduce(
+    207      (acc, source, index) => {
+    208        acc[source] = index
+    209        return acc
+    210      },
+    211      {} as Record<EditableSettingSource, number>,
+    212    )
+    213  
+    214    return [...matchers].sort((a, b) => {
+    215      const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
+    216>     const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    217  
+    218      const aSources = Array.from(new Set(aHooks.map(h => h.source)))
+    219      const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+    226          : sourcePriority[source as EditableSettingSource]
+src/packages/repl/src/hooksSettings.ts(218,52): error TS7006: Parameter 'h' implicitly has an 'any' type.
+  --- código src/packages/repl/src/hooksSettings.ts:208-228 ---
+    208        acc[source] = index
+    209        return acc
+    210      },
+    211      {} as Record<EditableSettingSource, number>,
+    212    )
+    213  
+    214    return [...matchers].sort((a, b) => {
+    215      const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
+    216      const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    217  
+    218>     const aSources = Array.from(new Set(aHooks.map(h => h.source)))
+    219      const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+    226          : sourcePriority[source as EditableSettingSource]
+    227  
+    228      const aHighestPriority = Math.min(...aSources.map(getSourcePriority))
+src/packages/repl/src/hooksSettings.ts(219,52): error TS7006: Parameter 'h' implicitly has an 'any' type.
+  --- código src/packages/repl/src/hooksSettings.ts:209-229 ---
+    209        return acc
+    210      },
+    211      {} as Record<EditableSettingSource, number>,
+    212    )
+    213  
+    214    return [...matchers].sort((a, b) => {
+    215      const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
+    216      const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    217  
+    218      const aSources = Array.from(new Set(aHooks.map(h => h.source)))
+    219>     const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+    226          : sourcePriority[source as EditableSettingSource]
+    227  
+    228      const aHighestPriority = Math.min(...aSources.map(getSourcePriority))
+    229      const bHighestPriority = Math.min(...bSources.map(getSourcePriority))
+src/packages/repl/src/hooksSettings.ts(228,55): error TS2345: Argument of type '(source: HookSource) => number' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => number'.
+  --- código src/packages/repl/src/hooksSettings.ts:218-238 ---
+    218      const aSources = Array.from(new Set(aHooks.map(h => h.source)))
+    219      const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+    226          : sourcePriority[source as EditableSettingSource]
+    227  
+    228>     const aHighestPriority = Math.min(...aSources.map(getSourcePriority))
+    229      const bHighestPriority = Math.min(...bSources.map(getSourcePriority))
+    230  
+    231      if (aHighestPriority !== bHighestPriority) {
+    232        return aHighestPriority - bHighestPriority
+    233      }
+    234  
+    235      // If same priority, sort by matcher name
+    236      return a.localeCompare(b)
+    237    })
+    238  }
+  Types of parameters 'source' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'HookSource'.
+src/packages/repl/src/hooksSettings.ts(229,55): error TS2345: Argument of type '(source: HookSource) => number' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => number'.
+  --- código src/packages/repl/src/hooksSettings.ts:219-238 ---
+    219      const bSources = Array.from(new Set(bHooks.map(h => h.source)))
+    220  
+    221      // Sort by highest priority source first (lowest priority number)
+    222      // Plugin hooks get lowest priority (highest number)
+    223      const getSourcePriority = (source: HookSource) =>
+    224        source === 'pluginHook' || source === 'builtinHook'
+    225          ? 999
+    226          : sourcePriority[source as EditableSettingSource]
+    227  
+    228      const aHighestPriority = Math.min(...aSources.map(getSourcePriority))
+    229>     const bHighestPriority = Math.min(...bSources.map(getSourcePriority))
+    230  
+    231      if (aHighestPriority !== bHighestPriority) {
+    232        return aHighestPriority - bHighestPriority
+    233      }
+    234  
+    235      // If same priority, sort by matcher name
+    236      return a.localeCompare(b)
+    237    })
+    238  }
+  Types of parameters 'source' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'HookSource'.

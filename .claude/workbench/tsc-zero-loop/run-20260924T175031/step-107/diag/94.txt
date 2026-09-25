@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/cli/src/setup/setup.ts(416,9): error TS18046: 'envDynamic.getIsDocker' is of type 'unknown'.
+  --- código src/packages/cli/src/setup/setup.ts:406-426 ---
+    406        // Skip for Desktop's local agent mode — same trust model as CCR/BYOC
+    407        // (trusted Anthropic-managed launcher intentionally pre-approving everything).
+    408        // Precedent: permissionSetup.ts:861, applySettingsChange.ts:55 (PR #19116)
+    409        process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
+    410        // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+    411        // unconditionally to unlock mid-session bypass switching
+    412        process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+    413      ) {
+    414        // Only await if permission mode is set to bypass
+    415        const [isDocker, hasInternet] = await Promise.all([
+    416>         envDynamic.getIsDocker(),
+    417          env.hasInternetAccess(),
+    418        ])
+    419        const isBubblewrap = envDynamic.getIsBubblewrapSandbox()
+    420        const isSandbox = process.env.IS_SANDBOX === '1'
+    421        const isSandboxed = isDocker || isBubblewrap || isSandbox
+    422        if (!isSandboxed || hasInternet) {
+    423          console.error(
+    424            `--dangerously-skip-permissions can only be used in Docker/sandbox containers with no internet access but got Docker: ${isDocker}, Bubblewrap: ${isBubblewrap}, IS_SANDBOX: ${isSandbox}, hasInternet: ${hasInternet}`,
+    425          )
+    426          process.exit(1)
+src/packages/cli/src/setup/setup.ts(419,28): error TS18046: 'envDynamic.getIsBubblewrapSandbox' is of type 'unknown'.
+  --- código src/packages/cli/src/setup/setup.ts:409-429 ---
+    409        process.env.CLAUDE_CODE_ENTRYPOINT !== 'local-agent' &&
+    410        // Same for CCD (Claude Code in Desktop) — apps#29127 passes the flag
+    411        // unconditionally to unlock mid-session bypass switching
+    412        process.env.CLAUDE_CODE_ENTRYPOINT !== 'claude-desktop'
+    413      ) {
+    414        // Only await if permission mode is set to bypass
+    415        const [isDocker, hasInternet] = await Promise.all([
+    416          envDynamic.getIsDocker(),
+    417          env.hasInternetAccess(),
+    418        ])
+    419>       const isBubblewrap = envDynamic.getIsBubblewrapSandbox()
+    420        const isSandbox = process.env.IS_SANDBOX === '1'
+    421        const isSandboxed = isDocker || isBubblewrap || isSandbox
+    422        if (!isSandboxed || hasInternet) {
+    423          console.error(
+    424            `--dangerously-skip-permissions can only be used in Docker/sandbox containers with no internet access but got Docker: ${isDocker}, Bubblewrap: ${isBubblewrap}, IS_SANDBOX: ${isSandbox}, hasInternet: ${hasInternet}`,
+    425          )
+    426          process.exit(1)
+    427        }
+    428      }
+    429    }

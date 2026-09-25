@@ -1,0 +1,6 @@
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(87,34): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(117,34): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(118,34): error TS2554: Expected 1 arguments, but got 0.
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(148,14): error TS2554: Expected 3 arguments, but got 2.
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(148,14): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(153,50): error TS2554: Expected 4-5 arguments, but got 2.

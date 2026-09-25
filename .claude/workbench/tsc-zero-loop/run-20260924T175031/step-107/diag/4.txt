@@ -1,0 +1,28 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/command-runtime/src/skills/bundled/keybindings.ts(42,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/command-runtime/src/skills/bundled/keybindings.ts:32-52 ---
+     32   */
+     33  function generateActionsTable(): string {
+     34    // Build a lookup: action -> { keys, context }
+     35    const actionInfo: Record<string, { keys: string[]; context: string }> = {}
+     36    for (const block of DEFAULT_BINDINGS) {
+     37      for (const [key, action] of Object.entries(block.bindings)) {
+     38        if (action) {
+     39          if (!actionInfo[action as string]) {
+     40            actionInfo[action as string] = { keys: [], context: block.context }
+     41          }
+     42>         actionInfo[action as string].keys.push(key)
+     43        }
+     44      }
+     45    }
+     46  
+     47    return markdownTable(
+     48      ['Action', 'Default Key(s)', 'Context'],
+     49      KEYBINDING_ACTIONS.map(action => {
+     50        const info = actionInfo[action]
+     51        const keys = info ? info.keys.map(k => `\`${k}\``).join(', ') : '(none)'
+     52        const context = info ? info.context : inferContextFromAction(action)

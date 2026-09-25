@@ -1,0 +1,161 @@
+src/packages/agent/internal/cronTasksCore.ts(90,45): error TS2339: Property 'getProjectRoot' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:80-100 ---
+     80  type CronFile = { tasks: CronTask[] }
+     81  
+     82  const CRON_FILE_REL = join('.claude', 'scheduled_tasks.json')
+     83  
+     84  /**
+     85   * Ruta del archivo de cron. `dir` cae por defecto a `getProjectRoot()` — se
+     86   * pasa explicito desde contextos que no arrancan por `main.tsx` (por ejemplo
+     87   * el daemon del SDK de agentes, que no tiene estado de bootstrap).
+     88   */
+     89  export function getCronFilePath(dir?: string): string {
+     90>   return join(dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd(), CRON_FILE_REL)
+     91  }
+     92  
+     93  /**
+     94   * Lee y analiza `.claude/scheduled_tasks.json`. Devuelve una lista vacia si el
+     95   * archivo falta, esta vacio o esta malformado. Las tareas con una cadena cron
+     96   * invalida se descartan en silencio —se registran a nivel debug— para que una
+     97   * sola entrada mala nunca bloquee el archivo entero.
+     98   */
+     99  export async function readCronTasks(dir?: string): Promise<CronTask[]> {
+    100    const bindings = getAgentHostBindings()
+src/packages/agent/internal/cronTasksCore.ts(101,23): error TS2339: Property 'getFsImplementation' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:91-111 ---
+     91  }
+     92  
+     93  /**
+     94   * Lee y analiza `.claude/scheduled_tasks.json`. Devuelve una lista vacia si el
+     95   * archivo falta, esta vacio o esta malformado. Las tareas con una cadena cron
+     96   * invalida se descartan en silencio —se registran a nivel debug— para que una
+     97   * sola entrada mala nunca bloquee el archivo entero.
+     98   */
+     99  export async function readCronTasks(dir?: string): Promise<CronTask[]> {
+    100    const bindings = getAgentHostBindings()
+    101>   const fs = bindings.getFsImplementation?.() ?? { readFile: async (p: string, opts: { encoding: BufferEncoding }) => { const { readFile: fsReadFile } = await import('fs/promises'); return fsReadFile(p, opts) } }
+    102    let raw: string
+    103    try {
+    104      raw = await fs.readFile(getCronFilePath(dir), { encoding: 'utf-8' })
+    105    } catch (e: unknown) {
+    106      if (isFsInaccessible(e)) return []
+    107      bindings.logError?.(e)
+    108      return []
+    109    }
+    110  
+    111    const parsed = safeParseJSON(raw, false)
+src/packages/agent/internal/cronTasksCore.ts(180,46): error TS2339: Property 'getProjectRoot' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:170-190 ---
+    170  /**
+    171   * Sobreescribe `.claude/scheduled_tasks.json` con las tareas dadas. Crea
+    172   * `.claude/` si falta. Una lista vacia escribe un archivo vacio —en vez de
+    173   * borrarlo— para que el observador de archivos vea un evento de cambio al
+    174   * retirarse la ultima tarea.
+    175   */
+    176  export async function writeCronTasks(
+    177    tasks: CronTask[],
+    178    dir?: string,
+    179  ): Promise<void> {
+    180>   const root = dir ?? getAgentHostBindings().getProjectRoot?.() ?? process.cwd()
+    181    await mkdir(join(root, '.claude'), { recursive: true })
+    182    // Se retira la bandera `durable`, que solo vive en tiempo de ejecucion: todo
+    183    // lo que esta en disco es durable por definicion, y dejarla fuera hace que
+    184    // `readCronTasks()` devuelva `durable: undefined` sin tener que fijarlo.
+    185    const body: CronFile = {
+    186      tasks: tasks.map(({ durable: _durable, ...rest }) => rest),
+    187    }
+    188    await writeFile(
+    189      getCronFilePath(root),
+    190      jsonStringify(body, null, 2) + '\n',
+src/packages/agent/internal/cronTasksCore.ts(225,28): error TS2339: Property 'addSessionCronTask' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:215-235 ---
+    215    // muestra ids cortos— y el disco.
+    216    const id = randomUUID().slice(0, 8)
+    217    const task = {
+    218      id,
+    219      cron,
+    220      prompt,
+    221      createdAt: Date.now(),
+    222      ...(recurring ? { recurring: true } : {}),
+    223    }
+    224    if (!durable) {
+    225>     getAgentHostBindings().addSessionCronTask?.({ ...task, ...(agentId ? { agentId } : {}) })
+    226      return id
+    227    }
+    228    const tasks = await readCronTasks()
+    229    tasks.push(task)
+    230    await writeCronTasks(tasks)
+    231    return id
+    232  }
+    233  
+    234  /**
+    235   * Retira tareas por id. No hace nada si ninguna coincide (por ejemplo, otra
+src/packages/agent/internal/cronTasksCore.ts(254,52): error TS2339: Property 'removeSessionCronTasks' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:244-264 ---
+    244   */
+    245  export async function removeCronTasks(
+    246    ids: string[],
+    247    dir?: string,
+    248  ): Promise<void> {
+    249    if (ids.length === 0) return
+    250    // Primero se barre el almacen de sesion. Si todos los ids quedaron cubiertos
+    251    // ahi, se termina — se salta la lectura del archivo por completo.
+    252    // `removeSessionCronTasks` no hace nada (devuelve 0) cuando no acierta, asi
+    253    // que los caminos previos de borrado durable caen sin reservar memoria.
+    254>   if (dir === undefined && (getAgentHostBindings().removeSessionCronTasks?.(ids) ?? 0) === ids.length) {
+    255      return
+    256    }
+    257    const idSet = new Set(ids)
+    258    const tasks = await readCronTasks(dir)
+    259    const remaining = tasks.filter(t => !idSet.has(t.id))
+    260    if (remaining.length === tasks.length) return
+    261    await writeCronTasks(remaining, dir)
+    262  }
+    263  
+    264  /**
+src/packages/agent/internal/cronTasksCore.ts(308,48): error TS2339: Property 'getSessionCronTasks' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/cronTasksCore.ts:298-318 ---
+    298   * Las tareas respaldadas por archivo mas las de solo sesion, mezcladas. Las de
+    299   * sesion reciben `durable: false` para que quien llama pueda distinguirlas; las
+    300   * de archivo se devuelven tal cual (`durable` sin definir, que es verdadero).
+    301   *
+    302   * Solo mezcla cuando `dir` esta sin definir: quien llama con `dir` explicito
+    303   * —el daemon— no tiene almacen de sesion con el que mezclar.
+    304   */
+    305  export async function listAllCronTasks(dir?: string): Promise<CronTask[]> {
+    306    const fileTasks = await readCronTasks(dir)
+    307    if (dir !== undefined) return fileTasks
+    308>   const sessionTasks = (getAgentHostBindings().getSessionCronTasks?.() ?? []).map(t => ({
+    309      ...t,
+    310      durable: false as const,
+    311    }))
+    312    return [...fileTasks, ...sessionTasks]
+    313  }
+    314  
+    315  /**
+    316   * Perillas de ajuste del scheduler cron. Se obtienen en runtime de la
+    317   * configuración GrowthBook `tengu_kairos_cron_config` (ver
+    318   * `misc/cronJitterConfig.ts`) para que ops pueda ajustar el comportamiento
+src/packages/agent/internal/cronTasksCore.ts(308,83): error TS7006: Parameter 't' implicitly has an 'any' type.
+  --- código src/packages/agent/internal/cronTasksCore.ts:298-318 ---
+    298   * Las tareas respaldadas por archivo mas las de solo sesion, mezcladas. Las de
+    299   * sesion reciben `durable: false` para que quien llama pueda distinguirlas; las
+    300   * de archivo se devuelven tal cual (`durable` sin definir, que es verdadero).
+    301   *
+    302   * Solo mezcla cuando `dir` esta sin definir: quien llama con `dir` explicito
+    303   * —el daemon— no tiene almacen de sesion con el que mezclar.
+    304   */
+    305  export async function listAllCronTasks(dir?: string): Promise<CronTask[]> {
+    306    const fileTasks = await readCronTasks(dir)
+    307    if (dir !== undefined) return fileTasks
+    308>   const sessionTasks = (getAgentHostBindings().getSessionCronTasks?.() ?? []).map(t => ({
+    309      ...t,
+    310      durable: false as const,
+    311    }))
+    312    return [...fileTasks, ...sessionTasks]
+    313  }
+    314  
+    315  /**
+    316   * Perillas de ajuste del scheduler cron. Se obtienen en runtime de la
+    317   * configuración GrowthBook `tengu_kairos_cron_config` (ver
+    318   * `misc/cronJitterConfig.ts`) para que ops pueda ajustar el comportamiento

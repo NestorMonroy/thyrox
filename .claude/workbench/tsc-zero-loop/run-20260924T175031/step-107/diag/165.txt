@@ -1,0 +1,28 @@
+patron: tool-provider-discover-not-awaited
+senal_del_verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+fix_generico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(3203,26): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/repl/src/components/PromptInput/PromptInput.tsx:3193-3213 ---
+   3193  /**
+   3194   * Compute the initial paste ID by finding the max ID used in existing messages.
+   3195   * This handles --continue/--resume scenarios where we need to avoid ID collisions.
+   3196   */
+   3197  function getInitialPasteId(messages: Message[]): number {
+   3198    let maxId = 0
+   3199    for (const message of messages) {
+   3200      if (message.type === 'user') {
+   3201        // Check image paste IDs
+   3202        if (message.imagePasteIds) {
+   3203>         for (const id of message.imagePasteIds) {
+   3204            if (id > maxId) maxId = id
+   3205          }
+   3206        }
+   3207        // Check text paste references in message content
+   3208        if (Array.isArray(message.message.content)) {
+   3209          for (const block of message.message.content) {
+   3210            if (block.type === 'text') {
+   3211              const refs = parseReferences(block.text)
+   3212              for (const ref of refs) {
+   3213                if (ref.id > maxId) maxId = ref.id

@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/commands/plan/plan.tsx(49,20): error TS18046: 'getAppState' is of type 'unknown'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:39-59 ---
+     39      </Box>
+     40    )
+     41  }
+     42  
+     43  export async function call(
+     44    onDone: LocalJSXCommandOnDone,
+     45    context: LocalJSXCommandContext,
+     46    args: string,
+     47  ): Promise<React.ReactNode> {
+     48    const { getAppState, setAppState } = context
+     49>   const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55      setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58          prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+src/packages/repl/src/commands/plan/plan.tsx(55,5): error TS18046: 'setAppState' is of type 'unknown'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:45-65 ---
+     45    context: LocalJSXCommandContext,
+     46    args: string,
+     47  ): Promise<React.ReactNode> {
+     48    const { getAppState, setAppState } = context
+     49    const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55>     setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58          prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+     60        ),
+     61      }))
+     62      const description = args.trim()
+     63      if (description && description !== 'open') {
+     64        onDone('Enabled plan mode', { shouldQuery: true })
+     65      } else {
