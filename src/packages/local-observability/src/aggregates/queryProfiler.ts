@@ -1,51 +1,71 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/aggregates/queryProfiler.ts`
- * (301 líneas fuente, 100 % portado). Utilidad de perfilado de query para
- * medir y reportar el tiempo en el pipeline de query desde el input del
- * usuario hasta la llegada del primer token. Habilitar con
- * `CLAUDE_CODE_PROFILE_QUERY=1`.
+ * Query profiling utility for measuring and reporting time spent in the query
+ * pipeline from user input to first token arrival. Enable by setting CLAUDE_CODE_PROFILE_QUERY=1
  *
- * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * `getPerformance`/`formatMs`/`formatTimelineLine` — de
- * `app-host/startup/profilerBase.js`, subpath no exportado.
+ * Uses Node.js built-in performance hooks API for standard timing measurement.
+ * Tracks each query session with detailed checkpoints for identifying bottlenecks.
+ *
+ * Checkpoints tracked (in order):
+ * - query_user_input_received: Start of profiling
+ * - query_context_loading_start/end: Loading system prompts and contexts
+ * - query_query_start: Entry to query call from REPL
+ * - query_fn_entry: Entry to query() function
+ * - query_microcompact_start/end: Microcompaction of messages
+ * - query_autocompact_start/end: Autocompaction check
+ * - query_setup_start/end: StreamingToolExecutor and model setup
+ * - query_api_loop_start: Start of API retry loop
+ * - query_api_streaming_start: Start of streaming API call
+ * - query_tool_schema_build_start/end: Building tool schemas
+ * - query_message_normalization_start/end: Normalizing messages
+ * - query_client_creation_start/end: Creating Anthropic client
+ * - query_api_request_sent: HTTP request dispatched (before await, inside retry body)
+ * - query_response_headers_received: .withResponse() resolved (headers arrived)
+ * - query_first_chunk_received: First streaming chunk received (TTFT)
+ * - query_api_streaming_end: Streaming complete
+ * - query_tool_execution_start/end: Tool execution
+ * - query_recursive_call: Before recursive query call
+ * - query_end: End of query
  */
 
 import { logForDebugging } from '../debug.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import {
-  formatMs,
-  formatTimelineLine,
-  getPerformance,
-} from '../internal/pendingCrossPackageDeps.js'
+import { formatMs, formatTimelineLine, getPerformance } from '@thyrox/app-host/startup/profilerBase.js'
 
-// Estado a nivel de módulo — inicializado una vez al cargar el módulo.
+// Module-level state - initialized once when the module loads
+// eslint-disable-next-line custom-rules/no-process-env-top-level
 const ENABLED = isEnvTruthy(process.env.CLAUDE_CODE_PROFILE_QUERY)
 
-// Rastrea snapshots de memoria por separado (perf_hooks no rastrea memoria).
+// Track memory snapshots separately (perf_hooks doesn't track memory)
 const memorySnapshots = new Map<string, NodeJS.MemoryUsage>()
 
-// Rastrea el conteo de queries para el reporte.
+// Track query count for reporting
 let queryCount = 0
 
-// Rastrea el tiempo del primer token recibido, por separado, para el resumen.
+// Track first token received time separately for summary
 let firstTokenTime: number | null = null
 
-/** Inicia el perfilado de una nueva sesión de query. */
+/**
+ * Start profiling a new query session
+ */
 export function startQueryProfile(): void {
   if (!ENABLED) return
 
   const perf = getPerformance()
 
+  // Clear previous marks and memory snapshots
   perf.clearMarks()
   memorySnapshots.clear()
   firstTokenTime = null
 
   queryCount++
 
+  // Record the start checkpoint
   queryCheckpoint('query_user_input_received')
 }
 
-/** Registra un checkpoint con el nombre dado. */
+/**
+ * Record a checkpoint with the given name
+ */
 export function queryCheckpoint(name: string): void {
   if (!ENABLED) return
 
@@ -53,7 +73,7 @@ export function queryCheckpoint(name: string): void {
   perf.mark(name)
   memorySnapshots.set(name, process.memoryUsage())
 
-  // Rastrea el primer token especialmente.
+  // Track first token specially
   if (name === 'query_first_chunk_received' && firstTokenTime === null) {
     const marks = perf.getEntriesByType('mark')
     if (marks.length > 0) {
@@ -63,17 +83,21 @@ export function queryCheckpoint(name: string): void {
   }
 }
 
-/** Termina la sesión de perfilado de query actual. */
+/**
+ * End the current query profiling session
+ */
 export function endQueryProfile(): void {
   if (!ENABLED) return
 
   queryCheckpoint('query_profile_end')
 }
 
-/** Identifica operaciones lentas (> 100ms de delta). */
+/**
+ * Identify slow operations (> 100ms delta)
+ */
 function getSlowWarning(deltaMs: number, name: string): string {
-  // No marca el primer checkpoint como lento — mide el tiempo desde el
-  // inicio del proceso, no overhead de procesamiento real.
+  // Don't flag the first checkpoint as slow - it measures time from process start,
+  // not actual processing overhead
   if (name === 'query_user_input_received') {
     return ''
   }
@@ -85,7 +109,7 @@ function getSlowWarning(deltaMs: number, name: string): string {
     return ` ⚠️  SLOW`
   }
 
-  // Advertencias específicas para cuellos de botella conocidos.
+  // Specific warnings for known bottlenecks
   if (name.includes('git_status') && deltaMs > 50) {
     return ' ⚠️  git status'
   }
@@ -99,7 +123,9 @@ function getSlowWarning(deltaMs: number, name: string): string {
   return ''
 }
 
-/** Obtiene un reporte formateado de todos los checkpoints del query actual/último. */
+/**
+ * Get a formatted report of all checkpoints for the current/last query
+ */
 function getQueryProfileReport(): string {
   if (!ENABLED) {
     return 'Query profiling not enabled (set CLAUDE_CODE_PROFILE_QUERY=1)'
@@ -117,8 +143,7 @@ function getQueryProfileReport(): string {
   lines.push('='.repeat(80))
   lines.push('')
 
-  // Usa el primer marcador como línea base (tiempo de inicio del query)
-  // para mostrar tiempos relativos.
+  // Use first mark as baseline (query start time) to show relative times
   const baselineTime = marks[0]?.startTime ?? 0
   let prevTime = baselineTime
   let apiRequestSentTime = 0
@@ -139,6 +164,7 @@ function getQueryProfileReport(): string {
       ),
     )
 
+    // Track key milestones for summary (use relative times)
     if (mark.name === 'query_api_request_sent') {
       apiRequestSentTime = relativeTime
     }
@@ -149,6 +175,7 @@ function getQueryProfileReport(): string {
     prevTime = mark.startTime
   }
 
+  // Calculate summary statistics (relative to baseline)
   const lastMark = marks[marks.length - 1]
   const totalTime = lastMark ? lastMark.startTime - baselineTime : 0
 
@@ -175,6 +202,7 @@ function getQueryProfileReport(): string {
     lines.push(`Total time: ${formatMs(totalTime)}ms`)
   }
 
+  // Add phase summary
   lines.push(getPhaseSummary(marks, baselineTime))
 
   lines.push('='.repeat(80))
@@ -182,7 +210,9 @@ function getQueryProfileReport(): string {
   return lines.join('\n')
 }
 
-/** Obtiene el resumen por fases mostrando el tiempo en cada fase principal. */
+/**
+ * Get phase-based summary showing time spent in each major phase
+ */
 function getPhaseSummary(
   marks: Array<{ name: string; startTime: number }>,
   baselineTime: number,
@@ -243,13 +273,14 @@ function getPhaseSummary(
 
     if (startTime !== undefined && endTime !== undefined) {
       const duration = endTime - startTime
-      const bar = '█'.repeat(Math.min(Math.ceil(duration / 10), 50))
+      const bar = '█'.repeat(Math.min(Math.ceil(duration / 10), 50)) // 1 block per 10ms, max 50
       lines.push(
         `  ${phase.name.padEnd(22)} ${formatMs(duration).padStart(10)}ms ${bar}`,
       )
     }
   }
 
+  // Calculate pre-API overhead (everything before api_request_sent)
   const apiRequestSent = markMap.get('query_api_request_sent')
   if (apiRequestSent !== undefined) {
     lines.push('')
@@ -261,7 +292,9 @@ function getPhaseSummary(
   return lines.join('\n')
 }
 
-/** Loguea el reporte de perfilado de query a la salida de debug. */
+/**
+ * Log the query profile report to debug output
+ */
 export function logQueryProfileReport(): void {
   if (!ENABLED) return
   logForDebugging(getQueryProfileReport())

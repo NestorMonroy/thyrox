@@ -1,18 +1,10 @@
-// Formateadores de pantalla puros — seguros como hoja (sin Ink). El
-// truncado consciente de ancho sigue en src/utils/truncate.ts pendiente de
-// su propia migracion.
-//
-// Puerto de `ccnmt: packages/output/src/formatters/format.ts`. Fiel a la
-// fuente salvo el ultimo parrafo (comentario), reescrito para reflejar que
-// aqui `./truncate.js` NO existe todavia — depende de `stringWidth` de
-// `@anthropic/ink` (fork de Ink vendorizado en ccnmt, no publicado en npm;
-// ver el analisis de la iniciativa) y de `@thyrox/output` aun no lo tiene
-// como hermano enlazado.
+// Pure display formatters — leaf-safe (no Ink). Width-aware truncation
+// still lives in src/utils/truncate.ts pending its own migration.
 
 import { getRelativeTimeFormat, getTimeZone } from '../utils/intl.js'
 
 /**
- * Formatea una cantidad de bytes en una cadena legible (KB, MB, GB).
+ * Formats a byte count to a human-readable string (KB, MB, GB).
  * @example formatFileSize(1536) → "1.5KB"
  */
 export function formatFileSize(sizeInBytes: number): string {
@@ -32,10 +24,9 @@ export function formatFileSize(sizeInBytes: number): string {
 }
 
 /**
- * Formatea milisegundos como segundos con 1 decimal (p. ej. `1234` →
- * `"1.2s"`). A diferencia de formatDuration, siempre conserva el decimal —
- * usar para tiempos sub-minuto donde la fraccion de segundo importa (TTFT,
- * duracion de hooks, etc.).
+ * Formats milliseconds as seconds with 1 decimal place (e.g. `1234` → `"1.2s"`).
+ * Unlike formatDuration, always keeps the decimal — use for sub-minute timings
+ * where the fractional second is meaningful (TTFT, hook durations, etc.).
  */
 export function formatSecondsShort(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`
@@ -46,11 +37,11 @@ export function formatDuration(
   options?: { hideTrailingZeros?: boolean; mostSignificantOnly?: boolean },
 ): string {
   if (ms < 60000) {
-    // Caso especial para 0
+    // Special case for 0
     if (ms === 0) {
       return '0s'
     }
-    // Para duraciones < 1s, muestra 1 decimal (p. ej. 0.5s)
+    // For durations < 1s, show 1 decimal place (e.g., 0.5s)
     if (ms < 1) {
       const s = (ms / 1000).toFixed(1)
       return `${s}s`
@@ -64,7 +55,7 @@ export function formatDuration(
   let minutes = Math.floor((ms % 3600000) / 60000)
   let seconds = Math.round((ms % 60000) / 1000)
 
-  // Maneja el acarreo de redondeo (p. ej. 59.5s redondea a 60s)
+  // Handle rounding carry-over (e.g., 59.5s rounds to 60s)
   if (seconds === 60) {
     seconds = 0
     minutes++
@@ -104,8 +95,7 @@ export function formatDuration(
   return `${seconds}s`
 }
 
-// `new Intl.NumberFormat` es caro, asi que cachea los formateadores para
-// reusarlos
+// `new Intl.NumberFormat` is expensive, so cache formatters for reuse
 let numberFormatterForConsistentDecimals: Intl.NumberFormat | null = null
 let numberFormatterForInconsistentDecimals: Intl.NumberFormat | null = null
 const getNumberFormatter = (
@@ -133,13 +123,12 @@ const getNumberFormatter = (
 }
 
 export function formatNumber(number: number): string {
-  // Solo usa minimumFractionDigits para numeros que se mostraran en
-  // notacion compacta
+  // Only use minimumFractionDigits for numbers that will be shown in compact notation
   const shouldUseConsistentDecimals = number >= 1000
 
   return getNumberFormatter(shouldUseConsistentDecimals)
-    .format(number) // p. ej. "1321" => "1.3K", "900" => "900"
-    .toLowerCase() // p. ej. "1.3K" => "1.3k", "1.0K" => "1.0k"
+    .format(number) // eg. "1321" => "1.3K", "900" => "900"
+    .toLowerCase() // eg. "1.3K" => "1.3k", "1.0K" => "1.0k"
 }
 
 export function formatTokens(count: number): string {
@@ -159,10 +148,10 @@ export function formatRelativeTime(
 ): string {
   const { style = 'narrow', numeric = 'always', now = new Date() } = options
   const diffInMs = date.getTime() - now.getTime()
-  // Usa Math.trunc para truncar hacia cero tanto en valores positivos como negativos
+  // Use Math.trunc to truncate towards zero for both positive and negative values
   const diffInSeconds = Math.trunc(diffInMs / 1000)
 
-  // Define los intervalos de tiempo con unidades cortas propias
+  // Define time intervals with custom short units
   const intervals = [
     { unit: 'year', seconds: 31536000, shortUnit: 'y' },
     { unit: 'month', seconds: 2592000, shortUnit: 'mo' },
@@ -173,22 +162,22 @@ export function formatRelativeTime(
     { unit: 'second', seconds: 1, shortUnit: 's' },
   ] as const
 
-  // Encuentra la unidad apropiada
+  // Find the appropriate unit
   for (const { unit, seconds: intervalSeconds, shortUnit } of intervals) {
     if (Math.abs(diffInSeconds) >= intervalSeconds) {
       const value = Math.trunc(diffInSeconds / intervalSeconds)
-      // Para el estilo short, usa el formato propio
+      // For short style, use custom format
       if (style === 'narrow') {
         return diffInSeconds < 0
           ? `${Math.abs(value)}${shortUnit} ago`
           : `in ${value}${shortUnit}`
       }
-      // Para dias y unidades mayores, usa siempre el estilo long
+      // For days and longer, use long style regardless of the style parameter
       return getRelativeTimeFormat('long', numeric).format(value, unit)
     }
   }
 
-  // Para valores menores a 1 segundo
+  // For values less than 1 second
   if (style === 'narrow') {
     return diffInSeconds <= 0 ? '0s ago' : 'in 0s'
   }
@@ -201,17 +190,16 @@ export function formatRelativeTimeAgo(
 ): string {
   const { now = new Date(), ...restOptions } = options
   if (date > now) {
-    // Para fechas futuras, solo devuelve el tiempo relativo sin "ago"
+    // For future dates, just return the relative time without "ago"
     return formatRelativeTime(date, { ...restOptions, now })
   }
 
-  // Para fechas pasadas, fuerza numeric: 'always' para asegurar "X units ago"
+  // For past dates, force numeric: 'always' to ensure we get "X units ago"
   return formatRelativeTime(date, { ...restOptions, numeric: 'always', now })
 }
 
 /**
- * Formatea metadata de log para mostrar (hora, tamano o conteo de
- * mensajes, branch, tag, PR)
+ * Formats log metadata for display (time, size or message count, branch, tag, PR)
  */
 export function formatLogMetadata(log: {
   modified: Date
@@ -259,12 +247,12 @@ export function formatResetTime(
   const now = new Date()
   const minutes = date.getMinutes()
 
-  // Calcula las horas hasta el reset
+  // Calculate hours until reset
   const hoursUntilReset = (date.getTime() - now.getTime()) / (1000 * 60 * 60)
 
-  // Si el reset esta a mas de 24 horas, muestra tambien la fecha
+  // If reset is more than 24 hours away, show the date as well
   if (hoursUntilReset > 24) {
-    // Muestra fecha y hora para resets a mas de un dia de distancia
+    // Show date and time for resets more than a day away
     const dateOptions: Intl.DateTimeFormatOptions = {
       month: 'short',
       day: 'numeric',
@@ -273,28 +261,28 @@ export function formatResetTime(
       hour12: showTime ? true : undefined,
     }
 
-    // Agrega el ano si no es el ano actual
+    // Add year if it's not the current year
     if (date.getFullYear() !== now.getFullYear()) {
       dateOptions.year = 'numeric'
     }
 
     const dateString = date.toLocaleString('en-US', dateOptions)
 
-    // Quita el espacio antes de AM/PM y lo pone en minuscula
+    // Remove the space before AM/PM and make it lowercase
     return (
       dateString.replace(/ ([AP]M)/i, (_match, ampm) => ampm.toLowerCase()) +
       (showTimezone ? ` (${getTimeZone()})` : '')
     )
   }
 
-  // Para resets dentro de 24 horas, muestra solo la hora (comportamiento existente)
+  // For resets within 24 hours, show just the time (existing behavior)
   const timeString = date.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: minutes === 0 ? undefined : '2-digit',
     hour12: true,
   })
 
-  // Quita el espacio antes de AM/PM, lo pone en minuscula, y agrega la zona horaria
+  // Remove the space before AM/PM and make it lowercase, then add timezone
   return (
     timeString.replace(/ ([AP]M)/i, (_match, ampm) => ampm.toLowerCase()) +
     (showTimezone ? ` (${getTimeZone()})` : '')
@@ -310,9 +298,8 @@ export function formatResetText(
   return `${formatResetTime(Math.floor(dt.getTime() / 1000), showTimezone, showTime)}`
 }
 
-// Los helpers de truncado siguen en src/utils/truncate.ts (dependen de
-// ink/stringWidth, que arrastra el fork de Ink entero al grafo de
-// dependencias de este paquete — fuera de alcance de este pase de porte;
-// ver TASK-DOCS-0229 y el analisis de la iniciativa). En la fuente, quien
-// consumia la superficie de truncado via './index.js' la obtenia por la
-// fachada src/utils/format.ts.
+// Truncate helpers still live in src/utils/truncate.ts (they depend on
+// ink/stringWidth which pulls the whole Ink fork into this package's
+// dependency graph — out of scope for the output Wave-2 migration).
+// Callers previously importing from './index.js' get
+// the truncate surface via the src/ facade (src/utils/format.ts).

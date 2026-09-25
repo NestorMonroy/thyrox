@@ -1,84 +1,15 @@
-/**
- * Puerto de `ccnmt: packages/updater/src/completionCache.ts` (166
- * líneas fuente).
- *
- * Cobertura: 2 de 2 símbolos exportados (`setupShellCompletion`,
- * `regenerateCompletionCache`), 100% de su lógica de detección de shell,
- * escritura de rc file y regeneración de cache.
- *
- * Divergencia declarada, en el formateo de los mensajes de salida:
- * `@anthropic/ink` (theming: `color`, `supportsHyperlinks`, `ThemeName`)
- * NO existe en este árbol — medido, 0 hits de `@anthropic/ink` en los 24
- * `package.json` de `src/packages`. Se reimplementan localmente los TRES
- * símbolos que este módulo consume de ese paquete:
- *
- *   - `ThemeName` — alias local mínimo (`'light' | 'dark'`); el sistema
- *     completo de temas (`Theme`, `colorize`, ANSI-256) no se porta aquí
- *     — pertenece a `@anthropic/ink`, un paquete que no está entre las
- *     rutas de este agente.
- *   - `color(key, theme)` — sustituto local que solo resuelve las DOS
- *     claves que este módulo usa (`warning` → amarillo, `success` →
- *     verde) con `chalk` (dependencia ya presente en el árbol — ver
- *     `local-observability/package.json`, `provider/package.json`).
- *     Ignora `theme` (paleta única). El lookup de tema completo de la
- *     fuente NO se porta.
- *   - `supportsHyperlinks()` — heurística local simplificada
- *     (TTY + `TERM_PROGRAM`/`TERM`), sin la librería `supports-hyperlinks`
- *     (ausente del árbol — 0 hits). Mismo criterio de fallback que la
- *     fuente (`ccnmt: packages/@ant/ink/src/core/supports-hyperlinks.ts`)
- *     para las terminales adicionales, sin la detección primaria de la
- *     librería.
- */
-
 import chalk from 'chalk'
 import { mkdir, readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
 import { dirname, join } from 'path'
 import { pathToFileURL } from 'url'
+import { color } from '@anthropic/ink'
+import { supportsHyperlinks } from '@anthropic/ink'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { logError } from '@thyrox/local-observability/logging'
-
-/** Ver docstring del módulo — sustituto local de `ThemeName` de `@anthropic/ink`. */
-export type ThemeName = 'light' | 'dark'
-
-const ADDITIONAL_HYPERLINK_TERMINALS = [
-  'ghostty',
-  'Hyper',
-  'kitty',
-  'alacritty',
-  'iTerm.app',
-  'iTerm2',
-]
-
-/** Ver docstring del módulo — sustituto local de `supportsHyperlinks()`. */
-function supportsHyperlinks(): boolean {
-  if (!process.stdout.isTTY) {
-    return false
-  }
-  const termProgram = process.env['TERM_PROGRAM']
-  if (termProgram && ADDITIONAL_HYPERLINK_TERMINALS.includes(termProgram)) {
-    return true
-  }
-  const lcTerminal = process.env['LC_TERMINAL']
-  if (lcTerminal && ADDITIONAL_HYPERLINK_TERMINALS.includes(lcTerminal)) {
-    return true
-  }
-  const term = process.env['TERM']
-  if (term?.includes('kitty')) {
-    return true
-  }
-  return false
-}
-
-/** Ver docstring del módulo — sustituto local de `color()` de `@anthropic/ink`. */
-function color(
-  key: 'warning' | 'success',
-  _theme: ThemeName,
-): (text: string) => string {
-  return key === 'warning' ? chalk.yellow : chalk.green
-}
+import type { ThemeName } from '@anthropic/ink'
 
 const EOL = '\n'
 
@@ -138,9 +69,8 @@ function formatPathLink(filePath: string): string {
 }
 
 /**
- * Genera y cachea el script de completado, y luego agrega una linea de
- * source al rc file del shell. Devuelve un mensaje de estado para el
- * usuario.
+ * Generate and cache the completion script, then add a source line to the
+ * shell's rc file. Returns a user-facing status message.
  */
 export async function setupShellCompletion(theme: ThemeName): Promise<string> {
   const shell = detectShell()
@@ -148,7 +78,7 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
     return ''
   }
 
-  // Asegura que el directorio de cache exista
+  // Ensure the cache directory exists
   try {
     await mkdir(dirname(shell.cacheFile), { recursive: true })
   } catch (e: unknown) {
@@ -156,9 +86,9 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
     return `${EOL}${color('warning', theme)(`Could not write ${shell.name} completion cache`)}${EOL}${chalk.dim(`Run manually: claude completion ${shell.shellFlag} > ${shell.cacheFile}`)}${EOL}`
   }
 
-  // Genera el script de completado escribiendo directo al archivo de
-  // cache. Usar --output evita pasar por stdout donde process.exit()
-  // puede truncar la salida antes de que el buffer del pipe drene.
+  // Generate the completion script by writing directly to the cache file.
+  // Using --output avoids piping through stdout where process.exit() can
+  // truncate output before the pipe buffer drains.
   const claudeBin = process.argv[1] || 'claude'
   const result = await execFileNoThrow(claudeBin, [
     'completion',
@@ -170,7 +100,7 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
     return `${EOL}${color('warning', theme)(`Could not generate ${shell.name} shell completions`)}${EOL}${chalk.dim(`Run manually: claude completion ${shell.shellFlag} > ${shell.cacheFile}`)}${EOL}`
   }
 
-  // Chequea si el rc file ya sourcea los completados
+  // Check if rc file already sources completions
   let existing = ''
   try {
     existing = await readFile(shell.rcFile, { encoding: 'utf-8' })
@@ -187,7 +117,7 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
     }
   }
 
-  // Agrega la linea de source al rc file
+  // Append source line to rc file
   try {
     const configDir = dirname(shell.rcFile)
     await mkdir(configDir, { recursive: true })
@@ -204,9 +134,8 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
 }
 
 /**
- * Regenera los scripts de cache de completado en ~/.claude/. Se llama
- * despues de `claude update` para que los completados sigan
- * sincronizados con el nuevo binario.
+ * Regenerate cached shell completion scripts in ~/.claude/.
+ * Called after `claude update` so completions stay in sync with the new binary.
  */
 export async function regenerateCompletionCache(): Promise<void> {
   const shell = detectShell()

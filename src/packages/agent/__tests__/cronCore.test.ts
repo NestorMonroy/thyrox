@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/cronCore.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   computeNextCronRun,
@@ -8,8 +5,8 @@ import {
   parseCronExpression,
 } from '../internal/cronCore.js'
 
-describe('parseCronExpression — comodines', () => {
-  test('todos los comodines se expanden al rango completo', () => {
+describe('parseCronExpression — wildcards', () => {
+  test('all wildcards expand to full range', () => {
     const r = parseCronExpression('* * * * *')
     expect(r?.minute).toHaveLength(60)
     expect(r?.hour).toHaveLength(24)
@@ -18,148 +15,148 @@ describe('parseCronExpression — comodines', () => {
     expect(r?.dayOfWeek).toHaveLength(7)
   })
 
-  test('paso estrella-slash-N', () => {
+  test('star-slash-N step', () => {
     const r = parseCronExpression('*/15 * * * *')
     expect(r?.minute).toEqual([0, 15, 30, 45])
   })
 
-  test('paso estrella-slash-N (divisor grande)', () => {
+  test('star-slash-N step (large divisor)', () => {
     const r = parseCronExpression('*/30 * * * *')
     expect(r?.minute).toEqual([0, 30])
   })
 
-  test('estrella-slash-1 equivale al comodín', () => {
+  test('star-slash-1 is same as wildcard', () => {
     const r = parseCronExpression('*/1 * * * *')
     expect(r?.minute).toHaveLength(60)
   })
 })
 
-describe('parseCronExpression — valores únicos', () => {
-  test('minuto único', () => {
+describe('parseCronExpression — single values', () => {
+  test('single minute', () => {
     expect(parseCronExpression('30 * * * *')?.minute).toEqual([30])
   })
-  test('hora 0 (medianoche)', () => {
+  test('hour 0 (midnight)', () => {
     expect(parseCronExpression('0 0 * * *')?.hour).toEqual([0])
   })
-  test('día 31', () => {
+  test('day 31', () => {
     expect(parseCronExpression('0 0 31 * *')?.dayOfMonth).toEqual([31])
   })
-  test('dayOfWeek 7 → normalizado a 0 (domingo)', () => {
-    // Peculiaridad POSIX cron: 7 es alias de domingo (0). Contrato crítico.
+  test('dayOfWeek 7 → normalized to 0 (Sunday)', () => {
+    // POSIX cron quirk: 7 is an alias for Sunday (0). Critical contract.
     expect(parseCronExpression('0 0 * * 7')?.dayOfWeek).toEqual([0])
   })
 })
 
-describe('parseCronExpression — rangos + listas', () => {
-  test('el rango se expande incluyendo ambos extremos', () => {
+describe('parseCronExpression — ranges + lists', () => {
+  test('range expands inclusive of both endpoints', () => {
     expect(parseCronExpression('0-5 * * * *')?.minute).toEqual([0, 1, 2, 3, 4, 5])
   })
 
-  test('rango con paso', () => {
+  test('range with step', () => {
     expect(parseCronExpression('0-10/2 * * * *')?.minute).toEqual([
       0, 2, 4, 6, 8, 10,
     ])
   })
 
-  test('lista separada por comas', () => {
+  test('comma-list', () => {
     expect(parseCronExpression('5,10,15 * * * *')?.minute).toEqual([5, 10, 15])
   })
 
-  test('la lista deduplica y ordena', () => {
+  test('list dedupes and sorts', () => {
     expect(parseCronExpression('15,5,10,5 * * * *')?.minute).toEqual([
       5, 10, 15,
     ])
   })
 
-  test('rango mezclado con valor único en la lista', () => {
+  test('mixed range + single in list', () => {
     expect(parseCronExpression('0,30-32 * * * *')?.minute).toEqual([
       0, 30, 31, 32,
     ])
   })
 
-  test('dayOfWeek rango 5-7 → [5, 6, 0] (7 normalizado a 0 dentro del rango)', () => {
+  test('dayOfWeek range 5-7 → [5, 6, 0] (7 normalized to 0 mid-range)', () => {
     expect(parseCronExpression('0 0 * * 5-7')?.dayOfWeek.sort()).toEqual([
       0, 5, 6,
     ])
   })
 })
 
-describe('parseCronExpression — entrada inválida', () => {
-  test('número de campos incorrecto → null', () => {
+describe('parseCronExpression — invalid input', () => {
+  test('wrong number of fields → null', () => {
     expect(parseCronExpression('* * * *')).toBeNull()
     expect(parseCronExpression('* * * * * *')).toBeNull()
   })
 
-  test('minuto fuera de rango (60) → null', () => {
+  test('out-of-range minute (60) → null', () => {
     expect(parseCronExpression('60 * * * *')).toBeNull()
   })
 
-  test('hora fuera de rango (24) → null', () => {
+  test('out-of-range hour (24) → null', () => {
     expect(parseCronExpression('0 24 * * *')).toBeNull()
   })
 
-  test('día fuera de rango (32) → null', () => {
+  test('out-of-range day (32) → null', () => {
     expect(parseCronExpression('0 0 32 * *')).toBeNull()
   })
 
-  test('mes fuera de rango (13) → null', () => {
+  test('out-of-range month (13) → null', () => {
     expect(parseCronExpression('0 0 * 13 *')).toBeNull()
   })
 
-  test('dayOfWeek fuera de rango (8) → null', () => {
+  test('out-of-range dayOfWeek (8) → null', () => {
     expect(parseCronExpression('0 0 * * 8')).toBeNull()
   })
 
-  test('rango invertido (10-5) → null', () => {
+  test('inverted range (10-5) → null', () => {
     expect(parseCronExpression('10-5 * * * *')).toBeNull()
   })
 
-  test('paso cero → null', () => {
+  test('zero step → null', () => {
     expect(parseCronExpression('*/0 * * * *')).toBeNull()
   })
 
-  test('sintaxis basura → null', () => {
+  test('garbage syntax → null', () => {
     expect(parseCronExpression('@daily')).toBeNull()
     expect(parseCronExpression('foo bar baz qux quux')).toBeNull()
   })
 
-  test('cadena vacía → null', () => {
+  test('empty string → null', () => {
     expect(parseCronExpression('')).toBeNull()
   })
 
-  test('letras en los campos → null', () => {
+  test('letters in fields → null', () => {
     expect(parseCronExpression('MON * * * *')).toBeNull()
   })
 })
 
-describe('parseCronExpression — tolerancia a espacios en blanco', () => {
-  test('múltiples espacios entre campos', () => {
+describe('parseCronExpression — whitespace tolerance', () => {
+  test('multiple spaces between fields', () => {
     const r = parseCronExpression('0    0    *    *    *')
     expect(r?.minute).toEqual([0])
     expect(r?.hour).toEqual([0])
   })
-  test('espacio en blanco inicial/final recortado', () => {
+  test('leading/trailing whitespace trimmed', () => {
     const r = parseCronExpression('  0 0 * * *  ')
     expect(r?.minute).toEqual([0])
   })
-  test('los tabs se tratan como espacio en blanco', () => {
+  test('tabs treated as whitespace', () => {
     const r = parseCronExpression('0\t0\t*\t*\t*')
     expect(r?.minute).toEqual([0])
   })
 })
 
 describe('computeNextCronRun', () => {
-  test('cron cada minuto devuelve el minuto siguiente', () => {
+  test('every-minute cron returns next minute', () => {
     const fields = parseCronExpression('* * * * *')!
     const from = new Date('2026-01-01T12:00:00')
     const next = computeNextCronRun(fields, from)
     expect(next).not.toBeNull()
     expect(next!.getTime()).toBeGreaterThan(from.getTime())
-    // Debe estar dentro de 60 segundos.
+    // Should be within 60 seconds.
     expect(next!.getTime() - from.getTime()).toBeLessThanOrEqual(60_000)
   })
 
-  test('cron en punto a las 12:30 → siguiente es 13:00', () => {
+  test('top-of-hour cron at 12:30 → next is 13:00', () => {
     const fields = parseCronExpression('0 * * * *')!
     const from = new Date('2026-01-01T12:30:00')
     const next = computeNextCronRun(fields, from)
@@ -167,7 +164,7 @@ describe('computeNextCronRun', () => {
     expect(next?.getHours()).toBe(13)
   })
 
-  test('cron diario 9am desde las 8am → hoy a las 9am', () => {
+  test('daily 9am cron from 8am → today at 9am', () => {
     const fields = parseCronExpression('0 9 * * *')!
     const from = new Date('2026-01-01T08:00:00')
     const next = computeNextCronRun(fields, from)
@@ -176,7 +173,7 @@ describe('computeNextCronRun', () => {
     expect(next?.getMinutes()).toBe(0)
   })
 
-  test('cron diario 9am desde las 10am → mañana a las 9am', () => {
+  test('daily 9am cron from 10am → tomorrow at 9am', () => {
     const fields = parseCronExpression('0 9 * * *')!
     const from = new Date('2026-01-01T10:00:00')
     const next = computeNextCronRun(fields, from)
@@ -184,9 +181,9 @@ describe('computeNextCronRun', () => {
     expect(next?.getHours()).toBe(9)
   })
 
-  test('el resultado es estrictamente POSTERIOR a `from` (no igual)', () => {
-    // Crítico: `from` mismo no califica aunque coincida con el patrón.
-    // De lo contrario el scheduler volvería a disparar el mismo minuto.
+  test('result is strictly AFTER `from` (not equal to it)', () => {
+    // Critical: `from` itself doesn't qualify even if it matches the
+    // pattern. Otherwise the scheduler would re-fire the same minute.
     const fields = parseCronExpression('30 12 * * *')!
     const from = new Date('2026-01-01T12:30:00')
     const next = computeNextCronRun(fields, from)
@@ -195,13 +192,13 @@ describe('computeNextCronRun', () => {
 })
 
 describe('cronToHuman', () => {
-  test('devuelve una cadena legible no vacía para un cron válido', () => {
+  test('returns a non-empty human string for valid cron', () => {
     const result = cronToHuman('0 9 * * *')
     expect(typeof result).toBe('string')
     expect(result.length).toBeGreaterThan(0)
   })
 
-  test('devuelve la entrada sin cambios o el fallback para un cron inválido', () => {
+  test('returns input unchanged or fallback for invalid cron', () => {
     const result = cronToHuman('invalid cron expression')
     expect(typeof result).toBe('string')
   })

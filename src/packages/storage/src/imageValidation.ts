@@ -1,66 +1,9 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/storage/src/imageValidation.ts`.
- *
- * La fuente exporta dos símbolos —`ImageSizeError`,
- * `validateImagesForAPI`— más el tipo `OversizedImage` y el type guard
- * privado `isBase64ImageBlock`. `imageValidation.behavior.test.ts` los
- * ejercita a los cuatro, incluida su suite "source pins" (asserts sobre
- * el texto literal del archivo), así que este porte es completo, no
- * parcial.
- *
- * Sustitutos locales declarados — los tres imports de la fuente
- * (`API_IMAGE_MAX_BASE64_SIZE`, `logEvent`, `formatFileSize`) vienen de
- * paquetes que no existen en este árbol:
- *
- *   - `API_IMAGE_MAX_BASE64_SIZE`
- *     (`@claude-code-how-works/provider/apiLimits.js`) — reconstruida
- *     VERBATIM: el valor server-enforced de 5 MB, pineado en
- *     `ccnmt: packages/provider/src/__tests__/apiLimits.behavior.test.ts`
- *     (`expect(API_IMAGE_MAX_BASE64_SIZE).toBe(5 * 1024 * 1024)`). Se
- *     escribe como la multiplicación, nunca como el conteo de bytes en
- *     dígitos planos, para que el test de "source pins" de esta suite
- *     («NOT hardcoded literal») siga siendo verdad tal como lo es en la
- *     fuente.
- *   - `logEvent` (`@claude-code-how-works/local-observability`) — no-op
- *     local. Ningún test de esta suite ejercita la telemetría real, sólo
- *     el literal del nombre de evento y su posición relativa al `push`
- *     (los tests de "source pins").
- *   - `formatFileSize` (`@claude-code-how-works/output/formatters`) —
- *     portada VERBATIM desde
- *     `ccnmt: packages/output/src/formatters/format.ts` (función pura de
- *     KB/MB/GB, sin dependencias propias — las únicas importaciones de ese
- *     archivo las usan otras funciones exportadas, no ésta).
- */
-
-const API_IMAGE_MAX_BASE64_SIZE = 5 * 1024 * 1024
-
-function logEvent(name: string, metadata: Record<string, unknown> = {}): void {
-  void name
-  void metadata
-}
+import { API_IMAGE_MAX_BASE64_SIZE } from '@thyrox/provider/apiLimits.js'
+import { logEvent } from '@thyrox/local-observability'
+import { formatFileSize } from '@thyrox/output/formatters'
 
 /**
- * Formatea un conteo de bytes a un string legible (KB, MB, GB).
- * @example formatFileSize(1536) → "1.5KB"
- */
-function formatFileSize(sizeInBytes: number): string {
-  const kb = sizeInBytes / 1024
-  if (kb < 1) {
-    return `${sizeInBytes} bytes`
-  }
-  if (kb < 1024) {
-    return `${kb.toFixed(1).replace(/\.0$/, '')}KB`
-  }
-  const mb = kb / 1024
-  if (mb < 1024) {
-    return `${mb.toFixed(1).replace(/\.0$/, '')}MB`
-  }
-  const gb = mb / 1024
-  return `${gb.toFixed(1).replace(/\.0$/, '')}GB`
-}
-
-/**
- * Información sobre una imagen con tamaño excedido.
+ * Information about an oversized image.
  */
 export type OversizedImage = {
   index: number
@@ -68,8 +11,7 @@ export type OversizedImage = {
 }
 
 /**
- * Error lanzado cuando una o más imágenes exceden el límite de tamaño
- * de la API.
+ * Error thrown when one or more images exceed the API size limit.
  */
 export class ImageSizeError extends Error {
   constructor(oversizedImages: OversizedImage[], maxSize: number) {
@@ -93,7 +35,7 @@ export class ImageSizeError extends Error {
 }
 
 /**
- * Type guard para verificar si un bloque es un bloque de imagen base64.
+ * Type guard to check if a block is a base64 image block
  */
 function isBase64ImageBlock(
   block: unknown,
@@ -107,20 +49,18 @@ function isBase64ImageBlock(
 }
 
 /**
- * Valida que todas las imágenes en los mensajes estén dentro del límite
- * de tamaño de la API. Es una red de seguridad en la frontera de la API
- * para atrapar cualquier imagen con tamaño excedido que se haya colado
- * en el procesamiento previo.
+ * Validates that all images in messages are within the API size limit.
+ * This is a safety net at the API boundary to catch any oversized images
+ * that may have slipped through upstream processing.
  *
- * Nota: el límite de 5MB de la API aplica al largo del string codificado
- * en base64, no a los bytes crudos decodificados.
+ * Note: The API's 5MB limit applies to the base64-encoded string length,
+ * not the decoded raw bytes.
  *
- * Funciona tanto con tipos UserMessage/AssistantMessage (que tienen
- * { type, message }) como con tipos MessageParam crudos (que tienen
- * { role, content }).
+ * Works with both UserMessage/AssistantMessage types (which have { type, message })
+ * and raw MessageParam types (which have { role, content }).
  *
- * @param messages - Arreglo de mensajes a validar
- * @throws ImageSizeError si alguna imagen excede el límite de la API
+ * @param messages - Array of messages to validate
+ * @throws ImageSizeError if any image exceeds the API limit
  */
 export function validateImagesForAPI(messages: unknown[]): void {
   const oversizedImages: OversizedImage[] = []
@@ -131,8 +71,8 @@ export function validateImagesForAPI(messages: unknown[]): void {
 
     const m = msg as Record<string, unknown>
 
-    // Maneja el formato de mensaje envuelto { type: 'user', message: { role, content } }
-    // Sólo se revisan mensajes de usuario.
+    // Handle wrapped message format { type: 'user', message: { role, content } }
+    // Only check user messages
     if (m.type !== 'user') continue
 
     const innerMessage = m.message as Record<string, unknown> | undefined
@@ -144,9 +84,8 @@ export function validateImagesForAPI(messages: unknown[]): void {
     for (const block of content) {
       if (isBase64ImageBlock(block)) {
         imageIndex++
-        // Verifica el largo del string codificado en base64 directamente
-        // (no los bytes decodificados) — el límite de la API aplica al
-        // tamaño del payload en base64.
+        // Check the base64-encoded string length directly (not decoded bytes)
+        // The API limit applies to the base64 payload size
         const base64Size = block.source.data.length
         if (base64Size > API_IMAGE_MAX_BASE64_SIZE) {
           logEvent('tengu_image_api_validation_failed', {

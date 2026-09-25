@@ -1,33 +1,29 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/blockTaskAndCascade.test.ts`.
+ * Tests for the dependency-graph invariants in tasks.ts:
  *
- * Tests para los invariantes del grafo de dependencias en tasks.ts:
+ *   - blockTask must reject cycles (self-loop, A↔B, A→B→C→A) at write
+ *     time. The previous implementation accepted them silently and the
+ *     cycle would deadlock claimTask.
+ *   - blockTask is bipartite: every (A.blocks ∋ B) must have a matching
+ *     (B.blockedBy ∋ A), and concurrent calls must not break this.
+ *   - cascadeUnblockOnCompletion must scrub the completed task ID from
+ *     every other task's blockedBy and report which tasks just became
+ *     fully unblocked. Without this, claimTask's read-side filter
+ *     papers over the symptom but TaskGet output keeps showing ghost
+ *     dependencies.
  *
- *   - blockTask debe rechazar ciclos (auto-lazo, A↔B, A→B→C→A) al momento
- *     de escribir. La implementacion anterior los aceptaba en silencio y
- *     el ciclo interbloqueaba a claimTask.
- *   - blockTask es bipartito: todo (A.blocks ∋ B) debe tener su
- *     (B.blockedBy ∋ A) correspondiente, y las llamadas concurrentes no
- *     deben romper esto.
- *   - cascadeUnblockOnCompletion debe scrubbear el ID de la tarea
- *     completada del blockedBy de cada otra tarea, y reportar cuales
- *     tareas quedaron completamente desbloqueadas. Sin esto, el filtro
- *     del lado de lectura de claimTask tapa el sintoma pero la salida
- *     de TaskGet sigue mostrando dependencias fantasma.
- *
- * Cada test corre contra un CLAUDE_CONFIG_DIR aislado (mkdtemp) para no
- * colisionar con `~/.claude/tasks` real de quien opera. El candado (en
- * esta version portada: un mutex en proceso indexado por ruta — ver el
- * docstring de tasks.ts) es compartido entre archivos, asi que se corren
- * los tests en serie (sin `test.concurrent`) para evitar contencion de
- * candado entre casos no relacionados.
+ * Each test runs against an isolated CLAUDE_CONFIG_DIR (mkdtemp) so it
+ * cannot collide with the operator's real ~/.claude/tasks. The
+ * .lock file machinery in tasks.ts is shared across files, so we run
+ * tests serially (no `test.concurrent`) to avoid lock contention from
+ * unrelated cases.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { mkdtemp, rm } from 'fs/promises'
 import { tmpdir } from 'os'
 import { join } from 'path'
 
-import { TaskCycleError } from '../errors.ts'
+import { TaskCycleError } from '../errors.js'
 import {
   blockTask,
   cascadeUnblockOnCompletion,
@@ -36,7 +32,7 @@ import {
   getTask,
   listTasks,
   updateTask,
-} from '../tasks.ts'
+} from '../tasks.js'
 
 const TASK_LIST_ID = 'block-task-tests'
 
@@ -108,12 +104,12 @@ describe('blockTask — cycle detection', () => {
       if (err instanceof TaskCycleError) caught = err
     }
     expect(caught).toBeDefined()
-    // El camino empieza y termina con la fuente ofensora (`c`, el
-    // fromTaskId de la llamada blockTask rechazada) — ese es el ciclo
-    // que habriamos cerrado al aceptar la arista.
+    // The path begins and ends with the offending source (`c`, the
+    // fromTaskId of the rejected blockTask call) — that's the cycle
+    // we'd have closed by accepting the edge.
     expect(caught!.path[0]).toBe(c)
     expect(caught!.path.at(-1)).toBe(c)
-    // Y la cadena intermedia visita las aristas existentes (a, b).
+    // And the chain in between visits the existing edges (a, b).
     expect(caught!.path).toContain(a)
     expect(caught!.path).toContain(b)
   })
@@ -142,12 +138,11 @@ describe('blockTask — bipartite invariant', () => {
   })
 
   test('concurrent blockTask of distinct edges keeps invariant', async () => {
-    // El trabajo se reparte entre varias fuentes/destinos para que las
-    // aristas sean independientes — el test verifica si el candado a
-    // nivel de lista las serializa lo suficientemente bien para
-    // mantener el invariante bipartito honesto. Con la implementacion
-    // vieja de candado por tarea, las aristas hacia el mismo destino
-    // competian y una direccion podia perderse.
+    // Spread work across multiple sources/targets so the edges are
+    // independent — the test is whether the list-level lock serializes
+    // them well enough to keep the bipartite invariant honest. With
+    // the old per-task-locking implementation, edges to the same
+    // target raced and one direction could be dropped.
     const sources = await Promise.all([
       makeTask('s1'),
       makeTask('s2'),
@@ -170,8 +165,7 @@ describe('blockTask — bipartite invariant', () => {
   test('repairs missing reverse edge when one side already has it', async () => {
     const a = await makeTask('a')
     const b = await makeTask('b')
-    // Se crea manualmente un estado inconsistente (solo la arista hacia
-    // adelante).
+    // Manually create an inconsistent state (only forward edge).
     await updateTask(TASK_LIST_ID, a, { blocks: [b] })
     expect((await getTask(TASK_LIST_ID, b))?.blockedBy).toEqual([])
 
@@ -197,9 +191,8 @@ describe('cascadeUnblockOnCompletion', () => {
     const taskC = await getTask(TASK_LIST_ID, c)
     expect(taskB?.blockedBy).toEqual([])
     expect(taskC?.blockedBy).toEqual([])
-    // La propia lista .blocks de la tarea completada tambien se
-    // scrubbea (las entradas ahora son referencias obsoletas — se
-    // restaura la simetria).
+    // The completed task's own .blocks list is also scrubbed (the
+    // entries are now stale references — symmetry is restored).
     const taskA = await getTask(TASK_LIST_ID, a)
     expect(taskA?.blocks).toEqual([])
   })
@@ -208,13 +201,13 @@ describe('cascadeUnblockOnCompletion', () => {
     const a = await makeTask('a')
     const b = await makeTask('b')
     const c = await makeTask('c')
-    // c bloqueada por a y por b
+    // c blocked by both a and b
     await blockTask(TASK_LIST_ID, a, c)
     await blockTask(TASK_LIST_ID, b, c)
 
     await updateTask(TASK_LIST_ID, a, { status: 'completed' })
     const result = await cascadeUnblockOnCompletion(TASK_LIST_ID, a)
-    // c sigue bloqueada por b; NO deberia estar en newlyUnblockedIds
+    // c still blocked by b; should NOT be in newlyUnblockedIds
     expect(result.newlyUnblockedIds).toEqual([])
 
     const taskC = await getTask(TASK_LIST_ID, c)
@@ -248,22 +241,21 @@ describe('deleteTask cascade', () => {
     expect(await deleteTask(TASK_LIST_ID, b)).toBe(true)
     const taskA = await getTask(TASK_LIST_ID, a)
     const taskC = await getTask(TASK_LIST_ID, c)
-    expect(taskA?.blocks).toEqual([]) // b removida
-    expect(taskC?.blockedBy).toEqual([]) // b removida
+    expect(taskA?.blocks).toEqual([]) // b removed
+    expect(taskC?.blockedBy).toEqual([]) // b removed
   })
 
   test('high water mark advances on delete to block ID reuse', async () => {
-    // deleteTask corre la escritura de la marca de agua alta dentro del
-    // mismo candado de lista que el borrado del archivo + la cascada.
-    // Sin esto, un createTask concurrente podria asignar el mismo ID
-    // que estamos borrando antes de que corra la cascada, y la tarea
-    // nueva heredaria las aristas a punto de scrubbearse. Se verifica
-    // borrando una tarea y confirmando luego que el siguiente
-    // createTask obtiene un ID mas alto (la marca de agua alta subio
-    // el contador).
+    // Phase S: deleteTask runs the high-water-mark write inside the
+    // same list-level lock as the file delete + cascade. Without
+    // this, a concurrent createTask could allocate the same ID
+    // we're deleting before the cascade ran, and the new task would
+    // inherit the about-to-be-scrubbed edges. We verify by deleting
+    // a task and then confirming the next createTask gets a higher
+    // ID (the high-water mark pulled the counter up).
     const a = await makeTask('first') // id "1"
     expect(await deleteTask(TASK_LIST_ID, a)).toBe(true)
-    const b = await makeTask('second') // NO debe reciclar "1"
+    const b = await makeTask('second') // must NOT recycle "1"
     expect(b).not.toBe(a)
     expect(parseInt(b, 10)).toBeGreaterThan(parseInt(a, 10))
   })

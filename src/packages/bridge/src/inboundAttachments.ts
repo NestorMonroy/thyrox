@@ -1,33 +1,25 @@
 /**
- * Resuelve adjuntos file_uuid en mensajes de usuario entrantes del
- * bridge.
+ * Resolve file_uuid attachments on inbound bridge user messages.
  *
- * El composer web sube vía /api/{org}/upload autenticado por cookie, y
- * envía file_uuid junto al mensaje. Aquí se obtiene cada uno vía GET
- * /api/oauth/files/{uuid}/content (autenticado por oauth, mismo store),
- * se escribe a ~/.claude/uploads/{sessionId}/, y se devuelven refs
- * @path para anteponer. La herramienta Read de Claude lo toma de ahí.
+ * Web composer uploads via cookie-authed /api/{org}/upload, sends file_uuid
+ * alongside the message. Here we fetch each via GET /api/oauth/files/{uuid}/content
+ * (oauth-authed, same store), write to ~/.claude/uploads/{sessionId}/, and
+ * return @path refs to prepend. Claude's Read tool takes it from there.
  *
- * Best-effort: cualquier fallo (sin token, red, no-2xx, disco) registra
- * debug y omite ese adjunto. El mensaje igual llega a Claude, sólo sin
- * @path.
- *
- * Puerto fiel de `ccnmt: packages/bridge/src/inboundAttachments.ts`.
- * `getSessionId`/`logForDebugging`/`getClaudeConfigHomeDir`/`lazySchema`
- * son sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
+ * Best-effort: any failure (no token, network, non-2xx, disk) logs debug and
+ * skips that attachment. The message still reaches Claude, just without @path.
  */
+
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import axios from 'axios'
-import { randomUUID } from 'node:crypto'
-import { mkdir, writeFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { randomUUID } from 'crypto'
+import { mkdir, writeFile } from 'fs/promises'
+import { basename, join } from 'path'
 import { z } from 'zod/v4'
-import {
-  getClaudeConfigHomeDir,
-  getSessionId,
-  lazySchema,
-  logForDebugging,
-} from './internal/pendingCrossPackageDeps.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { getBridgeAccessToken, getBridgeBaseUrl } from './bridgeConfig.js'
 
 const DOWNLOAD_TIMEOUT_MS = 30_000
@@ -46,7 +38,7 @@ const attachmentsArraySchema = lazySchema(() => z.array(attachmentSchema()))
 
 export type InboundAttachment = z.infer<ReturnType<typeof attachmentSchema>>
 
-/** Extrae file_attachments de un mensaje entrante débilmente tipado. */
+/** Pull file_attachments off a loosely-typed inbound message. */
 export function extractInboundAttachments(msg: unknown): InboundAttachment[] {
   if (typeof msg !== 'object' || msg === null || !('file_attachments' in msg)) {
     return []
@@ -56,9 +48,9 @@ export function extractInboundAttachments(msg: unknown): InboundAttachment[] {
 }
 
 /**
- * Retira componentes de ruta y conserva sólo caracteres seguros para un
- * nombre de archivo. file_name viene de la red (composer web), así que
- * se trata como no confiable aunque el composer lo controle.
+ * Strip path components and keep only filename-safe chars. file_name comes
+ * from the network (web composer), so treat it as untrusted even though the
+ * composer controls it.
  */
 function sanitizeFileName(name: string): string {
   const base = basename(name).replace(/[^a-zA-Z0-9._-]/g, '_')
@@ -70,8 +62,8 @@ function uploadsDir(): string {
 }
 
 /**
- * Obtiene y escribe un adjunto. Devuelve la ruta absoluta en éxito,
- * undefined ante cualquier fallo.
+ * Fetch + write one attachment. Returns the absolute path on success,
+ * undefined on any failure.
  */
 async function resolveOne(att: InboundAttachment): Promise<string | undefined> {
   const token = getBridgeAccessToken()
@@ -82,11 +74,10 @@ async function resolveOne(att: InboundAttachment): Promise<string | undefined> {
 
   let data: Buffer
   try {
-    // getOauthConfig() (vía getBridgeBaseUrl) lanza ante un
-    // CLAUDE_CODE_CUSTOM_OAUTH_URL no admitido en la allowlist —
-    // se mantiene dentro del try para que una URL FedStart mala degrade
-    // a "sin @path" en vez de tumbar el loop lector de print.ts (que no
-    // tiene catch alrededor del await).
+    // getOauthConfig() (via getBridgeBaseUrl) throws on a non-allowlisted
+    // CLAUDE_CODE_CUSTOM_OAUTH_URL — keep it inside the try so a bad
+    // FedStart URL degrades to "no @path" instead of crashing print.ts's
+    // reader loop (which has no catch around the await).
     const url = `${getBridgeBaseUrl()}/api/oauth/files/${encodeURIComponent(att.file_uuid)}/content`
     const response = await axios.get(url, {
       headers: { Authorization: `Bearer ${token}` },
@@ -104,9 +95,8 @@ async function resolveOne(att: InboundAttachment): Promise<string | undefined> {
     return undefined
   }
 
-  // El prefijo uuid hace imposibles las colisiones entre mensajes y
-  // dentro de uno (mismo nombre de archivo, archivos distintos). 8
-  // caracteres alcanzan — esto no es seguridad.
+  // uuid-prefix makes collisions impossible across messages and within one
+  // (same filename, different files). 8 chars is enough — this isn't security.
   const safeName = sanitizeFileName(att.file_name)
   const prefix = (
     att.file_uuid.slice(0, 8) || randomUUID().slice(0, 8)
@@ -127,8 +117,8 @@ async function resolveOne(att: InboundAttachment): Promise<string | undefined> {
 }
 
 /**
- * Resuelve todos los adjuntos de un mensaje entrante a una cadena
- * prefijo de refs @path. Cadena vacía si ninguno se resolvió.
+ * Resolve all attachments on an inbound message to a prefix string of
+ * @path refs. Empty string if none resolved.
  */
 export async function resolveInboundAttachments(
   attachments: InboundAttachment[],
@@ -138,17 +128,16 @@ export async function resolveInboundAttachments(
   const paths = await Promise.all(attachments.map(resolveOne))
   const ok = paths.filter((p): p is string => p !== undefined)
   if (ok.length === 0) return ''
-  // Forma entrecomillada — extractAtMentionedFiles trunca refs @ sin
-  // comillas en el primer espacio, lo que rompe cualquier home dir con
-  // espacios (/Users/John Smith/).
+  // Quoted form — extractAtMentionedFiles truncates unquoted @refs at the
+  // first space, which breaks any home dir with spaces (/Users/John Smith/).
   return ok.map(p => `@"${p}"`).join(' ') + ' '
 }
 
 /**
- * Antepone refs @path al contenido, sea cual sea su forma. Apunta al
- * ÚLTIMO bloque de texto — processUserInputBase lee inputString de
- * processedBlocks[processedBlocks.length - 1], así que poner refs en
- * block[0] hace que se ignoren silenciosamente para contenido [text, image].
+ * Prepend @path refs to content, whichever form it's in.
+ * Targets the LAST text block — processUserInputBase reads inputString
+ * from processedBlocks[processedBlocks.length - 1], so putting refs in
+ * block[0] means they're silently ignored for [text, image] content.
  */
 export function prependPathRefs(
   content: string | Array<ContentBlockParam>,
@@ -167,14 +156,13 @@ export function prependPathRefs(
       ]
     }
   }
-  // Sin bloque de texto — apenda uno al final para que sea el último.
+  // No text block — append one at the end so it's last.
   return [...content, { type: 'text', text: prefix.trimEnd() }]
 }
 
 /**
- * Conveniencia: extrae + resuelve + antepone. No-op cuando el mensaje no
- * tiene campo file_attachments (vía rápida — sin red, devuelve la misma
- * referencia).
+ * Convenience: extract + resolve + prepend. No-op when the message has no
+ * file_attachments field (fast path — no network, returns same reference).
  */
 export async function resolveAndPrepend(
   msg: unknown,

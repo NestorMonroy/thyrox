@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/agentSwarmsEnabled.test.ts:
+66 | 
+67 |   test('USER_TYPE=ant does NOT change behavior — still uses GrowthBook gate', () => {
+68 |     process.env.USER_TYPE = 'ant'
+69 |     expect(isAgentSwarmsEnabled()).toBe(true)
+70 |     growthBookValue = false
+71 |     expect(isAgentSwarmsEnabled()).toBe(false)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/agentSwarmsEnabled.test.ts:71:36)
+(fail) isAgentSwarmsEnabled — default-on for ccb operator > USER_TYPE=ant does NOT change behavior — still uses GrowthBook gate [0.20ms]
+94 | })
+95 | 
+96 | describe('isAgentSwarmsEnabled — GrowthBook killswitch', () => {
+97 |   test('returns false when tengu_amber_flint is killed', () => {
+98 |     growthBookValue = false
+99 |     expect(isAgentSwarmsEnabled()).toBe(false)
+                                        ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/agentSwarmsEnabled.test.ts:99:36)
+(fail) isAgentSwarmsEnabled — GrowthBook killswitch > returns false when tengu_amber_flint is killed [0.04ms]
+100 |   })
+101 | 
+102 |   test('GrowthBook overrides USER_TYPE=ant (no preferential treatment)', () => {
+103 |     process.env.USER_TYPE = 'ant'
+104 |     growthBookValue = false
+105 |     expect(isAgentSwarmsEnabled()).toBe(false)
+                                         ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/agentSwarmsEnabled.test.ts:105:36)
+(fail) isAgentSwarmsEnabled — GrowthBook killswitch > GrowthBook overrides USER_TYPE=ant (no preferential treatment) [0.04ms]
+
+ 6 pass
+ 3 fail
+ 12 expect() calls
+Ran 9 tests across 1 file. [105.00ms]
+exit=1

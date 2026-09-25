@@ -1,34 +1,24 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/lsp/passiveFeedback.ts`.
- * `PublishDiagnosticsParams` es sólo TIPO (erasado). `DiagnosticFile` viene
- * de `@thyrox/tool-registry/diagnosticTracking.js` — también sólo TIPO;
- * el paquete `tool-registry` no existe en este árbol, pero al ser un tipo
- * no necesita resolver en runtime.
- */
 import { fileURLToPath } from 'url'
 import type { PublishDiagnosticsParams } from 'vscode-languageserver-protocol'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { toError } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { DiagnosticFile } from '@thyrox/tool-registry/diagnosticTracking.js'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-  requireLocalObservabilitySlowOperations,
-} from '../internal/pendingCrossPackageDeps.js'
 import { registerPendingLSPDiagnostic } from './LSPDiagnosticRegistry.js'
 import type { LSPServerManager } from './LSPServerManager.js'
 
 /**
- * Mapea la severidad LSP a la severidad de diagnostic de Claude.
+ * Map LSP severity to Claude diagnostic severity
  *
- * Mapea números de severidad LSP a cadenas de severidad de Claude. Acepta
- * valores numéricos de severidad (1=Error, 2=Warning, 3=Information,
- * 4=Hint) o undefined, y por defecto usa 'Error' para valores
- * inválidos/faltantes.
+ * Maps LSP severity numbers to Claude diagnostic severity strings.
+ * Accepts numeric severity values (1=Error, 2=Warning, 3=Information, 4=Hint)
+ * or undefined, defaulting to 'Error' for invalid/missing values.
  */
 function mapLSPSeverity(
   lspSeverity: number | undefined,
 ): 'Error' | 'Warning' | 'Info' | 'Hint' {
-  // Enum DiagnosticSeverity de LSP:
+  // LSP DiagnosticSeverity enum:
   // 1 = Error, 2 = Warning, 3 = Information, 4 = Hint
   switch (lspSeverity) {
     case 1:
@@ -45,22 +35,18 @@ function mapLSPSeverity(
 }
 
 /**
- * Convierte diagnostics LSP al formato de diagnostic de Claude.
+ * Convert LSP diagnostics to Claude diagnostic format
  *
- * Convierte PublishDiagnosticsParams de LSP a formato DiagnosticFile[],
- * usado por el sistema de attachments de Claude.
+ * Converts LSP PublishDiagnosticsParams to DiagnosticFile[] format
+ * used by Claude's attachment system.
  */
 export function formatDiagnosticsForAttachment(
   params: PublishDiagnosticsParams,
 ): DiagnosticFile[] {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { logError } = requireLocalObservabilityLogging()
-  const { toError } = requireLocalObservabilityErrorHelpers()
-
-  // Parsea el URI (puede ser file:// o una ruta plana) y lo normaliza a ruta de sistema de archivos.
+  // Parse URI (may be file:// or plain path) and normalize to file system path
   let uri: string
   try {
-    // Maneja tanto URIs file:// como rutas planas.
+    // Handle both file:// URIs and plain paths
     uri = params.uri.startsWith('file://')
       ? fileURLToPath(params.uri)
       : params.uri
@@ -70,7 +56,7 @@ export function formatDiagnosticsForAttachment(
     logForDebugging(
       `Failed to convert URI to file path: ${params.uri}. Error: ${err.message}. Using original URI as fallback.`,
     )
-    // Se degrada con gracia al URI original - los servidores LSP pueden enviar URIs malformados.
+    // Gracefully fallback to original URI - LSP servers may send malformed URIs
     uri = params.uri
   }
 
@@ -114,51 +100,45 @@ export function formatDiagnosticsForAttachment(
 }
 
 /**
- * Resultado del registro de handlers, con datos de rastreo.
+ * Handler registration result with tracking data
  */
 export type HandlerRegistrationResult = {
-  /** Total de servidores. */
+  /** Total number of servers */
   totalServers: number
-  /** Número de registros exitosos. */
+  /** Number of successful registrations */
   successCount: number
-  /** Errores de registro por servidor. */
+  /** Registration errors per server */
   registrationErrors: Array<{ serverName: string; error: string }>
-  /** Rastreo de fallos en runtime (compartido entre todas las invocaciones del handler). */
+  /** Runtime failure tracking (shared across all handler invocations) */
   diagnosticFailures: Map<string, { count: number; lastError: string }>
 }
 
 /**
- * Registra handlers de notificación LSP en todos los servidores.
+ * Register LSP notification handlers on all servers
  *
- * Configura handlers para escuchar notificaciones
- * textDocument/publishDiagnostics de todos los servidores LSP y las enruta
- * al sistema de diagnostics de Claude. Usa la API pública getAllServers()
- * para acceso limpio a las instancias de servidor.
+ * Sets up handlers to listen for textDocument/publishDiagnostics notifications
+ * from all LSP servers and routes them to Claude's diagnostic system.
+ * Uses public getAllServers() API for clean access to server instances.
  *
- * @returns Datos de rastreo del estado de registro y fallos en runtime.
+ * @returns Tracking data for registration status and runtime failures
  */
 export function registerLSPNotificationHandlers(
   manager: LSPServerManager,
 ): HandlerRegistrationResult {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { logError } = requireLocalObservabilityLogging()
-  const { toError } = requireLocalObservabilityErrorHelpers()
-  const { jsonStringify } = requireLocalObservabilitySlowOperations()
-
-  // Registra handlers en todos los servidores configurados, para capturar diagnostics de cualquier lenguaje.
+  // Register handlers on all configured servers to capture diagnostics from any language
   const servers = manager.getAllServers()
 
-  // Rastrea fallos parciales - permite registros exitosos aunque algunos fallen.
+  // Track partial failures - allow successful server registrations even if some fail
   const registrationErrors: Array<{ serverName: string; error: string }> = []
   let successCount = 0
 
-  // Rastrea fallos consecutivos por servidor, para avisar tras 3+ fallos.
+  // Track consecutive failures per server to warn users after 3+ failures
   const diagnosticFailures: Map<string, { count: number; lastError: string }> =
     new Map()
 
   for (const [serverName, serverInstance] of servers.entries()) {
     try {
-      // Valida que la instancia de servidor tenga el método onNotification.
+      // Validate server instance has onNotification method
       if (
         !serverInstance ||
         typeof serverInstance.onNotification !== 'function'
@@ -174,10 +154,10 @@ export function registerLSPNotificationHandlers(
         logForDebugging(
           `Skipping handler registration for ${serverName}: ${errorMsg}`,
         )
-        continue // Se salta este servidor pero se rastrea el fallo.
+        continue // Skip this server but track the failure
       }
 
-      // Los errores se aíslan para no romper otros servidores.
+      // Errors are isolated to avoid breaking other servers
       serverInstance.onNotification(
         'textDocument/publishDiagnostics',
         (params: unknown) => {
@@ -185,7 +165,7 @@ export function registerLSPNotificationHandlers(
             `[PASSIVE DIAGNOSTICS] Handler invoked for ${serverName}! Params type: ${typeof params}`,
           )
           try {
-            // Valida la estructura de params antes de castear.
+            // Validate params structure before casting
             if (
               !params ||
               typeof params !== 'object' ||
@@ -207,11 +187,11 @@ export function registerLSPNotificationHandlers(
               `Received diagnostics from ${serverName}: ${diagnosticParams.diagnostics.length} diagnostic(s) for ${diagnosticParams.uri}`,
             )
 
-            // Convierte diagnostics LSP al formato de Claude (puede lanzar ante URIs inválidos).
+            // Convert LSP diagnostics to Claude format (can throw on invalid URIs)
             const diagnosticFiles =
               formatDiagnosticsForAttachment(diagnosticParams)
 
-            // Sólo se envía notificación si hay diagnostics.
+            // Only send notification if there are diagnostics
             const firstFile = diagnosticFiles[0]
             if (
               !firstFile ||
@@ -224,8 +204,8 @@ export function registerLSPNotificationHandlers(
               return
             }
 
-            // Registra los diagnostics para entrega asíncrona vía el sistema de attachments.
-            // Sigue el mismo patrón que AsyncHookRegistry para entrega asíncrona consistente.
+            // Register diagnostics for async delivery via attachment system
+            // Follows same pattern as AsyncHookRegistry for consistent async attachment delivery
             try {
               registerPendingLSPDiagnostic({
                 serverName,
@@ -236,7 +216,7 @@ export function registerLSPNotificationHandlers(
                 `LSP Diagnostics: Registered ${diagnosticFiles.length} diagnostic file(s) from ${serverName} for async delivery`,
               )
 
-              // Éxito - se resetea el contador de fallos de este servidor.
+              // Success - reset failure counter for this server
               diagnosticFailures.delete(serverName)
             } catch (error) {
               const err = toError(error)
@@ -248,7 +228,7 @@ export function registerLSPNotificationHandlers(
                   `Error: ${err.message}`,
               )
 
-              // Rastrea fallos consecutivos y avisa tras 3+.
+              // Track consecutive failures and warn after 3+
               const failures = diagnosticFailures.get(serverName) || {
                 count: 0,
                 lastError: '',
@@ -267,14 +247,14 @@ export function registerLSPNotificationHandlers(
               }
             }
           } catch (error) {
-            // Captura cualquier error inesperado de todo el handler, para no romper el loop de notificaciones.
+            // Catch any unexpected errors from the entire handler to prevent breaking the notification loop
             const err = toError(error)
             logError(err)
             logForDebugging(
               `Unexpected error processing diagnostics from ${serverName}: ${err.message}`,
             )
 
-            // Rastrea fallos consecutivos y avisa tras 3+.
+            // Track consecutive failures and warn after 3+
             const failures = diagnosticFailures.get(serverName) || {
               count: 0,
               lastError: '',
@@ -292,7 +272,7 @@ export function registerLSPNotificationHandlers(
               )
             }
 
-            // No se relanza - se aíslan los errores sólo a este servidor.
+            // Don't re-throw - isolate errors to this server only
           }
         },
       )
@@ -315,13 +295,13 @@ export function registerLSPNotificationHandlers(
     }
   }
 
-  // Reporta el estado general de registro.
+  // Report overall registration status
   const totalServers = servers.size
   if (registrationErrors.length > 0) {
     const failedServers = registrationErrors
       .map(e => `${e.serverName} (${e.error})`)
       .join(', ')
-    // Loguea los fallos agregados para rastreo.
+    // Log aggregate failures for tracking
     logError(
       new Error(
         `Failed to register diagnostics for ${registrationErrors.length} LSP server(s): ${failedServers}`,
@@ -338,7 +318,7 @@ export function registerLSPNotificationHandlers(
     )
   }
 
-  // Devuelve los datos de rastreo para monitoreo y tests.
+  // Return tracking data for monitoring and testing
   return {
     totalServers,
     successCount,

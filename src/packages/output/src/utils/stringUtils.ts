@@ -1,23 +1,18 @@
 /**
- * Puerto de `ccnmt: packages/output/src/utils/stringUtils.ts` (verbatim —
- * sin imports en la fuente).
- *
- * Funciones y clases utilitarias generales de cadena para acumulacion
- * segura de strings.
+ * General string utility functions and classes for safe string accumulation
  */
 
 /**
- * Escapa los caracteres especiales de regex en una cadena para poder
- * usarla como patron literal en un constructor RegExp.
+ * Escapes special regex characters in a string so it can be used as a literal
+ * pattern in a RegExp constructor.
  */
 export function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 /**
- * Pone en mayuscula el primer caracter de una cadena, dejando el resto
- * sin cambios. A diferencia de `capitalize` de lodash, esto NO pone en
- * minuscula el resto de los caracteres.
+ * Uppercases the first character of a string, leaving the rest unchanged.
+ * Unlike lodash `capitalize`, this does NOT lowercase the remaining characters.
  *
  * @example capitalize('fooBar') → 'FooBar'
  * @example capitalize('hello world') → 'Hello world'
@@ -27,8 +22,8 @@ export function capitalize(str: string): string {
 }
 
 /**
- * Devuelve la forma singular o plural de una palabra segun el conteo.
- * Reemplaza el idiom en linea `word${n === 1 ? '' : 's'}`.
+ * Returns the singular or plural form of a word based on count.
+ * Replaces the inline `word${n === 1 ? '' : 's'}` idiom.
  *
  * @example plural(1, 'file') → 'file'
  * @example plural(3, 'file') → 'files'
@@ -43,8 +38,8 @@ export function plural(
 }
 
 /**
- * Devuelve la primera linea de una cadena sin asignar un arreglo de
- * split. Se usa para detectar shebang al renderizar diffs.
+ * Returns the first line of a string without allocating a split array.
+ * Used for shebang detection in diff rendering.
  */
 export function firstLineOf(s: string): string {
   const nl = s.indexOf('\n')
@@ -52,9 +47,9 @@ export function firstLineOf(s: string): string {
 }
 
 /**
- * Cuenta las ocurrencias de `char` en `str` usando saltos de indexOf en
- * vez de iterar caracter por caracter. Tipado estructuralmente para que
- * Buffer tambien funcione (Buffer.indexOf acepta una cadena como aguja).
+ * Counts occurrences of `char` in `str` using indexOf jumps instead of
+ * per-character iteration. Structurally typed so Buffer works too
+ * (Buffer.indexOf accepts string needles).
  */
 export function countCharInString(
   str: { indexOf(search: string, start?: number): number },
@@ -71,8 +66,8 @@ export function countCharInString(
 }
 
 /**
- * Normaliza digitos de ancho completo (zenkaku) a digitos de ancho medio.
- * Util para aceptar entrada de IMEs japones/CJK.
+ * Normalize full-width (zenkaku) digits to half-width digits.
+ * Useful for accepting input from Japanese/CJK IMEs.
  */
 export function normalizeFullWidthDigits(input: string): string {
   return input.replace(/[０-９]/g, ch =>
@@ -81,25 +76,24 @@ export function normalizeFullWidthDigits(input: string): string {
 }
 
 /**
- * Normaliza el espacio de ancho completo (zenkaku) a espacio de ancho
- * medio. Util para aceptar entrada de IMEs japones/CJK (U+3000 → U+0020).
+ * Normalize full-width (zenkaku) space to half-width space.
+ * Useful for accepting input from Japanese/CJK IMEs (U+3000 → U+0020).
  */
 export function normalizeFullWidthSpace(input: string): string {
-  return input.replace(/　/g, ' ')
+  return input.replace(/\u3000/g, ' ')
 }
 
-// Mantiene la acumulacion en memoria modesta para no disparar el RSS.
-// El desbordamiento mas alla de este limite lo derrama a disco ShellCommand.
+// Keep in-memory accumulation modest to avoid blowing up RSS.
+// Overflow beyond this limit is spilled to disk by ShellCommand.
 const MAX_STRING_LENGTH = 2 ** 25
 
 /**
- * Une de forma segura un arreglo de cadenas con un delimitador, truncando
- * si el resultado excede maxSize.
+ * Safely joins an array of strings with a delimiter, truncating if the result exceeds maxSize.
  *
- * @param lines Arreglo de cadenas a unir
- * @param delimiter Delimitador a usar entre cadenas (default: ',')
- * @param maxSize Tamano maximo de la cadena resultante
- * @returns La cadena unida, truncada si fue necesario
+ * @param lines Array of strings to join
+ * @param delimiter Delimiter to use between strings (default: ',')
+ * @param maxSize Maximum size of the resulting string
+ * @returns The joined string, truncated if necessary
  */
 export function safeJoinLines(
   lines: string[],
@@ -114,10 +108,10 @@ export function safeJoinLines(
     const fullAddition = delimiterToAdd + line
 
     if (result.length + fullAddition.length <= maxSize) {
-      // La linea completa cabe
+      // The full line fits
       result += fullAddition
     } else {
-      // Hace falta truncar
+      // Need to truncate
       const remainingSpace =
         maxSize -
         result.length -
@@ -125,11 +119,11 @@ export function safeJoinLines(
         truncationMarker.length
 
       if (remainingSpace > 0) {
-        // Agrega el delimitador y tanto de la linea como quepa
+        // Add delimiter and as much of the line as will fit
         result +=
           delimiterToAdd + line.slice(0, remainingSpace) + truncationMarker
       } else {
-        // No hay espacio para nada de esta linea, solo agrega el marcador
+        // No room for any of this line, just add truncation marker
         result += truncationMarker
       }
       return result
@@ -139,9 +133,9 @@ export function safeJoinLines(
 }
 
 /**
- * Un acumulador de cadenas que maneja de forma segura salidas grandes,
- * truncando desde el final cuando se excede un limite de tamano. Esto
- * evita crashes por RangeError preservando el inicio de la salida.
+ * A string accumulator that safely handles large outputs by truncating from the end
+ * when a size limit is exceeded. This prevents RangeError crashes while preserving
+ * the beginning of the output.
  */
 export class EndTruncatingAccumulator {
   private content: string = ''
@@ -149,28 +143,28 @@ export class EndTruncatingAccumulator {
   private totalBytesReceived = 0
 
   /**
-   * Crea un nuevo EndTruncatingAccumulator
-   * @param maxSize Tamano maximo en caracteres antes de truncar
+   * Creates a new EndTruncatingAccumulator
+   * @param maxSize Maximum size in characters before truncation occurs
    */
   constructor(private readonly maxSize: number = MAX_STRING_LENGTH) {}
 
   /**
-   * Agrega datos al acumulador. Si el tamano total excede maxSize, el
-   * final se trunca para mantener el limite de tamano.
-   * @param data Los datos de cadena a agregar
+   * Appends data to the accumulator. If the total size exceeds maxSize,
+   * the end is truncated to maintain the size limit.
+   * @param data The string data to append
    */
   append(data: string | Buffer): void {
     const str = typeof data === 'string' ? data : data.toString()
     this.totalBytesReceived += str.length
 
-    // Si ya esta a capacidad y truncado, no modifica el contenido
+    // If already at capacity and truncated, don't modify content
     if (this.isTruncated && this.content.length >= this.maxSize) {
       return
     }
 
-    // Verifica si agregar la cadena excederia el limite
+    // Check if adding the string would exceed the limit
     if (this.content.length + str.length > this.maxSize) {
-      // Solo agrega lo que quepa
+      // Only append what we can fit
       const remainingSpace = this.maxSize - this.content.length
       if (remainingSpace > 0) {
         this.content += str.slice(0, remainingSpace)
@@ -182,7 +176,7 @@ export class EndTruncatingAccumulator {
   }
 
   /**
-   * Devuelve la cadena acumulada, con marcador de truncado si se trunco
+   * Returns the accumulated string, with truncation marker if truncated
    */
   toString(): string {
     if (!this.isTruncated) {
@@ -195,7 +189,7 @@ export class EndTruncatingAccumulator {
   }
 
   /**
-   * Limpia todos los datos acumulados
+   * Clears all accumulated data
    */
   clear(): void {
     this.content = ''
@@ -204,21 +198,21 @@ export class EndTruncatingAccumulator {
   }
 
   /**
-   * Devuelve el tamano actual de los datos acumulados
+   * Returns the current size of accumulated data
    */
   get length(): number {
     return this.content.length
   }
 
   /**
-   * Devuelve si ocurrio truncado
+   * Returns whether truncation has occurred
    */
   get truncated(): boolean {
     return this.isTruncated
   }
 
   /**
-   * Devuelve el total de bytes recibidos (antes de truncar)
+   * Returns total bytes received (before truncation)
    */
   get totalBytes(): number {
     return this.totalBytesReceived
@@ -226,12 +220,11 @@ export class EndTruncatingAccumulator {
 }
 
 /**
- * Trunca texto a un numero maximo de lineas, agregando puntos suspensivos
- * si se trunco.
+ * Truncates text to a maximum number of lines, adding an ellipsis if truncated.
  *
- * @param text El texto a truncar
- * @param maxLines Numero maximo de lineas a conservar
- * @returns El texto truncado con puntos suspensivos si se trunco
+ * @param text The text to truncate
+ * @param maxLines Maximum number of lines to keep
+ * @returns The truncated text with ellipsis if truncated
  */
 export function truncateToLines(text: string, maxLines: number): string {
   const lines = text.split('\n')

@@ -1,67 +1,61 @@
 /**
- * TeammateContext — contexto en runtime de teammates in-process — porte de
- * `ccnmt: packages/swarm/src/teammateContextAlias.ts`.
+ * TeammateContext — Runtime context for in-process teammates.
  *
- * Porte VERBATIM: la única dependencia es `node:async_hooks`, presente
- * en cualquier runtime de Node/Bun.
+ * AsyncLocalStorage-based context for in-process teammates, enabling
+ * concurrent teammate execution without global state conflicts.
  *
- * Contexto basado en AsyncLocalStorage para teammates in-process, que
- * permite ejecución concurrente sin conflictos de estado global.
+ * Relationship with other teammate identity mechanisms:
+ * - Env vars (CLAUDE_CODE_AGENT_ID): Process-based teammates spawned via tmux
+ * - dynamicTeamContext (teammate.ts): Process-based teammates joining at runtime
+ * - TeammateContext (this file): In-process teammates via AsyncLocalStorage
  *
- * Relación con otros mecanismos de identidad de teammate (documentado en
- * la fuente, ninguno de los dos existe aún en este árbol):
- * - Variables de entorno (CLAUDE_CODE_AGENT_ID): teammates basados en
- *   proceso, lanzados vía tmux.
- * - dynamicTeamContext (teammate.ts): teammates basados en proceso que
- *   se unen en runtime.
- * - TeammateContext (este archivo): teammates in-process vía
- *   AsyncLocalStorage.
+ * The helper functions in teammate.ts check AsyncLocalStorage first, then
+ * dynamicTeamContext, then env vars.
  *
- * ADVERTENCIA DE SINGLETON: el slot de AsyncLocalStorage de abajo es un
- * singleton a nivel de módulo. Los consumidores deben pasar por este
- * archivo canónico (o por `./teammateContext.ts`, su fachada) — nunca
- * instanciar una segunda AsyncLocalStorage bajo el mismo nombre.
+ * SINGLETON WARNING: The AsyncLocalStorage slot below is a module-level
+ * singleton. Consumers must route through this canonical file (or its
+ * src/ facade) — never instantiate a second AsyncLocalStorage under the
+ * same name.
  */
 
-import { AsyncLocalStorage } from 'node:async_hooks'
+import { AsyncLocalStorage } from 'async_hooks'
 
 /**
- * Contexto en runtime de un teammate in-process.
- * Se guarda en AsyncLocalStorage para acceso concurrente.
+ * Runtime context for in-process teammates.
+ * Stored in AsyncLocalStorage for concurrent access.
  */
 export type TeammateContext = {
-  /** Agent ID completo, p.ej. "researcher@my-team" */
+  /** Full agent ID, e.g., "researcher@my-team" */
   agentId: string
-  /** Nombre visible, p.ej. "researcher" */
+  /** Display name, e.g., "researcher" */
   agentName: string
-  /** Nombre del equipo al que pertenece este teammate */
+  /** Team name this teammate belongs to */
   teamName: string
-  /** Color de UI asignado a este teammate */
+  /** UI color assigned to this teammate */
   color?: string
-  /** Si el teammate debe entrar en plan mode antes de implementar */
+  /** Whether teammate must enter plan mode before implementing */
   planModeRequired: boolean
-  /** Session ID del líder (para correlacionar transcripts) */
+  /** Leader's session ID (for transcript correlation) */
   parentSessionId: string
-  /** Discriminador — siempre true para teammates in-process */
+  /** Discriminator - always true for in-process teammates */
   isInProcess: true
-  /** Abort controller para el manejo del ciclo de vida (enlazado al padre) */
+  /** Abort controller for lifecycle management (linked to parent) */
   abortController: AbortController
 }
 
 const teammateContextStorage = new AsyncLocalStorage<TeammateContext>()
 
 /**
- * Devuelve el contexto actual de teammate in-process, si corre como uno.
- * `undefined` si no se está ejecutando dentro de un contexto de teammate
- * in-process.
+ * Get the current in-process teammate context, if running as one.
+ * Returns undefined if not running within an in-process teammate context.
  */
 export function getTeammateContext(): TeammateContext | undefined {
   return teammateContextStorage.getStore()
 }
 
 /**
- * Corre una función con el contexto de teammate fijado. Se usa al lanzar
- * un teammate in-process para establecer su contexto de ejecución.
+ * Run a function with teammate context set.
+ * Used when spawning an in-process teammate to establish its execution context.
  */
 export function runWithTeammateContext<T>(
   context: TeammateContext,
@@ -71,18 +65,18 @@ export function runWithTeammateContext<T>(
 }
 
 /**
- * Verifica si la ejecución actual está dentro de un teammate in-process.
- * Más rápido que `getTeammateContext() !== undefined` para chequeos simples.
+ * Check if current execution is within an in-process teammate.
+ * Faster than `getTeammateContext() !== undefined` for simple checks.
  */
 export function isInProcessTeammate(): boolean {
   return teammateContextStorage.getStore() !== undefined
 }
 
 /**
- * Crea un `TeammateContext` a partir de la configuración de arranque.
- * El `abortController` lo pasa el llamador. Para teammates in-process,
- * típicamente es un controller independiente (no enlazado al padre) para
- * que el teammate siga corriendo aunque se interrumpa la query del líder.
+ * Create a TeammateContext from spawn configuration.
+ * The abortController is passed in by the caller. For in-process teammates,
+ * this is typically an independent controller (not linked to parent) so
+ * teammates continue running when the leader's query is interrupted.
  */
 export function createTeammateContext(config: {
   agentId: string

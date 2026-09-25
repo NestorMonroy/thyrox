@@ -1,33 +1,16 @@
-import { execSync } from 'node:child_process'
+import memoize from 'lodash-es/memoize.js'
 import * as path from 'path'
 import * as pathWin32 from 'path/win32'
-import {
-  getCwd,
-  getPlatform,
-  logForDebugging,
-  memoize,
-  memoizeWithLRU,
-} from './internal/pendingCrossPackageDeps.js'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { execSync } from '@thyrox/shell/execSyncWrapper.js'
+import { memoizeWithLRU } from '@thyrox/config/memoize.js'
+import { getPlatform } from '@thyrox/config/platform'
 
 /**
- * Adaptación de `ccnmt: packages/storage/src/windowsPaths.ts`. Las
- * conversiones Windows ↔ POSIX (`windowsPathToPosixPath`,
- * `posixPathToWindowsPath`) son fieles a la fuente, símbolo por símbolo.
- *
- * Sustituciones — ver `./internal/pendingCrossPackageDeps.ts` para el
- * porqué de cada una (`getCwd`, `getPlatform`, `memoize`, `memoizeWithLRU`,
- * `logForDebugging`). Aquí sólo `execSync`: la fuente la trae de
- * `@claude-code-how-works/shell/execSyncWrapper.js` (un wrapper de
- * tipos/seguridad); este porte usa `node:child_process`'s `execSync`
- * directo — mismo built-in que el wrapper envuelve, con la misma firma
- * para las dos llamadas que aquí se hacen (`stdio: 'pipe'`,
- * `encoding: 'utf8'`).
- */
-
-/**
- * Revisa si un archivo o directorio existe en Windows usando el comando dir.
- * @param path - La ruta a revisar
- * @returns true si la ruta existe, false en otro caso
+ * Check if a file or directory exists on Windows using the dir command
+ * @param path - The path to check
+ * @returns true if the path exists, false otherwise
  */
 function checkPathExists(path: string): boolean {
   try {
@@ -39,20 +22,19 @@ function checkPathExists(path: string): boolean {
 }
 
 /**
- * Encuentra un ejecutable usando where.exe en Windows.
- * @param executable - El nombre del ejecutable a encontrar
- * @returns La ruta al ejecutable o null si no se encuentra
+ * Find an executable using where.exe on Windows
+ * @param executable - The name of the executable to find
+ * @returns The path to the executable or null if not found
  */
 function findExecutable(executable: string): string | null {
-  // Para git, revisa primero las ubicaciones de instalación comunes.
+  // For git, check common installation locations first
   if (executable === 'git') {
     const defaultLocations = [
-      // revisa 64 bit antes que 32 bit
+      // check 64 bit before 32 bit
       'C:\\Program Files\\Git\\cmd\\git.exe',
       'C:\\Program Files (x86)\\Git\\cmd\\git.exe',
-      // deliberadamente NO se busca
-      // C:\Program Files\Git\mingw64\bin\git.exe porque ese directorio son
-      // las herramientas "crudas" sin el entorno configurado
+      // intentionally don't look for C:\Program Files\Git\mingw64\bin\git.exe
+      // because that directory is the "raw" tools with no environment setup
     ]
 
     for (const location of defaultLocations) {
@@ -62,25 +44,24 @@ function findExecutable(executable: string): string | null {
     }
   }
 
-  // Recae en where.exe.
+  // Fall back to where.exe
   try {
     const result = execSync(`where.exe ${executable}`, {
       stdio: 'pipe',
       encoding: 'utf8',
     }).trim()
 
-    // SEGURIDAD: filtra cualquier resultado del directorio actual para
-    // evitar ejecutar un git.bat/cmd/exe malicioso.
+    // SECURITY: Filter out any results from the current directory
+    // to prevent executing malicious git.bat/cmd/exe files
     const paths = result.split('\r\n').filter(Boolean)
     const cwd = getCwd().toLowerCase()
 
     for (const candidatePath of paths) {
-      // Normaliza y compara rutas para asegurar que no estamos en el
-      // directorio actual.
+      // Normalize and compare paths to ensure we're not in current directory
       const normalizedPath = path.resolve(candidatePath).toLowerCase()
       const pathDir = path.dirname(normalizedPath).toLowerCase()
 
-      // Salta si el ejecutable está en el directorio de trabajo actual.
+      // Skip if the executable is in the current working directory
       if (pathDir === cwd || normalizedPath.startsWith(cwd + path.sep)) {
         logForDebugging(
           `Skipping potentially malicious executable in current directory: ${candidatePath}`,
@@ -88,7 +69,7 @@ function findExecutable(executable: string): string | null {
         continue
       }
 
-      // Retorna la primera ruta válida que no esté en el directorio actual.
+      // Return the first valid path that's not in the current directory
       return candidatePath
     }
 
@@ -99,14 +80,13 @@ function findExecutable(executable: string): string | null {
 }
 
 /**
- * Si es Windows, fija la variable de entorno SHELL a la ruta de git-bash.
- * La usan BashTool y Shell.ts para comandos de shell del usuario. COMSPEC
- * se deja sin tocar para la ejecución de procesos del sistema.
+ * If Windows, set the SHELL environment variable to git-bash path.
+ * This is used by BashTool and Shell.ts for user shell commands.
+ * COMSPEC is left unchanged for system process execution.
  *
- * Cuando no se encuentra git-bash, SHELL se deja sin fijar (o con su valor
- * previo). La ejecución de bash mostrará un error claro cuando un comando
- * bash de verdad se ejecute; los comandos de PowerShell y herramientas
- * que no son shell siguen totalmente usables.
+ * When git-bash is not found, SHELL is left unset (or at its prior value).
+ * The bash execution path will surface a clear error when a bash command is
+ * actually run; PowerShell commands and non-shell tools remain fully usable.
  */
 export function setShellIfWindows(): void {
   if (getPlatform() === 'windows') {
@@ -124,11 +104,10 @@ export function setShellIfWindows(): void {
 }
 
 /**
- * Encuentra la ruta donde existe `bash.exe` incluido con git-bash.
- * Retorna null cuando no se encuentra git-bash — quien llama decide si
- * eso es fatal para su caso de uso específico (p. ej. un hook de bash
- * falla, pero los hooks de PowerShell y herramientas que no son shell
- * siguen funcionando).
+ * Find the path where `bash.exe` included with git-bash exists.
+ * Returns null when git-bash is not found — callers decide whether
+ * that is fatal for their specific use case (e.g. a bash hook fails,
+ * but PowerShell hooks and non-shell tools keep working).
  */
 export const findGitBashPath = memoize((): string | null => {
   if (process.env.CLAUDE_CODE_GIT_BASH_PATH) {
@@ -152,48 +131,48 @@ export const findGitBashPath = memoize((): string | null => {
   return null
 })
 
-/** Convierte una ruta de Windows a una ruta POSIX usando JS puro. */
+/** Convert a Windows path to a POSIX path using pure JS. */
 export const windowsPathToPosixPath = memoizeWithLRU(
   (windowsPath: string): string => {
-    // Rutas UNC: \\server\share -> //server/share
+    // Handle UNC paths: \\server\share -> //server/share
     if (windowsPath.startsWith('\\\\')) {
       return windowsPath.replace(/\\/g, '/')
     }
-    // Rutas con letra de unidad: C:\Users\foo -> /c/Users/foo
+    // Handle drive letter paths: C:\Users\foo -> /c/Users/foo
     const match = windowsPath.match(/^([A-Za-z]):[/\\]/)
     if (match) {
       const driveLetter = match[1]!.toLowerCase()
       return '/' + driveLetter + windowsPath.slice(2).replace(/\\/g, '/')
     }
-    // Ya POSIX o relativo — sólo invierte las barras.
+    // Already POSIX or relative — just flip slashes
     return windowsPath.replace(/\\/g, '/')
   },
   (p: string) => p,
   500,
 )
 
-/** Convierte una ruta POSIX a una ruta de Windows usando JS puro. */
+/** Convert a POSIX path to a Windows path using pure JS. */
 export const posixPathToWindowsPath = memoizeWithLRU(
   (posixPath: string): string => {
-    // Rutas UNC: //server/share -> \\server\share
+    // Handle UNC paths: //server/share -> \\server\share
     if (posixPath.startsWith('//')) {
       return posixPath.replace(/\//g, '\\')
     }
-    // Formato /cygdrive/c/...
+    // Handle /cygdrive/c/... format
     const cygdriveMatch = posixPath.match(/^\/cygdrive\/([A-Za-z])(\/|$)/)
     if (cygdriveMatch) {
       const driveLetter = cygdriveMatch[1]!.toUpperCase()
       const rest = posixPath.slice(('/cygdrive/' + cygdriveMatch[1]).length)
       return driveLetter + ':' + (rest || '\\').replace(/\//g, '\\')
     }
-    // Formato /c/... (MSYS2/Git Bash)
+    // Handle /c/... format (MSYS2/Git Bash)
     const driveMatch = posixPath.match(/^\/([A-Za-z])(\/|$)/)
     if (driveMatch) {
       const driveLetter = driveMatch[1]!.toUpperCase()
       const rest = posixPath.slice(2)
       return driveLetter + ':' + (rest || '\\').replace(/\//g, '\\')
     }
-    // Ya Windows o relativo — sólo invierte las barras.
+    // Already Windows or relative — just flip slashes
     return posixPath.replace(/\//g, '\\')
   },
   (p: string) => p,

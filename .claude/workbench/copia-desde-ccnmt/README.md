@@ -109,3 +109,18 @@ regresiones — las dos son pruebas nuestras que fijan nuestra versión:
   failed for expected reason» ante un ENOENT, que la copia no emite.
 
 Las dos se revierten (`rejected-behavior`): quedan **72 copias**.
+
+## Fase 1 — lote 04 (100 más)
+
+3 pasadas de tsc; 71 copiados, 12 rechazados por su archivo, 17 por un
+consumidor. tsc **2351 → 2343** en el paso; tras revertir, **2344** (el `TS2698` de `openai/client.ts` que la copia quitaba vuelve con la versión de HEAD; 0 diagnósticos nuevos frente a la base del lote). Pruebas: 96 derivadas, 4 regresiones, dos de
+cada clase:
+
+- copias de **módulo** que rompen nuestras pruebas de fijación:
+  `provider/src/openai/client.ts` (la prueba exige
+  `getProxyFetchOptions({ forAnthropicAPI: false })`) e `indexImpl.ts` (la
+  bitácora de sesión cae a la de anthropic con `??`);
+- copias de **prueba** de la fuente que fallan contra nuestro módulo:
+  `agentSwarmsEnabled.test.ts` y `cronJitterConfig.test.ts`.
+
+Las cuatro se revierten: quedan **67 copias**.

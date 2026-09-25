@@ -1,13 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/toolSearchPure.test.ts`
- * contra `../toolSearch.ts` (puerto PARCIAL — ver la cabecera de ese
- * archivo: sólo `isToolReferenceBlock` y `extractDiscoveredToolNames`,
- * de los trece símbolos exportados por la fuente).
- *
- * Casos, datos y aserciones idénticos a la fuente. La descripción de cada
- * `describe`/`test` se tradujo al español; los identificadores quedan en
- * inglés.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   extractDiscoveredToolNames,
@@ -16,18 +6,18 @@ import {
 
 type Msg = Parameters<typeof extractDiscoveredToolNames>[0][number]
 
-describe('isToolReferenceBlock — type guard en runtime', () => {
-  test('bloque tool_reference válido → true', () => {
+describe('isToolReferenceBlock — runtime type guard', () => {
+  test('valid tool_reference block → true', () => {
     expect(isToolReferenceBlock({ type: 'tool_reference' })).toBe(true)
   })
 
-  test('tool_reference con campos extra sigue coincidiendo', () => {
+  test('tool_reference with extra fields still matches', () => {
     expect(
       isToolReferenceBlock({ type: 'tool_reference', tool_name: 'X' }),
     ).toBe(true)
   })
 
-  test('type distinto → false', () => {
+  test('different type → false', () => {
     expect(isToolReferenceBlock({ type: 'tool_use' })).toBe(false)
     expect(isToolReferenceBlock({ type: 'text' })).toBe(false)
     expect(isToolReferenceBlock({ type: 'tool_result' })).toBe(false)
@@ -41,37 +31,37 @@ describe('isToolReferenceBlock — type guard en runtime', () => {
     expect(isToolReferenceBlock(undefined)).toBe(false)
   })
 
-  test('primitivos → false', () => {
+  test('primitives → false', () => {
     expect(isToolReferenceBlock('tool_reference')).toBe(false)
     expect(isToolReferenceBlock(42)).toBe(false)
     expect(isToolReferenceBlock(true)).toBe(false)
   })
 
-  test('objeto sin campo type → false', () => {
+  test('object without type field → false', () => {
     expect(isToolReferenceBlock({ tool_name: 'X' })).toBe(false)
   })
 
-  test('objeto con type pero valor equivocado → false', () => {
-    expect(isToolReferenceBlock({ type: 'TOOL_REFERENCE' })).toBe(false) // sensible a mayúsculas
+  test('object with type but wrong value → false', () => {
+    expect(isToolReferenceBlock({ type: 'TOOL_REFERENCE' })).toBe(false) // case-sensitive
     expect(isToolReferenceBlock({ type: '' })).toBe(false)
   })
 
-  test('arreglo → false (typeof [] === "object" pero sin campo type)', () => {
+  test('array → false (typeof [] === "object" but no type field)', () => {
     expect(isToolReferenceBlock([])).toBe(false)
     expect(isToolReferenceBlock([{ type: 'tool_reference' }])).toBe(false)
   })
 })
 
-describe('extractDiscoveredToolNames — entrada vacía', () => {
-  test('arreglo vacío → conjunto vacío', () => {
+describe('extractDiscoveredToolNames — empty input', () => {
+  test('empty array → empty set', () => {
     expect(extractDiscoveredToolNames([])).toEqual(new Set())
   })
 })
 
-describe('extractDiscoveredToolNames — filtrado por tipo de mensaje', () => {
-  test('los mensajes assistant se saltan (sólo user trae tool_result)', () => {
-    // Aunque metiéramos tool_result a la fuerza en un mensaje assistant
-    // (imposible en la práctica), la función no debe recorrerlo.
+describe('extractDiscoveredToolNames — message-type filtering', () => {
+  test('assistant messages skipped (only user has tool_result)', () => {
+    // Even if we shoved tool_result into an assistant message (impossible
+    // in practice), the function should not scan it.
     const msgs: Msg[] = [
       {
         type: 'assistant',
@@ -88,7 +78,7 @@ describe('extractDiscoveredToolNames — filtrado por tipo de mensaje', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('los mensajes progress se saltan', () => {
+  test('progress messages skipped', () => {
     const msgs: Msg[] = [
       {
         type: 'progress',
@@ -105,21 +95,21 @@ describe('extractDiscoveredToolNames — filtrado por tipo de mensaje', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('content que no es arreglo se salta en silencio', () => {
+  test('non-array content skipped silently', () => {
     const msgs: Msg[] = [
       { type: 'user', message: { content: 'plain text' } } as Msg,
     ]
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('campo message ausente se salta', () => {
+  test('missing message field skipped', () => {
     const msgs: Msg[] = [{ type: 'user' } as Msg]
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 })
 
-describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
-  test('un solo tool_reference dentro de tool_result', () => {
+describe('extractDiscoveredToolNames — tool_reference extraction', () => {
+  test('single tool_reference inside tool_result', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -136,7 +126,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set(['mcp__foo']))
   })
 
-  test('múltiples tool_references en el mismo tool_result', () => {
+  test('multiple tool_references in same tool_result', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -159,7 +149,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     )
   })
 
-  test('múltiples tool_results a través de mensajes — se acumulan', () => {
+  test('multiple tool_results across messages — accumulated', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -187,7 +177,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set(['a', 'b']))
   })
 
-  test('los duplicados se deduplican por el Set', () => {
+  test('duplicates de-duplicated by Set', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -207,7 +197,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set(['foo']))
   })
 
-  test('tool_reference mezclado con no-referencias — sólo se extraen las referencias', () => {
+  test('tool_reference mixed with non-references — only references extracted', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -228,10 +218,10 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set(['mcp__foo']))
   })
 
-  test('tool_reference SIN campo tool_name se descarta', () => {
-    // La verificación en runtime exige que 'type' === 'tool_reference' Y
-    // que 'tool_name' sea un string. Una entrada malformada sin
-    // tool_name se descarta en silencio (defensivo).
+  test('tool_reference WITHOUT tool_name field is skipped', () => {
+    // The runtime check requires both 'type' === 'tool_reference' AND
+    // 'tool_name' to be a string. A malformed entry without tool_name
+    // is silently skipped (defensive).
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -239,7 +229,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
           content: [
             {
               type: 'tool_result',
-              content: [{ type: 'tool_reference' }], // sin tool_name
+              content: [{ type: 'tool_reference' }], // no tool_name
             },
           ],
         },
@@ -248,7 +238,7 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('tool_reference con tool_name que no es string se descarta', () => {
+  test('tool_reference with non-string tool_name is skipped', () => {
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -265,8 +255,8 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('tool_result con content que no es arreglo se descarta en silencio', () => {
-    // isToolResultBlockWithContent exige Array.isArray(content).
+  test('tool_result with non-array content silently skipped', () => {
+    // The isToolResultBlockWithContent guard requires Array.isArray(content).
     const msgs: Msg[] = [
       {
         type: 'user',
@@ -279,14 +269,13 @@ describe('extractDiscoveredToolNames — extracción de tool_reference', () => {
   })
 })
 
-describe('extractDiscoveredToolNames — carry de compact_boundary', () => {
-  // CRÍTICO: cuando la compactación resume mensajes que portan
-  // tool_reference, el conjunto descubierto se snapshotea sobre el
-  // marcador de frontera. El recorrido lo vuelve a leer. Sin esto, tras
-  // la compactación el modelo perdería visibilidad sobre las
-  // herramientas que había descubierto antes.
+describe('extractDiscoveredToolNames — compact_boundary carry', () => {
+  // CRITICAL: when compaction summarizes tool_reference-bearing messages,
+  // the discovered set is snapshotted on the boundary marker. The scan
+  // reads it back. Without this, post-compaction the model would lose
+  // visibility into the tools it had previously discovered.
 
-  test('compact_boundary con preCompactDiscoveredTools porta los nombres', () => {
+  test('compact_boundary with preCompactDiscoveredTools carries names', () => {
     const msgs: Msg[] = [
       {
         type: 'system',
@@ -301,7 +290,7 @@ describe('extractDiscoveredToolNames — carry de compact_boundary', () => {
     )
   })
 
-  test('compact_boundary SIN preCompactDiscoveredTools es no-op', () => {
+  test('compact_boundary WITHOUT preCompactDiscoveredTools is no-op', () => {
     const msgs: Msg[] = [
       {
         type: 'system',
@@ -311,7 +300,7 @@ describe('extractDiscoveredToolNames — carry de compact_boundary', () => {
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('un mensaje system que no es compact (subtype distinto) es no-op', () => {
+  test('non-compact system message (different subtype) is no-op', () => {
     const msgs: Msg[] = [
       {
         type: 'system',
@@ -319,12 +308,12 @@ describe('extractDiscoveredToolNames — carry de compact_boundary', () => {
         compactMetadata: { preCompactDiscoveredTools: ['x'] },
       } as unknown as Msg,
     ]
-    // No es compact_boundary → no es candidato de carry. El
-    // descubrimiento sólo dispara para compact_boundary específicamente.
+    // Not a compact_boundary → not a carry candidate. Discovery only fires
+    // for compact_boundary specifically.
     expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
   })
 
-  test('las herramientas portadas se acumulan con los descubrimientos post-compact', () => {
+  test('carried tools accumulate with post-compact discoveries', () => {
     const msgs: Msg[] = [
       {
         type: 'system',
@@ -349,12 +338,12 @@ describe('extractDiscoveredToolNames — carry de compact_boundary', () => {
   })
 })
 
-describe('extractDiscoveredToolNames — contrato del valor de retorno', () => {
-  test('devuelve una instancia de Set', () => {
+describe('extractDiscoveredToolNames — return value contract', () => {
+  test('returns a Set instance', () => {
     expect(extractDiscoveredToolNames([])).toBeInstanceOf(Set)
   })
 
-  test('devuelve un Set fresco por llamada (sin mutación compartida)', () => {
+  test('returns a fresh Set per call (no shared mutation)', () => {
     const r1 = extractDiscoveredToolNames([])
     const r2 = extractDiscoveredToolNames([])
     expect(r1).not.toBe(r2)

@@ -1,66 +1,63 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/claudeInChromeCommon.test.ts`.
+ * Tests for claudeInChromeCommon — Chrome tab tracking + MCP-server name
+ * detection.
  *
- * Tests de `claudeInChromeCommon` — seguimiento de pestañas de Chrome +
- * detección del nombre del servidor MCP.
- *
- * `trackClaudeInChromeTabId` tiene un tope de 200 pestañas que se resuelve
- * con "limpiar y añadir" cuando se agrega un id NUEVO en el tope. Una
- * expulsión equivocada es o bien crecimiento ilimitado de memoria (sin
- * expulsión) o perder la pestaña que el usuario acaba de abrir (expulsión
- * al re-agregar una existente). Se prueba el comportamiento documentado.
+ * trackClaudeInChromeTabId has a 200-tab cap that wraps via clear-and-add
+ * when a NEW id is added at the cap. Wrong eviction = either unbounded
+ * memory growth (no eviction) or losing the tab the user just opened
+ * (clear-on-existing eviction). Test the documented behavior.
  */
 import { describe, expect, test } from 'bun:test'
 import {
   isClaudeInChromeMCPServer,
   isTrackedClaudeInChromeTabId,
   trackClaudeInChromeTabId,
-} from '../claudeInChromeCommon.ts'
+} from '../claudeInChromeCommon.js'
 
 describe('isClaudeInChromeMCPServer', () => {
-  test('coincide exactamente con "claude-in-chrome"', () => {
+  test('exact "claude-in-chrome" matches', () => {
     expect(isClaudeInChromeMCPServer('claude-in-chrome')).toBe(true)
   })
 
-  test('distingue mayúsculas: la variante en mayúsculas NO coincide', () => {
-    // normalizeNameForMCP sólo reemplaza [^a-zA-Z0-9_-] por `_` — no pasa a
-    // minúsculas. Así que "Claude-In-Chrome" queda igual y falla la
-    // igualdad estricta. Es comportamiento documentado — la forma
-    // canónica es exactamente "claude-in-chrome".
+  test('case-sensitive: uppercase variant does NOT match', () => {
+    // normalizeNameForMCP only replaces [^a-zA-Z0-9_-] with `_` — it
+    // doesn't lowercase. So "Claude-In-Chrome" stays as-is and fails
+    // the strict equality check. This is documented behavior — the
+    // canonical form is exactly "claude-in-chrome".
     expect(isClaudeInChromeMCPServer('Claude-In-Chrome')).toBe(false)
   })
 
-  test('los caracteres fuera de [a-zA-Z0-9_-] se normalizan a _', () => {
-    // Un espacio → guion bajo. Así que "claude in chrome" →
-    // "claude_in_chrome", que NO es la forma canónica (con guiones).
+  test('characters outside [a-zA-Z0-9_-] are normalized to _', () => {
+    // A space → underscore. So "claude in chrome" → "claude_in_chrome",
+    // which is NOT the canonical form (with dashes).
     expect(isClaudeInChromeMCPServer('claude in chrome')).toBe(false)
   })
 
-  test('la forma con guion bajo NO se considera equivalente a la de guion', () => {
-    // La constante es "claude-in-chrome" (guiones). normalizeNameForMCP
-    // no traduce guion bajo a guion (ni viceversa).
+  test('underscore-form is NOT considered equivalent to dash-form', () => {
+    // The constant is "claude-in-chrome" (dashes). normalizeNameForMCP
+    // doesn't translate underscores to dashes (or vice versa).
     expect(isClaudeInChromeMCPServer('claude_in_chrome')).toBe(false)
   })
 
-  test('un nombre distinto devuelve false', () => {
+  test('different name returns false', () => {
     expect(isClaudeInChromeMCPServer('claude-in-firefox')).toBe(false)
     expect(isClaudeInChromeMCPServer('chrome')).toBe(false)
     expect(isClaudeInChromeMCPServer('')).toBe(false)
   })
 })
 
-describe('trackClaudeInChromeTabId — seguimiento básico', () => {
-  test('agregar → isTracked devuelve true', () => {
-    const tabId = 999_001 // fuera del rango del test de expulsión
+describe('trackClaudeInChromeTabId — basic tracking', () => {
+  test('add → isTracked returns true', () => {
+    const tabId = 999_001 // outside the eviction-test range
     trackClaudeInChromeTabId(tabId)
     expect(isTrackedClaudeInChromeTabId(tabId)).toBe(true)
   })
 
-  test('un id no rastreado devuelve false', () => {
+  test('untracked id returns false', () => {
     expect(isTrackedClaudeInChromeTabId(999_999_998)).toBe(false)
   })
 
-  test('agregar el mismo id dos veces es idempotente (sigue rastreado una sola vez)', () => {
+  test('add same id twice is idempotent (still tracked once)', () => {
     const tabId = 999_002
     trackClaudeInChromeTabId(tabId)
     trackClaudeInChromeTabId(tabId)
@@ -68,42 +65,40 @@ describe('trackClaudeInChromeTabId — seguimiento básico', () => {
   })
 })
 
-describe('trackClaudeInChromeTabId — expulsión LRU en MAX_TRACKED_TABS', () => {
-  test('agregar 250 ids distintos dispara limpiar-y-agregar', () => {
-    // El tope es 200. Agregar un 201º id NUEVO limpia todo y agrega el
-    // nuevo. Así que tras agregar 250 ids distintos en secuencia:
-    //   - Los primeros 200 llenan el conjunto.
-    //   - El 201º: no está presente + tamaño === 200 → limpia + agrega
-    //     (el conjunto queda con 1).
-    //   - Los 49 restantes se agregan normal → el conjunto queda con 50.
-    // Los ids más viejos (1..200) se expulsan en el punto de desborde 201.
-    const baseId = 1_000_000 // rango único para no chocar con otros tests
+describe('trackClaudeInChromeTabId — LRU eviction at MAX_TRACKED_TABS', () => {
+  test('adding 250 distinct ids triggers clear-and-add', () => {
+    // The cap is 200. Adding a 201st NEW id clears all and adds the
+    // new one. So after adding 250 distinct ids in sequence:
+    //   - First 200 fill the set.
+    //   - 201st: not present + size === 200 → clear + add (set has 1)
+    //   - Remaining 49 add normally → set has 50.
+    // Earliest added IDs (1..200) get evicted at id 201.
+    const baseId = 1_000_000 // unique range to avoid earlier-test pollution
     for (let i = 0; i < 250; i++) {
       trackClaudeInChromeTabId(baseId + i)
     }
-    // El primer lote (el más viejo) debe expulsarse en el punto de desborde.
+    // First batch (oldest) should be evicted at the cap-overflow point.
     expect(isTrackedClaudeInChromeTabId(baseId)).toBe(false)
     expect(isTrackedClaudeInChromeTabId(baseId + 100)).toBe(false)
 
-    // El último lote de 50 debe estar rastreado.
+    // The last 50 batch should be tracked.
     expect(isTrackedClaudeInChromeTabId(baseId + 249)).toBe(true)
     expect(isTrackedClaudeInChromeTabId(baseId + 200)).toBe(true)
   })
 })
 
-describe('trackClaudeInChromeTabId — re-agregar un id existente en el tope NO expulsa', () => {
-  test('agregar un id existente estando en el tope NO limpia', () => {
-    // Crítico: si el tamaño === MAX y el id YA está rastreado, la función
-    // agrega normalmente sin limpiar. Esto protege contra perder estado
-    // real cuando una pestaña dispara onActivated repetidamente.
+describe('trackClaudeInChromeTabId — re-add of existing id at cap does NOT evict', () => {
+  test('adding existing id when at cap does NOT clear', () => {
+    // Critical: if size === MAX and the id is ALREADY tracked, the
+    // function adds normally without clearing. This protects against
+    // losing real state when a tab fires onActivated repeatedly.
     const baseId = 2_000_000
-    // Primero, agregar ids frescos repetidamente para reconstruir el
-    // seguimiento cerca del tope. (No se puede resetear el estado
-    // limpiamente, así que sólo se verifica la guarda de comportamiento.)
+    // First, repeatedly add fresh ids to rebuild tracking up near the cap.
+    // (We can't reset state cleanly, so just verify the behavioral guard.)
     const sentinel = 2_000_500
     trackClaudeInChromeTabId(sentinel)
     expect(isTrackedClaudeInChromeTabId(sentinel)).toBe(true)
-    // Re-rastrear el mismo id — debe seguir rastreado.
+    // Re-track the same id — must still be tracked.
     trackClaudeInChromeTabId(sentinel)
     expect(isTrackedClaudeInChromeTabId(sentinel)).toBe(true)
   })

@@ -1,27 +1,25 @@
 /**
- * Orquestador de clasificador por-worker — `ant 3921.js` Wp7/Gp7 + ZB5.
+ * Per-worker classifier orchestrator — ant 3921.js Wp7/Gp7 + ZB5.
  *
- * Para cada WorkerVm:
- *   1. Se suscribe a las escrituras del ring (vía WorkerVm.on('write')).
- *   2. Cada CLASSIFIER_TICK_MS, lee la cola del ring y corre el pipeline
- *      preclassify → heuristic → llm.
- *   3. Escribe state.json + apéndice a timeline.jsonl al cambiar de estado.
- *   4. Emite tengu_bg_classify con el payload completo de ant.
+ * For each WorkerVm:
+ *   1. Subscribe to ring writes (via WorkerVm.on('write')).
+ *   2. Every CLASSIFIER_TICK_MS, read ring tail and run preclassify →
+ *      heuristic → llm pipeline.
+ *   3. Write state.json + append timeline.jsonl on state change.
+ *   4. Emit tengu_bg_classify with full ant payload.
  *
- * Detiene la orquestación en vm.settle.
+ * Stops orchestration on vm.settle.
  *
- * Gate: CLAUDE_CODE_BG_CLASSIFIER=1 (variable de entorno). El motor LLM
- * además requiere CLAUDE_CODE_BG_CLASSIFIER_ENGINE=llm; el default es
- * heuristic (sin gasto de API).
+ * Gate: CLAUDE_CODE_BG_CLASSIFIER=1 (env var). LLM engine additionally
+ * requires CLAUDE_CODE_BG_CLASSIFIER_ENGINE=llm; default is heuristic
+ * (no API spend).
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/classifier/orchestrator.ts`.
+ * @dynamicRequire
  */
 
-import {
-  generateJobName,
-  logEvent,
-  readJobState,
-} from '../internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
+import { readJobState } from '@thyrox/agent/background/fleet/fleetStore.js'
+import { generateJobName } from '@thyrox/agent/background/fleet/generateJobName.js'
 import type { WorkerVm } from '../workerVm.js'
 import { closingShape } from './heuristic.js'
 import { classify } from './llmClient.js'
@@ -42,7 +40,7 @@ interface OrchestratorState {
   pendingTick: NodeJS.Timeout | null
   intervalTimer: NodeJS.Timeout | null
   stopped: boolean
-  /** Tokens acumulados a través de todas las llamadas LLM de este worker. */
+  /** Cumulative tokens across all LLM calls for this worker. */
   tokens: { input: number; output: number; cacheRead: number; cacheCreation: number }
 }
 
@@ -56,7 +54,7 @@ export function getClassifierEngine(): 'heuristic' | 'llm' {
   return process.env.CLAUDE_CODE_BG_CLASSIFIER_ENGINE === 'llm' ? 'llm' : 'heuristic'
 }
 
-/** ant fp7 — registrar una vez por proceso, en el primer arranque de orchestrator. */
+/** ant fp7 — record once per process, on first orchestrator start. */
 let configEmitted = false
 function emitConfigOnce(): void {
   if (configEmitted) return
@@ -86,8 +84,7 @@ export function startOrchestrator(vm: WorkerVm, intent?: string): void {
     stopped: false,
     tokens: { input: 0, output: 0, cacheRead: 0, cacheCreation: 0 },
   }
-  // Semilla de prev desde el archivo de estado existente (así el reinicio
-  // del daemon preserva continuidad).
+  // Seed prev from existing state file (so daemon restart preserves continuity).
   const existing = readState(short)
   if (existing) {
     state.prevState = existing.state
@@ -95,7 +92,7 @@ export function startOrchestrator(vm: WorkerVm, intent?: string): void {
     state.prevTempo = existing.tempo
     state.tokens = existing.tokens ?? state.tokens
   } else {
-    // Escritura inicial del archivo de estado — captura intent + cwd + cliVersion.
+    // Initial state file write — captures intent + cwd + cliVersion.
     const now = new Date().toISOString()
     const initial: WorkerStateFile = {
       state: 'working',
@@ -124,12 +121,12 @@ export function startOrchestrator(vm: WorkerVm, intent?: string): void {
     state.pendingTick.unref()
   }
 
-  // Listener de escritura del ring (dispara con cada chunk de PTY).
+  // Ring write listener (fires on every PTY chunk).
   vm.on('write', triggerClassify)
-  // Tick periódico para atrapar estancamientos + clasificación tipo cron.
+  // Periodic tick to catch stalls + cron-like classification.
   state.intervalTimer = setInterval(triggerClassify, CLASSIFIER_TICK_MS)
   state.intervalTimer.unref()
-  // El listener de settle detiene al orchestrator.
+  // Settle listener stops orchestrator.
   vm.once('settled', () => stopOrchestrator(short))
 }
 
@@ -140,7 +137,7 @@ export function stopOrchestrator(short: string): void {
   if (state.pendingTick) clearTimeout(state.pendingTick)
   if (state.intervalTimer) clearInterval(state.intervalTimer)
   orchestrators.delete(short)
-  // Escritura final de estado — marca firstTerminalAt si el estado es terminal.
+  // Final state write — mark firstTerminalAt if state is terminal.
   const cur = readState(short)
   if (cur && !cur.firstTerminalAt && isTerminalState(cur.state)) {
     writeState(short, { ...cur, firstTerminalAt: new Date().toISOString() })
@@ -167,7 +164,7 @@ async function runClassify(state: OrchestratorState): Promise<void> {
     engine: getClassifierEngine(),
   })
 
-  // Acumula tokens.
+  // Accumulate tokens.
   state.tokens.input += result.tokens.input
   state.tokens.output += result.tokens.output
   state.tokens.cacheRead += result.tokens.cacheRead
@@ -224,7 +221,7 @@ async function runClassify(state: OrchestratorState): Promise<void> {
     }),
   })
 
-  // Emite agent_terminal una vez, al entrar a estado terminal.
+  // Emit agent_terminal once when entering terminal state.
   if (
     isTerminalState(result.state) &&
     !cur?.firstTerminalAt
@@ -241,8 +238,8 @@ async function runClassify(state: OrchestratorState): Promise<void> {
   state.prevDetail = result.detail
   state.prevTempo = result.tempo
 
-  // Origen: `ant 3991.js` — disparo del namer desde el pase post-LLM del
-  // clasificador:
+  // Source: ant 3991.js — namer trigger from the classifier post-LLM
+  // pass:
   //   if (!f?.name && C && $==="llm" && !H.nameInFlight) {
   //     let m = O.filter(x => !x.isApiErrorMessage).map(rE).find(Boolean)
   //     let p = m ? "" : yy8(O)
@@ -251,15 +248,13 @@ async function runClassify(state: OrchestratorState): Promise<void> {
   //     Vq3(Y, C, S).catch(vH).finally(() => { H.nameInFlight = !1 })
   //   }
   //
-  // Donde `f` es el FleetJobState (se relee tras escribir para tomar el
-  // intent recién persistido), `$` es la procedencia del clasificador,
-  // `C` es el prompt de usuario (state.intent), y `S` es la cola del
-  // primer mensaje de texto del agente (aquí se aproxima con la cola del
-  // ring que usa classify).
+  // Where `f` is the FleetJobState (we re-read after writing to pick up
+  // the freshly persisted intent), `$` is the classifier source, `C` is
+  // the user prompt (state.intent), and `S` is the agent's first text
+  // message tail (we approximate with the ring tail used by classify).
   //
-  // El namer dispara una sola vez por vida del worker (vía el Set
-  // `attempted` en `generateJobName.ts`), así que llamar a esta rama
-  // repetidamente es seguro — se auto-debounce.
+  // The namer is fire-once per worker lifetime (via attempted Set in
+  // namer.ts), so spamming this branch is safe — it self-debounces.
   if (result.source === 'llm') {
     const jobsRoot = process.env.CLAUDE_CONFIG_HOME
       ? `${process.env.CLAUDE_CONFIG_HOME}/jobs/${state.vm.short}`
@@ -276,16 +271,15 @@ async function runClassify(state: OrchestratorState): Promise<void> {
       void generateJobName({
         short: state.vm.short,
         userMsg: intent,
-        // Usa el detail del LLM como proxy compacto de la cola del
-        // agente — el texto completo excedería el tope de 300 caracteres
-        // de Vq3 y ant lo trunca igual.
+        // Use the LLM detail as a compact agent-tail proxy — full text
+        // would blow past Vq3's 300-char cap and ant truncates anyway.
         agentTail: result.detail ?? '',
       }).catch(() => undefined)
     }
   }
 }
 
-/** Helper de test/inspección. */
+/** Test/inspection helper. */
 export function _orchestratorCount(): number {
   return orchestrators.size
 }

@@ -1,35 +1,13 @@
-/**
- * Lectura y render de un PDF: la puerta por la que un documento entra a la
- * conversación.
- *
- * Procedencia: `ccnmt: packages/tool-registry/src/pdf.ts` (300 líneas,
- * 6 exports). Ese árbol declara `"license": "UNLICENSED"`, así que el cuerpo
- * se **reimplementa** —mismo nombre de módulo, mismo sitio en el paquete,
- * mismos nombres y firmas— y no se copia.
- *
- * Los dos caminos son distintos a propósito y no se pueden fundir:
- *
- * - `readPDF` manda el PDF ENTERO al API en base64, así que su tope es el que
- *   deja sitio al resto de la petición (20 MB crudos, ~27 codificados);
- * - `extractPDFPages` no manda el PDF: manda IMÁGENES que renderiza en local,
- *   así que su tope es cinco veces mayor. Confundirlos rechazaría documentos
- *   que sí se pueden leer por la segunda vía.
- *
- * DIVERGENCIA DECLARADA (única): la fuente resuelve `errorMessage`,
- * `execFileNoThrow`, `formatFileSize`, `getFsImplementation` y
- * `getToolResultsDir` por su nombre de paquete; aquí es el mismo símbolo bajo
- * el alcance `@thyrox`. No cambia ni la firma ni el comportamiento.
- */
 import { randomUUID } from 'crypto'
 import { mkdir, readdir, readFile } from 'fs/promises'
 import { join } from 'path'
-import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
-import { formatFileSize } from '@thyrox/output/formatters'
 import {
   PDF_MAX_EXTRACT_SIZE,
   PDF_TARGET_RAW_SIZE,
 } from '@thyrox/provider/apiLimits.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
+import { formatFileSize } from '@thyrox/output/formatters'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { getToolResultsDir } from '@thyrox/storage/toolResultStorage.js'
 
@@ -49,7 +27,9 @@ export type PDFResult<T> =
   | { success: false; error: PDFError }
 
 /**
- * Lee un PDF y lo devuelve codificado en base64.
+ * Read a PDF file and return it as base64-encoded data.
+ * @param filePath Path to the PDF file
+ * @returns Result containing PDF data or a structured error
  */
 export async function readPDF(filePath: string): Promise<
   PDFResult<{
@@ -66,6 +46,7 @@ export async function readPDF(filePath: string): Promise<
     const stats = await fs.stat(filePath)
     const originalSize = stats.size
 
+    // Check if file is empty
     if (originalSize === 0) {
       return {
         success: false,
@@ -73,9 +54,9 @@ export async function readPDF(filePath: string): Promise<
       }
     }
 
-    // El tope se aplica al tamaño CRUDO y antes de leer el archivo: base64
-    // crece ~33 %, y el API acota la petición entera. Comprobarlo después de
-    // codificar leería en memoria un documento que ya se sabe que no cabe.
+    // Check if PDF exceeds maximum size
+    // The API has a 32MB total request limit. After base64 encoding (~33% larger),
+    // a PDF must be under ~20MB raw to leave room for conversation context.
     if (originalSize > PDF_TARGET_RAW_SIZE) {
       return {
         success: false,
@@ -88,12 +69,11 @@ export async function readPDF(filePath: string): Promise<
 
     const fileBuffer = await readFile(filePath)
 
-    // Los bytes mágicos: rechaza lo que no es un PDF —un HTML renombrado a
-    // `.pdf`, por ejemplo— ANTES de que entre al contexto de la conversación.
-    // Una vez que un bloque de documento inválido está en el historial, toda
-    // llamada posterior al API falla con «The PDF specified was not valid» y
-    // la sesión queda irrecuperable sin limpiarla. La guarda no protege a la
-    // herramienta: protege a la sesión.
+    // Validate PDF magic bytes — reject files that aren't actually PDFs
+    // (e.g., HTML files renamed to .pdf) before they enter conversation context.
+    // Once an invalid PDF document block is in the message history, every subsequent
+    // API call fails with 400 "The PDF specified was not valid" and the session
+    // becomes unrecoverable without /clear.
     const header = fileBuffer.subarray(0, 5).toString('ascii')
     if (!header.startsWith('%PDF-')) {
       return {
@@ -107,8 +87,8 @@ export async function readPDF(filePath: string): Promise<
 
     const base64 = fileBuffer.toString('base64')
 
-    // El número de páginas no se puede saber aquí sin analizar el documento.
-    // El API impone su propio límite y lo reporta si se excede.
+    // Note: We cannot check page count here without parsing the PDF
+    // The API will enforce the 100-page limit and return an error if exceeded
 
     return {
       success: true,
@@ -133,11 +113,8 @@ export async function readPDF(filePath: string): Promise<
 }
 
 /**
- * Cuenta las páginas con `pdfinfo` (de poppler-utils). Devuelve `null` cuando
- * el binario no está o cuando el conteo no se puede determinar.
- *
- * `null` y no `NaN`: un NaN viajaría como número y se compararía en silencio
- * contra un tope de páginas; el `null` obliga a quien llama a decidir.
+ * Get the number of pages in a PDF file using `pdfinfo` (from poppler-utils).
+ * Returns `null` if pdfinfo is not available or if the page count cannot be determined.
  */
 export async function getPDFPageCount(
   filePath: string,
@@ -169,16 +146,16 @@ export type PDFExtractPagesResult = {
 
 let pdftoppmAvailable: boolean | undefined
 
-/** Limpia la caché de disponibilidad. Sólo para pruebas. */
+/**
+ * Reset the pdftoppm availability cache. Used by tests only.
+ */
 export function resetPdftoppmCache(): void {
   pdftoppmAvailable = undefined
 }
 
 /**
- * ¿Está `pdftoppm` (de poppler-utils)? El resultado se cachea por proceso.
- *
- * Se cachea también el `false`: cachear sólo el sí dejaría el no sondeando el
- * binario en cada llamada, que es justo el coste que la caché evita.
+ * Check whether the `pdftoppm` binary (from poppler-utils) is available.
+ * The result is cached for the lifetime of the process.
  */
 export async function isPdftoppmAvailable(): Promise<boolean> {
   if (pdftoppmAvailable !== undefined) return pdftoppmAvailable
@@ -186,18 +163,18 @@ export async function isPdftoppmAvailable(): Promise<boolean> {
     timeout: 5000,
     useCwd: false,
   })
-  // `pdftoppm` imprime su versión a stderr y sale con 0 — o con 99 en las
-  // versiones viejas. Por eso un stderr no vacío cuenta como disponible.
+  // pdftoppm prints version info to stderr and exits 0 (or sometimes 99 on older versions)
   pdftoppmAvailable = code === 0 || stderr.length > 0
   return pdftoppmAvailable
 }
 
 /**
- * Renderiza las páginas del PDF a JPEG con `pdftoppm`, produciendo
- * `page-01.jpg`, `page-02.jpg`… en un directorio de salida. Es lo que permite
- * leer un PDF grande, y funciona con cualquier proveedor del API.
+ * Extract PDF pages as JPEG images using pdftoppm.
+ * Produces page-01.jpg, page-02.jpg, etc. in an output directory.
+ * This enables reading large PDFs and works with all API providers.
  *
- * @param options rango de páginas, 1-indexado e inclusivo.
+ * @param filePath Path to the PDF file
+ * @param options Optional page range (1-indexed, inclusive)
  */
 export async function extractPDFPages(
   filePath: string,
@@ -238,21 +215,15 @@ export async function extractPDFPages(
     }
 
     const uuid = randomUUID()
-    // El directorio cuelga del de resultados de la SESIÓN, no de un temporal
-    // del sistema: así la limpieza de la sesión arrastra las imágenes en vez
-    // de dejarlas huérfanas en disco.
     const outputDir = join(getToolResultsDir(), `pdf-${uuid}`)
     await mkdir(outputDir, { recursive: true })
 
-    // `pdftoppm` produce `<prefijo>-01.jpg`, `<prefijo>-02.jpg`, etc.
+    // pdftoppm produces files like <prefix>-01.jpg, <prefix>-02.jpg, etc.
     const prefix = join(outputDir, 'page')
     const args = ['-jpeg', '-r', '100']
     if (options?.firstPage) {
       args.push('-f', String(options.firstPage))
     }
-    // `Infinity` NO viaja: sale de un rango abierto de quien llama, y como
-    // argumento daría `-l Infinity`, que no es un número y hace fallar el
-    // render entero.
     if (options?.lastPage && options.lastPage !== Infinity) {
       args.push('-l', String(options.lastPage))
     }
@@ -288,13 +259,11 @@ export async function extractPDFPages(
       }
     }
 
+    // Read generated image files and sort naturally
     const entries = await readdir(outputDir)
     const imageFiles = entries.filter(f => f.endsWith('.jpg')).sort()
     const pageCount = imageFiles.length
 
-    // Cero páginas es un fallo, no un éxito con `count: 0`. Un éxito vacío
-    // haría que quien llama mandara un mensaje sin imágenes y sin error: el
-    // fallo se volvería invisible.
     if (pageCount === 0) {
       return {
         success: false,

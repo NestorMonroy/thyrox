@@ -1,11 +1,3 @@
-/**
- * Porte de
- * `ccnmt: packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts`
- * — registro global de funciones de limpieza para el apagado ordenado.
- *
- * Descripciones de `describe`/`test` traducidas al español; identificadores,
- * datos y aserciones conservados verbatim contra la fuente.
- */
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
   registerCleanup,
@@ -13,20 +5,23 @@ import {
 } from '../cleanupRegistry.js'
 
 afterEach(async () => {
-  // El Set a nivel de módulo se comparte entre tests. No se limpia aquí:
-  // cada test abajo se registra y desregistra explícitamente con su propia
-  // función de "unregister", así que este hook es intencionalmente un no-op.
+  // The module-level Set is shared across tests. Clear by registering &
+  // running a no-op set of cleanups, then unregistering all by registering
+  // a marker and reading. The cleanest approach: each test must
+  // unregister anything it registered.
+  // Tests below register inline and call their unregister fn explicitly,
+  // so this hook is intentionally a no-op.
 })
 
-describe('registerCleanup — estado del registro', () => {
-  test('registra una función y devuelve una función de desregistro', () => {
+describe('registerCleanup — registry state', () => {
+  test('registers a function and returns an unregister fn', () => {
     const fn = async () => {}
     const unreg = registerCleanup(fn)
     expect(typeof unreg).toBe('function')
-    unreg() // limpieza
+    unreg() // clean up
   })
 
-  test('desregistrar quita la función (una corrida posterior no la llama)', async () => {
+  test('unregister removes the function (subsequent run does not call it)', async () => {
     let called = false
     const fn = async () => {
       called = true
@@ -37,23 +32,23 @@ describe('registerCleanup — estado del registro', () => {
     expect(called).toBe(false)
   })
 
-  test('múltiples registros de LA MISMA función se deduplican (semántica de Set)', async () => {
+  test('multiple registrations of the SAME function are deduped (Set semantics)', async () => {
     let count = 0
     const fn = async () => {
       count++
     }
     const unreg1 = registerCleanup(fn)
     const unreg2 = registerCleanup(fn)
-    // unreg1 y unreg2 referencian la misma entrada del Set.
+    // Both unreg1 and unreg2 reference the same Set entry.
     await runCleanupFunctions()
-    expect(count).toBe(1) // se llamó una sola vez pese a los dos registros
-    // Cualquiera de los dos "unreg" limpia el slot (el Set solo tiene una entrada).
+    expect(count).toBe(1) // called once despite two register calls
+    // Either unreg cleans the slot (Set has only one entry).
     unreg1()
-    // El segundo unreg es un no-op (la entrada ya no está).
+    // Second unreg is a no-op (entry already gone).
     unreg2()
   })
 
-  test('registrar e inmediatamente desregistrar no deja nada invocable en el registro', async () => {
+  test('register-then-immediately-unregister leaves no callable in registry', async () => {
     let called = false
     const unreg = registerCleanup(async () => {
       called = true
@@ -63,7 +58,7 @@ describe('registerCleanup — estado del registro', () => {
     expect(called).toBe(false)
   })
 
-  test('referencias de función distintas NO se deduplican', async () => {
+  test('different function references are NOT deduped', async () => {
     let count = 0
     const fn1 = async () => {
       count++
@@ -80,8 +75,8 @@ describe('registerCleanup — estado del registro', () => {
   })
 })
 
-describe('runCleanupFunctions — invocación', () => {
-  test('corre todas las funciones registradas concurrentemente (Promise.all)', async () => {
+describe('runCleanupFunctions — invocation', () => {
+  test('runs all registered functions concurrently (Promise.all)', async () => {
     let aDone = false
     let bDone = false
     const a = async () => {
@@ -101,10 +96,10 @@ describe('runCleanupFunctions — invocación', () => {
     u2()
   })
 
-  test('un rechazo en una limpieza se propaga (NO se traga en silencio)', async () => {
-    // Promise.all rechaza ante el primer fallo. CRÍTICO: si un refactor
-    // futuro cambia a Promise.allSettled, los errores se tragarían en
-    // silencio. Harían falta tests para detectar ese cambio.
+  test('rejection in one cleanup propagates (NOT silently swallowed)', async () => {
+    // Promise.all rejects on first failure. CRITICAL: if a future
+    // refactor switches to Promise.allSettled, errors would be
+    // swallowed. Tests would be needed to detect that change.
     const u1 = registerCleanup(async () => {
       throw new Error('cleanup boom')
     })
@@ -118,17 +113,16 @@ describe('runCleanupFunctions — invocación', () => {
     u1()
   })
 
-  test('registro vacío → resuelve exitosamente', async () => {
-    // Tras una limpieza completa, el registro debe poder correr como no-op.
-    // Solo se verifica que no lance.
+  test('empty registry → resolves successfully', async () => {
+    // After full cleanup the registry should be runnable as no-op.
+    // Just verify it doesn't throw.
     await expect(runCleanupFunctions()).resolves.toBeUndefined()
   })
 
-  test('runCleanupFunctions NO limpia el registro (las funciones siguen registradas)', async () => {
-    // Documenta que correr la limpieza NO es un auto-desregistro. La
-    // función puede volver a llamarse y disparará todas las limpiezas
-    // registradas otra vez. El apagado del proceso llama esto una sola
-    // vez y termina.
+  test('runCleanupFunctions does NOT clear the registry (functions stay registered)', async () => {
+    // Documents that running cleanup is NOT auto-unregister. The
+    // function can be called again and will fire all registered
+    // cleanups again. Process shutdown calls this once and exits.
     let count = 0
     const u = registerCleanup(async () => {
       count++
@@ -140,19 +134,18 @@ describe('runCleanupFunctions — invocación', () => {
   })
 })
 
-describe('registerCleanup — contrato del valor de retorno', () => {
-  test('la función de desregistro devuelve un boolean (resultado de Set.delete)', () => {
-    // Set.delete devuelve true si el elemento estaba presente. Se
-    // documenta el tipo de retorno para que quien llame sepa si
-    // desregistró dos veces.
+describe('registerCleanup — return value contract', () => {
+  test('unregister fn returns boolean (Set.delete result)', () => {
+    // Set.delete returns true if the element was present. Document the
+    // return type so callers can know if they double-unregistered.
     const fn = async () => {}
     const unreg = registerCleanup(fn)
     const firstResult = unreg()
-    // Set.delete devuelve boolean. La firma de `fn` dice `() => void`
-    // pero el Set.delete subyacente devuelve true. TypeScript borra el
-    // boolean — pero en tiempo de ejecución está ahí.
+    // Set.delete returns boolean. The fn signature says `() => void`
+    // but the underlying Set.delete returns true. TypeScript erases
+    // the boolean — but at runtime it's there.
     expect(firstResult === true || firstResult === undefined).toBe(true)
-    // La segunda llamada devuelve false (ya no está).
+    // Second call returns false (already gone).
     const secondResult = unreg()
     expect(secondResult === false || secondResult === undefined).toBe(true)
   })

@@ -1,21 +1,9 @@
-/**
- * Traduccion del esquema de herramienta Anthropic al de Gemini — porte de
- * `ccnmt: packages/provider/src/gemini/convertTools.ts` (285 lineas).
- *
- * El puerto es COMPLETO: sus dos exportaciones —`anthropicToolsToGemini` y
- * `anthropicToolChoiceToGemini`— y las siete funciones privadas del saneador.
- * Ninguna queda fuera.
- *
- * POR QUE ES TAN LARGO comparado con su hermano de OpenAI: aquel solo tiene
- * que convertir `const` en `enum`; este tiene que traducir JSON Schema entero
- * al DIALECTO de Gemini, que admite un vocabulario acotado. Lo que no esta en
- * ese vocabulario se descarta en vez de viajar, porque viajar hace que la
- * llamada falle.
- */
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
-import type { GeminiFunctionCallingConfig, GeminiTool } from './types.js'
+import type {
+  GeminiFunctionCallingConfig,
+  GeminiTool,
+} from './types.js'
 
-/** Los siete tipos que el dialecto de Gemini admite. */
 const GEMINI_JSON_SCHEMA_TYPES = new Set([
   'string',
   'number',
@@ -26,12 +14,9 @@ const GEMINI_JSON_SCHEMA_TYPES = new Set([
   'null',
 ])
 
-/**
- * Deja el `type` en la forma que Gemini admite: una cadena del vocabulario, o
- * un arreglo de esas cadenas deduplicado, o nada. Un arreglo que quede con un
- * solo tipo se colapsa a la cadena.
- */
-function normalizeGeminiJsonSchemaType(value: unknown): string | string[] | undefined {
+function normalizeGeminiJsonSchemaType(
+  value: unknown,
+): string | string[] | undefined {
   if (typeof value === 'string') {
     return GEMINI_JSON_SCHEMA_TYPES.has(value) ? value : undefined
   }
@@ -49,7 +34,6 @@ function normalizeGeminiJsonSchemaType(value: unknown): string | string[] | unde
   return undefined
 }
 
-/** El tipo de Gemini que corresponde a un valor concreto. */
 function inferGeminiJsonSchemaTypeFromValue(value: unknown): string | undefined {
   if (value === null) return 'null'
   if (Array.isArray(value)) return 'array'
@@ -62,7 +46,6 @@ function inferGeminiJsonSchemaTypeFromValue(value: unknown): string | undefined 
   return undefined
 }
 
-/** El tipo —o los tipos— que se deducen de los valores de un `enum`. */
 function inferGeminiJsonSchemaTypeFromEnum(
   values: unknown[],
 ): string | string[] | undefined {
@@ -74,7 +57,6 @@ function inferGeminiJsonSchemaTypeFromEnum(
   return unique.length === 1 ? unique[0] : unique
 }
 
-/** Anade `null` al tipo, sin duplicarlo si ya estaba. */
 function addNullToGeminiJsonSchemaType(
   value: string | string[] | undefined,
 ): string | string[] | undefined {
@@ -85,11 +67,6 @@ function addNullToGeminiJsonSchemaType(
   return value === 'null' ? value : [value, 'null']
 }
 
-/**
- * Sanea el mapa de `properties`, descartando las que queden vacias. Si no
- * sobrevive ninguna, no hay mapa: devolver uno vacio haria que el consumidor
- * emitiera una clave sin contenido.
- */
 function sanitizeGeminiJsonSchemaProperties(
   value: unknown,
 ): Record<string, Record<string, unknown>> | undefined {
@@ -108,7 +85,6 @@ function sanitizeGeminiJsonSchemaProperties(
   return Object.fromEntries(sanitizedEntries)
 }
 
-/** Sanea un arreglo de esquemas, descartando los que queden vacios. */
 function sanitizeGeminiJsonSchemaArray(
   value: unknown,
 ): Record<string, unknown>[] | undefined {
@@ -121,17 +97,9 @@ function sanitizeGeminiJsonSchemaArray(
   return sanitized.length > 0 ? sanitized : undefined
 }
 
-/**
- * Traduce un JSON Schema al dialecto de Gemini.
- *
- * Es una LISTA BLANCA, no una lista negra: se construye un objeto nuevo con
- * las claves admitidas en vez de borrar las prohibidas del original. Asi, una
- * palabra clave que Gemini no conozca no viaja aunque nadie la haya previsto.
- *
- * Cada clave se copia solo si su valor tiene el tipo correcto — el guard es
- * por `typeof`, no por presencia.
- */
-function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
+function sanitizeGeminiJsonSchema(
+  schema: unknown,
+): Record<string, unknown> {
   if (!schema || typeof schema !== 'object' || Array.isArray(schema)) {
     return {}
   }
@@ -141,8 +109,6 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
 
   let type = normalizeGeminiJsonSchemaType(source.type)
 
-  // `const` gana sobre `enum`, y de cualquiera de los dos se puede deducir el
-  // tipo si no venia declarado.
   if (source.const !== undefined) {
     result.enum = [source.const]
     type = type ?? inferGeminiJsonSchemaTypeFromValue(source.const)
@@ -151,7 +117,6 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
     type = type ?? inferGeminiJsonSchemaTypeFromEnum(source.enum)
   }
 
-  // Sin tipo declarado ni deducido, la forma del esquema lo delata.
   if (!type) {
     if (source.properties && typeof source.properties === 'object') {
       type = 'object'
@@ -180,8 +145,6 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
   if (typeof source.pattern === 'string') {
     result.pattern = source.pattern
   }
-  // Gemini no tiene las formas exclusivas: se pliegan a las inclusivas, y la
-  // inclusiva gana si vienen las dos.
   if (typeof source.minimum === 'number') {
     result.minimum = source.minimum
   } else if (typeof source.exclusiveMinimum === 'number') {
@@ -214,8 +177,6 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
   const properties = sanitizeGeminiJsonSchemaProperties(source.properties)
   if (properties) {
     result.properties = properties
-    // `propertyOrdering` es clave PROPIA de Gemini, no de JSON Schema: fija el
-    // orden en que el modelo debe emitir los campos.
     result.propertyOrdering = Object.keys(properties)
   }
 
@@ -231,7 +192,9 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
   if (typeof source.additionalProperties === 'boolean') {
     result.additionalProperties = source.additionalProperties
   } else {
-    const additionalProperties = sanitizeGeminiJsonSchema(source.additionalProperties)
+    const additionalProperties = sanitizeGeminiJsonSchema(
+      source.additionalProperties,
+    )
     if (Object.keys(additionalProperties).length > 0) {
       result.additionalProperties = additionalProperties
     }
@@ -247,7 +210,6 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
     result.prefixItems = prefixItems
   }
 
-  // Gemini no tiene `oneOf`: se traduce a `anyOf`, y el `anyOf` propio gana.
   const anyOf = sanitizeGeminiJsonSchemaArray(source.anyOf ?? source.oneOf)
   if (anyOf) {
     result.anyOf = anyOf
@@ -256,27 +218,20 @@ function sanitizeGeminiJsonSchema(schema: unknown): Record<string, unknown> {
   return result
 }
 
-/**
- * El esquema de parametros de una funcion, con su respaldo: un esquema que se
- * vacie entero cae al objeto vacio en vez de viajar como `{}`.
- */
-function sanitizeGeminiFunctionParameters(schema: unknown): Record<string, unknown> {
+function sanitizeGeminiFunctionParameters(
+  schema: unknown,
+): Record<string, unknown> {
   const sanitized = sanitizeGeminiJsonSchema(schema)
   if (Object.keys(sanitized).length > 0) {
     return sanitized
   }
 
-  return { type: 'object', properties: {} }
+  return {
+    type: 'object',
+    properties: {},
+  }
 }
 
-/**
- * Traduce las herramientas de Anthropic al grupo de declaraciones de funcion
- * de Gemini.
- *
- * Las de servidor se filtran, y si no queda ninguna se devuelve arreglo vacio
- * y NO un grupo con cero declaraciones: eso ultimo hace que Gemini responda
- * 400.
- */
 export function anthropicToolsToGemini(tools: BetaToolUnion[]): GeminiTool[] {
   const functionDeclarations = tools
     .filter(tool => {
@@ -287,10 +242,11 @@ export function anthropicToolsToGemini(tools: BetaToolUnion[]): GeminiTool[] {
       const anyTool = tool as unknown as Record<string, unknown>
       const name = (anyTool.name as string) || ''
       const description = (anyTool.description as string) || ''
-      const inputSchema = (anyTool.input_schema as Record<string, unknown> | undefined) ?? {
-        type: 'object',
-        properties: {},
-      }
+      const inputSchema =
+        (anyTool.input_schema as Record<string, unknown> | undefined) ?? {
+          type: 'object',
+          properties: {},
+        }
 
       return {
         name,
@@ -299,14 +255,11 @@ export function anthropicToolsToGemini(tools: BetaToolUnion[]): GeminiTool[] {
       }
     })
 
-  return functionDeclarations.length > 0 ? [{ functionDeclarations }] : []
+  return functionDeclarations.length > 0
+    ? [{ functionDeclarations }]
+    : []
 }
 
-/**
- * Traduce el `tool_choice` de Anthropic a la configuracion de llamada a
- * funcion de Gemini: `auto` da modo AUTO; `any` y `tool` dan modo ANY, y el
- * segundo ademas acota el nombre permitido cuando lo trae.
- */
 export function anthropicToolChoiceToGemini(
   toolChoice: unknown,
 ): GeminiFunctionCallingConfig | undefined {
@@ -323,7 +276,8 @@ export function anthropicToolChoiceToGemini(
     case 'tool':
       return {
         mode: 'ANY',
-        allowedFunctionNames: typeof tc.name === 'string' ? [tc.name] : undefined,
+        allowedFunctionNames:
+          typeof tc.name === 'string' ? [tc.name] : undefined,
       }
     default:
       return undefined

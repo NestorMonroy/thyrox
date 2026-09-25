@@ -1,21 +1,18 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/isSyntheticMessage.test.ts`.
+ * Tests for isSyntheticMessage — detects whether a message is one of
+ * the canonical SYNTHETIC_MESSAGES (interrupted-by-user, no-response-
+ * requested, etc.) so callers can suppress them from transcript export
+ * or attribution counts.
  *
- * `isSyntheticMessage` detecta si un mensaje es uno de los
- * `SYNTHETIC_MESSAGES` canonicos (interrumpido-por-el-usuario, sin
- * respuesta solicitada, etc.) para que los llamadores puedan suprimirlos
- * del export del transcript o de los conteos de atribucion.
- *
- * Una deteccion equivocada es, en cualquier direccion, perdida de datos:
- *   - un mensaje REAL de usuario clasificado como sintetico: se descarta
- *     en silencio del transcript / la atribucion
- *   - un mensaje sintetico clasificado como real: infla el conteo de
- *     prompts de usuario y se filtra al export de transcript que el
- *     usuario comparte
+ * Wrong detection = either:
+ *   - Real user message classified as synthetic: silently dropped
+ *     from transcript / attribution
+ *   - Synthetic message classified as real: inflates user-prompt
+ *     count, leaks into transcript export the user shares
  */
 import { describe, expect, test } from 'bun:test'
-import { isSyntheticMessage, SYNTHETIC_MESSAGES } from '../messages.ts'
-import type { Message } from '../messageShapes.ts'
+import { isSyntheticMessage, SYNTHETIC_MESSAGES } from '../messages.js'
+import type { Message } from '../messageShapes.js'
 
 const userText = (text: string): Message =>
   ({
@@ -27,62 +24,54 @@ const userText = (text: string): Message =>
     },
   }) as Message
 
-describe('isSyntheticMessage — marcadores sinteticos conocidos', () => {
+describe('isSyntheticMessage — known synthetic markers', () => {
   test('"[Request interrupted by user]" → true', () => {
-    expect(
-      isSyntheticMessage(userText('[Request interrupted by user]')),
-    ).toBe(true)
+    expect(isSyntheticMessage(userText('[Request interrupted by user]'))).toBe(true)
   })
 
   test('"[Request interrupted by user for tool use]" → true', () => {
     expect(
-      isSyntheticMessage(
-        userText('[Request interrupted by user for tool use]'),
-      ),
+      isSyntheticMessage(userText('[Request interrupted by user for tool use]')),
     ).toBe(true)
   })
 
   test('"No response requested." → true', () => {
-    expect(isSyntheticMessage(userText('No response requested.'))).toBe(
-      true,
-    )
+    expect(isSyntheticMessage(userText('No response requested.'))).toBe(true)
   })
 
-  test('todo miembro del conjunto SYNTHETIC_MESSAGES devuelve true', () => {
+  test('every member of SYNTHETIC_MESSAGES set returns true', () => {
     for (const m of SYNTHETIC_MESSAGES) {
       expect(isSyntheticMessage(userText(m))).toBe(true)
     }
   })
 })
 
-describe('isSyntheticMessage — contenido no-sintetico', () => {
-  test('mensaje de usuario normal → false', () => {
+describe('isSyntheticMessage — non-synthetic content', () => {
+  test('regular user message → false', () => {
     expect(isSyntheticMessage(userText('hello world'))).toBe(false)
   })
 
-  test('texto parecido pero distinto → false (exige coincidencia exacta)', () => {
+  test('similar-but-different text → false (exact match required)', () => {
     expect(isSyntheticMessage(userText('Request interrupted by user'))).toBe(
       false,
     )
     expect(isSyntheticMessage(userText('[Request interrupted]'))).toBe(false)
-    expect(isSyntheticMessage(userText('no response requested.'))).toBe(
-      false,
-    ) // caja
+    expect(isSyntheticMessage(userText('no response requested.'))).toBe(false) // case
   })
 
-  test('cadena vacia → false', () => {
+  test('empty string → false', () => {
     expect(isSyntheticMessage(userText(''))).toBe(false)
   })
 
-  test('sintetico con espacios de relleno → false (sin trim)', () => {
-    expect(
-      isSyntheticMessage(userText(' [Request interrupted by user] ')),
-    ).toBe(false)
+  test('whitespace-padded synthetic → false (no trim)', () => {
+    expect(isSyntheticMessage(userText(' [Request interrupted by user] '))).toBe(
+      false,
+    )
   })
 })
 
-describe('isSyntheticMessage — tipos de mensaje no elegibles', () => {
-  test('mensaje progress → false (retorna temprano)', () => {
+describe('isSyntheticMessage — message types not eligible', () => {
+  test('progress message → false (returns early)', () => {
     expect(
       isSyntheticMessage({
         type: 'progress',
@@ -95,7 +84,7 @@ describe('isSyntheticMessage — tipos de mensaje no elegibles', () => {
     ).toBe(false)
   })
 
-  test('mensaje attachment → false', () => {
+  test('attachment message → false', () => {
     expect(
       isSyntheticMessage({
         type: 'attachment',
@@ -104,7 +93,7 @@ describe('isSyntheticMessage — tipos de mensaje no elegibles', () => {
     ).toBe(false)
   })
 
-  test('mensaje system → false', () => {
+  test('system message → false', () => {
     expect(
       isSyntheticMessage({
         type: 'system',
@@ -113,10 +102,9 @@ describe('isSyntheticMessage — tipos de mensaje no elegibles', () => {
     ).toBe(false)
   })
 
-  test('mensaje de asistente con contenido de texto sintetico → revisa text[0]', () => {
-    // Documentado: los mensajes de asistente TAMBIEN pueden marcarse como
-    // sinteticos. Fija que la funcion inspecciona content[0] sin importar
-    // el rol.
+  test('assistant message with synthetic-text content → checks text[0]', () => {
+    // Documented: assistant messages CAN be synthetic-marked. Locks
+    // that the function inspects content[0] regardless of role.
     const r = isSyntheticMessage({
       type: 'assistant',
       uuid: 'uuid',
@@ -129,10 +117,9 @@ describe('isSyntheticMessage — tipos de mensaje no elegibles', () => {
   })
 })
 
-describe('isSyntheticMessage — casos limite de la forma del contenido', () => {
-  test('mensaje de usuario con contenido de cadena (no arreglo) → false', () => {
-    // Contrato documentado: la funcion exige Array.isArray sobre el
-    // contenido.
+describe('isSyntheticMessage — content shape edge cases', () => {
+  test('user message with string content (not array) → false', () => {
+    // Documented contract: function requires Array.isArray content.
     expect(
       isSyntheticMessage({
         type: 'user',
@@ -145,7 +132,7 @@ describe('isSyntheticMessage — casos limite de la forma del contenido', () => 
     ).toBe(false)
   })
 
-  test('arreglo de contenido vacio → false', () => {
+  test('empty content array → false', () => {
     expect(
       isSyntheticMessage({
         type: 'user',
@@ -158,7 +145,7 @@ describe('isSyntheticMessage — casos limite de la forma del contenido', () => 
     ).toBe(false)
   })
 
-  test('el primer bloque no es texto (imagen, tool_use) → false', () => {
+  test('first block is non-text (image, tool_use) → false', () => {
     expect(
       isSyntheticMessage({
         type: 'user',
@@ -176,9 +163,9 @@ describe('isSyntheticMessage — casos limite de la forma del contenido', () => 
     ).toBe(false)
   })
 
-  test('mensaje multi-bloque: solo se revisa el primer bloque de texto', () => {
-    // Documentado: la funcion SOLO revisa content[0]. Los bloques
-    // siguientes se ignoran aunque contengan marcadores sinteticos.
+  test('multi-block message: only first text block is checked', () => {
+    // Documented: function ONLY checks content[0]. Subsequent blocks
+    // are ignored even if they contain synthetic markers.
     const r = isSyntheticMessage({
       type: 'user',
       uuid: 'uuid',

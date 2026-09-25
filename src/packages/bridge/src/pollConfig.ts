@@ -1,37 +1,27 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/pollConfig.ts`.
- * `getFeatureValue_CACHED_WITH_REFRESH` y `lazySchema` son sustitutos —
- * ver `internal/pendingCrossPackageDeps.ts`. `zod` es dependencia npm
- * real.
- */
 import { z } from 'zod/v4'
-import {
-  getFeatureValue_CACHED_WITH_REFRESH,
-  lazySchema,
-} from './internal/pendingCrossPackageDeps.js'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import {
   DEFAULT_POLL_CONFIG,
   type PollIntervalConfig,
 } from './pollConfigDefaults.js'
 
-// .min(100) en los intervalos de búsqueda de trabajo restaura el viejo
-// piso Math.max(..., 100) como defensa en profundidad contra valores mal
-// tecleados de GrowthBook. A diferencia de un clamp, Zod rechaza el
-// objeto entero ante una violación — una config con un campo malo cae
-// enteramente a DEFAULT_POLL_CONFIG en vez de confiarse parcialmente.
+// .min(100) on the seek-work intervals restores the old Math.max(..., 100)
+// defense-in-depth floor against fat-fingered GrowthBook values. Unlike a
+// clamp, Zod rejects the whole object on violation — a config with one bad
+// field falls back to DEFAULT_POLL_CONFIG entirely rather than being
+// partially trusted.
 //
-// Los intervalos at_capacity usan un refinamiento 0-o-≥100: 0 significa
-// "deshabilitado" (modo sólo-heartbeat), ≥100 es el piso anti-typo. Los
-// valores 1-99 se rechazan para que una confusión de unidad (ops piensa
-// en segundos, entra 10) no haga poll cada 10ms contra el camino de BD
-// de VerifyEnvironmentSecretAuth.
+// The at_capacity intervals use a 0-or-≥100 refinement: 0 means "disabled"
+// (heartbeat-only mode), ≥100 is the fat-finger floor. Values 1–99 are
+// rejected so unit confusion (ops thinks seconds, enters 10) doesn't poll
+// every 10ms against the VerifyEnvironmentSecretAuth DB path.
 //
-// Los refines a nivel de objeto exigen al menos un mecanismo de vida
-// en capacidad habilitado: heartbeat U el intervalo de poll relevante.
-// Sin esto, la config con drift hb=0, atCapMs=0 (ops deshabilita el
-// heartbeat sin restaurar at_capacity) se cuela por cada sitio de
-// throttle sin ningún sleep — haciendo tight-loop de /poll a velocidad
-// de round-trip HTTP.
+// The object-level refines require at least one at-capacity liveness
+// mechanism enabled: heartbeat OR the relevant poll interval. Without this,
+// the hb=0, atCapMs=0 drift config (ops disables heartbeat without
+// restoring at_capacity) falls through every throttle site with no sleep —
+// tight-looping /poll at HTTP-round-trip speed.
 const zeroOrAtLeast100 = {
   message: 'must be 0 (disabled) or ≥100ms',
 }
@@ -39,23 +29,21 @@ const pollIntervalConfigSchema = lazySchema(() =>
   z
     .object({
       poll_interval_ms_not_at_capacity: z.number().int().min(100),
-      // 0 = sin polling en capacidad. Independiente del heartbeat —
-      // ambos pueden estar habilitados (el heartbeat corre, sale
-      // periódicamente a hacer poll).
+      // 0 = no at-capacity polling. Independent of heartbeat — both can be
+      // enabled (heartbeat runs, periodically breaks out to poll).
       poll_interval_ms_at_capacity: z
         .number()
         .int()
         .refine(v => v === 0 || v >= 100, zeroOrAtLeast100),
-      // 0 = deshabilitado; valor positivo = heartbeat a este intervalo
-      // mientras se está en capacidad. Corre junto al polling en
-      // capacidad, no en su lugar. Se llama non_exclusive para
-      // distinguirlo del viejo campo heartbeat_interval_ms (semántica
-      // either-or en clientes pre-#22145). .default(0) para que las
-      // configs de GrowthBook existentes sin este campo parseen con éxito.
+      // 0 = disabled; positive value = heartbeat at this interval while at
+      // capacity. Runs alongside at-capacity polling, not instead of it.
+      // Named non_exclusive to distinguish from the old heartbeat_interval_ms
+      // (either-or semantics in pre-#22145 clients). .default(0) so existing
+      // GrowthBook configs without this field parse successfully.
       non_exclusive_heartbeat_interval_ms: z.number().int().min(0).default(0),
-      // Intervalos multisesión (bridgeMain.ts). Los defaults coinciden
-      // con los valores single-session para que las configs existentes
-      // sin estos campos preserven el comportamiento actual.
+      // Multisession (bridgeMain.ts) intervals. Defaults match the
+      // single-session values so existing configs without these fields
+      // preserve current behavior.
       multisession_poll_interval_ms_not_at_capacity: z
         .number()
         .int()
@@ -75,7 +63,7 @@ const pollIntervalConfigSchema = lazySchema(() =>
         .int()
         .refine(v => v === 0 || v >= 100, zeroOrAtLeast100)
         .default(DEFAULT_POLL_CONFIG.multisession_poll_interval_ms_at_capacity),
-      // .min(1) coincide con la restricción ge=1 del servidor (work_v1.py:230).
+      // .min(1) matches the server's ge=1 constraint (work_v1.py:230).
       reclaim_older_than_ms: z.number().int().min(1).default(5000),
       session_keepalive_interval_v2_ms: z
         .number()
@@ -104,14 +92,12 @@ const pollIntervalConfigSchema = lazySchema(() =>
 )
 
 /**
- * Obtiene la config de intervalo de poll del bridge desde GrowthBook con
- * una ventana de refresco de 5 minutos. Valida el JSON servido contra el
- * schema; cae a los defaults si la bandera está ausente, malformada, o
- * parcialmente especificada.
+ * Fetch the bridge poll interval config from GrowthBook with a 5-minute
+ * refresh window. Validates the served JSON against the schema; falls back
+ * to defaults if the flag is absent, malformed, or partially-specified.
  *
- * Compartido por bridgeMain.ts (standalone) y replBridge.ts (REPL) para
- * que ops pueda ajustar ambas tasas de poll fleet-wide con un solo push
- * de config.
+ * Shared by bridgeMain.ts (standalone) and replBridge.ts (REPL) so ops
+ * can tune both poll rates fleet-wide with a single config push.
  */
 export function getPollIntervalConfig(): PollIntervalConfig {
   const raw = getFeatureValue_CACHED_WITH_REFRESH<unknown>(

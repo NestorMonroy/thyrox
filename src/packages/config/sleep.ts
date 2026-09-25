@@ -1,24 +1,15 @@
 /**
- * Puerto de `ccnmt: packages/config/sleep.ts` (84 líneas fuente). Sin
- * dependencias — `setTimeout`/`AbortSignal` puros. Reimplementación fiel:
- * mismos nombres, misma firma, mismo comportamiento (ver
- * `porte-completo-no-parcial.md`, «la licencia cambia el mecanismo, nunca
- * la fidelidad»).
+ * Abort-responsive sleep. Resolves after `ms` milliseconds, or immediately
+ * when `signal` aborts (so backoff loops don't block shutdown).
  *
- * `sleep` resuelve tras `ms` milisegundos, o de inmediato si `signal` se
- * aborta antes — para que un loop de backoff no bloquee un shutdown.
- * `withTimeout` corre una promesa contra un timeout: si no se resuelve a
- * tiempo, rechaza con `Error(message)`.
- */
-
-/**
- * Sleep que responde a abort. Por defecto un abort resuelve en silencio; quien
- * llama revisa `signal.aborted` después del await. Con `throwOnAbort: true`
- * (o `abortError` provisto) el abort rechaza en vez de resolver — útil dentro
- * de un loop de reintento cuyo rechazo debe burbujear y cancelar la operación
- * entera. `abortError` permite personalizar el error de rechazo (implica
- * `throwOnAbort: true`); sirve para loops que atrapan una clase de error
- * concreta.
+ * By default, abort resolves silently; the caller should check
+ * `signal.aborted` after the await. Pass `throwOnAbort: true` to have
+ * abort reject — useful when the sleep is deep inside a retry loop
+ * and you want the rejection to bubble up and cancel the whole operation.
+ *
+ * Pass `abortError` to customize the rejection error (implies
+ * `throwOnAbort: true`). Useful for retry loops that catch a specific
+ * error class (e.g. `APIUserAbortError`).
  */
 export function sleep(
   ms: number,
@@ -26,48 +17,55 @@ export function sleep(
   opts?: { throwOnAbort?: boolean; abortError?: () => Error; unref?: boolean },
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Se revisa el estado abortado ANTES de armar el timer. Si `onAbort` se
-    // definiera primero y se llamara sincrónicamente aquí, referenciaría a
-    // `timer` mientras aún está en la Temporal Dead Zone.
+    // Check aborted state BEFORE setting up the timer. If we defined
+    // onAbort first and called it synchronously here, it would reference
+    // `timer` while still in the Temporal Dead Zone.
     if (signal?.aborted) {
       if (opts?.throwOnAbort || opts?.abortError) {
-        reject(opts.abortError?.() ?? new Error('aborted'))
+        void reject(opts.abortError?.() ?? new Error('aborted'))
       } else {
-        resolve()
+        void resolve()
       }
       return
     }
-
-    const timer = setTimeout(() => {
-      signal?.removeEventListener('abort', onAbort)
-      resolve()
-    }, ms)
-
+    const timer = setTimeout(
+      (signal, onAbort, resolve) => {
+        signal?.removeEventListener('abort', onAbort)
+        void resolve()
+      },
+      ms,
+      signal,
+      onAbort,
+      resolve,
+    )
     function onAbort(): void {
       clearTimeout(timer)
       if (opts?.throwOnAbort || opts?.abortError) {
-        reject(opts.abortError?.() ?? new Error('aborted'))
+        void reject(opts.abortError?.() ?? new Error('aborted'))
       } else {
-        resolve()
+        void resolve()
       }
     }
-
     signal?.addEventListener('abort', onAbort, { once: true })
     if (opts?.unref) {
-      timer.unref?.()
+      timer.unref()
     }
   })
 }
 
+function rejectWithTimeout(reject: (e: Error) => void, message: string): void {
+  reject(new Error(message))
+}
+
 /**
- * Corre una promesa contra un timeout. Rechaza con `Error(message)` si la
- * promesa no se asienta dentro de `ms`. El timer se limpia cuando la promesa
- * se asienta (sin timer colgante) y se hace `unref` para no bloquear la
- * salida del proceso.
+ * Race a promise against a timeout. Rejects with `Error(message)` if the
+ * promise doesn't settle within `ms`. The timeout timer is cleared when
+ * the promise settles (no dangling timer) and unref'd so it doesn't
+ * block process exit.
  *
- * No cancela el trabajo subyacente: si la promesa está respaldada por una
- * operación async fuera de control, esa operación sigue corriendo. Esto sólo
- * devuelve el control a quien llama.
+ * Note: this doesn't cancel the underlying work — if the promise is
+ * backed by a runaway async operation, that keeps running. This just
+ * returns control to the caller.
  */
 export function withTimeout<T>(
   promise: Promise<T>,
@@ -76,8 +74,9 @@ export function withTimeout<T>(
 ): Promise<T> {
   let timer: ReturnType<typeof setTimeout> | undefined
   const timeoutPromise = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error(message)), ms)
-    timer.unref?.()
+    // eslint-disable-next-line no-restricted-syntax -- not a sleep: REJECTS after ms (timeout guard)
+    timer = setTimeout(rejectWithTimeout, ms, reject, message)
+    if (typeof timer === 'object') timer.unref?.()
   })
   return Promise.race([promise, timeoutPromise]).finally(() => {
     if (timer !== undefined) clearTimeout(timer)

@@ -1,31 +1,3 @@
-/**
- * El alta de un compañero en el archivo de equipo, y la reconstrucción del
- * archivo cuando desapareció.
- *
- * Procedencia: `ccnmt: packages/swarm/src/core/teamFileRegistration.ts`
- * (109 líneas, 3 símbolos exportados). Ese árbol declara `"license":
- * "UNLICENSED"`, así que el cuerpo se **reimplementa** y no se copia.
- *
- * EL SÍNTOMA CONTRA EL QUE PROTEGE. La creación del equipo escribe su archivo
- * y deja el contexto en memoria; para cuando una llamada posterior lanza un
- * compañero, el archivo puede haberse ido —limpieza de disco, una carrera
- * entre llamadas de herramienta, una escritura a medias—. La conducta anterior
- * era lanzar «el equipo no existe, créalo primero», y eso arrastraba al modelo
- * a un bucle: crear el equipo → «ya diriges ese equipo» → crear el equipo.
- *
- * LA RECUPERACIÓN ES ESTRECHA A PROPÓSITO: sólo dispara cuando el contexto en
- * memoria nombra EL MISMO equipo que se pidió. Pasar el nombre equivocado es
- * un defecto de quien llama y sigue lanzando — reconstruir ahí escondería el
- * defecto tras un archivo nuevo.
- *
- * QUÉ SE PIERDE AL RECONSTRUIR: lo que sólo vive en el archivo —descripción,
- * fecha de creación, y por miembro el modelo, el prompt, el color, el modo
- * plan y el tipo de respaldo—. Sobrevive lo que decide el ENRUTADO:
- * identificador, nombre, directorio y panel. Es la diferencia entre un equipo
- * que sigue funcionando y uno que no.
- *
- * DIVERGENCIA DECLARADA: ninguna.
- */
 import { getSessionId, logForDebugging } from '../adapters/appRuntime.js'
 import {
   readTeamFileAsync,
@@ -33,12 +5,6 @@ import {
   updateTeamFileAsync,
 } from './teamHelpers.js'
 
-/**
- * La parte del estado de la aplicación que este módulo lee.
- *
- * Se declara aquí y no se toma del anfitrión porque la forma del contexto de
- * equipo es de swarm: el anfitrión sólo lo transporta.
- */
 export type TeamContextSnapshot = {
   teamContext?: {
     teamName?: string
@@ -57,8 +23,20 @@ export type TeamContextSnapshot = {
 }
 
 /**
- * Devuelve el archivo del equipo, reconstruyéndolo desde la instantánea en
- * memoria si falta.
+ * Loads the team file, reconstructing it from AppState when it is missing but
+ * the leader still believes they are in the team.
+ *
+ * Symptom this guards against: TeamCreate writes the team file and sets
+ * appState.teamContext, but by the time a later Agent spawn runs, the file has
+ * gone missing (disk cleanup, race across tool calls, corrupted write, etc.).
+ * Prior behavior threw "Team X does not exist. Call spawnTeam first" which
+ * misled the LLM into a TeamCreate → "Already leading team" loop.
+ *
+ * Recovery only fires when appState.teamContext.teamName matches the requested
+ * teamName — a legitimate "I passed the wrong team_name" case still throws.
+ * Reconstructed members lose metadata not kept in memory (description,
+ * createdAt, per-member model/prompt/color/planModeRequired/backendType);
+ * routing-critical fields (agentId, name, cwd, tmuxPaneId) survive.
  */
 export async function ensureTeamFileFromSnapshot(
   teamName: string,
@@ -67,16 +45,6 @@ export async function ensureTeamFileFromSnapshot(
   const existing = await readTeamFileAsync(teamName)
   if (existing) return existing
 
-  // La reconstrucción va DENTRO de la actualización con cerrojo: entre
-  // comprobar que falta y escribirlo cabe otro escritor, y `current ??` deja
-  // ganar al que llegó primero.
-  //
-  // SEGUNDA DEFENSA, HOY INALCANZABLE DESDE EL TEST. El atajo de arriba se
-  // adelanta siempre que el archivo esté, así que `current ??` sólo actúa en
-  // la carrera. Medido con anulación: retirar el atajo hace caer un caso;
-  // retirar este `??` no hace caer ninguno. Un control así no separa «la
-  // defensa está» de «el test no pregunta», y por eso se declara en vez de
-  // contarse. Sucesor: TASK-THYROX-0002.
   const ensured = await updateTeamFileAsync(
     teamName,
     current => current ?? rebuildTeamFileFromSnapshot(teamName, snapshot),
@@ -89,13 +57,6 @@ export async function ensureTeamFileFromSnapshot(
   return ensured
 }
 
-/**
- * Da de alta a un compañero, reconstruyendo el archivo si hiciera falta.
- *
- * Se purga primero cualquier fila con el mismo identificador: un reintento de
- * arranque vuelve a registrar, y dos filas del mismo agente dejarían al
- * enrutado eligiendo una al azar.
- */
 export async function registerTeammateInTeamFile(
   teamName: string,
   snapshot: TeamContextSnapshot,
@@ -104,7 +65,10 @@ export async function registerTeammateInTeamFile(
   await updateTeamFileAsync(teamName, teamFile => {
     const current = teamFile ?? rebuildTeamFileFromSnapshot(teamName, snapshot)
     const members = current.members.filter(m => m.agentId !== member.agentId)
-    return { ...current, members: [...members, member] }
+    return {
+      ...current,
+      members: [...members, member],
+    }
   })
 }
 

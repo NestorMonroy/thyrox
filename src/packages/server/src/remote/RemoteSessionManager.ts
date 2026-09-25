@@ -1,11 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/server/src/remote/RemoteSessionManager.ts`.
- * `SDKMessage`/`SDKControl*` — sólo TIPOS, de
- * `@thyrox/headless-sdk/{agentSdkTypes,controlTypes}.js`.
- * `logForDebugging`/`logError`/`sendEventToRemoteSession` — ver
- * `../internal/pendingCrossPackageDeps.js` (el último es punto de
- * inyección: el paquete `teleport` no existe en este árbol).
- */
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type {
   SDKControlCancelRequest,
@@ -13,19 +5,19 @@ import type {
   SDKControlRequest,
   SDKControlResponse,
 } from '@thyrox/headless-sdk/controlTypes.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/logging'
 import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityLogging,
-  sendEventToRemoteSession,
   type RemoteMessageContent,
-} from '../internal/pendingCrossPackageDeps.js'
+  sendEventToRemoteSession,
+} from '@thyrox/teleport/api.js'
 import {
   SessionsWebSocket,
   type SessionsWebSocketCallbacks,
 } from './SessionsWebSocket.js'
 
 /**
- * Type guard: ¿es un mensaje SDKMessage (no un mensaje de control)?
+ * Type guard to check if a message is an SDKMessage (not a control message)
  */
 function isSDKMessage(
   message:
@@ -42,8 +34,8 @@ function isSDKMessage(
 }
 
 /**
- * Respuesta de permiso simplificada para sesiones remotas.
- * Es una versión simplificada de PermissionResult para comunicación con CCR.
+ * Simple permission response for remote sessions.
+ * This is a simplified version of PermissionResult for CCR communication.
  */
 export type RemotePermissionResponse =
   | {
@@ -59,47 +51,46 @@ export type RemoteSessionConfig = {
   sessionId: string
   getAccessToken: () => string
   orgUuid: string
-  /** True si la sesión se creó con un prompt inicial que se está procesando. */
+  /** True if session was created with an initial prompt that's being processed */
   hasInitialPrompt?: boolean
   /**
-   * Cuando es true, este cliente es un viewer puro. Ctrl+C/Escape NO
-   * mandan interrupt al agente remoto; el timeout de reconexión de 60s se
-   * desactiva; el título de la sesión nunca se actualiza. Lo usa
-   * `claude assistant`.
+   * When true, this client is a pure viewer. Ctrl+C/Escape do NOT send
+   * interrupt to the remote agent; 60s reconnect timeout is disabled;
+   * session title is never updated. Used by `claude assistant`.
    */
   viewerOnly?: boolean
 }
 
 export type RemoteSessionCallbacks = {
-  /** Se llama cuando se recibe un SDKMessage de la sesión. */
+  /** Called when an SDKMessage is received from the session */
   onMessage: (message: SDKMessage) => void
-  /** Se llama cuando se recibe una petición de permiso de CCR. */
+  /** Called when a permission request is received from CCR */
   onPermissionRequest: (
     request: SDKControlPermissionRequest,
     requestId: string,
   ) => void
-  /** Se llama cuando el servidor cancela una petición de permiso pendiente. */
+  /** Called when the server cancels a pending permission request */
   onPermissionCancelled?: (
     requestId: string,
     toolUseId: string | undefined,
   ) => void
-  /** Se llama cuando se establece la conexión. */
+  /** Called when connection is established */
   onConnected?: () => void
-  /** Se llama cuando se pierde la conexión y no se puede restaurar. */
+  /** Called when connection is lost and cannot be restored */
   onDisconnected?: () => void
-  /** Se llama ante una caída transitoria de WS mientras el backoff de reconexión está en curso. */
+  /** Called on transient WS drop while reconnect backoff is in progress */
   onReconnecting?: () => void
-  /** Se llama ante un error. */
+  /** Called on error */
   onError?: (error: Error) => void
 }
 
 /**
- * Gestiona una sesión CCR remota.
+ * Manages a remote CCR session.
  *
- * Coordina:
- * - La suscripción WebSocket para recibir mensajes de CCR
- * - El POST HTTP para mandar mensajes de usuario a CCR
- * - El flujo de petición/respuesta de permisos
+ * Coordinates:
+ * - WebSocket subscription for receiving messages from CCR
+ * - HTTP POST for sending user messages to CCR
+ * - Permission request/response flow
  */
 export class RemoteSessionManager {
   private websocket: SessionsWebSocket | null = null
@@ -112,10 +103,9 @@ export class RemoteSessionManager {
   ) {}
 
   /**
-   * Conecta a la sesión remota vía WebSocket.
+   * Connect to the remote session via WebSocket
    */
   connect(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging(
       `[RemoteSessionManager] Connecting to session ${this.config.sessionId}`,
     )
@@ -135,7 +125,6 @@ export class RemoteSessionManager {
         this.callbacks.onReconnecting?.()
       },
       onError: error => {
-        const { logError } = requireLocalObservabilityLogging()
         logError(error)
         this.callbacks.onError?.(error)
       },
@@ -152,7 +141,7 @@ export class RemoteSessionManager {
   }
 
   /**
-   * Maneja mensajes provenientes del WebSocket.
+   * Handle messages from WebSocket
    */
   private handleMessage(
     message:
@@ -161,15 +150,13 @@ export class RemoteSessionManager {
       | SDKControlResponse
       | SDKControlCancelRequest,
   ): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-
-    // Maneja control requests (prompts de permiso de CCR).
+    // Handle control requests (permission prompts from CCR)
     if (message.type === 'control_request') {
       this.handleControlRequest(message)
       return
     }
 
-    // Maneja control cancel requests (el servidor cancela un permiso pendiente).
+    // Handle control cancel requests (server cancelling a pending permission prompt)
     if (message.type === 'control_cancel_request') {
       const { request_id } = message
       const pendingRequest = this.pendingPermissionRequests.get(request_id)
@@ -184,23 +171,22 @@ export class RemoteSessionManager {
       return
     }
 
-    // Maneja control responses (acuses de recibo).
+    // Handle control responses (acknowledgments)
     if (message.type === 'control_response') {
       logForDebugging('[RemoteSessionManager] Received control response')
       return
     }
 
-    // Reenvía mensajes SDK al callback (el type guard asegura el narrowing correcto).
+    // Forward SDK messages to callback (type guard ensures proper narrowing)
     if (isSDKMessage(message)) {
       this.callbacks.onMessage(message)
     }
   }
 
   /**
-   * Maneja control requests de CCR (p. ej. peticiones de permiso).
+   * Handle control requests from CCR (e.g., permission requests)
    */
   private handleControlRequest(request: SDKControlRequest): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     const requestId = request.request_id as string
     const inner = request.request as SDKControlPermissionRequest
 
@@ -211,8 +197,8 @@ export class RemoteSessionManager {
       this.pendingPermissionRequests.set(requestId, inner)
       this.callbacks.onPermissionRequest(inner, requestId)
     } else {
-      // Manda una respuesta de error para subtipos no reconocidos, así el
-      // servidor no queda colgado esperando una respuesta que nunca llega.
+      // Send an error response for unrecognized subtypes so the server
+      // doesn't hang waiting for a reply that never comes.
       logForDebugging(
         `[RemoteSessionManager] Unsupported control request subtype: ${inner.subtype}`,
       )
@@ -229,14 +215,12 @@ export class RemoteSessionManager {
   }
 
   /**
-   * Manda un mensaje de usuario a la sesión remota vía HTTP POST.
+   * Send a user message to the remote session via HTTP POST
    */
   async sendMessage(
     content: RemoteMessageContent,
     opts?: { uuid?: string },
   ): Promise<boolean> {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { logError } = requireLocalObservabilityLogging()
     logForDebugging(
       `[RemoteSessionManager] Sending message to session ${this.config.sessionId}`,
     )
@@ -259,14 +243,12 @@ export class RemoteSessionManager {
   }
 
   /**
-   * Responde a una petición de permiso de CCR.
+   * Respond to a permission request from CCR
    */
   respondToPermissionRequest(
     requestId: string,
     result: RemotePermissionResponse,
   ): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { logError } = requireLocalObservabilityLogging()
     const pendingRequest = this.pendingPermissionRequests.get(requestId)
     if (!pendingRequest) {
       logError(
@@ -301,33 +283,31 @@ export class RemoteSessionManager {
   }
 
   /**
-   * Comprueba si está conectado a la sesión remota.
+   * Check if connected to the remote session
    */
   isConnected(): boolean {
     return this.websocket?.isConnected() ?? false
   }
 
   /**
-   * Manda una señal de interrupción para cancelar la petición actual en la sesión remota.
+   * Send an interrupt signal to cancel the current request on the remote session
    */
   cancelSession(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging('[RemoteSessionManager] Sending interrupt signal')
     this.websocket?.sendControlRequest({ subtype: 'interrupt' })
   }
 
   /**
-   * Devuelve el ID de sesión.
+   * Get the session ID
    */
   getSessionId(): string {
     return this.config.sessionId
   }
 
   /**
-   * Se desconecta de la sesión remota.
+   * Disconnect from the remote session
    */
   disconnect(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging('[RemoteSessionManager] Disconnecting')
     this.websocket?.close()
     this.websocket = null
@@ -335,18 +315,17 @@ export class RemoteSessionManager {
   }
 
   /**
-   * Fuerza la reconexión del WebSocket.
-   * Útil cuando la suscripción queda obsoleta tras el apagado de un contenedor.
+   * Force reconnect the WebSocket.
+   * Useful when the subscription becomes stale after container shutdown.
    */
   reconnect(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
     logForDebugging('[RemoteSessionManager] Reconnecting WebSocket')
     this.websocket?.reconnect()
   }
 }
 
 /**
- * Crea una config de sesión remota a partir de tokens OAuth.
+ * Create a remote session config from OAuth tokens
  */
 export function createRemoteSessionConfig(
   sessionId: string,

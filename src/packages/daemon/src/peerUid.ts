@@ -1,38 +1,36 @@
 /**
- * Búsqueda de peer-uid para sockets de dominio Unix. `ant 5163.js`
- * TF3/AF3/zF3 — resuelve el uid efectivo del proceso conectante vía
- * getsockopt SO_PEERCRED (Linux) o LOCAL_PEERCRED (macOS), para que el
- * daemon pueda rechazar conexiones al socket de control desde un uid
- * distinto (el error de usar sudo, filesystems compartidos entre hosts,
- * etc.).
+ * Peer-UID lookup for Unix-domain sockets. ant 5163.js TF3/AF3/zF3 —
+ * resolves the connecting process's effective uid via getsockopt
+ * SO_PEERCRED (Linux) or LOCAL_PEERCRED (macOS), so the daemon can
+ * reject control-socket connections from a different uid (sudo
+ * footgun, host-shared filesystems, etc.).
  *
- * Devuelve:
- *   - null cuando la plataforma no soporta la búsqueda de uid o cuando la
- *     búsqueda falla (best-effort — se acepta la conexión si no se puede
- *     verificar, igual que ant). El llamador trata null como "no
- *     verificable, aceptar".
- *   - un número cuando el uid del peer se resolvió con éxito.
+ * Returns:
+ *   - null when the platform doesn't support uid lookup or when the
+ *     lookup fails (best-effort — we accept the connection if we
+ *     can't verify, matching ant). The caller treats null as 'not
+ *     verifiable, accept'.
+ *   - a number when peer uid was successfully resolved.
  *
- * Windows no está soportado (los named pipes tienen un modelo de ACL
- * distinto; ant también devuelve null).
+ * Windows is unsupported (named pipes have a different ACL model;
+ * ant returns null too).
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/peerUid.ts`.
+ * @dynamicRequire
  */
 
 import type { Socket } from 'node:net'
-import { dlopen, FFIType, ptr } from 'bun:ffi'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 /**
- * Obtiene el uid del peer conectante para un socket de dominio Unix.
- * Devuelve null ante cualquier fallo. Los errores se registran pero no se
- * propagan — verificar al peer es best-effort.
+ * Get the connecting peer's uid for a Unix-domain socket. Returns null
+ * on any failure. Errors are logged but don't propagate — verifying
+ * the peer is best-effort.
  */
 export function getPeerUid(socket: Socket): number | null {
   if (process.platform === 'win32') return null
-  // socket._handle.fd es el file descriptor subyacente. La API pública de
-  // Node no lo expone; se accede igual que ant.
+  // socket._handle.fd is the underlying file descriptor. Node's public
+  // API doesn't expose it; we reach in like ant does.
   const handle = (socket as unknown as { _handle?: { fd?: number } })._handle
   const fd = typeof handle?.fd === 'number' ? handle.fd : -1
   if (fd < 0) return null
@@ -49,9 +47,8 @@ export function getPeerUid(socket: Socket): number | null {
 }
 
 /**
- * SO_PEERCRED de Linux. Devuelve la estructura sockaddr ucred { pid; uid;
- * gid }. uid está en el offset de byte 4. Optionlevel SOL_SOCKET=1,
- * optname SO_PEERCRED=17.
+ * Linux SO_PEERCRED. Returns sockaddr struct ucred { pid; uid; gid }.
+ * uid is at byte offset 4. Optionlevel SOL_SOCKET=1, optname SO_PEERCRED=17.
  */
 function getPeerUidLinux(fd: number): number | null {
   const ffi = loadGetsockopt()
@@ -64,16 +61,15 @@ function getPeerUidLinux(fd: number): number | null {
 }
 
 /**
- * LOCAL_PEERCRED de macOS. Devuelve la estructura xucred; uid está en el
- * offset de byte 4. Option level 0 (SOL_LOCAL) en macOS, optname
- * LOCAL_PEERCRED=1.
+ * macOS LOCAL_PEERCRED. Returns xucred struct; uid is at byte offset 4.
+ * Option level 0 (SOL_LOCAL) on macOS, optname LOCAL_PEERCRED=1.
  */
 function getPeerUidMacOS(fd: number): number | null {
   const ffi = loadGetsockopt()
   if (!ffi) return null
-  const buf = new Uint8Array(76) // sizeof(struct xucred) — sobre-asignado
+  const buf = new Uint8Array(76) // sizeof(struct xucred) — over-allocate
   const len = new Uint32Array([76])
-  // SOL_LOCAL = 0, LOCAL_PEERCRED = 0x001 en macOS
+  // SOL_LOCAL = 0, LOCAL_PEERCRED = 0x001 on macOS
   const r = ffi.getsockopt(fd, 0, 1, buf, len)
   if (r !== 0) return null
   return new DataView(buf.buffer).getUint32(4, true)
@@ -91,17 +87,13 @@ interface GetsockoptFFI {
 
 let cachedFFI: GetsockoptFFI | null | undefined
 
-/**
- * `bun:ffi` resuelve siempre bajo Bun (es un módulo interno, no un paquete
- * npm) — verificado con `Bun.resolveSync('bun:ffi', cwd)`. La fuente lo
- * cargaba con `require()` diferido dentro de un `try`; aquí el `import`
- * queda estático arriba (regla de imports perezosos) y sólo el `dlopen`,
- * que sí puede fallar en tiempo de ejecución si `libc`/`libSystem` no
- * aparece, se envuelve en el `try/catch` de esta función.
- */
 function loadGetsockopt(): GetsockoptFFI | null {
   if (cachedFFI !== undefined) return cachedFFI
   try {
+    // bun:ffi is bun-only. ccb runs only on bun (build target=bun) so
+    // this is safe; node would throw at import time.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { dlopen, FFIType, ptr } = require('bun:ffi') as typeof import('bun:ffi')
     const libname = process.platform === 'darwin' ? 'libSystem.dylib' : 'libc.so.6'
     const lib = dlopen(libname, {
       getsockopt: {
@@ -127,10 +119,10 @@ function loadGetsockopt(): GetsockoptFFI | null {
 }
 
 /**
- * Verifica si el uid del peer conectante coincide con el uid del daemon.
- * Devuelve null si se permite el acceso (el peer coincide O no se puede
- * verificar); devuelve un string de mensaje de error si el acceso debe
- * rechazarse. Conducta exacta de `ant 5163.js` RFK.
+ * Check if the connecting peer's uid matches the daemon's uid.
+ * Returns null if access is allowed (peer matches OR can't be
+ * verified); returns an error message string if access should be
+ * rejected. ant 5163.js RFK exact behavior.
  */
 export function checkPeerUid(socket: Socket): string | null {
   const myUid = process.getuid?.()

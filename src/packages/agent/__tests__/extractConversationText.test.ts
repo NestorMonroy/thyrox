@@ -1,15 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/extractConversationText.test.ts`
- * (24 casos, 26 `expect`; verbatim en datos y expectativas).
- *
- * Fija el contrato de `extractConversationText` (`../sessionTitle.js`): el
- * aplanado de un historial de mensajes a un único texto para el título de
- * sesión — qué tipos de mensaje cuentan, qué forma de `content` se extrae,
- * los filtros `isMeta`/`origin.kind`, y el recorte de cola a 1000 caracteres
- * (el defecto que fija: un cambio futuro a `.slice(0, 1000)` degradaría la
- * calidad del título en silencio, porque el contexto reciente es el que
- * importa).
- */
 import { describe, expect, test } from 'bun:test'
 import { extractConversationText } from '../sessionTitle.js'
 import type { Message } from '../messageShapes.js'
@@ -30,8 +18,8 @@ function assistantMsg(
   } as Message
 }
 
-describe('extractConversationText — filtro por tipo de mensaje', () => {
-  test('usuario + asistente: texto concatenado con salto de línea', () => {
+describe('extractConversationText — message-type filter', () => {
+  test('user + assistant text concatenated with newline', () => {
     expect(
       extractConversationText([
         userMsg('hello'),
@@ -40,7 +28,7 @@ describe('extractConversationText — filtro por tipo de mensaje', () => {
     ).toBe('hello\nworld')
   })
 
-  test('mensajes de sistema se omiten', () => {
+  test('system messages skipped', () => {
     expect(
       extractConversationText([
         { type: 'system', message: { content: 'system info' } } as Message,
@@ -49,7 +37,7 @@ describe('extractConversationText — filtro por tipo de mensaje', () => {
     ).toBe('real')
   })
 
-  test('mensajes de progreso se omiten', () => {
+  test('progress messages skipped', () => {
     expect(
       extractConversationText([
         { type: 'progress', message: { content: 'progress' } } as Message,
@@ -58,7 +46,7 @@ describe('extractConversationText — filtro por tipo de mensaje', () => {
     ).toBe('real')
   })
 
-  test('mensajes de adjunto se omiten', () => {
+  test('attachment messages skipped', () => {
     expect(
       extractConversationText([
         { type: 'attachment' } as Message,
@@ -68,14 +56,14 @@ describe('extractConversationText — filtro por tipo de mensaje', () => {
   })
 })
 
-describe('extractConversationText — tipo de content', () => {
-  test('content de tipo string se propaga verbatim', () => {
+describe('extractConversationText — content type', () => {
+  test('string content propagated verbatim', () => {
     expect(extractConversationText([userMsg('hello world')])).toBe(
       'hello world',
     )
   })
 
-  test('content de tipo array — solo se extraen los bloques text', () => {
+  test('array content — only text blocks extracted', () => {
     expect(
       extractConversationText([
         userMsg([
@@ -87,9 +75,9 @@ describe('extractConversationText — tipo de content', () => {
     ).toBe('block1\nblock2')
   })
 
-  test('bloque text sin el campo `text` se omite', () => {
-    // La condición es: 'type' === 'text' Y 'text' in block. Un bloque text
-    // malformado sin ese campo se omite.
+  test('text block without `text` field skipped', () => {
+    // The check is: 'type' === 'text' AND 'text' in block. A malformed
+    // text block without the field is skipped.
     expect(
       extractConversationText([
         userMsg([{ type: 'text' } as { type: string }]),
@@ -97,7 +85,7 @@ describe('extractConversationText — tipo de content', () => {
     ).toBe('')
   })
 
-  test('content que no es string ni array (forma inesperada) se omite', () => {
+  test('non-string non-array content (e.g. unexpected shape) skipped', () => {
     expect(
       extractConversationText([
         {
@@ -108,19 +96,19 @@ describe('extractConversationText — tipo de content', () => {
     ).toBe('')
   })
 
-  test('array de content vacío → resultado vacío para ese mensaje', () => {
+  test('empty array content → empty result for that message', () => {
     expect(extractConversationText([userMsg([])])).toBe('')
   })
 
-  test('content de string vacío se propaga', () => {
-    // La función empuja strings vacíos sin condición para content de tipo
-    // string. Unidos con \n, dos mensajes de usuario vacíos producen solo '\n'.
+  test('empty string content propagated', () => {
+    // The function pushes empty strings unconditionally for string content.
+    // Joined with \n, two empty user messages produce just '\n'.
     expect(extractConversationText([userMsg(''), userMsg('')])).toBe('\n')
   })
 })
 
-describe('extractConversationText — filtro isMeta', () => {
-  test('mensajes con isMeta:true se omiten', () => {
+describe('extractConversationText — isMeta filter', () => {
+  test('isMeta:true messages skipped', () => {
     const meta = {
       type: 'user',
       isMeta: true,
@@ -129,8 +117,8 @@ describe('extractConversationText — filtro isMeta', () => {
     expect(extractConversationText([meta, userMsg('real')])).toBe('real')
   })
 
-  test('mensajes con isMeta:false NO se omiten', () => {
-    // La condición es `'isMeta' in msg && msg.isMeta` — un isMeta falsy pasa.
+  test('isMeta:false messages NOT skipped', () => {
+    // The check is `'isMeta' in msg && msg.isMeta` — falsy isMeta passes.
     const notMeta = {
       type: 'user',
       isMeta: false,
@@ -139,13 +127,13 @@ describe('extractConversationText — filtro isMeta', () => {
     expect(extractConversationText([notMeta])).toBe('real')
   })
 
-  test('campo isMeta ausente NO se trata como meta', () => {
+  test('missing isMeta field NOT treated as meta', () => {
     expect(extractConversationText([userMsg('real')])).toBe('real')
   })
 })
 
-describe('extractConversationText — filtro origin', () => {
-  test('origin.kind === "human" se permite', () => {
+describe('extractConversationText — origin filter', () => {
+  test('origin.kind === "human" allowed', () => {
     const human = {
       type: 'user',
       origin: { kind: 'human' },
@@ -154,9 +142,9 @@ describe('extractConversationText — filtro origin', () => {
     expect(extractConversationText([human])).toBe('real')
   })
 
-  test('origin.kind !== "human" se filtra (p. ej. agent, channel)', () => {
-    // Los mensajes originados en canal/agente no forman parte del hilo de
-    // conversación humano a efectos de generación de título.
+  test('origin.kind !== "human" filtered (e.g. agent, channel)', () => {
+    // Channel/agent-originated messages are not part of the human
+    // conversation thread for title-generation purposes.
     const agent = {
       type: 'user',
       origin: { kind: 'agent' },
@@ -172,28 +160,27 @@ describe('extractConversationText — filtro origin', () => {
     ).toBe('real')
   })
 
-  test('campo origin ausente se permite (se trata como human)', () => {
+  test('missing origin field allowed (treated as human)', () => {
     expect(extractConversationText([userMsg('real')])).toBe('real')
   })
 })
 
-describe('extractConversationText — recorte de cola (1000 caracteres)', () => {
-  test('texto de menos de 1000 caracteres pasa sin cambios', () => {
+describe('extractConversationText — tail truncation (1000 chars)', () => {
+  test('text under 1000 chars passed through unchanged', () => {
     const text = 'a'.repeat(500)
     expect(extractConversationText([userMsg(text)])).toBe(text)
   })
 
-  test('texto de exactamente 1000 caracteres pasa (límite inclusivo)', () => {
+  test('text exactly 1000 chars passed through (boundary inclusive)', () => {
     const text = 'a'.repeat(1000)
     expect(extractConversationText([userMsg(text)])).toBe(text)
   })
 
-  test('texto de más de 1000 caracteres se recorta por LA COLA (últimos 1000)', () => {
-    // CRÍTICO: el recorte por cola significa que gana el FINAL de la
-    // conversación, no el inicio. Es así por diseño — el contexto reciente
-    // es más relevante para generar el título. Un cambio futuro a
-    // .slice(0, 1000) desplazaría en silencio a un prefijo inicial y
-    // degradaría la calidad del título.
+  test('text over 1000 chars TAIL-sliced (last 1000 chars)', () => {
+    // CRITICAL: tail-slice means the END of the conversation wins, not
+    // the start. This is per design — recent context is more relevant
+    // for title generation. A future change to .slice(0, 1000) would
+    // silently shift to leading-prefix and degrade title quality.
     const head = 'X'.repeat(500)
     const tail = 'a'.repeat(1000)
     const result = extractConversationText([userMsg(head + tail)])
@@ -201,23 +188,23 @@ describe('extractConversationText — recorte de cola (1000 caracteres)', () => 
     expect(result.startsWith('X')).toBe(false)
   })
 
-  test('el recorte aplica sobre el texto YA UNIDO, no por mensaje', () => {
-    // El recorte corre sobre el parts.join('\n') ya unido, así que aunque
-    // cada mensaje individual sea < 1000, el total puede excederlo.
+  test('truncation applies to JOINED text, not per-message', () => {
+    // The truncation runs on the joined parts.join('\n'), so even if
+    // individual messages are < 1000, the total may exceed it.
     const m1 = 'x'.repeat(800)
-    const m2 = 'y'.repeat(800) // total: 800 + 1 + 800 = 1601 caracteres
+    const m2 = 'y'.repeat(800) // total: 800 + 1 + 800 = 1601 chars
     const result = extractConversationText([userMsg(m1), userMsg(m2)])
     expect(result.length).toBe(1000)
     expect(result.endsWith('y')).toBe(true)
   })
 })
 
-describe('extractConversationText — casos vacíos / de borde', () => {
-  test('array de mensajes vacío → string vacío', () => {
+describe('extractConversationText — empty / edge cases', () => {
+  test('empty messages array → empty string', () => {
     expect(extractConversationText([])).toBe('')
   })
 
-  test('todos los mensajes meta → string vacío', () => {
+  test('all-meta messages → empty string', () => {
     const meta = (text: string) =>
       ({
         type: 'user',
@@ -227,7 +214,7 @@ describe('extractConversationText — casos vacíos / de borde', () => {
     expect(extractConversationText([meta('a'), meta('b')])).toBe('')
   })
 
-  test('solo tipos que no son de conversación → string vacío', () => {
+  test('only non-conversation types → empty string', () => {
     expect(
       extractConversationText([
         { type: 'system', message: { content: 'x' } } as Message,
@@ -236,7 +223,7 @@ describe('extractConversationText — casos vacíos / de borde', () => {
     ).toBe('')
   })
 
-  test('mezcla user+assistant+meta — solo se une lo humano no-meta de user/assistant', () => {
+  test('mixed user+assistant+meta — only non-meta human user/assistant joined', () => {
     const meta = {
       type: 'user',
       isMeta: true,

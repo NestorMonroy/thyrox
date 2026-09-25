@@ -4,22 +4,19 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Porte de `ccnmt: packages/agent/__tests__/internalLogging.behavior.test.ts`.
+ * Source-level pins for `internal/logging.ts`. These are catch-block / hot
+ * path observers that delegate to the host bindings — with a console.* fall
+ * back so that errors are NEVER swallowed when no host is installed.
  *
- * Pin a nivel de fuente para `internal/logging.ts`. Son observadores de
- * catch-block / hot path que delegan en las ataduras del host — con
- * fallback a console.* para que un error NUNCA quede en silencio cuando
- * no hay host instalado.
+ * Three invariants:
+ *  1. logEvent: pure delegate (telemetry) — silent no-op if host is missing.
+ *  2. logError + logAntError: delegate if installed, ELSE console.error fall
+ *     back. Never silent.
+ *  3. logForDebugging: pure delegate (debug log file) — silent no-op if host
+ *     is missing.
  *
- * Tres invariantes:
- *  1. logEvent: delegado puro (telemetría) — no-op silencioso si falta el host.
- *  2. logError + logAntError: delegan si está instalado, SI NO caen a
- *     console.error. Nunca en silencio.
- *  3. logForDebugging: delegado puro (archivo de debug log) — no-op
- *     silencioso si falta el host.
- *
- * La separación delegado-vs-fallback importa: que la telemetría o el debug
- * log queden a oscuras es aceptable; que un error quede a oscuras, no.
+ * The delegate-vs-fallback split matters: telemetry/debug-log going dark is
+ * acceptable; errors going dark is not.
  */
 describe('internal/logging', () => {
   const source = readFileSync(
@@ -27,17 +24,17 @@ describe('internal/logging', () => {
     'utf-8',
   )
 
-  describe('logEvent (telemetría — fallback silencioso OK)', () => {
-    test('delega vía optional chain (sin host = no-op)', () => {
+  describe('logEvent (telemetry — silent fallback OK)', () => {
+    test('delegates via optional chain (no host = no-op)', () => {
       expect(source).toMatch(
         /logEvent\([\s\S]{0,300}?getAgentHostBindings\(\)\.logEvent\?\.\(/,
       )
     })
 
-    test('NO fallback silencioso: sin console.* en logEvent', () => {
-      // Pin: la telemetría DEBE quedar silenciosa cuando falta el sink de
-      // analytics. Un refactor futuro que "siempre haga console.log de la
-      // telemetría" saturaría stderr.
+    test('NOT silent-fallback: no console.* in logEvent', () => {
+      // Pin: telemetry SHOULD be silent when the analytics sink is missing.
+      // A future refactor that "let's always console.log telemetry" would
+      // spam stderr.
       const block = source.match(
         /export function logEvent\([\s\S]+?\n\}/,
       )?.[0]
@@ -46,16 +43,16 @@ describe('internal/logging', () => {
     })
   })
 
-  describe('logError (error — fallback console.error OBLIGATORIO)', () => {
-    test('usa console.error cuando falta la atadura del host', () => {
+  describe('logError (error — console.error fallback REQUIRED)', () => {
+    test('uses console.error when host binding is missing', () => {
       expect(source).toMatch(
         /logError[\s\S]{0,300}?if \(logger\) \{[\s\S]{0,200}?logger\(error\)[\s\S]{0,100}?\}\s*\n\s*console\.error\(error\)/,
       )
     })
 
-    test('se detiene (early-return tras la llamada al host, sin log doble)', () => {
-      // Pin: si dispara la atadura del host, se hace RETURN — nunca se
-      // loguea dos veces.
+    test('falls through (early-return after host call, no double log)', () => {
+      // Pin: if host binding fires, we RETURN — never double-log.
+      // A regression that drops the `return` would log every error twice.
       const block = source.match(
         /export function logError\([\s\S]+?\n\}/,
       )?.[0]
@@ -63,10 +60,10 @@ describe('internal/logging', () => {
     })
   })
 
-  describe('logAntError (error con nombre — misma disciplina de fallback)', () => {
-    test('pasa el message Y el error tanto al logger como a console', () => {
-      // Pin: la firma es (message, error). Un regresivo que quite el campo
-      // message perdería la etiqueta legible en los logs.
+  describe('logAntError (named error — same fallback discipline)', () => {
+    test('passes BOTH message and error to logger and console', () => {
+      // Pin: signature is (message, error). A regression that drops the
+      // message field would lose the human-readable label in logs.
       expect(source).toMatch(
         /logAntError\(message: string, error: unknown\)/,
       )
@@ -74,7 +71,7 @@ describe('internal/logging', () => {
       expect(source).toMatch(/console\.error\(message, error\)/)
     })
 
-    test('early-return al acertar el host (sin log doble)', () => {
+    test('early-returns on host hit (no double log)', () => {
       const block = source.match(
         /export function logAntError\([\s\S]+?\n\}/,
       )?.[0]
@@ -82,14 +79,14 @@ describe('internal/logging', () => {
     })
   })
 
-  describe('logForDebugging (archivo de debug log — fallback silencioso OK)', () => {
-    test('delega vía optional chain (sin fallback a console)', () => {
+  describe('logForDebugging (debug log file — silent fallback OK)', () => {
+    test('delegates via optional chain (no console fallback)', () => {
       expect(source).toMatch(
         /logForDebugging\([\s\S]{0,300}?getAgentHostBindings\(\)\.logDebug\?\.\(message, metadata\)/,
       )
     })
 
-    test('SIN fallback a console (el debug-only es silencioso si falta el sink)', () => {
+    test('NO console.* fallback (debug-only is silent when sink absent)', () => {
       const block = source.match(
         /export function logForDebugging\([\s\S]+?\n\}/,
       )?.[0]
@@ -97,14 +94,14 @@ describe('internal/logging', () => {
       expect(block).not.toMatch(/console\./)
     })
 
-    test('acepta metadata opcional', () => {
+    test('accepts optional metadata', () => {
       expect(source).toMatch(/metadata\?:\s*unknown/)
     })
   })
 
-  test('el tipo AnalyticsMetadata se re-exporta para quien lo consuma', () => {
-    // Quien llama pasa metadata tipada; el re-export evita que tenga que
-    // atravesar internalTypes directamente.
+  test('AnalyticsMetadata type is re-exported for callers', () => {
+    // Callers pass typed metadata; re-export keeps them from reaching
+    // through internalTypes directly.
     expect(source).toMatch(
       /export type \{ AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS \}/,
     )

@@ -1,69 +1,99 @@
 /**
- * Direcciones compuestas — porte de `ccnmt: packages/agent/agentIdUtils.ts`.
+ * Deterministic Agent ID System
  *
- * Dos formas que se arman y se desarman sin ambiguedad:
+ * This module provides helper functions for formatting and parsing deterministic
+ * agent IDs used in the swarm/teammate system.
  *
- *   agente   `<nombre>@<equipo>`
- *   pedido   `<tipo>-<marca de tiempo>@<agente>`
+ * ## ID Formats
  *
- * Son deterministas a proposito: el mismo agente en el mismo equipo recibe
- * el mismo identificador, asi que se puede reconectar tras un reinicio y
- * calcular la direccion de un companero sin consultar a nadie.
+ * **Agent IDs**: `agentName@teamName`
+ * - Example: `team-lead@my-project`, `researcher@my-project`
+ * - The @ symbol acts as a separator between agent name and team name
  *
- * Las dos gramaticas se cruzan —el agente lleva arroba y el pedido tambien—
- * y por eso cada lado elige su separador con criterio opuesto: el agente
- * parte en la PRIMERA arroba (el equipo puede contener mas), y el pedido
- * separa su marca de tiempo en el ULTIMO guion (el tipo puede contener mas).
+ * **Request IDs**: `{requestType}-{timestamp}@{agentId}`
+ * - Example: `shutdown-1702500000000@researcher@my-project`
+ * - Used for shutdown requests, plan approvals, etc.
+ *
+ * ## Why Deterministic IDs?
+ *
+ * Deterministic IDs provide several benefits:
+ *
+ * 1. **Reproducibility**: The same agent spawned with the same name in the same team
+ *    always gets the same ID, enabling reconnection after crashes/restarts.
+ *
+ * 2. **Human-readable**: IDs are meaningful and debuggable (e.g., `tester@my-project`).
+ *
+ * 3. **Predictable**: Team leads can compute a teammate's ID without looking it up,
+ *    simplifying message routing and task assignment.
+ *
+ * ## Constraints
+ *
+ * - Agent names must NOT contain `@` (it's used as the separator)
+ * - Use `sanitizeAgentName()` from TeammateTool.ts to strip @ from names
  */
 
-/** Une el nombre del agente y el de su equipo. */
+/**
+ * Formats an agent ID in the format `agentName@teamName`.
+ */
 export function formatAgentId(agentName: string, teamName: string): string {
   return `${agentName}@${teamName}`
 }
 
 /**
- * Desarma la direccion de un agente por su primera arroba. Devuelve nulo
- * si no hay arroba: la cadena no es una direccion, es otra cosa.
+ * Parses an agent ID into its components.
+ * Returns null if the ID doesn't contain the @ separator.
  */
 export function parseAgentId(
   agentId: string,
 ): { agentName: string; teamName: string } | null {
-  const separator = agentId.indexOf('@')
-  if (separator === -1) return null
+  const atIndex = agentId.indexOf('@')
+  if (atIndex === -1) {
+    return null
+  }
   return {
-    agentName: agentId.slice(0, separator),
-    teamName: agentId.slice(separator + 1),
+    agentName: agentId.slice(0, atIndex),
+    teamName: agentId.slice(atIndex + 1),
   }
 }
 
-/** Acuna el identificador de un pedido, fechandolo en el momento. */
+/**
+ * Formats a request ID in the format `{requestType}-{timestamp}@{agentId}`.
+ */
 export function generateRequestId(
   requestType: string,
   agentId: string,
 ): string {
-  return `${requestType}-${Date.now()}@${agentId}`
+  const timestamp = Date.now()
+  return `${requestType}-${timestamp}@${agentId}`
 }
 
 /**
- * Desarma un pedido en sus tres partes. Devuelve nulo ante cualquiera de
- * los tres defectos —sin arroba, sin guion en el prefijo, marca de tiempo
- * no numerica— porque los tres significan lo mismo para el llamador: esto
- * no es un pedido.
+ * Parses a request ID into its components.
+ * Returns null if the request ID doesn't match the expected format.
  */
 export function parseRequestId(
   requestId: string,
 ): { requestType: string; timestamp: number; agentId: string } | null {
-  const separator = requestId.indexOf('@')
-  if (separator === -1) return null
+  const atIndex = requestId.indexOf('@')
+  if (atIndex === -1) {
+    return null
+  }
 
-  const prefix = requestId.slice(0, separator)
-  const agentId = requestId.slice(separator + 1)
+  const prefix = requestId.slice(0, atIndex)
+  const agentId = requestId.slice(atIndex + 1)
 
-  const lastDash = prefix.lastIndexOf('-')
-  if (lastDash === -1) return null
+  const lastDashIndex = prefix.lastIndexOf('-')
+  if (lastDashIndex === -1) {
+    return null
+  }
 
-  const timestamp = parseInt(prefix.slice(lastDash + 1), 10)
-  if (Number.isNaN(timestamp)) return null
+  const requestType = prefix.slice(0, lastDashIndex)
+  const timestampStr = prefix.slice(lastDashIndex + 1)
+  const timestamp = parseInt(timestampStr, 10)
 
-  return { requestType: prefix.slice(0, lastDash), timestamp, agentId }
+  if (isNaN(timestamp)) {
+    return null
+  }
+
+  return { requestType, timestamp, agentId }
 }

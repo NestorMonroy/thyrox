@@ -1,24 +1,23 @@
 /**
- * Fallback de despacho por spool de archivos — `ant 5165.js` XF3/EFK/fF3.
+ * File-spool dispatch fallback — ant 5165.js XF3/EFK/fF3.
  *
- * Observa `~/.claude/daemon/dispatch/` por archivos de envoltorio de
- * despacho entrantes. Cada archivo es un request de despacho que la CLI
- * no pudo entregar por socket (p. ej. el daemon a mitad de un reinicio).
- * El daemon lo recoge vía fs.watch al arrancar + un re-escaneo cada 5s,
- * valida esquema/tamaño/edad, lo aplica como si fuera un despacho de
- * socket, borra al tener éxito o mueve a `rejected/` ante fallo.
+ * Watches `~/.claude/daemon/dispatch/` for incoming dispatch envelope
+ * files. Each file is one dispatch request that the CLI couldn't deliver
+ * via socket (e.g. daemon mid-restart). Daemon picks up via fs.watch on
+ * boot + every 5s rescan, validates schema/size/age, applies as if it
+ * were a socket dispatch, deletes on success or moves to `rejected/` on
+ * failure.
  *
- * Sobrevive a un reinicio del daemon entre la escritura de la CLI y la
- * lectura del daemon — el archivo simplemente queda ahí hasta que el
- * siguiente daemon arranca. El despacho sólo-por-socket pierde cualquier
- * request en vuelo cuando el daemon muere a mitad del manejo.
+ * Survives daemon restart between CLI write and daemon read — the file
+ * just sits there until next daemon comes up. socket-only dispatch
+ * loses any in-flight request when daemon dies mid-handle.
  *
- * ccb usa `fs.watch` de Node en vez de chokidar (una dependencia menos).
- * En macOS fs.watch dispara eventos 'rename' tanto en crear COMO en
- * borrar — se filtra por lstat para distinguir, más un poll cada 5s como
- * respaldo ya que fs.watch puede perderse eventos bajo carga.
+ * ccb uses Node `fs.watch` instead of chokidar (one less dep). On macOS
+ * fs.watch fires 'rename' events on file create AND delete — we filter
+ * by lstat to distinguish, plus poll every 5s as backup since fs.watch
+ * can miss events under load.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/dispatchSpool.ts`.
+ * @dynamicRequire
  */
 
 import {
@@ -31,25 +30,24 @@ import {
   renameSync,
   unlinkSync,
   watch,
-  writeFileSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
 import { basename, join } from 'node:path'
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
-/** `ant 5165.js` DF3 — edad máxima antes de que un archivo de spool se considere rancio (24h). */
+/** ant 5165.js DF3 — max age before a spool file is considered stale (24h). */
 const MAX_AGE_MS = 86_400_000
-/** `ant 5165.js` MF3 — tamaño máximo de cuerpo para un solo envoltorio de despacho (256 KiB). */
+/** ant 5165.js MF3 — max body size for a single dispatch envelope (256 KiB). */
 const MAX_BODY_BYTES = 262_144
 
 export interface DispatchEnvelope {
-  /** epoch en ms de cuándo la CLI escribió este envoltorio. El daemon rechaza si es muy viejo. */
+  /** ms-epoch when CLI wrote this envelope. Daemon rejects if too old. */
   createdAt: number
-  /** Op del daemon a invocar una vez ingerido el envoltorio. Igual que el op de socket. */
+  /** Daemon op to invoke once envelope is ingested. Same as socket op. */
   op: string
-  /** Payload del op (pasado al manejador como msg.d). */
+  /** Op payload (passed to handler as msg.d). */
   d: Record<string, unknown>
-  /** Nonce opcional para el emparejamiento await-ack. */
+  /** Optional nonce for await-ack pairing. */
   nonce?: string
 }
 
@@ -66,7 +64,7 @@ function isTempFile(name: string): boolean {
 }
 
 /**
- * `ant 5165.js` NrH — mueve un envoltorio malo al subdirectorio rejected/.
+ * ant 5165.js NrH — move a bad envelope to rejected/ subdir.
  */
 function rejectFile(path: string, reason: string): void {
   try {
@@ -74,18 +72,17 @@ function rejectFile(path: string, reason: string): void {
     const dest = join(getRejectedDir(), basename(path))
     try { renameSync(path, dest) } catch { unlinkSync(path) }
   } catch {
-    // best-effort — si no se puede rechazar, sólo se hace unlink
+    // best-effort — can't reject, just unlink
     try { unlinkSync(path) } catch { /**/ }
   }
   logEvent('tengu_bg_dispatch_rejected', { reason: reason.slice(0, 100) })
 }
 
 /**
- * `ant 5165.js` EFK — procesa un archivo de envoltorio. Devuelve `null`
- * ante éxito (archivo consumido) o un string con la razón de rechazo.
- * Síncrono porque la ruta de despacho del daemon es síncrona; la
- * invocación real del manejador es async vía el callback deliver, que el
- * llamador espera.
+ * ant 5165.js EFK — process one envelope file. Returns `null` on success
+ * (file consumed) or a rejection reason string. Sync because daemon
+ * dispatch path is synchronous; the actual handler invocation is async
+ * via the deliver callback which the caller awaits.
  */
 export async function ingestEnvelope(
   path: string,
@@ -141,10 +138,9 @@ export async function ingestEnvelope(
 }
 
 /**
- * `ant 5165.js` fF3 — drena cualquier archivo pre-existente en el
- * directorio de spool al arrancar. Lo llama el arranque del daemon antes
- * de armar fs.watch, para que cualquier archivo escrito entre el apagado
- * del daemon anterior y este arranque se procese.
+ * ant 5165.js fF3 — drain any pre-existing files in spool dir on boot.
+ * Called by daemon startup before fs.watch is set up so any files
+ * written between previous daemon shutdown and this boot get processed.
  */
 export async function drainSpool(
   deliver: (env: DispatchEnvelope) => Promise<void> | void,
@@ -169,13 +165,12 @@ export interface SpoolWatcher {
 }
 
 /**
- * `ant 5165.js` XF3 — arranca el file-watcher sobre el directorio de
- * spool. El llamador provee `deliver`, que enruta el envoltorio por la
- * misma tabla de despacho de ops que usa el servidor de socket.
+ * ant 5165.js XF3 — start the file-watcher on the spool dir. Caller
+ * provides `deliver` which routes the envelope through the same op
+ * dispatch table the socket server uses.
  *
- * fs.watch es best-effort — un timer de polling cada 5s cubre los casos
- * en que el watcher se pierde el evento (carga alta del sistema,
- * coalescencia de eventos de FS).
+ * fs.watch is best-effort — a 5s polling timer covers cases where the
+ * watcher misses the event (high system load, FS event coalescing).
  */
 export function startSpoolWatcher(
   deliver: (env: DispatchEnvelope) => Promise<void> | void,
@@ -196,7 +191,7 @@ export function startSpoolWatcher(
       const fname = String(filename)
       if (isTempFile(fname) || fname === 'rejected' || fname.startsWith('.')) return
       const path = join(dir, fname)
-      // Sólo ingiere ante existencia (o sea, add o rename-into); ENOENT significa rename-out.
+      // Only ingest on existence (i.e. add or rename-into); ENOENT means rename-out.
       if (!existsSync(path)) return
       void ingestEnvelope(path, deliver).catch(() => {})
     })
@@ -211,7 +206,7 @@ export function startSpoolWatcher(
       reason: 'watch-setup',
     })
   }
-  // Respaldo de poll cada 5s (ant no tiene esto — chokidar hace poll internamente en macOS).
+  // 5s poll backup (ant doesn't have this — chokidar polls internally on macOS).
   const pollTimer = setInterval(() => {
     void drainSpool(deliver).catch(() => {})
   }, 5000)
@@ -225,12 +220,11 @@ export function startSpoolWatcher(
 }
 
 /**
- * Escribe un envoltorio de despacho al directorio de spool. Helper del
- * lado del llamador, usado por la CLI cuando el socket del daemon no es
- * alcanzable.
+ * Write a dispatch envelope to the spool dir. Caller-side helper used
+ * by CLI when daemon socket is unreachable.
  *
- * Escritura atómica vía tmp + rename (así el watcher nunca ve un archivo
- * parcial). Devuelve la ruta al envoltorio en el spool.
+ * Atomic-write via tmp + rename (so the watcher never sees a partial
+ * file). Returns the path to the spooled envelope.
  */
 export function writeSpoolEnvelope(env: DispatchEnvelope): string {
   const dir = getSpoolDir()
@@ -238,6 +232,7 @@ export function writeSpoolEnvelope(env: DispatchEnvelope): string {
   const id = `${env.createdAt}-${Math.random().toString(36).slice(2, 10)}`
   const tmp = join(dir, `${id}.tmp`)
   const dest = join(dir, `${id}.json`)
+  const { writeFileSync } = require('node:fs') as typeof import('node:fs')
   writeFileSync(tmp, JSON.stringify(env), { mode: 0o600 })
   renameSync(tmp, dest)
   return dest

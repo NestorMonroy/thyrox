@@ -1,34 +1,39 @@
-import { beforeEach, describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, mock, test } from 'bun:test'
 
-/**
- * Tests for fileUtilities.ts's pure helpers — high-traffic Read/Edit
- * formatting logic (line numbering) and cross-platform path comparison.
- *
- * Porte a `../fileUtilities.js`, no `../file.js`: `file.ts` ya existe en
- * este árbol (porte parcial previo, sólo `atomicWriteFile`) y no es mío —
- * no se toca. Estos símbolos viven en un módulo nuevo propio.
- *
- * La fuente inyecta el flag/plataforma con `mock.module()` sobre
- * `@claude-code-how-works/config/{feature-flags,platform}` — ninguno de
- * los dos paquetes existe en este árbol. Se sustituye por el patrón de
- * inyección por setter que ya usa este mismo paquete en otros módulos
- * (`internal/pendingCrossPackageDeps.ts: setGetCwdFn`): `fileUtilities.ts`
- * expone `setPlatformForTests`/`setCompactLinePrefixKillswitchForTests`, y
- * el `beforeEach` los reinicia igual que la fuente reinicia sus mocks.
- */
+// Mock feature flag + platform BEFORE importing file.js.
+// The pure helpers we want depend on these two host bindings.
+const realFf = await import('@thyrox/config/feature-flags')
+const realPf = await import('@thyrox/config/platform')
+
+let compactLinePrefixOff = false
+let platform: 'macos' | 'windows' | 'linux' = 'macos'
+
+mock.module('@thyrox/config/feature-flags', () => ({
+  ...realFf,
+  getFeatureValue_CACHED_MAY_BE_STALE: <T>(key: string, fallback: T): T => {
+    if (key === 'tengu_compact_line_prefix_killswitch') {
+      return compactLinePrefixOff as unknown as T
+    }
+    return fallback
+  },
+}))
+
+mock.module('@thyrox/config/platform', () => ({
+  ...realPf,
+  getPlatform: () => platform,
+}))
+
 const {
   addLineNumbers,
   stripLineNumberPrefix,
   convertLeadingTabsToSpaces,
   pathsEqual,
   normalizePathForComparison,
-  setPlatformForTests,
-  setCompactLinePrefixKillswitchForTests,
-} = await import('../fileUtilities.js')
+} = await import('../file.js')
 
 beforeEach(() => {
-  setCompactLinePrefixKillswitchForTests(null)
-  setPlatformForTests('macos')
+  compactLinePrefixOff = false
+  platform = 'macos'
 })
 
 describe('convertLeadingTabsToSpaces', () => {
@@ -73,7 +78,7 @@ describe('convertLeadingTabsToSpaces', () => {
 
 describe('addLineNumbers — compact format (default)', () => {
   beforeEach(() => {
-    setCompactLinePrefixKillswitchForTests(false) // killswitch off → compact ON
+    compactLinePrefixOff = false // killswitch off → compact ON
   })
 
   test('empty content → empty string', () => {
@@ -106,7 +111,7 @@ describe('addLineNumbers — compact format (default)', () => {
 
 describe('addLineNumbers — legacy padded format (killswitch on)', () => {
   beforeEach(() => {
-    setCompactLinePrefixKillswitchForTests(true) // killswitch ON → compact OFF
+    compactLinePrefixOff = true // killswitch ON → compact OFF
   })
 
   test('numbers padded to 6 chars + Unicode arrow', () => {
@@ -168,71 +173,67 @@ describe('stripLineNumberPrefix — inverse of addLineNumbers', () => {
 
 describe('normalizePathForComparison — platform sensitivity', () => {
   test('macos: forward slashes preserved, case preserved', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(normalizePathForComparison('/Users/Me/Project')).toBe(
       '/Users/Me/Project',
     )
   })
 
   test('macos: relative-path . and .. resolved', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(normalizePathForComparison('a/./b/../c')).toBe('a/c')
   })
 
   test('windows: forward slashes converted to backslashes', () => {
-    setPlatformForTests('windows')
-    expect(normalizePathForComparison('C:/Users/Me')).toBe(
-      'c:\\users\\me',
-    )
+    platform = 'windows'
+    expect(normalizePathForComparison('C:/Users/Me')).toBe('c:\\users\\me')
   })
 
   test('windows: case lowercased (Windows paths are case-insensitive)', () => {
-    setPlatformForTests('windows')
-    expect(normalizePathForComparison('C:\\Users\\Me')).toBe(
-      'c:\\users\\me',
-    )
+    platform = 'windows'
+    expect(normalizePathForComparison('C:\\Users\\Me')).toBe('c:\\users\\me')
   })
 
   test('linux: same as macos (Unix-style)', () => {
-    setPlatformForTests('linux')
+    platform = 'linux'
     expect(normalizePathForComparison('/home/User/X')).toBe('/home/User/X')
   })
 })
 
 describe('pathsEqual — platform-aware comparison', () => {
   test('macos: case-sensitive — different case → not equal', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(pathsEqual('/foo/Bar', '/foo/bar')).toBe(false)
   })
 
   test('macos: same path → equal', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(pathsEqual('/foo/bar', '/foo/bar')).toBe(true)
   })
 
   test('macos: redundant separators normalized', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(pathsEqual('/foo//bar', '/foo/bar')).toBe(true)
   })
 
   test('macos: . and .. resolved', () => {
-    setPlatformForTests('macos')
+    platform = 'macos'
     expect(pathsEqual('/foo/./bar', '/foo/bar')).toBe(true)
     expect(pathsEqual('/foo/baz/../bar', '/foo/bar')).toBe(true)
   })
 
   test('windows: case-insensitive — different case → equal', () => {
-    setPlatformForTests('windows')
+    platform = 'windows'
     expect(pathsEqual('C:\\Users\\me', 'c:\\users\\ME')).toBe(true)
   })
 
   test('windows: forward and backslash both work', () => {
-    setPlatformForTests('windows')
+    platform = 'windows'
     expect(pathsEqual('C:/Users/me', 'c:\\users\\me')).toBe(true)
   })
 
   test('linux: case-sensitive', () => {
-    setPlatformForTests('linux')
+    platform = 'linux'
     expect(pathsEqual('/etc/Hosts', '/etc/hosts')).toBe(false)
   })
 })

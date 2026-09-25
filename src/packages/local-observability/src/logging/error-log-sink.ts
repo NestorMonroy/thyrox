@@ -1,81 +1,55 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/error-log-sink.ts`
- * (279 líneas fuente). Implementación respaldada por archivo del
- * contrato `ErrorLogSink` declarado en `./error-log.ts`. Pesado (axios,
- * writers con buffer, registro de cleanup) e inicializado sólo al
- * arrancar la app — por eso separado de `./error-log.ts`, que debe
- * quedarse libre de dependencias para que los logs previos al arranque
- * se encolen sin riesgo.
+ * V7 §8.12 — error-log-sink: file-backed implementation for the ErrorLogSink
+ * contract declared in ./error-log.ts.
  *
- * Reapuntado a `@thyrox/*` real: `CACHE_PATHS` — `@thyrox/storage`
- * exporta `./cache-paths`.
+ * Moved from src/utils/errorLogSink.ts. Heavy-weight (axios, buffered writers,
+ * cleanup registry) and only initialized during app startup — hence separated
+ * from ./error-log.ts which must stay dep-free so log calls before startup
+ * can be safely queued.
  *
- * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * `getSessionId`/`registerCleanup` (app-host/bootstrap, subpath no
- * exportado), `getFsImplementation` (storage/fsOperations, ídem).
- *
- * `MACRO.VERSION`: constante de build-time inyectada por
- * `Bun.build({ define })`, o el relleno de
- * `@thyrox/agent: internal/macroFallback.ts` bajo `bun:test` — ese
- * módulo no está exportado por `@thyrox/agent`, así que aquí se declara
- * el tipo ambiental mínimo en línea (mismo patrón que
- * `ccnmt: packages/local-observability/src/sentry.ts` declara
- * `BUILD_ENV` en línea: "so this package doesn't depend on
- * src/types/global.d.ts") y se lee con guarda `typeof MACRO !==
- * 'undefined'`, con `'0.0.0-dev'` como default fiel a la ausencia del
- * define.
- *
- * NOTA DE INCONSISTENCIA DE LA FUENTE (no de este porte): este archivo
- * inlinea su PROPIO `createBufferedWriter`/`createJsonlWriter`, más
- * simple que el de `output/buffers` que `../debug.ts` sí importa (sin
- * `immediateMode` ni desborde detached) — la propia fuente lo declara:
- * "Small enough to inline here so local-observability stays src/-free".
- * Se porta tal cual, sin unificar los dos writers por mi cuenta (sería
- * una decisión editorial, no un porte). Ver hallazgo.
+ * Cross-package deps (direct imports): fs from storage/fsOperations,
+ * cache paths from storage/cache-paths, session id + cleanup registry
+ * from app-host/bootstrap, debug logger + sentry from this package.
  */
 
 import axios from 'axios'
 import { dirname, join } from 'path'
 
-import {
-  getFsImplementation,
-  getSessionId,
-  registerCleanup,
-} from '../internal/pendingCrossPackageDeps.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 
 import { captureException } from '../sentry.js'
 import { logForDebugging } from '../debug.js'
 import { jsonStringify } from '../slowOperations.js'
-import { attachErrorLogSink, dateToFilename } from './error-log.js'
 
-declare const MACRO: { VERSION: string } | undefined
-
-// Shim local que envuelve CACHE_PATHS en la forma "lazy-call" que este
-// módulo espera (los llamadores hacen `getCachePaths().errors()`, no
-// `CACHE_PATHS.errors()` directo).
-const getCachePaths = (): {
-  errors(): string
-  mcpLogs(serverName: string): string
-} => ({
+// Local shim wrapping CACHE_PATHS into the lazy-call shape this module
+// expects (callers do `getCachePaths().errors()` not `CACHE_PATHS.errors()`).
+const getCachePaths = (): { errors(): string; mcpLogs(serverName: string): string } => ({
   errors: () => CACHE_PATHS.errors(),
   mcpLogs: (serverName: string) => CACHE_PATHS.mcpLogs(serverName),
 })
+import { attachErrorLogSink, dateToFilename } from './error-log.js'
 
 const DATE = dateToFilename(new Date())
 
-/** Obtiene la ruta al archivo de log de errores. */
+/**
+ * Gets the path to the errors log file.
+ */
 export function getErrorsPath(): string {
   return join(getCachePaths().errors(), DATE + '.jsonl')
 }
 
-/** Obtiene la ruta a los logs MCP de un servidor. */
+/**
+ * Gets the path to MCP logs for a server.
+ */
 export function getMCPLogsPath(serverName: string): string {
   return join(getCachePaths().mcpLogs(serverName), DATE + '.jsonl')
 }
 
 // ---------------------------------------------------------------------------
-// Writer JSONL con buffer (implementación mínima inlineada)
+// Buffered JSONL writer (inlined minimal implementation)
 // ---------------------------------------------------------------------------
 
 type JsonlWriter = {
@@ -91,9 +65,9 @@ type BufferedWriterOptions = {
 }
 
 /**
- * Writer con buffer mínimo — agrupa escrituras para reducir la sobrecarga
- * de syscalls. Suficientemente pequeño para inlinearlo aquí y que
- * local-observability se quede libre de dependencias de src/.
+ * Minimal buffered writer — groups writes to reduce syscall overhead.
+ * Previously imported from src/utils/bufferedWriter.ts. Small enough
+ * to inline here so local-observability stays src/-free.
  */
 function createBufferedWriter(options: BufferedWriterOptions): JsonlWriter {
   const { writeFn, flushIntervalMs = 1000, maxBufferSize = 50 } = options
@@ -108,7 +82,7 @@ function createBufferedWriter(options: BufferedWriterOptions): JsonlWriter {
     try {
       writeFn(content)
     } catch {
-      // Falla en silencio — loguear nunca debe lanzar.
+      // Silently fail — logging must never throw
     }
   }
 
@@ -147,13 +121,13 @@ function createJsonlWriter(options: BufferedWriterOptions): JsonlWriter {
 }
 
 // ---------------------------------------------------------------------------
-// Pool de writers de log
+// Log writer pool
 // ---------------------------------------------------------------------------
 
 const logWriters = new Map<string, JsonlWriter>()
 
 /**
- * Flushea todos los writers de log con buffer. Usado para pruebas.
+ * Flush all buffered log writers. Used for testing.
  * @internal
  */
 export function _flushLogWritersForTesting(): void {
@@ -163,7 +137,7 @@ export function _flushLogWritersForTesting(): void {
 }
 
 /**
- * Limpia todos los writers de log con buffer. Usado para pruebas.
+ * Clear all buffered log writers. Used for testing.
  * @internal
  */
 export function _clearLogWritersForTesting(): void {
@@ -204,7 +178,7 @@ function appendToLog(path: string, message: object): void {
     cwd: process.cwd(),
     userType: process.env.USER_TYPE,
     sessionId: getSessionId(),
-    version: typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev',
+    version: MACRO.VERSION,
   }
 
   getLogWriter(path).write(messageWithTimestamp)
@@ -228,7 +202,7 @@ function extractServerMessage(data: unknown): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
-// Implementaciones del sink
+// Sink implementations
 // ---------------------------------------------------------------------------
 
 function logErrorImpl(error: Error): void {
@@ -283,17 +257,14 @@ function logMCPDebugImpl(serverName: string, message: string): void {
 }
 
 /**
- * Inicializa el sink de log de errores.
+ * Initialize the error log sink.
  *
- * Llamar durante el arranque de la app para acoplar el backend de
- * logging de errores. Cualquier error logueado antes de esto se encola y
- * se drena.
+ * Call this during app startup to attach the error logging backend.
+ * Any errors logged before this is called will be queued and drained.
  *
- * Debe llamarse ANTES que `initializeAnalyticsSink()` en la secuencia de
- * arranque.
+ * Should be called BEFORE initializeAnalyticsSink() in the startup sequence.
  *
- * Idempotente: seguro de llamar varias veces (las llamadas subsecuentes
- * son no-op).
+ * Idempotent: safe to call multiple times (subsequent calls are no-ops).
  */
 export function initializeErrorLogSink(): void {
   attachErrorLogSink({

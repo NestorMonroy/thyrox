@@ -1,19 +1,13 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/bridgeStatusUtil.ts`.
- * `getClaudeAiBaseUrl`/`getRemoteSessionUrl`/`stringWidth`/
- * `formatDuration`/`truncateToWidth`/`getGraphemeSegmenter` son
- * sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
- */
 import {
-  formatDuration,
   getClaudeAiBaseUrl,
-  getGraphemeSegmenter,
-  stringWidth,
-  truncateToWidth,
-} from './internal/pendingCrossPackageDeps.js'
-import { getRemoteSessionUrl } from './internal/getRemoteSessionUrl.js'
+  getRemoteSessionUrl,
+} from '@thyrox/config/product'
+import { stringWidth } from '@anthropic/ink'
+import { formatDuration } from '@thyrox/output/formatters'
+import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
+import { getGraphemeSegmenter } from '@thyrox/output/utils/intl.js'
 
-/** Estados de la máquina de estados de status del bridge. */
+/** Bridge status state machine states. */
 export type StatusState =
   | 'idle'
   | 'attached'
@@ -21,10 +15,10 @@ export type StatusState =
   | 'reconnecting'
   | 'failed'
 
-/** Cuánto se queda visible una línea de actividad de herramienta tras el último tool_start (ms). */
+/** How long a tool activity line stays visible after last tool_start (ms). */
 export const TOOL_DISPLAY_EXPIRY_MS = 30_000
 
-/** Intervalo del tick de la animación shimmer (ms). */
+/** Interval for the shimmer animation tick (ms). */
 export const SHIMMER_INTERVAL_MS = 150
 
 export function timestamp(): string {
@@ -37,12 +31,12 @@ export function timestamp(): string {
 
 export { formatDuration, truncateToWidth as truncatePrompt }
 
-/** Abrevia un resumen de actividad de herramienta para el display de trail. */
+/** Abbreviate a tool activity summary for the trail display. */
 export function abbreviateActivity(summary: string): string {
   return truncateToWidth(summary, 30)
 }
 
-/** Construye la URL de conexión mostrada cuando el bridge está ocioso. */
+/** Build the connect URL shown when the bridge is idle. */
 export function buildBridgeConnectUrl(
   environmentId: string,
   ingressUrl?: string,
@@ -52,9 +46,9 @@ export function buildBridgeConnectUrl(
 }
 
 /**
- * Construye la URL de sesión mostrada cuando una sesión está adjunta.
- * Delega en getRemoteSessionUrl para la traducción de prefijo cse_→session_,
- * y luego apenda la query ?bridge={environmentId} específica de v1.
+ * Build the session URL shown when a session is attached. Delegates to
+ * getRemoteSessionUrl for the cse_→session_ prefix translation, then appends
+ * the v1-specific ?bridge={environmentId} query.
  */
 export function buildBridgeSessionUrl(
   sessionId: string,
@@ -64,7 +58,7 @@ export function buildBridgeSessionUrl(
   return `${getRemoteSessionUrl(sessionId, ingressUrl)}?bridge=${environmentId}`
 }
 
-/** Calcula el índice de brillo para una animación shimmer de barrido inverso. */
+/** Compute the glimmer index for a reverse-sweep shimmer animation. */
 export function computeGlimmerIndex(
   tick: number,
   messageWidth: number,
@@ -74,15 +68,14 @@ export function computeGlimmerIndex(
 }
 
 /**
- * Divide el texto en tres segmentos por posición de columna visual para
- * el render del shimmer.
+ * Split text into three segments by visual column position for shimmer rendering.
  *
- * Usa segmentación por grafema y `stringWidth` para que la división sea
- * correcta con caracteres multi-byte, emoji y glifos CJK.
+ * Uses grapheme segmentation and `stringWidth` so the split is correct for
+ * multi-byte characters, emoji, and CJK glyphs.
  *
- * Devuelve las cadenas `{ before, shimmer, after }`. Ambos renderers
- * (chalk en bridgeUI.ts y React/Ink en bridge.tsx) aplican su propio
- * coloreado a estos segmentos.
+ * Returns `{ before, shimmer, after }` strings. Both renderers (chalk in
+ * bridgeUI.ts and React/Ink in bridge.tsx) apply their own coloring to
+ * these segments.
  */
 export function computeShimmerSegments(
   text: string,
@@ -92,12 +85,12 @@ export function computeShimmerSegments(
   const shimmerStart = glimmerIndex - 1
   const shimmerEnd = glimmerIndex + 1
 
-  // Cuando el shimmer está fuera de pantalla, devuelve todo el texto como "before"
+  // When shimmer is offscreen, return all text as "before"
   if (shimmerStart >= messageWidth || shimmerEnd < 0) {
     return { before: text, shimmer: '', after: '' }
   }
 
-  // Divide en a lo sumo 3 segmentos por posición de columna visual
+  // Split into at most 3 segments by visual column position
   const clampedStart = Math.max(0, shimmerStart)
   let colPos = 0
   let before = ''
@@ -118,17 +111,17 @@ export function computeShimmerSegments(
   return { before, shimmer, after }
 }
 
-/** Etiqueta y color de status del bridge, computados. */
+/** Computed bridge status label and color from connection state. */
 export type BridgeStatusInfo = {
   label:
     | 'Remote Control failed'
     | 'Remote Control reconnecting'
     | 'Remote Control active'
-    | 'Remote Control connecting…'
+    | 'Remote Control connecting\u2026'
   color: 'error' | 'warning' | 'success'
 }
 
-/** Deriva una etiqueta y color de status del estado de conexión del bridge. */
+/** Derive a status label and color from the bridge connection state. */
 export function getBridgeStatus({
   error,
   connected,
@@ -145,27 +138,26 @@ export function getBridgeStatus({
     return { label: 'Remote Control reconnecting', color: 'warning' }
   if (sessionActive || connected)
     return { label: 'Remote Control active', color: 'success' }
-  return { label: 'Remote Control connecting…', color: 'warning' }
+  return { label: 'Remote Control connecting\u2026', color: 'warning' }
 }
 
-/** Texto del footer mostrado cuando el bridge está ocioso (estado Ready). */
+/** Footer text shown when bridge is idle (Ready state). */
 export function buildIdleFooterText(url: string): string {
   return `Code everywhere with the Claude app or ${url}`
 }
 
-/** Texto del footer mostrado cuando una sesión está activa (estado Connected). */
+/** Footer text shown when a session is active (Connected state). */
 export function buildActiveFooterText(url: string): string {
   return `Continue coding in the Claude app or ${url}`
 }
 
-/** Texto del footer mostrado cuando el bridge falló. */
+/** Footer text shown when the bridge has failed. */
 export const FAILED_FOOTER_TEXT = 'Something went wrong, please try again'
 
 /**
- * Envuelve texto en un hyperlink de terminal OSC 8. Ancho visual cero
- * para propósitos de layout. strip-ansi (usado por stringWidth) elimina
- * correctamente estas secuencias, así que countVisualLines en
- * bridgeUI.ts se mantiene exacto.
+ * Wrap text in an OSC 8 terminal hyperlink. Zero visual width for layout purposes.
+ * strip-ansi (used by stringWidth) correctly strips these sequences, so
+ * countVisualLines in bridgeUI.ts remains accurate.
  */
 export function wrapWithOsc8Link(text: string, url: string): string {
   return `\x1b]8;;${url}\x07${text}\x1b]8;;\x07`

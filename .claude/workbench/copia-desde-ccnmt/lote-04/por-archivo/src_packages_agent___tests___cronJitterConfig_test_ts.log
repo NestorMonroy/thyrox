@@ -1,0 +1,109 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/cronJitterConfig.test.ts:
+55 |       oneShotMinuteMod: 15,
+56 |       recurringMaxAgeMs: 24 * 60 * 60 * 1000,
+57 |       cacheLeadMs: 30_000,
+58 |     }
+59 |     featureValue = valid
+60 |     expect(getCronJitterConfig()).toEqual(valid)
+                                       ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "cacheLeadMs": 30000,
+-   "oneShotFloorMs": 5000,
+-   "oneShotMaxMs": 30000,
+-   "oneShotMinuteMod": 15,
+-   "recurringCapMs": 60000,
+-   "recurringFrac": 0.5,
+-   "recurringMaxAgeMs": 86400000,
++   "cacheLeadMs": 60000,
++   "oneShotFloorMs": 0,
++   "oneShotMaxMs": 90000,
++   "oneShotMinuteMod": 30,
++   "recurringCapMs": 900000,
++   "recurringFrac": 0.1,
++   "recurringMaxAgeMs": 604800000,
+  }
+
+- Expected  - 7
++ Received  + 7
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/cronJitterConfig.test.ts:60:35)
+(fail) getCronJitterConfig — valid GB payload > passes through a valid full config [0.44ms]
+71 |       oneShotFloorMs: 0,
+72 |       oneShotMinuteMod: 30,
+73 |       // no recurringMaxAgeMs, no cacheLeadMs
+74 |     }
+75 |     featureValue = partial
+76 |     expect(getCronJitterConfig()).toEqual({
+                                       ^
+error: expect(received).toEqual(expected)
+
+@@ -3,6 +3,6 @@
+    "oneShotFloorMs": 0,
+-   "oneShotMaxMs": 30000,
++   "oneShotMaxMs": 90000,
+    "oneShotMinuteMod": 30,
+-   "recurringCapMs": 60000,
+-   "recurringFrac": 0.5,
++   "recurringCapMs": 900000,
++   "recurringFrac": 0.1,
+    "recurringMaxAgeMs": 604800000,
+
+- Expected  - 3
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/cronJitterConfig.test.ts:76:35)
+(fail) getCronJitterConfig — valid GB payload > partial config WITHOUT recurringMaxAgeMs gets default for that field [0.17ms]
+193 |       oneShotMinuteMod: 30,
+194 |       recurringMaxAgeMs: 60_000,
+195 |       cacheLeadMs: 30_000,
+196 |     }
+197 |     featureValue = valid
+198 |     expect(getCronJitterConfig()).toEqual(valid)
+                                        ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "cacheLeadMs": 30000,
+-   "oneShotFloorMs": 5000,
+-   "oneShotMaxMs": 5000,
++   "cacheLeadMs": 60000,
++   "oneShotFloorMs": 0,
++   "oneShotMaxMs": 90000,
+    "oneShotMinuteMod": 30,
+-   "recurringCapMs": 60000,
+-   "recurringFrac": 0.5,
+-   "recurringMaxAgeMs": 60000,
++   "recurringCapMs": 900000,
++   "recurringFrac": 0.1,
++   "recurringMaxAgeMs": 604800000,
+  }
+
+- Expected  - 6
++ Received  + 6
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/cronJitterConfig.test.ts:198:35)
+(fail) getCronJitterConfig — invalid GB payload falls back to defaults > oneShotFloorMs == oneShotMaxMs is allowed (boundary equal) [0.16ms]
+224 |       oneShotMinuteMod: 30,
+225 |       recurringMaxAgeMs: 60_000,
+226 |       newFieldFromFuture: 'ignored',
+227 |     }
+228 |     const result = getCronJitterConfig()
+229 |     expect(result.recurringFrac).toBe(0.5)
+                                       ^
+error: expect(received).toBe(expected)
+
+Expected: 0.5
+Received: 0.1
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/cronJitterConfig.test.ts:229:34)
+(fail) getCronJitterConfig — invalid GB payload falls back to defaults > extra unknown fields are ignored (zod default) [0.14ms]
+
+ 13 pass
+ 4 fail
+ 17 expect() calls
+Ran 17 tests across 1 file. [169.00ms]
+exit=1

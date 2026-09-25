@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/openaiClientSourcePinning.test.ts:
+57 |     const lecturas = fuente.match(/if \(!options\?\.fetchOverride\) \{/g) ?? []
+58 |     expect(lecturas).toHaveLength(2)
+59 |   })
+60 | 
+61 |   test('5. la capa de red se pide declarando que NO es el API de Anthropic', () => {
+62 |     expect(fuente).toMatch(/getProxyFetchOptions\(\{ forAnthropicAPI: false \}\)/)
+                        ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /getProxyFetchOptions\(\{ forAnthropicAPI: false \}\)/
+Received: "/**\n * OpenAI client — OpenAI SDK wrapper. `as any` casts on\n * fetchOptions/fetch are by-design type-system bypass: OpenAI SDK's\n * options accept Node and Web fetch interchangeably at runtime but\n * the published types lock to one variant. SDK-version compatibility.\n */\nimport { getProviderNetworkLayer } from '../network.js'\nimport OpenAI from 'openai'\nimport { readEnv } from '@thyrox/config/env'\nimport { resolveConnectionForModel } from '../providers.js'\n\n/**\n * Connection registry is the source of truth for endpoint+key. When a\n * connection record matches the requested model, its endpoint/key win\n * over env vars — that's how multiple OpenAI Compatible providers can\n * coexist (Ollama + DeepSeek + vLLM each have their own connection).\n *\n * Env-var fallback (legacy single-provider mode):\n *   OPENAI_API_KEY      Required. API key.\n *   OPENAI_BASE_URL     Recommended. Base URL.\n *   OPENAI_ORG_ID       Optional.\n *   OPENAI_PROJECT_ID   Optional.\n */\n\n// Cache by connection id (or env-fallback key) so multiple connections\n// don't clobber a single shared client. Switching models triggers a new\n// lookup; the old client is GC'd if nothing references it.\nconst clientCache = new Map<string, OpenAI>()\n\nexport function getOpenAIClient(options?: {\n  maxRetries?: number\n  fetchOverride?: any\n  source?: string\n  /** Model id — used to resolve connection-specific endpoint/key. */\n  model?: string\n}): OpenAI {\n  const networkLayer = getProviderNetworkLayer()\n\n  const conn = options?.model\n    ? resolveConnectionForModel(options.model)\n    : undefined\n  const usingConn = conn?.protocol === 'openai' && conn.auth.type === 'api_key'\n\n  const apiKey = usingConn\n    ? (conn.auth.type === 'api_key' ? conn.auth.key : '')\n    : readEnv('OPENAI_API_KEY') || ''\n  const baseURL = usingConn ? conn.endpoint : readEnv('OPENAI_BASE_URL')\n\n  // Cache key: 'conn:<id>' for per-connection clients, 'env' for fallback.\n  // fetchOverride disables caching (test seam).\n  const cacheKey = usingConn && conn ? `conn:${conn.id}` : 'env'\n  if (!options?.fetchOverride) {\n    const cached = clientCache.get(cacheKey)\n    if (cached) return cached\n  }\n\n  const client = new OpenAI({\n    apiKey,\n    ...(baseURL && { baseURL }),\n    maxRetries: options?.maxRetries ?? 0,\n    timeout: parseInt(readEnv('API_TIMEOUT_MS') || String(600 * 1000), 10),\n    dangerouslyAllowBrowser: true,\n    ...(readEnv('OPENAI_ORG_ID') && { organization: readEnv('OPENAI_ORG_ID') }),\n    ...(readEnv('OPENAI_PROJECT_ID') && { project: readEnv('OPENAI_PROJECT_ID') }),\n    fetchOptions: networkLayer.getProxyFetchOptions({\n      forAnthropicAPI: false,\n    }) as any,\n    ...(options?.fetchOverride && { fetch: options.fetchOverride as any }),\n  })\n\n  if (!options?.fetchOverride) {\n    clientCache.set(cacheKey, client)\n  }\n\n  return client\n}\n\n/** Clear the cached clients (useful when connections change at runtime). */\nexport function clearOpenAIClientCache(): void {\n  clientCache.clear()\n}\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/openaiClientSourcePinning.test.ts:62:20)
+(fail) invariantes escritos en openai/client.ts > 5. la capa de red se pide declarando que NO es el API de Anthropic [0.64ms]
+
+ 5 pass
+ 1 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [119.00ms]
+exit=1

@@ -1,30 +1,14 @@
-/**
- * Puerto de `ccnmt: packages/server/src/directConnectManager.ts`.
- *
- * `SDKMessage`/`SDKControlPermissionRequest`/`StdoutMessage` — sólo TIPOS
- * (erasados), de `@thyrox/headless-sdk/{agentSdkTypes,controlTypes}.js`.
- * `RemotePermissionResponse` — tipo, de `./remote/RemoteSessionManager.js`.
- * `RemoteMessageContent` — tipo, ver `internal/pendingCrossPackageDeps.ts`
- * (el paquete `teleport` no existe en este árbol).
- * `logForDebugging`/`jsonParse`/`jsonStringify` — ver ese mismo archivo.
- *
- * `new WebSocket(...)` es el `WebSocket` global — Bun lo trae nativo, sin
- * import (verificado: `bun -e "new WebSocket('ws://x')"` no lanza por
- * import ausente). El comentario de la fuente sobre "headers option but
- * the DOM typings don't" se conserva porque describe una limitación real
- * de los tipos de lib.dom, no de Bun en tiempo de ejecución.
- */
+/* eslint-disable eslint-plugin-n/no-unsupported-features/node-builtins */
+
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type {
   SDKControlPermissionRequest,
   StdoutMessage,
 } from '@thyrox/headless-sdk/controlTypes.js'
 import type { RemotePermissionResponse } from './remote/RemoteSessionManager.js'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilitySlowOperations,
-  type RemoteMessageContent,
-} from './internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import type { RemoteMessageContent } from '@thyrox/teleport/api.js'
 
 export type DirectConnectConfig = {
   serverUrl: string
@@ -49,7 +33,7 @@ function isStdoutMessage(value: unknown): value is StdoutMessage {
     typeof value === 'object' &&
     value !== null &&
     'type' in value &&
-    typeof (value as { type: unknown }).type === 'string'
+    typeof value.type === 'string'
   )
 }
 
@@ -64,14 +48,11 @@ export class DirectConnectSessionManager {
   }
 
   connect(): void {
-    const { logForDebugging } = requireLocalObservabilityDebug()
-    const { jsonParse, jsonStringify } = requireLocalObservabilitySlowOperations()
-
     const headers: Record<string, string> = {}
     if (this.config.authToken) {
       headers['authorization'] = `Bearer ${this.config.authToken}`
     }
-    // El WebSocket de Bun soporta la opción headers, pero los tipos DOM no.
+    // Bun's WebSocket supports headers option but the DOM typings don't
     this.ws = new WebSocket(this.config.wsUrl, {
       headers,
     } as unknown as string[])
@@ -95,37 +76,30 @@ export class DirectConnectSessionManager {
         if (!isStdoutMessage(raw)) {
           continue
         }
-        const parsed = raw as unknown as {
-          type: string
-          request?: { subtype: string; [key: string]: unknown }
-          request_id: string
-          subtype?: string
-          [key: string]: unknown
-        }
+        const parsed = raw
 
-        // Maneja control requests (peticiones de permiso).
+        // Handle control requests (permission requests)
         if (parsed.type === 'control_request') {
-          if (parsed.request?.subtype === 'can_use_tool') {
+          if (parsed.request.subtype === 'can_use_tool') {
             this.callbacks.onPermissionRequest(
-              parsed.request as unknown as SDKControlPermissionRequest,
+              parsed.request,
               parsed.request_id,
             )
           } else {
-            // Manda una respuesta de error para subtipos no reconocidos,
-            // así el servidor no queda colgado esperando una respuesta que
-            // nunca llega.
+            // Send an error response for unrecognized subtypes so the
+            // server doesn't hang waiting for a reply that never comes.
             logForDebugging(
-              `[DirectConnect] Unsupported control request subtype: ${parsed.request?.subtype}`,
+              `[DirectConnect] Unsupported control request subtype: ${parsed.request.subtype}`,
             )
             this.sendErrorResponse(
               parsed.request_id,
-              `Unsupported control request subtype: ${parsed.request?.subtype}`,
+              `Unsupported control request subtype: ${parsed.request.subtype}`,
             )
           }
           continue
         }
 
-        // Reenvía mensajes SDK (assistant, result, system, etc).
+        // Forward SDK messages (assistant, result, system, etc.)
         if (
           parsed.type !== 'control_response' &&
           parsed.type !== 'keep_alive' &&
@@ -134,7 +108,7 @@ export class DirectConnectSessionManager {
           parsed.type !== 'streamlined_tool_use_summary' &&
           !(parsed.type === 'system' && parsed.subtype === 'post_turn_summary')
         ) {
-          this.callbacks.onMessage(parsed as unknown as SDKMessage)
+          this.callbacks.onMessage(parsed)
         }
       }
     })
@@ -149,13 +123,11 @@ export class DirectConnectSessionManager {
   }
 
   sendMessage(content: RemoteMessageContent): boolean {
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return false
     }
 
-    // Debe coincidir con el formato SDKUserMessage que espera
-    // `--input-format stream-json`.
+    // Must match SDKUserMessage format expected by `--input-format stream-json`
     const message = jsonStringify({
       type: 'user',
       message: {
@@ -173,12 +145,11 @@ export class DirectConnectSessionManager {
     requestId: string,
     result: RemotePermissionResponse,
   ): void {
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return
     }
 
-    // Debe coincidir con el formato SDKControlResponse que espera StructuredIO.
+    // Must match SDKControlResponse format expected by StructuredIO
     const response = jsonStringify({
       type: 'control_response',
       response: {
@@ -196,15 +167,14 @@ export class DirectConnectSessionManager {
   }
 
   /**
-   * Manda una señal de interrupción para cancelar la petición actual.
+   * Send an interrupt signal to cancel the current request
    */
   sendInterrupt(): void {
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return
     }
 
-    // Debe coincidir con el formato SDKControlRequest que espera StructuredIO.
+    // Must match SDKControlRequest format expected by StructuredIO
     const request = jsonStringify({
       type: 'control_request',
       request_id: crypto.randomUUID(),
@@ -216,7 +186,6 @@ export class DirectConnectSessionManager {
   }
 
   private sendErrorResponse(requestId: string, error: string): void {
-    const { jsonStringify } = requireLocalObservabilitySlowOperations()
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       return
     }

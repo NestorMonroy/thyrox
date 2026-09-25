@@ -1,0 +1,23 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/provider/__tests__/openaiIndexImplSourcePinning.test.ts:
+62 |     const respaldos = fuente.match(
+63 |       /hostBindings\.session\.logForDebugging \?\? hostBindings\.anthropic\.logForDebugging/g,
+64 |     ) ?? []
+65 |     // Uno en el camino normal y otro en el catch: el catch vuelve a resolver
+66 |     // los bindings porque el fallo puede venir de antes de tenerlos.
+67 |     expect(respaldos).toHaveLength(2)
+                           ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 2
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/openaiIndexImplSourcePinning.test.ts:67:23)
+(fail) invariantes escritos en openai/indexImpl.ts > 3. la bitacora de sesion cae a la de anthropic con ?? [2.95ms]
+
+ 5 pass
+ 1 fail
+ 9 expect() calls
+Ran 6 tests across 1 file. [129.00ms]
+exit=1

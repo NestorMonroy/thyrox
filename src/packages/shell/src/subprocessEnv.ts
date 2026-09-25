@@ -1,21 +1,9 @@
 import { getAllEnv, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 
 /**
- * Construye el entorno de un subproceso, aplicando los cribados de
- * seguridad correspondientes.
- *
- * Puerto completo de `claude-code-nestor-monroy-tools:
- * packages/shell/src/subprocessEnv.ts` — los dos exports de la fuente
- * (`registerUpstreamProxyEnvFn`, `subprocessEnv`) están cubiertos por
- * `subprocessEnv.test.ts`.
- *
- * @module
- */
-
-/**
- * Variables de entorno a retirar de subprocesos cuando se corre dentro de
- * GitHub Actions. Evita que una inyección de prompt exfiltre secretos vía
- * expansión de shell en comandos de la herramienta Bash.
+ * Env vars to strip from subprocess environments when running inside GitHub
+ * Actions. Prevents prompt-injection attacks from exfiltrating secrets via
+ * shell expansion in Bash tool commands.
  */
 const GHA_SUBPROCESS_SCRUB = [
   'ANTHROPIC_API_KEY',
@@ -44,19 +32,23 @@ const GHA_SUBPROCESS_SCRUB = [
 ] as const
 
 /**
- * Variables que SIEMPRE se retiran del entorno del subproceso, sin
- * importar el cribado de GHA. Tres categorías:
+ * Env vars ant 2482.js iy() ALWAYS strips from subprocess env (regardless
+ * of GHA scrub). Three categories:
  *
- * 1. Tokens de autenticación — inyectados sólo para el hijo en segundo
- *    plano; no deben filtrarse a subprocesos de bash ni a scripts de hook.
- * 2. Marcadores de control de proceso — etiquetas de sesión en background
- *    o de reanudación; una invocación anidada quedaría mal etiquetada.
- * 3. Telemetría: todo `OTEL_*` (con match de prefijo más abajo).
+ * 1. Auth tokens — daemon injected these for the bg child only; they
+ *    must not leak into bash subprocesses or hook scripts.
+ * 2. Process-control markers — bg-session/resume tags; nested ccb
+ *    invocations would otherwise be mis-tagged.
+ * 3. Telemetry: all OTEL_* (handled separately by prefix match below).
+ *
+ * Mirrors ant 2482.js iy() lines 110-131. Cheap (~10 deletes per spawn).
  */
 const ALWAYS_SCRUB = [
+  // Auth — daemon-injected on macOS (4706.js xXK)
   'CLAUDE_CODE_OAUTH_TOKEN',
   'CLAUDE_CODE_SUBSCRIPTION_TYPE',
   'CLAUDE_CODE_RATE_LIMIT_TIER',
+  // Process-control markers
   'CLAUDE_CODE_SESSION_KIND',
   'CLAUDE_BG_SOURCE',
   'CLAUDE_BG_ISOLATION',
@@ -67,36 +59,35 @@ const ALWAYS_SCRUB = [
   'CLAUDE_JOB_DIR',
 ] as const
 
-// Se registra tras importar dinámicamente el módulo de proxy ascendente en
-// sesiones que lo requieran.
-let getUpstreamProxyEnv: (() => Record<string, string>) | undefined
+// Registered by init.ts after the upstreamproxy module is dynamically imported
+// in CCR sessions.
+let _getUpstreamProxyEnv: (() => Record<string, string>) | undefined
 
 export function registerUpstreamProxyEnvFn(
   fn: () => Record<string, string>,
 ): void {
-  getUpstreamProxyEnv = fn
+  _getUpstreamProxyEnv = fn
 }
 
 /**
- * Construye el entorno de un subproceso. Pasar un `env` explícito evita
- * leer `process.env` real (uso en tests — así se elimina la necesidad de
- * mockear el módulo de utilidades de entorno, que en bun-test es
- * proceso-wide y contamina otros archivos de test). Los llamadores de
- * producción omiten el parámetro y la función lee directo de
- * `getAllEnv()`/`readEnv()`.
+ * Build subprocess env. Pass an explicit `env` to bypass real process.env
+ * (used in tests — eliminates the need for mock.module on env utils, which
+ * is process-wide in bun-test and pollutes other test files). Production
+ * callers omit the param and the function reads from getAllEnv()/readEnv()
+ * directly.
  */
 export function subprocessEnv(
   env?: Record<string, string | undefined>,
 ): NodeJS.ProcessEnv {
   const baseEnv = env ?? getAllEnv()
-  const scrubFlag = env
-    ? env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB
-    : readEnv('CLAUDE_CODE_SUBPROCESS_ENV_SCRUB')
-  const proxyEnv = getUpstreamProxyEnv?.() ?? {}
+  const scrubFlag = env ? env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB : readEnv('CLAUDE_CODE_SUBPROCESS_ENV_SCRUB')
+  const proxyEnv = _getUpstreamProxyEnv?.() ?? {}
 
-  // ALWAYS_SCRUB aplica sin importar la bandera de GHA. Sólo se construye
-  // un objeto nuevo si de verdad hay algo que retirar; si no, se devuelve
-  // baseEnv sin tocar (camino rápido).
+  // ALWAYS_SCRUB applies regardless of the GHA flag — process-control
+  // markers must not leak into nested subprocesses. Build a fresh
+  // object only if there's actually something to strip; otherwise
+  // return baseEnv unchanged for the hot path. OTEL_* matches by prefix
+  // (ant 2482.js:120,132 — strip every key starting with "OTEL_").
   const needsAlwaysScrub = ALWAYS_SCRUB.some(k => k in baseEnv)
   const needsOtelScrub = Object.keys(baseEnv).some(k => k.startsWith('OTEL_'))
   const needsProxy = Object.keys(proxyEnv).length > 0
@@ -110,7 +101,7 @@ export function subprocessEnv(
   for (const k of ALWAYS_SCRUB) {
     delete merged[k]
   }
-  // Cribado de prefijo OTEL_* — se recorre cada clave.
+  // OTEL_* prefix scrub — ant 2482.js:132 iterates every key.
   for (const k of Object.keys(merged)) {
     if (k.startsWith('OTEL_')) delete merged[k]
   }
