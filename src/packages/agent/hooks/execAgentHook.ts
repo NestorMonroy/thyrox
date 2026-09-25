@@ -8,7 +8,13 @@ import { type Tool, toolMatchesName } from '@thyrox/tool-registry/Tool.js'
 import { SYNTHETIC_OUTPUT_TOOL_NAME } from '@thyrox/tool-registry/tools/SyntheticOutputTool/SyntheticOutputTool.js'
 import { ALL_AGENT_DISALLOWED_TOOLS } from '@thyrox/tool-registry/runtime'
 import { asAgentId } from '../idTypes'
-import type { Message } from '../messageShapes'
+import type {
+  Message,
+  RequestStartEvent,
+  StreamEvent,
+  TombstoneMessage,
+  ToolUseSummaryMessage,
+} from '../messageShapes'
 import { createAbortController } from '../abortController.js'
 import { createAttachmentMessage } from '../attachments.js'
 import { createCombinedAbortSignal } from '../combinedAbortSignal.js'
@@ -29,6 +35,20 @@ import {
   registerStructuredOutputEnforcement,
 } from './hookHelpers.js'
 import { clearSessionHooks } from './sessionHooks.js'
+
+/**
+ * El item que entrega `query()` viaja tipado con los alias sueltos de
+ * `internalTypes.ts` (frontera V7 §8), pero `handleMessageFromStream` exige
+ * la forma canónica de `messageShapes.ts`. Los dos describen el mismo objeto
+ * en tiempo de ejecución; esta unión declara esa forma canónica para el
+ * mensaje que entra a esa llamada.
+ */
+type StreamedAgentItem =
+  | Message
+  | TombstoneMessage
+  | StreamEvent
+  | RequestStartEvent
+  | ToolUseSummaryMessage
 
 /**
  * Execute an agent-based hook using a multi-turn LLM query
@@ -175,7 +195,7 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
       })) {
         // Process stream events to update response length in the spinner
         handleMessageFromStream(
-          message,
+          message as StreamedAgentItem,
           () => {}, // onMessage - we handle messages below
           newContent =>
             toolUseContext.setResponseLength(

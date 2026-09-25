@@ -64,8 +64,6 @@ async function crear(
   } as never)
 }
 
-/** El contexto que `call` recibe; ninguno de los dos útiles lo mira. */
-const CTX = {} as never
 
 describe('TaskGetTool — 7 casos', () => {
   test('1. se nombra igual en el protocolo y ante la persona', () => {
@@ -162,7 +160,7 @@ describe('TaskListTool — 7 casos', () => {
     const pendiente = await crear('la que espera', { blockedBy: [hecha] })
     await updateTask(LISTA, hecha, { status: 'completed' })
 
-    const { data } = await TaskListTool.call({}, CTX)
+    const { data } = await TaskListTool.call()
     const fila = data.tasks.find(t => t.id === pendiente)!
     expect(fila.blockedBy).toEqual([])
   })

@@ -126,7 +126,11 @@ export function renderToolUseProgressMessage(
     <MessageResponse>
       <Box flexDirection="column">
         <SubAgentProvider>
-          {displayedMessages.map(progressMessage => (
+          {displayedMessages
+            .filter((pm): pm is ProgressMessage<AgentToolProgress> =>
+              hasProgressMessage(pm.data),
+            )
+            .map(progressMessage => (
             <Box key={progressMessage.uuid} height={1} overflow="hidden">
               <MessageComponent
                 message={progressMessage.data.message}

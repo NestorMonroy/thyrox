@@ -13,6 +13,7 @@
  * y que su metadata estática tiene la forma esperada.
  */
 import { describe, expect, test } from 'bun:test'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
 import * as barrel from '../index.js'
 import { StubCommandRuntime } from '../testing/index.js'
 import { isSkillSearchEnabled } from '../skills/featureCheck.js'
@@ -186,7 +187,13 @@ describe('metadata estática de comandos', () => {
     if (reviewCommand.type !== 'prompt') {
       throw new Error('reviewCommand debe ser type "prompt"')
     }
-    const blocks = await reviewCommand.getPromptForCommand('42', undefined)
+    // review.ts declara `getPromptForCommand(args)` sin leer `context`
+    // (review.ts:48) — se recorta aquí a la forma que el runtime realmente
+    // cumple, mismo patrón que `bin/command.ts` para `createMovedToPluginCommand`.
+    type ContextlessPromptCommand = {
+      getPromptForCommand(args: string, context: unknown): Promise<ContentBlockParam[]>
+    }
+    const blocks = await (reviewCommand as ContextlessPromptCommand).getPromptForCommand('42', undefined)
     const first = blocks[0]
     if (first?.type !== 'text') {
       throw new Error('el primer bloque de review debe ser de tipo text')

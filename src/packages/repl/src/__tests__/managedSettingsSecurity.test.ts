@@ -171,9 +171,8 @@ describe('extractDangerousSettings — hooks', () => {
   })
 
   test('null hooks → hasHooks=false', () => {
-    const result = extractDangerousSettings({
-      hooks: null,
-    } as SettingsJson)
+    const nullHooksSettings: Record<string, unknown> = { hooks: null }
+    const result = extractDangerousSettings(nullHooksSettings as SettingsJson)
     expect(result.hasHooks).toBe(false)
   })
 
