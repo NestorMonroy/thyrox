@@ -40,6 +40,7 @@ import { findToolByName } from '@thyrox/tool-registry/Tool.js'
 import { handleStopHooks } from './internal/stopHooksCore.ts'
 import { getAgentHostBindings } from './host.ts'
 import { recordTranscript } from './internal/runtimeBridges.ts'
+import type { StreamEvent as AgentStreamEvent } from './types/events.ts'
 import {
   fromCoreMessage,
   fromCoreMessages,
@@ -494,7 +495,10 @@ export function fromAgentEvent(event: { type: string; [key: string]: unknown }) 
       return isCoreMessage(msg) ? fromCoreMessage(msg) : undefined
     }
     case 'stream':
-      return event.event
+      // El evento crudo del provider, con la forma que el contrato del bucle
+      // declara (`types/events.ts`, `StreamEvent.event`). Sin tipo, `unknown`
+      // absorbía la unión entera del retorno y el consumidor lo veía `{}`.
+      return event.event as AgentStreamEvent['event'] | undefined
     case 'request_start':
       return { type: 'stream_request_start' as const }
     case 'done':
