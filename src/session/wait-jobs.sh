@@ -574,6 +574,14 @@ cmd_dispatch() {
         plog=$(sed -n 's/^log=//p' "$pf");  ppid=$(sed -n 's/^pid=//p' "$pf")
         pps=$(sed -n 's/^proc_start=//p' "$pf"); pmk=$(sed -n 's/^marker=//p' "$pf")
         v=$(verdict "$plog" "$ppid" "$pattern" "$pps" "$pmk")
+        # El marcador dice «termino»; afterok exige «termino con 0». Se lee el
+        # codigo de la ultima linea del marcador — el de `bg.sh` y el `EXIT=`
+        # propio acaban en el numero — y uno distinto de 0 cancela.
+        local pcode=""
+        if [[ "$v" == OK ]]; then
+            pcode=$(grep -E "${pmk:-$pattern}" "$plog" 2>/dev/null | tail -1 | grep -oE "[0-9]+$")
+            [[ -n "$pcode" && "$pcode" != 0 ]] && v=BAIL
+        fi
         case "$v" in
             OK)
                 run=$(sed -n 's/^run=//p' "$f")
@@ -606,7 +614,11 @@ cmd_dispatch() {
                 grep -v '^after_ok=\|^run=' "$f" > "$tmp"
                 printf 'cancelled=%s\n' "$after_ok" >> "$tmp"
                 mv -f "$tmp" "$f"
-                echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                if [[ -n "$pcode" && "$pcode" != 0 ]]; then
+                    echo "  CANCELADO $label — su predecesor '$after_ok' asentó con código $pcode, no 0; no se lanza"
+                else
+                    echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                fi
                 cancelados=$((cancelados + 1))
                 ;;
             *)

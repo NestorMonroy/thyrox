@@ -73,6 +73,32 @@ afirmar "dispatch DICE que lo canceló (no calla)" 0 $?
 grep -qi "malo" <<<"$SALIDA"
 afirmar "nombra al predecesor que falló" 0 $?
 
+echo "== 3b. CONTROL — un predecesor que ASIENTA con codigo != 0 no es afterok =="
+# El marcador dice «termino», no «termino bien». `qsub -W depend=afterok`
+# exige salida 0; medido en el paso 155: un pipeline que salio con
+# `__BG_EXIT__=3` (gate 3b bloqueado) quedo asentado OK, y una arista sobre el
+# habria lanzado al siguiente sobre una base sin asentar.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+T3=$(mktemp -u); fixture_adopt "$T3"
+LX=$(fixture_file); printf 'trabajo\nEXIT=3\n' > "$LX"
+bash "$GUION" register asentado_mal "$LX" >/dev/null
+LY=$(fixture_file)
+bash "$GUION" register hijo3 "$LY" --after-ok asentado_mal --run "touch $T3" >/dev/null
+SALIDA=$(bash "$GUION" dispatch 2>&1)
+sleep 1
+afirmar "con EXIT=3 el dependiente NO arranco" "ausente" \
+    "$( [[ -e "$T3" ]] && echo presente || echo ausente )"
+grep -q "CANCELADO.*hijo3.*asentado_mal.*3" <<<"$SALIDA"
+afirmar "y dispatch lo dice, con el predecesor y su codigo" 0 $?
+LZ=$(fixture_file); printf '__BG_EXIT__=0\n' > "$LZ"
+bash "$GUION" register bien_bg "$LZ" --marker '^__BG_EXIT__=[0-9]+' >/dev/null
+T4=$(mktemp -u); fixture_adopt "$T4"
+bash "$GUION" register hijo4 "$(fixture_file)" --after-ok bien_bg --run "touch $T4" >/dev/null
+bash "$GUION" dispatch >/dev/null 2>&1
+sleep 1
+afirmar "con el marcador de bg.sh y codigo 0 SI arranca" "presente" \
+    "$( [[ -e "$T4" ]] && echo presente || echo ausente )"
+
 echo "== 4. un CANCELADO no deja el turno bloqueado para siempre =="
 # Se aisla: en el caso 3 el ledger conserva ademas a `malo`, que es un BAIL sin
 # recoger y SI debe seguir pendiente. Medir los dos juntos no distinguiria
