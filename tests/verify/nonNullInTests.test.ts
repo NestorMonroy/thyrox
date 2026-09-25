@@ -26,6 +26,22 @@ describe('nonNullInTests', () => {
     expect(semanticDiagnosticCodes({ [file]: next! }, file, options)).not.toContain(18048)
   })
 
+  test('asserts an argument whose only mismatch is undefined and closes TS2345', () => {
+    const file = '/p/c.test.ts'
+    const call = 'declare function take(value: number): void\nconst xs: number[] = []\ntake(xs[0])\n'
+    expect(semanticDiagnosticCodes({ [file]: call }, file, options)).toContain(2345)
+    const next = applyNonNullInTests({ [file]: call }, [file]).get(file)
+    expect(next).toContain('take(xs[0]!)')
+    expect(semanticDiagnosticCodes({ [file]: next! }, file, options)).not.toContain(2345)
+  })
+
+  test('leaves an argument mismatch that undefined does not explain', () => {
+    const file = '/p/d.test.ts'
+    const call = 'declare function take(value: number): void\ntake(String(1))\n'
+    expect(semanticDiagnosticCodes({ [file]: call }, file, options)).toContain(2345)
+    expect(applyNonNullInTests({ [file]: call }, [file]).size).toBe(0)
+  })
+
   test('leaves product code alone', () => {
     const file = '/p/src/a.ts'
     expect(semanticDiagnosticCodes({ [file]: indexed }, file, options)).toContain(2532)

@@ -29,7 +29,7 @@ import { createHash } from 'node:crypto'
 import path from 'node:path'
 import ts from 'typescript'
 import { inferredTypeEdits } from './applyInferredTypes'
-import { nonNullInTestEdits, POSSIBLY_UNDEFINED_CODES } from './nonNullInTests'
+import { NON_NULL_CODES, nonNullInTestEdits } from './nonNullInTests'
 import { unusedImportEdits } from './removeUnusedImports'
 import {
   DEFAULT_OPTIONS,
@@ -73,7 +73,7 @@ export const PROPOSERS: readonly Proposer[] = [
   },
   {
     name: 'non-null-in-tests',
-    codes: POSSIBLY_UNDEFINED_CODES,
+    codes: NON_NULL_CODES,
     edits: (service, fileName) => nonNullInTestEdits(service, fileName),
   },
 ]

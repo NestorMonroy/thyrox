@@ -1,6 +1,7 @@
 /**
  * Aserción no nula en las PRUEBAS donde tsc señala un valor posiblemente
- * `undefined` (TS2532, TS18048): se inserta `!` justo al final del tramo que
+ * `undefined` (TS2532, TS18048), o un argumento cuya única incompatibilidad es
+ * `undefined` (TS2345, TS2769): se inserta `!` justo al final del tramo que
  * el diagnóstico marca.
  *
  * POR QUÉ SÓLO EN PRUEBAS. La fuente compila con `strict: false`, el árbol con
@@ -19,6 +20,20 @@ import { applyEdits, createMemoryService, DEFAULT_OPTIONS } from './tsLanguageSe
 
 export const POSSIBLY_UNDEFINED_CODES: ReadonlySet<number> = new Set([2532, 18048])
 
+/** Un argumento `T | undefined` donde se pide `T`: el mismo índice sin
+ * afirmar, pero tsc lo reporta sobre la llamada (TS2345, o TS2769 cuando la
+ * firma tiene sobrecargas, como `expect(x).toBe(y)`). Sólo cuenta si la
+ * cadena del mensaje culpa a `undefined`: cualquier otra incompatibilidad no
+ * se resuelve con `!`. */
+export const UNDEFINED_ARGUMENT_CODES: ReadonlySet<number> = new Set([2345, 2769])
+const UNDEFINED_IS_THE_MISMATCH = /Type 'undefined' is not assignable to type/
+
+export const NON_NULL_CODES: ReadonlySet<number> = new Set([...POSSIBLY_UNDEFINED_CODES, ...UNDEFINED_ARGUMENT_CODES])
+
+function blamesUndefined(diagnostic: ts.Diagnostic): boolean {
+  return UNDEFINED_IS_THE_MISMATCH.test(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'))
+}
+
 const TEST_FILE = /(^|\/)(__tests__|tests)\/|\.test\.tsx?$/
 
 export function isTestFile(fileName: string): boolean {
@@ -30,7 +45,10 @@ export function nonNullInTestEdits(service: ts.LanguageService, fileName: string
   const text = service.getProgram()?.getSourceFile(fileName)?.text ?? ''
   const ends = new Set<number>()
   for (const diagnostic of service.getSemanticDiagnostics(fileName)) {
-    if (!POSSIBLY_UNDEFINED_CODES.has(diagnostic.code) || diagnostic.start === undefined) continue
+    if (diagnostic.start === undefined) continue
+    const flagged = POSSIBLY_UNDEFINED_CODES.has(diagnostic.code)
+      || (UNDEFINED_ARGUMENT_CODES.has(diagnostic.code) && blamesUndefined(diagnostic))
+    if (!flagged) continue
     const end = diagnostic.start + (diagnostic.length ?? 0)
     // Ya afirmado, o el tramo termina en `?` de una cadena opcional: nada.
     if (text[end] === '!' || text[end] === '?') continue
