@@ -31,6 +31,10 @@ HEADER = re.compile(r"^(?P<file>[^(\s][^(]*)\((?P<line>\d+),(?P<col>\d+)\): erro
 QUOTED_TYPE = re.compile(r"\btype '((?:[^']|'(?!\s|\.|$))*)'")
 IDENTIFIER = re.compile(r"\b[A-Z][A-Za-z0-9_]*\b")
 EXPORTED = re.compile(r"^export (?:type|interface) ([A-Z][A-Za-z0-9_]*)", re.M)
+# Una copia LOCAL (sin `export`) de un tipo exportado en otro lado también
+# compite con él: paso 113, dos `type CanUseToolFn = (...args: unknown[])`
+# en `agent` causaban 6 errores que esta cola no veía.
+LOCAL = re.compile(r"^(?:type|interface) ([A-Z][A-Za-z0-9_]*)", re.M)
 SKIPPED = {"node_modules", "dist", "__tests__"}
 
 
@@ -60,8 +64,11 @@ def cited_types(message: str) -> set[str]:
 
 
 def duplicated_types(root: Path) -> dict[str, list[str]]:
-    """Nombres exportados como `type`/`interface` desde más de un archivo."""
+    """Nombres declarados como `type`/`interface` en más de un archivo, si al
+    menos uno lo exporta. Un nombre sólo local en varios archivos (`Props`,
+    `State`) no cuenta: son tipos distintos que comparten nombre."""
     where: dict[str, set[str]] = defaultdict(set)
+    exported: set[str] = set()
     # Poda in situ y sin seguir enlaces: `src/packages` tiene cientos de
     # enlaces de workspace, y un recorrido que los sigue no termina (h-thyrox-29).
     for current, dirs, files in os.walk(root, followlinks=False):
@@ -70,9 +77,15 @@ def duplicated_types(root: Path) -> dict[str, list[str]]:
             if not name.endswith((".ts", ".tsx")) or name.endswith(".d.ts"):
                 continue
             path = Path(current) / name
-            for exported in EXPORTED.findall(path.read_text(encoding="utf-8", errors="ignore")):
-                where[exported].add(str(path.relative_to(root)))
-    return {name: sorted(files) for name, files in sorted(where.items()) if len(files) > 1}
+            text = path.read_text(encoding="utf-8", errors="ignore")
+            relative = str(path.relative_to(root))
+            for declared in EXPORTED.findall(text):
+                exported.add(declared)
+                where[declared].add(relative)
+            for declared in LOCAL.findall(text):
+                where[declared].add(relative)
+    return {name: sorted(files) for name, files in sorted(where.items())
+            if len(files) > 1 and name in exported}
 
 
 def shared_type(diagnostic: Diagnostic, duplicates: dict[str, list[str]]) -> str | None:

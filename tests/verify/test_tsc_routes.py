@@ -8,7 +8,11 @@ Qué haría fallar a este control:
 - tomar el nombre de una PROPIEDAD entre comillas por un tipo citado;
 - ordenar la cola por nombre y no por frecuencia;
 - contar como duplicado un tipo que sólo se repite en `__tests__`,
-  `node_modules` o `dist`.
+  `node_modules` o `dist`;
+- no ver una copia LOCAL (sin `export`) de un tipo exportado en otro archivo:
+  paso 113, dos `type CanUseToolFn = (...args: unknown[]) => …` en `agent`
+  causaban 6 errores y el clasificador no los contaba;
+- contar un nombre local que nadie exporta (`Props`, `State`): llenaría la cola.
 """
 from __future__ import annotations
 
@@ -85,6 +89,23 @@ with tempfile.TemporaryDirectory() as tmp:
     found = tr.duplicated_types(root)
     assert_equal("un nombre exportado desde dos archivos es duplicado",
                  {"Shared": ["pkg-a/src/types.ts", "pkg-b/src/types.ts"]}, found)
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for rel, text in {
+        "repl/hooks.ts": "export type CanUse = (a: string) => boolean\n",
+        "agent/query.ts": "type CanUse = (...args: unknown[]) => boolean\nfunction f() {}\n",
+        "agent/engine.ts": "type CanUse = (...args: unknown[]) => boolean\n",
+        "ui/a.tsx": "type Props = { a: 1 }\n",
+        "ui/b.tsx": "type Props = { b: 2 }\n",
+    }.items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    found = tr.duplicated_types(root)
+    assert_equal("una copia local de un tipo exportado cuenta como duplicado",
+                 ["agent/engine.ts", "agent/query.ts", "repl/hooks.ts"], found.get("CanUse"))
+    assert_equal("un nombre local que nadie exporta no cuenta", None, found.get("Props"))
 
 print(f"test_tsc_routes: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
