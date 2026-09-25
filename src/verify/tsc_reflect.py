@@ -182,6 +182,32 @@ def audit(run: Path) -> dict:
             "uncovered_steps": uncovered_steps}
 
 
+def sweep_gate(run: Path, step: Path) -> list[str]:
+    """Gate 4 (plan v2.2.0), al cerrar un paso con avance. Con al menos un
+    patrón abierto en la memoria, el paso tiene que haber REVISADO patrones
+    (`gate4.json` los nombra: omitir el paso 4 es 0 revisados) y su log final
+    no puede dejar viva ninguna instancia de un patrón que no esté aplicada,
+    excluida con razón o cerrada. Devuelve los motivos de bloqueo; vacío si pasa.
+
+    Antes el gate 4 vivía sólo en `agent_proposal`, y un camino de propuestas
+    que no pasara por ahí (un pool de `claude -p` por archivo) lo saltaba."""
+    rows = [row for row in _read_jsonl(run / PATTERNS) if row.get("status") != "closed"]
+    if not rows:
+        return []
+    reasons = []
+    record = step / "gate4.json"
+    reviewed = json.loads(record.read_text()).get("reviewed", []) if record.exists() else []
+    if not reviewed:
+        reasons.append(f"el paso no revisó ningún patrón ({record.name} ausente o vacío) "
+                       f"con {len(rows)} abierto(s) en la memoria: el paso 4 se omitió")
+    final = step / "final.log"
+    lines = final.read_text().splitlines() if final.exists() else []
+    for name, found in blocking_pending(run, lines, []).items():
+        reasons.append(f"{name}: {sum(found.values())} instancia(s) viva(s) en {len(found)} archivo(s) "
+                       "sin aplicar, excluir ni cerrar")
+    return reasons
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -198,6 +224,9 @@ def main(argv: list[str] | None = None) -> int:
     gate_p = sub.add_parser("gate-memory", help="gate 3b: el paso deja memoria que lo cubre")
     gate_p.add_argument("--run", type=Path, required=True)
     gate_p.add_argument("--step", type=Path, required=True)
+    sweep_p = sub.add_parser("gate-sweep", help="gate 4: el paso aplicó la memoria a todo el código")
+    sweep_p.add_argument("--run", type=Path, required=True)
+    sweep_p.add_argument("--step", type=Path, required=True)
     audit_p = sub.add_parser("audit", help="las dos preguntas de verificación del plan")
     audit_p.add_argument("--run", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -218,6 +247,12 @@ def main(argv: list[str] | None = None) -> int:
                       file=sys.stderr)
                 return 4
             print(f"gate 3b: {args.step.name} cubierto por la memoria")
+        elif args.command == "gate-sweep":
+            reasons = sweep_gate(args.run, args.step)
+            if reasons:
+                print(f"GATE 4 BLOQUEADO — {args.step.name}: " + "; ".join(reasons), file=sys.stderr)
+                return 5
+            print(f"gate 4: {args.step.name} aplicó o declaró la salida de cada patrón de la memoria")
         else:
             a = audit(args.run)
             print(f"aceptados con avance: {a['accepted']} · cubiertos por memoria: {a['covered']} · "

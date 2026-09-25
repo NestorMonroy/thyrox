@@ -170,6 +170,25 @@ def main() -> int:
             {"status": "no-progress", "accepted": [], "files_kept": []}))
         assert_equal("un paso sin avance no exige memoria", [], reflect.uncovered_by_memory(mem, step))
 
+        # Gate 4: con patrones abiertos, el paso revisa patrones (gate4.json)
+        # y no deja instancias vivas sin aplicar, excluir ni cerrar.
+        print("sweep_gate")
+        sweep = run / "sweep"
+        sweep.mkdir()
+        sstep = sweep / "step-010"
+        sstep.mkdir()
+        assert_equal("sin patrones abiertos, el gate 4 no exige nada", [], reflect.sweep_gate(sweep, sstep))
+        (sweep / "patterns.jsonl").write_text(json.dumps(
+            {"name": "unk", "signal": "TS18046", "fix": "f", "include": "", "exclude": [], "applied": []}) + "\n")
+        (sstep / "final.log").write_text("src/z.ts(1,1): error TS2322: otra cosa.\n")
+        assert_equal("con patrones y sin gate4.json, bloquea: el paso 4 se omitió", 1,
+                     len(reflect.sweep_gate(sweep, sstep)))
+        (sstep / "gate4.json").write_text(json.dumps({"reviewed": [{"pattern": "unk", "files": []}]}))
+        assert_equal("revisado y sin instancias vivas: pasa", [], reflect.sweep_gate(sweep, sstep))
+        (sstep / "final.log").write_text("src/z.ts(1,1): error TS18046: 'w' is of type 'unknown'.\n")
+        assert_equal("revisado pero con una instancia viva sin salida: bloquea", 1,
+                     len(reflect.sweep_gate(sweep, sstep)))
+
         # Las dos preguntas de verificación del plan, con su denominador.
         print("audit")
         (step / "report.json").write_text(json.dumps(
