@@ -1,2 +1,2 @@
-tsconfig.json 412
-tsconfig.tests.json 412
+tsconfig.json 402
+tsconfig.tests.json 402
