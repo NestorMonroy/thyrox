@@ -5,6 +5,10 @@ export interface DisplayGeometry {
   scaleFactor: number
   originX: number
   originY: number
+  /** Nombre legible de la pantalla; sin él se muestra `display <id>`. */
+  label?: string
+  /** Si es la pantalla principal del sistema. */
+  isPrimary?: boolean
 }
 
 export interface ScreenshotResult {
@@ -42,6 +46,11 @@ export interface ResolvePrepareCaptureResult extends ScreenshotResult {
   hidden: string[]
   activated?: string
   displayId: number
+  /**
+   * El motivo por el que la captura falló. Presente, la imagen va vacía a
+   * propósito y `toolCalls` responde `capture_failed` con este mensaje.
+   */
+  captureError?: string
 }
 
 export interface ComputerExecutorCapabilities {
