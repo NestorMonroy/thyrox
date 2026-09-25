@@ -74,6 +74,8 @@ CHECKS: list[Check] = [
     # ── Herramienta ─────────────────────────────────────────────────────
     Check('bench-untracked', 'Herramienta', 'gate', 'check_bench_untracked.py',
           'un commit que toca un banco no deja fuera sus archivos nuevos'),
+    Check('cache-layout', 'Herramienta', 'gate', 'check_cache_layout.py',
+          'cada unidad de .claude/cache/ en su carpeta con un README que dice qué guarda'),
     Check('unbounded-pipe', 'Herramienta', 'shell',
           'check_unbounded_pipe.py',
           'un escritor sin fin canalizado a un consumidor que cortocircuita'),

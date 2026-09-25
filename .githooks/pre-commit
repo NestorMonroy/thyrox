@@ -137,6 +137,13 @@ bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 # no viajó. Sin rutas lee las staged del índice del propio commit.
 python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 
+# Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
+# guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
+# pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
+# que el caché del propio proveedor no se validaba nunca. Sólo las unidades
+# que este commit prepara (`--staged`).
+python3 "$GATES/check_cache_layout.py" --root "$ROOT" --staged --strict || CODE=1
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.

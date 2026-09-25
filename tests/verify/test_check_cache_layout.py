@@ -46,8 +46,10 @@ def assert_equal(name: str, expected, obtained) -> None:
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=cwd, check=True,
-                   capture_output=True)
+    # Sin la firma del entorno: con `commit.gpgsign=true` global y sin llave, el
+    # commit del fixture sale 128 y la suite muere antes de medir el modo --staged.
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args],
+                   cwd=cwd, check=True, capture_output=True)
 
 
 def run(argv: list[str]) -> tuple[int, str]:
