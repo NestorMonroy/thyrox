@@ -99,8 +99,8 @@ import {
 } from './internal/sdkMappers.js'
 import { readEnv } from '@thyrox/config/env'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 
-type MCPServerConnection = { name?: string; [key: string]: unknown }
 type AppState = {
   toolPermissionContext: {
     mode: string
