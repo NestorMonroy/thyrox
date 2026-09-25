@@ -48,7 +48,6 @@
  *   al final (2026-09-24, `Ysr`/`wS` de 2.1.275), acotados a la capa de
  *   archivo: las otras capas de política no existen aquí.
  * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
- *   `getSettingsWithSources`,
  *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
@@ -538,6 +537,24 @@ function declaredInOptInSource(key: string): boolean {
 }
 
 /** ¿Aceptó el usuario el aviso del modo que salta los permisos? (`sU`). */
+/**
+ * `Djn` de 2.1.281: invalida las cachés y devuelve la configuración efectiva
+ * junto con cada fuente que aporta alguna clave, de menor a mayor prioridad.
+ * Sin `getEnabledSettingSources` (no portada) se recorren todas las fuentes.
+ */
+export function getSettingsWithSources(
+  read: (source: SettingSource) => SettingsJson | null = getSettingsForSource,
+  effective: () => SettingsJson = getInitialSettings,
+): { effective: SettingsJson; sources: Array<{ source: SettingSource; settings: SettingsJson }> } {
+  resetSettingsCache()
+  const sources: Array<{ source: SettingSource; settings: SettingsJson }> = []
+  for (const source of SETTING_SOURCES) {
+    const settings = read(source)
+    if (settings && Object.keys(settings).length > 0) sources.push({ source, settings })
+  }
+  return { effective: effective(), sources }
+}
+
 export function hasSkipDangerousModePermissionPrompt(): boolean {
   return declaredInOptInSource('skipDangerousModePermissionPrompt')
 }
