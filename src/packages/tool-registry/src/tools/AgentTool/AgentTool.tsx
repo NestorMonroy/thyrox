@@ -1541,7 +1541,16 @@ export const AgentTool = buildTool({
                     onProgress({
                       toolUseID: `agent_${assistantMessage.message.id}`,
                       data: {
-                        message: m,
+                        // `m` normalizado sólo puede ser 'assistant' o 'user' —
+                        // el filtro de más arriba (`message.type !== 'assistant'
+                        // && message.type !== 'user'`) ya descartó cualquier otro
+                        // tipo antes de normalizar. Para un mensaje de asistente,
+                        // `usage` siempre viene poblado por la API real (mismo
+                        // supuesto que UI.tsx:572/816 ya hacen sin guardia).
+                        // `NormalizedMessage` no conserva esa garantía en su tipo
+                        // porque se calcula sobre la unión completa de
+                        // `Message['message']`, no por rama — de ahí el estrechado.
+                        message: m as AgentToolProgress['message'],
                         type: 'agent_progress',
                         // prompt only needed on first progress message (UI.tsx:624
                         // reads progressMessages[0]). Omit here to avoid duplication.

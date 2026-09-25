@@ -282,6 +282,13 @@ export function resolvePluginLspEnvironment(
 }
 
 /**
+ * Guarda de tipo: comprueba que el valor sea un objeto registro.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Add plugin scope to LSP server configs
  * This adds a prefix to server names to avoid conflicts between plugins
  */
@@ -292,6 +299,9 @@ export function addPluginScopeToLspServers(
   const scopedServers: Record<string, ScopedLspServerConfig> = {}
 
   for (const [name, config] of Object.entries(servers)) {
+    if (!isRecord(config)) {
+      continue
+    }
     // Add plugin prefix to server name to avoid conflicts
     const scopedName = `plugin:${pluginName}:${name}`
     scopedServers[scopedName] = {

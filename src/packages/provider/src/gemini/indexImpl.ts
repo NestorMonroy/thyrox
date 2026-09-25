@@ -60,7 +60,7 @@ export async function* queryModelGemini(
         toolToAPISchema(tool, {
           getToolPermissionContext: options.getToolPermissionContext,
           tools,
-          agents: options.agents,
+          agents: options.agents || [],
           allowedAgentTypes: options.allowedAgentTypes,
           model: options.model,
         }),

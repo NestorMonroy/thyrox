@@ -15,7 +15,11 @@ import type { LocalCommandCall } from '../../types.js'
 import { requireAgentAwaySummary } from '../../internal/pendingCrossPackageDeps.js'
 
 export const call: LocalCommandCall = async (_args, context) => {
-  if (context.messages.length === 0) {
+  // `LocalJSXCommandContext` (../../types.js) sólo declara `messages` vía su
+  // índice `[key: string]: unknown` — se narrowea aquí, sin ensanchar el tipo
+  // compartido, igual que exige la divergencia declarada arriba.
+  const messages = Array.isArray(context.messages) ? context.messages : []
+  if (messages.length === 0) {
     return {
       type: 'text',
       value: 'Nothing to recap yet — send a message first.',
@@ -24,7 +28,7 @@ export const call: LocalCommandCall = async (_args, context) => {
   try {
     const { generateAwaySummary } = requireAgentAwaySummary()
     const summary = await generateAwaySummary(
-      context.messages,
+      messages,
       context.abortController.signal,
     )
     if (context.abortController.signal.aborted) {
@@ -38,7 +42,8 @@ export const call: LocalCommandCall = async (_args, context) => {
     }
     return { type: 'text', value: summary }
   } catch (err) {
-    if (context.abortController.signal.aborted) {
+    const abortController = context.abortController as AbortController
+    if (abortController.signal.aborted) {
       return { type: 'text', value: 'Recap cancelled.' }
     }
     throw err

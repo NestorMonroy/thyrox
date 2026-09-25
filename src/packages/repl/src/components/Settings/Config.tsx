@@ -1590,7 +1590,7 @@ export function Config({
         const backToInitial = newValue === initialThinkingEnabled.current
         if (backToInitial) {
           setShowThinkingWarning(false)
-        } else if (context.messages.some((m: { type: string }) => m.type === 'assistant')) {
+        } else if (Array.isArray(context.messages) && context.messages.some((m: { type: string }) => m.type === 'assistant')) {
           setShowThinkingWarning(true)
         }
       }

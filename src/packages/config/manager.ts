@@ -72,7 +72,7 @@ export const SettingsManager = {
    */
   getForSource(source: SettingSource): SettingsJson | null {
     const result = getSettingsForSource(source)
-    return result.settings || null
+    return result?.settings ?? null
   },
 
   /**
@@ -110,7 +110,7 @@ export const SettingsManager = {
    * Get the file path for a given settings source.
    */
   getFilePath(source: SettingSource): string | null {
-    return getSettingsFilePathForSource(source)
+    return getSettingsFilePathForSource(source) ?? null
   },
 
   // ── GlobalConfig (single-file user preferences) ─────────────────

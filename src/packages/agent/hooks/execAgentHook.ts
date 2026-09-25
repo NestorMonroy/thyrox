@@ -247,7 +247,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
               agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
           })
           return {
-            hook,
             outcome: 'cancelled',
           }
         }
@@ -263,7 +262,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
             agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
         })
         return {
-          hook,
           outcome: 'cancelled',
         }
       }
@@ -274,7 +272,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
           `Hooks: Agent hook condition was not met: ${structuredOutputResult.reason}`,
         )
         return {
-          hook,
           outcome: 'blocking',
           blockingError: {
             blockingError: `Agent hook condition was not met: ${structuredOutputResult.reason}`,
@@ -292,7 +289,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
           agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
       return {
-        hook,
         outcome: 'success',
         message: createAttachmentMessage({
           type: 'hook_success',
@@ -308,7 +304,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
 
       if (combinedSignal.aborted) {
         return {
-          hook,
           outcome: 'cancelled',
         }
       }
@@ -324,7 +319,6 @@ When done, return your result using the ${SYNTHETIC_OUTPUT_TOOL_NAME} tool with:
         agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     })
     return {
-      hook,
       outcome: 'non_blocking_error',
       message: createAttachmentMessage({
         type: 'hook_non_blocking_error',

@@ -447,8 +447,12 @@ export function installPluginBindings(): void {
   })
   setGracefulShutdownFn(async (code?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js')
-    return gracefulShutdown(code)
+    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js') as typeof import('../bootstrap/gracefulShutdown.js')
+    // DIVERGENCIA DECLARADA: el binding exige Promise<never> (nunca
+    // resuelve), pero la implementación real puede retornar cuando el
+    // apagado ya está en curso — mismo patrón ya documentado para este
+    // binding en permission/src/permissionSetup.ts.
+    return gracefulShutdown(code) as Promise<never>
   })
 
   // --- sesión / cwd
@@ -473,7 +477,7 @@ export function installPluginBindings(): void {
     existsSync: p => getFsImplementation().existsSync(p),
     mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
     writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
-    readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
     readdirSync: p =>
       nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
         name: string
@@ -528,7 +532,9 @@ export function installPluginBindings(): void {
 
   // --- telemetría
   setBuildPluginTelemetryFieldsFn((...args) =>
-    buildPluginTelemetryFields(...args),
+    buildPluginTelemetryFields(
+      ...(args as [string, string | undefined, (Set<string> | null)?]),
+    ),
   )
   setClassifyPluginCommandErrorFn(error =>
     classifyPluginCommandError(error) as any,

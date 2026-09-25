@@ -34,7 +34,10 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { getDumpPromptsPath } from '@thyrox/provider/dumpPrompts.js'
-import { buildPostCompactMessages } from '@thyrox/agent/compaction/compact.js'
+import {
+  buildPostCompactMessages,
+  type CompactionResult,
+} from '@thyrox/agent/compaction/compact.js'
 import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
 import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
 import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
@@ -91,6 +94,7 @@ import { logOTelEvent, redactIfDisabled } from '@thyrox/local-observability/tele
 import { emitSlashUserPrompt } from './slashUserPromptTelemetry.js'
 import { buildPluginCommandTelemetryFields } from '@thyrox/tool-registry/telemetry/pluginTelemetry.js'
 import { getAssistantMessageContentLength } from '@thyrox/agent/tokens.js'
+import { parseEffortValue } from '@thyrox/agent/effort.js'
 import { createAgentId } from '@thyrox/agent/uuid.js'
 import { getWorkload } from '@thyrox/provider/workloadContext.js'
 import type {
@@ -142,10 +146,14 @@ async function executeForkedSlashCommand(
   const { skillContent, modifiedGetAppState, baseAgent, promptMessages } =
     await prepareForkedCommandContext(command, args, context)
 
-  // Merge skill's effort into the agent definition so runAgent applies it
+  // Merge skill's effort into the agent definition so runAgent applies it.
+  // command.effort llega tipado `unknown`; parseEffortValue lo normaliza al
+  // mismo EffortValue que ya exige AgentDefinition, sin cambiar el valor
+  // para un efecto ya válido (parseEffortValue lo devuelve intacto).
+  const parsedEffort = parseEffortValue(command.effort)
   const agentDefinition =
-    command.effort !== undefined
-      ? { ...baseAgent, effort: command.effort }
+    parsedEffort !== undefined
+      ? { ...baseAgent, effort: parsedEffort }
       : baseAgent
 
   logForDebugging(
@@ -538,10 +546,15 @@ export async function processSlashCommand(
         eventData.plugin_version =
           pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       }
-      Object.assign(
-        eventData,
-        buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
-      )
+      if (pluginManifest.name) {
+        Object.assign(
+          eventData,
+          buildPluginCommandTelemetryFields({
+            pluginManifest: { ...pluginManifest, name: pluginManifest.name },
+            repository,
+          }),
+        )
+      }
     }
 
     logEvent('tengu_input_command', {
@@ -918,10 +931,14 @@ async function getMessagesForSlashCommand(
                   ]
                 : []),
             ]
+            // compactionResult llega tipado como unknown desde LocalCommandResult,
+            // pero mod.call() para 'compact' siempre produce un CompactionResult
+            // (compact.ts / sessionMemoryCompact.ts garantizan esa forma).
+            const compactionResult = result.compactionResult as CompactionResult
             const compactionResultWithSlashMessages = {
-              ...result.compactionResult,
+              ...compactionResult,
               messagesToKeep: [
-                ...(result.compactionResult.messagesToKeep ?? []),
+                ...(compactionResult.messagesToKeep ?? []),
                 ...slashCommandMessages,
               ],
             }

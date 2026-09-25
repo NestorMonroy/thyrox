@@ -344,9 +344,15 @@ function removeExtraMarketplace(
     const updates: Record<string, unknown> = {}
 
     // Remove from extraKnownMarketplaces
-    if (settings.extraKnownMarketplaces?.[name]) {
+    // `extraKnownMarketplaces` no está declarado en SettingsSchema (queda
+    // fuera del shape tipado, sólo pasa por el passthrough); se afirma su
+    // forma real de mapa por nombre de mercado.
+    const extraKnownMarketplaces = settings.extraKnownMarketplaces as
+      | Record<string, unknown>
+      | undefined
+    if (extraKnownMarketplaces?.[name]) {
       updates.extraKnownMarketplaces = {
-        ...settings.extraKnownMarketplaces,
+        ...extraKnownMarketplaces,
         [name]: undefined,
       }
     }

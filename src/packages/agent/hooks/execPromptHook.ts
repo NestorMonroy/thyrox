@@ -356,7 +356,6 @@ Always include a "reason" field.`
           `Hooks: prompt-hook evaluator API error: ${errText}`,
         )
         return {
-          hook,
           outcome: 'non_blocking_error',
           message: createAttachmentMessage({
             type: 'hook_non_blocking_error',
@@ -422,7 +421,6 @@ Always include a "reason" field.`
         // The model gets a non_blocking_error attachment but the turn ends
         // normally (ant 4793.js does the same — it's the only safe choice).
         return {
-          hook,
           outcome: 'non_blocking_error',
           message: createAttachmentMessage({
             type: 'hook_non_blocking_error',
@@ -516,7 +514,7 @@ Always include a "reason" field.`
           hookEvent,
           content: '',
         }),
-      }
+      } as HookResult
     } catch (error) {
       cleanupSignal()
 
@@ -524,7 +522,7 @@ Always include a "reason" field.`
         return {
           hook,
           outcome: 'cancelled',
-        }
+        } as HookResult
       }
       throw error
     }
@@ -543,6 +541,6 @@ Always include a "reason" field.`
         stdout: '',
         exitCode: 1,
       }),
-    }
+    } as HookResult
   }
 }

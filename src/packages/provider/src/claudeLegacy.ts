@@ -61,7 +61,7 @@ type ClaudeLegacyRuntime = {
   }
   configureTaskBudgetParams: (
     taskBudget: Options['taskBudget'],
-    outputConfig: BetaMessageStreamParams['output'] & {
+    outputConfig: BetaMessageStreamParams['output_config'] & {
       task_budget?: { type: 'tokens'; total: number; remaining?: number }
     },
     betas: string[],
@@ -136,7 +136,7 @@ export function getCacheControl(args?: {
 
 export function configureTaskBudgetParams(
   taskBudget: Options['taskBudget'],
-  outputConfig: BetaMessageStreamParams['output'] & {
+  outputConfig: BetaMessageStreamParams['output_config'] & {
     task_budget?: { type: 'tokens'; total: number; remaining?: number }
   },
   betas: string[],
@@ -183,7 +183,7 @@ export async function* queryModelWithStreaming(args: {
 }
 
 export async function* executeNonStreamingRequest(...args: unknown[]): AsyncGenerator<unknown, unknown> {
-  yield* getLegacyRuntime().executeNonStreamingRequest(...args)
+  return yield* getLegacyRuntime().executeNonStreamingRequest(...args)
 }
 
 export function stripExcessMediaItems(...args: unknown[]): unknown {

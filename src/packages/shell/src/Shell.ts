@@ -44,7 +44,7 @@ setCreateTaskOutputFn(
   ): TaskOutputPort =>
     new TaskOutput(
       taskId,
-      onProgress as ExecOptions['onProgress'] | null,
+      onProgress,
       stdoutToFile,
     ),
 )
@@ -59,9 +59,9 @@ function createShellExecContext(): ShellExecContext {
     logEvent,
     logForDebugging,
     getSessionEnvVars,
-    getSessionEnvironmentScript,
-    wrapWithSandbox: (cmd, shell, tmpDir, signal) =>
-      SandboxManager.wrapWithSandbox(cmd, shell, tmpDir, signal),
+    getSessionEnvironmentScript: async () => (await getSessionEnvironmentScript()) ?? '',
+    wrapWithSandbox: (cmd, shell, _tmpDir, signal) =>
+      SandboxManager.wrapWithSandbox(cmd, shell, undefined, signal),
     cleanupAfterSandbox: () => SandboxManager.cleanupAfterCommand(),
     onCwdChanged: onCwdChangedForHooks,
     getTmuxEnv: async () => getClaudeTmuxEnv(),

@@ -226,7 +226,10 @@ export function useReplBridge(
                 '@thyrox/bridge/inboundAttachments.js'
               )
               let sanitized = fields.content
-              if (feature('KAIROS_GITHUB_WEBHOOKS')) {
+              if (
+                feature('KAIROS_GITHUB_WEBHOOKS') &&
+                typeof fields.content === 'string'
+              ) {
                 /* eslint-disable @typescript-eslint/no-require-imports */
                 const { sanitizeInboundWebhookContent } =
                   require('@thyrox/bridge/webhookSanitizer.js') as typeof import('@thyrox/bridge/webhookSanitizer.js')
@@ -517,7 +520,7 @@ export function useReplBridge(
               }
               if (
                 feature('TRANSCRIPT_CLASSIFIER') &&
-                mode === 'auto' &&
+                (mode as PermissionMode) === 'auto' &&
                 !isAutoModeGateEnabled()
               ) {
                 const reason = getAutoModeUnavailableReason()

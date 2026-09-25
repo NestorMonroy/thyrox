@@ -217,10 +217,20 @@ export function deserializeMessagesWithInterruptDetection(
           isMeta: true,
         }),
       ])
-      filteredMessages.push(continuationMessage!)
+      // `normalizeMessages` devuelve `NormalizedMessage[]`, la union de todos
+      // los tipos de mensaje: su firma no recuerda que la entrada era un unico
+      // mensaje de usuario. La guarda estrecha a `NormalizedUserMessage`, algo
+      // que el flujo ya garantiza porque el unico mensaje de entrada lo
+      // construye `createUserMessage`.
+      if (continuationMessage?.type !== 'user') {
+        throw new Error(
+          'normalizeMessages debio devolver un mensaje de usuario para un mensaje de usuario de entrada',
+        )
+      }
+      filteredMessages.push(continuationMessage)
       turnInterruptionState = {
         kind: 'interrupted_prompt',
-        message: continuationMessage!,
+        message: continuationMessage,
       }
     } else {
       turnInterruptionState = internalState

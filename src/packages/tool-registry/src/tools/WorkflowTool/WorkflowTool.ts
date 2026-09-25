@@ -5,6 +5,7 @@
 
 import { randomUUID } from 'node:crypto'
 import { createElement } from 'react'
+import type { ToolResultBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import { Text } from '@anthropic/ink'
 import { z } from 'zod/v4'
 import { buildTool, type ToolDef } from '../../Tool.js'
@@ -489,7 +490,6 @@ export const WorkflowTool = buildTool({
         durationMs: result.durationMs,
         scriptPath,
         workflowRunId: runId,
-        workflowName,
         args: input.args,
         transcriptDir,
         setAppState,
@@ -548,8 +548,8 @@ export const WorkflowTool = buildTool({
   renderToolUseRejectedMessage() {
     return 'Workflow rejected'
   },
-  renderToolUseErrorMessage(output: { error?: string }) {
-    return createElement(Text, null, output.error ?? 'Workflow error')
+  renderToolUseErrorMessage(result: ToolResultBlockParam['content']) {
+    return createElement(Text, null, typeof result === 'string' ? result : 'Workflow error')
   },
   renderToolUseProgressMessage() {
     return null

@@ -4,7 +4,7 @@ import type { Command } from '@thyrox/command-runtime/runtime'
 import { Box } from '@anthropic/ink'
 import type { Screen } from '../screens/REPL.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
-import type { RenderableMessage } from '@thyrox/agent/messageShapes'
+import type { ProgressMessage, RenderableMessage } from '@thyrox/agent/messageShapes'
 import {
   getDisplayMessageFromCollapsed,
   getToolSearchOrReadInfo,
@@ -155,8 +155,12 @@ function MessageRowImpl({
       ? getDisplayMessageFromCollapsed(msg)
       : msg
 
-  const progressMessagesForMessage =
-    isGrouped || isCollapsed ? [] : getProgressMessagesFromLookup(msg, lookups)
+  const progressMessagesForMessage: ProgressMessage[] =
+    isGrouped || isCollapsed
+      ? []
+      : getProgressMessagesFromLookup(msg, lookups).filter(
+          (m): m is ProgressMessage => m.type === 'progress',
+        )
 
   const siblingToolUseIDs =
     isGrouped || isCollapsed

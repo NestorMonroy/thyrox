@@ -19,7 +19,7 @@ import type { RuntimeHandles } from '@thyrox/app-host'
 import { init } from '@thyrox/app-host/init.js'
 import { loadPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
 import { loadRemoteManagedSettings } from '../remoteManagedSettings.js'
-import { setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
+import { getSessionId, setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
 import { clearPluginCache } from '../pluginLoader.js'
 import { runMigrations } from '@thyrox/app-host/main/startup/settings.js'
 import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
@@ -428,7 +428,7 @@ export async function runCliProgram(
   profileCheckpoint('main_after_run')
 
   // Log startup perf to Statsig (sampled) and output detailed report if enabled
-  profileReport()
+  profileReport({ sessionId: getSessionId() })
 
   return program
 }

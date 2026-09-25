@@ -35,8 +35,7 @@ import {
   getCommandName,
 } from '@thyrox/command-runtime/runtime'
 import type { ModelInfo } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { HookCallbackMatcher } from '@thyrox/agent/types/hooks.js'
-import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { HookCallbackMatcher, HookEvent } from '@thyrox/agent/types/hooks.js'
 import type { PermissionMode as InternalPermissionMode } from '@thyrox/permission/permissionTypes'
 import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
@@ -71,6 +70,14 @@ import { enqueue } from '@thyrox/agent/messageQueueManager.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { randomUUID } from 'crypto'
 import { StructuredIO } from '../../../structuredIO.js'
+
+// El compat layer de mcp-runtime (compat.ts) tipa ChannelMessageNotificationSchema()
+// de forma genérica y pierde la forma real del schema; el contrato real vive en
+// mcp-runtime/src/channelNotification.ts.
+type ChannelNotificationParams = {
+  content: string
+  meta?: Record<string, string>
+}
 
 export async function handleInitializeRequest(
   request: SDKControlInitializeRequest,
@@ -424,7 +431,7 @@ export function handleChannelEnable(
   connection.client.setNotificationHandler(
     ChannelMessageNotificationSchema(),
     async notification => {
-      const { content, meta } = notification.params
+      const { content, meta } = notification.params as ChannelNotificationParams
       logMCPDebug(
         serverName,
         `notifications/claude/channel: ${content.slice(0, 80)}`,
@@ -500,7 +507,7 @@ export function reregisterChannelHandlerAfterReconnect(
   connection.client.setNotificationHandler(
     ChannelMessageNotificationSchema(),
     async notification => {
-      const { content, meta } = notification.params
+      const { content, meta } = notification.params as ChannelNotificationParams
       logMCPDebug(
         connection.name,
         `notifications/claude/channel: ${content.slice(0, 80)}`,
