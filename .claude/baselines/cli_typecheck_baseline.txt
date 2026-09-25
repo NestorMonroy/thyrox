@@ -1,2 +1,2 @@
-tsconfig.json 900
-tsconfig.tests.json 900
+tsconfig.json 888
+tsconfig.tests.json 888
