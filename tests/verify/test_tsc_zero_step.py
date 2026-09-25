@@ -250,8 +250,10 @@ with tempfile.TemporaryDirectory() as directory:
     row, tsc = net_fixture(base, "WORSE")
     report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
                            epsilon=0.5, alpha0=0.5, max_batch=None, net=True)
-    assert_equal("neta: un diagnóstico nuevo en su propio archivo tampoco la tumba si el total baja",
-                 ("progress", "const a = WORSE\n"), (report.status, (base / "a.ts").read_text()))
+    # Antes este caso se conservaba. Se invirtió medido: las dos veces que la
+    # neta conservó código roto, lo nuevo caía en el propio archivo.
+    assert_equal("neta: un diagnóstico nuevo en su propio archivo la tumba aunque el total baje",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
 
 with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)

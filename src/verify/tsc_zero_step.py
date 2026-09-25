@@ -153,11 +153,18 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     outcomes.update({v.proposal_id: v.outcome for v in report.verdicts})
     # Política neta: sólo con una propuesta por lote, porque el total no se
     # puede repartir entre varias. Se conserva si bajan sus objetivos y baja el
-    # total; lo que destapa se registra y no se revierte.
+    # total; lo que destapa EN OTROS ARCHIVOS se registra y no se revierte.
+    # Lo nuevo en los archivos que la propuesta edita la tumba: esos son suyos,
+    # y un error ahí es la propuesta incompleta, no un contrato destapado. Las
+    # dos veces que la neta conservó código roto fue así (pasos 087 y 094,
+    # intento 1: un nombre sin importar y una propiedad de clase renombrada).
     net_kept: str | None = None
     if net and len(applied) == 1 and len(report.verdicts) == 1:
         verdict = report.verdicts[0]
-        if verdict.targets_after < verdict.targets_before and report.total_after < report.total_before:
+        own = set(by_id[verdict.proposal_id]["files"])
+        breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
+        if (not breaks_own and verdict.targets_after < verdict.targets_before
+                and report.total_after < report.total_before):
             net_kept = verdict.proposal_id
             outcomes[net_kept] = "accepted-net"
 
