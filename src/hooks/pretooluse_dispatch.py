@@ -81,6 +81,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_irreversible_operation",
     "detect_edit_loop",
     "detect_awk_substr_target",
+    "detect_gawk_opportunity",
 )
 
 

@@ -126,6 +126,45 @@ Su gate es `src/hooks/detect_awk_substr_target.py`, detector de
 `/regex/` al separar argumentos— se probaron por anulación: retirada cada una
 cae exactamente su caso (`python3 tests/hooks/test_detect_awk_substr_target.py`).
 
+### gawk: `gensub` y `-i inplace`, y cuándo son la forma
+
+gawk es un awk con dos cosas propias. **`gensub`** no modifica nada: devuelve
+el texto cambiado, así que acepta un `substr()` directo y **reutiliza los
+grupos capturados**, cosa que `gsub` no hace. **`-i inplace`** edita el archivo
+en su lugar, con `-v inplace::suffix=.bak` si se quiere copia (en gawk antiguo,
+`-v INPLACE_SUFFIX=.bak`). Directiva del ejecutor 2026-09-25.
+
+| Necesidad | Idioma |
+|---|---|
+| reemplazo en toda la línea, devolviendo el texto | `gawk '{ print gensub(/viejo/, "nuevo", "g") }' archivo` |
+| sólo la segunda coincidencia | `gawk '{ print gensub(/a/, "X", 2) }' archivo` |
+| reutilizar lo encontrado (intercambiar dos palabras) | `gawk '{ print gensub(/(\w+) (\w+)/, "\\2 \\1", "g") }'` |
+| guardar en el mismo archivo | `gawk -i inplace '{ print gensub(/viejo/, "nuevo", "g") }' archivo` |
+| con copia del original | `gawk -i inplace -v inplace::suffix=.bak '{ … }' archivo` |
+
+**Los momentos en que es la forma**, cada uno medido en este contenedor
+(gawk 5.2.1):
+
+1. **Temporal y `mv` de vuelta** — `awk … f > f.tmp && mv f.tmp f` son dos
+   pasos y un temporal que queda si el primero falla: `gawk -i inplace`.
+2. **Grupos capturados en `gsub`/`sub`** — `gsub` no expande `\1`: sobre
+   «hola mundo», `gsub(/(\w+) (\w+)/, "\\2 \\1")` escribe `\2 \1` **y sale
+   0**. Es un resultado falso y silencioso; `gensub` da «mundo hola».
+3. **Una sustitución por línea en Python** — `read_text` → `re.sub` →
+   `write_text` es la puerta de atrás de esta regla: `gawk -i inplace` con
+   `gensub`. No aplica si la sustitución cruza líneas (`re.S`, `DOTALL`,
+   `\n` en el patrón): gawk lee por registro.
+4. **`-i inplace` en otro awk** — `mawk -i inplace` sale 2 («not an option:
+   -i»), y `awk` a secas resuelve a mawk en Debian (`detect_bare_awk`).
+
+Su gate es `src/hooks/detect_gawk_opportunity.py`, detector de
+`pretooluse_dispatch.py`, con esos cuatro momentos. Sus seis mitades de
+juicio —el ancla de awk, que el `mv` vuelva a la entrada, la exclusión de
+`gensub`, exigir escritura, el descuento multilínea y la exclusión de gawk en
+`-i inplace`— se probaron por anulación: retirada cada una cae exactamente
+su gemelo inocente (`python3 tests/hooks/test_detect_gawk_opportunity.py`).
+Avisa, no bloquea.
+
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
 nuevo, no por completitud.
