@@ -16,6 +16,8 @@ Qué haría fallar a este control:
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -196,6 +198,29 @@ with tempfile.TemporaryDirectory() as directory:
                  {"getDynamicSkills", "onDynamicSkillsLoaded", "Kind"}, names)
 untouched = "import {\n  a,\n  b,\n} from './a.js'\nimport { c } from './c.js'\nconst z = a + b + c\n"
 assert_equal("un import de varias líneas sin duplicados conserva su forma", untouched, mp.merge_imports(untouched))
+
+# Paso 142: un pool sobre la lista concatenada de cuatro módulos; cada
+# módulo se ensambla con su propio items.txt y un mapa donde 0 marca las
+# salidas que son de otro módulo (antes, `__declarations__:types` de los
+# cuatro chocaba y sólo el último se aplicaba).
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "out").mkdir()
+    (base / "out/2.json").write_text(json.dumps({"result": "```json\n" + json.dumps(outputs[0]) + "\n```"}))
+    foreign = {"edits": [{"file": "otro.ts", "old_string": "// @port-slot: f", "new_string": "x"}]}
+    (base / "out/3.json").write_text(json.dumps({"result": "```json\n" + json.dumps(foreign) + "\n```"}))
+    items = base / "items.txt"
+    (base / "items").mkdir()
+    (base / "items/1.txt").write_text("Ítem: f\n")
+    items.write_text(f"module:t.ts {base / 'items/1.txt'}\n")
+    target = base / "t.ts"
+    target.write_text(BASE)
+    (base / "map.json").write_text("[0, 1, 0]")
+    with contextlib.chdir(base), contextlib.redirect_stdout(io.StringIO()):
+        mp.main(["assemble", "--target", "t.ts", "--items", str(items), "--outputs", str(base / "out"),
+                 "--map", str(base / "map.json")])
+    assert_equal("un 0 en el mapa salta la salida de otro módulo", True,
+                 "export function f() { return a }" in target.read_text())
 
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

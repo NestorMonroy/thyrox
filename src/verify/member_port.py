@@ -64,10 +64,13 @@ def insert_anchors(text: str, names: list[str]) -> str:
     return f"{body}\n\n// --- porte por miembros: un ancla por ítem ---\n{slots}\n"
 
 
-def read_outputs(directory: Path, names: list[str]) -> dict[str, dict]:
-    """La propuesta de cada ítem, por su número; la que no trae JSON no cuenta."""
+def read_outputs(directory: Path, names: list[str | None]) -> dict[str, dict]:
+    """La propuesta de cada ítem, por su número; la que no trae JSON no cuenta,
+    y un nombre `None` es una salida que no es de este destino."""
     proposals: dict[str, dict] = {}
     for number, name in enumerate(names, 1):
+        if name is None:
+            continue
         output = read_output(directory / f"{number}.json")
         block = re.search(r"\{.*\}", (output or {}).get("result", "") or "", re.S)
         if not block:
@@ -310,7 +313,8 @@ def main(argv: list[str] | None = None) -> int:
     proposals: dict[str, dict] = {}
     numbering = wave_numbers(len(args.outputs), [json.loads(m.read_text()) for m in args.map], len(names))
     for directory, numbers in zip(args.outputs, numbering):
-        wave_names = [names[n - 1] for n in numbers]
+        # 0 marca una salida que es de otro módulo (un pool sobre varios).
+        wave_names = [names[n - 1] if n else None for n in numbers]
         for name, proposal in read_outputs(directory, wave_names).items():
             if any("@port-" in (e.get("old_string") or "") for e in proposal.get("edits", []) or []):
                 proposals[name] = proposal
