@@ -1274,14 +1274,21 @@ export const NonNullableUsagePlaceholder = lazySchema(() => z.unknown())
 // ============================================================================
 
 export const SDKAssistantMessageErrorSchema = lazySchema(() =>
+  // Los doce valores de 2.1.281, en su orden.
   z.enum([
     'authentication_failed',
+    'oauth_org_not_allowed',
+    'account_on_hold',
+    'verification_required',
     'billing_error',
     'rate_limit',
+    'overloaded',
     'invalid_request',
+    'model_not_found',
     'server_error',
     'unknown',
     'max_output_tokens',
+    'cloud_credential_error',
   ]),
 )
 

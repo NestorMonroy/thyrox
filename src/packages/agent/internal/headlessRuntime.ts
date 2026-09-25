@@ -1,5 +1,6 @@
 import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage } from '../internalTypes.js'
+import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
   setAppState: (f: (prev: unknown) => unknown) => void,
@@ -66,7 +67,7 @@ export function shouldEnableThinkingByDefault(): boolean | undefined {
   return getAgentHostBindings().shouldEnableThinkingByDefault?.()
 }
 
-export function buildSystemInitMessage(params: unknown): unknown {
+export function buildSystemInitMessage(params: unknown): SDKMessage | undefined {
   return getAgentHostBindings().buildSystemInitMessage?.(params)
 }
 
@@ -79,7 +80,7 @@ export async function* handleOrphanedPermission(
   tools: unknown[],
   messages: AgentMessage[],
   context: unknown,
-): AsyncGenerator<unknown> {
+): AsyncGenerator<SDKMessage> {
   const handler = getAgentHostBindings().handleOrphanedPermission
   if (!handler) {
     return
@@ -98,7 +99,7 @@ export function isResultSuccessful(
 
 export async function* normalizeMessage(
   message: AgentMessage,
-): AsyncGenerator<unknown> {
+): AsyncGenerator<SDKMessage> {
   const normalizer = getAgentHostBindings().normalizeMessage
   if (!normalizer) {
     return

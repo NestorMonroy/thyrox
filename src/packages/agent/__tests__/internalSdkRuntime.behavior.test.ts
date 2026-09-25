@@ -28,12 +28,13 @@ describe('internal/sdkRuntime fallbacks', () => {
     expect(source).toMatch(/getInMemoryErrors\?\.\(\) \?\? \[\]/)
   })
 
-  test('categorizeRetryableAPIError ECHOES error (no swallowing)', () => {
-    // Pin: if no classifier installed, return the original error
-    // unchanged. A regression to `?? null` would silently drop errors
-    // from the SDK envelope.
+  test('categorizeRetryableAPIError: no host → unknown', () => {
+    // Pin: the result lands in the `error` field of an `api_retry` SDK
+    // message, whose schema is the SDKAssistantMessageError enum. Echoing
+    // the raw error object (the previous fallback) broke that schema;
+    // 'unknown' is the value X5t of 2.1.281 returns when nothing matches.
     expect(source).toMatch(
-      /categorizeRetryableAPIError\?\.\(error\) \?\? error/,
+      /categorizeRetryableAPIError\?\.\(error\) \?\? 'unknown'/,
     )
   })
 
@@ -53,12 +54,13 @@ describe('internal/sdkRuntime fallbacks', () => {
     expect(source).toMatch(/getModelUsage\?\.\(\) \?\? \{\}/)
   })
 
-  test('getFastModeState: no host → null (distinguished from undefined)', () => {
-    // Pin: null signals "no host has classified the model". Caller
-    // checks `=== null` explicitly. Returning undefined would let `??`
-    // chains in the caller substitute a different default.
+  test('getFastModeState: no host → off', () => {
+    // Pin: every caller assigns the result to an optional
+    // `fast_mode_state`, whose schema is 'off' | 'cooldown' | 'on' — null
+    // is not a member, and no caller compares against null. Without a
+    // provider fast mode is not active, which is 'off'.
     expect(source).toMatch(
-      /getFastModeState\?\.\(model, fastMode\) \?\? null/,
+      /getFastModeState\?\.\(model, fastMode\) \?\? 'off'/,
     )
   })
 

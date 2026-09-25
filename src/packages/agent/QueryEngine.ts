@@ -5,6 +5,15 @@
  * boundary / event extraction. SDK-to-SDK shape translation pattern.
  */
 import { feature } from 'bun:bundle'
+import type {
+  PermissionMode,
+  SDKCompactBoundaryMessage,
+  SDKMessage,
+  SDKPermissionDenial,
+  SDKStatus,
+  SDKUserMessageReplay,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
 import { getGlobalConfig } from '@thyrox/config'
@@ -90,13 +99,6 @@ import {
 import { readEnv } from '@thyrox/config/env'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 
-type PermissionMode = string
-type SDKCompactBoundaryMessage = { type: string; [key: string]: unknown }
-type SDKMessage = { type: string; [key: string]: unknown }
-type SDKPermissionDenial = { [key: string]: unknown }
-type SDKStatus = string
-type SDKUserMessageReplay = { type: string; [key: string]: unknown }
-type NonNullableUsage = { [key: string]: unknown }
 type MCPServerConnection = { name?: string; [key: string]: unknown }
 type AppState = {
   toolPermissionContext: {

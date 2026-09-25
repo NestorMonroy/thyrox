@@ -1,4 +1,12 @@
 import type {
+  ModelUsage,
+  SDKAssistantMessageError,
+  SDKMessage,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+
+/** `getFastModeState` de `@thyrox/provider/fastMode`: los tres estados del SDK. */
+export type FastModeState = 'off' | 'cooldown' | 'on'
+import type {
   AgentHookResult,
   AgentMessage,
   AgentQuerySource,
@@ -47,7 +55,7 @@ export type AgentHostBindings = {
   logError?: (err: unknown) => void
   logAntError?: (message: string, err: unknown) => void
   getInMemoryErrors?: () => unknown[]
-  categorizeRetryableAPIError?: (error: unknown) => unknown
+  categorizeRetryableAPIError?: (error: unknown) => SDKAssistantMessageError
   headlessProfilerCheckpoint?: (name: string) => void
   queryCheckpoint?: (name: string) => void
 
@@ -194,19 +202,19 @@ export type AgentHostBindings = {
     systemContext: Record<string, string>
   }>
   shouldEnableThinkingByDefault?: () => boolean | undefined
-  buildSystemInitMessage?: (params: unknown) => unknown
+  buildSystemInitMessage?: (params: unknown) => SDKMessage
   sdkCompatToolName?: (toolName: string) => string
   handleOrphanedPermission?: (
     orphanedPermission: unknown,
     tools: unknown[],
     messages: AgentMessage[],
     context: unknown,
-  ) => AsyncGenerator<unknown>
+  ) => AsyncGenerator<SDKMessage>
   isResultSuccessful?: (
     result: AgentMessage | undefined,
     lastStopReason: string | null,
   ) => boolean
-  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<unknown>
+  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<SDKMessage>
   selectableUserMessagesFilter?: (message: AgentMessage) => boolean
   getCoordinatorUserContext?: (
     mcpClients: ReadonlyArray<{ name: string }>,
@@ -267,8 +275,8 @@ export type AgentHostBindings = {
   }>
   getTotalAPIDuration?: () => number
   getTotalCost?: () => number
-  getModelUsage?: () => Record<string, unknown>
-  getFastModeState?: (model: string, fastMode?: boolean) => unknown
+  getModelUsage?: () => Record<string, ModelUsage>
+  getFastModeState?: (model: string, fastMode?: boolean) => FastModeState
   notifyCommandLifecycle?: (
     uuid: string,
     state: 'started' | 'completed',

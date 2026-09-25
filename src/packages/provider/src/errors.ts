@@ -29,7 +29,7 @@
  *   traducción.
  * - `isValidAPIMessage`, `extractUnknownErrorFormat`,
  *   `getAssistantMessageFromError`,
- *   `categorizeRetryableAPIError`, `getErrorMessageIfRefusal` — los seis
+ *   `getErrorMessageIfRefusal` — los cuatro
  *   dependen del SDK de Anthropic (`APIError`, `APIConnectionError`,
  *   `BetaMessage`) y de cinco módulos hermanos que este árbol no tiene:
  *   `model.ts`, `modelStrings.ts`, `claudeAiLimits.ts`,
@@ -37,6 +37,37 @@
  */
 
 
+
+/** La forma de un error de API que `categorizeRetryableAPIError` lee. */
+export type RetryableAPIErrorShape = {
+  status?: number
+  message?: string
+  isCloudCredentialError?: boolean
+}
+
+/**
+ * `X5t` de 2.1.281: la categoría SDK (`SDKAssistantMessageError`) de un error
+ * de API que se va a reintentar. El orden importa: un 529 es `overloaded`
+ * aunque también sea >= 408.
+ */
+export function categorizeRetryableAPIError(
+  error: RetryableAPIErrorShape,
+):
+  | 'overloaded'
+  | 'rate_limit'
+  | 'authentication_failed'
+  | 'server_error'
+  | 'cloud_credential_error'
+  | 'unknown' {
+  if (error.status === 529 || error.message?.includes('"type":"overloaded_error"')) {
+    return 'overloaded'
+  }
+  if (error.status === 429) return 'rate_limit'
+  if (error.status === 401 || error.status === 403) return 'authentication_failed'
+  if (error.status !== undefined && error.status >= 408) return 'server_error'
+  if (error.isCloudCredentialError) return 'cloud_credential_error'
+  return 'unknown'
+}
 
 /** V7 §6.5 — el espacio de errores tipados del provider. */
 export class ProviderBaseError extends Error {
