@@ -188,6 +188,12 @@ def main() -> int:
         (sstep / "final.log").write_text("src/z.ts(1,1): error TS18046: 'w' is of type 'unknown'.\n")
         assert_equal("revisado pero con una instancia viva sin salida: bloquea", 1,
                      len(reflect.sweep_gate(sweep, sstep)))
+        # Un paso posterior ya midió el árbol con el arreglo dentro: su log
+        # es el vigente, y la instancia del log viejo ya no bloquea.
+        later = sweep / "later.log"
+        later.write_text("src/z.ts(1,1): error TS2322: otra cosa.\n")
+        assert_equal("con el log vigente de un paso posterior: pasa", [],
+                     reflect.sweep_gate(sweep, sstep, later))
 
         # Las dos preguntas de verificación del plan, con su denominador.
         print("audit")
