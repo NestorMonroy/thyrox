@@ -50,7 +50,7 @@ import { pathInWorkingPath } from './filesystem.js'
 import { checkEditableInternalPath, checkReadableInternalPath } from './internalPaths.js'
 import { checkPathSafetyForAutoEdit, isWindowsNetworkPath, pathContains } from './pathSafety.js'
 import type { ToolPermissionContext } from './permissions.js'
-import type { PermissionRule } from './permissionTypes.js'
+import type { AdditionalWorkingDirectory, PermissionRule } from './permissionTypes.js'
 import { allPathsMatchAllowRule, matchingRuleForInput } from './ruleMatching.js'
 
 const MAX_DIRS_TO_LIST = 5
@@ -229,7 +229,6 @@ export function isPathInSandboxWriteAllowlist(
 // `VFe`, `T_n`, `hyt`). Reimplementación del contrato, no copia.
 // ---------------------------------------------------------------------------
 
-type AdditionalWorkingDirectory = { path: string; source?: string }
 type TrustedNetworkDirectories = Map<string, readonly string[]>
 
 /** La forma del contexto de permisos que esta cadena lee. */
