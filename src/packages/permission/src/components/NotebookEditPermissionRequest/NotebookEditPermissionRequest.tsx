@@ -21,11 +21,7 @@ export function NotebookEditPermissionRequest(
           `Failed to parse notebook edit input: ${result.error.message}`,
         ),
       )
-      // Copia de `ccnmt: packages/permission/src/components/
-      // NotebookEditPermissionRequest/NotebookEditPermissionRequest.tsx` con los
-      // comentarios traducidos; el cuerpo es el de la fuente.
-      //
-      // Devuelve un valor por defecto para no reventar.
+      // Return a default value to avoid crashing
       return {
         notebook_path: '',
         new_source: '',

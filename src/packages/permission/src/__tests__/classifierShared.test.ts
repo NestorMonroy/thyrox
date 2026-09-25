@@ -19,11 +19,8 @@ describe('extractToolUseBlock', () => {
   })
 
   test('returns FIRST matching block when multiple present', () => {
-    // Copia de `ccnmt: packages/permission/src/__tests__/classifierShared.test.ts`
-    // con los comentarios traducidos; el cuerpo es el de la fuente.
-    //
-    // `.find` devuelve el primero. Queda documentado: si un refactor futuro
-    // usara `.findLast`, se clasificaría el `tool_use` equivocado.
+    // .find returns first. Documents this — if a future refactor uses
+    // .findLast, the wrong tool_use would be classified.
     const blocks: Block[] = [
       { type: 'tool_use', id: 'first', name: 'Bash', input: {} } as never,
       { type: 'tool_use', id: 'second', name: 'Bash', input: {} } as never,
@@ -54,13 +51,13 @@ describe('extractToolUseBlock', () => {
     const blocks: Block[] = [
       { type: 'tool_use', id: 'tu1', name: 'Bash', input: {} } as never,
     ]
-    // 'bash' en minúscula NO casa con 'Bash'.
+    // 'bash' (lowercase) does NOT match 'Bash'.
     expect(extractToolUseBlock(blocks, 'bash')).toBeNull()
   })
 
   test('skips text blocks even with matching content', () => {
-    // La función comprueba `b.type === 'tool_use'` Y el nombre. Un bloque de
-    // texto cuya cadena resulte ser 'Bash' NO debe casar.
+    // The function checks `b.type === 'tool_use'` AND name. A text block
+    // with a string that happens to be 'Bash' should NOT match.
     const blocks: Block[] = [
       { type: 'text', text: 'Bash' } as never,
     ]
@@ -68,10 +65,9 @@ describe('extractToolUseBlock', () => {
   })
 
   test('post-narrow check (block.type !== "tool_use") catches null block', () => {
-    // Defensa en profundidad: aunque `.find` devuelva algo con
-    // `type=tool_use`, el segundo `if (!block || block.type !== 'tool_use')`
-    // protege de sorpresas. Se prueba el comportamiento de fallar cerrado
-    // cuando no hay coincidencia.
+    // Defense-in-depth: even if .find returns something with type=tool_use,
+    // the second `if (!block || block.type !== 'tool_use')` guards against
+    // surprises. Test the fail-closed behavior on no match.
     expect(extractToolUseBlock([] as Block[], 'Anything')).toBeNull()
   })
 })
@@ -108,7 +104,7 @@ describe('parseClassifierResponse', () => {
       type: 'tool_use' as const,
       id: 't',
       name: 'classify',
-      input: { decision: 'allow' /* falta la razón */ },
+      input: { decision: 'allow' /* missing reason */ },
     }
     expect(parseClassifierResponse(block, schema)).toBeNull()
   })
@@ -124,10 +120,9 @@ describe('parseClassifierResponse', () => {
   })
 
   test('preserves type narrowing — returned data is z.infer<typeof schema>', () => {
-    // Comprobación en tiempo de compilación: el tipo del dato devuelto
-    // coincide con lo que el esquema infiere. Si el esquema exige
-    // `{decision, reason}`, el objeto devuelto en tiempo de ejecución tiene
-    // esos campos cuando no es null.
+    // Compile-time check: returned data's type matches schema inference.
+    // If schema requires {decision, reason}, runtime returned object
+    // has those fields when non-null.
     const block = {
       type: 'tool_use' as const,
       id: 't',
@@ -136,7 +131,7 @@ describe('parseClassifierResponse', () => {
     }
     const result = parseClassifierResponse(block, schema)
     if (result !== null) {
-      // El tipo se estrecha a `{decision, reason}`.
+      // Type-narrows to {decision, reason}.
       expect(result.decision).toBe('deny')
       expect(result.reason).toBe('unsafe')
     } else {
@@ -145,8 +140,8 @@ describe('parseClassifierResponse', () => {
   })
 
   test('strips extra fields per schema definition', () => {
-    // `z.object` descarta por defecto los campos desconocidos (el
-    // estricto-por-defecto de zod v4 es opt-in). Queda documentado.
+    // z.object by default strips unknown fields (zod v4 strict-by-default
+    // is opt-in). Document the behavior.
     const block = {
       type: 'tool_use' as const,
       id: 't',
@@ -166,9 +161,9 @@ describe('parseClassifierResponse', () => {
   })
 
   test('safeParse failure returns null (does NOT throw)', () => {
-    // Contrato crítico: la función NUNCA debe lanzar. Si `schema.safeParse`
-    // devuelve `success=false`, devuelve null. Un lanzamiento aquí reventaría
-    // el turno del clasificador.
+    // Critical contract: function must NEVER throw. If schema.safeParse
+    // returns success=false, return null. A throw here would crash the
+    // classifier turn.
     const block = {
       type: 'tool_use' as const,
       id: 't',

@@ -1,8 +1,5 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/errors.ts` (verbatim — sin
- * dependencias). V7 §6.5 — el namespace tipado de errores del paquete
- * `memory`: un `code` estable por clase, para que el consumidor discrimine
- * por código en vez de por `instanceof` de una jerarquía más fina.
+ * V7 §6.5 — MemoryError typed error namespace.
  */
 export class MemoryBaseError extends Error {
   readonly code: string

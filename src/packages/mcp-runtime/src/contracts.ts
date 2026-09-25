@@ -1,11 +1,8 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/contracts.ts` — sus 8
- * tipos, ninguno omitido. Sin imports en la fuente.
- *
- * Estado dinámico (no-SDK) de una conexión MCP. Lo mantiene el host del SDK
- * y se pasa a `handleMcpSetServers` / `reconcileMcpServers`. Los tipos de
- * runtime para clientes/herramientas/configs son genéricos — el paquete no
- * necesita conocer las formas concretas que declara la raíz del consumidor.
+ * Dynamic (non-SDK) MCP connection state. Maintained by the SDK host
+ * and passed to handleMcpSetServers / reconcileMcpServers. Runtime
+ * types for clients/tools/configs are generic — the package doesn't
+ * need to know the concrete shapes from root.
  */
 export type DynamicMcpState<TConnection = unknown, TTools = unknown, TScopedConfig = unknown> = {
   clients: TConnection[]
@@ -54,8 +51,8 @@ export type MCPServerConnection = {
 }
 
 /**
- * Estado de los servidores MCP de SDK que corren en el proceso del SDK.
- * Paralelo a `DynamicMcpState` pero con configs de forma SDK.
+ * State for SDK MCP servers that run in the SDK process. Parallel to
+ * DynamicMcpState but uses SDK-shaped configs.
  */
 export type SdkMcpState<TConnection = unknown, TTools = unknown, TSdkConfig = unknown> = {
   configs: Record<string, TSdkConfig>
@@ -64,8 +61,8 @@ export type SdkMcpState<TConnection = unknown, TTools = unknown, TSdkConfig = un
 }
 
 /**
- * Resultado de `handleMcpSetServers` — el estado nuevo de ambos lados más un
- * sobre de respuesta para entregar de vuelta al cliente del SDK.
+ * Result of handleMcpSetServers — new state on both sides + a response
+ * envelope to deliver back to the SDK client.
  */
 export type McpSetServersResult<
   TResponse = unknown,
@@ -129,11 +126,10 @@ export type McpRuntimeHostBindings<
     resources?: Record<string, TMcpResource[]>
   }>
   /**
-   * Handler del lado SDK para las peticiones de control `mcp_set_servers`.
-   * Se instala desde la raíz del consumidor vía `runtimeHostSetup` (ese
-   * archivo NO se portó en este pase — ver su docstring en ccnmt y el
-   * hallazgo de esta iniciativa). Los tipos son opacos en la frontera del
-   * paquete — quien llama castea el resultado a su especialización local.
+   * SDK-side handler for mcp_set_servers control requests. Installed
+   * from root (src/cli/mcpServersHandlers.ts) via runtimeHostSetup.
+   * Types are opaque at the package boundary — callers cast the
+   * result to their local specialization.
    */
   handleMcpSetServers?: (
     servers: Record<string, unknown>,

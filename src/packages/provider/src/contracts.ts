@@ -1,13 +1,3 @@
-/**
- * Porte fiel de `ccnmt: packages/provider/src/contracts.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — el archivo es en su mayoría declaraciones de tipo (el
- * contrato público de un mensaje/tool/query de provider), más dos
- * funciones puras (`getEmptyProviderToolPermissionContext`,
- * `providerToolMatchesName`). Sin divergencias: sus únicos imports son
- * `@anthropic-ai/sdk` (type-only, se borra al transpilar) y `crypto`
- * (builtin de Node/Bun) — cero dependencias cruzadas de paquete.
- */
 import type { ClientOptions } from '@anthropic-ai/sdk'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ContentBlock, ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'

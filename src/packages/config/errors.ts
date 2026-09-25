@@ -1,13 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/config/errors.ts` (67 líneas fuente). No es uno
- * de los 15 del alcance — es la dependencia de hoja que `host.ts` necesita
- * (`HostBindingsError`) y que a su vez necesita `remote/index.ts`: sin
- * dependencias propias (cero `import`), se porta en el sitio en vez de
- * bloquearse.
+ * V7 §6.5 — ConfigError typed error namespace.
  *
- * Espacio de nombres de errores tipados de config. Cada clase extiende
- * `ConfigBaseError`, que lleva un `code` estable (para matching en CI/logs) y
- * soporta el encadenamiento nativo `Error.cause`.
+ * Every error class extends ConfigBaseError which carries a stable `code`
+ * string (for CI/log matching) and supports native Error.cause chaining.
  */
 
 export class ConfigBaseError extends Error {

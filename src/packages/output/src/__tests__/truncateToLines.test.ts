@@ -1,12 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/output/src/__tests__/truncateToLines.test.ts`
- * (verbatim). Tests de truncateToLines — limita una salida multi-linea a
- * N lineas + "…".
+ * Tests for truncateToLines — caps multi-line output at N lines + "…".
  *
- * Se usa en el renderizado compacto de salida (celdas de tabla Markdown,
- * blurbs de preview de log, resumenes de bloque de error). Un conteo de
- * lineas incorrecto descarta contenido demasiado pronto (bloques de 1
- * linea pierden su contenido) o no limita y satura la pantalla.
+ * Used in compact-output rendering (Markdown table cells, log
+ * preview blurbs, error block summaries). Wrong line counting =
+ * either drops content too early (1-line blocks lose their
+ * content) or fails to cap and floods the screen.
  */
 import { describe, expect, test } from 'bun:test'
 import { truncateToLines } from '../utils/stringUtils.js'

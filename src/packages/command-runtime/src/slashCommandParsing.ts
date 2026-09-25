@@ -1,9 +1,5 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/command-runtime/src/slashCommandParsing.ts`
- * — sus dos exportaciones, ninguna omitida. El archivo fuente no importa nada
- * fuera de si mismo, asi que este porte no arrastra ninguna dependencia.
- *
- * Utilidades centralizadas para el parseo de slash commands.
+ * Centralized utilities for parsing slash commands
  */
 
 export type ParsedSlashCommand = {
@@ -17,9 +13,8 @@ export type ParsedStackedSlashCommands = {
   args: string
 }
 
-/** Parsea de dos a cinco tokens `/skill` iniciales. Un solo comando se queda
- * en el camino normal de slash command, y el primer token que no es comando
- * empieza la tarea. */
+/** Parse two to five leading `/skill` tokens. A single command stays on the
+ * normal slash-command path, and the first non-command token begins the task. */
 export function parseStackedSlashCommands(
   input: string,
 ): ParsedStackedSlashCommands | null {
@@ -39,10 +34,10 @@ export function parseStackedSlashCommands(
 }
 
 /**
- * Parsea una cadena de entrada de slash command en sus partes componentes.
+ * Parses a slash command input string into its component parts
  *
- * @param input - La cadena cruda de entrada (debe empezar con '/')
- * @returns Nombre de comando, args y bandera MCP parseados, o null si es invalida
+ * @param input - The raw input string (should start with '/')
+ * @returns Parsed command name, args, and MCP flag, or null if invalid
  *
  * @example
  * parseSlashCommand('/search foo bar')
@@ -55,12 +50,12 @@ export function parseStackedSlashCommands(
 export function parseSlashCommand(input: string): ParsedSlashCommand | null {
   const trimmedInput = input.trim()
 
-  // Verifica que la entrada empiece con '/'
+  // Check if input starts with '/'
   if (!trimmedInput.startsWith('/')) {
     return null
   }
 
-  // Retira el '/' inicial y divide por espacios
+  // Remove the leading '/' and split by spaces
   const withoutSlash = trimmedInput.slice(1)
   const words = withoutSlash.split(' ')
 
@@ -72,14 +67,14 @@ export function parseSlashCommand(input: string): ParsedSlashCommand | null {
   let isMcp = false
   let argsStartIndex = 1
 
-  // Verifica comandos MCP (la segunda palabra es '(MCP)')
+  // Check for MCP commands (second word is '(MCP)')
   if (words.length > 1 && words[1] === '(MCP)') {
     commandName = commandName + ' (MCP)'
     isMcp = true
     argsStartIndex = 2
   }
 
-  // Extrae los argumentos (todo despues del nombre de comando)
+  // Extract arguments (everything after command name)
   const args = words.slice(argsStartIndex).join(' ')
 
   return {

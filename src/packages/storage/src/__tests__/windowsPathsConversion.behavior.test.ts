@@ -8,26 +8,26 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Fija `windowsPaths.ts` — conversiones de ruta Windows ↔ POSIX que usan la
- * herramienta Bash, invocaciones de git-bash, y normalización de rutas. Los
- * bugs aquí corrompen rutas de archivo en silencio — se ven "raras pero
- * plausibles" y se cuelan más allá de una revisión visual.
+ * Pin `windowsPaths.ts` — Windows ↔ POSIX path conversions used by Bash
+ * tool, git-bash invocations, and path normalization. Bugs here corrupt
+ * file paths silently — they look "weird but plausible" so they slip
+ * past visual review.
  *
- * Invariantes críticos:
+ * Critical invariants:
  *  1. windowsPathToPosixPath:
  *     - UNC `\\server\share` → `//server/share`
- *     - `C:\path` → `/c/path` (letra de unidad en minúscula, estilo MSYS2)
- *     - Ya-POSIX o relativo → sólo invierte las barras.
+ *     - `C:\path` → `/c/path` (lowercase drive letter, MSYS2 style)
+ *     - Already-POSIX or relative → just flip slashes.
  *  2. posixPathToWindowsPath:
  *     - UNC `//server/share` → `\\server\share`
- *     - `/cygdrive/c/path` → `C:\path` (letra de unidad en mayúscula)
- *     - `/c/path` (MSYS2/Git Bash) → `C:\path` (letra de unidad en mayúscula)
- *     - Ya-Windows o relativo → sólo invierte las barras.
- *  3. Round-trip: posix → windows → posix debe producir el original
- *     (para los casos canónicos).
- *  4. Caché LRU (500 entradas) en cada función — memoización.
- *  5. SEGURIDAD: findExecutable filtra binarios sombreados por CWD (evita
- *     un git.bat malicioso en la raíz del proyecto).
+ *     - `/cygdrive/c/path` → `C:\path` (uppercase drive letter)
+ *     - `/c/path` (MSYS2/Git Bash) → `C:\path` (uppercase drive letter)
+ *     - Already-Windows or relative → just flip slashes.
+ *  3. Round-trip: posix → windows → posix should yield original
+ *     (for the canonical cases).
+ *  4. LRU cache (500 entries) on each function — memoization.
+ *  5. SECURITY: findExecutable filters CWD-shadowed binaries (prevents
+ *     malicious git.bat in project root).
  */
 describe('windowsPathToPosixPath', () => {
   test('UNC path \\\\server\\share → //server/share', () => {
@@ -38,13 +38,13 @@ describe('windowsPathToPosixPath', () => {
   })
 
   test('drive letter C:\\Users → /c/Users (LOWERCASE drive)', () => {
-    // Fija: unidad en minúscula. Convención MSYS2. /C/Users sería inusual.
+    // Pin: lowercase drive. MSYS2 convention. /C/Users would be unusual.
     expect(windowsPathToPosixPath('C:\\Users\\foo')).toBe('/c/Users/foo')
     expect(windowsPathToPosixPath('D:\\Projects\\bar')).toBe('/d/Projects/bar')
   })
 
   test('drive letter with forward slash C:/ → /c/...', () => {
-    // Fija: tolera rutas ya mezcladas (C:/ además de C:\).
+    // Pin: tolerates already-mixed paths (C:/ as well as C:\).
     expect(windowsPathToPosixPath('C:/Users/foo')).toBe('/c/Users/foo')
   })
 
@@ -53,12 +53,12 @@ describe('windowsPathToPosixPath', () => {
   })
 
   test('already-POSIX path → unchanged (no double-conversion)', () => {
-    // Fija: la regex tolera entrada ya-POSIX.
+    // Pin: regex tolerates already-POSIX input.
     expect(windowsPathToPosixPath('/usr/local/bin')).toBe('/usr/local/bin')
   })
 
   test('drive letter without path (C:\\) → /c/', () => {
-    // Fija: raíz de unidad sin resto.
+    // Pin: trailing-only drive root.
     expect(windowsPathToPosixPath('C:\\')).toBe('/c/')
   })
 })
@@ -72,19 +72,19 @@ describe('posixPathToWindowsPath', () => {
   })
 
   test('cygdrive /cygdrive/c/Users → C:\\Users (UPPERCASE drive)', () => {
-    // Fija: unidad en mayúscula — convención Windows. Forma cygdrive.
+    // Pin: uppercase drive — Windows convention. cygdrive form.
     expect(posixPathToWindowsPath('/cygdrive/c/Users/foo')).toBe(
       'C:\\Users\\foo',
     )
   })
 
   test('MSYS2 /c/Users → C:\\Users (UPPERCASE drive)', () => {
-    // Fija: unidad en mayúscula. Formato MSYS2/Git Bash /c/ (NO /cygdrive/).
+    // Pin: uppercase drive. MSYS2/Git Bash format /c/ (NOT /cygdrive/).
     expect(posixPathToWindowsPath('/c/Users/foo')).toBe('C:\\Users\\foo')
   })
 
   test('drive letter alone /c → C:\\', () => {
-    // Fija: caso especial de raíz de unidad.
+    // Pin: drive-root special case.
     expect(posixPathToWindowsPath('/c')).toBe('C:\\')
   })
 
@@ -103,7 +103,7 @@ describe('posixPathToWindowsPath', () => {
 
 describe('round-trip conversions', () => {
   test('Windows → POSIX → Windows preserves drive paths', () => {
-    // Fija: sin pérdida para el caso canónico de letra de unidad.
+    // Pin: lossless for the canonical drive-letter case.
     // C:\Users\foo → /c/Users/foo → C:\Users\foo
     const original = 'C:\\Users\\foo'
     expect(posixPathToWindowsPath(windowsPathToPosixPath(original))).toBe(
@@ -128,17 +128,17 @@ describe('round-trip conversions', () => {
 
 describe('memoization (LRU cache)', () => {
   test('same input → same reference (cached result)', () => {
-    // Fija: memoizeWithLRU retorna el mismo string en cada llamada (string
-    // primitivo — la igualdad de referencia puede no aplicar, pero el
-    // resultado DEBE ser igual por valor).
+    // Pin: memoizeWithLRU returns the same string each call (string
+    // primitive — reference equality may not hold, but the result MUST
+    // be value-equal).
     const a = windowsPathToPosixPath('C:\\some\\path')
     const b = windowsPathToPosixPath('C:\\some\\path')
     expect(a).toBe(b)
   })
 
   test('many different inputs all work (LRU doesn\'t corrupt)', () => {
-    // Fija: tamaño de caché = 500. Más allá de eso ocurre desalojo — pero
-    // nunca una respuesta incorrecta.
+    // Pin: cache size = 500. Beyond that, eviction happens — but never
+    // a wrong answer.
     for (let i = 0; i < 1000; i++) {
       const result = windowsPathToPosixPath(`C:\\path${i}`)
       expect(result).toBe(`/c/path${i}`)
@@ -153,28 +153,28 @@ describe('source pins', () => {
   )
 
   test('LRU cache size = 500 for each conversion function', () => {
-    // Fija: 500 es el tamaño de caché documentado. Una regresión a 5000 o
-    // 50 cambiaría el perfil de memoria/rendimiento.
+    // Pin: 500 is the documented cache size. A regression to 5000 or 50
+    // would change memory/perf profile.
     const matches = source.match(/memoizeWithLRU\(/g)
     expect(matches?.length).toBe(2)
-    // Ambas deben pasar `500` como tercer argumento.
+    // Both should pass `500` as the third arg.
     expect(
       (source.match(/\(p: string\) => p,\s*\n\s*500/g) ?? []).length,
     ).toBe(2)
   })
 
   test('SECURITY: findExecutable filters CWD-shadowed binaries', () => {
-    // Fija: guarda crítica contra un `git.bat` en la raíz del proyecto
-    // ejecutándose en lugar del git del sistema. No se puede retirar.
+    // Pin: critical guard against `git.bat` in project root being run
+    // instead of system git. Cannot be removed.
     expect(source).toMatch(
       /Skipping potentially malicious executable in current directory/,
     )
   })
 
   test('findExecutable for "git" checks default install locations FIRST', () => {
-    // Fija: los defaults se revisan antes que where.exe. Una regresión
-    // que quite esto ralentizaría la búsqueda de git Y podría elegir un
-    // git equivocado en sistemas donde PATH está contaminado.
+    // Pin: defaults checked before where.exe. A regression that drops
+    // this would slow down git lookup AND might pick a wrong git on
+    // systems where PATH has been polluted.
     expect(source).toMatch(/executable === 'git'/)
     expect(source).toMatch(
       /'C:\\\\Program Files\\\\Git\\\\cmd\\\\git\.exe'/,
@@ -182,7 +182,7 @@ describe('source pins', () => {
   })
 
   test('64-bit Program Files BEFORE Program Files (x86)', () => {
-    // Fija: preferir 64-bit. El comentario lo dice; fija el orden.
+    // Pin: prefer 64-bit. The comment says so; pin the order.
     const sixtyFour = source.indexOf("'C:\\\\Program Files\\\\Git\\\\cmd\\\\git.exe'")
     const thirtyTwo = source.indexOf(
       "'C:\\\\Program Files (x86)\\\\Git\\\\cmd\\\\git.exe'",
@@ -192,23 +192,22 @@ describe('source pins', () => {
   })
 
   test('SHELL env set only on windows (NOT on macOS/Linux)', () => {
-    // Fija: guarda sobre platform === 'windows'. Una regresión que fije
-    // SHELL en macOS sobreescribiría la elección del usuario.
+    // Pin: guard on platform === 'windows'. A regression that sets
+    // SHELL on macOS would override the user's choice.
     expect(source).toMatch(
       /if \(getPlatform\(\) === 'windows'\) \{[\s\S]+?process\.env\.SHELL = gitBashPath/,
     )
   })
 
   test('CLAUDE_CODE_GIT_BASH_PATH env var checked first (user override)', () => {
-    // Fija: variable de entorno → ubicaciones por defecto → where.exe.
+    // Pin: env var → default locations → where.exe.
     expect(source).toMatch(
       /findGitBashPath = memoize[\s\S]+?process\.env\.CLAUDE_CODE_GIT_BASH_PATH/,
     )
   })
 
   test('bashPath derived from gitPath via ../../bin/bash.exe', () => {
-    // Fija: relación estructural entre el directorio de instalación de git
-    // y bash.exe.
+    // Pin: structural relationship between git install dir and bash.exe.
     expect(source).toMatch(
       /pathWin32\.join\(gitPath, '\.\.', '\.\.', 'bin', 'bash\.exe'\)/,
     )

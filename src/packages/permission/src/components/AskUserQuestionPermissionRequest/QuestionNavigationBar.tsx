@@ -5,9 +5,6 @@ import { Box, Text, stringWidth } from '@anthropic/ink'
 import type { Question } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 
-// Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/QuestionNavigationBar.tsx` con los
-// comentarios traducidos; el cuerpo es el de la fuente.
-
 type Props = {
   questions: Question[]
   currentQuestionIndex: number
@@ -23,30 +20,30 @@ export function QuestionNavigationBar({
 }: Props): React.ReactNode {
   const { columns } = useTerminalSize()
 
-  // Calcula el texto que muestra cada pestaña según el ancho disponible.
+  // Calculate the display text for each tab based on available width
   const tabDisplayTexts = useMemo(() => {
-    // Los elementos de ancho fijo.
+    // Calculate fixed width elements
     const leftArrow = '← '
     const rightArrow = ' →'
     const submitText = hideSubmitTab ? '' : ` ${figures.tick} Submit `
-    const checkboxWidth = 2 // la casilla más su espacio
-    const paddingPerTab = 2 // espacio antes y después del texto de cada pestaña
+    const checkboxWidth = 2 // checkbox + space
+    const paddingPerTab = 2 // space before and after each tab text
 
     const fixedWidth =
       stringWidth(leftArrow) + stringWidth(rightArrow) + stringWidth(submitText)
 
-    // El ancho disponible para todas las pestañas de pregunta.
+    // Available width for all question tabs
     const availableForTabs = columns - fixedWidth
 
     if (availableForTabs <= 0) {
-      // Terminal demasiado estrecha: se cae de vuelta a la vista mínima.
+      // Terminal too narrow, fallback to minimal display
       return questions.map((q: Question, index: number) => {
         const header = q?.header || `Q${index + 1}`
         return index === currentQuestionIndex ? header.slice(0, 3) : ''
       })
     }
 
-    // El ancho ideal de cada pestaña (checkbox + padding + texto).
+    // Calculate ideal width for each tab (checkbox + padding + text)
     const tabHeaders = questions.map(
       (q: Question, index: number) => q?.header || `Q${index + 1}`,
     )
@@ -54,28 +51,27 @@ export function QuestionNavigationBar({
       header => checkboxWidth + paddingPerTab + stringWidth(header),
     )
 
-    // El ancho ideal total.
+    // Calculate total ideal width
     const totalIdealWidth = idealWidths.reduce((sum, w) => sum + w, 0)
 
-    // Si todo cabe, se usan los encabezados completos.
+    // If everything fits, use full headers
     if (totalIdealWidth <= availableForTabs) {
       return tabHeaders
     }
 
-    // Hay que truncar: la pestaña actual tiene prioridad.
+    // Need to truncate - prioritize current tab
     const currentHeader = tabHeaders[currentQuestionIndex] || ''
     const currentIdealWidth =
       checkboxWidth + paddingPerTab + stringWidth(currentHeader)
 
-    // Ancho mínimo de las demás pestañas (checkbox + padding + 1 carácter +
-    // puntos suspensivos).
+    // Minimum width for other tabs (checkbox + padding + 1 char + ellipsis)
     const minWidthPerTab = checkboxWidth + paddingPerTab + 2 // "X…"
 
-    // El espacio de la pestaña actual: se intenta mostrar el texto completo.
+    // Calculate space for current tab (try to show full text)
     const currentTabWidth = Math.min(currentIdealWidth, availableForTabs / 2)
     const remainingWidth = availableForTabs - currentTabWidth
 
-    // El espacio de las demás pestañas.
+    // Calculate space for other tabs
     const otherTabCount = questions.length - 1
     const widthPerOtherTab = Math.max(
       minWidthPerTab,
@@ -84,11 +80,11 @@ export function QuestionNavigationBar({
 
     return tabHeaders.map((header, index) => {
       if (index === currentQuestionIndex) {
-        // Pestaña actual: se muestra todo lo que quepa.
+        // Current tab - show as much as possible
         const maxTextWidth = currentTabWidth - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       } else {
-        // Las demás pestañas se truncan hasta caber.
+        // Other tabs - truncate to fit
         const maxTextWidth = widthPerOtherTab - checkboxWidth - paddingPerTab
         return truncateToWidth(header, maxTextWidth)
       }

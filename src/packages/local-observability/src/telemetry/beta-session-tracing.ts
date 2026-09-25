@@ -1,9 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/telemetry/beta-session-tracing.ts`
- * (53 líneas fuente, 100 % portado). Implementaciones stub usadas por
- * otro código de telemetría — en el build externo esta característica
- * está eliminada; los stubs mantienen honestos los call sites sin costo
- * en runtime. Sin dependencias externas.
+ * V7 §8.12 — beta-session-tracing: stub implementations used by other
+ * telemetry code.
+ *
+ * Moved from src/utils/telemetry/betaSessionTracing.ts. In the external
+ * build this feature is eliminated; the stubs keep call sites honest
+ * without runtime cost.
  */
 
 export type LLMRequestNewContext = {

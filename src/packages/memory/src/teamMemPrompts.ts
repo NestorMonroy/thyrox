@@ -1,7 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/teamMemPrompts.ts` (verbatim).
- * Contenido de prompt en inglés, VERBATIM — es comportamiento del producto.
- */
 import {
   buildSearchingPastContextSection,
   DIRS_EXIST_GUIDANCE,
@@ -19,10 +15,9 @@ import { getAutoMemPath } from './paths.js'
 import { getTeamMemPath } from './teamMemPaths.js'
 
 /**
- * Construye el prompt combinado cuando tanto la memoria automática como la
- * de equipo están habilitadas. Taxonomía cerrada de cuatro tipos (user /
- * feedback / project / reference) con guía de <scope> por tipo, embebida
- * en bloques <type> estilo XML.
+ * Build the combined prompt when both auto memory and team memory are enabled.
+ * Closed four-type taxonomy (user / feedback / project / reference) with
+ * per-type <scope> guidance embedded in XML-style <type> blocks.
  */
 export function buildCombinedMemoryPrompt(
   extraGuidelines?: string[],

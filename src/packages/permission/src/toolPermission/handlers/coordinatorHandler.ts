@@ -14,17 +14,14 @@ type CoordinatorPermissionParams = {
 }
 
 /**
- * Copia de `ccnmt: packages/permission/src/toolPermission/handlers/coordinatorHandler.ts`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
+ * Handles the coordinator worker permission flow.
  *
- * Atiende el flujo de permiso del trabajador coordinador.
+ * For coordinator workers, automated checks (hooks and classifier) are
+ * awaited sequentially before falling through to the interactive dialog.
  *
- * En un trabajador coordinador, las comprobaciones automáticas —los hooks y el
- * clasificador— se esperan en secuencia antes de caer al diálogo interactivo.
- *
- * Devuelve una `PermissionDecision` si las comprobaciones automáticas
- * resolvieron el permiso, o null si quien llama debe caer al diálogo
- * interactivo.
+ * Returns a PermissionDecision if the automated checks resolved the
+ * permission, or null if the caller should fall through to the
+ * interactive dialog.
  */
 async function handleCoordinatorPermission(
   params: CoordinatorPermissionParams,
@@ -32,7 +29,7 @@ async function handleCoordinatorPermission(
   const { ctx, updatedInput, suggestions, permissionMode } = params
 
   try {
-    // 1. Probar primero los hooks de permiso (rápidos y locales)
+    // 1. Try permission hooks first (fast, local)
     const hookResult = await ctx.runHooks(
       permissionMode,
       suggestions,
@@ -40,7 +37,7 @@ async function handleCoordinatorPermission(
     )
     if (hookResult) return hookResult
 
-    // 2. Probar el clasificador (lento, es inferencia — sólo para bash)
+    // 2. Try classifier (slow, inference -- bash only)
     const classifierResult = feature('BASH_CLASSIFIER')
       ? await ctx.tryClassifier?.(params.pendingClassifierCheck, updatedInput)
       : null
@@ -48,11 +45,10 @@ async function handleCoordinatorPermission(
       return classifierResult
     }
   } catch (error) {
-    // Si las comprobaciones automáticas fallan de forma inesperada, caer a
-    // mostrar el diálogo para que el usuario decida a mano. Lo que se lance y
-    // no sea un `Error` recibe un prefijo de contexto para que el registro sea
-    // trazable — a propósito NO se usa `toError()`, que descartaría ese
-    // prefijo.
+    // If automated checks fail unexpectedly, fall through to show the dialog
+    // so the user can decide manually. Non-Error throws get a context prefix
+    // so the log is traceable — intentionally NOT toError(), which would drop
+    // the prefix.
     if (error instanceof Error) {
       logError(error)
     } else {
@@ -60,8 +56,8 @@ async function handleCoordinatorPermission(
     }
   }
 
-  // 3. Ninguna resolvió, o las comprobaciones fallaron — caer al diálogo de
-  // abajo. Los hooks ya corrieron y el clasificador ya se consumió.
+  // 3. Neither resolved (or checks failed) -- fall through to dialog below.
+  // Hooks already ran, classifier already consumed.
   return null
 }
 

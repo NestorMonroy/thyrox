@@ -1,68 +1,46 @@
 /**
- * Porte COMPLETO de
- * `ccnmt: packages/mcp-runtime/src/SdkControlTransport.ts` — sus 2
- * exportaciones, ninguna omitida.
+ * SDK MCP Transport Bridge
  *
- * `@modelcontextprotocol/sdk` declarado en `package.json`, sin
- * `node_modules` enlazado todavía (misma deuda que el resto del paquete).
+ * This file implements a transport bridge that allows MCP servers running in the SDK process
+ * to communicate with the Claude Code CLI process through control messages.
  *
- * Puente de transporte MCP del SDK.
+ * ## Architecture Overview
  *
- * Este archivo implementa un puente de transporte que permite a los
- * servidores MCP que corren en el proceso del SDK comunicarse con el
- * proceso de la CLI de Claude Code a través de mensajes de control.
+ * Unlike regular MCP servers that run as separate processes, SDK MCP servers run in-process
+ * within the SDK. This requires a special transport mechanism to bridge communication between:
+ * - The CLI process (where the MCP client runs)
+ * - The SDK process (where the SDK MCP server runs)
  *
- * ## Visión general de la arquitectura
+ * ## Message Flow
  *
- * A diferencia de los servidores MCP normales, que corren como procesos
- * separados, los servidores MCP del SDK corren en proceso, dentro del
- * SDK. Esto exige un mecanismo de transporte especial para tender un
- * puente de comunicación entre:
- * - El proceso de la CLI (donde corre el cliente MCP)
- * - El proceso del SDK (donde corre el servidor MCP del SDK)
+ * ### CLI → SDK (via SdkControlClientTransport)
+ * 1. CLI's MCP Client calls a tool → sends JSONRPC request to SdkControlClientTransport
+ * 2. Transport wraps the message in a control request with server_name and request_id
+ * 3. Control request is sent via stdout to the SDK process
+ * 4. SDK's StructuredIO receives the control response and routes it back to the transport
+ * 5. Transport unwraps the response and returns it to the MCP Client
  *
- * ## Flujo de mensajes
+ * ### SDK → CLI (via SdkControlServerTransport)
+ * 1. Query receives control request with MCP message and calls transport.onmessage
+ * 2. MCP server processes the message and calls transport.send() with response
+ * 3. Transport calls sendMcpMessage callback with the response
+ * 4. Query's callback resolves the pending promise with the response
+ * 5. Query returns the response to complete the control request
  *
- * ### CLI → SDK (vía SdkControlClientTransport)
- * 1. El cliente MCP de la CLI llama una herramienta → envía una petición
- *    JSONRPC a SdkControlClientTransport.
- * 2. El transporte envuelve el mensaje en una petición de control con
- *    server_name y request_id.
- * 3. La petición de control se envía por stdout al proceso del SDK.
- * 4. El StructuredIO del SDK recibe la respuesta de control y la
- *    enruta de vuelta al transporte.
- * 5. El transporte desenvuelve la respuesta y se la devuelve al cliente
- *    MCP.
+ * ## Key Design Points
  *
- * ### SDK → CLI (vía SdkControlServerTransport)
- * 1. Query recibe la petición de control con el mensaje MCP y llama a
- *    transport.onmessage.
- * 2. El servidor MCP procesa el mensaje y llama a transport.send() con
- *    la respuesta.
- * 3. El transporte llama al callback sendMcpMessage con la respuesta.
- * 4. El callback de Query resuelve la promesa pendiente con la
- *    respuesta.
- * 5. Query devuelve la respuesta para completar la petición de control.
- *
- * ## Puntos clave de diseño
- *
- * - SdkControlClientTransport: StructuredIO lleva el registro de
- *   peticiones pendientes.
- * - SdkControlServerTransport: Query lleva el registro de peticiones
- *   pendientes.
- * - El envoltorio de la petición de control incluye server_name para
- *   enrutar al servidor SDK correcto.
- * - El sistema soporta múltiples servidores MCP del SDK corriendo
- *   simultáneamente.
- * - Los IDs de mensaje se preservan a lo largo de todo el flujo para
- *   una correlación correcta.
+ * - SdkControlClientTransport: StructuredIO tracks pending requests
+ * - SdkControlServerTransport: Query tracks pending requests
+ * - The control request wrapper includes server_name to route to the correct SDK server
+ * - The system supports multiple SDK MCP servers running simultaneously
+ * - Message IDs are preserved through the entire flow for proper correlation
  */
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js'
 
 /**
- * Función de callback para enviar un mensaje MCP y obtener la respuesta.
+ * Callback function to send an MCP message and get the response
  */
 type SendMcpMessageCallback = (
   serverName: string,
@@ -70,16 +48,14 @@ type SendMcpMessageCallback = (
 ) => Promise<JSONRPCMessage>
 
 /**
- * Transporte del lado de la CLI para servidores MCP del SDK.
+ * CLI-side transport for SDK MCP servers.
  *
- * Este transporte se usa en el proceso de la CLI para tender un puente
- * de comunicación entre:
- * - El cliente MCP de la CLI (que quiere llamar herramientas de
- *   servidores MCP del SDK)
- * - El proceso del SDK (donde corre el servidor MCP real)
+ * This transport is used in the CLI process to bridge communication between:
+ * - The CLI's MCP Client (which wants to call tools on SDK MCP servers)
+ * - The SDK process (where the actual MCP server runs)
  *
- * Convierte mensajes del protocolo MCP en peticiones de control que se
- * pueden enviar por stdout/stdin al proceso del SDK.
+ * It converts MCP protocol messages into control requests that can be sent
+ * through stdout/stdin to the SDK process.
  */
 export class SdkControlClientTransport implements Transport {
   private isClosed = false
@@ -100,10 +76,10 @@ export class SdkControlClientTransport implements Transport {
       throw new Error('Transport is closed')
     }
 
-    // Envía el mensaje y espera la respuesta.
+    // Send the message and wait for the response
     const response = await this.sendMcpMessage(this.serverName, message)
 
-    // Devuelve la respuesta al cliente MCP.
+    // Pass the response back to the MCP client
     if (this.onmessage) {
       this.onmessage(response)
     }
@@ -119,18 +95,16 @@ export class SdkControlClientTransport implements Transport {
 }
 
 /**
- * Transporte del lado del SDK para servidores MCP del SDK.
+ * SDK-side transport for SDK MCP servers.
  *
- * Este transporte se usa en el proceso del SDK para tender un puente de
- * comunicación entre:
- * - Las peticiones de control que llegan de la CLI (vía stdin)
- * - El servidor MCP real corriendo en el proceso del SDK
+ * This transport is used in the SDK process to bridge communication between:
+ * - Control requests coming from the CLI (via stdin)
+ * - The actual MCP server running in the SDK process
  *
- * Actúa como un simple paso-a-través que reenvía mensajes al servidor
- * MCP y envía las respuestas de vuelta vía un callback.
+ * It acts as a simple pass-through that forwards messages to the MCP server
+ * and sends responses back via a callback.
  *
- * Nota: Query maneja toda la correlación de petición/respuesta y el
- * flujo asíncrono.
+ * Note: Query handles all request/response correlation and async flow.
  */
 class SdkControlServerTransport implements Transport {
   private isClosed = false
@@ -148,7 +122,7 @@ class SdkControlServerTransport implements Transport {
       throw new Error('Transport is closed')
     }
 
-    // Simplemente devuelve la respuesta a través del callback.
+    // Simply pass the response back through the callback
     this.sendMcpMessage(message)
   }
 

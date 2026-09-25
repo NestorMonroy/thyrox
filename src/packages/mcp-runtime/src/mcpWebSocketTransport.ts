@@ -1,18 +1,9 @@
 /**
- * Porte COMPLETO de
- * `ccnmt: packages/mcp-runtime/src/mcpWebSocketTransport.ts` — su única
- * exportación, ninguna omitida.
- *
- * Transporte WebSocket de MCP — puente Bun-vs-Node WebSocket. La clase
- * guarda `ws: WebSocketLike` (una unión que cubre tanto el WebSocket nativo
- * de Bun como el paquete `ws` de Node) y despacha en runtime vía `this.isBun`.
- * Los casts `as unknown as` estrechan a uno u otro tipo concreto según la
- * rama — patrón de binding en runtime.
- *
- * Los tres cruces (`logForDiagnosticsNoPII`, `toError`, `jsonParse`/
- * `jsonStringify`) pasan el filtro de dos pasos — subpath declarado en
- * `@thyrox/local-observability` y símbolo verificado con resolución real —
- * y se repuntan sin divergencia.
+ * MCP WebSocket transport — Bun-vs-Node WebSocket bridge. The class
+ * stores `ws: WebSocketLike` (a union covering both Bun's native
+ * WebSocket and Node's `ws` package WebSocket) and dispatches at
+ * runtime via `this.isBun`. The `as unknown as` casts narrow to one
+ * or the other concrete type per branch — runtime-binding pattern.
  */
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js'
 import {
@@ -24,11 +15,11 @@ import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
-// Constantes de readyState de WebSocket (iguales para nativo y para ws)
+// WebSocket readyState constants (same for both native and ws)
 const WS_CONNECTING = 0
 const WS_OPEN = 1
 
-// Interfaz mínima compartida por globalThis.WebSocket y ws.WebSocket
+// Minimal interface shared by globalThis.WebSocket and ws.WebSocket
 type WebSocketLike = {
   readonly readyState: number
   close(): void
@@ -71,7 +62,7 @@ export class WebSocketTransport implements Transport {
       }
     })
 
-    // Cablea los manejadores de eventos persistentes.
+    // Attach persistent event handlers
     if (this.isBun) {
       const nws = this.ws as unknown as globalThis.WebSocket
       nws.addEventListener('message', this.onBunMessage)
@@ -89,7 +80,7 @@ export class WebSocketTransport implements Transport {
   onerror?: (error: Error) => void
   onmessage?: (message: JSONRPCMessage) => void
 
-  // Manejadores de eventos de Bun (WebSocket nativo)
+  // Bun (native WebSocket) event handlers
   private onBunMessage = (event: MessageEvent) => {
     try {
       const data =
@@ -110,7 +101,7 @@ export class WebSocketTransport implements Transport {
     this.handleCloseCleanup()
   }
 
-  // Manejadores de eventos de Node (paquete ws)
+  // Node (ws package) event handlers
   private onNodeMessage = (data: Buffer) => {
     try {
       const messageObj = jsonParse(data.toString('utf-8'))
@@ -129,16 +120,16 @@ export class WebSocketTransport implements Transport {
     this.handleCloseCleanup()
   }
 
-  // Manejador de error compartido
+  // Shared error handler
   private handleError(error: unknown): void {
     logForDiagnosticsNoPII('error', 'mcp_websocket_message_fail')
     this.onerror?.(toError(error))
   }
 
-  // Manejador de cierre compartido, con limpieza de listeners
+  // Shared close handler with listener cleanup
   private handleCloseCleanup(): void {
     this.onclose?.()
-    // Limpia los listeners tras el cierre.
+    // Clean up listeners after close
     if (this.isBun) {
       const nws = this.ws as unknown as globalThis.WebSocket
       nws.removeEventListener('message', this.onBunMessage)
@@ -153,7 +144,7 @@ export class WebSocketTransport implements Transport {
   }
 
   /**
-   * Empieza a escuchar mensajes en el WebSocket.
+   * Starts listening for messages on the WebSocket.
    */
   async start(): Promise<void> {
     if (this.started) {
@@ -165,13 +156,12 @@ export class WebSocketTransport implements Transport {
       throw new Error('WebSocket is not open. Cannot start transport.')
     }
     this.started = true
-    // A diferencia de stdio, las conexiones WebSocket normalmente ya están
-    // establecidas cuando se crea el transporte. No hace falta ninguna
-    // acción de conexión explícita aquí, sólo cablear los listeners.
+    // Unlike stdio, WebSocket connections are typically already established when the transport is created.
+    // No explicit connection action needed here, just attaching listeners.
   }
 
   /**
-   * Cierra la conexión WebSocket.
+   * Closes the WebSocket connection.
    */
   async close(): Promise<void> {
     if (
@@ -180,13 +170,12 @@ export class WebSocketTransport implements Transport {
     ) {
       this.ws.close()
     }
-    // Asegura que los listeners se retiren aunque close() se haya llamado
-    // externamente o la conexión ya estuviera cerrada.
+    // Ensure listeners are removed even if close was called externally or connection was already closed
     this.handleCloseCleanup()
   }
 
   /**
-   * Envía un mensaje JSON-RPC por la conexión WebSocket.
+   * Sends a JSON-RPC message over the WebSocket connection.
    */
   async send(message: JSONRPCMessage): Promise<void> {
     if (this.ws.readyState !== WS_OPEN) {
@@ -197,7 +186,7 @@ export class WebSocketTransport implements Transport {
 
     try {
       if (this.isBun) {
-        // El send() del WebSocket nativo es síncrono (sin callback).
+        // Native WebSocket.send() is synchronous (no callback)
         this.ws.send(json)
       } else {
         await new Promise<void>((resolve, reject) => {

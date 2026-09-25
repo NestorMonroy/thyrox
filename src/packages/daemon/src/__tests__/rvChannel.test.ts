@@ -1,11 +1,11 @@
 /**
- * Test end-to-end del canal de rendezvous: rvServer (lado worker, ant
- * 4291.js) hablando con rvClient (lado supervisor, ant naK / 5016.js) sobre
- * un socket de dominio Unix real, en un tmpdir aislado.
+ * End-to-end rendezvous channel test: rvServer (worker side, ant 4291.js)
+ * talking to rvClient (supervisor side, ant naK / 5016.js) over a real
+ * Unix domain socket in an isolated tmpdir.
  *
- * Sin mocks: el baile del socket —descartar el handshake, una sola conexion
- * con last-write-wins, framing JSON por linea, backoff de reconexion— ES la
- * logica bajo test. Mockearlo no probaria nada.
+ * No mocks — the socket dance (handshake discard, single-connection
+ * last-write-wins, newline-JSON framing, reconnect backoff) IS the logic
+ * under test. Mocking it would prove nothing.
  */
 
 import {
@@ -48,8 +48,7 @@ afterAll(() => {
   rmSync(ISOLATED_HOME, { recursive: true, force: true })
 })
 
-/** Una ruta de socket nueva por test, para que un bind que quede colgando
- *  nunca se filtre de un caso a otro. */
+/** Fresh socket path per test so a leftover bind never bleeds across cases. */
 function freshSockPath(): string {
   return join(ISOLATED_HOME, `rv-${process.pid}-${sockSeq++}.sock`)
 }
@@ -65,7 +64,7 @@ afterEach(() => {
   else process.env.CLAUDE_JOB_DIR = ORIGINAL_JOB_DIR
 })
 
-/** Espera hasta que `pred()` sea cierto o venza el plazo. */
+/** Wait until `pred()` is true or the deadline elapses. */
 async function until(pred: () => boolean, ms = 2000): Promise<void> {
   const deadline = Date.now() + ms
   while (Date.now() < deadline) {
@@ -87,8 +86,7 @@ describe('rv channel — server start/stop', () => {
     process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
     await startRendezvousServer()
     expect(isRendezvousServerRunning()).toBe(true)
-    // La variable de entorno se consume para que un spawn anidado no pueda
-    // volver a hacer bind.
+    // The env var is consumed so a nested spawn can't re-bind.
     expect(process.env.CLAUDE_BG_RENDEZVOUS_SOCK).toBeUndefined()
     stopRendezvousServer()
     expect(isRendezvousServerRunning()).toBe(false)
@@ -99,9 +97,9 @@ describe('rv channel — supervisor ↔ worker', () => {
   test('client connects, handshake is discarded by the worker handler', async () => {
     const sock = freshSockPath()
     process.env.CLAUDE_BG_RENDEZVOUS_SOCK = sock
-    // Un hook de respuesta que registra: si la trama del handshake llegara
-    // al manejador de comandos, NO encajaria como respuesta, pero una trama
-    // malformada con `role` tiene que descartarse en silencio (ant kb3).
+    // A reply hook that records — if the handshake frame ever leaked into
+    // the command handler, it would NOT match a reply, but a malformed
+    // frame with a `role` must be silently dropped (ant kb3).
     const replies: string[] = []
     const hostCbs: RvServerHost = {
       enqueueReply: t => replies.push(t),
@@ -120,7 +118,7 @@ describe('rv channel — supervisor ↔ worker', () => {
     )
     await until(() => connected)
     expect(connected).toBe(true)
-    // El handshake no encolo ninguna respuesta.
+    // No reply was enqueued by the handshake.
     expect(replies).toEqual([])
     client.close()
   })
@@ -142,9 +140,9 @@ describe('rv channel — supervisor ↔ worker', () => {
     )
     await until(() => connected)
 
-    // sendRv es el empuje de bajo nivel worker→supervisor. El heartbeat
-    // periodico de 30 s es la misma trama; aqui se dispara una de forma
-    // sincrona en vez de esperar los 30 s.
+    // sendRv is the low-level worker→supervisor push. (The 30s periodic
+    // heartbeat is the same frame; we fire one synchronously here rather
+    // than waiting 30s.)
     expect(sendRv({ type: 'heartbeat' })).toBe(true)
     await until(() => received.some(m => m.type === 'heartbeat'))
     expect(received.some(m => m.type === 'heartbeat')).toBe(true)
@@ -169,7 +167,7 @@ describe('rv channel — supervisor ↔ worker', () => {
       },
     )
     await until(() => connected)
-    // Derribar el servidor tira la conexion viva → onDisconnect.
+    // Tearing the server down drops the live connection → onDisconnect.
     stopRendezvousServer()
     await until(() => disconnects > 0)
     expect(disconnects).toBeGreaterThan(0)
@@ -221,7 +219,7 @@ describe('rv channel — supervisor ↔ worker', () => {
     )
     await until(() => connected)
     client.send({ type: 'reply', text: 'yes' })
-    // Se le da tiempo a la trama para aterrizar; NO tiene que encolarse.
+    // Give the frame time to land; it should NOT enqueue.
     await new Promise(r => setTimeout(r, 100))
     expect(replies).toEqual([])
     client.close()
@@ -278,10 +276,10 @@ describe('rv channel — supervisor ↔ worker', () => {
     )
     await until(() => connected)
     client.send({ type: 'shutdown' })
-    // onShutdown corre de forma sincrona despues de que sendRv encole el
-    // ack, mientras que el supervisor observa ese ack en un evento de socket
-    // posterior. Se espera a los dos efectos independientes en vez de tratar
-    // el callback como prueba de que el mensaje ya cruzo el socket Unix.
+    // onShutdown runs synchronously after sendRv queues the ack, while the
+    // supervisor observes that ack on a later socket event. Wait for both
+    // independent effects instead of treating the callback as proof that the
+    // message has already crossed the Unix socket.
     await until(
       () =>
         shutdownCalled && received.some(m => m.type === 'shutting-down'),
@@ -318,8 +316,8 @@ describe('rv channel — supervisor ↔ worker', () => {
     )
     await until(() => secondConnected)
 
-    // Cuando el segundo conecta, un empuje llega exactamente al socket vivo.
-    // El `conn` del servidor es ahora el segundo, y sendRv escribe en el.
+    // After the second connects, a push reaches exactly the live socket.
+    // The server's `conn` is now the second; sendRv writes to it.
     expect(sendRv({ type: 'heartbeat' })).toBe(true)
     first.close()
     second.close()
@@ -372,14 +370,14 @@ describe('rv channel — state + done persist to disk', () => {
     await pushRvState({ state: 'done', tempo: 'idle', detail: 'finished' })
     await until(() => received.some(m => m.type === 'state'))
 
-    // El disco refleja el patch fusionado.
+    // Disk reflects the merged patch.
     const onDisk = await readJobState(jobDir)
     expect(onDisk?.state).toBe('done')
     expect(onDisk?.tempo).toBe('idle')
     expect(onDisk?.detail).toBe('finished')
-    expect(onDisk?.intent).toBe('do a thing') // preservado de la semilla
+    expect(onDisk?.intent).toBe('do a thing') // preserved from seed
 
-    // El patch tambien se empujo por el cable.
+    // The patch was also pushed over the wire.
     const statePush = received.find(m => m.type === 'state') as
       | { type: 'state'; patch: Record<string, unknown> }
       | undefined

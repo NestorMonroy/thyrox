@@ -1,8 +1,3 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/bridgeApi.ts` — cliente
- * HTTP del bridge contra la API de entornos/sesiones (`axios`, dependencia
- * npm real).
- */
 import axios from 'axios'
 
 import { debugBody, extractErrorDetail } from './debugUtils.js'
@@ -20,39 +15,35 @@ type BridgeApiDeps = {
   runnerVersion: string
   onDebug?: (msg: string) => void
   /**
-   * Se llama ante un 401 para intentar refrescar el token OAuth. Devuelve
-   * true si se refrescó, en cuyo caso el request se reintenta una vez.
-   * Se inyecta porque `handleOAuth401Error` de `utils/auth.ts` arrastra
-   * transitivamente config.ts → file.ts → permissions/filesystem.ts →
-   * sessionStorage.ts → commands.ts (~1300 módulos). Los llamadores del
-   * daemon que usan tokens por env var omiten esto — sus tokens no
-   * refrescan, así que un 401 va directo a BridgeFatalError.
+   * Called on 401 to attempt OAuth token refresh. Returns true if refreshed,
+   * in which case the request is retried once. Injected because
+   * handleOAuth401Error from utils/auth.ts transitively pulls in config.ts →
+   * file.ts → permissions/filesystem.ts → sessionStorage.ts → commands.ts
+   * (~1300 modules). Daemon callers using env-var tokens omit this — their
+   * tokens don't refresh, so 401 goes straight to BridgeFatalError.
    */
   onAuth401?: (staleAccessToken: string) => Promise<boolean>
   /**
-   * Devuelve el token de dispositivo confiable a enviar como
-   * X-Trusted-Device-Token en llamadas a la API del bridge. Las sesiones
-   * bridge tienen SecurityTier=ELEVATED en el servidor (CCR v2); cuando la
-   * bandera de enforcement del servidor está activa,
-   * ConnectBridgeWorker requiere un dispositivo confiable al emitir el
-   * JWT. Opcional — cuando está ausente o devuelve undefined, la
-   * cabecera se omite y el servidor cae a su camino sin bandera/no-op.
-   * El gate del lado CLI es
-   * `tengu_sessions_elevated_auth_enforcement` (ver trustedDevice.ts).
+   * Returns the trusted device token to send as X-Trusted-Device-Token on
+   * bridge API calls. Bridge sessions have SecurityTier=ELEVATED on the
+   * server (CCR v2); when the server's enforcement flag is on,
+   * ConnectBridgeWorker requires a trusted device at JWT-issuance.
+   * Optional — when absent or returning undefined, the header is omitted
+   * and the server falls through to its flag-off/no-op path. The CLI-side
+   * gate is tengu_sessions_elevated_auth_enforcement (see trustedDevice.ts).
    */
   getTrustedDeviceToken?: () => string | undefined
 }
 
 const BETA_HEADER = 'environments-2025-11-01'
 
-/** Patrón allowlist para IDs provistos por el servidor usados en segmentos de ruta URL. */
+/** Allowlist pattern for server-provided IDs used in URL path segments. */
 const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/
 
 /**
- * Valida que un ID provisto por el servidor sea seguro para
- * interpolarlo en una ruta URL. Previene path traversal (p. ej.
- * `../../admin`) e inyección vía IDs que contengan slashes, puntos u
- * otros caracteres especiales.
+ * Validate that a server-provided ID is safe to interpolate into a URL path.
+ * Prevents path traversal (e.g. `../../admin`) and injection via IDs that
+ * contain slashes, dots, or other special characters.
  */
 export function validateBridgeId(id: string, label: string): string {
   if (!id || !SAFE_ID_PATTERN.test(id)) {
@@ -61,10 +52,10 @@ export function validateBridgeId(id: string, label: string): string {
   return id
 }
 
-/** Errores fatales del bridge que no deben reintentarse (p. ej. fallos de auth). */
+/** Fatal bridge errors that should not be retried (e.g. auth failures). */
 export class BridgeFatalError extends Error {
   readonly status: number
-  /** Tipo de error provisto por el servidor, p. ej. "environment_expired". */
+  /** Server-provided error type, e.g. "environment_expired". */
   readonly errorType: string | undefined
   constructor(message: string, status: number, errorType?: string) {
     super(message)
@@ -106,13 +97,11 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
   }
 
   /**
-   * Ejecuta un request autenticado con OAuth con un único reintento ante
-   * un 401. En un 401, intenta refrescar el token vía
-   * `handleOAuth401Error` (mismo patrón que withRetry.ts para
-   * v1/messages). Si el refresh tiene éxito, reintenta el request una
-   * vez con el nuevo token. Si el refresh falla o el reintento también
-   * devuelve 401, la respuesta 401 se devuelve para que
-   * handleErrorStatus lance BridgeFatalError.
+   * Execute an OAuth-authenticated request with a single retry on 401.
+   * On 401, attempts token refresh via handleOAuth401Error (same pattern as
+   * withRetry.ts for v1/messages). If refresh succeeds, retries the request
+   * once with the new token. If refresh fails or the retry also returns 401,
+   * the 401 response is returned for handleErrorStatus to throw BridgeFatalError.
    */
   async function withOAuthRetry<T>(
     fn: (accessToken: string) => Promise<{ status: number; data: T }>,
@@ -130,7 +119,7 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
       return response
     }
 
-    // Intenta refrescar el token — coincide con el patrón de withRetry.ts
+    // Attempt token refresh — matches the pattern in withRetry.ts
     debug(`[bridge:api] ${context}: 401 received, attempting token refresh`)
     const refreshed = await deps.onAuth401(accessToken)
     if (refreshed) {
@@ -145,7 +134,7 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
       debug(`[bridge:api] ${context}: Token refresh failed`)
     }
 
-    // El refresh falló — devuelve el 401 para que handleErrorStatus lance
+    // Refresh failed — return 401 for handleErrorStatus to throw
     return response
   }
 
@@ -169,22 +158,20 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
               directory: config.dir,
               branch: config.branch,
               git_repo_url: config.gitRepoUrl,
-              // Anuncia la capacidad de sesión para que claude.ai/code
-              // muestre insignias "2/4 sessions" y sólo bloquee el
-              // selector cuando esté realmente a capacidad. Los backends
-              // que aún no aceptan este campo lo ignoran silenciosamente.
+              // Advertise session capacity so claude.ai/code can show
+              // "2/4 sessions" badges and only block the picker when
+              // actually at capacity. Backends that don't yet accept
+              // this field will silently ignore it.
               max_sessions: config.maxSessions,
-              // worker_type deja que claude.ai filtre entornos por
-              // origen (p. ej. el selector de asistente sólo muestra
-              // workers en modo asistente). La app desktop cowork envía
-              // "cowork"; aquí se envía un valor distinto.
+              // worker_type lets claude.ai filter environments by origin
+              // (e.g. assistant picker only shows assistant-mode workers).
+              // Desktop cowork app sends "cowork"; we send a distinct value.
               metadata: { worker_type: config.workerType },
-              // Re-registro idempotente: si tenemos un environment_id
-              // emitido por el backend de una sesión previa (resume de
-              // --session-id), lo enviamos de vuelta para que el backend
-              // se reconecte en vez de crear un entorno nuevo. El
-              // backend puede aun así devolver un ID nuevo si el viejo
-              // expiró — los llamadores deben comparar la respuesta.
+              // Idempotent re-registration: if we have a backend-issued
+              // environment_id from a prior session (--session-id resume),
+              // send it back so the backend reattaches instead of creating
+              // a new env. The backend may still hand back a fresh ID if
+              // the old one expired — callers must compare the response.
               ...(config.reuseEnvironmentId && {
                 environment_id: config.reuseEnvironmentId,
               }),
@@ -217,9 +204,8 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
     ): Promise<WorkResponse | null> {
       validateBridgeId(environmentId, 'environmentId')
 
-      // Guarda y resetea, para que los errores rompan la racha de
-      // "consecutivos vacíos". Se restaura abajo cuando la respuesta es
-      // verdaderamente vacía.
+      // Save and reset so errors break the "consecutive empty" streak.
+      // Restored below when the response is truly empty.
       const prevEmptyPolls = consecutiveEmptyPolls
       consecutiveEmptyPolls = 0
 
@@ -239,7 +225,7 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
 
       handleErrorStatus(response.status, response.data, 'Poll')
 
-      // Cuerpo vacío o null = no hay trabajo disponible
+      // Empty body or null = no work available
       if (!response.data) {
         consecutiveEmptyPolls = prevEmptyPolls + 1
         if (
@@ -355,7 +341,7 @@ export function createBridgeApiClient(deps: BridgeApiDeps): BridgeApiClient {
         'ArchiveSession',
       )
 
-      // 409 = ya archivado (idempotente, no es un error)
+      // 409 = already archived (idempotent, not an error)
       if (response.status === 409) {
         debug(
           `[bridge:api] POST /v1/sessions/${sessionId}/archive -> 409 (already archived)`,
@@ -513,7 +499,7 @@ function handleErrorStatus(
   }
 }
 
-/** Verifica si una cadena de tipo de error indica expiración de sesión/entorno. */
+/** Check whether an error type string indicates a session/environment expiry. */
 export function isExpiredErrorType(errorType: string | undefined): boolean {
   if (!errorType) {
     return false
@@ -522,11 +508,10 @@ export function isExpiredErrorType(errorType: string | undefined): boolean {
 }
 
 /**
- * Verifica si un BridgeFatalError es un error de permiso 403 suprimible.
- * Son errores 403 para scopes como 'external_poll_sessions' u
- * operaciones como StopWork que fallan porque el rol del usuario carece
- * de 'environments:manage'. No afectan la funcionalidad central y no
- * deben mostrarse a los usuarios.
+ * Check whether a BridgeFatalError is a suppressible 403 permission error.
+ * These are 403 errors for scopes like 'external_poll_sessions' or operations
+ * like StopWork that fail because the user's role lacks 'environments:manage'.
+ * They don't affect core functionality and shouldn't be shown to users.
  */
 export function isSuppressible403(err: BridgeFatalError): boolean {
   if (err.status !== 403) {

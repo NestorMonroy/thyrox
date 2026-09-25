@@ -1,7 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/output/src/__tests__/stringUtils.test.ts`
- * (verbatim). Tests de output/stringUtils — utilidades chicas usadas en
- * toda la capa de renderizado de output (markdown, capture, formatters).
+ * Tests for output/stringUtils — small utilities used across the
+ * output rendering layer (markdown, capture, formatters).
  */
 import { describe, expect, test } from 'bun:test'
 import {

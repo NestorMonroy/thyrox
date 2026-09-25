@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/directMemberMessage.test.ts`.
- */
 import { describe, expect, mock, test } from 'bun:test'
 import {
   parseDirectMemberMessage,
@@ -65,9 +62,9 @@ describe('parseDirectMemberMessage — non-matches return null', () => {
   })
 
   test('@name with only whitespace body returns null', () => {
-    // Contrato: el cuerpo debe tener contenido no-blanco DESPUES de trim.
-    // El regex exige al menos un caracter tras el espacio, pero al
-    // recortar puede quedar vacio.
+    // Contract: body must contain non-whitespace AFTER trim. The regex
+    // requires at least one char after the space, but trimming may
+    // produce empty.
     expect(parseDirectMemberMessage('@alice    ')).toBeNull()
   })
 
@@ -80,9 +77,9 @@ describe('parseDirectMemberMessage — non-matches return null', () => {
   })
 
   test('@name with @ in middle returns null (no whitespace boundary)', () => {
-    // El regex es `^@([\w-]+)\s+(.+)$` — tras el nombre, exige un
-    // espacio en blanco. `@bad@name hello` tiene `@` justo despues de
-    // `bad`, asi que la frontera falla y todo el regex falla.
+    // The regex is `^@([\w-]+)\s+(.+)$` — after the name, it requires
+    // whitespace. `@bad@name hello` has `@` immediately after `bad`,
+    // so the boundary fails and the whole regex fails.
     expect(parseDirectMemberMessage('@bad@name hello')).toBeNull()
   })
 
@@ -154,7 +151,7 @@ describe('sendDirectMemberMessage — error paths', () => {
   })
 
   test('handles undefined teammates field', async () => {
-    // Contrato: teammates ?? {} — teammates undefined se trata como vacio.
+    // Contract: teammates ?? {} — undefined teammates is treated as empty.
     const result = await sendDirectMemberMessage(
       'alice',
       'msg',
@@ -188,22 +185,21 @@ describe('sendDirectMemberMessage — happy path', () => {
     expect(msg.from).toBe('user')
     expect(msg.text).toBe('hello')
     expect(typeof msg.timestamp).toBe('string')
-    // Debe ser ISO8601
+    // Should be ISO8601
     expect(msg.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/)
     expect(teamName).toBe('team-alpha')
   })
 
   test('matches recipient by name field, not by teammate map key', async () => {
-    // Contrato: la busqueda es
-    // `Object.values(teammates).find(t => t.name === ...)`. La clave del
-    // mapa es irrelevante — solo importa el campo .name.
+    // Contract: lookup is `Object.values(teammates).find(t => t.name === ...)`.
+    // The map key is irrelevant — only the .name field matches.
     const writeToMailbox = mock(async () => {})
     await sendDirectMemberMessage(
       'alice',
       'msg',
       {
         teammates: {
-          'random-key': { name: 'alice' }, // clave ≠ nombre; la busqueda debe funcionar igual
+          'random-key': { name: 'alice' }, // key ≠ name; lookup must succeed
         },
         teamName: 't',
       } as never,

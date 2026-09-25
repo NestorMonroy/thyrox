@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/glob.ts`.
- * La version anterior portaba 1 de 2 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
 import { basename, dirname, isAbsolute, join, sep } from 'path'
 import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'

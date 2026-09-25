@@ -9,28 +9,22 @@ import { getDenyRules } from './permissions.js'
 import { permissionRuleValueToString } from './permissionRuleParser.js'
 
 // ============================================================================
-// Copia de `ccnmt: packages/permission/src/yoloSystemPrompt.ts` con los
-// comentarios traducidos; el cuerpo es el de la fuente.
+// Auto-mode classifier SYSTEM PROMPT assembly (ant v2.1.150 Dp5/UZ7/q36/pM_/H36
+// + Yp5/wp5 + Jp5). Split out of yoloClassifier.ts so the decision engine
+// (API calls, parsing, telemetry) stays separate from prompt construction.
 //
-// Ensamblado del SYSTEM PROMPT del clasificador de modo automático (ant
-// v2.1.150 Dp5/UZ7/q36/pM_/H36 + Yp5/wp5 + Jp5). Se separó de
-// yoloClassifier.ts para que el motor de decisión — llamadas al API, parseo,
-// telemetría — quede aparte de la construcción del prompt.
-//
-// Tres archivos .txt respaldan esta capa:
-//   - auto_mode_system_prompt.txt — el prompt BASE (Threat Model, User Intent
-//     Rule, Evaluation Rules, Classification Process) con un marcador de
-//     posición `<permissions_template>`.
-//   - permissions_{external,anthropic}.txt — la PLANTILLA de reglas HARD/SOFT
-//     BLOCK + ALLOW. ant 150 distribuye una sola; ccb conserva los dos nombres
-//     de archivo con contenido idéntico, para la eliminación de código muerto
-//     en tiempo de build y para el test de contrato de rutas protegidas.
+// Three .txt files back this layer:
+//   - auto_mode_system_prompt.txt — BASE prompt (Threat Model, User Intent Rule,
+//     Evaluation Rules, Classification Process) with a `<permissions_template>`
+//     placeholder.
+//   - permissions_{external,anthropic}.txt — the HARD/SOFT BLOCK + ALLOW rule
+//     TEMPLATE (ant 150 ships one; ccb keeps both filenames with identical
+//     content for build-time DCE + the protected-path contract test).
 // ============================================================================
 
-// Eliminación de código muerto: imports condicionales de los prompts del
-// clasificador de modo automático. En tiempo de build el bundler incrusta los
-// .txt como literales de cadena; en tiempo de test, require() devuelve
-// {default: string}. txtRequire normaliza las dos formas.
+// Dead code elimination: conditional imports for auto mode classifier prompts.
+// At build time, the bundler inlines .txt files as string literals. At test
+// time, require() returns {default: string} — txtRequire normalizes both.
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 function txtRequire(mod: string | { default: string }): string {
   return typeof mod === 'string' ? mod : mod.default
@@ -40,76 +34,68 @@ const BASE_PROMPT: string = feature('TRANSCRIPT_CLASSIFIER')
   ? txtRequire(require('./yolo-classifier-prompts/auto_mode_system_prompt.txt'))
   : ''
 
-// La plantilla externa se carga aparte, para que `claude auto-mode defaults`
-// disponga de ella incluso en las builds de ant.
+// External template is loaded separately so it's available for
+// `claude auto-mode defaults` even in ant builds.
 const EXTERNAL_PERMISSIONS_TEMPLATE: string = feature('TRANSCRIPT_CLASSIFIER')
   ? txtRequire(require('./yolo-classifier-prompts/permissions_external.txt'))
   : ''
 
-// ant 150 colapsó las dos plantillas en una: en 3149.js, Kp5()===true
-// selecciona siempre RR8, y la alternativa `qp5` es un `""` muerto. ccb
-// conserva las dos constantes .txt para la eliminación de código muerto en
-// build y para el test de contrato de rutas protegidas, pero hoy las dos
-// llevan el MISMO contenido RR8 de ant 150. La separación histórica entre
-// anthropic y external — y su razón, «las reglas de denegación externas son
-// demasiado amplias para desarrollar en macOS» — ya no existe: la plantilla
-// v150 trae en línea las excepciones ALLOW amigables al desarrollo (Local
-// Operations, Declared Dependencies, Toolchain Bootstrap, etc.).
+// ant 150 collapsed the two templates into one (3149.js Kp5()===true always
+// selects RR8; the `qp5` alternate is dead `""`). ccb keeps both .txt consts
+// for build-time DCE + the protected-path contract test, but they now hold the
+// SAME ant-150 RR8 content. The historical anthropic-vs-external split (and the
+// "external deny rules too broad for macOS dev" rationale) is gone: the v150
+// template already carries the dev-friendly ALLOW exceptions (Local Operations,
+// Declared Dependencies, Toolchain Bootstrap, etc.) inline.
 const ANTHROPIC_PERMISSIONS_TEMPLATE: string = feature('TRANSCRIPT_CLASSIFIER')
   ? txtRequire(require('./yolo-classifier-prompts/permissions_anthropic.txt'))
   : ''
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 
 function isUsingExternalPermissions(): boolean {
-  // Kp5() de ant 150: siempre true. El clasificador usa siempre la plantilla
-  // unificada v150. forceExternalPermissions se conserva como válvula de
-  // escape inerte, por compatibilidad de configuración. Devolver true aquí
-  // también deshabilita la inyección heredada de guía de bash y powershell de
-  // ccb, condicionada a `!usingExternal` — y es correcto, porque el Dp5 de ant
-  // nunca las inyectó en el clasificador de modo automático y la plantilla
-  // v150 ya cubre en línea los idiomas de PowerShell. Las reglas `prompt:` de
-  // Bash siguen funcionando por su propio camino de clasificador especulativo
-  // (useCanUseTool peekSpeculativeClassifierCheck), independiente de este
-  // prompt.
+  // ant 150 Kp5(): always true. The classifier always uses the v150 unified
+  // template. forceExternalPermissions is kept as a no-op escape hatch for
+  // config compat. Returning true here also disables the legacy ccb bash/
+  // powershell guidance injection (gated on `!usingExternal`) — correct,
+  // because ant's Dp5 never injected those into the auto-mode classifier and
+  // the v150 template already covers PowerShell idioms inline. Bash `prompt:`
+  // rules keep working via their own speculative-classifier path (useCanUseTool
+  // peekSpeculativeClassifierCheck), independent of this prompt.
   return true
 }
 
 /**
- * La forma de la configuración settings.autoMode: las cuatro secciones del
- * prompt del clasificador que un usuario puede personalizar. Variante de campo
- * obligatorio — arreglos vacíos cuando la sección falta — para la salida JSON;
- * settings.ts usa la variante de campo opcional.
+ * Shape of the settings.autoMode config — the four classifier prompt sections a
+ * user can customize. Required-field variant (empty arrays when absent) for
+ * JSON output; settings.ts uses the optional-field variant.
  */
 export type AutoModeRules = {
   allow: string[]
   soft_deny: string[]
   /**
-   * Reglas de denegación dura: estas clases de acción NUNCA se auto-aprueban,
-   * ni siquiera con autorización explícita del usuario en la conversación
-   * activa. El clasificador evalúa hard_deny ANTES de comprobar la intención
-   * del usuario o soft_deny.
+   * Hard-deny rules — these classes of action are NEVER auto-approved, even
+   * with explicit user authorization in the active conversation. The classifier
+   * evaluates hard_deny BEFORE checking user intent or soft_deny.
    */
   hard_deny: string[]
   environment: string[]
 }
 
 /**
- * Parsea la plantilla de permisos externa a la forma del esquema
- * settings.autoMode. La plantilla externa envuelve los valores por defecto de
- * cada sección en etiquetas <user_*_to_replace> — los ajustes del usuario
- * REEMPLAZAN esos valores por defecto — así que el contenido capturado de la
- * etiqueta ES el valor por defecto. En la plantilla cada viñeta ocupa una sola
- * línea; cada línea que empieza por `- ` se vuelve una entrada del arreglo.
- * Lo consume `claude auto-mode defaults`.
+ * Parses the external permissions template into the settings.autoMode schema
+ * shape. The external template wraps each section's defaults in
+ * <user_*_to_replace> tags (user settings REPLACE these defaults), so the
+ * captured tag contents ARE the defaults. Bullet items are single-line in the
+ * template; each line starting with `- ` becomes one array entry.
+ * Used by `claude auto-mode defaults`.
  */
 export function getDefaultExternalAutoModeRules(): AutoModeRules {
   return {
     allow: extractTaggedBullets('user_allow_rules_to_replace'),
-    // q36() de ant 150: los valores por defecto de denegación blanda viven en
-    // `user_soft_deny_rules_to_replace`, renombrado desde el
-    // `user_deny_rules_to_replace` anterior a v150. El respaldo mantiene
-    // `auto-mode defaults` funcionando si alguna vez se carga una plantilla
-    // sin portar.
+    // ant 150 q36(): the soft-deny defaults live in
+    // `user_soft_deny_rules_to_replace` (renamed from the pre-v150
+    // `user_deny_rules_to_replace`). The fallback keeps `auto-mode defaults`
+    // working if an unported template is ever loaded.
     soft_deny: orFallback(
       extractTaggedBullets('user_soft_deny_rules_to_replace'),
       () => extractTaggedBullets('user_deny_rules_to_replace'),
@@ -136,18 +122,16 @@ function extractTaggedBullets(tagName: string): string[] {
 }
 
 /**
- * Devuelve el system prompt externo completo del clasificador con las reglas
- * por defecto, sin sobreescrituras del usuario. Lo consume
- * `claude auto-mode critique` para mostrarle al modelo cómo ve el clasificador
- * sus propias instrucciones.
+ * Returns the full external classifier system prompt with default rules (no user
+ * overrides). Used by `claude auto-mode critique` to show the model how the
+ * classifier sees its instructions.
  */
 export function buildDefaultExternalSystemPrompt(): string {
-  // UZ7() de ant 150: desenvuelve cada etiqueta `<foo_to_replace>` a sus
-  // valores por defecto y retira el marcador `<settings_deny_rules>` — en la
-  // vista de defaults no hay reglas de denegación del usuario. Se atienden
-  // tanto la etiqueta v150 `user_soft_deny_rules_to_replace` como la heredada
-  // `user_deny_rules_to_replace`, para que una plantilla sin portar no pueda
-  // filtrar una etiqueta literal a la vista de crítica.
+  // ant 150 UZ7(): unwrap every `<foo_to_replace>` tag to its defaults and
+  // strip the `<settings_deny_rules>` marker (no user deny rules in the
+  // defaults view). Both the v150 `user_soft_deny_rules_to_replace` and the
+  // legacy `user_deny_rules_to_replace` tags are handled so an unported
+  // template can't leak a literal tag into the critique view.
   const unwrap = (s: string, tag: string): string =>
     s.replace(
       new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`),
@@ -170,34 +154,31 @@ export function buildDefaultExternalSystemPrompt(): string {
 }
 
 /**
- * Centinela que un usuario puede colocar en cualquier lista de reglas de
- * autoMode para reinsertar los valores por defecto de la plantilla junto a sus
- * reglas propias. ant `alH` ("$defaults" en 3149.js). Sin él, una sección de
- * usuario no vacía REEMPLAZA por completo los valores por defecto de esa
- * sección, porque la etiqueta `<foo_to_replace>` los envuelve; con él, los
- * valores por defecto se expanden una vez en la posición del centinela y se
- * conservan el resto de las entradas del usuario. Es el único mecanismo con el
- * que un usuario puede conservar las listas BLOCK/ALLOW por defecto — grandes
- * y críticas para la seguridad — mientras añade reglas.
+ * Sentinel a user may place in any autoMode rule list to splice the template's
+ * built-in defaults back in alongside their custom rules. ant `alH` ("$defaults"
+ * in 3149.js). Without it, a non-empty user section REPLACES that section's
+ * defaults entirely (the `<foo_to_replace>` tag wraps the defaults); with it,
+ * the defaults are expanded once at the sentinel's position and the rest of the
+ * user's entries are kept. This is the only mechanism by which a user can keep
+ * the (large, security-critical) default BLOCK/ALLOW lists while adding rules.
  */
 const DEFAULTS_SENTINEL = '$defaults'
 
 /**
- * Las reglas de clasificador de prompt de Bash usan un marcador `prompt:` en su
- * ruleContent y se hacen cumplir por su propio camino (bashClassifier.ts): NO
- * deben aflorar ante el clasificador de modo automático como reglas genéricas
- * de denegación de settings. ant `C96` ("prompt:" en 3149.js).
+ * Bash prompt-classifier rules use a `prompt:` ruleContent marker and are
+ * enforced on their own path (bashClassifier.ts) — they must NOT be surfaced as
+ * generic settings deny rules to the auto-mode classifier. ant `C96` ("prompt:"
+ * in 3149.js).
  */
 const BASH_PROMPT_RULE_PREFIX = 'prompt:'
 
 /**
- * Fusiona las entradas de regla que aporta el usuario con el bloque por defecto
- * de la plantilla, honrando el centinela `$defaults`. ant `pM_` (3149.js): con
- * la lista del usuario vacía se conservan los valores por defecto verbatim; en
- * otro caso se emite cada entrada del usuario como viñeta `- `, expandiendo los
- * valores por defecto una sola vez donde aparezca el centinela — deduplicado,
- * así que un segundo `$defaults` se descarta. Devuelve la cadena de reemplazo
- * ya unida para el cuerpo de una etiqueta `<foo_to_replace>`.
+ * Merge user-supplied rule entries with the template's default block, honoring
+ * the `$defaults` sentinel. ant `pM_` (3149.js): when the user list is empty,
+ * keep the defaults verbatim; otherwise emit each user entry as a `- ` bullet,
+ * expanding the defaults once where the sentinel appears (deduped — a second
+ * `$defaults` is dropped). Returns the joined replacement string for a
+ * `<foo_to_replace>` tag body.
  */
 function mergeRulesWithDefaults(
   userRules: string[] | undefined,
@@ -220,20 +201,18 @@ function mergeRulesWithDefaults(
 }
 
 /**
- * Construye la línea de guía "User Deny Rules" que se inyecta en el marcador
- * `<settings_deny_rules>`. ant `Yp5` — recoge las cadenas de regla de
- * denegación en crudo y salta las reglas `prompt:` de Bash — más `wp5`, que da
- * formato a la guía de elusión entre herramientas. Le dice al clasificador que
- * una regla de denegación de Edit/Write/MultiEdit tiene que bloquear también el
- * mismo efecto encaminado por Bash (`python -c`, `sed -i`, `cat >`, heredocs).
- * Devuelve '' cuando el usuario no tiene reglas de denegación.
+ * Build the "User Deny Rules" guidance line injected at the `<settings_deny_rules>`
+ * marker. ant `Yp5` (collect raw deny-rule strings, skip Bash `prompt:` rules)
+ * + `wp5` (format the cross-tool-circumvention guidance). Tells the classifier
+ * that an Edit/Write/MultiEdit deny rule must also block the same effect routed
+ * through Bash (`python -c`, `sed -i`, `cat >`, heredocs). Returns '' when the
+ * user has no deny rules.
  */
 function buildSettingsDenyRulesGuidance(context: ToolPermissionContext): string {
   const seen = new Set<string>()
   for (const rule of getDenyRules(context)) {
-    // Las reglas de clasificador de prompt de Bash se hacen cumplir en otro
-    // sitio: no son objetivos de elusión. ant Yp5
-    // `fw(O).ruleContent?.startsWith(C96)`.
+    // Bash prompt-classifier rules are enforced elsewhere — not circumvention
+    // targets. ant Yp5 `fw(O).ruleContent?.startsWith(C96)`.
     if (rule.ruleValue.ruleContent?.startsWith(BASH_PROMPT_RULE_PREFIX)) continue
     seen.add(permissionRuleValueToString(rule.ruleValue))
   }
@@ -250,41 +229,37 @@ function buildSettingsDenyRulesGuidance(context: ToolPermissionContext): string 
 }
 
 /**
- * Construye las líneas de Session Context que se anexan como bloque de sistema
- * aparte. ant `Jp5` (3149.js): resuelve la identidad del operador desde
- * GITHUB_ACTOR / USER / USERNAME / el correo de git (su parte local),
- * saneada y con tope de longitud, para que el clasificador pueda resolver el
- * patrón de rama `$USER/...` de las reglas de denegación y reconocer que las
- * ramas `<other-user>/...` NO son las ramas personales de este operador.
+ * Build Session Context lines appended as a separate system block. ant `Jp5`
+ * (3149.js): resolve the operator's identity from GITHUB_ACTOR / USER /
+ * USERNAME / git email (local part), sanitized and length-capped, so the
+ * classifier can resolve the `$USER/...` branch pattern in the deny rules and
+ * recognize that `<other-user>/...` branches are NOT this operator's personal
+ * branches.
  *
- * AÑADIDO DE ccb — contexto del modelo de operador. La forma entera del
- * producto ccb es un operador único en solitario que corre un CLI
- * autoalojado en una máquina suya: la misma premisa que
- * CYBER_RISK_INSTRUCTION codifica para el bucle principal del agente, y que
- * la retirada del diálogo de confianza del workspace (d6593f98) codifica para
- * el arranque. La plantilla de clasificador de aguas arriba hereda los
- * supuestos multi-inquilino de ant — señaladamente el SOFT BLOCK "Git Push to
- * Default Branch ... bypasses pull request review", que para ccb es
- * sencillamente falso: ccb lo mantiene una sola persona, su flujo de release
- * documentado ES commit más push directo a main, y no hay ningún gate de
- * revisión de PR que eludir. Sin corregir esto, el clasificador — otro LLM,
- * que nunca ve CYBER_RISK_INSTRUCTION — bloquea el flujo de release normal
- * del operador y, peor, se engancha a un push bloqueado previo del transcript
- * para bloquear también el git de SÓLO LECTURA que venga después
+ * ccb ADDITION — operator-model context. ccb's whole product shape is a
+ * single solo operator running a self-hosted CLI on a machine they own (the
+ * same premise CYBER_RISK_INSTRUCTION encodes for the main agent loop, and
+ * the workspace-trust dialog removal d6593f98 encodes for startup). The
+ * upstream classifier template inherits ant's multi-tenant assumptions —
+ * notably the SOFT BLOCK "Git Push to Default Branch ... bypasses pull
+ * request review", which is simply false for ccb: ccb is solo-maintained,
+ * its documented release flow IS commit + push directly to main, and there
+ * is no PR-review gate to bypass. Without correcting this, the classifier
+ * (a separate LLM that never sees CYBER_RISK_INSTRUCTION) blocks the
+ * operator's normal release workflow and, worse, latches onto a prior
+ * blocked push in the transcript to also block subsequent READ-ONLY git
  * (`git fetch`/`status`/`rev-parse`).
  *
- * La corrección vive aquí, en código, y no en las plantillas .txt: (a) las
- * plantillas se sincronizan con aguas arriba y perderían la edición en el
- * siguiente pull de ant; (b) ésta es la costura establecida para inyectar los
- * hechos del entorno que el clasificador tiene que saber — aquí ya se inyecta
- * la identidad; (c) aplica a toda instalación de ccb, porque el modelo de
- * operador es una propiedad del producto y no de un usuario. Estas líneas NO
- * relajan ningún HARD BLOCK: empujar a un repositorio FUERA del remoto propio
- * del repositorio del directorio de trabajo sigue siendo Data Exfiltration, con
- * bloqueo duro, y el force-push, el borrado de rama remota y la reescritura de
- * historia siguen bajo Git Destructive, con bloqueo blando. Sólo corrigen las
- * dos clasificaciones erróneas: la del push a la rama por defecto y la del git
- * de sólo lectura.
+ * The fix lives here, in code, rather than in the .txt templates: (a) the
+ * templates are upstream-synced and would lose the edit on the next ant
+ * pull; (b) this is the established seam for injecting environment facts the
+ * classifier must know (it already injects identity here); (c) it applies to
+ * every ccb install, since the operator model is a property of the product,
+ * not of one user. These lines do NOT relax any HARD BLOCK — pushing to a
+ * repo OUTSIDE the working-dir repo's own remote is still Data Exfiltration
+ * (hard-blocked), and force-push / remote-branch deletion / history rewrite
+ * stay under Git Destructive (soft block). They only correct the
+ * default-branch-push and read-only-git misclassifications.
  */
 async function buildSessionContextLines(): Promise<string[]> {
   const lines: string[] = []
@@ -294,9 +269,8 @@ async function buildSessionContextLines(): Promise<string[]> {
     readEnv('USER') ??
     readEnv('USERNAME') ??
     (gitEmail ? gitEmail.split('@')[0] : null)
-  // Saneado: se descarta todo lo que caiga fuera de un conjunto conservador de
-  // identificador y se topa la longitud. El jp5 de ant retira los caracteres
-  // no admitidos antes del .slice(0,64).
+  // Sanitize: drop anything outside a conservative identifier set, cap length.
+  // ant jp5 strips disallowed chars before the .slice(0,64).
   const identity =
     rawIdentity?.replace(/[^A-Za-z0-9._-]/g, '').slice(0, 64) || null
   if (identity) {
@@ -306,9 +280,8 @@ async function buildSessionContextLines(): Promise<string[]> {
         `(\`<other-user>/...\`) are NOT this user's personal branches.`,
     )
   }
-  // Modelo de operador de ccb: el comentario de documentación de arriba explica
-  // por qué estas líneas corrigen los supuestos multi-inquilino de la plantilla
-  // de aguas arriba.
+  // ccb operator model — see the doc comment above for why these correct the
+  // upstream template's multi-tenant assumptions.
   lines.push(
     `**Operator model**: This is a self-hosted, single-operator ccb instance ` +
       `running on a machine the operator owns — NOT a shared, multi-tenant, ` +
@@ -340,16 +313,14 @@ async function buildSessionContextLines(): Promise<string[]> {
 }
 
 /**
- * Guía de denegación propia de PowerShell para el clasificador. Se anexa a la
- * lista de denegación en buildYoloSystemPrompt cuando el modo automático de
- * PowerShell está activo. Mapea los idiomas de PS a las categorías BLOCK ya
- * existentes, para que el clasificador reconozca `iex (iwr ...)` como "Code
- * from External", `Remove-Item -Recurse -Force` como "Irreversible Local
- * Destruction", etc.
+ * PowerShell-specific deny guidance for the classifier. Appended to the
+ * deny list in buildYoloSystemPrompt when PowerShell auto mode is active.
+ * Maps PS idioms to the existing BLOCK categories so the classifier
+ * recognizes `iex (iwr ...)` as "Code from External", `Remove-Item
+ * -Recurse -Force` as "Irreversible Local Destruction", etc.
  *
- * Guardada en su definición para la eliminación de código muerto: con
- * external:false el contenido de la cadena está ausente de las builds
- * externas, el mismo patrón que los require de .txt de arriba.
+ * Guarded at definition for DCE — with external:false, the string content
+ * is absent from external builds (same pattern as the .txt requires above).
  */
 const POWERSHELL_DENY_GUIDANCE: readonly string[] = feature(
   'POWERSHELL_AUTO_MODE',
@@ -363,10 +334,9 @@ const POWERSHELL_DENY_GUIDANCE: readonly string[] = feature(
   : []
 
 /**
- * El system prompt del clasificador ya ensamblado: el texto de base más
- * plantilla (bloque 0) y, si las hay, las líneas de Session Context (bloque 1).
- * El `Dp5` de ant devuelve un arreglo de bloques de sistema exactamente por
- * esto: el Session Context es un bloque cacheable aparte.
+ * The assembled classifier system prompt: the base+template text (block 0) plus
+ * any Session Context lines (block 1). ant `Dp5` returns a system-block array
+ * for exactly this reason — the Session Context is a separate cacheable block.
  */
 export type YoloSystemPrompt = {
   systemText: string
@@ -374,12 +344,12 @@ export type YoloSystemPrompt = {
 }
 
 /**
- * Construye el system prompt del clasificador de modo automático.
- * Ensambla el prompt base con la plantilla de permisos y sustituye los valores
- * de allow/soft_deny/hard_deny/environment del usuario que vienen de
- * settings.autoMode, inyecta en `<settings_deny_rules>` la guía de elusión de
- * reglas de denegación entre herramientas, y devuelve el Session Context como
- * bloque aparte. ant `Dp5` (3149.js).
+ * Build the system prompt for the auto mode classifier.
+ * Assembles the base prompt with the permissions template and substitutes
+ * user allow/soft_deny/hard_deny/environment values from settings.autoMode,
+ * injects the cross-tool deny-rule circumvention guidance at
+ * `<settings_deny_rules>`, and returns Session Context as a separate block.
+ * ant `Dp5` (3149.js).
  */
 export async function buildYoloSystemPrompt(
   context: ToolPermissionContext,
@@ -407,19 +377,18 @@ export async function buildYoloSystemPrompt(
     ...(includePowerShellGuidance ? POWERSHELL_DENY_GUIDANCE : []),
     ...(autoMode?.soft_deny ?? []),
   ]
-  // Los transcripts de sesión son el registro de autoridad con el que se
-  // reanuda el trabajo y se decide si el operador aprobó una acción. El modo
-  // automático nunca debe permitir que el modelo reescriba ese registro, ni
-  // siquiera cuando una lista hard_deny a medida reemplaza los valores por
-  // defecto de la plantilla.
+  // Session transcripts are the authority record used to resume work and to
+  // decide whether the operator approved an action. Auto mode must never let
+  // the model rewrite that record, even when a custom hard_deny list replaces
+  // the template defaults.
   const transcriptIntegrityRule =
     'Session Transcript Integrity: Never create, edit, truncate, replace, move, or delete Claude Code session transcript files (including .jsonl files under the Claude projects/session directories).'
 
-  // Cada etiqueta `<foo_to_replace>...</foo_to_replace>` envuelve los valores
-  // por defecto de esa sección. Una lista de usuario no vacía los REEMPLAZA;
-  // una que contenga el centinela `$defaults` los reinserta
-  // (mergeRulesWithDefaults). ant Dp5/pM_/H36: la misma fusión para allow,
-  // soft_deny, hard_deny y environment.
+  // Each `<foo_to_replace>...</foo_to_replace>` tag wraps that section's
+  // defaults. A non-empty user list REPLACES the defaults; a user list
+  // containing the `$defaults` sentinel splices the defaults back in
+  // (mergeRulesWithDefaults). ant Dp5/pM_/H36 — the same merge for allow,
+  // soft_deny, hard_deny, and environment.
   const systemText = systemPrompt
     .replace(
       /<user_allow_rules_to_replace>([\s\S]*?)<\/user_allow_rules_to_replace>/,
@@ -440,19 +409,17 @@ export async function buildYoloSystemPrompt(
       (_m, defaults: string) =>
         mergeRulesWithDefaults(autoMode?.environment, defaults),
     )
-    // Compatibilidad hacia atrás: las plantillas anteriores a v150 usaban el
-    // nombre de etiqueta aditivo `<user_deny_rules_to_replace>`. ant 150 lo
-    // renombró a soft_deny; se conserva un replace inerte para que una
-    // plantilla sin portar nunca filtre la etiqueta literal al clasificador.
+    // Back-compat: pre-v150 templates used the additive `<user_deny_rules_to_replace>`
+    // tag name. ant 150 renamed it to soft_deny; keep a no-op replace so an
+    // unported template never leaks the literal tag to the classifier.
     .replace(
       /<user_deny_rules_to_replace>([\s\S]*?)<\/user_deny_rules_to_replace>/,
       (_m, defaults: string) =>
         mergeRulesWithDefaults(softDenyDescriptions, defaults),
     )
-    // Inyecta la guía de elusión de reglas de denegación entre herramientas. El
-    // Dp5 de ant reemplaza el marcador `<settings_deny_rules>` por
-    // wp5(Yp5(context)); las plantillas anteriores a v150 no llevan marcador,
-    // así que ahí es inerte.
+    // Inject the cross-tool deny-rule circumvention guidance. ant Dp5 replaces
+    // the `<settings_deny_rules>` marker with wp5(Yp5(context)); pre-v150
+    // templates have no marker, so this is a no-op there.
     .replace('<settings_deny_rules>', () =>
       buildSettingsDenyRulesGuidance(context),
     )

@@ -1,11 +1,8 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/estimateTokens.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { estimateMessageTokens } from '../compaction/estimateTokens.js'
 
 const deps = {
-  // 1 token por caracter (deterministico para los tests).
+  // 1 token per char (deterministic for tests).
   roughEstimate: (text: string) => text.length,
   jsonStringify: (v: unknown) => JSON.stringify(v),
 }
@@ -29,7 +26,7 @@ describe('estimateMessageTokens — basic', () => {
     const msgs: Msg[] = [
       { type: 'user', message: { content: [{ type: 'text', text: 'abc' }] } },
     ]
-    // 3 caracteres * (4/3) = 4.
+    // 3 chars * (4/3) = 4.
     expect(estimateMessageTokens(msgs, deps)).toBe(4)
   })
 
@@ -40,7 +37,7 @@ describe('estimateMessageTokens — basic', () => {
         message: { content: [{ type: 'text', text: 'hello world' }] },
       },
     ]
-    // 11 caracteres * 4/3 = 14.66 → ceil = 15.
+    // 11 chars * 4/3 = 14.66 → ceil = 15.
     expect(estimateMessageTokens(msgs, deps)).toBe(15)
   })
 })
@@ -113,7 +110,7 @@ describe('estimateMessageTokens — block types', () => {
   })
 
   test('tool_use with missing input defaults to {} for stringify', () => {
-    // `block.input ?? {}` — un input undefined cae al objeto vacio.
+    // `block.input ?? {}` — undefined input falls back to empty object.
     const msgs: Msg[] = [
       {
         type: 'assistant',
@@ -133,7 +130,7 @@ describe('estimateMessageTokens — block types', () => {
         message: { content: [{ type: 'unknown_type', payload: 'x' }] },
       },
     ]
-    // JSON.stringify({type:'unknown_type',payload:'x'}) = ~30 caracteres.
+    // JSON.stringify({type:'unknown_type',payload:'x'}) = ~30 chars.
     const result = estimateMessageTokens(msgs, deps)
     expect(result).toBeGreaterThan(0)
   })
@@ -172,7 +169,7 @@ describe('estimateMessageTokens — tool_result blocks', () => {
         },
       },
     ]
-    // 3 + 4 = 7 caracteres.
+    // 3 + 4 = 7 chars.
     expect(estimateMessageTokens(msgs, deps)).toBe(Math.ceil(7 * (4 / 3)))
   })
 
@@ -224,8 +221,8 @@ describe('estimateMessageTokens — tool_result blocks', () => {
 })
 
 describe('estimateMessageTokens — final ceiling', () => {
-  // La funcion multiplica por 4/3 y aplica ceil. Estimacion char-a-token:
-  // ratio 4/3 (guia aproximada de Anthropic). Verifica la logica de ceil.
+  // The function multiplies by 4/3 and ceil's. Chars-to-tokens estimate:
+  // 4/3 ratio (rough Anthropic guidance). Verify the ceiling logic.
 
   test('1 char × 4/3 = 1.33 → ceil → 2', () => {
     const msgs: Msg[] = [
@@ -263,7 +260,7 @@ describe('estimateMessageTokens — multi-message accumulation', () => {
       { type: 'user', message: { content: 'plain string' } },
       { type: 'user', message: { content: [{ type: 'text', text: 'abc' }] } },
     ]
-    // Solo el segundo cuenta.
+    // Only the second counts.
     expect(estimateMessageTokens(msgs, deps)).toBe(4)
   })
 

@@ -1,6 +1,5 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/command-runtime/src/errors.ts` — las 5
- * clases de error del espacio de nombres tipado (V7 §6.5), ninguna omitida.
+ * V7 §6.5 — CommandRuntimeError typed error namespace.
  */
 export class CommandRuntimeBaseError extends Error {
   readonly code: string

@@ -1,48 +1,43 @@
 /**
- * Resolución del sentinel de fire-prompt del loop autónomo — porte de
- * `ccnmt: packages/agent/internal/loopSentinelCore.ts` (port de ant
- * v2.1.136, módulo `xFH` — 2924.js + 2925.js).
+ * Loop fire-prompt sentinel resolution — port of ant v2.1.136
+ * `xFH` module (2924.js + 2925.js).
  *
- * El scheduler de cron emite `task.prompt` verbatim al disparar un wakeup.
- * Para loops autónomos y loops guiados por `loop.md`,
- * `resolveLoopDefaultFire` sustituye ese prompt por una instrucción más rica
- * al momento del disparo —el preámbulo de steward/persistente en el primer
- * disparo; un recordatorio corto de «tick» en los siguientes— en vez de
- * dejar pasar el string literal `<<autonomous-loop>>`.
+ * The cron scheduler emits `task.prompt` verbatim when a wakeup fires.
+ * For autonomous loops and loop.md-driven loops we want to substitute
+ * a richer instruction prompt at fire time, so the model gets the
+ * steward / persistent preamble (first fire) or a short "loop tick"
+ * reminder (subsequent fires) instead of a literal `<<autonomous-loop>>`
+ * string. `resolveLoopDefaultFire` is the single entry point
+ * useScheduledTasks plumbs into the queue.
  *
- * PORTE COMPLETO: 17 de 17 símbolos exportados, medido con el censo por AST
- * contra la fuente.
+ * Per-session state:
+ *   `loopPreambleDelivered` — once-per-session flag for the heavy
+ *     preamble.
+ *   `loopFileLastContent`  — content of the last loop.md we expanded
+ *     (or the LOOP_FALLBACK_PREAMBLE_SENTINEL when the loop.md path
+ *     fell through to the autonomous-loop preamble). Used to detect
+ *     loop.md edits + to suppress the heavy preamble on later fires.
  *
- * Antes era un PORTE PARCIAL declarado, y su premisa era una sola: «ninguno
- * de los dos paquetes vive en este árbol». Hoy es falsa — los siete símbolos
- * que la fuente importa resuelven:
- *
- *   getCwd                              app-host/src/bootstrap/cwd.ts
- *   getCwdState / setCwdState           app-host/src/bootstrap/state.ts
- *   getFeatureValue_CACHED_MAY_BE_STALE config/feature-flags.ts
- *   readEnv / getClaudeConfigHomeDir    config/env/utils.ts
- *   logEvent                            local-observability/src/core.ts
- *   getInitialSettings                  config/settings/settings.ts
- *   getGlobalConfig                     config/global/config.ts
- *
- * Con eso caen los seis exportados que faltaban —`readLoopFile`,
- * `isLoopDefaultPromptEnabled`, `logAutonomousLoopActivation`,
- * `resolveAutonomousLoopFire`, `resolveLoopFileFire`,
- * `resolveLoopDefaultFire`— y con ellos sus auxiliares privados
- * (`truncateLoopFile`, `LOOP_FILE_MAX_BYTES`, `isPushNotifEnabled`, los
- * seis generadores de «tick» y los cuatro nombres de herramienta).
- *
- * Caen también los DOS stand-in locales que el porte parcial necesitaba:
- * `readEnv` —que era `process.env[name]` a mano— y
- * `getFeatureValue_CACHED_MAY_BE_STALE` —que devolvía siempre el
- * `defaultValue`, sin overrides ni `LOCAL_GATE_DEFAULTS`—. Ahora los dos son
- * el import real, así que el comportamiento de las banderas deja de ser un
- * sustituto y pasa a ser el de la fuente.
- *
- * Lo que la fuente NO testea unitariamente sigue sin testearse aquí, y esa
- * frontera es suya, no nuestra: *"The fire-resolution path is integration
- * (depends on env vars, feature flags, and global config that don't survive
- * bun:test mocking). These unit tests pin the structural invariants"*.
+ * Ant identifier map (for cross-reference):
+ *   EY8          → AUTONOMOUS_LOOP_PREAMBLE       (default / steward)
+ *   q67          → AUTONOMOUS_LOOP_PREAMBLE_PERSISTENT (loop-persistent variant)
+ *   _66          → isLoopPersistentPreambleEnabled
+ *   CY8          → getAutonomousLoopPreamble
+ *   IY8          → logAutonomousLoopActivation
+ *   xY8          → isLoopDefaultPromptEnabled
+ *   A67          → resolveAutonomousLoopFire
+ *   Y67          → resolveLoopFileFire
+ *   oK5          → resolveLoopDefaultFire
+ *   aK5          → resetAutonomousLoopDelivered
+ *   uY8 / mY8    → isAutonomousLoopSentinel / isLoopFileSentinel
+ *   rK5          → isLoopDefaultSentinel
+ *   T67 / dK5    → autonomousLoopTickCron / autonomousLoopTickDynamic
+ *   cK5 / lK5    → loopFileTickCron / loopFileTickDynamic
+ *   nK5          → loopFileTickAbsentDynamic
+ *   iz_          → buildPushNotifPacingHint
+ *   bY8          → SCHEDULE_WAKEUP_HEARTBEAT_HINT  (dynamic-pacing tail)
+ *   K67          → LOOP_FALLBACK_PREAMBLE_SENTINEL
+ *   H66          → LOOP_FILE_MAX_BYTES (25000)
  */
 
 import { existsSync, readFileSync } from 'fs'

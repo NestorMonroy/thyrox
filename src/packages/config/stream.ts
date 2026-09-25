@@ -1,12 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/config/stream.ts` (68 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
- *
- * `AsyncIterator` de un solo uso respaldado por una cola interna: `enqueue`
- * añade valores, `done`/`error` cierran el stream, y quien consuma con
- * `for await` recibe cada valor en orden — bloqueando en `next()` cuando la
- * cola está vacía hasta que llegue el próximo valor, el cierre, o el error.
- */
 export class Stream<T> implements AsyncIterator<T> {
   private readonly queue: T[] = []
   private readResolve?: (value: IteratorResult<T>) => void

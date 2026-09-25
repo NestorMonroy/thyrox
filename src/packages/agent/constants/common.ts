@@ -1,2 +1,2 @@
-// Canonical owner is @claude-code-how-works/config/commonConstants.
+// Canonical owner is @thyrox/config/commonConstants.
 export * from '@thyrox/config/commonConstants.js'

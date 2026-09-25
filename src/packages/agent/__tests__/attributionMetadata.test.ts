@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/attributionMetadata.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { computeAttributionMetadata, querySourceFamily, skillToPlugin } from '../attributionMetadata.js'
 

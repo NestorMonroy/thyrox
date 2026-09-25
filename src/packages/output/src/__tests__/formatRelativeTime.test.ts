@@ -1,12 +1,10 @@
 /**
- * Puerto de
- * `ccnmt: packages/output/src/__tests__/formatRelativeTime.test.ts`
- * (verbatim). Tests de formatRelativeTime — se usa en la lista de
- * sesiones, timestamps de log y antiguedades de actividad formateadas.
+ * Tests for formatRelativeTime — used in session list display, log
+ * timestamps, and pretty-printed activity ages.
  *
- * La funcion recibe un `now` opcional para testing deterministico. Una
- * convencion de signo incorrecta hace que "5m ago" aparezca en fechas
- * futuras; un corte de unidad incorrecto da "60m ago" en vez de "1h ago".
+ * The function takes an optional `now` for deterministic testing.
+ * Wrong sign conventions = "5m ago" appears for future dates;
+ * wrong unit-bucket cutoffs = "60m ago" instead of "1h ago".
  */
 import { describe, expect, test } from 'bun:test'
 import {

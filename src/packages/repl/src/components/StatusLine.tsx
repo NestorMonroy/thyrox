@@ -198,7 +198,7 @@ function StatusLineInner({
   const { addNotification } = useNotifications()
   // AppState-sourced model — same source as API requests. getMainLoopModel()
   // re-reads settings.json on every call, so another session's /model write
-  // would leak into this session's statusline (anthropics/claude-code#37596).
+  // would leak into this session's statusline (anthropics/claude-code-how-works-how-works#37596).
   const mainLoopModel = useMainLoopModel()
 
   // Keep latest values in refs for stable callback access

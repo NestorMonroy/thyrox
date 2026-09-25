@@ -1,15 +1,14 @@
 /**
- * Porte verbatim de `ccnmt: packages/agent/__tests__/attributionSnapshotHelpers.test.ts`.
+ * Tests for stateToSnapshotMessage + restoreAttributionStateFromSnapshots
+ * + incrementPromptCount — pure helpers for serializing/deserializing
+ * the AttributionState across compaction + session resume.
  *
- * Cubre `stateToSnapshotMessage` + `restoreAttributionStateFromSnapshots` +
- * `incrementPromptCount` — los helpers puros que serializan/deserializan el
- * `AttributionState` a traves de la compactacion y la reanudacion de sesion.
+ * Wrong serialization = char counts double across compaction (a known
+ * bug class noted in commitAttribution.ts: "837 snapshots × 280 files
+ * → 1.15 quadrillion chars" if you SUM instead of taking the LAST).
  *
- * Una serializacion mal hecha duplica el conteo de caracteres en cada
- * compactacion (la clase de bug que el docstring de `commitAttribution.ts`
- * ya documenta: "837 snapshots x 280 files -> 1.15 quadrillion chars" si se
- * SUMA en vez de tomar el ULTIMO). Una restauracion mal hecha pierde trabajo
- * parcial al reanudar la sesion.
+ * Wrong restore = session resume loses partial work; user-Pry mode
+ * loses the original repo's class detection.
  */
 import { describe, expect, test } from 'bun:test'
 import {

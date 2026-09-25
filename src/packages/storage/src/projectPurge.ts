@@ -1,13 +1,4 @@
 /**
- * Porte COMPLETO por fusion de `ccnmt: packages/storage/src/projectPurge.ts`.
- * La version anterior portaba 7 de 9 exports, y los suyos eran
- * subconjunto ESTRICTO de la fuente: cero simbolos propios que perder.
- * Divergencia frente a la fuente: ninguna, salvo el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*` (TASK-THYROX-0169).
- * Refs: TASK-THYROX-0199.
- */
-
-/**
  * `project purge` core — byte-for-byte port of ant v2.1.136
  *   - `ci3` → collectProjectPurgeItems (single-project plan)
  *   - `li3` → collectAllProjectsPurgeItems (--all plan)

@@ -1,18 +1,15 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/taskSchema.behavior.test.ts`.
- *
- * Fija los invariantes del schema de Task. Las herramientas TaskCreate/
- * TaskUpdate/TaskList validan todas contra TaskSchema; cualquier drift
- * rompe el protocolo entero de la lista de tareas (validación de entrada
- * del LLM, forma del JSON persistido).
- */
 import { describe, expect, test } from 'bun:test'
 
 import { TASK_STATUSES, TaskSchema, TaskStatusSchema } from '../tasks.ts'
 
+/**
+ * Pin Task schema invariants. TaskCreate/TaskUpdate/TaskList tools all
+ * validate against TaskSchema; any drift breaks the entire task list
+ * protocol (LLM input validation, persisted JSON shape).
+ */
 describe('Task schema invariants', () => {
   test('TASK_STATUSES = ["pending", "in_progress", "completed"] (exact order)', () => {
-    // El orden a veces lo usan las capas de presentación — se fija.
+    // Order is sometimes used by display layers — pin it.
     expect([...TASK_STATUSES]).toEqual(['pending', 'in_progress', 'completed'])
   })
 
@@ -38,7 +35,7 @@ describe('Task schema invariants', () => {
     }
     expect(() => schema.parse(valid)).not.toThrow()
 
-    // Cada campo obligatorio, al faltar, → lanza
+    // Each required field, when missing, → throws
     for (const field of ['id', 'subject', 'description', 'status', 'blocks', 'blockedBy'] as const) {
       const partial = { ...valid }
       delete (partial as any)[field]
@@ -70,7 +67,7 @@ describe('Task schema invariants', () => {
       blocks: [],
       blockedBy: [],
     }
-    expect(() => schema.parse(base)).not.toThrow() // todos los opcionales omitidos
+    expect(() => schema.parse(base)).not.toThrow() // all optionals omitted
     expect(() =>
       schema.parse({ ...base, activeForm: 'Doing T', owner: 'agent-1', metadata: { x: 1 } }),
     ).not.toThrow()
@@ -86,7 +83,7 @@ describe('Task schema invariants', () => {
       blocks: [],
       blockedBy: [],
     }
-    // String, number, boolean, array, objeto anidado
+    // String, number, boolean, array, nested object
     expect(() =>
       schema.parse({
         ...base,
@@ -96,8 +93,8 @@ describe('Task schema invariants', () => {
   })
 
   test('id is a string (NOT number) — pin so TaskCreate doesn\'t accept numeric IDs', () => {
-    // La marca de agua alta guarda el ID máximo como string; IDs numéricos
-    // romperían la comparación lexicográfica y causarían colisiones.
+    // The high-water-mark stores the max ID as a string; numeric IDs
+    // would break the lexicographic comparison and cause collisions.
     const schema = TaskSchema()
     const base = {
       id: 1 as any,
@@ -111,9 +108,9 @@ describe('Task schema invariants', () => {
   })
 
   test('rejects unknown statuses ("deleted" not in core schema)', () => {
-    // "deleted" es un verbo solo-de-TaskUpdate que borra la tarea; no es
-    // un estado persistente. Se fija para que un refactor "agreguemos
-    // deleted al enum" que no auditó a todos los consumidores no se cuele.
+    // "deleted" is a TaskUpdate-only verb that removes the task; it's
+    // not a persistent state. Pin so a "let's add deleted to the enum"
+    // refactor that didn't audit all consumers doesn't slip through.
     const schema = TaskSchema()
     const base = {
       id: '1',

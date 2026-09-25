@@ -1,18 +1,15 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/messagePredicates.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { isHumanTurn } from '../messagePredicates.js'
 
 type Msg = Parameters<typeof isHumanTurn>[0]
 
 describe('isHumanTurn', () => {
-  // Contrato critico: los mensajes tool_result comparten `type: 'user'` con
-  // los turnos humanos. El discriminante es la ausencia de `toolUseResult` Y
-  // no estar marcado `isMeta`. Si un refactor futuro invierte esta logica
-  // (p. ej. usa `toolUseResult !== null` en vez de `=== undefined`), los
-  // mensajes tool_result se contarian como prompts de usuario en atribucion
-  // / token-budget / rutas de replay del transcript.
+  // Critical contract: tool_result messages share `type: 'user'` with
+  // human turns. The discriminant is the absence of `toolUseResult` AND
+  // not being marked `isMeta`. If a future refactor inverts this logic
+  // (e.g., uses `toolUseResult !== null` instead of `=== undefined`),
+  // tool_result messages would be counted as user prompts in attribution
+  // / token-budget / transcript replay paths.
 
   test('returns true for plain user message', () => {
     expect(
@@ -39,9 +36,9 @@ describe('isHumanTurn', () => {
   })
 
   test('returns false when toolUseResult is null', () => {
-    // `=== undefined` excluye null. Atrapa la forma de bug silencioso donde
-    // un refactor usa `!toolUseResult` (que trataria null como turno humano
-    // porque `!null === true`).
+    // `=== undefined` excludes null. Catches the silent-bug shape where
+    // a refactor uses `!toolUseResult` (which would treat null as
+    // human-turn since `!null === true`).
     expect(
       isHumanTurn({
         type: 'user',
@@ -52,8 +49,8 @@ describe('isHumanTurn', () => {
   })
 
   test('returns false when toolUseResult is empty object {}', () => {
-    // {} es un valor valido de toolUseResult (p. ej. una herramienta que
-    // devuelve void). NO debe tratarse como ausente.
+    // {} is a valid toolUseResult value (e.g., a tool that returns
+    // void). It must NOT be treated as missing.
     expect(
       isHumanTurn({
         type: 'user',

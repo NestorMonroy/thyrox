@@ -96,7 +96,7 @@ export function UltraplanChoiceDialog({
     const halfPage = Math.max(1, Math.floor(visibleHeight / 2));
 
     // Forked Ink adds wheelDown/wheelUp to the Key payload (vendored at
-    // packages/@anthropic/ink); declare here since the public Key type ships
+    // packages/@ant/ink); declare here since the public Key type ships
     // without them.
     const key = rawKey as typeof rawKey & { wheelDown?: boolean; wheelUp?: boolean };
 

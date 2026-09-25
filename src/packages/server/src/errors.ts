@@ -1,4 +1,3 @@
-/** Puerto de `ccnmt: packages/server/src/errors.ts`. */
 export class ServerBaseError extends Error {
   readonly code: string
 

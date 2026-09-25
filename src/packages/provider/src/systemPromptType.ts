@@ -1,10 +1,8 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/provider/src/systemPromptType.ts` —
- * sus 2 exportaciones, ninguna omitida.
+ * Branded type for system prompt arrays.
  *
- * Tipo branded para arrays de system prompt. Módulo deliberadamente sin
- * dependencias, para poder importarse desde cualquier parte sin riesgo de
- * inicialización circular.
+ * This module is intentionally dependency-free so it can be imported
+ * from anywhere without risking circular initialization issues.
  */
 
 export type SystemPrompt = readonly string[] & {

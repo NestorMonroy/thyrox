@@ -1,8 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de `ccnmt: packages/tool-registry/src/utils/array.ts`
- * (TASK #232, porte de `tool-registry`). Sin dependencias — tres utilidades
- * puras de arreglo.
- */
 export function intersperse<A>(as: A[], separator: (index: number) => A): A[] {
   return as.flatMap((a, i) => (i ? [separator(i), a] : [a]))
 }

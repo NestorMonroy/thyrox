@@ -1,8 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de
- * `ccnmt: packages/tool-registry/src/tools/ReadMcpResourceTool/prompt.ts`
- * (TASK #232). Sin dependencias. Cadenas dirigidas al modelo — verbatim.
- */
 export const DESCRIPTION = `
 Reads a specific resource from an MCP server.
 - server: The name of the MCP server to read from

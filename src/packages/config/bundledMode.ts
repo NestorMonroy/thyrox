@@ -1,13 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/config/bundledMode.ts` (54 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
- */
-
-/**
- * Detecta si el runtime actual es Bun.
- * Devuelve verdadero cuando:
- * - Se ejecuta un archivo JS vía el comando `bun`.
- * - Se ejecuta un ejecutable standalone compilado con Bun.
+ * Detects if the current runtime is Bun.
+ * Returns true when:
+ * - Running a JS file via the `bun` command
+ * - Running a Bun-compiled standalone executable
  */
 export function isRunningWithBun(): boolean {
   // https://bun.com/guides/util/detect-bun
@@ -15,36 +10,35 @@ export function isRunningWithBun(): boolean {
 }
 
 /**
- * Detecta si se ejecuta como un ejecutable standalone compilado con Bun.
+ * Detects if running as a Bun-compiled standalone executable.
  *
- * `Bun.embeddedFiles` sólo se puebla cuando el build pasa
- * `--embed-file=…` — aquí no se pasa, así que queda un array vacío incluso
- * en un binario `bun build --compile`, lo que hacía devolver falso en cada
- * binario de release. Eso se propagaba a
- * `getCurrentInstallationType()` devolviendo 'unknown'/'npm-global' y a
- * `AutoUpdaterWrapper` renderizando el actualizador legado basado en npm en
- * vez de `NativeAutoUpdater` — el auto-update nunca corría.
+ * `Bun.embeddedFiles` is only populated when the build passes
+ * `--embed-file=…` — we don't, so it stays an empty array even in a
+ * `bun build --compile` binary, which made this return false on every
+ * release binary. That cascaded into `getCurrentInstallationType()`
+ * returning 'unknown'/'npm-global' and `AutoUpdaterWrapper` rendering
+ * the legacy npm-based updater instead of `NativeAutoUpdater` —
+ * auto-update never ran.
  *
- * La señal confiable: en un binario compilado con Bun, `Bun.main` (y
- * `import.meta.url`) apuntan dentro de un sistema de archivos sintético que
- * el runtime monta para alojar el bundle JS embebido. Al ejecutar vía
- * `bun script.ts`, son rutas reales en disco en vez de eso.
+ * The reliable signal: in a Bun-compiled binary, `Bun.main` (and
+ * `import.meta.url`) point inside a synthetic filesystem the runtime
+ * mounts to host the embedded JS bundle. When running via `bun
+ * script.ts`, they're real on-disk paths instead.
  *
- * Según `StandaloneModuleGraph.zig` de Bun, el prefijo sintético difiere
- * por plataforma:
+ * Per Bun's `StandaloneModuleGraph.zig`, the synthetic prefix differs
+ * by platform:
  *   - macOS/Linux: `/$bunfs/`
- *   - Windows:     `B:\~BUN\` (canónico) — las URLs de archivo de Windows
- *                  requieren una letra de unidad, así que un `/$bunfs/`
- *                  estilo POSIX es inválido. La normalización de ruta
- *                  también puede producir la forma con slash `B:/~BUN/`,
- *                  así que se aceptan ambas.
+ *   - Windows:     `B:\~BUN\` (canonical) — Windows file URLs require a
+ *                  drive letter, so a POSIX-style `/$bunfs/` is invalid.
+ *                  Path-normalization can also yield the forward-slash
+ *                  form `B:/~BUN/`, so we accept both.
  *
- * La variante de Windows faltaba antes de este comentario, lo que rompía
- * el auto-updater nativo en cada binario de release de Windows.
+ * The Windows variant was missing before this comment, which broke the
+ * native auto-updater on every Windows release binary.
  */
 const BUNFS_PREFIXES = ['/$bunfs/', 'B:\\~BUN\\', 'B:/~BUN/'] as const
 
-/** Helper puro para testing — ¿esta cadena de `Bun.main` parece un entrypoint en modo bundled? */
+/** Pure helper for testing — does this Bun.main string look like a bundled-mode entrypoint? */
 export function isBundledMainPath(main: string): boolean {
   for (const prefix of BUNFS_PREFIXES) {
     if (main.startsWith(prefix)) return true

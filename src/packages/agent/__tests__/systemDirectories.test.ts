@@ -1,6 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/systemDirectories.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { getSystemDirectories } from '../misc/systemDirectories.js'
 import { join } from 'path'
@@ -57,12 +54,11 @@ describe('getSystemDirectories — Windows', () => {
     expect(dirs.DOWNLOADS).toBe(join('C:\\Users\\TestUser', 'Downloads'))
   })
   test('HOME stays at homedir even when USERPROFILE is set', () => {
-    // Contrato: HOME es `homedir`, no `USERPROFILE`. La rama de Windows
-    // separa esto deliberadamente (USERPROFILE gobierna las carpetas
-    // conocidas, HOME sigue siendo "el home del usuario"). Si un futuro
-    // refactor los intercambia por accidente, las herramientas basadas
-    // en archivos que resuelven `~/foo` empezarian a escribir en
-    // silencio bajo USERPROFILE en vez de HOME.
+    // Contract: HOME is `homedir`, not `USERPROFILE`. The Windows branch
+    // intentionally separates these (USERPROFILE drives well-known
+    // folders, HOME stays "user's home dir"). If a future refactor
+    // accidentally swaps them, file-based tools that resolve `~/foo`
+    // would silently start writing under USERPROFILE instead.
     const dirs = getSystemDirectories({
       platform: 'windows',
       homedir: HOME,
@@ -116,11 +112,10 @@ describe('getSystemDirectories — Linux', () => {
     expect(dirs.DOWNLOADS).toBe('/custom/DL')
   })
   test('XDG with empty string falls back to default (per `||` semantics)', () => {
-    // Contrato: `env.XDG_DESKTOP_DIR || defaults.DESKTOP` — la cadena
-    // vacia es falsy. Si un cambio futuro usara `??`, la cadena vacia
-    // sobreescribiria el default, lo cual seria incorrecto (XDG deja
-    // unset = vacio en algunos shells; esa no es la intencion del
-    // usuario).
+    // Contract: `env.XDG_DESKTOP_DIR || defaults.DESKTOP` — empty string
+    // is falsy. If a future change uses `??` the empty string would
+    // override the default, which is wrong (XDG sets unset = empty in
+    // some shells; that's not the user's intent).
     const dirs = getSystemDirectories({
       platform: 'linux',
       homedir: HOME,

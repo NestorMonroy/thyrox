@@ -1,38 +1,56 @@
 /**
- * Puerto de `ccnmt: packages/tool-registry/src/toolLimits.ts` (56 líneas,
- * 6 símbolos). Los topes de tamaño del resultado de una herramienta.
- *
- * SON EL TECHO DEL SISTEMA, no una sugerencia: una herramienta puede
- * declarar un `maxResultSizeChars` MENOR y se respeta, pero ninguna puede
- * subir por encima de esto. Al excederse, el resultado se persiste a disco
- * y el modelo recibe una vista previa con la ruta en vez del contenido.
+ * Constants related to tool result size limits
  */
 
-/** Tope por resultado antes de persistir a disco y devolver una vista previa. */
+/**
+ * Default maximum size in characters for tool results before they get persisted
+ * to disk. When exceeded, the result is saved to a file and the model receives
+ * a preview with the file path instead of the full content.
+ *
+ * Individual tools may declare a lower maxResultSizeChars, but this constant
+ * acts as a system-wide cap regardless of what tools declare.
+ */
 export const DEFAULT_MAX_RESULT_SIZE_CHARS = 50_000
 
-/** Tope por resultado en tokens — cota superior para que uno solo no coma el contexto. */
+/**
+ * Maximum size for tool results in tokens.
+ * Based on analysis of tool result sizes, we set this to a reasonable upper bound
+ * to prevent excessively large tool results from consuming too much context.
+ *
+ * This is approximately 400KB of text (assuming ~4 bytes per token).
+ */
 export const MAX_TOOL_RESULT_TOKENS = 100_000
 
-/** Estimación conservadora de bytes por token; el conteo real varía. */
+/**
+ * Bytes per token estimate for calculating token count from byte size.
+ * This is a conservative estimate - actual token count may vary.
+ */
 export const BYTES_PER_TOKEN = 4
 
 /**
- * El tope en bytes se DERIVA de los dos anteriores. Escribirlo a mano
- * dejaría dos fuentes de verdad: subir el tope en tokens dejaría atrás al
- * de bytes sin que nada lo delatara.
+ * Maximum size for tool results in bytes (derived from token limit).
  */
 export const MAX_TOOL_RESULT_BYTES = MAX_TOOL_RESULT_TOKENS * BYTES_PER_TOKEN
 
 /**
- * Tope AGREGADO de los bloques de resultado dentro de UN mensaje de
- * usuario — la tanda de herramientas paralelas de un turno. Los mensajes se
- * evalúan por separado: 150K en un turno y 150K en el siguiente no se tocan.
+ * Default maximum aggregate size in characters for tool_result blocks within
+ * a SINGLE user message (one turn's batch of parallel tool results). When a
+ * message's blocks together exceed this, the largest blocks in that message
+ * are persisted to disk and replaced with previews until under budget.
+ * Messages are evaluated independently — a 150K result in one turn and a
+ * 150K result in the next are both untouched.
  *
- * Existe porque el tope por herramienta no acota la suma: diez herramientas
- * en paralelo, cada una debajo de su límite, producen 400K en un solo turno.
+ * This prevents N parallel tools from each hitting the per-tool max and
+ * collectively producing e.g. 10 × 40K = 400K in one turn's user message.
+ *
+ * Overridable at runtime via GrowthBook flag tengu_hawthorn_window — see
+ * getPerMessageBudgetLimit() in toolResultStorage.ts.
  */
 export const MAX_TOOL_RESULTS_PER_MESSAGE_CHARS = 200_000
 
-/** Largo máximo del resumen de una herramienta en las vistas compactas. */
+/**
+ * Maximum character length for tool summary strings in compact views.
+ * Used by getToolUseSummary() implementations to truncate long inputs
+ * for display in grouped agent rendering.
+ */
 export const TOOL_SUMMARY_MAX_LENGTH = 50

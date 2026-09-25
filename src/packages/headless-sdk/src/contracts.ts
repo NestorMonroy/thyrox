@@ -1,10 +1,6 @@
-/**
- * Puerto de `ccnmt: packages/headless-sdk/src/contracts.ts` (verbatim — la
- * fuente es un stub `export {}`, sin símbolos que portar).
- *
- * Superficie pública del host no-interactivo (acceso JSON/programático sin
- * pasar por Ink). Hoy no declara ningún símbolo — la fuente lo describe como
- * el futuro hogar de las APIs de sesión SDK, adaptadores de stream de
- * eventos, adaptadores del protocolo de control y de resume/fork/headless-run.
- */
+// V7 §8.25 — headless/sdk subsystem contracts.
+// Public surface for the non-interactive host that provides JSON/programmatic
+// access without going through Ink. Will host: SDK-facing session APIs, event
+// stream adapters, control protocol adapters, resume/fork/headless-run adapters.
+// See V7 §10.2 print.ts landing map for the migration plan.
 export {}

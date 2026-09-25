@@ -1,34 +1,27 @@
 /**
- * Puerto de `ccnmt: packages/output/src/utils/displayTags.ts` (verbatim —
- * sin imports en la fuente).
- */
-
-/**
- * Coincide con cualquier bloque tipo XML `<tag>…</tag>` (nombres de tag en
- * minuscula, atributos opcionales, contenido multi-linea). Se usa para
- * quitar tags envolventes inyectados por el sistema de los titulos que se
- * muestran — contexto de IDE, marcadores de slash-command, salida de
- * hooks, notificaciones de tarea, mensajes de canal, etc. Un patron
- * generico evita mantener una lista blanca creciente que se queda atras
- * cuando aparecen nuevos tipos de notificacion.
+ * Matches any XML-like `<tag>…</tag>` block (lowercase tag names, optional
+ * attributes, multi-line content). Used to strip system-injected wrapper tags
+ * from display titles — IDE context, slash-command markers, hook output,
+ * task notifications, channel messages, etc. A generic pattern avoids
+ * maintaining an ever-growing allowlist that falls behind as new notification
+ * types are added.
  *
- * Solo coincide con nombres de tag en minuscula (`[a-z][\w-]*`) para que
- * la prosa del usuario que menciona componentes JSX/HTML ("fix the
- * <Button> layout", "<!DOCTYPE html>") pase de largo — esos empiezan con
- * mayuscula o `!`. El cuerpo no-codicioso con un tag de cierre por
- * backreference mantiene separados los bloques adyacentes; los angulos
- * sin pareja ("when x < y") no coinciden.
+ * Only matches lowercase tag names (`[a-z][\w-]*`) so user prose mentioning
+ * JSX/HTML components ("fix the <Button> layout", "<!DOCTYPE html>") passes
+ * through — those start with uppercase or `!`. The non-greedy body with a
+ * backreferenced closing tag keeps adjacent blocks separate; unpaired angle
+ * brackets ("when x < y") don't match.
  */
 const XML_TAG_BLOCK_PATTERN = /<([a-z][\w-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
 
 /**
- * Quita bloques de tag tipo XML del texto para usarlo en titulos de UI
- * (/rewind, /resume, titulos de sesion de bridge). El contexto inyectado
- * por el sistema — metadata de IDE, salida de hooks, notificaciones de
- * tarea — llega envuelto en tags y nunca deberia aparecer como titulo.
+ * Strip XML-like tag blocks from text for use in UI titles (/rewind, /resume,
+ * bridge session titles). System-injected context — IDE metadata, hook output,
+ * task notifications — arrives wrapped in tags and should never surface as a
+ * title.
  *
- * Si quitar los tags dejara el texto vacio, devuelve el original sin
- * cambios (mejor mostrar algo que nada).
+ * If stripping would result in empty text, returns the original unchanged
+ * (better to show something than nothing).
  */
 export function stripDisplayTags(text: string): string {
   const result = text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
@@ -36,11 +29,10 @@ export function stripDisplayTags(text: string): string {
 }
 
 /**
- * Como stripDisplayTags pero devuelve cadena vacia cuando todo el
- * contenido es tags. Lo usa getLogDisplayTitle para detectar prompts que
- * son solo un comando (p. ej. /clear) para que caigan al siguiente
- * fallback de titulo, y extractTitleText para saltar mensajes puramente
- * XML durante la derivacion de titulo de bridge.
+ * Like stripDisplayTags but returns empty string when all content is tags.
+ * Used by getLogDisplayTitle to detect command-only prompts (e.g. /clear)
+ * so they can fall through to the next title fallback, and by extractTitleText
+ * to skip pure-XML messages during bridge title derivation.
  */
 export function stripDisplayTagsAllowEmpty(text: string): string {
   return text.replace(XML_TAG_BLOCK_PATTERN, '').trim()
@@ -50,10 +42,9 @@ const IDE_CONTEXT_TAGS_PATTERN =
   /<(ide_opened_file|ide_selection)(?:\s[^>]*)?>[\s\S]*?<\/\1>\n?/g
 
 /**
- * Quita solo los tags de contexto inyectados por el IDE (ide_opened_file,
- * ide_selection). Lo usa textForResubmit para que la flecha-arriba de
- * reenvio preserve el contenido escrito por el usuario, incluido HTML en
- * minuscula como `<code>foo</code>`, mientras descarta el ruido del IDE.
+ * Strip only IDE-injected context tags (ide_opened_file, ide_selection).
+ * Used by textForResubmit so UP-arrow resubmit preserves user-typed content
+ * including lowercase HTML like `<code>foo</code>` while dropping IDE noise.
  */
 export function stripIdeContextTags(text: string): string {
   return text.replace(IDE_CONTEXT_TAGS_PATTERN, '').trim()

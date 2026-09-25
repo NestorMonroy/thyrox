@@ -1,15 +1,15 @@
 /**
- * Cliente RPC del daemon — lo usa la CLI de ccb para hablar con el daemon
- * por su socket de control.
+ * Daemon RPC client — used by ccb CLI to talk to the daemon over its
+ * control socket.
  *
- * Tres primitivas, cada una portada de `ant 4138.js`:
+ * Three primitives, each ported from ant 4138.js:
  *
- *   request(op, payload, opts)   → ant gY  (RPC de un solo tiro)
- *   subscribe(op, payload, on..) → ant Ds7 (stream de larga vida)
- *   leaseKeepalive(label)        → ant Js7 (heartbeat para declarar
- *                                          nuestro proceso al daemon)
+ *   request(op, payload, opts)   → ant gY  (single-shot RPC)
+ *   subscribe(op, payload, on..) → ant Ds7 (long-lived stream)
+ *   leaseKeepalive(label)        → ant Js7 (heartbeat to declare
+ *                                          our process to the daemon)
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/daemonClient.ts`.
+ * @dynamicRequire
  */
 
 import { type Socket, connect } from 'node:net'
@@ -29,11 +29,11 @@ import { getControlSocketPath } from './socketPaths.js'
 const DEFAULT_TIMEOUT_MS = 5000
 
 /**
- * Manda un único request al daemon y espera su respuesta. Expira tras
- * `timeoutMs` (default 5s). Devuelve una respuesta tipada — el llamador
- * angosta por `ok`. Los errores de conexión / timeouts salen a la
- * superficie como objetos ErrorResponse con `code: 'ENOCONN' | 'ETIMEOUT'`
- * para que los llamadores puedan ramificar sobre ellos sin try/catch.
+ * Send a single request to the daemon and await its reply. Times out
+ * after `timeoutMs` (default 5s). Returns a typed response — caller
+ * narrows on `ok`. Connection errors / timeouts surface as ErrorResponse
+ * objects with `code: 'ENOCONN' | 'ETIMEOUT'` so callers can branch
+ * on them without a try/catch.
  */
 export async function daemonRequest(
   op: ProtoOp,
@@ -88,11 +88,11 @@ export async function daemonRequest(
 }
 
 /**
- * Se suscribe a un stream de larga vida del daemon (p. ej. subscribe de
- * logs). Llama a `onMessage` por cada trama recibida, `onError` ante
- * fallo. Devuelve un `dispose()` para cerrar el stream.
+ * Subscribe to a long-lived daemon stream (e.g. log subscribe).
+ * Calls `onMessage` for each frame received, `onError` on failure.
+ * Returns a `dispose()` to close the stream.
  *
- * Espeja ant Ds7 (4138.js:126-152).
+ * Mirrors ant Ds7 (4138.js:126-152).
  */
 export function daemonSubscribe(
   op: ProtoOp,
@@ -131,14 +131,13 @@ export function daemonSubscribe(
 }
 
 /**
- * Keepalive de lease en segundo plano. Conecta, manda `{op: 'lease',
- * client}`, mantiene la conexión. Al cerrarse, reintenta cada 1s. Devuelve
- * una función de stop.
+ * Background lease keepalive. Connects, sends `{op: 'lease', client}`,
+ * holds the connection. On close, retries every 1s. Returns a stop fn.
  *
- * Se usa para que el daemon pueda rastrear qué procesos CLI están
- * interesados (para el orden de apagado ordenado).
+ * Used so the daemon can track which CLI processes are interested
+ * (for graceful shutdown ordering).
  *
- * Espeja ant Js7 (4138.js:95-125).
+ * Mirrors ant Js7 (4138.js:95-125).
  */
 export function leaseKeepalive(label: string): () => void {
   const client = { label, cwd: process.cwd(), pid: process.pid }
@@ -154,7 +153,7 @@ export function leaseKeepalive(label: string): () => void {
       socket?.write(encodeFrame({ proto: PROTO_VERSION, op: 'lease', client }))
     })
     socket.on('data', () => {
-      // El daemon puede mandar ACKs de keep-alive; se ignoran.
+      // Daemon may send keep-alive ACKs; we ignore them.
     })
     socket.once('close', () => {
       socket = null

@@ -1,17 +1,3 @@
-/**
- * Porte COMPLETO de
- * `ccnmt: packages/mcp-runtime/src/elicitationValidation.ts` — sus 14
- * exportaciones (tipos y funciones), ninguna omitida.
- *
- * Repuntados (subpath declarado y símbolo verificado con resolución real):
- * `@thyrox/local-observability/slowOperations.js` (`jsonStringify`) y
- * `@thyrox/output/utils/stringUtils.js` (`plural`).
- *
- * Validación de las entradas de elicitación MCP (los prompts que un servidor
- * pide al usuario) contra su `PrimitiveSchemaDefinition`, con mensajes en
- * inglés (son los que el propio zod produce y el usuario ve en el prompt —
- * no se traducen, son la salida de cara al operador, no prosa de este árbol).
- */
 import type {
   EnumSchema,
   MultiSelectEnumSchema,
@@ -52,8 +38,7 @@ const STRING_FORMATS = {
 }
 
 /**
- * Verifica si el esquema es un enum de selección única (formato legado
- * `enum` o el nuevo formato `oneOf`).
+ * Check if schema is a single-select enum (either legacy `enum` format or new `oneOf` format)
  */
 export const isEnumSchema = (
   schema: PrimitiveSchemaDefinition,
@@ -62,8 +47,7 @@ export const isEnumSchema = (
 }
 
 /**
- * Verifica si el esquema es un enum de selección múltiple (`type: "array"`
- * con `items.enum` o `items.anyOf`).
+ * Check if schema is a multi-select enum (`type: "array"` with `items.enum` or `items.anyOf`)
  */
 export function isMultiSelectEnumSchema(
   schema: PrimitiveSchemaDefinition,
@@ -78,7 +62,7 @@ export function isMultiSelectEnumSchema(
 }
 
 /**
- * Obtiene los valores de un esquema de enum de selección múltiple.
+ * Get values from a multi-select enum schema
  */
 export function getMultiSelectValues(schema: MultiSelectEnumSchema): string[] {
   if ('anyOf' in schema.items) {
@@ -91,8 +75,7 @@ export function getMultiSelectValues(schema: MultiSelectEnumSchema): string[] {
 }
 
 /**
- * Obtiene las etiquetas de exhibición de un esquema de enum de selección
- * múltiple.
+ * Get display labels from a multi-select enum schema
  */
 export function getMultiSelectLabels(schema: MultiSelectEnumSchema): string[] {
   if ('anyOf' in schema.items) {
@@ -105,7 +88,7 @@ export function getMultiSelectLabels(schema: MultiSelectEnumSchema): string[] {
 }
 
 /**
- * Obtiene la etiqueta de un valor concreto en un enum de selección múltiple.
+ * Get label for a specific value in a multi-select enum
  */
 export function getMultiSelectLabel(
   schema: MultiSelectEnumSchema,
@@ -116,8 +99,7 @@ export function getMultiSelectLabel(
 }
 
 /**
- * Obtiene los valores de enum de un EnumSchema (cubre los formatos legado
- * `enum` y el nuevo `oneOf`).
+ * Get enum values from EnumSchema (handles both legacy `enum` and new `oneOf` formats)
  */
 export function getEnumValues(schema: EnumSchema): string[] {
   if ('oneOf' in schema) {
@@ -130,7 +112,7 @@ export function getEnumValues(schema: EnumSchema): string[] {
 }
 
 /**
- * Obtiene las etiquetas de exhibición de enum de un EnumSchema.
+ * Get enum display labels from EnumSchema
  */
 export function getEnumLabels(schema: EnumSchema): string[] {
   if ('oneOf' in schema) {
@@ -143,7 +125,7 @@ export function getEnumLabels(schema: EnumSchema): string[] {
 }
 
 /**
- * Obtiene la etiqueta de un valor concreto de enum.
+ * Get label for a specific enum value
  */
 export function getEnumLabel(schema: EnumSchema, value: string): string {
   const index = getEnumValues(schema).indexOf(value)
@@ -194,7 +176,7 @@ function getZodSchema(schema: PrimitiveSchemaDefinition): z.ZodTypeAny {
         })
         break
       default:
-        // Sin validación de formato específica.
+        // No specific format validation
         break
     }
     return stringSchema
@@ -205,7 +187,7 @@ function getZodSchema(schema: PrimitiveSchemaDefinition): z.ZodTypeAny {
     const formatNum = (n: number) =>
       Number.isInteger(n) && !isInteger ? `${n}.0` : String(n)
 
-    // Un solo mensaje de error descriptivo para las violaciones de rango.
+    // Build a single descriptive error message for range violations
     const rangeMsg =
       schema.minimum !== undefined && schema.maximum !== undefined
         ? `Must be ${typeLabel} between ${formatNum(schema.minimum)} and ${formatNum(schema.maximum)}`
@@ -248,7 +230,7 @@ export function validateElicitationInput(
   const parseResult = zodSchema.safeParse(stringValue)
 
   if (parseResult.success) {
-    // zodSchema siempre produce tipos primitivos para la elicitación.
+    // zodSchema always produces primitive types for elicitation
     return {
       value: parseResult.data as string | number | boolean,
       isValid: true,
@@ -271,7 +253,7 @@ const hasStringFormat = (
 }
 
 /**
- * Devuelve un placeholder/pista útil para un formato dado.
+ * Returns a helpful placeholder/hint for a given format
  */
 export function getFormatHint(
   schema: PrimitiveSchemaDefinition,
@@ -306,8 +288,7 @@ export function getFormatHint(
 }
 
 /**
- * Verifica si un esquema es de formato date o date-time, que admite el
- * parseo en lenguaje natural.
+ * Check if a schema is a date or date-time format that supports NL parsing
  */
 export function isDateTimeSchema(
   schema: PrimitiveSchemaDefinition,
@@ -320,8 +301,8 @@ export function isDateTimeSchema(
 }
 
 /**
- * Validación asíncrona que intenta el parseo de fecha/hora en lenguaje
- * natural vía Haiku cuando la entrada no luce como ISO 8601.
+ * Async validation that attempts NL date/time parsing via Haiku
+ * when the input doesn't look like ISO 8601.
  */
 export async function validateElicitationInputAsync(
   stringValue: string,

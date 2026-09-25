@@ -1,12 +1,6 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/memoryShapeTelemetry.ts` (verbatim).
- */
-
-// Telemetría de forma de memoria — stub sin efecto. La implementación real
-// registra qué memorias consideró el algoritmo de recall frente a las que
-// seleccionó, y la forma de las llamadas de escritura de memoria. Se
-// mantiene como stub para que los llamadores condicionados por feature
-// flag sigan compilando.
+// Memory-shape telemetry — no-op stub. Real implementation records which
+// memories the recall algorithm considered vs selected, and shape of
+// memory-writing calls. Kept as a stub so feature-flagged callers compile.
 
 import type { MemoryScope } from './memoryFileDetection.js'
 

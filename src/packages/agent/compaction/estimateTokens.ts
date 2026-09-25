@@ -1,11 +1,5 @@
 /**
- * Porte de `ccnmt: packages/agent/compaction/estimateTokens.ts`.
  *
- * Estima el costo en tokens de una lista de mensajes, sumando por tipo de
- * bloque de contenido y aplicando al final la razon aproximada de 4/3
- * caracteres-a-tokens que Anthropic recomienda. Las dependencias
- * (`roughEstimate`, `jsonStringify`) se inyectan para que el calculo sea
- * determinista en los tests.
  */
 
 const IMAGE_MAX_TOKEN_SIZE = 2000
@@ -35,9 +29,6 @@ function calculateToolResultTokens(
 }
 
 /**
- * Suma el estimado de tokens de los mensajes `user`/`assistant`; ignora
- * cualquier otro `type`. Multiplica el total por 4/3 y redondea hacia
- * arriba.
  */
 export function estimateMessageTokens(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

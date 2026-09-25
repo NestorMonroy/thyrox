@@ -1,36 +1,36 @@
 /**
- * Protocolo de cable del socket del daemon.
+ * Daemon socket wire protocol.
  *
- * Envoltorio: cada request y response es un único objeto JSON seguido de
- * un terminador `\n`. `ant 4138.js` usa el mismo formato (línea 64-67:
+ * Envelope: each request and response is a single JSON object followed
+ * by a `\n` terminator. ant 4138.js uses the same format (line 64-67:
  * `EH(H) + "\n"`).
  *
- * Versión de protocolo: ant usa `proto: W5` donde W5 es una constante que
- * se incrementa en cambios incompatibles. ccb la espeja como
- * `PROTO_VERSION` = 1 por ahora; se sube si cambia la semántica de framing.
+ * Protocol version: ant uses `proto: W5` where W5 is a constant that
+ * gets bumped on breaking changes. ccb mirrors as `PROTO_VERSION` =
+ * 1 for now; we'll bump if we change framing semantics.
  *
- * Op codes (CLI → Daemon salvo que se indique lo contrario):
- *   ping            — chequeo de vivacidad
- *   nudge           — sondea el estado de reinicio del daemon (devuelve {restarting})
- *   list            — enumera workers activos
- *   spawn           — crea una sesión bg nueva (con envoltorio de despacho)
- *   dispatch        — ruta de despacho alterna; toma nonce + archivo de spool
- *   await-ack       — espera el ACK de spawn/dispatch por nonce
- *   subscribe       — transmite la salida del worker (snapshot + delta)
- *   attach          — abre el socket de claim por job (handshake al PTY)
- *   resize          — propaga el resize de ventana desde el cliente
- *   kill            — señaliza al worker; devuelve {confirmed: bool}
- *   respawn         — kill + reinicio del mismo id corto
- *   retire          — programa el retiro tras idleGracePeriodMs
- *   shutdown        — apagado ordenado del daemon
- *   reply           — envía input de texto a un worker bloqueado
- *   attacher-caps   — anuncia las capacidades del cliente
- *   lease           — heartbeat de keepalive desde el cliente CLI
+ * Op codes (CLI → Daemon unless noted):
+ *   ping            — liveness check
+ *   nudge           — poll daemon restart state (returns {restarting})
+ *   list            — enumerate active workers
+ *   spawn           — create new bg session (with dispatch envelope)
+ *   dispatch        — alt dispatch path; takes nonce + spool file
+ *   await-ack       — wait for spawn/dispatch ACK by nonce
+ *   subscribe       — stream worker output (snapshot + delta)
+ *   attach          — open per-job claim socket (handshake to PTY)
+ *   resize          — propagate window resize from client
+ *   kill            — signal worker; returns {confirmed: bool}
+ *   respawn         — kill + restart same short id
+ *   retire          — schedule retire after idleGracePeriodMs
+ *   shutdown        — graceful daemon shutdown
+ *   reply           — send text input to a blocked worker
+ *   attacher-caps   — advertise client capabilities
+ *   lease           — keepalive heartbeat from CLI client
  *
- * Más los ops worker → daemon del lado del daemon (sólo hacia adelante):
+ * Plus daemon-side worker → daemon ops (forward-only):
  *   heartbeat, state, done, detach-request
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/socketProto.ts`.
+ * @dynamicRequire
  */
 
 export const PROTO_VERSION = 1
@@ -86,26 +86,24 @@ export interface ErrorResponse {
 
 export type Response = OkResponse | ErrorResponse
 
-/** Codifica un request/response como el envoltorio de cable (JSON + LF). */
+/** Encode a request/response as the wire envelope (JSON + LF). */
 export function encodeFrame(obj: object): string {
   return `${JSON.stringify(obj)}\n`
 }
 
 /**
- * Guarda contra desbordamiento por línea. El servidor rv de `ant 4291.js`
- * acota su buffer entrante a 1 MiB (`if(q.length>1048576)q="",_.destroy()`)
- * para que un peer que nunca manda un newline no pueda crecer el buffer
- * pendiente sin límite. Las tramas de protocolo legítimas (envoltorios RPC,
- * tramas de control rv) son líneas JSON diminutas, muy por debajo de este
- * tope, así que sólo se dispara ante un peer atascado u hostil.
+ * Per-line overflow guard. ant 4291.js's rv server caps its inbound
+ * buffer at 1 MiB (`if(q.length>1048576)q="",_.destroy()`) so a peer that
+ * never sends a newline can't grow the pending buffer without bound. Legit
+ * protocol frames (RPC envelopes, rv control frames) are tiny JSON lines
+ * far under this, so the cap only ever trips on a wedged/hostile peer.
  */
 const MAX_PENDING_LINE_BYTES = 1024 * 1024
 
 /**
- * Decodificador de línea con estado para datos de socket. Llama a
- * `onMessage` una vez por cada línea JSON completa terminada en `\n`;
- * llama a `onError` y se detiene ante input malformado o una sola línea
- * que exceda MAX_PENDING_LINE_BYTES.
+ * Stateful line decoder for socket data. Calls `onMessage` once per
+ * complete `\n`-terminated JSON line; calls `onError` and stops on
+ * malformed input or on a single line exceeding MAX_PENDING_LINE_BYTES.
  */
 export function createLineDecoder(
   onMessage: (msg: unknown) => void,
@@ -119,7 +117,7 @@ export function createLineDecoder(
     while (true) {
       const idx = buf.indexOf('\n')
       if (idx < 0) {
-        // Sin línea completa todavía — acotar el buffer pendiente (ant 4291.js).
+        // No complete line yet — bound the pending buffer (ant 4291.js).
         if (buf.length > MAX_PENDING_LINE_BYTES) {
           stopped = true
           buf = ''

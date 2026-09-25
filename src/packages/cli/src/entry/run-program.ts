@@ -411,10 +411,10 @@ export async function runCliProgram(
     return program
   }
 
-  // claude mcp + server + ssh + open (extracted to @claude-code-how-works/cli)
+  // claude mcp + server + ssh + open (extracted to @thyrox/cli)
   registerMcpCommands(program, { pendingConnect: pendings.pendingConnect })
 
-  // claude auth/plugin/setup-token/agents/auto-mode/remote-control/assistant/doctor/up/rollback/install/log/error/export/task/completion (extracted to @claude-code-how-works/cli)
+  // claude auth/plugin/setup-token/agents/auto-mode/remote-control/assistant/doctor/up/rollback/install/log/error/export/task/completion (extracted to @thyrox/cli)
   registerMiscCommands(program)
 
   // claude project purge — port of ant v2.1.126 WD/5142.js

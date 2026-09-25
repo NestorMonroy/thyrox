@@ -42,11 +42,7 @@ import { useMultipleChoiceState } from './use-multiple-choice-state.js'
 
 const MIN_CONTENT_HEIGHT = 12
 const MIN_CONTENT_WIDTH = 40
-// Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/AskUserQuestionPermissionRequest.tsx`
-// con los comentarios traducidos; el cuerpo es el de la fuente.
-//
-// Líneas que consume el marco alrededor del área de contenido (barra de
-// navegación, título, pie, texto de ayuda, etc.)
+// Lines used by chrome around the content area (nav bar, title, footer, help text, etc.)
 const CONTENT_CHROME_OVERHEAD = 15
 
 export function AskUserQuestionPermissionRequest(
@@ -84,15 +80,13 @@ function AskUserQuestionPermissionRequestBody({
 }: PermissionRequestProps & {
   highlight: CliHighlight | null
 }): React.ReactNode {
-  // Memoizar el resultado del parseo: `safeParse` devuelve un objeto nuevo (y
-  // un arreglo `questions` nuevo) en cada llamada. Sin esto, las escrituras de
-  // ref en el cuerpo del render de abajo hacen que el React Compiler se salga
-  // de este componente, así que nada queda memoizado de forma automática:
-  // `questions` cambia de identidad en cada render y el `useMemo` de
-  // `globalContentHeight` (que corre `applyMarkdown` sobre cada vista previa)
-  // nunca acierta en su caché. `toolUseConfirm.input` es estable durante toda
-  // la vida del diálogo (esta herramienta devuelve `behavior: 'ask'`
-  // directamente y nunca pasa por el clasificador).
+  // Memoize parse result: safeParse returns a new object (and new `questions`
+  // array) on every call. Without this, the render-body ref writes below make
+  // React Compiler bail out on this component, so nothing is auto-memoized —
+  // `questions` changes identity every render, and the `globalContentHeight`
+  // useMemo (which runs applyMarkdown over every preview) never hits its cache.
+  // `toolUseConfirm.input` is stable for the dialog's lifetime (this tool
+  // returns `behavior: 'ask'` directly and never goes through the classifier).
   const result = useMemo(
     () => AskUserQuestionTool.inputSchema.safeParse(toolUseConfirm.input),
     [toolUseConfirm.input],
@@ -101,63 +95,55 @@ function AskUserQuestionPermissionRequestBody({
   const { rows: terminalRows } = useTerminalSize()
   const [theme] = useTheme()
 
-  // Calcular unas dimensiones de contenido consistentes entre todas las
-  // preguntas, para que no haya saltos de maquetación. `globalContentHeight`
-  // es la altura total del área de contenido por debajo de la navegación y el
-  // título, INCLUIDOS el pie y el texto de ayuda, para que todas las vistas
-  // —preguntas, vistas previas y envío— coincidan.
+  // Calculate consistent content dimensions across all questions to prevent layout shifts.
+  // globalContentHeight represents the total height of the content area below the nav/title,
+  // INCLUDING footer and help text, so all views (questions, previews, submit) match.
   const { globalContentHeight, globalContentWidth } = useMemo(() => {
     let maxHeight = 0
     let maxWidth = 0
 
-    // Pie (separador, «Chat about this» y el plan opcional) más el texto de ayuda ≈ 7 líneas
+    // Footer (divider + "Chat about this" + optional plan) + help text ≈ 7 lines
     const FOOTER_HELP_LINES = 7
 
-    // Capar a la altura de la terminal menos lo que consume el marco, pero garantizando al menos MIN_CONTENT_HEIGHT
+    // Cap at terminal height minus chrome overhead, but ensure at least MIN_CONTENT_HEIGHT
     const maxAllowedHeight = Math.max(
       MIN_CONTENT_HEIGHT,
       terminalRows - CONTENT_CHROME_OVERHEAD,
     )
 
-    // PREVIEW_OVERHEAD coincide con la constante de `PreviewQuestionView.tsx`
-    // — las líneas que consumen, dentro del área de contenido, los elementos
-    // que no son la vista previa (márgenes, bordes, notas, pie, texto de
-    // ayuda). Aquí se usa para capar el contenido de la vista previa, de modo
-    // que `globalContentHeight` refleje la altura *truncada* y no la cruda.
+    // PREVIEW_OVERHEAD matches the constant in PreviewQuestionView.tsx — lines
+    // used by non-preview elements within the content area (margins, borders,
+    // notes, footer, help text). Used here to cap preview content so that
+    // globalContentHeight reflects the *truncated* height, not the raw height.
     const PREVIEW_OVERHEAD = 11
 
     for (const q of questions) {
       const hasPreview = q.options.some(opt => opt.preview)
 
       if (hasPreview) {
-        // Calcular el máximo de líneas de vista previa que de verdad se
-        // mostrarían tras el truncado, con la misma lógica que
-        // `PreviewQuestionView`.
+        // Compute the max preview content lines that would actually display
+        // after truncation, matching the logic in PreviewQuestionView.
         const maxPreviewContentLines = Math.max(
           1,
           maxAllowedHeight - PREVIEW_OVERHEAD,
         )
 
-        // En una pregunta con vista previa, el total es la altura del par
-        // lado a lado más el pie y la ayuda.
-        // Lado a lado = max(panel izquierdo, panel derecho).
-        // Panel derecho = caja de vista previa (contenido, bordes e indicador
-        // de truncado) más las notas.
+        // For preview questions, total = side-by-side height + footer/help
+        // Side-by-side = max(left panel, right panel)
+        // Right panel = preview box (content + borders + truncation indicator) + notes
         let maxPreviewBoxHeight = 0
         for (const opt of q.options) {
           if (opt.preview) {
-            // Medir el markdown ya *renderizado* (la misma transformación que
-            // `PreviewBox`), para que el conteo de líneas y los anchos
-            // coincidan con lo que de verdad se va a mostrar. `applyMarkdown`
-            // quita los delimitadores de bloque de código, la sintaxis de
-            // negrita y cursiva, etc.
+            // Measure the *rendered* markdown (same transform as PreviewBox) so
+            // that line counts and widths match what will actually be displayed.
+            // applyMarkdown removes code fence markers, bold/italic syntax, etc.
             const rendered = applyMarkdown(opt.preview, theme, highlight)
             const previewLines = rendered.split('\n')
             const isTruncated = previewLines.length > maxPreviewContentLines
             const displayedLines = isTruncated
               ? maxPreviewContentLines
               : previewLines.length
-            // Caja de vista previa: el contenido mostrado, el indicador de truncado y 2 bordes
+            // Preview box: displayed content + truncation indicator + 2 borders
             maxPreviewBoxHeight = Math.max(
               maxPreviewBoxHeight,
               displayedLines + (isTruncated ? 1 : 0) + 2,
@@ -167,14 +153,14 @@ function AskUserQuestionPermissionRequestBody({
             }
           }
         }
-        // Panel derecho: la caja de vista previa más las notas (2 líneas con margen)
+        // Right panel: preview box + notes (2 lines with margin)
         const rightPanelHeight = maxPreviewBoxHeight + 2
-        // Panel izquierdo: las opciones y la descripción
+        // Left panel: options + description
         const leftPanelHeight = q.options.length + 2
         const sideByHeight = Math.max(leftPanelHeight, rightPanelHeight)
         maxHeight = Math.max(maxHeight, sideByHeight + FOOTER_HELP_LINES)
       } else {
-        // En una pregunta corriente: las opciones, «Other», el pie y la ayuda
+        // For regular questions: options + "Other" + footer/help
         maxHeight = Math.max(
           maxHeight,
           q.options.length + 3 + FOOTER_HELP_LINES,
@@ -265,11 +251,11 @@ function AskUserQuestionPermissionRequestBody({
     questions?.every((q: Question) => q?.question && !!answers[q.question]) ??
     false
 
-  // Ocultar la pestaña de envío cuando hay una sola pregunta y es de selección única (el caso de auto-envío)
+  // Hide submit tab when there's only one question and it's single-select (auto-submit scenario)
   const hideSubmitTab = questions.length === 1 && !questions[0]?.multiSelect
 
   const handleCancel = useCallback(() => {
-    // Registrar el rechazo con la procedencia de la metadata, si la hay
+    // Log rejection with metadata source if present
     if (metadataSource) {
       logEvent('tengu_ask_user_question_rejected', {
         source:
@@ -384,7 +370,7 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
 
   const submitAnswers = useCallback(
     async (answersToSubmit: Record<string, string>) => {
-      // Registrar la aceptación con la procedencia de la metadata, si la hay
+      // Log acceptance with metadata source if present
       if (metadataSource) {
         logEvent('tengu_ask_user_question_accepted', {
           source:
@@ -396,13 +382,13 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
             isInPlanMode && isPlanModeInterviewPhaseEnabled(),
         })
       }
-      // Construir las anotaciones desde `questionStates` (la vista previa elegida, las notas del usuario)
+      // Build annotations from questionStates (e.g., selected preview, user notes)
       const annotations: Record<string, { preview?: string; notes?: string }> =
         {}
       for (const q of questions) {
         const answer = answersToSubmit[q.question]
         const notes = questionStates[q.question]?.textInputValue
-        // Localizar el contenido de vista previa de la opción elegida
+        // Find the selected option's preview content
         const selectedOption = answer
           ? q.options.find(opt => opt.label === answer)
           : undefined
@@ -472,7 +458,7 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
               ? `${textInput} (Image attached)`
               : textInput
         } else if (label === '__other__') {
-          // Envío sólo de imágenes: comprobar si esta pregunta las tiene
+          // Image-only submission — check if this question has images
           const questionImages = Object.values(
             pastedContentsByQuestion[questionText] ?? {},
           ).filter(c => c.type === 'image')
@@ -482,7 +468,7 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
         }
       }
 
-      // Con selección única y una sola pregunta, auto-enviar en vez de mostrar la pantalla de revisión
+      // For single-select with only one question, auto-submit instead of showing review screen
       const isSingleQuestion = questions.length === 1
       if (!isMultiSelect && isSingleQuestion && shouldAdvance) {
         const updatedAnswers = {
@@ -515,12 +501,12 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
     }
   }
 
-  // Con la pestaña de envío oculta, no permitir navegar más allá de la última pregunta
+  // When submit tab is hidden, don't allow navigating past the last question
   const maxIndex = hideSubmitTab
     ? (questions?.length || 1) - 1
     : questions?.length || 0
 
-  // Callbacks de navegación acotada para las pestañas de pregunta
+  // Bounded navigation callbacks for question tabs
   const handleTabPrev = useCallback(() => {
     if (currentQuestionIndex > 0) {
       prevQuestion()
@@ -533,13 +519,11 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
     }
   }, [currentQuestionIndex, maxIndex, nextQuestion])
 
-  // Usar el sistema de atajos para navegar entre preguntas (flechas
-  // izquierda y derecha, tab y shift+tab). Un `useInput` pelado no sirve
-  // porque el sistema de atajos resuelve las flechas a `tabs:next` y
-  // `tabs:previous` y puede llamar a `stopImmediatePropagation` antes de que
-  // `useInput` se dispare. Los componentes hijos (`PreviewQuestionView`, por
-  // ejemplo) también registran sus propios atajos `tabs:next`/`tabs:previous`
-  // para que el manejo sea fiable sea cual sea el orden de los listeners.
+  // Use keybindings system for question navigation (left/right arrows, tab/shift+tab)
+  // Raw useInput doesn't work because the keybinding system resolves left/right arrows
+  // to tabs:next/tabs:previous and may stopImmediatePropagation before useInput fires.
+  // Child components (e.g., PreviewQuestionView) also register their own tabs:next/tabs:previous
+  // keybindings to ensure reliable handling regardless of listener ordering.
   useKeybindings(
     {
       'tabs:previous': handleTabPrev,
@@ -607,7 +591,7 @@ Questions asked and answers provided:\n${questionsWithAnswers}`
     )
   }
 
-  // Esto no debería alcanzarse nunca
+  // This should never be reached
   return null
 }
 

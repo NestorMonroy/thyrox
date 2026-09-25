@@ -1,23 +1,19 @@
 /**
- * Copia de `ccnmt: packages/permission/src/components/PermissionExplanation.tsx`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
+ * Permission Explanation UI
  *
- * Interfaz de explicación de permiso.
+ * Renders the `ctrl+e` LLM command explainer inside a permission confirmation
+ * dialog. Three parts (ported from ant v2.1.150 5236.js):
  *
- * Renderiza, dentro del diálogo de confirmación de permiso, el explicador por
- * LLM que se abre con `ctrl+e`. Son tres partes (portadas de ant v2.1.150
- * 5236.js):
+ * - `usePermissionExplainer` (ant Wy6) — wires the `confirm:toggleExplanation`
+ *   keybinding, kicks off the one-shot LLM call on first toggle, and aborts
+ *   the in-flight request on unmount.
+ * - `PermissionExplanation` (ant Zy6) — Suspense container. Shows a loading
+ *   shimmer while the promise resolves.
+ * - `PermissionExplanationContent` (ant APO) — renders the resolved
+ *   explanation / reasoning / risk line.
  *
- * - `usePermissionExplainer` (ant Wy6) — cablea el atajo
- *   `confirm:toggleExplanation`, arranca la llamada al LLM de un solo disparo
- *   al primer toggle, y aborta la petición en vuelo al desmontar.
- * - `PermissionExplanation` (ant Zy6) — el contenedor de Suspense. Muestra un
- *   shimmer de carga mientras la promesa resuelve.
- * - `PermissionExplanationContent` (ant APO) — renderiza la explicación ya
- *   resuelta, con su razonamiento y su línea de riesgo.
- *
- * La llamada al LLM lleva `.catch(() => null)` y es abortable, así que no
- * puede reventar el diálogo de permiso.
+ * The LLM call is `.catch(() => null)` and abortable, so it can never crash
+ * the permission dialog.
  */
 
 import React, { Suspense, use, useCallback, useEffect, useRef, useState } from 'react'
@@ -37,7 +33,7 @@ import {
 
 const LOADING_TEXT = 'Loading explanation\u2026'
 
-/** Las entradas que el explicador necesita para describir una llamada de herramienta pendiente. */
+/** Inputs the explainer needs to describe a pending tool call. */
 export type PermissionExplainerInput = {
   toolName: string
   toolInput: unknown
@@ -46,20 +42,19 @@ export type PermissionExplainerInput = {
 }
 
 export type PermissionExplainerState = {
-  /** Si el bloque de explicación debe estar visible. */
+  /** Whether the explanation block should be visible. */
   visible: boolean
-  /** Si la funcionalidad del explicador está habilitada (gobierna la pista y el atajo). */
+  /** Whether the explainer feature is enabled (gates the hint + keybinding). */
   enabled: boolean
-  /** La cadena que se muestra para el atajo del toggle (por ejemplo «ctrl+e»). */
+  /** The display string for the toggle shortcut (e.g. "ctrl+e"). */
   chord: string
-  /** La promesa de la explicación, en vuelo o ya resuelta; null antes del primer toggle. */
+  /** The in-flight / resolved explanation promise, or null before first toggle. */
   promise: Promise<ExplanationData | null> | null
 }
 
 /**
- * ant Wy6 — es el dueño del atajo y del ciclo de vida de la llamada al LLM. Se
- * llama desde un componente de petición de permiso; el estado que devuelve se
- * renderiza con <PermissionExplanation />.
+ * ant Wy6 — owns the keybinding + LLM-call lifecycle. Call from a permission
+ * request component; render the returned state via <PermissionExplanation />.
  */
 export function usePermissionExplainer(
   input: PermissionExplainerInput,
@@ -77,7 +72,7 @@ export function usePermissionExplainer(
   const abortRef = useRef<AbortController | null>(null)
 
   const handleToggle = useCallback(() => {
-    // Arrancar la petición sólo la primera vez que se hace visible.
+    // Only start a request when first becoming visible.
     if (!visible) {
       logEvent('tengu_permission_explainer_shortcut_used', {})
       if (!promise) {
@@ -102,15 +97,15 @@ export function usePermissionExplainer(
     isActive: enabled,
   })
 
-  // Abortar cualquier petición en vuelo al desmontar.
+  // Abort any in-flight request on unmount.
   useEffect(() => () => abortRef.current?.abort(), [])
 
   return { visible, enabled, chord, promise }
 }
 
 /**
- * ant APO — renderiza la explicación ya resuelta. Suspende sobre la promesa con
- * `React.use` hasta que asienta.
+ * ant APO — renders the resolved explanation. Suspends on the promise via
+ * React.use until it settles.
  */
 function PermissionExplanationContent({
   promise,
@@ -145,7 +140,7 @@ function PermissionExplanationContent({
   )
 }
 
-/** ant KPO — el shimmer de carga que se muestra mientras la explicación se genera. */
+/** ant KPO — the loading shimmer shown while the explanation generates. */
 function LoadingExplanation(): React.ReactNode {
   const [ref, glimmerIndex] = useShimmerAnimation(
     'responding',
@@ -171,8 +166,8 @@ function LoadingExplanation(): React.ReactNode {
 }
 
 /**
- * ant Zy6 — el contenedor de Suspense. No renderiza nada hasta que el usuario
- * hace visible el explicador (y se ha arrancado una petición).
+ * ant Zy6 — the Suspense container. Renders nothing until the user toggles the
+ * explainer visible (and a request has been kicked off).
  */
 export function PermissionExplanation({
   visible,

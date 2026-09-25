@@ -19,14 +19,7 @@ type PermissionRuleExplanationProps = {
 type DecisionReasonStrings = {
   reasonString: string
   configString?: string
-  /**
-   * Copia de `ccnmt: packages/permission/src/components/
-   * PermissionRuleExplanation.tsx` con los comentarios traducidos; el cuerpo es
-   * el de la fuente.
-   *
-   * Cuando se fija, reasonString es texto plano que se renderiza con este color
-   * del theme en vez de con <Ansi>.
-   */
+  /** When set, reasonString is plain text rendered with this theme color instead of <Ansi>. */
   themeColor?: keyof Theme
 }
 

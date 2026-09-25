@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/errors.ts` (verbatim — sin
- * dependencias). El namespace tipado de errores del paquete `ide`: un
- * `code` estable por clase, para que el consumidor discrimine por código en
- * vez de por `instanceof` de una jerarquía más fina.
- */
 export class IdeBaseError extends Error {
   readonly code: string
 

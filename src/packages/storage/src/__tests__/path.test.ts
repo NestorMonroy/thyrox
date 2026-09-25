@@ -2,19 +2,8 @@ import { describe, expect, mock, test } from 'bun:test'
 import { homedir } from 'os'
 import { sep } from 'path'
 
-/**
- * `path.ts` resuelve el cwd por defecto vía `getCwd()` de
- * `./internal/pendingCrossPackageDeps.ts` (ver ese módulo: sustituye a
- * `@claude-code-how-works/app-host/bootstrap/cwd.js`, no enlazado como
- * dependencia de workspace de este paquete — DEC-04). La fuente mockea ese
- * import con `mock.module`; aquí se usa el setter DI del propio stub, ya
- * que el módulo real de ccnmt no existe en este árbol. Mismos casos, mismos
- * datos, mismas expectativas — sólo cambia el mecanismo de override.
- */
-// CORREGIDO 2026-09-24: `path.ts` ya importa el `getCwd` REAL de
-// `@thyrox/app-host/bootstrap/cwd.js`, así que el setter del sustituto local
-// no lo alcanzaba y la prueba medía el cwd del proceso. Se simula el módulo
-// real, extendiendo sus exportaciones como pide `mock.module` (es global).
+// Spread real exports + override only what this test needs.
+// See feedback_bun_mock_module_global_scope.md.
 const realCwd = await import('@thyrox/app-host/bootstrap/cwd.js')
 mock.module('@thyrox/app-host/bootstrap/cwd.js', () => ({
   ...realCwd,
@@ -55,7 +44,7 @@ describe('expandPath', () => {
     expect(() => expandPath('foo', '/base\0dir')).toThrow(/null bytes/)
   })
   test('throws TypeError on non-string path', () => {
-    // @ts-expect-error — probando la ruta de error en tiempo de ejecución
+    // @ts-expect-error — testing runtime error path
     expect(() => expandPath(123)).toThrow(TypeError)
   })
   test('empty path returns normalized baseDir', () => {

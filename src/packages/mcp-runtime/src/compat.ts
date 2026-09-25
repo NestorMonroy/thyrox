@@ -1,24 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/compat.ts` — sus 29
- * exportaciones (7 tipos + 22 funciones/reexportaciones), ninguna omitida.
- *
- * Capa de compatibilidad hacia atrás para la forma pre-refactor de la API:
- * normalización de nombre de servidor, prefijo/filtrado de herramientas y
- * comandos por servidor, el wrapping de mensajes de canal, y un reenvío
- * completo de los símbolos "legado" de `./client.ts`.
- *
- * `zod/v4` está declarado en `package.json` (`"zod": "^4.3.6"`, mismo rango
- * que ya declara `@thyrox/config`) pero **no resuelve todavía** en este
- * árbol — ninguno de los dos tiene `node_modules/zod` enlazado (verificado:
- * `bun -e "import('zod/v4')"` falla igual desde `src/packages/config` como
- * módulo aislado y desde este paquete). Es la misma deuda que ya declara
- * `command-runtime::@anthropic-ai/sdk` en
- * `tests/package/dependencies_baseline.txt` — un tercero real, declarado,
- * pendiente de instalar/enlazar, no una dependencia hermana. Aquí sólo se
- * usa `z` en posición de tipo (`typeof z.object`), así que el import se
- * conserva por fidelidad a la fuente aunque nunca se ejecute en este
- * módulo.
- */
 import { z } from 'zod/v4'
 import {
   clearMcpAuthCache,

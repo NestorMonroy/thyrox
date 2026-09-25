@@ -1,10 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/remote-setup/api.ts` (182
- * líneas fuente, 100% portado). Cliente del flujo de onboarding web:
- * importar un token de GitHub, crear el entorno por defecto y resolver
- * si el usuario ya inicio sesion.
- */
-
 import axios from 'axios'
 import { getOauthConfig } from '@thyrox/provider/oauthConstants'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -14,11 +7,11 @@ import { fetchEnvironments } from '../environments.js'
 const CCR_BYOC_BETA_HEADER = 'ccr-byoc-2025-07-29'
 
 /**
- * Envuelve un token crudo de GitHub para que su representacion en string
- * quede redactada. `String(token)`, template literals,
- * `JSON.stringify(token)`, y cualquier mensaje de error adjunto mostraran
- * `[REDACTED:gh-token]` en vez del valor del token. Llamar `.reveal()`
- * solo en el unico punto donde el valor crudo se coloca en un cuerpo HTTP.
+ * Wraps a raw GitHub token so that its string representation is redacted.
+ * `String(token)`, template literals, `JSON.stringify(token)`, and any
+ * attached error messages will show `[REDACTED:gh-token]` instead of the
+ * token value. Call `.reveal()` only at the single point where the raw
+ * value is placed into an HTTP body.
  */
 export class RedactedGithubToken {
   readonly #value: string
@@ -50,11 +43,10 @@ export type ImportTokenError =
   | { kind: 'network' }
 
 /**
- * Hace POST de un token de GitHub al backend de CCR, que lo valida
- * contra el endpoint /user de GitHub y lo guarda cifrado con Fernet en
- * sync_user_tokens. El token guardado satisface las mismas rutas de
- * lectura que un token OAuth, asi que clone/push en claude.ai/code
- * funciona de inmediato tras esto.
+ * POSTs a GitHub token to the CCR backend, which validates it against
+ * GitHub's /user endpoint and stores it Fernet-encrypted in sync_user_tokens.
+ * The stored token satisfies the same read paths as an OAuth token, so
+ * clone/push in claude.ai/code works immediately after this succeeds.
  */
 export async function importGithubToken(
   token: RedactedGithubToken,
@@ -97,9 +89,8 @@ export async function importGithubToken(
     return { ok: false, error: { kind: 'server', status: response.status } }
   } catch (err) {
     if (axios.isAxiosError(err)) {
-      // err.config.data contendria el cuerpo del POST con el token
-      // crudo. No lo incluyas en ningun log. El codigo de error solo ya
-      // es suficiente.
+      // err.config.data would contain the POST body with the raw token.
+      // Do not include it in any log. The error code alone is enough.
       logForDebugging(`import-token network error: ${err.code ?? 'unknown'}`, {
         level: 'error',
       })
@@ -118,12 +109,12 @@ async function hasExistingEnvironment(): Promise<boolean> {
 }
 
 /**
- * Creacion best-effort del entorno por defecto. Espeja el
- * DEFAULT_CLOUD_ENVIRONMENT_REQUEST del onboarding web para que un
- * usuario primerizo llegue al composer en vez de a env-setup. Primero
- * chequea si ya hay entornos, para que re-correr /web-setup no acumule
- * duplicados. Los fallos son no-fatales — el import del token ya tuvo
- * exito, y la maquina de estados web cae a env-setup en la siguiente carga.
+ * Best-effort default environment creation. Mirrors the web onboarding's
+ * DEFAULT_CLOUD_ENVIRONMENT_REQUEST so a first-time user lands on the
+ * composer instead of env-setup. Checks for existing environments first
+ * so re-running /web-setup doesn't pile up duplicates. Failures are
+ * non-fatal — the token import already succeeded, and the web state
+ * machine falls back to env-setup on next load.
  */
 export async function createDefaultEnvironment(): Promise<boolean> {
   let accessToken: string, orgUUID: string
@@ -137,10 +128,9 @@ export async function createDefaultEnvironment(): Promise<boolean> {
     return true
   }
 
-  // La ruta /private/organizations/{org}/ rechaza tokens OAuth de CLI
-  // (dependencia de auth equivocada). La ruta publica usa
-  // build_flexible_auth — la misma que usa fetchEnvironments(). La org
-  // se pasa via la cabecera x-organization-uuid.
+  // The /private/organizations/{org}/ path rejects CLI OAuth tokens (wrong
+  // auth dep). The public path uses build_flexible_auth — same path
+  // fetchEnvironments() uses. Org is passed via x-organization-uuid header.
   const url = `${getOauthConfig().BASE_API_URL}/v1/environment_providers/cloud/create`
   const headers = {
     ...getOAuthHeaders(accessToken),
@@ -177,7 +167,7 @@ export async function createDefaultEnvironment(): Promise<boolean> {
   }
 }
 
-/** Devuelve true cuando el usuario tiene credenciales OAuth de Claude validas. */
+/** Returns true when the user has valid Claude OAuth credentials. */
 export async function isSignedIn(): Promise<boolean> {
   try {
     await prepareApiRequest()

@@ -1,21 +1,14 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/memoryTypes.ts` (verbatim — sin
- * dependencias). Taxonomia de tipos de memoria.
+ * Memory type taxonomy.
  *
- * Las memorias se restringen a cuatro tipos que capturan contexto NO
- * derivable del estado actual del proyecto. Patrones de codigo, arquitectura,
- * historial de git y estructura de archivos SI son derivables (via
- * grep/git/CLAUDE.md) y NO deben guardarse como memorias.
+ * Memories are constrained to four types capturing context NOT derivable
+ * from the current project state. Code patterns, architecture, git history,
+ * and file structure are derivable (via grep/git/CLAUDE.md) and should NOT
+ * be saved as memories.
  *
- * Los dos exports `TYPES_SECTION_*` de abajo estan duplicados a proposito en
- * vez de generarse desde una especificacion compartida — mantenerlos planos
- * hace triviales las ediciones por-modo sin razonar sobre el renderizado
- * condicional de un helper.
- *
- * El CONTENIDO de los arreglos de cadenas (el prompt que ve el modelo) se
- * conserva VERBATIM en ingles: es comportamiento del producto, no prosa de
- * este puerto — traducirlo cambiaria lo que el sistema realmente le dice al
- * modelo. Solo los comentarios de racional se tradujeron al espanol.
+ * The two TYPES_SECTION_* exports below are intentionally duplicated rather
+ * than generated from a shared spec — keeping them flat makes per-mode edits
+ * trivial without reasoning through a helper's conditional rendering.
  */
 
 export const MEMORY_TYPES = [
@@ -28,10 +21,9 @@ export const MEMORY_TYPES = [
 export type MemoryType = (typeof MEMORY_TYPES)[number]
 
 /**
- * Analiza un valor crudo de frontmatter como un `MemoryType`.
- * Los valores invalidos o ausentes devuelven `undefined` — los archivos
- * legado sin campo `type:` siguen funcionando; los de tipo desconocido
- * degradan con gracia.
+ * Parse a raw frontmatter value into a MemoryType.
+ * Invalid or missing values return undefined — legacy files without a
+ * `type:` field keep working, files with unknown types degrade gracefully.
  */
 export function parseMemoryType(raw: unknown): MemoryType | undefined {
   if (typeof raw !== 'string') return undefined
@@ -39,9 +31,8 @@ export function parseMemoryType(raw: unknown): MemoryType | undefined {
 }
 
 /**
- * Sección `## Types of memory` para el modo COMBINADO (directorios privado +
- * de equipo). Incluye etiquetas `<scope>` y calificadores team/private en
- * los ejemplos. Contenido en inglés VERBATIM — es el prompt real.
+ * `## Types of memory` section for COMBINED mode (private + team directories).
+ * Includes <scope> tags and team/private qualifiers in examples.
  */
 export const TYPES_SECTION_COMBINED: readonly string[] = [
   '## Types of memory',
@@ -115,10 +106,9 @@ export const TYPES_SECTION_COMBINED: readonly string[] = [
 ]
 
 /**
- * Sección `## Types of memory` para el modo SOLO-INDIVIDUAL (un único
- * directorio). Sin etiquetas `<scope>`. Los ejemplos usan
- * `[saves X memory: …]` llano. La prosa que solo tiene sentido con el split
- * privado/equipo se reescribió. Contenido en inglés VERBATIM.
+ * `## Types of memory` section for INDIVIDUAL-ONLY mode (single directory).
+ * No <scope> tags. Examples use plain `[saves X memory: …]`. Prose that
+ * only makes sense with a private/team split is reworded.
  */
 export const TYPES_SECTION_INDIVIDUAL: readonly string[] = [
   '## Types of memory',
@@ -188,7 +178,7 @@ export const TYPES_SECTION_INDIVIDUAL: readonly string[] = [
 ]
 
 /**
- * Sección `## What NOT to save in memory`. Idéntica en ambos modos.
+ * `## What NOT to save in memory` section. Identical across both modes.
  */
 export const WHAT_NOT_TO_SAVE_SECTION: readonly string[] = [
   '## What NOT to save in memory',
@@ -199,33 +189,29 @@ export const WHAT_NOT_TO_SAVE_SECTION: readonly string[] = [
   '- Anything already documented in CLAUDE.md files.',
   '- Ephemeral task details: in-progress work, temporary state, current conversation context.',
   '',
-  // H2: guardia de guardado explícito. Validado por evals
-  // (memory-prompt-iteration caso 3, 0/2 → 3/3): evita que "guarda la lista
-  // de PRs de esta semana" se convierta en ruido de bitácora de actividad.
+  // H2: explicit-save gate. Eval-validated (memory-prompt-iteration case 3,
+  // 0/2 → 3/3): prevents "save this week's PR list" → activity-log noise.
   'These exclusions apply even when the user explicitly asks you to save. If they ask you to save a PR list or activity summary, ask what was *surprising* or *non-obvious* about it — that is the part worth keeping.',
 ]
 
 /**
- * Advertencia de drift del lado del recall. Un único bullet bajo
- * `## When to access memories`. Proactivo: verificar la memoria contra el
- * estado actual antes de responder.
+ * Recall-side drift caveat. Single bullet under `## When to access memories`.
+ * Proactive: verify memory against current state before answering.
  */
 export const MEMORY_DRIFT_CAVEAT =
   '- Memory records can become stale over time. Use memory as context for what was true at a given point in time. Before answering the user or building assumptions based solely on information in memory records, verify that the memory is still correct and up-to-date by reading the current state of the files or resources. If a recalled memory conflicts with current information, trust what you observe now — and update or remove the stale memory rather than acting on it.'
 
 /**
- * Sección `## When to access memories`. Incluye `MEMORY_DRIFT_CAVEAT`.
+ * `## When to access memories` section. Includes MEMORY_DRIFT_CAVEAT.
  *
- * H6 (evals de contaminación de rama #22856, caso 5 1/3 en capy): el bullet
- * de "ignore" es el delta. Modo de fallo: el usuario dice "ignora la memoria
- * sobre X" → Claude lee el código correctamente pero agrega "no Y como se
- * anotó en memoria" — trata "ignore" como "reconocer y luego anular" en vez
- * de "no referenciar en absoluto". El bullet nombra ese anti-patrón
- * explícitamente.
+ * H6 (branch-pollution evals #22856, case 5 1/3 on capy): the "ignore" bullet
+ * is the delta. Failure mode: user says "ignore memory about X" → Claude reads
+ * code correctly but adds "not Y as noted in memory" — treats "ignore" as
+ * "acknowledge then override" rather than "don't reference at all." The bullet
+ * names that anti-pattern explicitly.
  *
- * Presupuesto de tokens (H6a): se fusionaron los bullets 1+2 viejos, ambos
- * más ajustados. Las 4 líneas viejas eran ~70 tokens; las 4 nuevas son ~73.
- * Neto ~+3.
+ * Token budget (H6a): merged old bullets 1+2, tightened both. Old 4 lines
+ * were ~70 tokens; new 4 lines are ~73 tokens. Net ~+3.
  */
 export const WHEN_TO_ACCESS_SECTION: readonly string[] = [
   '## When to access memories',
@@ -236,29 +222,26 @@ export const WHEN_TO_ACCESS_SECTION: readonly string[] = [
 ]
 
 /**
- * Sección `## Trusting what you recall`. Guía de mayor peso sobre CÓMO tratar
- * una memoria una vez recuperada — separada de CUÁNDO acceder.
+ * `## Trusting what you recall` section. Heavier-weight guidance on HOW to
+ * treat a memory once you've recalled it — separate from WHEN to access.
  *
- * Validado por evals (memory-prompt-iteration.eval.ts, 2026-03-17):
- *   H1 (verificar claims de función/archivo): 0/2 → 3/3 vía appendSystemPrompt.
- *      Enterrado como bullet bajo "When to access", cayó a 0/3 — la posición
- *      importa. La señal H1 es sobre qué HACER con una memoria, no cuándo
- *      mirarla, así que necesita su propio contexto de disparo a nivel de
- *      sección.
- *   H5 (rechazo de ruido del lado de lectura): 0/2 → 3/3 vía
- *      appendSystemPrompt, 2/3 in-place como bullet. Parcial porque
- *      "snapshot" está intuitivamente más cerca de "when to access" que H1.
+ * Eval-validated (memory-prompt-iteration.eval.ts, 2026-03-17):
+ *   H1 (verify function/file claims): 0/2 → 3/3 via appendSystemPrompt. When
+ *      buried as a bullet under "When to access", dropped to 0/3 — position
+ *      matters. The H1 cue is about what to DO with a memory, not when to
+ *      look, so it needs its own section-level trigger context.
+ *   H5 (read-side noise rejection): 0/2 → 3/3 via appendSystemPrompt, 2/3
+ *      in-place as a bullet. Partial because "snapshot" is intuitively closer
+ *      to "when to access" than H1 is.
  *
- * Hueco conocido: H1 no cubre claims de slash-command (0/3 en el caso /fork —
- * los slash commands no son archivos ni funciones en la ontología del
- * modelo).
+ * Known gap: H1 doesn't cover slash-command claims (0/3 on the /fork case —
+ * slash commands aren't files or functions in the model's ontology).
  */
 export const TRUSTING_RECALL_SECTION: readonly string[] = [
-  // El texto del encabezado importa: "Before recommending" (señal de acción
-  // en el punto de decisión) midió mejor que "Trusting what you recall"
-  // (abstracto). La variante appendSystemPrompt con este encabezado dio 3/3;
-  // el encabezado abstracto dio 0/3 in-place. Mismo cuerpo — solo cambió el
-  // encabezado.
+  // Header wording matters: "Before recommending" (action cue at the decision
+  // point) tested better than "Trusting what you recall" (abstract). The
+  // appendSystemPrompt variant with this header went 3/3; the abstract header
+  // went 0/3 in-place. Same body text — only the header differed.
   '## Before recommending from memory',
   '',
   'A memory that names a specific function, file, or flag is a claim that it existed *when the memory was written*. It may have been renamed, removed, or never merged. Before recommending it:',
@@ -273,7 +256,7 @@ export const TRUSTING_RECALL_SECTION: readonly string[] = [
 ]
 
 /**
- * Ejemplo de formato de frontmatter con el campo `type`.
+ * Frontmatter format example with the `type` field.
  */
 export const MEMORY_FRONTMATTER_EXAMPLE: readonly string[] = [
   '```markdown',

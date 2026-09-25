@@ -1,22 +1,21 @@
 /**
- * Porte de `ccnmt: packages/agent/attributionMetadata.ts` (byte-identical
- * en comportamiento; comentarios traducidos al español).
+ * Computes `{attributionAgent, attributionSkill, attributionPlugin}` metadata
+ * from the current querySource + spawnedBySkill + activeSkill.
  *
- * Calcula la metadata `{attributionAgent, attributionSkill,
- * attributionPlugin}` a partir del querySource actual + spawnedBySkill +
- * activeSkill.
+ * ant 2599.js La/yp1/d78 + 2547.js zAH/Z98 byte-identical port.
  *
- * Consumido por:
- *   - claudeLegacyRuntime: se esparce en los eventos de mensaje del
- *     asistente enviados a los consumidores del SDK, para que las
- *     herramientas río abajo puedan enrutar por procedencia agent/skill.
- *   - payloads de atribución de logEvent (telemetría).
+ * Used by:
+ *   - claudeLegacyRuntime: spread into assistant message events sent to SDK
+ *     consumers, so tools downstream can route by agent/skill provenance.
+ *   - logEvent attribution payloads (telemetry).
+ *
+ * @dynamicRequire
  */
 
 /**
- * Normaliza una cadena querySource a su familia amplia.
- * Devuelve 'main' para SDK / repl-main-thread; 'subagent' para agent:* o
- * hook_agent / verification_agent; 'auxiliary' para todo lo demás.
+ * Normalize a querySource string to its broad family. ant 2547.js zAH.
+ * Returns 'main' for SDK / repl-main-thread; 'subagent' for agent:* or
+ * hook_agent / verification_agent; 'auxiliary' for everything else.
  */
 export function querySourceFamily(querySource: string | undefined): 'main' | 'subagent' | 'auxiliary' | undefined {
   if (querySource === undefined) return undefined
@@ -25,7 +24,7 @@ export function querySourceFamily(querySource: string | undefined): 'main' | 'su
   return 'auxiliary'
 }
 
-/** Extrae el nombre del plugin de un id `pluginName:skillName`. */
+/** Extract plugin name from `pluginName:skillName` slash-separated id. ant Z98. */
 export function skillToPlugin(skillId: string): string | undefined {
   const i = skillId.indexOf(':')
   return i > 0 ? skillId.slice(0, i) : undefined
@@ -36,7 +35,7 @@ interface SkillBlock {
   attributionPlugin?: string
 }
 
-/** Produce {attributionSkill, attributionPlugin} para un nombre de skill. */
+/** ant 2599.js d78 — produce {attributionSkill, attributionPlugin} for a skill name. */
 function skillAttribution(skillName: string | undefined, pluginOverride?: string): SkillBlock {
   if (!skillName) return pluginOverride ? { attributionPlugin: pluginOverride } : {}
   const plugin = skillToPlugin(skillName) ?? pluginOverride
@@ -53,13 +52,14 @@ export interface AttributionMetadata {
 }
 
 /**
- * Calcula la metadata de atribución para una query en curso.
- *   - querySource = "agent:builtin:<name>"  → agent = <name>, + bloque skill
- *   - querySource = "agent:custom:<name>"   → agent = <name>, + bloque skill (con override de plugin custom)
- *   - querySource = main + activeSkill set  → solo bloque skill (agent omitido)
- *   - resto                                 → vacío
+ * Compute attribution metadata for an in-flight query.
+ * ant 2599.js yp1 byte-identical:
+ *   - querySource = "agent:builtin:<name>"  → agent = <name>, + skill block
+ *   - querySource = "agent:custom:<name>"   → agent = <name>, + skill block (with custom-plugin override)
+ *   - querySource = main + activeSkill set  → skill block only (agent omitted)
+ *   - else                                  → empty
  *
- * El wrapper es a prueba de excepciones — devuelve {} ante cualquier throw.
+ * The wrapper (ant La) is exception-safe — returns {} on any throw.
  */
 export function computeAttributionMetadata(
   querySource: string | undefined,

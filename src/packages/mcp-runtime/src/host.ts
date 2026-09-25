@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/host.ts` — sus 2
- * exportaciones, ninguna omitida.
- *
- * Registro del único punto de enganche del paquete con la raíz del
- * consumidor: quien hospeda mcp-runtime instala sus `bindings` una vez
- * (`installMcpRuntimeHostBindings`) y todo el resto del paquete las lee a
- * través de `getMcpRuntimeHostBindings`.
- */
 import type { McpRuntimeHostBindings } from './contracts.js'
 import { HostBindingsError } from './errors.js'
 

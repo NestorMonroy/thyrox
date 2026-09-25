@@ -1,7 +1,5 @@
 /**
- * Puerto de `ccnmt: packages/headless-sdk/src/sdkUtilityTypes.ts` (verbatim
- * — sin imports en la fuente). Tipo utilitario de uso — no expresable como
- * schema Zod, de ahí que viva fuera de `coreSchemas.ts`/`coreTypes.generated.ts`.
+ * Stub: SDK Utility Types.
  */
 export type NonNullableUsage = {
   inputTokens?: number

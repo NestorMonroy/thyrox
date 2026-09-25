@@ -1,6 +1,4 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/getDirectoriesToProcess.test.ts`.
- *
  * Tests for getDirectoriesToProcess — pure path-walker that decides
  * which directories' CLAUDE.md / .claude/rules/*.md files get loaded.
  *

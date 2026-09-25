@@ -1,18 +1,12 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/extractMemoriesPrompts.ts`
- * (verbatim).
+ * Prompt templates for the background memory extraction agent.
  *
- * Plantillas de prompt para el agente de extracción de memoria en segundo
- * plano.
- *
- * El agente de extracción corre como un fork perfecto de la conversación
- * principal — mismo prompt de sistema, mismo prefijo de mensajes. El
- * prompt de sistema del agente principal siempre tiene las instrucciones
- * completas de guardado; cuando el agente principal escribe memorias por
- * su cuenta, extractMemories.ts salta ese turno (hasMemoryWritesSince).
- * Este prompt dispara solo cuando el agente principal no escribió, así que
- * los criterios de guardado de aquí se solapan inofensivamente con los del
- * prompt de sistema.
+ * The extraction agent runs as a perfect fork of the main conversation — same
+ * system prompt, same message prefix. The main agent's system prompt always
+ * has full save instructions; when the main agent writes memories itself,
+ * extractMemories.ts skips that turn (hasMemoryWritesSince). This prompt
+ * fires only when the main agent didn't write, so the save-criteria here
+ * overlap the system prompt's harmlessly.
  */
 
 import { feature } from 'bun:bundle'
@@ -22,9 +16,8 @@ import {
   TYPES_SECTION_INDIVIDUAL,
   WHAT_NOT_TO_SAVE_SECTION,
 } from './memoryTypes.js'
-// Los nombres de herramienta son cadenas estables. Inlinearlos mantiene a
-// memory como hoja de Wave-2 sin dependencia del subsistema tool-registry
-// de Wave-3.
+// Tool names are stable strings. Inlining keeps memory a Wave-2 leaf
+// with no dep on the Wave-3 tool-registry subsystem.
 const BASH_TOOL_NAME = 'Bash'
 const FILE_EDIT_TOOL_NAME = 'Edit'
 const FILE_READ_TOOL_NAME = 'Read'
@@ -33,7 +26,7 @@ const GLOB_TOOL_NAME = 'Glob'
 const GREP_TOOL_NAME = 'Grep'
 
 /**
- * Apertura compartida por las dos variantes de prompt de extracción.
+ * Shared opener for both extract-prompt variants.
  */
 function opener(newMessageCount: number, existingMemories: string): string {
   const manifest =
@@ -53,9 +46,8 @@ function opener(newMessageCount: number, existingMemories: string): string {
 }
 
 /**
- * Construye el prompt de extracción para memoria auto-only (sin memoria
- * de equipo). Taxonomía de cuatro tipos, sin guía de scope (directorio
- * único).
+ * Build the extraction prompt for auto-only memory (no team memory).
+ * Four-type taxonomy, no scope guidance (single directory).
  */
 export function buildExtractAutoOnlyPrompt(
   newMessageCount: number,
@@ -104,10 +96,9 @@ export function buildExtractAutoOnlyPrompt(
 }
 
 /**
- * Construye el prompt de extracción para memoria combinada auto + equipo.
- * Taxonomía de cuatro tipos con guía de <scope> por tipo (la elección de
- * directorio va incrustada en cada bloque de tipo, sin necesidad de una
- * sección de ruteo separada).
+ * Build the extraction prompt for combined auto + team memory.
+ * Four-type taxonomy with per-type <scope> guidance (directory choice
+ * is baked into each type block, no separate routing section needed).
  */
 export function buildExtractCombinedPrompt(
   newMessageCount: number,

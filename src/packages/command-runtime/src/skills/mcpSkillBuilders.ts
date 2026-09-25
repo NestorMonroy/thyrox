@@ -1,26 +1,27 @@
-/**
- * Porte fiel de `ccnmt: packages/command-runtime/src/skills/mcpSkillBuilders.ts`
- * (paquete `command-runtime`, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO: registro de escritura única para las dos
- * funciones de `loadSkillsDir.js` que la búsqueda de skills de MCP
- * necesita — es una hoja del grafo de dependencias, sólo importa tipos,
- * así que tanto `mcpSkills.ts` como `loadSkillsDir.ts` pueden depender de
- * ella sin formar un ciclo (client.ts → mcpSkills.ts → loadSkillsDir.ts →
- * … → client.ts).
- *
- * `loadSkillsDir.ts` ya existe en este árbol, pero es un porte PARCIAL:
- * no exporta `createSkillCommand` ni `parseSkillFrontmatterFields` (medido
- * con grep sobre sus exports). El `import type` sigue siendo válido en
- * tiempo de ejecución — Bun borra los `import type` sin verificar que el
- * nombre exista en el módulo importado (verificado con un caso mínimo:
- * un `import type` de un símbolo ausente de un módulo SÍ resoluble no
- * falla al correr) — así que este archivo resuelve hoy y empezará a
- * tipar de verdad cuando `loadSkillsDir.ts` porte esas dos funciones.
- */
 import type {
   createSkillCommand,
   parseSkillFrontmatterFields,
 } from './loadSkillsDir.js'
+
+/**
+ * Write-once registry for the two loadSkillsDir functions that MCP skill
+ * discovery needs. This module is a dependency-graph leaf: it imports nothing
+ * but types, so both mcpSkills.ts and loadSkillsDir.ts can depend on it
+ * without forming a cycle (client.ts → mcpSkills.ts → loadSkillsDir.ts → …
+ * → client.ts).
+ *
+ * The non-literal dynamic-import approach ("await import(variable)") fails at
+ * runtime in Bun-bundled binaries — the specifier is resolved against the
+ * chunk's /$bunfs/root/… path, not the original source tree, yielding "Cannot
+ * find module './loadSkillsDir.js'". A literal dynamic import works in bunfs
+ * but dependency-cruiser tracks it, and because loadSkillsDir transitively
+ * reaches almost everything, the single new edge fans out into many new cycle
+ * violations in the diff check.
+ *
+ * Registration happens at loadSkillsDir.ts module init, which is eagerly
+ * evaluated at startup via the static import from commands.ts — long before
+ * any MCP server connects.
+ */
 
 export type MCPSkillBuilders = {
   createSkillCommand: typeof createSkillCommand

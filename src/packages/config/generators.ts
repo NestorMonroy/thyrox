@@ -1,8 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/config/generators.ts` (88 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
- */
-
 const NO_VALUE = Symbol('NO_VALUE')
 
 export async function lastX<A>(as: AsyncGenerator<A>): Promise<A> {
@@ -33,8 +28,7 @@ type QueuedGenerator<A> = {
   promise: Promise<QueuedGenerator<A>>
 }
 
-// Corre todos los generadores concurrentemente hasta un tope de
-// concurrencia, emitiendo valores conforme llegan.
+// Run all generators concurrently up to a concurrency cap, yielding values as they come in
 export async function* all<A>(
   generators: AsyncGenerator<A, void>[],
   concurrencyCap = Infinity,
@@ -53,7 +47,7 @@ export async function* all<A>(
   const waiting = [...generators]
   const promises = new Set<Promise<QueuedGenerator<A>>>()
 
-  // Arranca la tanda inicial hasta el tope de concurrencia.
+  // Start initial batch up to concurrency cap
   while (promises.size < concurrencyCap && waiting.length > 0) {
     const gen = waiting.shift()!
     promises.add(next(gen))
@@ -65,12 +59,12 @@ export async function* all<A>(
 
     if (!done) {
       promises.add(next(generator))
-      // TODO: limpiar esto.
+      // TODO: Clean this up
       if (value !== undefined) {
         yield value as Awaited<A>
       }
     } else if (waiting.length > 0) {
-      // Arranca un generador nuevo cuando uno termina.
+      // Start a new generator when one finishes
       const nextGen = waiting.shift()!
       promises.add(next(nextGen))
     }

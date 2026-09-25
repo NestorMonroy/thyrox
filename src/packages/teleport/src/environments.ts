@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/environments.ts` (120 líneas
- * fuente, 100% portado). Cliente de la Environment API: listar entornos
- * disponibles y crear un entorno cloud por defecto.
- */
-
 import axios from 'axios'
 import { getOauthConfig } from '@thyrox/provider/oauthConstants'
 import { getOrganizationUUID } from '@thyrox/provider/oauth/client.js'
@@ -31,9 +25,9 @@ export type EnvironmentListResponse = {
 }
 
 /**
- * Obtiene la lista de entornos disponibles desde la Environment API.
- * @returns Promise<EnvironmentResource[]> Array de entornos disponibles
- * @throws Error si la peticion falla o no hay access token disponible
+ * Fetches the list of available environments from the Environment API
+ * @returns Promise<EnvironmentResource[]> Array of available environments
+ * @throws Error if the API request fails or no access token is available
  */
 export async function fetchEnvironments(): Promise<EnvironmentResource[]> {
   const accessToken = getClaudeAIOAuthTokens()?.accessToken
@@ -76,8 +70,8 @@ export async function fetchEnvironments(): Promise<EnvironmentResource[]> {
 }
 
 /**
- * Crea un entorno anthropic_cloud por defecto para usuarios sin ninguno.
- * Usa la ruta publica environment_providers (misma auth que fetchEnvironments).
+ * Creates a default anthropic_cloud environment for users who have none.
+ * Uses the public environment_providers route (same auth as fetchEnvironments).
  */
 export async function createDefaultCloudEnvironment(
   name: string,

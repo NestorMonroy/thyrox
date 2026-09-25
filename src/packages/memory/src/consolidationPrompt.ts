@@ -1,20 +1,14 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/consolidationPrompt.ts` (verbatim
- * — sin dependencias externas al paquete). Contenido de prompt en inglés,
- * VERBATIM — es comportamiento del producto.
- */
-
-// Cuerpo del prompt de consolidación, portado desde upstream v2.1.123
-// `ow_()` (bun-demincer/work/claude-code-2.1.123/resplit/3891.js).
+// Consolidation prompt body, ported from upstream v2.1.123 `ow_()`
+// (bun-demincer/work/claude-code-how-works-how-works-2.1.123/resplit/3891.js).
 //
-// Usado por ambos:
-//   - `/dream` manual (foreground, acceso completo a herramientas)
-//   - `/dream consolidate` disparado por cron (background, solo lectura)
+// Used by both:
+//   - manual `/dream` (foreground, full tool access)
+//   - cron-fired `/dream consolidate` (background, read-only)
 //
-// Diferencias contra el cuerpo anterior de ccb: la fase 1 referencia el
-// layout de log por-sesión (`logs/YYYY/MM/DD/<id>-<title>.md`); las fuentes
-// de la fase 2 se re-priorizaron; se agregan las secciones de memoria de
-// equipo y de reconciliación con CLAUDE.md cuando aplican.
+// Differences vs the prior ccb body: phase 1 references per-session log
+// layout (`logs/YYYY/MM/DD/<id>-<title>.md`); phase 2 sources are
+// re-prioritised; team-memory and CLAUDE.md-reconcile sections appended
+// when applicable.
 
 import {
   DIR_EXISTS_GUIDANCE,

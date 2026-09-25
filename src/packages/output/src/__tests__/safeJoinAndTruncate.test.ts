@@ -1,12 +1,10 @@
 /**
- * Puerto de
- * `ccnmt: packages/output/src/__tests__/safeJoinAndTruncate.test.ts`
- * (verbatim). Tests de safeJoinLines + EndTruncatingAccumulator — redes
- * de seguridad para acumular salidas grandes de shell / resultados de
- * herramienta sin disparar el RSS por concatenacion O(n²) de cadenas.
+ * Tests for safeJoinLines + EndTruncatingAccumulator — safety nets for
+ * accumulating large shell output / tool result strings without
+ * blowing up RSS via O(n²) string concatenation.
  *
- * Una cuenta de tamano incorrecta produce un OOM silencioso o un
- * truncado prematuro que descarta salida legitima.
+ * Wrong size accounting = either silent OOM or premature truncation
+ * that drops legitimate output.
  */
 import { describe, expect, test } from 'bun:test'
 import {

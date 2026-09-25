@@ -26,15 +26,10 @@ const DENY_ALL_RESPONSE: CuPermissionResponse = {
 }
 
 /**
- * Copia de `ccnmt: packages/permission/src/components/ComputerUseApproval/
- * ComputerUseApproval.tsx` con los comentarios traducidos; el cuerpo es el de
- * la fuente.
- *
- * Despachador de dos paneles. Cuando `request.tccState` está presente faltan
- * los permisos de macOS (Accessibility / Screen Recording) y la lista de
- * aplicaciones es irrelevante: se muestra un panel de TCC que abre System
- * Settings. En cualquier otro caso se muestra el panel de la allowlist de
- * aplicaciones más los grant flags.
+ * Two-panel dispatcher. When `request.tccState` is present, macOS permissions
+ * (Accessibility / Screen Recording) are missing and the app list is
+ * irrelevant — show a TCC panel that opens System Settings. Otherwise show the
+ * app allowlist + grant-flags panel.
  */
 export function ComputerUseApproval({
   request,
@@ -50,7 +45,7 @@ export function ComputerUseApproval({
   )
 }
 
-// ── Panel de TCC ──────────────────────────────────────────────────────────
+// ── TCC panel ─────────────────────────────────────────────────────────────
 
 type TccOption = 'open_accessibility' | 'open_screen_recording' | 'retry'
 
@@ -100,9 +95,8 @@ function ComputerUseTccPanel({
         )
         return
       case 'retry':
-        // Se resuelve denegando todo: el modelo vuelve a llamar a
-        // request_access, que re-consulta TCC y renderiza la lista de
-        // aplicaciones si ya quedo concedido.
+        // Resolve with deny-all — the model re-calls request_access, which
+        // re-checks TCC and renders the app list if now granted.
         onDone()
         return
     }
@@ -136,7 +130,7 @@ function ComputerUseTccPanel({
   )
 }
 
-// ── Panel de la allowlist de aplicaciones ─────────────────────────────────
+// ── App allowlist panel ───────────────────────────────────────────────────
 
 type AppListOption = 'allow_all' | 'deny'
 
@@ -153,11 +147,10 @@ function ComputerUseAppListPanel({
   request,
   onDone,
 }: ComputerUseApprovalProps): React.ReactNode {
-  // Se premarca toda aplicación resuelta que aún no esté concedida. Los
-  // centinelas quedan marcados también: la señal es el texto de advertencia, no
-  // una casilla sin marcar. El alternador por elemento es trabajo posterior;
-  // por ahora toda aplicación resuelta se concede cuando el usuario acepta.
-  // `setChecked` queda sin uso hasta entonces.
+  // Pre-check every resolved, not-yet-granted app. Sentinels stay checked
+  // too — the warning text is the signal, not an unchecked box.
+  // Per-item toggles are a follow-up; for now every resolved app is granted
+  // when the user accepts. `setChecked` is unused until then.
   const [checked] = useState<ReadonlySet<string>>(
     () =>
       new Set(
@@ -221,8 +214,7 @@ function ComputerUseAppListPanel({
           ? ('user_denied' as const)
           : ('not_installed' as const),
       }))
-    // Al permitir se conceden todos los flags pedidos; el alternador por flag
-    // es trabajo posterior.
+    // Grant all requested flags on allow — per-flag toggles are a follow-up.
     const flags = {
       ...DEFAULT_GRANT_FLAGS,
       ...Object.fromEntries(requestedFlagKeys.map(k => [k, true] as const)),

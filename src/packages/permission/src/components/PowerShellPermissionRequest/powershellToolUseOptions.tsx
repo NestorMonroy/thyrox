@@ -45,21 +45,14 @@ export function powershellToolUseOptions({
     })
   }
 
-  // Copia de `ccnmt: packages/permission/src/components/
-  // PowerShellPermissionRequest/powershellToolUseOptions.tsx` con los
-  // comentarios traducidos; el cuerpo es el de la fuente.
-  //
-  // Nota: PowerShell no tiene alternador de sandbox, porque el sandbox no está
-  // soportado en Windows.
-  // Nota: PowerShell no tiene la opción de revisado-por-el-clasificador, que es
-  // una capacidad [SOLO-ANT] de Bash.
+  // Note: No sandbox toggle for PowerShell - sandbox is not supported on Windows
+  // Note: No classifier-reviewed option for PowerShell (ANT-ONLY feature for Bash)
 
-  // Las opciones de "permitir siempre" solo se muestran cuando
-  // allowManagedPermissionRulesOnly no las restringe. Se prefiere el input de
-  // prefijo editable — extractor estático más las ediciones del usuario — sobre
-  // la etiqueta de sugerencias, que no es editable. El input editable no puede
-  // representar permisos de directorio ni reglas de la herramienta Read, así
-  // que ante esos se cae de vuelta a la etiqueta.
+  // Only show "always allow" options when not restricted by allowManagedPermissionRulesOnly.
+  // Prefer the editable prefix input (static extractor + user edits) over the
+  // non-editable suggestions label. The editable input can't represent
+  // directory permissions or Read-tool rules, so fall back to the label when
+  // those are present.
   if (shouldShowAlwaysAllowOptions() && suggestions.length > 0) {
     const hasNonPowerShellSuggestions = suggestions.some(
       s =>

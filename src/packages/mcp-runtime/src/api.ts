@@ -1,12 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/api.ts` — sus 8
- * exportaciones, ninguna omitida.
- *
- * API de runtime que delega en los `bindings` instalados por
- * `installMcpRuntimeHostBindings` (ver `./host.ts`): descubrimiento,
- * conexión, ejecución de herramienta y los dos handlers del lado SDK para
- * `mcp_set_servers`.
- */
 import { getMcpRuntimeHostBindings } from './host.js'
 import { HostBindingsError } from './errors.js'
 
@@ -114,9 +105,9 @@ export async function discover<
     tools.push(...result.tools)
     commands.push(...result.commands)
     if (result.resources) {
-      // TMcpConnection es genérico y no expone `.name` en su contrato
-      // base; las conexiones concretas sí. Recae a una clave sintética
-      // cuando la implementación la omite.
+      // TMcpConnection is generic and doesn't expose `.name` on its
+      // base contract; concrete connections do. Falls back to a
+      // synthetic key when the impl omits it.
       resources[
         (result.client as { name?: string } | null)?.name ??
           `server-${clients.length}`
@@ -187,11 +178,10 @@ export async function prefetchResources<
 }
 
 /**
- * Handler del lado SDK para `mcp_set_servers`. Delega en la implementación
- * instalada desde la raíz del consumidor (ver `src/cli/mcpServersHandlers.ts`
- * en la fuente — no se portó en este pase). Quien llama castea el
- * resultado a su especialización de tipo concreta local — ver V7 §10.2
- * Cut 5 para el detalle de por qué los tipos son opacos aquí.
+ * SDK-side mcp_set_servers handler. Delegates to the root-installed
+ * implementation (see src/cli/mcpServersHandlers.ts). Callers cast the
+ * result to their local concrete type specialization — see V7 §10.2
+ * Cut 5 for details on why the types are opaque here.
  */
 export async function handleMcpSetServers(
   servers: Record<string, unknown>,

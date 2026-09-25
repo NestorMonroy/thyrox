@@ -10,20 +10,16 @@ import { applyMarkdown } from '@thyrox/output/markdown.js'
 import sliceAnsi from '@thyrox/output/utils/sliceAnsi.js'
 
 type PreviewBoxProps = {
-  /** Copia de `ccnmt: packages/permission/src/components/AskUserQuestionPermissionRequest/PreviewBox.tsx`
-   * con los comentarios traducidos; el cuerpo es el de la fuente.
-   *
-   * El contenido de vista previa a mostrar. El markdown se renderiza con
-   * resaltado de sintaxis para los bloques de código (```ts, ```py, etc.).
-   * También admite texto llano de varias líneas. */
+  /** The preview content to display. Markdown is rendered with syntax highlighting
+   * for code blocks (```ts, ```py, etc.). Also supports plain multi-line text. */
   content: string
-  /** Máximo de líneas a mostrar antes de truncar. @default 20 */
+  /** Maximum number of lines to display before truncating. @default 20 */
   maxLines?: number
-  /** Altura mínima, en líneas, de la caja de vista previa. Si el contenido es más corto, se rellena. */
+  /** Minimum height (in lines) for the preview box. Content will be padded if shorter. */
   minHeight?: number
-  /** Ancho mínimo de la caja de vista previa. @default 40 */
+  /** Minimum width for the preview box. @default 40 */
   minWidth?: number
-  /** Ancho máximo disponible para esta caja (el del contenedor, por ejemplo). */
+  /** Maximum width available for this box (e.g., the container width). */
   maxWidth?: number
 }
 
@@ -39,10 +35,9 @@ const BOX_CHARS = {
 }
 
 /**
- * Una caja monoespaciada con borde para mostrar contenido de vista previa.
- * Trunca con un indicador el contenido que excede `maxLines`. El componente
- * padre debe pasar `maxLines` a partir de su presupuesto de altura
- * disponible.
+ * A bordered monospace box for displaying preview content.
+ * Truncates content that exceeds maxLines with an indicator.
+ * The parent component should pass maxLines based on its available height budget.
  */
 export function PreviewBox(props: PreviewBoxProps): React.ReactNode {
   const settings = useSettings()
@@ -73,13 +68,12 @@ function PreviewBoxBody({
   const [theme] = useTheme()
   const effectiveMaxWidth = maxWidth ?? terminalWidth - 4
 
-  // Usar el `maxLines` que se pase, o un valor por defecto razonable
+  // Use provided maxLines, or a reasonable default
   const effectiveMaxLines = maxLines ?? 20
 
-  // Renderizar el markdown con resaltado de sintaxis para los bloques de
-  // código. `applyMarkdown` devuelve una cadena con estilos ANSI (negrita,
-  // colores, etc.) que aquí se parte en líneas. `stringWidth` y `sliceAnsi`,
-  // más abajo, tratan bien los códigos ANSI.
+  // Render markdown with syntax highlighting for code blocks. applyMarkdown
+  // returns an ANSI-styled string (bold, colors, etc.) that we split into
+  // lines. stringWidth and sliceAnsi below correctly handle ANSI codes.
   const rendered = useMemo(
     () => applyMarkdown(content, theme, highlight),
     [content, theme, highlight],
@@ -87,14 +81,13 @@ function PreviewBoxBody({
   const contentLines = rendered.split('\n')
   const isTruncated = contentLines.length > effectiveMaxLines
 
-  // Truncar a `effectiveMaxLines`
+  // Truncate to effectiveMaxLines
   const truncatedLines = isTruncated
     ? contentLines.slice(0, effectiveMaxLines)
     : contentLines
 
-  // Rellenar el contenido con líneas vacías si es más corto que `minHeight`,
-  // pero sin pasar nunca del límite de truncado — si no, el relleno deshace
-  // el truncado.
+  // Pad content with empty lines if shorter than minHeight, but never exceed
+  // the truncation limit — otherwise padding undoes the truncation
   const effectiveMinHeight = Math.min(minHeight ?? 0, effectiveMaxLines)
   const paddingNeeded = Math.max(
     0,
@@ -105,22 +98,22 @@ function PreviewBoxBody({
       ? [...truncatedLines, ...Array<string>(paddingNeeded).fill('')]
       : truncatedLines
 
-  // Calcular el ancho del contenido (el ancho visual máximo de línea, tratando unicode, emoji y CJK)
+  // Calculate content width (max visual line width, handling unicode/emoji/CJK)
   const contentWidth = Math.max(
     minWidth,
     ...lines.map(line => stringWidth(line)),
   )
-  // Sumar 2 por el relleno del borde, y capar al ancho del contenedor para que no haya salto de línea
+  // Add 2 for border padding, cap at the container width to prevent line wrapping
   const boxWidth = Math.min(contentWidth + 4, effectiveMaxWidth)
-  const innerWidth = boxWidth - 4 // Descontar los bordes y el relleno
+  const innerWidth = boxWidth - 4 // Account for borders and padding
 
-  // Renderizar el borde superior
+  // Render top border
   const topBorder = `${BOX_CHARS.topLeft}${BOX_CHARS.horizontal.repeat(boxWidth - 2)}${BOX_CHARS.topRight}`
 
-  // Renderizar el borde inferior
+  // Render bottom border
   const bottomBorder = `${BOX_CHARS.bottomLeft}${BOX_CHARS.horizontal.repeat(boxWidth - 2)}${BOX_CHARS.bottomRight}`
 
-  // Construir la barra separadora del truncado (por ejemplo ├─── ✂ ─── 42 lines hidden ──────┤)
+  // Build the truncation separator bar (e.g. ├─── ✂ ─── 42 lines hidden ──────┤)
   const truncationBar = isTruncated
     ? (() => {
         const hiddenCount = contentLines.length - effectiveMaxLines
@@ -136,10 +129,8 @@ function PreviewBoxBody({
       <Text dimColor>{topBorder}</Text>
 
       {lines.map((line, index) => {
-        // Rellenar o truncar la línea hasta el ancho interior, midiendo por
-        // ancho visual para unicode, emoji y CJK. `sliceAnsi` trata bien las
-        // secuencias de escape ANSI; `stringWidth` las descarta antes de
-        // medir.
+        // Pad or truncate line to fit inner width (using visual width for unicode/emoji/CJK).
+        // sliceAnsi handles ANSI escape codes correctly; stringWidth strips them before measuring.
         const lineWidth = stringWidth(line)
         const displayLine =
           lineWidth > innerWidth ? sliceAnsi(line, 0, innerWidth) : line

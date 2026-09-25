@@ -1,10 +1,6 @@
 /**
- * Puerto de `ccnmt: packages/headless-sdk/src/runtimeTypes.ts` (verbatim —
- * sin imports en la fuente).
- *
- * Tipos SDK en tiempo de ejecución (aún no publicados como open-source):
- * callbacks e interfaces con métodos — no serializables, por eso viven
- * fuera de `coreTypes.generated.ts`.
+ * SDK Runtime Types (not yet published in open-source).
+ * Non-serializable types: callbacks, interfaces with methods.
  */
 
 export type AnyZodRawShape = Record<string, unknown>
@@ -64,11 +60,10 @@ export interface Query {
 export interface InternalQuery extends Query {
   [key: string]: unknown
 }
-// Niveles de esfuerzo cross-proveedor. `none` sólo se expone cuando la
-// metadata de conexión declara soporte explícito (hoy, modelos GPT-5.6
-// Codex).
-//   low / medium / high — soportados en todos los modelos con capacidad de esfuerzo
-//   xhigh                — razonamiento extendido en Claude/Codex compatibles
+// Cross-provider effort levels. `none` is exposed only when connection
+// metadata explicitly declares support (currently GPT-5.6 Codex models).
+//   low / medium / high — supported on all effort-capable models
+//   xhigh                — extended reasoning on supported Claude/Codex models
 //   max                  — Mythos / Opus 4.7 / Opus 4.6 / Sonnet 4.6
-// El orden importa: inteligencia ascendente, lo usa el selector de la UI.
+// Order matters: ascending intelligence, used by the picker UI.
 export type EffortLevel = 'none' | 'low' | 'medium' | 'high' | 'xhigh' | 'max'

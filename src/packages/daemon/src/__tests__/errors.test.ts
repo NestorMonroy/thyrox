@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/errors.test.ts`.
 import { describe, expect, test } from 'bun:test'
 import {
   DaemonBaseError,

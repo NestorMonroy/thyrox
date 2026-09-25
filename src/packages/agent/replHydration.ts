@@ -1,52 +1,49 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/agent/replHydration.ts` — hidratación
- * de REPL, del ant 4656.js `mJK` + 3845.js `k56`/`XI7`/`Px5`.
+ * REPL hydration — port of ant 4656.js mJK + 3845.js k56/XI7/Px5.
  *
- * Cuando un fork (o un agente resumido) arranca, el agente interno recibe
- * un objeto `replHydration` que deja que su REPL (sandbox
- * `vm.Script.runInContext`) vuelva a ejecutar cada bloque de código previo
- * con envoltorios de herramienta simulados que devuelven los resultados del
- * turno anterior, de forma que el estado del REPL termine coincidiendo con
- * lo que el usuario vio.
+ * When a fork (or resumed agent) starts, the inner agent receives a
+ * `replHydration` object that lets its REPL (`vm.Script.runInContext`
+ * sandbox) re-execute every prior code block with mocked tool wrappers
+ * that return the previous turn's results, so REPL state ends up
+ * matching what the user saw.
  *
- * Forma:
- *   { kind: 'fork',  log: ReplayEntry[] }   — fork nuevo, log = bloques REPL del padre
- *   { kind: 'resume', log: ReplayEntry[] }  — agente resumido, log reconstruido de los mensajes
- *   { kind: 'fresh' }                       — sin hidratación (default)
+ * Shape:
+ *   { kind: 'fork',  log: ReplayEntry[] }   — fresh fork, log = parent's REPL blocks
+ *   { kind: 'resume', log: ReplayEntry[] }  — resumed agent, log reconstructed from messages
+ *   { kind: 'fresh' }                       — no hydration (default)
  *
- * `k56` (`reconstructLog` en este módulo) recorre el historial de mensajes
- * y agrupa los `tool_use:REPL` del asistente con sus salidas `tool_result`
- * en entradas `{ replId, code, calls: [{kind, toolName, result|error}], threw
- * }`. El `Px5` de ant 3845.js hace luego `vm.Script(code).runInContext` de
- * cada una, con `calls` dirigiendo los valores de retorno del envoltorio.
+ * `k56` (this module's `reconstructLog`) walks the message history and
+ * groups assistant tool_use:REPL with their tool_result outputs into
+ * `{ replId, code, calls: [{kind, toolName, result|error}], threw }`
+ * entries. ant 3845.js Px5 then `vm.Script(code).runInContext` each one
+ * with `calls` driving the wrapper return values.
  *
- * Hoy el REPLTool de ccb es un stub de una línea (`isEnabled: () => false`),
- * así que el consumidor de la hidratación es un no-op. La extracción k56
- * sigue corriendo igual y produce `ReplayEntry[]` correcto, listo para
- * cuando el REPLTool de ccb tenga una implementación real. Éste es un
- * PORTE ESTRUCTURAL, no un mínimo-viable — el dato es correcto y completo;
- * solo el ejecutor `runInContext` está apagado por bandera.
+ * Today ccb's REPLTool is a 1-line stub (`isEnabled: () => false`), so
+ * the hydration consumer is a no-op. The k56 extraction still runs and
+ * produces correct ReplayEntry[] data, ready for whenever ccb's REPLTool
+ * gets a real impl. This is a STRUCTURAL port not a minimal-viable —
+ * the data is correct + complete; only the runInContext executor is
+ * gated off.
  *
  * @dynamicRequire
  */
 
 import type { Message, AssistantMessage, UserMessage } from './messageShapes.js'
 
-/** ant 3845.js: constante con el nombre de la herramienta REPL. Se refleja como 'REPL'. */
+/** ant 3845.js: REPL tool name constant. Mirrored as 'REPL'. */
 export const REPL_TOOL_NAME = 'REPL'
 
 /**
- * Una llamada a herramienta simulada dentro de un bloque REPL — lo que
- * devolvió el envoltorio. ant 3845.js: { kind: 'ok' | 'err', toolName, result?, error? }
+ * One mocked tool call inside a REPL block — what the wrapper returned.
+ * ant 3845.js: { kind: 'ok' | 'err', toolName, result?, error? }
  */
 export type ReplayCall =
   | { kind: 'ok'; toolName: string; result: unknown }
   | { kind: 'err'; toolName: string; error: string }
 
 /**
- * Un bloque REPL: el código original + la secuencia de llamadas a
- * herramientas internas que hizo (en orden) + si el original lanzó
- * excepción. ant 3845.js k56.
+ * One REPL block: the original code + the sequence of inner-tool calls
+ * it made (in order) + whether the original threw. ant 3845.js k56.
  */
 export interface ReplayEntry {
   replId: string
@@ -55,26 +52,26 @@ export interface ReplayEntry {
   threw: boolean
 }
 
-/** Payload de hidratación como unión discriminada. Default 'fresh' = sin reproducción. */
+/** Discriminated-union hydration payload. Default 'fresh' = no replay. */
 export type ReplHydration =
   | { kind: 'fork'; log: ReplayEntry[] }
   | { kind: 'resume'; log: ReplayEntry[] }
   | { kind: 'fresh' }
 
-/** ant 3845.js MI7 — lee de forma segura una propiedad string de un Record/objeto. */
+/** ant 3845.js MI7 — safely read a string property from a Record/object. */
 function readStringProp(obj: unknown, key: string): string {
   if (obj === null || typeof obj !== 'object') return ''
   const v = (obj as Record<string, unknown>)[key]
   return typeof v === 'string' ? v : ''
 }
 
-/** Convierte un bloque de content a un Record genérico para sondear campos sin tipar. */
+/** Cast a content block to a generic record so we can probe untyped fields. */
 function asRecord(block: unknown): Record<string, unknown> | null {
   if (typeof block !== 'object' || block === null) return null
   return block as unknown as Record<string, unknown>
 }
 
-/** ant 3845.js wx5 — extrae los bloques tool_use:REPL de un mensaje de asistente. */
+/** ant 3845.js wx5 — extract REPL tool_use blocks from an assistant message. */
 function extractReplToolUses(m: AssistantMessage): Array<{ id: string; code: string }> {
   if (m.isVirtual) return []
   const content = m.message.content
@@ -93,7 +90,7 @@ function extractReplToolUses(m: AssistantMessage): Array<{ id: string; code: str
   return out
 }
 
-/** ant 3845.js jx5 — extrae el nombre de herramienta interna pendiente de un mensaje de asistente virtual. */
+/** ant 3845.js jx5 — extract pending inner-tool name from a virtual assistant msg. */
 function extractPendingName(m: AssistantMessage): string | undefined {
   if (!m.isVirtual) return undefined
   const content = m.message.content
@@ -103,7 +100,7 @@ function extractPendingName(m: AssistantMessage): string | undefined {
   return undefined
 }
 
-/** ant 3845.js Jx5 — extrae el resultado de la herramienta interna de un mensaje de usuario virtual. */
+/** ant 3845.js Jx5 — extract the inner-tool result from a virtual user msg. */
 function extractInnerResult(m: UserMessage, toolName: string): ReplayCall | undefined {
   if (!m.isVirtual) return undefined
   const content = m.message.content
@@ -125,7 +122,7 @@ function extractInnerResult(m: UserMessage, toolName: string): ReplayCall | unde
   }
 }
 
-/** ant 3845.js Dx5 — detecta si un mensaje de usuario NO virtual reporta que el bloque REPL lanzó excepción. */
+/** ant 3845.js Dx5 — detect if a non-virtual user message reports the REPL block threw. */
 function detectReplThrew(m: UserMessage, replId: string): boolean | undefined {
   if (m.isVirtual) return undefined
   const content = m.message.content
@@ -139,12 +136,12 @@ function detectReplThrew(m: UserMessage, replId: string): boolean | undefined {
 }
 
 /**
- * Reconstruye el log de reproducción de REPL a partir de un arreglo de
- * mensajes — ant 3845.js k56 byte-idéntico.
+ * Reconstruct REPL replay log from a message array — ant 3845.js k56
+ * byte-identical.
  *
- * Recorre el flujo de mensajes, abre una nueva ReplayEntry en cada bloque
- * tool_use:REPL, acumula pares virtuales {pendingName,resultado} como
- * `calls`, y finaliza en el siguiente tool_use:REPL o al terminar el flujo.
+ * Walks the message stream, opens a new ReplayEntry on each
+ * tool_use:REPL block, accumulates virtual {pendingName,result} pairs
+ * as `calls`, finalizes on next tool_use:REPL or end of stream.
  */
 export function reconstructLog(messages: readonly Message[]): ReplayEntry[] {
   const out: ReplayEntry[] = []
@@ -202,28 +199,25 @@ export function reconstructLog(messages: readonly Message[]): ReplayEntry[] {
 }
 
 /**
- * Consumidor de la hidratación — ant 3848.js flujo de arranque de
- * hidratación.
+ * Hydration consumer — ant 3848.js hydration boot path.
  *
- * Lo llama el arranque del agente interno (inicio de QueryEngine) con el
- * payload replHydration del padre + una referencia al REPLTool. Reproduce
- * cada ReplayEntry a través del vm.runInContext del REPL de forma que el
- * estado del REPL termine coincidiendo con lo que el usuario vio antes del
- * fork/resume.
+ * Called by inner agent boot (QueryEngine startup) with the parent's
+ * replHydration payload + a REPLTool reference. Replays each ReplayEntry
+ * through the REPL's vm.runInContext so REPL state ends up matching
+ * what the user saw before fork/resume.
  *
- * Devuelve un resumen de cuántas entradas se reprodujeron limpias vs. con
- * deriva (drift).
+ * Returns a summary of how many entries replayed cleanly vs drifted.
  *
- * Hoy REPLTool.isEnabled === false en ccb, así que este consumidor
- * devuelve { skipped: true } sin hacer nada. Cuando REPLTool tenga una
- * implementación real, el consumidor se activa automáticamente.
+ * Today ccb's REPLTool.isEnabled === false, so this returns
+ * { skipped: true } without doing anything. Once REPLTool gets a real
+ * impl, the consumer becomes active automatically.
  */
 export async function hydrateRepl(
   hydration: ReplHydration,
   options?: {
-    /** Inyecta un REPLTool habilitado para testing — default es el stub de ccb. */
+    /** Inject an enabled REPLTool for testing — defaults to ccb's stub. */
     isReplToolEnabled?: () => boolean
-    /** Función de reproducción por entrada — abstraída para que los tests no necesiten vm. */
+    /** Per-entry replay fn — abstracted so tests don't need vm. */
     replayEntry?: (entry: ReplayEntry) => Promise<{ kind: 'ok' | 'drift' | 'threw'; reason?: string }>
   },
 ): Promise<{
@@ -243,7 +237,7 @@ export async function hydrateRepl(
   }
   const replayer =
     options?.replayEntry ??
-    (async () => ({ kind: 'ok' as const })) // default no-op cuando falta implementación real de REPLTool
+    (async () => ({ kind: 'ok' as const })) // no-op default when REPLTool real impl absent
   let okCount = 0
   let driftCount = 0
   let threwCount = 0

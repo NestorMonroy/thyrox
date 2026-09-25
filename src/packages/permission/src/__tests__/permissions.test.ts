@@ -1,9 +1,6 @@
 import { mock, describe, expect, test } from "bun:test";
 
-// Copia de `ccnmt: packages/permission/src/__tests__/permissions.test.ts` con
-// los comentarios traducidos; el cuerpo es el de la fuente.
-//
-// Se mockea log.ts para cortar la cadena pesada de dependencias.
+// Mock log.ts to cut the heavy dependency chain
 mock.module("src/utils/log.ts", () => ({
   logError: () => {},
   logToFile: () => {},
@@ -21,7 +18,7 @@ mock.module("src/utils/log.ts", () => ({
   _resetErrorLogForTesting: () => {},
 }));
 
-// Se mockea slowOperations para evitar bun:bundle.
+// Mock slowOperations to avoid bun:bundle
 mock.module("src/utils/slowOperations.ts", () => ({
   jsonStringify: JSON.stringify,
   jsonParse: JSON.parse,
@@ -42,7 +39,7 @@ const {
 
 import { getEmptyToolPermissionContext } from "@thyrox/tool-registry/Tool.js";
 
-// ─── Auxiliar ───────────────────────────────────────────────────────────
+// ─── Helper ─────────────────────────────────────────────────────────────
 
 function makeContext(opts: {
   denyRules?: string[];
@@ -52,8 +49,8 @@ function makeContext(opts: {
   const deny: Record<string, string[]> = {};
   const ask: Record<string, string[]> = {};
 
-  // alwaysDenyRules guarda las cadenas de regla en crudo: getDenyRules()
-  // llama a permissionRuleValueFromString por dentro.
+  // alwaysDenyRules stores raw rule strings — getDenyRules() calls
+  // permissionRuleValueFromString internally
   if (opts.denyRules?.length) {
     deny["localSettings"] = opts.denyRules;
   }
@@ -93,9 +90,8 @@ describe("getDenyRuleForTool", () => {
   });
 
   test("rule with content does not match whole-tool deny", () => {
-    // getDenyRuleForTool usa toolMatchesRule, que exige
-    // ruleContent === undefined. Una regla como "Bash(rm -rf)" solo casa con
-    // invocaciones concretas, no con la herramienta entera.
+    // getDenyRuleForTool uses toolMatchesRule which requires ruleContent === undefined
+    // Rules like "Bash(rm -rf)" only match specific invocations, not the entire tool
     const ctx = makeContext({ denyRules: ["Bash(rm -rf)"] });
     const result = getDenyRuleForTool(ctx, makeTool("Bash"));
     expect(result).toBeNull();

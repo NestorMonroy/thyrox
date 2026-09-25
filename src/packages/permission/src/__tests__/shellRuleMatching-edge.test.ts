@@ -5,10 +5,7 @@ import {
   parsePermissionRule,
 } from '../shellRuleMatching.js'
 
-// Copia de `ccnmt: packages/permission/src/__tests__/shellRuleMatching-edge.test.ts`
-// con los comentarios traducidos; el cuerpo es el de la fuente.
-//
-// ─── Sonda del conteo de barras invertidas de hasWildcards ──────────────
+// ─── Probe hasWildcards backslash counting ──────────────────────────────
 
 describe('hasWildcards — backslash counting precision', () => {
   test('zero backslashes (plain *) → unescaped → true', () => {
@@ -32,7 +29,7 @@ describe('hasWildcards — backslash counting precision', () => {
   })
 
   test('multiple wildcards — only one needs to be unescaped', () => {
-    // Patrón: '\* foo *' — el primer * está escapado, el segundo no.
+    // Pattern: '\* foo *' — first * is escaped, second is not.
     expect(hasWildcards('\\* foo *')).toBe(true)
   })
 
@@ -41,27 +38,26 @@ describe('hasWildcards — backslash counting precision', () => {
   })
 
   test('legacy ":*" wins even if other * present in pattern', () => {
-    // La función comprueba `endsWith(':*')` PRIMERO. Todo lo anterior se
-    // ignora, aunque el patrón traiga antes un * sin escapar.
-    // CRÍTICO: esta regla impide que la forma heredada «git commit:*» se
-    // interprete por accidente como sintaxis de comodín.
+    // The function checks `endsWith(':*')` FIRST. Anything before that
+    // is ignored — even if the pattern has unescaped * earlier.
+    // CRITICAL: this rule prevents the legacy "git commit:*" form from
+    // accidentally being interpreted as wildcard syntax.
     expect(hasWildcards('git commit:*')).toBe(false)
     expect(hasWildcards('foo * bar:*')).toBe(false)
   })
 
   test('asterisk at end without space prefix', () => {
-    // 'foo*' (sin espacio) — sigue teniendo un * sin escapar.
+    // 'foo*' (no space) — still has unescaped *.
     expect(hasWildcards('foo*')).toBe(true)
   })
 })
 
-// ─── Sonda de los casos límite de matchWildcardPattern ─────────────────
+// ─── Probe matchWildcardPattern edge cases ──────────────────────────────
 
 describe('matchWildcardPattern — multiline / heredoc commands', () => {
   test('wildcard matches commands with embedded newlines (dotAll)', () => {
-    // La bandera 's' (dotAll) es crítica para que coincidan los comandos que
-    // `splitCommand` devolvió con saltos de línea dentro (contenido de
-    // heredoc).
+    // The 's' (dotAll) flag is critical for matching commands that splitCommand
+    // returned with embedded newlines (heredoc content).
     expect(
       matchWildcardPattern(
         'cat *',
@@ -71,7 +67,7 @@ describe('matchWildcardPattern — multiline / heredoc commands', () => {
   })
 
   test('plain "." (any char) within wildcard → matches newline (dotAll)', () => {
-    // Con la bandera dotAll, cualquier '.' de la expresión regular casa con \n.
+    // Any '.' in the regex matches \n with dotAll flag.
     expect(matchWildcardPattern('echo *', 'echo line1\nline2')).toBe(true)
   })
 })
@@ -92,9 +88,9 @@ describe('matchWildcardPattern — escaped wildcards in middle', () => {
 })
 
 describe('matchWildcardPattern — trailing-wildcard space-optionality', () => {
-  // La rama «endsWith(' .*') && unescapedStarCount === 1» hace que `git *`
-  // case tanto con `git add` COMO con `git` a secas. Documenta esa ergonomía,
-  // que carga peso.
+  // The "endsWith(' .*') && unescapedStarCount === 1" branch makes
+  // `git *` match both `git add` AND bare `git`. Documents this load-bearing
+  // ergonomic.
 
   test('"git *" matches bare "git"', () => {
     expect(matchWildcardPattern('git *', 'git')).toBe(true)
@@ -109,7 +105,7 @@ describe('matchWildcardPattern — trailing-wildcard space-optionality', () => {
   })
 
   test('"git *" does NOT match "git2"', () => {
-    // El « ?args» opcional sólo entra si el resto va separado por espacios.
+    // The optional " ?args" only kicks in if the rest is space-separated.
     expect(matchWildcardPattern('git *', 'git2')).toBe(false)
   })
 
@@ -118,16 +114,16 @@ describe('matchWildcardPattern — trailing-wildcard space-optionality', () => {
   })
 
   test('multi-wildcard pattern does NOT get the optional-suffix treatment', () => {
-    // CRÍTICO: '* run *' casaría de forma incorrecta con 'npm run' si el
-    // comodín de espacio final fuera opcional. La guarda
-    // `unescapedStarCount === 1` lo impide.
+    // CRITICAL: '* run *' would incorrectly match 'npm run' if the trailing
+    // space-wildcard were optional. The unescapedStarCount === 1 guard
+    // prevents this.
     expect(matchWildcardPattern('* run *', 'npm run')).toBe(false)
     expect(matchWildcardPattern('* run *', 'npm run build')).toBe(true)
   })
 
   test('escaped trailing wildcard does NOT trigger optional suffix', () => {
-    // El patrón 'git \*' tiene cero comodines sin escapar. La lógica del
-    // sufijo opcional NO aplica — el patrón casa con 'git *' literal.
+    // Pattern 'git \*' has zero unescaped wildcards. The optional-suffix
+    // logic does NOT apply — pattern matches 'git *' literally.
     expect(matchWildcardPattern('git \\*', 'git')).toBe(false)
     expect(matchWildcardPattern('git \\*', 'git *')).toBe(true)
   })
@@ -200,7 +196,7 @@ describe('matchWildcardPattern — case insensitivity', () => {
 })
 
 describe('matchWildcardPattern — full-string match (anchored)', () => {
-  // El patrón va envuelto en ^...$. Los comodines tienen que cubrir el comando ENTERO.
+  // Pattern is wrapped in ^...$. Wildcards must cover the FULL command.
 
   test('pattern without wildcard requires exact full-string match', () => {
     expect(matchWildcardPattern('npm install', 'npm install')).toBe(true)
@@ -230,26 +226,26 @@ describe('matchWildcardPattern — empty / whitespace edge', () => {
   })
 
   test('pattern with leading/trailing whitespace is trimmed', () => {
-    // La función llama antes a `pattern.trim()`.
+    // The function calls `pattern.trim()` first.
     expect(matchWildcardPattern('  git *  ', 'git add')).toBe(true)
     expect(matchWildcardPattern('  git *  ', 'git')).toBe(true)
   })
 })
 
-// ─── Sonda del orden de ramas de parsePermissionRule ───────────────────
+// ─── Probe parsePermissionRule branch ordering ──────────────────────────
 
 describe('parsePermissionRule — branch precedence', () => {
   test('legacy ":*" wins over wildcard branch', () => {
-    // 'foo:*' es un prefijo heredado aunque contenga un *.
+    // 'foo:*' is legacy prefix even though it contains *.
     const r = parsePermissionRule('foo:*')
     expect(r.type).toBe('prefix')
     expect(r).toEqual({ type: 'prefix', prefix: 'foo' })
   })
 
   test('mixed ":*" with leading wildcard — STILL prefix (legacy precedence)', () => {
-    // 'a*:*' — gana `endsWith(':*')`. El * anterior queda incluido en el
-    // contenido del «prefijo». Esto documenta que lo heredado gana, para que
-    // un refactor futuro no invierta la precedencia por accidente.
+    // 'a*:*' — endsWith(':*') wins. The * earlier is included in the
+    // "prefix" content. This documents the legacy-wins behavior so
+    // future refactors don't accidentally flip the precedence.
     const r = parsePermissionRule('a*:*')
     expect(r.type).toBe('prefix')
     expect((r as { prefix: string }).prefix).toBe('a*')
@@ -263,7 +259,7 @@ describe('parsePermissionRule — branch precedence', () => {
   })
 
   test('plain ":" (no asterisk) is exact, not prefix', () => {
-    // 'foo:' NO termina en ':*' → es exacto.
+    // 'foo:' does NOT end with ':*' → exact.
     expect(parsePermissionRule('foo:')).toEqual({
       type: 'exact',
       command: 'foo:',

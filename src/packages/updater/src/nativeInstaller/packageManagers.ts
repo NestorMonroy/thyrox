@@ -1,14 +1,5 @@
 /**
- * Deteccion de gestor de paquetes para el CLI de Claude
- *
- * Puerto de `ccnmt: packages/updater/src/nativeInstaller/packageManagers.ts`
- * (357 líneas fuente, 100% portado). Divergencia declarada: `getPlatform`
- * aquí NO es el de `./platform.ts` (que devuelve `linux-x64`, etc. para
- * el instalador nativo) sino el de `@claude-code-how-works/config/platform`
- * en la fuente — que en este árbol SÍ está portado como
- * `@thyrox/config/platform.ts` con la misma forma
- * (`'macos'|'windows'|'wsl'|'linux'|'unknown'`, verificado contra su
- * `export type Platform` y `export const getPlatform`).
+ * Package manager detection for Claude CLI
  */
 
 import { readFile } from 'fs/promises'
@@ -29,12 +20,11 @@ export type PackageManager =
   | 'unknown'
 
 /**
- * Parsea /etc/os-release para extraer los campos ID e ID_LIKE. ID_LIKE
- * identifica la familia de la distro (p.ej. Ubuntu tiene
- * ID_LIKE=debian), permitiendo saltarse execs de gestor de paquetes en
- * distros que no pueden tenerlos. Devuelve null si el archivo no es
- * legible (sistemas pre-systemd o no estandar); los llamadores caen al
- * exec en ese caso como fallback conservador.
+ * Parses /etc/os-release to extract the distro ID and ID_LIKE fields.
+ * ID_LIKE identifies the distro family (e.g. Ubuntu has ID_LIKE=debian),
+ * letting us skip package manager execs on distros that can't have them.
+ * Returns null if the file is unreadable (pre-systemd or non-standard systems);
+ * callers fall through to the exec in that case as a conservative fallback.
  */
 export const getOsRelease = memoize(
   async (): Promise<{ id: string; idLike: string[] } | null> => {
@@ -63,16 +53,16 @@ function isDistroFamily(
 }
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via mise
- * (un gestor de versiones de herramientas poliglota) chequeando si la
- * ruta del ejecutable esta dentro de un directorio de installs de mise.
+ * Detects if the currently running Claude instance was installed via mise
+ * (a polyglot tool version manager) by checking if the executable path
+ * is within a mise installs directory.
  *
- * mise instala en: ~/.local/share/mise/installs/<tool>/<version>/
+ * mise installs to: ~/.local/share/mise/installs/<tool>/<version>/
  */
 export function detectMise(): boolean {
   const execPath = process.execPath || process.argv[0] || ''
 
-  // Chequea si el ejecutable esta dentro de un directorio de installs de mise
+  // Check if the executable is within a mise installs directory
   if (/[/\\]mise[/\\]installs[/\\]/i.test(execPath)) {
     logForDebugging(`Detected mise installation: ${execPath}`)
     return true
@@ -82,16 +72,16 @@ export function detectMise(): boolean {
 }
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via asdf
- * (otro gestor de versiones de herramientas poliglota) chequeando si la
- * ruta del ejecutable esta dentro de un directorio de installs de asdf.
+ * Detects if the currently running Claude instance was installed via asdf
+ * (another polyglot tool version manager) by checking if the executable path
+ * is within an asdf installs directory.
  *
- * asdf instala en: ~/.asdf/installs/<tool>/<version>/
+ * asdf installs to: ~/.asdf/installs/<tool>/<version>/
  */
 export function detectAsdf(): boolean {
   const execPath = process.execPath || process.argv[0] || ''
 
-  // Chequea si el ejecutable esta dentro de un directorio de installs de asdf
+  // Check if the executable is within an asdf installs directory
   if (/[/\\]\.?asdf[/\\]installs[/\\]/i.test(execPath)) {
     logForDebugging(`Detected asdf installation: ${execPath}`)
     return true
@@ -101,30 +91,28 @@ export function detectAsdf(): boolean {
 }
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via Homebrew
- * chequeando si la ruta del ejecutable esta dentro de un directorio
- * Caskroom de Homebrew.
+ * Detects if the currently running Claude instance was installed via Homebrew
+ * by checking if the executable path is within a Homebrew Caskroom directory.
  *
- * Nota: se chequea especificamente Caskroom porque npm tambien puede
- * instalarse via Homebrew, lo que pondria paquetes globales de npm bajo
- * el mismo prefijo de Homebrew (p.ej. /opt/homebrew/lib/node_modules).
- * Hay que distinguir entre:
- * - Homebrew cask: /opt/homebrew/Caskroom/claude-code/...
- * - npm-global (via el npm de Homebrew): /opt/homebrew/lib/node_modules/@anthropic-ai/...
+ * Note: We specifically check for Caskroom because npm can also be installed via
+ * Homebrew, which would place npm global packages under the same Homebrew prefix
+ * (e.g., /opt/homebrew/lib/node_modules). We need to distinguish between:
+ * - Homebrew cask: /opt/homebrew/Caskroom/claude-code-how-works-how-works/...
+ * - npm-global (via Homebrew's npm): /opt/homebrew/lib/node_modules/@anthropic-ai/...
  */
 export function detectHomebrew(): boolean {
   const platform = getPlatform()
 
-  // Homebrew es solo para macOS y Linux
+  // Homebrew is only for macOS and Linux
   if (platform !== 'macos' && platform !== 'linux' && platform !== 'wsl') {
     return false
   }
 
-  // Obtiene la ruta del ejecutable actualmente en ejecucion
+  // Get the path of the currently running executable
   const execPath = process.execPath || process.argv[0] || ''
 
-  // Chequea si el ejecutable esta dentro de un directorio Caskroom de
-  // Homebrew. Especifico de instalaciones cask de Homebrew
+  // Check if the executable is within a Homebrew Caskroom directory
+  // This is specific to Homebrew cask installations
   if (execPath.includes('/Caskroom/')) {
     logForDebugging(`Detected Homebrew cask installation: ${execPath}`)
     return true
@@ -134,23 +122,20 @@ export function detectHomebrew(): boolean {
 }
 
 /**
- * Puerto de ant v2.1.136 `Vw_` (3481.js). Extrae el nombre del cask de
- * Homebrew (p.ej. `claude-code` o
- * `claude-code@latest`) de la ruta Caskroom del
- * ejecutable en ejecucion. Devuelve null cuando el ejecutable no esta
- * dentro de un directorio Caskroom.
+ * Port of ant v2.1.136 `Vw_` (3481.js). Extract the Homebrew cask name
+ * (e.g. `claude-code-how-works-how-works` or `claude-code-how-works-how-works@latest`) from the running
+ * executable's Caskroom path. Returns null when the executable isn't
+ * inside a Caskroom directory.
  *
- * Forma de la ruta: `/opt/homebrew/Caskroom/<cask-name>/<version>/...`
+ * Path shape: `/opt/homebrew/Caskroom/<cask-name>/<version>/...`
  *
- * Es la unica forma de distinguir entre usuarios que instalaron el cask
- * estable `claude-code` de los que instalaron
- * `claude-code@latest` (que sigue el canal
- * bleeding-edge). El auto-updater de gestor de paquetes usa el nombre de
- * la formula tanto para obtener la version correcta de
- * formulae.brew.sh COMO para construir el comando
- * `brew upgrade --cask <name>` correcto, ya que
- * `brew upgrade --cask claude-code` no tocara
- * `claude-code@latest`.
+ * This is the only way to tell apart users who installed the stable
+ * `claude-code-how-works-how-works` cask from those who installed `claude-code-how-works-how-works@latest`
+ * (which tracks the bleeding-edge channel). The package-manager auto-
+ * updater uses the formula name BOTH to fetch the right version from
+ * formulae.brew.sh AND to build the right `brew upgrade --cask <name>`
+ * command, since `brew upgrade --cask claude-code-how-works-how-works` won't touch
+ * `claude-code-how-works-how-works@latest`.
  */
 export function detectBrewFormulaName(): string | null {
   const execPath = process.execPath || process.argv[0] || ''
@@ -158,25 +143,25 @@ export function detectBrewFormulaName(): string | null {
 }
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via winget
- * chequeando si la ruta del ejecutable esta dentro de un directorio de WinGet.
+ * Detects if the currently running Claude instance was installed via winget
+ * by checking if the executable path is within a WinGet directory.
  *
- * winget instala en:
- * - Usuario: %LOCALAPPDATA%\Microsoft\WinGet\Packages
- * - Sistema: C:\Program Files\WinGet\Packages
- * Y crea links en: %LOCALAPPDATA%\Microsoft\WinGet\Links\
+ * Winget installs to:
+ * - User: %LOCALAPPDATA%\Microsoft\WinGet\Packages
+ * - System: C:\Program Files\WinGet\Packages
+ * And creates links at: %LOCALAPPDATA%\Microsoft\WinGet\Links\
  */
 export function detectWinget(): boolean {
   const platform = getPlatform()
 
-  // Winget es solo para Windows
+  // Winget is only for Windows
   if (platform !== 'windows') {
     return false
   }
 
   const execPath = process.execPath || process.argv[0] || ''
 
-  // Chequea rutas de WinGet (maneja ambos tipos de barra)
+  // Check for WinGet paths (handles both forward and backslashes)
   const wingetPatterns = [
     /Microsoft[/\\]WinGet[/\\]Packages/i,
     /Microsoft[/\\]WinGet[/\\]Links/i,
@@ -193,12 +178,12 @@ export function detectWinget(): boolean {
 }
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via pacman
- * consultando la base de datos de pacman por propiedad de archivo.
+ * Detects if the currently running Claude instance was installed via pacman
+ * by querying pacman's database for file ownership.
  *
- * Se gatea por la familia de distro Arch antes de invocar pacman. En
- * otras distros como Ubuntu/Debian, 'pacman' en PATH puede resolver al
- * juego pacman (/usr/games/pacman) en vez del gestor de paquetes de Arch.
+ * We gate on the Arch distro family before invoking pacman. On other distros
+ * like Ubuntu/Debian, 'pacman' in PATH may resolve to the pacman game
+ * (/usr/games/pacman) rather than the Arch package manager.
  */
 export const detectPacman = memoize(async (): Promise<boolean> => {
   const platform = getPlatform()
@@ -228,12 +213,10 @@ export const detectPacman = memoize(async (): Promise<boolean> => {
 })
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via un
- * paquete .deb consultando la base de datos de dpkg por propiedad de
- * archivo.
+ * Detects if the currently running Claude instance was installed via a .deb package
+ * by querying dpkg's database for file ownership.
  *
- * Se usa `dpkg -S <execPath>` para chequear si el ejecutable pertenece a
- * un paquete gestionado por dpkg.
+ * We use `dpkg -S <execPath>` to check if the executable is owned by a dpkg-managed package.
  */
 export const detectDeb = memoize(async (): Promise<boolean> => {
   const platform = getPlatform()
@@ -263,12 +246,10 @@ export const detectDeb = memoize(async (): Promise<boolean> => {
 })
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via un
- * paquete RPM consultando la base de datos de RPM por propiedad de
- * archivo.
+ * Detects if the currently running Claude instance was installed via an RPM package
+ * by querying the RPM database for file ownership.
  *
- * Se usa `rpm -qf <execPath>` para chequear si el ejecutable pertenece a
- * un paquete RPM.
+ * We use `rpm -qf <execPath>` to check if the executable is owned by an RPM package.
  */
 export const detectRpm = memoize(async (): Promise<boolean> => {
   const platform = getPlatform()
@@ -298,11 +279,11 @@ export const detectRpm = memoize(async (): Promise<boolean> => {
 })
 
 /**
- * Detecta si la instancia de Claude en ejecucion se instalo via Alpine
- * APK consultando la base de datos de apk por propiedad de archivo.
+ * Detects if the currently running Claude instance was installed via Alpine APK
+ * by querying apk's database for file ownership.
  *
- * Se usa `apk info --who-owns <execPath>` para chequear si el
- * ejecutable pertenece a un paquete gestionado por apk.
+ * We use `apk info --who-owns <execPath>` to check if the executable is owned
+ * by an apk-managed package.
  */
 export const detectApk = memoize(async (): Promise<boolean> => {
   const platform = getPlatform()
@@ -336,8 +317,8 @@ export const detectApk = memoize(async (): Promise<boolean> => {
 })
 
 /**
- * Funcion memoizada para detectar que gestor de paquetes instalo Claude.
- * Devuelve 'unknown' si no se detecta ningun gestor de paquetes
+ * Memoized function to detect which package manager installed Claude
+ * Returns 'unknown' if no package manager is detected
  */
 export const getPackageManager = memoize(async (): Promise<PackageManager> => {
   if (detectHomebrew()) {

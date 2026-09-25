@@ -1,16 +1,14 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/tokenStatsToStatsigMetrics.test.ts`.
+ * Tests for tokenStatsToStatsigMetrics — pure transform from internal
+ * TokenStats shape to flat metrics record sent to Statsig.
  *
- * Transformación pura de la forma interna TokenStats a un registro plano de
- * métricas enviado a Statsig.
+ * Wrong percentage math = misleading observability dashboards (e.g.
+ * "tool result tokens dominate" when they don't), which can lead to
+ * misallocated optimization effort.
  *
- * Una aritmética de porcentaje incorrecta = paneles de observabilidad
- * engañosos (p. ej. "los tokens de resultado de herramienta dominan" cuando
- * no es así), lo que puede llevar a esfuerzo de optimización mal asignado.
- *
- * Generación incorrecta de clave dinámica (`tool_request_${tool}_tokens`) =
- * colisiones de clave con métricas incorporadas, o métricas faltantes para
- * nombres de herramienta con caracteres especiales.
+ * Wrong dynamic-key generation (`tool_request_${tool}_tokens`) = key
+ * collisions with built-in metrics, or missing metrics for tool names
+ * with special characters.
  */
 import { describe, expect, test } from 'bun:test'
 import { tokenStatsToStatsigMetrics } from '../contextAnalysis.js'
@@ -43,8 +41,7 @@ describe('tokenStatsToStatsigMetrics — empty stats', () => {
 
   test('total=0 → no percentage keys emitted (avoid div-by-zero)', () => {
     const r = tokenStatsToStatsigMetrics(empty())
-    // Contrato documentado: las claves de porcentaje sólo se añaden
-    // cuando total > 0.
+    // Documented contract: percentage keys are only added when total > 0.
     expect(r.human_message_percent).toBeUndefined()
     expect(r.tool_request_percent).toBeUndefined()
     expect(r.duplicate_read_percent).toBeUndefined()
@@ -152,7 +149,7 @@ describe('tokenStatsToStatsigMetrics — tool request/result tokens', () => {
       total: 100,
     }
     const r = tokenStatsToStatsigMetrics(stats)
-    expect(r.tool_request_percent).toBe(50) // 30+20 de 100
+    expect(r.tool_request_percent).toBe(50) // 30+20 of 100
     expect(r.tool_result_percent).toBe(40)
   })
 })
@@ -193,7 +190,7 @@ describe('tokenStatsToStatsigMetrics — duplicate file reads', () => {
 
 describe('tokenStatsToStatsigMetrics — rounding', () => {
   test('percentages use Math.round (not floor or ceil)', () => {
-    // 33/100 = 33%, 34/100 = 34%; 33.5 debe redondear a 34.
+    // 33/100 = 33%, 34/100 = 34%; 33.5 should round to 34.
     const stats: TokenStats = {
       ...empty(),
       humanMessages: 335,
@@ -238,7 +235,7 @@ describe('tokenStatsToStatsigMetrics — output shape', () => {
   })
 
   test('tool name with underscore goes into key as-is', () => {
-    // Sin saneamiento en esta función — responsabilidad del llamador.
+    // No sanitization in this function — caller's responsibility.
     const stats: TokenStats = {
       ...empty(),
       toolRequests: new Map([['mcp__github__list', 100]]),

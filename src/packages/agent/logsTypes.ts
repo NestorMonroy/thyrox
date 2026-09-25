@@ -1,39 +1,3 @@
-/**
- * Tipos del log de sesion — porte COMPLETO por fusion de
- * `ccnmt: packages/agent/logsTypes.ts` (26 simbolos, 347 lineas).
- *
- * MODELAN CADA TIPO DE ENTRADA que puede aparecer en el transcript persistido
- * de una sesion: el mensaje serializado, sus variantes de titulo y de etiqueta,
- * las entradas de modo y de worktree, el reemplazo de contenido, el snapshot de
- * atribucion, los dos de colapso de contexto, y el orden entre todos ellos
- * (`sortLogs`).
- *
- * La version anterior portaba DOS de los 26 y declaraba dos bloqueos. **Los dos
- * eran falsos**, medido antes de completar el porte:
- *
- * - decia que `TranscriptMessage`/`SerializedMessage`/`Entry`/`LogOption`
- *   arrastran `ContentReplacementRecord` desde «un paquete hermano que este
- *   arbol no tiene». `src/packages/storage/src/toolResultStorage.ts` existe y
- *   exporta el simbolo; lo que la frase describia era el ALCANCE viejo
- *   (`@claude-code-how-works/`), no la ausencia del paquete.
- * - decia que `FileHistorySnapshotMessage` necesita `FileHistorySnapshot` de
- *   `./fileHistory.js` y que «tampoco tiene consumidor en este cierre».
- *   `agent/fileHistory.ts` lo exporta, y su consumidor es
- *   `storage/sessionStorage.ts`, que aborta sin el.
- *
- * Es la misma clase que el docstring de `storage/sessionStorage.ts` ya
- * registro: un bloqueo declarado que nadie volvio a medir envejece hacia la
- * falsedad mientras el arbol crece a su alrededor. El instrumento que lo
- * destapo no fue releer el comentario sino el import real
- * (`import('...').catch(e => e.message)`), que nombra el simbolo que falta.
- *
- * Divergencia frente a la fuente: **ninguna**. El unico cambio es el alcance
- * `@claude-code-how-works/*` -> `@thyrox/*`, que es el renombre de
- * TASK-THYROX-0169.
- *
- * Refs: TASK-THYROX-0199.
- */
-
 import type { UUID } from 'crypto'
 import type { FileHistorySnapshot } from './fileHistory.js'
 import type { ContentReplacementRecord } from '@thyrox/storage/toolResultStorage.js'

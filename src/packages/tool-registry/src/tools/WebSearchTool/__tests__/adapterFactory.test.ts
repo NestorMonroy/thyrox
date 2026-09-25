@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // Strategy: only mock the model + provider helpers. We do NOT mock
-// `@claude-code-how-works/config/env/utils` — replacing that module breaks
+// `@thyrox/config/env/utils` — replacing that module breaks
 // transitive consumers that need its other exports. Instead we drive
 // the env override through real `process.env.WEB_SEARCH_ADAPTER`,
 // which the factory reads via the live `readEnv()`.

@@ -23,7 +23,7 @@ type Props = {
   onAddDirectory: (path: string, remember?: boolean) => void
   onCancel: () => void
   permissionContext: ToolPermissionContext
-  directoryPath?: string // Con directoryPath presente, muestra opciones de selección en vez de entrada
+  directoryPath?: string // When directoryPath is provided, show selection options instead of input
 }
 
 type RememberDirectoryOption = 'yes-session' | 'yes-remember' | 'no'
@@ -119,11 +119,7 @@ export function AddWorkspaceDirectory({
   const [selectedSuggestion, setSelectedSuggestion] = useState(0)
   const options = useMemo(() => REMEMBER_DIRECTORY_OPTIONS, [])
 
-  // Copia de `ccnmt: packages/permission/src/components/rules/
-  // AddWorkspaceDirectory.tsx` con los comentarios traducidos; el cuerpo es el
-  // de la fuente.
-  //
-  // Pide los completados de directorio.
+  // Fetch directory completions
   const fetchSuggestions = useCallback(async (path: string) => {
     if (!path) {
       setSuggestions([])
@@ -145,10 +141,10 @@ export function AddWorkspaceDirectory({
     const newPath = suggestion.id + '/'
     setDirectoryInput(newPath)
     setError(null)
-    // Las sugerencias se actualizan por el useEffect.
+    // Suggestions will update via the useEffect
   }, [])
 
-  // Resuelve el envio del directorio desde el input.
+  // Handle directory submission from input
   const handleSubmit = useCallback(
     async (newPath: string) => {
       const result = await validateDirectoryForWorkspace(
@@ -165,16 +161,14 @@ export function AddWorkspaceDirectory({
     [permissionContext, onAddDirectory],
   )
 
-  // Esc cancela; Ctrl+C lo resuelven los keybindings globales. Se usa el
-  // contexto de Settings para que la tecla 'n' no cancele, y así se pueda
-  // teclear 'n' en el input.
+  // Handle Esc to cancel (Ctrl+C handled by global keybindings)
+  // Use Settings context so 'n' key doesn't cancel (allows typing 'n' in input)
   useKeybinding('confirm:no', onCancel, { context: 'Settings' })
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (suggestions.length > 0) {
-        // Tab: acepta la sugerencia seleccionada y continua, para bajar a los
-        // subdirectorios.
+        // Tab: accept selected suggestion and continue (for drilling into subdirs)
         if (e.key === 'tab') {
           e.preventDefault()
           const suggestion = suggestions[selectedSuggestion]
@@ -184,7 +178,7 @@ export function AddWorkspaceDirectory({
           return
         }
 
-        // Enter: aplica la sugerencia seleccionada y envia.
+        // Enter: apply selected suggestion and submit
         if (e.key === 'return') {
           e.preventDefault()
           const suggestion = suggestions[selectedSuggestion]

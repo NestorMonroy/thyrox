@@ -8,10 +8,6 @@ import {
   suggestionForPrefix,
 } from "../shellRuleMatching.js";
 
-// Copia de `ccnmt: packages/permission/src/__tests__/shellRuleMatching.test.ts`
-// con los comentarios traducidos; el cuerpo es el de la fuente. Los seis
-// encabezados de sección nombran un símbolo, así que quedan verbatim.
-
 // ─── permissionRuleExtractPrefix ────────────────────────────────────────
 
 describe("permissionRuleExtractPrefix", () => {

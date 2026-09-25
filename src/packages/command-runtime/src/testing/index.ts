@@ -1,12 +1,7 @@
 /**
- * Porte fiel de `ccnmt: packages/command-runtime/src/testing/index.ts`
- * (paquete `command-runtime`, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO — sin dependencias cruzadas de paquete: la
- * fuente advierte explícitamente "Must NOT import from ../internal/", y
- * este archivo no lo hace.
- *
- * `StubCommandRuntime` para tests herméticos que no quieren instalar
- * bindings de host reales.
+ * @thyrox/command-runtime/testing
+ * V7 §9.11 — StubCommandRuntime for hermetic tests.
+ * Must NOT import from ../internal/.
  */
 export type StubCommandDefinition = {
   name: string

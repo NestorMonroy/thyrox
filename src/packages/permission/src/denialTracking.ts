@@ -1,17 +1,7 @@
 /**
- * Porte fiel de `ccnmt: packages/permission/src/denialTracking.ts`
- * (45 líneas, 6 exports, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO: el tipo `DenialTrackingState`, la constante
- * `DENIAL_LIMITS` y las cuatro funciones (`createDenialTrackingState`,
- * `recordDenial`, `recordSuccess`, `shouldFallbackToPrompting`) están
- * presentes, con el mismo comportamiento.
- *
- * Infraestructura de conteo de denegaciones para clasificadores de
- * permiso: rastrea denegaciones consecutivas y totales para decidir
- * cuándo caer de vuelta al prompt interactivo en vez de seguir
- * clasificando de forma automática.
- *
- * Sin divergencias.
+ * Denial tracking infrastructure for permission classifiers.
+ * Tracks consecutive denials and total denials to determine
+ * when to fall back to prompting.
  */
 
 export type DenialTrackingState = {
@@ -40,7 +30,7 @@ export function recordDenial(state: DenialTrackingState): DenialTrackingState {
 }
 
 export function recordSuccess(state: DenialTrackingState): DenialTrackingState {
-  if (state.consecutiveDenials === 0) return state // Sin cambios necesarios
+  if (state.consecutiveDenials === 0) return state // No change needed
   return {
     ...state,
     consecutiveDenials: 0,

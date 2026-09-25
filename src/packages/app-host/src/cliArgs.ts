@@ -1,6 +1,3 @@
-// Adaptación de @claude-code-how-works/app-host: src/cliArgs.ts.
-// Capa 0 (sin cita a paquete hermano) — porte verbatim, sin divergencias.
-
 /**
  * Parse a CLI flag value early, before Commander.js processes arguments.
  * Supports both space-separated (--flag value) and equals-separated (--flag=value) syntax.

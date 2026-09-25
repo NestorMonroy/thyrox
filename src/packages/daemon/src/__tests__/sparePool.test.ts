@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/sparePool.test.ts`.
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
   _resetSparePoolForTest,
@@ -74,7 +73,7 @@ describe('claimSpare', () => {
       expect(r.sessionId).toBe('sess-1')
       expect(r.ptySocket).toBe('/tmp/sock')
     }
-    // El slot se consumió.
+    // Slot consumed.
     expect(getSpareSlot()).toBe(null)
   })
 })

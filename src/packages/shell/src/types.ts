@@ -1,20 +1,11 @@
 /**
- * Porte fiel de `ccnmt: packages/shell/src/types.ts` — los tipos
- * transversales del paquete: qué es un shell soportado
- * (`ShellType`/`SHELL_TYPES`), el contrato que implementa cada proveedor
- * (`ShellProvider`), las opciones y el resultado de una ejecución
- * (`ExecOptions`/`ExecResult`) y el asa que el llamador recibe para
- * seguir un comando en curso (`ShellCommand`).
- *
- * Porte COMPLETO: los siete símbolos exportados de la fuente están
- * presentes con la misma forma.
- *
- * @module
  */
+
 
 export const SHELL_TYPES = ['bash', 'powershell'] as const
 export type ShellType = (typeof SHELL_TYPES)[number]
 export const DEFAULT_HOOK_SHELL: ShellType = 'bash'
+
 
 export type ShellProvider = {
   type: ShellType
@@ -22,9 +13,8 @@ export type ShellProvider = {
   detached: boolean
 
   /**
-   * Construye la cadena de comando completa, con toda la preparación
-   * propia del shell. Para bash: fuente del snapshot, entorno de sesión,
-   * deshabilitar extglob, envolver en eval, seguimiento de pwd.
+   * Build the full command string including all shell-specific setup.
+   * For bash: source snapshot, session env, disable extglob, eval-wrap, pwd tracking.
    */
   buildExecCommand(
     command: string,
@@ -36,20 +26,22 @@ export type ShellProvider = {
   ): Promise<{ commandString: string; cwdFilePath: string }>
 
   /**
-   * Argumentos de shell para el spawn (p. ej. `['-c', '-l', cmd]` en bash).
+   * Shell args for spawn (e.g., ['-c', '-l', cmd] for bash).
    */
   getSpawnArgs(commandString: string): string[]
 
   /**
-   * Variables de entorno adicionales para este tipo de shell. Puede
-   * hacer inicialización asíncrona (p. ej. el socket de tmux en bash).
+   * Extra env vars for this shell type.
+   * May perform async initialization (e.g., tmux socket setup for bash).
    */
   getEnvironmentOverrides(command: string): Promise<Record<string, string>>
 }
 
+
 export type ShellConfig = {
   provider: ShellProvider
 }
+
 
 export type ExecOptions = {
   timeout?: number
@@ -63,16 +55,17 @@ export type ExecOptions = {
   preventCwdChanges?: boolean
   shouldUseSandbox?: boolean
   shouldAutoBackground?: boolean
-  /** Cuando está presente, stdout se canaliza (no va a archivo) y este callback se dispara por cada trozo de datos. */
+  /** When provided, stdout is piped (not sent to file) and this callback fires on each data chunk. */
   onStdout?: (data: string) => void
   /**
-   * Variables de entorno adicionales a mezclar en el subproceso lanzado.
-   * Hoy la usa `BashTool` para reenviar `CLAUDE_EFFORT=<nivel>`, así los
-   * scripts de shell definidos por el usuario y los generadores de la
-   * status-line pueden ramificar según el nivel de esfuerzo activo.
+   * Extra environment variables to merge into the spawned subprocess. Ported
+   * from ant v2.1.133 yZ→RZ (4042.js). Currently used by BashTool to forward
+   * `CLAUDE_EFFORT=<level>` so user-defined shell scripts and status-line
+   * generators can branch on the active effort level.
    */
   extraEnv?: Record<string, string>
 }
+
 
 export type ExecResult = {
   stdout: string
@@ -81,17 +74,18 @@ export type ExecResult = {
   interrupted: boolean
   backgroundTaskId?: string
   backgroundedByUser?: boolean
-  /** Se fija cuando el modo asistente puso en background automáticamente un comando bloqueante de larga duración. */
+  /** Set when assistant-mode auto-backgrounded a long-running blocking command. */
   assistantAutoBackgrounded?: boolean
-  /** Se fija cuando stdout era demasiado grande para caber inline — apunta al archivo de salida en disco. */
+  /** Set when stdout was too large to fit inline — points to the output file on disk. */
   outputFilePath?: string
-  /** Tamaño total del archivo de salida en bytes (se fija junto con outputFilePath). */
+  /** Total size of the output file in bytes (set when outputFilePath is set). */
   outputFileSize?: number
-  /** El id de tarea del archivo de salida (se fija junto con outputFilePath). */
+  /** The task ID for the output file (set when outputFilePath is set). */
   outputTaskId?: string
-  /** Mensaje de error cuando el comando falló antes de lanzarse (p. ej. cwd borrado). */
+  /** Error message when the command failed before spawning (e.g., deleted cwd). */
   preSpawnError?: string
 }
+
 
 export type ShellCommand = {
   background: (backgroundTaskId: string) => boolean
@@ -99,11 +93,12 @@ export type ShellCommand = {
   kill: () => void
   status: 'running' | 'backgrounded' | 'completed' | 'killed'
   /**
-   * Limpia los recursos del stream (event listeners). Debe llamarse tras
-   * completar o matar el comando para evitar fugas de memoria.
+   * Cleans up stream resources (event listeners).
+   * Should be called after the command completes or is killed to prevent memory leaks.
    */
   cleanup: () => void
   onTimeout?: (
     callback: (backgroundFn: (taskId: string) => boolean) => void,
   ) => void
 }
+

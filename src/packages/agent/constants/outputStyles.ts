@@ -1,2 +1,2 @@
-// Canonical owner is @claude-code-how-works/config/outputStyles.
+// Canonical owner is @thyrox/config/outputStyles.
 export * from '@thyrox/config/outputStyles.js'

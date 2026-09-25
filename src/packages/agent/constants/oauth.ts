@@ -1,2 +1,2 @@
-// Canonical owner is @claude-code-how-works/provider/oauthConstants.
+// Canonical owner is @thyrox/provider/oauthConstants.
 export * from '@thyrox/provider/oauthConstants'

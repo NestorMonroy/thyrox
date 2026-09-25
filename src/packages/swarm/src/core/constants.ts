@@ -1,10 +1,7 @@
-/**
- * Constantes de sesión tmux/socket del dominio swarm — porte de
- * `ccnmt: packages/swarm/src/core/constants.ts`.
- *
- * Porte VERBATIM: cero dependencias externas (el único import es al
- * hermano `../types/constants.ts`, ya portado en este mismo árbol).
- */
+// Only TEAM_LEAD_NAME is consumed via this barrel; the other 5 exports
+// from '../types/constants.js' had no callers and were dropped 2026-04-29.
+// Importers that want the dropped constants should reach into
+// '../types/constants.js' directly.
 export { TEAM_LEAD_NAME } from '../types/constants.js'
 
 export const SWARM_SESSION_NAME = 'claude-swarm'

@@ -1,7 +1,3 @@
-/**
- * Porte fiel de
- * `ccnmt: packages/shell/src/__test__/shellQuoting.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   hasStdinRedirect,
@@ -73,6 +69,7 @@ describe('quoteShellCommand (heredoc path)', () => {
   test('escapes single quotes within heredoc body', () => {
     const cmd = "cat <<EOF\nit's\nEOF"
     const result = quoteShellCommand(cmd)
+    // Single quote escape uses '"'"' pattern
     expect(result).toContain(`'"'"'`)
   })
 })
@@ -111,6 +108,7 @@ describe('rewriteWindowsNullRedirect', () => {
     expect(rewriteWindowsNullRedirect('echo hello')).toBe('echo hello')
   })
   test('regression: does not mangle "ls >null" (previously could match start)', () => {
+    // Negative lookahead — `null` keeps its name
     expect(rewriteWindowsNullRedirect('echo > null')).toBe('echo > null')
   })
 })

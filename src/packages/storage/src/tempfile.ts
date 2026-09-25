@@ -3,21 +3,18 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 
 /**
- * Genera una ruta de archivo temporal.
+ * Generate a temporary file path.
  *
- * Adaptación fiel de `ccnmt: packages/storage/src/tempfile.ts` — sin deps
- * externas al paquete (sólo built-ins de Node), portada verbatim.
- *
- * @param prefix Prefijo opcional para el nombre del archivo temporal
- * @param extension Extensión de archivo opcional (por defecto '.md')
- * @param options.contentHash Cuando se provee, el identificador se deriva de
- *   un hash SHA-256 de esta cadena (primeros 16 hex). Esto produce una ruta
- *   ESTABLE entre procesos: cualquier proceso con el mismo contenido obtiene
- *   la misma ruta. Se usa cuando la ruta termina en contenido enviado a la
- *   API de Anthropic (p. ej. listas de denegación del sandbox en
- *   descripciones de herramienta), porque un UUID al azar cambiaría en cada
- *   spawn de subproceso e invalidaría el prefijo cacheado del prompt.
- * @returns Ruta del archivo temporal
+ * @param prefix Optional prefix for the temp file name
+ * @param extension Optional file extension (defaults to '.md')
+ * @param options.contentHash When provided, the identifier is derived from a
+ *   SHA-256 hash of this string (first 16 hex chars). This produces a path
+ *   that is stable across process boundaries — any process with the same
+ *   content will get the same path. Use this when the path ends up in content
+ *   sent to the Anthropic API (e.g., sandbox deny lists in tool descriptions),
+ *   because a random UUID would change on every subprocess spawn and
+ *   invalidate the prompt cache prefix.
+ * @returns Temp file path
  */
 export function generateTempFilePath(
   prefix: string = 'claude-prompt',

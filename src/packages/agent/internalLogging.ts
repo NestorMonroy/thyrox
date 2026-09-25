@@ -1,9 +1,9 @@
 /**
  * V7 §10.3 facade — `logPermissionContextForAnts` + `getContainerId` now
- * live in `@claude-code-how-works/local-observability/logging/internal`.
+ * live in `@thyrox/local-observability/logging/internal`.
  *
  * Note: the moved function accepts `unknown` for `toolPermissionContext`
- * because the concrete type lives in `@claude-code-how-works/permission` and
+ * because the concrete type lives in `@thyrox/permission` and
  * local-observability doesn't depend upward. This facade retains the
  * `ToolPermissionContext` parameter type for the sole remaining call site
  * to preserve the existing API.

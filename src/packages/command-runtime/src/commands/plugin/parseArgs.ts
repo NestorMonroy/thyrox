@@ -1,11 +1,4 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/command-runtime/src/commands/plugin/parseArgs.ts`
- * — su unica exportacion de funcion (`parsePluginArgs`) y su tipo
- * `ParsedCommand`, ninguno omitido. Sin dependencias externas: la fuente no
- * importa nada, y el porte tampoco.
- */
-
-// Analiza los argumentos de la subcomanda plugin en comandos estructurados
+// Parse plugin subcommand arguments into structured commands
 export type ParsedCommand =
   | { type: 'menu' }
   | { type: 'help' }
@@ -42,13 +35,13 @@ export function parsePluginArgs(args?: string): ParsedCommand {
         return { type: 'install' }
       }
 
-      // Verifica si esta en formato plugin@marketplace
+      // Check if it's in format plugin@marketplace
       if (target.includes('@')) {
         const [plugin, marketplace] = target.split('@')
         return { type: 'install', plugin, marketplace }
       }
 
-      // Verifica si el destino parece un marketplace (URL o path)
+      // Check if the target looks like a marketplace (URL or path)
       const isMarketplace =
         target.startsWith('http://') ||
         target.startsWith('https://') ||
@@ -57,11 +50,11 @@ export function parsePluginArgs(args?: string): ParsedCommand {
         target.includes('\\')
 
       if (isMarketplace) {
-        // Es una URL/path de marketplace, sin plugin especificado
+        // This is a marketplace URL/path, no plugin specified
         return { type: 'install', marketplace: target }
       }
 
-      // De lo contrario, se trata como nombre de plugin
+      // Otherwise treat it as a plugin name
       return { type: 'install', plugin: target }
     }
 
@@ -98,13 +91,13 @@ export function parsePluginArgs(args?: string): ParsedCommand {
         case 'list':
           return { type: 'marketplace', action: 'list' }
         default:
-          // Sin accion especificada, muestra el menu de marketplace
+          // No action specified, show marketplace menu
           return { type: 'marketplace' }
       }
     }
 
     default:
-      // Comando desconocido, muestra el menu
+      // Unknown command, show menu
       return { type: 'menu' }
   }
 }

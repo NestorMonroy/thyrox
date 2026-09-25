@@ -76,15 +76,11 @@ describe('autoModeCircuitBroken', () => {
 })
 
 describe('three flags are independent (no cross-contamination)', () => {
-  // Copia de `ccnmt: packages/permission/src/__tests__/autoModeState.test.ts`
-  // con los comentarios traducidos; el cuerpo es el de la fuente.
-  //
-  // Crítico: los tres flags son Semánticamente distintos:
-  // - active: ¿estoy ahora mismo en modo automático?
-  // - flagCli: ¿el usuario me arranco con --auto?
-  // - circuitBroken: ¿GrowthBook deshabilito el modo automático a mitad de
-  //   sesión?
-  // Un refactor que los colapse rompe la lógica del gate en silencio.
+  // Critical: the three flags are SEMANTICALLY distinct:
+  // - active: am I currently in auto mode?
+  // - flagCli: did the user start me with --auto?
+  // - circuitBroken: has GrowthBook disabled auto mode mid-session?
+  // A refactor that conflates them silently breaks gate logic.
 
   test('setting active does NOT change flagCli', () => {
     setAutoModeActive(true)
@@ -119,7 +115,7 @@ describe('three flags are independent (no cross-contamination)', () => {
     setAutoModeActive(true)
     setAutoModeFlagCli(true)
     setAutoModeCircuitBroken(true)
-    // Se desactiva solo active.
+    // Unset only active.
     setAutoModeActive(false)
     expect(isAutoModeActive()).toBe(false)
     expect(getAutoModeFlagCli()).toBe(true)

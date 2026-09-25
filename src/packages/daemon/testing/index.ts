@@ -1,8 +1,3 @@
-/**
- * Fixtures de test del contrato público del daemon.
- * Puerto fiel de `ccnmt: packages/daemon/testing/index.ts`.
- */
-
 import type { DaemonRuntime, DaemonWorker } from '../src/contracts.js'
 
 export function createStubWorker(

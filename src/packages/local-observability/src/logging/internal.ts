@@ -1,9 +1,8 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/internal.ts`
- * (83 líneas fuente, 100 % portado). `logPermissionContextForAnts` +
- * sondas de namespace k8s/container. Emite eventos de sólo-analítica para
- * usuarios ant-internos; no-op para el resto. Sin dependencias de
- * paquete hermano.
+ * V7 §8.12 — internal: `logPermissionContextForAnts` + k8s/container probes.
+ *
+ * Moved from src/services/internalLogging.ts. Emits analytics-only events
+ * for ant-internal users; no-ops otherwise.
  */
 
 import { readFile } from 'fs/promises'
@@ -14,9 +13,11 @@ import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from 
 import { jsonStringify } from '../slowOperations.js'
 
 /**
- * Obtiene el namespace de Kubernetes actual:
- * `null` en laptops/desarrollo local, `"default"` para devboxes en el
- * namespace default, `"ts"` para devboxes en el namespace ts, …
+ * Get the current Kubernetes namespace:
+ * Returns null on laptops/local development,
+ * "default" for devboxes in default namespace,
+ * "ts" for devboxes in ts namespace,
+ * ...
  */
 const getKubernetesNamespace = memoize(async (): Promise<string | null> => {
   if (process.env.USER_TYPE !== 'ant') return null
@@ -30,7 +31,9 @@ const getKubernetesNamespace = memoize(async (): Promise<string | null> => {
   }
 })
 
-/** Obtiene el ID de contenedor OCI desde dentro de un contenedor en ejecución. */
+/**
+ * Get the OCI container ID from within a running container.
+ */
 export const getContainerId = memoize(async (): Promise<string | null> => {
   if (process.env.USER_TYPE !== 'ant') return null
   const containerIdPath = '/proc/self/mountinfo'
@@ -54,13 +57,11 @@ export const getContainerId = memoize(async (): Promise<string | null> => {
 })
 
 /**
- * Loguea un evento con el namespace y el contexto de permisos de
- * herramienta actuales.
+ * Logs an event with the current namespace and tool permission context.
  *
- * Acepta `unknown` para `toolPermissionContext` porque el tipo concreto
- * vive en `@thyrox/permission` y no se cruza hacia arriba desde
- * local-observability. Cada llamador pasa el contexto de permiso que
- * tenga a mano.
+ * Accepts `unknown` for `toolPermissionContext` because the concrete type
+ * lives in `@thyrox/permission` and we don't cross upward to it from
+ * local-observability. Callers pass whatever permission context they have.
  */
 export async function logPermissionContextForAnts(
   toolPermissionContext: unknown,

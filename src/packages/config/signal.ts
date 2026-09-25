@@ -1,30 +1,26 @@
 /**
- * Puerto de `ccnmt: packages/config/signal.ts` (41 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
+ * Tiny listener-set primitive for pure event signals (no stored state).
  *
- * Primitiva mínima de conjunto-de-listeners para señales de evento puras
- * (sin estado guardado). Colapsa a una línea el boilerplate de ~8 líneas
- * `const listeners = new Set(); function subscribe(){…};
- * function notify(){for(const l of listeners) l()}` que la fuente reporta
- * duplicado ~15 veces por el árbol.
+ * Collapses the ~8-line `const listeners = new Set(); function subscribe(){…};
+ * function notify(){for(const l of listeners) l()}` boilerplate that was
+ * duplicated ~15× across the codebase into a one-liner.
  *
- * Distinta de un store (`AppState`, `createStore`) — no hay snapshot, no
- * hay `getState`. Se usa cuando a los suscriptores les basta saber "algo
- * pasó", opcionalmente con argumentos del evento, no "cuál es el valor
- * actual".
+ * Distinct from a store (AppState, createStore) — there is no snapshot, no
+ * getState. Use this when subscribers only need to know "something happened",
+ * optionally with event args, not "what is the current value".
  *
- * Uso:
+ * Usage:
  *   const changed = createSignal<[SettingSource]>()
  *   export const subscribe = changed.subscribe
- *   // más tarde: changed.emit('userSettings')
+ *   // later: changed.emit('userSettings')
  */
 
 export type Signal<Args extends unknown[] = []> = {
-  /** Suscribe un listener. Devuelve una función para desuscribirse. */
+  /** Subscribe a listener. Returns an unsubscribe function. */
   subscribe: (listener: (...args: Args) => void) => () => void
-  /** Llama a todos los listeners suscritos con los argumentos dados. */
+  /** Call all subscribed listeners with the given arguments. */
   emit: (...args: Args) => void
-  /** Elimina todos los listeners. Útil en rutas de dispose/reset. */
+  /** Remove all listeners. Useful in dispose/reset paths. */
   clear: () => void
 }
 

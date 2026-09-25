@@ -1,7 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/__tests__/errors.test.ts`
- * (61 líneas fuente, 100 % portado).
- */
 import { describe, expect, test } from 'bun:test'
 import {
   LocalObservabilityBaseError,

@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/dispatchSpool.test.ts`.
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'

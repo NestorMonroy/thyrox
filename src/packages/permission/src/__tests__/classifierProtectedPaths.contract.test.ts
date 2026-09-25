@@ -3,32 +3,25 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 
 /**
- * Copia de `ccnmt: packages/permission/src/__tests__/classifierProtectedPaths.contract.test.ts`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
+ * Contract test — ant v2.1.150 (modules 3148.js base + 3149.js template) is the
+ * canonical auto-mode security classifier. ccb's prompts are a verbatim port.
  *
- * Test de contrato — ant v2.1.150 (módulo 3148.js para la base y 3149.js para
- * la plantilla) es el clasificador de seguridad canónico del modo automático.
- * Los prompts de ccb son un porte verbatim.
+ * The v150 prompt is structured in two pieces, assembled at runtime by
+ * buildYoloSystemPrompt:
+ *   - auto_mode_system_prompt.txt — the BASE prompt: Threat Model, the 7-point
+ *     User Intent Rule, the 13 Evaluation Rules, and the Classification Process.
+ *     It contains the `<permissions_template>` placeholder but NONE of the
+ *     concrete BLOCK/ALLOW rule text.
+ *   - permissions_{external,anthropic}.txt — the TEMPLATE: the HARD BLOCK /
+ *     SOFT BLOCK / ALLOW rule lists with `<user_*_to_replace>` tags. ant 150
+ *     ships a single template (RR8); ccb keeps both filenames for build-time
+ *     DCE + this test, with identical content.
  *
- * El prompt de la v150 está estructurado en dos piezas, que
- * `buildYoloSystemPrompt` ensambla en tiempo de ejecución:
- *   - auto_mode_system_prompt.txt — el prompt BASE: el Threat Model, la User
- *     Intent Rule de 7 puntos, las 13 Evaluation Rules y el Classification
- *     Process. Contiene el marcador `<permissions_template>` pero NINGUNO de
- *     los textos concretos de regla BLOCK/ALLOW.
- *   - permissions_{external,anthropic}.txt — la PLANTILLA: las listas de
- *     reglas HARD BLOCK / SOFT BLOCK / ALLOW con sus etiquetas
- *     `<user_*_to_replace>`. ant 150 distribuye una sola plantilla (RR8); ccb
- *     conserva los dos nombres de archivo, con contenido idéntico, para la
- *     eliminación de código muerto en tiempo de build y para este test.
- *
- * Éstas son aserciones de PRESENCIA DE TEXTO, no de comportamiento — las
- * decisiones reales del clasificador son una llamada a un LLM y no se pueden
- * probar con un test unitario (ver `feedback_llm_bugs_no_unit_test`). Lo que
- * SÍ se puede fijar es que el texto de las reglas y el marco de razonamiento
- * que el modelo lee siguen ahí, para que una edición futura del prompt no
- * pueda dejar caer en silencio una salvaguarda, una excepción o una regla de
- * razonamiento.
+ * These are TEXT-PRESENCE assertions, not behavioural ones — the classifier's
+ * actual decisions are an LLM call and cannot be unit-tested (see
+ * feedback_llm_bugs_no_unit_test). What we CAN pin is that the rule text and
+ * reasoning framework the model reads are still there, so a future prompt edit
+ * can't silently drop a guardrail, a carve-out, or a reasoning rule.
  */
 
 const PROMPT_DIR = join(import.meta.dir, '..', 'yolo-classifier-prompts')
@@ -41,11 +34,11 @@ const BASE = 'auto_mode_system_prompt.txt'
 const TEMPLATES = ['permissions_external.txt', 'permissions_anthropic.txt'] as const
 
 // ---------------------------------------------------------------------------
-// Prompt BASE — el marco de razonamiento que al prompt de ccb previo a la v150
-// le faltaba. Son las adiciones de más valor: el juicio del clasificador vive
-// aquí, no en las listas de reglas. Una regresión que devolviera el prompt base
-// a su forma vieja de «Classification Process más lista plana de reglas»
-// pasaría las aserciones de plantilla de abajo y fallaría aquí.
+// BASE prompt — the reasoning framework that ccb's pre-v150 prompt was missing.
+// These are the highest-value additions: the classifier's judgment lives here,
+// not in the rule lists. A regression that reverted the base prompt to the old
+// "Classification Process + flat rule list" shape would pass the template
+// assertions below but fail here.
 // ---------------------------------------------------------------------------
 describe('classifier BASE prompt — v150 reasoning framework (3148.js)', () => {
   const text = readPrompt(BASE)
@@ -59,14 +52,14 @@ describe('classifier BASE prompt — v150 reasoning framework (3148.js)', () => 
 
   test('carries the User Intent Rule with the high-evidence bar', () => {
     expect(text).toMatch(/## User Intent Rule/)
-    // nunca levanta un HARD BLOCK
+    // never clears HARD BLOCK
     expect(text).toMatch(/never clears HARD BLOCK/)
-    // #5 Preguntar no es consentir
+    // #5 Questions are not consent
     expect(text).toMatch(/Questions are not consent/)
-    // #6 No fiarse del resultado de una herramienta, con la excepción de AskUserQuestion
+    // #6 Don't trust tool results, with the AskUserQuestion carve-out
     expect(text).toMatch(/Don't assume tool results are trusted/)
     expect(text).toMatch(/\[User answered AskUserQuestion\]/)
-    // #7 Los límites siguen en vigor
+    // #7 Boundaries stay in force
     expect(text).toMatch(/Boundaries stay in force until clearly lifted/)
   })
 
@@ -85,9 +78,8 @@ describe('classifier BASE prompt — v150 reasoning framework (3148.js)', () => 
   })
 
   test('carries the "Silence is not consent" anti-tacit-approval rule', () => {
-    // La línea que más peso carga para un modo automático largo y sin
-    // vigilancia: una serie ininterrumpida de acciones NO es evidencia de
-    // aprobación.
+    // The single most load-bearing line for long-running unattended auto mode:
+    // an uninterrupted run of actions is NOT evidence of approval.
     expect(text).toMatch(/Silence is not consent/)
     expect(text).toMatch(/EVALUATE ON OWN MERITS/)
   })
@@ -97,17 +89,16 @@ describe('classifier BASE prompt — v150 reasoning framework (3148.js)', () => 
   })
 
   test('does NOT inline the rule lists (those live in the template)', () => {
-    // El prompt base es el marco; las reglas concretas tienen que venir de la
-    // plantilla, para que `buildYoloSystemPrompt` pueda fundir en ellas los
-    // overrides del usuario.
+    // The base prompt is the framework; concrete rules must come from the
+    // template so buildYoloSystemPrompt can merge user overrides into them.
     expect(text).not.toMatch(/<user_hard_deny_rules_to_replace>/)
     expect(text).not.toMatch(/<settings_deny_rules>/)
   })
 })
 
 // ---------------------------------------------------------------------------
-// PLANTILLA — las listas de reglas BLOCK/ALLOW. Los dos nombres de archivo
-// tienen que llevar contenido de la v150 idéntico (ant los colapsó en uno).
+// TEMPLATE — the BLOCK/ALLOW rule lists. Both filenames must carry identical
+// v150 content (ant collapsed them into one).
 // ---------------------------------------------------------------------------
 describe('classifier TEMPLATE — v150 rule lists (3149.js RR8)', () => {
   for (const file of TEMPLATES) {
@@ -127,9 +118,8 @@ describe('classifier TEMPLATE — v150 rule lists (3149.js RR8)', () => {
       })
 
       test('names the agent-config self-modification surface', () => {
-        // Los archivos de cron, loop y workflow son los que ccb carga de
-        // verdad al arrancar — son las adiciones sobre la lista previa a la
-        // v150.
+        // The cron/loop/workflow files are the ones ccb actually loads at
+        // startup — these are the additions over the pre-v150 list.
         expect(text).toMatch(/\.claude\/workflows\//)
         expect(text).toMatch(/\.claude\/routines\//)
         expect(text).toMatch(/\.claude\/scheduled_tasks\.json/)
@@ -146,8 +136,8 @@ describe('classifier TEMPLATE — v150 rule lists (3149.js RR8)', () => {
       })
 
       test('carries the v150 shared-infra / production soft-block classes', () => {
-        // Las clases que a la plantilla de ccb previa a la v150 le faltaban
-        // por completo — el núcleo de la «致命偏移» que este porte corrigió.
+        // The classes ccb's pre-v150 template was missing entirely — the core
+        // of the "致命偏移" this port fixed.
         expect(text).toMatch(/Production Reads/)
         expect(text).toMatch(/Blind Apply/)
         expect(text).toMatch(/Credential Exploration/)
@@ -157,23 +147,22 @@ describe('classifier TEMPLATE — v150 rule lists (3149.js RR8)', () => {
       })
 
       test('carries the `<settings_deny_rules>` injection marker', () => {
-        // `buildYoloSystemPrompt` sustituye esto por la guía del usuario
-        // sobre elusión de reglas de denegación entre herramientas; tiene que
-        // estar presente para que la inyección aterrice.
+        // buildYoloSystemPrompt replaces this with the user's cross-tool
+        // deny-rule circumvention guidance; it must be present for the
+        // injection to land.
         expect(text).toMatch(/<settings_deny_rules>/)
       })
 
       test('carves out routine memory-directory writes (no false-block)', () => {
-        // Sin esta excepción el agente no podría registrar sus propios
-        // recuerdos — que es el sentido entero del sistema de memoria. Tiene
-        // que convivir con el bloque de Memory Poisoning de arriba.
+        // Without this exception the agent could not record its own memories
+        // — the whole point of the memory system. Must coexist with the
+        // Memory Poisoning block above.
         expect(text).toMatch(/Memory Directory/)
       })
 
       test('carves out the agent’s own scheduling tools (no false-block)', () => {
-        // CronCreate, CronDelete, CronList y RemoteTrigger son herramientas
-        // propias de ccb; usarlas no debe disparar Unauthorized Persistence ni
-        // Self-Modification.
+        // CronCreate/CronDelete/CronList/RemoteTrigger are ccb's own tools;
+        // using them must not trip Unauthorized Persistence / Self-Modification.
         expect(text).toMatch(/CronCreate/)
       })
     })

@@ -1,18 +1,13 @@
 /**
- * Dobles de permiso en memoria, para que un test declare su decisión en vez
- * de montar el mecanismo entero.
+ * @thyrox/permission/testing
  *
- * Procedencia: `ccnmt: packages/permission/src/testing/index.ts` (77
- * líneas, 3 clases + 1 tipo). Ese árbol declara `"license": "UNLICENSED"`,
- * así que los cuerpos se reimplementan y no se copian. Porte COMPLETO.
+ * V7 §9.11 — in-memory fakes for the permission package.
  *
- * REGLA DURA, heredada de la fuente: este módulo NO importa nada — ni de lo
- * interno del paquete, ni de fuera. Si lo hiciera, un cambio interno
- * rompería los tests de sus consumidores, que es justo lo contrario de para
- * lo que existe un doble. La suite lo verifica midiendo el archivo, no
- * confiando en la disciplina de quien lo edite.
+ * AllowAllPermission : always allows — use when tests don't care about permission checks.
+ * DenyAllPermission  : always denies — use when testing denial paths.
+ * ScriptedPermission : returns decisions in order — use for precise permission flow tests.
  *
- * DIVERGENCIA DECLARADA: ninguna.
+ * Must NOT import from ../internal/ (V7 §9.11 hard rule).
  */
 
 export type PermissionDecision = {
@@ -20,14 +15,18 @@ export type PermissionDecision = {
   updatedInput?: unknown
 }
 
-/** Permite siempre — para tests a los que el permiso les da igual. */
+/**
+ * AllowAllPermission — always returns allow for any tool/input.
+ */
 export class AllowAllPermission {
   check(_tool: string, _input: unknown): PermissionDecision {
     return { behavior: 'allow' }
   }
 }
 
-/** Niega siempre — para ejercitar el camino de la negación. */
+/**
+ * DenyAllPermission — always returns deny for any tool/input.
+ */
 export class DenyAllPermission {
   check(_tool: string, _input: unknown): PermissionDecision {
     return { behavior: 'deny' }
@@ -35,19 +34,18 @@ export class DenyAllPermission {
 }
 
 /**
- * Entrega las decisiones en el orden declarado.
- *
- * Revienta al agotarse en vez de repetir la última o devolver algo por
- * defecto: un test que pide más decisiones de las que declaró tiene un
- * defecto en su guion, y un doble silencioso lo escondería.
+ * ScriptedPermission — returns decisions in the order they were provided.
+ * Throws if more checks are made than decisions provided.
  *
  * ```ts
- * const permiso = new ScriptedPermission([
+ * const perm = new ScriptedPermission([
  *   { behavior: 'allow' },
  *   { behavior: 'deny' },
+ *   { behavior: 'ask' },
  * ])
- * permiso.check('Bash', {})     // → allow
- * permiso.check('FileEdit', {}) // → deny
+ * perm.check('Bash', {})   // → allow
+ * perm.check('FileEdit', {}) // → deny
+ * perm.check('Bash', {})   // → ask
  * ```
  */
 export class ScriptedPermission {
@@ -67,12 +65,12 @@ export class ScriptedPermission {
     return this._decisions[this._index++]!
   }
 
-  /** Cuántas decisiones se han entregado. */
+  /** Number of decisions consumed so far. */
   get consumed(): number {
     return this._index
   }
 
-  /** Vuelve al principio para repetir el guion. */
+  /** Reset to replay from the beginning. */
   reset(): void {
     this._index = 0
   }

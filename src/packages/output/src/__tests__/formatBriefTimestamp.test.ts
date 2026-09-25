@@ -1,16 +1,12 @@
 /**
- * Puerto de
- * `ccnmt: packages/output/src/__tests__/formatBriefTimestamp.test.ts`
- * (verbatim). Tests de formatBriefTimestamp — lo usan las etiquetas de
- * mensaje en UIs de chat y listas de sesion. La visualizacion escala con
- * la antiguedad:
- *   mismo dia:   "1:30 PM" (depende del locale)
- *   hasta 6 dias: "Sunday, 4:15 PM"
- *   mas antiguo: "Sunday, Feb 20, 4:30 PM"
+ * Tests for formatBriefTimestamp — used by message labels in chat
+ * UIs and session lists. Display scales with age:
+ *   same day:      "1:30 PM" (locale-dependent)
+ *   within 6 days: "Sunday, 4:15 PM"
+ *   older:         "Sunday, Feb 20, 4:30 PM"
  *
- * `now` es inyectable, asi que los tests son deterministas sin importar
- * cuando corran. Un limite de dia incorrecto desplaza las etiquetas ±1
- * dia en la medianoche.
+ * `now` is injectable, so tests are deterministic regardless of when
+ * they run. Wrong day boundary = labels shift by ±1 day on midnight.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { formatBriefTimestamp } from '../formatters/brief-timestamp.js'

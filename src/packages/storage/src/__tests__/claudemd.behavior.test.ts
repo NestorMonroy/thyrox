@@ -53,10 +53,8 @@ describe('CLAUDE.md memory constants + filters (vs ant)', () => {
   })
 
   test('filterInjectedMemoryFiles is a no-op when tengu_moth_copse flag is false (default)', () => {
-    // En este porte no existe el sistema real de feature-flags; la
-    // sustitución local siempre devuelve el valor por defecto (`false`),
-    // así que la función retorna el input intacto, preservando
-    // Managed/policyHelper — igual que la fuente con la bandera apagada.
+    // In bun:test the feature flag stub returns the default `false`.
+    // Function returns input untouched, preserving Managed/policyHelper.
     const files = [
       { path: '/real/CLAUDE.md', content: 'real', type: 'Project' as const },
       { path: POLICY_HELPER_CLAUDE_MD_SENTINEL, content: 'managed', type: 'Managed' as const },

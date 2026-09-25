@@ -1,11 +1,10 @@
 /**
- * Puerto de `ccnmt: packages/config/utils/markdownDescription.ts` (26
- * líneas fuente). No es uno de los 15 del alcance — es la dependencia de
- * hoja que `plugin/_deps.ts` necesita como import estático de su propia
- * capa: sin dependencias propias, se porta en el sitio.
+ * Extracts a description from markdown content.
+ * Uses the first non-empty line as the description, or falls back to a default.
  *
- * Extrae una descripción de contenido markdown. Usa la primera línea no
- * vacía como descripción, o cae a un default.
+ * Lives in config (not tool-registry) so config/plugin/_deps.ts can call it
+ * statically — used to be in tool-registry/markdownConfigLoader.ts and was
+ * lazy-required to avoid the config → tool-registry cycle.
  */
 export function extractDescriptionFromMarkdown(
   content: string,
@@ -15,11 +14,11 @@ export function extractDescriptionFromMarkdown(
   for (const line of lines) {
     const trimmed = line.trim()
     if (trimmed) {
-      // Si es un encabezado, quita el prefijo de encabezado.
+      // If it's a header, strip the header prefix
       const headerMatch = trimmed.match(/^#+\s+(.+)$/)
       const text = headerMatch?.[1] ?? trimmed
 
-      // Devuelve el texto, acotado a un largo razonable.
+      // Return the text, limited to reasonable length
       return text.length > 100 ? text.substring(0, 97) + '...' : text
     }
   }

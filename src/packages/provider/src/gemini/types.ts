@@ -1,16 +1,3 @@
-/**
- * La forma del cable de Gemini — porte de
- * `ccnmt: packages/provider/src/gemini/types.ts` (86 lineas).
- *
- * El puerto es COMPLETO: la constante y los trece tipos de la fuente, con los
- * mismos nombres y los mismos campos opcionales. Ninguno queda fuera.
- *
- * Es declaracion pura salvo `GEMINI_THOUGHT_SIGNATURE_FIELD`, que es el unico
- * valor en ejecucion: el nombre del campo con que la firma de un bloque de
- * pensamiento viaja de ida y vuelta a traves de la forma de Anthropic, que no
- * tiene sitio propio para ella.
- */
-
 export const GEMINI_THOUGHT_SIGNATURE_FIELD = '_geminiThoughtSignature'
 
 export type GeminiFunctionCall = {

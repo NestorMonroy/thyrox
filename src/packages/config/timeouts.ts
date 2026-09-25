@@ -1,18 +1,13 @@
-/**
- * Puerto de `ccnmt: packages/config/timeouts.ts` (39 líneas fuente).
- * Reimplementación fiel VERBATIM. Sin dependencias.
- */
-
-const DEFAULT_TIMEOUT_MS = 120_000 // 2 minutos
-const MAX_TIMEOUT_MS = 600_000 // 10 minutos
+// Constants for timeout values
+const DEFAULT_TIMEOUT_MS = 120_000 // 2 minutes
+const MAX_TIMEOUT_MS = 600_000 // 10 minutes
 
 type EnvLike = Record<string, string | undefined>
 
 /**
- * Obtiene el timeout por defecto para operaciones de bash, en milisegundos.
- * Revisa la variable de entorno `BASH_DEFAULT_TIMEOUT_MS` o devuelve el
- * default de 2 minutos.
- * @param env variables de entorno a revisar (por defecto `process.env`).
+ * Get the default timeout for bash operations in milliseconds
+ * Checks BASH_DEFAULT_TIMEOUT_MS environment variable or returns 2 minutes default
+ * @param env Environment variables to check (defaults to process.env for production use)
  */
 export function getDefaultBashTimeoutMs(env: EnvLike = process.env): number {
   const envValue = env.BASH_DEFAULT_TIMEOUT_MS
@@ -26,20 +21,19 @@ export function getDefaultBashTimeoutMs(env: EnvLike = process.env): number {
 }
 
 /**
- * Obtiene el timeout máximo para operaciones de bash, en milisegundos.
- * Revisa la variable de entorno `BASH_MAX_TIMEOUT_MS` o devuelve el default
- * de 10 minutos.
- * @param env variables de entorno a revisar (por defecto `process.env`).
+ * Get the maximum timeout for bash operations in milliseconds
+ * Checks BASH_MAX_TIMEOUT_MS environment variable or returns 10 minutes default
+ * @param env Environment variables to check (defaults to process.env for production use)
  */
 export function getMaxBashTimeoutMs(env: EnvLike = process.env): number {
   const envValue = env.BASH_MAX_TIMEOUT_MS
   if (envValue) {
     const parsed = parseInt(envValue, 10)
     if (!isNaN(parsed) && parsed > 0) {
-      // Garantiza que el máximo sea al menos tan grande como el default.
+      // Ensure max is at least as large as default
       return Math.max(parsed, getDefaultBashTimeoutMs(env))
     }
   }
-  // Garantiza siempre que el máximo sea al menos tan grande como el default.
+  // Always ensure max is at least as large as default
   return Math.max(MAX_TIMEOUT_MS, getDefaultBashTimeoutMs(env))
 }

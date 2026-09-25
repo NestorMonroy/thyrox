@@ -1,64 +1,57 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/teamMemSecretScanner.ts` (verbatim
- * — sin dependencias externas al paquete).
- *
- * Escáner de secretos del lado del cliente para memoria de equipo (PSR
- * M22174).
- *
- * Escanea el contenido en busca de credenciales antes de subirlo, para que
- * los secretos nunca salgan de la máquina del usuario. Usa un subconjunto
- * curado de reglas de alta confianza de gitleaks
- * (https://github.com/gitleaks/gitleaks, licencia MIT) — solo se incluyen
- * reglas con prefijos distintivos que tienen tasas de falso-positivo casi
- * cero. Se omiten las reglas genéricas basadas en contexto de palabra
- * clave.
- *
- * IDs de regla y regexes tomados directo de la config pública de gitleaks:
- * https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
- *
- * Notas de regex en JS:
- *   - gitleaks usa regex de Go; los grupos inline (?i) y de modo (?-i:...)
- *     no son portables a JS. Las reglas afectadas se reescriben con clases
- *     de caracteres explícitas ([a-zA-Z0-9] en vez de (?i)[a-z0-9]).
- *   - Las alternancias de límite finales como (?:[\x60'"\s;]|\\[nr]|$)
- *     de la regex de Go se conservan (JS `$` coincide con fin-de-cadena en
- *     modo por defecto).
- */
-
-// capitalize inlineado abajo, igual que en la fuente.
+// Inlined from src/utils/stringUtils.ts — keep this leaf src/-free.
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+/**
+ * Client-side secret scanner for team memory (PSR M22174).
+ *
+ * Scans content for credentials before upload so secrets never leave the
+ * user's machine. Uses a curated subset of high-confidence rules from
+ * gitleaks (https://github.com/gitleaks/gitleaks, MIT license) — only
+ * rules with distinctive prefixes that have near-zero false-positive
+ * rates are included. Generic keyword-context rules are omitted.
+ *
+ * Rule IDs and regexes sourced directly from the public gitleaks config:
+ * https://github.com/gitleaks/gitleaks/blob/master/config/gitleaks.toml
+ *
+ * JS regex notes:
+ *   - gitleaks uses Go regex; inline (?i) and mode groups (?-i:...) are
+ *     not portable to JS. Affected rules are rewritten with explicit
+ *     character classes ([a-zA-Z0-9] instead of (?i)[a-z0-9]).
+ *   - Trailing boundary alternations like (?:[\x60'"\s;]|\\[nr]|$) from
+ *     Go regex are kept (JS $ matches end-of-string in default mode).
+ */
+
+// inlined capitalize below
+
 type SecretRule = {
-  /** ID de regla de gitleaks (kebab-case), usado en labels y analítica. */
+  /** Gitleaks rule ID (kebab-case), used in labels and analytics */
   id: string
-  /** Fuente del regex, compilado con pereza en el primer escaneo. */
+  /** Regex source, lazily compiled on first scan */
   source: string
-  /** Flags opcionales de regex JS (la mayoría de reglas son case-sensitive por defecto). */
+  /** Optional JS regex flags (most rules are case-sensitive by default) */
   flags?: string
 }
 
 type SecretMatch = {
-  /** ID de regla de gitleaks que coincidió (p. ej. "github-pat", "aws-access-token"). */
+  /** Gitleaks rule ID that matched (e.g., "github-pat", "aws-access-token") */
   ruleId: string
-  /** Label legible derivado del ID de regla. */
+  /** Human-readable label derived from the rule ID */
   label: string
 }
 
-// ─── Reglas curadas ─────────────────────────────────────────────
-// Patrones de alta confianza de gitleaks con prefijos distintivos.
-// Ordenadas aproximadamente por probabilidad de aparecer en contenido de
-// un equipo de desarrollo.
+// ─── Curated rules ──────────────────────────────────────────────
+// High-confidence patterns from gitleaks with distinctive prefixes.
+// Ordered roughly by likelihood of appearing in dev-team content.
 
-// Prefijo de API key de Anthropic, ensamblado en tiempo de ejecución para
-// que la secuencia de bytes literal no esté presente en el bundle externo
-// (chequeo de cadenas excluidas). join() no se pliega a constante por el
-// minificador.
+// Anthropic API key prefix, assembled at runtime so the literal byte
+// sequence isn't present in the external bundle (excluded-strings check).
+// join() is not constant-folded by the minifier.
 const ANT_KEY_PFX = ['sk', 'ant', 'api'].join('-')
 
 const SECRET_RULES: SecretRule[] = [
-  // — Proveedores cloud —
+  // — Cloud providers —
   {
     id: 'aws-access-token',
     source: '\\b((?:A3T[A-Z0-9]|AKIA|ASIA|ABIA|ACCA)[A-Z2-7]{16})\\b',
@@ -81,7 +74,7 @@ const SECRET_RULES: SecretRule[] = [
     source: '\\b(doo_v1_[a-f0-9]{64})(?:[\\x60\'"\\s;]|\\\\[nr]|$)',
   },
 
-  // — APIs de IA —
+  // — AI APIs —
   {
     id: 'anthropic-api-key',
     source: `\\b(${ANT_KEY_PFX}03-[a-zA-Z0-9_\\-]{93}AA)(?:[\\x60'"\\s;]|\\\\[nr]|$)`,
@@ -102,7 +95,7 @@ const SECRET_RULES: SecretRule[] = [
     source: '\\b(hf_[a-zA-Z]{34})(?:[\\x60\'"\\s;]|\\\\[nr]|$)',
   },
 
-  // — Control de versiones —
+  // — Version control —
   {
     id: 'github-pat',
     source: 'ghp_[0-9a-zA-Z]{36}',
@@ -132,7 +125,7 @@ const SECRET_RULES: SecretRule[] = [
     source: 'gldt-[0-9a-zA-Z_\\-]{20}',
   },
 
-  // — Comunicación —
+  // — Communication —
   {
     id: 'slack-bot-token',
     source: 'xoxb-[0-9]{10,13}-[0-9]{10,13}[a-zA-Z0-9-]*',
@@ -156,7 +149,7 @@ const SECRET_RULES: SecretRule[] = [
     source: '\\b(SG\\.[a-zA-Z0-9=_\\-.]{66})(?:[\\x60\'"\\s;]|\\\\[nr]|$)',
   },
 
-  // — Herramientas de desarrollo —
+  // — Dev tooling —
   {
     id: 'npm-access-token',
     source: '\\b(npm_[a-zA-Z0-9]{36})(?:[\\x60\'"\\s;]|\\\\[nr]|$)',
@@ -186,7 +179,7 @@ const SECRET_RULES: SecretRule[] = [
       '\\b(PMAK-[a-fA-F0-9]{24}-[a-fA-F0-9]{34})(?:[\\x60\'"\\s;]|\\\\[nr]|$)',
   },
 
-  // — Observabilidad —
+  // — Observability —
   {
     id: 'grafana-api-key',
     source:
@@ -211,7 +204,7 @@ const SECRET_RULES: SecretRule[] = [
       '\\bsntrys_eyJpYXQiO[a-zA-Z0-9+/]{10,200}(?:LCJyZWdpb25fdXJs|InJlZ2lvbl91cmwi|cmVnaW9uX3VybCI6)[a-zA-Z0-9+/]{10,200}={0,2}_[a-zA-Z0-9+/]{43}',
   },
 
-  // — Pagos / comercio —
+  // — Payment / commerce —
   {
     id: 'stripe-access-token',
     source:
@@ -226,7 +219,7 @@ const SECRET_RULES: SecretRule[] = [
     source: 'shpss_[a-fA-F0-9]{32}',
   },
 
-  // — Criptografía —
+  // — Crypto —
   {
     id: 'private-key',
     source:
@@ -235,8 +228,7 @@ const SECRET_RULES: SecretRule[] = [
   },
 ]
 
-// Caché de patrones compilados con pereza — se compila una vez, en el
-// primer escaneo.
+// Lazily compiled pattern cache — compile once on first scan.
 let compiledRules: Array<{ id: string; re: RegExp }> | null = null
 
 function getCompiledRules(): Array<{ id: string; re: RegExp }> {
@@ -250,11 +242,11 @@ function getCompiledRules(): Array<{ id: string; re: RegExp }> {
 }
 
 /**
- * Convierte un ID de regla de gitleaks (kebab-case) en un label legible.
- * P. ej. "github-pat" → "GitHub PAT", "aws-access-token" → "AWS Access Token".
+ * Convert a gitleaks rule ID (kebab-case) to a human-readable label.
+ * e.g., "github-pat" → "GitHub PAT", "aws-access-token" → "AWS Access Token"
  */
 function ruleIdToLabel(ruleId: string): string {
-  // Palabras cuya capitalización canónica difiere del title case.
+  // Words where the canonical capitalization differs from title case
   const specialCase: Record<string, string> = {
     aws: 'AWS',
     gcp: 'GCP',
@@ -281,11 +273,11 @@ function ruleIdToLabel(ruleId: string): string {
 }
 
 /**
- * Escanea una cadena en busca de secretos potenciales.
+ * Scan a string for potential secrets.
  *
- * Devuelve un match por cada regla que disparó (deduplicado por ID de
- * regla). El texto realmente coincidente NO se devuelve, a propósito —
- * nunca logueamos ni mostramos valores de secretos.
+ * Returns one match per rule that fired (deduplicated by rule ID). The
+ * actual matched text is intentionally NOT returned — we never log or
+ * display secret values.
  */
 export function scanForSecrets(content: string): SecretMatch[] {
   const matches: SecretMatch[] = []
@@ -308,18 +300,17 @@ export function scanForSecrets(content: string): SecretMatch[] {
 }
 
 /**
- * Obtiene un label legible para un ID de regla de gitleaks.
- * Recae en la conversión kebab-a-Title para IDs desconocidos.
+ * Get a human-readable label for a gitleaks rule ID.
+ * Falls back to kebab-to-Title conversion for unknown IDs.
  */
 export function getSecretLabel(ruleId: string): string {
   return ruleIdToLabel(ruleId)
 }
 
 /**
- * Redacta in-place cualquier secreto coincidente con [REDACTED].
- * A diferencia de scanForSecrets, esto devuelve el contenido con los
- * tramos reemplazados, para que el texto circundante se pueda seguir
- * escribiendo a disco de forma segura.
+ * Redact any matched secrets in-place with [REDACTED].
+ * Unlike scanForSecrets, this returns the content with spans replaced
+ * so the surrounding text can still be written to disk safely.
  */
 let redactRules: RegExp[] | null = null
 
@@ -328,9 +319,8 @@ export function redactSecrets(content: string): string {
     r => new RegExp(r.source, (r.flags ?? '').replace('g', '') + 'g'),
   )
   for (const re of redactRules) {
-    // Reemplaza solo el grupo capturado, no el match completo — los
-    // patrones incluyen caracteres de límite (espacio, comilla, ;) fuera
-    // del grupo que deben sobrevivir.
+    // Replace only the captured group, not the full match — patterns include
+    // boundary chars (space, quote, ;) outside the group that must survive.
     content = content.replace(re, (match, g1) =>
       typeof g1 === 'string' ? match.replace(g1, '[REDACTED]') : '[REDACTED]',
     )

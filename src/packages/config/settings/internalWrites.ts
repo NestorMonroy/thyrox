@@ -1,23 +1,15 @@
 /**
- * Puerto de `ccnmt: packages/config/settings/internalWrites.ts` (37 líneas
- * fuente). Reimplementación fiel VERBATIM. Sin dependencias.
+ * Tracks timestamps of in-process settings-file writes so the chokidar watcher
+ * in changeDetector.ts can ignore its own echoes.
  *
- * Registra timestamps de escrituras de archivos de settings hechas EN
- * PROCESO, para que el watcher de `changeDetector.ts` (hoy bloqueado —
- * falta `chokidar` en `package.json`, ver `porte-completo-no-parcial.md`)
- * pueda ignorar sus propios ecos.
+ * Extracted from changeDetector.ts to break the settings.ts → changeDetector.ts →
+ * hooks.ts → … → settings.ts cycle. settings.ts needs to mark "I'm about to
+ * write" before the write lands; changeDetector needs to read the mark when
+ * chokidar fires. The map is the only shared state — everything else in
+ * changeDetector (chokidar, hooks, mdm polling) is irrelevant to settings.ts.
  *
- * Extraído de `changeDetector.ts` para romper el ciclo
- * `settings.ts → changeDetector.ts → hooks.ts → … → settings.ts`.
- * `settings.ts` necesita marcar "estoy por escribir" antes de que la
- * escritura aterrice; `changeDetector` necesita leer la marca cuando
- * `chokidar` dispara. El mapa es el único estado compartido — todo lo
- * demás en `changeDetector` (chokidar, hooks, polling MDM) es irrelevante
- * para `settings.ts`.
- *
- * Los llamadores pasan rutas ya resueltas. La resolución ruta→fuente
- * (`getSettingsFilePathForSource`) vive en `settings.ts`, así que
- * `settings.ts` la hace antes de llamar aquí.
+ * Callers pass resolved paths. The path→source resolution (getSettingsFilePathForSource)
+ * lives in settings.ts, so settings.ts does it before calling here. No imports.
  */
 
 const timestamps = new Map<string, number>()
@@ -27,10 +19,9 @@ export function markInternalWrite(path: string): void {
 }
 
 /**
- * Verdadero si `path` fue marcada dentro de `windowMs`. Consume la marca al
- * acertar — el watcher dispara una vez por escritura, así que una marca
- * acertada no debería suprimir el siguiente cambio (real, externo) al mismo
- * archivo.
+ * True if `path` was marked within `windowMs`. Consumes the mark on match —
+ * the watcher fires once per write, so a matched mark shouldn't suppress
+ * the next (real, external) change to the same file.
  */
 export function consumeInternalWrite(path: string, windowMs: number): boolean {
   const ts = timestamps.get(path)

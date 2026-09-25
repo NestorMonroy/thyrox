@@ -1,20 +1,16 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/contracts.ts` (verbatim — sin
- * imports en la fuente).
+ * MemoryHostBindings — runtime dependencies injected by the composition root.
  *
- * `MemoryHostBindings` — las dependencias en tiempo de ejecución que inyecta
- * la raíz de composición. Todas OPCIONALES: el paquete `memory` funciona en
- * tiempo de carga del módulo, antes de que el host instale los bindings
- * (p. ej. para inicializadores estáticos, dobles de test). Cada sitio de
- * llamada usa optional-chaining (`binding?.()`) para que un binding ausente
- * sea un no-op silencioso salvo que se documente lo contrario.
+ * All optional: the memory package works at module load time before the host
+ * installs bindings (e.g., for static initializers, test doubles). Every call
+ * site uses optional-chaining (binding?.()) so missing bindings are silent
+ * no-ops unless documented otherwise.
  *
- * V7 §8 — `memory` es una hoja de Wave 2. No puede importar de
- * `app-compat`/`agent`/`provider`/`app-host`. Toda dependencia cruzada de
- * capa entra por este archivo.
+ * V7 §8 — memory is a Wave 2 leaf. It cannot import from app-compat/agent/
+ * provider/app-host. All cross-layer dependencies come through this file.
  */
 
-/** Interfaz mínima de filesystem (subconjunto de `FsOperations`). */
+/** Minimal filesystem interface (subset of FsOperations) */
 export type MemFsImplementation = {
   readFileSync(path: string, opts: { encoding: string }): string
   readdir(
@@ -25,13 +21,13 @@ export type MemFsImplementation = {
   mkdir(path: string): Promise<void>
 }
 
-/** Candidato mínimo de sesión para el lock de consolidación. */
+/** Minimal session candidate for consolidation lock */
 export type MemSessionCandidate = {
   sessionId: string
   mtime: number
 }
 
-/** Encabezado mínimo de archivo de memoria que devuelve `scanMemoryFiles`. */
+/** Minimal memory file header returned by scanMemoryFiles */
 export type MemoryFileHeader = {
   filename: string
   filePath: string
@@ -50,7 +46,7 @@ export type MemoryHostBindings = {
   // ── Timestamp ──────────────────────────────────────────────────────────
   now?: () => number
 
-  // ── Estado de sesión (bootstrap/state.ts) ──────────────────────────────
+  // ── Session state (bootstrap/state.ts) ────────────────────────────────
   getCwd?: () => string
   getOriginalCwd?: () => string
   getProjectRoot?: () => string | undefined
@@ -59,41 +55,41 @@ export type MemoryHostBindings = {
   getIsRemoteMode?: () => boolean
   getSessionId?: () => string
 
-  // ── Config/rutas ───────────────────────────────────────────────────────
-  /** Devuelve ~/.claude (o el override `CLAUDE_CONFIG_DIR`). */
+  // ── Config/paths ───────────────────────────────────────────────────────
+  /** Returns ~/.claude (or CLAUDE_CONFIG_DIR override) */
   getConfigHomeDir?: () => string
 
   // ── Filesystem ─────────────────────────────────────────────────────────
   getFsImplementation?: () => MemFsImplementation
-  /** Mapea un CWD al directorio de sesión del proyecto. */
+  /** Maps a CWD to the project session directory */
   getProjectDir?: (cwd: string) => string
 
   // ── Git ────────────────────────────────────────────────────────────────
   findCanonicalGitRoot?: (cwd: string) => string | undefined
-  /** Devuelve el slug "owner/repo" del remoto git actual, o null. */
+  /** Returns "owner/repo" slug for the current git remote, or null */
   getGithubRepo?: () => Promise<string | null>
 
-  // ── Proceso / listado de sesiones ───────────────────────────────────────
+  // ── Process / session listing ──────────────────────────────────────────
   isProcessRunning?: (pid: number) => boolean
   listCandidates?: (
     dir: string,
     recentOnly: boolean,
   ) => Promise<MemSessionCandidate[]>
 
-  // ── Herramienta / feature flags ─────────────────────────────────────────
+  // ── Tool / feature flags ───────────────────────────────────────────────
   isReplModeEnabled?: () => boolean
   hasEmbeddedSearchTools?: () => boolean
-  /** El nombre de la herramienta Grep tal como está registrada. */
+  /** The name of the Grep tool as registered in the tool registry */
   grepToolName?: string
 
-  // ── Proveedor / modelo ───────────────────────────────────────────────────
+  // ── Provider / model ───────────────────────────────────────────────────
   getDefaultSonnetModel?: () => string
   getAPIProvider?: () => string
   isFirstPartyAnthropicBaseUrl?: () => boolean
   getClaudeCodeUserAgent?: () => string
   getRetryDelay?: (attempt: number) => number
 
-  // ── API de side-query ────────────────────────────────────────────────────
+  // ── Side-query API ─────────────────────────────────────────────────────
   sideQuery?: (params: {
     model: string
     system: string
@@ -105,7 +101,7 @@ export type MemoryHostBindings = {
     querySource: string
   }) => Promise<{ content: Array<{ type: string; text?: string }> }>
 
-  // ── OAuth / auth ──────────────────────────────────────────────────────
+  // ── OAuth / auth ───────────────────────────────────────────────────────
   checkAndRefreshOAuthTokenIfNeeded?: () => Promise<void>
   getClaudeAIOAuthTokens?: () => {
     accessToken?: string
@@ -116,7 +112,7 @@ export type MemoryHostBindings = {
   claudeAiInferenceScope?: string
   claudeAiProfileScope?: string
 
-  // ── Escaneo de archivos de memoria ──────────────────────────────────────
+  // ── Memory file scanning ───────────────────────────────────────────────
   scanMemoryFiles?: (
     memoryDir: string,
     signal: AbortSignal,
@@ -127,10 +123,10 @@ export type MemoryHostBindings = {
     selected: MemoryFileHeader[],
   ) => void
 
-  // ── Invalidación de caché ────────────────────────────────────────────────
+  // ── Cache invalidation ─────────────────────────────────────────────────
   clearMemoryFileCaches?: () => void
 
-  // ── Ejecutor de agente forkeado ──────────────────────────────────────────
+  // ── Forked agent runner ────────────────────────────────────────────────
   runForkedAgent?: (params: {
     promptMessages: unknown[]
     cacheSafeParams: unknown
@@ -162,7 +158,7 @@ export type MemoryHostBindings = {
   }
   createAbortController?: () => AbortController
 
-  // ── Gestión de tareas (autoDream) ────────────────────────────────────────
+  // ── Task management (autoDream) ────────────────────────────────────────
   registerDreamTask?: (
     toolUseContext: unknown,
     params: {
@@ -187,7 +183,7 @@ export type MemoryHostBindings = {
     state: unknown,
   ) => state is { filesTouched: string[]; status?: string }
 
-  // ── Prompts de extracción ────────────────────────────────────────────────
+  // ── Extraction prompts ─────────────────────────────────────────────────
   buildExtractAutoOnlyPrompt?: (
     newMessageCount: number,
     existingMemories: string,
@@ -199,11 +195,11 @@ export type MemoryHostBindings = {
     skipIndex: boolean,
   ) => string
 
-  // ── Escaneo de secretos (teamMemorySync) ─────────────────────────────────
+  // ── Secret scanning (teamMemorySync) ───────────────────────────────────
   scanForSecrets?: (
     content: string,
   ) => Array<{ ruleId: string; label: string }>
 
-  // ── Analítica ─────────────────────────────────────────────────────────
+  // ── Analytics ─────────────────────────────────────────────────────────
   sanitizeToolNameForAnalytics?: (toolName: string) => string
 }

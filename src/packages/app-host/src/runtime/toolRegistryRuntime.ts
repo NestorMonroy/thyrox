@@ -1,46 +1,10 @@
 /**
- * Adaptación de @claude-code-how-works/app-host: src/runtime/toolRegistryRuntime.ts.
- * Capa 1 tramo B — porte FIEL de la lógica; importaciones DECLARADAS
- * COLGANTES, sin traducir y sin stub.
- *
- * La fuente instala los host bindings del paquete `tool-registry`
- * (descubrimiento de herramientas builtin, reglas de deny por permiso,
- * el conjunto de herramientas dependiente del modo — REPL / simple /
- * completo) y reexporta un puñado de constantes y funciones de ese
- * mismo paquete (`TOOL_PRESETS`, `parseToolPreset`, `getToolRegistry`,
- * `getAllBaseTools`, `filterToolsByDenyRules`, `getTools`,
- * `assembleToolPool`, `getMergedTools`).
- *
- * NINGUNO de sus tres paquetes hermanos existe hoy en este árbol:
- *
- *   - `@claude-code-how-works/tool-registry` (paquete completo, 12
- *     imports distintos: el índice, `Tool.js`, `toolConstants`, seis
- *     archivos de herramientas concretas — `AgentTool`, `BashTool`,
- *     `FileEditTool`, `FileReadTool`, `REPLTool` × 2,
- *     `ReadMcpResourceTool`, `SendMessageTool`, `SyntheticOutputTool`,
- *     `TaskStopTool` — y `BuiltInToolsProvider`) — ausente por completo.
- *   - `@claude-code-how-works/permission/permissions`
- *     (`getDenyRuleForTool`) — el paquete `permission` no existe.
- *   - `@claude-code-how-works/config/env/utils` (`isEnvTruthy`) —
- *     `@thyrox/config` SÍ existe, pero no expone ese subpath.
- *   - `@claude-code-how-works/agent/coordinatorMode.js` — `@thyrox/agent`
- *     SÍ existe, pero `coordinatorMode.ts` no está portado ahí ni
- *     expuesto en su `package.json` (`exports`).
- *
- * Ninguno se stubea localmente; los seis imports se conservan literales
- * — mismo criterio que `installPluginBindings.ts` (hermano en este
- * directorio) y `agent/internal/macroFallback.ts`.
- *
- * El auto-run `installToolRegistryRuntimeBindings()` al final del
- * módulo (igual que la fuente) es irrelevante aquí: el PRIMER import de
- * valor (`@claude-code-how-works/tool-registry`) ya agota la resolución
- * de módulos antes de que corra cualquier código del archivo.
- *
- * Sin test: ninguno de los tres paquetes hermanos resuelve hoy. Mismo
- * estado que `installPluginBindings.ts`/`packageHostSetup.ts`
- * (hermanos en este mismo pase).
+ * toolRegistryRuntime — wires tool registry host bindings (tools, MCP
+ * servers, agents) into the runtime. Host-binding adapter: every
+ * `as any/unknown` cast is by-design type-system bypass for the
+ * runtime-binding pattern, not a hidden mismatch.
  */
-// biome-ignore-all assist/source/organizeImports: los marcadores de import SOLO-ANT no se reordenan
+// biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { feature } from 'bun:bundle'
 import {
   TOOL_PRESETS as PACKAGE_TOOL_PRESETS,
@@ -157,9 +121,8 @@ export function installToolRegistryRuntimeBindings(): void {
   registryHostBindingsInstalled = true
 }
 
-// Instala los host bindings al cargar el módulo, para que cualquier
-// llamador directo de @claude-code-how-works/tool-registry pueda confiar
-// en un runtime ya inicializado.
+// Install host bindings on module load so any direct
+// @thyrox/tool-registry caller can rely on an initialized runtime.
 installToolRegistryRuntimeBindings()
 
 export {

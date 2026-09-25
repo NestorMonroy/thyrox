@@ -1,9 +1,3 @@
-/**
- * Constantes compartidas del dominio swarm — porte de
- * `ccnmt: packages/swarm/src/types/constants.ts`.
- *
- * Porte VERBATIM: cero dependencias externas.
- */
 
 export const TEAM_LEAD_NAME = 'team-lead'
 

@@ -1,9 +1,3 @@
-/**
- * Contrato público del bridge: estado, handle de la sesión REPL,
- * opciones de init, y las ataduras que el host (harness/CLI) instala.
- * Puerto fiel de `ccnmt: packages/bridge/src/contracts.ts`.
- */
-
 export type BridgeState = 'ready' | 'connected' | 'reconnecting' | 'failed'
 
 export type ReplBridgeHandle = {

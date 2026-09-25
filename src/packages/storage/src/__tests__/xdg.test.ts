@@ -23,10 +23,10 @@ describe('getXDGStateHome', () => {
   })
 
   test('empty XDG_STATE_HOME (empty string) falls back via ?? operator', () => {
-    // ?? sólo dispara con null/undefined. La cadena vacía se preserva por
-    // spec (env.XDG_STATE_HOME = '' es una señal deliberada de "usar el
-    // default" en algunas shells, pero nuestra implementación la deja pasar
-    // tal cual). Documenta el contrato actual.
+    // ?? only triggers on null/undefined. Empty string is preserved per spec
+    // (env.XDG_STATE_HOME = '' is a deliberate "use default" signal in some
+    // shells, but our implementation passes it through). Documents the
+    // current contract.
     expect(
       getXDGStateHome({ env: { XDG_STATE_HOME: '' }, homedir: HOME }),
     ).toBe('')
@@ -50,7 +50,7 @@ describe('getXDGCacheHome', () => {
   })
 
   test('XDG_CACHE_HOME takes precedence even with similar XDG_DATA_HOME set', () => {
-    // Cada variable XDG es independiente. Fijar una no afecta a otra.
+    // Each XDG var is independent. Setting one doesn't affect another.
     expect(
       getXDGCacheHome({
         env: { XDG_CACHE_HOME: '/cache', XDG_DATA_HOME: '/data' },
@@ -88,11 +88,10 @@ describe('getXDGDataHome', () => {
 
 describe('getUserBinDir', () => {
   test('always ~/.local/bin (no XDG_BIN_HOME spec — function ignores env)', () => {
-    // Crítico: no hay XDG_BIN_HOME estándar. La función retorna
-    // homedir + '.local/bin' sin importar ninguna variable de entorno. Si
-    // un futuro refactor "extiende" leyendo XDG_BIN_HOME, la ruta de
-    // instalación cambiaría en silencio y la resolución de rutas de
-    // actualización se rompería.
+    // Critical: there is no standard XDG_BIN_HOME. The function returns
+    // homedir + '.local/bin' regardless of any env var. If a future
+    // refactor "extends" by reading XDG_BIN_HOME, the install path would
+    // silently shift and update path resolution would break.
     expect(getUserBinDir({ env: {}, homedir: HOME })).toBe(
       join(HOME, '.local', 'bin'),
     )
@@ -108,8 +107,8 @@ describe('getUserBinDir', () => {
   })
 
   test('ignores XDG_BIN_HOME (no such var in spec)', () => {
-    // Documenta el no-soporte deliberado. La spec XDG no define
-    // XDG_BIN_HOME. Cualquier valor aquí DEBE ignorarse.
+    // Document the deliberate non-support. XDG spec doesn't define
+    // XDG_BIN_HOME. Any value here MUST be ignored.
     expect(
       getUserBinDir({
         env: { XDG_BIN_HOME: '/should/be/ignored' },

@@ -1,4 +1,3 @@
-// Puerto fiel de `ccnmt: packages/daemon/src/__tests__/bgDaemonTimers.test.ts`.
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 
 import {
@@ -147,12 +146,11 @@ describe('setupUpgradeWatchdog', () => {
   })
 
   test('dispose called when binary unreadable returns no-op', () => {
-    // No es fácil mockear argv[1] a mitad de test, pero la rama
-    // centinela de "binario ilegible" se ejercita cada vez que statSync
-    // falla sobre una ruta inexistente (p. ej. el process.argv[1] del
-    // test runner es el propio binario de bun, que es legible, así que
-    // esto es un chequeo de humo de que dispose() no lanza sobre una
-    // configuración válida).
+    // We can't easily mock argv[1] mid-test, but the sentinel branch
+    // for "unreadable binary" is exercised whenever statSync fails on
+    // a non-existent path (e.g. test runner's process.argv[1] is the
+    // bun binary itself, which is readable, so this is a smoke check
+    // that dispose() doesn't throw on a valid setup).
     const abort = new AbortController()
     const w = setupUpgradeWatchdog(abort)
     expect(() => w.dispose()).not.toThrow()

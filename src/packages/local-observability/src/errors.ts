@@ -1,7 +1,5 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/errors.ts` (33 líneas
- * fuente, 100 % portado). Espacio de nombres de errores tipados de
- * `LocalObservability` — sin dependencias externas.
+ * V7 §6.5 — LocalObservabilityError typed error namespace.
  */
 export class LocalObservabilityBaseError extends Error {
   readonly code: string

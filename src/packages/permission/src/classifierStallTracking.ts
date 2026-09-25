@@ -7,29 +7,21 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { resolveAntModel } from '@thyrox/provider/antModels.js'
 
 /**
- * Copia de `ccnmt: packages/permission/src/classifierStallTracking.ts` con los
- * comentarios traducidos; el cuerpo es el de la fuente.
+ * Thinking config for classifier calls. The classifier wants short text-only
+ * responses — API thinking blocks are ignored by extractTextContent() and waste tokens.
  *
- * Configuración de `thinking` para las llamadas del clasificador. El
- * clasificador quiere respuestas cortas y sólo de texto — los bloques
- * `thinking` que devuelve el API los ignora `extractTextContent()` y gastan
- * tokens.
+ * For most models: send { type: 'disabled' } via sideQuery's `thinking: false`.
  *
- * Para la mayoría de los modelos: enviar { type: 'disabled' } por el
- * `thinking: false` de `sideQuery`.
+ * Models with alwaysOnThinking (declared in tengu_ant_model_override) default
+ * to adaptive thinking server-side and reject `disabled` with a 400. For those:
+ * don't pass `thinking: false`, instead pad max_tokens so adaptive thinking
+ * (observed 0–1114 tokens replaying go/ccshare/shawnm-20260310-202833) doesn't
+ * exhaust the budget before <block> is emitted. Without headroom,
+ * stop_reason=max_tokens yields an empty text response → parseXmlBlock('')
+ * → null → "unparseable" → safe commands blocked.
  *
- * Los modelos con `alwaysOnThinking` (declarado en `tengu_ant_model_override`)
- * usan por defecto `thinking` adaptativo del lado del servidor y rechazan
- * `disabled` con un 400. Para esos: no pasar `thinking: false`, sino acolchar
- * `max_tokens` para que el `thinking` adaptativo (observado entre 0 y 1114
- * tokens al reproducir go/ccshare/shawnm-20260310-202833) no agote el
- * presupuesto antes de que se emita <block>. Sin ese margen,
- * `stop_reason=max_tokens` produce una respuesta de texto vacía →
- * `parseXmlBlock('')` → null → "unparseable" → se bloquean comandos seguros.
- *
- * Devuelve [disableThinking, headroom] — una tupla en vez de un objeto con
- * nombres, para que las cadenas de los nombres de propiedad no sobrevivan a la
- * minificación en las builds externas.
+ * Returns [disableThinking, headroom] — tuple instead of named object so
+ * property-name strings don't survive minification into external builds.
  */
 export function getClassifierThinkingConfig(
   model: string,
@@ -44,41 +36,37 @@ export function getClassifierThinkingConfig(
 }
 
 // ============================================================================
-// Seguimiento de atascos y timeouts por etapa (ant Rp5 / WR8)
+// Stall tracking + per-stage timeouts (ant Rp5 / WR8)
 //
-// Capa de instrumentación genérica que envuelve el `sideQuery` de un
-// clasificador de modo automático con (1) registro de heartbeat, para que una
-// petición colgada se vea en --debug, y (2) un timeout exterior de reloj de
-// pared superpuesto al timeout por fetch que `sideQuery` ya tiene. Vive en su
-// propio módulo porque es fontanería de la llamada al API, no lógica de
-// clasificación — `yoloClassifier.ts` lo consume pero no es su dueño.
+// Generic instrumentation layer that wraps an auto-mode classifier sideQuery
+// with (1) heartbeat logging so a hung request is visible in --debug, and
+// (2) an outer wall-clock timeout layered over sideQuery's own per-fetch
+// timeout. Lives in its own module because it is API-call plumbing, not
+// classification logic — yoloClassifier.ts consumes it but doesn't own it.
 // ============================================================================
 
 /**
- * Timeout de reloj de pared para la etapa 1 (la rápida) — ant LZ7. Corto
- * porque la etapa 1 es una decisión inmediata de entre 64 y 256 tokens.
+ * Wall-clock timeout for stage 1 (fast) — ant LZ7. Short because stage 1 is a
+ * 64–256 token immediate decision.
  */
 export const CLASSIFIER_STAGE1_TIMEOUT_MS = 30000
 /**
- * Timeout de reloj de pared para la etapa 2 (la de `thinking`) y para el
- * clasificador `tool_use` de un solo disparo — ant fR8. Más amplio, para dar
- * lugar al chain-of-thought.
+ * Wall-clock timeout for stage 2 (thinking) and the single-shot tool_use
+ * classifier — ant fR8. Larger to allow chain-of-thought.
  */
 export const CLASSIFIER_STAGE2_TIMEOUT_MS = 120000
 /**
- * Timeout interior por fetch que se le entrega a `sideQuery` — ant kZ7. Queda
- * dentro de la señal exterior de reloj de pared, para que un intento de fetch
- * concreto no pueda colgar el presupuesto entero. ant lo impone en toda
- * llamada del clasificador, sea cual sea la etapa.
+ * Inner per-fetch timeout handed to sideQuery — ant kZ7. Sits inside the
+ * outer wall-clock signal so an individual fetch attempt can't hang the whole
+ * budget. ant forces this on every classifier call regardless of stage.
  */
 const CLASSIFIER_FETCH_TIMEOUT_MS = 60000
 
-/** Contador mutable de intentos de fetch por etapa (el objeto `{count:0}` de ant). */
+/** Mutable per-stage fetch-attempt counter (ant's `{count:0}` object). */
 export type AttemptCounter = { count: number }
 
 /**
- * Metadata de las líneas de registro de atasco de una llamada del clasificador
- * al API (el argumento `_` de ant Rp5).
+ * Metadata for a classifier API call's stall log lines (ant Rp5's `_` arg).
  */
 export type ClassifierStallMeta = {
   toolName: string
@@ -88,12 +76,11 @@ export type ClassifierStallMeta = {
 }
 
 /**
- * Envuelve la promesa de una llamada del clasificador al API con registro de
- * heartbeat de atasco. Replica ant Rp5 exactamente: una línea de inicio, una
- * línea de progreso a los 15 s y después cada 30 s hasta 10 veces, y una línea
- * de fin que lleva el desenlace y la duración. Los heartbeats permiten ver un
- * clasificador colgado en los registros de --debug en vez de un atasco
- * silencioso. La promesa se devuelve —o se relanza— sin alterar.
+ * Wrap a classifier API promise with stall heartbeat logging. Mirrors ant
+ * Rp5 exactly: a started line, a progress line at 15s then every 30s up to 10
+ * times, and a finished line carrying outcome + duration. The heartbeats let
+ * operators see a hung classifier in --debug logs instead of a silent stall.
+ * The promise is returned/thrown through unchanged.
  */
 async function runClassifierWithStallTracking<T>(
   promise: Promise<T>,
@@ -151,12 +138,11 @@ async function runClassifierWithStallTracking<T>(
 }
 
 /**
- * Ejecuta el `sideQuery` de un clasificador bajo un timeout exterior de reloj
- * de pared y con seguimiento de atascos. Replica ant WR8: construye una abort
- * signal ligada al timeout (fk → `createCombinedAbortSignal`), impone el
- * timeout interior por fetch (kZ7), cablea el contador de intentos por
- * `onFetchAttempt` y enruta la llamada por `runClassifierWithStallTracking`.
- * Limpia la señal del timeout en el `finally`.
+ * Run a classifier sideQuery under an outer wall-clock timeout + stall
+ * tracking. Mirrors ant WR8: builds a timeout-linked abort signal (fk →
+ * createCombinedAbortSignal), forces the inner per-fetch timeout (kZ7), wires
+ * the attempt counter via onFetchAttempt, and routes the call through
+ * runClassifierWithStallTracking. Cleans up the timeout signal in finally.
  */
 export async function sideQueryWithStallTracking(
   outerSignal: AbortSignal,

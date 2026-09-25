@@ -1,19 +1,4 @@
-/**
- * Porte fiel de `ccnmt: packages/permission/src/bashClassifier.ts`
- * (61 líneas, 7 exports, licencia UNLICENSED — reimplementación, no
- * copia). Porte COMPLETO — y triple: la fuente MISMA es ya el stub
- * externo. Su primera línea lo declara, verbatim:
- *
- *   "Stub for external builds - the classifier permissions feature is ANT-ONLY"
- *
- * No hay nada que bloquear aquí porque este archivo ES el punto de apagado del clasificador
- * semántico de Bash — el módulo entero devuelve valores neutros/negativos
- * fijos (nunca clasifica, nunca aprueba nada por su cuenta), que es
- * exactamente el comportamiento fail-closed que corresponde en un árbol
- * sin el subsistema clasificador ML portado.
- *
- * Sin divergencias.
- */
+// Stub for external builds - classifier permissions feature is ANT-ONLY
 
 export const PROMPT_PREFIX = 'prompt:'
 

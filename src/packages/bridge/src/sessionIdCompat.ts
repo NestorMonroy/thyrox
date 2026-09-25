@@ -1,48 +1,39 @@
 /**
- * Helpers de traducción de etiqueta del session ID para la capa de
- * compat de CCR v2.
+ * Session ID tag translation helpers for the CCR v2 compat layer.
  *
- * Vive en su propio archivo (en vez de workSecret.ts) para que
- * sessionHandle.ts y replBridgeTransport.ts (puntos de entrada de
- * bridge.mjs) puedan importar de workSecret.ts sin traer estas funciones
- * de re-etiquetado.
+ * Lives in its own file (rather than workSecret.ts) so that sessionHandle.ts
+ * and replBridgeTransport.ts (bridge.mjs entry points) can import from
+ * workSecret.ts without pulling in these retag functions.
  *
- * El interruptor de apagado isCseShimEnabled se inyecta vía
- * setCseShimGate() para evitar un import estático de
- * bridgeEnabled.ts → growthbook.ts → config.ts — todos vetados del
- * bundle sdk.mjs (scripts/build-agent-sdk.sh). Los llamadores que ya
- * importan bridgeEnabled.ts registran el gate; la ruta del SDK nunca lo
- * hace, así que el shim queda activo por default (coincidiendo con el
- * default propio de isCseShimEnabled()).
- *
- * Puerto fiel de `ccnmt: packages/bridge/src/sessionIdCompat.ts`.
+ * The isCseShimEnabled kill switch is injected via setCseShimGate() to avoid
+ * a static import of bridgeEnabled.ts → growthbook.ts → config.ts — all
+ * banned from the sdk.mjs bundle (scripts/build-agent-sdk.sh). Callers that
+ * already import bridgeEnabled.ts register the gate; the SDK path never does,
+ * so the shim defaults to active (matching isCseShimEnabled()'s own default).
  */
 
 let _isCseShimEnabled: (() => boolean) | undefined
 
 /**
- * Registra el gate de GrowthBook para el shim cse_. Se llama desde el
- * código de init del bridge que ya importa bridgeEnabled.ts.
+ * Register the GrowthBook gate for the cse_ shim. Called from bridge
+ * init code that already imports bridgeEnabled.ts.
  */
 export function setCseShimGate(gate: () => boolean): void {
   _isCseShimEnabled = gate
 }
 
 /**
- * Re-etiqueta un session ID `cse_*` a `session_*` para usarlo con la API
- * de compat v1.
+ * Re-tag a `cse_*` session ID to `session_*` for use with the v1 compat API.
  *
- * Los endpoints de worker (/v1/code/sessions/{id}/worker/*) quieren
- * `cse_*`; eso es lo que entrega el poll de trabajo. Los endpoints de
- * compat de cara al cliente (/v1/sessions/{id}, /v1/sessions/{id}/archive,
- * /v1/sessions/{id}/events) quieren `session_*` —
- * compat/convert.go:27 valida TagSession. Mismo UUID, disfraz distinto.
- * No-op para IDs que no son `cse_*`.
+ * Worker endpoints (/v1/code/sessions/{id}/worker/*) want `cse_*`; that's
+ * what the work poll delivers. Client-facing compat endpoints
+ * (/v1/sessions/{id}, /v1/sessions/{id}/archive, /v1/sessions/{id}/events)
+ * want `session_*` — compat/convert.go:27 validates TagSession. Same UUID,
+ * different costume. No-op for IDs that aren't `cse_*`.
  *
- * bridgeMain mantiene una sola variable sessionId tanto para el registro
- * de worker como para las llamadas de gestión de sesión. Llega como
- * `cse_*` del poll de trabajo bajo el gate de compat, así que
- * archiveSession/fetchSessionTitle necesitan este re-etiquetado.
+ * bridgeMain holds one sessionId variable for both worker registration and
+ * session-management calls. It arrives as `cse_*` from the work poll under
+ * the compat gate, so archiveSession/fetchSessionTitle need this re-tag.
  */
 export function toCompatSessionId(id: string): string {
   if (!id.startsWith('cse_')) return id
@@ -51,17 +42,14 @@ export function toCompatSessionId(id: string): string {
 }
 
 /**
- * Re-etiqueta un session ID `session_*` a `cse_*` para llamadas de la
- * capa de infraestructura.
+ * Re-tag a `session_*` session ID to `cse_*` for infrastructure-layer calls.
  *
- * Inverso de toCompatSessionId. POST /v1/environments/{id}/bridge/reconnect
- * vive debajo de la capa de compat: una vez que ccr_v2_compat_enabled
- * está activo del lado servidor, busca sesiones por su etiqueta de infra
- * (`cse_*`). createBridgeSession sigue devolviendo `session_*`
- * (compat/convert.go:41) y eso es lo que guarda bridge-pointer — así que
- * el reconnect perpetuo pasa el disfraz equivocado y recibe "Session not
- * found" de vuelta. Mismo UUID, etiqueta equivocada. No-op para IDs que
- * no son `session_*`.
+ * Inverse of toCompatSessionId. POST /v1/environments/{id}/bridge/reconnect
+ * lives below the compat layer: once ccr_v2_compat_enabled is on server-side,
+ * it looks sessions up by their infra tag (`cse_*`). createBridgeSession still
+ * returns `session_*` (compat/convert.go:41) and that's what bridge-pointer
+ * stores — so perpetual reconnect passes the wrong costume and gets "Session
+ * not found" back. Same UUID, wrong tag. No-op for IDs that aren't `session_*`.
  */
 export function toInfraSessionId(id: string): string {
   if (!id.startsWith('session_')) return id

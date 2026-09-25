@@ -104,8 +104,9 @@ describe('stripHtmlComments — empty / edge inputs', () => {
   })
 
   test('mixed CRLF + LF preserved when no comment present', () => {
-    // Important: the fast path (no "<!--" present) returns the original
-    // content untouched, CRLF included.
+    // Important: marked normalises \r\n during lex, but the no-comment
+    // fast path returns the original content untouched (the function
+    // returns identity when "<!--" is not present).
     const input = 'a\r\nb\nc\r\n'
     const { content, stripped } = stripHtmlComments(input)
     expect(content).toBe(input)

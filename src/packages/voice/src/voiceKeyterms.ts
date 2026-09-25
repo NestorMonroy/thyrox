@@ -1,40 +1,19 @@
-/**
- * Keyterms de voz para mejorar la precision de STT en el endpoint
- * voice_stream.
- *
- * Provee hints de vocabulario especifico del dominio ("keywords" de
- * Deepgram) para que el motor STT reconozca correctamente terminologia
- * de codigo, nombres de proyecto, y nombres de rama que de otro modo se
- * escucharian mal.
- *
- * Puerto de `ccnmt: packages/voice/src/voiceKeyterms.ts` (106 líneas
- * fuente, 100% portado).
- *
- * LA DIVERGENCIA QUE AQUI SE DECLARABA YA NO APLICA — retirada el
- * 2026-09-19T07:58:25. Decia que `storage/src/git.ts` de este arbol
- * «no incluye `getBranch`» y por eso se citaba `getCachedBranch` de
- * `@thyrox/config/gitFilesystem.js` en su lugar. Era cierto al
- * escribirse y es falso hoy, sin que nadie tocara este archivo:
- * `src/packages/storage/src/git.ts:214` declara
- * `export const getBranch = async (): Promise<string>`, la misma firma
- * que el sustituto. El import vuelve al de la fuente.
- *
- * Efecto lateral medido: `@thyrox/storage` estaba declarada en el
- * manifiesto de este paquete con CERO imports. Con este import deja de
- * estarlo.
- */
+// Voice keyterms for improving STT accuracy in the voice_stream endpoint.
+//
+// Provides domain-specific vocabulary hints (Deepgram "keywords") so the STT
+// engine correctly recognises coding terminology, project names, and branch
+// names that would otherwise be misheard.
 
 import { basename } from 'path'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import { getBranch } from '@thyrox/storage/git.js'
 
-// ─── Keyterms globales ──────────────────────────────────────────────
+// ─── Global keyterms ────────────────────────────────────────────────
 
 const GLOBAL_KEYTERMS: readonly string[] = [
-  // Terminos que Deepgram consistentemente destroza sin hints de keyword.
-  // Nota: "Claude" y "Anthropic" ya son keyterms base del lado servidor.
-  // Evitar terminos que nadie dice en voz alta tal como se escriben
-  // (stdout → "standard out").
+  // Terms Deepgram consistently mangles without keyword hints.
+  // Note: "Claude" and "Anthropic" are already server-side base keyterms.
+  // Avoid terms nobody speaks aloud as-spelled (stdout → "standard out").
   'MCP',
   'symlink',
   'grep',
@@ -54,9 +33,9 @@ const GLOBAL_KEYTERMS: readonly string[] = [
 // ─── Helpers ────────────────────────────────────────────────────────
 
 /**
- * Divide un identificador (camelCase, PascalCase, kebab-case,
- * snake_case, o segmentos de ruta) en palabras individuales. Los
- * fragmentos de 2 caracteres o menos se descartan para evitar ruido.
+ * Split an identifier (camelCase, PascalCase, kebab-case, snake_case, or
+ * path segments) into individual words.  Fragments of 2 chars or fewer are
+ * discarded to avoid noise.
  */
 function splitIdentifier(name: string): string[] {
   return name
@@ -71,26 +50,24 @@ function fileNameWords(filePath: string): string[] {
   return splitIdentifier(stem)
 }
 
-// ─── API pública ────────────────────────────────────────────────────
+// ─── Public API ─────────────────────────────────────────────────────
 
 const MAX_KEYTERMS = 50
 
 /**
- * Construye una lista de keyterms para el endpoint STT de voice_stream.
+ * Build a list of keyterms for the voice_stream STT endpoint.
  *
- * Combina terminos de codigo globales hardcodeados con el contexto de
- * la sesion (nombre de proyecto, rama git, archivos recientes) sin
- * ninguna llamada a modelo.
+ * Combines hardcoded global coding terms with session context (project name,
+ * git branch, recent files) without any model calls.
  */
 export async function getVoiceKeyterms(
   recentFiles?: ReadonlySet<string>,
 ): Promise<string[]> {
   const terms = new Set<string>(GLOBAL_KEYTERMS)
 
-  // El basename del root del proyecto como un solo termino — los
-  // usuarios dicen "claude CLI internal" como una frase, no palabras
-  // aisladas. Mantener el basename completo permite que el boosting de
-  // keyterm del STT calce la frase sin importar el separador.
+  // Project root basename as a single term — users say "claude CLI internal"
+  // as a phrase, not isolated words. Keeping the whole basename lets the
+  // STT's keyterm boosting match the phrase regardless of separator.
   try {
     const projectRoot = getProjectRoot()
     if (projectRoot) {
@@ -100,10 +77,10 @@ export async function getVoiceKeyterms(
       }
     }
   } catch {
-    // getProjectRoot() puede lanzar si no se ha inicializado aun — ignora
+    // getProjectRoot() may throw if not initialised yet — ignore
   }
 
-  // Palabras de la rama git (p.ej. "feat/voice-keyterms" → "feat", "voice", "keyterms")
+  // Git branch words (e.g. "feat/voice-keyterms" → "feat", "voice", "keyterms")
   try {
     const branch = await getBranch()
     if (branch) {
@@ -112,11 +89,10 @@ export async function getVoiceKeyterms(
       }
     }
   } catch {
-    // getBranch() puede fallar si no se esta en un repo git — ignora
+    // getBranch() may fail if not in a git repo — ignore
   }
 
-  // Nombres de archivos recientes — solo escanea lo suficiente para
-  // llenar los slots restantes
+  // Recent file names — only scan enough to fill remaining slots
   if (recentFiles) {
     for (const filePath of recentFiles) {
       if (terms.size >= MAX_KEYTERMS) break

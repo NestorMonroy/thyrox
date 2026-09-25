@@ -1,76 +1,60 @@
 /**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/sanitization.ts` — sus
- * 2 exportaciones (`partiallySanitizeUnicode` y las 4 sobrecargas + el
- * cuerpo de `recursivelySanitizeUnicode`), ninguna omitida. Sin imports en
- * la fuente.
+ * Unicode Sanitization for Hidden Character Attack Mitigation
  *
- * Saneamiento Unicode para mitigar ataques de caracteres ocultos.
+ * This module implements security measures against Unicode-based hidden character attacks,
+ * specifically targeting ASCII Smuggling and Hidden Prompt Injection vulnerabilities.
+ * These attacks use invisible Unicode characters (such as Tag characters, format controls,
+ * private use areas, and noncharacters) to hide malicious instructions that are invisible
+ * to users but processed by AI models.
  *
- * Este módulo implementa medidas de seguridad contra ataques Unicode de
- * caracteres ocultos, específicamente dirigidos a vulnerabilidades de ASCII
- * Smuggling e inyección de prompt oculta. Estos ataques usan caracteres
- * Unicode invisibles (como caracteres Tag, controles de formato, áreas de
- * uso privado y no-caracteres) para ocultar instrucciones maliciosas que
- * son invisibles para el usuario pero que sí procesan los modelos de IA.
+ * The vulnerability was demonstrated in HackerOne report #3086545 targeting Claude Desktop's
+ * MCP (Model Context Protocol) implementation, where attackers could inject hidden instructions
+ * using Unicode Tag characters that would be executed by Claude but remain invisible to users.
  *
- * La vulnerabilidad se demostró en el reporte HackerOne #3086545 contra la
- * implementación de MCP (Model Context Protocol) de Claude Desktop, donde un
- * atacante podía inyectar instrucciones ocultas usando caracteres Unicode
- * Tag que Claude ejecutaba sin que el usuario las viera.
+ * Reference: https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/
  *
- * Referencia: https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/
+ * This implementation provides comprehensive protection by:
+ * 1. Applying NFKC Unicode normalization to handle composed character sequences
+ * 2. Removing dangerous Unicode categories while preserving legitimate text and formatting
+ * 3. Supporting recursive sanitization of complex nested data structures
+ * 4. Maintaining performance with efficient regex processing
  *
- * Esta implementación protege en cuatro frentes:
- * 1. Aplica normalización Unicode NFKC para manejar secuencias de
- *    caracteres compuestos.
- * 2. Elimina categorías Unicode peligrosas preservando el texto y el
- *    formato legítimos.
- * 3. Soporta saneamiento recursivo de estructuras de datos anidadas.
- * 4. Mantiene el rendimiento con procesamiento de regex eficiente.
- *
- * El saneamiento está siempre activo para proteger contra estos ataques.
+ * The sanitization is always enabled to protect against these attacks.
  */
 
 export function partiallySanitizeUnicode(prompt: string): string {
   let current = prompt
   let previous = ''
   let iterations = 0
-  const MAX_ITERATIONS = 10 // Límite de seguridad para evitar bucles infinitos
+  const MAX_ITERATIONS = 10 // Safety limit to prevent infinite loops
 
-  // Sanea iterativamente hasta que no haya más cambios o se llegue al
-  // máximo de iteraciones.
+  // Iteratively sanitize until no more changes occur or max iterations reached
   while (current !== previous && iterations < MAX_ITERATIONS) {
     previous = current
 
-    // Aplica normalización NFKC para manejar secuencias de caracteres
-    // compuestos.
+    // Apply NFKC normalization to handle composed character sequences
     current = current.normalize('NFKC')
 
-    // Elimina categorías Unicode peligrosas usando rangos de caracteres
-    // explícitos.
+    // Remove dangerous Unicode categories using explicit character ranges
 
-    // Método 1: quita las clases de propiedad Unicode peligrosas. Es la
-    // defensa primaria y la solución que usan ampliamente las librerías
-    // de código abierto.
+    // Method 1: Strip dangerous Unicode property classes
+    // This is the primary defence and is the solution that is widely used in OSS libraries.
     current = current.replace(/[\p{Cf}\p{Co}\p{Cn}]/gu, '')
 
-    // Método 2: rangos de caracteres explícitos. El método anterior tiene
-    // fallas sutiles en algunos entornos que no soportan clases de
-    // propiedad Unicode en regex, así que también se implementa un
-    // respaldo que quita algunos rangos peligrosos conocidos.
+    // Method 2: Explicit character ranges. There are some subtle issues with the above method
+    // failing in certain environments that don't support regexes for unicode property classes,
+    // so we also implement a fallback that strips out some specifically known dangerous ranges.
     current = current
-      .replace(/[\u200B-\u200F]/g, '') // Espacios de ancho cero, marcas LTR/RTL
-      .replace(/[\u202A-\u202E]/g, '') // Caracteres de formato direccional
-      .replace(/[\u2066-\u2069]/g, '') // Aislantes direccionales
-      .replace(/[\uFEFF]/g, '') // Marca de orden de bytes
-      .replace(/[\uE000-\uF8FF]/g, '') // Plano multilingüe básico, uso privado
+      .replace(/[\u200B-\u200F]/g, '') // Zero-width spaces, LTR/RTL marks
+      .replace(/[\u202A-\u202E]/g, '') // Directional formatting characters
+      .replace(/[\u2066-\u2069]/g, '') // Directional isolates
+      .replace(/[\uFEFF]/g, '') // Byte order mark
+      .replace(/[\uE000-\uF8FF]/g, '') // Basic Multilingual Plane private use
 
     iterations++
   }
 
-  // Si se llega al máximo de iteraciones, falla ruidosamente. Esto sólo
-  // debería pasar si hay un bug o si alguien construyó a propósito una
-  // cadena Unicode profundamente anidada.
+  // If we hit max iterations, crash loudly. This should only ever happen if there is a bug or if someone purposefully created a deeply nested unicode string.
   if (iterations >= MAX_ITERATIONS) {
     throw new Error(
       `Unicode sanitization reached maximum iterations (${MAX_ITERATIONS}) for input: ${prompt.slice(0, 100)}`,
@@ -102,7 +86,6 @@ export function recursivelySanitizeUnicode(value: unknown): unknown {
     return sanitized
   }
 
-  // Devuelve sin cambios el resto de valores primitivos (números,
-  // booleanos, null, undefined).
+  // Return other primitive values (numbers, booleans, null, undefined) unchanged
   return value
 }

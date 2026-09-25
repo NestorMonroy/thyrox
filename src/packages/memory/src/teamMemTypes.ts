@@ -1,26 +1,9 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/teamMemTypes.ts` (verbatim).
+ * Team Memory Sync types, moved from app-compat/services/teamMemorySync/types.ts
+ * into the memory package (the canonical owner of team memory logic).
  *
- * Tipos de Team Memory Sync, movidos desde
- * `app-compat/services/teamMemorySync/types.ts` al paquete `memory` (el
- * dueño canónico de la lógica de memoria de equipo).
- *
- * V7 §8 — `memory` no puede importar de `app-compat`. Estos tipos se
- * importaban antes cruzando ese límite; ahora viven aquí.
- *
- * NOTA DE DRIFT (hallazgo H-DOCS): este archivo y `teamMemSyncTypes.ts`
- * declaran, en la fuente ccnmt, esquemas y tipos casi idénticos
- * (`TeamMemoryData`, `SkippedSecretFile`, los cuatro `TeamMemorySync*Result`)
- * de forma independiente. Cada uno tiene un único consumidor real:
- * `teamMemorySync.ts` usa ÉSTE; `teamMemorySyncWatcher.ts` usa SOLO
- * `TeamMemorySyncPushResult` del otro. Se porta cada archivo fiel a sí
- * mismo — no es responsabilidad de este porte unificar una duplicación
- * preexistente de la fuente.
- *
- * `lazySchema` se duplica localmente aquí, sin exportar — es el patrón que
- * la propia fuente documenta en `config/internal/lazySchema.ts`: "V7 §11.4
- * — kept package-internal (not in a shared utils package). Each owner
- * that needs this 8-line helper duplicates it."
+ * V7 §8 — memory cannot import from app-compat. These types
+ * were previously imported across the boundary; now they live here.
  */
 
 import { z } from 'zod/v4'

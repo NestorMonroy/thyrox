@@ -1,21 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/client/transport.ts` —
- * sus 5 exportaciones, ninguna omitida.
- *
- * Helpers de transporte: cliente WebSocket Node vía `ws` (import dinámico,
- * verbatim de la fuente), timeout de conexión/petición y tamaños de lote
- * de conexión.
- *
- * `@modelcontextprotocol/sdk` y `ws` están declarados en `package.json`
- * (mismas versiones que fija `ccnmt: package.json` para el monorepo:
- * `^1.29.0` y `^8.21.0`) pero **no resuelven todavía** en este árbol — no
- * hay `node_modules/@modelcontextprotocol` ni `node_modules/ws` en ningún
- * paquete de `@thyrox/*` (verificado, ninguno de los dos aparece bajo
- * `src/packages/<pkg>/package.json`). Es la misma clase de deuda que
- * `command-runtime::@anthropic-ai/sdk` ya congela en
- * `tests/package/dependencies_baseline.txt` — tercero real, declarado,
- * pendiente de instalar.
- */
 import type { FetchLike } from "@modelcontextprotocol/sdk/shared/transport.js";
 
 export type WsClientLike = {

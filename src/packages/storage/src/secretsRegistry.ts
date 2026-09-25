@@ -1,24 +1,17 @@
 /**
- * Puerto COMPLETO de `ccnmt: packages/storage/src/secretsRegistry.ts`
- * (121 líneas fuente). Cero dependencias hermanas ausentes: el archivo
- * entero es lógica autocontenida (una tabla de expresiones regulares +
- * dos funciones puras que la consultan). Porte verbatim.
+ * Secrets-redaction regex registry — ported from ant v2.1.128 yg
+ * (0207.js).
  *
- * Registro de expresiones regulares de redacción de secretos —
- * adaptado de ant v2.1.128 yg (0207.js).
+ * Each rule has a `confidence` field (`high` or `low`). High-confidence
+ * patterns are tight enough that a match is almost certainly a real
+ * secret (so they can be applied to logs without consultation). Low-
+ * confidence patterns are broader regexes that may have false positives
+ * — callers should use them in contexts where over-redaction is the
+ * lesser evil (e.g. sending log lines to a third-party telemetry sink).
  *
- * Cada regla tiene un campo `confidence` (`high` o `low`). Los patrones
- * de alta confianza son lo bastante ajustados como para que un match
- * sea casi con certeza un secreto real (así que pueden aplicarse a logs
- * sin consulta previa). Los de baja confianza son regexes más amplias
- * que pueden dar falsos positivos — quien las use debe hacerlo en
- * contextos donde sobre-redactar es el mal menor (p. ej. enviar líneas
- * de log a un sink de telemetría de terceros).
- *
- * La lista es deliberadamente no exhaustiva: el objetivo es atrapar los
- * patrones con más probabilidad de aparecer en salida de shell / result
- * de herramienta / volcado de entorno, no ser un escáner de secretos
- * completo.
+ * The list is non-exhaustive on purpose: the goal is to catch the
+ * patterns most likely to appear in shell output / tool results /
+ * environment dumps, not to be a full secret-scanner.
  */
 export type SecretConfidence = 'high' | 'low'
 
@@ -30,49 +23,49 @@ export type SecretPattern = {
 
 const REGEXES: SecretPattern[] = [
   // -------------------- HIGH-CONFIDENCE --------------------
-  // Anthropic API key (sk-ant-...). Prefijo fijo, longitud casi fija.
+  // Anthropic API key (sk-ant-...). Tight prefix, fixed length-ish.
   {
     name: 'anthropic-api-key',
     re: /sk-ant-[a-zA-Z0-9_-]{40,}/g,
     confidence: 'high',
   },
-  // OpenAI API key (sk-...). Longitud ≥ 40, charset alnum + guiones/guiones bajos.
-  // No choca con el prefijo sk-ant- de arriba.
+  // OpenAI API key (sk-...). Length ≥ 40, charset alnum + dashes/underscores.
+  // Doesn't conflict with sk-ant prefix above.
   {
     name: 'openai-api-key',
     re: /sk-(?!ant-)[A-Za-z0-9_-]{40,}/g,
     confidence: 'high',
   },
-  // AWS access key id — prefijo fijo + longitud.
+  // AWS access key id — fixed prefix + length.
   { name: 'aws-access-key-id', re: /AKIA[0-9A-Z]{16}/g, confidence: 'high' },
   { name: 'aws-temporary-token', re: /ASIA[0-9A-Z]{16}/g, confidence: 'high' },
-  // Tokens de GitHub fine-grained / clásicos — todos usan prefijos
-  // ghp_/gho_/ghu_/ghs_/ghr_ con longitud fija.
+  // GitHub fine-grained / classic tokens — all use ghp_/gho_/ghu_/ghs_/ghr_
+  // prefixes with a fixed length.
   {
     name: 'github-token',
     re: /gh[pousr]_[A-Za-z0-9_]{36,}/g,
     confidence: 'high',
   },
-  // Stripe live secret key. Las de test (sk_test_*) se omiten a propósito:
-  // no son "secretos" bajo ningún modelo de amenaza razonable.
+  // Stripe live secret key. Test keys (sk_test_*) intentionally omitted
+  // since they're not "secrets" in any threat-model sense.
   {
     name: 'stripe-live-secret',
     re: /sk_live_[A-Za-z0-9]{16,}/g,
     confidence: 'high',
   },
-  // Tokens de bot / app / usuario de Slack.
+  // Slack bot / app / user tokens.
   {
     name: 'slack-token',
     re: /xox[baprs]-[A-Za-z0-9-]{10,}/g,
     confidence: 'high',
   },
-  // JWT genérico — tres segmentos base64url-ish separados por puntos.
+  // Generic JWT — three base64url-ish segments separated by dots.
   {
     name: 'jwt',
     re: /eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g,
     confidence: 'high',
   },
-  // Clave privada de cuenta de servicio de Google (cabecera PEM).
+  // Google service-account private key (PEM header).
   {
     name: 'pem-private-key',
     re: /-----BEGIN (?:RSA |EC |DSA |OPENSSH |PGP )?PRIVATE KEY-----/g,
@@ -80,24 +73,22 @@ const REGEXES: SecretPattern[] = [
   },
 
   // -------------------- LOW-CONFIDENCE --------------------
-  // Cadenas hexadecimales genéricas de alta entropía que parecen tokens —
-  // OJO: esto da falsos positivos con SHAs de commit / salidas de hash,
-  // así que quien las use debe hacerlo por decisión explícita.
+  // Generic high-entropy hex strings that look like tokens — bear in
+  // mind these false-match commit SHAs / hash outputs, so callers must
+  // opt-in.
   {
     name: 'generic-hex-32',
     re: /\b[0-9a-f]{32}\b/g,
     confidence: 'low',
   },
-  // Tokens alfanuméricos genéricos de 40+ caracteres — falsos positivos
-  // con todo tipo de payloads.
+  // Generic alnum tokens 40+ chars — false-matches all kinds of payloads.
   {
     name: 'generic-token-40',
     re: /\b[A-Za-z0-9_-]{40,}\b/g,
     confidence: 'low',
   },
-  // Cabeceras Authorization Bearer — captura la línea completa de la
-  // cabecera para que la porción del token quede enmascarada junto al
-  // prefijo.
+  // Bearer auth headers — captures the whole header line so the actual
+  // token portion is masked along with the prefix.
   {
     name: 'authorization-header',
     re: /Authorization:\s*Bearer\s+[A-Za-z0-9._-]+/gi,
@@ -113,10 +104,10 @@ export function getSecretPatterns(
 }
 
 /**
- * Aplica los patrones solicitados a `text` y devuelve la forma redactada
- * (los matches se reemplazan por `[REDACTED:<name>]`). Útil para
- * sanear líneas de log antes de que salgan del proceso. Devuelve el
- * texto de entrada sin cambios cuando ningún patrón hace match.
+ * Apply the requested patterns to `text` and return the redacted form
+ * (matches replaced with `[REDACTED:<name>]`). Useful for sanitizing
+ * log lines before they leave the process. Returns the input unchanged
+ * when no patterns match.
  */
 export function redactSecrets(
   text: string,

@@ -1,6 +1,3 @@
-// Adaptación de @claude-code-how-works/app-host: src/contracts.ts.
-// Capa 0 (sin cita a paquete hermano) — porte verbatim, sin divergencias.
-
 export type RuntimeBindingInstallers = {
   installCorePackageBindings?: () => void
   installProviderBindings?: () => void

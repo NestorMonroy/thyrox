@@ -1,10 +1,4 @@
-/**
- * Puerto de `ccnmt: packages/voice/src/index.ts` (25 líneas fuente,
- * 100% portado). Superficie pública V7 §8.20 de integración de voz:
- * re-exporta contrato + errores, y ofrece un runtime de voz mínimo
- * basado en cierre.
- */
-
+// V7 §8.20 — voice integration public surface.
 export * from './contracts.js'
 export * from './errors.js'
 

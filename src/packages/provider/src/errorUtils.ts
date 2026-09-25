@@ -1,16 +1,9 @@
-/**
- * Porte fiel de `ccnmt: packages/provider/src/errorUtils.ts` (paquete
- * `provider`, licencia UNLICENSED — reimplementación, no copia). Porte
- * COMPLETO — sin divergencias: su único import es `@anthropic-ai/sdk`
- * (type-only, se borra al transpilar); cero dependencias cruzadas de
- * paquete. Los mensajes de error se conservan en inglés (son texto que
- * el usuario final ve — comportamiento observable, no comentario).
- */
 import type { APIError } from '@anthropic-ai/sdk'
 
-// Códigos de error SSL/TLS de OpenSSL (los usan tanto Node.js como Bun).
+// SSL/TLS error codes from OpenSSL (used by both Node.js and Bun)
+// See: https://www.openssl.org/docs/man3.1/man3/X509_STORE_CTX_get_error.html
 const SSL_ERROR_CODES = new Set([
-  // Errores de verificación de certificado
+  // Certificate verification errors
   'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
   'UNABLE_TO_GET_ISSUER_CERT',
   'UNABLE_TO_GET_ISSUER_CERT_LOCALLY',
@@ -20,16 +13,16 @@ const SSL_ERROR_CODES = new Set([
   'CERT_REVOKED',
   'CERT_REJECTED',
   'CERT_UNTRUSTED',
-  // Errores de certificado autofirmado
+  // Self-signed certificate errors
   'DEPTH_ZERO_SELF_SIGNED_CERT',
   'SELF_SIGNED_CERT_IN_CHAIN',
-  // Errores de cadena
+  // Chain errors
   'CERT_CHAIN_TOO_LONG',
   'PATH_LENGTH_EXCEEDED',
-  // Errores de hostname/altname
+  // Hostname/altname errors
   'ERR_TLS_CERT_ALTNAME_INVALID',
   'HOSTNAME_MISMATCH',
-  // Errores de handshake TLS
+  // TLS handshake errors
   'ERR_TLS_HANDSHAKE_TIMEOUT',
   'ERR_SSL_WRONG_VERSION_NUMBER',
   'ERR_SSL_DECRYPTION_FAILED_OR_BAD_RECORD_MAC',
@@ -42,9 +35,9 @@ export type ConnectionErrorDetails = {
 }
 
 /**
- * Extrae el detalle de un error de conexión de la cadena `.cause`. El SDK
- * de Anthropic envuelve el error subyacente en esa propiedad; esta
- * función recorre la cadena hasta encontrar el código/mensaje raíz.
+ * Extracts connection error details from the error cause chain.
+ * The Anthropic SDK wraps underlying errors in the `cause` property.
+ * This function walks the cause chain to find the root error code/message.
  */
 export function extractConnectionErrorDetails(
   error: unknown,
@@ -53,9 +46,9 @@ export function extractConnectionErrorDetails(
     return null
   }
 
-  // Recorre la cadena de cause buscando el error raíz con código
+  // Walk the cause chain to find the root error with a code
   let current: unknown = error
-  const maxDepth = 5 // Evita loops infinitos
+  const maxDepth = 5 // Prevent infinite loops
   let depth = 0
 
   while (current && depth < maxDepth) {
@@ -73,7 +66,7 @@ export function extractConnectionErrorDetails(
       }
     }
 
-    // Avanza al siguiente cause de la cadena
+    // Move to the next cause in the chain
     if (
       current instanceof Error &&
       'cause' in current &&
@@ -90,14 +83,13 @@ export function extractConnectionErrorDetails(
 }
 
 /**
- * Da una pista accionable para errores SSL/TLS, pensada para contextos
- * fuera del cliente API principal (intercambio de token OAuth, chequeos
- * de conectividad preflight) donde `formatAPIError` no aplica.
+ * Returns an actionable hint for SSL/TLS errors, intended for contexts outside
+ * the main API client (OAuth token exchange, preflight connectivity checks)
+ * where `formatAPIError` doesn't apply.
  *
- * Motivación: usuarios corporativos detrás de un proxy que intercepta TLS
- * (Zscaler y similares) ven el OAuth completarse en el navegador, pero el
- * intercambio de token de la CLI falla en silencio con un código SSL
- * crudo. Mostrar el arreglo probable ahorra una vuelta de soporte.
+ * Motivation: enterprise users behind TLS-intercepting proxies (Zscaler et al.)
+ * see OAuth complete in-browser but the CLI's token exchange silently fails
+ * with a raw SSL code. Surfacing the likely fix saves a support round-trip.
  */
 export function getSSLErrorHint(error: unknown): string | null {
   const details = extractConnectionErrorDetails(error)
@@ -108,9 +100,9 @@ export function getSSLErrorHint(error: unknown): string | null {
 }
 
 /**
- * Quita contenido HTML (p. ej. páginas de error de CloudFlare) de un
- * mensaje, devolviendo un título legible o cadena vacía si se detecta
- * HTML. Devuelve el mensaje original sin cambios si no hay HTML.
+ * Strips HTML content (e.g., CloudFlare error pages) from a message string,
+ * returning a user-friendly title or empty string if HTML is detected.
+ * Returns the original message unchanged if no HTML is found.
  */
 function sanitizeMessageHTML(message: string): string {
   if (message.includes('<!DOCTYPE html') || message.includes('<html')) {
@@ -124,31 +116,30 @@ function sanitizeMessageHTML(message: string): string {
 }
 
 /**
- * Detecta si el mensaje de un error trae HTML (p. ej. páginas de error de
- * CloudFlare) y devuelve en su lugar un mensaje legible para el usuario.
+ * Detects if an error message contains HTML content (e.g., CloudFlare error pages)
+ * and returns a user-friendly message instead
  */
 export function sanitizeAPIError(apiError: APIError): string {
   const message = apiError.message
   if (!message) {
-    // A veces el mensaje viene undefined — sin determinar por qué en la fuente.
+    // Sometimes message is undefined
+    // TODO: figure out why
     return ''
   }
   return sanitizeMessageHTML(message)
 }
 
 /**
- * Formas de un error de API deserializado desde el JSONL de sesión.
+ * Shapes of deserialized API errors from session JSONL.
  *
- * Tras el viaje de ida y vuelta por JSON, el `APIError` del SDK pierde su
- * propiedad `.message`. El mensaje real vive en distinto nivel de anidado
- * según el proveedor:
+ * After JSON round-tripping, the SDK's APIError loses its `.message` property.
+ * The actual message lives at different nesting levels depending on the provider:
  *
  * - Bedrock/proxy: `{ error: { message: "..." } }`
- * - API estándar de Anthropic: `{ error: { error: { message: "..." } } }`
- *   (el `.error` externo es el cuerpo de la respuesta; el interno es el
- *   error de la API)
+ * - Standard Anthropic API: `{ error: { error: { message: "..." } } }`
+ *   (the outer `.error` is the response body, the inner `.error` is the API error)
  *
- * Ver también `getErrorMessage` en `logging.ts`, que maneja las mismas formas.
+ * See also: `getErrorMessage` in `logging.ts` which handles the same shapes.
  */
 type NestedAPIError = {
   error?: {
@@ -168,24 +159,24 @@ function hasNestedError(value: unknown): value is NestedAPIError {
 }
 
 /**
- * Extrae un mensaje legible de un error de API deserializado que no
- * tiene `.message` de nivel superior.
+ * Extract a human-readable message from a deserialized API error that lacks
+ * a top-level `.message`.
  *
- * Revisa dos niveles de anidado (el más profundo primero, por especificidad):
- * 1. `error.error.error.message` — forma estándar de la API de Anthropic
- * 2. `error.error.message` — forma de Bedrock
+ * Checks two nesting levels (deeper first for specificity):
+ * 1. `error.error.error.message` — standard Anthropic API shape
+ * 2. `error.error.message` — Bedrock shape
  */
 function extractNestedErrorMessage(error: APIError): string | null {
   if (!hasNestedError(error)) {
     return null
   }
 
-  // Accede a `.error` vía el tipo angostado para que TypeScript vea la
-  // forma anidada en vez del `Object | undefined` del SDK.
+  // Access `.error` via the narrowed type so TypeScript sees the nested shape
+  // instead of the SDK's `Object | undefined`.
   const narrowed: NestedAPIError = error
   const nested = narrowed.error
 
-  // Forma estándar de Anthropic: { error: { error: { message } } }
+  // Standard Anthropic API shape: { error: { error: { message } } }
   const deepMsg = nested?.error?.message
   if (typeof deepMsg === 'string' && deepMsg.length > 0) {
     const sanitized = sanitizeMessageHTML(deepMsg)
@@ -194,7 +185,7 @@ function extractNestedErrorMessage(error: APIError): string | null {
     }
   }
 
-  // Forma de Bedrock: { error: { message } }
+  // Bedrock shape: { error: { message } }
   const msg = nested?.message
   if (typeof msg === 'string' && msg.length > 0) {
     const sanitized = sanitizeMessageHTML(msg)
@@ -207,18 +198,18 @@ function extractNestedErrorMessage(error: APIError): string | null {
 }
 
 export function formatAPIError(error: APIError): string {
-  // Extrae el detalle de conexión de la cadena de cause
+  // Extract connection error details from the cause chain
   const connectionDetails = extractConnectionErrorDetails(error)
 
   if (connectionDetails) {
     const { code, isSSLError } = connectionDetails
 
-    // Maneja errores de timeout
+    // Handle timeout errors
     if (code === 'ETIMEDOUT') {
       return 'Request timed out. Check your internet connection and proxy settings'
     }
 
-    // Maneja errores SSL/TLS con mensajes específicos
+    // Handle SSL/TLS errors with specific messages
     if (isSSLError) {
       switch (code) {
         case 'UNABLE_TO_VERIFY_LEAF_SIGNATURE':
@@ -244,16 +235,16 @@ export function formatAPIError(error: APIError): string {
   }
 
   if (error.message === 'Connection error.') {
-    // Si hay un código pero no es SSL, se incluye para depurar
+    // If we have a code but it's not SSL, include it for debugging
     if (connectionDetails?.code) {
       return `Unable to connect to API (${connectionDetails.code})`
     }
     return 'Unable to connect to API. Check your internet connection'
   }
 
-  // Guarda: al deserializar desde JSONL (p. ej. --resume), el objeto de
-  // error puede ser un objeto plano sin `.message`. Se devuelve un
-  // fallback seguro en vez de undefined, que rompería a quien lea `.length`.
+  // Guard: when deserialized from JSONL (e.g. --resume), the error object may
+  // be a plain object without a `.message` property.  Return a safe fallback
+  // instead of undefined, which would crash callers that access `.length`.
   if (!error.message) {
     return (
       extractNestedErrorMessage(error) ??
@@ -262,7 +253,7 @@ export function formatAPIError(error: APIError): string {
   }
 
   const sanitizedMessage = sanitizeAPIError(error)
-  // Usa el mensaje saneado si difiere del original (es decir, si se sanea HTML)
+  // Use sanitized message if it's different from the original (i.e., HTML was sanitized)
   return sanitizedMessage !== error.message && sanitizedMessage.length > 0
     ? sanitizedMessage
     : error.message

@@ -1,21 +1,18 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/internalTypes.ts` (verbatim — sin
- * dependencias).
+ * Local structural type aliases for the memory package.
  *
- * Alias de tipos estructurales locales para el paquete `memory`.
+ * These replace direct type imports from app-compat which
+ * violate V7 Wave 2 boundaries. The types here are minimal structural
+ * equivalents — callers in the integration layer (app-compat/agent) satisfy
+ * them via TypeScript's structural typing without explicit casts.
  *
- * Reemplazan imports directos de tipos de `app-compat`, que violarían los
- * límites de V7 Wave 2. Los tipos de aquí son equivalentes estructurales
- * mínimos — los llamadores en la capa de integración (`app-compat`/`agent`)
- * los satisfacen por tipado estructural de TypeScript, sin casts explícitos.
- *
- * V7 §8 — `memory` no puede importar tipos de `app-compat`. Los
- * estructurales locales son el patrón de sustitución aprobado.
+ * V7 §8 — memory cannot import types from app-compat. Local structurals are
+ * the approved substitution pattern.
  */
 
-// ── Tipos de mensaje ──────────────────────────────────────────────────────────
+// ── Message types ─────────────────────────────────────────────────────────────
 
-/** Forma mínima de mensaje que necesitan extractMemories / autoDream. */
+/** Minimal message shape needed by extractMemories / autoDream */
 export type MemMessage = {
   type: string
   uuid?: string
@@ -32,22 +29,22 @@ export type MemContentBlock = {
   text?: string
 }
 
-/** Recorte estructural del contenido de AssistantMessage. */
+/** Structural slice of AssistantMessage content */
 export type MemAssistantMessage = MemMessage & {
   type: 'assistant'
   message: { content: MemContentBlock[] }
 }
 
-// ── Mensaje de sistema (para el callback appendSystemMessage) ───────────────────
+// ── System message (for appendSystemMessage callback) ──────────────────────────
 
 export type MemSystemMessage = {
   type: string
   [key: string]: unknown
 }
 
-// ── Tipos de herramienta ──────────────────────────────────────────────────────
+// ── Tool types ────────────────────────────────────────────────────────────────
 
-/** Recorte estructural mínimo de Tool que necesita extractMemories. */
+/** Minimal structural slice of Tool needed by extractMemories */
 export type MemTool = {
   name: string
   inputSchema: {
@@ -56,7 +53,7 @@ export type MemTool = {
   isReadOnly?: (input: unknown) => boolean
 }
 
-/** Resultado de permiso que devuelve canUseTool. */
+/** Permission result returned by canUseTool */
 export type MemToolPermissionResult =
   | { behavior: 'allow'; updatedInput: Record<string, unknown> }
   | {
@@ -65,22 +62,22 @@ export type MemToolPermissionResult =
       decisionReason: { type: string; reason?: string }
     }
 
-/** La firma de la función canUseTool que usan los agentes forkeados. */
+/** The canUseTool function signature used by forked agents */
 export type MemCanUseTool = (
   tool: MemTool,
   input: Record<string, unknown>,
 ) => Promise<MemToolPermissionResult>
 
-// ── Contexto del hook de REPL ─────────────────────────────────────────────────
+// ── REPL hook context ─────────────────────────────────────────────────────────
 
-/** Recorte estructural de ToolUseContext que necesita el paquete memory. */
+/** Structural slice of ToolUseContext needed by memory package */
 export type MemToolUseContext = {
   agentId?: string
   appendSystemMessage?: (msg: MemSystemMessage) => void
   [key: string]: unknown
 }
 
-/** Equivalente estructural de REPLHookContext para uso del paquete memory. */
+/** Structural equivalent of REPLHookContext for memory package usage */
 export type MemREPLContext = {
   messages: MemMessage[]
   toolUseContext: MemToolUseContext

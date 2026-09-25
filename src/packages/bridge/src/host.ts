@@ -1,8 +1,3 @@
-/**
- * Punto de inyección de las ataduras del host del bridge. Puerto fiel de
- * `ccnmt: packages/bridge/src/host.ts`.
- */
-
 import type { BridgeHostBindings } from './contracts.js'
 import { HostBindingsError } from './errors.js'
 

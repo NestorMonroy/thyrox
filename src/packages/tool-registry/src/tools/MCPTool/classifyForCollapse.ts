@@ -1,20 +1,13 @@
 /**
- * Puerto FIEL y COMPLETO de
- * `ccnmt: packages/tool-registry/src/tools/MCPTool/classifyForCollapse.ts`
- * (TASK #232, porte de `tool-registry`). Sin dependencias — listas de
- * permitidos por herramienta, más dos funciones puras.
+ * Classify an MCP tool as a search/read operation for UI collapsing.
+ * Returns { isSearch: false, isRead: false } for tools that should not
+ * collapse (e.g., send_message, create_*, update_*).
  *
- * Clasifica una herramienta MCP como operación de búsqueda/lectura para el
- * colapso de la UI. Devuelve `{ isSearch: false, isRead: false }` para
- * herramientas que no deben colapsar (p. ej. send_message, create_*,
- * update_*).
- *
- * Usa listas explícitas de permitidos por herramienta para los servidores
- * MCP más comunes. Los nombres de herramienta son estables entre
- * instalaciones (aunque el nombre del servidor varíe, p. ej. "slack" vs
- * "claude_ai_Slack"), así que el emparejamiento se basa sólo en el nombre
- * de la herramienta, tras normalizar camelCase/kebab-case a snake_case.
- * Los nombres de herramienta desconocidos no colapsan (conservador).
+ * Uses explicit per-tool allowlists for the most common MCP servers.
+ * Tool names are stable across installs (even when the server name varies,
+ * e.g., "slack" vs "claude_ai_Slack"), so matching is keyed on the tool
+ * name alone after normalizing camelCase/kebab-case to snake_case.
+ * Unknown tool names don't collapse (conservative).
  */
 
 // prettier-ignore
@@ -592,7 +585,6 @@ const READ_TOOLS = new Set([
   'resources_list',
 ])
 
-/** Normaliza camelCase/kebab-case a snake_case en minúsculas. */
 function normalize(name: string): string {
   return name
     .replace(/([a-z])([A-Z])/g, '$1_$2')
@@ -600,8 +592,6 @@ function normalize(name: string): string {
     .toLowerCase()
 }
 
-/** El nombre del servidor no se usa (aún) — el emparejamiento es por
- *  nombre de herramienta solamente, ver docstring del módulo. */
 export function classifyMcpToolForCollapse(
   _serverName: string,
   toolName: string,

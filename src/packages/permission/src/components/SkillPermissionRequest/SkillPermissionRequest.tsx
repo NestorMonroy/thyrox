@@ -43,11 +43,7 @@ export function SkillPermissionRequest(
 
   const skill = parseInput(toolUseConfirm.input)
 
-  // Copia de `ccnmt: packages/permission/src/components/SkillPermissionRequest/
-  // SkillPermissionRequest.tsx` con los comentarios traducidos; el cuerpo es el
-  // de la fuente.
-  //
-  // Comprueba si esto es un comando, usando la metadata de checkPermissions.
+  // Check if this is a command using metadata from checkPermissions
   const commandObj =
     toolUseConfirm.permissionResult.behavior === 'ask' &&
     toolUseConfirm.permissionResult.metadata &&
@@ -76,11 +72,10 @@ export function SkillPermissionRequest(
       },
     ]
 
-    // Las opciones de "permitir siempre" solo se añaden cuando
-    // allowManagedPermissionRulesOnly no las restringe.
+    // Only add "always allow" options when not restricted by allowManagedPermissionRulesOnly
     const alwaysAllowOptions: PermissionPromptOption<SkillOptionValue>[] = []
     if (showAlwaysAllowOptions) {
-      // Añade la opción de coincidencia exacta.
+      // Add exact match option
       alwaysAllowOptions.push({
         label: (
           <Text>
@@ -91,7 +86,7 @@ export function SkillPermissionRequest(
         value: 'yes-exact',
       })
 
-      // Añade la opción de prefijo si el skill lleva argumentos.
+      // Add prefix option if the skill has arguments
       const spaceIndex = skill.indexOf(' ')
       if (spaceIndex > 0) {
         const commandPrefix = skill.substring(0, spaceIndex)
@@ -179,7 +174,7 @@ export function SkillPermissionRequest(
             },
           })
 
-          // Extrae el prefijo del skill: todo lo anterior al primer espacio.
+          // Extract the skill prefix (everything before the first space)
           const spaceIndex = skill.indexOf(' ')
           const commandPrefix =
             spaceIndex > 0 ? skill.substring(0, spaceIndex) : skill

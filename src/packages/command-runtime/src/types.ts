@@ -1,17 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/command-runtime/src/types.ts` — sus 15
- * exportaciones, ninguna omitida, mas los dos tipos internos (`LocalCommand`,
- * `LocalJSXCommand`, sin exportar en la fuente) de los que depende `Command`.
- *
- * Divergencia declarada: `ContentBlockParam` se importa como TYPE-ONLY desde
- * `@anthropic-ai/sdk/resources/index.mjs`, igual que en la fuente. El paquete
- * `@anthropic-ai/sdk` no esta instalado en este arbol — pero un `import type`
- * se elide por completo al compilar/transpilar (verificado: `bun test` corre
- * limpio sin el paquete presente, porque el import nunca sobrevive a tiempo
- * de ejecucion). Lo unico que fallaria sin el paquete es `tsc --noEmit`
- * sobre este archivo en particular, que queda fuera del alcance de este pase
- * (TDD con `bun test` como gate).
- */
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { UUID } from 'crypto'
 
@@ -24,10 +10,10 @@ export type LocalCommandResult =
     }
   | { type: 'skip' }
   /**
-   * `'query'` — stdout visible del sistema (`value`) MAS un meta-mensaje
-   * invisible (`prompt`) que dirige al agente. Lo usa `/goal` para que la
-   * persona vea "Goal set: ..." y el agente reciba en silencio el prompt
-   * directivo. Espeja ant v2.1.136 4689.js OZ3 + 3753.js qm5, rama 'query'.
+   * `'query'` — visible system stdout (`value`) PLUS an invisible meta-message
+   * (`prompt`) that drives the agent. Used by `/goal` so the user sees
+   * "Goal set: ..." and the agent silently receives the directive prompt.
+   * Mirrors ant v2.1.136 4689.js OZ3 + 3753.js qm5 'query' branch.
    */
   | { type: 'query'; value: string; prompt: string }
 

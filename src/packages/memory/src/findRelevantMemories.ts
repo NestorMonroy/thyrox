@@ -1,6 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/findRelevantMemories.ts` (verbatim).
- */
 import { feature } from 'bun:bundle'
 import { getMemoryHostBindings } from './host.js'
 import { errorMessage, jsonParse } from './internalUtils.js'
@@ -20,19 +17,17 @@ Return a list of filenames for the memories that will clearly be useful to Claud
 `
 
 /**
- * Encuentra archivos de memoria relevantes a una query, escaneando los
- * encabezados de archivo de memoria y pidiéndole a Sonnet que seleccione
- * los más relevantes.
+ * Find memory files relevant to a query by scanning memory file headers
+ * and asking Sonnet to select the most relevant ones.
  *
- * Devuelve rutas de archivo absolutas + mtime de las memorias más
- * relevantes (hasta 5). Excluye MEMORY.md (ya cargado en el prompt de
- * sistema). El mtime se pasa a través para que los llamadores puedan
- * mostrar frescura al modelo principal sin un segundo stat.
+ * Returns absolute file paths + mtime of the most relevant memories
+ * (up to 5). Excludes MEMORY.md (already loaded in system prompt).
+ * mtime is threaded through so callers can surface freshness to the
+ * main model without a second stat.
  *
- * `alreadySurfaced` filtra rutas mostradas en turnos anteriores antes de
- * la llamada a Sonnet, así que el selector gasta su presupuesto de 5
- * slots en candidatos frescos en vez de re-elegir archivos que el
- * llamador descartaría.
+ * `alreadySurfaced` filters paths shown in prior turns before the
+ * Sonnet call, so the selector spends its 5-slot budget on fresh
+ * candidates instead of re-picking files the caller will discard.
  */
 export async function findRelevantMemories(
   query: string,
@@ -61,9 +56,8 @@ export async function findRelevantMemories(
     .map(filename => byFilename.get(filename))
     .filter((m): m is MemoryFileHeader => m !== undefined)
 
-  // Dispara incluso con selección vacía: la tasa de selección necesita el
-  // denominador, y las edades -1 distinguen "corrió, no eligió nada" de
-  // "nunca corrió".
+  // Fires even on empty selection: selection-rate needs the denominator,
+  // and -1 ages distinguish "ran, picked nothing" from "never ran".
   if (feature('MEMORY_SHAPE_TELEMETRY')) {
     bindings.reportMemoryShapeTelemetry?.(memories, selected)
   }

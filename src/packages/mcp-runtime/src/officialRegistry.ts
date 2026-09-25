@@ -1,14 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/officialRegistry.ts` —
- * sus 3 exportaciones, ninguna omitida.
- *
- * `axios` declarado en `package.json` (`^1.20.0`, mismo rango que ya fija
- * `@thyrox/local-observability`), sin `node_modules` enlazado todavía.
- *
- * Reapuntados a `@thyrox/local-observability` (subpath + símbolo
- * verificados en runtime): `./debug.js` (`logForDebugging`) y
- * `./errorHelpers.js` (`errorMessage`).
- */
 import axios from 'axios'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
@@ -23,9 +12,9 @@ type RegistryResponse = {
   servers: RegistryServer[]
 }
 
-// URLs sin query string ni barra final — coincide con la normalización que
-// hace getLoggingSafeMcpBaseUrl, para que Set.has() funcione directamente.
-let officialUrls: Set<string> | undefined
+// URLs stripped of query string and trailing slash — matches the normalization
+// done by getLoggingSafeMcpBaseUrl so direct Set.has() lookup works.
+let officialUrls: Set<string> | undefined 
 
 function normalizeUrl(url: string): string | undefined {
   try {
@@ -38,8 +27,8 @@ function normalizeUrl(url: string): string | undefined {
 }
 
 /**
- * Fetch fire-and-forget del registro oficial de MCP.
- * Puebla officialUrls para las consultas de isOfficialMcpUrl.
+ * Fire-and-forget fetch of the official MCP registry.
+ * Populates officialUrls for isOfficialMcpUrl lookups.
  */
 export async function prefetchOfficialMcpUrls(): Promise<void> {
   if (process.env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC) {
@@ -71,9 +60,8 @@ export async function prefetchOfficialMcpUrls(): Promise<void> {
 }
 
 /**
- * Devuelve true si y sólo si la URL dada (ya normalizada vía
- * getLoggingSafeMcpBaseUrl) está en el registro oficial de MCP. Registro
- * indefinido → false (fail-closed).
+ * Returns true iff the given (already-normalized via getLoggingSafeMcpBaseUrl)
+ * URL is in the official MCP registry. Undefined registry → false (fail-closed).
  */
 export function isOfficialMcpUrl(normalizedUrl: string): boolean {
   return officialUrls?.has(normalizedUrl) ?? false

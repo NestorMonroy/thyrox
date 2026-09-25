@@ -1,9 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/output/src/buffers/buffered-writer.ts`
- * (verbatim — sin imports en la fuente). Agrupa escrituras pequenas en
- * lotes mas grandes para reducir el overhead de syscall, con dos
- * disparadores de flush: por temporizador y por tamano/bytes.
- */
 type WriteFn = (content: string) => void
 
 export type BufferedWriter = {
@@ -28,9 +22,9 @@ export function createBufferedWriter({
   let buffer: string[] = []
   let bufferBytes = 0
   let flushTimer: NodeJS.Timeout | null = null
-  // Lote desprendido por overflow que aun no se escribio. Se rastrea para
-  // que flush()/dispose() lo pueda drenar sincronicamente si el proceso
-  // termina antes de que dispare el setImmediate.
+  // Batch detached by overflow that hasn't been written yet. Tracked so
+  // flush()/dispose() can drain it synchronously if the process exits
+  // before the setImmediate fires.
   let pendingOverflow: string[] | null = null
 
   function clearTimer(): void {
@@ -58,17 +52,15 @@ export function createBufferedWriter({
     }
   }
 
-  // Desprende el buffer sincronicamente para que quien llama nunca espere
-  // a writeFn. writeFn puede bloquear (p. ej. un appendFileSync de un sink
-  // de log de errores) — si el overflow dispara a mitad de un render o de
-  // una tecla, diferir la escritura mantiene corto el tick actual. Los
-  // flushes por temporizador ya corren fuera de rutas de codigo de usuario,
-  // asi que se quedan sincronicos.
+  // Detach the buffer synchronously so the caller never waits on writeFn.
+  // writeFn may block (e.g. errorLogSink.ts appendFileSync) — if overflow fires
+  // mid-render or mid-keystroke, deferring the write keeps the current tick
+  // short. Timer-based flushes already run outside user code paths so they
+  // stay synchronous.
   function flushDeferred(): void {
     if (pendingOverflow) {
-      // Una escritura de overflow anterior sigue en cola. Se coalesce en
-      // ella para preservar el orden — las escrituras aterrizan en un solo
-      // lote ordenado por setImmediate.
+      // A previous overflow write is still queued. Coalesce into it to
+      // preserve ordering — writes land in a single setImmediate-ordered batch.
       pendingOverflow.push(...buffer)
       buffer = []
       bufferBytes = 0

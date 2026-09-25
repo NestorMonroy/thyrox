@@ -1,7 +1,4 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/betaSessionTracing.ts`
- * (12 líneas fuente, 100 % portado).
- */
+// Canonical owner is @thyrox/local-observability/telemetry.
 export type { LLMRequestNewContext } from './telemetry/index.js'
 export {
   addBetaInteractionAttributes,

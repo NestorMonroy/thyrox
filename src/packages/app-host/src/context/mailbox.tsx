@@ -1,12 +1,3 @@
-/**
- * Adaptación de `ccnmt: packages/app-host/src/context/mailbox.tsx`.
- * Capa 0 (sin cita a paquete hermano ausente) — porte verbatim, sin
- * divergencias. `Mailbox` se importa como valor desde
- * `@thyrox/agent/runtime/mailbox.js` — resuelve: `@thyrox/agent` YA es
- * dependencia declarada de `@thyrox/app-host` (`package.json`), y el
- * subpath lo alcanza el wildcard `./*` -> `./*.ts` del `package.json` de
- * `@thyrox/agent` (verificado con `Bun.resolveSync`).
- */
 import React, { createContext, useContext, useMemo } from 'react'
 import { Mailbox } from '@thyrox/agent/runtime/mailbox.js'
 

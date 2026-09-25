@@ -1,10 +1,6 @@
-/**
- * Puerto de `ccnmt: packages/config/settings/validationTips.ts` (164
- * líneas fuente). Reimplementación fiel VERBATIM.
- */
 import type { ZodIssueCode } from 'zod/v4'
 
-// En zod v4, ZodIssueCode es un valor, no un tipo — se usa `typeof` para obtener el tipo.
+// v4 ZodIssueCode is a value, not a type - use typeof to get the type
 type ZodIssueCodeType = (typeof ZodIssueCode)[keyof typeof ZodIssueCode]
 
 type ValidationTip = {
@@ -81,13 +77,11 @@ const TIP_MATCHERS: TipMatcher[] = [
       ctx.path.includes('hooks') && ctx.code === 'invalid_type',
     tip: {
       suggestion:
-        // gh-31187 / CC-282: la sugerencia anterior mostraba
-        // {"matcher": {"tools": ["BashTool"]}} — un formato de objeto que
-        // nunca existió en el esquema (matcher es z.string(), siempre lo
-        // fue). Los usuarios copiaban el ejemplo de la sugerencia y
-        // obtenían el mismo error de validación otra vez. Ver
-        // matchesPattern() en hooks.ts: matcher es exact-match,
-        // separado-por-pipe ("Edit|Write"), o regex. Vacío/"*" matchea todo.
+        // gh-31187 / CC-282: prior example showed {"matcher": {"tools": ["BashTool"]}}
+        // — an object format that never existed in the schema (matcher is z.string(),
+        // always has been). Users copied the tip's example and got the same validation
+        // error again. See matchesPattern() in hooks.ts: matcher is exact-match,
+        // pipe-separated ("Edit|Write"), or regex. Empty/"*" matches all.
         'Hooks use a matcher + hooks array. The matcher is a string: a tool name ("Bash"), pipe-separated list ("Edit|Write"), or empty to match all. Example: {"PostToolUse": [{"matcher": "Edit|Write", "hooks": [{"type": "command", "command": "echo Done"}]}]}',
     },
   },
@@ -158,7 +152,7 @@ export function getValidationTip(context: TipContext): ValidationTip | null {
     tip.suggestion = `Valid values: ${context.enumValues.map(v => `"${v}"`).join(', ')}`
   }
 
-  // Añade el link de documentación según el prefijo de la ruta.
+  // Add documentation link based on path prefix
   if (!tip.docLink && context.path) {
     const pathPrefix = context.path.split('.')[0]
     if (pathPrefix) {

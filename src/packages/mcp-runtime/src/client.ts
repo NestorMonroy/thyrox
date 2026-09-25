@@ -1,14 +1,3 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/mcp-runtime/src/client.ts` — sus 20
- * exportaciones (1 re-exportación + 2 clases + 17 funciones/const),
- * ninguna omitida.
- *
- * Fachada de compatibilidad hacia atrás: el runtime "legado" (implementado
- * fuera de este paquete, en la raíz del consumidor) se instala como el
- * campo `.legacy` de los bindings (ver `./host.ts`), y cada símbolo de aquí
- * es un delgado paso-a-través hacia ese runtime legado. Los tipos son
- * opacos a propósito — es la misma frontera que documenta `./contracts.ts`.
- */
 import { getMcpRuntimeHostBindings } from './host.js'
 import { HostBindingsError } from './errors.js'
 

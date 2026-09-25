@@ -33,7 +33,7 @@ export async function call(
   const short = process.env.CLAUDE_CODE_BG_JOB_SHORT
   if (short) {
     try {
-      // Route through @claude-code-how-works/cli/bg.js (which already depends on
+      // Route through @thyrox/cli/bg.js (which already depends on
       // daemon) instead of pulling daemon directly into command-runtime.
       // Stays under the cross-package-coupling budget.
       const { markJobStopped } = await import('@thyrox/cli/bg.js')

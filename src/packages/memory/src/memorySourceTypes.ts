@@ -1,8 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/memorySourceTypes.ts` (verbatim).
- * `feature('TEAMMEM')` es el flag de compilación nativo de Bun
- * (`bun:bundle`), no un símbolo bloqueado — no requiere sustituto.
- */
 import { feature } from 'bun:bundle'
 
 export const MEMORY_TYPE_VALUES = [

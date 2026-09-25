@@ -1,2 +1,2 @@
-// Canonical owner is @claude-code-how-works/config/plugin/pluginLoader.
+// Canonical owner is @thyrox/config/plugin/pluginLoader.
 export * from '@thyrox/config/plugin/pluginLoader'

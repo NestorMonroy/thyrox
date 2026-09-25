@@ -1,2 +1,2 @@
-// Canonical owner is @claude-code-how-works/config/remote.
+// Canonical owner is @thyrox/config/remote.
 export * from '@thyrox/config/remote'

@@ -1,46 +1,8 @@
 /**
- * Adaptación de @claude-code-how-works/app-host: src/providerHostSetup.ts.
- * Capa 1 tramo B — porte FIEL de la lógica; importaciones DECLARADAS
- * COLGANTES, sin traducir y sin stub.
- *
- * `runtime/installProviderBindings.ts` (hermano en `runtime/`, capa 0,
- * NO asignado a este pase) ya lo adelantaba: *"Referencia
- * '../providerHostSetup.js', que NO se portó en este pase […] Queda
- * colgante hasta que se adapte."* Este archivo es ese adaptado, y sigue
- * sin poder resolver ninguno de sus destinos:
- *
- *   - `@claude-code-how-works/provider` y sus doce subpaths
- *     (`providerHostSetup`, `claudeLegacyRuntime.js`, `authAlias.js`,
- *     `proxy.js`, `oauthConstants`, `context.js`, `http.js`,
- *     `model.js`, `providers.js`, `modelOptions.js`, `costTracker.js`)
- *     — el paquete `provider` no existe en absoluto en este árbol.
- *   - `@claude-code-how-works/local-observability/debug.js`
- *     (`isDebugToStdErr`, `logForDebugging`) — el paquete
- *     `local-observability` no existe.
- *   - `@claude-code-how-works/config/env/utils`
- *     (`getAWSRegion`, `getVertexRegionForModel`, `isEnvTruthy`) —
- *     `@thyrox/config` existe, ese subpath no.
- *   - `./bootstrap/state.js` (`getIsNonInteractiveSession`,
- *     `getSessionId`) — SÍ es del propio paquete y se tradujo a ruta
- *     relativa, pero `bootstrap/` es zona PROHIBIDA de este pase (la
- *     escribe otro agente en paralelo) y ninguno de los dos símbolos
- *     está hoy en su `state.ts`. Mismo criterio que
- *     `activityManager.ts` fija para `getActiveTimeCounter`.
- *
- * El archivo entero se porta verbatim: la lógica propia (los tres
- * objetos `bindings`/`anthropicQueryBinding`/`anthropicQueryStreamBinding`
- * y los dos wrappers `Object.assign` con `.cache.clear()`) es
- * exactamente el contrato que la fuente le da a
- * `installProviderRuntimeBindings` — no se reescribe su forma.
- *
- * El auto-run `installProviderRuntimeBindings(bindings)` al final del
- * módulo (igual que la fuente) es irrelevante: el PRIMER import de
- * valor (`@claude-code-how-works/provider/providerHostSetup`) ya agota
- * la resolución de módulos antes de que corra cualquier código.
- *
- * Sin test: ninguno de los cuatro destinos resuelve hoy. Mismo estado
- * que `packageHostSetup.ts`/`runtime/toolRegistryRuntime.ts` (hermanos
- * de este mismo pase).
+ * providerHostSetup (app-host side) — wires provider package's host
+ * bindings to the host's real implementations. Host-binding adapter:
+ * every `as any/unknown` cast is by-design type-system bypass for the
+ * runtime-binding pattern, not a hidden mismatch.
  */
 import {
   installProviderRuntimeBindings,

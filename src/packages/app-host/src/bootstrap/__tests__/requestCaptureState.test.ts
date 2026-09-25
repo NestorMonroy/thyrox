@@ -1,14 +1,10 @@
 // Characterization tests for Slice B (Request Capture).
 // Locks the current behavior of last-request / post-compaction / cached-claudemd
 // state living in src/bootstrap/state.ts so the upcoming migration to
-// @claude-code-how-works/provider/requestCaptureState is behavior-preserving.
+// @thyrox/provider/requestCaptureState is behavior-preserving.
 // Migrator-Beta will update the import path after the move.
 //
 // Plan: TEAM_PLAN/mellow-booping-waffle.md §2.1 (Slice B) + §2.4 (assertions).
-//
-// Porte: ccnmt: packages/app-host/src/bootstrap/__tests__/requestCaptureState.test.ts
-// (verbatim en casos, datos y expectativas; ver cabecera de cobertura en
-// ../state.ts para qué slice de la fuente respalda este archivo).
 
 import { beforeEach, describe, expect, test } from "bun:test";
 

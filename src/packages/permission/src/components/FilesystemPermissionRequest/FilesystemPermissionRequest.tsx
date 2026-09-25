@@ -37,18 +37,13 @@ export function FilesystemPermissionRequest({
   const isReadOnly = toolUseConfirm.tool.isReadOnly(toolUseConfirm.input)
   const userFacingReadOrEdit = isReadOnly ? 'Read' : 'Edit'
 
-  // Copia de `ccnmt: packages/permission/src/components/
-  // FilesystemPermissionRequest/FilesystemPermissionRequest.tsx` con los
-  // comentarios traducidos; el cuerpo es el de la fuente.
-  //
-  // Se usa la forma singular simple: el detalle real de la operación se muestra
-  // en el contenido.
+  // Use simple singular form - the actual operation details are shown in content
   const title = `${userFacingReadOrEdit} file`
 
-  // Parser de paso simple, porque no hace falta transformar el input.
+  // Simple pass-through parser since we don't need to transform the input
   const parseInput = (input: unknown): ToolInput => input as ToolInput
 
-  // Se cae de vuelta a la petición de permiso genérica si no se halla ruta.
+  // Fall back to generic permission request if no path is found
   if (!path) {
     return (
       <FallbackPermissionRequest
@@ -62,7 +57,7 @@ export function FilesystemPermissionRequest({
     )
   }
 
-  // Renderiza el contenido del mensaje de uso de herramienta.
+  // Render tool use message content
   const content = (
     <Box flexDirection="column" paddingX={2} paddingY={1}>
       <Text>

@@ -1,16 +1,9 @@
 /**
- * Puerto de `ccnmt: packages/config/semver.ts` (121 líneas fuente).
- * Reimplementación fiel VERBATIM.
+ * Semver comparison utilities that use Bun.semver when available
+ * and fall back to the npm `semver` package in Node.js environments.
  *
- * Utilidades de comparación semver que usan `Bun.semver` cuando está
- * disponible y caen al paquete npm `semver` en entornos Node. `Bun.semver.order()`
- * es ~20x más rápido que las comparaciones semver de npm. El fallback de
- * npm semver siempre usa `{ loose: true }`.
- *
- * `semver` (npm) no está declarado en `package.json` de este paquete — el
- * `require()` diferido de `getNpmSemver()` sólo se ejecuta bajo Node (nunca
- * bajo Bun, que es el runtime de este árbol), así que no bloquea la carga
- * del módulo aquí.
+ * Bun.semver.order() is ~20x faster than npm semver comparisons.
+ * The npm semver fallback always uses { loose: true }.
  */
 
 let _npmSemver: typeof import('semver') | undefined
@@ -38,29 +31,28 @@ export function gte(a: string, b: string): boolean {
 }
 
 /**
- * Compara dos cadenas de versión usando semver cuando ambas son semver
- * válidas; si no, cae a comparación lexicográfica. Diseñada para el formato
- * de tag "1.carus.000" de ccb — `Bun.semver.order` lanza ante algo no-semver,
- * así que `update.ts` y el instalador nativo pasan por este envoltorio en
- * vez de llamar a `gt`/`gte` directamente.
+ * Compare two version strings using semver when both are valid semver,
+ * else fall back to lexicographic comparison. Designed for ccb's
+ * "1.carus.000" tag format — Bun.semver.order throws on non-semver,
+ * so update.ts and the native installer go through this wrapper
+ * instead of calling gt/gte directly.
  *
- * Devuelve verdadero si y sólo si `latest` representa una versión MÁS NUEVA
- * que `current`. Para tags de sufijo numérico monótono
- * ("1.carus.000" → "1.carus.001"), la comparación lexicográfica da la
- * respuesta correcta.
+ * Returns true iff `latest` represents a NEWER version than `current`.
+ * For monotonic numeric suffix tags ("1.carus.000" → "1.carus.001"),
+ * lex compare gives the right answer.
  */
 export function isVersionNewer(latest: string, current: string): boolean {
   if (typeof Bun !== 'undefined') {
     try {
       return Bun.semver.order(latest, current) === 1
     } catch {
-      /* sigue abajo */
+      /* fall through */
     }
   } else {
     try {
       return getNpmSemver().gt(latest, current, { loose: true })
     } catch {
-      /* sigue abajo */
+      /* fall through */
     }
   }
   return latest > current
@@ -95,26 +87,25 @@ export function order(a: string, b: string): -1 | 0 | 1 {
 }
 
 /**
- * Parseo best-effort → cadena `.version` canónica. Espeja el `uX8.parse(v)?.version`
- * de ant (3480.js): devuelve la cadena de versión depurada (p. ej. "1.2.3" /
- * "1.2.3-rc.1") cuando la entrada es parseable, `undefined` si no. Útil para
- * sanear cadenas de versión que llegan del servidor antes de usarlas en
- * comparaciones o logs.
+ * Best-effort parse → canonical `.version` string. Mirrors ant
+ * `uX8.parse(v)?.version` (3480.js): returns the cleaned version
+ * string (e.g. "1.2.3" / "1.2.3-rc.1") when the input is parseable,
+ * `undefined` otherwise. Useful for sanitizing server-provided
+ * version strings before they're used in comparisons / logs.
  */
 export function parseVersion(value: string): string | undefined {
   if (!value) return undefined
-  // Recorta espacios + quita el prefijo `v` ANTES de la sonda de parseo, para
-  // que ni el espacio en blanco ni la convención npm hagan tropezar la ruta
-  // estricta de semver. `uX8.parse(v)?.version` de ant hace la misma
-  // normalización vía la librería semver subyacente antes de devolver
-  // `.version`.
+  // Trim + strip leading `v` BEFORE the parse probe so that whitespace
+  // and the npm-convention prefix don't trip the strict-semver path.
+  // ant's `uX8.parse(v)?.version` does the same normalisation via the
+  // underlying semver library before returning `.version`.
   const cleaned = value.trim().replace(/^v/, '')
   if (!cleaned) return undefined
   if (typeof Bun !== 'undefined') {
     try {
-      // `Bun.semver.order` lanza ante una entrada no parseable; se usa como
-      // sonda de "¿es parseable?". Si no lanza, la cadena tiene al menos la
-      // forma de semver suficiente para comparar.
+      // Bun.semver.order throws on unparseable input; use it as a
+      // "is parseable?" probe. If it doesn't throw, the string is
+      // at least semver-shaped enough for comparison.
       Bun.semver.order(cleaned, '0.0.0')
       return cleaned
     } catch {

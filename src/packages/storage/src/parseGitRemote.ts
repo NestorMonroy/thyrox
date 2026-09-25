@@ -1,12 +1,7 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/storage/src/parseGitRemote.ts`.
- *
- * Módulo hoja sin dependencias externas — se porta entero, con su
- * comentario de origen conservado: fue extraído de detectRepository.ts
- * en la fuente para romper el ciclo storage/git ↔ storage/detectRepository
- * (git usa parseGitRemote en getGithubRepo vía import dinámico;
- * detectRepository importa getRemoteUrl de git de forma estática).
- */
+// Leaf module: pure git-remote URL parser. Extracted from detectRepository.ts
+// to break the storage/git ↔ storage/detectRepository cycle (git uses
+// parseGitRemote in getGithubRepo via dynamic import; detectRepository
+// imports getRemoteUrl from git statically).
 
 export type ParsedRepository = {
   host: string
@@ -15,13 +10,13 @@ export type ParsedRepository = {
 }
 
 /**
- * Parsea una URL de remoto git en sus componentes host, owner y name.
- * Soporta: SSH (git@host:owner/repo.git), URL (https/ssh/git://host/owner/repo[.git]).
+ * Parses a git remote URL into host, owner, and name components.
+ * Supports: SSH (git@host:owner/repo.git), URL (https/ssh/git://host/owner/repo[.git]).
  */
 export function parseGitRemote(input: string): ParsedRepository | null {
   const trimmed = input.trim()
 
-  // Formato SSH: git@host:owner/repo.git
+  // SSH format: git@host:owner/repo.git
   const sshMatch = trimmed.match(/^git@([^:]+):([^/]+)\/([^/]+?)(?:\.git)?$/)
   if (sshMatch?.[1] && sshMatch[2] && sshMatch[3]) {
     if (!looksLikeRealHostname(sshMatch[1])) return null
@@ -32,7 +27,7 @@ export function parseGitRemote(input: string): ParsedRepository | null {
     }
   }
 
-  // Formato URL: https://host/owner/repo.git, ssh://git@host/owner/repo, git://host/owner/repo
+  // URL format: https://host/owner/repo.git, ssh://git@host/owner/repo, git://host/owner/repo
   const urlMatch = trimmed.match(
     /^(https?|ssh|git):\/\/(?:[^@]+@)?([^/:]+(?::\d+)?)\/([^/]+)\/([^/]+?)(?:\.git)?$/,
   )
@@ -56,9 +51,8 @@ export function parseGitRemote(input: string): ParsedRepository | null {
 }
 
 /**
- * Los TLDs reales son puramente alfabéticos; los alias SSH como
- * "github.com-work" tienen un último segmento "com-work" que contiene un
- * guion.
+ * Real TLDs are purely alphabetic; SSH aliases like "github.com-work" have a
+ * last segment "com-work" which contains a hyphen.
  */
 function looksLikeRealHostname(host: string): boolean {
   if (!host.includes('.')) return false

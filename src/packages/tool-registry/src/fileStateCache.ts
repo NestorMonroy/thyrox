@@ -1,8 +1,3 @@
-/**
- * Puerto FIEL y COMPLETO de
- * `ccnmt: packages/tool-registry/src/fileStateCache.ts` (TASK #232, porte
- * de `tool-registry`). Depende de `lru-cache` (npm) y de `node:path`.
- */
 import { LRUCache } from 'lru-cache'
 import { normalize } from 'path'
 
@@ -11,27 +6,26 @@ export type FileState = {
   timestamp: number
   offset: number | undefined
   limit: number | undefined
-  // Verdadero cuando esta entrada se pobló por auto-inyección (p. ej.
-  // CLAUDE.md) y el contenido inyectado no coincidía con el disco
-  // (comentarios HTML recortados, frontmatter recortado, MEMORY.md
-  // truncado). El modelo sólo vio una vista parcial; Edit/Write deben
-  // exigir un Read explícito antes. `content` aquí guarda los bytes CRUDOS
-  // del disco (para el diff de getChangedFiles), no lo que el modelo vio.
+  // True when this entry was populated by auto-injection (e.g. CLAUDE.md) and
+  // the injected content did not match disk (stripped HTML comments, stripped
+  // frontmatter, truncated MEMORY.md). The model has only seen a partial view;
+  // Edit/Write must require an explicit Read first. `content` here holds the
+  // RAW disk bytes (for getChangedFiles diffing), not what the model saw.
   isPartialView?: boolean
 }
 
-// Tamaño máximo por defecto para las cachés de estado de archivos leídos
+// Default max entries for read file state caches
 export const READ_FILE_STATE_CACHE_SIZE = 100
 
-// Límite de tamaño por defecto para las cachés de estado de archivos (25MB)
-// Evita el crecimiento sin límite de memoria por contenidos grandes.
+// Default size limit for file state caches (25MB)
+// This prevents unbounded memory growth from large file contents
 const DEFAULT_MAX_CACHE_SIZE_BYTES = 25 * 1024 * 1024
 
 /**
- * Una caché de estado de archivo que normaliza toda clave de ruta antes de
- * acceder. Esto asegura hits de caché consistentes sin importar si quien
- * llama pasa rutas relativas o absolutas con segmentos redundantes (p. ej.
- * /foo/../bar) o separadores de ruta mixtos en Windows (/ vs \).
+ * A file state cache that normalizes all path keys before access.
+ * This ensures consistent cache hits regardless of whether callers pass
+ * relative vs absolute paths with redundant segments (e.g. /foo/../bar)
+ * or mixed path separators on Windows (/ vs \).
  */
 export class FileStateCache {
   private cache: LRUCache<string, FileState>
@@ -110,11 +104,10 @@ export class FileStateCache {
 }
 
 /**
- * Factory para crear una FileStateCache con límite de tamaño.
- * Usa el desalojo por tamaño incorporado de LRUCache para evitar el
- * crecimiento de memoria. Nota: las imágenes no se cachean (ver
- * FileReadTool), así que el límite de tamaño es sobre todo para archivos
- * de texto grandes, notebooks y otro contenido editable.
+ * Factory function to create a size-limited FileStateCache.
+ * Uses LRUCache's built-in size-based eviction to prevent memory bloat.
+ * Note: Images are not cached (see FileReadTool) so size limit is mainly
+ * for large text files, notebooks, and other editable content.
  */
 export function createFileStateCacheWithSizeLimit(
   maxEntries: number,
@@ -123,28 +116,27 @@ export function createFileStateCacheWithSizeLimit(
   return new FileStateCache(maxEntries, maxSizeBytes)
 }
 
-// Convierte la caché a un objeto plano (lo usa compact.ts en la fuente).
+// Helper function to convert cache to object (used by compact.ts)
 export function cacheToObject(
   cache: FileStateCache,
 ): Record<string, FileState> {
   return Object.fromEntries(cache.entries())
 }
 
-// Devuelve todas las claves de la caché (lo usan varios componentes).
+// Helper function to get all keys from cache (used by several components)
 export function cacheKeys(cache: FileStateCache): string[] {
   return Array.from(cache.keys())
 }
 
-// Clona una FileStateCache, preservando la configuración de límite de
-// tamaño de la caché origen.
+// Helper function to clone a FileStateCache
+// Preserves size limit configuration from the source cache
 export function cloneFileStateCache(cache: FileStateCache): FileStateCache {
   const cloned = createFileStateCacheWithSizeLimit(cache.max, cache.maxSize)
   cloned.load(cache.dump())
   return cloned
 }
 
-// Combina dos cachés de estado de archivo; las entradas más recientes (por
-// timestamp) sobrescriben a las más viejas.
+// Merge two file state caches, with more recent entries (by timestamp) overriding older ones
 export function mergeFileStateCaches(
   first: FileStateCache,
   second: FileStateCache,
@@ -152,7 +144,7 @@ export function mergeFileStateCaches(
   const merged = cloneFileStateCache(first)
   for (const [filePath, fileState] of second.entries()) {
     const existing = merged.get(filePath)
-    // Sólo sobrescribe si la entrada nueva es más reciente.
+    // Only override if the new entry is more recent
     if (!existing || fileState.timestamp > existing.timestamp) {
       merged.set(filePath, fileState)
     }

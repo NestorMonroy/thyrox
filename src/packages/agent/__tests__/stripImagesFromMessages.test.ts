@@ -1,12 +1,11 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/stripImagesFromMessages.test.ts`.
+ * Tests for stripImagesFromMessages — used during compaction to free up
+ * context. Images and documents are replaced with `[image]` / `[document]`
+ * text placeholders.
  *
- * Se usa durante la compactación para liberar contexto. Las imágenes y
- * documentos se reemplazan por marcadores de texto `[image]` / `[document]`.
- *
- * Un stripping incorrecto = o bien el contenido de texto real se corrompe
- * (pérdida de datos durante la compactación) o los datos de imagen se
- * alimentan al resumidor (tokens desperdiciados + resumen degradado).
+ * Wrong stripping = either real text content gets clobbered (data loss
+ * during compaction) or image data gets fed to the summarizer (wasted
+ * tokens + degraded summary quality).
  */
 import { describe, expect, test } from 'bun:test'
 import type { UUID } from 'crypto'
@@ -35,15 +34,15 @@ describe('stripImagesFromMessages — basic shapes', () => {
   })
 
   test('all-text user message returns IDENTICAL reference (no media → no rewrite)', () => {
-    // La función devuelve la MISMA referencia si nada cambió — importante
-    // para la estabilidad del prompt cache (una referencia distinta es
-    // una identidad distinta en el caché).
+    // The function returns the SAME reference if nothing changed —
+    // important for prompt-cache stability (different reference =
+    // different identity in caches).
     const msg = user([{ type: 'text', text: 'hello' }])
     expect(stripImagesFromMessages([msg])[0]).toBe(msg)
   })
 
   test('assistant messages are NEVER touched (per docstring)', () => {
-    // Documentado: sólo los mensajes de usuario contienen imágenes.
+    // Documented: only user messages contain images.
     const a = assistant([{ type: 'text', text: 'reply' }])
     const result = stripImagesFromMessages([a])
     expect(result[0]).toBe(a)
@@ -165,7 +164,7 @@ describe('stripImagesFromMessages — tool_result nested media', () => {
   })
 
   test('tool_result with string content is unchanged', () => {
-    // La función sólo entra en tool_result.content si es un arreglo.
+    // The function only walks INTO tool_result.content if it's an array.
     const msg = user([
       {
         type: 'tool_result',
@@ -188,8 +187,8 @@ describe('stripImagesFromMessages — multiple messages', () => {
     ])
     const c = user('string content')
     const result = stripImagesFromMessages([a, b, c])
-    expect(result[0]).toBe(a) // referencia sin cambios
-    expect(result[1]).not.toBe(b) // reescrito
-    expect(result[2]).toBe(c) // sin cambios
+    expect(result[0]).toBe(a) // unchanged reference
+    expect(result[1]).not.toBe(b) // rewritten
+    expect(result[2]).toBe(c) // unchanged
   })
 })

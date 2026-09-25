@@ -1,13 +1,9 @@
 // Characterization tests for Slice A (Telemetry).
 // Locks the current behavior of meter/counter state living in src/bootstrap/state.ts
-// so the upcoming migration to @claude-code-how-works/local-observability/meterState is
+// so the upcoming migration to @thyrox/local-observability/meterState is
 // behavior-preserving. Migrator-Alpha will update the import path after the move.
 //
 // Plan: TEAM_PLAN/mellow-booping-waffle.md §2.1 (Slice A) + §2.4 (assertions).
-//
-// Porte: ccnmt: packages/app-host/src/bootstrap/__tests__/meterState.test.ts
-// (verbatim en casos, datos y expectativas; ver cabecera de cobertura en
-// ../state.ts para qué slice de la fuente respalda este archivo).
 
 import { beforeEach, describe, expect, test } from "bun:test";
 import type { Attributes, Meter, MetricOptions } from "@opentelemetry/api";

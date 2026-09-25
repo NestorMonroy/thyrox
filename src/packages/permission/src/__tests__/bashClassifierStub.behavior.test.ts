@@ -15,58 +15,51 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Copia de `ccnmt: packages/permission/src/__tests__/bashClassifierStub.behavior.test.ts`
- * con los comentarios traducidos; el cuerpo es el de la fuente.
+ * Pin `bashClassifier.ts` — declared ANT-only stub in this build.
  *
- * Fija `bashClassifier.ts`, declarado en esta build como un stub sólo-ant.
+ * The whole module is a no-op shim: `isClassifierPermissionsEnabled` returns
+ * false, all getters return empty arrays, and classifyBashCommand always
+ * returns matches:false. The pin prevents accidental activation (which
+ * would call ant-only APIs that don't exist in this build).
  *
- * El módulo entero es una cáscara que no hace nada:
- * `isClassifierPermissionsEnabled` devuelve false, todos los getters
- * devuelven arreglos vacíos y `classifyBashCommand` devuelve siempre
- * `matches:false`. Fijarlo impide una activación accidental, que llamaría a
- * APIs sólo-ant que en esta build no existen.
- *
- * Importante: esto NO es código muerto. Las puertas de permiso de ccb llaman
- * a estas funciones en cada invocación de Bash, esperando una semántica de
- * «siempre pasa». Una regresión que devolviera `matches: true` denegaría
- * comandos en falso.
+ * Important: this is NOT dead code. ccb's permission gates call these
+ * functions on every Bash invocation, expecting "always-pass" semantics.
+ * A regression that returned `matches: true` would falsely deny commands.
  */
 describe('bashClassifier (ANT-only stub)', () => {
   test('PROMPT_PREFIX = "prompt:" (rule format prefix)', () => {
-    // Fijado: los archivos de regla usan «prompt: <desc>» para marcar los
-    // prompts del clasificador. Una regresión que cambiara el prefijo
-    // rompería en silencio la coincidencia de reglas de cualquier archivo de
-    // regla de ant que se conserve.
+    // Pin: rule files use "prompt: <desc>" to mark classifier prompts.
+    // A regression that changes the prefix would silently break rule
+    // matching for any preserved ant rule files.
     expect(PROMPT_PREFIX).toBe('prompt:')
   })
 
   test('isClassifierPermissionsEnabled() is ALWAYS false in this build', () => {
-    // Fijado: esta build NO es ant. Devolver true activaría APIs del
-    // clasificador que son sólo de ant y aquí no están implementadas.
+    // Pin: this build is NOT ant. Returning true would activate ant-only
+    // classifier APIs that aren't implemented here.
     expect(isClassifierPermissionsEnabled()).toBe(false)
   })
 
   test('extractPromptDescription(any) → null in this build', () => {
-    // Fijado: es un stub. Una regresión que devolviera una cadena inyectaría
-    // descripciones del clasificador en el parseo de reglas.
+    // Pin: stub. A regression returning a string would inject classifier
+    // descriptions into rule parsing.
     expect(extractPromptDescription(undefined)).toBeNull()
     expect(extractPromptDescription('')).toBeNull()
     expect(extractPromptDescription('prompt: foo')).toBeNull()
   })
 
   test('createPromptRuleContent returns "${PROMPT_PREFIX} ${trimmed}"', () => {
-    // Fijado: ésta NO es un stub — construye el contenido de la regla aunque
-    // el clasificador esté deshabilitado. El formato tiene que seguir siendo
-    // equivalente byte a byte, para que cualquier archivo de regla de ant que
-    // se conserve parsee igual en las dos builds.
+    // Pin: not a stub — this function builds the rule content even though
+    // the classifier itself is disabled. Format must stay byte-equivalent
+    // so any preserved ant rule files parse the same way on either build.
     expect(createPromptRuleContent('do x')).toBe('prompt: do x')
     expect(createPromptRuleContent('  trim me  ')).toBe('prompt: trim me')
   })
 
   test('classifyBashCommand always returns matches:false', async () => {
-    // Fijado: NUNCA coincide. Una regresión a `matches: true` denegaría todo
-    // comando de Bash (el camino del clasificador lo recorre cada invocación
-    // de Bash peligrosa).
+    // Pin: NEVER matches. A regression to `matches: true` would deny
+    // every Bash command (the classifier path is hit by every dangerous
+    // Bash invocation).
     const result = await classifyBashCommand(
       'rm -rf /',
       '/tmp',
@@ -79,8 +72,8 @@ describe('bashClassifier (ANT-only stub)', () => {
   })
 
   test('classifyBashCommand confidence="high" reason="This feature is disabled"', () => {
-    // Fijado: la forma del stub. Quien llama mira la confianza para decidir
-    // si reintenta; «high» significa «respuesta definitiva, no reintentes».
+    // Pin: stub-shape. Callers check confidence to decide retry; "high"
+    // means "definitive answer, don't retry".
     return classifyBashCommand(
       'ls',
       '.',
@@ -95,16 +88,15 @@ describe('bashClassifier (ANT-only stub)', () => {
   })
 
   test('all three getBashPrompt*Descriptions return []', () => {
-    // Fijado: arreglo vacío, NO `undefined`. Quien llama los expande dentro
-    // de arreglos de regla — con `undefined` reventaría.
+    // Pin: empty array (NOT undefined). Callers spread these into rule
+    // arrays — undefined would crash.
     expect(getBashPromptDenyDescriptions(undefined)).toEqual([])
     expect(getBashPromptAskDescriptions(undefined)).toEqual([])
     expect(getBashPromptAllowDescriptions(undefined)).toEqual([])
   })
 
   test('generateGenericDescription echoes specific description or null', async () => {
-    // Fijado: deja pasar. NO regenera nada — gana la descripción de quien
-    // llama.
+    // Pin: passthrough. NOT a regenerator — caller's description wins.
     const sig = new AbortController().signal
     expect(await generateGenericDescription('rm -rf /', 'wipe', sig)).toBe(
       'wipe',
@@ -113,7 +105,7 @@ describe('bashClassifier (ANT-only stub)', () => {
   })
 
   test('generateGenericDescription empty string → null (NOT empty string)', async () => {
-    // Fijado: `specificDescription || null` — cortocircuito por valor falso.
+    // Pin: `specificDescription || null` — falsy short-circuit.
     const sig = new AbortController().signal
     expect(await generateGenericDescription('cmd', '', sig)).toBeNull()
   })
@@ -126,10 +118,9 @@ describe('bashClassifier — source pins', () => {
   )
 
   test('file declares "ANT-ONLY" stub status', () => {
-    // Fijado: los marcadores del comentario de cabecera ayudan a que quien
-    // llegue entienda por qué todo devuelve un no-op. Un refactor que
-    // retirara ese marcador sin convertir el stub en implementación real
-    // sería confuso.
+    // Pin: top comment markers help future devs understand why everything
+    // returns no-op. A refactor that removes this marker without flipping
+    // the stub to live would be confusing.
     expect(source).toMatch(/Stub for external builds.+ANT-ONLY/i)
   })
 
@@ -146,9 +137,8 @@ describe('bashClassifier — source pins', () => {
   })
 
   test('no transitive imports of ant-only modules (file is self-contained)', () => {
-    // Fijado: NINGUNA sentencia de import, salvo las de tipos. Añadir
-    // cualquier import aquí arrastra una dependencia a todas las builds de
-    // ccb.
+    // Pin: NO import statements at all (besides types). Adding any
+    // import here pulls a dep into every ccb build.
     const importLines = source
       .split('\n')
       .filter(line => /^import /.test(line.trim()))

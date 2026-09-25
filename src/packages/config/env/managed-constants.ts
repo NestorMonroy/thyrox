@@ -1,32 +1,29 @@
 /**
- * Puerto de `ccnmt: packages/config/env/managed-constants.ts`. No es uno de
- * los 15 del alcance — es la dependencia de hoja que `managedEnv.ts`
- * necesita: sin imports propios (sólo declara conjuntos de nombres de
- * variables de entorno), se porta en el sitio en vez de bloquearse.
+ * Environment variables that control inference routing: which provider to use,
+ * which endpoint to hit, and which model IDs to send.
  *
- * Variables de entorno que gobiernan el ruteo de inferencia: qué proveedor
- * usar, a qué endpoint llegar, y qué IDs de modelo enviar.
+ * When CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST is truthy in the spawn env, these
+ * are stripped from settings-sourced env so the host's routing config isn't
+ * overridden by a user's ~/.claude/settings.json — e.g. a Bedrock setup for
+ * terminal CLI that would break a host that only supports first-party auth.
  *
- * Cuando `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` es verdadero en el entorno de
- * arranque, éstas se descartan del entorno proveniente de settings para que
- * la config de ruteo del host no quede sobreescrita por un
- * `~/.claude/settings.json` de usuario — p. ej. una config de Bedrock para
- * el CLI de terminal que rompería un host que sólo soporta auth first-party.
+ * @[MODEL LAUNCH]: New models usually don't need changes here —
+ * VERTEX_REGION_CLAUDE_* is prefix-matched. New providers or new routing
+ * config vars (endpoint, project, region, auth) do.
  *
- * Nota de mantenimiento (`@[MODEL LAUNCH]` en la fuente): un modelo nuevo
- * normalmente no requiere cambios aquí — `VERTEX_REGION_CLAUDE_*` se
- * empareja por prefijo. Un proveedor nuevo o una variable de ruteo nueva
- * (endpoint, proyecto, región, auth) sí.
+ * Note: OpenAI provider uses OPENAI_* env vars (OPENAI_API_KEY, OPENAI_BASE_URL,
+ * OPENAI_MODEL, OPENAI_DEFAULT_*_MODEL, OPENAI_SMALL_FAST_MODEL) which are all
+ * provider-managed to keep routing config isolated from Anthropic settings.
  */
 const PROVIDER_MANAGED_ENV_VARS = new Set([
-  // La bandera misma — settings no puede desactivarla una vez que el host la puso
+  // The flag itself — settings can't unset it once the host set it
   'CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST',
-  // Selección de proveedor
+  // Provider selection
   'CLAUDE_CODE_USE_BEDROCK',
   'CLAUDE_CODE_USE_VERTEX',
   'CLAUDE_CODE_USE_FOUNDRY',
   'CLAUDE_CODE_USE_GEMINI',
-  // Config de endpoint (base URLs, identificadores de proyecto/recurso)
+  // Endpoint config (base URLs, project/resource identifiers)
   'ANTHROPIC_BASE_URL',
   'ANTHROPIC_BEDROCK_BASE_URL',
   'ANTHROPIC_VERTEX_BASE_URL',
@@ -34,7 +31,7 @@ const PROVIDER_MANAGED_ENV_VARS = new Set([
   'ANTHROPIC_FOUNDRY_RESOURCE',
   'ANTHROPIC_VERTEX_PROJECT_ID',
   'GEMINI_BASE_URL',
-  // Ruteo por región (VERTEX_REGION_CLAUDE_* por-modelo, se maneja por prefijo abajo)
+  // Region routing (per-model VERTEX_REGION_CLAUDE_* handled by prefix below)
   'CLOUD_ML_REGION',
   // Auth
   'ANTHROPIC_API_KEY',
@@ -46,7 +43,7 @@ const PROVIDER_MANAGED_ENV_VARS = new Set([
   'CLAUDE_CODE_SKIP_VERTEX_AUTH',
   'CLAUDE_CODE_SKIP_FOUNDRY_AUTH',
   'GEMINI_API_KEY',
-  // Defaults de modelo — a menudo con formatos de ID específicos del proveedor
+  // Model defaults — often set to provider-specific ID formats
   'ANTHROPIC_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL',
   'ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION',
@@ -60,7 +57,7 @@ const PROVIDER_MANAGED_ENV_VARS = new Set([
   'ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION',
   'ANTHROPIC_DEFAULT_SONNET_MODEL_NAME',
   'ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES',
-  // Específicas de proveedor OpenAI
+  // OpenAI provider specific
   'OPENAI_API_KEY',
   'OPENAI_BASE_URL',
   'OPENAI_MODEL',
@@ -82,7 +79,7 @@ const PROVIDER_MANAGED_ENV_VARS = new Set([
   'CLAUDE_CODE_SUBAGENT_MODEL',
   'GEMINI_MODEL',
   'GEMINI_SMALL_FAST_MODEL',
-  // Específicas de proveedor Gemini — separadas de Anthropic/OpenAI
+  // Gemini provider specific - separate from Anthropic/OpenAI
   'GEMINI_DEFAULT_HAIKU_MODEL',
   'GEMINI_DEFAULT_HAIKU_MODEL_DESCRIPTION',
   'GEMINI_DEFAULT_HAIKU_MODEL_NAME',
@@ -98,8 +95,8 @@ const PROVIDER_MANAGED_ENV_VARS = new Set([
 ])
 
 const PROVIDER_MANAGED_ENV_PREFIXES = [
-  // Overrides de región Vertex por-modelo — crece con cada lanzamiento, así
-  // que se empareja por prefijo para no tener que actualizarlo con cada uno.
+  // Per-model Vertex region overrides — scales with model releases, so
+  // prefix-matched to avoid drift on each launch.
   'VERTEX_REGION_CLAUDE_',
 ]
 
@@ -111,7 +108,9 @@ export function isProviderManagedEnvVar(key: string): boolean {
   )
 }
 
-/** Settings peligrosos que pueden ejecutar shell arbitrario. */
+/**
+ * Dangerous shell settings that can execute arbitrary shell code
+ */
 export const DANGEROUS_SHELL_SETTINGS = [
   'apiKeyHelper',
   'awsAuthRefresh',
@@ -122,13 +121,28 @@ export const DANGEROUS_SHELL_SETTINGS = [
 ] as const
 
 /**
- * Variables de entorno seguras que pueden aplicarse antes del diálogo de
- * confianza. Son settings específicos de Claude Code que no representan
- * riesgo de seguridad.
+ * Safe environment variables that can be applied before trust dialog.
+ * These are Claude Code specific settings that don't pose security risks.
  *
- * IMPORTANTE: ésta es la fuente de verdad de qué variables son seguras.
- * Cualquier variable NO listada aquí se considera peligrosa y dispara un
- * diálogo de seguridad si llega vía settings gestionados remotos.
+ * IMPORTANT: This is the source of truth for which env vars are safe.
+ * Any env var NOT in this list is considered dangerous and will trigger
+ * a security dialog when set via remote managed settings.
+ *
+ * Dangerous env vars (NOT in this list):
+ *
+ * === REDIRECT TO ATTACKER-CONTROLLED SERVER ===
+ * - ANTHROPIC_BASE_URL, ANTHROPIC_BEDROCK_BASE_URL, ANTHROPIC_FOUNDRY_BASE_URL, ANTHROPIC_VERTEX_BASE_URL
+ * - HTTP_PROXY, HTTPS_PROXY, NO_PROXY, http_proxy, https_proxy, no_proxy
+ * - OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_LOGS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT
+ *
+ * === TRUST ATTACKER-CONTROLLED SERVER ===
+ * - NODE_TLS_REJECT_UNAUTHORIZED
+ * - NODE_EXTRA_CA_CERTS
+ *
+ * === SWITCH TO ATTACKER-CONTROLLED PROJECT ===
+ * - ANTHROPIC_FOUNDRY_RESOURCE
+ * - ANTHROPIC_API_KEY, ANTHROPIC_AUTH_TOKEN
+ * - AWS_BEARER_TOKEN_BEDROCK
  */
 export const SAFE_ENV_VARS = new Set([
   'ANTHROPIC_CUSTOM_HEADERS',
@@ -147,7 +161,7 @@ export const SAFE_ENV_VARS = new Set([
   'ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION',
   'ANTHROPIC_DEFAULT_SONNET_MODEL_NAME',
   'ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES',
-  // Específicas de proveedor OpenAI
+  // OpenAI provider specific
   'OPENAI_DEFAULT_HAIKU_MODEL',
   'OPENAI_DEFAULT_HAIKU_MODEL_DESCRIPTION',
   'OPENAI_DEFAULT_HAIKU_MODEL_NAME',

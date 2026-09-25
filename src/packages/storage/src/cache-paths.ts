@@ -1,16 +1,16 @@
 /**
- * Resolución de rutas de caché para directorios de logs/transcripts/mcp-logs.
+ * V7 §8.10 — cache path resolution for log/transcript/mcp-log dirs.
  *
- * Adaptación fiel de `ccnmt: packages/storage/src/cache-paths.ts`. Sigue
- * viviendo en storage porque estas rutas determinan dónde se persisten en
- * disco los transcripts, logs de error y logs de MCP. El directorio de
- * caché es por-proyecto, derivado del cwd.
+ * Moved from src/utils/cachePaths.ts. Owned by storage because these
+ * paths determine where transcripts, error logs, and MCP logs are
+ * persisted on disk. Cache dir is per-project, derived from cwd.
  *
- * Deps host-provided:
- *   - cwdFn: retorna process.cwd() (o un valor mockeado en tests)
- *   - djb2HashFn: hash de respaldo para nombres de proyecto largos
+ * Host-provided deps:
+ *   - cwdFn: returns process.cwd() (or a mocked value in tests)
+ *   - djb2HashFn: fallback hash for long project names
  *
- * Ambos tienen defaults sensatos basados en built-ins de Node.
+ * Both have sensible node-builtin defaults; installStorageBindings wires
+ * richer implementations at startup.
  */
 
 import envPaths from 'env-paths'
@@ -19,8 +19,7 @@ import { join } from 'path'
 const paths = envPaths('claude-cli')
 
 // ---------------------------------------------------------------------------
-// Inyección de dependencias basada en setters — mantiene storage libre de
-// imports cruzados a otros paquetes del árbol.
+// Setter-based DI — keeps storage src/-free.
 // ---------------------------------------------------------------------------
 
 let _cwd: () => string = () => process.cwd()
@@ -39,11 +38,10 @@ export function setDjb2HashFn(fn: (s: string) => number): void {
 }
 
 // ---------------------------------------------------------------------------
-// sanitizePath local, usando djb2Hash — NO la versión compartida que otro
-// módulo del paquete pudiera exponer con un hash distinto (p. ej. wyhash de
-// Bun). Los nombres de directorio de caché deben permanecer estables entre
-// actualizaciones para no huerfanar la caché existente (logs de error, logs
-// de MCP).
+// Local sanitizePath using djb2Hash — NOT the shared version from
+// sessionStoragePortable.ts which uses Bun.hash (wyhash) when available.
+// Cache directory names must remain stable across upgrades so existing
+// cache data (error logs, MCP logs) is not orphaned.
 // ---------------------------------------------------------------------------
 
 const MAX_SANITIZED_LENGTH = 200
@@ -66,8 +64,7 @@ export const CACHE_PATHS = {
     join(
       paths.cache,
       getProjectDir(_cwd()),
-      // Sanea el nombre del servidor para compat con Windows (':' está
-      // reservado para letras de unidad).
+      // Sanitize server name for Windows compatibility (colons are reserved for drive letters)
       `mcp-logs-${sanitizePath(serverName)}`,
     ),
 }

@@ -1,13 +1,5 @@
 /**
- * Puerto de `ccnmt: packages/output/src/setUtils.ts` (verbatim — sin
- * imports en la fuente). Operaciones de conjunto usadas por el resto del
- * paquete (y por quien compare dos `Set` de IDs de herramienta/mensaje en
- * caliente); cada una anota en la fuente que esta optimizada por velocidad,
- * no por brevedad.
- */
-
-/**
- * Nota: este codigo es caliente, esta optimizado por velocidad.
+ * Note: this code is hot, so is optimized for speed.
  */
 export function difference<A>(a: Set<A>, b: Set<A>): Set<A> {
   const result = new Set<A>()
@@ -20,7 +12,7 @@ export function difference<A>(a: Set<A>, b: Set<A>): Set<A> {
 }
 
 /**
- * Nota: este codigo es caliente, esta optimizado por velocidad.
+ * Note: this code is hot, so is optimized for speed.
  */
 export function intersects<A>(a: Set<A>, b: Set<A>): boolean {
   if (a.size === 0 || b.size === 0) {
@@ -35,7 +27,7 @@ export function intersects<A>(a: Set<A>, b: Set<A>): boolean {
 }
 
 /**
- * Nota: este codigo es caliente, esta optimizado por velocidad.
+ * Note: this code is hot, so is optimized for speed.
  */
 export function every<A>(a: ReadonlySet<A>, b: ReadonlySet<A>): boolean {
   for (const item of a) {
@@ -47,7 +39,7 @@ export function every<A>(a: ReadonlySet<A>, b: ReadonlySet<A>): boolean {
 }
 
 /**
- * Nota: este codigo es caliente, esta optimizado por velocidad.
+ * Note: this code is hot, so is optimized for speed.
  */
 export function union<A>(a: Set<A>, b: Set<A>): Set<A> {
   const result = new Set<A>()

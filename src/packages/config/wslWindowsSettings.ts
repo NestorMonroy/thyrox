@@ -1,10 +1,26 @@
 /**
- * Puerto de `ccnmt: packages/config/wslWindowsSettings.ts` (140 líneas
- * fuente). Reimplementación fiel VERBATIM. Sin dependencias.
+ * WSL → Windows managed-settings reader.
  *
- * El literal `/etc/claude-code/managed-settings.json` de
- * un comentario proviene tal cual de la fuente — mismo caso que
- * `managedPath.ts` y `product.ts` de este mismo pase; ver su nota.
+ * Port of ant v2.1.136 (0684.js `gI6` / 0683.js `xSH` / 0661.js `JB`).
+ * The infrastructure to read the Windows policy chain from inside WSL
+ * is fully implemented — registry queries via `/mnt/c/Windows/System32
+ * /reg.exe`, file reads from `/mnt/c/Program Files/ClaudeCode/
+ * managed-settings.json`, the dual flag check (admin source AND HKCU
+ * user opt-in) — but ant `E6_()` is hardcoded to return `false` in
+ * v2.1.136, which short-circuits the entire chain at the call site.
+ *
+ * Why ant disabled it: WSL's DrvFs-backed Windows reads are
+ * unreliable across distro updates and Hyper-V states (file paths
+ * disappear, reg.exe interop can hang). Until a more reliable
+ * mechanism lands, the WSL chain is gated off. Settings authors
+ * should rely on `/etc/claude-code-how-works-how-works/managed-settings.json` for WSL
+ * deployments.
+ *
+ * ccb mirrors this byte-for-byte: `isWslChainEnabled()` matches ant
+ * `E6_()` (hardcoded false), so `getWslInheritedWindowsSettings()`
+ * returns null without spawning any subprocesses. The full
+ * read-path is kept so that when ant flips the gate back on, ccb
+ * picks up the change in one constant edit instead of a re-port.
  */
 import { execFile } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
@@ -18,23 +34,23 @@ const HKLM_MANAGED_SETTINGS_PATH =
   '/mnt/c/Program Files/ClaudeCode/managed-settings.json'
 
 /**
- * `E6_()` de ant — hoy fijo en falso en v2.1.136. Cuando ant reactive esto,
- * sustituir `WSL_CHAIN_ENABLED` por el check en vivo (probablemente
- * `isRunningInWsl()` u otra feature gate). El resto de este módulo es la
- * implementación que se vuelve activa.
+ * Ant `E6_()` — currently hardcoded to false in v2.1.136. When ant
+ * flips this back on, replace `WSL_CHAIN_ENABLED` with the live
+ * check (likely `isRunningInWsl()` or a new feature gate). The rest
+ * of this module is the implementation that becomes active.
  *
- * Historia: ant 2.1.131 tenía esto devolviendo `isRunningInWsl()`; en
- * 2.1.136 el cuerpo de la función se volvió `return !1` (un falso fijo). El
- * cambio deshabilitó la cadena WSL a la espera de un mecanismo de
- * subproceso más confiable (las consultas a reg.exe y las lecturas de
- * DrvFs estaban dando timeout en Win11 24H2 / WSL2 sin un modo de fallo
- * consistente).
+ * History: ant 2.1.131 had this returning `isRunningInWsl()`; in
+ * 2.1.136 the function body became `return !1` (a hardcoded false).
+ * The change disabled the WSL chain pending a more reliable
+ * subprocess mechanism (the reg.exe queries and DrvFs reads were
+ * timing out on Win11 24H2 / WSL2 with no consistent failure mode).
  */
 const WSL_CHAIN_ENABLED = false
 
 function isWslChainEnabled(): boolean {
-  // `E6_()` de ant: fijo en falso en v2.1.136. Se conserva la forma de la
-  // función para que reactivarla en el futuro sea un cambio de constante.
+  // ant E6_(): hardcoded false in v2.1.136. Keep the function shape
+  // so future re-enablement is a constant edit and call sites stay
+  // the same.
   return WSL_CHAIN_ENABLED
 }
 
@@ -52,14 +68,14 @@ async function readRegKeyValue(
   key: string,
   valueName: string,
 ): Promise<string | undefined> {
-  // Usa cmd.exe vía interop DrvFs. WSL trae /mnt/c/Windows/System32 por defecto.
+  // Use cmd.exe via DrvFs interop. WSL ships /mnt/c/Windows/System32 by default.
   try {
     const { stdout } = await execFileAsync(
       '/mnt/c/Windows/System32/reg.exe',
       ['query', key, '/v', valueName],
       { timeout: 5000 },
     )
-    // Formato: "    valueName    REG_SZ    value"
+    // Format: "    valueName    REG_SZ    value"
     const match = new RegExp(
       `${valueName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+REG_[A-Z_]+\\s+(.+)`,
     ).exec(stdout)
@@ -76,32 +92,32 @@ async function readWslInheritsFlag(key: string): Promise<boolean> {
 }
 
 /**
- * Devuelve los settings de la cadena de política de Windows a superponer
- * sobre los managed-settings de Linux, o `null` cuando:
- *   - la feature de cadena WSL está deshabilitada (`E6_()` de ant === false)
- *   - no se ejecuta en WSL
- *   - `wslInheritsWindowsSettings` de la fuente admin no es `true`
- *   - `wslInheritsWindowsSettings` de HKCU no es `true` (opt-in de usuario)
+ * Returns the Windows policy chain settings to layer on top of Linux
+ * managed-settings, or null when:
+ *   - the WSL chain feature is disabled (ant E6_() === false)
+ *   - not running in WSL
+ *   - admin source's wslInheritsWindowsSettings is not true
+ *   - HKCU's wslInheritsWindowsSettings is not true (user opt-in)
  *
- * El corte temprano en `isWslChainEnabled()` refleja el guard
- * `if(!E6_()) return null;` de ant al inicio de cada sitio de lectura —
- * mantiene la función invocable pero rápidamente deshabilitada.
+ * The short-circuit on `isWslChainEnabled()` mirrors ant's
+ * `if(!E6_()) return null;` guard at the top of every read site —
+ * keeping the function callable but quickly disabled.
  */
 export async function getWslInheritedWindowsSettings(): Promise<
   Record<string, unknown> | null
 > {
-  // Corte temprano `E6_() => false` de ant. Se conserva el resto del cuerpo
-  // intacto para que la futura reactivación sea un cambio de una línea.
+  // Ant `E6_() => false` short-circuit. Keep the rest of the body
+  // intact so the future flip is a one-line change.
   if (!isWslChainEnabled()) return null
   if (!isRunningInWsl()) return null
-  // Chequeo de fuente admin: el archivo O HKLM deben declarar el flag.
+  // Admin source check: file OR HKLM must declare the flag.
   let fileSettings: Record<string, unknown> | undefined
   if (existsSync(HKLM_MANAGED_SETTINGS_PATH)) {
     try {
       const raw = readFileSync(HKLM_MANAGED_SETTINGS_PATH, 'utf-8')
       fileSettings = JSON.parse(raw) as Record<string, unknown>
     } catch {
-      // archivo admin malformado — sigue al chequeo de HKLM
+      // malformed admin file — fall through to HKLM check
     }
   }
   const fileFlag =
@@ -111,14 +127,14 @@ export async function getWslInheritedWindowsSettings(): Promise<
   const hklmFlag = await readWslInheritsFlag(HKLM_KEY)
   if (!fileFlag && !hklmFlag) return null
 
-  // Opt-in de usuario: HKCU también debe tener el flag.
+  // User opt-in: HKCU must also have the flag.
   const hkcuFlag = await readWslInheritsFlag(HKCU_KEY)
   if (!hkcuFlag) return null
 
-  // Quita `wslInheritsWindowsSettings` del payload fusionado — el flag es
-  // metadata sobre si aplicar la cadena, no un setting que deba propagarse
-  // al `managedSettings` en vivo. `nAq` de ant hace la misma
-  // desestructuración-y-recorte.
+  // Strip `wslInheritsWindowsSettings` from the merged payload — the
+  // flag is metadata about whether to apply the chain, not a setting
+  // that should be propagated to the live managedSettings. Ant
+  // `nAq` does the same destructure-strip.
   const merged: Record<string, unknown> = {}
   if (fileSettings) {
     const { wslInheritsWindowsSettings: _strip, ...rest } = fileSettings

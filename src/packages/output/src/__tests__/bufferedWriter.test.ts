@@ -1,13 +1,12 @@
 /**
- * Puerto de `ccnmt: packages/output/src/__tests__/bufferedWriter.test.ts`
- * (verbatim). Tests de createBufferedWriter — agrupa escrituras pequenas
- * en lotes mas grandes para reducir el overhead de syscall, con
- * disparadores de flush tanto por temporizador como por tamano.
+ * Tests for createBufferedWriter — batches small writes into larger
+ * ones to reduce syscall overhead, with both timer-based and
+ * size-based flush triggers.
  *
- * Un agrupado incorrecto puede:
- *   - perder escrituras (el umbral de tamano no dispara el flush)
- *   - bloquear el event loop (un writeFn sincrono dispara en cada push)
- *   - reordenar escrituras entre lotes de overflow
+ * Wrong batching either:
+ *   - drops writes (size threshold not triggering flush)
+ *   - blocks the event loop (synchronous writeFn fires on every push)
+ *   - reorders writes across overflow batches
  */
 import { describe, expect, mock, test } from 'bun:test'
 import { createBufferedWriter } from '../buffers/buffered-writer.js'

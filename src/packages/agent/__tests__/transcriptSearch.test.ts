@@ -1,7 +1,15 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/transcriptSearch.test.ts`,
- * acotado a `toolUseSearchText` y `toolResultSearchText` (ver docstring
- * del modulo portado para la divergencia declarada).
+ * Tests for transcriptSearch.ts pure helpers — drives the / search
+ * input matcher in transcript view.
+ *
+ * Wrong duck-typing here = either:
+ *   - phantom matches (search hits text that doesn't render → bad UX,
+ *     user thinks "/" is broken)
+ *   - missed hits (text renders but search doesn't find it → bad UX,
+ *     user has to scroll manually)
+ *
+ * The strategy is allowlist-only: known field names per known tool
+ * output shape. Unknown shapes return empty (under-count > phantom).
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -37,7 +45,7 @@ describe('toolUseSearchText — primary-argument extraction', () => {
   })
 
   test('unknown field is NOT indexed (allowlist)', () => {
-    // 'rawOutputPath' es metadata interna — nunca se renderiza.
+    // 'rawOutputPath' is internal metadata — never rendered.
     expect(toolUseSearchText({ rawOutputPath: '/tmp/x' })).toBe('')
   })
 
@@ -57,7 +65,7 @@ describe('toolUseSearchText — primary-argument extraction', () => {
   })
 
   test('mixed args (non-string) is rejected (every() guard)', () => {
-    // Documentado: solo los arreglos que son 100% strings se concatenan.
+    // Documented: only fully-string arrays are joined.
     expect(toolUseSearchText({ args: ['ls', 42] })).toBe('')
   })
 
@@ -90,8 +98,8 @@ describe('toolResultSearchText — known shapes', () => {
   })
 
   test('Read output: file.content takes precedence over stdout (order matters)', () => {
-    // Documentado: la forma stdout se comprueba PRIMERO. Si ambas
-    // existen, gana stdout. Se fija aqui para evitar un reorden silencioso.
+    // Documented: stdout shape is checked FIRST. So if both exist,
+    // stdout wins. Lock this to prevent silent reorder bugs.
     expect(
       toolResultSearchText({
         stdout: 'std',
@@ -116,7 +124,7 @@ describe('toolResultSearchText — fallback allowlist', () => {
       text: 'b',
       message: 'c',
     })
-    // Concatenado con '\n' (orden de insercion en el bucle).
+    // Concatenated by '\n' (insertion order in the loop)
     expect(r.split('\n')).toEqual(['a', 'b', 'c'])
   })
 
@@ -147,8 +155,8 @@ describe('toolResultSearchText — edge cases', () => {
   })
 
   test('plain string → returned as-is (special case)', () => {
-    // Rama documentada: si r es string, se retorna igual. Algunas
-    // herramientas devuelven strings crudos.
+    // Documented branch: if r is a string, return it. Some tools
+    // return raw strings.
     expect(toolResultSearchText('plain text')).toBe('plain text')
   })
 
@@ -171,15 +179,15 @@ describe('toolResultSearchText — edge cases', () => {
   })
 
   test('mixed-type array NOT joined (every() guard)', () => {
-    // filenames debe ser 100% strings.
+    // filenames must be all-strings.
     expect(
       toolResultSearchText({ filenames: ['a.ts', 42] }),
     ).toBe('')
   })
 
   test('file.content with non-string content NOT picked up', () => {
-    // El check es `typeof file.content === 'string'`. Un buffer u
-    // objeto cae al allowlist de respaldo.
+    // The check is `typeof file.content === 'string'`. A buffer or
+    // object falls through to the fallback allowlist.
     expect(
       toolResultSearchText({ file: { content: { nested: 'x' } } }),
     ).toBe('')
