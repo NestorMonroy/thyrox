@@ -19,12 +19,12 @@ import type {
   BetaToolChoiceAuto,
   BetaToolChoiceTool,
   BetaToolUnion,
-  BetaUsage,
   BetaMessageParam as MessageParam,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { TextBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { Stream } from '@anthropic-ai/sdk/streaming.mjs'
 import type { ClientOptions } from '@anthropic-ai/sdk'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { getProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderRequestOptions } from './internal/providerTypes.ts'
@@ -89,8 +89,14 @@ type ClaudeLegacyRuntime = {
   executeNonStreamingRequest: (...args: unknown[]) => AsyncGenerator<unknown, unknown>
   stripExcessMediaItems: (...args: unknown[]) => unknown
   cleanupStream: (stream: Stream<BetaRawMessageStreamEvent>) => void
-  updateUsage: (usage: BetaUsage, delta?: BetaMessageDeltaUsage) => BetaUsage
-  accumulateUsage: (...args: unknown[]) => unknown
+  updateUsage: (
+    usage: Readonly<NonNullableUsage>,
+    delta?: BetaMessageDeltaUsage,
+  ) => NonNullableUsage
+  accumulateUsage: (
+    totalUsage: Readonly<NonNullableUsage>,
+    messageUsage: Readonly<NonNullableUsage>,
+  ) => NonNullableUsage
   addCacheBreakpoints: (...args: unknown[]) => unknown
   buildSystemPromptBlocks: (
     systemPrompt: unknown,
@@ -194,12 +200,20 @@ export function cleanupStream(stream: Stream<BetaRawMessageStreamEvent>): void {
   return getLegacyRuntime().cleanupStream(stream)
 }
 
-export function updateUsage(usage: BetaUsage, delta?: BetaMessageDeltaUsage): BetaUsage {
+// El uso que se acumula es el `NonNullableUsage` del SDK —el mismo que
+// `logging` exporta—, no el `BetaUsage` crudo con sus campos nulables.
+export function updateUsage(
+  usage: Readonly<NonNullableUsage>,
+  delta?: BetaMessageDeltaUsage,
+): NonNullableUsage {
   return getLegacyRuntime().updateUsage(usage, delta)
 }
 
-export function accumulateUsage(...args: unknown[]): unknown {
-  return getLegacyRuntime().accumulateUsage(...args)
+export function accumulateUsage(
+  totalUsage: Readonly<NonNullableUsage>,
+  messageUsage: Readonly<NonNullableUsage>,
+): NonNullableUsage {
+  return getLegacyRuntime().accumulateUsage(totalUsage, messageUsage)
 }
 
 export function addCacheBreakpoints(...args: unknown[]): unknown {
