@@ -48,9 +48,8 @@
  *   binding estático que fallaría igual que un `import` (sin symlink de
  *   workspace). Se intenta `require()` y, si falla, se cae al valor real
  *   copiado — no inventado — como fallback.
- * - `coerceDescriptionToString` — de `@thyrox/agent/frontmatterParser.ts`
- *   (existe). Es función, así que se envuelve como función (no como
- *   binding estático).
+ * - `coerceDescriptionToString` — reexportada de `../frontmatterParser.ts`,
+ *   su hogar en este mismo paquete.
  * - `FRONTMATTER_REGEX` — de `../frontmatterParser.ts`, no portado en este
  *   pase. Se declara localmente con el valor exacto de la fuente
  *   (`/^---\s*\n([\s\S]*?)---\s*\n?/`, verificado leyendo el archivo) — es
@@ -71,7 +70,6 @@ import type {
 } from '@thyrox/shell/execFileNoThrow.js'
 import type { McpbManifestAny } from '@anthropic-ai/mcpb'
 import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
-import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
 import { extractDescriptionFromMarkdown as _canonicalExtractDescriptionFromMarkdown } from '../utils/markdownDescription.js'
@@ -782,14 +780,12 @@ export const setClearRegisteredPluginHooksFn =
   setClearRegisteredPluginHooksFn_
 
 /**
- * `coerceDescriptionToString` — reexport de la impl real en
- * `@thyrox/agent/frontmatterParser.ts` (existe, verificado). Se envuelve
- * como función (no como binding estático de `export {...} from`, que
- * fallaría por falta de symlink de workspace).
+ * `coerceDescriptionToString` vive en este mismo paquete
+ * (`../frontmatterParser.ts`). Antes se pedía a `@thyrox/agent/frontmatterParser`,
+ * que sólo reexporta este módulo: la vuelta por `agent` tipaba el resultado
+ * como `unknown` y rompía la descripción de cada comando de plugin.
  */
-export function coerceDescriptionToString(...args: unknown[]): unknown {
-  return requireAgentFrontmatterParser().coerceDescriptionToString(...args)
-}
+export { coerceDescriptionToString } from '../frontmatterParser.js'
 
 /**
  * `extractDescriptionFromMarkdown` lives in
@@ -928,7 +924,7 @@ const [_getParseEffortValue, setParseEffortValueFn_] = makeSetter(
 )
 const [_getParseYaml, setParseYamlFn_] = makeSetter((_s: string): unknown => null)
 const [_getParseArgumentNames, setParseArgumentNamesFn_] = makeSetter(
-  (_s: string): string[] => [],
+  (_s: string | string[] | undefined): string[] => [],
 )
 const [_getParseUserSpecifiedModel, setParseUserSpecifiedModelFn_] =
   makeSetter((_v: unknown): string | undefined => undefined)
@@ -1007,7 +1003,7 @@ export function parseEffortValue(
 export function parseYaml(s: string): unknown {
   return _getParseYaml()(s)
 }
-export function parseArgumentNames(s: string): string[] {
+export function parseArgumentNames(s: string | string[] | undefined): string[] {
   return _getParseArgumentNames()(s)
 }
 export function parseUserSpecifiedModel(v: unknown): string | undefined {
