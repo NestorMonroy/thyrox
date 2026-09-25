@@ -1,0 +1,14 @@
+src/packages/@ant/ink/src/core/terminal.ts(1,29): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  --- código src/packages/@ant/ink/src/core/terminal.ts:1-11 ---
+      1> import { coerce, gte } from 'semver'
+      2  import type { Writable } from 'stream'
+      3  import { getClearTerminalSequence } from './clearTerminal.js'
+      4  import type { Diff } from './frame.js'
+      5  import { cursorMove, cursorTo, eraseLines } from './termio/csi.js'
+      6  import { BSU, ESU, HIDE_CURSOR, SHOW_CURSOR } from './termio/dec.js'
+      7  import { link } from './termio/osc.js'
+      8  
+      9  export type Progress = {
+     10    state: 'running' | 'completed' | 'error' | 'indeterminate'
+     11    percentage?: number
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`

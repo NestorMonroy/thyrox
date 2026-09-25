@@ -1,0 +1,95 @@
+src/packages/provider/src/gemini/convertMessages.ts(41,32): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:31-51 ---
+     31  
+     32    for (const msg of messages) {
+     33      if (msg.type === 'assistant') {
+     34        const content = convertInternalAssistantMessage(
+     35          msg as ProviderAssistantMessage,
+     36        )
+     37        if (content.parts.length > 0) {
+     38          contents.push(content)
+     39        }
+     40  
+     41>       const assistantContent = msg.message.content
+     42        if (Array.isArray(assistantContent)) {
+     43          for (const block of assistantContent) {
+     44            if (typeof block !== 'string' && block.type === 'tool_use') {
+     45              toolNamesById.set(block.id, block.name)
+     46            }
+     47          }
+     48        }
+     49        continue
+     50      }
+     51  
+src/packages/provider/src/gemini/convertMessages.ts(86,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:76-96 ---
+     76  
+     77  function systemPromptToText(systemPrompt: ProviderSystemPrompt): string {
+     78    if (!systemPrompt || systemPrompt.length === 0) return ''
+     79    return systemPrompt.filter(Boolean).join('\n\n')
+     80  }
+     81  
+     82  function convertInternalUserMessage(
+     83    msg: ProviderUserMessage,
+     84    toolNamesById: ReadonlyMap<string, string>,
+     85  ): GeminiContent {
+     86>   const content = msg.message.content
+     87  
+     88    if (typeof content === 'string') {
+     89      return {
+     90        role: 'user',
+     91        parts: createTextGeminiParts(content),
+     92      }
+     93    }
+     94  
+     95    if (!Array.isArray(content)) {
+     96      return { role: 'user', parts: [] }
+src/packages/provider/src/gemini/convertMessages.ts(102,44): error TS2345: Argument of type 'ContentBlockParam | ContentBlock' is not assignable to parameter of type 'string | Record<string, unknown>'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:92-112 ---
+     92      }
+     93    }
+     94  
+     95    if (!Array.isArray(content)) {
+     96      return { role: 'user', parts: [] }
+     97    }
+     98  
+     99    return {
+    100      role: 'user',
+    101      parts: content.flatMap(block =>
+    102>       convertUserContentBlockToGeminiParts(block, toolNamesById),
+    103      ),
+    104    }
+    105  }
+    106  
+    107  function convertUserContentBlockToGeminiParts(
+    108    block: string | Record<string, unknown>,
+    109    toolNamesById: ReadonlyMap<string, string>,
+    110  ): GeminiPart[] {
+    111    if (typeof block === 'string') {
+    112      return createTextGeminiParts(block)
+  Type 'TextBlockParam' is not assignable to type 'string | Record<string, unknown>'.
+    Type 'TextBlockParam' is not assignable to type 'Record<string, unknown>'.
+      Index signature for type 'string' is missing in type 'TextBlockParam'.
+src/packages/provider/src/gemini/convertMessages.ts(157,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:147-167 ---
+    147        return createTextGeminiParts(`[image: ${source.url}]`)
+    148      }
+    149    }
+    150  
+    151    return []
+    152  }
+    153  
+    154  function convertInternalAssistantMessage(
+    155    msg: ProviderAssistantMessage,
+    156  ): GeminiContent {
+    157>   const content = msg.message.content
+    158  
+    159    if (typeof content === 'string') {
+    160      return {
+    161        role: 'model',
+    162        parts: createTextGeminiParts(content),
+    163      }
+    164    }
+    165  
+    166    if (!Array.isArray(content)) {
+    167      return { role: 'model', parts: [] }

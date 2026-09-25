@@ -1,0 +1,23 @@
+src/packages/cli/src/transports.ts(67,41): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
+  --- código src/packages/cli/src/transports.ts:57-77 ---
+     57    return new Ctor(...args)
+     58  }
+     59  
+     60  export class SSETransport {
+     61    constructor(...args: any[]) {
+     62      return instantiate(loadSSEModule().SSETransport as any, args)
+     63    }
+     64  }
+     65  
+     66  export function parseSSEFrames(...args: any[]) {
+     67>   return loadSSEModule().parseSSEFrames(...args)
+     68  }
+     69  
+     70  export class WebSocketTransport {
+     71    constructor(...args: any[]) {
+     72      return instantiate(loadWebSocketModule().WebSocketTransport as any, args)
+     73    }
+     74  }
+     75  
+     76  export class HybridTransport {
+     77    constructor(...args: any[]) {

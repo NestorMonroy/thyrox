@@ -1,0 +1,24 @@
+src/packages/provider/src/openai/modelMapping.ts(64,5): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/provider/src/openai/modelMapping.ts:54-74 ---
+     54   * 4. `DEFAULT_MODEL_MAP`.
+     55   * 5. El propio nombre, ya recortado.
+     56   *
+     57   * El sufijo `[1m]` —modificador de ventana propio de Claude— se recorta ANTES
+     58   * de detectar la familia y ANTES de consultar el mapa, con un ancla al final:
+     59   * solo cuenta como sufijo si esta al final.
+     60   */
+     61  export function resolveOpenAIModel(anthropicModel: string): string {
+     62    // Prioridad maxima: el override explicito.
+     63    if (readEnv('OPENAI_MODEL')) {
+     64>     return readEnv('OPENAI_MODEL')
+     65    }
+     66  
+     67    const cleanModel = anthropicModel.replace(/\[1m\]$/, '')
+     68  
+     69    const family = getModelFamily(cleanModel)
+     70    if (family) {
+     71      // Override por familia especifico de OpenAI (el preferido en este proveedor).
+     72      const openaiEnvVar = `OPENAI_DEFAULT_${family.toUpperCase()}_MODEL`
+     73      const openaiOverride = readEnv(openaiEnvVar)
+     74      if (openaiOverride) return openaiOverride
+  Type 'undefined' is not assignable to type 'string'.

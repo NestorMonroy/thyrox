@@ -1,0 +1,161 @@
+src/packages/command-runtime/src/commands/login/login.tsx(58,28): error TS18046: 'context.getAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:48-68 ---
+     48            // Refresh GrowthBook after login to get updated feature flags (e.g., for claude.ai MCPs)
+     49            refreshGrowthBookAfterAuthChange()
+     50            // Clear any stale trusted device token from a previous account before
+     51            // re-enrolling — prevents sending the old token on bridge calls while
+     52            // the async enrollTrustedDevice() is in-flight.
+     53            clearTrustedDeviceToken()
+     54            // Enroll as a trusted device for Remote Control (10-min fresh-session window)
+     55            void enrollTrustedDevice()
+     56            // Reset killswitch gate checks and re-run with new org
+     57            resetBypassPermissionsCheck()
+     58>           const appState = context.getAppState()
+     59            void checkAndDisableBypassPermissionsIfNeeded(
+     60              appState.toolPermissionContext,
+     61              context.setAppState,
+     62            )
+     63            if (feature('TRANSCRIPT_CLASSIFIER')) {
+     64              resetAutoModeGateCheck()
+     65              void checkAndDisableAutoModeIfNeeded(
+     66                appState.toolPermissionContext,
+     67                context.setAppState,
+     68                appState.fastMode,
+src/packages/command-runtime/src/commands/login/login.tsx(61,13): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '(f: (prev: AppState) => AppState) => void'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:51-71 ---
+     51            // re-enrolling — prevents sending the old token on bridge calls while
+     52            // the async enrollTrustedDevice() is in-flight.
+     53            clearTrustedDeviceToken()
+     54            // Enroll as a trusted device for Remote Control (10-min fresh-session window)
+     55            void enrollTrustedDevice()
+     56            // Reset killswitch gate checks and re-run with new org
+     57            resetBypassPermissionsCheck()
+     58            const appState = context.getAppState()
+     59            void checkAndDisableBypassPermissionsIfNeeded(
+     60              appState.toolPermissionContext,
+     61>             context.setAppState,
+     62            )
+     63            if (feature('TRANSCRIPT_CLASSIFIER')) {
+     64              resetAutoModeGateCheck()
+     65              void checkAndDisableAutoModeIfNeeded(
+     66                appState.toolPermissionContext,
+     67                context.setAppState,
+     68                appState.fastMode,
+     69              )
+     70            }
+     71            // Clear stale mainLoopModel if it's a bare model id that doesn't
+src/packages/command-runtime/src/commands/login/login.tsx(67,15): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '(f: (prev: AppState) => AppState) => void'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:57-77 ---
+     57            resetBypassPermissionsCheck()
+     58            const appState = context.getAppState()
+     59            void checkAndDisableBypassPermissionsIfNeeded(
+     60              appState.toolPermissionContext,
+     61              context.setAppState,
+     62            )
+     63            if (feature('TRANSCRIPT_CLASSIFIER')) {
+     64              resetAutoModeGateCheck()
+     65              void checkAndDisableAutoModeIfNeeded(
+     66                appState.toolPermissionContext,
+     67>               context.setAppState,
+     68                appState.fastMode,
+     69              )
+     70            }
+     71            // Clear stale mainLoopModel if it's a bare model id that doesn't
+     72            // belong to any current connection. Without this, the header shows
+     73            // a leftover model from a previous session (e.g. "Sonnet 4.5")
+     74            // even though the user is now on a fresh Claude Account login.
+     75            // This runs after connections are saved so the check is accurate.
+     76            try {
+     77              const { updateSettingsForSource, getSettingsForSource } =
+src/packages/command-runtime/src/commands/login/login.tsx(98,19): error TS18046: 'context.setAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:88-108 ---
+     88                // current connection model. If not, it's stale.
+     89                if (!connectionId) {
+     90                  const allIds = getEnabledConnections().flatMap(c =>
+     91                    c.models.map(m => m.id),
+     92                  )
+     93                  if (!allIds.includes(modelId)) {
+     94                    updateSettingsForSource('userSettings', {
+     95                      mainLoopModel: undefined,
+     96                    } as never)
+     97                    // Also clear from AppState so the header re-renders immediately.
+     98>                   context.setAppState(prev => ({
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+src/packages/command-runtime/src/commands/login/login.tsx(98,39): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:88-108 ---
+     88                // current connection model. If not, it's stale.
+     89                if (!connectionId) {
+     90                  const allIds = getEnabledConnections().flatMap(c =>
+     91                    c.models.map(m => m.id),
+     92                  )
+     93                  if (!allIds.includes(modelId)) {
+     94                    updateSettingsForSource('userSettings', {
+     95                      mainLoopModel: undefined,
+     96                    } as never)
+     97                    // Also clear from AppState so the header re-renders immediately.
+     98>                   context.setAppState(prev => ({
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+src/packages/command-runtime/src/commands/login/login.tsx(109,11): error TS18046: 'context.setAppState' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:99-119 ---
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+    109>           context.setAppState(prev => ({
+    110              ...prev,
+    111              authVersion: prev.authVersion + 1,
+    112            }))
+    113          }
+    114          onDone(success ? 'Login successful' : 'Login interrupted')
+    115        }}
+    116      />
+    117    )
+    118  }
+    119  
+src/packages/command-runtime/src/commands/login/login.tsx(109,31): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+  --- código src/packages/command-runtime/src/commands/login/login.tsx:99-119 ---
+     99                      ...prev,
+    100                      mainLoopModel: null,
+    101                    }))
+    102                  }
+    103                }
+    104              }
+    105            } catch {
+    106              // Best-effort; never block login completion.
+    107            }
+    108            // Increment authVersion to trigger re-fetching of auth-dependent data in hooks (e.g., MCP servers)
+    109>           context.setAppState(prev => ({
+    110              ...prev,
+    111              authVersion: prev.authVersion + 1,
+    112            }))
+    113          }
+    114          onDone(success ? 'Login successful' : 'Login interrupted')
+    115        }}
+    116      />
+    117    )
+    118  }
+    119  

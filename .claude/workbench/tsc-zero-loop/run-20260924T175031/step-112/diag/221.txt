@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/services/toolExecution.ts(1023,9): error TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1013-1033 ---
+   1013          ? permissionDecision.contentBlocks
+   1014          : undefined
+   1015      if (rejectContentBlocks?.length) {
+   1016        messageContent.push(...rejectContentBlocks)
+   1017      }
+   1018  
+   1019      // Generate sequential imagePasteIds so each image renders with a distinct label
+   1020      let rejectImageIds: number[] | undefined
+   1021      if (rejectContentBlocks?.length) {
+   1022        const imageCount = count(
+   1023>         rejectContentBlocks,
+   1024          (b: ContentBlockParam) => b.type === 'image',
+   1025        )
+   1026        if (imageCount > 0) {
+   1027          const startId = getNextImagePasteId(toolUseContext.messages)
+   1028          rejectImageIds = Array.from(
+   1029            { length: imageCount },
+   1030            (_, i) => startId + i,
+   1031          )
+   1032        }
+   1033      }
+  Type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+    Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1238,29): error TS2559: Type '"tool.output"' has no properties in common with type 'Span'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1228-1248 ---
+   1228        if (tool.name === BASH_TOOL_NAME && 'command' in processedInput) {
+   1229          const bashInput = processedInput as BashToolInput
+   1230          contentAttributes.bash_command = bashInput.command
+   1231          // Also capture output if available
+   1232          if ('output' in result.data) {
+   1233            contentAttributes.output = String(result.data.output)
+   1234          }
+   1235        }
+   1236  
+   1237        if (Object.keys(contentAttributes).length > 0) {
+   1238>         addToolContentEvent('tool.output', contentAttributes)
+   1239        }
+   1240      }
+   1241  
+   1242      // Capture structured output from tool result if present
+   1243      if (typeof result === 'object' && 'structured_output' in result) {
+   1244        // Store the structured output in an attachment message
+   1245        resultingMessages.push({
+   1246          message: createAttachmentMessage({
+   1247            type: 'structured_output',
+   1248            data: result.structured_output,

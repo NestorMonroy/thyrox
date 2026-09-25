@@ -1,0 +1,50 @@
+src/packages/repl/src/screens/REPLView.tsx(2622,11): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2612-2632 ---
+   2612            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2613        );
+   2614  
+   2615        startBackgroundSession({
+   2616          messages: [...messagesRef.current, ...uniqueNotifications],
+   2617          queryParams: {
+   2618            systemPrompt,
+   2619            userContext,
+   2620            systemContext,
+   2621            canUseTool,
+   2622>           toolUseContext,
+   2623            querySource: getQuerySourceForREPL(),
+   2624          },
+   2625          description: terminalTitle,
+   2626          setAppState,
+   2627          agentDefinition: mainThreadAgentDefinition,
+   2628        });
+   2629      })();
+   2630    }, [
+   2631      abortController,
+   2632      mainLoopModel,
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2680,80): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2670-2690 ---
+   2670              } else {
+   2671                setMessages(() => [newMessage]);
+   2672              }
+   2673              // Bump conversationId so Messages.tsx row keys change and
+   2674              // stale memoized rows remount with post-compact content.
+   2675              setConversationId(randomUUID());
+   2676              // Compaction succeeded — clear the context-blocked flag so ticks resume
+   2677              if (feature('PROACTIVE') || feature('KAIROS')) {
+   2678                proactiveModule?.setContextBlocked(false);
+   2679              }
+   2680>           } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
+   2681              // Replace the previous ephemeral progress tick for the same tool
+   2682              // call instead of appending. Sleep/Bash emit a tick per second and
+   2683              // only the last one is rendered; appending blows up the messages
+   2684              // array (13k+ observed) and the transcript (120MB of sleep_progress
+   2685              // lines). useLogMessages tracks length, so same-length replacement
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.

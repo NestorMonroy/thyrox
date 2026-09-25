@@ -1,0 +1,4 @@
+src/packages/repl/src/screens/REPLView.tsx(3488,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+src/packages/repl/src/screens/REPLView.tsx(3977,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: getQuerySourceForREPL; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

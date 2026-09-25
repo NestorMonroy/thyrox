@@ -1,0 +1,5 @@
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(205,9): error TS2322: Type 'unknown[]' is not assignable to type 'OptionWithDescription<string>[]'.
+  Type 'unknown' is not assignable to type 'OptionWithDescription<string>'.
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(567,22): error TS18046: 'opt' is of type 'unknown'.
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(568,19): error TS18046: 'opt' is of type 'unknown'.
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(590,11): error TS2739: Type 'ToolPermissionContext' is missing the following properties from type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }': mode, additionalWorkingDirectories, isBypassPermissionsModeAvailable

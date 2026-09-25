@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(7,3): error TS2724: '"@thyrox/config/settings"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,10): error TS7006: Parameter 'serverName' implicitly has an 'any' type.

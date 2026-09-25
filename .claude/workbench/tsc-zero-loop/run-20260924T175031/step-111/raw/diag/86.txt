@@ -1,0 +1,8 @@
+src/packages/command-runtime/src/commands/ide/ide.tsx(432,58): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, ScopedMcpServerConfig> | undefined'.
+  Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/command-runtime/src/commands/ide/ide.tsx(439,7): error TS2322: Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, ScopedMcpServerConfig> | undefined'.
+  Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.

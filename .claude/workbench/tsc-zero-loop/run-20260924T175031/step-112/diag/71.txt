@@ -1,0 +1,46 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(508,55): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:498-518 ---
+    498        (await nodeFsp.readdir(p, { withFileTypes: true })) as Array<{
+    499          name: string
+    500          isFile(): boolean
+    501          isDirectory(): boolean
+    502        }>,
+    503      stat: async p => (await nodeFsp.stat(p)) as any,
+    504      rm: async (p, o) => nodeFsp.rm(p, o),
+    505      rename: async (o, n) => nodeFsp.rename(o, n),
+    506    })
+    507    setPathExistsFn(p => pathExists(p))
+    508>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    509    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    510    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    511    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    512  
+    513    // --- git
+    514    setGitExeFn(() => gitExe())
+    515    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    516  
+    517    // --- subproceso
+    518    setExecFileNoThrowFn(execFileNoThrow)
+src/packages/app-host/src/runtime/installPluginBindings.ts(531,32): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:521-541 ---
+    521  
+    522    // --- operaciones lentas
+    523    setJsonStringifyFn((value, replacer, space) =>
+    524      jsonStringify(value, replacer as Parameters<typeof JSON.stringify>[1], space),
+    525    )
+    526    setJsonParseFn(jsonParse)
+    527    setCloneFn(v => clone(v))
+    528  
+    529    // --- telemetría
+    530    setBuildPluginTelemetryFieldsFn((...args) =>
+    531>     buildPluginTelemetryFields(...args),
+    532    )
+    533    setClassifyPluginCommandErrorFn(error =>
+    534      classifyPluginCommandError(error) as any,
+    535    )
+    536  
+    537    // --- helpers varios
+    538    setRgPathFn(() => {
+    539      try {
+    540        // eslint-disable-next-line @typescript-eslint/no-require-imports
+    541        const mod = require('@thyrox/tool-registry/ripgrep.js')

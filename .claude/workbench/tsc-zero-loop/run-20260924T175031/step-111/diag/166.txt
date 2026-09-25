@@ -1,0 +1,24 @@
+src/packages/provider/src/runtimeHelpers.ts(154,10): error TS2352: Conversion of type 'Record<string, unknown>' to type 'BetaToolUnion' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/runtimeHelpers.ts:144-164 ---
+    144      input_schema: getToolInputSchema(tool),
+    145    }
+    146  
+    147    if (options.deferLoading) {
+    148      schema.defer_loading = true
+    149    }
+    150    if (options.cacheControl) {
+    151      schema.cache_control = options.cacheControl
+    152    }
+    153  
+    154>   return schema as BetaToolUnion
+    155  }
+    156  
+    157  export function calculateUSDCost(_model: string, _usage: unknown): number {
+    158    return 0
+    159  }
+    160  
+    161  export function isDeferredTool(tool: ProviderTool): boolean {
+    162    return tool.isMcp === true || tool.shouldDefer === true
+    163  }
+    164  
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaWebFetchTool20260318': name, type

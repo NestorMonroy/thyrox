@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(1565,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1555-1575 ---
+   1555              result.type === 'user' &&
+   1556              Array.isArray(result.message.content) &&
+   1557              result.message.content.some(
+   1558                content =>
+   1559                  content.type === 'tool_result' &&
+   1560                  content.tool_use_id === block.id,
+   1561              ),
+   1562          )
+   1563          const resultContent =
+   1564            toolResult?.type === 'user' &&
+   1565>           Array.isArray(toolResult.message.content)
+   1566              ? toolResult.message.content.find(
+   1567                  (c): c is ToolResultBlockParam =>
+   1568                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1569                )
+   1570              : undefined
+   1571          return {
+   1572            name: block.name,
+   1573            input: block.input,
+   1574            output:
+   1575              resultContent && 'content' in resultContent
+src/packages/agent/query.ts(1566,15): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1556-1576 ---
+   1556              Array.isArray(result.message.content) &&
+   1557              result.message.content.some(
+   1558                content =>
+   1559                  content.type === 'tool_result' &&
+   1560                  content.tool_use_id === block.id,
+   1561              ),
+   1562          )
+   1563          const resultContent =
+   1564            toolResult?.type === 'user' &&
+   1565            Array.isArray(toolResult.message.content)
+   1566>             ? toolResult.message.content.find(
+   1567                  (c): c is ToolResultBlockParam =>
+   1568                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1569                )
+   1570              : undefined
+   1571          return {
+   1572            name: block.name,
+   1573            input: block.input,
+   1574            output:
+   1575              resultContent && 'content' in resultContent
+   1576                ? resultContent.content

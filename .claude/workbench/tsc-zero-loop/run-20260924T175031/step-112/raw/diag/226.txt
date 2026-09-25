@@ -1,0 +1,3 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1072,65): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1220,9): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.

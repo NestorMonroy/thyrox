@@ -1,0 +1,46 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1409,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1399-1419 ---
+   1399          // Check result.backgroundTaskId (not the closure var) to also cover
+   1400          // Ctrl+B, which calls shellCommand.background() directly.
+   1401          if (result.backgroundTaskId !== undefined) {
+   1402            markTaskNotified(result.backgroundTaskId, setAppState)
+   1403            const fixedResult: ExecResult = {
+   1404              ...result,
+   1405              backgroundTaskId: undefined,
+   1406            }
+   1407            // Mirror ShellCommand.#handleExit's large-output branch that was
+   1408            // skipped because #backgroundTaskId was set.
+   1409>           const { taskOutput } = shellCommand
+   1410            if (taskOutput.stdoutToFile && !taskOutput.outputFileRedundant) {
+   1411              fixedResult.outputFilePath = taskOutput.path
+   1412              fixedResult.outputFileSize = taskOutput.outputFileSize
+   1413              fixedResult.outputTaskId = taskOutput.taskId
+   1414            }
+   1415            shellCommand.cleanup()
+   1416            return fixedResult
+   1417          }
+   1418          // Command has completed - return the actual result
+   1419          // If we registered as a foreground task, unregister it
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1474,15): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1464-1484 ---
+   1464          backgroundShellId === undefined &&
+   1465          elapsedSeconds >= PROGRESS_THRESHOLD_MS / 1000 &&
+   1466          setToolJSX
+   1467        ) {
+   1468          // Register this command as a foreground task so it can be backgrounded via Ctrl+B
+   1469          if (!foregroundTaskId) {
+   1470            foregroundTaskId = registerForeground(
+   1471              {
+   1472                command,
+   1473                description: description || command,
+   1474>               shellCommand,
+   1475                agentId,
+   1476              },
+   1477              setAppState,
+   1478              toolUseId,
+   1479            )
+   1480          }
+   1481  
+   1482          setToolJSX({
+   1483            jsx: <BackgroundHint />,
+   1484            shouldHidePromptInput: false,

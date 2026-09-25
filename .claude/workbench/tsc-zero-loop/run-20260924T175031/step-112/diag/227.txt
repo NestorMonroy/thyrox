@@ -1,0 +1,47 @@
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1252,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1242-1262 ---
+   1242      backgroundFn?: (shellId: string) => void,
+   1243    ): void {
+   1244      // If a foreground task is already registered (via registerForeground in the
+   1245      // progress loop), background it in-place instead of re-spawning. Re-spawning
+   1246      // would overwrite tasks[taskId], emit a duplicate task_started SDK event,
+   1247      // and leak the first cleanup callback.
+   1248      if (foregroundTaskId) {
+   1249        if (
+   1250          !backgroundExistingForegroundTask(
+   1251            foregroundTaskId,
+   1252>           shellCommand,
+   1253            description || command,
+   1254            setAppState,
+   1255            toolUseId,
+   1256          )
+   1257        ) {
+   1258          return
+   1259        }
+   1260        backgroundShellId = foregroundTaskId
+   1261        logEvent(eventName, {
+   1262          command_type: getCommandTypeForLogging(command),
+  Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/BashTool/BashTool.tsx(1382,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/BashTool/BashTool.tsx:1372-1392 ---
+   1372          code: 0,
+   1373          interrupted: false,
+   1374          backgroundTaskId: backgroundShellId,
+   1375          assistantAutoBackgrounded,
+   1376        }
+   1377      }
+   1378    }
+   1379  
+   1380    // Start polling the output file for progress. The poller's #tick calls
+   1381    // onProgress every second, which resolves progressSignal below.
+   1382>   TaskOutput.startPolling(shellCommand.taskOutput.taskId)
+   1383  
+   1384    // Progress loop: wake is driven by the shared poller calling onProgress,
+   1385    // which resolves the progressSignal.
+   1386    try {
+   1387      while (true) {
+   1388        const progressSignal = createProgressSignal()
+   1389        const result = await Promise.race([resultPromise, progressSignal])
+   1390  
+   1391        if (result !== null) {
+   1392          // Race: backgrounding fired (15s timer / onTimeout / Ctrl+B) but the

@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,29): error TS2339: Property 'content' does not exist on type '{}'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3289,38): error TS2339: Property 'uuid' does not exist on type '{}'.

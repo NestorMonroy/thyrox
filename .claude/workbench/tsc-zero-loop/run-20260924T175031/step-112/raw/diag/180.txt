@@ -1,0 +1,5 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(48,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(138,44): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

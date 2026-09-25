@@ -1,0 +1,3 @@
+src/packages/repl/src/components/messageActions.tsx(31,60): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+src/packages/repl/src/components/messageActions.tsx(352,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+src/packages/repl/src/components/messageActions.tsx(378,29): error TS2322: Type 'unknown' is not assignable to type 'string'.

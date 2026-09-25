@@ -1,0 +1,23 @@
+src/packages/repl/src/components/wizard/WizardProvider.tsx(24,4): error TS2315: Type 'WizardProviderProps' is not generic.
+  --- código src/packages/repl/src/components/wizard/WizardProvider.tsx:14-34 ---
+     14  export const WizardContext = createContext<WizardContextValue<any> | null>(null)
+     15  
+     16  export function WizardProvider<T extends Record<string, unknown>>({
+     17    steps,
+     18    initialData = {} as T,
+     19    onComplete,
+     20    onCancel,
+     21    children,
+     22    title,
+     23    showStepCounter = true,
+     24> }: WizardProviderProps<T>): ReactNode {
+     25    const [currentStepIndex, setCurrentStepIndex] = useState(0)
+     26    const [wizardData, setWizardData] = useState<T>(initialData)
+     27    const [isCompleted, setIsCompleted] = useState(false)
+     28    const [navigationHistory, setNavigationHistory] = useState<number[]>([])
+     29  
+     30    useExitOnCtrlCDWithKeybindings()
+     31  
+     32    // Handle completion in useEffect to avoid updating parent during render
+     33    useEffect(() => {
+     34      if (isCompleted) {

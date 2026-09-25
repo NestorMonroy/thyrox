@@ -1,0 +1,2 @@
+src/packages/agent/internal/stopHooksCore.ts(391,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/stopHooksCore.ts(455,37): error TS2339: Property 'createUserInterruptionMessage' does not exist on type 'AgentHostBindings'.

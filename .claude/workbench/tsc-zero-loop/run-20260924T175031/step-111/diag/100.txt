@@ -1,0 +1,14 @@
+src/packages/command-runtime/src/commands/session/session.tsx(1,40): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/user/thyrox/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  --- código src/packages/command-runtime/src/commands/session/session.tsx:1-11 ---
+      1> import { toString as qrToString } from 'qrcode'
+      2  import * as React from 'react'
+      3  import { useEffect, useState } from 'react'
+      4  import { Box, Pane, Text } from '@anthropic/ink'
+      5  import { useKeybinding } from '@anthropic/ink/keybindings'
+      6  import { useAppState } from '@thyrox/app-host/state/AppState.js'
+      7  import type { LocalJSXCommandCall } from '@thyrox/agent/command.js'
+      8  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+      9  
+     10  type Props = {
+     11    onDone: () => void
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`

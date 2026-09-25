@@ -1,0 +1,144 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(34,8): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'AgentMentionAttachment'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:24-44 ---
+     24    ProgressMessage,
+     25    SystemMessage,
+     26    UserMessage,
+     27  } from '@thyrox/agent/messageShapes'
+     28  import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+     29  import {
+     30    isValidImagePaste,
+     31    type PromptInputMode,
+     32  } from '../textInputTypes.js'
+     33  import {
+     34>   type AgentMentionAttachment,
+     35    createAttachmentMessage,
+     36    getAttachmentMessages,
+     37  } from '@thyrox/agent/attachments.js'
+     38  import type { PastedContent } from '@thyrox/config'
+     39  import type { EffortValue } from '@thyrox/agent/effort.js'
+     40  import { toArray } from '@thyrox/config/generators'
+     41  import {
+     42    executeUserPromptSubmitHooks,
+     43    getUserPromptSubmitHookBlockingMessage,
+     44  } from '@thyrox/agent/hooks.js'
+src/packages/repl/src/processUserInput/processUserInput.ts(36,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:26-46 ---
+     26    UserMessage,
+     27  } from '@thyrox/agent/messageShapes'
+     28  import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+     29  import {
+     30    isValidImagePaste,
+     31    type PromptInputMode,
+     32  } from '../textInputTypes.js'
+     33  import {
+     34    type AgentMentionAttachment,
+     35    createAttachmentMessage,
+     36>   getAttachmentMessages,
+     37  } from '@thyrox/agent/attachments.js'
+     38  import type { PastedContent } from '@thyrox/config'
+     39  import type { EffortValue } from '@thyrox/agent/effort.js'
+     40  import { toArray } from '@thyrox/config/generators'
+     41  import {
+     42    executeUserPromptSubmitHooks,
+     43    getUserPromptSubmitHookBlockingMessage,
+     44  } from '@thyrox/agent/hooks.js'
+     45  import {
+     46    createImageMetadataText,
+src/packages/repl/src/processUserInput/processUserInput.ts(525,9): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:515-535 ---
+    515      : []
+    516    queryCheckpoint('query_attachment_loading_end')
+    517  
+    518    // Bash commands
+    519    if (inputString !== null && mode === 'bash') {
+    520      const { processBashCommand } = await import('./processBashCommand.js')
+    521      return addImageMetadataMessage(
+    522        await processBashCommand(
+    523          inputString,
+    524          precedingInputBlocks,
+    525>         attachmentMessages,
+    526          context,
+    527          setToolJSX,
+    528        ),
+    529        imageMetadataTexts,
+    530      )
+    531    }
+    532  
+    533    // Slash commands
+    534    // Skip for remote bridge messages — input from CCR clients is plain text
+    535    if (
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.
+src/packages/repl/src/processUserInput/processUserInput.ts(545,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:535-555 ---
+    535    if (
+    536      inputString !== null &&
+    537      !effectiveSkipSlash &&
+    538      inputString.startsWith('/')
+    539    ) {
+    540      const { processSlashCommand } = await import('./processSlashCommand.js')
+    541      const slashResult = await processSlashCommand(
+    542        inputString,
+    543        precedingInputBlocks,
+    544        imageContentBlocks,
+    545>       attachmentMessages,
+    546        context,
+    547        setToolJSX,
+    548        uuid,
+    549        isAlreadyProcessing,
+    550        canUseTool,
+    551      )
+    552      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    553    }
+    554  
+    555    // Log agent mention queries for analysis
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.
+src/packages/repl/src/processUserInput/processUserInput.ts(561,9): error TS18046: 'm' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:551-571 ---
+    551      )
+    552      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    553    }
+    554  
+    555    // Log agent mention queries for analysis
+    556    if (inputString !== null && mode === 'prompt') {
+    557      const trimmedInput = inputString.trim()
+    558  
+    559      const agentMention = attachmentMessages.find(
+    560        (m): m is AttachmentMessage<AgentMentionAttachment> =>
+    561>         m.attachment.type === 'agent_mention',
+    562      )
+    563  
+    564      if (agentMention) {
+    565        const agentMentionString = `@agent-${agentMention.attachment.agentType}`
+    566        const isSubagentOnly = trimmedInput === agentMentionString
+    567        const isPrefix =
+    568          trimmedInput.startsWith(agentMentionString) && !isSubagentOnly
+    569  
+    570        // Log whenever users use @agent-<name> syntax
+    571        logEvent('tengu_subagent_at_mention', {
+src/packages/repl/src/processUserInput/processUserInput.ts(584,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:574-594 ---
+    574        })
+    575      }
+    576    }
+    577  
+    578    // Regular user prompt
+    579    return addImageMetadataMessage(
+    580      processTextPrompt(
+    581        normalizedInput,
+    582        imageContentBlocks,
+    583        imagePasteIds,
+    584>       attachmentMessages,
+    585        uuid,
+    586        permissionMode,
+    587        isMeta,
+    588      ),
+    589      imageMetadataTexts,
+    590    )
+    591  }
+    592  
+    593  // Adds image metadata texts as isMeta message to result
+    594  function addImageMetadataMessage(
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

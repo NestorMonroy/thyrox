@@ -1,0 +1,91 @@
+src/packages/app-host/src/state/__tests__/selectors.test.ts(42,15): error TS2769: No overload matches this call.
+  --- código src/packages/app-host/src/state/__tests__/selectors.test.ts:32-52 ---
+     32      ).toBeUndefined()
+     33    })
+     34  
+     35    test('devuelve la tarea cuando sí es un in_process_teammate', () => {
+     36      const task = teammateTask()
+     37      expect(
+     38        getViewedTeammateTask({
+     39          viewingAgentTaskId: 't1',
+     40          tasks: { t1: task },
+     41        }),
+     42>     ).toEqual(task)
+     43    })
+     44  })
+     45  
+     46  describe('getActiveAgentForInput', () => {
+     47    test('leader cuando no se está viendo nada', () => {
+     48      expect(
+     49        getActiveAgentForInput({ viewingAgentTaskId: undefined, tasks: {} }),
+     50      ).toEqual({ type: 'leader' })
+     51    })
+     52  
+  Overload 1 of 2, '(expected: InProcessTeammateTaskState | undefined): void', gave the following error.
+    Argument of type '{ id: string; status: string; type: string; }' is not assignable to parameter of type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+  Overload 2 of 2, '(expected: NoInfer<InProcessTeammateTaskState | undefined>): void', gave the following error.
+    Argument of type '{ id: string; status: string; type: string; }' is not assignable to parameter of type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/app-host/src/state/__tests__/selectors.test.ts(57,7): error TS2769: No overload matches this call.
+  --- código src/packages/app-host/src/state/__tests__/selectors.test.ts:47-67 ---
+     47    test('leader cuando no se está viendo nada', () => {
+     48      expect(
+     49        getActiveAgentForInput({ viewingAgentTaskId: undefined, tasks: {} }),
+     50      ).toEqual({ type: 'leader' })
+     51    })
+     52  
+     53    test('viewed cuando la tarea vista es un teammate in-process', () => {
+     54      const task = teammateTask()
+     55      expect(
+     56        getActiveAgentForInput({ viewingAgentTaskId: 't1', tasks: { t1: task } }),
+     57>     ).toEqual({ type: 'viewed', task })
+     58    })
+     59  
+     60    test('named_agent cuando la tarea vista es local_agent', () => {
+     61      const task = { type: 'local_agent', name: 'reviewer' }
+     62      expect(
+     63        getActiveAgentForInput({ viewingAgentTaskId: 't1', tasks: { t1: task } }),
+     64      ).toEqual({ type: 'named_agent', task })
+     65    })
+     66  
+     67    test('leader cuando la tarea vista no existe ni es teammate ni local_agent', () => {
+  Overload 1 of 2, '(expected: ActiveAgentForInput): void', gave the following error.
+    Type '{ id: string; status: string; type: string; }' is not assignable to type 'InProcessTeammateTaskState'.
+      Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+  Overload 2 of 2, '(expected: NoInfer<ActiveAgentForInput>): void', gave the following error.
+    Argument of type '{ type: "viewed"; task: { id: string; status: string; type: string; }; }' is not assignable to parameter of type 'ActiveAgentForInput'.
+      Types of property 'task' are incompatible.
+        Type '{ id: string; status: string; type: string; }' is not assignable to type 'InProcessTeammateTaskState'.
+          Type '{ id: string; status: string; type: string; }' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/app-host/src/state/__tests__/selectors.test.ts(64,7): error TS2769: No overload matches this call.
+  --- código src/packages/app-host/src/state/__tests__/selectors.test.ts:54-74 ---
+     54      const task = teammateTask()
+     55      expect(
+     56        getActiveAgentForInput({ viewingAgentTaskId: 't1', tasks: { t1: task } }),
+     57      ).toEqual({ type: 'viewed', task })
+     58    })
+     59  
+     60    test('named_agent cuando la tarea vista es local_agent', () => {
+     61      const task = { type: 'local_agent', name: 'reviewer' }
+     62      expect(
+     63        getActiveAgentForInput({ viewingAgentTaskId: 't1', tasks: { t1: task } }),
+     64>     ).toEqual({ type: 'named_agent', task })
+     65    })
+     66  
+     67    test('leader cuando la tarea vista no existe ni es teammate ni local_agent', () => {
+     68      expect(
+     69        getActiveAgentForInput({
+     70          viewingAgentTaskId: 't1',
+     71          tasks: { t1: { type: 'other' } },
+     72        }),
+     73      ).toEqual({ type: 'leader' })
+     74    })
+  Overload 1 of 2, '(expected: ActiveAgentForInput): void', gave the following error.
+    Type '{ type: string; name: string; }' is not assignable to type 'LocalAgentTaskState'.
+      Type '{ type: string; name: string; }' is missing the following properties from type 'TaskStateBase': id, status, description, startTime, and 3 more.
+  Overload 2 of 2, '(expected: NoInfer<ActiveAgentForInput>): void', gave the following error.
+    Argument of type '{ type: "named_agent"; task: { type: string; name: string; }; }' is not assignable to parameter of type 'ActiveAgentForInput'.
+      Types of property 'task' are incompatible.
+        Type '{ type: string; name: string; }' is not assignable to type 'LocalAgentTaskState'.
+          Type '{ type: string; name: string; }' is missing the following properties from type 'TaskStateBase': id, status, description, startTime, and 3 more.

@@ -1,0 +1,47 @@
+src/packages/repl/src/screens/REPLView.tsx(3033,36): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3023-3043 ---
+   3023        // Returns null if already running — no separate check-then-set.
+   3024        const thisGeneration = queryGuard.tryStart();
+   3025        if (thisGeneration === null) {
+   3026          logEvent('tengu_concurrent_onquery_detected', {});
+   3027  
+   3028          // Extract and enqueue user message text, skipping meta messages
+   3029          // (e.g. expanded skill content, tick prompts) that should not be
+   3030          // replayed as user-visible text.
+   3031          newMessages
+   3032            .filter((m): m is UserMessage => m.type === 'user' && !m.isMeta)
+   3033>           .map(_ => getContentText(_.message.content))
+   3034            .filter(_ => _ !== null)
+   3035            .forEach((msg, i) => {
+   3036              enqueue({ value: msg, mode: 'prompt' });
+   3037              if (i === 0) {
+   3038                logEvent('tengu_concurrent_onquery_enqueued', {});
+   3039              }
+   3040            });
+   3041          return;
+   3042        }
+   3043  
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(3272,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3262-3282 ---
+   3262              ...updatedToolPermissionContext,
+   3263              mode: 'auto',
+   3264              prePlanMode: undefined,
+   3265            });
+   3266          }
+   3267  
+   3268          return {
+   3269            ...prev,
+   3270            initialMessage: null,
+   3271            toolPermissionContext: updatedToolPermissionContext,
+   3272>           ...(shouldStorePlanForVerification && {
+   3273              pendingPlanVerification: {
+   3274                plan: initialMsg.message.planContent!,
+   3275                verificationStarted: false,
+   3276                verificationCompleted: false,
+   3277              },
+   3278            }),
+   3279          };
+   3280        });
+   3281  
+   3282        // Create file history snapshot for code rewind

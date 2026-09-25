@@ -1,0 +1,139 @@
+src/packages/agent/task/framework.ts(53,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/agent/task/framework.ts:43-63 ---
+     43  /**
+     44   * Update a task's state in AppState.
+     45   * Helper function for task implementations.
+     46   * Generic to allow type-safe updates for specific task types.
+     47   */
+     48  export function updateTaskState<T extends TaskState>(
+     49    taskId: string,
+     50    setAppState: SetAppState,
+     51    updater: (task: T) => T,
+     52  ): void {
+     53>   setAppState(prev => {
+     54      const task = prev.tasks?.[taskId] as T | undefined
+     55      if (!task) {
+     56        return prev
+     57      }
+     58      const updated = updater(task)
+     59      if (updated === task) {
+     60        // Updater returned the same reference (early-return no-op). Skip the
+     61        // spread so s.tasks subscribers don't re-render on unchanged state.
+     62        return prev
+     63      }
+  Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: T | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'T | TaskState' is not assignable to type 'TaskState'.
+              Type 'T' is not assignable to type 'TaskState'.
+                Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                  Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                    Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                      Type 'T' is not assignable to type 'DreamTaskState'.
+                        Type 'TaskState' is not assignable to type 'DreamTaskState'.
+                          Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                            Type 'T' is not assignable to type 'TaskStateBase'.
+                              Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/agent/task/framework.ts(79,15): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/agent/task/framework.ts:69-89 ---
+     69        },
+     70      }
+     71    })
+     72  }
+     73  
+     74  /**
+     75   * Register a new task in AppState.
+     76   */
+     77  export function registerTask(task: TaskState, setAppState: SetAppState): void {
+     78    let isReplacement = false
+     79>   setAppState(prev => {
+     80      const existing = prev.tasks[task.id]
+     81      isReplacement = existing !== undefined
+     82      // Carry forward UI-held state on re-register (resumeAgentBackground
+     83      // replaces the task; user's retain shouldn't reset). startTime keeps
+     84      // the panel sort stable; messages + diskLoaded preserve the viewed
+     85      // transcript across the replace (the user's just-appended prompt lives
+     86      // in messages and isn't on disk yet).
+     87      const merged =
+     88        existing && 'retain' in existing
+     89          ? {
+  Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'tasks' are incompatible.
+        Type '{ [x: string]: TaskState | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+          'string' index signatures are incompatible.
+            Type 'TaskState | TaskState' is not assignable to type 'TaskState'.
+              Type 'TaskState' is not assignable to type 'import("/home/user/thyrox/src/packages/repl/src/tasksTypes").TaskState'.
+                Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                  Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+src/packages/agent/task/framework.ts(108,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/task/framework.ts:98-118 ---
+     98      return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } }
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108>     tool_use_id: task.toolUseId,
+    109      description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+src/packages/agent/task/framework.ts(109,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/task/framework.ts:99-119 ---
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108      tool_use_id: task.toolUseId,
+    109>     description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+    119  /**
+src/packages/agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/agent/task/framework.ts:289-309 ---
+    289    enqueuePendingNotification({
+    290      value: message,
+    291      mode: 'task-notification',
+    292      priority: 'next',
+    293    })
+    294  }
+    295  
+    296  /**
+    297   * Get human-readable status text.
+    298   */
+    299> function getStatusText(status: TaskStatus): string {
+    300    switch (status) {
+    301      case 'completed':
+    302        return 'completed successfully'
+    303      case 'failed':
+    304        return 'failed'
+    305      case 'killed':
+    306        return 'was stopped'
+    307      case 'running':
+    308        return 'is running'
+    309      case 'pending':

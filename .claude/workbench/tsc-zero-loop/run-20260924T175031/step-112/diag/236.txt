@@ -1,0 +1,52 @@
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(633,9): error TS2345: Argument of type 'CommandBase & PromptCommand' is not assignable to parameter of type 'CommandBase & PromptCommand & { type: "prompt"; }'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts:623-643 ---
+    623  
+    624      const commands = await getAllCommands(context)
+    625      const command = findCommand(commandName, commands)
+    626  
+    627      // Track skill usage for ranking
+    628      recordSkillUsage(commandName)
+    629  
+    630      // Check if skill should run as a forked sub-agent
+    631      if (command?.type === 'prompt' && command.context === 'fork') {
+    632        return executeForkedSkill(
+    633>         command,
+    634          commandName,
+    635          args,
+    636          context,
+    637          canUseTool,
+    638          parentMessage,
+    639          onProgress,
+    640        )
+    641      }
+    642  
+    643      // Process the skill with optional args
+  Type 'CommandBase & PromptCommand' is not assignable to type 'PromptCommand'.
+    Types of property 'source' are incompatible.
+      Type 'string' is not assignable to type '"userSettings" | "projectSettings" | "localSettings" | "plugin" | "bundled" | "mcp" | "flagSettings" | "policySettings" | "builtin"'.
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(733,48): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts:723-743 ---
+    723            ...(pluginMarketplace && {
+    724              _PROTO_marketplace_name:
+    725                pluginMarketplace as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    726            }),
+    727            plugin_name: (isOfficialSkill
+    728              ? command.pluginInfo.pluginManifest.name
+    729              : 'third-party') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    730            plugin_repository: (isOfficialSkill
+    731              ? command.pluginInfo.repository
+    732              : 'third-party') as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    733>           ...buildPluginCommandTelemetryFields(command.pluginInfo),
+    734          }),
+    735      })
+    736  
+    737      // Get the tool use ID from the parent message for linking newMessages
+    738      const toolUseID = getToolUseIDFromParentMessage(
+    739        parentMessage,
+    740        SKILL_TOOL_NAME,
+    741      )
+    742  
+    743      // Tag user messages with sourceToolUseID so they stay transient until this tool resolves
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

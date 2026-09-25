@@ -1,0 +1,1 @@
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx(51,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.

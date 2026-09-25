@@ -1,0 +1,32 @@
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts(496,23): error TS2352: Conversion of type 'undefined' to type 'string' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts:486-499 ---
+    486          isCancel: () => false,
+    487        },
+    488      }))
+    489      mock.module('src/utils/http', () => ({
+    490        getWebFetchUserAgent: () => 'TestAgent/1.0',
+    491      }))
+    492  
+    493      const adapter = await createAdapter()
+    494      await adapter.search('hello world & special=chars', {})
+    495  
+    496>     const calledUrl = axiosGet.mock.calls[0]![0] as string
+    497      expect(calledUrl).toContain('q=hello%20world%20%26%20special%3Dchars')
+    498    })
+    499  })
+src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts(496,47): error TS2493: Tuple type '[]' of length '0' has no element at index '0'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/__tests__/bingAdapter.test.ts:486-499 ---
+    486          isCancel: () => false,
+    487        },
+    488      }))
+    489      mock.module('src/utils/http', () => ({
+    490        getWebFetchUserAgent: () => 'TestAgent/1.0',
+    491      }))
+    492  
+    493      const adapter = await createAdapter()
+    494      await adapter.search('hello world & special=chars', {})
+    495  
+    496>     const calledUrl = axiosGet.mock.calls[0]![0] as string
+    497      expect(calledUrl).toContain('q=hello%20world%20%26%20special%3Dchars')
+    498    })
+    499  })

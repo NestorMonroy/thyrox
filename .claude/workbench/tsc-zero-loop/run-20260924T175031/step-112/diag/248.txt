@@ -1,0 +1,21 @@
+tests/unit/utils/treeify.test.ts(103,28): error TS2345: Argument of type '{ name: string; nested: { inner: string; }; count: number; }' is not assignable to parameter of type 'TreeNode'.
+  --- código tests/unit/utils/treeify.test.ts:93-109 ---
+     93    })
+     94  
+     95    test('handles empty string key with string value', () => {
+     96      const obj = { ' ': 'whitespace-key' }
+     97      const result = treeify(obj)
+     98      expect(result).toContain('whitespace-key')
+     99    })
+    100  
+    101    test('handles mixed object and primitive values', () => {
+    102      const obj = { name: 'test', nested: { inner: 'val' }, count: 5 }
+    103>     const result = treeify(obj)
+    104      expect(result).toContain('name')
+    105      expect(result).toContain('nested')
+    106      expect(result).toContain('inner')
+    107      expect(result).toContain('count')
+    108    })
+    109  })
+  Property 'count' is incompatible with index signature.
+    Type 'number' is not assignable to type 'string | TreeNode | undefined'.

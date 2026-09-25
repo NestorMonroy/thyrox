@@ -1,0 +1,2 @@
+src/packages/provider/src/openai/convertMessages.ts(124,19): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/provider/src/openai/convertMessages.ts(200,19): error TS18048: 'msg.message' is possibly 'undefined'.

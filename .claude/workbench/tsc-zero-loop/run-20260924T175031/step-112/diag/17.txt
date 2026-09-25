@@ -1,0 +1,47 @@
+src/packages/agent/QueryEngine.ts(975,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+  --- código src/packages/agent/QueryEngine.ts:965-985 ---
+    965            if (persistSession) {
+    966              messages.push(msg)
+    967              void recordTranscript(messages)
+    968            }
+    969            yield* normalizeMessage(msg)
+    970            break
+    971          }
+    972          case 'user': {
+    973            const msg = message as Message
+    974            this.mutableMessages.push(msg)
+    975>           yield* normalizeMessage(msg)
+    976            break
+    977          }
+    978          case 'stream_event': {
+    979            const event = (message as unknown as { event: Record<string, unknown> }).event
+    980            if (event.type === 'message_start') {
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985                currentMessageUsage,
+src/packages/agent/QueryEngine.ts(984,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  --- código src/packages/agent/QueryEngine.ts:974-994 ---
+    974            this.mutableMessages.push(msg)
+    975            yield* normalizeMessage(msg)
+    976            break
+    977          }
+    978          case 'stream_event': {
+    979            const event = (message as unknown as { event: Record<string, unknown> }).event
+    980            if (event.type === 'message_start') {
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984>             currentMessageUsage = updateUsage(
+    985                currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990              currentMessageUsage = updateUsage(
+    991                currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+  Index signature for type 'string' is missing in type 'BetaUsage'.

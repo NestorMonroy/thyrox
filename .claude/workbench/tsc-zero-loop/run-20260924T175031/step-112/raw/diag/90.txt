@@ -1,0 +1,11 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2143,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+  Type 'Promise<AssistantMessage | null>' is not assignable to type 'Promise<OrphanedAssistantMessage | null | undefined>'.
+    Type 'AssistantMessage | null' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+      Type 'AssistantMessage' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2144,9): error TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.
+  Types of parameters 'command' and 'entry' are incompatible.
+    Type '{ mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }' is not assignable to type 'QueuedCommand'.
+      Types of property 'value' are incompatible.
+        Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+          Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+            Type 'unknown' is not assignable to type 'ContentBlockParam'.

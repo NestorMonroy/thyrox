@@ -1,0 +1,19 @@
+src/packages/permission/src/components/hooks.ts(211,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/hooks.ts:201-216 ---
+    201            ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    202          })
+    203        }
+    204      }
+    205  
+    206      void logUnaryEvent({
+    207        completion_type: unaryEvent.completion_type,
+    208        event: 'response',
+    209        metadata: {
+    210          language_name: unaryEvent.language_name,
+    211>         message_id: toolUseConfirm.assistantMessage.message.id,
+    212          platform: env.platform,
+    213        },
+    214      })
+    215    }, [toolUseConfirm, unaryEvent, setAppState])
+    216  }
+  Type 'undefined' is not assignable to type 'string'.

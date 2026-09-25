@@ -1,0 +1,2 @@
+tests/task/premises.test.ts(35,23): error TS2322: Type 'number | null | undefined' is not assignable to type 'number | null'.
+  Type 'undefined' is not assignable to type 'number | null'.

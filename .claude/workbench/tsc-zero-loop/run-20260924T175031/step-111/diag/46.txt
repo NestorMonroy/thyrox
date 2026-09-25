@@ -1,0 +1,24 @@
+src/packages/agent/workflow/workflowWorktree.ts(77,11): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/workflow/workflowWorktree.ts:67-87 ---
+     67      )
+     68    }
+     69    log(`[worktree] agent "${label}" isolated at ${worktree.worktreePath}`)
+     70  
+     71    return {
+     72      worktreePath: worktree.worktreePath,
+     73      async cleanup() {
+     74        try {
+     75          const changed = await hasWorktreeChanges(
+     76            worktree.worktreePath,
+     77>           worktree.headCommit,
+     78          )
+     79          if (!changed) {
+     80            await removeAgentWorktree(
+     81              worktree.worktreePath,
+     82              worktree.worktreeBranch,
+     83              worktree.gitRoot,
+     84            )
+     85            log(`[worktree] agent "${label}" worktree removed (no changes)`)
+     86          } else {
+     87            log(
+  Type 'undefined' is not assignable to type 'string'.

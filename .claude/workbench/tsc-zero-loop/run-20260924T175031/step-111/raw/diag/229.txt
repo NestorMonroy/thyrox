@@ -1,0 +1,1 @@
+src/packages/repl/src/components/wizard/WizardProvider.tsx(24,4): error TS2315: Type 'WizardProviderProps' is not generic.

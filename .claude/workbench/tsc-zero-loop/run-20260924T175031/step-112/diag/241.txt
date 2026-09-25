@@ -1,0 +1,46 @@
+tests/integration/context-build.test.ts(31,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:21-41 ---
+     21    test('buildEffectiveSystemPrompt handles empty prompts', () => {
+     22      const result = buildEffectiveSystemPrompt({
+     23        defaultSystemPrompt: '',
+     24      })
+     25      const joined = Array.from(result).join('')
+     26      expect(joined).toBe('')
+     27    })
+     28  
+     29    test('buildEffectiveSystemPrompt with overrideSystemPrompt replaces everything', () => {
+     30      const result = buildEffectiveSystemPrompt({
+     31>       defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })
+     34      const joined = Array.from(result).join('')
+     35      expect(joined).toBe('Override')
+     36    })
+     37  
+     38    test('buildEffectiveSystemPrompt with customSystemPrompt replaces default', () => {
+     39      const result = buildEffectiveSystemPrompt({
+     40        defaultSystemPrompt: 'Default',
+     41        customSystemPrompt: 'Custom',
+tests/integration/context-build.test.ts(40,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+  --- código tests/integration/context-build.test.ts:30-50 ---
+     30      const result = buildEffectiveSystemPrompt({
+     31        defaultSystemPrompt: 'Default',
+     32        overrideSystemPrompt: 'Override',
+     33      })
+     34      const joined = Array.from(result).join('')
+     35      expect(joined).toBe('Override')
+     36    })
+     37  
+     38    test('buildEffectiveSystemPrompt with customSystemPrompt replaces default', () => {
+     39      const result = buildEffectiveSystemPrompt({
+     40>       defaultSystemPrompt: 'Default',
+     41        customSystemPrompt: 'Custom',
+     42      })
+     43      const joined = Array.from(result).join('')
+     44      expect(joined).toBe('Custom')
+     45    })
+     46  
+     47    test('buildEffectiveSystemPrompt with appendSystemPrompt includes both', () => {
+     48      const result = buildEffectiveSystemPrompt({
+     49        defaultSystemPrompt: 'Main prompt',
+     50        appendSystemPrompt: 'Appended',

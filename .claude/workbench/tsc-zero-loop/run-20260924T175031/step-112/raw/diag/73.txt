@@ -1,0 +1,6 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(125,66): error TS2345: Argument of type 'unknown[] | PermissionUpdate[]' is not assignable to parameter of type 'PermissionUpdate[]'.
+  Type 'unknown[]' is not assignable to type 'PermissionUpdate[]'.
+    Type 'unknown' is not assignable to type 'PermissionUpdate'.
+src/packages/app-host/src/runtime/runtimeHandles.ts(135,56): error TS2322: Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown> | McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.
+  Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.
+    Type 'unknown' is not assignable to type 'MCPServerConnection'.

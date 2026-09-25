@@ -1,0 +1,47 @@
+src/packages/repl/src/queryHelpers.ts(124,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "billing_error" | "rate_limit" | "invalid_request" | "server_error" | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:114-134 ---
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120            message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124>           error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+    131          progressData.type === 'agent_progress' ||
+    132          progressData.type === 'skill_progress'
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+src/packages/repl/src/queryHelpers.ts(143,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:133-153 ---
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+    135            switch (_.type) {
+    136              case 'assistant':
+    137                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    138                if (!isNotEmptyMessage(_)) {
+    139                  break
+    140                }
+    141                yield {
+    142                  type: 'assistant',
+    143>                 message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.

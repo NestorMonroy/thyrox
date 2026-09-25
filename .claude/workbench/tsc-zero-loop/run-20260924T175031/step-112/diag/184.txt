@@ -1,0 +1,46 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(922,15): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:912-932 ---
+    912                        // This is a perf optimization to avoid having to recaculcate the leaf node every time
+    913                        // Since we're creating a bunch of synthetic messages for compact, it's important to set
+    914                        // the timestamp of the last message to be slightly after the current time
+    915                        // This is mostly important for sdk / -p mode
+    916                        timestamp: new Date(Date.now() + 100).toISOString(),
+    917                      }),
+    918                    ]
+    919                  : []),
+    920              ]
+    921              const compactionResultWithSlashMessages = {
+    922>               ...result.compactionResult,
+    923                messagesToKeep: [
+    924                  ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(924,21): error TS18046: 'result.compactionResult' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:914-934 ---
+    914                        // the timestamp of the last message to be slightly after the current time
+    915                        // This is mostly important for sdk / -p mode
+    916                        timestamp: new Date(Date.now() + 100).toISOString(),
+    917                      }),
+    918                    ]
+    919                  : []),
+    920              ]
+    921              const compactionResultWithSlashMessages = {
+    922                ...result.compactionResult,
+    923                messagesToKeep: [
+    924>                 ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+    933              return {
+    934                messages: buildPostCompactMessages(

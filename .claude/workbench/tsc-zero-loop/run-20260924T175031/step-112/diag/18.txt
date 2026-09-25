@@ -1,0 +1,48 @@
+src/packages/agent/QueryEngine.ts(985,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  --- código src/packages/agent/QueryEngine.ts:975-995 ---
+    975            yield* normalizeMessage(msg)
+    976            break
+    977          }
+    978          case 'stream_event': {
+    979            const event = (message as unknown as { event: Record<string, unknown> }).event
+    980            if (event.type === 'message_start') {
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985>               currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990              currentMessageUsage = updateUsage(
+    991                currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+    995              // is yielded at content_block_stop with stop_reason=null; the
+  Type 'NonNullableUsage' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 8 more.
+src/packages/agent/QueryEngine.ts(990,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  --- código src/packages/agent/QueryEngine.ts:980-1000 ---
+    980            if (event.type === 'message_start') {
+    981              // Reset current message usage for new message
+    982              currentMessageUsage = EMPTY_USAGE
+    983              const eventMessage = event.message as { usage: BetaMessageDeltaUsage }
+    984              currentMessageUsage = updateUsage(
+    985                currentMessageUsage,
+    986                eventMessage.usage,
+    987              )
+    988            }
+    989            if (event.type === 'message_delta') {
+    990>             currentMessageUsage = updateUsage(
+    991                currentMessageUsage,
+    992                event.usage as BetaMessageDeltaUsage,
+    993              )
+    994              // Capture stop_reason from message_delta. The assistant message
+    995              // is yielded at content_block_stop with stop_reason=null; the
+    996              // real value only arrives here (see claude.ts message_delta
+    997              // handler). Without this, result.stop_reason is always null.
+    998              const delta = event.delta as { stop_reason?: string | null }
+    999              if (delta.stop_reason != null) {
+   1000                lastStopReason = delta.stop_reason
+  Index signature for type 'string' is missing in type 'BetaUsage'.

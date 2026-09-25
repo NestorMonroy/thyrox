@@ -1,0 +1,18 @@
+src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts(246,22): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type 'number'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts:236-250 ---
+    236      if (!trimmed || trimmed === 'NOT_FOUND' || trimmed === 'INVALID_SIZE') {
+    237        return emptyResult(language)
+    238      }
+    239  
+    240      const parts = trimmed.split(',')
+    241      if (parts.length !== 4) return emptyResult(language)
+    242  
+    243      const [x, y, w, h] = parts.map(Number)
+    244      if (!w || !h) return emptyResult(language)
+    245  
+    246>     return ocrRegion(x, y, w, h, lang)
+    247    } catch {
+    248      return emptyResult(language)
+    249    }
+    250  }
+  Type 'undefined' is not assignable to type 'number'.

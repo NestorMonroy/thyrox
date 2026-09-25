@@ -1,0 +1,28 @@
+{
+ "reviewed": [
+  {
+   "pattern": "toBe-literal-outside-narrowed-return-type",
+   "files": [
+    "src/packages/config/__tests__/pluginIdentifier.test.ts"
+   ]
+  },
+  {
+   "pattern": "callback-return-type-narrower-than-target",
+   "files": [
+    "src/packages/config/plugin/PluginInstallationManager.ts"
+   ]
+  },
+  {
+   "pattern": "stat-wrapper-narrows-mtime-to-mtime-only",
+   "files": [
+    "src/packages/config/plugin/mcpbHandler.ts"
+   ]
+  },
+  {
+   "pattern": "typeof-import-of-untyped-package",
+   "files": [
+    "src/packages/config/semver.ts"
+   ]
+  }
+ ]
+}

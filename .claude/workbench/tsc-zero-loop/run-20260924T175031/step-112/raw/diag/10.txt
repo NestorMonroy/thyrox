@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(622,18): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(623,12): error TS18048: 'msg.message' is possibly 'undefined'.

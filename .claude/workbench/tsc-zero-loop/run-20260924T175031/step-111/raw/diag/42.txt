@@ -1,0 +1,2 @@
+src/packages/agent/sideQuestion.ts(140,30): error TS2352: Conversion of type '{ [key: string]: unknown; type: string; }' to type '{ name: string; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'name' is missing in type '{ [key: string]: unknown; type: string; }' but required in type '{ name: string; }'.

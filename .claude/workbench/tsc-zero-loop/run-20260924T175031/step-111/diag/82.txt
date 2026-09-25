@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/copy/index.ts(12,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/copy/copy")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/copy/index.ts:2-15 ---
+      2   * Copy command - minimal metadata only.
+      3   * Implementation is lazy-loaded from copy.tsx to reduce startup time.
+      4   */
+      5  import type { Command } from '../../runtime.js'
+      6  
+      7  const copy = {
+      8    type: 'local-jsx',
+      9    name: 'copy',
+     10    description:
+     11      "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)",
+     12>   load: () => import('./copy.js'),
+     13  } satisfies Command
+     14  
+     15  export default copy
+  Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/copy/copy")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

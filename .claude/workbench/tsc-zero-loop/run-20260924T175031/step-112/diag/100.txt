@@ -1,0 +1,48 @@
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(163,25): error TS2339: Property 'supportsNonInteractive' does not exist on type 'Command'.
+  --- código src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts:153-173 ---
+    153    test('rename', () => {
+    154      expect(renameCommand.name).toBe('rename')
+    155      expect(renameCommand.argumentHint).toBe('[name]')
+    156    })
+    157    test('workflows', () => {
+    158      expect(workflowsCommand.name).toBe('workflows')
+    159      expect(workflowsCommand.aliases).toEqual([])
+    160    })
+    161    test('recap', () => {
+    162      expect(recapCommand.name).toBe('recap')
+    163>     expect(recapCommand.supportsNonInteractive).toBe(false)
+    164    })
+    165    test('goal (local-jsx + local)', () => {
+    166      expect(goalJsxCommand.name).toBe('goal')
+    167      expect(goalJsxCommand.type).toBe('local-jsx')
+    168      expect(goalLocalCommand.name).toBe('goal')
+    169      expect(goalLocalCommand.type).toBe('local')
+    170      expect(goalLocalCommand.supportsNonInteractive).toBe(true)
+    171    })
+    172    test('review + ultrareview', async () => {
+    173      expect(reviewCommand.name).toBe('review')
+  Property 'supportsNonInteractive' does not exist on type 'CommandBase & PromptCommand'.
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(170,29): error TS2339: Property 'supportsNonInteractive' does not exist on type 'Command'.
+  --- código src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts:160-180 ---
+    160    })
+    161    test('recap', () => {
+    162      expect(recapCommand.name).toBe('recap')
+    163      expect(recapCommand.supportsNonInteractive).toBe(false)
+    164    })
+    165    test('goal (local-jsx + local)', () => {
+    166      expect(goalJsxCommand.name).toBe('goal')
+    167      expect(goalJsxCommand.type).toBe('local-jsx')
+    168      expect(goalLocalCommand.name).toBe('goal')
+    169      expect(goalLocalCommand.type).toBe('local')
+    170>     expect(goalLocalCommand.supportsNonInteractive).toBe(true)
+    171    })
+    172    test('review + ultrareview', async () => {
+    173      expect(reviewCommand.name).toBe('review')
+    174      expect(reviewCommand.type).toBe('prompt')
+    175      const blocks = await (reviewCommand as { getPromptForCommand: (a: string) => Promise<{ type: string; text: string }[]> }).getPromptForCommand('42')
+    176      expect(blocks[0]?.text).toContain('PR number: 42')
+    177      expect(ultrareview.name).toBe('ultrareview')
+    178      expect(ultrareview.type).toBe('local-jsx')
+    179    })
+    180    test('getGoalConditionMaxLength resuelve @thyrox/agent (ya declarado)', () => {
+  Property 'supportsNonInteractive' does not exist on type 'CommandBase & PromptCommand'.

@@ -1,0 +1,2 @@
+src/packages/cli/src/entry/cli.tsx(175,13): error TS2339: Property 'exitWithError' does not exist on type 'typeof import("/home/user/thyrox/src/packages/shell/src/process")'.
+src/packages/cli/src/entry/cli.tsx(329,17): error TS2339: Property 'exitWithError' does not exist on type 'typeof import("/home/user/thyrox/src/packages/shell/src/process")'.

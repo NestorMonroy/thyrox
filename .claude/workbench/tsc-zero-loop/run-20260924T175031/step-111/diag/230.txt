@@ -1,0 +1,111 @@
+src/packages/repl/src/conversationRecovery.tsx(187,30): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/conversationRecovery.tsx:177-197 ---
+    177        if (
+    178          msg.type === 'user' &&
+    179          msg.permissionMode !== undefined &&
+    180          !validModes.has(msg.permissionMode as string)
+    181        ) {
+    182          msg.permissionMode = undefined
+    183        }
+    184      }
+    185  
+    186      // Filter out unresolved tool uses and any synthetic messages that follow them
+    187>     const filteredToolUses = filterUnresolvedToolUses(
+    188        migratedMessages,
+    189      ) as NormalizedMessage[]
+    190  
+    191      // Filter out orphaned thinking-only assistant messages that can cause API errors
+    192      // during resume. These occur when streaming yields separate messages per content
+    193      // block and interleaved user messages prevent proper merging by message.id.
+    194      const filteredThinking = filterOrphanedThinkingOnlyMessages(
+    195        filteredToolUses,
+    196      ) as NormalizedMessage[]
+    197  
+  Type 'Message' is not comparable to type 'NormalizedMessage'.
+    Type 'Message' is not comparable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+      Type 'Message' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:178-198 ---
+    178          msg.type === 'user' &&
+    179          msg.permissionMode !== undefined &&
+    180          !validModes.has(msg.permissionMode as string)
+    181        ) {
+    182          msg.permissionMode = undefined
+    183        }
+    184      }
+    185  
+    186      // Filter out unresolved tool uses and any synthetic messages that follow them
+    187      const filteredToolUses = filterUnresolvedToolUses(
+    188>       migratedMessages,
+    189      ) as NormalizedMessage[]
+    190  
+    191      // Filter out orphaned thinking-only assistant messages that can cause API errors
+    192      // during resume. These occur when streaming yields separate messages per content
+    193      // block and interleaved user messages prevent proper merging by message.id.
+    194      const filteredThinking = filterOrphanedThinkingOnlyMessages(
+    195        filteredToolUses,
+    196      ) as NormalizedMessage[]
+    197  
+    198      // Filter out assistant messages with only whitespace text content.
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content
+src/packages/repl/src/conversationRecovery.tsx(223,9): error TS2322: Type 'NormalizedMessage' is not assignable to type 'NormalizedUserMessage'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:213-233 ---
+    213          process.env.CLAUDE_CODE_RESUME_PROMPT || 'Continue from where you left off.'
+    214        const [continuationMessage] = normalizeMessages([
+    215          createUserMessage({
+    216            content: resumeText,
+    217            isMeta: true,
+    218          }),
+    219        ])
+    220        filteredMessages.push(continuationMessage!)
+    221        turnInterruptionState = {
+    222          kind: 'interrupted_prompt',
+    223>         message: continuationMessage!,
+    224        }
+    225      } else {
+    226        turnInterruptionState = internalState
+    227      }
+    228  
+    229      // Append a synthetic assistant sentinel after the last user message so
+    230      // the conversation is API-valid if no resume action is taken. Skip past
+    231      // trailing system/progress messages and insert right after the user
+    232      // message so removeInterruptedMessage's splice(idx, 2) removes the
+    233      // correct pair.
+  Type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'NormalizedUserMessage'.
+    Type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type '{ type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }; }'.
+      Types of property 'type' are incompatible.
+        Type '"assistant"' is not assignable to type '"user"'.
+src/packages/repl/src/conversationRecovery.tsx(552,33): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:542-562 ---
+    542          log = await loadFullLog(log)
+    543        }
+    544  
+    545        // Determine sessionId first so we can pass it to copy functions
+    546        if (!sessionId) {
+    547          sessionId = getSessionIdFromLog(log) as UUID
+    548        }
+    549        // Pass the original session ID to ensure the plan slug is associated with
+    550        // the session we're resuming, not the temporary session ID before resume
+    551        if (sessionId) {
+    552>         await copyPlanForResume(log, asSessionId(sessionId))
+    553        }
+    554  
+    555        // Copy file history for resume
+    556        void copyFileHistoryForResume(log)
+    557  
+    558        messages = log.messages
+    559        checkResumeConsistency(messages)
+    560      }
+    561  
+    562      // Restore skill state from invoked_skills attachments before deserialization.
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.

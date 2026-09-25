@@ -1,0 +1,46 @@
+src/packages/config/plugin/pluginLoader.ts(3174,5): error TS18048: 'inlinePlugins' is possibly 'undefined'.
+  --- código src/packages/config/plugin/pluginLoader.ts:3164-3184 ---
+   3164      plugins: LoadedPlugin[]
+   3165      errors: PluginError[]
+   3166    }>,
+   3167  ): Promise<PluginLoadResult> {
+   3168    // Load marketplace plugins and session-only plugins in parallel.
+   3169    // getInlinePlugins() is a synchronous state read with no dependency on
+   3170    // marketplace loading, so these two sources can be fetched concurrently.
+   3171    const inlinePlugins = getInlinePlugins()
+   3172    const [marketplaceResult, sessionResult] = await Promise.all([
+   3173      marketplaceLoader(),
+   3174>     inlinePlugins.length > 0
+   3175        ? loadSessionOnlyPlugins(inlinePlugins)
+   3176        : Promise.resolve({ plugins: [], errors: [] }),
+   3177    ])
+   3178    // 3. Load built-in plugins that ship with the CLI
+   3179    const builtinResult = getBuiltinPlugins()
+   3180  
+   3181    // Session plugins (--plugin-dir) override installed ones by name,
+   3182    // UNLESS the installed plugin is locked by managed settings
+   3183    // (policySettings). See mergePluginSources() for details.
+   3184    const { plugins: allPlugins, errors: mergeErrors } = mergePluginSources({
+src/packages/config/plugin/pluginLoader.ts(3174,5): error TS18046: 'inlinePlugins.length' is of type 'unknown'.
+  --- código src/packages/config/plugin/pluginLoader.ts:3164-3184 ---
+   3164      plugins: LoadedPlugin[]
+   3165      errors: PluginError[]
+   3166    }>,
+   3167  ): Promise<PluginLoadResult> {
+   3168    // Load marketplace plugins and session-only plugins in parallel.
+   3169    // getInlinePlugins() is a synchronous state read with no dependency on
+   3170    // marketplace loading, so these two sources can be fetched concurrently.
+   3171    const inlinePlugins = getInlinePlugins()
+   3172    const [marketplaceResult, sessionResult] = await Promise.all([
+   3173      marketplaceLoader(),
+   3174>     inlinePlugins.length > 0
+   3175        ? loadSessionOnlyPlugins(inlinePlugins)
+   3176        : Promise.resolve({ plugins: [], errors: [] }),
+   3177    ])
+   3178    // 3. Load built-in plugins that ship with the CLI
+   3179    const builtinResult = getBuiltinPlugins()
+   3180  
+   3181    // Session plugins (--plugin-dir) override installed ones by name,
+   3182    // UNLESS the installed plugin is locked by managed settings
+   3183    // (policySettings). See mergePluginSources() for details.
+   3184    const { plugins: allPlugins, errors: mergeErrors } = mergePluginSources({

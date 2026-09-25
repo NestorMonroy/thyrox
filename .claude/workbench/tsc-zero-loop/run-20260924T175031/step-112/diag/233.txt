@@ -1,0 +1,46 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1115,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1105-1125 ---
+   1105      return {
+   1106        stdout: '',
+   1107        stderr: '',
+   1108        code: 0,
+   1109        interrupted: false,
+   1110        backgroundTaskId: shellId,
+   1111      }
+   1112    }
+   1113  
+   1114    // Start polling the output file for progress
+   1115>   TaskOutput.startPolling(shellCommand.taskOutput.taskId)
+   1116  
+   1117    // Set up progress yielding with periodic checks
+   1118    const startTime = Date.now()
+   1119    let nextProgressTime = startTime + PROGRESS_THRESHOLD_MS
+   1120    let foregroundTaskId: string | undefined 
+   1121  
+   1122    // Progress loop: wrap in try/finally so stopPolling is called on every exit
+   1123    // path — normal completion, timeout/interrupt backgrounding, and Ctrl+B
+   1124    // (matches BashTool pattern; see PR #18887 review thread at :560)
+   1125    try {
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1157,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1147-1167 ---
+   1147          // Check result.backgroundTaskId (not the closure var) to also cover
+   1148          // Ctrl+B, which calls shellCommand.background() directly.
+   1149          if (result.backgroundTaskId !== undefined) {
+   1150            markTaskNotified(result.backgroundTaskId, setAppState)
+   1151            const fixedResult: ExecResult = {
+   1152              ...result,
+   1153              backgroundTaskId: undefined,
+   1154            }
+   1155            // Mirror ShellCommand.#handleExit's large-output branch that was
+   1156            // skipped because #backgroundTaskId was set.
+   1157>           const { taskOutput } = shellCommand
+   1158            if (taskOutput.stdoutToFile && !taskOutput.outputFileRedundant) {
+   1159              fixedResult.outputFilePath = taskOutput.path
+   1160              fixedResult.outputFileSize = taskOutput.outputFileSize
+   1161              fixedResult.outputTaskId = taskOutput.taskId
+   1162            }
+   1163            // Command completed — cleanup stream listeners here. The finally
+   1164            // block's guard (!backgroundShellId && status !== 'backgrounded')
+   1165            // correctly skips cleanup for *running* backgrounded tasks, but
+   1166            // in this race the process is done. Matches BashTool.tsx:1399.
+   1167            shellCommand.cleanup()

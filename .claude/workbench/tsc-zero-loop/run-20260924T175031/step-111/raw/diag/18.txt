@@ -1,0 +1,2 @@
+src/packages/agent/commands/commit.ts(70,9): error TS2698: Spread types may only be created from object types.
+src/packages/agent/commands/commit.ts(72,28): error TS18046: 'context' is of type 'unknown'.

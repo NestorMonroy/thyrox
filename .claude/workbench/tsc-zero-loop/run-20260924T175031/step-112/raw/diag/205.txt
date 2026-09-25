@@ -1,0 +1,4 @@
+src/packages/repl/src/screens/REPLView.tsx(2610,9): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2621,11): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.

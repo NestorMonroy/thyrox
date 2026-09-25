@@ -1,0 +1,12 @@
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(5,7): error TS2322: Type '{ type: "system"; subtype: "snip_boundary"; }' is not assignable to type 'Message'.
+  Types of property 'subtype' are incompatible.
+    Type '"snip_boundary"' is not assignable to type '"thinking" | "compact_boundary" | "local_command" | "api_error" | "file_snapshot" | "agents_killed" | "api_metrics" | "away_summary" | "bridge_status" | "informational" | ... 5 more ... | "turn_duration"'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(6,7): error TS2322: Type '{ type: "system"; subtype: "other"; }' is not assignable to type 'Message'.
+  Types of property 'subtype' are incompatible.
+    Type '"other"' is not assignable to type '"thinking" | "compact_boundary" | "local_command" | "api_error" | "file_snapshot" | "agents_killed" | "api_metrics" | "away_summary" | "bridge_status" | "informational" | ... 5 more ... | "turn_duration"'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(7,7): error TS2322: Type '{ type: "user"; }' is not assignable to type 'Message'.
+  Type '{ type: "user"; }' is not assignable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/compactionSnipProjection.test.ts(17,34): error TS2352: Conversion of type '{ type: "user"; subtype: string; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "user"; subtype: string; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; subtype: string; }' but required in type 'MessageBase'.

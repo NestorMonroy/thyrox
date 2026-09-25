@@ -1,0 +1,15 @@
+src/packages/bridge/src/bridgeUI.ts(2,40): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/user/thyrox/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  --- código src/packages/bridge/src/bridgeUI.ts:1-12 ---
+      1  import chalk from 'chalk'
+      2> import { toString as qrToString } from 'qrcode'
+      3  import {
+      4    BRIDGE_FAILED_INDICATOR,
+      5    BRIDGE_READY_INDICATOR,
+      6    BRIDGE_SPINNER_FRAMES,
+      7  } from '@thyrox/output/constants/figures.js'
+      8  import { stringWidth } from '@anthropic/ink'
+      9  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     10  import {
+     11    buildActiveFooterText,
+     12    buildBridgeConnectUrl,
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`

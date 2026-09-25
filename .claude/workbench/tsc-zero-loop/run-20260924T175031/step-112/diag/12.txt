@@ -1,0 +1,48 @@
+src/packages/agent/QueryEngine.ts(655,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/QueryEngine.ts:645-665 ---
+    645          // system subtype) so mobile clients + session-ingress can parse it.
+    646          if (
+    647            msg.type === 'system' &&
+    648            msg.subtype === 'local_command' &&
+    649            typeof msg.content === 'string' &&
+    650            (msg.content.includes(`<${LOCAL_COMMAND_STDOUT_TAG}>`) ||
+    651              msg.content.includes(`<${LOCAL_COMMAND_STDERR_TAG}>`))
+    652          ) {
+    653            yield localCommandOutputToSDKAssistantMessage(
+    654              msg.content,
+    655>             msg.uuid,
+    656              getSessionId(),
+    657              LOCAL_COMMAND_STDOUT_TAG,
+    658              LOCAL_COMMAND_STDERR_TAG,
+    659            )
+    660          }
+    661  
+    662          if (msg.type === 'system' && msg.subtype === 'compact_boundary') {
+    663            const compactMsg = msg as SystemCompactBoundaryMessage
+    664            yield {
+    665              type: 'system',
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(718,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/agent/QueryEngine.ts:708-728 ---
+    708        messagesFromUserInput
+    709          .filter(selectableUserMessagesFilter)
+    710          .forEach(message => {
+    711            void fileHistoryMakeSnapshot(
+    712              (updater: (prev: FileHistoryState) => FileHistoryState) => {
+    713                setAppState(prev => ({
+    714                  ...prev,
+    715                  fileHistory: updater(prev.fileHistory),
+    716                }))
+    717              },
+    718>             message.uuid,
+    719            )
+    720          })
+    721      }
+    722  
+    723      // Track current message usage (reset on each message_start)
+    724      let currentMessageUsage: NonNullableUsage = EMPTY_USAGE
+    725      let turnCount = 1
+    726      let hasAcknowledgedInitialMessages = false
+    727      // Track structured output from StructuredOutput tool calls
+    728      let structuredOutputFromTool: unknown
+  Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.

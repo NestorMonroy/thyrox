@@ -1,0 +1,19 @@
+src/packages/command-runtime/src/host.ts(33,10): error TS2352: Conversion of type 'CommandRegistryHostBindings<CommandLike>' to type 'CommandRegistryHostBindings<TCommand>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/command-runtime/src/host.ts:23-34 ---
+     23  }
+     24  
+     25  export function getCommandRegistryHostBindings<
+     26    TCommand extends CommandLike,
+     27  >(): CommandRegistryHostBindings<TCommand> {
+     28    if (!commandRegistryHostBindings) {
+     29      throw new HostBindingsError(
+     30        'Command registry host bindings have not been installed. Install host bindings before using @thyrox/command-runtime runtime APIs.',
+     31      )
+     32    }
+     33>   return commandRegistryHostBindings as CommandRegistryHostBindings<TCommand>
+     34  }
+  The types returned by 'getCommands(...)' are incompatible between these types.
+    Type 'Promise<CommandLike[]>' is not comparable to type 'Promise<TCommand[]>'.
+      Type 'CommandLike[]' is not comparable to type 'TCommand[]'.
+        Type 'CommandLike' is not comparable to type 'TCommand'.
+          'CommandLike' is assignable to the constraint of type 'TCommand', but 'TCommand' could be instantiated with a different subtype of constraint 'CommandLike'.

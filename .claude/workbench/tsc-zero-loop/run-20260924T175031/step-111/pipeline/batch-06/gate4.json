@@ -1,0 +1,22 @@
+{
+ "reviewed": [
+  {
+   "pattern": "leer-campo-nunca-persistido-del-cache-de-discovery-state",
+   "files": [
+    "src/packages/mcp-runtime/src/auth.ts"
+   ]
+  },
+  {
+   "pattern": "in-operator-no-estrecha-por-indice-signature",
+   "files": [
+    "src/packages/output/src/render/exportRenderer.tsx"
+   ]
+  },
+  {
+   "pattern": "beta-usage-union-record-unknown-missing-input-tokens",
+   "files": [
+    "src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx"
+   ]
+  }
+ ]
+}

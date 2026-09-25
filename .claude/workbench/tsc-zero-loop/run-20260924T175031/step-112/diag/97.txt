@@ -1,0 +1,46 @@
+src/packages/cli/src/structuredIO.ts(25,29): error TS2724: '"@thyrox/agent/types/hooks.js"' has no exported member named 'hookJSONOutputSchema'. Did you mean 'HookJSONOutput'?
+  --- código src/packages/cli/src/structuredIO.ts:15-35 ---
+     15  import { SDKControlElicitationResponseSchema } from '@thyrox/agent/sdkControlSchemas.js'
+     16  import type {
+     17    SDKControlRequest,
+     18    SDKControlResponse,
+     19    StdinMessage,
+     20    StdoutMessage,
+     21  } from '@thyrox/headless-sdk/controlTypes.js'
+     22  import type { PermissionUpdate as InternalPermissionUpdate } from '@thyrox/permission/permissionTypes'
+     23  import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+     24  import type { Tool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+     25> import { type HookCallback, hookJSONOutputSchema } from '@thyrox/agent/types/hooks.js'
+     26  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     27  import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
+     28  import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
+     29  import {
+     30    type Output as PermissionToolOutput,
+     31    permissionPromptToolResultToPermissionDecision,
+     32    outputSchema as permissionToolOutputSchema,
+     33  } from '@thyrox/permission/PermissionPromptToolResultSchema'
+     34  import type {
+     35    PermissionDecision,
+src/packages/cli/src/structuredIO.ts(210,9): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.
+  --- código src/packages/cli/src/structuredIO.ts:200-220 ---
+    200  
+    201    /**
+    202     * Queue a user turn to be yielded before the next message from this.input.
+    203     * Works before iteration starts and mid-stream — read() re-checks
+    204     * prependedLines between each yielded message.
+    205     */
+    206    prependUserMessage(content: string): void {
+    207      this.prependedLines.push(
+    208        jsonStringify({
+    209          type: 'user',
+    210>         content,
+    211          uuid: '',
+    212          session_id: '',
+    213          message: { role: 'user', content },
+    214          parent_tool_use_id: null,
+    215        } satisfies SDKUserMessage) + '\n',
+    216      )
+    217    }
+    218  
+    219    private async *read() {
+    220      let content = ''

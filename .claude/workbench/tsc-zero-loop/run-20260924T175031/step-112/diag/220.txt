@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/services/toolExecution.ts(775,5): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:765-785 ---
+    765    let shouldPreventContinuation = false
+    766    let stopReason: string | undefined
+    767    let hookPermissionResult: PermissionResult | undefined
+    768    const preToolHookInfos: StopHookInfo[] = []
+    769    const preToolHookStart = Date.now()
+    770    for await (const result of runPreToolUseHooks(
+    771      toolUseContext,
+    772      tool,
+    773      processedInput,
+    774      toolUseID,
+    775>     assistantMessage.message.id,
+    776      requestId,
+    777      mcpServerType,
+    778      mcpServerBaseUrl,
+    779    )) {
+    780      switch (result.type) {
+    781        case 'message':
+    782          if (result.message.message.type === 'progress') {
+    783            onToolProgress(result.message.message)
+    784          } else {
+    785            resultingMessages.push(result.message)
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/services/toolExecution.ts(1016,27): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1006-1026 ---
+   1006          tool_use_id: toolUseID,
+   1007        },
+   1008      ]
+   1009  
+   1010      // Add image blocks at top level (not inside tool_result, which rejects non-text with is_error)
+   1011      const rejectContentBlocks =
+   1012        permissionDecision.behavior === 'ask'
+   1013          ? permissionDecision.contentBlocks
+   1014          : undefined
+   1015      if (rejectContentBlocks?.length) {
+   1016>       messageContent.push(...rejectContentBlocks)
+   1017      }
+   1018  
+   1019      // Generate sequential imagePasteIds so each image renders with a distinct label
+   1020      let rejectImageIds: number[] | undefined
+   1021      if (rejectContentBlocks?.length) {
+   1022        const imageCount = count(
+   1023          rejectContentBlocks,
+   1024          (b: ContentBlockParam) => b.type === 'image',
+   1025        )
+   1026        if (imageCount > 0) {
+  Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name

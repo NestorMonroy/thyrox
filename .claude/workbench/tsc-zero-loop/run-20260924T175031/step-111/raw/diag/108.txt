@@ -1,0 +1,5 @@
+src/packages/config/__tests__/pluginIdentifier.test.ts(226,64): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: "user" | "local" | "project"): void', gave the following error.
+    Argument of type '"flag"' is not assignable to parameter of type '"user" | "local" | "project"'.
+  Overload 2 of 2, '(expected: "user" | "local" | "project"): void', gave the following error.
+    Argument of type '"flag"' is not assignable to parameter of type '"user" | "local" | "project"'.

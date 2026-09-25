@@ -1,0 +1,138 @@
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(418,5): error TS2741: Property 'fallback_credit' is missing in type '{ inference_geo: null; iterations: null; speed: null; output_tokens_details: null; input_tokens: number; output_tokens: number; cache_creation_input_tokens: number | null; cache_read_input_tokens: number | null; server_tool_use: { ...; } | null; service_tier: "priority" | ... 2 more ... | null; cache_creation: { ......' but required in type 'BetaUsage'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:408-428 ---
+    408    const result = [
+    409      totalToolUseCount === 1 ? '1 tool use' : `${totalToolUseCount} tool uses`,
+    410      formatNumber(totalTokens) + ' tokens',
+    411      formatDuration(totalDurationMs),
+    412    ]
+    413  
+    414    const completionMessage = `Done (${result.join(' · ')})`
+    415  
+    416    const finalAssistantMessage = createAssistantMessage({
+    417      content: completionMessage,
+    418>     usage: { ...usage, inference_geo: null, iterations: null, speed: null, output_tokens_details: null },
+    419    })
+    420  
+    421    return (
+    422      <Box flexDirection="column">
+    423        {process.env.USER_TYPE === 'ant' && (
+    424          <MessageResponse>
+    425            <Text color="warning">
+    426              [ANT-ONLY] API calls: {getDisplayPath(getDumpPromptsPath(agentId))}
+    427            </Text>
+    428          </MessageResponse>
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(870,44): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:860-880 ---
+    860  
+    861        // For teammate spawns, show @name with type in parens and description as status
+    862        let agentType: string
+    863        let description: string | undefined
+    864        let color: keyof Theme | undefined
+    865        let descriptionColor: keyof Theme | undefined
+    866        let taskDescription: string | undefined
+    867        if (isTeammateSpawn && parsedInput.success && parsedInput.data.name) {
+    868          agentType = `@${parsedInput.data.name}`
+    869          const subagentType = parsedInput.data.subagent_type
+    870>         description = isCustomSubagentType(subagentType)
+    871            ? subagentType
+    872            : undefined
+    873          taskDescription = parsedInput.data.description
+    874          // Use the custom agent definition's color on the type, not the name
+    875          descriptionColor = isCustomSubagentType(subagentType)
+    876            ? (getAgentColor(subagentType) as keyof Theme | undefined)
+    877            : undefined
+    878        } else {
+    879          agentType = parsedInput.success
+    880            ? userFacingName(parsedInput.data)
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(873,9): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:863-883 ---
+    863        let description: string | undefined
+    864        let color: keyof Theme | undefined
+    865        let descriptionColor: keyof Theme | undefined
+    866        let taskDescription: string | undefined
+    867        if (isTeammateSpawn && parsedInput.success && parsedInput.data.name) {
+    868          agentType = `@${parsedInput.data.name}`
+    869          const subagentType = parsedInput.data.subagent_type
+    870          description = isCustomSubagentType(subagentType)
+    871            ? subagentType
+    872            : undefined
+    873>         taskDescription = parsedInput.data.description
+    874          // Use the custom agent definition's color on the type, not the name
+    875          descriptionColor = isCustomSubagentType(subagentType)
+    876            ? (getAgentColor(subagentType) as keyof Theme | undefined)
+    877            : undefined
+    878        } else {
+    879          agentType = parsedInput.success
+    880            ? userFacingName(parsedInput.data)
+    881            : 'Agent'
+    882          description = parsedInput.success
+    883            ? parsedInput.data.description
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(875,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:865-885 ---
+    865        let descriptionColor: keyof Theme | undefined
+    866        let taskDescription: string | undefined
+    867        if (isTeammateSpawn && parsedInput.success && parsedInput.data.name) {
+    868          agentType = `@${parsedInput.data.name}`
+    869          const subagentType = parsedInput.data.subagent_type
+    870          description = isCustomSubagentType(subagentType)
+    871            ? subagentType
+    872            : undefined
+    873          taskDescription = parsedInput.data.description
+    874          // Use the custom agent definition's color on the type, not the name
+    875>         descriptionColor = isCustomSubagentType(subagentType)
+    876            ? (getAgentColor(subagentType) as keyof Theme | undefined)
+    877            : undefined
+    878        } else {
+    879          agentType = parsedInput.success
+    880            ? userFacingName(parsedInput.data)
+    881            : 'Agent'
+    882          description = parsedInput.success
+    883            ? parsedInput.data.description
+    884            : undefined
+    885          color = parsedInput.success
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(882,9): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:872-892 ---
+    872            : undefined
+    873          taskDescription = parsedInput.data.description
+    874          // Use the custom agent definition's color on the type, not the name
+    875          descriptionColor = isCustomSubagentType(subagentType)
+    876            ? (getAgentColor(subagentType) as keyof Theme | undefined)
+    877            : undefined
+    878        } else {
+    879          agentType = parsedInput.success
+    880            ? userFacingName(parsedInput.data)
+    881            : 'Agent'
+    882>         description = parsedInput.success
+    883            ? parsedInput.data.description
+    884            : undefined
+    885          color = parsedInput.success
+    886            ? userFacingNameBackgroundColor(parsedInput.data)
+    887            : undefined
+    888          taskDescription = undefined
+    889        }
+    890  
+    891        // Check if this was launched as a background agent OR backgrounded mid-execution
+    892        const launchedAsAsync =
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(988,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/UI.tsx:978-998 ---
+    978            toolUseCount={stat.toolUseCount}
+    979            tokens={stat.tokens}
+    980            color={stat.color}
+    981            isLast={index === agentStats.length - 1}
+    982            isResolved={stat.isResolved}
+    983            isError={stat.isError}
+    984            isAsync={stat.isAsync}
+    985            shouldAnimate={shouldAnimate}
+    986            lastToolInfo={stat.lastToolInfo}
+    987            hideType={allSameType}
+    988>           name={stat.name}
+    989          />
+    990        ))}
+    991      </Box>
+    992    )
+    993  }
+    994  
+    995  export function userFacingName(
+    996    input:
+    997      | Partial<{
+    998          description: string

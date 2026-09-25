@@ -1,0 +1,4 @@
+src/packages/config/manager.ts(15,3): error TS2724: '"./settings/settings.js"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?
+src/packages/config/manager.ts(75,5): error TS2322: Type '{} | null' is not assignable to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; } | null'.
+  Type '{}' is not assignable to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }'.
+    Index signature for type 'string' is missing in type '{}'.

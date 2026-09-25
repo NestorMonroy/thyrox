@@ -1,0 +1,81 @@
+src/packages/agent/__tests__/agentContextGuards.test.ts(148,43): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/agentContextGuards.test.ts:138-158 ---
+    138    test('inside subagent context but no subagentName → undefined', () => {
+    139      runWithAgentContext(subagent(), () => {
+    140        expect(getSubagentLogName()).toBeUndefined()
+    141      })
+    142    })
+    143  
+    144    test('built-in subagent → returns subagentName verbatim', () => {
+    145      runWithAgentContext(
+    146        subagent({ subagentName: 'Explore', isBuiltIn: true }),
+    147        () => {
+    148>         expect(getSubagentLogName()).toBe('Explore')
+    149        },
+    150      )
+    151    })
+    152  
+    153    test('non-built-in (user-defined) → "user-defined" literal', () => {
+    154      runWithAgentContext(
+    155        subagent({ subagentName: 'my-custom-agent', isBuiltIn: false }),
+    156        () => {
+    157          expect(getSubagentLogName()).toBe('user-defined')
+    158        },
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"Explore"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"Explore"' is not assignable to parameter of type 'undefined'.
+src/packages/agent/__tests__/agentContextGuards.test.ts(157,43): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/agentContextGuards.test.ts:147-167 ---
+    147        () => {
+    148          expect(getSubagentLogName()).toBe('Explore')
+    149        },
+    150      )
+    151    })
+    152  
+    153    test('non-built-in (user-defined) → "user-defined" literal', () => {
+    154      runWithAgentContext(
+    155        subagent({ subagentName: 'my-custom-agent', isBuiltIn: false }),
+    156        () => {
+    157>         expect(getSubagentLogName()).toBe('user-defined')
+    158        },
+    159      )
+    160    })
+    161  
+    162    test('isBuiltIn undefined → "user-defined" (default)', () => {
+    163      runWithAgentContext(subagent({ subagentName: 'X' }), () => {
+    164        expect(getSubagentLogName()).toBe('user-defined')
+    165      })
+    166    })
+    167  
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+src/packages/agent/__tests__/agentContextGuards.test.ts(164,41): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/agentContextGuards.test.ts:154-174 ---
+    154      runWithAgentContext(
+    155        subagent({ subagentName: 'my-custom-agent', isBuiltIn: false }),
+    156        () => {
+    157          expect(getSubagentLogName()).toBe('user-defined')
+    158        },
+    159      )
+    160    })
+    161  
+    162    test('isBuiltIn undefined → "user-defined" (default)', () => {
+    163      runWithAgentContext(subagent({ subagentName: 'X' }), () => {
+    164>       expect(getSubagentLogName()).toBe('user-defined')
+    165      })
+    166    })
+    167  
+    168    test('teammate context (not subagent) → undefined', () => {
+    169      runWithAgentContext(teammate(), () => {
+    170        expect(getSubagentLogName()).toBeUndefined()
+    171      })
+    172    })
+    173  })
+    174  
+  Overload 1 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.
+  Overload 2 of 2, '(expected: undefined): void', gave the following error.
+    Argument of type '"user-defined"' is not assignable to parameter of type 'undefined'.

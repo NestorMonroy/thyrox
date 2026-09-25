@@ -1,0 +1,61 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(210,9): error TS2322: Type 'BuiltInAgentDefinition | CustomAgentDefinition | PluginAgentDefinition | { effort: {} | null; agentType: string; ... 22 more ...; getSystemPrompt: (params: { ...; }) => string; } | { ...; } | { ...; }' is not assignable to type 'AgentDefinition'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:200-220 ---
+    200        while (Date.now() < deadline) {
+    201          const s = context.getAppState()
+    202          if (!s.mcp.clients.some((c: { type: string }) => c.type === 'pending')) break
+    203          await sleep(MCP_SETTLE_POLL_MS)
+    204        }
+    205        const freshTools =
+    206          context.options.refreshTools?.() ?? context.options.tools
+    207  
+    208        const agentMessages: Message[] = []
+    209        for await (const message of runAgent({
+    210>         agentDefinition,
+    211          promptMessages,
+    212          toolUseContext: {
+    213            ...context,
+    214            getAppState: modifiedGetAppState,
+    215            abortController: bgAbortController,
+    216          },
+    217          canUseTool,
+    218          isAsync: true,
+    219          querySource: 'agent:custom',
+    220          model: command.model as ModelAlias | undefined,
+  Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BuiltInAgentDefinition'.
+      Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BaseAgentDefinition'.
+        Types of property 'effort' are incompatible.
+          Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+            Type 'null' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(261,9): error TS2322: Type 'AssistantMessage | NormalizedUserMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:251-271 ---
+    251    let toolUseCounter = 0
+    252  
+    253    // Helper to create a progress message from an agent message
+    254    const createProgressMessage = (
+    255      message: AssistantMessage | NormalizedUserMessage,
+    256    ): ProgressMessage<AgentProgress> => {
+    257      toolUseCounter++
+    258      return {
+    259        type: 'progress',
+    260        data: {
+    261>         message,
+    262          type: 'agent_progress',
+    263          prompt: skillContent,
+    264          agentId,
+    265        },
+    266        parentToolUseID,
+    267        toolUseID: `${parentToolUseID}-${toolUseCounter}`,
+    268        timestamp: new Date().toISOString(),
+    269        uuid: randomUUID(),
+    270      }
+    271    }
+  Type 'AssistantMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+    Type 'AssistantMessage' is not assignable to type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }'.
+      Type 'AssistantMessage' is not assignable to type '{ message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: ContentItem[]; }'.
+              Types of property 'content' are incompatible.
+                Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                  Type 'undefined' is not assignable to type 'ContentItem[]'.

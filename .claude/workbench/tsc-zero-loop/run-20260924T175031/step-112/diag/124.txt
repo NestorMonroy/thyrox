@@ -1,0 +1,23 @@
+src/packages/config/plugin/lspPluginIntegration.ts(298,7): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:288-308 ---
+    288  export function addPluginScopeToLspServers(
+    289    servers: Record<string, LspServerConfig>,
+    290    pluginName: string,
+    291  ): Record<string, ScopedLspServerConfig> {
+    292    const scopedServers: Record<string, ScopedLspServerConfig> = {}
+    293  
+    294    for (const [name, config] of Object.entries(servers)) {
+    295      // Add plugin prefix to server name to avoid conflicts
+    296      const scopedName = `plugin:${pluginName}:${name}`
+    297      scopedServers[scopedName] = {
+    298>       ...config,
+    299        scope: 'dynamic', // Use dynamic scope for plugin servers
+    300        source: pluginName,
+    301      }
+    302    }
+    303  
+    304    return scopedServers
+    305  }
+    306  
+    307  /**
+    308   * Get LSP servers from a specific plugin with environment variable resolution and scoping

@@ -1,0 +1,4 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1541,17): error TS2740: Type 'FileStateCache' is missing the following properties from type 'FileStateCache': cache, get, set, has, and 6 more.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1553,15): error TS2328: Types of parameters 'f' and 'f' are incompatible.
+  Type 'AppState' is not assignable to type 'import("/home/user/thyrox/src/packages/app-host/src/state/AppStateCompat").AppState'.
+    Type 'AppState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.

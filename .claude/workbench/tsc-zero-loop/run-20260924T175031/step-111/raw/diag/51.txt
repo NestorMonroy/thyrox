@@ -1,0 +1,1 @@
+src/packages/app-host/src/main/startup/telemetry.ts(178,73): error TS2339: Property 'prefersReducedMotion' does not exist on type '{}'.

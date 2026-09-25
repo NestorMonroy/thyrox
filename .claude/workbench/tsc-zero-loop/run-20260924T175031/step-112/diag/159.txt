@@ -1,0 +1,64 @@
+src/packages/repl/src/components/MessageRow.tsx(300,34): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 16 more ... | (MessageBase & ... 1 more ......' is not assignable to parameter of type 'NormalizedMessage'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:290-310 ---
+    290    if (msg.type === 'collapsed_read_search') {
+    291      const toolIds = getToolUseIdsFromCollapsedGroup(msg)
+    292      return toolIds.every(id => resolvedToolUseIDs.has(id))
+    293    }
+    294    if (msg.type === 'assistant') {
+    295      const block = msg.message.content[0]
+    296      if (block?.type === 'server_tool_use') {
+    297        return resolvedToolUseIDs.has(block.id)
+    298      }
+    299    }
+    300>   const toolUseID = getToolUseID(msg)
+    301    return !toolUseID || resolvedToolUseIDs.has(toolUseID)
+    302  }
+    303  
+    304  /**
+    305   * Conservative memo comparator that only bails out when we're CERTAIN
+    306   * the message won't change. Fails safe by re-rendering when uncertain.
+    307   *
+    308   * Exported for testing.
+    309   */
+    310  function areMessageRowPropsEqual(prev: Props, next: Props): boolean {
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'NormalizedMessage'.
+    Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/messageShapes").MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }'. Two different types with this name exist, but they are unrelated.
+      Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '(NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }) | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+                Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: ContentItem[]; }'.
+                  Types of property 'content' are incompatible.
+                    Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                      Type 'undefined' is not assignable to type 'ContentItem[]'.
+src/packages/repl/src/components/MessageRow.tsx(341,24): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:331-351 ---
+    331    // latestBashOutputUUID affects rendering (full vs truncated output)
+    332    const prevIsLatestBash = prev.latestBashOutputUUID === prev.message.uuid
+    333    const nextIsLatestBash = next.latestBashOutputUUID === next.message.uuid
+    334    if (prevIsLatestBash !== nextIsLatestBash) return false
+    335  
+    336    // lastThinkingBlockId affects thinking block visibility — but only for
+    337    // messages that HAVE thinking content. Checking unconditionally busts the
+    338    // memo for every scrollback message whenever thinking starts/stops (CC-941).
+    339    if (
+    340      prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    341>     hasThinkingContent(next.message)
+    342    ) {
+    343      return false
+    344    }
+    345  
+    346    // Check if this message is still "in flight"
+    347    const isStreaming = isMessageStreaming(prev.message, prev.streamingToolUseIDs)
+    348    const isResolved = allToolsResolved(
+    349      prev.message,
+    350      prev.lookups.resolvedToolUseIDs,
+    351    )
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: { type: string; }[]; }'.
+          Types of property 'content' are incompatible.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.

@@ -1,0 +1,6 @@
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(418,5): error TS2741: Property 'fallback_credit' is missing in type '{ inference_geo: null; iterations: null; speed: null; output_tokens_details: null; input_tokens: number; output_tokens: number; cache_creation_input_tokens: number | null; cache_read_input_tokens: number | null; server_tool_use: { ...; } | null; service_tier: "priority" | ... 2 more ... | null; cache_creation: { ......' but required in type 'BetaUsage'.
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(870,44): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(873,9): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(875,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'string | undefined'.
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(882,9): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/tool-registry/src/tools/AgentTool/UI.tsx(988,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.

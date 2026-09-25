@@ -1,0 +1,2 @@
+src/packages/repl/src/components/MessageSelector.tsx(1027,36): error TS2339: Property 'isMeta' does not exist on type 'never'.
+src/packages/repl/src/components/MessageSelector.tsx(1044,9): error TS2367: This comparison appears to be unintentional because the types '"grouped_tool_use" | "collapsed_read_search"' and '"user"' have no overlap.

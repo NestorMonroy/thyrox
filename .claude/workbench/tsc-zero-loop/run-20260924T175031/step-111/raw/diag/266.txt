@@ -1,0 +1,17 @@
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(107,4): error TS1354: 'readonly' type modifier is only permitted on array and tuple literal types.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2532: Object is possibly 'undefined'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(184,36): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(187,17): error TS2345: Argument of type 'unknown' is not assignable to parameter of type '{ [key: string]: unknown; mode: string; input: unknown; }'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(205,30): error TS18046: 'tool' is of type 'unknown'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(265,5): error TS2322: Type '{ readFile: (path: string) => Promise<string>; writeFile: (path: string, content: string) => Promise<void>; mkdir: ((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<...>) | ((path: string, mkdirOptions: { ...; } | undefined) => Promise<...>); exists: (path: string) => Promise<......' is not assignable to type 'HostFileSystem'.
+  Types of property 'mkdir' are incompatible.
+    Type '((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>) | ((path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<...>)' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+      Type '(path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<string | undefined>' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+        Type 'Promise<string | undefined>' is not assignable to type 'Promise<void>'.
+          Type 'string | undefined' is not assignable to type 'void'.
+            Type 'string' is not assignable to type 'void'.
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(272,7): error TS2322: Type '((path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>) | ((path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<...>)' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+  Type '(path: string, mkdirOptions: { recursive?: boolean | undefined; } | undefined) => Promise<string | undefined>' is not assignable to type '(path: string, options?: { recursive?: boolean | undefined; } | undefined) => Promise<void>'.
+    Type 'Promise<string | undefined>' is not assignable to type 'Promise<void>'.
+      Type 'string | undefined' is not assignable to type 'void'.
+        Type 'string' is not assignable to type 'void'.

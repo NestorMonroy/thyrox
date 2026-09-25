@@ -1,0 +1,83 @@
+src/packages/bridge/src/runtimeHostSetup.ts(28,5): error TS2322: Type '(msg: { type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }) => { ...; } | undefined' is not assignable to type '(message: unknown) => unknown'.
+  --- código src/packages/bridge/src/runtimeHostSetup.ts:18-38 ---
+     18  let installed = false
+     19  
+     20  export function installBridgeBindings(): void {
+     21    if (installed) {
+     22      return
+     23    }
+     24  
+     25    installBridgeHostBindings({
+     26      bridgeMain,
+     27      buildBridgeConnectUrl,
+     28>     extractInboundMessageFields,
+     29      resolveAndPrepend,
+     30      initReplBridge,
+     31      getBridgeDisabledReason,
+     32      isCcrMirrorEnabled,
+     33      isBridgeEnabledBlocking,
+     34      clearTrustedDeviceToken,
+     35      enrollTrustedDevice,
+     36      getTrustedDeviceToken,
+     37    })
+     38  
+  Types of parameters 'msg' and 'message' are incompatible.
+    Type 'unknown' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }'.
+src/packages/bridge/src/runtimeHostSetup.ts(29,5): error TS2322: Type '(msg: unknown, content: string | ContentBlockParam[]) => Promise<string | ContentBlockParam[]>' is not assignable to type '(message: unknown, content: string | unknown[]) => Promise<string | unknown[]>'.
+  --- código src/packages/bridge/src/runtimeHostSetup.ts:19-39 ---
+     19  
+     20  export function installBridgeBindings(): void {
+     21    if (installed) {
+     22      return
+     23    }
+     24  
+     25    installBridgeHostBindings({
+     26      bridgeMain,
+     27      buildBridgeConnectUrl,
+     28      extractInboundMessageFields,
+     29>     resolveAndPrepend,
+     30      initReplBridge,
+     31      getBridgeDisabledReason,
+     32      isCcrMirrorEnabled,
+     33      isBridgeEnabledBlocking,
+     34      clearTrustedDeviceToken,
+     35      enrollTrustedDevice,
+     36      getTrustedDeviceToken,
+     37    })
+     38  
+     39    installed = true
+  Types of parameters 'content' and 'content' are incompatible.
+    Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+        Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+          Type 'unknown' is not assignable to type 'ContentBlockParam'.
+src/packages/bridge/src/runtimeHostSetup.ts(30,5): error TS2322: Type '(options?: import("/home/user/thyrox/src/packages/bridge/src/initReplBridge").InitBridgeOptions | undefined) => Promise<import("/home/user/thyrox/src/packages/bridge/src/replBridge").ReplBridgeHandle | null>' is not assignable to type '(options?: import("/home/user/thyrox/src/packages/bridge/src/contracts").InitBridgeOptions | undefined) => Promise<import("/home/user/thyrox/src/packages/bridge/src/contracts").ReplBridgeHandle | null>'.
+  --- código src/packages/bridge/src/runtimeHostSetup.ts:20-40 ---
+     20  export function installBridgeBindings(): void {
+     21    if (installed) {
+     22      return
+     23    }
+     24  
+     25    installBridgeHostBindings({
+     26      bridgeMain,
+     27      buildBridgeConnectUrl,
+     28      extractInboundMessageFields,
+     29      resolveAndPrepend,
+     30>     initReplBridge,
+     31      getBridgeDisabledReason,
+     32      isCcrMirrorEnabled,
+     33      isBridgeEnabledBlocking,
+     34      clearTrustedDeviceToken,
+     35      enrollTrustedDevice,
+     36      getTrustedDeviceToken,
+     37    })
+     38  
+     39    installed = true
+     40  }
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'import("/home/user/thyrox/src/packages/bridge/src/contracts").InitBridgeOptions | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/bridge/src/initReplBridge").InitBridgeOptions | undefined'.
+      Type 'import("/home/user/thyrox/src/packages/bridge/src/contracts").InitBridgeOptions' is not assignable to type 'import("/home/user/thyrox/src/packages/bridge/src/initReplBridge").InitBridgeOptions'.
+        Types of property 'initialMessages' are incompatible.
+          Type 'unknown[] | undefined' is not assignable to type 'Message[] | undefined'.
+            Type 'unknown[]' is not assignable to type 'Message[]'.
+              Type 'unknown' is not assignable to type 'Message'.

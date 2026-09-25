@@ -1,0 +1,46 @@
+src/packages/agent/internal/stopHooksCore.ts(508,24): error TS2339: Property 'createSystemMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:498-518 ---
+    498        return yield* hooksDeTeammate(permissionMode, toolUseContext)
+    499      }
+    500  
+    501      return { blockingErrors: [], preventContinuation: false }
+    502    } catch (error) {
+    503      host().logEvent?.('tengu_stop_hook_error', {
+    504        duration: Date.now() - hookStartTime,
+    505      })
+    506      // Un mensaje de sistema que el modelo NO ve, para que el usuario pueda
+    507      // depurar su hook.
+    508>     const sys = host().createSystemMessage?.(
+    509        `Stop hook failed: ${errorMessage(error)}`,
+    510        'warning',
+    511      )
+    512      if (sys) yield sys
+    513      return { blockingErrors: [], preventContinuation: false }
+    514    } finally {
+    515      // Se restaura el hook de objetivo diferido para que el turno siguiente
+    516      // reevalúe cuando el trabajo de fondo termine. Envuelto en `try` porque
+    517      // el `finally` corre también al abortar, y un fallo aquí nunca debe
+    518      // enmascarar el error original.
+src/packages/agent/internal/stopHooksCore.ts(651,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+  --- código src/packages/agent/internal/stopHooksCore.ts:641-661 ---
+    641      nombreDelHook: 'TaskCompleted' | 'TeammateIdle',
+    642      mensajeDeBloqueo: (e: unknown) => string,
+    643    ): AsyncGenerator<unknown, boolean> {
+    644      for await (const result of gen) {
+    645        if (result.message) {
+    646          const msg = result.message as { type: string; toolUseID?: string }
+    647          if (msg.type === 'progress' && msg.toolUseID) toolUseID = msg.toolUseID
+    648          yield result.message
+    649        }
+    650        if (result.blockingError) {
+    651>         const userMessage = host().createUserMessage?.({
+    652            content: mensajeDeBloqueo(result.blockingError),
+    653            isMeta: true,
+    654          })
+    655          if (userMessage) {
+    656            bloqueos.push(userMessage)
+    657            yield userMessage
+    658          }
+    659        }
+    660        if (result.preventContinuation) {
+    661          corta = true

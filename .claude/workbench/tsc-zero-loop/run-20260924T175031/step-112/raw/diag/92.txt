@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2717,41): error TS7006: Parameter 'submit' implicitly has an 'any' type.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2813,24): error TS7006: Parameter 'error' implicitly has an 'any' type.

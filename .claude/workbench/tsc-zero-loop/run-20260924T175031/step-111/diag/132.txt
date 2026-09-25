@@ -1,0 +1,88 @@
+src/packages/permission/src/__tests__/shellRuleMatching.test.ts(132,23): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/shellRuleMatching.test.ts:122-142 ---
+    122    });
+    123  });
+    124  
+    125  // ─── suggestionForExactCommand ──────────────────────────────────────────
+    126  
+    127  describe("suggestionForExactCommand", () => {
+    128    test("creates addRules suggestion", () => {
+    129      const result = suggestionForExactCommand("Bash", "npm install");
+    130      expect(result).toHaveLength(1);
+    131      expect(result[0]!.type).toBe("addRules");
+    132>     expect(result[0]!.rules[0]!.toolName).toBe("Bash");
+    133      expect(result[0]!.rules[0]!.ruleContent).toBe("npm install");
+    134      expect(result[0]!.behavior).toBe("allow");
+    135    });
+    136  });
+    137  
+    138  // ─── suggestionForPrefix ────────────────────────────────────────────────
+    139  
+    140  describe("suggestionForPrefix", () => {
+    141    test("creates prefix suggestion with :*", () => {
+    142      const result = suggestionForPrefix("Bash", "npm");
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/shellRuleMatching.test.ts(133,23): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/shellRuleMatching.test.ts:123-143 ---
+    123  });
+    124  
+    125  // ─── suggestionForExactCommand ──────────────────────────────────────────
+    126  
+    127  describe("suggestionForExactCommand", () => {
+    128    test("creates addRules suggestion", () => {
+    129      const result = suggestionForExactCommand("Bash", "npm install");
+    130      expect(result).toHaveLength(1);
+    131      expect(result[0]!.type).toBe("addRules");
+    132      expect(result[0]!.rules[0]!.toolName).toBe("Bash");
+    133>     expect(result[0]!.rules[0]!.ruleContent).toBe("npm install");
+    134      expect(result[0]!.behavior).toBe("allow");
+    135    });
+    136  });
+    137  
+    138  // ─── suggestionForPrefix ────────────────────────────────────────────────
+    139  
+    140  describe("suggestionForPrefix", () => {
+    141    test("creates prefix suggestion with :*", () => {
+    142      const result = suggestionForPrefix("Bash", "npm");
+    143      expect(result[0]!.rules[0]!.ruleContent).toBe("npm:*");
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/shellRuleMatching.test.ts(134,23): error TS2339: Property 'behavior' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/shellRuleMatching.test.ts:124-144 ---
+    124  
+    125  // ─── suggestionForExactCommand ──────────────────────────────────────────
+    126  
+    127  describe("suggestionForExactCommand", () => {
+    128    test("creates addRules suggestion", () => {
+    129      const result = suggestionForExactCommand("Bash", "npm install");
+    130      expect(result).toHaveLength(1);
+    131      expect(result[0]!.type).toBe("addRules");
+    132      expect(result[0]!.rules[0]!.toolName).toBe("Bash");
+    133      expect(result[0]!.rules[0]!.ruleContent).toBe("npm install");
+    134>     expect(result[0]!.behavior).toBe("allow");
+    135    });
+    136  });
+    137  
+    138  // ─── suggestionForPrefix ────────────────────────────────────────────────
+    139  
+    140  describe("suggestionForPrefix", () => {
+    141    test("creates prefix suggestion with :*", () => {
+    142      const result = suggestionForPrefix("Bash", "npm");
+    143      expect(result[0]!.rules[0]!.ruleContent).toBe("npm:*");
+    144    });
+  Property 'behavior' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+src/packages/permission/src/__tests__/shellRuleMatching.test.ts(143,23): error TS2339: Property 'rules' does not exist on type 'PermissionUpdate'.
+  --- código src/packages/permission/src/__tests__/shellRuleMatching.test.ts:133-145 ---
+    133      expect(result[0]!.rules[0]!.ruleContent).toBe("npm install");
+    134      expect(result[0]!.behavior).toBe("allow");
+    135    });
+    136  });
+    137  
+    138  // ─── suggestionForPrefix ────────────────────────────────────────────────
+    139  
+    140  describe("suggestionForPrefix", () => {
+    141    test("creates prefix suggestion with :*", () => {
+    142      const result = suggestionForPrefix("Bash", "npm");
+    143>     expect(result[0]!.rules[0]!.ruleContent).toBe("npm:*");
+    144    });
+    145  });
+  Property 'rules' does not exist on type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.

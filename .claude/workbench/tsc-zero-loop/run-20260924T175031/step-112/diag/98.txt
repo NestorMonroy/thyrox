@@ -1,0 +1,56 @@
+src/packages/cli/src/structuredIO.ts(632,13): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:622-642 ---
+    622              sdkPromise.catch(() => {})
+    623              hookAbortController.abort()
+    624              return winner.decision
+    625            }
+    626            // Hook passed through (no decision) — wait for the SDK prompt
+    627            const sdkResult = await sdkPromise
+    628            return permissionPromptToolResultToPermissionDecision(
+    629              sdkResult.result,
+    630              tool,
+    631              input,
+    632>             toolUseContext,
+    633            )
+    634          }
+    635  
+    636          // SDK prompt responded first — use its result (hook still running
+    637          // in background but its result will be ignored)
+    638          return permissionPromptToolResultToPermissionDecision(
+    639            winner.result,
+    640            tool,
+    641            input,
+    642            toolUseContext,
+  Types of property 'setAppState' are incompatible.
+    Type '(f: (prev: AppState) => AppState) => void' is not assignable to type '(updater: (prev: never) => unknown) => void'.
+      Types of parameters 'f' and 'updater' are incompatible.
+        Types of parameters 'prev' and 'prev' are incompatible.
+          Type 'AppState' is not assignable to type 'never'.
+src/packages/cli/src/structuredIO.ts(642,11): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/Tool").ToolUseContext' is not assignable to parameter of type 'ToolUseContext'.
+  --- código src/packages/cli/src/structuredIO.ts:632-652 ---
+    632              toolUseContext,
+    633            )
+    634          }
+    635  
+    636          // SDK prompt responded first — use its result (hook still running
+    637          // in background but its result will be ignored)
+    638          return permissionPromptToolResultToPermissionDecision(
+    639            winner.result,
+    640            tool,
+    641            input,
+    642>           toolUseContext,
+    643          )
+    644        } catch (error) {
+    645          return permissionPromptToolResultToPermissionDecision(
+    646            {
+    647              behavior: 'deny',
+    648              message: `Tool permission request failed: ${error}`,
+    649              toolUseID,
+    650            },
+    651            tool,
+    652            input,
+  Types of property 'setAppState' are incompatible.
+    Type '(f: (prev: AppState) => AppState) => void' is not assignable to type '(updater: (prev: never) => unknown) => void'.
+      Types of parameters 'f' and 'updater' are incompatible.
+        Types of parameters 'prev' and 'prev' are incompatible.
+          Type 'AppState' is not assignable to type 'never'.

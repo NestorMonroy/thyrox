@@ -1,0 +1,41 @@
+src/packages/config/plugin/lspPluginIntegration.ts(6,3): error TS2724: '"./_deps.js"' has no exported member named 'ScopedLspServerConfig'. Did you mean 'ScopedMcpServerConfig'?
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:1-16 ---
+      1  import { readFile } from 'fs/promises'
+      2  import { join, relative, resolve } from 'path'
+      3  import { z } from 'zod/v4'
+      4  import type {
+      5    LspServerConfig,
+      6>   ScopedLspServerConfig,
+      7  } from './_deps.js'
+      8  import { expandEnvVarsInString } from './_deps.js'
+      9  import type { LoadedPlugin, PluginError } from './types.js'
+     10  import { logForDebugging } from './_deps.js'
+     11  import { isENOENT, toError } from './_deps.js'
+     12  import { logError } from './_deps.js'
+     13  import { jsonParse } from './_deps.js'
+     14  import { getPluginDataDir } from './pluginDirectories.js'
+     15  import {
+     16    getPluginStorageId,
+src/packages/config/plugin/lspPluginIntegration.ts(243,22): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:233-253 ---
+    233        resolved = substituteUserConfigVariables(resolved, userConfig)
+    234      }
+    235  
+    236      // Finally expand general environment variables
+    237      const { expanded, missingVars } = expandEnvVarsInString(resolved)
+    238      allMissingVars.push(...missingVars)
+    239  
+    240      return expanded
+    241    }
+    242  
+    243>   const resolved = { ...config }
+    244  
+    245    // Resolve command path
+    246    if (resolved.command) {
+    247      resolved.command = resolveValue(resolved.command)
+    248    }
+    249  
+    250    // Resolve args
+    251    if (resolved.args) {
+    252      resolved.args = resolved.args.map((arg: string): string => resolveValue(arg))
+    253    }

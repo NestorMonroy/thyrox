@@ -1,0 +1,3 @@
+src/packages/agent/hooks/apiQueryHookHelper.ts(89,9): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+src/packages/agent/hooks/apiQueryHookHelper.ts(120,13): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,25 @@
+src/packages/agent/__tests__/toolSearchPure.test.ts(243,7): error TS2352: Conversion of type '{ type: "user"; message: { content: { type: "tool_result"; content: { type: "tool_reference"; tool_name: number; }[]; }[]; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/toolSearchPure.test.ts:233-253 ---
+    233              },
+    234            ],
+    235          },
+    236        } as Msg,
+    237      ]
+    238      expect(extractDiscoveredToolNames(msgs)).toEqual(new Set())
+    239    })
+    240  
+    241    test('tool_reference with non-string tool_name is skipped', () => {
+    242      const msgs: Msg[] = [
+    243>       {
+    244          type: 'user',
+    245          message: {
+    246            content: [
+    247              {
+    248                type: 'tool_result',
+    249                content: [{ type: 'tool_reference', tool_name: 42 }],
+    250              },
+    251            ],
+    252          },
+    253        } as Msg,
+  Type '{ type: "user"; message: { content: { type: "tool_result"; content: { type: "tool_reference"; tool_name: number; }[]; }[]; }; }' is not comparable to type 'UserMessage'.
+    Property 'uuid' is missing in type '{ type: "user"; message: { content: { type: "tool_result"; content: { type: "tool_reference"; tool_name: number; }[]; }[]; }; }' but required in type 'MessageBase'.

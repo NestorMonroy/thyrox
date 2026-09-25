@@ -1,0 +1,4 @@
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(163,25): error TS2339: Property 'supportsNonInteractive' does not exist on type 'Command'.
+  Property 'supportsNonInteractive' does not exist on type 'CommandBase & PromptCommand'.
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(170,29): error TS2339: Property 'supportsNonInteractive' does not exist on type 'Command'.
+  Property 'supportsNonInteractive' does not exist on type 'CommandBase & PromptCommand'.

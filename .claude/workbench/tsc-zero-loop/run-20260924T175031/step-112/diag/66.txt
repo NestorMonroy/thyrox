@@ -1,0 +1,77 @@
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(631,14): error TS2322: Type 'Set<{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }>' is not assignable to type 'Set<Command>'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:621-641 ---
+    621  
+    622  /**
+    623   * Commands that are safe to use in remote mode (--remote).
+    624   * These only affect local TUI state and don't depend on local filesystem,
+    625   * git, shell, IDE, MCP, or other local execution context.
+    626   *
+    627   * Used in two places:
+    628   * 1. Pre-filtering commands in main.tsx before REPL renders (prevents race with CCR init)
+    629   * 2. Preserving local-only commands in REPL's handleRemoteInit after CCR filters
+    630   */
+    631> export const REMOTE_SAFE_COMMANDS: Set<Command> = new Set([
+    632    session, // Shows QR code / URL for remote session
+    633    exit, // Exit the TUI
+    634    clear, // Clear screen
+    635    help, // Show help
+    636    theme, // Change terminal theme
+    637    color, // Change agent color
+    638    vim, // Toggle vim mode
+    639    cost, // Show session cost (local cost tracking)
+    640    usage, // Show usage info
+    641    copy, // Copy last message
+  Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; } | ... 4 more ... | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'CommandBase & LocalJSXCommand'.
+        Type '{ type: "local-jsx"; name: string; description: string; immediate: true; argumentHint: string; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>; }' is not assignable to type 'LocalJSXCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/btw/btw")' is not assignable to type 'LocalJSXCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type '(onDone: LocalJSXCommandOnDone, context: ProcessUserInputContext, args: string) => Promise<ReactNode>' is not assignable to type 'LocalJSXCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'ProcessUserInputContext'.
+                        Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'LocalJSXCommandContext'.
+                          Types of property 'setMessages' are incompatible.
+                            Types of parameters 'updater' and 'updater' are incompatible.
+                              Type 'unknown[]' is not assignable to type 'Message[]'.
+                                Type 'unknown' is not assignable to type 'Message'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(662,14): error TS2322: Type 'Set<{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:652-672 ---
+    652   * over the Remote Control bridge. These produce text output that streams
+    653   * back to the mobile/web client and have no terminal-only side effects.
+    654   *
+    655   * 'local-jsx' commands are blocked by type (they render Ink UI) and
+    656   * 'prompt' commands are allowed by type (they expand to text sent to the
+    657   * model) — this set only gates 'local' commands.
+    658   *
+    659   * When adding a new 'local' command that should work from mobile, add it
+    660   * here. Default is blocked.
+    661   */
+    662> export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
+    663    [
+    664      compact, // Shrink context — useful mid-session from a phone
+    665      clear, // Wipe transcript
+    666      cost, // Show session cost
+    667      summary, // Summarize conversation
+    668      files, // List tracked files
+    669    ].filter((c): c is Command => c !== null),
+    670  )
+    671  
+    672  /**
+  Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'Command'.
+    Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'Command'.
+      Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'CommandBase & LocalCommand'.
+        Type '{ type: "local"; name: string; description: string; readonly isHidden: boolean; supportsNonInteractive: true; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>; }' is not assignable to type 'LocalCommand'.
+          The types returned by 'load()' are incompatible between these types.
+            Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")>' is not assignable to type 'Promise<LocalCommandModule>'.
+              Type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/cost/cost")' is not assignable to type 'LocalCommandModule'.
+                Types of property 'call' are incompatible.
+                  Type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/command").LocalCommandCall'.
+                    Types of parameters 'context' and 'context' are incompatible.
+                      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandContext' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandContext'.
+                        Types of property 'setMessages' are incompatible.
+                          Types of parameters 'updater' and 'updater' are incompatible.
+                            Type 'unknown[]' is not assignable to type 'Message[]'.
+                              Type 'unknown' is not assignable to type 'Message'.

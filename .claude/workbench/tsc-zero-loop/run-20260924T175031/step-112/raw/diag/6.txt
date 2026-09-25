@@ -1,0 +1,2 @@
+src/packages/agent/QueryEngine.ts(317,40): error TS18046: 'tool' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(349,9): error TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.

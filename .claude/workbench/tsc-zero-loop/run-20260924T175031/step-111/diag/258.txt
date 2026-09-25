@@ -1,0 +1,23 @@
+src/packages/shell/src/sandbox/sandbox-adapter.ts(778,17): error TS2339: Property 'getSandboxBinaryPath' does not exist on type 'typeof import("/home/user/thyrox/src/packages/config/settings/settings")'.
+  --- código src/packages/shell/src/sandbox/sandbox-adapter.ts:768-788 ---
+    768        }
+    769  
+    770        // Port of ant v2.1.133 aTH (2492.js) — read sandbox.bwrapPath /
+    771        // sandbox.socatPath from layered settings and prepend their
+    772        // dirnames to PATH so the upstream `@anthropic-ai/sandbox-runtime`
+    773        // resolution finds them. We can't pass the path directly because
+    774        // the upstream lib doesn't accept an override prop; the env mutate
+    775        // is the smallest portable injection point.
+    776        try {
+    777          // eslint-disable-next-line @typescript-eslint/no-require-imports
+    778>         const { getSandboxBinaryPath } = require(
+    779            '@thyrox/config/settings',
+    780          ) as typeof import('@thyrox/config/settings')
+    781          // eslint-disable-next-line @typescript-eslint/no-require-imports
+    782          const path = require('node:path') as typeof import('node:path')
+    783          const extraDirs: string[] = []
+    784          for (const field of ['bwrapPath', 'socatPath'] as const) {
+    785            const p = getSandboxBinaryPath(field)
+    786            if (p && p.length > 0) extraDirs.push(path.dirname(p))
+    787          }
+    788          if (extraDirs.length > 0) {

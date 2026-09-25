@@ -1,0 +1,48 @@
+src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx(139,9): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx:129-149 ---
+    129    }> = []
+    130  
+    131    const sourcesToCheck = [
+    132      { source: 'userSettings' as const, scope: 'user' },
+    133      { source: 'projectSettings' as const, scope: 'project' },
+    134      { source: 'localSettings' as const, scope: 'local' },
+    135    ]
+    136  
+    137    for (const { source, scope } of sourcesToCheck) {
+    138      const settings = getSettingsForSource(source)
+    139>     if (settings?.extraKnownMarketplaces?.[name]) {
+    140        editableSources.push({ source, scope })
+    141      }
+    142    }
+    143  
+    144    const policySettings = getSettingsForSource('policySettings')
+    145    const isInPolicy = Boolean(policySettings?.extraKnownMarketplaces?.[name])
+    146  
+    147    return { editableSources, isInPolicy }
+    148  }
+    149  
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx(145,30): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/command-runtime/src/commands/plugin/PluginSettings.tsx:135-155 ---
+    135    ]
+    136  
+    137    for (const { source, scope } of sourcesToCheck) {
+    138      const settings = getSettingsForSource(source)
+    139      if (settings?.extraKnownMarketplaces?.[name]) {
+    140        editableSources.push({ source, scope })
+    141      }
+    142    }
+    143  
+    144    const policySettings = getSettingsForSource('policySettings')
+    145>   const isInPolicy = Boolean(policySettings?.extraKnownMarketplaces?.[name])
+    146  
+    147    return { editableSources, isInPolicy }
+    148  }
+    149  
+    150  function buildMarketplaceAction(name: string): ErrorRowAction {
+    151    const { editableSources, isInPolicy } = getExtraMarketplaceSourceInfo(name)
+    152  
+    153    if (editableSources.length > 0) {
+    154      return {
+    155        kind: 'remove-extra-marketplace',
+  No index signature with a parameter of type 'string' was found on type '{}'.

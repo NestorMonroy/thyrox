@@ -1,0 +1,48 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1524,15): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1514-1534 ---
+   1514            await runWithWorkload(cmd.workload ?? options.workload, async () => {
+   1515              for await (const message of ask({
+   1516                commands: uniqBy(
+   1517                  [...currentCommands, ...appState.mcp.commands],
+   1518                  'name',
+   1519                ),
+   1520                prompt: input,
+   1521                promptUuid: cmd.uuid,
+   1522                isMeta: cmd.isMeta,
+   1523                cwd: cwd(),
+   1524>               tools: allTools,
+   1525                verbose: options.verbose,
+   1526                mcpClients: allMcpClients,
+   1527                thinkingConfig: options.thinkingConfig,
+   1528                maxTurns: options.maxTurns,
+   1529                maxBudgetUsd: options.maxBudgetUsd,
+   1530                taskBudget: options.taskBudget,
+   1531                canUseTool,
+   1532                userSpecifiedModel: activeUserSpecifiedModel,
+   1533                fallbackModel: options.fallbackModel,
+   1534                jsonSchema: getInitJsonSchema() ?? options.jsonSchema,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1531,15): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1521-1541 ---
+   1521                promptUuid: cmd.uuid,
+   1522                isMeta: cmd.isMeta,
+   1523                cwd: cwd(),
+   1524                tools: allTools,
+   1525                verbose: options.verbose,
+   1526                mcpClients: allMcpClients,
+   1527                thinkingConfig: options.thinkingConfig,
+   1528                maxTurns: options.maxTurns,
+   1529                maxBudgetUsd: options.maxBudgetUsd,
+   1530                taskBudget: options.taskBudget,
+   1531>               canUseTool,
+   1532                userSpecifiedModel: activeUserSpecifiedModel,
+   1533                fallbackModel: options.fallbackModel,
+   1534                jsonSchema: getInitJsonSchema() ?? options.jsonSchema,
+   1535                mutableMessages,
+   1536                getReadFileCache: () =>
+   1537                  pendingSeeds.size === 0
+   1538                    ? readFileState
+   1539                    : mergeFileStateCaches(readFileState, pendingSeeds),
+   1540                setReadFileCache: cache => {
+   1541                  readFileState = cache
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.

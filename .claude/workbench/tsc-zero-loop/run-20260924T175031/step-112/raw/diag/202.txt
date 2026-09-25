@@ -1,0 +1,5 @@
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  Type 'null' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.

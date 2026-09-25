@@ -1,0 +1,23 @@
+src/packages/repl/src/components/Stats.tsx(973,46): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/Stats.tsx:963-983 ---
+    963      const padding = Math.max(2, contentWidth - lastLineLen - statsLabel.length)
+    964      lines[lines.length - 1] =
+    965        lastLine + ' '.repeat(padding) + chalk.gray(statsLabel)
+    966    }
+    967  
+    968    return lines.join('\n')
+    969  }
+    970  
+    971  function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
+    972    const lines: string[] = []
+    973>   const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme))
+    974    const h = (text: string) => applyColor(text, theme.claude as Color)
+    975  
+    976    // Two-column helper with fixed spacing
+    977    // Column 1: label (18 chars) + value + padding to reach col 2
+    978    // Column 2 starts at character position 40
+    979    const COL1_LABEL_WIDTH = 18
+    980    const COL2_START = 40
+    981    const COL2_LABEL_WIDTH = 18
+    982  
+    983    const row = (l1: string, v1: string, l2: string, v2: string): string => {

@@ -1,0 +1,12 @@
+src/packages/agent/__tests__/productionWiring.test.ts(78,9): error TS2322: Type 'Mock<(name: string) => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; } | undefined>' is not assignable to type '(name: string) => CoreTool | undefined'.
+  Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; } | undefined' is not assignable to type 'CoreTool | undefined'.
+    Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }' is missing the following properties from type 'CoreTool': description, inputSchema
+src/packages/agent/__tests__/productionWiring.test.ts(79,9): error TS2322: Type 'Mock<() => { name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }[]>' is not assignable to type '() => CoreTool[]'.
+  Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }[]' is not assignable to type 'CoreTool[]'.
+    Type '{ name: string; inputJSONSchema: { type: string; properties: { text: { type: string; }; }; }; }' is missing the following properties from type 'CoreTool': description, inputSchema
+src/packages/agent/__tests__/productionWiring.test.ts(93,9): error TS2322: Type 'Mock<(messages: unknown[]) => Promise<{ compacted: boolean; messages: unknown[]; }>>' is not assignable to type '(messages: CoreMessage[], tokenCount: number) => Promise<CompactionResult>'.
+  Type 'Promise<{ compacted: boolean; messages: unknown[]; }>' is not assignable to type 'Promise<CompactionResult>'.
+    Type '{ compacted: boolean; messages: unknown[]; }' is not assignable to type 'CompactionResult'.
+      Types of property 'messages' are incompatible.
+        Type 'unknown[]' is not assignable to type 'CoreMessage[]'.
+          Type 'unknown' is not assignable to type 'CoreMessage'.

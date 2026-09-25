@@ -1,0 +1,23 @@
+src/packages/agent/hooks/execAgentHook.ts(327,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:317-337 ---
+    317    } catch (error) {
+    318      const errorMsg = errorMessage(error)
+    319      logForDebugging(`Hooks: Agent hook error: ${errorMsg}`)
+    320      logEvent('tengu_agent_stop_hook_error', {
+    321        durationMs: Date.now() - hookStartTime,
+    322        errorType: 2, // 2 = general error
+    323        agentName:
+    324          agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    325      })
+    326      return {
+    327>       hook,
+    328        outcome: 'non_blocking_error',
+    329        message: createAttachmentMessage({
+    330          type: 'hook_non_blocking_error',
+    331          hookName,
+    332          toolUseID: effectiveToolUseID,
+    333          hookEvent,
+    334          stderr: `Error executing agent hook: ${errorMsg}`,
+    335          stdout: '',
+    336          exitCode: 1,
+    337        }),

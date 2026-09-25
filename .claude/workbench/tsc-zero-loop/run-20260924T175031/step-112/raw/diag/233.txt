@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1115,40): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1157,19): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.

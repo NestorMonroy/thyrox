@@ -1,0 +1,29 @@
+src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(2,3): error TS2305: Module '"./loadSkillsDir.js"' has no exported member 'createSkillCommand'.
+  --- código src/packages/command-runtime/src/skills/mcpSkillBuilders.ts:1-12 ---
+      1  import type {
+      2>   createSkillCommand,
+      3    parseSkillFrontmatterFields,
+      4  } from './loadSkillsDir.js'
+      5  
+      6  /**
+      7   * Write-once registry for the two loadSkillsDir functions that MCP skill
+      8   * discovery needs. This module is a dependency-graph leaf: it imports nothing
+      9   * but types, so both mcpSkills.ts and loadSkillsDir.ts can depend on it
+     10   * without forming a cycle (client.ts → mcpSkills.ts → loadSkillsDir.ts → …
+     11   * → client.ts).
+     12   *
+src/packages/command-runtime/src/skills/mcpSkillBuilders.ts(3,3): error TS2305: Module '"./loadSkillsDir.js"' has no exported member 'parseSkillFrontmatterFields'.
+  --- código src/packages/command-runtime/src/skills/mcpSkillBuilders.ts:1-13 ---
+      1  import type {
+      2    createSkillCommand,
+      3>   parseSkillFrontmatterFields,
+      4  } from './loadSkillsDir.js'
+      5  
+      6  /**
+      7   * Write-once registry for the two loadSkillsDir functions that MCP skill
+      8   * discovery needs. This module is a dependency-graph leaf: it imports nothing
+      9   * but types, so both mcpSkills.ts and loadSkillsDir.ts can depend on it
+     10   * without forming a cycle (client.ts → mcpSkills.ts → loadSkillsDir.ts → …
+     11   * → client.ts).
+     12   *
+     13   * The non-literal dynamic-import approach ("await import(variable)") fails at

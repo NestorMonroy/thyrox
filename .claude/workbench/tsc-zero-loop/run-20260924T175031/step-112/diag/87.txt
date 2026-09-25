@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557,55): error TS7006: Parameter 'elicitSignal' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1547-1567 ---
+   1547                  }
+   1548                  pendingSeeds.clear()
+   1549                },
+   1550                customSystemPrompt: options.systemPrompt,
+   1551                appendSystemPrompt: options.appendSystemPrompt,
+   1552                getAppState,
+   1553                setAppState,
+   1554                abortController,
+   1555                replayUserMessages: options.replayUserMessages,
+   1556                includePartialMessages: options.includePartialMessages,
+   1557>               handleElicitation: (serverName, params, elicitSignal) =>
+   1558                  structuredIO.handleElicitation(
+   1559                    serverName,
+   1560                    params.message,
+   1561                    undefined,
+   1562                    elicitSignal,
+   1563                    params.mode,
+   1564                    params.url,
+   1565                    'elicitationId' in params ? params.elicitationId : undefined,
+   1566                  ),
+   1567                agents: currentAgents,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1573,19): error TS2322: Type 'string' is not assignable to type '"compacting"'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1563-1583 ---
+   1563                    params.mode,
+   1564                    params.url,
+   1565                    'elicitationId' in params ? params.elicitationId : undefined,
+   1566                  ),
+   1567                agents: currentAgents,
+   1568                orphanedPermission: cmd.orphanedPermission,
+   1569                setSDKStatus: status => {
+   1570                  output.enqueue({
+   1571                    type: 'system',
+   1572                    subtype: 'status',
+   1573>                   status,
+   1574                    session_id: getSessionId(),
+   1575                    uuid: randomUUID(),
+   1576                  })
+   1577                },
+   1578              })) {
+   1579                // Forward messages to bridge incrementally (mid-turn) so
+   1580                // claude.ai sees progress and the connection stays alive
+   1581                // while blocked on permission requests.
+   1582                forwardMessagesToBridge()
+   1583  

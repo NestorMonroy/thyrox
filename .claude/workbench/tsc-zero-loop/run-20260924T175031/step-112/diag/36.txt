@@ -1,0 +1,46 @@
+src/packages/agent/hooks/execPromptHook.ts(445,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:435-455 ---
+    435            }),
+    436          }
+    437        }
+    438  
+    439        const parsed = hookResponseSchema().safeParse(json)
+    440        if (!parsed.success) {
+    441          logForDebugging(
+    442            `Hooks: model response does not conform to expected schema: ${parsed.error.message}`,
+    443          )
+    444          return {
+    445>           hook,
+    446            outcome: 'non_blocking_error',
+    447            message: createAttachmentMessage({
+    448              type: 'hook_non_blocking_error',
+    449              hookName,
+    450              toolUseID: effectiveToolUseID,
+    451              hookEvent,
+    452              stderr: `Schema validation failed: ${parsed.error.message}`,
+    453              stdout: fullResponse,
+    454              exitCode: 1,
+    455            }),
+src/packages/agent/hooks/execPromptHook.ts(489,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:479-499 ---
+    479                toolUseID: effectiveToolUseID,
+    480                hookEvent,
+    481                content: '',
+    482              }),
+    483            } as HookResult
+    484          }
+    485          logForDebugging(
+    486            `Hooks: Prompt hook condition was not met: ${parsed.data.reason}`,
+    487          )
+    488          return {
+    489>           hook,
+    490            outcome: 'blocking',
+    491            blockingError: {
+    492              // Format: `[<original-condition>]: <reason>` — matches ant 4793.js
+    493              // so /goal status renders cleanly via formatLastCheck(reason).
+    494              blockingError: `[${hook.prompt}]: ${parsed.data.reason ?? ''}`,
+    495              command: hook.prompt,
+    496            },
+    497            // ant v2.1.142 4793.js: `preventContinuation:!Y&&H.continueOnBlock!==!0`
+    498            // - Stop/SubagentStop: never prevent (loop semantics — /goal keeps going)
+    499            // - Other events: prevent unless the hook opts into continueOnBlock=true

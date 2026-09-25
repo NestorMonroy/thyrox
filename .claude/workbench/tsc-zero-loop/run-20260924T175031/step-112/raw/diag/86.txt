@@ -1,0 +1,2 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557,35): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557,47): error TS7006: Parameter 'params' implicitly has an 'any' type.

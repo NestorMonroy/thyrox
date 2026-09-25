@@ -1,0 +1,54 @@
+src/packages/repl/src/hooks/useRemoteSession.ts(316,15): error TS2345: Argument of type 'StreamEvent' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/hooks/useRemoteSession.ts:306-326 ---
+    306              }
+    307            }
+    308  
+    309            setMessages(prev => [...prev, converted.message])
+    310            // Note: Don't stop loading on assistant messages - the agent may still be
+    311            // working (tool use loops). Loading stops only on session end or permission request.
+    312          } else if (converted.type === 'stream_event') {
+    313            // Process streaming events to update UI in real-time
+    314            if (setStreamingToolUses && setStreamMode) {
+    315              handleMessageFromStream(
+    316>               converted.event,
+    317                message => setMessages(prev => [...prev, message]),
+    318                () => {
+    319                  // No-op for response length - remote sessions don't track this
+    320                },
+    321                setStreamMode,
+    322                setStreamingToolUses,
+    323              )
+    324            } else {
+    325              logForDebugging(
+    326                `[useRemoteSession] Stream event received but streaming callbacks not provided`,
+  Type 'StreamEvent' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, uuid, timestamp
+src/packages/repl/src/hooks/useRemoteSession.ts(351,11): error TS2322: Type '({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; })[] | undefined' is not assignable to type 'PermissionUpdate[] | undefined'.
+  --- código src/packages/repl/src/hooks/useRemoteSession.ts:341-361 ---
+    341  
+    342          const syntheticMessage = createSyntheticAssistantMessage(
+    343            request,
+    344            requestId,
+    345          )
+    346  
+    347          const permissionResult: PermissionAskDecision = {
+    348            behavior: 'ask',
+    349            message:
+    350              request.description ?? `${request.tool_name} requires permission`,
+    351>           suggestions: request.permission_suggestions,
+    352            blockedPath: request.blocked_path,
+    353          }
+    354  
+    355          const toolUseConfirm: ToolUseConfirm = {
+    356            assistantMessage: syntheticMessage,
+    357            tool,
+    358            description:
+    359              request.description ?? `${request.tool_name} requires permission`,
+    360            input: request.input,
+    361            toolUseContext: {} as ToolUseConfirm['toolUseContext'],
+  Type '({ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; })[]' is not assignable to type 'PermissionUpdate[]'.
+    Type '{ type: "addRules"; rules: { toolName: string; ruleContent?: string | undefined; }[]; behavior: "ask" | "deny" | "allow"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; } | ... 4 more ... | { ...; }' is not assignable to type 'PermissionUpdate'.
+      Type '{ type: "setMode"; mode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; }' is not assignable to type 'PermissionUpdate'.
+        Type '{ type: "setMode"; mode: "default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; destination: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"; }' is not assignable to type '{ type: "setMode"; destination: PermissionUpdateDestination; mode: "default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"; }'.
+          Types of property 'mode' are incompatible.
+            Type '"default" | "auto" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"' is not assignable to type '"default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"'.
+              Type '"auto"' is not assignable to type '"default" | "acceptEdits" | "bypassPermissions" | "dontAsk" | "plan"'.

@@ -1,0 +1,51 @@
+src/packages/repl/src/screens/REPLView.tsx(506,3): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:496-516 ---
+    496    MessageActionsKeybindings,
+    497    MessageActionsBar,
+    498    type MessageActionsState,
+    499    type MessageActionsNav,
+    500    type MessageActionCaps,
+    501  } from '../components/messageActions.js'
+    502  import { setClipboard } from '@anthropic/ink'
+    503  import type { ScrollBoxHandle } from '@anthropic/ink'
+    504  import {
+    505    createAttachmentMessage,
+    506>   getQueuedCommandAttachments,
+    507  } from '@thyrox/agent/attachments.js'
+    508  
+    509  // Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
+    510  // function identity each render, which would break composedOnScroll's memo.
+    511  const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
+    512  // Window after a user-initiated scroll during which type-into-empty does NOT
+    513  // repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+    514  // up to read the start → start typing → before this fix, snapped to bottom.
+    515  // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
+    516  const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.

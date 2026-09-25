@@ -1,0 +1,23 @@
+src/packages/provider/src/openai/client.ts(83,5): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/provider/src/openai/client.ts:73-93 ---
+     73      apiKey,
+     74      ...(baseURL && { baseURL }),
+     75      maxRetries: options?.maxRetries ?? 0,
+     76      timeout: parseInt(readEnv('API_TIMEOUT_MS') || String(600 * 1000), 10),
+     77      dangerouslyAllowBrowser: true,
+     78      ...(readEnv('OPENAI_ORG_ID') && { organization: readEnv('OPENAI_ORG_ID') }),
+     79      ...(readEnv('OPENAI_PROJECT_ID') && { project: readEnv('OPENAI_PROJECT_ID') }),
+     80      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     81      fetchOptions: networkLayer.getProxyFetchOptions({ forAnthropicAPI: false }) as any,
+     82      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     83>     ...(options?.fetchOverride && { fetch: options.fetchOverride as any }),
+     84    })
+     85  
+     86    if (!options?.fetchOverride) {
+     87      clientCache.set(cacheKey, client)
+     88    }
+     89  
+     90    return client
+     91  }
+     92  
+     93  /** Vacia los clientes cacheados; util cuando las conexiones cambian en caliente. */

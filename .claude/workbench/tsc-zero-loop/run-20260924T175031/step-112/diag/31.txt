@@ -1,0 +1,48 @@
+src/packages/agent/hooks/execAgentHook.ts(178,11): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:168-188 ---
+    168          messages: agentMessages,
+    169          systemPrompt,
+    170          userContext: {},
+    171          systemContext: {},
+    172          canUseTool: hasPermissionsToUseTool,
+    173          toolUseContext: agentToolUseContext,
+    174          querySource: 'hook_agent',
+    175        })) {
+    176          // Process stream events to update response length in the spinner
+    177          handleMessageFromStream(
+    178>           message,
+    179            () => {}, // onMessage - we handle messages below
+    180            newContent =>
+    181              toolUseContext.setResponseLength(
+    182                length => length + newContent.length,
+    183              ),
+    184            toolUseContext.setStreamMode ?? (() => {}),
+    185            () => {}, // onStreamingToolUses - not needed for hooks
+    186          )
+    187  
+    188          // Skip streaming events for further processing
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/agent/hooks/execAgentHook.ts(250,13): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execAgentHook.ts:240-260 ---
+    240            logForDebugging(
+    241              `Hooks: Agent hook did not complete within ${MAX_AGENT_TURNS} turns`,
+    242            )
+    243            logEvent('tengu_agent_stop_hook_max_turns', {
+    244              durationMs: Date.now() - hookStartTime,
+    245              turnCount,
+    246              agentName:
+    247                agentName as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    248            })
+    249            return {
+    250>             hook,
+    251              outcome: 'cancelled',
+    252            }
+    253          }
+    254  
+    255          // For other cases (e.g., agent finished without calling structured output tool),
+    256          // just log and return cancelled (don't show error to user)
+    257          logForDebugging(`Hooks: Agent hook did not return structured output`)
+    258          logEvent('tengu_agent_stop_hook_error', {
+    259            durationMs: Date.now() - hookStartTime,
+    260            turnCount,

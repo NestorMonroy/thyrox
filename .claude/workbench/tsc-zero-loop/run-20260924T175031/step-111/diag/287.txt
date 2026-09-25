@@ -1,0 +1,14 @@
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(2,68): error TS2307: Cannot find module '../../../utils/powershell/parser.js' or its corresponding type declarations.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts:1-12 ---
+      1  import { mock, describe, expect, test } from "bun:test";
+      2> import type { ParsedCommandElement, ParsedPowerShellCommand } from "../../../utils/powershell/parser.js";
+      3  
+      4  // Mock clmTypes to avoid heavy dependency chain
+      5  mock.module("../../../utils/powershell/dangerousCmdlets.js", () => ({
+      6    DANGEROUS_SCRIPT_BLOCK_CMDLETS: new Set([
+      7      "invoke-command",
+      8      "icm",
+      9      "start-job",
+     10      "start-threadjob",
+     11      "register-engineevent",
+     12      "register-wmievent",

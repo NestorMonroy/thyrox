@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(317,40): error TS18046: 'tool' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:307-327 ---
+    307          toolUseContext,
+    308          assistantMessage,
+    309          toolUseID,
+    310          forceDecision,
+    311        )
+    312  
+    313        // Track denials for SDK reporting
+    314        if (result.behavior !== 'allow') {
+    315          this.permissionDenials.push({
+    316            type: 'permission_denial',
+    317>           tool_name: sdkCompatToolName(tool.name),
+    318            tool_use_id: toolUseID,
+    319            tool_input: input,
+    320          })
+    321        }
+    322  
+    323        return result
+    324      }
+    325  
+    326      const initialAppState = getAppState()
+    327      const initialMainLoopModel = userSpecifiedModel
+src/packages/agent/QueryEngine.ts(349,9): error TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.
+  --- código src/packages/agent/QueryEngine.ts:339-359 ---
+    339      const customPrompt =
+    340        typeof customSystemPrompt === 'string' ? customSystemPrompt : undefined
+    341      const {
+    342        defaultSystemPrompt,
+    343        userContext: baseUserContext,
+    344        systemContext,
+    345      } = await fetchSystemPromptParts({
+    346        tools,
+    347        mainLoopModel: initialMainLoopModel,
+    348        additionalWorkingDirectories: Array.from(
+    349>         initialAppState.toolPermissionContext.additionalWorkingDirectories.keys(),
+    350        ),
+    351        mcpClients,
+    352        customSystemPrompt: customPrompt,
+    353      })
+    354      headlessProfilerCheckpoint('after_getSystemPrompt')
+    355      const userContext = {
+    356        ...baseUserContext,
+    357        ...getCoordinatorUserContext(
+    358          mcpClients,
+    359          isScratchpadEnabled() ? getScratchpadDir() : undefined,

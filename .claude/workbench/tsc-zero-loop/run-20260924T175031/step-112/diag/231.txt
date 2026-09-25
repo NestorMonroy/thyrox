@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(714,71): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:704-724 ---
+    704        // If backgrounded, return immediately with task ID. Strip hints first
+    705        // so interrupt-backgrounded fullOutput doesn't leak the tag to the
+    706        // model (BashTool has no early return, so all paths flow through its
+    707        // single extraction site).
+    708        if (result.backgroundTaskId) {
+    709          const bgExtracted = extractClaudeCodeHints(
+    710            result.stdout || '',
+    711            input.command,
+    712          )
+    713          if (isMainThread && bgExtracted.hints.length > 0) {
+    714>           for (const hint of bgExtracted.hints) maybeRecordPluginHint(hint)
+    715          }
+    716          return {
+    717            data: {
+    718              stdout: bgExtracted.stripped,
+    719              stderr: [result.stderr || '', stderrForShellReset]
+    720                .filter(Boolean)
+    721                .join('\n'),
+    722              interrupted: false,
+    723              backgroundTaskId: result.backgroundTaskId,
+    724              backgroundedByUser: result.backgroundedByUser,
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(762,67): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/tool-registry/src/claudeCodeHints").ClaudeCodeHint' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").ClaudeCodeHint'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:752-772 ---
+    752  
+    753        // Claude Code hints protocol: CLIs/SDKs gated on CLAUDECODE=1 emit a
+    754        // `<claude-code-hint />` tag to stderr (merged into stdout here). Scan,
+    755        // record for useClaudeCodeHintRecommendation to surface, then strip
+    756        // so the model never sees the tag — a zero-token side channel.
+    757        // Stripping runs unconditionally (subagent output must stay clean too);
+    758        // only the dialog recording is main-thread-only.
+    759        const extracted = extractClaudeCodeHints(stdout, input.command)
+    760        stdout = extracted.stripped
+    761        if (isMainThread && extracted.hints.length > 0) {
+    762>         for (const hint of extracted.hints) maybeRecordPluginHint(hint)
+    763        }
+    764  
+    765        // preSpawnError means exec() succeeded but the inner shell failed before
+    766        // the command ran (e.g. CWD deleted). createFailedCommand sets code=1,
+    767        // which interpretCommandResult can mistake for grep-no-match / findstr
+    768        // string-not-found. Throw it directly. Matches BashTool.tsx:957.
+    769        if (result.preSpawnError) {
+    770          throw new Error(result.preSpawnError)
+    771        }
+    772        if (interpretation.isError && !isInterrupt) {
+  Type 'ClaudeCodeHint' is missing the following properties from type 'ClaudeCodeHint': id, message

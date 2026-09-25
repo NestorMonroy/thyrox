@@ -1,0 +1,143 @@
+src/packages/provider/__tests__/providerStreaming.test.ts(141,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:131-151 ---
+    131  
+    132    test('los input_json_delta se concatenan y se parsean a objeto', async () => {
+    133      const p = proveedor(() => new Response(cuerpoSse(EVENTOS_HERRAMIENTA)))
+    134      const turno = await p.send({ ...peticion, stream: true })
+    135      expect(turno.content).toEqual([{ type: 'tool_use', id: 'tu_1', name: 'Bash', input: { command: 'ls' } }])
+    136      expect(turno.stop_reason).toBe('tool_use')
+    137    })
+    138  
+    139    test('un tool_use sin ningun delta queda con input vacio, no roto', async () => {
+    140      const p = proveedor(() => new Response(cuerpoSse([
+    141>       EVENTOS_HERRAMIENTA[0],
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(152,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:142-162 ---
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+    152>       EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162        EVENTOS_TEXTO[0],
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(152,31): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:142-162 ---
+    142        { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
+    143        { type: 'content_block_stop', index: 0 },
+    144        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    145      ])))
+    146      expect((await p.send({ ...peticion, stream: true })).content).toEqual(
+    147        [{ type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} }])
+    148    })
+    149  
+    150    test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
+    151      const p = proveedor(() => new Response(cuerpoSse([
+    152>       EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162        EVENTOS_TEXTO[0],
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(162,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:152-172 ---
+    152        EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+    153        { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
+    154        { type: 'content_block_stop', index: 0 },
+    155        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
+    156      ])))
+    157      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/tu_1|JSON/)
+    158    })
+    159  
+    160    test('dos bloques conservan su orden por indice', async () => {
+    161      const p = proveedor(() => new Response(cuerpoSse([
+    162>       EVENTOS_TEXTO[0],
+    163        { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } },
+    164        { type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'voy a correr' } },
+    165        { type: 'content_block_stop', index: 0 },
+    166        { type: 'content_block_start', index: 1, content_block: { type: 'tool_use', id: 'tu_9', name: 'Bash', input: {} } },
+    167        { type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"command":"pwd"}' } },
+    168        { type: 'content_block_stop', index: 1 },
+    169        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 9 } },
+    170      ])))
+    171      const turno = await p.send({ ...peticion, stream: true })
+    172      expect(turno.content.map((b) => b.type)).toEqual(['text', 'tool_use'])
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(177,7): error TS2322: Type '{ type: string; message: { id: string; model: string; content: never[]; stop_reason: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; index?: undefined; content_block?: undefined; delta?: undefined; usage?: undefined; } | ... 5 mo...' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:167-187 ---
+    167        { type: 'content_block_delta', index: 1, delta: { type: 'input_json_delta', partial_json: '{"command":"pwd"}' } },
+    168        { type: 'content_block_stop', index: 1 },
+    169        { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 9 } },
+    170      ])))
+    171      const turno = await p.send({ ...peticion, stream: true })
+    172      expect(turno.content.map((b) => b.type)).toEqual(['text', 'tool_use'])
+    173    })
+    174  
+    175    test('un evento `error` dentro del stream se propaga con su mensaje', async () => {
+    176      const p = proveedor(() => new Response(cuerpoSse([
+    177>       EVENTOS_TEXTO[0],
+    178        { type: 'error', error: { type: 'overloaded_error', message: 'Overloaded' } },
+    179      ])))
+    180      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/Overloaded/)
+    181    })
+    182  
+    183    test('un stream que corta antes de message_delta no inventa un turno', async () => {
+    184      const p = proveedor(() => new Response(cuerpoSse(EVENTOS_TEXTO.slice(0, 4))))
+    185      await expect(p.send({ ...peticion, stream: true })).rejects.toThrow(/incompleto/)
+    186    })
+    187  
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.
+src/packages/provider/__tests__/providerStreaming.test.ts(246,30): error TS2488: Type 'Headers' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/provider/__tests__/providerStreaming.test.ts:236-256 ---
+    236      usar: (baseUrl: string) => Promise<T>,
+    237    ): Promise<T> {
+    238      const srv = Bun.serve({ port: 0, fetch: manejar })
+    239      try { return await usar(`http://127.0.0.1:${srv.port}`) } finally { srv.stop(true) }
+    240    }
+    241  
+    242    test('la ruta JSON viaja por socket con sus cabeceras reales', async () => {
+    243      const visto: Record<string, string> = {}
+    244      const turno = await conServidor(
+    245        (req) => {
+    246>         for (const [k, v] of req.headers) visto[k] = v
+    247          return new Response(JSON.stringify({ id: 'msg_red', model: 'claude-opus-5', stop_reason: 'end_turn',
+    248            content: [{ type: 'text', text: 'desde el socket' }],
+    249            usage: { input_tokens: 2, output_tokens: 3, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 } }),
+    250            { headers: { 'content-type': 'application/json', 'anthropic-ratelimit-unified-status': 'allowed' } })
+    251        },
+    252        async (baseUrl) => {
+    253          const p = new AnthropicHttpProvider({ apiKey: 'clave-local', baseUrl })
+    254          const t = await p.send({ ...peticion, cacheTtl: '1h' })
+    255          expect(p.lastLimits.status).toBe('allowed')
+    256          return t

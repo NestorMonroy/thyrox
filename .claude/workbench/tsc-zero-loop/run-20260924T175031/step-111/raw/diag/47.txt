@@ -1,0 +1,3 @@
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts(91,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts(170,12): error TS2554: Expected 2-3 arguments, but got 1.

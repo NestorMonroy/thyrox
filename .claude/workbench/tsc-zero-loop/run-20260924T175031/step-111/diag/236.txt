@@ -1,0 +1,23 @@
+src/packages/repl/src/hooks/useInboxPoller.ts(342,33): error TS18046: 'q' is of type 'unknown'.
+  --- código src/packages/repl/src/hooks/useInboxPoller.ts:332-352 ---
+    332                )
+    333              },
+    334              async recheckPermission() {
+    335                // No-op for tmux workers — permission state is on the worker side
+    336              },
+    337            }
+    338  
+    339            // Deduplicate: if markMessagesAsRead failed on a prior poll,
+    340            // the same message will be re-read — skip if already queued.
+    341            setToolUseConfirmQueue(queue => {
+    342>             if (queue.some(q => q.toolUseID === parsed.tool_use_id)) {
+    343                return queue
+    344              }
+    345              return [...queue, entry]
+    346            })
+    347          } else {
+    348            logForDebugging(
+    349              `[InboxPoller] ToolUseConfirmQueue unavailable, dropping permission request from ${parsed.agent_id}`,
+    350            )
+    351          }
+    352        }

@@ -1,0 +1,6 @@
+src/packages/repl/src/screens/REPLView.tsx(2479,9): error TS2322: Type 'Dispatch<SetStateAction<IdeType | null>>' is not assignable to type '(ide: unknown) => void'.
+  Types of parameters 'value' and 'ide' are incompatible.
+    Type 'unknown' is not assignable to type 'SetStateAction<IdeType | null>'.
+src/packages/repl/src/screens/REPLView.tsx(2527,9): error TS2322: Type '(sessionId: UUID, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<void>' is not assignable to type '(sessionId: `${string}-${string}-${string}-${string}-${string}`, log: unknown, entrypoint: ResumeEntrypoint) => Promise<void>'.
+  Types of parameters 'log' and 'log' are incompatible.
+    Type 'unknown' is not assignable to type 'LogOption'.

@@ -1,0 +1,6 @@
+src/packages/config/semver.ts(9,31): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`
+src/packages/config/semver.ts(11,40): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`
+src/packages/config/semver.ts(14,53): error TS7016: Could not find a declaration file for module 'semver'. '/home/user/thyrox/node_modules/semver/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/semver` if it exists or add a new declaration (.d.ts) file containing `declare module 'semver';`

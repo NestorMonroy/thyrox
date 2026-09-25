@@ -1,0 +1,3 @@
+src/packages/repl/src/components/Messages.tsx(509,25): error TS2345: Argument of type 'NormalizedMessage[]' is not assignable to parameter of type 'AnyMessage'.
+  Property 'type' is missing in type 'NormalizedMessage[]' but required in type 'AnyMessage'.
+src/packages/repl/src/components/Messages.tsx(518,33): error TS2339: Property 'has' does not exist on type 'string[]'.

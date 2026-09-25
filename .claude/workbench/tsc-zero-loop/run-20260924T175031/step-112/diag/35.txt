@@ -1,0 +1,46 @@
+src/packages/agent/hooks/execPromptHook.ts(359,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:349-369 ---
+    349        // If the evaluator API call itself errored, surface as a non-blocking
+    350        // error so the Stop hook doesn't loop on infrastructure failures.
+    351        if ((response as { isApiErrorMessage?: boolean }).isApiErrorMessage) {
+    352          const errText = extractTextContent(
+    353            Array.isArray(response.message.content) ? response.message.content : [],
+    354          ).trim()
+    355          logForDebugging(
+    356            `Hooks: prompt-hook evaluator API error: ${errText}`,
+    357          )
+    358          return {
+    359>           hook,
+    360            outcome: 'non_blocking_error',
+    361            message: createAttachmentMessage({
+    362              type: 'hook_non_blocking_error',
+    363              hookName,
+    364              toolUseID: effectiveToolUseID,
+    365              hookEvent,
+    366              stderr: `Hook evaluator API error: ${errText}`,
+    367              stdout: '',
+    368              exitCode: 1,
+    369            }),
+src/packages/agent/hooks/execPromptHook.ts(425,11): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks/execPromptHook.ts:415-435 ---
+    415          }
+    416        }
+    417        if (!json) {
+    418          logForDebugging(
+    419            `Hooks: error parsing response as JSON: ${fullResponse}`,
+    420          )
+    421          // Non-blocking: a stuck evaluator must not loop the Stop hook.
+    422          // The model gets a non_blocking_error attachment but the turn ends
+    423          // normally (ant 4793.js does the same — it's the only safe choice).
+    424          return {
+    425>           hook,
+    426            outcome: 'non_blocking_error',
+    427            message: createAttachmentMessage({
+    428              type: 'hook_non_blocking_error',
+    429              hookName,
+    430              toolUseID: effectiveToolUseID,
+    431              hookEvent,
+    432              stderr: 'JSON validation failed',
+    433              stdout: fullResponse,
+    434              exitCode: 1,
+    435            }),

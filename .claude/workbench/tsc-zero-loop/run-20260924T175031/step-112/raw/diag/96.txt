@@ -1,0 +1,6 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3474,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3475,9): error TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+  Type 'string' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.

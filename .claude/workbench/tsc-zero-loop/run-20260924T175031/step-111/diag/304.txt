@@ -1,0 +1,24 @@
+tests/task/premises.test.ts(35,23): error TS2322: Type 'number | null | undefined' is not assignable to type 'number | null'.
+  --- código tests/task/premises.test.ts:25-45 ---
+     25    files?: Record<string, string>
+     26    env?: Record<string, string>
+     27    exits?: Record<string, number | null>
+     28  }): PremiseIo {
+     29    const files = mundo.files ?? {}
+     30    return {
+     31      list: (glob) => Object.keys(files).filter((f) => f.startsWith(glob.replace(/\*.*$/, ''))),
+     32      read: (path) => files[path] ?? '',
+     33      exists: (path) => path in files,
+     34      env: (name) => mundo.env?.[name],
+     35>     run: (command) => (command in (mundo.exits ?? {}) ? (mundo.exits as Record<string, number | null>)[command] : null),
+     36    }
+     37  }
+     38  
+     39  const mundoVacio = io({})
+     40  
+     41  describe('los cinco veredictos, y ninguno se colapsa con otro (T-055)', () => {
+     42    test('actionable — abierta y su bloqueo YA NO se cumple: el caso T-011', () => {
+     43      const tarea: TaskPremise = {
+     44        id: 'T-011',
+     45        open: true,
+  Type 'undefined' is not assignable to type 'number | null'.
