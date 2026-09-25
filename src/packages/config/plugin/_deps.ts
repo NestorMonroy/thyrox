@@ -1271,52 +1271,21 @@ export function setGracefulShutdownFn(fn: typeof _gracefulShutdown): void {
 }
 
 // ---------------------------------------------------------------------------
-// Slots de tipo forward-compat — las definiciones precisas viven en
-// subsistemas de capa superior (tool-registry para Command, skills para
-// BundledSkillDefinition). Usar tipos estructurales equivalentes a
-// `unknown` mantiene la capa del paquete plugin limpia.
+// Tipos de capa superior: `Command` (agent) y `BundledSkillDefinition`
+// (command-runtime). Se re-exportan sólo como tipos; hasta 2026-09-25 eran
+// ranuras de campos `unknown` con índice abierto, y los consumidores que les
+// pasaban los tipos reales fallaban (ver H-THYROX-176).
 // ---------------------------------------------------------------------------
 
-export type Command = {
-  type: string
-  name: string
-  description?: string
-  hasUserSpecifiedDescription?: boolean
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  contentLength?: number
-  source?: string
-  loadedFrom?: string
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  isHidden?: boolean
-  progressMessage?: string
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// El `Command` real vive en `@thyrox/agent/command.js`. Esta ranura lo
+// sustituía por un objeto de campos `unknown` con índice abierto, y cada lista
+// de comandos de plugin fallaba al entregarse a quien espera el `Command`
+// completo. Se re-exporta sólo el tipo: la capa de plugin no gana ninguna
+// dependencia de ejecución.
+export type { Command } from '@thyrox/agent/command.js'
 
-export type BundledSkillDefinition = {
-  name: string
-  description?: string
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// Igual que `Command`: la definición real vive en el paquete de comandos.
+export type { BundledSkillDefinition } from '@thyrox/command-runtime/skills/bundledSkills.js'
 
 // El paquete ya existe: se reexportan los bindings canónicos en vez de
 // conservar la prosa heredada que afirmaba que estaba ausente.
