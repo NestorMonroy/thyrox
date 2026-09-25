@@ -28,6 +28,7 @@ import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { getProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderRequestOptions } from './internal/providerTypes.ts'
+import type { ProviderNotification } from './contracts.ts'
 import { HostBindingsError } from './errors.ts'
 
 type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[]
@@ -46,7 +47,7 @@ export type Options = ProviderRequestOptions & {
   queryTracking?: unknown
   agentId?: string
   outputFormat?: BetaJSONOutputFormat
-  addNotification?: (notif: unknown) => void
+  addNotification?: (notif: ProviderNotification) => void
   fetchOverride?: ClientOptions['fetch']
   taskBudget?: OptionsTaskBudget
 }

@@ -1764,9 +1764,7 @@ async function* queryLoop(
     })
 
     // Refresh tools between turns so newly-connected MCP servers become available
-    const refreshTools = updatedToolUseContext.options.refreshTools as
-      | (() => unknown[])
-      | undefined
+    const refreshTools = updatedToolUseContext.options.refreshTools
     if (refreshTools) {
       const refreshedTools = refreshTools()
       if (refreshedTools !== updatedToolUseContext.options.tools) {

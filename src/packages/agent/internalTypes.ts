@@ -11,6 +11,8 @@
  * El archivo es AUTOCONTENIDO: no importa nada externo. Se porta completo.
  */
 
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+
 // ── Tipos de mensaje ────────────────────────────────────────────────────────
 
 /**
@@ -98,24 +100,12 @@ export type AgentHookResult = {
 
 // ── Tipos de tool / contexto ─────────────────────────────────────────────────
 
-/** Forma mínima de ToolUseContext que necesitan los stop hooks y el query loop. */
-export type AgentToolUseContext = {
-  agentId?: string
-  agentType?: string
-  abortController: AbortController
-  getAppState: () => { toolPermissionContext: { mode: string }; [key: string]: unknown }
-  setAppState?: (f: (prev: unknown) => unknown) => void
-  addNotification?: (n: { key: string; text: string; priority: string }) => void
-  queryTracking?: { chainId: string; depth: number }
-  appendSystemMessage?: (msg: unknown) => void
-  options: {
-    mainLoopModel: string
-    tools: unknown[]
-    isNonInteractiveSession?: boolean
-    [key: string]: unknown
-  }
-  [key: string]: unknown
-}
+/**
+ * El contexto de herramienta del query loop es el del registro. Antes era
+ * una forma mínima local (la de la fuente, V7 §8), y cada consumidor que
+ * tenía el tipo real tenía que convertirlo para pasarlo.
+ */
+export type AgentToolUseContext = ToolUseContext
 
 // ── Tipo de system prompt ────────────────────────────────────────────────────
 
