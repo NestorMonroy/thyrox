@@ -1,0 +1,30 @@
+Patrón: lazy-schema-call-on-plain-zod-export-359
+Señal del verificador: : TS2349: This\ expression\ is\ not\ callable\.$
+Arreglo genérico: Derivado de los objetivos de src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts; ver su diff en el paso.
+Ya aplicado en: src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts
+Archivos donde la señal sigue viva: src/packages/app-host/src/runtime/commandRegistryRuntime.ts
+
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(469,27): error TS2349: This expression is not callable.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:459-479 ---
+    459   * because loading is expensive (disk I/O, dynamic imports).
+    460   */
+    461  const loadAllCommands = memoize(async (cwd: string): Promise<Command[]> => {
+    462    const [
+    463      { skillDirCommands, pluginSkills, bundledSkills, builtinPluginSkills },
+    464      pluginCommands,
+    465      workflowCommands,
+    466    ] = await Promise.all([
+    467      getSkills(cwd),
+    468      getPluginCommands(),
+    469>     getWorkflowCommands ? getWorkflowCommands(cwd) : Promise.resolve([]),
+    470    ])
+    471  
+    472    return [
+    473      ...bundledSkills,
+    474      ...builtinPluginSkills,
+    475      ...skillDirCommands,
+    476      ...workflowCommands,
+    477      ...pluginCommands,
+    478      ...pluginSkills,
+    479      ...COMMANDS(),
+  Type 'never' has no call signatures.

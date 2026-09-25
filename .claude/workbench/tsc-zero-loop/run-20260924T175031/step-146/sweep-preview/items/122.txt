@@ -1,0 +1,146 @@
+Patrón: deferred-passthrough-settings-key-is-unknown
+Señal del verificador: TS2322: Type 'unknown' is not assignable to type '(string \| undefined|[^']*\[\] \| null)'
+Arreglo genérico: Cuando una clave de settings está marcada como "diferida" en inventory.ts (no declarada en SettingsSchema de types.ts), leerla desde el objeto que devuelve getSettingsForSource() produce `unknown` por el `.passthrough()` del esquema. Se corrige acotando el tipo del objeto leído con un cast local a la forma conocida de esa clave (p. ej. `as { campo?: Tipo } | null`), igual que ya hace settings.ts en otros puntos (`as { autoMode?: unknown } | null`) — nunca con `any`/`as unknown as`.
+Ya aplicado en: src/packages/config/plugin/marketplaceHelpers.ts
+Archivos donde la señal sigue viva: src/packages/agent/task/framework.ts, src/packages/repl/src/components/Message.tsx, src/packages/repl/src/queryHelpers.ts
+
+src/packages/agent/task/framework.ts(108,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/task/framework.ts:98-118 ---
+     98      return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } }
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108>     tool_use_id: task.toolUseId,
+    109      description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:125-145 ---
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+    127                shouldShowDot={shouldShowDot}
+    128                width={width}
+    129                inProgressToolCallCount={inProgressToolUseIDs.size}
+    130                isTranscriptMode={isTranscriptMode}
+    131                lookups={lookups}
+    132                onOpenRateLimitOptions={onOpenRateLimitOptions}
+    133                thinkingBlockId={`${message.uuid}:${index}`}
+    134                lastThinkingBlockId={lastThinkingBlockId}
+    135>               advisorModel={message.advisorModel}
+    136              />
+    137            ))}
+    138          </Box>
+    139        )
+    140      case 'user': {
+    141        if (message.isCompactSummary) {
+    142          return (
+    143            <CompactSummary
+    144              message={message}
+    145              screen={isTranscriptMode ? 'transcript' : 'prompt'}
+src/packages/repl/src/components/Message.tsx(321,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:311-331 ---
+    311    isTranscriptMode: boolean
+    312  }): React.ReactNode {
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321>           planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323            timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+src/packages/repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:313-333 ---
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321            planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323>           timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+    332            addMargin={addMargin && !isUserContinuation}
+    333          />
+
+src/packages/repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:147-167 ---
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157>                 timestamp: _.timestamp,
+    158                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    159                  tool_use_result: _.mcpMeta
+    160                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    161                    : _.toolUseResult,
+    162                }
+    163                break
+    164            }
+    165          }
+    166        } else if (
+    167          progressData.type === 'bash_progress' ||
+src/packages/repl/src/queryHelpers.ts(221,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:211-231 ---
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217            message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221>           timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+    228        return
+    229      default:
+    230      // yield nothing
+    231    }

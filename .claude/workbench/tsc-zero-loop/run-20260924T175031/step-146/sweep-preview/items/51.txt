@@ -1,0 +1,1749 @@
+Patrón: value-setter-store-vs-updater-setter-hostsessionstore-244
+Señal del verificador: : TS2322: Type\ .+?\ is\ not\ assignable\ to\ type\ .+?\.$
+Arreglo genérico: Derivado de los objetivos de src/packages/app-host/src/runtime/bootstrap.ts; ver su diff en el paso.
+Ya aplicado en: src/packages/agent/__tests__/compactionSnipProjection.test.ts, src/packages/app-host/src/runtime/bootstrap.ts, src/packages/app-host/src/runtime/installCliBindings.ts, src/packages/bridge/commands/bridge-kick.ts, src/packages/cli/src/entry/main.tsx, src/packages/config/generators.ts, src/packages/config/plugin/commands/reload-plugins/index.ts, src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts, src/packages/permission/src/components/rules/PermissionRuleList.tsx, src/packages/permission/src/toolPermission/permissionLogging.ts, src/packages/provider/__tests__/providerStreaming.test.ts, src/packages/provider/src/adapters.ts, src/packages/repl/src/commands/config/index.ts, src/packages/repl/src/commands/diff/index.ts, src/packages/repl/src/components/PromptInput/PromptInput.tsx, src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx, src/packages/repl/src/doctorDiagnostic.ts, src/packages/repl/src/handlePromptSubmit.tsx, src/packages/repl/src/screens/ResumeConversation.tsx, src/packages/storage/src/sessionStart.ts, src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx, src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts, tests/unit/openai/streamAdapter.test.ts, tests/unit/utils/treeify.test.ts
+Archivos donde la señal sigue viva: src/packages/agent/QueryEngine.ts, src/packages/agent/hooks.ts, src/packages/agent/messages/mappers.ts, src/packages/agent/query.ts, src/packages/agent/task/framework.ts, src/packages/app-host/src/launchRepl.tsx, src/packages/app-host/src/runtime/commandRegistryRuntime.ts, src/packages/app-host/src/runtime/installPluginBindings.ts, src/packages/app-host/src/runtime/runtimeHandles.ts, src/packages/cli/src/entry/commander.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/cli/src/structuredIO.ts, src/packages/command-runtime/src/commands/fork/index.ts, src/packages/config/plugin/mcpbHandler.ts, src/packages/config/plugin/pluginLoader.ts, src/packages/mcp-runtime/src/useManageMCPConnections.ts, src/packages/permission/src/toolPermission/PermissionContext.ts, src/packages/provider/src/claudeLegacyRuntime.ts, src/packages/repl/src/components/App.tsx, src/packages/repl/src/components/Message.tsx, src/packages/repl/src/components/PromptInput/Notifications.tsx, src/packages/repl/src/processUserInput/processTextPrompt.ts, src/packages/repl/src/queryHelpers.ts, src/packages/repl/src/screens/REPLView.tsx, src/packages/repl/src/screens/repl/bgDetachSignal.ts, src/packages/storage/src/sessionStorage.ts, src/packages/tool-registry/src/services/toolHooks.ts, src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts, src/packages/tool-registry/src/tools/BashTool/UI.tsx
+
+src/packages/agent/QueryEngine.ts(557,11): error TS2322: Type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 24 more ... | undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+  --- código src/packages/agent/QueryEngine.ts:547-567 ---
+    547      // Cache-only: headless/SDK/CCR startup must not block on network for
+    548      // ref-tracked plugins. CCR populates the cache via CLAUDE_CODE_SYNC_PLUGIN_INSTALL
+    549      // (headlessPluginInstall) or CLAUDE_CODE_PLUGIN_SEED_DIR before this runs;
+    550      // SDK callers that need fresh source can call /reload-plugins.
+    551      const [skills, { enabled: enabledPlugins }] = await Promise.all([
+    552        getSlashCommandToolSkills(getCwd()),
+    553        loadAllPluginsCacheOnly(),
+    554      ])
+    555      headlessProfilerCheckpoint('after_skills_plugins')
+    556  
+    557>     yield buildSystemInitMessage({
+    558        tools,
+    559        mcpClients,
+    560        model: mainLoopModel,
+    561        permissionMode: initialAppState.toolPermissionContext
+    562          .mode as PermissionMode, // TODO: avoid the cast
+    563        commands,
+    564        agents,
+    565        skills,
+    566        plugins: enabledPlugins,
+    567        fastMode: initialAppState.fastMode,
+  Type 'undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+src/packages/agent/QueryEngine.ts(706,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+  --- código src/packages/agent/QueryEngine.ts:696-716 ---
+    696        ? countToolCalls(this.mutableMessages, SYNTHETIC_OUTPUT_TOOL_NAME)
+    697        : 0
+    698  
+    699      const agent = new AgentCore(
+    700        createProductionDeps({
+    701          tools,
+    702          toolUseContext: processUserInputContext,
+    703          canUseTool: wrappedCanUseTool,
+    704          querySource: 'sdk',
+    705          contextOverrides: {
+    706>           systemPrompt,
+    707            userContext,
+    708            systemContext,
+    709          },
+    710        }),
+    711        {
+    712          messages: toCoreMessages(messages),
+    713          model: mainLoopModel,
+    714          sessionId: getSessionId(),
+    715          totalUsage: this.totalUsage,
+    716        },
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/QueryEngine.ts(797,9): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/QueryEngine.ts:787-807 ---
+    787                  : String(event.error ?? 'Agent core execution failed'),
+    788              ],
+    789            }
+    790            return
+    791          }
+    792  
+    793          continue
+    794        }
+    795  
+    796        if (event.type === 'compaction') {
+    797>         this.mutableMessages = fromCoreMessages(event.after)
+    798          messages.splice(0, messages.length, ...this.mutableMessages)
+    799  
+    800          const compactBoundary = createCompactBoundaryMessage(
+    801            'auto',
+    802            0,
+    803            this.mutableMessages.at(-1)?.uuid,
+    804          )
+    805          this.mutableMessages.push(compactBoundary)
+    806          messages.push(compactBoundary)
+    807  
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/agent/QueryEngine.ts(972,15): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'.
+  --- código src/packages/agent/QueryEngine.ts:962-982 ---
+    962              // Accumulate current message usage into total
+    963              this.totalUsage = accumulateUsage(
+    964                this.totalUsage,
+    965                currentMessageUsage,
+    966              )
+    967            }
+    968  
+    969            if (includePartialMessages) {
+    970              yield {
+    971                type: 'stream_event' as const,
+    972>               event,
+    973                session_id: getSessionId(),
+    974                parent_tool_use_id: null,
+    975                uuid: randomUUID(),
+    976              }
+    977            }
+    978  
+    979            break
+    980          }
+    981          case 'attachment': {
+    982            const msg = message as Message
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaRawMessageDeltaEvent': context_management, delta, type, usage
+
+src/packages/agent/hooks.ts(1951,7): error TS2322: Type 'AgentMessage' is not assignable to type 'HookAttachmentMessage'.
+  --- código src/packages/agent/hooks.ts:1941-1961 ---
+   1941      ) {
+   1942        return {
+   1943          outcome: 'cancelled',
+   1944          hook,
+   1945        }
+   1946      }
+   1947  
+   1948      // Log for monitoring
+   1949      logError(error)
+   1950      return {
+   1951>       message: createAttachmentMessage({
+   1952          type: 'hook_error_during_execution',
+   1953          hookName,
+   1954          toolUseID,
+   1955          hookEvent,
+   1956          content:
+   1957            error instanceof Error
+   1958              ? error.message
+   1959              : 'Function hook execution error',
+   1960        }),
+   1961        outcome: 'non_blocking_error',
+  Property 'attachment' is missing in type 'AgentMessage' but required in type '{ type: "attachment"; attachment: { [key: string]: unknown; type: string; }; }'.
+
+src/packages/agent/messages/mappers.ts(127,13): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+  --- código src/packages/agent/messages/mappers.ts:117-137 ---
+    117    return messages.flatMap((message): SDKMessage[] => {
+    118      switch (message.type) {
+    119        case 'assistant':
+    120          return [
+    121            {
+    122              type: 'assistant',
+    123              message: normalizeAssistantMessageForSDK(message as AssistantMessage),
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127>             error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134              message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+src/packages/agent/messages/mappers.ts(134,13): error TS2322: Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type 'MessageParam'.
+  --- código src/packages/agent/messages/mappers.ts:124-144 ---
+    124              session_id: getSessionId(),
+    125              parent_tool_use_id: null,
+    126              uuid: message.uuid,
+    127              error: message.error,
+    128            },
+    129          ]
+    130        case 'user':
+    131          return [
+    132            {
+    133              type: 'user',
+    134>             message: message.message,
+    135              session_id: getSessionId(),
+    136              parent_tool_use_id: null,
+    137              uuid: message.uuid,
+    138              timestamp:
+    139                typeof message.timestamp === 'string' ? message.timestamp : undefined,
+    140              isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+    141              // Structured tool output (not the string content sent to the
+    142              // model — the full Output object). Rides the protobuf catchall
+    143              // so web viewers can read things like BriefTool's file_uuid
+    144              // without it polluting model context.
+  Types of property 'content' are incompatible.
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+
+src/packages/agent/query.ts(515,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:505-525 ---
+    505          consecutiveRapidRefills,
+    506        }
+    507  
+    508        const postCompactMessages = buildPostCompactMessages(compactionResult)
+    509  
+    510        for (const message of postCompactMessages) {
+    511          yield message
+    512        }
+    513  
+    514        // Continue on with the current query call using the post compact messages
+    515>       messagesForQuery = postCompactMessages
+    516      } else if (consecutiveFailures !== undefined) {
+    517        // Autocompact failed — propagate failure count so the circuit breaker
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/query.ts:518-538 ---
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+    526      toolUseContext = {
+    527        ...toolUseContext,
+    528>       messages: messagesForQuery,
+    529      }
+    530  
+    531      const assistantMessages: AssistantMessage[] = []
+    532      const toolResults: (UserMessage | AttachmentMessage)[] = []
+    533      // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    534      // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    535      // Set during streaming whenever a tool_use block arrives — the sole
+    536      // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    537      const toolUseBlocks: ToolUseBlock[] = []
+    538      let needsFollowUp = false
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+src/packages/agent/query.ts(671,15): error TS2322: Type 'EffortValue | undefined' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/query.ts:661-681 ---
+    661                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    662                hasAppendSystemPrompt:
+    663                  !!toolUseContext.options.appendSystemPrompt,
+    664                maxOutputTokensOverride,
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671>               effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675                addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+  Type 'number' is not assignable to type 'string'.
+src/packages/agent/query.ts(675,15): error TS2322: Type '((notif: Notification) => void) | undefined' is not assignable to type '((notif: ProviderNotification) => void) | undefined'.
+  --- código src/packages/agent/query.ts:665-685 ---
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667                hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671                effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675>               addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {
+    678                    total: params.taskBudget.total,
+    679                    ...(taskBudgetRemaining !== undefined && {
+    680                      remaining: taskBudgetRemaining,
+    681                    }),
+    682                  },
+    683                }),
+    684              },
+    685            })) {
+  Type '(notif: Notification) => void' is not assignable to type '(notif: ProviderNotification) => void'.
+    Types of parameters 'notif' and 'notif' are incompatible.
+      Type 'ProviderNotification' is not assignable to type 'Notification'.
+        Type 'ProviderNotification' is not assignable to type 'TextNotification'.
+          Type 'ProviderNotification' is not assignable to type 'BaseNotification'.
+            Types of property 'priority' are incompatible.
+              Type 'string' is not assignable to type 'Priority'.
+src/packages/agent/query.ts(802,21): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:792-812 ---
+    792              if (
+    793                mediaRecoveryEnabled &&
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802>               yield yieldMessage
+    803              }
+    804              if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+src/packages/agent/query.ts(1127,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:1117-1137 ---
+   1117                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1118                  preCompactContext,
+   1119              )
+   1120            }
+   1121  
+   1122            const postCompactMessages = buildPostCompactMessages(compacted)
+   1123            for (const msg of postCompactMessages) {
+   1124              yield msg
+   1125            }
+   1126            const next: State = {
+   1127>             messages: postCompactMessages,
+   1128              toolUseContext,
+   1129              autoCompactTracking: undefined,
+   1130              maxOutputTokensRecoveryCount,
+   1131              hasAttemptedReactiveCompact: true,
+   1132              maxOutputTokensOverride: undefined,
+   1133              pendingToolUseSummary: undefined,
+   1134              stopHookActive: undefined,
+   1135              stopHookBlockingCount: 0,
+   1136              turnCount,
+   1137              transition: { reason: 'reactive_compact_retry' },
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(1244,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  --- código src/packages/agent/query.ts:1234-1254 ---
+   1234  
+   1235        // Skip stop hooks when the last message is an API error (rate limit,
+   1236        // prompt-too-long, auth failure, etc.). The model never produced a
+   1237        // real response — hooks evaluating it create a death spiral:
+   1238        // error → hook blocking → retry → error → …
+   1239        if (lastMessage?.isApiErrorMessage) {
+   1240          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1241          return { reason: 'completed' }
+   1242        }
+   1243  
+   1244>       const stopHookResult = yield* handleStopHooks(
+   1245          messagesForQuery,
+   1246          assistantMessages,
+   1247          systemPrompt,
+   1248          userContext,
+   1249          systemContext,
+   1250          toolUseContext,
+   1251          querySource,
+   1252          stopHookActive,
+   1253        )
+   1254  
+
+src/packages/agent/task/framework.ts(108,5): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/agent/task/framework.ts:98-118 ---
+     98      return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } }
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108>     tool_use_id: task.toolUseId,
+    109      description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+src/packages/agent/task/framework.ts(109,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/task/framework.ts:99-119 ---
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108      tool_use_id: task.toolUseId,
+    109>     description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+    119  /**
+
+src/packages/app-host/src/launchRepl.tsx(32,24): error TS2322: Type 'HostSessionStore<TState>' is not assignable to type 'AppStateStore'.
+  --- código src/packages/app-host/src/launchRepl.tsx:22-39 ---
+     22    session,
+     23    appProps,
+     24    replProps,
+     25    renderAndRun,
+     26  }: LaunchReplArgs<TState, TStats, TFpsMetrics>): Promise<void> {
+     27    const { App } = await import('@thyrox/repl/components/App.js')
+     28    const { REPL } = await import('@thyrox/repl/screens/REPL.js')
+     29  
+     30    await renderAndRun(
+     31      root,
+     32>     <App {...appProps} store={session.store}>
+     33        <REPL
+     34          {...replProps}
+     35          runtimeGraph={session.runtimeGraph}
+     36        />
+     37      </App>,
+     38    )
+     39  }
+  The types returned by 'getState()' are incompatible between these types.
+    Type 'TState' is not assignable to type 'AppState'.
+      Type 'TState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(521,5): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:511-531 ---
+    511  
+    512    if (uniqueDynamicSkills.length === 0) {
+    513      return baseCommands
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521>     return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524    return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(524,3): error TS2322: Type '(Command | DynamicPromptSkill)[]' is not assignable to type 'Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:514-534 ---
+    514    }
+    515  
+    516    // Insert dynamic skills after plugin skills but before built-in commands
+    517    const builtInNames = new Set(COMMANDS().map(c => c.name))
+    518    const insertIndex = baseCommands.findIndex(c => builtInNames.has(c.name))
+    519  
+    520    if (insertIndex === -1) {
+    521      return [...baseCommands, ...uniqueDynamicSkills]
+    522    }
+    523  
+    524>   return [
+    525      ...baseCommands.slice(0, insertIndex),
+    526      ...uniqueDynamicSkills,
+    527      ...baseCommands.slice(insertIndex),
+    528    ]
+    529  }
+    530  
+    531  /**
+    532   * Clears only the memoization caches for commands, WITHOUT clearing skill caches.
+    533   * Use this when dynamic skills are added to invalidate cached command lists.
+    534   */
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(662,14): error TS2322: Type 'Set<{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }>' is not assignable to type 'Set<Command>'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:652-672 ---
+    652   * over the Remote Control bridge. These produce text output that streams
+    653   * back to the mobile/web client and have no terminal-only side effects.
+    654   *
+    655   * 'local-jsx' commands are blocked by type (they render Ink UI) and
+    656   * 'prompt' commands are allowed by type (they expand to text sent to the
+    657   * model) — this set only gates 'local' commands.
+    658   *
+    659   * When adding a new 'local' command that should work from mobile, add it
+    660   * here. Default is blocked.
+    661   */
+    662> export const BRIDGE_SAFE_COMMANDS: Set<Command> = new Set(
+    663    [
+    664      compact, // Shrink context — useful mid-session from a phone
+    665      clear, // Wipe transcript
+    666      cost, // Show session cost
+    667      summary, // Summarize conversation
+    668      files, // List tracked files
+    669    ].filter((c): c is Command => c !== null),
+    670  )
+    671  
+    672  /**
+  Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: () => Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/clear/clear")>; } | { ...; } | { ...; } | { ...; } | { ...; }' is not assignable to type 'Command'.
+    Type '{ isEnabled: () => boolean; isHidden: boolean; name: string; }' is not assignable to type 'Command'.
+      Type '{ isEnabled: () => boolean; isHidden: boolean; name: string; }' is not assignable to type 'CommandBase & LocalJSXCommand'.
+        Property 'description' is missing in type '{ isEnabled: () => boolean; isHidden: boolean; name: string; }' but required in type 'CommandBase'.
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts(786,33): error TS2322: Type '({ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null)[]' is not assignable to type 'readonly Command[]'.
+  --- código src/packages/app-host/src/runtime/commandRegistryRuntime.ts:776-796 ---
+    776      clearCommandsCache,
+    777      getCommandName,
+    778      isCommandEnabled,
+    779      builtInCommandNames: () => builtInCommandNames(),
+    780      findCommand,
+    781      hasCommand,
+    782      getCommand,
+    783      getSkillToolCommands,
+    784      getSlashCommandToolSkills,
+    785      getMcpSkillCommands: mcpCommands => getMcpSkillCommands(mcpCommands),
+    786>     internalOnlyCommands: () => INTERNAL_ONLY_COMMANDS,
+    787      remoteSafeCommands: () => REMOTE_SAFE_COMMANDS,
+    788      bridgeSafeCommands: () => BRIDGE_SAFE_COMMANDS,
+    789      isBridgeSafeCommand,
+    790      filterCommandsForRemoteMode,
+    791      formatDescriptionWithSource,
+    792    })
+    793  
+    794    commandRegistryHostBindingsInstalled = true
+    795  }
+    796  
+  Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand(args: string, context: ToolUseContext): Promise<...>; } | ... 4 more ... | null' is not assignable to type 'Command'.
+    Type 'null' is not assignable to type 'Command'.
+
+src/packages/app-host/src/runtime/installPluginBindings.ts(504,39): error TS2322: Type '{ resolvedPath: string; isSymlink: boolean; isCanonical: boolean; }' is not assignable to type 'string'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:494-514 ---
+    494      mkdir: async (p, o) => {
+    495        await nodeFsp.mkdir(p, { recursive: true, ...(o ?? {}) })
+    496      },
+    497      readdir: async p =>
+    498        (await nodeFsp.readdir(p, { withFileTypes: true })),
+    499      stat: async p => (await nodeFsp.stat(p)) as any,
+    500      rm: async (p, o) => nodeFsp.rm(p, o),
+    501      rename: async (o, n) => nodeFsp.rename(o, n),
+    502    })
+    503    setPathExistsFn(p => pathExists(p))
+    504>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    505    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    506    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    507    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    508  
+    509    // --- git
+    510    setGitExeFn(() => gitExe())
+    511    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    512  
+    513    // --- subproceso
+    514    setExecFileNoThrowFn(execFileNoThrow)
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(120,58): error TS2322: Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:110-130 ---
+    110      commands: initialState.plugins.commands,
+    111      errors: initialState.plugins.errors,
+    112      installationStatus: initialState.plugins.installationStatus,
+    113      needsRefresh: initialState.plugins.needsRefresh,
+    114    })
+    115    const agentCatalogStore = createSnapshotStore(initialState.agentDefinitions)
+    116  
+    117    return {
+    118      permission: {
+    119        getContext: () => permissionStore.getState(),
+    120>       setContext: next => permissionStore.setState(() => next),
+    121        buildUpdates: (...args: unknown[]) =>
+    122          (Array.isArray(args[0]) ? args[0] : []) as PermissionUpdate[],
+    123        applyUpdates: updates => {
+    124          let nextContext = permissionStore.getState()
+    125          nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)
+src/packages/app-host/src/runtime/runtimeHandles.ts(135,56): error TS2322: Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown> | McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:125-145 ---
+    125          nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)
+    131        },
+    132      },
+    133      mcp: {
+    134        getSnapshot: () => mcpStore.getState(),
+    135>       setSnapshot: snapshot => mcpStore.setState(() => snapshot),
+    136        subscribe: listener => mcpStore.subscribe(listener),
+    137        refresh: () => {},
+    138        getResources: serverName =>
+    139          mcpStore.getState().resources[serverName] ?? [],
+    140      },
+    141      plugins: {
+    142        getSnapshot: () => pluginStore.getState(),
+    143        setSnapshot: snapshot => pluginStore.setState(() => snapshot),
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+  Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.
+    Type 'unknown' is not assignable to type 'MCPServerConnection'.
+src/packages/app-host/src/runtime/runtimeHandles.ts(143,59): error TS2322: Type 'PluginRuntimeSnapshot<unknown, unknown, unknown> | PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:133-153 ---
+    133      mcp: {
+    134        getSnapshot: () => mcpStore.getState(),
+    135        setSnapshot: snapshot => mcpStore.setState(() => snapshot),
+    136        subscribe: listener => mcpStore.subscribe(listener),
+    137        refresh: () => {},
+    138        getResources: serverName =>
+    139          mcpStore.getState().resources[serverName] ?? [],
+    140      },
+    141      plugins: {
+    142        getSnapshot: () => pluginStore.getState(),
+    143>       setSnapshot: snapshot => pluginStore.setState(() => snapshot),
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+    146      },
+    147      agentCatalog: {
+    148        getDefinitions: () => agentCatalogStore.getState(),
+    149        setDefinitions: next => agentCatalogStore.setState(() => next),
+    150        refresh: () => {},
+    151      },
+    152      sessionStoreFactory: {
+    153        createHeadlessStore: params =>
+  Type 'PluginRuntimeSnapshot<unknown, unknown, unknown>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.
+    Type 'unknown' is not assignable to type 'LoadedPlugin'.
+src/packages/app-host/src/runtime/runtimeHandles.ts(149,64): error TS2322: Type 'unknown' is not assignable to type 'AgentDefinitionsResult'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:139-159 ---
+    139          mcpStore.getState().resources[serverName] ?? [],
+    140      },
+    141      plugins: {
+    142        getSnapshot: () => pluginStore.getState(),
+    143        setSnapshot: snapshot => pluginStore.setState(() => snapshot),
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+    146      },
+    147      agentCatalog: {
+    148        getDefinitions: () => agentCatalogStore.getState(),
+    149>       setDefinitions: next => agentCatalogStore.setState(() => next),
+    150        refresh: () => {},
+    151      },
+    152      sessionStoreFactory: {
+    153        createHeadlessStore: params =>
+    154          createHeadlessSessionStore(
+    155            (params ?? {
+    156              mcpClients: [],
+    157              mcpCommands: [],
+    158              mcpTools: [],
+    159              toolPermissionContext: permissionStore.getState(),
+src/packages/app-host/src/runtime/runtimeHandles.ts(154,9): error TS2322: Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<unknown> | HostSessionStore<AppState>'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:144-164 ---
+    144        subscribe: listener => pluginStore.subscribe(listener),
+    145        refresh: () => {},
+    146      },
+    147      agentCatalog: {
+    148        getDefinitions: () => agentCatalogStore.getState(),
+    149        setDefinitions: next => agentCatalogStore.setState(() => next),
+    150        refresh: () => {},
+    151      },
+    152      sessionStoreFactory: {
+    153        createHeadlessStore: params =>
+    154>         createHeadlessSessionStore(
+    155            (params ?? {
+    156              mcpClients: [],
+    157              mcpCommands: [],
+    158              mcpTools: [],
+    159              toolPermissionContext: permissionStore.getState(),
+    160              effort: undefined,
+    161              effectiveModel: null,
+    162            }) as HeadlessStoreParams,
+    163          ),
+    164      },
+  Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<AppState>'.
+    Types of property 'setState' are incompatible.
+      Type '(next: AppState) => void' is not assignable to type '(updater: (prev: AppState) => AppState) => void'.
+        Types of parameters 'next' and 'updater' are incompatible.
+          Type '(prev: AppState) => AppState' is not assignable to type 'AppState'.
+            Type '(prev: AppState) => AppState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+
+src/packages/cli/src/entry/commander.ts(40,3): error TS2322: Type 'Command<[string | undefined], { debug?: boolean | undefined; debugToStderr?: true | undefined; debugFile?: boolean | undefined; verbose?: true | undefined; print?: true | undefined; bare?: true | undefined; ... 59 more ...; file?: string[] | undefined; }, {}>' is not assignable to type 'Command<[], {}, {}>'.
+  --- código src/packages/cli/src/entry/commander.ts:30-50 ---
+     30        getOptionSortKey(a).localeCompare(getOptionSortKey(b)),
+     31    })
+     32  }
+     33  
+     34  /**
+     35   * Creates and configures the main Commander program with all CLI options.
+     36   * Returns the program without .action() or preAction hook attached —
+     37   * those are wired in main.tsx's run() function.
+     38   */
+     39  export function createMainProgram(): CommanderCommand {
+     40>   return new CommanderCommand()
+     41      .configureHelp(createSortedHelpConfig())
+     42      .enablePositionalOptions()
+     43      .name('claude')
+     44      .description(
+     45        `Claude Code - starts an interactive session by default, use -p/--print for non-interactive output`,
+     46      )
+     47      .argument('[prompt]', 'Your prompt', String)
+     48      // Subcommands inherit helpOption via commander's copyInheritedSettings —
+     49      // setting it once here covers mcp, plugin, auth, and all other subcommands.
+     50      .helpOption('-h, --help', 'Display help for command')
+  Types of property 'processedArgs' are incompatible.
+    Type '[string | undefined]' is not assignable to type '[]'.
+      Source has 1 element(s) but target allows only 0.
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2143,9): error TS2322: Type '(toolUseId: string) => Promise<AssistantMessage | null>' is not assignable to type '(toolUseID: string) => Promise<OrphanedAssistantMessage | null | undefined>'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2133-2153 ---
+   2133    structuredIO.setUnexpectedResponseCallback(async message => {
+   2134      await handleOrphanedPermissionResponse({
+   2135        message,
+   2136        handledToolUseIds: handledOrphanedToolUseIds,
+   2137        onEnqueued: () => {
+   2138          // The first message of a session might be the orphaned permission
+   2139          // check rather than a user prompt, so kick off the loop.
+   2140          void run()
+   2141        },
+   2142        deps: {
+   2143>         findUnresolvedToolUse,
+   2144          enqueue,
+   2145          logDebug: logForDebugging,
+   2146        },
+   2147      })
+   2148    })
+   2149  
+   2150    // Track active OAuth flows per server so we can abort a previous flow
+   2151    // when a new mcp_authenticate request arrives for the same server.
+   2152    const activeOAuthFlows = new Map<string, AbortController>()
+   2153    // Track manual callback URL submit functions for active OAuth flows.
+  Type 'Promise<AssistantMessage | null>' is not assignable to type 'Promise<OrphanedAssistantMessage | null | undefined>'.
+    Type 'AssistantMessage | null' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+      Type 'AssistantMessage' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2144,9): error TS2322: Type '(command: QueuedCommand) => void' is not assignable to type '(entry: { mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }) => void'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2134-2154 ---
+   2134      await handleOrphanedPermissionResponse({
+   2135        message,
+   2136        handledToolUseIds: handledOrphanedToolUseIds,
+   2137        onEnqueued: () => {
+   2138          // The first message of a session might be the orphaned permission
+   2139          // check rather than a user prompt, so kick off the loop.
+   2140          void run()
+   2141        },
+   2142        deps: {
+   2143          findUnresolvedToolUse,
+   2144>         enqueue,
+   2145          logDebug: logForDebugging,
+   2146        },
+   2147      })
+   2148    })
+   2149  
+   2150    // Track active OAuth flows per server so we can abort a previous flow
+   2151    // when a new mcp_authenticate request arrives for the same server.
+   2152    const activeOAuthFlows = new Map<string, AbortController>()
+   2153    // Track manual callback URL submit functions for active OAuth flows.
+   2154    // Used when localhost is not reachable (e.g., browser-based IDEs).
+  Types of parameters 'command' and 'entry' are incompatible.
+    Type '{ mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }' is not assignable to type 'QueuedCommand'.
+      Types of property 'value' are incompatible.
+        Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+          Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+            Type 'unknown' is not assignable to type 'ContentBlockParam'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3474,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3464-3484 ---
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467          trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474>         value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })
+   3478        // Increment prompt count for attribution tracking and save snapshot
+   3479        // The snapshot persists promptCount so it survives compaction
+   3480        if (feature('COMMIT_ATTRIBUTION')) {
+   3481          setAppState(prev => ({
+   3482            ...prev,
+   3483            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3484              void recordAttributionSnapshot(snapshot).catch(error => {
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3475,9): error TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3465-3485 ---
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467          trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474          value: await resolveAndPrepend(message, message.message.content),
+   3475>         uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })
+   3478        // Increment prompt count for attribution tracking and save snapshot
+   3479        // The snapshot persists promptCount so it survives compaction
+   3480        if (feature('COMMIT_ATTRIBUTION')) {
+   3481          setAppState(prev => ({
+   3482            ...prev,
+   3483            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3484              void recordAttributionSnapshot(snapshot).catch(error => {
+   3485                logForDebugging(`Attribution: Failed to save snapshot: ${error}`)
+  Type 'string' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+
+src/packages/cli/src/structuredIO.ts(669,7): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+  --- código src/packages/cli/src/structuredIO.ts:659-679 ---
+    659          }
+    660          parentSignal.removeEventListener('abort', onParentAbort)
+    661        }
+    662      }
+    663    }
+    664  
+    665    createHookCallback(callbackId: string, timeout?: number): HookCallback {
+    666      return {
+    667        type: 'callback',
+    668        timeout,
+    669>       callback: async (
+    670          input: HookInput,
+    671          toolUseID: string | null,
+    672          abort: AbortSignal | undefined,
+    673        ): Promise<HookJSONOutput> => {
+    674          try {
+    675            const result = await this.sendRequest<HookJSONOutput>(
+    676              {
+    677                subtype: 'hook_callback',
+    678                callback_id: callbackId,
+    679                input,
+  Types of parameters 'input' and 'input' are incompatible.
+    Type 'HookInput' is not assignable to type '({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; })'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd
+
+src/packages/command-runtime/src/commands/fork/index.ts(31,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/fork/fork")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/command-runtime/src/commands/fork/index.ts:21-34 ---
+     21   *
+     22   * For OS-level background sessions that survive the parent REPL exiting,
+     23   * see `--bg` / `claude ps`/`logs`/`attach` (Phase B, separate path).
+     24   */
+     25  const fork = {
+     26    type: 'local-jsx',
+     27    name: 'fork',
+     28    description: 'Spawn a background agent that inherits the full conversation',
+     29    argumentHint: '<directive>',
+     30    isEnabled: () => isForkSubagentEnabled(),
+     31>   load: () => import('./fork.js'),
+     32  } satisfies Command
+     33  
+     34  export default fork
+  Property 'call' is missing in type 'typeof import("/home/user/thyrox/src/packages/command-runtime/src/commands/fork/fork")' but required in type 'LocalJSXCommandModule'.
+
+src/packages/config/plugin/mcpbHandler.ts(424,5): error TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:414-434 ---
+    414    manifest: McpbManifest,
+    415    extractedPath: string,
+    416    userConfig: UserConfigValues = {},
+    417  ): Promise<McpServerConfig> {
+    418    // Lazy import: @anthropic-ai/mcpb barrel pulls in zod v3 schemas (~700KB of
+    419    // bound closures). See dxt/helpers.ts for details.
+    420    const { getMcpConfigForManifest } = await import('@anthropic-ai/mcpb')
+    421    const mcpConfig = await getMcpConfigForManifest({
+    422      manifest,
+    423      extensionPath: extractedPath,
+    424>     systemDirs: getSystemDirectories(),
+    425      userConfig,
+    426      pathSeparator: '/',
+    427    })
+    428  
+    429    if (!mcpConfig) {
+    430      const error = new Error(
+    431        `Failed to generate MCP server configuration from manifest "${manifest.name}"`,
+    432      )
+    433      logError(error)
+    434      throw error
+  Index signature for type 'string' is missing in type 'string[]'.
+
+src/packages/config/plugin/pluginLoader.ts(3191,5): error TS2322: Type 'unknown[]' is not assignable to type 'LoadedPlugin[]'.
+  --- código src/packages/config/plugin/pluginLoader.ts:3181-3201 ---
+   3181    ])
+   3182    // 3. Load built-in plugins that ship with the CLI
+   3183    const builtinResult = getBuiltinPlugins()
+   3184  
+   3185    // Session plugins (--plugin-dir) override installed ones by name,
+   3186    // UNLESS the installed plugin is locked by managed settings
+   3187    // (policySettings). See mergePluginSources() for details.
+   3188    const { plugins: allPlugins, errors: mergeErrors } = mergePluginSources({
+   3189      session: sessionResult.plugins,
+   3190      marketplace: marketplaceResult.plugins,
+   3191>     builtin: [...builtinResult.enabled, ...builtinResult.disabled],
+   3192      managedNames: getManagedPluginNames(),
+   3193    })
+   3194    const allErrors = [
+   3195      ...marketplaceResult.errors,
+   3196      ...sessionResult.errors,
+   3197      ...mergeErrors,
+   3198    ]
+   3199  
+   3200    // Verify dependencies. Runs AFTER the parallel load — deps are presence
+   3201    // checks, not load-order, so no topological sort needed. Demotion is
+  Type 'unknown' is not assignable to type 'LoadedPlugin'.
+
+src/packages/mcp-runtime/src/useManageMCPConnections.ts(528,23): error TS2322: Type '{ kind: string; server: string; }' is not assignable to type 'string'.
+  --- código src/packages/mcp-runtime/src/useManageMCPConnections.ts:518-538 ---
+    518                        entry_kind:
+    519                          entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    520                        is_dev: entry?.dev ?? false,
+    521                        plugin: pluginId,
+    522                      })
+    523                      enqueue({
+    524                        mode: 'prompt',
+    525                        value: wrapChannelMessage(client.name, content, meta),
+    526                        priority: 'next',
+    527                        isMeta: true,
+    528>                       origin: { kind: 'channel', server: client.name },
+    529                        skipSlashCommands: true,
+    530                      })
+    531                    },
+    532                  )
+    533                  // Permission-reply handler — separate event, separate
+    534                  // capability. Only registers if the server declares
+    535                  // claude/channel/permission (same opt-in check as the send
+    536                  // path in interactiveHandler.ts). Server parses the user's
+    537                  // reply and emits {request_id, behavior}; no regex on our
+    538                  // side, text in the general channel can't accidentally match.
+
+src/packages/permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:117-137 ---
+    117        opts?: {
+    118          input?: Record<string, unknown>
+    119          permissionPromptStartTimeMs?: number
+    120        },
+    121      ) {
+    122        logPermissionDecision(
+    123          {
+    124            tool,
+    125            input: opts?.input ?? input,
+    126            toolUseContext,
+    127>           messageId,
+    128            toolUseID,
+    129          },
+    130          args,
+    131          opts?.permissionPromptStartTimeMs,
+    132        )
+    133      },
+    134      logCancelled() {
+    135        logEvent('tengu_tool_use_cancelled', {
+    136          messageID:
+    137            messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(205,46): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:195-215 ---
+    195                classifierDecision.type === 'classifier'
+    196              ) {
+    197                const matchedRule = classifierDecision.reason.match(
+    198                  /^Allowed by prompt rule: "(.+)"$/,
+    199                )?.[1]
+    200                if (matchedRule) {
+    201                  setClassifierApproval(toolUseID, matchedRule)
+    202                }
+    203              }
+    204              logPermissionDecision(
+    205>               { tool, input, toolUseContext, messageId, toolUseID },
+    206                { decision: 'accept', source: { type: 'classifier' } },
+    207                undefined,
+    208              )
+    209              return {
+    210                behavior: 'allow' as const,
+    211                updatedInput: updatedInput ?? input,
+    212                userModified: false,
+    213                decisionReason: classifierDecision,
+    214              }
+    215            },
+  Type 'undefined' is not assignable to type 'string'.
+
+src/packages/provider/src/claudeLegacyRuntime.ts(575,61): error TS2322: Type 'unknown' is not assignable to type 'Record<string, unknown> | BetaUsage | undefined'.
+  --- código src/packages/provider/src/claudeLegacyRuntime.ts:565-585 ---
+    565      if (error instanceof APIUserAbortError) throw error
+    566      logError(error)
+    567      yield createAssistantAPIErrorMessage(`API Error: ${errorMessage(error)}`) as unknown as AssistantMessage
+    568      return
+    569    } finally {
+    570      cleanupStream(stream)
+    571    }
+    572  
+    573    const assistantMessage: AssistantMessage = {
+    574      type: 'assistant',
+    575>     message: { role: 'assistant', content: textAccumulator, usage: usage as unknown },
+    576    }
+    577    yield assistantMessage
+    578  }
+    579  
+    580  export async function queryModelWithoutStreaming({
+    581    messages,
+    582    systemPrompt,
+    583    thinkingConfig,
+    584    tools,
+    585    signal,
+
+src/packages/repl/src/components/App.tsx(36,11): error TS2322: Type '{ children: ReactNode; initialState: AppState; store: AppStateStore | undefined; onChangeAppState: ({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void; }' is not assignable to type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.
+  --- código src/packages/repl/src/components/App.tsx:26-44 ---
+     26    stats,
+     27    initialState,
+     28    store,
+     29    children,
+     30  }: Props): React.ReactNode {
+     31    return (
+     32      <FpsMetricsProvider getFpsMetrics={getFpsMetrics}>
+     33        <StatsProvider store={stats}>
+     34          <AppStateProvider
+     35            initialState={initialState}
+     36>           store={store}
+     37            onChangeAppState={onChangeAppState}
+     38          >
+     39            {children}
+     40          </AppStateProvider>
+     41        </StatsProvider>
+     42      </FpsMetricsProvider>
+     43    )
+     44  }
+  Property 'store' does not exist on type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.
+
+src/packages/repl/src/components/Message.tsx(108,11): error TS2322: Type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' is not assignable to type 'Attachment'.
+  --- código src/packages/repl/src/components/Message.tsx:98-118 ---
+     98    isActiveCollapsedGroup,
+     99    isUserContinuation = false,
+    100    lastThinkingBlockId,
+    101    latestBashOutputUUID,
+    102  }: Props): React.ReactNode {
+    103    switch (message.type) {
+    104      case 'attachment':
+    105        return (
+    106          <AttachmentMessage
+    107            addMargin={addMargin}
+    108>           attachment={message.attachment}
+    109            verbose={verbose}
+    110            isTranscriptMode={isTranscriptMode}
+    111          />
+    112        )
+    113      case 'assistant':
+    114        return (
+    115          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    116            {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+    117              <AssistantMessageBlock
+    118                key={index}
+  Type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' is missing the following properties from type 'HookSuccessAttachment': content, hookName, hookEvent
+src/packages/repl/src/components/Message.tsx(135,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:125-145 ---
+    125                progressMessagesForMessage={progressMessagesForMessage}
+    126                shouldAnimate={shouldAnimate}
+    127                shouldShowDot={shouldShowDot}
+    128                width={width}
+    129                inProgressToolCallCount={inProgressToolUseIDs.size}
+    130                isTranscriptMode={isTranscriptMode}
+    131                lookups={lookups}
+    132                onOpenRateLimitOptions={onOpenRateLimitOptions}
+    133                thinkingBlockId={`${message.uuid}:${index}`}
+    134                lastThinkingBlockId={lastThinkingBlockId}
+    135>               advisorModel={message.advisorModel}
+    136              />
+    137            ))}
+    138          </Box>
+    139        )
+    140      case 'user': {
+    141        if (message.isCompactSummary) {
+    142          return (
+    143            <CompactSummary
+    144              message={message}
+    145              screen={isTranscriptMode ? 'transcript' : 'prompt'}
+src/packages/repl/src/components/Message.tsx(177,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:167-187 ---
+    167        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    168        const content = (
+    169          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    170            {message.message.content.map((param, index) => (
+    171              <UserMessage
+    172                key={index}
+    173                message={message}
+    174                addMargin={addMargin}
+    175                tools={tools}
+    176                progressMessagesForMessage={progressMessagesForMessage}
+    177>               param={param}
+    178                style={style}
+    179                verbose={verbose}
+    180                imageIndex={imageIndices[index]!}
+    181                isUserContinuation={isUserContinuation}
+    182                lookups={lookups}
+    183                isTranscriptMode={isTranscriptMode}
+    184              />
+    185            ))}
+    186          </Box>
+    187        )
+  Type 'DocumentBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Type 'DocumentBlockParam' is not assignable to type 'ImageBlockParam'.
+      Types of property 'source' are incompatible.
+        Type 'Base64PDFSource | PlainTextSource | ContentBlockSource | URLPDFSource | FileDocumentSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+          Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+            Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource'.
+              Types of property 'media_type' are incompatible.
+                Type '"application/pdf"' is not assignable to type '"image/png" | "image/jpeg" | "image/gif" | "image/webp"'.
+src/packages/repl/src/components/Message.tsx(321,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:311-331 ---
+    311    isTranscriptMode: boolean
+    312  }): React.ReactNode {
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321>           planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323            timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+src/packages/repl/src/components/Message.tsx(323,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/components/Message.tsx:313-333 ---
+    313    const { columns } = useTerminalSize()
+    314    switch (param.type) {
+    315      case 'text':
+    316        return (
+    317          <UserTextMessage
+    318            addMargin={addMargin}
+    319            param={param}
+    320            verbose={verbose}
+    321            planContent={message.planContent}
+    322            isTranscriptMode={isTranscriptMode}
+    323>           timestamp={message.timestamp}
+    324          />
+    325        )
+    326      case 'image':
+    327        // If previous message is user (text or image), this is a continuation - use connector
+    328        // Otherwise this image starts a new user turn - use margin
+    329        return (
+    330          <UserImageMessage
+    331            imageId={imageIndex}
+    332            addMargin={addMargin && !isUserContinuation}
+    333          />
+src/packages/repl/src/components/Message.tsx(419,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:409-429 ---
+    409            width={width}
+    410            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    411          />
+    412        )
+    413      }
+    414    }
+    415    switch (param.type) {
+    416      case 'tool_use':
+    417        return (
+    418          <AssistantToolUseMessage
+    419>           param={param}
+    420            addMargin={addMargin}
+    421            tools={tools}
+    422            commands={commands}
+    423            verbose={verbose}
+    424            inProgressToolUseIDs={inProgressToolUseIDs}
+    425            progressMessagesForMessage={progressMessagesForMessage}
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/repl/src/components/Message.tsx(436,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:426-446 ---
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+    430            isTranscriptMode={isTranscriptMode}
+    431          />
+    432        )
+    433      case 'text':
+    434        return (
+    435          <AssistantTextMessage
+    436>           param={param}
+    437            addMargin={addMargin}
+    438            shouldShowDot={shouldShowDot}
+    439            verbose={verbose}
+    440            width={width}
+    441            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    442          />
+    443        )
+    444      case 'redacted_thinking':
+    445        if (!isTranscriptMode && !verbose) {
+    446          return null
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.
+src/packages/repl/src/components/Message.tsx(459,11): error TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+  --- código src/packages/repl/src/components/Message.tsx:449-469 ---
+    449      case 'thinking': {
+    450        if (!isTranscriptMode && !verbose) {
+    451          return null
+    452        }
+    453        // In transcript mode with hidePastThinking, only show the last thinking block
+    454        const isLastThinking =
+    455          !lastThinkingBlockId || thinkingBlockId === lastThinkingBlockId
+    456        return (
+    457          <AssistantThinkingMessage
+    458            addMargin={addMargin}
+    459>           param={param}
+    460            isTranscriptMode={isTranscriptMode}
+    461            verbose={verbose}
+    462            hideInTranscript={isTranscriptMode && !isLastThinking}
+    463          />
+    464        )
+    465      }
+    466      case 'server_tool_use':
+    467      case 'advisor_tool_result':
+    468        if (isAdvisorBlock(param)) {
+    469          return (
+  Type 'ConnectorTextBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+    Property 'thinking' is missing in type 'ConnectorTextBlock' but required in type 'ThinkingBlock'.
+
+src/packages/repl/src/components/PromptInput/Notifications.tsx(390,11): error TS2322: Type '(result: AutoUpdaterResult) => void' is not assignable to type '(autoUpdaterResult: AutoUpdaterResult | null) => void'.
+  --- código src/packages/repl/src/components/PromptInput/Notifications.tsx:380-400 ---
+    380          </Box>
+    381        )}
+    382        {!isBriefOnly && (
+    383          <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />
+    384        )}
+    385        {shouldShowAutoUpdater && (
+    386          <AutoUpdaterWrapper
+    387            isUpdating={isAutoUpdating}
+    388            onChangeIsUpdating={onChangeIsUpdating}
+    389            autoUpdaterResult={autoUpdaterResult}
+    390>           onAutoUpdaterResult={onAutoUpdaterResult}
+    391            showSuccessMessage={!isShowingCompactMessage}
+    392            verbose={verbose}
+    393          />
+    394        )}
+    395        {feature('VOICE_MODE')
+    396          ? voiceEnabled &&
+    397            voiceError && (
+    398              <Box>
+    399                <Text color="error" wrap="truncate">
+    400                  {voiceError}
+  Types of parameters 'result' and 'autoUpdaterResult' are incompatible.
+    Type 'AutoUpdaterResult | null' is not assignable to type 'AutoUpdaterResult'.
+      Type 'null' is not assignable to type 'AutoUpdaterResult'.
+
+src/packages/repl/src/processUserInput/processTextPrompt.ts(79,7): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  --- código src/packages/repl/src/processUserInput/processTextPrompt.ts:69-89 ---
+     69      const textContent =
+     70        typeof input === 'string'
+     71          ? input.trim()
+     72            ? [{ type: 'text' as const, text: input }]
+     73            : []
+     74          : input
+     75      const userMessage = createUserMessage({
+     76        content: [...textContent, ...imageContentBlocks],
+     77        uuid: uuid,
+     78        imagePasteIds: imagePasteIds.length > 0 ? imagePasteIds : undefined,
+     79>       permissionMode,
+     80        isMeta: isMeta || undefined,
+     81      })
+     82  
+     83      return {
+     84        messages: [userMessage, ...attachmentMessages],
+     85        shouldQuery: true,
+     86      }
+     87    }
+     88  
+     89    const userMessage = createUserMessage({
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.
+src/packages/repl/src/processUserInput/processTextPrompt.ts(92,5): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  --- código src/packages/repl/src/processUserInput/processTextPrompt.ts:82-100 ---
+     82  
+     83      return {
+     84        messages: [userMessage, ...attachmentMessages],
+     85        shouldQuery: true,
+     86      }
+     87    }
+     88  
+     89    const userMessage = createUserMessage({
+     90      content: input,
+     91      uuid,
+     92>     permissionMode,
+     93      isMeta: isMeta || undefined,
+     94    })
+     95  
+     96    return {
+     97      messages: [userMessage, ...attachmentMessages],
+     98      shouldQuery: true,
+     99    }
+    100  }
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.
+
+src/packages/repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:110-130 ---
+    110  export function* normalizeMessage(message: Message): Generator<SDKMessage> {
+    111    switch (message.type) {
+    112      case 'assistant':
+    113        for (const _ of normalizeMessages([message])) {
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120>           message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124            error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+src/packages/repl/src/queryHelpers.ts(124,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:114-134 ---
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120            message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124>           error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+    131          progressData.type === 'agent_progress' ||
+    132          progressData.type === 'skill_progress'
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+src/packages/repl/src/queryHelpers.ts(143,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:133-153 ---
+    133        ) {
+    134          for (const _ of normalizeMessages([progressData.message])) {
+    135            switch (_.type) {
+    136              case 'assistant':
+    137                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    138                if (!isNotEmptyMessage(_)) {
+    139                  break
+    140                }
+    141                yield {
+    142                  type: 'assistant',
+    143>                 message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/repl/src/queryHelpers.ts(147,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:137-157 ---
+    137                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    138                if (!isNotEmptyMessage(_)) {
+    139                  break
+    140                }
+    141                yield {
+    142                  type: 'assistant',
+    143                  message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147>                 error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157                  timestamp: _.timestamp,
+src/packages/repl/src/queryHelpers.ts(153,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:143-163 ---
+    143                  message: _.message,
+    144                  parent_tool_use_id: message.parentToolUseID as string,
+    145                  session_id: getSessionId(),
+    146                  uuid: _.uuid,
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153>                 message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157                  timestamp: _.timestamp,
+    158                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    159                  tool_use_result: _.mcpMeta
+    160                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    161                    : _.toolUseResult,
+    162                }
+    163                break
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+    Types of property 'role' are incompatible.
+      Type 'string | undefined' is not assignable to type '"system" | "user" | "assistant"'.
+        Type 'undefined' is not assignable to type '"system" | "user" | "assistant"'.
+src/packages/repl/src/queryHelpers.ts(157,17): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:147-167 ---
+    147                  error: _.error,
+    148                }
+    149                break
+    150              case 'user':
+    151                yield {
+    152                  type: 'user',
+    153                  message: _.message,
+    154                  parent_tool_use_id: message.parentToolUseID as string,
+    155                  session_id: getSessionId(),
+    156                  uuid: _.uuid,
+    157>                 timestamp: _.timestamp,
+    158                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    159                  tool_use_result: _.mcpMeta
+    160                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    161                    : _.toolUseResult,
+    162                }
+    163                break
+    164            }
+    165          }
+    166        } else if (
+    167          progressData.type === 'bash_progress' ||
+src/packages/repl/src/queryHelpers.ts(217,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:207-227 ---
+    207              uuid: message.uuid,
+    208            }
+    209          }
+    210        }
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217>           message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221            timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+  Type 'undefined' is not assignable to type 'MessageParam'.
+src/packages/repl/src/queryHelpers.ts(221,11): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:211-231 ---
+    211        break
+    212      }
+    213      case 'user':
+    214        for (const _ of normalizeMessages([message])) {
+    215          yield {
+    216            type: 'user',
+    217            message: _.message,
+    218            parent_tool_use_id: null,
+    219            session_id: getSessionId(),
+    220            uuid: _.uuid,
+    221>           timestamp: _.timestamp,
+    222            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    223            tool_use_result: _.mcpMeta
+    224              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    225              : _.toolUseResult,
+    226          }
+    227        }
+    228        return
+    229      default:
+    230      // yield nothing
+    231    }
+
+src/packages/repl/src/screens/REPLView.tsx(1826,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1816-1836 ---
+   1816            initialMainThreadAgentDefinition,
+   1817            agentDefinitions,
+   1818          );
+   1819          setMainThreadAgentDefinition(restoredAgent);
+   1820          setAppState(prev => ({ ...prev, agent: restoredAgent?.agentType }));
+   1821  
+   1822          // Restore standalone agent context from the resumed conversation
+   1823          // Always reset to the new session's values (or clear if none)
+   1824          setAppState(prev => ({
+   1825            ...prev,
+   1826>           standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+   1827          }));
+   1828          void updateSessionName(log.agentName);
+   1829  
+   1830          // Restore read file state from the message history
+   1831          restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
+   1832  
+   1833          // Clear any active loading state (no queryId since we're not in a query)
+   1834          resetLoadingState();
+   1835          setAbortController(null);
+   1836  
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+src/packages/repl/src/screens/REPLView.tsx(3995,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3985-4005 ---
+   3985          (
+   3986            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   3987          ).resetContextCollapse();
+   3988          /* eslint-enable @typescript-eslint/no-require-imports */
+   3989        }
+   3990  
+   3991        // Restore state from the message we're rewinding to
+   3992        setAppState(prev => ({
+   3993          ...prev,
+   3994          // Restore permission mode from the message
+   3995>         toolPermissionContext:
+   3996            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   3997              ? {
+   3998                  ...prev.toolPermissionContext,
+   3999                  mode: message.permissionMode,
+   4000                }
+   4001              : prev.toolPermissionContext,
+   4002          // Clear stale prompt suggestion from previous conversation state
+   4003          promptSuggestion: {
+   4004            text: null,
+   4005            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.
+src/packages/repl/src/screens/REPLView.tsx(5050,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:5040-5060 ---
+   5040                  </Box>
+   5041                )}
+   5042                {process.env.USER_TYPE === 'ant' && <TungstenLiveMonitor />}
+   5043                {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
+   5044                <Box flexGrow={1} />
+   5045                {showSpinner && (
+   5046                  <SpinnerWithVerb
+   5047                    mode={streamMode}
+   5048                    spinnerTip={spinnerTip}
+   5049                    responseLengthRef={responseLengthRef}
+   5050>                   apiMetricsRef={apiMetricsRef}
+   5051                    overrideMessage={spinnerMessage}
+   5052                    spinnerSuffix={stopHookSpinnerSuffix}
+   5053                    verbose={verbose}
+   5054                    loadingStartTimeRef={loadingStartTimeRef}
+   5055                    totalPausedMsRef={totalPausedMsRef}
+   5056                    pauseStartTimeRef={pauseStartTimeRef}
+   5057                    overrideColor={spinnerColor}
+   5058                    overrideShimmerColor={spinnerShimmerColor}
+   5059                    hasActiveTools={inProgressToolUseIDs.size > 0}
+   5060                    leaderIsIdle={!isLoading}
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.
+
+src/packages/repl/src/screens/repl/bgDetachSignal.ts(53,40): error TS2322: Type '"detach"' is not assignable to type '"resize" | "kill" | "exit" | "reply" | "heartbeat" | "hello" | "live" | "claim"'.
+  --- código src/packages/repl/src/screens/repl/bgDetachSignal.ts:43-63 ---
+     43        const settle = (): void => {
+     44          try {
+     45            sock.destroy()
+     46          } catch {
+     47            /* best-effort */
+     48          }
+     49        }
+     50        sock.once('error', settle)
+     51        sock.once('connect', () => {
+     52          try {
+     53>           sock.write(encodeCtrlFrame({ t: 'detach' }))
+     54            setTimeout(settle, 50)
+     55          } catch {
+     56            settle()
+     57          }
+     58        })
+     59      } catch {
+     60        // best-effort — stdout APC is the primary path
+     61      }
+     62    })()
+     63  }
+
+src/packages/storage/src/sessionStorage.ts(740,15): error TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.
+  --- código src/packages/storage/src/sessionStorage.ts:730-750 ---
+    730          // if available (set at creation time), otherwise fall back to sequential parent
+    731          let effectiveParentUuid = parentUuid
+    732          if (
+    733            message.type === 'user' &&
+    734            'sourceToolAssistantUUID' in message &&
+    735            message.sourceToolAssistantUUID
+    736          ) {
+    737            effectiveParentUuid = message.sourceToolAssistantUUID as UUID
+    738          }
+    739  
+    740>         const transcriptMessage: TranscriptMessage = {
+    741            parentUuid: isCompactBoundary ? null : effectiveParentUuid,
+    742            logicalParentUuid: isCompactBoundary ? parentUuid : undefined,
+    743            isSidechain,
+    744            teamName: teamInfo?.teamName,
+    745            agentName: teamInfo?.agentName,
+    746            promptId:
+    747              message.type === 'user' ? (getPromptId() ?? undefined) : undefined,
+    748            agentId,
+    749            ...message,
+    750            // Session-stamp fields MUST come after the spread. On --fork-session
+  Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'TranscriptMessage'.
+    Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'MessageBase & { type: "system"; subtype: "compact_boundary"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; } & { ...; }'.
+      Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type '{ content?: string | undefined; logicalParentUuid?: `${string}-${string}-${string}-${string}-${string}` | undefined; compactMetadata: { [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string...'.
+        Types of property 'logicalParentUuid' are incompatible.
+          Type '`${string}-${string}-${string}-${string}-${string}` | null | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+            Type 'null' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+
+src/packages/tool-registry/src/services/toolHooks.ts(390,16): error TS2322: Type 'import("/home/user/thyrox/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").PermissionDecision'.
+  --- código src/packages/tool-registry/src/services/toolHooks.ts:380-400 ---
+    380          interactionSatisfied
+    381            ? `Hook satisfied user interaction for ${tool.name} via updatedInput`
+    382            : `Hook approved tool use for ${tool.name}, bypassing permission prompt`,
+    383        )
+    384        return { decision: hookPermissionResult, input: hookInput }
+    385      }
+    386      if (ruleCheck.behavior === 'deny') {
+    387        logForDebugging(
+    388          `Hook approved tool use for ${tool.name}, but deny rule overrides: ${ruleCheck.message}`,
+    389        )
+    390>       return { decision: ruleCheck, input: hookInput }
+    391      }
+    392      // ask rule — dialog required despite hook approval
+    393      logForDebugging(
+    394        `Hook approved tool use for ${tool.name}, but ask rule requires prompt`,
+    395      )
+    396      return {
+    397        decision: await canUseTool(
+    398          tool,
+    399          hookInput,
+    400          toolUseContext,
+  Type 'PermissionDecision' is not assignable to type 'PermissionAskDecision<{ [key: string]: unknown; }>'.
+    Types of property 'behavior' are incompatible.
+      Type '"allow" | "ask" | "deny" | "passthrough"' is not assignable to type '"ask"'.
+        Type '"allow"' is not assignable to type '"ask"'.
+
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(186,7): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:176-196 ---
+    176      ...appState.toolPermissionContext,
+    177      mode: selectedAgent.permissionMode ?? 'acceptEdits',
+    178    }
+    179    const workerTools = isResumedFork
+    180      ? toolUseContext.options.tools
+    181      : assembleToolPool(workerPermissionContext, appState.mcp.tools)
+    182  
+    183    const runAgentParams: Parameters<typeof runAgent>[0] = {
+    184      agentDefinition: selectedAgent,
+    185      promptMessages: [
+    186>       ...resumedMessages,
+    187        createUserMessage({ content: prompt }),
+    188      ],
+    189      toolUseContext,
+    190      canUseTool,
+    191      isAsync: true,
+    192      querySource: getQuerySourceForAgent(
+    193        selectedAgent.agentType,
+    194        isBuiltInAgent(selectedAgent),
+    195      ),
+    196      model: undefined,
+  Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase'.
+      Types of property 'type' are incompatible.
+        Type 'string' is not assignable to type 'MessageType'.
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts:177-197 ---
+    177      mode: selectedAgent.permissionMode ?? 'acceptEdits',
+    178    }
+    179    const workerTools = isResumedFork
+    180      ? toolUseContext.options.tools
+    181      : assembleToolPool(workerPermissionContext, appState.mcp.tools)
+    182  
+    183    const runAgentParams: Parameters<typeof runAgent>[0] = {
+    184      agentDefinition: selectedAgent,
+    185      promptMessages: [
+    186        ...resumedMessages,
+    187>       createUserMessage({ content: prompt }),
+    188      ],
+    189      toolUseContext,
+    190      canUseTool,
+    191      isAsync: true,
+    192      querySource: getQuerySourceForAgent(
+    193        selectedAgent.agentType,
+    194        isBuiltInAgent(selectedAgent),
+    195      ),
+    196      model: undefined,
+    197      // Fork resume: pass parent's system prompt (cache-identical prefix).
+  Type 'AnyMessage' is not assignable to type 'Message'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.
+
+src/packages/tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.
+  --- código src/packages/tool-registry/src/tools/BashTool/UI.tsx:31-51 ---
+     31    onBackground,
+     32  }: {
+     33    onBackground?: () => void
+     34  } = {}): React.ReactElement | null {
+     35    const store = useAppStateStore()
+     36    const setAppState = useSetAppState()
+     37  
+     38    // Handler for task:background - background all foreground tasks
+     39    const handleBackground = React.useCallback(() => {
+     40      // Background ALL foreground bash tasks
+     41>     backgroundAll(() => store.getState(), setAppState)
+     42      // Also call the optional callback (used for non-bash tasks like agents)
+     43      onBackground?.()
+     44    }, [store, setAppState, onBackground])
+     45  
+     46    useKeybinding('task:background', handleBackground, {
+     47      context: 'Task',
+     48    })
+     49  
+     50    // Get the configured shortcut for task:background
+     51    const baseShortcut = useShortcutDisplay('task:background', 'Task', 'ctrl+b')
+  Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

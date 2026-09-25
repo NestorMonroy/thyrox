@@ -1,0 +1,71 @@
+src/packages/agent/attachments.ts(3039,5): error TS2322: Type 'StateAttachment[]' is not assignable to type 'Attachment[]'.
+  --- código src/packages/agent/attachments.ts:3029-3049 ---
+   3029    options?: { skipSkillDiscovery?: boolean },
+   3030  ): Promise<Attachment[]> {
+   3031    if (
+   3032      isEnvTruthy(readEnv('CLAUDE_CODE_DISABLE_ATTACHMENTS')) ||
+   3033      isEnvTruthy(readEnv('CLAUDE_CODE_SIMPLE'))
+   3034    ) {
+   3035      // query.ts:removeFromQueue dequeues these unconditionally after
+   3036      // getAttachmentMessages runs — returning [] here silently drops them.
+   3037      // Coworker runs with --bare and depends on task-notification for
+   3038      // mid-tool-call notifications from Local*Task/Remote*Task.
+   3039>     return getQueuedCommandAttachments(queuedCommands)
+   3040    }
+   3041  
+   3042    // This will slow down submissions
+   3043    // TODO: Compute attachments as the user types, not here (though we use this
+   3044    // function for slash command prompts too)
+   3045    const abortController = createAbortController()
+   3046    const timeoutId = setTimeout(ac => ac.abort(), 1000, abortController)
+   3047    const context = { ...toolUseContext, abortController }
+   3048  
+   3049    const isMainThread = !toolUseContext.agentId
+  Type 'StateAttachment' is not assignable to type 'Attachment'.
+    Type 'StateAttachment' is missing the following properties from type 'HookSuccessAttachment': content, hookName, toolUseID, hookEvent
+src/packages/agent/attachments.ts(3181,19): error TS2304: Cannot find name 'getTeammateMailboxAttachments'.
+  --- código src/packages/agent/attachments.ts:3171-3191 ---
+   3171      ...(isAgentSwarmsEnabled()
+   3172        ? [
+   3173            // Skip teammate mailbox for the session_memory forked agent.
+   3174            // It shares AppState.teamContext with the leader, so isTeamLead resolves
+   3175            // true and it reads+marks-as-read the leader's DMs as ephemeral attachments,
+   3176            // silently stealing messages that should be delivered as permanent turns.
+   3177            ...(querySource === 'session_memory'
+   3178              ? []
+   3179              : [
+   3180                  maybe('teammate_mailbox', async () =>
+   3181>                   getTeammateMailboxAttachments(toolUseContext),
+   3182                  ),
+   3183                ]),
+   3184            maybe('team_context', async () =>
+   3185              getTeamContextAttachment(messages ?? []),
+   3186            ),
+   3187          ]
+   3188        : []),
+   3189      maybe('agent_pending_messages', async () =>
+   3190        getAgentPendingMessageAttachments(toolUseContext),
+   3191      ),
+src/packages/agent/attachments.ts(3185,13): error TS2304: Cannot find name 'getTeamContextAttachment'.
+  --- código src/packages/agent/attachments.ts:3175-3195 ---
+   3175            // true and it reads+marks-as-read the leader's DMs as ephemeral attachments,
+   3176            // silently stealing messages that should be delivered as permanent turns.
+   3177            ...(querySource === 'session_memory'
+   3178              ? []
+   3179              : [
+   3180                  maybe('teammate_mailbox', async () =>
+   3181                    getTeammateMailboxAttachments(toolUseContext),
+   3182                  ),
+   3183                ]),
+   3184            maybe('team_context', async () =>
+   3185>             getTeamContextAttachment(messages ?? []),
+   3186            ),
+   3187          ]
+   3188        : []),
+   3189      maybe('agent_pending_messages', async () =>
+   3190        getAgentPendingMessageAttachments(toolUseContext),
+   3191      ),
+   3192      maybe('critical_system_reminder', () =>
+   3193        Promise.resolve(getCriticalSystemReminderAttachment(toolUseContext)),
+   3194      ),
+   3195      ...(feature('COMPACTION_REMINDERS')

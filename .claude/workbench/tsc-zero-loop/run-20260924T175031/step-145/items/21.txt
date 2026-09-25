@@ -1,0 +1,23 @@
+src/packages/provider/src/claudeAiLimits.ts(746,26): error TS2339: Property 'claimAbbrev' does not exist on type 'EarlyWarningConfig'.
+  --- código src/packages/provider/src/claudeAiLimits.ts:736-756 ---
+    736  /**
+    737   * Check if time-relative early warning should be triggered for a rate limit type.
+    738   * Fallback when server doesn't send surpassed-threshold header.
+    739   * Returns ClaudeAILimits if thresholds are exceeded, null otherwise.
+    740   */
+    741  function getTimeRelativeEarlyWarning(
+    742    headers: globalThis.Headers,
+    743    config: EarlyWarningConfig,
+    744    unifiedRateLimitFallbackAvailable: boolean,
+    745  ): ClaudeAILimits | null {
+    746>   const { rateLimitType, claimAbbrev, windowSeconds, thresholds } = config
+    747  
+    748    const utilizationHeader = headers.get(
+    749      `anthropic-ratelimit-unified-${claimAbbrev}-utilization`,
+    750    )
+    751    const resetHeader = headers.get(
+    752      `anthropic-ratelimit-unified-${claimAbbrev}-reset`,
+    753    )
+    754  
+    755    if (utilizationHeader === null || resetHeader === null) {
+    756      return null

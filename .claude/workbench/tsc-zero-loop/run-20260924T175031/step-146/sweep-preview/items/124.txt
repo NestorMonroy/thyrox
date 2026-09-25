@@ -1,0 +1,54 @@
+Patrón: optional-field-from-shared-response-type-assigned-to-required-field
+Señal del verificador: TS2322: Type 'string \| undefined' is not assignable to type 'string'\.
+Arreglo genérico: Cuando un campo opcional de un tipo de respuesta compartido (p. ej. `OAuthTokenExchangeResponse.refresh_token`) se asigna a un campo requerido de un tipo de dominio (`OAuthTokens.refreshToken`) y la invariante de que el campo siempre viene presente en ESE flujo concreto es real (no un supuesto), se añade una guarda local `if (!valor) throw new Error(...)` inmediatamente antes del uso, en vez de silenciar con `!` o `as`. Si no hay invariante real disponible en ese punto (p. ej. es un flujo de refresh y sí puede faltar), se usa el valor previo conocido como default, como ya hace `client.ts:234` con `refresh_token: newRefreshToken = refreshToken`.
+Ya aplicado en: src/packages/provider/src/oauth/index.ts
+Archivos donde la señal sigue viva: src/packages/permission/src/toolPermission/PermissionContext.ts
+
+src/packages/permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:117-137 ---
+    117        opts?: {
+    118          input?: Record<string, unknown>
+    119          permissionPromptStartTimeMs?: number
+    120        },
+    121      ) {
+    122        logPermissionDecision(
+    123          {
+    124            tool,
+    125            input: opts?.input ?? input,
+    126            toolUseContext,
+    127>           messageId,
+    128            toolUseID,
+    129          },
+    130          args,
+    131          opts?.permissionPromptStartTimeMs,
+    132        )
+    133      },
+    134      logCancelled() {
+    135        logEvent('tengu_tool_use_cancelled', {
+    136          messageID:
+    137            messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(205,46): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:195-215 ---
+    195                classifierDecision.type === 'classifier'
+    196              ) {
+    197                const matchedRule = classifierDecision.reason.match(
+    198                  /^Allowed by prompt rule: "(.+)"$/,
+    199                )?.[1]
+    200                if (matchedRule) {
+    201                  setClassifierApproval(toolUseID, matchedRule)
+    202                }
+    203              }
+    204              logPermissionDecision(
+    205>               { tool, input, toolUseContext, messageId, toolUseID },
+    206                { decision: 'accept', source: { type: 'classifier' } },
+    207                undefined,
+    208              )
+    209              return {
+    210                behavior: 'allow' as const,
+    211                updatedInput: updatedInput ?? input,
+    212                userModified: false,
+    213                decisionReason: classifierDecision,
+    214              }
+    215            },
+  Type 'undefined' is not assignable to type 'string'.

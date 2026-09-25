@@ -1,0 +1,27 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 5,
+   "total_before": 246,
+   "total_final": 234,
+   "tsc_runs": 2,
+   "kept": 3
+  },
+  {
+   "batch": 2,
+   "files": 1,
+   "total_before": 234,
+   "total_final": 226,
+   "tsc_runs": 1,
+   "kept": 1
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/attachments.ts",
+  "src/packages/agent/attachments/mailbox.ts",
+  "src/packages/provider/src/claudeAiLimits.ts",
+  "src/packages/storage/src/claudemd.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-145/pipeline/batch-02/final.log"
+}

@@ -1,0 +1,55 @@
+Patrón: reread-env-getter-loses-truthy-narrowing
+Señal del verificador: TS2345:.*Argument of type 'string \| undefined' is not assignable to parameter of type 'string'
+Arreglo genérico: Cuando una función lectora de entorno (`string | undefined`) se llama dos veces con el mismo nombre —una para comprobar truthy en el `if` y otra dentro del cuerpo para usar el valor— TypeScript no puede ligar la narrowing de la primera llamada a la segunda, porque son invocaciones distintas de una función, no la misma expresión. Se arregla capturando el resultado en una variable local antes del `if` y reutilizando esa variable dentro del cuerpo; el `if (variable)` narrowea la variable, no la llamada.
+Ya aplicado en: src/packages/provider/src/thinking.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+
+src/packages/agent/hooks.ts(1192,34): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/hooks.ts:1182-1202 ---
+   1182      }
+   1183    }
+   1184  
+   1185    // CLAUDE_CODE_SHELL_PREFIX envuelve el comando con quoting POSIX
+   1186    // (formatShellPrefixCommand usa shell-quote). Esto no tiene sentido para
+   1187    // PowerShell — ver diseño §8.1. Por ahora los hooks de PS ignoran el
+   1188    // prefijo; un CLAUDE_CODE_PS_SHELL_PREFIX (o un prefijo consciente del
+   1189    // shell) queda como trabajo futuro.
+   1190    const finalCommand =
+   1191      !execArgs && !isPowerShell && readEnv('CLAUDE_CODE_SHELL_PREFIX')
+   1192>       ? formatShellPrefixCommand(readEnv('CLAUDE_CODE_SHELL_PREFIX'), command)
+   1193        : command
+   1194  
+   1195    const hookTimeoutMs = hook.timeout
+   1196      ? hook.timeout * 1000
+   1197      : TOOL_HOOK_EXECUTION_TIMEOUT_MS
+   1198  
+   1199    // Arma las variables de entorno — todas las rutas pasan por toHookPath
+   1200    // para la conversión POSIX de Windows.
+   1201    const envVars: NodeJS.ProcessEnv = {
+   1202      ...subprocessEnv(),
+  Type 'undefined' is not assignable to type 'string'.
+
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(124,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:114-134 ---
+    114  
+    115    while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
+    116      const block = blockMatch[1]
+    117      if (block === undefined) continue
+    118  
+    119      // Extract the primary link from <h2><a href="...">...</a></h2>
+    120      const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
+    121      const linkMatch = h2LinkRegex.exec(block)
+    122      if (!linkMatch) continue
+    123  
+    124>     const rawUrl = decodeHtmlEntities(linkMatch[1])
+    125      const titleHtml = linkMatch[2]
+    126      if (titleHtml === undefined) continue
+    127  
+    128      // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
+    129      // or skip Bing-internal / relative links
+    130      const url = resolveBingUrl(rawUrl)
+    131      if (!url) continue
+    132  
+    133      const title = decodeHtmlEntities(
+    134        titleHtml.replace(/<[^>]+>/g, '').trim(),
+  Type 'undefined' is not assignable to type 'string'.

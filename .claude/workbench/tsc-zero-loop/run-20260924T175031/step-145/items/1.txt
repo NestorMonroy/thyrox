@@ -1,0 +1,69 @@
+src/packages/agent/attachments.ts(1904,36): error TS2304: Cannot find name 'getManagedAndUserConditionalRules'.
+  --- código src/packages/agent/attachments.ts:1894-1914 ---
+   1894    try {
+   1895      // Retorno temprano si la ruta no está en el working path permitido
+   1896      if (!pathInAllowedWorkingPath(filePath, appState.toolPermissionContext)) {
+   1897        return attachments
+   1898      }
+   1899  
+   1900      const processedPaths = new Set<string>()
+   1901      const originalCwd = getOriginalCwd()
+   1902  
+   1903      // Fase 1: procesar reglas condicionales Managed y User
+   1904>     const managedUserRules = await getManagedAndUserConditionalRules(
+   1905        filePath,
+   1906        processedPaths,
+   1907      )
+   1908      attachments.push(
+   1909        ...memoryFilesToAttachments(managedUserRules, toolUseContext, filePath),
+   1910      )
+   1911  
+   1912      // Fase 2: obtener los directorios a procesar
+   1913      const { nestedDirs, cwdLevelDirs } = getDirectoriesToProcess(
+   1914        filePath,
+src/packages/agent/attachments.ts(1909,10): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1899-1919 ---
+   1899  
+   1900      const processedPaths = new Set<string>()
+   1901      const originalCwd = getOriginalCwd()
+   1902  
+   1903      // Fase 1: procesar reglas condicionales Managed y User
+   1904      const managedUserRules = await getManagedAndUserConditionalRules(
+   1905        filePath,
+   1906        processedPaths,
+   1907      )
+   1908      attachments.push(
+   1909>       ...memoryFilesToAttachments(managedUserRules, toolUseContext, filePath),
+   1910      )
+   1911  
+   1912      // Fase 2: obtener los directorios a procesar
+   1913      const { nestedDirs, cwdLevelDirs } = getDirectoriesToProcess(
+   1914        filePath,
+   1915        originalCwd,
+   1916      )
+   1917  
+   1918      const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
+   1919        'tengu_paper_halyard',
+src/packages/agent/attachments.ts(1927,15): error TS2304: Cannot find name 'getMemoryFilesForNestedDirectory'.
+  --- código src/packages/agent/attachments.ts:1917-1937 ---
+   1917  
+   1918      const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
+   1919        'tengu_paper_halyard',
+   1920        false,
+   1921      )
+   1922  
+   1923      // Fase 3: procesar directorios anidados (CWD → destino)
+   1924      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1925      for (const dir of nestedDirs) {
+   1926        const memoryFiles = (
+   1927>         await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1928        ).filter(
+   1929          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1930        )
+   1931        attachments.push(
+   1932          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1933        )
+   1934      }
+   1935  
+   1936      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1937      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
