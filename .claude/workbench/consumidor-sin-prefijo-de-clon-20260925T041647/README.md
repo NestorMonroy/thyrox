@@ -16,6 +16,7 @@ Salida registrada: `outputs/probe.out`.
 |---|---|
 | H-THYROX-176 — la familia `THYROX_WORKBENCH_<CLONE>` ignora en silencio la clave de un clon sin prefijo | `## 1` |
 | H-THYROX-177 — `root()` compone `<prefijo><repo>` aunque el clon no lo lleve, y `declarations.py` crea esos hogares fantasma, que despues confirman el roster | `## 2` |
+| H-THYROX-178 — sin `start`, el `.env` se busca desde `src/paths/` de thyrox y no desde el cwd: `agent_store` invocado en un consumidor escribe en el store del proveedor | `## 3` |
 
 ## Como se destapo el 177
 
