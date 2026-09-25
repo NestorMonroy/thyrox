@@ -4,6 +4,9 @@
     tsc_cycle classify --log L --packages P --out O.json
     tsc_cycle status   --bench STEP [--job-dir J]
     tsc_cycle reject   --run RUN --bench STEP --file F --lesson L
+    tsc_cycle modules plan   --log L --bench STEP
+    tsc_cycle modules launch --bench STEP --worktree W --ledger L --seed N
+                             [--model M] [--width N] [--dry-run]
 
 Cada fase es un subcomando que lee y escribe en el banco del paso, así una
 fase se repite sin rehacer las anteriores. `tsc_zero_loop` sigue siendo el
@@ -16,11 +19,14 @@ import argparse
 import collections
 import json
 import os
+import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 
 from verify import tsc_reflect, tsc_routes
+from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
 
 
 def cmd_classify(args) -> int:
@@ -137,6 +143,102 @@ def cmd_reject(args) -> int:
     return 0
 
 
+# «El módulo X no exporta Y»: TS2305 y TS2614 (`Module '"X"' has no exported
+# member 'Y'`) y TS2724 (`'"X"' has no exported member named 'Y'`).
+MISSING_EXPORT = re.compile(r"""'"(?P<module>[^"]+)"' has no exported member (?:named )?'(?P<member>[^']+)'""")
+MISSING_EXPORT_CODES = {"TS2305", "TS2614", "TS2724"}
+THYROX = Path(__file__).resolve().parents[2]
+MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
+
+
+def _unit_of(spec: str, consumer: str, root: Path | None, packages: dict) -> str:
+    """El archivo al que resuelve `spec` desde `consumer`, relativo a `root`,
+    con la misma resolución que ya usa la bisección (`source_copy_step`).
+    Sin archivo real que resuelva, la ruta normalizada del especificador."""
+    if root is not None:
+        targets = (_resolve_relative(root / consumer, spec) if spec.startswith(".")
+                   else _resolve_package(spec, packages))
+        existing = sorted(t for t in targets if t.is_file())
+        if existing:
+            return str(existing[0].relative_to(root.resolve()))
+    # `./compact.js` nombra un módulo distinto según quién lo importe.
+    return os.path.normpath(os.path.join(os.path.dirname(consumer), spec)) if spec.startswith(".") else spec
+
+
+def module_units(diagnostics, root: Path | None = None) -> dict[str, dict]:
+    """Los módulos que un porte tiene que completar: por el archivo al que
+    resuelven, sus consumidores (quien emite el error) y los miembros que le
+    faltan. Un import de paquete y uno relativo al mismo archivo son UNA
+    unidad: dos pools portando el mismo módulo se pisarían."""
+    packages = _package_map(root / "src" / "packages") if root is not None and (root / "src/packages").is_dir() else {}
+    units: dict[str, dict] = {}
+    for d in diagnostics:
+        match = MISSING_EXPORT.search(d.message) if d.code in MISSING_EXPORT_CODES else None
+        if not match:
+            continue
+        module = _unit_of(match["module"], d.file, root, packages)
+        unit = units.setdefault(module, {"consumers": set(), "members": set(), "diagnostics": []})
+        unit["consumers"].add(d.file)
+        unit["members"].add(match["member"])
+        unit["diagnostics"].append(f"{d.file}({d.line}): error {d.code}: {d.message}")
+    return {k: {"consumers": sorted(v["consumers"]), "members": sorted(v["members"]),
+                "diagnostics": v["diagnostics"]} for k, v in units.items()}
+
+
+def cmd_modules_plan(args) -> int:
+    units = module_units(tsc_routes.parse_diagnostics(args.log.read_text(encoding="utf-8", errors="ignore")),
+                         args.root)
+    if not units:
+        # Un lote vacío correría el pool para nada y se leería como «hecho».
+        print(f"tsc_cycle modules plan: {args.log} no tiene exportaciones ausentes — no hay módulo que portar",
+              file=sys.stderr)
+        return 2
+    items = args.bench / "items"
+    items.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for n, (module, unit) in enumerate(sorted(units.items()), 1):
+        path = items / f"{n}.txt"
+        path.write_text(f"Módulo: {module}\nMiembros que faltan: {', '.join(unit['members'])}\n\n"
+                        + "\n".join(unit["diagnostics"]) + "\n", encoding="utf-8")
+        lines.append(" ".join([f"module:{module}", str(path), *unit["consumers"]]))
+    (args.bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"modules plan: {len(units)} módulo(s), "
+          f"{sum(len(u['consumers']) for u in units.values())} consumidor(es) -> {args.bench / 'items.txt'}")
+    return 0
+
+
+def launch_commands(bench: Path, model: str, worktree: Path, ledger: Path, seed: int,
+                    width: int = 8) -> list[list[str]]:
+    """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
+    repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
+    `worktree` mientras el pool sigue). Ninguno es un subagente."""
+    items, outputs = bench / "items.txt", bench / "outputs"
+    pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(MODULE_PROMPT))} --out {shlex.quote(str(outputs))}"
+            f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
+            f" --tools Read,Grep,Glob --max-turns 30 < {shlex.quote(str(items))}")
+    pipeline = [sys.executable, "src/verify/pool_pipeline.py", "--main", ".", "--worktree", str(worktree),
+                "--items", str(items), "--outputs", str(outputs), "--bench", str(bench / "pipeline"),
+                "--ledger", str(ledger), "--seed", str(seed), "--batch", "5", "--poll", "10",
+                "--unit", "module", "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
+    name = bench.name
+    return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
+            ["bash", "bin/thyrox-bg", "start", f"{name}-pipeline", "--grace", "0", "--",
+             "env", f"PYTHONPATH={THYROX / 'src'}", *pipeline]]
+
+
+def cmd_modules_launch(args) -> int:
+    if not (args.bench / "items.txt").is_file():
+        print(f"tsc_cycle modules launch: falta {args.bench / 'items.txt'} — corre antes `modules plan`",
+              file=sys.stderr)
+        return 2
+    commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width)
+    for command in commands:
+        print(shlex.join(command))
+        if not args.dry_run:
+            subprocess.run(command, check=True, cwd=THYROX)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -155,6 +257,22 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--file", required=True)
     p.add_argument("--lesson", required=True)
     p.set_defaults(func=cmd_reject)
+    modules = sub.add_parser("modules", help="el módulo como unidad: pool de claude -p y pipeline de medición")
+    msub = modules.add_subparsers(dest="modules_command", required=True)
+    p = msub.add_parser("plan", help="deriva un ítem por módulo con exportaciones ausentes")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX, help="árbol contra el que se resuelven los módulos")
+    p.set_defaults(func=cmd_modules_plan)
+    p = msub.add_parser("launch", help="lanza el pool y el pipeline con thyrox-bg")
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--ledger", type=Path, required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--width", type=int, default=8)
+    p.add_argument("--dry-run", action="store_true", help="imprime los comandos sin lanzarlos")
+    p.set_defaults(func=cmd_modules_launch)
     args = parser.parse_args(argv)
     return args.func(args)
 
