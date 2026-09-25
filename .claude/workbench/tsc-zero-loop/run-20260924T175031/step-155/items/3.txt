@@ -1,0 +1,56 @@
+src/packages/agent/QueryEngine.ts(972,15): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'.
+  --- código src/packages/agent/QueryEngine.ts:962-982 ---
+    962              // Accumulate current message usage into total
+    963              this.totalUsage = accumulateUsage(
+    964                this.totalUsage,
+    965                currentMessageUsage,
+    966              )
+    967            }
+    968  
+    969            if (includePartialMessages) {
+    970              yield {
+    971                type: 'stream_event' as const,
+    972>               event,
+    973                session_id: getSessionId(),
+    974                parent_tool_use_id: null,
+    975                uuid: randomUUID(),
+    976              }
+    977            }
+    978  
+    979            break
+    980          }
+    981          case 'attachment': {
+    982            const msg = message as Message
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaRawMessageDeltaEvent': context_management, delta, type, usage
+src/packages/agent/QueryEngine.ts(1228,17): error TS2769: No overload matches this call.
+  --- código src/packages/agent/QueryEngine.ts:1218-1238 ---
+   1218      // valid successful terminal state).
+   1219      const result = messages.findLast(
+   1220        m => m.type === 'assistant' || m.type === 'user',
+   1221      )
+   1222      // Capture for the error_during_execution diagnostic — isResultSuccessful
+   1223      // is a type predicate (message is Message), so inside the false branch
+   1224      // `result` narrows to never and these accesses don't typecheck.
+   1225      const edeResultType = result?.type ?? 'undefined'
+   1226      const edeLastContentType =
+   1227        result?.type === 'assistant'
+   1228>         ? (last(result.message.content)?.type ?? 'none')
+   1229          : 'n/a'
+   1230  
+   1231      // Flush buffered transcript writes before yielding result.
+   1232      // The desktop app kills the CLI process immediately after receiving the
+   1233      // result message, so any unflushed writes would be lost.
+   1234      if (persistSession) {
+   1235        if (
+   1236          isEnvTruthy(readEnv('CLAUDE_CODE_EAGER_FLUSH')) ||
+   1237          isEnvTruthy(readEnv('CLAUDE_CODE_IS_COWORK'))
+   1238        ) {
+  Overload 1 of 2, '(array: readonly [...unknown[], ContentBlockParam]): ContentBlockParam', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+  Overload 2 of 2, '(array: List<string> | null | undefined): string | undefined', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+        'number' index signatures are incompatible.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+            Type 'TextBlockParam' is not assignable to type 'string'.

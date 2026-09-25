@@ -1,0 +1,23 @@
+src/packages/storage/src/claudemd.ts(1515,7): error TS6133: 'MEMORY_INSTRUCTION_PROMPT' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:1505-1525 ---
+   1505  // `teamMemPaths` depende de `feature('TEAMMEM')` (macro `bun:bundle`) y de
+   1506  // `require('@claude-code-how-works/memory/teamMemPaths')`, un módulo externo
+   1507  // ausente en este monorepo. La macro nunca evalúa a `true` fuera del build de
+   1508  // ant (mismo precedente que `sessionStoragePredicates.ts`/
+   1509  // `filePersistence.ts`: GATEO OMITIDO, constante), así que se porta
+   1510  // directamente la rama `null` que esa condición siempre toma aquí.
+   1511  const teamMemPaths = null
+   1512  
+   1513  let hasLoggedInitialLoad = false
+   1514  
+   1515> const MEMORY_INSTRUCTION_PROMPT =
+   1516    'Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written.'
+   1517  
+   1518  // File extensions that are allowed for @include directives
+   1519  // This prevents binary files (images, PDFs, etc.) from being loaded into memory
+   1520  const TEXT_FILE_EXTENSIONS = new Set([
+   1521    // Markdown and text
+   1522    '.md',
+   1523    '.txt',
+   1524    '.text',
+   1525    // Data formats
