@@ -11,7 +11,6 @@ import { getActiveAgentsFromList } from '@thyrox/tool-registry/tools/AgentTool/l
 import { editFileInEditor } from '../../../../promptEditor.js'
 import { useWizard } from '../../../wizard/index.js'
 import { getNewAgentFilePath, saveAgentToFile } from '../../agentFileUtils.js'
-import type { AgentWizardData } from '../types.js'
 import { ConfirmStep } from './ConfirmStep.js'
 
 type Props = {
@@ -25,7 +24,7 @@ export function ConfirmStepWrapper({
   existingAgents,
   onComplete,
 }: Props): ReactNode {
-  const { wizardData } = useWizard<AgentWizardData>()
+  const { wizardData } = useWizard()
   const [saveError, setSaveError] = useState<string | null>(null)
   const setAppState = useSetAppState()
 

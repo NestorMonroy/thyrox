@@ -413,7 +413,7 @@ export async function setup(
     ) {
       // Only await if permission mode is set to bypass
       const [isDocker, hasInternet] = await Promise.all([
-        envDynamic.getIsDocker(),
+        (envDynamic.getIsDocker as () => Promise<boolean>)(),
         env.hasInternetAccess(),
       ])
       const isBubblewrap = (envDynamic.getIsBubblewrapSandbox as () => boolean)()

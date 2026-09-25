@@ -2407,6 +2407,7 @@ export function FleetView(props: FleetViewProps): React.ReactNode {
               start,
               end,
               color: 'suggestion',
+              priority: 5,
             }))}
             // We pass focus={false} so TextInput's internal useInput
             // doesn't steal chords from FleetView's outer cascade.

@@ -3,7 +3,6 @@ import { isAutoMemoryEnabled } from '@thyrox/memory/paths'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { WizardProvider } from '../../wizard/index.js'
-import type { AgentWizardData } from './types.js'
 import { ColorStep } from './wizard-steps/ColorStep.js'
 import { ConfirmStepWrapper } from './wizard-steps/ConfirmStepWrapper.js'
 import { DescriptionStep } from './wizard-steps/DescriptionStep.js'
@@ -52,7 +51,7 @@ export function CreateAgentWizard({
   ]
 
   return (
-    <WizardProvider<AgentWizardData>
+    <WizardProvider<Record<string, unknown>>
       steps={steps}
       initialData={{}}
       onComplete={() => {

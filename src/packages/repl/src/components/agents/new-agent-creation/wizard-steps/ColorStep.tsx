@@ -10,7 +10,7 @@ import type { AgentWizardData } from '../types.js'
 
 export function ColorStep(): ReactNode {
   const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard<AgentWizardData & Record<string, unknown>>()
 
   // Handle escape key - ColorPicker handles its own escape internally
   useKeybinding('confirm:no', goBack, { context: 'Confirmation' })

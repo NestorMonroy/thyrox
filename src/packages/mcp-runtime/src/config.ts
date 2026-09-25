@@ -56,6 +56,22 @@ import { normalizeNameForMCP } from './normalization.js'
 import { getProjectMcpServerStatus } from './utils.js'
 
 /**
+ * `ValidationError` portado en `@thyrox/config/validation` no incluye
+ * `suggestion` ni `mcpErrorMetadata` — la fuente sí los declara en su
+ * `ValidationError` (packages/config/settings/validation.ts), y este módulo
+ * los produce en varios puntos. Se amplía localmente en vez de tocar el
+ * paquete `config`, que está fuera del alcance de este archivo.
+ */
+type McpValidationError = ValidationError & {
+  suggestion?: string
+  mcpErrorMetadata?: {
+    scope: ConfigScope
+    serverName?: string
+    severity?: 'fatal' | 'warning'
+  }
+}
+
+/**
  * Get the path to the managed MCP configuration file
  */
 export function getEnterpriseMcpFilePath(): string {
@@ -1400,7 +1416,7 @@ export function parseMcpConfigFromFilePath(params: {
   scope: ConfigScope
 }): {
   config: McpJsonConfig | null
-  errors: ValidationError[]
+  errors: McpValidationError[]
 } {
   const { filePath, expandVars, scope } = params
   const fs = getFsImplementation()

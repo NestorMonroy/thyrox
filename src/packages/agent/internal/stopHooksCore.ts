@@ -64,7 +64,7 @@ import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getTotalOutputTokens } from '@thyrox/app-host/bootstrap/state.js'
 import { getAgentHostBindings } from '../host.js'
-import type { HostTask, StopHookExecutionResult } from '../host.js'
+import type { StopHookExecutionResult } from '../host.js'
 import {
   addSessionHook,
   getSessionHooks,
@@ -78,6 +78,7 @@ import type {
   AgentREPLHookContext,
   AgentStopHookInfo,
   AgentSystemPrompt,
+  AgentTask,
   AgentToolUseContext,
 } from '../internalTypes.js'
 
@@ -282,7 +283,7 @@ export async function* handleStopHooks(
     if (appState.activeGoal) {
       try {
         const taskListId = host().getTaskListId?.()
-        const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+        const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
         const hayTrabajoDeFondo = tasks.some(
           t =>
             (t.status === 'in_progress' || t.status === 'running') &&
@@ -675,7 +676,7 @@ async function* hooksDeTeammate(
   }
 
   const taskListId = host().getTaskListId?.()
-  const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+  const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
   for (const task of tasks.filter(
     t => t.status === 'in_progress' && t.owner === teammateName,
   )) {

@@ -15,6 +15,8 @@ import type {
   ShellCommand,
 } from '../types.js'
 import type { ShellExecContext, SnapshotContext } from '../context.js'
+import { generateTaskId } from '@thyrox/tool-registry/Task.js'
+import { TaskOutput } from '@thyrox/tool-registry/task/TaskOutput.js'
 
 /**
  * Contexto de ejecución mutable mínimo para tests herméticos del shell.
@@ -140,5 +142,6 @@ export function createCompletedShellCommand(
     kill: () => {},
     status: 'completed',
     cleanup: () => {},
+    taskOutput: new TaskOutput(generateTaskId('local_bash'), null),
   }
 }

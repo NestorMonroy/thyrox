@@ -1550,7 +1550,13 @@ export function REPL({
       bashTools: bashTools.current,
     }).then(async tip => {
       if (tip) {
-        const content = await tip.content({ theme });
+        // Forma real del subconjunto de Tip que el spinner consume; el stub
+        // de 'tips/types.js' lo declara como `unknown` (mismo patrón que
+        // TipEntry en tipRegistry.ts).
+        interface SpinnerTipContent {
+          content: (context: { theme: typeof theme }) => Promise<string>
+        }
+        const content = await (tip as SpinnerTipContent).content({ theme });
         setAppState(prev => ({
           ...prev,
           spinnerTip: content,
@@ -2006,7 +2012,7 @@ export function REPL({
   // Permission and interactive dialogs can show even when toolJSX is set,
   // as long as shouldContinueAnimation is true. This prevents deadlocks when
   // agents set background hints while waiting for user interaction.
-  const allowDialogsWithAnimation = !toolJSX || toolJSX.shouldContinueAnimation;
+  const allowDialogsWithAnimation = Boolean(!toolJSX || toolJSX.shouldContinueAnimation);
   const focusedInputDialog = getFocusedInputDialog({
     isExiting,
     exitFlow,
@@ -2019,7 +2025,7 @@ export function REPL({
     hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
     hasElicitation: Boolean(elicitation.queue[0]),
     showingCostDialog,
-    idleReturnPending,
+    idleReturnPending: Boolean(idleReturnPending),
     isLoading,
     ultraplanPendingChoice,
     ultraplanLaunchPending,
@@ -2677,7 +2683,13 @@ export function REPL({
             if (feature('PROACTIVE') || feature('KAIROS')) {
               proactiveModule?.setContextBlocked(false);
             }
-          } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
+          } else if (
+            newMessage.type === 'progress' &&
+            typeof newMessage.data === 'object' &&
+            newMessage.data !== null &&
+            'type' in newMessage.data &&
+            isEphemeralToolProgress(newMessage.data.type)
+          ) {
             // Replace the previous ephemeral progress tick for the same tool
             // call instead of appending. Sleep/Bash emit a tick per second and
             // only the last one is rendered; appending blows up the messages
@@ -2693,6 +2705,12 @@ export function REPL({
               if (
                 last?.type === 'progress' &&
                 last.parentToolUseID === newMessage.parentToolUseID &&
+                last.data &&
+                typeof last.data === 'object' &&
+                'type' in last.data &&
+                newMessage.data &&
+                typeof newMessage.data === 'object' &&
+                'type' in newMessage.data &&
                 last.data.type === newMessage.data.type
               ) {
                 const copy = oldMessages.slice();
@@ -3030,7 +3048,7 @@ export function REPL({
         // replayed as user-visible text.
         newMessages
           .filter((m): m is UserMessage => m.type === 'user' && !m.isMeta)
-          .map(_ => getContentText(_.message.content))
+          .map(_ => (_.message.content === undefined ? null : getContentText(_.message.content)))
           .filter(_ => _ !== null)
           .forEach((msg, i) => {
             enqueue({ value: msg, mode: 'prompt' });
@@ -4012,9 +4030,13 @@ export function REPL({
         const imageBlocks: Array<ImageBlockParam> = message.message.content.filter(block => block.type === 'image');
         if (imageBlocks.length > 0) {
           const newPastedContents: Record<number, PastedContent> = {};
+          // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma
+          // de indice de `MessageBase`, o sea `unknown`. Mismo estrechamiento que
+          // `PromptInput.tsx:3205`.
+          const imagePasteIds = message.imagePasteIds as number[] | undefined;
           imageBlocks.forEach((block, index) => {
             if (block.source.type === 'base64') {
-              const id = message.imagePasteIds?.[index] ?? index + 1;
+              const id = imagePasteIds?.[index] ?? index + 1;
               newPastedContents[id] = {
                 id,
                 type: 'image',

@@ -3,7 +3,6 @@ import { handlePlanModeTransition } from '@thyrox/app-host/bootstrap/state.js'
 import type { LocalJSXCommandContext } from '@thyrox/command-runtime/runtime'
 import { Box, Text } from '@anthropic/ink'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
-import type { ToolPermissionContext } from '@thyrox/tool-registry/Tool.js'
 import { getExternalEditor } from '@thyrox/storage/editor.js'
 import { toIDEDisplayName } from '@thyrox/ide/ide.js'
 import { applyPermissionUpdate } from '@thyrox/permission/PermissionUpdate'
@@ -53,7 +52,7 @@ export async function call(
   // If not in plan mode, enable it
   if (currentMode !== 'plan') {
     handlePlanModeTransition(currentMode, 'plan')
-    setAppState((prev: { toolPermissionContext: ToolPermissionContext }) => ({
+    setAppState(prev => ({
       ...prev,
       toolPermissionContext: applyPermissionUpdate(
         prepareContextForPlanMode(prev.toolPermissionContext),

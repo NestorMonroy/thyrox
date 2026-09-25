@@ -41,6 +41,7 @@ import {
 import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
 import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
 import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+import type { AgentToolProgress } from '@thyrox/tool-registry/progressTypes'
 import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
 import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
 import type { CommandResultDisplay } from '@thyrox/agent/command.js'
@@ -266,7 +267,10 @@ async function executeForkedSlashCommand(
     return {
       type: 'progress',
       data: {
-        message,
+        // Un mensaje de asistente real de la API SIEMPRE trae `usage`
+        // poblado y `content` como arreglo — mismo supuesto que
+        // AgentTool.tsx:1553 ya documenta para este mismo campo.
+        message: message as AgentToolProgress['message'],
         type: 'agent_progress',
         prompt: skillContent,
         agentId,

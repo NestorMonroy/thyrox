@@ -280,7 +280,7 @@ function isMessageStreaming(
     const toolIds = getToolUseIdsFromCollapsedGroup(msg)
     return toolIds.some(id => streamingToolUseIDs.has(id))
   }
-  const toolUseID = getToolUseID(msg)
+  const toolUseID = getToolUseID(msg as NormalizedMessage)
   return !!toolUseID && streamingToolUseIDs.has(toolUseID)
 }
 
@@ -308,7 +308,7 @@ function allToolsResolved(
       return resolvedToolUseIDs.has(block.id)
     }
   }
-  const toolUseID = getToolUseID(msg)
+  const toolUseID = getToolUseID(msg as NormalizedMessage)
   return !toolUseID || resolvedToolUseIDs.has(toolUseID)
 }
 

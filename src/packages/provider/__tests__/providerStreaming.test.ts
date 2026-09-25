@@ -247,7 +247,7 @@ describe('AnthropicHttpProvider contra un servidor local (sin fetchImpl)', () =>
     const visto: Record<string, string> = {}
     const turno = await conServidor(
       (req) => {
-        for (const [k, v] of req.headers) visto[k] = v
+        req.headers.forEach((v, k) => { visto[k] = v })
         return new Response(JSON.stringify({ id: 'msg_red', model: 'claude-opus-5', stop_reason: 'end_turn',
           content: [{ type: 'text', text: 'desde el socket' }],
           usage: { input_tokens: 2, output_tokens: 3, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 } }),

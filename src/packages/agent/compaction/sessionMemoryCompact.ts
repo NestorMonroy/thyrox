@@ -462,11 +462,15 @@ function createCompactionResultFromSessionMemory(
   const { truncatedContent, wasTruncated } =
     truncateSessionMemoryForCompact(sessionMemory)
 
+  // Esta ruta de compactación no tiene estado proactivo ni preferencia de
+  // idioma inyectados -- se pasan los valores que no agregan ningún texto.
   let summaryContent = getCompactUserSummaryMessage(
     truncatedContent,
     true,
     transcriptPath,
     true,
+    false,
+    { getLanguage: () => undefined },
   )
 
   if (wasTruncated) {

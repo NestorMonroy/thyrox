@@ -510,7 +510,7 @@ function PromptInput({
     if (viewedTeammate) {
       return {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
     }
     return toolPermissionContext
@@ -1900,7 +1900,7 @@ function PromptInput({
     if (isAgentSwarmsEnabled() && viewedTeammate && viewingAgentTaskId) {
       const teammateContext: ToolPermissionContext = {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
       // Pass undefined for teamContext (unused but kept for API compatibility)
       const nextMode = getNextPermissionMode(teammateContext, undefined)

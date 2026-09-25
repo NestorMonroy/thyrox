@@ -4,11 +4,9 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import { Select } from '../../../CustomSelect/select.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
-import type { AgentWizardData } from '../types.js'
 
 export function MethodStep(): ReactNode {
-  const { goNext, goBack, updateWizardData, goToStep } =
-    useWizard<AgentWizardData>()
+  const { goNext, goBack, updateWizardData, goToStep } = useWizard()
 
   const methodOptions = [
     {

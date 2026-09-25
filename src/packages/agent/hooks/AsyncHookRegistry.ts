@@ -1,6 +1,5 @@
 import type {
   AsyncHookJSONOutput,
-  HookEvent,
   SyncHookJSONOutput,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
@@ -19,7 +18,7 @@ export type PendingAsyncHook = {
   processId: string
   hookId: string
   hookName: string
-  hookEvent: HookEvent | 'StatusLine' | 'FileSuggestion'
+  hookEvent: string
   toolName?: string
   pluginId?: string
   startTime: number
@@ -48,7 +47,7 @@ export function registerPendingAsyncHook({
   hookId: string
   asyncResponse: AsyncHookJSONOutput
   hookName: string
-  hookEvent: HookEvent | 'StatusLine' | 'FileSuggestion'
+  hookEvent: string
   command: string
   shellCommand: ShellCommand
   toolName?: string
@@ -121,7 +120,7 @@ export async function checkForAsyncHookResponses(): Promise<
     processId: string
     response: SyncHookJSONOutput
     hookName: string
-    hookEvent: HookEvent | 'StatusLine' | 'FileSuggestion'
+    hookEvent: string
     toolName?: string
     pluginId?: string
     stdout: string
@@ -133,7 +132,7 @@ export async function checkForAsyncHookResponses(): Promise<
     processId: string
     response: SyncHookJSONOutput
     hookName: string
-    hookEvent: HookEvent | 'StatusLine' | 'FileSuggestion'
+    hookEvent: string
     toolName?: string
     pluginId?: string
     stdout: string

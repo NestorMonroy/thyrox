@@ -322,7 +322,7 @@ export function AttachmentMessage({
             isTranscriptMode={isTranscriptMode}
           />
           {hasImages &&
-            attachment.imagePasteIds?.map(id => (
+            attachment.imagePasteIds?.map((id: number) => (
               <UserImageMessage key={id} imageId={id} />
             ))}
         </Box>
@@ -338,7 +338,7 @@ export function AttachmentMessage({
       if (attachment.skills.length === 0) {
         return null
       }
-      const skillNames = attachment.skills.map(s => s.name).join(', ')
+      const skillNames = attachment.skills.map((s: { name: string; path: string; content: string }) => s.name).join(', ')
       return <Line>Skills restored ({skillNames})</Line>
     }
     case 'diagnostics':

@@ -71,8 +71,7 @@ export const SettingsManager = {
    * Get the raw settings for a specific source layer.
    */
   getForSource(source: SettingSource): SettingsJson | null {
-    const result = getSettingsForSource(source)
-    return result?.settings ?? null
+    return getSettingsForSource(source)
   },
 
   /**

@@ -10,7 +10,6 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import { Select } from '../../../CustomSelect/select.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
-import type { AgentWizardData } from '../types.js'
 
 type MemoryOption = {
   label: string
@@ -18,8 +17,7 @@ type MemoryOption = {
 }
 
 export function MemoryStep(): ReactNode {
-  const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+  const { goNext, goBack, updateWizardData, wizardData } = useWizard()
 
   useKeybinding('confirm:no', goBack, { context: 'Confirmation' })
 

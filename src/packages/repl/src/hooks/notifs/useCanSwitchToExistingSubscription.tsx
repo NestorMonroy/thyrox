@@ -54,11 +54,11 @@ async function getExistingClaudeSubscription(): Promise<'Max' | 'Pro' | null> {
     return null
   }
 
-  if (profile.account.has_claude_max) {
+  if (profile.organization.organization_type === 'claude_max') {
     return 'Max'
   }
 
-  if (profile.account.has_claude_pro) {
+  if (profile.organization.organization_type === 'claude_pro') {
     return 'Pro'
   }
 

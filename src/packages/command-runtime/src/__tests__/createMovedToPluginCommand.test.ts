@@ -70,6 +70,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.source).toBe('builtin')
   })
 

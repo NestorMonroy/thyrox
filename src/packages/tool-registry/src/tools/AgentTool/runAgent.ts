@@ -600,16 +600,13 @@ export async function* runAgent({
         content: await skill.getPromptForCommand('', toolUseContext),
       })),
     )
-    for (const { skillName, skill, content } of loaded) {
+    for (const { skillName, content } of loaded) {
       logForDebugging(
         `[Agent: ${agentDefinition.agentType}] Preloaded skill '${skillName}'`,
       )
 
       // Add command-message metadata so the UI shows which skill is loading
-      const metadata = formatSkillLoadingMetadata(
-        skillName,
-        skill.progressMessage,
-      )
+      const metadata = formatSkillLoadingMetadata(skillName)
 
       initialMessages.push(
         createUserMessage({
