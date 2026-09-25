@@ -1,0 +1,27 @@
+Port the permission decision engine
+
+Eight modules import hasPermissionsToUseTool and none got it: the port
+of permissions.ts left it out, together with deletePermissionRule,
+applyPermissionRulesToPermissionContext and syncPermissionRulesFromDisk,
+because PermissionUpdate, classifierDecision, autoModeState and
+denialTracking were missing. All four are in the package now, so the
+engine is implemented natively on top of them.
+
+It follows the five-argument contract its consumers call (ccnmt
+v2.1.88): the rule chain decides first (whole-tool deny and ask, the
+tool's own decision, the bypass-immune checks, bypass mode, whole-tool
+allow), and only then do the mode transformations apply to an ask:
+dontAsk denies, auto mode consults the classifier with its fast paths
+and denial limits, and without a prompt the PermissionRequest hooks
+decide or the call is denied. The 2.1.281 version (eMo, eight
+arguments) is the drift task #18 measures.
+
+YoloClassifierResult, which yoloClassifier.ts already imported and no
+file declared, is ported into permissionTypes.ts. The engine is
+published from the package root, as the source does.
+
+Tests: ten behaviour cases; removing each guard (dontAsk, safetyCheck,
+content ask rule, bypass) fails exactly its own cases. The derived
+subset passes 242 of 242.
+
+tsc: 2390 -> 2379.

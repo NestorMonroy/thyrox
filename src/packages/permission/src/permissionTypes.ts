@@ -33,8 +33,8 @@
  *
  * NO se agregan (sin consumidor confirmado en este pase): `AdditionalWorkingDirectory`
  * (SÍ se agrega — ver abajo), `PermissionCommandMetadata` sólo se usa dentro
- * de `PermissionMetadata`, `ClassifierResult`/`ClassifierBehavior`/
- * `ClassifierUsage`/`YoloClassifierResult` (sólo los consume `yoloClassifier.ts`
+ * de `PermissionMetadata`, `ClassifierResult`/`ClassifierBehavior`
+ * (sólo los consume `yoloClassifier.ts`
  * y `classifierShared.ts`, bloqueados por `@anthropic-ai/sdk`/`zod`, no
  * linkeados en `node_modules` de este paquete sin correr `bun install`, fuera
  * de alcance de este pase), `ToolPermissionRulesBySource`/`ToolPermissionContext`
@@ -128,6 +128,58 @@ export type ClassifierUsage = {
   outputTokens: number
   cacheReadInputTokens: number
   cacheCreationInputTokens: number
+}
+
+/**
+ * La decision del clasificador de modo auto sobre una accion, con la
+ * telemetria de su llamada. `permissionTypes.ts:344-403`.
+ */
+export type YoloClassifierResult = {
+  thinking?: string
+  shouldBlock: boolean
+  reason: string
+  unavailable?: boolean
+  /**
+   * La API respondio «prompt is too long»: el transcript del clasificador
+   * excede su ventana. Es determinista (mismo transcript, mismo error), asi
+   * que quien llama vuelve al prompt normal en vez de reintentar o cerrar.
+   */
+  transcriptTooLong?: boolean
+  /** El modelo de esta llamada al clasificador. */
+  model: string
+  /** Consumo de la llamada, para la telemetria de sobrecosto. */
+  usage?: ClassifierUsage
+  durationMs?: number
+  /** Longitud en caracteres de cada componente del prompt enviado. */
+  promptLengths?: {
+    systemPrompt: number
+    toolCalls: number
+    userPrompts: number
+  }
+  /** Ruta donde se volcaron los prompts; sólo con `unavailable` por error de API. */
+  errorDumpPath?: string
+  /**
+   * Por que un bloqueo es un fallo de parseo: negativa de politica, respuesta
+   * ilegible, sin tool_use o esquema invalido. Sólo con `shouldBlock` por
+   * parseo, nunca por error de API o aborto.
+   */
+  failureMode?: 'policy_refusal' | 'unparseable' | 'no_tool_use' | 'invalid_schema'
+  /** La etapa que produjo la decision final (clasificador XML de dos etapas). */
+  stage?: 'fast' | 'thinking'
+  /** Consumo de la etapa 1 (rapida) cuando tambien corrio la 2. */
+  stage1Usage?: ClassifierUsage
+  stage1DurationMs?: number
+  /**
+   * `request_id` de la etapa 1, para unir con los registros de la API. El
+   * clasificador de una etapa (tool_use) tambien lo escribe aqui.
+   */
+  stage1RequestId?: string
+  /** `msg_xxx` de la etapa 1: une el evento de decision con su prompt. */
+  stage1MsgId?: string
+  stage2Usage?: ClassifierUsage
+  stage2DurationMs?: number
+  stage2RequestId?: string
+  stage2MsgId?: string
 }
 
 // ============================================================================

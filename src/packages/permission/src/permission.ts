@@ -136,3 +136,7 @@ export {
   isBypassPermissionsModeDisabled,
   transitionPermissionMode,
 } from './permissionSetup.js'
+
+// La decision de permiso de una llamada a herramienta. La fuente la publica
+// desde la raiz del paquete (`index.ts`), y el SDK headless la importa de ahi.
+export { hasPermissionsToUseTool } from './permissions.js'

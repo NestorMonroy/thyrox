@@ -335,6 +335,20 @@ async function decideWithAskRule(
 
 // ---- Bash en sandbox (≙ `Xg`, `Mvt`) ----
 
+/**
+ * Si un comando de Bash saltaría una regla `ask` de herramienta entera porque
+ * corre en sandbox con `autoAllowBashIfSandboxed`. Los comandos que no
+ * correrán en sandbox (excluidos, `dangerouslyDisableSandbox`) sí la respetan.
+ */
+export function canSandboxAutoAllowBash(toolName: string, input: unknown): boolean {
+  return (
+    toolName === BASH_TOOL_NAME &&
+    callSandbox('isSandboxingEnabled') &&
+    callSandbox('isAutoAllowBashIfSandboxedEnabled') &&
+    bashRunsSandboxed(input)
+  )
+}
+
 function bashRunsSandboxed(input: unknown): boolean {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

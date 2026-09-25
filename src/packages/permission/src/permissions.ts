@@ -1,5 +1,5 @@
 /**
- * Porte PARCIAL DECLARADO de `ccnmt: packages/permission/src/permissions.ts`
+ * Porte de `ccnmt: packages/permission/src/permissions.ts`
  * (1523 líneas, 17 exports, licencia UNLICENSED — reimplementación, no
  * copia). El objetivo pedido para este pase es `getDenyRuleForTool`,
  * consumidor real confirmado en `@thyrox/app-host/src/runtime/toolRegistryRuntime.ts:80`
@@ -16,20 +16,20 @@
  *   (agregada en el pase del porte de `shadowedRuleDetection.ts` — ver
  *   abajo; antes OMITIDA por falta de consumidor)
  *
- * OMITIDAS (4 de 17), declaradas por nombre, línea y bloqueo — ninguna
- * tiene consumidor confirmado en este pase:
- *
- *   - `hasPermissionsToUseTool` (permissions.ts:480-1107, ~627 líneas) —
- *     bloqueada por el subsistema clasificador ML (`./classifierDecision.js`,
- *     `./autoModeState.js`, tras `feature('TRANSCRIPT_CLASSIFIER')`) y por
- *     `./PermissionUpdate.js` (330 líneas, no portado).
- *   - `deletePermissionRule` (permissions.ts:1366-1445) — bloqueada por
- *     `deletePermissionRuleFromSettings` (host binding sin implementación
- *     de referencia en este árbol) y `./PermissionUpdate.js`.
- *   - `applyPermissionRulesToPermissionContext` (permissions.ts:1445-1456) —
- *     bloqueada por `applyPermissionUpdate`/`./PermissionUpdate.js`.
- *   - `syncPermissionRulesFromDisk` (permissions.ts:1456-1523) — bloqueada
- *     por `applyPermissionUpdates`/`./PermissionUpdate.js`.
+ * PORTADAS DESPUÉS (las 4 que faltaban): `hasPermissionsToUseTool`
+ * (permissions.ts:480-1107, con `hasPermissionsToUseToolInner`,
+ * `persistDenialState`, `handleDenialLimitExceeded` y los hooks
+ * `PermissionRequest` para agentes sin prompt), `deletePermissionRule`,
+ * `applyPermissionRulesToPermissionContext` y `syncPermissionRulesFromDisk`.
+ * Lo que las bloqueaba —`PermissionUpdate.ts`, `classifierDecision.ts`,
+ * `autoModeState.ts`, `denialTracking.ts`— ya está en el paquete. Su contrato
+ * es el de 2.1.88 porque es el que llaman sus ocho consumidores
+ * (`CanUseToolFn` de cinco argumentos); la versión de 2.1.281 (`eMo`, ocho
+ * argumentos, con la frontera de Chrome y el piso de hooks) es la deriva que
+ * mide la tarea #18. `checkRuleBasedPermissions`, el export 17, vive en
+ * `ruleBasedPermissions.ts` (porte de `BC` de 2.1.281) y se reexporta aquí,
+ * donde la fuente lo declara: 17 de 17, medido con `comm` sobre las
+ * declaraciones y el reexport.
  *
  * Divergencias medidas en lo portado:
  *
@@ -72,6 +72,55 @@ import {
   permissionRuleValueFromString,
   permissionRuleValueToString,
 } from './permissionRuleParser.js'
+import { feature } from 'bun:bundle'
+import { APIUserAbortError } from '@anthropic-ai/sdk'
+import type { AssistantMessage } from '@thyrox/agent/messageShapes'
+import { executePermissionRequestHooks } from '@thyrox/agent/hooks.js'
+import { sanitizeToolNameForAnalytics } from '@thyrox/agent/eventMetadata.js'
+import {
+  AUTO_REJECT_MESSAGE,
+  DONT_ASK_REJECT_MESSAGE,
+  buildClassifierUnavailableMessage,
+  buildYoloRejectionMessage,
+} from '@thyrox/agent/messages.js'
+import {
+  addToTurnClassifierDuration,
+  getTotalCacheCreationInputTokens,
+  getTotalCacheReadInputTokens,
+  getTotalInputTokens,
+  getTotalOutputTokens,
+} from '@thyrox/app-host/bootstrap/state.js'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { getFeatureValue_CACHED_WITH_REFRESH } from '@thyrox/config/feature-flags'
+import { logEvent } from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { calculateCostFromTokens } from '@thyrox/provider/modelCost.js'
+import type { Tool as RegistryTool, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import { isAutoModeActive } from './autoModeState.js'
+import { computeAutoModeFallback, isAutoModeAllowlistedTool } from './classifierDecision.js'
+import { clearClassifierChecking, setClassifierChecking } from './classifierApprovals.js'
+import {
+  DENIAL_LIMITS,
+  createDenialTrackingState,
+  recordDenial,
+  recordSuccess,
+  shouldFallbackToPrompting,
+  type DenialTrackingState,
+} from './denialTracking.js'
+import { AbortError, ContextError } from './errors.js'
+import { applyPermissionUpdate, applyPermissionUpdates, persistPermissionUpdates } from './PermissionUpdate.js'
+import type {
+  PermissionDecision,
+  PermissionMode,
+  PermissionResult,
+  PermissionUpdate,
+  PermissionUpdateDestination,
+  YoloClassifierResult,
+} from './permissionTypes.js'
+import { deletePermissionRuleFromSettings, shouldAllowManagedPermissionRulesOnly } from './permissionsLoader.js'
+import { canSandboxAutoAllowBash } from './ruleBasedPermissions.js'
+import { classifyYoloAction, formatActionForClassifier } from './yoloClassifier.js'
 
 export type ToolPermissionContext = {
   alwaysAllowRules: Partial<Record<PermissionRuleSource, string[]>>
@@ -398,3 +447,682 @@ export function createPermissionRequestMessage(toolName: string, decisionReason?
 // La mitad por reglas de la decisión (`oT` de 2.1.275) vive en su propio
 // módulo; los consumidores la importan desde aquí, como en la fuente.
 export { checkRuleBasedPermissions } from './ruleBasedPermissions.js'
+
+// ---- El motor de decisión (≙ `hasPermissionsToUseTool`, ccnmt v2.1.88) ----
+
+type EngineContext = ToolUseContext
+type EngineDecision = PermissionDecision
+
+const AGENT_TOOL_NAME = 'Agent'
+const REPL_TOOL_NAME = 'REPL'
+const POWERSHELL_TOOL_NAME = 'PowerShell'
+/** Plazo con que se refresca la bandera de cierre del clasificador caído. */
+const CLASSIFIER_FAIL_CLOSED_REFRESH_MS = 30 * 60 * 1000
+
+/** El contexto de permisos de la sesión, visto con la forma que leen las reglas. */
+function permissionContextOf(context: EngineContext): ToolPermissionContext & {
+  mode?: string
+  isBypassPermissionsModeAvailable?: boolean
+  shouldAvoidPermissionPrompts?: boolean
+} {
+  return context.getAppState().toolPermissionContext as never
+}
+
+function isAbort(error: unknown): boolean {
+  return error instanceof AbortError || error instanceof APIUserAbortError
+}
+
+/** `updatedInput` de un resultado si lo trae; si no, la entrada original. */
+function updatedInputOrFallback(
+  result: EngineDecision | PermissionResult,
+  fallback: Record<string, unknown>,
+): Record<string, unknown> {
+  return (('updatedInput' in result ? result.updatedInput : undefined) as Record<string, unknown> | undefined) ?? fallback
+}
+
+/**
+ * Los pasos de la cadena que no dependen del modo auto: denegaciones, reglas
+ * `ask`, la decisión propia de la herramienta, las comprobaciones inmunes al
+ * bypass, el modo bypass y las reglas `allow` de herramienta entera. Lo que
+ * queda sin decidir sale como `ask`.
+ */
+async function hasPermissionsToUseToolInner(
+  tool: RegistryTool,
+  input: Record<string, unknown>,
+  context: EngineContext,
+): Promise<EngineDecision> {
+  if (context.abortController.signal.aborted) throw new AbortError()
+
+  const rules = permissionContextOf(context)
+  // 1a. La herramienta entera está denegada.
+  const denyRule = getDenyRuleForTool(rules, tool)
+  if (denyRule) {
+    return {
+      behavior: 'deny',
+      decisionReason: { type: 'rule', rule: denyRule },
+      message: `Permission to use ${tool.name} has been denied.`,
+    }
+  }
+  // 1b. La herramienta entera pregunta, salvo Bash en sandbox con auto-permiso:
+  // ahí decide el `checkPermissions` de Bash con sus reglas por comando.
+  const askRule = getAskRuleForTool(rules, tool)
+  if (askRule && !canSandboxAutoAllowBash(tool.name, input)) {
+    return {
+      behavior: 'ask',
+      decisionReason: { type: 'rule', rule: askRule },
+      message: createPermissionRequestMessage(tool.name),
+    }
+  }
+
+  // 1c. La decisión propia de la herramienta; una entrada que no valida deja
+  // el `passthrough` por defecto.
+  let toolResult: PermissionResult = {
+    behavior: 'passthrough',
+    message: createPermissionRequestMessage(tool.name),
+  }
+  try {
+    const parsedInput = tool.inputSchema.parse(input)
+    toolResult = await tool.checkPermissions(parsedInput as never, context)
+  } catch (error) {
+    if (isAbort(error)) throw error
+    logError(error)
+  }
+
+  // 1d. La herramienta deniega.
+  if (toolResult.behavior === 'deny') return toolResult
+  if (toolResult.behavior === 'ask') {
+    // 1e. Exige interacción del usuario incluso en bypass.
+    if (tool.requiresUserInteraction?.()) return toolResult
+    // 1f. Una regla `ask` por contenido pesa más que el modo bypass.
+    const reason = toolResult.decisionReason
+    if (reason?.type === 'rule' && reason.rule.ruleBehavior === 'ask') return toolResult
+    // 1g. Las comprobaciones de seguridad (.git/, .claude/, configuración de
+    // shell) son inmunes al bypass.
+    if (reason?.type === 'safetyCheck') return toolResult
+  }
+
+  // 2a. El modo bypass, directo o desde plan cuando la sesión arrancó en bypass.
+  const current = permissionContextOf(context)
+  const bypass =
+    current.mode === 'bypassPermissions' ||
+    (current.mode === 'plan' && current.isBypassPermissionsModeAvailable === true)
+  if (bypass) {
+    return {
+      behavior: 'allow',
+      updatedInput: updatedInputOrFallback(toolResult, input),
+      decisionReason: { type: 'mode', mode: current.mode as PermissionMode },
+    }
+  }
+  // 2b. La herramienta entera está permitida.
+  const allowRule = toolAlwaysAllowedRule(current, tool)
+  if (allowRule) {
+    return {
+      behavior: 'allow',
+      updatedInput: updatedInputOrFallback(toolResult, input),
+      decisionReason: { type: 'rule', rule: allowRule },
+    }
+  }
+
+  // 3. Lo que nadie decidió se pregunta.
+  const result: EngineDecision =
+    toolResult.behavior === 'passthrough'
+      ? {
+          ...toolResult,
+          behavior: 'ask',
+          message: createPermissionRequestMessage(tool.name, toolResult.decisionReason as never),
+        }
+      : toolResult
+  if (result.behavior === 'ask' && result.suggestions) {
+    logForDebugging(`Permission suggestions for ${tool.name}: ${JSON.stringify(result.suggestions, null, 2)}`)
+  }
+  return result
+}
+
+/**
+ * Guarda el estado de denegaciones. Un subagente asíncrono tiene su propio
+ * contador, porque su `setAppState` no escribe; el resto va al estado global.
+ */
+function persistDenialState(context: EngineContext, next: DenialTrackingState): void {
+  if (context.localDenialTracking) {
+    Object.assign(context.localDenialTracking, next)
+    return
+  }
+  context.setAppState(prev => {
+    // `recordSuccess` devuelve la misma referencia si no hubo cambio: devolver
+    // `prev` deja que el store se salte a sus suscriptores.
+    if (prev.denialTracking === next) return prev
+    return { ...prev, denialTracking: next }
+  })
+}
+
+/**
+ * Si el clasificador acumuló demasiadas denegaciones, devuelve un `ask` para
+ * que el usuario revise; sin el límite alcanzado, null. En headless no hay a
+ * quién preguntar: se aborta el agente.
+ */
+function handleDenialLimitExceeded(
+  denialState: DenialTrackingState,
+  isHeadless: boolean,
+  classifierReason: string,
+  assistantMessage: AssistantMessage,
+  tool: RegistryTool,
+  result: EngineDecision,
+  context: EngineContext,
+): EngineDecision | null {
+  if (!shouldFallbackToPrompting(denialState)) return null
+
+  const hitTotalLimit = denialState.totalDenials >= DENIAL_LIMITS.maxTotal
+  // Las cifras se leen antes de persistir: con contador local, persistir muta
+  // el mismo objeto.
+  const totalCount = denialState.totalDenials
+  const consecutiveCount = denialState.consecutiveDenials
+  const warning = hitTotalLimit
+    ? `${totalCount} actions were blocked this session. Please review the transcript before continuing.`
+    : `${consecutiveCount} consecutive actions were blocked. Please review the transcript before continuing.`
+
+  logEvent('tengu_auto_mode_denial_limit_exceeded', {
+    limit: hitTotalLimit ? 'total' : 'consecutive',
+    mode: isHeadless ? 'headless' : 'cli',
+    messageID: assistantMessage.message.id,
+    consecutiveDenials: consecutiveCount,
+    totalDenials: totalCount,
+    toolName: sanitizeToolNameForAnalytics(tool.name),
+  })
+  if (isHeadless) throw new AbortError('Agent aborted: too many classifier denials in headless mode')
+
+  logForDebugging(`Classifier denial limit exceeded, falling back to prompting: ${warning}`, { level: 'warn' })
+  if (hitTotalLimit) persistDenialState(context, { ...denialState, totalDenials: 0, consecutiveDenials: 0 })
+
+  // Se conserva el clasificador original para que el registro de la anulación
+  // del usuario nombre el correcto.
+  const originalClassifier = result.decisionReason?.type === 'classifier' ? result.decisionReason.classifier : 'auto-mode'
+  return {
+    ...result,
+    decisionReason: {
+      type: 'classifier',
+      classifier: originalClassifier,
+      reason: `${warning}\n\nLatest blocked action: ${classifierReason}`,
+    },
+  } as EngineDecision
+}
+
+/**
+ * Hooks `PermissionRequest` para agentes sin prompt: un hook puede permitir o
+ * denegar antes de la denegación automática. Sin decisión de ningún hook,
+ * null. Un hook que falla no tumba la llamada: cae a la denegación.
+ */
+async function runPermissionRequestHooksForHeadlessAgent(
+  tool: RegistryTool,
+  input: Record<string, unknown>,
+  toolUseID: string,
+  context: EngineContext,
+  permissionMode: string | undefined,
+  suggestions: PermissionUpdate[] | undefined,
+): Promise<EngineDecision | null> {
+  try {
+    for await (const hookResult of executePermissionRequestHooks(
+      tool.name,
+      toolUseID,
+      input,
+      context,
+      permissionMode,
+      suggestions,
+      context.abortController.signal,
+    )) {
+      const decision = hookResult.permissionRequestResult
+      if (!decision) continue
+      if (decision.behavior === 'allow') {
+        const updates = decision.updatedPermissions as PermissionUpdate[] | undefined
+        if (updates?.length) {
+          persistPermissionUpdates(updates)
+          context.setAppState(prev => ({
+            ...prev,
+            toolPermissionContext: applyPermissionUpdates(prev.toolPermissionContext, updates),
+          }))
+        }
+        return {
+          behavior: 'allow',
+          updatedInput: (decision.updatedInput as Record<string, unknown> | undefined) ?? input,
+          decisionReason: { type: 'hook', hookName: 'PermissionRequest' },
+        }
+      }
+      if (decision.behavior === 'deny') {
+        if (decision.interrupt) {
+          logForDebugging(`Hook interrupt: tool=${tool.name} hookMessage=${decision.message}`)
+          context.abortController.abort()
+        }
+        return {
+          behavior: 'deny',
+          message: decision.message || 'Permission denied by hook',
+          decisionReason: { type: 'hook', hookName: 'PermissionRequest', reason: decision.message },
+        }
+      }
+    }
+  } catch (error) {
+    logError(new Error('PermissionRequest hook failed for headless agent', { cause: toError(error) }))
+  }
+  return null
+}
+
+function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value))
+}
+
+/** Telemetría de la decisión del clasificador, con su costo y el de la sesión. */
+function logClassifierDecision(
+  tool: RegistryTool,
+  assistantMessage: AssistantMessage,
+  denialState: DenialTrackingState,
+  result: YoloClassifierResult,
+): void {
+  const costOf = (usage: YoloClassifierResult['usage']) =>
+    usage && result.model ? calculateCostFromTokens(result.model, usage) : undefined
+  logEvent('tengu_auto_mode_decision', {
+    decision: result.unavailable ? 'unavailable' : result.shouldBlock ? 'blocked' : 'allowed',
+    toolName: sanitizeToolNameForAnalytics(tool.name),
+    inProtectedNamespace: isInProtectedNamespace(),
+    // El msg_id de la respuesta del agente que produjo el tool_use: une la
+    // decisión con la respuesta de la API del agente principal.
+    agentMsgId: assistantMessage.message.id,
+    classifierModel: result.model,
+    consecutiveDenials: result.shouldBlock ? denialState.consecutiveDenials + 1 : 0,
+    totalDenials: result.shouldBlock ? denialState.totalDenials + 1 : denialState.totalDenials,
+    classifierInputTokens: result.usage?.inputTokens,
+    classifierOutputTokens: result.usage?.outputTokens,
+    classifierCacheReadInputTokens: result.usage?.cacheReadInputTokens,
+    classifierCacheCreationInputTokens: result.usage?.cacheCreationInputTokens,
+    classifierDurationMs: result.durationMs,
+    classifierSystemPromptLength: result.promptLengths?.systemPrompt,
+    classifierToolCallsLength: result.promptLengths?.toolCalls,
+    classifierUserPromptsLength: result.promptLengths?.userPrompts,
+    // Totales del transcript principal: la llamada del clasificador no suma
+    // al costo de la sesión, así que estos excluyen sus tokens.
+    sessionInputTokens: getTotalInputTokens(),
+    sessionOutputTokens: getTotalOutputTokens(),
+    sessionCacheReadInputTokens: getTotalCacheReadInputTokens(),
+    sessionCacheCreationInputTokens: getTotalCacheCreationInputTokens(),
+    classifierCostUSD: costOf(result.usage),
+    classifierStage: result.stage,
+    classifierStage1InputTokens: result.stage1Usage?.inputTokens,
+    classifierStage1OutputTokens: result.stage1Usage?.outputTokens,
+    classifierStage1CacheReadInputTokens: result.stage1Usage?.cacheReadInputTokens,
+    classifierStage1CacheCreationInputTokens: result.stage1Usage?.cacheCreationInputTokens,
+    classifierStage1DurationMs: result.stage1DurationMs,
+    classifierStage1RequestId: result.stage1RequestId,
+    classifierStage1MsgId: result.stage1MsgId,
+    classifierStage1CostUSD: costOf(result.stage1Usage),
+    classifierStage2InputTokens: result.stage2Usage?.inputTokens,
+    classifierStage2OutputTokens: result.stage2Usage?.outputTokens,
+    classifierStage2CacheReadInputTokens: result.stage2Usage?.cacheReadInputTokens,
+    classifierStage2CacheCreationInputTokens: result.stage2Usage?.cacheCreationInputTokens,
+    classifierStage2DurationMs: result.stage2DurationMs,
+    classifierStage2RequestId: result.stage2RequestId,
+    classifierStage2MsgId: result.stage2MsgId,
+    classifierStage2CostUSD: costOf(result.stage2Usage),
+  })
+}
+
+function logFastPathAllow(tool: RegistryTool, assistantMessage: AssistantMessage, fastPath: 'acceptEdits' | 'allowlist'): void {
+  logEvent('tengu_auto_mode_decision', {
+    decision: 'allowed',
+    toolName: sanitizeToolNameForAnalytics(tool.name),
+    inProtectedNamespace: isInProtectedNamespace(),
+    agentMsgId: assistantMessage.message.id,
+    confidence: 'high',
+    fastPath,
+  })
+}
+
+/**
+ * El modo auto: el clasificador decide en lugar del usuario, salvo lo que no
+ * le corresponde (comprobaciones no aprobables, reglas `ask` explícitas, el
+ * piso de plan) y lo que un atajo ya resuelve sin llamarlo.
+ */
+async function decideInAutoMode(
+  tool: RegistryTool,
+  input: Record<string, unknown>,
+  context: EngineContext,
+  assistantMessage: AssistantMessage,
+  toolUseID: string,
+  result: EngineDecision,
+): Promise<EngineDecision> {
+  const appState = context.getAppState()
+  const permissionContext = permissionContextOf(context)
+  const isHeadless = permissionContext.shouldAvoidPermissionPrompts ?? false
+
+  const fallback = computeAutoModeFallback(result.decisionReason, isHeadless)
+  if (fallback === 'deny-headless') {
+    return {
+      behavior: 'deny',
+      message: result.behavior === 'ask' ? result.message : createPermissionRequestMessage(tool.name),
+      decisionReason: {
+        type: 'asyncAgent',
+        reason: 'Action requires interactive approval and permission prompts are not available in this context',
+      },
+    }
+  }
+  if (fallback) {
+    logEvent('tengu_auto_mode_fallback_to_ask', { reason: fallback.reason, toolName: sanitizeToolNameForAnalytics(tool.name) })
+    return result
+  }
+  if (tool.requiresUserInteraction?.()) {
+    logEvent('tengu_auto_mode_fallback_to_ask', {
+      reason: 'requires_user_interaction',
+      toolName: sanitizeToolNameForAnalytics(tool.name),
+    })
+    return result
+  }
+
+  const denialState = context.localDenialTracking ?? appState.denialTracking ?? createDenialTrackingState()
+
+  // PowerShell exige permiso explícito en modo auto salvo con la bandera de
+  // compilación que lo manda al clasificador como a Bash.
+  if (tool.name === POWERSHELL_TOOL_NAME && !feature('POWERSHELL_AUTO_MODE')) {
+    if (isHeadless) {
+      return {
+        behavior: 'deny',
+        message: 'PowerShell tool requires interactive approval',
+        decisionReason: {
+          type: 'asyncAgent',
+          reason: 'PowerShell tool requires interactive approval and permission prompts are not available in this context',
+        },
+      }
+    }
+    logForDebugging(`Skipping auto mode classifier for ${tool.name}: tool requires explicit user permission`)
+    return result
+  }
+
+  // Atajo: lo que acceptEdits permitiría no paga una llamada al clasificador.
+  // Agent y REPL quedan fuera: su checkPermissions permite en acceptEdits, y
+  // el clasificador tiene que ver el código que une sus llamadas internas.
+  if (tool.name !== AGENT_TOOL_NAME && tool.name !== REPL_TOOL_NAME) {
+    try {
+      const parsedInput = tool.inputSchema.parse(input)
+      const acceptEdits = await tool.checkPermissions(parsedInput as never, {
+        ...context,
+        getAppState: () => {
+          const state = context.getAppState()
+          return { ...state, toolPermissionContext: { ...state.toolPermissionContext, mode: 'acceptEdits' as const } }
+        },
+      })
+      if (acceptEdits.behavior === 'allow') {
+        persistDenialState(context, recordSuccess(denialState))
+        logForDebugging(`Skipping auto mode classifier for ${tool.name}: would be allowed in acceptEdits mode`)
+        logFastPathAllow(tool, assistantMessage, 'acceptEdits')
+        return {
+          behavior: 'allow',
+          updatedInput: (acceptEdits.updatedInput as Record<string, unknown> | undefined) ?? input,
+          decisionReason: { type: 'mode', mode: 'auto' },
+        }
+      }
+    } catch (error) {
+      if (isAbort(error)) throw error
+      // Si la comprobación en acceptEdits falla, decide el clasificador.
+    }
+  }
+
+  // Las herramientas de la lista segura no necesitan clasificador.
+  if (isAutoModeAllowlistedTool(tool.name)) {
+    persistDenialState(context, recordSuccess(denialState))
+    logForDebugging(`Skipping auto mode classifier for ${tool.name}: tool is on the safe allowlist`)
+    logFastPathAllow(tool, assistantMessage, 'allowlist')
+    return { behavior: 'allow', updatedInput: input, decisionReason: { type: 'mode', mode: 'auto' } }
+  }
+
+  const action = formatActionForClassifier(tool.name, input)
+  setClassifierChecking(toolUseID)
+  let classifierResult: YoloClassifierResult
+  try {
+    classifierResult = await classifyYoloAction(
+      context.messages as never,
+      action,
+      context.options.tools as never,
+      permissionContext as never,
+      context.abortController.signal,
+    )
+  } finally {
+    clearClassifierChecking(toolUseID)
+  }
+
+  if (process.env.USER_TYPE === 'ant' && classifierResult.errorDumpPath && context.addNotification) {
+    context.addNotification({
+      key: 'auto-mode-error-dump',
+      text: `Auto mode classifier error — prompts dumped to ${classifierResult.errorDumpPath} (included in /share)`,
+      priority: 'immediate',
+      color: 'error',
+    } as never)
+  }
+  logClassifierDecision(tool, assistantMessage, denialState, classifierResult)
+  if (classifierResult.durationMs !== undefined) addToTurnClassifierDuration(classifierResult.durationMs)
+
+  if (!classifierResult.shouldBlock) {
+    persistDenialState(context, recordSuccess(denialState))
+    return {
+      behavior: 'allow',
+      updatedInput: input,
+      decisionReason: { type: 'classifier', classifier: 'auto-mode', reason: classifierResult.reason },
+    }
+  }
+
+  // El transcript excede la ventana del clasificador: error determinista que
+  // no se recupera reintentando, así que se vuelve a la aprobación manual.
+  if (classifierResult.transcriptTooLong) {
+    // REPL pasa: sus llamadas internas se clasifican una a una.
+    if (tool.name === REPL_TOOL_NAME) {
+      return { behavior: 'allow', updatedInput: input, decisionReason: { type: 'mode', mode: 'auto' } }
+    }
+    // En headless la condición es permanente (el transcript sólo crece):
+    // denegar y reintentar gastaría tokens sin llegar nunca al límite.
+    if (isHeadless) {
+      throw new AbortError('Agent aborted: auto mode classifier transcript exceeded context window in headless mode')
+    }
+    logForDebugging('Auto mode classifier transcript too long, falling back to normal permission handling', { level: 'warn' })
+    logEvent('tengu_auto_mode_fallback_to_ask', {
+      reason: 'transcript_too_long',
+      toolName: sanitizeToolNameForAnalytics(tool.name),
+    })
+    return {
+      ...result,
+      decisionReason: {
+        type: 'other',
+        reason:
+          'Auto mode classifier transcript exceeded context window — falling back to manual approval (try /compact to reduce conversation size)',
+      },
+    } as EngineDecision
+  }
+
+  // Clasificador caído (error de API): la bandera decide cerrar o abrir.
+  if (classifierResult.unavailable) {
+    if (getFeatureValue_CACHED_WITH_REFRESH('tengu_iron_gate_closed', true, CLASSIFIER_FAIL_CLOSED_REFRESH_MS)) {
+      logForDebugging('Auto mode classifier unavailable, denying with retry guidance (fail closed)', { level: 'warn' })
+      return {
+        behavior: 'deny',
+        decisionReason: { type: 'classifier', classifier: 'auto-mode', reason: 'Classifier unavailable' },
+        message: buildClassifierUnavailableMessage(tool.name, classifierResult.model),
+      }
+    }
+    logForDebugging('Auto mode classifier unavailable, falling back to normal permission handling (fail open)', {
+      level: 'warn',
+    })
+    logEvent('tengu_auto_mode_fallback_to_ask', {
+      reason: 'classifier_unavailable_fail_open',
+      toolName: sanitizeToolNameForAnalytics(tool.name),
+    })
+    return result
+  }
+
+  const deniedState = recordDenial(denialState)
+  persistDenialState(context, deniedState)
+  logForDebugging(`Auto mode classifier blocked action: ${classifierResult.reason}`, { level: 'warn' })
+  // El límite se mira después del clasificador para incluir su razón.
+  const limited = handleDenialLimitExceeded(
+    deniedState,
+    isHeadless,
+    classifierResult.reason,
+    assistantMessage,
+    tool,
+    result,
+    context,
+  )
+  if (limited) return limited
+  return {
+    behavior: 'deny',
+    decisionReason: { type: 'classifier', classifier: 'auto-mode', reason: classifierResult.reason },
+    message: buildYoloRejectionMessage(classifierResult.reason),
+  }
+}
+
+/**
+ * La decisión de permiso de una llamada a herramienta: la cadena de reglas,
+ * y sobre su `ask` las transformaciones de modo — dontAsk deniega, auto
+ * consulta al clasificador, y sin prompt disponible deciden los hooks o se
+ * deniega. Las transformaciones van al final para que ningún retorno
+ * temprano de la cadena las salte.
+ */
+export async function hasPermissionsToUseTool(
+  tool: RegistryTool,
+  input: Record<string, unknown>,
+  context: EngineContext,
+  assistantMessage: AssistantMessage,
+  toolUseID: string,
+): Promise<EngineDecision> {
+  const result = await hasPermissionsToUseToolInner(tool, input, context)
+
+  if (result.behavior === 'allow') {
+    // Cualquier uso permitido en modo auto, aunque lo permita una regla, corta
+    // la racha de denegaciones consecutivas.
+    if (feature('TRANSCRIPT_CLASSIFIER')) {
+      const appState = context.getAppState()
+      const denialState = context.localDenialTracking ?? appState.denialTracking
+      if (permissionContextOf(context).mode === 'auto' && denialState && denialState.consecutiveDenials > 0) {
+        persistDenialState(context, recordSuccess(denialState))
+      }
+    }
+    return result
+  }
+  if (result.behavior !== 'ask') return result
+
+  const permissionContext = permissionContextOf(context)
+  if (permissionContext.mode === 'dontAsk') {
+    return {
+      behavior: 'deny',
+      decisionReason: { type: 'mode', mode: 'dontAsk' },
+      message: DONT_ASK_REJECT_MESSAGE(tool.name),
+    }
+  }
+  // El clasificador va antes que la ausencia de prompt: así funciona también
+  // en headless.
+  const autoActive =
+    permissionContext.mode === 'auto' || (permissionContext.mode === 'plan' && isAutoModeActive())
+  if (feature('TRANSCRIPT_CLASSIFIER') && autoActive) {
+    return decideInAutoMode(tool, input, context, assistantMessage, toolUseID, result)
+  }
+  if (permissionContext.shouldAvoidPermissionPrompts) {
+    const hookDecision = await runPermissionRequestHooksForHeadlessAgent(
+      tool,
+      input,
+      toolUseID,
+      context,
+      permissionContext.mode,
+      result.suggestions as PermissionUpdate[] | undefined,
+    )
+    if (hookDecision) return hookDecision
+    return {
+      behavior: 'deny',
+      decisionReason: { type: 'asyncAgent', reason: 'Permission prompts are not available in this context' },
+      message: AUTO_REJECT_MESSAGE(tool.name),
+    }
+  }
+  return result
+}
+
+// ---- Edición de reglas en el contexto ----
+
+type EditPermissionRuleArgs = {
+  initialContext: ToolPermissionContext
+  setToolPermissionContext: (updatedContext: ToolPermissionContext) => void
+}
+
+/** Borra una regla de su destino; las fuentes de sólo lectura lo rehúsan. */
+export async function deletePermissionRule({
+  rule,
+  initialContext,
+  setToolPermissionContext,
+}: EditPermissionRuleArgs & { rule: PermissionRule }): Promise<void> {
+  if (rule.source === 'policySettings' || rule.source === 'flagSettings' || rule.source === 'command') {
+    throw new ContextError('Cannot delete permission rules from read-only settings')
+  }
+  const updatedContext = applyPermissionUpdate(initialContext as never, {
+    type: 'removeRules',
+    rules: [rule.ruleValue],
+    behavior: rule.ruleBehavior,
+    destination: rule.source as PermissionUpdateDestination,
+  })
+  switch (rule.source) {
+    case 'localSettings':
+    case 'userSettings':
+    case 'projectSettings':
+      deletePermissionRuleFromSettings(rule as never)
+      break
+    case 'cliArg':
+    case 'session':
+      // Fuentes en memoria: no hay nada que borrar del disco.
+      break
+  }
+  setToolPermissionContext(updatedContext as never)
+}
+
+/** Agrupa reglas por fuente y comportamiento en actualizaciones de contexto. */
+function convertRulesToUpdates(rules: PermissionRule[], type: 'addRules' | 'replaceRules'): PermissionUpdate[] {
+  const grouped = new Map<string, { source: PermissionRuleSource; behavior: PermissionBehavior; values: PermissionRule['ruleValue'][] }>()
+  for (const rule of rules) {
+    const key = `${rule.source}:${rule.ruleBehavior}`
+    const group = grouped.get(key) ?? { source: rule.source, behavior: rule.ruleBehavior, values: [] }
+    group.values.push(rule.ruleValue)
+    grouped.set(key, group)
+  }
+  return [...grouped.values()].map(group => ({
+    type,
+    rules: group.values,
+    behavior: group.behavior,
+    destination: group.source as PermissionUpdateDestination,
+  }))
+}
+
+/** Suma reglas al contexto (arranque). */
+export function applyPermissionRulesToPermissionContext(
+  toolPermissionContext: ToolPermissionContext,
+  rules: PermissionRule[],
+): ToolPermissionContext {
+  return applyPermissionUpdates(toolPermissionContext as never, convertRulesToUpdates(rules, 'addRules')) as never
+}
+
+const RULE_BEHAVIORS: PermissionBehavior[] = ['allow', 'deny', 'ask']
+
+/** Vacía las reglas de un conjunto de fuentes, para los tres comportamientos. */
+function clearSources(context: ToolPermissionContext, sources: PermissionUpdateDestination[]): ToolPermissionContext {
+  let next = context
+  for (const destination of sources) {
+    for (const behavior of RULE_BEHAVIORS) {
+      next = applyPermissionUpdate(next as never, { type: 'replaceRules', rules: [], behavior, destination }) as never
+    }
+  }
+  return next
+}
+
+/**
+ * Sincroniza las reglas leídas del disco (cambio de settings): reemplaza, no
+ * suma. Las fuentes de disco se vacían antes, porque una fuente que se quedó
+ * sin reglas no genera actualización y sus reglas viejas sobrevivirían.
+ */
+export function syncPermissionRulesFromDisk(
+  toolPermissionContext: ToolPermissionContext,
+  rules: PermissionRule[],
+): ToolPermissionContext {
+  let context = toolPermissionContext
+  if (shouldAllowManagedPermissionRulesOnly()) {
+    context = clearSources(context, ['userSettings', 'projectSettings', 'localSettings', 'cliArg', 'session'])
+  }
+  context = clearSources(context, ['userSettings', 'projectSettings', 'localSettings'])
+  return applyPermissionUpdates(context as never, convertRulesToUpdates(rules, 'replaceRules')) as never
+}
