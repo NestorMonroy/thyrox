@@ -8,7 +8,6 @@ import {
   calculateOptimalLeftWidth,
   formatWelcomeMessage,
   truncatePath,
-  getRecentActivitySync,
   getLogoDisplayData,
 } from '../../uiHelpers/logoV2Utils.js'
 import { truncate } from '@thyrox/output/formatters/truncate.js'
@@ -71,7 +70,6 @@ import { renderModelSetting } from '@thyrox/provider/model.js'
 const LEFT_PANEL_MAX_WIDTH = 50
 
 export function LogoV2(): React.ReactNode {
-  const activities = getRecentActivitySync()
   const username = getGlobalConfig().oauthAccount?.displayName ?? ''
 
   const { columns } = useTerminalSize()
@@ -315,7 +313,7 @@ export function LogoV2(): React.ReactNode {
   )
 
   // Calculate layout dimensions
-  const { leftWidth, rightWidth } = calculateLayoutDimensions(
+  const { leftWidth } = calculateLayoutDimensions(
     columns,
     layoutMode,
     optimalLeftWidth,
