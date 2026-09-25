@@ -141,7 +141,7 @@ const command = {
     const finalContent = await executeShellCommandsInPrompt(
       promptContent,
       {
-        ...context,
+        ...(context as Record<string, unknown>),
         getAppState() {
           const appState = (context as CommandContextWithAppState).getAppState()
           return {

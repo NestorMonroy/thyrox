@@ -14,19 +14,18 @@ export function getStructuredIO(
   let inputStream: AsyncIterable<string>
   if (typeof inputPrompt === 'string') {
     if (inputPrompt.trim() !== '') {
-      inputStream = fromArray([
-        jsonStringify({
-          type: 'user',
+      const userMessage = {
+        type: 'user' as const,
+        content: inputPrompt,
+        uuid: '',
+        session_id: '',
+        message: {
+          role: 'user' as const,
           content: inputPrompt,
-          uuid: '',
-          session_id: '',
-          message: {
-            role: 'user',
-            content: inputPrompt,
-          },
-          parent_tool_use_id: null,
-        } satisfies SDKUserMessage),
-      ])
+        },
+        parent_tool_use_id: null,
+      }
+      inputStream = fromArray([jsonStringify(userMessage satisfies SDKUserMessage)])
     } else {
       inputStream = fromArray([])
     }

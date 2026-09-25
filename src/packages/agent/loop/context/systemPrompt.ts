@@ -80,9 +80,13 @@ export function parseRule(raw: string): { body: string; paths: string[] | null }
   const match = fenced ?? dashed
   if (!match) return { body: raw, paths: null }
   const body = raw.slice(match[0].length)
-  const line = /^\s*paths:\s*(.+)$/m.exec(match[1])
+  const inner = match[1]
+  if (inner === undefined) return { body, paths: null }
+  const line = /^\s*paths:\s*(.+)$/m.exec(inner)
   if (!line) return { body, paths: null }
-  return { body, paths: splitPaths(line[1]) }
+  const captured = line[1]
+  if (captured === undefined) return { body, paths: null }
+  return { body, paths: splitPaths(captured) }
 }
 
 /** `paths: a, b` · `paths: ["a", "b"]` · `paths: a` — las tres formas dan la misma lista. */

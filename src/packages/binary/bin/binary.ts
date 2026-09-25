@@ -37,7 +37,8 @@ function guard(mensaje: string): never {
 
 function opcion(argv: string[], nombre: string, defecto: string): string {
   const i = argv.indexOf(nombre)
-  return i >= 0 && argv[i + 1] ? argv[i + 1] : defecto
+  const valor = argv[i + 1]
+  return i >= 0 && valor ? valor : defecto
 }
 
 function abrir(argv: string[]) {

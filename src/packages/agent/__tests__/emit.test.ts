@@ -13,7 +13,9 @@ const ON_DISK = join(agentsDir(), 'migration-porter.md')
 function diskUpdatedAt(text: string): string {
   const found = /^updated_at: (.+)$/m.exec(text)
   if (!found) throw new Error('el archivo en disco no declara updated_at')
-  return found[1]
+  const value = found[1]
+  if (value === undefined) throw new Error('el archivo en disco no declara updated_at')
+  return value
 }
 
 describe('toMarkdown', () => {

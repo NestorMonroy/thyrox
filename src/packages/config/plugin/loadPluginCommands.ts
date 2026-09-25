@@ -417,7 +417,7 @@ export const getPluginCommands = memoize(async (): Promise<Command[]> => {
   // works — getInlinePlugins() is set by main.tsx from --plugin-dir.
   // loadAllPluginsCacheOnly already short-circuits to inline-only when
   // inlinePlugins.length > 0.
-  if (isBareMode() && getInlinePlugins().length === 0) {
+  if (isBareMode() && (getInlinePlugins()?.length ?? 0) === 0) {
     return []
   }
   // Only load commands from enabled plugins
