@@ -348,7 +348,18 @@ export const SettingsSchema = lazySchema(() => z
           'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting CLAUDE_CODE_NO_FLICKER, but persistent across sessions.',
         ),
     spinnerTipsEnabled: z.boolean().optional(),
-    spinnerVerbs: z.array(z.string()).optional(),
+    // Forma de 2.1.281: `append` añade los verbos a los de fábrica y
+    // `replace` usa sólo los propios. Era `string[]`, que no es lo que el
+    // binario acepta ni lo que `getSpinnerVerbs` lee.
+    spinnerVerbs: z
+      .object({
+        mode: z.enum(['append', 'replace']),
+        verbs: z.array(z.string()),
+      })
+      .optional()
+      .describe(
+        'Customize spinner verbs. mode: "append" adds verbs to defaults, "replace" uses only your verbs.',
+      ),
     spinnerTipsOverride: z
         .object({
           excludeDefault: z.boolean().optional(),

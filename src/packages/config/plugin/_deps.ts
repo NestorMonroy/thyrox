@@ -1060,7 +1060,11 @@ const [_getRegisterHookCallbacks, setRegisterHookCallbacksFn_] = makeSetter(
 const [
   _getGetAgentDefinitionsWithOverrides,
   setGetAgentDefinitionsWithOverridesFn_,
-] = makeSetter(async (..._args: unknown[]): Promise<unknown[]> => [])
+] = makeSetter(
+  // Sin host enlazado no hay agentes: el resultado vacío con su forma real,
+  // no un arreglo, que `refresh` leería como `allAgents` indefinido.
+  async (_cwd: string): Promise<AgentDefinitionsResult> => ({ activeAgents: [], allAgents: [] }),
+)
 export function getRegisteredHooks(): unknown[] {
   return _getRegisteredHooks_()()
 }
@@ -1068,9 +1072,9 @@ export function registerHookCallbacks(hooks: unknown[]): void {
   _getRegisterHookCallbacks()(hooks)
 }
 export function getAgentDefinitionsWithOverrides(
-  ...args: unknown[]
-): Promise<unknown[]> {
-  return _getGetAgentDefinitionsWithOverrides()(...args)
+  cwd: string,
+): Promise<AgentDefinitionsResult> {
+  return _getGetAgentDefinitionsWithOverrides()(cwd)
 }
 export const setGetRegisteredHooksFn = setGetRegisteredHooksFn_
 export const setRegisterHookCallbacksFn = setRegisterHookCallbacksFn_
@@ -1306,5 +1310,6 @@ export type { OutputStyleConfig } from '../outputStyles.js'
 // Tipos que sus consumidores piden aquí y que son de otro paquete; entran
 // por una clave declarada de su exports (medido con src/verify/namedImports.ts).
 export type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
-export type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+export type { AgentDefinitionsResult }
 export type { AppState } from '@thyrox/tool-registry/appStateTypes'
