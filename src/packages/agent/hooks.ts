@@ -850,6 +850,38 @@ export async function executePreCompactHooks(
 }
 
 /**
+ * PostCompact (`ccnmt: packages/agent/hooks.ts:4435`): corre los hooks
+ * `PostCompact` que casen con el disparador, con el resumen recién
+ * producido en `compact_summary`, y devuelve el mensaje que el usuario ve
+ * -uno por comando, con su salida-. A diferencia de PreCompact, la salida
+ * no vuelve como instrucción: la compactación ya terminó.
+ */
+export async function executePostCompactHooks(
+  params: { trigger: 'manual' | 'auto'; compactSummary: string },
+  signal?: AbortSignal,
+  timeoutMs: number = DEFAULT_HOOK_TIMEOUT_MS,
+): Promise<{ userDisplayMessage?: string }> {
+  const hookInput = {
+    ...createBaseHookInput(),
+    hook_event_name: 'PostCompact',
+    trigger: params.trigger,
+    compact_summary: params.compactSummary,
+  }
+  const results = await executeHooksOutsideREPL({ hookInput, matchQuery: params.trigger, signal, timeoutMs })
+  if (results.length === 0) return {}
+  const lines: string[] = []
+  for (const r of results) {
+    if (r.cancelled) continue
+    const out = r.output.trim()
+    if (r.succeeded && !r.blocked) lines.push(`PostCompact [${r.command}] completed successfully${out ? `: ${out}` : ''}`)
+    else lines.push(`PostCompact [${r.command}] failed${out ? `: ${out}` : ''}`)
+  }
+  return {
+    ...(lines.length > 0 && { userDisplayMessage: lines.join('\n') }),
+  }
+}
+
+/**
  * El plazo de SessionEnd (`Rse`): la variable manda; si no, el mayor
  * `timeout` declarado por un hook de SessionEnd, con piso de 1 500 ms y
  * techo de 60 000 ms.

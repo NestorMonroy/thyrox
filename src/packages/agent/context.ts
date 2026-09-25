@@ -55,6 +55,10 @@ function getCanonicalName(model: string): string {
 // modelos por ahora).
 export const MODEL_CONTEXT_WINDOW_DEFAULT = 200_000
 
+// Tokens de salida máximos para las operaciones de compactación
+// (`ccnmt: packages/agent/context.ts:13`).
+export const COMPACT_MAX_OUTPUT_TOKENS = 20_000
+
 /**
  * Verifica si el contexto de 1M está deshabilitado vía variable de
  * entorno. La usan los administradores de un despliegue C4E para
