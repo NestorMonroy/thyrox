@@ -1,0 +1,29 @@
+Patrón: unknown-absorbs-return-union
+Señal del verificador: TS2339: Property '[^']+' does not exist on type '\{\}'
+Arreglo genérico: Un valor unknown estrechado por veracidad (if (!x) ..., x?.y, !x || x.f()) queda como {} y cada lectura es TS2339. Se tipa el unknown donde se declara, con el contrato que el propio arbol ya tiene para ese valor: la rama de retorno (fromAgentEvent, paso 085) o el stub de tipo (QuerySource, paso 086). No se castea en el consumidor.
+Ya aplicado en: src/packages/agent/createDeps.ts, src/packages/agent/querySource.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(2530,38): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/hooks.ts:2520-2540 ---
+   2520   * para evitar construir hook inputs por cada archivo de instrucciones cuando no hay
+   2521   * ningún hook configurado.
+   2522   *
+   2523   * Comprueba tanto los hooks de settings-file (getHooksConfigFromSnapshot) como los
+   2524   * hooks registrados (plugin hooks + SDK callback hooks vía registerHookCallbacks).
+   2525   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2526   * internos y no se comprueban.
+   2527   */
+   2528  export function hasInstructionsLoadedHook(): boolean {
+   2529    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2530>   if (snapshotHooks && snapshotHooks.length > 0) return true
+   2531    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2532    if (registeredHooks && registeredHooks.length > 0) return true
+   2533    return false
+   2534  }
+   2535  /**
+   2536   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2537   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')
+   2538   * @param matcher El patrón del matcher - puede ser:
+   2539   *   - Cadena simple para coincidencia exacta (p.ej. 'Write')
+   2540   *   - Lista separada por pipes para varias coincidencias exactas (p.ej. 'Write|Edit')

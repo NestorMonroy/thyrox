@@ -1,0 +1,76 @@
+Patrón: narrowing-unknown-async-generator-event
+Señal del verificador: TS18046: '\w+' is of type 'unknown'
+Arreglo genérico: Cuando el valor iterado viene de un AsyncGenerator tipado como `unknown` (por ejemplo el que devuelve `queryModelWithStreaming`, cuyo tipo de evento colapsa a `unknown` por diseño — no se interpreta en ese módulo), el acceso a una propiedad como `.type` falla con TS18046. Se afirma el tipo mínimo necesario en el punto de uso con `(valor as { type: string }).type`, igual que ya hace el propio código dos líneas más abajo para el cuerpo del bloque — no se cambia la forma en que el valor se produce ni su conducta en ejecución.
+Ya aplicado en: src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts
+Archivos donde la señal sigue viva: src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts
+
+src/packages/agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:715-735 ---
+    715                    toolUseContext,
+    716                  )
+    717                }
+    718              }
+    719              // Backfill tool_use inputs on a cloned message before yield so
+    720              // SDK stream output and transcript serialization see legacy/derived
+    721              // fields. The original `message` is left untouched for
+    722              // assistantMessages.push below — it flows back to the API and
+    723              // mutating it would break prompt caching (byte mismatch).
+    724              let yieldMessage: typeof message = message
+    725>             if (message.type === 'assistant') {
+    726                const assistantMsg = message as AssistantMessage
+    727                const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
+    728                let clonedContent: typeof contentArr | undefined
+    729                for (let i = 0; i < contentArr.length; i++) {
+    730                  const block = contentArr[i]!
+    731                  if (
+    732                    block.type === 'tool_use' &&
+    733                    typeof block.input === 'object' &&
+    734                    block.input !== null
+    735                  ) {
+src/packages/agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:794-814 ---
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804>             if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+    813                  needsFollowUp = true
+    814                }
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
