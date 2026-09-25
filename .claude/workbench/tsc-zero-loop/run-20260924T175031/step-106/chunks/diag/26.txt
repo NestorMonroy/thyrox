@@ -1,0 +1,6 @@
+src/packages/agent/messages/mappers.ts(274,7): error TS2322: Type 'ToolResultBlockParam | TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ... 20 more ... | ContainerUploadBlock' is not assignable to type 'BetaContentBlock'.
+  Type 'ToolResultBlockParam' is not assignable to type 'BetaContentBlock'.
+    Type 'ToolResultBlockParam' is not assignable to type 'BetaMCPToolResultBlock'.
+      Types of property 'content' are incompatible.
+        Type 'string | (TextBlockParam | ImageBlockParam | SearchResultBlockParam | DocumentBlockParam | ToolReferenceBlockParam | BrowserStateBlockParam)[] | undefined' is not assignable to type 'string | BetaTextBlock[]'.
+          Type 'undefined' is not assignable to type 'string | BetaTextBlock[]'.

@@ -1,0 +1,1 @@
+src/packages/config/plugin/loadPluginCommands.ts(866,23): error TS2532: Object is possibly 'undefined'.

@@ -1,0 +1,17 @@
+src/packages/repl/src/screens/REPLView.tsx(2821,72): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2821,75): error TS7006: Parameter 'i' implicitly has an 'any' type.
+src/packages/repl/src/screens/REPLView.tsx(2925,9): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/repl/src/screens/REPLView.tsx(2926,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3033,36): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(3272,11): error TS2698: Spread types may only be created from object types.
+src/packages/repl/src/screens/REPLView.tsx(3488,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.

@@ -1,0 +1,9 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(175,33): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(177,13): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/cli/src/headless/sdk/control/handlers.ts(218,7): error TS2322: Type 'APIProvider' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+  Type '"codex"' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(513,24): error TS2339: Property 'dev' does not exist on type 'ChannelEntry'.
