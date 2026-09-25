@@ -1,0 +1,25 @@
+idéntico src/packages/@ant/ink/src/core/ink.tsx
+sin llamadas perdidas src/packages/agent/__tests__/messageFactories.test.ts
+idéntico src/packages/agent/createDeps.ts
+LLAMADAS PERDIDAS src/packages/agent/internal/cronTasksCore.ts: getAgentHostBindings×5
+LLAMADAS PERDIDAS src/packages/agent/internal/stopHooksCore.ts: toolUseContext.setAppState×2
+sin llamadas perdidas src/packages/color-diff-napi/src/__tests__/color-diff.test.ts
+idéntico src/packages/mcp-runtime/src/runtimeHostSetup.ts
+sin llamadas perdidas src/packages/permission/__tests__/PermissionUpdate.test.ts
+sin llamadas perdidas src/packages/permission/src/__tests__/permissionUpdatePure.test.ts
+idéntico src/packages/provider/src/__tests__/connections.test.ts
+idéntico src/packages/repl/src/components/DiagnosticsDisplay.tsx
+LLAMADAS PERDIDAS src/packages/repl/src/components/ValidationErrorsList.tsx: if×2, jsxDEV_7x81h0kn×4, fileErrors.forEach×1, suggestionPairs.has×1, suggestionPairs.set×1, Array.from×1, suggestionPairs.values×1, map×1
+sin llamadas perdidas src/packages/repl/src/fileIndex/index.ts
+idéntico src/packages/repl/src/hooksSettings.ts
+sin llamadas perdidas src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts
+idéntico src/packages/swarm/src/runtime/inProcessRunner.ts
+sin llamadas perdidas src/packages/swarm/src/worktree/index.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts
+sin llamadas perdidas src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts
+LLAMADAS PERDIDAS src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts: for×1, render×1
+4 de 21 archivos pierden llamadas al transpilar
+TESTS
+21
+__BG_EXIT__=0
