@@ -212,8 +212,8 @@ export function sortMatchersByPriority(
   )
 
   return [...matchers].sort((a, b) => {
-    const aHooks = hooksByEventAndMatcher[selectedEvent]?.[a] || []
-    const bHooks = hooksByEventAndMatcher[selectedEvent]?.[b] || []
+    const aHooks = hooksByEventAndMatcher[selectedEvent as string]?.[a] || []
+    const bHooks = hooksByEventAndMatcher[selectedEvent as string]?.[b] || []
 
     const aSources = Array.from(new Set(aHooks.map(h => h.source)))
     const bSources = Array.from(new Set(bHooks.map(h => h.source)))

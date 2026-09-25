@@ -414,7 +414,7 @@ export async function* handleStopHooks(
           if (activo && !activo.paused && activo.condition === hook.prompt) {
             esBloqueoDeObjetivo = true
             const reason = result.stopReason
-            toolUseContext.setAppState((prev: unknown) => ({
+            toolUseContext.setAppState?.((prev: unknown) => ({
               ...(prev as object),
               activeGoal: {
                 ...((prev as { activeGoal: object }).activeGoal),
@@ -582,7 +582,7 @@ async function* resolverObjetivoAlcanzado(
   } catch {
     // Limpieza de mejor esfuerzo.
   }
-  toolUseContext.setAppState((prev: unknown) => ({
+  toolUseContext.setAppState?.((prev: unknown) => ({
     ...(prev as object),
     activeGoal: undefined,
   }))

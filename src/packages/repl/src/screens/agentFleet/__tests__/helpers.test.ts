@@ -152,20 +152,20 @@ describe('loop + self-driving', () => {
 describe('pickIcon', () => {
   test('pinned + idle + no presence → "∙"', () => {
     const s = mockState({ tempo: 'idle' })
-    expect(pickIcon(s, true, undefined)).toBe('∙')
+    expect(pickIcon(s, 'success', undefined)).toBe('∙')
   })
 
   test('busy/shell presence → null (no glyph)', () => {
-    expect(pickIcon(mockState(), false, 'busy')).toBeNull()
-    expect(pickIcon(mockState(), false, 'shell')).toBeNull()
+    expect(pickIcon(mockState(), null, 'busy')).toBeNull()
+    expect(pickIcon(mockState(), null, 'shell')).toBeNull()
   })
 
   test('/loop job → completed glyph', () => {
-    expect(pickIcon(mockState({ intent: '/loop x' }), false, undefined)).toBe('✢')
+    expect(pickIcon(mockState({ intent: '/loop x' }), null, undefined)).toBe('✢')
   })
 
   test('default → steady glyph', () => {
-    expect(pickIcon(mockState(), false, undefined)).toBe('✻')
+    expect(pickIcon(mockState(), null, undefined)).toBe('✻')
   })
 })
 

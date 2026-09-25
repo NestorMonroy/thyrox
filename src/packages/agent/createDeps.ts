@@ -68,6 +68,7 @@ import type {
   SystemPrompt,
   ToolDep,
 } from './agentDeps.ts'
+import type { CoreTool, PermissionResult, ToolInputJSONSchema } from './types/tools.ts'
 
 /** Una herramienta del registro, en la forma que este adaptador consume. */
 type RuntimeTool = {
@@ -243,14 +244,11 @@ class ToolDepImpl implements ToolDep {
     }
   }
 
-  private toCoreTool(tool: RuntimeTool) {
+  private toCoreTool(tool: RuntimeTool): CoreTool {
     return {
       name: tool.name,
       description: '',
-      inputSchema: (tool.inputJSONSchema ?? { type: 'object' }) as Record<
-        string,
-        unknown
-      >,
+      inputSchema: (tool.inputJSONSchema ?? { type: 'object' }) as ToolInputJSONSchema,
       userFacingName: tool.userFacingName(undefined),
       isLocal: !tool.isMcp,
       isMcp: !!tool.isMcp,
@@ -265,7 +263,7 @@ class PermissionDepImpl implements PermissionDep {
     private readonly tools: RuntimeTool[],
   ) {}
 
-  async canUseTool(tool: { name: string }, input: unknown) {
+  async canUseTool(tool: { name: string }, input: unknown): Promise<PermissionResult> {
     const realTool = findToolByName(this.tools as never, tool.name) as
       | RuntimeTool
       | undefined

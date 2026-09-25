@@ -10,6 +10,7 @@
  * unparseable on resume.
  */
 import { describe, expect, mock, test } from 'bun:test'
+import type { ToolResultBlockParam } from '../internal/messageFactories.js'
 
 // logForDebugging in messageFactories goes through host bindings which
 // aren't installed in test context. Stub the logging module so the
@@ -26,6 +27,17 @@ const {
   createUserInterruptionMessage,
   createUserMessage,
 } = await import('../internal/messageFactories.js')
+
+// Extrae el texto del primer bloque de contenido sin castear: `ToolResultBlockParam`
+// sólo exige `type`/`tool_use_id`, así que `text` cae en su índice `unknown` y se
+// estrecha con `typeof`, no con una aserción de tipo.
+function firstBlockText(
+  content: string | ToolResultBlockParam[],
+): string | undefined {
+  if (!Array.isArray(content)) return undefined
+  const text = content[0]?.text
+  return typeof text === 'string' ? text : undefined
+}
 
 describe('createUserMessage', () => {
   test('basic string content message', () => {
@@ -82,14 +94,12 @@ describe('createUserInterruptionMessage', () => {
   test('default (no toolUse) emits non-tool interrupt text', () => {
     const m = createUserInterruptionMessage({})
     expect(Array.isArray(m.message.content)).toBe(true)
-    const block = (m.message.content as Array<{ text: string }>)[0]
-    expect(block?.text).toBe('[Request interrupted by user]')
+    expect(firstBlockText(m.message.content)).toBe('[Request interrupted by user]')
   })
 
   test('toolUse=true emits tool-specific interrupt text', () => {
     const m = createUserInterruptionMessage({ toolUse: true })
-    const block = (m.message.content as Array<{ text: string }>)[0]
-    expect(block?.text).toBe('[Request interrupted by user for tool use]')
+    expect(firstBlockText(m.message.content)).toBe('[Request interrupted by user for tool use]')
   })
 
   test('SKIP_FIRST_PROMPT_PATTERN must match this text', () => {
@@ -100,8 +110,8 @@ describe('createUserInterruptionMessage', () => {
       /^(?:\s*<[a-z][\w-]*[\s>]|\[Request interrupted by user[^\]]*\])/
     const m1 = createUserInterruptionMessage({})
     const m2 = createUserInterruptionMessage({ toolUse: true })
-    const t1 = (m1.message.content as Array<{ text: string }>)[0]?.text ?? ''
-    const t2 = (m2.message.content as Array<{ text: string }>)[0]?.text ?? ''
+    const t1 = firstBlockText(m1.message.content) ?? ''
+    const t2 = firstBlockText(m2.message.content) ?? ''
     expect(SKIP_PATTERN.test(t1)).toBe(true)
     expect(SKIP_PATTERN.test(t2)).toBe(true)
   })
