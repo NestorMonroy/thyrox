@@ -3,6 +3,7 @@
 
     tsc_cycle classify --log L --packages P --out O.json
     tsc_cycle status   --bench STEP [--job-dir J]
+    tsc_cycle reject   --run RUN --bench STEP --file F --lesson L
 
 Cada fase es un subcomando que lee y escribe en el banco del paso, así una
 fase se repite sin rehacer las anteriores. `tsc_zero_loop` sigue siendo el
@@ -15,10 +16,11 @@ import argparse
 import collections
 import json
 import os
+import subprocess
 import sys
 from pathlib import Path
 
-from verify import tsc_routes
+from verify import tsc_reflect, tsc_routes
 
 
 def cmd_classify(args) -> int:
@@ -86,6 +88,55 @@ def cmd_status(args) -> int:
     return 0
 
 
+def accepting_batch(bench: Path, file: str) -> Path | None:
+    proposal = f"agent:pool:{file}"
+    for report in sorted((bench / "pipeline").glob("batch-*/report.json")):
+        if proposal in json.loads(report.read_text()).get("accepted", []):
+            return report.parent
+    return None
+
+
+def before_log(batch: Path) -> Path | None:
+    """El «antes» de un lote: su `base.log` o, desde el segundo, el `final.log` del anterior.
+
+    Paso 110: tres reflexiones salieron SIN MEDIR porque se pidió el
+    `base.log` de lotes que no lo tienen — el pipeline mide la base una sola
+    vez, y cada lote parte del final del anterior.
+    """
+    if (batch / "base.log").is_file():
+        return batch / "base.log"
+    previous = sorted(p for p in batch.parent.glob("batch-*") if p.name < batch.name)
+    if previous and (previous[-1] / "final.log").is_file():
+        return previous[-1] / "final.log"
+    return None
+
+
+def cmd_reject(args) -> int:
+    batch = accepting_batch(args.bench, args.file)
+    if batch is None:
+        print(f"tsc_cycle reject: ningún lote de {args.bench} aceptó {args.file} — no se revierte nada",
+              file=sys.stderr)
+        return 2
+    before = before_log(batch)
+    if before is None or not (batch / "batch.log").is_file():
+        print(f"tsc_cycle reject: {batch.name} no tiene «antes» o batch.log — no se revierte nada", file=sys.stderr)
+        return 2
+    subprocess.run(["git", "checkout", "--", args.file], check=True, capture_output=True)
+    proposal = f"agent:pool:{args.file}"
+    with (args.run / "ledger.jsonl").open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"proposal_id": proposal, "proposer": "agent", "outcome": "rejected-review",
+                                 "targets_before": 0, "targets_after": 0, "new_diagnostics": [],
+                                 "total_before": 0, "total_after": 0}) + "\n")
+    tsc_reflect.add(args.run, proposal, [args.file], args.lesson, before.read_text().splitlines(),
+                    (batch / "batch.log").read_text().splitlines())
+    kept = args.bench / "kept.txt"
+    if kept.is_file():
+        remaining = [l for l in kept.read_text().splitlines() if l.strip() and l != args.file]
+        kept.write_text("".join(f"{l}\n" for l in remaining))
+    print(f"reject: {args.file} revertido y registrado ({batch.name}, antes={before.name})")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -98,6 +149,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--bench", type=Path, required=True)
     p.add_argument("--job-dir", type=Path)
     p.set_defaults(func=cmd_status)
+    p = sub.add_parser("reject", help="revierte un archivo rechazado en revisión y lo registra")
+    p.add_argument("--run", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--file", required=True)
+    p.add_argument("--lesson", required=True)
+    p.set_defaults(func=cmd_reject)
     args = parser.parse_args(argv)
     return args.func(args)
 

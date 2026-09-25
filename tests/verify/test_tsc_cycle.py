@@ -6,6 +6,9 @@ Qué haría fallar a este control:
 - `classify` que escriba la cola sin sus consumidores;
 - `classify` sobre un log sin diagnósticos que publique un cero en vez de
   rehusar: un log vacío no distingue «cero errores» de «tsc no corrió».
+- `reject` que tome el `base.log` de un lote que no lo tiene: desde el
+  segundo lote el «antes» es el `final.log` del anterior (paso 110);
+- `reject` que revierta un archivo que ningún lote aceptó.
 """
 from __future__ import annotations
 
@@ -102,6 +105,49 @@ with tempfile.TemporaryDirectory() as tmp:
     (job / "outputs" / "pid").unlink()
     code, stdout, _ = run(["status", "--bench", str(step), "--job-dir", str(job)])
     assert_equal("sin archivo pid el estado es desconocido, no «terminado»", True, "job=unknown" in stdout)
+
+with tempfile.TemporaryDirectory() as tmp:
+    import subprocess
+    root = Path(tmp) / "repo"
+    (root / "src").mkdir(parents=True)
+    git = lambda *a: subprocess.run(["git", "-C", str(root), *a], check=True, capture_output=True)
+    git("init", "-q")
+    (root / "src" / "k.ts").write_text("const k = BAD\n")
+    git("add", "."); git("-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "base")
+    (root / "src" / "k.ts").write_text("const k = FIXED_BY_AGENT\n")
+    run_dir = root / "run"
+    step = run_dir / "step-9"
+    first, second = step / "pipeline" / "batch-01", step / "pipeline" / "batch-02"
+    for batch in (first, second):
+        batch.mkdir(parents=True)
+    (first / "base.log").write_text("src/o.ts(1,1): error TS1: before-1\n")
+    (first / "final.log").write_text("src/o.ts(1,1): error TS1: after-1\n")
+    (first / "report.json").write_text(json.dumps({"accepted": ["agent:pool:src/other.ts"]}))
+    (second / "batch.log").write_text("src/o.ts(1,1): error TS1: after-1\nsrc/n.ts(2,2): error TS2: revealed\n")
+    (second / "report.json").write_text(json.dumps({"accepted": ["agent:pool:src/k.ts"]}))
+    (step / "kept.txt").write_text("src/other.ts\nsrc/k.ts\n")
+    (run_dir / "ledger.jsonl").write_text("")
+    cwd = Path.cwd()
+    os.chdir(root)
+    try:
+        code, stdout, stderr = run(["reject", "--run", "run", "--bench", "run/step-9", "--file", "src/k.ts",
+                                    "--lesson", "parchó al consumidor"])
+        code_missing, _, err_missing = run(["reject", "--run", "run", "--bench", "run/step-9", "--file",
+                                            "src/none.ts", "--lesson", "x"])
+    finally:
+        os.chdir(cwd)
+    assert_equal("reject sale 0", 0, code)
+    assert_equal("revierte el archivo a HEAD", "const k = BAD\n", (root / "src" / "k.ts").read_text())
+    ledger = [json.loads(l) for l in (run_dir / "ledger.jsonl").read_text().splitlines() if l.strip()]
+    assert_equal("el ledger registra el rechazo en revisión",
+                 [("agent:pool:src/k.ts", "rejected-review")], [(r["proposal_id"], r["outcome"]) for r in ledger])
+    reflections = run_dir / "reflections.jsonl"
+    last = reflections.read_text().splitlines()[-1] if reflections.is_file() else "{}"
+    assert_equal("el «antes» del segundo lote es el final.log del primero",
+                 ["src/n.ts: TS2: revealed"], json.loads(last).get("revealed"))
+    assert_equal("sale de kept.txt", "src/other.ts\n", (step / "kept.txt").read_text())
+    assert_equal("un archivo que ningún lote aceptó rehúsa con exit 2", 2, code_missing)
+    assert_equal("y lo nombra", True, "src/none.ts" in err_missing)
 
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
