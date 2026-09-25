@@ -73,18 +73,34 @@ def decided_files(ledger: Path) -> set[str]:
 _IMPORT = re.compile(r"""(?:from|import)\s*\(?\s*['"]([^'"]+)['"]""")
 
 
+def _resolve_relative(consumer: Path, spec: str) -> set[Path]:
+    """Las rutas a las que puede apuntar un import relativo de TypeScript:
+    el `.js` del especificador se escribe por el `.ts` que compila a él."""
+    base = (consumer.parent / spec).resolve()
+    stem = base.with_suffix("") if base.suffix in (".js", ".mjs", ".ts", ".tsx") else base
+    return {stem.with_suffix(ext) for ext in (".ts", ".tsx", ".mts")} | \
+        {stem / f"index{ext}" for ext in (".ts", ".tsx")}
+
+
 def imported_copies(cwd: Path, consumers: set[str], applied: set[str], dest: Path) -> set[str]:
-    """Las copias aplicadas que algún consumidor afectado importa, por el nombre
-    del módulo (sin extensión): basta para culpar, no para resolver rutas."""
-    stems = {}
+    """Las copias aplicadas que algún consumidor afectado importa. Un import
+    relativo se resuelve a su ruta; uno de paquete se casa por el nombre del
+    módulo, salvo `index`, que nombra a medio árbol y culparía a inocentes."""
+    paths = {(dest / rel).resolve(): rel for rel in applied}
+    stems: dict[str, set[str]] = {}
     for rel in applied:
-        stems.setdefault(Path(rel).with_suffix("").name, set()).add(rel)
+        stem = Path(rel).with_suffix("").name
+        if stem != "index":
+            stems.setdefault(stem, set()).add(rel)
     found: set[str] = set()
     for consumer in consumers:
         path = cwd / consumer
         if not path.is_file():
             continue
         for spec in _IMPORT.findall(path.read_text(errors="ignore")):
+            if spec.startswith("."):
+                found |= {paths[target] for target in _resolve_relative(path, spec) if target in paths}
+                continue
             name = Path(spec).name
             for suffix in (".js", ".ts", ".tsx", ".mjs"):
                 name = name.removesuffix(suffix)
@@ -154,19 +170,25 @@ def run_copy_step(dest: Path, source: Path, files: list[str], before_lines: list
             half = len(group) // 2
             return culprits(group[:half]) + culprits(group[half:])
 
-        # Primero el grafo de imports: el consumidor que recibe un diagnóstico
-        # nuevo casi siempre importa la copia que lo rompió. Culparla directo
-        # ahorra la bisección; si no basta, se biseca lo que queda.
-        if new and applied:
+        # Primero el grafo de imports, por rondas: el consumidor que recibe un
+        # diagnóstico nuevo casi siempre importa la copia que lo rompió. Cada
+        # ronda culpa a las importadas y se queda con el retiro si lo nuevo
+        # baja, aunque no llegue a cero; sólo el residuo que ningún import
+        # explica se biseca. Antes era todo o nada: un solo culpable
+        # transitivo tiraba la atribución entera y se bisecaba el lote.
+        while new and applied:
             _, by_file = _new_diagnostics(before_lines, after)
             suspects = imported_copies(cwd, set(by_file), applied, dest)
-            if suspects:
-                trial = applied - suspects
-                lines = measure(tree, trial, "imports")
-                if not _new_diagnostics(before_lines, lines)[0]:
-                    for rel in suspects:
-                        outcomes[rel] = "rejected-consumer"
-                    applied, after, new = trial, lines, []
+            if not suspects:
+                break
+            trial = applied - suspects
+            lines = measure(tree, trial, f"imports-{runs}")
+            remaining = _new_diagnostics(before_lines, lines)[0]
+            if len(remaining) >= len(new):
+                break
+            for rel in suspects:
+                outcomes[rel] = "rejected-consumer"
+            applied, after, new = trial, lines, remaining
         while new and applied:
             blamed = culprits(sorted(applied)) or sorted(applied)
             for rel in blamed:

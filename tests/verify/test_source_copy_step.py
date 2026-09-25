@@ -40,13 +40,13 @@ def assert_equal(name: str, expected, obtained) -> None:
 FAKE_TSC = '''import pathlib, re, sys
 root = pathlib.Path(sys.argv[1])
 files = sorted(root.glob("*.ts"))
-broken = any("BROKEN_API" in p.read_text() for p in files)
+broken = {m for p in files for m in re.findall(r"BROKEN_API(\\d*)", p.read_text())}
 lines = []
 for path in files:
     for number, text in enumerate(path.read_text().splitlines(), 1):
         for match in re.finditer(r"BAD(\\d+)", text):
             lines.append(f"{path.name}({number},1): error TS9001: bad {match.group(1)}.")
-        if "USES_API" in text and broken:
+        if any(m in broken for m in re.findall(r"USES_API(\\d*)", text)):
             lines.append(f"{path.name}({number},1): error TS9003: api broken.")
 print("\\n".join(lines))
 sys.exit(2 if lines else 0)
@@ -130,6 +130,46 @@ with tempfile.TemporaryDirectory() as directory:
     except RuntimeError:
         broke = True
     assert_equal("un tsc que sale distinto de 0 sin diagnósticos es una medición rota", True, broke)
+
+# Dos culpables: uno importado directo por su consumidor y otro que rompe a
+# un consumidor a través de un módulo no copiado. El grafo de imports explica
+# el primero; sólo el segundo se biseca, y las inocentes quedan.
+TWO_DEST = {
+    "p1.ts": "export const q = 1\n", "p2.ts": "export const q = 2\n",
+    "mid.ts": "import { q } from './p2.js'\n",
+    "c1.ts": "import { q } from './p1.js' // USES_API1\n",
+    "c2.ts": "import { m } from './mid.js' // USES_API2\n",
+    "a.ts": "export const a = 1\n", "b.ts": "export const b = 1\n", "index.ts": "export {}\n",
+    "c3.ts": "import '@pkg/index.js'\n",
+}
+TWO_SOURCE = {
+    "p1.ts": "export const q = 1 // BROKEN_API1\n", "p2.ts": "export const q = 2 // BROKEN_API2\n",
+    "a.ts": "export const a = 10\n", "b.ts": "export const b = 10\n", "index.ts": "export {} // x\n",
+}
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    dest, source = base / "dest", base / "source"
+    dest.mkdir(); source.mkdir()
+    for name, text in TWO_DEST.items():
+        (dest / name).write_text(text)
+    for name, text in TWO_SOURCE.items():
+        (source / name).write_text(text)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    tsc = [sys.executable, str(base / "fake_tsc.py"), str(dest)]
+    ledger = base / "ledger.jsonl"
+    report = step.run_copy_step(dest, source, sorted(TWO_SOURCE), before(tsc, dest), tsc, ledger,
+                                base / "bench", rewrites=[], batch=10)
+    assert_equal("dos culpables: cada uno rechazado y las inocentes copiadas", {
+        "p1.ts": "rejected-consumer", "p2.ts": "rejected-consumer",
+        "a.ts": "copied", "b.ts": "copied", "index.ts": "copied",
+    }, report["outcomes"])
+    assert_equal("el import de `index` no culpa por el nombre", set(),
+                 step.imported_copies(dest, {"c3.ts"}, {"index.ts"}, dest))
+    (dest / "c4.ts").write_text("import { q } from './sub/p1.js'\n")
+    assert_equal("un import relativo culpa a su ruta, no a la homónima", {"sub/p1.ts"},
+                 step.imported_copies(dest, {"c4.ts"}, {"p1.ts", "sub/p1.ts"}, dest))
+    # batch + imports (retira p1) + bisección del residuo de 4 + confirm.
+    assert_equal("sólo el residuo se biseca", 8, report["tsc_runs"])
 
 print(f"\n{passed} ok, {failed} fallos")
 sys.exit(1 if failed else 0)
