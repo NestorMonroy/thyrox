@@ -271,5 +271,39 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("neta: si el total no baja se revierte aunque un objetivo baje",
                  ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
 
+
+# --- Parcial conservable (`accept_partial=True`) ------------------------------
+# Baja un objetivo de dos y no deja nada nuevo en su archivo: se conserva.
+# Una parcial que deja algo nuevo se revierte por la bisección, igual que
+# una aceptada.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, [row], tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None, accept_partial=True)
+    last = [json.loads(line) for line in ledger.read_text().splitlines()][-1]
+    assert_equal("parcial sin nada nuevo: se conserva",
+                 ("progress", 3, 2, "const a = BAD5\n", "accepted-partial"),
+                 (report.status, report.total_before, report.total_final, (base / "a.ts").read_text(),
+                  last["outcome"]))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("sin la opción, la misma parcial se revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5 WORSE")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, accept_partial=True)
+    assert_equal("parcial con algo nuevo: la bisección la revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

@@ -70,7 +70,7 @@ def count_ledger(rows) -> dict[str, tuple[int, int]]:
         if outcome in IGNORED:
             continue
         pair = counts.setdefault(row["proposer"], [0, 0])
-        if outcome in ("accepted", "accepted-net"):
+        if outcome in ("accepted", "accepted-net", "accepted-partial"):
             pair[0] += 1
         elif outcome in AGAINST:
             pair[1] += 1

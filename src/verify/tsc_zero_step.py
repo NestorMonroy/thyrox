@@ -113,7 +113,8 @@ def _queued(residual: Path) -> set[tuple[str, str]]:
 
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
-             before_lines: list[str] | None = None, net: bool = False) -> StepReport:
+             before_lines: list[str] | None = None, net: bool = False,
+             accept_partial: bool = False) -> StepReport:
     runs = 0
     if before_lines is None:
         before_lines = run_tsc(root, tsc, bench / "before.log")
@@ -168,9 +169,20 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
             net_kept = verdict.proposal_id
             outcomes[net_kept] = "accepted-net"
 
+    # Parcial conservable: bajan sus objetivos sin llegar a cero. Se trata
+    # como una aceptada, así que `settle` la revierte (y la registra como
+    # `revealed`) si deja cualquier diagnóstico nuevo, en su archivo o fuera.
+    if accept_partial:
+        for pid in applied:
+            if pid != net_kept and outcomes[pid] == "partial":
+                outcomes[pid] = "accepted-partial"
+
+    keep = ("accepted", "accepted-net", "accepted-partial")
     patched = {pid: {file: (root / file).read_text() for file in applied[pid]} for pid in applied}
-    accepted = [pid for pid in applied if outcomes[pid] in ("accepted", "accepted-net")]
-    reverted = [pid for pid in applied if outcomes[pid] not in ("accepted", "accepted-net")]
+    accepted = [pid for pid in applied if outcomes[pid] in keep and pid != net_kept]
+    if net_kept is not None:
+        accepted = [net_kept]
+    reverted = [pid for pid in applied if outcomes[pid] not in keep]
     for pid in reverted:
         for file, text in applied[pid].items():
             (root / file).write_text(text)
@@ -248,12 +260,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-batch", type=int)
     parser.add_argument("--net", action="store_true",
                         help="política neta: conservar una propuesta si bajan sus objetivos y el total")
+    parser.add_argument("--accept-partial", action="store_true",
+                        help="conservar la parcial que no deja nada nuevo en sus archivos")
     args = parser.parse_args(argv[:split])
     try:
         before = args.before_log.read_text().splitlines() if args.before_log else None
         report = run_step(args.root, _read_jsonl(args.candidates), argv[split + 1:], args.ledger,
                           args.bench, seed=args.seed, epsilon=args.epsilon, alpha0=args.alpha0,
-                          max_batch=args.max_batch, before_lines=before, net=args.net)
+                          max_batch=args.max_batch, before_lines=before, net=args.net,
+                          accept_partial=args.accept_partial)
     except (OSError, ValueError, RuntimeError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_zero_step: SIN MEDIR — {error}", file=sys.stderr)
         return 2
