@@ -19,7 +19,7 @@ git add -N "$BENCH_ROOT" "${EXTRA[@]}"
 PATHSPEC=$(mktemp -p .claude/cache pathspec.XXXXXX)
 { cat "$B/copiados.paths"; echo "$BENCH_ROOT"; printf '%s\n' "${EXTRA[@]}"; } > "$PATHSPEC"
 OUT=$("${A[@]}" commit -q --pathspec-from-file="$PATHSPEC" -F "$MSG" 2>&1) || { rm -f "$PATHSPEC"; echo "$OUT" | tail -20; exit 1; }
-rm -f "$PATHSPEC"
+rm -f "$PATHSPEC" "$MSG"
 LOW=$(echo "$OUT" | grep -oE "tsconfig.json baja: [0-9]+" | grep -oE "[0-9]+$" | head -1 || true)
 if [ -n "$LOW" ]; then
   R=.claude/baselines/cli_typecheck_baseline.txt
