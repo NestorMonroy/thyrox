@@ -5,15 +5,17 @@ export interface FileStateCache {
   load(entries: unknown): void
 }
 
-type CloneableFileStateCache = FileStateCache
-
-export function cloneFileStateCache(
-  cache: CloneableFileStateCache,
-): CloneableFileStateCache {
+/**
+ * Genérico sobre el tipo concreto de la caché: el clon es de la misma
+ * clase que el original (se construye con su `constructor`), así que el
+ * llamador recibe de vuelta el tipo que entregó — la clase real del
+ * registro de herramientas en QueryEngine, un stub en los tests.
+ */
+export function cloneFileStateCache<T extends FileStateCache>(cache: T): T {
   const ctor = cache.constructor as new (
     maxEntries: number,
     maxSizeBytes: number,
-  ) => CloneableFileStateCache
+  ) => T
   const cloned = new ctor(cache.max, cache.maxSize)
   cloned.load(cache.dump())
   return cloned

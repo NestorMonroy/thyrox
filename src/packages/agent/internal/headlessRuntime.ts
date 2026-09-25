@@ -1,10 +1,14 @@
 import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage } from '../internalTypes.js'
 import type { Message } from '../messageShapes.js'
+import type { SetAppState } from '../messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
-  setAppState: (f: (prev: unknown) => unknown) => void,
+  setAppState: SetAppState,
   sessionId: string,
 ): void {
   getAgentHostBindings().registerStructuredOutputEnforcement?.(
@@ -35,7 +39,7 @@ export async function loadAllPluginsCacheOnly(): Promise<{
 export async function processUserInput(params: unknown): Promise<{
   messages: Message[]
   shouldQuery: boolean
-  allowedTools: unknown
+  allowedTools?: string[]
   model?: string
   resultText?: string
   [key: string]: unknown
@@ -77,10 +81,10 @@ export function sdkCompatToolName(toolName: string): string {
 }
 
 export async function* handleOrphanedPermission(
-  orphanedPermission: unknown,
-  tools: unknown[],
+  orphanedPermission: OrphanedPermission,
+  tools: Tools,
   messages: AgentMessage[],
-  context: unknown,
+  context: ProcessUserInputContext,
 ): AsyncGenerator<SDKMessage> {
   const handler = getAgentHostBindings().handleOrphanedPermission
   if (!handler) {

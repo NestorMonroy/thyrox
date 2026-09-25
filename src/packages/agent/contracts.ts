@@ -1,4 +1,8 @@
 import type { Message } from './messageShapes.js'
+import type { SetAppState } from './messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
 import type {
   ModelUsage,
   SDKAssistantMessageError,
@@ -180,7 +184,7 @@ export type AgentHostBindings = {
   createCacheSafeParams?: (ctx: AgentREPLHookContext) => unknown
   saveCacheSafeParams?: (params: unknown) => void
   registerStructuredOutputEnforcement?: (
-    setAppState: (f: (prev: unknown) => unknown) => void,
+    setAppState: SetAppState,
     sessionId: string,
   ) => void
   getMainLoopModel?: () => string
@@ -192,7 +196,7 @@ export type AgentHostBindings = {
   processUserInput?: (params: unknown) => Promise<{
     messages: Message[]
     shouldQuery: boolean
-    allowedTools: unknown
+    allowedTools?: string[]
     model?: string
     resultText?: string
     [key: string]: unknown
@@ -206,10 +210,10 @@ export type AgentHostBindings = {
   buildSystemInitMessage?: (params: unknown) => SDKMessage
   sdkCompatToolName?: (toolName: string) => string
   handleOrphanedPermission?: (
-    orphanedPermission: unknown,
-    tools: unknown[],
+    orphanedPermission: OrphanedPermission,
+    tools: Tools,
     messages: AgentMessage[],
-    context: unknown,
+    context: ProcessUserInputContext,
   ) => AsyncGenerator<SDKMessage>
   isResultSuccessful?: (
     result: AgentMessage | undefined,
