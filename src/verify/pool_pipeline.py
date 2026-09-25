@@ -226,6 +226,28 @@ def memory_gate(run: Path, batch: Path, problems: list[str]) -> None:
                           f"de memoria que lo cubra ({detail}). No se exporta ni se continúa.")
 
 
+SWEEP_UNIT = "pattern:"
+
+
+def settle_sweep(run: Path, unit: str, listed: list[str], kept: list[str], step: str) -> dict | None:
+    """Gate 4, la mitad que asienta: los archivos del patrón que el paso
+    conservó se marcan como aplicados; los que no, se excluyen con una razón
+    que cita el paso. Sin este asiento, la ruta sweep volvería a ofrecer los
+    mismos archivos y el gate no se liberaría. Una unidad que no es de patrón
+    devuelve None: no hay memoria que asentar."""
+    if not unit.startswith(SWEEP_UNIT):
+        return None
+    name = unit[len(SWEEP_UNIT):]
+    applied = sorted(set(listed) & set(kept))
+    excluded = sorted(set(listed) - set(kept))
+    if applied:
+        tsc_sweep.mark_applied(run, name, applied)
+    if excluded:
+        tsc_sweep.exclude_files(run, name, excluded,
+                                f"{step}: el barrido no conservó el arreglo en este archivo")
+    return {"applied": applied, "excluded": excluded}
+
+
 def next_base(bench: Path, previous: Path | None) -> Path | None:
     """La base del lote siguiente: el `final.log` de éste si lo escribió. Un
     lote sin candidatas aplicadas no mide ni escribe (paso 137 murió al leerlo
@@ -311,6 +333,10 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
                     file: [data for n in grouped.get(file, []) for data in outputs.get(n, [])]
                     for file in kept_now}, kept_now)
                 memory_gate(args.ledger.parent, bench, problems)
+            if getattr(args, "unit", "file") == "module":
+                for unit in ready:
+                    listed = sorted({f for n in grouped[unit] for f in items[n - 1].split()[2:]})
+                    settle_sweep(args.ledger.parent, unit, listed, kept_now, bench.name)
             kept.update(kept_now)
             before_log = next_base(bench, before_log)
             summary.append({"batch": batch_no, "files": len(ready), "total_before": report["total_before"],

@@ -299,5 +299,28 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("con final.log, la base es la del lote", base / "batch-04/final.log",
                  pp.next_base(base / "batch-04", previous))
 
+# Gate 4, la mitad que asienta: tras un lote de barrido, los archivos del
+# patrón que el paso conservó quedan como aplicados y los que no, excluidos
+# con una razón que cita el paso. Sin esto la ruta sweep volvería a ofrecer
+# los mismos archivos y el gate no se liberaría nunca.
+with tempfile.TemporaryDirectory() as directory:
+    run_dir = Path(directory)
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "missing-index-guard", "signal": r"TS2532",
+                                       "fix": "afirmar el índice tras comprobarlo"})
+    settled = pp.settle_sweep(run_dir, "pattern:missing-index-guard", ["src/a.ts", "src/b.ts"],
+                              ["src/a.ts", "src/z.ts"], "step-150")
+    row = pp.tsc_sweep.load_patterns(run_dir)["missing-index-guard"]
+    assert_equal("el archivo conservado queda aplicado", True, "src/a.ts" in row["applied"])
+    assert_equal("el no conservado queda excluido", ["src/b.ts"], row["exclude"])
+    assert_equal("y su razón cita el paso", True, "step-150" in row.get("exclude_reasons", {}).get("src/b.ts", ""))
+    assert_equal("un conservado ajeno al patrón no se le atribuye", False, "src/z.ts" in row["applied"])
+    assert_equal("devuelve lo aplicado y lo excluido", {"applied": ["src/a.ts"], "excluded": ["src/b.ts"]},
+                 settled)
+    try:
+        outside = pp.settle_sweep(run_dir, "src/packages/x", ["src/c.ts"], [], "step-150")
+    except ValueError as error:
+        outside = f"error: {error}"
+    assert_equal("una unidad que no es de patrón no toca la memoria", None, outside)
+
 print(f"test_pool_pipeline: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

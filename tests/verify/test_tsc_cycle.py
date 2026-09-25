@@ -378,8 +378,9 @@ with tempfile.TemporaryDirectory() as tmp:
         "src/packages/agent/skip.ts(1,1): error TS2304: Cannot find name 'x'.\n"
         "node_modules/x/index.d.ts(1,1): error TS2304: Cannot find name 'y'.\n")
     (root / "excluded.txt").write_text("src/packages/agent/skip.ts\n")
+    (root / "run").mkdir()
     code = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "step"), "--root", str(root),
-                    "--exclude", str(root / "excluded.txt"), "--size", "2"])
+                    "--run", str(root / "run"), "--exclude", str(root / "excluded.txt"), "--size", "2"])
     lines = (root / "step/items.txt").read_text().splitlines()
     assert_equal("un ítem por trozo de a lo sumo --size diagnósticos, sin excluidos ni ajenos a src/",
                  (0, ["src/packages/agent/query.ts", "src/packages/agent/query.ts"]),
@@ -389,7 +390,7 @@ with tempfile.TemporaryDirectory() as tmp:
                  ("  Type '{}' is missing" in first, "   20> line 20" in first, "   10  line 10" in first))
     with contextlib.redirect_stderr(io.StringIO()):
         none = tc.main(["local", "plan", "--log", str(root / "none.log"), "--bench", str(root / "none"),
-                        "--root", str(root)]) if (root / "none.log").write_text("") is not None else None
+                        "--root", str(root), "--run", str(root / "run")]) if (root / "none.log").write_text("") is not None else None
     assert_equal("sin diagnósticos locales, rehúsa sin items.txt", (2, False),
                  (none, (root / "none/items.txt").exists()))
     pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
@@ -401,6 +402,52 @@ with tempfile.TemporaryDirectory() as tmp:
                   "--net" in pipeline_text))
     assert_equal("la plantilla de la ruta 3 existe", True,
                  (tc.THYROX / "src/verify/prompts/file-local.md").is_file())
+
+# --- sweep: el paso 4 del plan v2.2.0 como ruta, y su gate -----------------
+# H-THYROX-186: la memoria y el barrido existían (`tsc_reflect`, `tsc_sweep`)
+# pero sólo como CLI que nadie llamaba; la ruta 3 los saltó en silencio.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for name in ("a", "b", "c", "d"):
+        path = root / f"src/{name}.ts"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(f"line {n}" for n in range(1, 21)) + "\n")
+    run = root / "run"
+    run.mkdir()
+    (run / "patterns.jsonl").write_text(json.dumps({
+        "name": "bad-literal", "signal": "TS9001: bad", "fix": "sustituir BADn por n", "include": "",
+        "exclude": [], "site": "", "replace": "", "applied": ["src/a.ts"]}) + "\n")
+    log = root / "sweep.log"
+    log.write_text("src/b.ts(5,1): error TS9001: bad 2.\n"
+                   "src/c.ts(7,1): error TS9001: bad 3.\n"
+                   "src/d.ts(9,1): error TS1234: other.\n")
+    with contextlib.redirect_stderr(io.StringIO()) as err:
+        blocked = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "local"),
+                           "--root", str(root), "--run", str(run)])
+    assert_equal("gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa", (2, True, False),
+                 (blocked, "GATE 4 BLOQUEADO" in err.getvalue(), (root / "local/items.txt").exists()))
+    code = tc.main(["sweep", "plan", "--log", str(log), "--bench", str(root / "sweep"), "--root", str(root),
+                    "--run", str(run)])
+    lines = (root / "sweep/items.txt").read_text().splitlines()
+    assert_equal("un ítem por patrón con sus archivos vivos", (0, ["pattern:bad-literal", "src/b.ts", "src/c.ts"]),
+                 (code, [lines[0].split()[0], *lines[0].split()[2:]]))
+    item = Path(lines[0].split()[1]).read_text()
+    assert_equal("el ítem trae señal, arreglo, dónde ya se aplicó y el código marcado", (True, True, True, True),
+                 ("TS9001: bad" in item, "sustituir BADn por n" in item, "src/a.ts" in item, "    5> line 5" in item))
+    assert_equal("sweep plan deja gate4.json con los patrones revisados", ["bad-literal"],
+                 json.loads((root / "sweep/gate4.json").read_text())["reviewed"])
+    pool, pipeline = tc.launch_commands(root / "sweep", model="claude-sonnet-5", worktree=Path("/wt"),
+                                        ledger=run / "ledger.jsonl", seed=7, route="sweep")
+    assert_equal("la ruta sweep usa su plantilla y la unidad de varios archivos", (True, True),
+                 ("src/verify/prompts/pattern-sweep.md" in " ".join(pool), "--unit module" in " ".join(pipeline)))
+    assert_equal("la plantilla del barrido existe", True, (tc.THYROX / "src/verify/prompts/pattern-sweep.md").is_file())
+    assert_equal("next manda al barrido antes que a la ruta local", "sweep",
+                 tc.next_route(tc.tsc_routes.parse_diagnostics(log.read_text()), {}, run=run))
+    tc.tsc_sweep.exclude_files(run, "bad-literal", ["src/b.ts", "src/c.ts"], "otra causa, medido")
+    with contextlib.redirect_stderr(io.StringIO()):
+        freed = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "local2"),
+                         "--root", str(root), "--run", str(run)])
+    assert_equal("excluidas con razón, la ruta local queda libre", 0, freed)
 
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

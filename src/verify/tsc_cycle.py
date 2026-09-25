@@ -29,7 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from verify import tsc_reflect, tsc_routes
+from verify import tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
 
@@ -156,6 +156,7 @@ THYROX = Path(__file__).resolve().parents[2]
 MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
 SHARED_PROMPT = Path("src/verify/prompts/shared-type.md")
 LOCAL_PROMPT = Path("src/verify/prompts/file-local.md")
+SWEEP_PROMPT = Path("src/verify/prompts/pattern-sweep.md")
 
 
 def _unit_of(spec: str, consumer: str, root: Path | None, packages: dict) -> str:
@@ -298,6 +299,15 @@ def cmd_local_plan(args) -> int:
     if args.exclude:
         excluded = {line.strip() for line in args.exclude.read_text().splitlines() if line.strip()}
     log = args.log.read_text(encoding="utf-8", errors="ignore") if args.log.is_file() else ""
+    pending = tsc_reflect.blocking_pending(args.run, log.splitlines(), [])
+    if pending:
+        # Gate 4 del plan v2.2.0: con instancias vivas de un patrón en memoria,
+        # la ruta por archivo no arranca; primero se barre (H-THYROX-186).
+        instances = sum(sum(found.values()) for found in pending.values())
+        print(f"tsc_cycle local plan: GATE 4 BLOQUEADO: {len(pending)} patrón(es) de la memoria con "
+              f"{instances} instancia(s) viva(s) sin aplicar, excluir ni cerrar; corre antes "
+              "`tsc_cycle sweep plan`", file=sys.stderr)
+        return 2
     items = local_items(log, args.root, excluded, args.size)
     if not items:
         print(f"tsc_cycle local plan: {args.log} no tiene diagnósticos locales — nada que proponer",
@@ -316,10 +326,68 @@ def cmd_local_plan(args) -> int:
     return 0
 
 
+def _matching_log(log: str, keep) -> str:
+    """El log con sólo los diagnósticos (y sus líneas encadenadas) que `keep`
+    acepta; `keep` recibe el archivo y la clave `archivo: TSxxxx: mensaje`."""
+    kept, taking = [], False
+    for raw in log.splitlines():
+        match = LOCAL_HEAD.match(raw)
+        if match:
+            header = tsc_routes.HEADER.match(raw)
+            key = f"{header['file']}: {header['code']}: {header['message']}" if header else raw
+            taking = keep(match["file"], key)
+        elif not raw.startswith(" "):
+            taking = False
+        if taking:
+            kept.append(raw)
+    return "\n".join(kept)
+
+
+def sweep_items(run: Path, log: str, root: Path) -> list[tuple[str, list[str], str]]:
+    """(patrón, archivos vivos, texto del ítem) por cada patrón de la memoria
+    con instancias vivas sin aplicar, excluir ni cerrar."""
+    rows = {row["name"]: row for row in tsc_sweep.load_patterns(run).values()}
+    items = []
+    for name, found in tsc_reflect.blocking_pending(run, log.splitlines(), []).items():
+        row, files = rows[name], sorted(found)
+        signal = re.compile(row["signal"])
+        wanted = set(files)
+        filtered = _matching_log(log, lambda file, key: file in wanted and bool(signal.search(key)))
+        blocks = [text for _, text in local_items(filtered, root, set(), size=10 ** 6)]
+        header = [f"Patrón: {name}", f"Señal del verificador: {row['signal']}",
+                  f"Arreglo genérico: {row['fix']}",
+                  f"Ya aplicado en: {', '.join(row.get('applied', [])) or '(ninguno)'}",
+                  f"Archivos donde la señal sigue viva: {', '.join(files)}", ""]
+        items.append((name, files, "\n".join(header) + "\n" + "\n".join(blocks)))
+    return items
+
+
+def cmd_sweep_plan(args) -> int:
+    log = args.log.read_text(encoding="utf-8", errors="ignore") if args.log.is_file() else ""
+    items = sweep_items(args.run, log, args.root)
+    if not items:
+        print(f"tsc_cycle sweep plan: ningún patrón de {args.run} tiene instancias vivas en {args.log}",
+              file=sys.stderr)
+        return 2
+    directory = args.bench / "items"
+    directory.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for n, (name, files, text) in enumerate(items, 1):
+        path = directory / f"{n}.txt"
+        path.write_text(text, encoding="utf-8")
+        lines.append(" ".join([f"pattern:{name}", str(path), *files]))
+    (args.bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # El registro que `tsc_reflect.sweep_gate` exige: el paso revisó patrones.
+    (args.bench / "gate4.json").write_text(json.dumps({"reviewed": [name for name, _, _ in items]}) + "\n")
+    print(f"sweep plan: {len(items)} patrón(es) sobre {len({f for _, files, _ in items for f in files})} "
+          f"archivo(s) -> {args.bench / 'items.txt'}")
+    return 0
+
+
 # Orden del plan v3 (tres rutas). Lo determinista que resuelven los
 # proponentes (`tsc_zero_loop`) es lo que no es una exportación ausente: ésa
 # es un porte y va por módulo.
-ROUTE_ORDER = ("deterministic", "modules", "shared", "local")
+ROUTE_ORDER = ("deterministic", "modules", "shared", "sweep", "local")
 ROUTE_COMMANDS = {
     # Forma de `zero-loop-4` (manifiesto del trabajo): identidad del commit,
     # proponentes y tsc tras sus dos `--`; sin ellos el lazo sale 2.
@@ -328,11 +396,18 @@ ROUTE_COMMANDS = {
                       " bunx tsc --noEmit -p tsconfig.json --pretty false"),
     "modules": "bash bin/tsc_cycle modules plan --log <log> --bench <paso> && bash bin/tsc_cycle modules launch …",
     "shared": "bash bin/tsc_cycle shared plan --log <log> --bench <paso> --top 1 && bash bin/tsc_cycle shared launch …",
+    "sweep": "bash bin/tsc_cycle sweep plan --log <log> --bench <paso> --run <corrida> && bash bin/tsc_cycle sweep launch …",
     "local": "bash bin/tsc_cycle local plan --log <log> --bench <paso> --exclude <en-vuelo> && bash bin/tsc_cycle local launch …",
 }
 
 
-def next_route(diagnostics, duplicates: dict[str, list[str]], exhausted: frozenset[str] | set[str] = frozenset()) -> str:
+def _log_lines(diagnostics) -> list[str]:
+    """Las cabeceras de un log reconstruidas desde sus diagnósticos."""
+    return [f"{d.file}({d.line},1): error {d.code}: {d.message}" for d in diagnostics]
+
+
+def next_route(diagnostics, duplicates: dict[str, list[str]], exhausted: frozenset[str] | set[str] = frozenset(),
+               run: Path | None = None) -> str:
     """La ruta que toca ahora según el plan v3: la primera con trabajo que no
     se haya declarado agotada. Una ruta se agota cuando su lazo termina
     `stalled`: tiene diagnósticos y no sabe producir nada para ellos (paso
@@ -347,6 +422,10 @@ def next_route(diagnostics, duplicates: dict[str, list[str]], exhausted: frozens
         "deterministic": [d for d in routes["deterministic"] if id(d) not in missing],
         "modules": [d for d in routes["deterministic"] if id(d) in missing],
         "shared": routes["shared"],
+        # Paso 4 del plan v2.2.0: lo que la memoria ya sabe arreglar va antes
+        # que la ruta por archivo (H-THYROX-186).
+        "sweep": (list(tsc_reflect.blocking_pending(run, _log_lines(diagnostics), []))
+                  if run is not None else []),
         "local": routes["local"],
     }
     with_work = [route for route in ROUTE_ORDER if pending[route]]
@@ -357,7 +436,7 @@ def next_route(diagnostics, duplicates: dict[str, list[str]], exhausted: frozens
 def cmd_next(args) -> int:
     diagnostics = tsc_routes.parse_diagnostics(args.log.read_text(encoding="utf-8", errors="ignore"))
     route = next_route(diagnostics, tsc_routes.duplicated_types(args.root / "src" / "packages"),
-                       exhausted=set(args.exhausted))
+                       exhausted=set(args.exhausted), run=args.run)
     if route == "none":
         # Un log sin diagnósticos no distingue «cero» de «tsc no corrió».
         print(f"tsc_cycle next: {args.log} sin diagnósticos — el cero lo confirma una medición", file=sys.stderr)
@@ -400,7 +479,7 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
     # Sólo la ruta 2 especula: con su política neta, N worktrees miden N
     # prefijos a la vez (`prefix_speculation`). La de módulos usa el primero.
     worktrees = worktrees if shared else worktrees[:1]
-    prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT}.get(route, MODULE_PROMPT)
+    prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT, "sweep": SWEEP_PROMPT}.get(route, MODULE_PROMPT)
     unit = "file" if route == "local" else "module"
     pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
             f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
@@ -491,6 +570,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--log", type=Path, required=True)
     p.add_argument("--bench", type=Path, required=True)
     p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--run", type=Path, required=True,
+                   help="la corrida cuya memoria (patterns.jsonl) decide el gate 4")
     p.add_argument("--exclude", type=Path, help="archivos que otra ruta tiene en vuelo, uno por línea")
     p.add_argument("--size", type=int, default=2, help="diagnósticos por ítem")
     p.set_defaults(func=cmd_local_plan)
@@ -503,6 +584,23 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="local")
+    sweep = sub.add_parser("sweep", help="paso 4 del plan v2.2.0: un ítem por patrón de la memoria")
+    wsub = sweep.add_subparsers(dest="sweep_command", required=True)
+    p = wsub.add_parser("plan", help="un ítem por patrón con instancias vivas, y gate4.json")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--run", type=Path, required=True)
+    p.set_defaults(func=cmd_sweep_plan)
+    p = wsub.add_parser("launch", help="lanza el pool y el pipeline del barrido con thyrox-bg")
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--ledger", type=Path, required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--width", type=int, default=8)
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_modules_launch, route="sweep")
     p = sub.add_parser("compare", help="antes y después de una medición de tsc")
     p.add_argument("before", type=Path)
     p.add_argument("after", type=Path)
@@ -510,6 +608,7 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("next", help="la ruta que toca según el plan v3 (1 → 2 → 3)")
     p.add_argument("--log", type=Path, required=True)
     p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--run", type=Path, help="la corrida cuya memoria decide la ruta de barrido")
     p.add_argument("--exhausted", action="append", default=[], choices=ROUTE_ORDER,
                    help="una ruta cuyo lazo terminó stalled; repetible")
     p.set_defaults(func=cmd_next)
