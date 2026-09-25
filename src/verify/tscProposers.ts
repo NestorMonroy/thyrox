@@ -26,11 +26,13 @@
  * lo mide `batch_verification`, que da `no-targets` cuando no aparece.
  */
 import { createHash } from 'node:crypto'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import ts from 'typescript'
 import { inferredTypeEdits } from './applyInferredTypes'
 import { NON_NULL_CODES, nonNullInTestEdits } from './nonNullInTests'
 import { unusedImportEdits } from './removeUnusedImports'
+import { deadDeclarationEdits } from './removeDeadDeclarations'
 import {
   DEFAULT_OPTIONS,
   applyEdits,
@@ -72,11 +74,29 @@ export const PROPOSERS: readonly Proposer[] = [
     edits: (service, fileName, text) => inferredTypeEdits(service, fileName, text),
   },
   {
+    name: 'dead-declarations',
+    codes: new Set([6133, 6196]),
+    edits: (_service, fileName, text) => deadDeclarationEdits(fileName, text, portSource(fileName)),
+  },
+  {
     name: 'non-null-in-tests',
     codes: NON_NULL_CODES,
     edits: (service, fileName) => nonNullInTestEdits(service, fileName),
   },
 ]
+
+/** El archivo de la fuente del que se portó `fileName`, si
+ * `TSC_PORT_SOURCE_ROOT` la declara: `src/packages/<x>` se porta de
+ * `<raíz>/<x>`. Sin la variable no se consulta ninguna fuente, y
+ * `dead-declarations` trata todo el código como propio. */
+function portSource(fileName: string): string | undefined {
+  const root = process.env.TSC_PORT_SOURCE_ROOT
+  if (!root) return undefined
+  const relative = path.relative(process.cwd(), fileName)
+  if (!relative.startsWith('src/packages/')) return undefined
+  const candidate = path.join(root, relative.slice('src/packages/'.length))
+  return existsSync(candidate) ? readFileSync(candidate, 'utf8') : undefined
+}
 
 /** La clave sin coordenadas que `analyze_typescript_diagnostics` extrae de
  * una línea de `tsc`: el archivo relativo a `cwd`, el código y la primera
