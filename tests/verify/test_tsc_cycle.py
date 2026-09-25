@@ -359,5 +359,48 @@ det = tc.ROUTE_COMMANDS["deterministic"]
 assert_equal("la ruta determinista nombra la identidad, el proponente y tsc", (True, True, True),
              ("commit_identity env" in det, "-- bin/tsc_proposers --" in det, "bunx tsc --noEmit" in det))
 
+# --- local: la ruta 3 versionada ------------------------------------------
+# Vivía como guion de banco (step-120/build_items.py + plantilla.md): corría y
+# nadie más podía invocarlo. Un ítem por archivo y trozo de diagnósticos, con
+# el código que los rodea, para que el `claude -p` no gaste turnos leyendo.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    source = root / "src/packages/agent/query.ts"
+    source.parent.mkdir(parents=True)
+    source.write_text("\n".join(f"line {n}" for n in range(1, 41)) + "\n")
+    (root / "src/packages/agent/skip.ts").write_text("x\n")
+    log = root / "local.log"
+    log.write_text(
+        "src/packages/agent/query.ts(20,5): error TS18048: 'result.message' is possibly 'undefined'.\n"
+        "src/packages/agent/query.ts(25,5): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.\n"
+        "  Type '{}' is missing the following properties from type 'CompactionResult': summaryMessages\n"
+        "src/packages/agent/query.ts(30,1): error TS2698: Spread types may only be created from object types.\n"
+        "src/packages/agent/skip.ts(1,1): error TS2304: Cannot find name 'x'.\n"
+        "node_modules/x/index.d.ts(1,1): error TS2304: Cannot find name 'y'.\n")
+    (root / "excluded.txt").write_text("src/packages/agent/skip.ts\n")
+    code = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "step"), "--root", str(root),
+                    "--exclude", str(root / "excluded.txt"), "--size", "2"])
+    lines = (root / "step/items.txt").read_text().splitlines()
+    assert_equal("un ítem por trozo de a lo sumo --size diagnósticos, sin excluidos ni ajenos a src/",
+                 (0, ["src/packages/agent/query.ts", "src/packages/agent/query.ts"]),
+                 (code, [line.split()[0] for line in lines]))
+    first = Path(lines[0].split()[1]).read_text()
+    assert_equal("el ítem trae la línea encadenada y el código marcado con '>'", (True, True, True),
+                 ("  Type '{}' is missing" in first, "   20> line 20" in first, "   10  line 10" in first))
+    with contextlib.redirect_stderr(io.StringIO()):
+        none = tc.main(["local", "plan", "--log", str(root / "none.log"), "--bench", str(root / "none"),
+                        "--root", str(root)]) if (root / "none.log").write_text("") is not None else None
+    assert_equal("sin diagnósticos locales, rehúsa sin items.txt", (2, False),
+                 (none, (root / "none/items.txt").exists()))
+    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+                                        ledger=Path("/run/l.jsonl"), seed=7, route="local")
+    pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
+    assert_equal("la ruta 3 usa su plantilla versionada, mide por archivo y sin política neta",
+                 (True, True, False),
+                 ("src/verify/prompts/file-local.md" in pool_text, "--unit file" in pipeline_text,
+                  "--net" in pipeline_text))
+    assert_equal("la plantilla de la ruta 3 existe", True,
+                 (tc.THYROX / "src/verify/prompts/file-local.md").is_file())
+
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

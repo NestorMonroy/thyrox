@@ -155,6 +155,7 @@ MISSING_EXPORT_CODES = {"TS2305", "TS2614", "TS2724"}
 THYROX = Path(__file__).resolve().parents[2]
 MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
 SHARED_PROMPT = Path("src/verify/prompts/shared-type.md")
+LOCAL_PROMPT = Path("src/verify/prompts/file-local.md")
 
 
 def _unit_of(spec: str, consumer: str, root: Path | None, packages: dict) -> str:
@@ -254,6 +255,67 @@ def cmd_shared_plan(args) -> int:
     return 0
 
 
+# Ruta 3: el ítem es un archivo y un trozo de sus diagnósticos, con el código
+# que los rodea. Antes vivía como guion de banco (step-120/build_items.py): el
+# contexto en el ítem evita que el `claude -p` gaste turnos leyendo, lo que en
+# el paso 114 dejó sin salida 19 de 29 ítems.
+LOCAL_CONTEXT_LINES = 10
+LOCAL_HEAD = re.compile(r"^(?P<file>[^\s(]+)\((?P<line>\d+),(?P<col>\d+)\): error TS\d+:")
+
+
+def local_items(log: str, root: Path, excluded: set[str], size: int) -> list[tuple[str, str]]:
+    """(archivo, texto del ítem) por trozo de a lo sumo `size` diagnósticos."""
+    by_file: dict[str, list[tuple[int, list[str]]]] = {}
+    current: list[str] | None = None
+    for raw in log.splitlines():
+        match = LOCAL_HEAD.match(raw)
+        if match:
+            current = [raw]
+            by_file.setdefault(match["file"], []).append((int(match["line"]), current))
+        elif raw.startswith(" ") and current is not None:
+            current.append(raw)
+        else:
+            current = None
+    items = []
+    for file, entries in by_file.items():
+        if file in excluded or not file.startswith("src/") or not (root / file).is_file():
+            continue
+        source = (root / file).read_text(encoding="utf-8", errors="ignore").splitlines()
+        for start in range(0, len(entries), size):
+            blocks = []
+            for line, lines in entries[start:start + size]:
+                low = max(1, line - LOCAL_CONTEXT_LINES)
+                high = min(len(source), line + LOCAL_CONTEXT_LINES)
+                context = [f"  --- código {file}:{low}-{high} ---"]
+                context += [f"  {n:5d}{'>' if n == line else ' '} {source[n - 1]}" for n in range(low, high + 1)]
+                blocks.append("\n".join([lines[0], *context, *lines[1:]]))
+            items.append((file, "\n".join(blocks) + "\n"))
+    return items
+
+
+def cmd_local_plan(args) -> int:
+    excluded = set()
+    if args.exclude:
+        excluded = {line.strip() for line in args.exclude.read_text().splitlines() if line.strip()}
+    log = args.log.read_text(encoding="utf-8", errors="ignore") if args.log.is_file() else ""
+    items = local_items(log, args.root, excluded, args.size)
+    if not items:
+        print(f"tsc_cycle local plan: {args.log} no tiene diagnósticos locales — nada que proponer",
+              file=sys.stderr)
+        return 2
+    directory = args.bench / "items"
+    directory.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for n, (file, text) in enumerate(items, 1):
+        path = directory / f"{n}.txt"
+        path.write_text(text, encoding="utf-8")
+        lines.append(f"{file} {path}")
+    (args.bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"local plan: {len(items)} ítem(s) sobre {len({f for f, _ in items})} archivo(s) -> "
+          f"{args.bench / 'items.txt'}")
+    return 0
+
+
 # Orden del plan v3 (tres rutas). Lo determinista que resuelven los
 # proponentes (`tsc_zero_loop`) es lo que no es una exportación ausente: ésa
 # es un porte y va por módulo.
@@ -266,7 +328,7 @@ ROUTE_COMMANDS = {
                       " bunx tsc --noEmit -p tsconfig.json --pretty false"),
     "modules": "bash bin/tsc_cycle modules plan --log <log> --bench <paso> && bash bin/tsc_cycle modules launch …",
     "shared": "bash bin/tsc_cycle shared plan --log <log> --bench <paso> --top 1 && bash bin/tsc_cycle shared launch …",
-    "local": "pool por archivo: pool_pipeline --unit file (ruta 3)",
+    "local": "bash bin/tsc_cycle local plan --log <log> --bench <paso> --exclude <en-vuelo> && bash bin/tsc_cycle local launch …",
 }
 
 
@@ -338,7 +400,8 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
     # Sólo la ruta 2 especula: con su política neta, N worktrees miden N
     # prefijos a la vez (`prefix_speculation`). La de módulos usa el primero.
     worktrees = worktrees if shared else worktrees[:1]
-    prompt = SHARED_PROMPT if shared else MODULE_PROMPT
+    prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT}.get(route, MODULE_PROMPT)
+    unit = "file" if route == "local" else "module"
     pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
             f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
             f" --tools Read,Grep,Glob --max-turns 30 < {shlex.quote(str(items))}")
@@ -348,7 +411,7 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
                 "--ledger", str(ledger), "--seed", str(seed),
                 # Ruta 2: de a una y con la política neta (plan v3, paso 3):
                 # el efecto de cada unificación se mide antes de la siguiente.
-                "--batch", str(len(worktrees)) if shared else "5", "--poll", "10", "--unit", "module",
+                "--batch", str(len(worktrees)) if shared else "5", "--poll", "10", "--unit", unit,
                 *(["--net"] if shared else []), "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
     name = bench.name
     return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
@@ -422,6 +485,24 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--width", type=int, default=8)
     p.add_argument("--dry-run", action="store_true")
     p.set_defaults(func=cmd_modules_launch, route="shared")
+    local = sub.add_parser("local", help="ruta 3: un ítem por archivo y trozo de diagnósticos")
+    lsub = local.add_subparsers(dest="local_command", required=True)
+    p = lsub.add_parser("plan", help="deriva los ítems por archivo con su código alrededor")
+    p.add_argument("--log", type=Path, required=True)
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--exclude", type=Path, help="archivos que otra ruta tiene en vuelo, uno por línea")
+    p.add_argument("--size", type=int, default=2, help="diagnósticos por ítem")
+    p.set_defaults(func=cmd_local_plan)
+    p = lsub.add_parser("launch", help="lanza el pool y el pipeline de la ruta 3 con thyrox-bg")
+    p.add_argument("--bench", type=Path, required=True)
+    p.add_argument("--worktree", type=Path, required=True)
+    p.add_argument("--ledger", type=Path, required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--model", default="claude-sonnet-5")
+    p.add_argument("--width", type=int, default=8)
+    p.add_argument("--dry-run", action="store_true")
+    p.set_defaults(func=cmd_modules_launch, route="local")
     p = sub.add_parser("compare", help="antes y después de una medición de tsc")
     p.add_argument("before", type=Path)
     p.add_argument("after", type=Path)
