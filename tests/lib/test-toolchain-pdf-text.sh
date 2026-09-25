@@ -28,10 +28,10 @@ else
   thyrox_summary; exit 1
 fi
 
-AUSENTE="thyrox-binario-que-no-existe-$$"
+MISSING="thyrox-binario-que-no-existe-$$"
 
 # Caso 2 — ausente y sin opt-in: REHUSA con exit 2.
-out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$AUSENTE" THYROX_INSTALL_PDF_TEXT= \
+out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$MISSING" THYROX_INSTALL_PDF_TEXT= \
        thyrox_toolchain_require_pdf_text 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando falta y no hay opt-in"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -44,10 +44,10 @@ else
 fi
 
 # Caso 4 — el rechazo NO emite un conteo (se descuentan los digitos legitimos).
-residuo="${out//THYROX_INSTALL_PDF_TEXT=1/}"
-residuo="${residuo//$AUSENTE/}"
-if [[ "$residuo" =~ [0-9] ]]; then
-  bad "el rechazo emite una cifra y no debe: '$residuo'"
+residue="${out//THYROX_INSTALL_PDF_TEXT=1/}"
+residue="${residue//$MISSING/}"
+if [[ "$residue" =~ [0-9] ]]; then
+  bad "el rechazo emite una cifra y no debe: '$residue'"
 else
   ok "el rechazo no emite ningun conteo"
 fi
@@ -61,7 +61,7 @@ else
 fi
 
 # Caso 6 — EL QUE DISCRIMINA: instalador que sale 0 sin instalar.
-THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$AUSENTE" \
+THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$MISSING" \
 THYROX_INSTALL_PDF_TEXT=1 \
 THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD=true \
   thyrox_toolchain_require_pdf_text >/dev/null 2>&1; rc=$?

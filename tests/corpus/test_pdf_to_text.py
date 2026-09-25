@@ -61,9 +61,9 @@ with tempfile.TemporaryDirectory() as directory:
     source = pathlib.Path(directory) / "doc.pdf"
     source.write_bytes(b"%PDF-1.4 fixture")
     ptt._pdftotext_bin = lambda: None
-    def _sin_biblioteca(path):
+    def _without_library(path):
         raise ImportError("pdfplumber")
-    ptt.extract_with_library = _sin_biblioteca
+    ptt.extract_with_library = _without_library
     try:
         ptt.main([str(source), str(pathlib.Path(directory) / "x.txt")])
         message = ""

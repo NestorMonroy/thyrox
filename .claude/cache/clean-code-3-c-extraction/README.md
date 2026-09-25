@@ -1,4 +1,4 @@
-# clean-code-3-c-extraccion
+# clean-code-3-c-extraction
 
 Texto extraído de *Clean Code2* (`Clean_Code_3_C.pdf`, 49 páginas, resumen en
 español de *Clean Code* de Robert C. Martin), subido por el ejecutor el
@@ -9,7 +9,7 @@ español de *Clean Code* de Robert C. Martin), subido por el ejecutor el
 Se regenera con:
 
 ```bash
-bash bin/pdf_to_text <ruta-al-pdf> .claude/cache/clean-code-3-c-extraccion/clean-code-3-c.txt
+bash bin/pdf_to_text <ruta-al-pdf> .claude/cache/clean-code-3-c-extraction/clean-code-3-c.txt
 ```
 
 Si falta el extractor, `thyrox_toolchain_require_pdf_text` lo adquiere

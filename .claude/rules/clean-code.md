@@ -9,7 +9,7 @@ paths:
 
 Fuente: *Clean Code2* (49 láminas, resumen en español de Robert C. Martin,
 *Clean Code*), subido por el ejecutor el 2026-09-25 y extraído con
-`bin/pdf_to_text` a `.claude/cache/clean-code-3-c-extraccion/`. Cada cláusula
+`bin/pdf_to_text` a `.claude/cache/clean-code-3-c-extraction/`. Cada cláusula
 de abajo cita su sección de la extracción; el texto completo se lee allí. La
 regla carga sólo sobre código (`paths:`): no gobierna la prosa de `docs`.
 
