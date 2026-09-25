@@ -1,29 +1,20 @@
-/**
- * Puerto de `ccnmt: packages/config/settings/pluginOnlyPolicy.ts` (60
- * líneas fuente). Reimplementación fiel VERBATIM.
- *
- * `CUSTOMIZATION_SURFACES` se completa en `types.ts` en este mismo pase
- * (ver su docstring) — la fuente ya lo declaraba ahí.
- */
-import { getSettingsForSource } from './settings.ts'
-import type { CUSTOMIZATION_SURFACES } from './types.ts'
+import { getSettingsForSource } from './settings.js'
+import type { CUSTOMIZATION_SURFACES } from './types.js'
 
 export type CustomizationSurface = (typeof CUSTOMIZATION_SURFACES)[number]
 
 /**
- * Comprueba si una superficie de customización está bloqueada a fuentes
- * sólo-plugin por la política administrada
- * `strictPluginOnlyCustomization`.
+ * Check whether a customization surface is locked to plugin-only sources
+ * by the managed `strictPluginOnlyCustomization` policy.
  *
- * "Bloqueada" significa que las fuentes a nivel usuario (`~/.claude/*`) y a
- * nivel proyecto (`.claude/*`) se saltan para esa superficie. Las fuentes
- * managed (`policySettings`) y provistas por plugin siempre cargan sin
- * importar esto — la política la fija un admin, así que las fuentes
- * managed ya están controladas por admin, y los plugins se gatean por
- * separado vía `strictKnownMarketplaces`.
+ * "Locked" means user-level (~/.claude/*) and project-level (.claude/*)
+ * sources are skipped for that surface. Managed (policySettings) and
+ * plugin-provided sources always load regardless — the policy is admin-set,
+ * so managed sources are already admin-controlled, and plugins are gated
+ * separately via `strictKnownMarketplaces`.
  *
- * `true` bloquea las cuatro superficies; la forma array bloquea sólo las
- * listadas. Ausente/undefined → nada bloqueado (el default).
+ * `true` locks all four surfaces; array form locks only those listed.
+ * Absent/undefined → nothing locked (the default).
  */
 export function isRestrictedToPluginOnly(
   surface: CustomizationSurface,
@@ -36,17 +27,15 @@ export function isRestrictedToPluginOnly(
 }
 
 /**
- * Fuentes que sortean `strictPluginOnlyCustomization`. Confiadas por admin
- * porque:
- *   plugin — se gatean por separado vía strictKnownMarketplaces
- *   policySettings — de settings managed, controladas por admin por definición
- *   built-in / builtin / bundled — vienen con el CLI, no son autoría del usuario
+ * Sources that bypass strictPluginOnlyCustomization. Admin-trusted because:
+ *   plugin — gated separately by strictKnownMarketplaces
+ *   policySettings — from managed settings, admin-controlled by definition
+ *   built-in / builtin / bundled — ship with the CLI, not user-authored
  *
- * Todo lo demás (userSettings, projectSettings, localSettings,
- * flagSettings, mcp, undefined) está bajo control del usuario y se bloquea
- * cuando la superficie relevante está bloqueada. Cubre tanto
- * `AgentDefinition.source` ('built-in' con guion) como `Command.source`
- * ('builtin' sin guion, más 'bundled').
+ * Everything else (userSettings, projectSettings, localSettings, flagSettings,
+ * mcp, undefined) is user-controlled and blocked when the relevant surface
+ * is locked. Covers both AgentDefinition.source ('built-in' with hyphen) and
+ * Command.source ('builtin' no hyphen, plus 'bundled').
  */
 const ADMIN_TRUSTED_SOURCES: ReadonlySet<string> = new Set([
   'plugin',
@@ -57,13 +46,12 @@ const ADMIN_TRUSTED_SOURCES: ReadonlySet<string> = new Set([
 ])
 
 /**
- * Si la fuente de una customización es confiada por admin bajo
- * `strictPluginOnlyCustomization`. Se usa para gatear el registro de hooks
- * de frontmatter y checks per-ítem similares donde el ítem lleva una
- * etiqueta de fuente pero el loader de filesystem de la superficie ya
- * corrió.
+ * Whether a customization's source is admin-trusted under
+ * strictPluginOnlyCustomization. Use this to gate frontmatter-hook
+ * registration and similar per-item checks where the item carries a
+ * source tag but the surface's filesystem loader already ran.
  *
- * Patrón en el sitio de llamada:
+ * Pattern at call sites:
  *   const allowed = !isRestrictedToPluginOnly(surface) || isSourceAdminTrusted(item.source)
  *   if (item.hooks && allowed) { register(...) }
  */

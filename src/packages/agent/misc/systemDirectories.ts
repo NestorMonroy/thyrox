@@ -1,47 +1,14 @@
-/**
- * Porte PARCIAL de `ccnmt: packages/agent/misc/systemDirectories.ts`.
- *
- * DIVERGENCIA DE ALCANCE, declarada. La fuente importa `getPlatform`
- * (con deteccion de WSL via `/proc/version`) de
- * `@claude-code-how-works/config/platform` y `logForDebugging` de
- * `@claude-code-how-works/local-observability/debug.js`. Ninguno de
- * los dos paquetes vive en este arbol, y el test de origen **siempre**
- * pasa `platform` explicito en `options`, asi que ninguna de las dos
- * rutas por defecto se ejercita.
- *
- * Se reimplementa aqui un `Platform` local identico (mismos cinco
- * valores) y un `getDefaultPlatform()` minimo — sin deteccion de WSL
- * via `/proc/version`, que exigiria portar el paquete `config`
- * entero para un camino que ningun test cubre — mas un logger de
- * depuracion trivial en vez de portar `local-observability`.
- */
-
-import { join } from 'path'
 import { homedir } from 'os'
-
-export type Platform = 'macos' | 'windows' | 'wsl' | 'linux' | 'unknown'
-
-/** Deteccion minima por `process.platform`. No distingue WSL de Linux
- *  (la fuente lo hace leyendo `/proc/version`) — ver la divergencia
- *  declarada arriba. */
-function getDefaultPlatform(): Platform {
-  if (process.platform === 'darwin') return 'macos'
-  if (process.platform === 'win32') return 'windows'
-  if (process.platform === 'linux') return 'linux'
-  return 'unknown'
-}
-
-/** Logger de depuracion trivial, en vez de portar `local-observability`. */
-function logForDebugging(message: string): void {
-  if (process.env.THYROX_DEBUG) console.error(message)
-}
+import { join } from 'path'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { getPlatform, type Platform } from '@thyrox/config/platform'
 
 export type SystemDirectories = {
   HOME: string
   DESKTOP: string
   DOCUMENTS: string
   DOWNLOADS: string
-  [key: string]: string // Firma de indice para compatibilidad con Record<string, string>
+  [key: string]: string // Index signature for compatibility with Record<string, string>
 }
 
 type EnvLike = Record<string, string | undefined>
@@ -53,18 +20,18 @@ type SystemDirectoriesOptions = {
 }
 
 /**
- * Obtiene los directorios del sistema entre plataformas.
- * Maneja las diferencias entre Windows, macOS, Linux y WSL.
- * @param options anulaciones opcionales para pruebas (env, homedir, platform)
+ * Get cross-platform system directories
+ * Handles differences between Windows, macOS, Linux, and WSL
+ * @param options Optional overrides for testing (env, homedir, platform)
  */
 export function getSystemDirectories(
   options?: SystemDirectoriesOptions,
 ): SystemDirectories {
-  const platform = options?.platform ?? getDefaultPlatform()
+  const platform = options?.platform ?? getPlatform()
   const homeDir = options?.homedir ?? homedir()
-  const env = options?.env ?? process.env
+  const env = options?.env ?? process.env // V7-EXEMPT: dynamic env key access
 
-  // Rutas por defecto usadas por la mayoria de las plataformas.
+  // Default paths used by most platforms
   const defaults: SystemDirectories = {
     HOME: homeDir,
     DESKTOP: join(homeDir, 'Desktop'),
@@ -74,8 +41,7 @@ export function getSystemDirectories(
 
   switch (platform) {
     case 'windows': {
-      // Windows: usa USERPROFILE si esta disponible (maneja nombres de
-      // carpeta localizados).
+      // Windows: Use USERPROFILE if available (handles localized folder names)
       const userProfile = env.USERPROFILE || homeDir
       return {
         HOME: homeDir,
@@ -87,7 +53,7 @@ export function getSystemDirectories(
 
     case 'linux':
     case 'wsl': {
-      // Linux/WSL: primero verifica la especificacion XDG Base Directory.
+      // Linux/WSL: Check XDG Base Directory specification first
       return {
         HOME: homeDir,
         DESKTOP: env.XDG_DESKTOP_DIR || defaults.DESKTOP,
@@ -98,9 +64,9 @@ export function getSystemDirectories(
 
     case 'macos':
     default: {
-      // macOS y plataformas desconocidas usan las rutas estandar.
+      // macOS and unknown platforms use standard paths
       if (platform === 'unknown') {
-        logForDebugging(`Plataforma desconocida detectada, usando rutas por defecto`)
+        logForDebugging(`Unknown platform detected, using default paths`)
       }
       return defaults
     }

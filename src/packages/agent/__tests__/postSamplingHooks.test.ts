@@ -1,14 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/postSamplingHooks.test.ts`
- * (12 casos, 13 `expect`; verbatim en datos y expectativas).
- *
- * Fija el contrato de `../postSamplingHooks.js`: registro/limpieza de hooks
- * post-muestreo, orden de ejecución, y el contrato crítico — un hook que
- * lanza (síncrona o asíncronamente, con Error o con un valor arbitrario) NO
- * detiene a los hooks siguientes ni hace que `executePostSamplingHooks`
- * rechace. Sin esto, un solo plugin roto podría inutilizar una sesión
- * entera.
- */
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 import {
   clearPostSamplingHooks,
@@ -29,7 +18,7 @@ const FAKE_CONTEXT = {
 }
 
 describe('registerPostSamplingHook + executePostSamplingHooks', () => {
-  test('un hook registrado se llama una vez por executePostSamplingHooks', async () => {
+  test('a registered hook is called once per executePostSamplingHooks', async () => {
     const hook = mock(async () => {})
     registerPostSamplingHook(hook)
     await executePostSamplingHooks(
@@ -42,7 +31,7 @@ describe('registerPostSamplingHook + executePostSamplingHooks', () => {
     expect(hook).toHaveBeenCalledTimes(1)
   })
 
-  test('múltiples hooks registrados se llaman en el orden de registro', async () => {
+  test('multiple registered hooks are called in registration order', async () => {
     const order: string[] = []
     registerPostSamplingHook(async () => {
       order.push('a')
@@ -63,7 +52,7 @@ describe('registerPostSamplingHook + executePostSamplingHooks', () => {
     expect(order).toEqual(['a', 'b', 'c'])
   })
 
-  test('los hooks síncronos se esperan correctamente', async () => {
+  test('synchronous hooks are awaited correctly', async () => {
     let called = false
     registerPostSamplingHook(() => {
       called = true
@@ -78,7 +67,7 @@ describe('registerPostSamplingHook + executePostSamplingHooks', () => {
     expect(called).toBe(true)
   })
 
-  test('el hook recibe el REPLHookContext completo', async () => {
+  test('hook receives the full REPLHookContext', async () => {
     const context = {
       messages: [{ id: 'msg1' }] as never,
       systemPrompt: 'sysprompt' as never,
@@ -103,7 +92,7 @@ describe('registerPostSamplingHook + executePostSamplingHooks', () => {
     expect(captured[0]).toEqual(context)
   })
 
-  test('querySource es opcional y su default es undefined', async () => {
+  test('querySource is optional and defaults to undefined', async () => {
     let captured: unknown = null
     registerPostSamplingHook(async ctx => {
       captured = ctx
@@ -120,7 +109,7 @@ describe('registerPostSamplingHook + executePostSamplingHooks', () => {
 })
 
 describe('clearPostSamplingHooks', () => {
-  test('elimina todos los hooks registrados', async () => {
+  test('removes all registered hooks', async () => {
     const hook = mock(async () => {})
     registerPostSamplingHook(hook)
     clearPostSamplingHooks()
@@ -134,7 +123,7 @@ describe('clearPostSamplingHooks', () => {
     expect(hook).not.toHaveBeenCalled()
   })
 
-  test('reinicia el contador de registro a 0', async () => {
+  test('resets registration count to 0', async () => {
     registerPostSamplingHook(async () => {})
     registerPostSamplingHook(async () => {})
     registerPostSamplingHook(async () => {})
@@ -150,17 +139,17 @@ describe('clearPostSamplingHooks', () => {
       FAKE_CONTEXT.systemContext,
       FAKE_CONTEXT.toolUseContext,
     )
-    // Solo corre el hook post-clear — los previos al clear ya no están.
+    // Only the post-clear hook ran — pre-clear ones are gone.
     expect(calls).toBe(1)
   })
 })
 
-describe('manejo de errores — un fallo de hook no debe propagarse', () => {
-  // Contrato crítico: los hooks post-sampling son de asesoría; un hook que
-  // falla NO debe abortar el resto de la cadena ni hacer fallar el turno
-  // del agente. Sin esto, un solo plugin roto podría inutilizar una sesión.
+describe('error handling — hook failures must not propagate', () => {
+  // Critical contract: post-sampling hooks are advisory; one failing hook
+  // must NOT abort the rest of the chain or fail the agent's turn.
+  // Without this, a single broken plugin could brick a session.
 
-  test('un hook que lanza no detiene a los hooks siguientes', async () => {
+  test('a throwing hook does not stop subsequent hooks from running', async () => {
     const order: string[] = []
     registerPostSamplingHook(async () => {
       order.push('a')
@@ -182,7 +171,7 @@ describe('manejo de errores — un fallo de hook no debe propagarse', () => {
     expect(order).toEqual(['a', 'b', 'c'])
   })
 
-  test('un error lanzado síncronamente también se captura', async () => {
+  test('synchronously thrown error is also caught', async () => {
     let later = false
     registerPostSamplingHook(() => {
       throw new Error('sync-throw')
@@ -200,7 +189,7 @@ describe('manejo de errores — un fallo de hook no debe propagarse', () => {
     expect(later).toBe(true)
   })
 
-  test('executePostSamplingHooks mismo no rechaza cuando un hook lanza', async () => {
+  test('executePostSamplingHooks itself does not reject when a hook throws', async () => {
     registerPostSamplingHook(async () => {
       throw new Error('always-throws')
     })
@@ -215,7 +204,7 @@ describe('manejo de errores — un fallo de hook no debe propagarse', () => {
     ).resolves.toBeUndefined()
   })
 
-  test('valores lanzados que no son Error (string, objeto) también se manejan', async () => {
+  test('non-Error throw values (string, object) are also handled', async () => {
     let later = false
     registerPostSamplingHook(async () => {
       throw 'plain-string-error'
@@ -237,8 +226,8 @@ describe('manejo de errores — un fallo de hook no debe propagarse', () => {
   })
 })
 
-describe('registro vacío', () => {
-  test('executePostSamplingHooks sin hooks registrados resuelve limpio', async () => {
+describe('empty registration', () => {
+  test('executePostSamplingHooks with no registered hooks resolves cleanly', async () => {
     await expect(
       executePostSamplingHooks(
         FAKE_CONTEXT.messages,

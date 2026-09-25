@@ -1,40 +1,32 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/abort.test.ts`.
- * `shouldAbort` es un wrapper trivial sobre `AbortSignal.aborted`;
- * `createSyntheticToolResults` fabrica resultados de error para los
- * `tool_use` pendientes del ÚLTIMO mensaje de assistant, para que una
- * interrupción no deje un turno con herramientas sin su `tool_result`
- * (la API rechaza esa forma de transcript).
- */
 import { describe, expect, test } from 'bun:test'
-import { createSyntheticToolResults, shouldAbort } from '../internal/abort.ts'
+import { createSyntheticToolResults, shouldAbort } from '../internal/abort.js'
 
 type Msg = Parameters<typeof createSyntheticToolResults>[0][number]
 
 describe('shouldAbort', () => {
-  test('devuelve false cuando el signal es undefined', () => {
+  test('returns false when signal is undefined', () => {
     expect(shouldAbort(undefined)).toBe(false)
   })
-  test('devuelve false cuando el signal no está abortado', () => {
+  test('returns false when signal is not aborted', () => {
     const c = new AbortController()
     expect(shouldAbort(c.signal)).toBe(false)
   })
-  test('devuelve true cuando el signal está abortado', () => {
+  test('returns true when signal is aborted', () => {
     const c = new AbortController()
     c.abort()
     expect(shouldAbort(c.signal)).toBe(true)
   })
-  test('devuelve false sin argumento (default)', () => {
+  test('returns false when no argument passed (default)', () => {
     expect(shouldAbort()).toBe(false)
   })
 })
 
-describe('createSyntheticToolResults — casos vacíos / sin tool_use', () => {
-  test('devuelve un arreglo vacío cuando messages está vacío', () => {
+describe('createSyntheticToolResults — empty / no-tool-use cases', () => {
+  test('returns empty array when messages is empty', () => {
     expect(createSyntheticToolResults([])).toEqual([])
   })
 
-  test('devuelve un arreglo vacío cuando no hay mensajes de assistant', () => {
+  test('returns empty array when no assistant messages', () => {
     expect(
       createSyntheticToolResults([
         { type: 'user', content: 'hello' } as never,
@@ -42,7 +34,7 @@ describe('createSyntheticToolResults — casos vacíos / sin tool_use', () => {
     ).toEqual([])
   })
 
-  test('devuelve un arreglo vacío cuando el assistant no tiene bloques tool_use', () => {
+  test('returns empty array when assistant has no tool_use blocks', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -52,7 +44,7 @@ describe('createSyntheticToolResults — casos vacíos / sin tool_use', () => {
     expect(createSyntheticToolResults(messages)).toEqual([])
   })
 
-  test('devuelve un arreglo vacío cuando el content del assistant no es arreglo (string)', () => {
+  test('returns empty array when assistant content is non-array (string)', () => {
     const messages: Msg[] = [
       { type: 'assistant', content: 'plain string' } as never,
     ]
@@ -60,8 +52,8 @@ describe('createSyntheticToolResults — casos vacíos / sin tool_use', () => {
   })
 })
 
-describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLTIMO assistant', () => {
-  test('produce un tool_result por cada bloque tool_use', () => {
+describe('createSyntheticToolResults — extracts pending tool_uses from latest assistant', () => {
+  test('produces a tool_result for each tool_use block', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -73,12 +65,12 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     ]
     const results = createSyntheticToolResults(messages)
     expect(results).toHaveLength(2)
-    // El orden coincide con el orden de entrada.
+    // Order matches the input order.
     expect((results[0] as { tool_use_id: string }).tool_use_id).toBe('tu_1')
     expect((results[1] as { tool_use_id: string }).tool_use_id).toBe('tu_2')
   })
 
-  test('la razón por defecto es "interrupted"', () => {
+  test('default reason is "interrupted"', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -91,7 +83,7 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     )
   })
 
-  test('una razón custom se interpola en el content del resultado', () => {
+  test('custom reason is interpolated into result content', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -104,7 +96,7 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     )
   })
 
-  test('marca cada resultado con is_error: true', () => {
+  test('marks each result with is_error: true', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -115,7 +107,7 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     expect((results[0] as { is_error: boolean }).is_error).toBe(true)
   })
 
-  test('usa block.id como tool_use_id', () => {
+  test('uses block.id as tool_use_id', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -123,13 +115,11 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
       } as never,
     ]
     const results = createSyntheticToolResults(messages)
-    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe(
-      'unique-id',
-    )
+    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe('unique-id')
   })
 
-  test('sólo se examina el ÚLTIMO mensaje de assistant', () => {
-    // Camina hacia atrás desde el final; el primer assistant que encuentra gana.
+  test('only the LAST assistant message is examined', () => {
+    // Walks backwards from the end; first assistant hit wins.
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -146,9 +136,9 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     expect((results[0] as { tool_use_id: string }).tool_use_id).toBe('new')
   })
 
-  test('el recorrido hacia atrás se detiene en el primer assistant encontrado', () => {
-    // Aunque mensajes de assistant más antiguos tengan bloques tool_use,
-    // el bucle se rompe tras el primer hit del recorrido inverso.
+  test('walking backwards stops at the first assistant message found', () => {
+    // Even if older assistant messages have tool_use blocks, the loop
+    // breaks after the first reverse-traversal hit.
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -161,12 +151,10 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     ]
     const results = createSyntheticToolResults(messages)
     expect(results).toHaveLength(1)
-    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe(
-      'newest',
-    )
+    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe('newest')
   })
 
-  test('los bloques que no son tool_use en el mensaje de assistant se ignoran', () => {
+  test('non-tool_use blocks in the assistant message are ignored', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',
@@ -179,12 +167,10 @@ describe('createSyntheticToolResults — extrae los tool_use pendientes del ÚLT
     ]
     const results = createSyntheticToolResults(messages)
     expect(results).toHaveLength(1)
-    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe(
-      'real_tu',
-    )
+    expect((results[0] as { tool_use_id: string }).tool_use_id).toBe('real_tu')
   })
 
-  test('los bloques sin propiedad "id" se omiten', () => {
+  test('blocks without an "id" property are skipped', () => {
     const messages: Msg[] = [
       {
         type: 'assistant',

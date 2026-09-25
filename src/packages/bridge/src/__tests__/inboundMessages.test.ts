@@ -1,10 +1,3 @@
-/**
- * Puerto fiel de
- * `ccnmt: packages/bridge/src/__tests__/inboundMessages.test.ts`
- * (240 líneas fuente, 100% portado). Sin mocks —
- * `extractInboundMessageFields` y `normalizeImageBlocks` son lógica
- * pura sin dependencias cruzadas.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   extractInboundMessageFields,
@@ -16,17 +9,23 @@ type Block = Parameters<typeof normalizeImageBlocks>[0][number]
 
 describe('extractInboundMessageFields — non-user message types', () => {
   test('returns undefined for assistant messages', () => {
-    expect(extractInboundMessageFields({ type: 'assistant' } as Msg)).toBeUndefined()
+    expect(
+      extractInboundMessageFields({ type: 'assistant' } as Msg),
+    ).toBeUndefined()
   })
 
   test('returns undefined for system messages', () => {
-    expect(extractInboundMessageFields({ type: 'system' } as Msg)).toBeUndefined()
+    expect(
+      extractInboundMessageFields({ type: 'system' } as Msg),
+    ).toBeUndefined()
   })
 })
 
 describe('extractInboundMessageFields — empty / missing content', () => {
   test('returns undefined when message has no message field', () => {
-    expect(extractInboundMessageFields({ type: 'user' } as Msg)).toBeUndefined()
+    expect(
+      extractInboundMessageFields({ type: 'user' } as Msg),
+    ).toBeUndefined()
   })
 
   test('returns undefined when content is undefined', () => {
@@ -81,8 +80,8 @@ describe('extractInboundMessageFields — string content', () => {
   })
 
   test('returns undefined uuid when present but not a string', () => {
-    // La función chequea `typeof msg.uuid === 'string'` — cualquier otra
-    // cosa (número, objeto) se trata como ausente.
+    // The function checks `typeof msg.uuid === 'string'` — anything else
+    // (number, object) is treated as missing.
     const result = extractInboundMessageFields({
       type: 'user',
       message: { content: 'hello' },
@@ -108,7 +107,7 @@ describe('extractInboundMessageFields — array content', () => {
       type: 'user',
       message: { content },
     } as Msg)
-    // Camino rápido: sin bloques malformados → devuelve la referencia original.
+    // Fast path: no malformed blocks → original reference returned.
     expect(result?.content).toBe(content)
   })
 })
@@ -151,7 +150,7 @@ describe('normalizeImageBlocks — fast path (no malformed blocks)', () => {
 
 describe('normalizeImageBlocks — slow path (malformed blocks present)', () => {
   test('translates camelCase mediaType → snake_case media_type', () => {
-    // PNG mínimo válido en base64 (8x8 transparente)
+    // Minimal valid base64 PNG (8x8 transparent)
     const PNG =
       'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4//8/w38GIAXDABTjAcdwhB+ZAAAAAElFTkSuQmCC'
     const blocks = [
@@ -166,14 +165,13 @@ describe('normalizeImageBlocks — slow path (malformed blocks present)', () => 
     ] as never as Block[]
     const out = normalizeImageBlocks(blocks)
     expect(out).not.toBe(blocks)
-    expect(
-      (out[0] as never as { source: { media_type: string } }).source
-        .media_type,
-    ).toBe('image/png')
+    expect((out[0] as never as { source: { media_type: string } }).source.media_type).toBe(
+      'image/png',
+    )
   })
 
   test('detects format from base64 magic bytes when mediaType is missing', () => {
-    // Magic bytes de PNG
+    // PNG magic bytes
     const PNG =
       'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4//8/w38GIAXDABTjAcdwhB+ZAAAAAElFTkSuQmCC'
     const blocks = [
@@ -181,16 +179,15 @@ describe('normalizeImageBlocks — slow path (malformed blocks present)', () => 
         type: 'image',
         source: {
           type: 'base64',
-          // sin media_type ni mediaType
+          // no media_type or mediaType
           data: PNG,
         },
       },
     ] as never as Block[]
     const out = normalizeImageBlocks(blocks)
-    expect(
-      (out[0] as never as { source: { media_type: string } }).source
-        .media_type,
-    ).toBe('image/png')
+    expect((out[0] as never as { source: { media_type: string } }).source.media_type).toBe(
+      'image/png',
+    )
   })
 
   test('preserves the original data field unchanged', () => {
@@ -221,12 +218,11 @@ describe('normalizeImageBlocks — slow path (malformed blocks present)', () => 
     } as never
     const blocks = [wellFormed, malformed]
     const out = normalizeImageBlocks(blocks)
-    // El bloque bien formado no debe tocarse (misma referencia).
+    // Well-formed block should be untouched (same reference).
     expect(out[0]).toBe(wellFormed)
-    // El bloque malformado debe tener media_type asignado.
+    // Malformed block should have media_type set.
     expect(
-      (out[1] as never as { source: { media_type: string } }).source
-        .media_type,
+      (out[1] as never as { source: { media_type: string } }).source.media_type,
     ).toBe('image/png')
   })
 

@@ -1,52 +1,34 @@
 /**
- * Porte fiel de
- * `ccnmt: packages/shell/src/sandbox/sandboxRipgrepResolver.ts`.
+ * Resolve a ripgrep path the sandbox-runtime can spawn.
  *
- * Resuelve una ruta de ripgrep que sandbox-runtime pueda lanzar.
+ * Sandbox-runtime takes rg as an external binary because it's a separate
+ * process — NAPI doesn't help here. Three paths:
  *
- * sandbox-runtime recibe `rg` como binario externo porque es un proceso
- * aparte — NAPI no ayuda aquí. Tres caminos:
+ *   - Linux + standalone binary: extract the embedded rg to tmp on first
+ *     call (sandbox-runtime needs an actual file on disk to spawn)
+ *   - Linux + dev mode: use the vendored on-disk rg from this checkout
+ *   - macOS / Windows: any path works — macOS sandbox uses native
+ *     profile globs and never shells out; Windows doesn't support
+ *     sandboxing at all
  *
- *   - Linux + binario standalone: extraer el `rg` embebido a `tmp` en la
- *     primera llamada (sandbox-runtime necesita un archivo real en disco
- *     para lanzarlo)
- *   - Linux + modo desarrollo: usar el `rg` vendorizado en disco de este
- *     checkout
- *   - macOS / Windows: cualquier ruta sirve — el sandbox de macOS usa
- *     globs de perfil nativos y nunca hace shell-out; Windows no soporta
- *     sandboxing en absoluto
- *
- * Se sacó de `sandbox-adapter.ts` para mantener honesto su presupuesto de
- * líneas. El caso borde de sandbox-rg es chico pero inevitable mientras
- * `@anthropic-ai/sandbox-runtime` reciba `rg` como valor de config.
- *
- * Porte COMPLETO: el único símbolo exportado de la fuente está presente.
- *
- * Divergencia medida: `isInBundledMode` y
- * `ensureExtractedRipgrepForSandbox` se resuelven vía los envoltorios
- * `requireConfigBundledMode()`/`requireToolRegistryEmbeddedRgExtractor()`
- * de `../internal/pendingCrossPackageDeps.js` — BLOQUEADOS, ver el
- * docstring de ese módulo. Este archivo carga sin error; el camino Linux
- * lanza si de verdad se invoca, antes de que exista la pieza real.
- *
- * @module
+ * Lifted out of sandbox-adapter.ts to keep its LOC budget honest. The
+ * sandbox-rg edge case is small but unavoidable as long as
+ * @anthropic-ai/sandbox-runtime takes rg as a config value.
  */
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import {
-  requireConfigBundledMode,
-  requireToolRegistryEmbeddedRgExtractor,
-} from '../internal/pendingCrossPackageDeps.js'
+import { join } from 'path'
+import { fileURLToPath } from 'url'
+
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { ensureExtractedRipgrepForSandbox } from '@thyrox/tool-registry/embeddedRgExtractor.js'
 
 export function getSandboxRipgrep(): { rgPath: string; rgArgs: string[] } {
   if (process.platform === 'linux') {
-    const extracted =
-      requireToolRegistryEmbeddedRgExtractor().ensureExtractedRipgrepForSandbox()
+    const extracted = ensureExtractedRipgrepForSandbox()
     if (extracted) {
       return { rgPath: extracted, rgArgs: [] }
     }
-    // Respaldo de modo desarrollo: rg vendorizado junto al árbol fuente de este módulo.
-    if (!requireConfigBundledMode().isInBundledMode()) {
+    // Dev mode fallback: vendored rg next to this module's source tree.
+    if (!isInBundledMode()) {
       const here = fileURLToPath(import.meta.url)
       const vendorDir = join(
         here,

@@ -1,11 +1,12 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/createMessageHelpers.test.ts`.
+ * Tests for createSyntheticUserCaveatMessage, createModelSwitchBreadcrumbs,
+ * createProgressMessage, createToolResultStopMessage — pure message
+ * constructors (or constructor + structural transform).
  *
- * Los constructores puros de mensaje corren en caminos calientes (comandos
- * slash, cambio de modelo, interrupcion de una herramienta). Un UUID mal
- * generado son claves duplicadas que revientan el reconciliador de React; una
- * etiqueta mal envuelta filtra el caveat al contexto del modelo como texto
- * plano al que el modelo «responde».
+ * These constructors run on hot paths (slash commands, model switches,
+ * tool execution interrupts). Wrong UUID generation = duplicate IDs that
+ * crash the React reconciler. Wrong tag wrapping = caveat leaks into
+ * model context as plain text the model "responds" to.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -14,10 +15,10 @@ import {
   createSyntheticUserCaveatMessage,
   createToolResultStopMessage,
   formatCommandInputTags,
-} from '../messages.ts'
+} from '../messages.js'
 
 describe('createSyntheticUserCaveatMessage', () => {
-  test('devuelve un mensaje de usuario con el caveat envuelto en su etiqueta', () => {
+  test('returns a user message with caveat content wrapped in tag', () => {
     const m = createSyntheticUserCaveatMessage()
     expect(m.type).toBe('user')
     const content = m.message.content
@@ -26,18 +27,18 @@ describe('createSyntheticUserCaveatMessage', () => {
     expect(content).toContain('DO NOT respond')
   })
 
-  test('isMeta=true — el caveat queda oculto en el transcript', () => {
+  test('isMeta=true (so the caveat is hidden from transcript display)', () => {
     const m = createSyntheticUserCaveatMessage()
     expect(m.isMeta).toBe(true)
   })
 
-  test('cada llamada da un UUID fresco (sin claves duplicadas de React)', () => {
+  test('each call yields a fresh UUID (no dup React keys)', () => {
     const a = createSyntheticUserCaveatMessage()
     const b = createSyntheticUserCaveatMessage()
     expect(a.uuid).not.toBe(b.uuid)
   })
 
-  test('el contenido va envuelto en etiquetas, no en texto plano', () => {
+  test('content is wrapped in tags (not plain text)', () => {
     const m = createSyntheticUserCaveatMessage()
     const content = m.message.content as string
     expect(content.startsWith('<')).toBe(true)
@@ -45,55 +46,55 @@ describe('createSyntheticUserCaveatMessage', () => {
   })
 })
 
-describe('createModelSwitchBreadcrumbs — la miga al estilo de un comando slash', () => {
-  test('devuelve 3 mensajes (caveat + comando + stdout)', () => {
+describe('createModelSwitchBreadcrumbs — slash-command-style breadcrumb', () => {
+  test('returns 3 messages (caveat + command + stdout)', () => {
     const r = createModelSwitchBreadcrumbs('opus', 'Claude Opus 4.7')
     expect(r).toHaveLength(3)
   })
 
-  test('el primero es el caveat (isMeta=true)', () => {
+  test('first message is the caveat (isMeta=true)', () => {
     const [first] = createModelSwitchBreadcrumbs('opus', 'Claude Opus 4.7')
     expect(first?.isMeta).toBe(true)
   })
 
-  test('el segundo contiene el comando de modelo', () => {
+  test('second message contains the model command', () => {
     const [, second] = createModelSwitchBreadcrumbs('opus', 'Claude Opus 4.7')
     expect(second?.message.content).toContain('/model')
     expect(second?.message.content).toContain('opus')
   })
 
-  test('el tercero contiene el resolvedDisplay, en la etiqueta local-command-stdout', () => {
+  test('third message contains the resolvedDisplay (in local-command-stdout tag)', () => {
     const [, , third] = createModelSwitchBreadcrumbs('opus', 'Claude Opus 4.7')
     expect(third?.message.content).toContain('Claude Opus 4.7')
     expect(third?.message.content).toContain('local-command-stdout')
   })
 
-  test('los 3 mensajes son de tipo user', () => {
+  test('all 3 messages are user-type', () => {
     const r = createModelSwitchBreadcrumbs('opus', 'Display')
     for (const m of r) {
       expect(m.type).toBe('user')
     }
   })
 
-  test('los 3 mensajes tienen UUID distinto', () => {
+  test('all 3 messages have unique UUIDs', () => {
     const r = createModelSwitchBreadcrumbs('opus', 'Display')
     const uuids = r.map(m => m.uuid)
     expect(new Set(uuids).size).toBe(3)
   })
 
-  test('no escapa nada — modelArg se interpola tal cual en la etiqueta del comando', () => {
-    // Documentado: sin saneo tipo XSS; quien llama es de confianza (CLI/SDK).
+  test('escapes nothing — modelArg is interpolated as-is into the command tag', () => {
+    // Documented: no XSS-like sanitization; caller is trusted (CLI/SDK).
     const r = createModelSwitchBreadcrumbs(
       'opus<script>',
       'evil"display',
     )
     const content = r[1]?.message.content as string
-    expect(content).toContain('opus<script>') // insertado verbatim
+    expect(content).toContain('opus<script>') // inserted verbatim
   })
 })
 
 describe('createProgressMessage', () => {
-  test('devuelve un mensaje de progreso con el toolUseID y la data dados', () => {
+  test('returns a progress message with given toolUseID and data', () => {
     const m = createProgressMessage({
       toolUseID: 'tu_1',
       parentToolUseID: 'tu_parent',
@@ -105,7 +106,7 @@ describe('createProgressMessage', () => {
     expect(m.data).toEqual({ type: 'bash', stdout: 'hello' })
   })
 
-  test('uuid y timestamp se autogeneran', () => {
+  test('uuid + timestamp are auto-generated', () => {
     const m = createProgressMessage({
       toolUseID: 'tu_1',
       parentToolUseID: 'tu_parent',
@@ -117,7 +118,7 @@ describe('createProgressMessage', () => {
     expect(typeof m.timestamp).toBe('string')
   })
 
-  test('el timestamp va en formato ISO', () => {
+  test('timestamp is ISO format', () => {
     const m = createProgressMessage({
       toolUseID: 'tu_1',
       parentToolUseID: 'tu_p',
@@ -126,7 +127,7 @@ describe('createProgressMessage', () => {
     expect(m.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/)
   })
 
-  test('cada llamada obtiene un UUID fresco', () => {
+  test('each call gets a fresh UUID', () => {
     const a = createProgressMessage({
       toolUseID: 'tu',
       parentToolUseID: 'p',
@@ -140,8 +141,8 @@ describe('createProgressMessage', () => {
     expect(a.uuid).not.toBe(b.uuid)
   })
 
-  test('el campo data es el argumento verbatim (no se clona)', () => {
-    // Documentado: la data pertenece a quien llama y se guarda por referencia.
+  test('data field is the data argument verbatim (not cloned)', () => {
+    // Documented: caller-owned data is held by reference.
     const data = { type: 'bash' as const, foo: 'bar' } as never
     const m = createProgressMessage({
       toolUseID: 'tu',
@@ -153,24 +154,24 @@ describe('createProgressMessage', () => {
 })
 
 describe('createToolResultStopMessage', () => {
-  test('devuelve un bloque tool_result con is_error=true', () => {
+  test('returns a tool_result block with is_error=true', () => {
     const r = createToolResultStopMessage('tu_xyz')
     expect(r.type).toBe('tool_result')
     expect(r.is_error).toBe(true)
   })
 
-  test('devuelve el toolUseID recibido', () => {
+  test('echoes back the toolUseID', () => {
     const r = createToolResultStopMessage('tu_xyz')
     expect(r.tool_use_id).toBe('tu_xyz')
   })
 
-  test('el contenido es la cadena estandar CANCEL_MESSAGE', () => {
+  test('content is the standard CANCEL_MESSAGE string', () => {
     const r = createToolResultStopMessage('tu_xyz')
     expect(typeof r.content).toBe('string')
     expect((r.content as string).length).toBeGreaterThan(0)
   })
 
-  test('IDs distintos dan tool_use_id distinto y el mismo contenido', () => {
+  test('different IDs produce different tool_use_id but same content', () => {
     const a = createToolResultStopMessage('a')
     const b = createToolResultStopMessage('b')
     expect(a.tool_use_id).toBe('a')
@@ -179,8 +180,8 @@ describe('createToolResultStopMessage', () => {
   })
 })
 
-describe('formatCommandInputTags (ya probado en otro sitio; se re-verifica la forma)', () => {
-  test('contiene las 3 etiquetas: name, message, args', () => {
+describe('formatCommandInputTags (already tested elsewhere; re-verify shape)', () => {
+  test('contains all 3 tags: name, message, args', () => {
     const r = formatCommandInputTags('model', 'opus')
     expect(r).toContain('<command-name>/model</command-name>')
     expect(r).toContain('<command-message>model</command-message>')

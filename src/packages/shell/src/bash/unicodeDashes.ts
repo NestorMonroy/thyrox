@@ -1,42 +1,34 @@
 /**
- * Normalizador de guiones Unicode a guion ASCII.
+ * Unicode-dash → ASCII hyphen normaliser.
  *
- * Porte fiel de `ccnmt: packages/shell/src/bash/unicodeDashes.ts`. Cierra
- * una clase de bypass de permisos donde el modelo emite un en-dash /
- * em-dash / barra horizontal (U+2013, U+2014, U+2015) en un nombre de
- * flag — `rm —rf` se ve idéntico a `rm --rf` en una terminal, pero el
- * clasificador de permisos ve un argv distinto. Un shell real NO trata
- * esos caracteres como guion (son literales), así que si pasan el
- * clasificador el comando o no hace nada o falla — el riesgo del bypass
- * está en que el clasificador clasifique mal, no en que el shell ejecute
- * mal. Normalizando todo campo de texto/nombre/argv ANTES de que llegue
- * al clasificador se garantiza que clasificador y shell coinciden en qué
- * comando es.
+ * Ported from ant v2.1.136 `Le()` (module 3999). Closes a class of permission
+ * bypasses where the model emits an en-dash / em-dash / horizontal-bar
+ * (U+2013, U+2014, U+2015) in flag names — `rm —rf` looks identical to
+ * `rm --rf` in a terminal but the permission classifier sees a different
+ * argv. Real shells DO NOT treat these as hyphens (they are just literal
+ * characters), so once they get past the classifier the command would
+ * either no-op or fail. The bypass risk is the classifier mis-classifying,
+ * not the shell mis-executing. By normalising every text/name/argv field
+ * BEFORE it reaches the classifier, we guarantee the classifier and the
+ * shell agree on what the command is.
  *
- * Aplicar en:
- * - `SimpleCommand.text` / `.argv[]` (`ast.ts`, `ast-alias.ts`)
- * - entradas de `extractRules` / el parser de reglas de permisos
- * - cualquier cadena que llegue al clasificador extraída del texto crudo
+ * Apply in:
+ * - SimpleCommand.text / .argv[] (ast.ts, ast-alias.ts)
+ * - extractRules / permission rule parser inputs
+ * - any classifier-facing string extracted from raw command text
  *
- * NO aplicar a la cadena que se ejecuta REALMENTE en el shell — el
- * usuario puede haber escrito un em-dash a propósito (p. ej. en un
- * comentario que se hace echo) y debe preservarse para la fidelidad del
- * stdout.
- *
- * Porte COMPLETO: los dos símbolos exportados de la fuente están
- * presentes.
- *
- * @module
+ * Do NOT apply to the command string that ACTUALLY runs in the shell —
+ * the user may have typed an em-dash deliberately (e.g. in an echoed
+ * comment) and we should preserve it for stdout fidelity.
  */
-
-const UNICODE_DASH_RE = /[–—―]/g
+const UNICODE_DASH_RE = /[\u2013\u2014\u2015]/g
 
 export function sanitizeUnicodeDashes(text: string): string {
   return text.replace(UNICODE_DASH_RE, '-')
 }
 
 /**
- * Conveniencia para arreglos de argv. Devuelve un arreglo nuevo.
+ * Convenience for argv arrays. Returns a new array.
  */
 export function sanitizeUnicodeDashesArgv(argv: readonly string[]): string[] {
   return argv.map(sanitizeUnicodeDashes)

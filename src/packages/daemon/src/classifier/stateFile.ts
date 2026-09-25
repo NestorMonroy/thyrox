@@ -1,24 +1,22 @@
 /**
- * Lectura/escritura del archivo de estado por-worker + append al timeline.
+ * Per-worker state file r/w + timeline append.
  *
- * UN SOLO state.json — alineado con `ant 2.1.150`. ant mantiene UN solo
- * archivo de estado por job (`state.json`, ant `JJ8`/`xO`/`c7` @ 2514.js):
- * el clasificador, el worker, el daemon y FleetView leen/escriben el mismo
- * archivo. ccb solía partirlo en `state.json` (FleetJobState,
- * worker/FleetView) + un `classifier-state.json` separado (WorkerStateFile,
- * clasificador) — los dos nunca se sincronizaban, así que el `intent` vacío
- * del clasificador no arrasaba nada pero FleetView leía la vista del
- * clasificador de forma inconsistente y la etiqueta de fila "sesión actual"
- * nunca se actualizaba. Ahora el clasificador escribe el MISMO state.json
- * vía un merge que preserva los campos propios del worker
- * (intent/name/worktree/…) y sólo parcha los campos clasificados
- * (state/detail/tempo/needs/output).
+ * SINGLE state.json — aligned with ant 2.1.150. ant keeps ONE per-job state
+ * file (`state.json`, ant `JJ8`/`xO`/`c7` @ 2514.js): the classifier, the
+ * worker, the daemon and FleetView all read/write the same file. ccb used to
+ * split into `state.json` (FleetJobState, worker/FleetView) + a separate
+ * `classifier-state.json` (WorkerStateFile, classifier) — the two never
+ * synced, so the classifier's empty `intent` clobbered nothing but FleetView
+ * read the classifier's view inconsistently and the "current session" row
+ * label never updated. Now the classifier writes the SAME state.json via a
+ * merge that preserves the worker-owned fields (intent/name/worktree/…) and
+ * only patches the classified fields (state/detail/tempo/needs/output).
  *
- * Layout (por worker `<short>`):
- *   ~/.claude/jobs/<short>/state.json     — la única fuente de verdad
- *   ~/.claude/jobs/<short>/timeline.jsonl — log de cambios de estado, sólo-apéndice
+ * Layout (per worker `<short>`):
+ *   ~/.claude/jobs/<short>/state.json     — the single source of truth
+ *   ~/.claude/jobs/<short>/timeline.jsonl — append-only state-change log
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/classifier/stateFile.ts`.
+ * @dynamicRequire
  */
 
 import { appendFileSync, mkdirSync } from 'node:fs'
@@ -28,12 +26,12 @@ import {
   getJobDir,
   readJobStateSync,
   writeJobStateSync,
-} from '../internal/pendingCrossPackageDeps.js'
+} from '@thyrox/agent/background/fleet/fleetStore.js'
 import type {
   FleetJobState,
   FleetJobStatus,
   FleetTempo,
-} from '../internal/pendingCrossPackageDeps.js'
+} from '@thyrox/agent/background/fleet/fleetTypes.js'
 import type { WorkerState, WorkerStateFile, WorkerTempo } from './state.js'
 
 function getJobsRoot(): string {
@@ -45,7 +43,7 @@ function getTimelinePath(short: string): string {
   return join(getJobsRoot(), short, 'timeline.jsonl')
 }
 
-/** WorkerState tiene 'idle'/'crashed' que FleetJobStatus no tiene; se mapean. */
+/** WorkerState has 'idle'/'crashed' which FleetJobStatus lacks; map them. */
 function toFleetStatus(s: WorkerState): FleetJobStatus {
   if (s === 'idle') return 'working'
   if (s === 'crashed') return 'failed'
@@ -53,8 +51,8 @@ function toFleetStatus(s: WorkerState): FleetJobStatus {
 }
 
 /**
- * Lee el state.json único y lo presenta en la forma WorkerStateFile del
- * clasificador. Devuelve null cuando el state.json todavía no existe.
+ * Read the single state.json and present it in the classifier's
+ * WorkerStateFile shape. Returns null when no state.json exists yet.
  */
 export function readState(short: string): WorkerStateFile | null {
   const fleet = readJobStateSync(getJobDir(short))
@@ -84,14 +82,13 @@ export function readState(short: string): WorkerStateFile | null {
 }
 
 /**
- * Fusiona la vista del clasificador dentro del state.json único. Preserva
- * todos los campos propios del worker
- * (children/template/respawnFlags/worktree/daemonShort/…) y sólo parcha
- * los campos clasificados. Espeja ant `OEH`→`xO` (4292.js:36 → 2514.js:64):
- * un solo escritor, un solo archivo.
+ * Merge the classifier's view into the single state.json. Preserves all
+ * worker-owned fields (children/template/respawnFlags/worktree/daemonShort/…)
+ * and patches only the classified fields. Mirrors ant `OEH`→`xO` (4292.js:36
+ * → 2514.js:64): one writer, one file.
  *
- * `intent` usa `??` (NO `||`) para que un intent de string vacío en el
- * parcial entrante nunca arrase uno existente — coincide con ant `cb3:490`
+ * intent uses `??` (NOT `||`) so an empty-string intent on the incoming
+ * partial never clobbers an existing one — matches ant `cb3:490`
  * `intent: k?.intent ?? M`.
  */
 export function writeState(short: string, next: WorkerStateFile): void {
@@ -99,7 +96,7 @@ export function writeState(short: string, next: WorkerStateFile): void {
   const prev = readJobStateSync(jobDir)
   const now = next.updatedAt || new Date().toISOString()
   const merged: FleetJobState = {
-    // campos estructurales propios del worker: se conserva prev, con default sano
+    // worker-owned structural fields: keep prev, fall back to sane defaults
     output: next.output ?? prev?.output ?? null,
     children: prev?.children ?? null,
     linkScanOffset: prev?.linkScanOffset ?? 0,
@@ -118,14 +115,14 @@ export function writeState(short: string, next: WorkerStateFile): void {
     color: prev?.color,
     sortOrder: prev?.sortOrder,
     stateSortOrder: prev?.stateSortOrder,
-    // campos clasificados: se parchan desde `next`
+    // classified fields: patch from `next`
     state: toFleetStatus(next.state),
     tempo: next.tempo as FleetTempo,
     detail: next.detail,
     needs: next.needs,
     classifySource: next.classifySource,
     firstTerminalAt: next.firstTerminalAt ?? prev?.firstTerminalAt ?? null,
-    // campos de identidad/semilla: nunca arrasan un valor existente no vacío
+    // identity / seed fields: never clobber a non-empty existing value
     intent: prev?.intent ?? next.intent ?? '',
     initialPrompt: prev?.initialPrompt ?? next.initialPrompt,
     name: prev?.name ?? next.name,

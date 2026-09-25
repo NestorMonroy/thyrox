@@ -1,17 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/messageHelpers.behavior.test.ts`.
- *
- * Fija los dos ayudantes de recorrido de mensajes. Ambos estan en camino
- * caliente —se llaman en cada render del REPL y en cada disparo de
- * compactacion— y ambos tienen sutilezas de implementacion que un refactor
- * facil rompe:
- *
- *  - `getLastAssistantMessage` usa `findLast`, no `filter().last`, para salir
- *    temprano por el final en historiales largos.
- *  - `hasToolCallsInLastAssistantTurn` recorre HACIA ATRAS y se detiene en el
- *    primer mensaje de asistente: solo cuenta el turno mas reciente, no
- *    «cualquier llamada a herramienta de la sesion».
- */
 import { describe, expect, test } from 'bun:test'
 
 import {
@@ -19,13 +5,24 @@ import {
   hasToolCallsInLastAssistantTurn,
 } from '../messages.ts'
 
-describe('ayudantes de recorrido de mensajes', () => {
+/**
+ * Pin message-traversal helpers. Both are hot-path (called every REPL
+ * render and every compaction trigger), and both have implementation
+ * subtleties that easy refactors break:
+ *
+ *  - getLastAssistantMessage uses findLast (NOT filter().last) for O(1)
+ *    avg performance on long histories.
+ *  - hasToolCallsInLastAssistantTurn iterates BACKWARDS and stops at the
+ *    first assistant message — only the most recent assistant turn
+ *    counts, not "any tool call ever in this session".
+ */
+describe('message traversal helpers', () => {
   describe('getLastAssistantMessage', () => {
-    test('arreglo vacio devuelve undefined', () => {
+    test('empty array → undefined', () => {
       expect(getLastAssistantMessage([])).toBeUndefined()
     })
 
-    test('solo mensajes de usuario devuelve undefined', () => {
+    test('only user messages → undefined', () => {
       const messages = [
         { type: 'user', message: { content: 'a' } } as any,
         { type: 'user', message: { content: 'b' } } as any,
@@ -33,7 +30,7 @@ describe('ayudantes de recorrido de mensajes', () => {
       expect(getLastAssistantMessage(messages)).toBeUndefined()
     })
 
-    test('devuelve el ULTIMO mensaje de asistente, no el primero', () => {
+    test('returns the LAST assistant message (not first)', () => {
       const messages = [
         { type: 'assistant', message: { content: 'first', id: 'a1' } } as any,
         { type: 'user', message: { content: 'q' } } as any,
@@ -45,7 +42,7 @@ describe('ayudantes de recorrido de mensajes', () => {
       expect(result?.message.id).toBe('a3')
     })
 
-    test('atraviesa bloques tool_use intercalados: cada turno es candidato', () => {
+    test('handles interleaved tool_use blocks (each assistant turn is a candidate)', () => {
       const messages = [
         { type: 'assistant', message: { content: [{ type: 'text', text: 'hello' }], id: 'a1' } } as any,
         { type: 'progress', data: 'x' } as any,
@@ -56,11 +53,11 @@ describe('ayudantes de recorrido de mensajes', () => {
   })
 
   describe('hasToolCallsInLastAssistantTurn', () => {
-    test('vacio devuelve false', () => {
+    test('empty → false', () => {
       expect(hasToolCallsInLastAssistantTurn([])).toBe(false)
     })
 
-    test('solo mensajes de usuario devuelve false', () => {
+    test('user messages only → false', () => {
       expect(
         hasToolCallsInLastAssistantTurn([
           { type: 'user', message: { content: 'q' } } as any,
@@ -68,7 +65,7 @@ describe('ayudantes de recorrido de mensajes', () => {
       ).toBe(false)
     })
 
-    test('un mensaje de asistente CON bloque tool_use devuelve true', () => {
+    test('assistant message WITH tool_use block → true', () => {
       const messages = [
         { type: 'user', message: { content: 'q' } } as any,
         {
@@ -79,7 +76,7 @@ describe('ayudantes de recorrido de mensajes', () => {
       expect(hasToolCallsInLastAssistantTurn(messages)).toBe(true)
     })
 
-    test('un mensaje de asistente SIN tool_use devuelve false', () => {
+    test('assistant message WITHOUT tool_use → false', () => {
       const messages = [
         { type: 'user', message: { content: 'q' } } as any,
         {
@@ -90,10 +87,10 @@ describe('ayudantes de recorrido de mensajes', () => {
       expect(hasToolCallsInLastAssistantTurn(messages)).toBe(false)
     })
 
-    test('solo cuenta el ULTIMO turno, no las llamadas historicas', () => {
-      // El turno anterior si llamo a una herramienta, pero el actual es solo
-      // texto. La funcion debe devolver FALSE porque el ULTIMO turno de
-      // asistente no llama a nada.
+    test('only the LAST assistant turn counts (not historical tool calls)', () => {
+      // Previous turn had a tool call, but current turn is just text.
+      // The function should return FALSE because the LAST assistant turn
+      // is text-only.
       const messages = [
         {
           type: 'assistant',
@@ -108,7 +105,7 @@ describe('ayudantes de recorrido de mensajes', () => {
       expect(hasToolCallsInLastAssistantTurn(messages)).toBe(false)
     })
 
-    test('contenido en cadena, no en arreglo, devuelve false', () => {
+    test('string content (not array) → false (no tool_use blocks in string form)', () => {
       const messages = [
         { type: 'assistant', message: { content: 'hello' } } as any,
       ]

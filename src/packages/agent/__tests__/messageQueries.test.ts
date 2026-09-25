@@ -1,30 +1,21 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/messageQueries.test.ts`.
+ * Tests for message-history query helpers in messages.ts.
  *
- * Fija el contrato de dos consultas puras sobre el historial de mensajes.
+ * getLastAssistantMessage is called on every REPL render — using findLast
+ * vs filter+last matters at scale.
  *
- * `getLastAssistantMessage` se llama en cada render del REPL — usar
- * `findLast` en vez de `filter().at(-1)` importa a escala.
- *
- * `hasToolCallsInLastAssistantTurn` decide si el bucle continua (uso
- * automatico de herramienta) o se detiene. Una respuesta equivocada tiene
- * dos formas, ambas caras:
- *   - `true` en un turno sin herramienta → bucle infinito
- *   - `false` en un turno con herramienta → llamadas a herramienta
- *     perdidas en silencio
- *
- * Los dos simbolos ya estaban portados por un test anterior
- * (`isEmptyMessageText.test.ts` los trajo con `messages.ts`); este archivo
- * no agrega cobertura nueva al encabezado del modulo — solo fija su
- * contrato con el juego de casos propio de la fuente.
+ * hasToolCallsInLastAssistantTurn decides whether the loop continues
+ * (auto-tool-use) or stops. A wrong answer there either:
+ *   - returns true on a no-tool turn → infinite loop
+ *   - returns false on a tool turn → tool calls dropped silently
  */
 import { describe, expect, test } from 'bun:test'
 import type { UUID } from 'crypto'
 import {
   getLastAssistantMessage,
   hasToolCallsInLastAssistantTurn,
-} from '../messages.ts'
-import type { Message } from '../messageShapes.ts'
+} from '../messages.js'
+import type { Message } from '../messageShapes.js'
 
 function user(content: unknown): Message {
   return {
@@ -43,27 +34,27 @@ function assistant(content: unknown): Message {
 }
 
 describe('getLastAssistantMessage', () => {
-  test('arreglo vacio → undefined', () => {
+  test('empty array → undefined', () => {
     expect(getLastAssistantMessage([])).toBeUndefined()
   })
 
-  test('arreglo solo-usuario → undefined', () => {
+  test('only-user array → undefined', () => {
     expect(getLastAssistantMessage([user('hi'), user('bye')])).toBeUndefined()
   })
 
-  test('devuelve el ultimo asistente cuando hay varios', () => {
+  test('returns last assistant when multiple present', () => {
     const a1 = assistant('first')
     const a2 = assistant('second')
     const r = getLastAssistantMessage([a1, user('mid'), a2])
     expect(r).toBe(a2)
   })
 
-  test('devuelve el asistente aunque no sea el ultimo mensaje', () => {
+  test('returns assistant even when it is not the last message', () => {
     const a = assistant('reply')
     expect(getLastAssistantMessage([a, user('then this')])).toBe(a)
   })
 
-  test('omite tipos que no son asistente (system, attachment, progress)', () => {
+  test('skips non-assistant types (system, attachment, progress)', () => {
     const a = assistant('reply')
     const messages = [
       a,
@@ -73,7 +64,7 @@ describe('getLastAssistantMessage', () => {
     expect(getLastAssistantMessage(messages)).toBe(a)
   })
 
-  test('devuelve el ultimo de asistentes consecutivos', () => {
+  test('returns latest of consecutive assistants', () => {
     const a1 = assistant('1')
     const a2 = assistant('2')
     const a3 = assistant('3')
@@ -82,17 +73,17 @@ describe('getLastAssistantMessage', () => {
 })
 
 describe('hasToolCallsInLastAssistantTurn', () => {
-  test('arreglo vacio → false', () => {
+  test('empty array → false', () => {
     expect(hasToolCallsInLastAssistantTurn([])).toBe(false)
   })
 
-  test('sin asistentes → false', () => {
+  test('no assistants → false', () => {
     expect(
       hasToolCallsInLastAssistantTurn([user('hi'), user('bye')]),
     ).toBe(false)
   })
 
-  test('el ultimo asistente tiene un bloque tool_use → true', () => {
+  test('last assistant has tool_use block → true', () => {
     expect(
       hasToolCallsInLastAssistantTurn([
         assistant([{ type: 'tool_use', id: 't1', name: 'X', input: {} }]),
@@ -100,7 +91,7 @@ describe('hasToolCallsInLastAssistantTurn', () => {
     ).toBe(true)
   })
 
-  test('el ultimo asistente solo tiene texto → false', () => {
+  test('last assistant has only text → false', () => {
     expect(
       hasToolCallsInLastAssistantTurn([
         assistant([{ type: 'text', text: 'reply' }]),
@@ -108,7 +99,7 @@ describe('hasToolCallsInLastAssistantTurn', () => {
     ).toBe(false)
   })
 
-  test('mezcla de texto y tool_use → true (tool_use dispara)', () => {
+  test('mix of text and tool_use → true (tool_use is the trigger)', () => {
     expect(
       hasToolCallsInLastAssistantTurn([
         assistant([
@@ -119,7 +110,7 @@ describe('hasToolCallsInLastAssistantTurn', () => {
     ).toBe(true)
   })
 
-  test('solo revisa el ULTIMO asistente, no los anteriores', () => {
+  test('only checks LAST assistant, not earlier ones', () => {
     const earlierWithTool = assistant([
       { type: 'tool_use', id: 't1', name: 'X', input: {} },
     ])
@@ -129,7 +120,7 @@ describe('hasToolCallsInLastAssistantTurn', () => {
     ).toBe(false)
   })
 
-  test('omite mensajes de usuario intermedios y encuentra el ultimo asistente', () => {
+  test('skips user messages between, finds last assistant', () => {
     expect(
       hasToolCallsInLastAssistantTurn([
         assistant([{ type: 'tool_use', id: 't1', name: 'X', input: {} }]),
@@ -139,19 +130,19 @@ describe('hasToolCallsInLastAssistantTurn', () => {
     ).toBe(true)
   })
 
-  test('asistente con contenido de tipo cadena (no arreglo) → false', () => {
-    // La funcion solo inspecciona contenido en arreglo. El contenido en
-    // cadena no es una llamada a herramienta por definicion.
+  test('assistant with string content (not array) → false', () => {
+    // The function only inspects array content. String content is not
+    // a tool call by definition.
     expect(
       hasToolCallsInLastAssistantTurn([assistant('plain string')]),
     ).toBe(false)
   })
 
-  test('arreglo de contenido vacio → false', () => {
+  test('empty content array → false', () => {
     expect(hasToolCallsInLastAssistantTurn([assistant([])])).toBe(false)
   })
 
-  test('varios asistentes consecutivos: decide el ultimo', () => {
+  test('multiple consecutive assistants: last one decides', () => {
     expect(
       hasToolCallsInLastAssistantTurn([
         assistant([{ type: 'tool_use', id: 't1', name: 'X', input: {} }]),

@@ -1,13 +1,12 @@
 /**
- * Servidor del socket de control del daemon. Escucha en la ruta del
- * socket de control, acepta conexiones de clientes CLI, despacha op codes
- * a un registro de manejadores.
+ * Daemon control socket server. Listens at the control socket path,
+ * accepts CLI client connections, dispatches op codes to a registry
+ * of handlers.
  *
- * Cada conexión es de un solo tiro para la mayoría de los ops
- * (request → response → close); `subscribe`, `attach` y `lease` son de
- * larga vida.
+ * Each connection is one-shot for most ops (request → response → close);
+ * `subscribe`, `attach`, and `lease` are long-lived.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/socketServer.ts`.
+ * @dynamicRequire
  */
 
 import { existsSync, mkdirSync } from 'node:fs'
@@ -19,7 +18,7 @@ import {
 } from 'node:net'
 import { dirname } from 'node:path'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 import { checkPeerUid } from './peerUid.js'
 import {
   type ErrorResponse,
@@ -33,9 +32,9 @@ import {
 import { getControlSocketPath } from './socketPaths.js'
 
 /**
- * Un manejador puede devolver un Response (de un solo tiro) o iniciar un
- * stream de larga vida escribiendo directamente al socket y sin devolver
- * nunca.
+ * A handler may either return a Response (one-shot) or spawn a
+ * long-lived stream by writing directly to the socket and never
+ * returning.
  */
 export type OpHandler = (
   msg: Record<string, unknown>,
@@ -43,25 +42,25 @@ export type OpHandler = (
 ) => Promise<Response | undefined>
 
 export interface DaemonServer {
-  /** Número de clientes conectados actualmente (incl. lease holders). */
+  /** Number of currently-connected clients (incl. lease holders). */
   readonly clientCount: number
-  /** Deja de aceptar nuevas conexiones + cierra todos los clientes actuales. */
+  /** Stop accepting new connections + close all current clients. */
   close(): Promise<void>
 }
 
 /**
- * Ata el socket de control en la ruta estándar y arranca a servir.
- * Pre-limpia cualquier archivo de socket rancio. Devuelve un handle
- * DaemonServer con una sonda de clientCount + método close.
+ * Bind the control socket at the standard path and start serving.
+ * Pre-cleans any stale socket file. Returns a DaemonServer handle
+ * with a clientCount probe + close method.
  */
 export async function startSocketServer(
   handlers: Partial<Record<ProtoOp, OpHandler>>,
   opts: { socketPath?: string } = {},
 ): Promise<DaemonServer> {
   const socketPath = opts.socketPath ?? getControlSocketPath()
-  // Asegura que el directorio padre exista (modo 0o700 — sólo el dueño).
+  // Ensure parent dir exists (mode 0o700 — owner only).
   mkdirSync(dirname(socketPath), { recursive: true, mode: 0o700 })
-  // Pre-limpia un socket rancio.
+  // Pre-clean stale socket.
   if (existsSync(socketPath)) {
     await unlink(socketPath).catch(() => {})
   }
@@ -84,9 +83,8 @@ export async function startSocketServer(
       return
     }
     const m = msg as Record<string, unknown>
-    // Handshake de versión de protocolo de `ant 4138.js`: los clientes
-    // pasan `proto: PROTO_VERSION`. Si no coincide, emite
-    // tengu_bg_proto_mismatch + rechaza antes de despachar el op.
+    // ant 4138.js proto-version handshake: clients pass `proto: PROTO_VERSION`.
+    // If mismatched, emit tengu_bg_proto_mismatch + reject before op dispatch.
     const proto = m.proto as number | undefined
     if (typeof proto === 'number' && proto !== PROTO_VERSION) {
       logEvent('tengu_bg_proto_mismatch', {
@@ -125,8 +123,8 @@ export async function startSocketServer(
       .then(resp => {
         if (resp) {
           reply(socket, resp)
-          // Los ops de un solo tiro cierran tras responder. Los ops de
-          // larga vida manejan su propio ciclo de vida (devuelven void).
+          // One-shot ops close after reply. Long-lived ops handle their
+          // own lifecycle (return void).
           socket.end()
         }
       })
@@ -144,17 +142,15 @@ export async function startSocketServer(
     clients.add(socket)
     socket.on('error', () => socket.destroy())
     socket.once('close', () => clients.delete(socket))
-    // `ant 5164.js` — rechaza conexiones de un uid distinto antes de que
-    // fluya cualquier dato. SO_PEERCRED en Linux / LOCAL_PEERCRED en
-    // macOS. Best-effort: que checkPeerUid devuelva null significa que no
-    // se puede verificar (Windows / fallo de FFI / handle sin fd) y se
-    // acepta.
+    // ant 5164.js — reject connections from a different uid before
+    // any data flows. SO_PEERCRED on Linux / LOCAL_PEERCRED on macOS.
+    // Best-effort: null return from checkPeerUid means we can't
+    // verify (Windows / FFI failure / non-fd handle) and we accept.
     const peerErr = checkPeerUid(socket)
     if (peerErr) {
       logEvent('tengu_daemon_peer_uid_reject', {})
-      // ant difiere la respuesta hasta el primer byte de datos para darle
-      // al decoder del cliente la oportunidad de mostrar un error limpio.
-      // Se espeja.
+      // ant defers the reply until the first data byte to give the
+      // client decoder a chance to surface a clean error. Mirror.
       socket.once('data', () => {
         reply(socket, {
           ok: false,
@@ -199,12 +195,12 @@ export async function startSocketServer(
   }
 }
 
-/** Constructor de conveniencia para respuestas OK. */
+/** Convenience builder for OK responses. */
 export function ok<T extends Record<string, unknown>>(extras: T): OkResponse {
   return { ok: true, ...extras }
 }
 
-/** Constructor de conveniencia para respuestas de error. */
+/** Convenience builder for error responses. */
 export function err(
   code: ErrorResponse['code'],
   error: string,

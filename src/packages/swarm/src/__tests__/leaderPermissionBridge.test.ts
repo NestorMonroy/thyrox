@@ -1,6 +1,3 @@
-/**
- * Adaptado de `ccnmt: packages/swarm/src/__tests__/leaderPermissionBridge.test.ts`.
- */
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
   getLeaderSetToolPermissionContext,
@@ -12,34 +9,34 @@ import {
 } from '../permissions/leaderPermissionBridge.js'
 
 afterEach(() => {
-  // Los tests comparten estado a nivel de módulo — limpiar tras cada uno
-  // para no filtrar un registro obsoleto al siguiente test.
+  // Tests share module-level state — clean up after each to avoid leaking
+  // a stale registration into the next test.
   unregisterLeaderToolUseConfirmQueue()
   unregisterLeaderSetToolPermissionContext()
 })
 
-describe('puente de ToolUseConfirmQueue hacia el líder', () => {
-  test('devuelve null cuando no hay nada registrado', () => {
+describe('Leader ToolUseConfirmQueue bridge', () => {
+  test('returns null when nothing is registered', () => {
     expect(getLeaderToolUseConfirmQueue()).toBeNull()
   })
 
-  test('registrar → el getter devuelve la función registrada', () => {
+  test('register → getter returns the registered fn', () => {
     const fn = (_u: (prev: unknown[]) => unknown[]) => undefined
     registerLeaderToolUseConfirmQueue(fn as never)
     expect(getLeaderToolUseConfirmQueue()).toBe(fn as never)
   })
 
-  test('desregistrar → el getter vuelve a devolver null', () => {
+  test('unregister → getter returns null again', () => {
     registerLeaderToolUseConfirmQueue((() => undefined) as never)
     unregisterLeaderToolUseConfirmQueue()
     expect(getLeaderToolUseConfirmQueue()).toBeNull()
   })
 
-  test('registrar reemplaza un registro previo (gana el último)', () => {
-    // El REPL vuelve a registrar en cada montaje del líder. Sin "gana el
-    // último", un re-registro dejaría un closure obsoleto apuntando a un
-    // árbol de React ya desmontado → no-op silencioso o avisos de
-    // "setState en componente desmontado".
+  test('register replaces a previous registration (last-write-wins)', () => {
+    // The REPL re-registers on every mount of the leader. Without
+    // last-write-wins, a re-registration would leave a stale closure
+    // referencing a torn-down React tree → silent no-op or "setState on
+    // unmounted component" warnings.
     const first = (() => undefined) as never
     const second = (() => undefined) as never
     registerLeaderToolUseConfirmQueue(first)
@@ -47,34 +44,33 @@ describe('puente de ToolUseConfirmQueue hacia el líder', () => {
     expect(getLeaderToolUseConfirmQueue()).toBe(second)
   })
 
-  test('el getter devuelve la MISMA referencia en llamadas repetidas (sin copia)', () => {
-    // El getter se consulta en la ruta caliente (cada petición de permiso
-    // de un compañero en proceso). No debe asignar un envoltorio nuevo en
-    // cada llamada.
+  test('getter returns SAME reference across multiple calls (no copy)', () => {
+    // The getter is consulted on the hot path (every in-process teammate
+    // permission request). It must not allocate a new wrapper each call.
     const fn = (() => undefined) as never
     registerLeaderToolUseConfirmQueue(fn)
     expect(getLeaderToolUseConfirmQueue()).toBe(getLeaderToolUseConfirmQueue())
   })
 })
 
-describe('puente de ToolPermissionContext hacia el líder', () => {
-  test('devuelve null cuando no hay nada registrado', () => {
+describe('Leader ToolPermissionContext bridge', () => {
+  test('returns null when nothing is registered', () => {
     expect(getLeaderSetToolPermissionContext()).toBeNull()
   })
 
-  test('registrar → el getter devuelve la función registrada', () => {
+  test('register → getter returns the registered fn', () => {
     const fn = (_ctx: unknown, _opts?: { preserveMode?: boolean }) => undefined
     registerLeaderSetToolPermissionContext(fn as never)
     expect(getLeaderSetToolPermissionContext()).toBe(fn as never)
   })
 
-  test('desregistrar → el getter vuelve a devolver null', () => {
+  test('unregister → getter returns null again', () => {
     registerLeaderSetToolPermissionContext((() => undefined) as never)
     unregisterLeaderSetToolPermissionContext()
     expect(getLeaderSetToolPermissionContext()).toBeNull()
   })
 
-  test('registrar reemplaza un registro previo', () => {
+  test('register replaces a previous registration', () => {
     const first = (() => undefined) as never
     const second = (() => undefined) as never
     registerLeaderSetToolPermissionContext(first)
@@ -83,22 +79,22 @@ describe('puente de ToolPermissionContext hacia el líder', () => {
   })
 })
 
-describe('los dos puentes son INDEPENDIENTES', () => {
-  // CRÍTICO: las dos ranuras son variables de módulo separadas. Un bug que
-  // compartiera la ranura haría que registrar una borrara la otra. Este
-  // grupo fija esa separación.
+describe('two bridges are INDEPENDENT', () => {
+  // CRITICAL: the two slots are separate module-level vars. A bug like
+  // accidentally sharing the slot would mean registering one wipes the
+  // other. This test pins down the isolation.
 
-  test('registrar ToolUseConfirmQueue NO afecta a ToolPermissionContext', () => {
+  test('registering ToolUseConfirmQueue does NOT affect ToolPermissionContext', () => {
     registerLeaderToolUseConfirmQueue((() => undefined) as never)
     expect(getLeaderSetToolPermissionContext()).toBeNull()
   })
 
-  test('registrar ToolPermissionContext NO afecta a ToolUseConfirmQueue', () => {
+  test('registering ToolPermissionContext does NOT affect ToolUseConfirmQueue', () => {
     registerLeaderSetToolPermissionContext((() => undefined) as never)
     expect(getLeaderToolUseConfirmQueue()).toBeNull()
   })
 
-  test('desregistrar uno NO borra el otro', () => {
+  test('unregistering one does NOT clear the other', () => {
     const queueFn = (() => undefined) as never
     const ctxFn = (() => undefined) as never
     registerLeaderToolUseConfirmQueue(queueFn)
@@ -108,7 +104,7 @@ describe('los dos puentes son INDEPENDIENTES', () => {
     expect(getLeaderSetToolPermissionContext()).toBe(ctxFn)
   })
 
-  test('los dos pueden registrarse a la vez', () => {
+  test('both can be registered simultaneously', () => {
     const queueFn = (() => undefined) as never
     const ctxFn = (() => undefined) as never
     registerLeaderToolUseConfirmQueue(queueFn)

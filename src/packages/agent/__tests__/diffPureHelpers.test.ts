@@ -1,27 +1,21 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/diffPureHelpers.test.ts`.
- * Sólo la parte pura de `diff.ts` — el desplazamiento de números de línea
- * de un hunk cuando el diff se calculó sobre una rebanada del archivo, no
- * sobre el archivo entero.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   adjustHunkLineNumbers,
   CONTEXT_LINES,
   DIFF_TIMEOUT_MS,
-} from '../diff.ts'
+} from '../diff.js'
 
-describe('CONTEXT_LINES + DIFF_TIMEOUT_MS — constantes operativas', () => {
-  test('CONTEXT_LINES = 3 (contexto estándar de un diff unificado)', () => {
+describe('CONTEXT_LINES + DIFF_TIMEOUT_MS — operational constants', () => {
+  test('CONTEXT_LINES = 3 (standard unified-diff context)', () => {
     expect(CONTEXT_LINES).toBe(3)
   })
 
-  test('DIFF_TIMEOUT_MS = 5000 (5 segundos, tope ante entrada patológica)', () => {
+  test('DIFF_TIMEOUT_MS = 5000 (5 seconds, pathological-input cap)', () => {
     expect(DIFF_TIMEOUT_MS).toBe(5_000)
   })
 })
 
-describe('adjustHunkLineNumbers — desplazamiento de rebanada a archivo entero', () => {
+describe('adjustHunkLineNumbers — slice-relative → file-relative offset', () => {
   function hunk(oldStart: number, newStart: number): {
     oldStart: number
     oldLines: number
@@ -38,15 +32,15 @@ describe('adjustHunkLineNumbers — desplazamiento de rebanada a archivo entero'
     }
   }
 
-  test('offset 0 → devuelve la MISMA referencia (camino rápido)', () => {
-    // CRÍTICO: con offset 0 la función DEBE devolver el mismo arreglo (sin
-    // asignar). Es la optimización del caso común (diff de archivo entero,
-    // no de una rebanada).
+  test('offset 0 → returns reference unchanged (fast-path)', () => {
+    // CRITICAL: when offset is 0, the function MUST return the same array
+    // reference (no allocation). This is a hot-path optimization for the
+    // common case (full-file diff, not slice).
     const h = [hunk(1, 1), hunk(10, 10)]
     expect(adjustHunkLineNumbers(h, 0)).toBe(h)
   })
 
-  test('offset positivo desplaza oldStart y newStart', () => {
+  test('positive offset shifts both oldStart and newStart', () => {
     const adjusted = adjustHunkLineNumbers([hunk(1, 1)], 100)
     expect(adjusted).toEqual([
       {
@@ -59,16 +53,15 @@ describe('adjustHunkLineNumbers — desplazamiento de rebanada a archivo entero'
     ])
   })
 
-  test('offset negativo desplaza hacia abajo (p. ej. ctx.lineOffset - 1 con offset=0)', () => {
-    // El doc dice que quien llama pasa `ctx.lineOffset - 1`. Con
-    // lineOffset=1 (sin rebanada), eso es offset=0 → sin desplazamiento.
-    // Con lineOffset=10, el desplazamiento es +9. Un offset negativo
-    // también debe funcionar (raro pero documentado).
+  test('negative offset shifts down (e.g. ctx.lineOffset - 1 with offset=0)', () => {
+    // The doc says callers pass `ctx.lineOffset - 1`. When lineOffset=1
+    // (no slice), that's offset=0 → no shift. When lineOffset=10, the
+    // shift is +9. Negative offsets should also work (rare but documented).
     const adjusted = adjustHunkLineNumbers([hunk(105, 105)], -100)
     expect(adjusted[0]).toMatchObject({ oldStart: 5, newStart: 5 })
   })
 
-  test('arreglo multi-hunk — cada uno desplazado independientemente', () => {
+  test('multi-hunk array — each independently shifted', () => {
     const adjusted = adjustHunkLineNumbers(
       [hunk(1, 1), hunk(10, 12), hunk(20, 25)],
       50,
@@ -80,11 +73,11 @@ describe('adjustHunkLineNumbers — desplazamiento de rebanada a archivo entero'
     ])
   })
 
-  test('arreglo vacío → arreglo vacío (no-op seguro)', () => {
+  test('empty array → empty array (no-op safe)', () => {
     expect(adjustHunkLineNumbers([], 100)).toEqual([])
   })
 
-  test('preserva los campos que no son número de línea (oldLines, newLines, lines)', () => {
+  test('preserves non-line-number fields (oldLines, newLines, lines)', () => {
     const original = {
       oldStart: 5,
       oldLines: 3,
@@ -98,14 +91,14 @@ describe('adjustHunkLineNumbers — desplazamiento de rebanada a archivo entero'
     expect(adjusted!.lines).toEqual(original.lines)
   })
 
-  test('devuelve un arreglo NUEVO (no muta la entrada) cuando offset != 0', () => {
+  test('returns NEW array (not mutating input) when offset != 0', () => {
     const input = [hunk(1, 1)]
     const result = adjustHunkLineNumbers(input, 5)
     expect(result).not.toBe(input)
-    expect(input[0]!.oldStart).toBe(1) // la entrada queda intacta
+    expect(input[0]!.oldStart).toBe(1) // input unchanged
   })
 
-  test('offsets grandes (1M+) funcionan sin overflow', () => {
+  test('large offsets (1M+) work without overflow', () => {
     const adjusted = adjustHunkLineNumbers([hunk(1, 1)], 1_000_000)
     expect(adjusted[0]!.oldStart).toBe(1_000_001)
   })

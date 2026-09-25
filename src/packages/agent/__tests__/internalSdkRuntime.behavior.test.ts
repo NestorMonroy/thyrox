@@ -4,24 +4,19 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 /**
- * Pines a nivel de fuente para `internal/sdkRuntime.ts` — 6 fachadas que
- * alimentan el sobre de resultado del SDK (errores / duración / costo / uso
- * de modelo). Porte de
- * `ccnmt: packages/agent/__tests__/internalSdkRuntime.behavior.test.ts`.
+ * Source-level pins for `internal/sdkRuntime.ts` — 6 facades that feed
+ * the SDK result envelope (errors / duration / cost / model usage).
  *
- * Invariantes críticos:
- *  1. `getTotalCost` / `getTotalAPIDuration` caen a 0 (cero NUMÉRICO, no
- *     null/undefined). El sobre de resultado multiplica estos valores.
- *  2. `categorizeRetryableAPIError` HACE ECO del error de entrada cuando no
- *     hay clasificador del host — quien llama sigue teniendo el error
- *     original para mostrarlo, no se traga nada.
- *  3. `getFastModeState` cae a null (NO undefined). Quien llama compara
- *     `=== null` explícitamente para distinguir "apagado" de "sin
- *     configurar".
- *  4. `getInMemoryErrors` cae a [] (para que quien llama pueda iterar sin
- *     riesgo).
- *  5. `getModelUsage` cae a {} (quien llama lo esparce dentro de un
- *     resultado).
+ * Critical invariants:
+ *  1. getTotalCost / getTotalAPIDuration default to 0 (NUMERIC zero, not
+ *     null/undefined). The result envelope multiplies these.
+ *  2. categorizeRetryableAPIError ECHOES the input when no host has a
+ *     classifier — caller still has the original error to surface, no
+ *     swallowing.
+ *  3. getFastModeState falls back to null (NOT undefined). Caller checks
+ *     `=== null` explicitly to distinguish "off" from "not configured".
+ *  4. getInMemoryErrors fallback is [] (so callers can iterate safely).
+ *  5. getModelUsage fallback is {} (caller spreads into a result).
  */
 describe('internal/sdkRuntime fallbacks', () => {
   const source = readFileSync(
@@ -29,51 +24,51 @@ describe('internal/sdkRuntime fallbacks', () => {
     'utf-8',
   )
 
-  test('getInMemoryErrors: sin host → [] (NO undefined)', () => {
+  test('getInMemoryErrors: no host → [] (NOT undefined)', () => {
     expect(source).toMatch(/getInMemoryErrors\?\.\(\) \?\? \[\]/)
   })
 
-  test('categorizeRetryableAPIError HACE ECO del error (sin tragárselo)', () => {
-    // Pin: sin clasificador instalado, devuelve el error original sin
-    // cambios. Una regresión a `?? null` descartaría errores del sobre del
-    // SDK en silencio.
+  test('categorizeRetryableAPIError ECHOES error (no swallowing)', () => {
+    // Pin: if no classifier installed, return the original error
+    // unchanged. A regression to `?? null` would silently drop errors
+    // from the SDK envelope.
     expect(source).toMatch(
       /categorizeRetryableAPIError\?\.\(error\) \?\? error/,
     )
   })
 
-  test('getTotalAPIDuration: sin host → 0', () => {
+  test('getTotalAPIDuration: no host → 0', () => {
     expect(source).toMatch(/getTotalAPIDuration\?\.\(\) \?\? 0/)
   })
 
-  test('getTotalCost: sin host → 0', () => {
-    // Pin: cero numérico. Quien consume el SDK multiplica/suma esto; null
-    // rompería la aritmética.
+  test('getTotalCost: no host → 0', () => {
+    // Pin: numeric zero. SDK consumers multiply / add this; null would
+    // crash arithmetic.
     expect(source).toMatch(/getTotalCost\?\.\(\) \?\? 0/)
   })
 
-  test('getModelUsage: sin host → {} (NO undefined)', () => {
-    // Pin: quien llama esparce con `{ ...result, model_usage: getModelUsage()
-    // }`. {} es el default seguro.
+  test('getModelUsage: no host → {} (NOT undefined)', () => {
+    // Pin: caller spreads with `{ ...result, model_usage: getModelUsage()
+    // }`. {} is the safe default.
     expect(source).toMatch(/getModelUsage\?\.\(\) \?\? \{\}/)
   })
 
-  test('getFastModeState: sin host → null (distinto de undefined)', () => {
-    // Pin: null señala "ningún host clasificó el modelo". Quien llama
-    // compara `=== null` explícitamente. Devolver undefined dejaría que
-    // cadenas `??` de quien llama sustituyan otro default.
+  test('getFastModeState: no host → null (distinguished from undefined)', () => {
+    // Pin: null signals "no host has classified the model". Caller
+    // checks `=== null` explicitly. Returning undefined would let `??`
+    // chains in the caller substitute a different default.
     expect(source).toMatch(
       /getFastModeState\?\.\(model, fastMode\) \?\? null/,
     )
   })
 
-  test('getFastModeState pasa ambos argumentos (model, fastMode)', () => {
+  test('getFastModeState passes both args (model, fastMode)', () => {
     expect(source).toMatch(
       /getFastModeState\?\.\(model, fastMode\)/,
     )
   })
 
-  test('las 6 fachadas se exportan', () => {
+  test('all 6 facades are exported', () => {
     const exports = source.match(/^export function /gm)
     expect(exports?.length).toBe(6)
   })

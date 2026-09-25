@@ -1,24 +1,22 @@
 /**
- * Pool de worker de repuesto — puerto completo de `ant 4644.js`.
+ * Spare worker pool — full ant 4644.js port.
  *
- * Diseño de un solo slot: a lo sumo un worker de repuesto pre-calentado
- * por daemon. En `dispatch`, se intenta reclamar → se manda una trama de
- * control 'claim' al socket PTY del repuesto con la intención del usuario
- * → se reescribe su state.json con la intención + cwd reales. Si el claim
- * falla, se cae al spawn nuevo.
+ * Single-slot design: at most one pre-warmed spare worker per daemon.
+ * On `dispatch`, try claim → send 'claim' ctrl-frame to the spare's PTY
+ * socket carrying the user's intent → re-write its state.json with the
+ * real intent + cwd. If claim fails, fall through to fresh spawn.
  *
- * El scheduler de pre-calentamiento corre cuando el daemon está inactivo
- * (sin despachos pendientes en vuelo): genera un repuesto con la plantilla
- * `--bg-pty -- bg` + un sessionId placeholder, marca
- * `EKH = { jobId, sessionId, cwd, ready: false }`.
+ * Pre-warm scheduler runs on daemon idle (no pending dispatches in
+ * flight): spawns a spare with `--bg-pty -- bg` template + placeholder
+ * sessionId, marks `EKH = { jobId, sessionId, cwd, ready: false }`.
  *
- * Gate: CLAUDE_CODE_BG_SPARE_POOL=1 (default OFF — ahorra los recursos
- * inactivos del usuario a menos que opte explícitamente).
+ * Gate: CLAUDE_CODE_BG_SPARE_POOL=1 (default OFF — saves user's idle
+ * resources unless they opt in).
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/sparePool.ts`.
+ * @dynamicRequire
  */
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 interface SpareSlot {
   short: string
@@ -44,24 +42,22 @@ export function enableSparePool(): void {
 }
 
 /**
- * Devuelve el snapshot del slot de repuesto actual (o null). Lo usa el
- * dispatch del daemon para decidir claim vs spawn nuevo.
+ * Returns the current spare slot snapshot (or null). Used by daemon
+ * dispatch to decide claim vs fresh spawn.
  */
 export function getSpareSlot(): SpareSlot | null {
   return slot ? { ...slot } : null
 }
 
 /**
- * Intenta reclamar el repuesto actual para `cwd`. Devuelve el `short` del
- * slot si el cwd coincide y el slot está listo, si no `{ ok:false, reason }`.
+ * Try to claim the current spare for `cwd`. Returns the slot's
+ * `short` if cwd matches and slot is ready, else { ok:false, reason }.
  *
- * Al reclamar con éxito: limpia el slot (diseño de un solo slot — el claim
- * consume el repuesto; el scheduler de pre-calentamiento generará el
- * siguiente al quedar inactivo).
+ * On successful claim: clear slot (single-slot design — claim consumes
+ * the spare; pre-warm scheduler will spawn the next on idle).
  *
- * El envío real de la trama de control lo hace el op `sendclaim` del
- * daemon tras que esta función devuelva ok — esta función sólo reserva el
- * slot.
+ * The actual ctrl-frame send is done by the daemon's `sendclaim` op
+ * after this returns ok — this fn just reserves the slot.
  */
 export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: true; short: string; sessionId: string; ptySocket: string } {
   if (!enabled || !slot) {
@@ -83,9 +79,9 @@ export function claimSpare(cwd: string): { ok: false; reason: string } | { ok: t
 }
 
 /**
- * Marca un worker de repuesto recién generado como el slot actual. El
- * llamador es el scheduler de pre-calentamiento del daemon. Devuelve false
- * si ya existe un repuesto.
+ * Mark a freshly-spawned spare worker as the current slot. Caller is
+ * the daemon's pre-warm scheduler. Returns false if a spare already
+ * exists.
  */
 export function recordSpareSpawn(short: string, cwd: string, sessionId: string, ptySocket: string): boolean {
   if (!enabled) return false
@@ -96,10 +92,9 @@ export function recordSpareSpawn(short: string, cwd: string, sessionId: string, 
 }
 
 /**
- * Marca el repuesto como listo (se llama cuando la primera trama de
- * control 'hello' del worker vuelve, indicando que el REPL ya arrancó y
- * espera). Hasta estar listo, el claim devuelve 'not-ready' para no correr
- * contra un worker sin arrancar todavía.
+ * Mark the spare ready (called when worker's first 'hello' ctrl-frame
+ * comes back, indicating REPL is bootstrapped and waiting). Until ready,
+ * claim returns 'not-ready' so we don't race against an unbooted worker.
  */
 export function markSpareReady(short: string): void {
   if (slot && slot.short === short) {
@@ -107,15 +102,14 @@ export function markSpareReady(short: string): void {
   }
 }
 
-/** Descarta el repuesto registrado sin claim (p. ej. al apagar). */
+/** Drop the recorded spare without claim (e.g. on shutdown). */
 export function clearSpare(): void {
   slot = null
 }
 
 /**
- * Tick del scheduler de pre-calentamiento — llamar desde el loop de
- * inactividad del daemon (p. ej. cada 30s). Devuelve si un repuesto debería
- * generarse ahora.
+ * Pre-warm scheduler tick — call from daemon idle loop (e.g. every 30s).
+ * Returns whether a spare should be spawned now.
  */
 export function shouldPrewarm(): boolean {
   return enabled && !slot && !prewarmInFlight
@@ -125,7 +119,7 @@ export function setPrewarmInFlight(v: boolean): void {
   prewarmInFlight = v
 }
 
-/** Helper de test. */
+/** Test helper. */
 export function _resetSparePoolForTest(): void {
   slot = null
   enabled = false

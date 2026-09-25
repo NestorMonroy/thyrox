@@ -1,31 +1,6 @@
-/**
- * Puerto de `ccnmt: packages/config/settings/settingsCache.ts` (80 líneas
- * fuente). Reimplementación fiel VERBATIM en su lógica; DIVERGENCIA
- * estructural declarada abajo.
- *
- * DIVERGENCIA declarada: `settings.ts` (ya portado por un agente anterior)
- * documenta explícitamente que sustituyó esta caché por tres cachés de
- * módulo locales, ámbito-archivo, EN VEZ de importar `settingsCache.ts`
- * (que entonces no existía) — ver su docstring: *"Caché: ./settingsCache.ts
- * no existe en @thyrox/config. Se sustituye por tres cachés de módulo
- * equivalentes […], ámbito local a este archivo"*. Este archivo, ahora
- * portado, es una caché INDEPENDIENTE con el mismo contrato — no está
- * conectada a la de `settings.ts`. Sirve a los consumidores NUEVOS de este
- * mismo pase (`remote/syncCacheState.ts`, `changeDetector.ts` cuando se
- * porte) que citan `resetSettingsCache` por este nombre. Reconectar
- * `settings.ts` para que use esta caché en vez de la suya propia es
- * trabajo de un pase posterior — declarado, no fabricado en silencio (ver
- * el informe de esta tarea).
- */
-import type { SettingSource } from './constants.ts'
-import type { SettingsJson } from './types.ts'
-import type { SettingsError, SettingsWithErrors } from './validation.ts'
-
-// La fuente tipa esto como `ValidationError`; nuestro `validation.ts` (ya
-// portado, con un esquema más reducido) declara el mismo campo bajo
-// `SettingsError` — mismo shape (`file`, `path`, `message`). Ver la misma
-// nota en `mdm/settings.ts`.
-type ValidationError = SettingsError
+import type { SettingSource } from './constants.js'
+import type { SettingsJson } from './types.js'
+import type { SettingsWithErrors, ValidationError } from './validation.js'
 
 let sessionSettingsCache: SettingsWithErrors | null = null
 
@@ -38,17 +13,16 @@ export function setSessionSettingsCache(value: SettingsWithErrors): void {
 }
 
 /**
- * Caché por-fuente para `getSettingsForSource`. Se invalida junto con el
- * `sessionSettingsCache` fusionado — los mismos disparadores de
- * `resetSettingsCache()` (escritura de settings, --add-dir, init de
- * plugin, refresh de hooks).
+ * Per-source cache for getSettingsForSource. Invalidated alongside the
+ * merged sessionSettingsCache — same resetSettingsCache() triggers
+ * (settings write, --add-dir, plugin init, hooks refresh).
  */
 const perSourceCache = new Map<SettingSource, SettingsJson | null>()
 
 export function getCachedSettingsForSource(
   source: SettingSource,
 ): SettingsJson | null | undefined {
-  // undefined = cache miss; null = "sin settings para esta fuente" cacheado.
+  // undefined = cache miss; null = cached "no settings for this source"
   return perSourceCache.has(source) ? perSourceCache.get(source) : undefined
 }
 
@@ -60,10 +34,9 @@ export function setCachedSettingsForSource(
 }
 
 /**
- * Caché indexada por ruta para `parseSettingsFile`. Tanto
- * `getSettingsForSource` como `loadSettingsFromDisk` llaman a
- * `parseSettingsFile` sobre las mismas rutas durante el arranque — esto
- * deduplica la lectura de disco + el parseo zod.
+ * Path-keyed cache for parseSettingsFile. Both getSettingsForSource and
+ * loadSettingsFromDisk call parseSettingsFile on the same paths during
+ * startup — this dedupes the disk read + zod parse.
  */
 type ParsedSettings = {
   settings: SettingsJson | null
@@ -86,9 +59,9 @@ export function resetSettingsCache(): void {
 }
 
 /**
- * Capa base de settings de plugin para la cascada de settings.
- * `pluginLoader` escribe aquí tras cargar plugins; `loadSettingsFromDisk`
- * lo lee como la base de menor prioridad.
+ * Plugin settings base layer for the settings cascade.
+ * pluginLoader writes here after loading plugins;
+ * loadSettingsFromDisk reads it as the lowest-priority base.
  */
 let pluginSettingsBase: Record<string, unknown> | undefined
 

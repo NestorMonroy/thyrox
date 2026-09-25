@@ -1,0 +1,47 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/storage/src/__tests__/fileEncoding.test.ts:
+35 |     expect(detectFileEncoding(missing)).toBe('utf8')
+36 |     // ENOENT es "fs inaccesible": va por logForDebugging, no por logError.
+37 |     // logForDebugging tambien usa console.error como sink por defecto, asi
+38 |     // que se verifica el MENSAJE, no la mera invocacion.
+39 |     const calls = errorSpy.mock.calls.map(args => String(args[0]))
+40 |     expect(calls.some(m => m.includes('detectFileEncoding failed for expected reason'))).toBe(true)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:40:90)
+(fail) detectFileEncoding > un archivo INEXISTENTE (ENOENT) cae al fallback utf8, SIN pasar por logError [1.03ms]
+56 |     }
+57 |     setFsImplementation(fake)
+58 |     const errorSpy = spyOn(console, 'error')
+59 | 
+60 |     expect(detectFileEncoding(file)).toBe('utf8')
+61 |     expect(errorSpy).toHaveBeenCalledWith(new Error('boom sin code'))
+                          ^
+error: expect(received).toHaveBeenCalledWith(...expected)
+
+Expected: [
+  56 |     }
+57 |     setFsImplementation(fake)
+58 |     const errorSpy = spyOn(console, 'error')
+59 | 
+60 |     expect(detectFileEncoding(file)).toBe('utf8')
+61 |     expect(errorSpy).toHaveBeenCalledWith(new Error('boom sin code'))
+                                                   ^
+error: boom sin code
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:61:47)
+
+]
+But it was not called.
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/fileEncoding.test.ts:61:22)
+(fail) detectFileEncoding > un error NO relacionado con fs (p.ej. corrupcion de datos) SI pasa por logError [0.72ms]
+
+ 2 pass
+ 2 fail
+ 7 expect() calls
+Ran 4 tests across 1 file. [549.00ms]
+exit=1

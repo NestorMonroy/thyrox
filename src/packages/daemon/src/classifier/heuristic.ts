@@ -1,15 +1,13 @@
 /**
- * Clasificador heurístico — byte-idéntico a `ant 3918.js` em7/J08/Up5/iYH/GJ_.
+ * Heuristic classifier — ant 3918.js em7/J08/Up5/iYH/GJ_ byte-identical.
  *
- * Recorre la cola de salida del worker y hace pattern-match contra un
- * registro {state, detail, tempo, needs?, output?}. Se usa tanto como
- * preclasificación rápida (em7) como fallback cuando la llamada al LLM
- * falla (J08).
+ * Walks the worker output tail and pattern-matches into a {state, detail,
+ * tempo, needs?, output?} record. Used as both a fast preclassify (em7)
+ * and a fallback when LLM call fails (J08).
  *
- * Consciente de bloques de código: salta matches dentro de bloques
- * ```...``` vía iYH.
+ * Code-fence aware: skips matches inside ```...``` blocks via iYH.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/classifier/heuristic.ts`.
+ * @dynamicRequire
  */
 
 import {
@@ -41,7 +39,7 @@ import {
   WORKING_VERB_RE,
 } from './patterns.js'
 
-/** ant iYH — true si el índice `_` está dentro de un bloque de código abierto. */
+/** ant iYH — true if `_` index is inside an open code fence. */
 export function isInCodeFence(text: string, idx: number): boolean {
   let openMarker: string | null = null
   let openLen = 0
@@ -85,7 +83,7 @@ interface MarkerMatch {
   end: number
 }
 
-/** ant Up5 — encuentra el marcador de línea más reciente (failed/blocked/needs-input) que NO esté en un bloque de código. */
+/** ant Up5 — find the latest line marker (failed/blocked/needs-input) that's NOT in a code fence. */
 function findLineMarker(fullText: string, tailText: string, tailOffset: number): MarkerMatch | undefined {
   let result: MarkerMatch | undefined
   const tries: Array<['failed' | 'blocked', RegExp]> = [
@@ -112,14 +110,14 @@ function findLineMarker(fullText: string, tailText: string, tailOffset: number):
   return result
 }
 
-/** ant em7 — heurística completa: corre todos los patrones sobre la cola, devuelve el mejor match o null. */
+/** ant em7 — full heuristic: run all patterns on tail, return best match or null. */
 export function preClassify(text: string): ClassifierResult | null {
   const trimmed = text.trim()
   if (!trimmed) return null
   const tail = trimmed.slice(-800)
   const tailOffset = trimmed.length - tail.length
 
-  // 1. marcador de línea "result:" (done con output.result)
+  // 1. result: line marker (done with output.result)
   let resultMatch: RegExpExecArray | null = null
   const resultRe = /(?:^|\n)\s*result:\s*(.+?)\s*(?:\n|$)/gi
   let m: RegExpExecArray | null
@@ -137,7 +135,7 @@ export function preClassify(text: string): ClassifierResult | null {
 
   const marker = findLineMarker(trimmed, scanText, scanOffset)
 
-  // 2. "result:" + "next:" → working
+  // 2. result: + next: → working
   if (resultMatch && !marker) {
     const detail = truncate(resultMatch[1]!.trim())
     const nextRe = /(?:^|\n)\s*next:\s*\S/gi
@@ -193,8 +191,8 @@ export function preClassify(text: string): ClassifierResult | null {
     return null
   }
 
-  // 3. pregunta al final
-  if (/[?？]\s*$/.test(tail) && tail.replace(/[?？\s]+$/, '').length >= 4) {
+  // 3. trailing question
+  if (/[?\uFF1F]\s*$/.test(tail) && tail.replace(/[?\uFF1F\s]+$/, '').length >= 4) {
     const lastBreak = Math.max(
       tail.lastIndexOf('\n'),
       tail.lastIndexOf('. '),
@@ -207,7 +205,7 @@ export function preClassify(text: string): ClassifierResult | null {
     }
   }
 
-  // 4. patrones de la última oración
+  // 4. last sentence patterns
   const sentBreak = Math.max(
     0,
     tail.lastIndexOf('. '),
@@ -273,7 +271,7 @@ export function preClassify(text: string): ClassifierResult | null {
   return null
 }
 
-/** ant J08 — fallback definitivo: clasifica como working/idle, detail = última línea no vacía. */
+/** ant J08 — ultra-fallback: classify as working/idle, detail = last non-empty line. */
 export function fallbackHeuristic(text: string): ClassifierResult {
   const lastLine = text
     .split('\n')
@@ -283,12 +281,12 @@ export function fallbackHeuristic(text: string): ClassifierResult {
     branch: 'heuristic',
     state: 'working',
     tempo: 'idle',
-    detail: lastLine ? truncate(lastLine) : '—',
+    detail: lastLine ? truncate(lastLine) : '\u2014',
     source: 'heuristic',
   }
 }
 
-/** ant tm7 — describe la forma del cierre para que el prompt del LLM la incluya. */
+/** ant tm7 — describe the closing-shape so LLM prompt can include it. */
 export function closingShape(text: string): string {
   const trimmed = text.trim()
   if (!trimmed) return 'empty'
@@ -301,13 +299,13 @@ export function closingShape(text: string): string {
   for (const m of tail.matchAll(/(?:^|\n)\s*failed:\s*\S/gi)) {
     if (!isInCodeFence(trimmed, tailOffset + m.index!)) return 'failed-line'
   }
-  if (/[?？]\s*$/.test(trimmed)) return 'trailing-q'
+  if (/[?\uFF1F]\s*$/.test(trimmed)) return 'trailing-q'
   const last200 = trimmed.slice(-200)
-  if (/(?:^|\n)\s*(?:[-*•]|\d+\.|[|])\s/.test(last200)) return 'list-or-table'
+  if (/(?:^|\n)\s*(?:[-*\u2022]|\d+\.|[|])\s/.test(last200)) return 'list-or-table'
   return 'declarative'
 }
 
-/** ant GJ_ — fusiona la salida del LLM con el estado previo, rellenando defaults. */
+/** ant GJ_ — merge LLM output with prev state, default-fill. */
 const VALID_STATES = new Set<WorkerState>(['working', 'blocked', 'done', 'failed'])
 const TERMINAL_TEMPO_LOCK = new Set<WorkerState>(['done', 'failed', 'stopped', 'crashed'])
 
@@ -346,7 +344,7 @@ export function mergeWithPrev(
   }
 }
 
-/** ant qp7 — quita el bloque ```json y extrae el objeto JSON del texto del LLM. */
+/** ant qp7 — strip ```json fence + extract JSON object from LLM text. */
 export function parseLlmJson(text: string): Record<string, unknown> | null {
   const stripped = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '')
   const first = stripped.indexOf('{')
@@ -359,7 +357,7 @@ export function parseLlmJson(text: string): Record<string, unknown> | null {
   }
 }
 
-/** Usado por el orchestrator para decidir si escribir el archivo de estado. */
+/** Used by orchestrator to gate state file write. */
 export function shouldUpdateState(prev: WorkerStateFile | null, next: { state: WorkerState; detail: string; tempo: string; needs?: string }): boolean {
   if (!prev) return true
   return (

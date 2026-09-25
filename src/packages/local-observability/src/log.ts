@@ -1,23 +1,16 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/log.ts` (165 líneas
- * fuente, 100 % portado). Fachada "V7 §10.3": re-exporta la superficie
- * real de error-logging de `./logging/index.js`, y conserva localmente
- * los helpers de listado/título (`getLogDisplayTitle`, `loadErrorLogs`,
- * `getErrorLogByIndex`) porque dependen de tipos de storage/fileHistory
- * y no son una preocupación de observabilidad — la fuente dice
- * explícitamente "Do not add new logic here — add it in
- * packages/local-observability/".
+ * V7 §10.3 facade — the error-logging surface (`logError`, `logMCPError`,
+ * `logMCPDebug`, `attachErrorLogSink`, `getInMemoryErrors`, `dateToFilename`,
+ * `captureAPIRequest`, `_resetErrorLogForTesting`) now lives in
+ * `@thyrox/local-observability/logging`.
  *
- * Reapuntados a `@thyrox/*` reales (verificados contra su `package.json`
- * `exports`):
- * - `TICK_TAG` — `@thyrox/command-runtime` exporta `./xml.js`.
- * - `CACHE_PATHS` — `@thyrox/storage` exporta `./cache-paths`.
+ * This file keeps:
+ *   - re-exports from the owner package (so 148+ call sites don't need touching)
+ *   - the `LogOption` display/list helpers (`getLogDisplayTitle`, `loadErrorLogs`,
+ *     `getErrorLogByIndex`) which depend on storage/fileHistory types and
+ *     are not observability concerns. They'll move with storage later.
  *
- * Sustituidos localmente (ver `internal/pendingCrossPackageDeps.ts`):
- * - `LogOption`/`SerializedMessage`/`sortLogs` — de `agent/logsTypes.js`,
- *   `@thyrox/agent` no exporta ese subpath (tipo estructural estrecho).
- * - `stripDisplayTags`/`stripDisplayTagsAllowEmpty` — de
- *   `output/utils/displayTags.js`, `output` en porte concurrente.
+ * Do not add new logic here — add it in packages/local-observability/.
  */
 
 import { readdir, readFile, stat } from 'fs/promises'
@@ -36,19 +29,14 @@ import {
 } from './logging/index.js'
 
 import { TICK_TAG } from '@thyrox/command-runtime/xml.js'
+import { type LogOption, type SerializedMessage, sortLogs } from '@thyrox/agent/logsTypes.js'
 import { CACHE_PATHS } from '@thyrox/storage/cache-paths'
-import {
-  type LogOption,
-  type SerializedMessage,
-  sortLogs,
-  stripDisplayTags,
-  stripDisplayTagsAllowEmpty,
-} from './internal/pendingCrossPackageDeps.js'
+import { stripDisplayTags, stripDisplayTagsAllowEmpty } from '@thyrox/output/utils/displayTags.js'
 import { jsonParse } from './slowOperations.js'
 
 // ---------------------------------------------------------------------------
-// Re-exports de la API del paquete dueño — preserva todo call site externo
-// que aún importe desde `src/utils/log.js` / rutas relativas.
+// Re-exports of the owner-package API — preserves every external call site
+// that still imports from `src/utils/log.js` / relative paths.
 // ---------------------------------------------------------------------------
 
 export {
@@ -64,16 +52,15 @@ export {
 export type { ErrorLogSink }
 
 // ---------------------------------------------------------------------------
-// Helpers de display / listado — se quedan aquí porque dependen de
-// LogOption, que arrastra tipos de storage + fileHistory.
+// Display / list helpers — stay here because they depend on LogOption which
+// pulls in storage + fileHistory types. Will move with storage (Wave 2).
 // ---------------------------------------------------------------------------
 
 /**
- * Obtiene el título de display de un log/sesión con lógica de fallback.
- * Omite firstPrompt si empieza con un tag de tick/goal (auto-prompt del
- * modo autónomo). Quita tags no aptos para display (como
- * <ide_opened_file>) del resultado. Cae a un session ID truncado cuando
- * no hay otro título disponible.
+ * Gets the display title for a log/session with fallback logic.
+ * Skips firstPrompt if it starts with a tick/goal tag (autonomous mode auto-prompt).
+ * Strips display-unfriendly tags (like <ide_opened_file>) from the result.
+ * Falls back to a truncated session ID when no other title is available.
  */
 export function getLogDisplayTitle(
   log: LogOption,
@@ -96,12 +83,16 @@ export function getLogDisplayTitle(
   return stripDisplayTags(title).trim()
 }
 
-/** Carga la lista de logs de error. */
+/**
+ * Loads the list of error logs.
+ */
 export function loadErrorLogs(): Promise<LogOption[]> {
   return loadLogList(CACHE_PATHS.errors())
 }
 
-/** Obtiene un log de error por su índice. */
+/**
+ * Gets an error log by its index.
+ */
 export async function getErrorLogByIndex(
   index: number,
 ): Promise<LogOption | null> {

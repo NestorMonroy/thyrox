@@ -1,25 +1,28 @@
 /**
- * Insercion de un bloque en un arreglo de contenido, relativa a los bloques
- * `tool_result` — porte de `ccnmt: packages/agent/contentArray.ts`.
+ * Utility for inserting a block into a content array relative to tool_result
+ * blocks. Used by the API layer to position supplementary content (e.g.,
+ * cache editing directives) correctly within user messages.
  *
- * La colocacion no es libre: el bloque suplementario tiene que quedar DESPUES
- * del ultimo resultado de herramienta, porque un resultado que llega despues
- * de su directiva la deja sin efecto. Y si al insertarlo el bloque queda
- * ultimo, se anade un bloque de texto de continuacion: hay APIs que rechazan
- * una peticion cuyo contenido termina en algo que no es texto.
+ * Placement rules:
+ * - If tool_result blocks exist: insert after the last one
+ * - Otherwise: insert before the last block
+ * - If the inserted block would be the final element, a text continuation
+ *   block is appended (some APIs require the prompt not to end with
+ *   non-text content)
  */
 
 /**
- * Inserta `block` tras el ultimo `tool_result` del arreglo. Muta en el sitio.
+ * Inserts a block into the content array after the last tool_result block.
+ * Mutates the array in place.
  *
- * Sin ningun `tool_result`, el bloque va ANTES del ultimo elemento — asi el
- * ultimo sigue siendo el que era, que es la razon por la que la rama con
- * resultados necesita el texto de continuacion y esta no.
+ * @param content - The content array to modify
+ * @param block - The block to insert
  */
 export function insertBlockAfterToolResults(
   content: unknown[],
   block: unknown,
 ): void {
+  // Find position after the last tool_result block
   let lastToolResultIndex = -1
   for (let i = 0; i < content.length; i++) {
     const item = content[i]
@@ -27,20 +30,22 @@ export function insertBlockAfterToolResults(
       item &&
       typeof item === 'object' &&
       'type' in item &&
-      (item as { type: unknown }).type === 'tool_result'
+      (item as { type: string }).type === 'tool_result'
     ) {
       lastToolResultIndex = i
     }
   }
 
-  if (lastToolResultIndex < 0) {
-    content.splice(Math.max(0, content.length - 1), 0, block)
-    return
-  }
-
-  const insertPosition = lastToolResultIndex + 1
-  content.splice(insertPosition, 0, block)
-  if (insertPosition === content.length - 1) {
-    content.push({ type: 'text', text: '.' })
+  if (lastToolResultIndex >= 0) {
+    const insertPos = lastToolResultIndex + 1
+    content.splice(insertPos, 0, block)
+    // Append a text continuation if the inserted block is now last
+    if (insertPos === content.length - 1) {
+      content.push({ type: 'text', text: '.' })
+    }
+  } else {
+    // No tool_result blocks — insert before the last block
+    const insertIndex = Math.max(0, content.length - 1)
+    content.splice(insertIndex, 0, block)
   }
 }

@@ -1,62 +1,34 @@
 /**
- * Puerto de `ccnmt: packages/cli/src/secureStorage/keychainPrefetch.ts`
- * (115 líneas, 100 % portado). Dispara las dos lecturas de keychain de
- * macOS ("Claude Code-credentials" / "Claude Code") en paralelo con la
- * evaluación de módulos de main.tsx, mismo patrón que `startMdmRawRead()`
- * en `settings/mdm/rawRead.ts` (no portado). Los cinco símbolos
- * exportados (`startKeychainPrefetch`, `ensureKeychainPrefetchCompleted`,
- * `getLegacyApiKeyPrefetchResult`, `clearLegacyApiKeyPrefetch`) se portan
- * VERBATIM en firma y comportamiento.
+ * Minimal module for firing macOS keychain reads in parallel with main.tsx
+ * module evaluation, same pattern as startMdmRawRead() in settings/mdm/rawRead.ts.
  *
- * Ya consumido — `storage: src/secureStorage/keychainPrefetch.ts` ya
- * reexporta `export * from '@thyrox/cli/secureStorage/keychainPrefetch.js'`
- * como su dueño canónico; antes de este porte esa ruta no resolvía ningún
- * archivo, ahora resuelve vía el `./*.js` wildcard de `cli/package.json`.
+ * isRemoteManagedSettingsEligible() reads two separate keychain entries
+ * SEQUENTIALLY via sync execSync during applySafeConfigEnvironmentVariables():
+ *   1. "Claude Code-credentials" (OAuth tokens)  — ~32ms
+ *   2. "Claude Code" (legacy API key)            — ~33ms
+ * Sequential cost: ~65ms on every macOS startup.
  *
- * Dos de las tres rutas de import resuelven tal cual en este árbol:
+ * Firing both here lets the subprocesses run in parallel with the ~65ms of
+ * main.tsx imports. ensureKeychainPrefetchCompleted() is awaited alongside
+ * ensureMdmSettingsLoaded() in main.tsx preAction — nearly free since the
+ * subprocesses finish during import evaluation. Sync read() and
+ * getApiKeyFromConfigOrMacOSKeychain() then hit their caches.
  *
- *   - `execFile` (`child_process`) — built-in de Node/Bun.
- *   - `CREDENTIALS_SERVICE_SUFFIX`, `getMacOsKeychainStorageServiceName`,
- *     `getUsername`, `primeKeychainCacheFromPrefetch`
- *     (`@claude-code-how-works/mcp-runtime/macOsKeychainHelpers.js`) — SÍ
- *     existen en `@thyrox/mcp-runtime` con el subpath EXACTO (medido: está
- *     en `mcp-runtime/package.json` `exports` como
- *     `"./macOsKeychainHelpers"`, y los cuatro símbolos aparecen en
- *     `src/macOsKeychainHelpers.ts`).
- *
- * DIVERGENCIA DE ALCANCE, declarada — `isBareMode`
- * (`@claude-code-how-works/config/env/utils`): `@thyrox/config/env/utils.ts`
- * SÍ existe, pero no expone `isBareMode` (medido:
- * `grep -n "^export function" src/packages/config/env/utils.ts` → sólo
- * `isEnvTruthy`, `readEnv`, `getAllEnv`). Se reimplementa localmente FIEL a
- * la fuente real (`ccnmt: packages/config/env/utils.ts:43-70`:
- * `CLAUDE_CODE_SIMPLE` truthy o `--bare` en `process.argv`) en vez de
- * diferirla con `require()` — mismo criterio, y mismo texto de cita, que
- * `storage: src/sessionStart.ts::isBareMode` y
- * `agent: internal/macroFallback.ts` ya establecieron para este exacto
- * símbolo: es autocontenida (dos líneas, sin dependencias transitivas), así
- * que reimplementarla es más fiel que un `require()` que fallaría siempre.
+ * Imports stay minimal: child_process + macOsKeychainHelpers.ts (NOT
+ * macOsKeychainStorage.ts — that pulls in execa → human-signals →
+ * cross-spawn, ~58ms of synchronous module init). The helpers file's own
+ * import chain (envUtils, oauth constants, crypto) is already evaluated by
+ * startupProfiler.ts at main.tsx:5, so no new module-init cost lands here.
  */
+
 import { execFile } from 'child_process'
+import { isBareMode } from '@thyrox/config/env/utils'
 import {
   CREDENTIALS_SERVICE_SUFFIX,
   getMacOsKeychainStorageServiceName,
   getUsername,
   primeKeychainCacheFromPrefetch,
 } from '@thyrox/mcp-runtime/macOsKeychainHelpers.js'
-
-/** Fiel a `ccnmt: packages/config/env/utils.ts::isEnvTruthy` — ver docstring. */
-function isEnvTruthy(envVar: string | boolean | undefined): boolean {
-  if (!envVar) return false
-  if (typeof envVar === 'boolean') return envVar
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
-}
-
-/** Fiel a `ccnmt: packages/config/env/utils.ts::isBareMode` — ver docstring. */
-function isBareMode(): boolean {
-  return isEnvTruthy(process.env.CLAUDE_CODE_SIMPLE) || process.argv.includes('--bare')
-}
 
 const KEYCHAIN_PREFETCH_TIMEOUT_MS = 10_000
 

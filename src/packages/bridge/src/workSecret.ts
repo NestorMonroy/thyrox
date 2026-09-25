@@ -1,13 +1,8 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/workSecret.ts`.
- * `jsonParse`/`jsonStringify` son sustitutos — ver
- * `internal/pendingCrossPackageDeps.ts`.
- */
 import axios from 'axios'
-import { jsonParse, jsonStringify } from './internal/pendingCrossPackageDeps.js'
+import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import type { WorkSecret } from './types.js'
 
-/** Decodifica un work secret codificado en base64url y valida su versión. */
+/** Decode a base64url-encoded work secret and validate its version. */
 export function decodeWorkSecret(secret: string): WorkSecret {
   const json = Buffer.from(secret, 'base64url').toString('utf-8')
   const parsed: unknown = jsonParse(json)
@@ -37,12 +32,11 @@ export function decodeWorkSecret(secret: string): WorkSecret {
 }
 
 /**
- * Construye una URL SDK de WebSocket desde la URL base de la API y el
- * ID de sesión. Retira el protocolo HTTP(S) y construye una URL de
- * ingress ws(s)://.
+ * Build a WebSocket SDK URL from the API base URL and session ID.
+ * Strips the HTTP(S) protocol and constructs a ws(s):// ingress URL.
  *
- * Usa /v2/ para localhost (directo a session-ingress, sin rewrite de
- * Envoy) y /v1/ para producción (Envoy reescribe /v1/ → /v2/).
+ * Uses /v2/ for localhost (direct to session-ingress, no Envoy rewrite)
+ * and /v1/ for production (Envoy rewrites /v1/ → /v2/).
  */
 export function buildSdkUrl(apiBaseUrl: string, sessionId: string): string {
   const isLocalhost =
@@ -54,38 +48,35 @@ export function buildSdkUrl(apiBaseUrl: string, sessionId: string): string {
 }
 
 /**
- * Compara dos IDs de sesión sin importar su prefijo de ID etiquetado.
+ * Compare two session IDs regardless of their tagged-ID prefix.
  *
- * Los IDs etiquetados tienen la forma {tag}_{body} o
- * {tag}_staging_{body}, donde el body codifica un UUID. La capa de
- * compatibilidad de CCR v2 devuelve `session_*` a los clientes API v1
- * (compat/convert.go:41) pero la capa de infraestructura (cola de
- * trabajo de sandbox-gateway, respuesta de work poll) usa `cse_*`
- * (compat/CLAUDE.md:13). Ambos tienen el mismo UUID subyacente.
+ * Tagged IDs have the form {tag}_{body} or {tag}_staging_{body}, where the
+ * body encodes a UUID. CCR v2's compat layer returns `session_*` to v1 API
+ * clients (compat/convert.go:41) but the infrastructure layer (sandbox-gateway
+ * work queue, work poll response) uses `cse_*` (compat/CLAUDE.md:13). Both
+ * have the same underlying UUID.
  *
- * Sin esto, replBridge rechaza su propia sesión como "ajena" en el
- * chequeo de work-received cuando el gate ccr_v2_compat_enabled está
- * activo.
+ * Without this, replBridge rejects its own session as "foreign" at the
+ * work-received check when the ccr_v2_compat_enabled gate is on.
  */
 export function sameSessionId(a: string, b: string): boolean {
   if (a === b) return true
-  // El body es todo lo que sigue al último guion bajo — cubre tanto
-  // `{tag}_{body}` como `{tag}_staging_{body}`.
+  // The body is everything after the last underscore — this handles both
+  // `{tag}_{body}` and `{tag}_staging_{body}`.
   const aBody = a.slice(a.lastIndexOf('_') + 1)
   const bBody = b.slice(b.lastIndexOf('_') + 1)
-  // Guard contra IDs sin guion bajo (UUIDs pelados): lastIndexOf
-  // devuelve -1, slice(0) devuelve la cadena entera, y ya chequeamos
-  // a === b arriba. Se exige una longitud mínima para evitar matches
-  // accidentales en sufijos cortos (p. ej. restos de un tag de un solo
-  // char de IDs malformados).
+  // Guard against IDs with no underscore (bare UUIDs): lastIndexOf returns -1,
+  // slice(0) returns the whole string, and we already checked a === b above.
+  // Require a minimum length to avoid accidental matches on short suffixes
+  // (e.g. single-char tag remnants from malformed IDs).
   return aBody.length >= 4 && aBody === bBody
 }
 
 /**
- * Construye una URL de sesión CCR v2 desde la URL base de la API y el
- * ID de sesión. A diferencia de buildSdkUrl, devuelve una URL HTTP(S)
- * (no ws://) y apunta a /v1/code/sessions/{id} — el CC hijo derivará la
- * ruta del stream SSE y los endpoints worker desde esta base.
+ * Build a CCR v2 session URL from the API base URL and session ID.
+ * Unlike buildSdkUrl, this returns an HTTP(S) URL (not ws://) and points at
+ * /v1/code/sessions/{id} — the child CC will derive the SSE stream path
+ * and worker endpoints from this base.
  */
 export function buildCCRv2SdkUrl(
   apiBaseUrl: string,
@@ -96,11 +87,11 @@ export function buildCCRv2SdkUrl(
 }
 
 /**
- * Registra este bridge como el worker de una sesión CCR v2. Devuelve el
- * worker_epoch, que debe pasarse al proceso hijo CC para que su
- * CCRClient lo incluya en cada request de heartbeat/state/event.
+ * Register this bridge as the worker for a CCR v2 session.
+ * Returns the worker_epoch, which must be passed to the child CC process
+ * so its CCRClient can include it in every heartbeat/state/event request.
  *
- * Refleja lo que environment-manager hace en el camino de contenedor
+ * Mirrors what environment-manager does in the container path
  * (api-go/environment-manager/cmd/cmd_task_run.go RegisterWorker).
  */
 export async function registerWorker(
@@ -119,9 +110,8 @@ export async function registerWorker(
       timeout: 10_000,
     },
   )
-  // protojson serializa int64 como string para evitar pérdida de
-  // precisión de number en JS; el lado Go también puede devolver un
-  // number según la configuración del encoder.
+  // protojson serializes int64 as a string to avoid JS number precision loss;
+  // the Go side may also return a number depending on encoder settings.
   const raw = response.data?.worker_epoch
   const epoch = typeof raw === 'string' ? Number(raw) : raw
   if (

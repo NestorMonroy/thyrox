@@ -1,21 +1,21 @@
 /**
- * Tests para extractGlobBaseDirectory — helper puro que separa un patrón
- * glob en un directorio base estático + un patrón relativo apto para el
- * flag --glob de ripgrep (que exige patrones relativos incluso cuando
- * quien llama nos dio un patrón absoluto).
+ * Tests for extractGlobBaseDirectory — pure helper that splits a
+ * glob pattern into a static base directory + a relative pattern
+ * suitable for ripgrep's --glob flag (which requires relative
+ * patterns even when the user gave us an absolute pattern).
  *
- * Un split incorrecto = ripgrep busca en el directorio equivocado:
- * - "/etc/*.conf" debe buscar en /etc con patrón "*.conf"
- * - "src/**\/*.ts" debe buscar en "src" con patrón "**\/*.ts"
- * - "*.md" sin separador debe buscar en cwd
+ * Wrong split = ripgrep searches the wrong directory:
+ * - "/etc/*.conf" must search /etc with pattern "*.conf"
+ * - "src/**\/*.ts" must search "src" with pattern "**\/*.ts"
+ * - "*.md" with no separator must search cwd
  *
- * Los casos límite incluyen rutas literales (sin chars de glob), raíces de
- * unidad de Windows (C:/) y patrones de raíz (/).
+ * Edge cases include literal paths (no glob chars), Windows drive
+ * roots (C:/), and root patterns (/).
  */
 import { describe, expect, test } from 'bun:test'
 import { extractGlobBaseDirectory } from '../glob.js'
 
-describe('extractGlobBaseDirectory — patrones glob básicos', () => {
+describe('extractGlobBaseDirectory — basic glob patterns', () => {
   test('relative pattern with separator', () => {
     expect(extractGlobBaseDirectory('src/*.ts')).toEqual({
       baseDir: 'src',
@@ -59,10 +59,10 @@ describe('extractGlobBaseDirectory — patrones glob básicos', () => {
   })
 })
 
-describe('extractGlobBaseDirectory — sin separador antes del glob', () => {
+describe('extractGlobBaseDirectory — no separator before glob', () => {
   test('star at root → empty baseDir, full pattern as relative', () => {
-    // Contrato documentado: cuando no hay separador de ruta antes del
-    // primer char de glob, el patrón es relativo a cwd → baseDir es ''.
+    // Documented contract: when there's no path separator before the
+    // first glob char, the pattern is relative to cwd → baseDir is ''.
     expect(extractGlobBaseDirectory('*.md')).toEqual({
       baseDir: '',
       relativePattern: '*.md',
@@ -84,7 +84,7 @@ describe('extractGlobBaseDirectory — sin separador antes del glob', () => {
   })
 })
 
-describe('extractGlobBaseDirectory — rutas literales (sin chars de glob)', () => {
+describe('extractGlobBaseDirectory — literal paths (no glob chars)', () => {
   test('literal file → dirname/basename split', () => {
     expect(extractGlobBaseDirectory('src/file.ts')).toEqual({
       baseDir: 'src',
@@ -108,10 +108,10 @@ describe('extractGlobBaseDirectory — rutas literales (sin chars de glob)', () 
   })
 })
 
-describe('extractGlobBaseDirectory — patrones de raíz', () => {
+describe('extractGlobBaseDirectory — root patterns', () => {
   test('/*.txt → baseDir is /, pattern is *.txt', () => {
-    // Contrato documentado: cuando lastSepIndex es 0, baseDir queda vacío
-    // pero usamos '/' como raíz.
+    // Documented contract: when lastSepIndex is 0, baseDir is empty
+    // but we use '/' as the root.
     expect(extractGlobBaseDirectory('/*.txt')).toEqual({
       baseDir: '/',
       relativePattern: '*.txt',
@@ -133,9 +133,9 @@ describe('extractGlobBaseDirectory — patrones de raíz', () => {
   })
 })
 
-describe('extractGlobBaseDirectory — preserva separadores correctamente', () => {
+describe('extractGlobBaseDirectory — preserves separators correctly', () => {
   test('multiple consecutive slashes preserved (split at last)', () => {
-    // path.lastIndexOf('/') usa la ÚLTIMA barra, incluso tras consecutivas.
+    // path.lastIndexOf('/') uses the LAST slash, even after consecutive ones.
     expect(extractGlobBaseDirectory('a//b/*.ts')).toEqual({
       baseDir: 'a//b',
       relativePattern: '*.ts',
@@ -151,7 +151,7 @@ describe('extractGlobBaseDirectory — preserva separadores correctamente', () =
   })
 })
 
-describe('extractGlobBaseDirectory — forma del retorno', () => {
+describe('extractGlobBaseDirectory — return shape', () => {
   test('always returns object with both keys', () => {
     const r = extractGlobBaseDirectory('src/*.ts')
     expect('baseDir' in r).toBe(true)
@@ -170,10 +170,10 @@ describe('extractGlobBaseDirectory — forma del retorno', () => {
   })
 })
 
-describe('extractGlobBaseDirectory — glob char detectado dentro de un componente', () => {
+describe('extractGlobBaseDirectory — glob char detected within path component', () => {
   test('glob in middle path component', () => {
-    // 'src/foo*/bar.ts' — el primer char de glob está en la posición 7
-    // (el '*'). staticPrefix = 'src/foo'; lastSep en 3 → baseDir = 'src',
+    // 'src/foo*/bar.ts' — first glob char is at position 7 (the '*').
+    // staticPrefix = 'src/foo'; lastSep at 3 → baseDir = 'src',
     // relative = 'foo*/bar.ts'.
     expect(extractGlobBaseDirectory('src/foo*/bar.ts')).toEqual({
       baseDir: 'src',
@@ -196,7 +196,7 @@ describe('extractGlobBaseDirectory — glob char detectado dentro de un componen
   })
 })
 
-describe('extractGlobBaseDirectory — entradas degeneradas', () => {
+describe('extractGlobBaseDirectory — degenerate inputs', () => {
   test('empty string → no glob, empty input → bare dirname/basename', () => {
     // path.dirname('') === '.', path.basename('') === ''
     expect(extractGlobBaseDirectory('')).toEqual({
@@ -213,9 +213,9 @@ describe('extractGlobBaseDirectory — entradas degeneradas', () => {
   })
 
   test('trailing slash literal: path.dirname strips trailing slash', () => {
-    // 'a/b/' no tiene glob; path.dirname de node recorta la barra final y
-    // retorna 'a' (no 'a/b'); path.basename retorna 'b'. Fija el
-    // comportamiento del módulo path.
+    // 'a/b/' has no glob; node's path.dirname strips trailing slash and
+    // returns 'a' (not 'a/b'); path.basename returns 'b'. Locks the
+    // path module behaviour.
     expect(extractGlobBaseDirectory('a/b/')).toEqual({
       baseDir: 'a',
       relativePattern: 'b',

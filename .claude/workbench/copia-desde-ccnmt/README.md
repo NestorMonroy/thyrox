@@ -95,3 +95,17 @@ Pruebas con `pruebas_de_lote.sh` (el procedimiento del lote 01, ahora guion):
   `agent/internal/runtimeSignals.ts`: el par queda idéntico a la fuente.
 
 Las dos pruebas pasan tras el ajuste; 85 copias en total.
+
+## Fase 1 — lote 03 (100 más)
+
+3 pasadas de tsc; 74 copiados, 13 rechazados por su archivo, 13 por un
+consumidor. tsc **2353 → 2351**. Pruebas: 107 derivadas, 2 fallan y las 2 son
+regresiones — las dos son pruebas nuestras que fijan nuestra versión:
+
+- `provider/src/openai/modelMapping.ts`: la prueba exige
+  `readEnv` desde `@thyrox/config/env/utils`; la fuente lo importa de
+  `@thyrox/config/env`.
+- `storage/src/fileEncoding.ts`: la prueba espera el aviso «detectFileEncoding
+  failed for expected reason» ante un ENOENT, que la copia no emite.
+
+Las dos se revierten (`rejected-behavior`): quedan **72 copias**.

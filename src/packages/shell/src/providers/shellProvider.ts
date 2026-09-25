@@ -1,23 +1,33 @@
-/**
- * Porte fiel de `ccnmt: packages/shell/src/providers/shellProvider.ts`.
- *
- * En la fuente este archivo DUPLICA verbatim los cinco símbolos de
- * `../types.ts` (`SHELL_TYPES`, `ShellType`, `DEFAULT_HOOK_SHELL`,
- * `ShellProvider`) — medido con `diff types.ts providers/shellProvider.ts`:
- * el único cambio es que aquí falta `ShellConfig`/`ExecOptions`/etc, que
- * SÍ están en `types.ts`. En vez de reproducir la duplicación (que en la
- * fuente parece un artefacto de refactor, no una decisión), este archivo
- * reexporta desde `../types.js` — mismo contenido, una sola fuente de
- * verdad.
- *
- * Porte COMPLETO: los cuatro símbolos que la fuente declara están
- * presentes (vía reexport).
- *
- * @module
- */
-export {
-  SHELL_TYPES,
-  type ShellType,
-  DEFAULT_HOOK_SHELL,
-  type ShellProvider,
-} from '../types.js'
+export const SHELL_TYPES = ['bash', 'powershell'] as const
+export type ShellType = (typeof SHELL_TYPES)[number]
+export const DEFAULT_HOOK_SHELL: ShellType = 'bash'
+
+export type ShellProvider = {
+  type: ShellType
+  shellPath: string
+  detached: boolean
+
+  /**
+   * Build the full command string including all shell-specific setup.
+   * For bash: source snapshot, session env, disable extglob, eval-wrap, pwd tracking.
+   */
+  buildExecCommand(
+    command: string,
+    opts: {
+      id: number | string
+      sandboxTmpDir?: string
+      useSandbox: boolean
+    },
+  ): Promise<{ commandString: string; cwdFilePath: string }>
+
+  /**
+   * Shell args for spawn (e.g., ['-c', '-l', cmd] for bash).
+   */
+  getSpawnArgs(commandString: string): string[]
+
+  /**
+   * Extra env vars for this shell type.
+   * May perform async initialization (e.g., tmux socket setup for bash).
+   */
+  getEnvironmentOverrides(command: string): Promise<Record<string, string>>
+}

@@ -1,24 +1,23 @@
 /**
- * Temporizadores de guardia del bg-daemon: salida por inactividad + upgrade
- * del binario. Extraídos de bgDaemon.ts para que el archivo de entrada
- * quede bajo el presupuesto de 800 LOC. `ant 5170.js` iFK:172-244 — corren
- * durante toda la vida del daemon y abortan el AbortController cuando su
- * condición dispara.
+ * Bg-daemon idle-exit + binary-upgrade watchdog timers. Extracted from
+ * bgDaemon.ts so the entry file stays under the 800-LOC budget. ant
+ * 5170.js iFK:172-244 — these run for the lifetime of the daemon and
+ * abort the AbortController when their condition fires.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/bgDaemonTimers.ts`.
+ * @dynamicRequire
  */
 
 import { statSync } from 'node:fs'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 import type { WorkerVm } from './workerVm.js'
 
 /**
- * idleActivityCount cuenta todo lo que ancla al supervisor — leases
- * (conexiones de cliente activas), workers vivos, y workers desatendidos
- * (siguen corriendo pero ya no supervisados). Cero significa que el daemon
- * está inactivo y un origen transitorio puede auto-apagarse.
+ * idleActivityCount counts everything that pins the supervisor —
+ * leases (active client connections), live workers, and detached
+ * workers (still running but no longer supervised). Zero means the
+ * daemon is idle and a transient origin can self-shutdown.
  */
 export function makeIdleActivityCount(state: {
   leases: { readonly size: number }
@@ -36,13 +35,12 @@ export interface IdleExitOptions {
 }
 
 /**
- * Arma la guardia de salida por inactividad. Devuelve un callback `probe`
- * que el llamador debe disparar cada ~2s + una función `dispose` para
- * desmontar. Cuando el conteo de actividad es 0 durante `graceMs`, emite
- * tengu_daemon_idle_exit y aborta el controller (apagado ordenado).
+ * Set up the idle-exit watchdog. Returns a probe-tick callback caller
+ * should fire every ~2s + a clear function to teardown. When the
+ * activity count is 0 for `graceMs`, emits tengu_daemon_idle_exit and
+ * aborts the controller (graceful shutdown).
  *
- * Los orígenes service/shell anclan al supervisor — nunca salen por
- * inactividad.
+ * Service/shell origins pin the supervisor — they never idle-exit.
  */
 export function setupIdleExitWatchdog(opts: IdleExitOptions): {
   probe: () => void
@@ -84,16 +82,15 @@ export function setupIdleExitWatchdog(opts: IdleExitOptions): {
 }
 
 /**
- * Arma la guardia de upgrade del binario. Observa argv[1] (el binario ccb)
- * por cambio de mtime; al detectarlo, emite
- * tengu_daemon_self_restart_on_upgrade y aborta el controller para que el
- * wrapper / launchAgent reinicie al supervisor bajo el binario nuevo. Los
- * workers bg se re-adoptan desde el roster al siguiente arranque del
- * supervisor.
+ * Set up the binary-upgrade watchdog. Watches argv[1] (the ccb binary)
+ * for mtime change; on detection, emits tengu_daemon_self_restart_on_upgrade
+ * and aborts the controller so the wrapper / launchAgent restarts the
+ * supervisor under the new binary. Bg workers are re-adopted from the
+ * roster on the next supervisor's boot.
  *
- * Devuelve el mtime inicial + función dispose. Si argv[1] no se puede leer
- * (pasa en algunas rutas de bundle compilado), devuelve initialMtime=null y
- * el probe es un no-op.
+ * Returns initial mtime + dispose function. If argv[1] is unreadable
+ * (which happens on some compiled-bundle paths), returns initialMtime=null
+ * and the probe is a no-op.
  */
 export function setupUpgradeWatchdog(
   abort: AbortController,
@@ -130,9 +127,8 @@ export function setupUpgradeWatchdog(
 }
 
 /**
- * Tipo del mapa de workers para makeIdleActivityCount — exportado para que
- * los llamadores puedan angostar el tipo sin traer WorkerVm a
- * bgDaemonTimers.
+ * Worker map type for makeIdleActivityCount — exported so callers can
+ * type-narrow without pulling WorkerVm into bgDaemonTimers.
  */
 export type WorkerMaps = {
   workers: Map<string, WorkerVm>
