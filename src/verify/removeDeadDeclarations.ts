@@ -22,6 +22,7 @@
  * cadena al ámbito del módulo), que ningún análisis estático ve.
  */
 import ts from 'typescript'
+import { applyEdits, createMemoryService } from './tsLanguageService'
 
 const DEAD_CODES = new Set([6133, 6196])
 const MAX_ROUNDS = 20
@@ -123,6 +124,35 @@ function deadCluster(fileName: string, text: string): Set<string> {
   return removed
 }
 
+/** Una variable que `noUnusedLocals` da por no leída pero que el archivo
+ * ASIGNA en otro sitio: retirar su declaración deja la asignación huérfana
+ * (paso 102: TS2304 en `exceededLimits` y `boundPid`). */
+function writtenElsewhere(text: string, statement: ts.Statement, name: string): boolean {
+  if (!ts.isVariableStatement(statement)) return false
+  const source = ts.createSourceFile('/x.ts', text, ts.ScriptTarget.ESNext, true)
+  let count = 0
+  const visit = (node: ts.Node): void => {
+    if (ts.isIdentifier(node) && node.text === name) count += 1
+    node.forEachChild(visit)
+  }
+  visit(source)
+  return count > 1
+}
+
+/** Los imports que quedaron sin uso al retirar el racimo: se retiran con el
+ * arreglo combinado del servicio de lenguaje, que edita sólo el binding. Un
+ * import sin uso se elide al compilar, así que retirarlo no cambia la
+ * conducta (paso 102: `homedir`, `AttributedCounter` huérfanos). */
+function withoutOrphanImports(fileName: string, text: string): string {
+  const { service } = createMemoryService({ [fileName]: text }, {
+    noUnusedLocals: true, noResolve: true, allowJs: true, jsx: ts.JsxEmit.Preserve,
+    target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.ESNext,
+    moduleDetection: ts.ModuleDetectionKind.Force,
+  })
+  const { changes } = service.getCombinedCodeFix({ type: 'file', fileName }, 'unusedIdentifier_deleteImports', {}, {})
+  return applyEdits(text, changes.filter(change => change.fileName === fileName).flatMap(change => change.textChanges))
+}
+
 /** Las ediciones que retiran el racimo muerto, sobre el texto original. */
 export function deadDeclarationEdits(fileName: string, text: string, sourceText?: string): ts.TextChange[] {
   const source = ts.createSourceFile(fileName, text, ts.ScriptTarget.ESNext, true)
@@ -136,14 +166,18 @@ export function deadDeclarationEdits(fileName: string, text: string, sourceText?
   let current = text
   for (let round = 0; round < MAX_ROUNDS; round++) {
     const fresh = [...unusedTopLevel(fileName, current)]
-      .filter(name => byName.has(name) && !removed.has(name) && !liveInSource(name, sourceText, deadInSource))
+      .filter(name => byName.has(name) && !removed.has(name) && !liveInSource(name, sourceText, deadInSource) &&
+        !byName.get(name)!.some(statement => writtenElsewhere(current, statement, name)))
     if (fresh.length === 0) break
     for (const name of fresh) removed.add(name)
     current = applyRemovals(text, [...removed].flatMap(name => byName.get(name)!))
   }
-  return [...removed].flatMap(name => byName.get(name)!)
-    .map(statement => removal(text, statement))
-    .sort((a, b) => b.span.start - a.span.start)
+  if (removed.size === 0) return []
+  // Una sola edición que reemplaza el archivo: los imports huérfanos se
+  // calculan sobre el texto ya sin el racimo, y sus posiciones no son las del
+  // original.
+  const finalText = withoutOrphanImports(fileName, current)
+  return [{ span: { start: 0, length: text.length }, newText: finalText }]
 }
 
 function removal(text: string, statement: ts.Statement): ts.TextChange {

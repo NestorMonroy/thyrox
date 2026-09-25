@@ -66,3 +66,33 @@ describe('deadDeclarationEdits', () => {
     expect(out).not.toContain('function helper')
   })
 })
+
+const IMPORTS = [
+  "import { used, orphan } from './lib'",
+  '',
+  'function deadUser(): number {',
+  '  return orphan()',
+  '}',
+  '',
+  'let counter = 0',
+  '',
+  'export function tick(): number {',
+  '  counter = 1',
+  '  return used()',
+  '}',
+  '',
+].join('\n')
+
+describe('deadDeclarationEdits — lo que el racimo deja atrás', () => {
+  test('retira el import que sólo usaba el racimo y conserva el resto del import', () => {
+    const out = apply(IMPORTS, deadDeclarationEdits('/i.ts', IMPORTS))
+    expect(out).not.toContain('function deadUser')
+    expect(out).not.toContain('orphan')
+    expect(out).toContain("import { used } from './lib'")
+  })
+
+  test('no retira una variable que el archivo asigna aunque nadie la lea', () => {
+    const out = apply(IMPORTS, deadDeclarationEdits('/i.ts', IMPORTS))
+    expect(out).toContain('let counter = 0')
+  })
+})
