@@ -45,14 +45,16 @@ def mirror_node_modules(main: Path, wt: Path) -> int:
         dst_dir.mkdir(parents=True, exist_ok=True)
         for entry in src_dir.iterdir():
             target = dst_dir / entry.name
+            # Un alcance (`@types`) se recorre SIEMPRE, antes de mirar si ya
+            # existe: un paquete instalado después de la primera preparación
+            # vive dentro de un alcance que ya está reflejado.
+            if entry.name.startswith("@") and entry.is_dir() and not entry.is_symlink():
+                mirror(entry, target)
+                continue
             if target.exists() or target.is_symlink():
                 continue
             if entry.is_symlink():
-                link = os.readlink(entry)
-                target.symlink_to(link)
-            elif entry.name.startswith("@") and entry.is_dir():
-                mirror(entry, target)
-                continue
+                target.symlink_to(os.readlink(entry))
             else:
                 target.symlink_to(entry.resolve())
             created += 1
