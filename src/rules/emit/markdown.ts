@@ -52,7 +52,7 @@ export function resolveParameters(
 
 /** Sustituye los marcadores; lanza ante uno que ningún parámetro declara. */
 export function render(body: string, values: Record<string, string>): string {
-  return body.replace(PLACEHOLDER, (match, name: string) => {
+  return body.replace(PLACEHOLDER, (_match, name: string) => {
     if (!(name in values)) {
       throw new UnresolvedParameterError(
         `El cuerpo usa {{${name}}} y la definicion no lo declara como ` +

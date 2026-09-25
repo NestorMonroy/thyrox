@@ -1,0 +1,63 @@
+src/packages/agent/query.ts(353,41): error TS18046: 't' is of type 'unknown'.
+src/packages/agent/query.ts(354,21): error TS18046: 't' is of type 'unknown'.
+src/packages/agent/query.ts(386,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+src/packages/agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+src/packages/agent/query.ts(449,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+src/packages/agent/query.ts(450,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.
+src/packages/agent/query.ts(451,9): error TS2339: Property 'compactionUsage' does not exist on type '{}'.
+src/packages/agent/query.ts(457,28): error TS2339: Property 'summaryMessages' does not exist on type '{}'.
+src/packages/agent/query.ts(458,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+src/packages/agent/query.ts(459,28): error TS2339: Property 'hookResults' does not exist on type '{}'.
+src/packages/agent/query.ts(508,60): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(515,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(658,23): error TS18046: 'toolUseContext.options.agentDefinitions' is of type 'unknown'.
+src/packages/agent/query.ts(660,17): error TS18046: 'toolUseContext.options.agentDefinitions' is of type 'unknown'.
+src/packages/agent/query.ts(665,25): error TS18046: 'appState.mcp' is of type 'unknown'.
+src/packages/agent/query.ts(666,37): error TS18046: 'appState.mcp' is of type 'unknown'.
+src/packages/agent/query.ts(670,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/agent/query.ts(674,15): error TS2322: Type '((n: { key: string; text: string; priority: string; }) => void) | undefined' is not assignable to type '((notif: unknown) => void) | undefined'.
+  Type '(n: { key: string; text: string; priority: string; }) => void' is not assignable to type '(notif: unknown) => void'.
+    Types of parameters 'n' and 'notif' are incompatible.
+      Type 'unknown' is not assignable to type '{ key: string; text: string; priority: string; }'.
+src/packages/agent/query.ts(724,17): error TS18046: 'message' is of type 'unknown'.
+src/packages/agent/query.ts(736,21): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'Tools'.
+  Type 'unknown' is not assignable to type 'Tool<AnyObject, unknown, unknown>'.
+src/packages/agent/query.ts(761,19): error TS2698: Spread types may only be created from object types.
+src/packages/agent/query.ts(797,43): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AgentMessage | AgentStreamEvent | undefined'.
+src/packages/agent/query.ts(801,21): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+src/packages/agent/query.ts(803,17): error TS18046: 'message' is of type 'unknown'.
+src/packages/agent/query.ts(1057,42): error TS2345: Argument of type 'AgentAssistantMessage | undefined' is not assignable to parameter of type 'AgentMessage'.
+  Type 'undefined' is not assignable to type 'AgentMessage'.
+src/packages/agent/query.ts(1121,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(1126,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+src/packages/agent/query.ts(1147,15): error TS2322: Type 'AgentAssistantMessage | undefined' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+  Type 'undefined' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+src/packages/agent/query.ts(1148,38): error TS2345: Argument of type 'AgentAssistantMessage | undefined' is not assignable to parameter of type 'AgentMessage'.
+  Type 'undefined' is not assignable to type 'AgentMessage'.
+src/packages/agent/query.ts(1243,37): error TS2322: Type 'unknown' is not assignable to type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage'.
+src/packages/agent/query.ts(1246,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/query.ts(1426,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+src/packages/agent/query.ts(1460,27): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1467,41): error TS18048: 'toolResult.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1552,27): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1553,13): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1561,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1562,15): error TS18048: 'toolResult.message' is possibly 'undefined'.
+src/packages/agent/query.ts(1755,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+src/packages/agent/query.ts(1767,60): error TS2349: This expression is not callable.
+  Type '{}' has no call signatures.

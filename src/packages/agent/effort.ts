@@ -300,7 +300,6 @@ export function resolveAppliedEffort(
 
 /** Los modelos a los que `ne` nombra por nivel. */
 const XHIGH_MODELS = 'Fable 5, Opus 4.7+, Sonnet 5'
-const MAX_MODELS = 'Fable 5, Opus 4.6+, Sonnet 4.6+'
 const MAX_WARNING =
   'May use excessive tokens resulting in long response times or overthinking. Use sparingly for the hardest tasks.'
 

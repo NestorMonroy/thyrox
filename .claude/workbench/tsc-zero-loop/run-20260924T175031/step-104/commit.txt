@@ -1,0 +1,17 @@
+Finish five dead clusters that needed judgment
+
+Step 104 closed by hand the dead-local instances the proposer cannot
+decide: 1508 -> 1492 in 3 tsc passes.
+
+- mockRateLimits.ts: the setter API is dead in the source too; its
+  module state exceededLimits was then only ever written, so the
+  declaration, its type and the dead store in clearMockHeaders go.
+- teamMemSyncTypes.ts: a stale duplicate of teamMemTypes.ts; the
+  lazySchema-built schemas and their imports go.
+- useSearchInput.ts keeps the useTerminalSize() call, which subscribes
+  the component to resizes, and drops only the unused local.
+- logging.ts and LogoV2.tsx: unused destructured names.
+
+Two instances are excluded with their reason in memory: config.ts's
+lastReadFileStats is a port gap (10 references in the source, 4
+here), and CreateAgentWizard's TS6133 follows from TS2315/TS2344.

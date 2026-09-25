@@ -35,7 +35,6 @@ import {
 const DOCS_ROOT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim()
 const L2 = 'origin/feature/kaupamex-l2'
 const L0 = 'origin/feature/kaupamex-l0'
-const L3 = 'origin/feature/kaupamex-l3'
 
 /**
  * ¿La ref existe en ESTE clon? Alimenta a `test.if`, así que su respuesta útil

@@ -96,7 +96,7 @@ import type { Message } from './messageShapes.js'
  * declara localmente — ver la nota de divergencia del docstring del
  * módulo.
  */
-export type AttachmentMessage<T = unknown> = Message & {
+export type AttachmentMessage<_T = unknown> = Message & {
   type: 'attachment'
   attachment: { type: string; [key: string]: unknown }
 }

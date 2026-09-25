@@ -45,7 +45,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, analyze, diagnostic_key, stable_key
 
 
 @dataclass(frozen=True)
@@ -119,7 +119,7 @@ def _diagnostic_keys(lines) -> Counter[str]:
     for raw in lines:
         match = DIAGNOSTIC.match(raw.rstrip("\n"))
         if match:
-            keys[diagnostic_key(match)] += 1
+            keys[stable_key(diagnostic_key(match))] += 1
     return keys
 
 
@@ -132,9 +132,10 @@ def _new_diagnostics(before_lines, after_lines) -> tuple[list[str], dict[str, li
         match = DIAGNOSTIC.match(raw.rstrip("\n"))
         if not match:
             continue
+        # Se compara por la clave estable y se informa el texto tal cual.
         key = diagnostic_key(match)
-        if remaining[key] > 0:
-            remaining[key] -= 1
+        if remaining[stable_key(key)] > 0:
+            remaining[stable_key(key)] -= 1
             continue
         new.append(key)
         by_file.setdefault(match.group("file"), []).append(key)
@@ -177,8 +178,9 @@ def verify_proposals(before_lines, after_lines, proposals: list[Proposal]) -> Ba
     )
     verdicts: list[ProposalVerdict] = []
     for proposal in proposals:
-        targets_before = sum(before_keys[target] for target in proposal.targets)
-        targets_after = sum(after_keys[target] for target in proposal.targets)
+        targets = {stable_key(target) for target in proposal.targets}
+        targets_before = sum(before_keys[target] for target in targets)
+        targets_after = sum(after_keys[target] for target in targets)
         attributable = sorted(
             key
             for file in proposal.files

@@ -1,0 +1,11 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(922,15): error TS2698: Spread types may only be created from object types.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(924,21): error TS18046: 'result.compactionResult' is of type 'unknown'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(934,15): error TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  Type 'Message' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+    Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+      Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'ProgressMessage'.
+        Property 'data' is missing in type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' but required in type '{ type: "progress"; data: unknown; }'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1196,7): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1325,5): error TS2322: Type 'unknown[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  Type 'unknown' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(1328,5): error TS2322: Type 'unknown' is not assignable to type 'EffortValue | undefined'.

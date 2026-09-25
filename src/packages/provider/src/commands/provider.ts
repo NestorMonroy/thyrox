@@ -1,10 +1,13 @@
-import type { Command } from '@thyrox/command-runtime/runtime'
-import type { LocalCommandCall } from '@thyrox/agent/command.js'
+import type {
+  Command,
+  LocalCommandResult,
+  LocalJSXCommandContext,
+} from '@thyrox/command-runtime/runtime'
 import { getAPIProvider } from '../providers.js'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { getSettings } from '@thyrox/config/settings'
 import { applyConfigEnvironmentVariables } from '@thyrox/config/managedEnv.js'
-import { deleteEnv, getAllEnv, readEnv, setEnv } from '@thyrox/config/env'
+import { deleteEnv, getAllEnv, setEnv } from '@thyrox/config/env'
 
 function getEnvVarForProvider(provider: string): string {
   switch (provider) {
@@ -22,7 +25,7 @@ function getEnvVarForProvider(provider: string): string {
 }
 
 // Get merged env: process.env + settings.env (from userSettings)
-function getMergedEnv(): Record<string, string> {
+function getMergedEnv(): Record<string, string | undefined> {
   const settings = getSettings()
   const merged = getAllEnv()
   if (settings?.env) {
@@ -31,7 +34,10 @@ function getMergedEnv(): Record<string, string> {
   return merged
 }
 
-const call: LocalCommandCall = async (args, _context) => {
+const call = async (
+  args: string,
+  _context: LocalJSXCommandContext,
+): Promise<LocalCommandResult> => {
   const arg = args.trim().toLowerCase()
 
   // No argument: show current provider
@@ -44,11 +50,11 @@ const call: LocalCommandCall = async (args, _context) => {
   if (arg === 'unset') {
     updateSettingsForSource('userSettings', { modelType: undefined })
     // Also clear all provider-specific env vars to prevent conflicts
-    delete readEnv('CLAUDE_CODE_USE_BEDROCK')
-    delete readEnv('CLAUDE_CODE_USE_VERTEX')
-    delete readEnv('CLAUDE_CODE_USE_FOUNDRY')
-    delete readEnv('CLAUDE_CODE_USE_OPENAI')
-    delete readEnv('CLAUDE_CODE_USE_GEMINI')
+    deleteEnv('CLAUDE_CODE_USE_BEDROCK')
+    deleteEnv('CLAUDE_CODE_USE_VERTEX')
+    deleteEnv('CLAUDE_CODE_USE_FOUNDRY')
+    deleteEnv('CLAUDE_CODE_USE_OPENAI')
+    deleteEnv('CLAUDE_CODE_USE_GEMINI')
     return {
       type: 'text',
       value: 'API provider cleared (will use environment variables).',
@@ -108,11 +114,11 @@ const call: LocalCommandCall = async (args, _context) => {
   // - 'bedrock', 'vertex', 'foundry' are env-only (do NOT touch settings.json)
   if (arg === 'anthropic' || arg === 'openai' || arg === 'gemini' || arg === 'codex') {
     // Clear any cloud provider env vars to avoid conflicts
-    delete readEnv('CLAUDE_CODE_USE_BEDROCK')
-    delete readEnv('CLAUDE_CODE_USE_VERTEX')
-    delete readEnv('CLAUDE_CODE_USE_FOUNDRY')
-    delete readEnv('CLAUDE_CODE_USE_OPENAI')
-    delete readEnv('CLAUDE_CODE_USE_GEMINI')
+    deleteEnv('CLAUDE_CODE_USE_BEDROCK')
+    deleteEnv('CLAUDE_CODE_USE_VERTEX')
+    deleteEnv('CLAUDE_CODE_USE_FOUNDRY')
+    deleteEnv('CLAUDE_CODE_USE_OPENAI')
+    deleteEnv('CLAUDE_CODE_USE_GEMINI')
     // Update settings.json
     updateSettingsForSource('userSettings', { modelType: arg })
     // Ensure settings.env gets applied to process.env

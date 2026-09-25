@@ -37,58 +37,6 @@ function shouldUseVCR(): boolean {
   return false
 }
 
-/**
- * Generic fixture management helper
- * Handles caching, reading, writing fixtures for any data type
- */
-async function withFixture<T>(
-  input: unknown,
-  fixtureName: string,
-  f: () => Promise<T>,
-): Promise<T> {
-  if (!shouldUseVCR()) {
-    return await f()
-  }
-
-  // Create hash of input for fixture filename
-  const hash = createHash('sha1')
-    .update(jsonStringify(input))
-    .digest('hex')
-    .slice(0, 12)
-  const filename = join(
-    readEnv('CLAUDE_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
-    `fixtures/${fixtureName}-${hash}.json`,
-  )
-
-  // Fetch cached fixture
-  try {
-    const cached = jsonParse(
-      await readFile(filename, { encoding: 'utf8' }),
-    ) as T
-    return cached
-  } catch (e: unknown) {
-    const code = getErrnoCode(e)
-    if (code !== 'ENOENT') {
-      throw e
-    }
-  }
-
-  if ((env.isCI || readEnv('CI')) && !isEnvTruthy(readEnv('VCR_RECORD'))) {
-    throw new Error(
-      `Fixture missing: ${filename}. Re-run tests with VCR_RECORD=1, then commit the result.`,
-    )
-  }
-
-  // Create & write new fixture
-  const result = await f()
-
-  await mkdir(dirname(filename), { recursive: true })
-  await writeFile(filename, jsonStringify(result, null, 2), {
-    encoding: 'utf8',
-  })
-
-  return result
-}
 
 export async function withVCR(
   messages: Message[],
@@ -384,28 +332,3 @@ export async function* withStreamingVCR(
   yield* buffer
 }
 
-async function withTokenCountVCR(
-  messages: unknown[],
-  tools: unknown[],
-  f: () => Promise<number | null>,
-): Promise<number | null> {
-  // Dehydrate before hashing so fixture keys survive cwd/config-home/tempdir
-  // variation and message UUID/timestamp churn. System prompts embed the
-  // working directory (both raw and as a slash→dash project slug in the
-  // auto-memory path) and messages carry fresh UUIDs per run; without this,
-  // every test run produces a new hash and fixtures never hit in CI.
-  const cwdSlug = getCwd().replace(/[^a-zA-Z0-9]/g, '-')
-  const dehydrated = (
-    dehydrateValue(jsonStringify({ messages, tools })) as string
-  )
-    .replaceAll(cwdSlug, '[CWD_SLUG]')
-    .replace(
-      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
-      '[UUID]',
-    )
-    .replace(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?/g, '[TIMESTAMP]')
-  const result = await withFixture(dehydrated, 'token-count', async () => ({
-    tokenCount: await f(),
-  }))
-  return result.tokenCount
-}

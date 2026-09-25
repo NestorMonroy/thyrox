@@ -1,0 +1,19 @@
+src/packages/agent/localAgentTask.tsx(111,5): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/agent/localAgentTask.tsx(111,5): error TS18046: 'usage.input_tokens' is of type 'unknown'.
+src/packages/agent/localAgentTask.tsx(112,6): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/agent/localAgentTask.tsx(113,6): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/agent/localAgentTask.tsx(114,37): error TS18048: 'usage' is possibly 'undefined'.
+src/packages/agent/localAgentTask.tsx(114,37): error TS18046: 'usage.output_tokens' is of type 'unknown'.
+src/packages/agent/localAgentTask.tsx(115,25): error TS18048: 'message.message.content' is possibly 'undefined'.
+src/packages/agent/localAgentTask.tsx(116,17): error TS2339: Property 'type' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'type' does not exist on type 'string'.
+src/packages/agent/localAgentTask.tsx(119,19): error TS2339: Property 'name' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'name' does not exist on type 'string'.
+src/packages/agent/localAgentTask.tsx(120,31): error TS2339: Property 'input' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'input' does not exist on type 'string'.
+src/packages/agent/localAgentTask.tsx(122,45): error TS2339: Property 'name' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'name' does not exist on type 'string'.
+src/packages/agent/localAgentTask.tsx(125,29): error TS2339: Property 'name' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'name' does not exist on type 'string'.
+src/packages/agent/localAgentTask.tsx(128,21): error TS2339: Property 'name' does not exist on type 'string | ContentBlockParam | ContentBlock'.
+  Property 'name' does not exist on type 'string'.

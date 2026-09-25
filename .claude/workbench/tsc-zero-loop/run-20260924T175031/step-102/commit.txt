@@ -1,0 +1,7 @@
+Remove three dead clusters found to the fixpoint
+
+Step 102 reran dead-declarations after it learned to judge liveness by
+the source's own dead cluster: 1516 -> 1513 in 3 tsc passes. It kept
+pluginVersioning.ts, SdkControlTransport.ts and vcr.ts, each dead in
+the source too. The seven rejections exposed two cases the proposer
+now handles: write-only variables and imports left orphaned.

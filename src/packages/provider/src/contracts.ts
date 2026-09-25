@@ -1,4 +1,3 @@
-import type { ClientOptions } from '@anthropic-ai/sdk'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ContentBlock, ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { UUID } from 'crypto'
@@ -162,4 +161,3 @@ export type ProviderCachedAsyncFn<T> = (() => Promise<T>) & {
   }
 }
 
-type ProviderClientFetch = ClientOptions['fetch']

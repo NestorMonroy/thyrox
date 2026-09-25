@@ -8,6 +8,8 @@ import sys
 import tempfile
 import unittest
 from paths import reach  # noqa: E402
+from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key, stable_key  # noqa: E402
+from verify.batch_verification import _new_diagnostics  # noqa: E402
 
 ROOT = reach.thyrox_root()
 SCRIPT = ROOT / "src/verify/analyze_typescript_diagnostics.py"
@@ -81,6 +83,40 @@ class TypeScriptDiagnosticAnalysisTest(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertEqual(report, {})
         self.assertIn("no TypeScript diagnostics", result.stderr)
+
+
+# Par real (paso 097 contra paso 098): el mismo TS2322 de MessageRow.tsx, con
+# la línea desplazada y la unión impresa en otro orden y truncada distinto.
+_UNION_BEFORE = 'src/packages/repl/src/components/MessageRow.tsx(197,7): error TS2322: Type \'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup\' is not assignable to type \'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup\'.'
+_UNION_AFTER = 'src/packages/repl/src/components/MessageRow.tsx(200,7): error TS2322: Type \'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup\' is not assignable to type \'AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | ... 16 more ... | CollapsedReadSearchGroup\'.'
+
+
+class StableUnionKeyTest(unittest.TestCase):
+    def key(self, line: str) -> str:
+        match = DIAGNOSTIC.match(line)
+        assert match
+        return stable_key(diagnostic_key(match))
+
+    def test_same_union_printed_in_another_order_is_the_same_key(self) -> None:
+        self.assertEqual(self.key(_UNION_BEFORE), self.key(_UNION_AFTER))
+
+    def test_the_reprinted_union_is_not_a_new_diagnostic(self) -> None:
+        self.assertEqual([], _new_diagnostics([_UNION_BEFORE], [_UNION_AFTER])[0])
+
+    def test_signals_still_read_the_literal_text(self) -> None:
+        match = DIAGNOSTIC.match(_UNION_BEFORE)
+        assert match
+        self.assertIn("CollapsedReadSearchGroup", diagnostic_key(match))
+
+    def test_unions_of_different_size_stay_distinct(self) -> None:
+        self.assertNotEqual(
+            self.key("a.ts(1,1): error TS2322: Type 'A | B' is not assignable to type 'C'."),
+            self.key("a.ts(1,1): error TS2322: Type 'A | B | D' is not assignable to type 'C'."))
+
+    def test_non_union_type_is_kept_verbatim(self) -> None:
+        self.assertEqual(
+            "a.ts: TS2322: Type 'Array<A | B>' is not assignable to type 'C'.",
+            self.key("a.ts(1,1): error TS2322: Type 'Array<A | B>' is not assignable to type 'C'."))
 
 
 if __name__ == "__main__":

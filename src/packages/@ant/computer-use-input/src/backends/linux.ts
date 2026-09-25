@@ -20,13 +20,6 @@ function run(cmd: string[]): string {
   return new TextDecoder().decode(result.stdout).trim()
 }
 
-async function runAsync(cmd: string[]): Promise<string> {
-  const proc = Bun.spawn(cmd, { stdout: 'pipe', stderr: 'pipe' })
-  const out = await new Response(proc.stdout).text()
-  await proc.exited
-  return out.trim()
-}
-
 // ---------------------------------------------------------------------------
 // xdotool key name mapping
 // ---------------------------------------------------------------------------

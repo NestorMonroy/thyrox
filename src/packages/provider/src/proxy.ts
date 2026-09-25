@@ -129,21 +129,6 @@ function matchesGlobPattern(hostname: string, pattern: string): boolean {
   return true
 }
 
-/** Convierte una dirección IPv4 punteada a su entero de 32 bits, o `null`. */
-function parseIpv4ToInteger(address: string): number | null {
-  const octets = address.split('.')
-  if (octets.length !== 4) return null
-
-  let accumulator = 0
-  for (const octet of octets) {
-    if (!/^\d{1,3}$/.test(octet)) return null
-    const value = Number(octet)
-    if (value > 255) return null
-    accumulator = accumulator * 256 + value
-  }
-  return accumulator
-}
-
 /**
  * ¿La dirección cae dentro del bloque CIDR declarado?
  *

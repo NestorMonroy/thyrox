@@ -149,12 +149,13 @@ def _resolve_package(spec: str, packages: dict[str, tuple[Path, dict]]) -> set[P
 
 
 def reachable_copies(cwd: Path, consumers: set[str], applied: set[str], dest: Path,
-                     depth: int = 6) -> set[str]:
+                     depth: int = 6, package_root: Path | None = None) -> set[str]:
     """Las copias aplicadas a las que un consumidor afectado llega por la
     cadena de imports, hasta `depth` saltos. Un tipo que se rompe en una copia
     llega re-exportado por módulos que no se copiaron: el primer salto no lo
-    ve, y sin esto la bisección recorre el lote entero."""
-    packages = _package_map(dest)
+    ve, y sin esto la bisección recorre el lote entero. `package_root` acota
+    dónde se buscan los `package.json` cuando `dest` es una raíz más ancha."""
+    packages = _package_map(package_root or dest)
     paths = {(dest / rel).resolve(): rel for rel in applied}
     frontier = {(cwd / c).resolve() for c in consumers}
     seen = set(frontier)

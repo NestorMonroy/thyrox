@@ -137,7 +137,6 @@ public class CuWin32 {
 // ---------------------------------------------------------------------------
 
 let boundHwnd: string | null = null
-let boundPid: number | null = null
 let boundAppType: import('../win32/appDispatcher.js').AppType | null = null
 let boundFilePath: string | null = null
 
@@ -152,7 +151,7 @@ export function getBoundAppType(): string | null {
 }
 
 /** Bind to a window HWND — all subsequent input/screenshot operations target this handle */
-export function bindWindow(hwnd: string, pid?: number): void {
+export function bindWindow(hwnd: string, _pid?: number): void {
   hwnd = validateHwnd(hwnd)
   // Clean up previous binding
   if (boundHwnd) {
@@ -161,7 +160,6 @@ export function bindWindow(hwnd: string, pid?: number): void {
     hideIndicator()
   }
   boundHwnd = hwnd
-  boundPid = pid ?? null
   boundAppType = 'generic'
   boundFilePath = null
 
@@ -202,7 +200,6 @@ export function bindFile(
   appType: import('../win32/appDispatcher.js').AppType,
 ): void {
   boundHwnd = null
-  boundPid = null
   boundAppType = appType
   boundFilePath = filePath
 }
@@ -215,7 +212,6 @@ export function unbindWindow(): void {
   // Clear cached edit-child / InputSite mappings
   getWm().clearEditChildCache()
   boundHwnd = null
-  boundPid = null
   boundAppType = null
   boundFilePath = null
 }

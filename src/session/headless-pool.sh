@@ -25,7 +25,14 @@
 # --------
 #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
-#                    [--cwd DIR]  < items (uno por linea)
+#                    [--cwd DIR] [--memfree TAM]  < items (uno por linea)
+#
+# `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
+# item si queda menos que TAM; aplicacion: si baja de la mitad, mata al mas
+# joven y lo reencola), la misma que `run-task-pool.sh` porta a mano. La
+# anchura acota cuantos corren, no cuanta memoria ocupan; y con el pool
+# corriendo junto a un `tsc` completo (2.0 GB) en el arbol de medicion
+# (`pool_pipeline.py`), la anchura sola no protege a ninguno de los dos.
 #
 # El prompt de cada item es la plantilla seguida de `Item: <linea>`. Por item
 # escribe `<out>/<n>.json` (la salida `--output-format json`) y `<n>.err`;
@@ -53,7 +60,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-claude}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"
+TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -67,6 +74,7 @@ while [[ $# -gt 0 ]]; do
         --tools) TOOLS="${2:-}"; shift 2 ;;
         --max-turns) MAX_TURNS="${2:-}"; shift 2 ;;
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
+        --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -110,7 +118,16 @@ export HP_OUT="$(cd "$OUT" && pwd)" HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT"
 export HP_CLAUDE="$(command -v "$CLAUDE_BIN")" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS"
 
-"$PARALLEL_BIN" -j "$WIDTH" --colsep '\t' --joblog "$OUT/joblog.tsv" \
+MEMFREE_ARGS=()
+if [[ -n "$MEMFREE_SPEC" ]]; then
+    # La cota se valida con el mismo parser que `run-task-pool.sh` y `bg.sh`:
+    # una cota ilegible no se deja a la interpretacion de Parallel.
+    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib/memory.sh"
+    parse_binary_size "$MEMFREE_SPEC" >/dev/null 2>&1 || rehusa "--memfree ilegible: '$MEMFREE_SPEC' (ej. 2G, 512M)"
+    MEMFREE_ARGS=(--memfree "$MEMFREE_SPEC")
+fi
+
+"$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$OUT/joblog.tsv" \
     _headless_item {1} {2} :::: "$OUT/index.tsv" >/dev/null 2>&1
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por

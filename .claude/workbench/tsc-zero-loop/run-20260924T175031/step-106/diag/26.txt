@@ -1,0 +1,12 @@
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(51,20): error TS18048: 'bridgeProc.stdout' is possibly 'undefined'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(51,38): error TS2339: Property 'getReader' does not exist on type 'number | ReadableStream<Uint8Array<ArrayBuffer>>'.
+  Property 'getReader' does not exist on type 'number'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(134,7): error TS2532: Object is possibly 'undefined'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(134,25): error TS2339: Property 'write' does not exist on type 'number | FileSink'.
+  Property 'write' does not exist on type 'number'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(135,7): error TS2532: Object is possibly 'undefined'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(135,25): error TS2339: Property 'flush' does not exist on type 'number | FileSink'.
+  Property 'flush' does not exist on type 'number'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(182,7): error TS18048: 'bridgeProc.stdin' is possibly 'undefined'.
+src/packages/@ant/computer-use-mcp/src/legacy/win32/bridgeClient.ts(182,24): error TS2339: Property 'end' does not exist on type 'number | FileSink'.
+  Property 'end' does not exist on type 'number'.

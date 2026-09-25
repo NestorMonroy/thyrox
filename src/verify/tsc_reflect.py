@@ -182,7 +182,7 @@ def audit(run: Path) -> dict:
             "uncovered_steps": uncovered_steps}
 
 
-def sweep_gate(run: Path, step: Path) -> list[str]:
+def sweep_gate(run: Path, step: Path, log: Path | None = None) -> list[str]:
     """Gate 4 (plan v2.2.0), al cerrar un paso con avance. Con al menos un
     patrón abierto en la memoria, el paso tiene que haber REVISADO patrones
     (`gate4.json` los nombra: omitir el paso 4 es 0 revisados) y su log final
@@ -190,7 +190,12 @@ def sweep_gate(run: Path, step: Path) -> list[str]:
     excluida con razón o cerrada. Devuelve los motivos de bloqueo; vacío si pasa.
 
     Antes el gate 4 vivía sólo en `agent_proposal`, y un camino de propuestas
-    que no pasara por ahí (un pool de `claude -p` por archivo) lo saltaba."""
+    que no pasara por ahí (un pool de `claude -p` por archivo) lo saltaba.
+
+    `log` es el log que describe el árbol al cerrar. Por defecto es el del
+    paso; cuando un paso se cierra después de otro que ya midió el árbol con
+    sus cambios dentro (el barrido del 097 se verificó en el 099), el log
+    vigente es el más reciente, no el del paso."""
     rows = [row for row in _read_jsonl(run / PATTERNS) if row.get("status") != "closed"]
     if not rows:
         return []
@@ -200,7 +205,7 @@ def sweep_gate(run: Path, step: Path) -> list[str]:
     if not reviewed:
         reasons.append(f"el paso no revisó ningún patrón ({record.name} ausente o vacío) "
                        f"con {len(rows)} abierto(s) en la memoria: el paso 4 se omitió")
-    final = step / "final.log"
+    final = log or step / "final.log"
     lines = final.read_text().splitlines() if final.exists() else []
     for name, found in blocking_pending(run, lines, []).items():
         reasons.append(f"{name}: {sum(found.values())} instancia(s) viva(s) en {len(found)} archivo(s) "
@@ -227,6 +232,7 @@ def main(argv: list[str] | None = None) -> int:
     sweep_p = sub.add_parser("gate-sweep", help="gate 4: el paso aplicó la memoria a todo el código")
     sweep_p.add_argument("--run", type=Path, required=True)
     sweep_p.add_argument("--step", type=Path, required=True)
+    sweep_p.add_argument("--log", type=Path, help="log vigente del árbol (por defecto, el del paso)")
     audit_p = sub.add_parser("audit", help="las dos preguntas de verificación del plan")
     audit_p.add_argument("--run", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -248,7 +254,7 @@ def main(argv: list[str] | None = None) -> int:
                 return 4
             print(f"gate 3b: {args.step.name} cubierto por la memoria")
         elif args.command == "gate-sweep":
-            reasons = sweep_gate(args.run, args.step)
+            reasons = sweep_gate(args.run, args.step, args.log)
             if reasons:
                 print(f"GATE 4 BLOQUEADO — {args.step.name}: " + "; ".join(reasons), file=sys.stderr)
                 return 5

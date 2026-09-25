@@ -214,7 +214,6 @@ function decisionReasonToOTelSource(
     case 'other':
       return 'config'
     default: {
-      const _exhaustive: never = reason
       return 'config'
     }
   }

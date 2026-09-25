@@ -1,0 +1,44 @@
+{
+ "reviewed": [
+  {
+   "pattern": "delete-of-read-value-after-env-port",
+   "files": [
+    "src/packages/provider/src/commands/provider.ts"
+   ]
+  },
+  {
+   "pattern": "partial-literal-for-full-context-in-test",
+   "files": [
+    "src/packages/permission/__tests__/permissionSetup.test.ts",
+    "src/packages/permission/__tests__/permissionSetupAutoMode.test.ts"
+   ]
+  },
+  {
+   "pattern": "fake-message-outside-union-in-test",
+   "files": [
+    "src/packages/storage/src/__tests__/sessionStart.test.ts"
+   ]
+  },
+  {
+   "pattern": "test-local-state-for-appstate-updater",
+   "files": [
+    "src/packages/swarm/src/tasks/__tests__/InProcessTeammateTask.test.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-op-handler-table",
+   "files": [
+    "src/packages/daemon/src/bgDaemon.ts"
+   ]
+  },
+  {
+   "pattern": "content-union-read-without-narrowing",
+   "files": [
+    "src/packages/agent/localAgentTask.tsx",
+    "src/packages/repl/src/components/messages/GroupedToolUseContent.tsx",
+    "src/packages/tool-registry/src/teleport.tsx",
+    "src/packages/repl/src/components/MessageRow.tsx"
+   ]
+  }
+ ]
+}

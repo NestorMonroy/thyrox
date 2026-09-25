@@ -169,7 +169,7 @@ export async function fileHistoryTrackEdit(
         messageId,
         updatedMostRecentSnapshot,
         true, // isSnapshotUpdate
-      ).catch(error => {
+      ).catch((error: unknown) => {
         getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
       })
 
@@ -316,7 +316,7 @@ export async function fileHistoryMakeSnapshot(
         messageId,
         newSnapshot,
         false, // isSnapshotUpdate
-      ).catch(error => {
+      ).catch((error: unknown) => {
         getAgentHostBindings().logError?.(new Error(`FileHistory: Failed to record snapshot: ${error}`))
       })
 
@@ -920,7 +920,9 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     return
   }
 
-  const fileHistorySnapshots = log.fileHistorySnapshots
+  const fileHistorySnapshots = log.fileHistorySnapshots as
+    | FileHistorySnapshot[]
+    | undefined
   if (!fileHistorySnapshots || log.messages.length === 0) {
     return
   }
@@ -1019,7 +1021,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
             snapshot.messageId,
             snapshot,
             false, // isSnapshotUpdate
-          ).catch(_ => {
+          ).catch((_: unknown) => {
             getAgentHostBindings().logError?.(
               new Error(`FileHistory: Failed to record copy backup snapshot`),
             )

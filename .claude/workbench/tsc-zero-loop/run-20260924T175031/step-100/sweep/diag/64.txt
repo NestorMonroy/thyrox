@@ -1,0 +1,8 @@
+patron: untyped-command-builder-in-test
+senal_del_verificador: Property '\w+' does not exist on type '\{\}'
+fix_generico: La fábrica del test anota un tipo que borra las opciones: se deja inferir el Command de commander que devuelve new Command().
+
+diagnósticos de este archivo que casan la señal:
+tests/integration/cli-arguments.test.ts(107,27): error TS2339: Property 'effort' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(116,27): error TS2339: Property 'effort' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(127,27): error TS2339: Property 'promptSuggestions' does not exist on type '{}'.

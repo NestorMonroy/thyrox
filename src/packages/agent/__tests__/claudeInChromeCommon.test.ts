@@ -92,7 +92,6 @@ describe('trackClaudeInChromeTabId — re-add of existing id at cap does NOT evi
     // Critical: if size === MAX and the id is ALREADY tracked, the
     // function adds normally without clearing. This protects against
     // losing real state when a tab fires onActivated repeatedly.
-    const baseId = 2_000_000
     // First, repeatedly add fresh ids to rebuild tracking up near the cap.
     // (We can't reset state cleanly, so just verify the behavioral guard.)
     const sentinel = 2_000_500

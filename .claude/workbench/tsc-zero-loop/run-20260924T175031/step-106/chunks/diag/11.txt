@@ -1,0 +1,12 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(7,3): error TS2724: '"@thyrox/config/settings"' has no exported member named 'getSettingsWithSources'. Did you mean 'getSettingsWithErrors'?
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,10): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(792,22): error TS7006: Parameter 'message' implicitly has an 'any' type.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1524,15): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1531,15): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1541,17): error TS2740: Type 'FileStateCache' is missing the following properties from type 'FileStateCache': cache, get, set, has, and 6 more.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1553,15): error TS2328: Types of parameters 'f' and 'f' are incompatible.
+  Type 'AppState' is not assignable to type 'import("/home/user/thyrox/src/packages/app-host/src/state/AppStateCompat").AppState'.
+    Type 'AppState' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.

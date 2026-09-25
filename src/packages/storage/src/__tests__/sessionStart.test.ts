@@ -11,10 +11,18 @@ import {
   setPendingInitialUserMessageForTest,
   setShouldAllowManagedHooksOnlyFn,
   takeInitialUserMessage,
+  type HookResultMessage,
 } from '../sessionStart.js'
 
 const ORIGINAL_SIMPLE = process.env.CLAUDE_CODE_SIMPLE
 const ORIGINAL_ARGV = [...process.argv]
+
+// `uuid`/`type` fijos — sólo `label` varía — para construir un `Message`
+// mínimo y válido contra la unión discriminada, comparable por igualdad.
+const FAKE_UUID = '00000000-0000-0000-0000-000000000000' as const
+function fakeMessage(label: string): HookResultMessage {
+  return { type: 'collapsed_read_search', uuid: FAKE_UUID, label }
+}
 
 function resetAllInjections(): void {
   setShouldAllowManagedHooksOnlyFn(() => false)
@@ -22,7 +30,7 @@ function resetAllInjections(): void {
   setExecuteSessionStartHooksFn(async function* () {})
   setExecuteSetupHooksFn(async function* () {})
   setGetMainThreadAgentTypeFn(() => undefined)
-  setCreateAttachmentMessageFn(input => input)
+  setCreateAttachmentMessageFn(() => fakeMessage('default-context'))
   setPendingInitialUserMessageForTest(undefined)
 }
 
@@ -120,17 +128,23 @@ describe('processSessionStartHooks — modo --bare', () => {
 
 describe('processSessionStartHooks — orquestación con colaboradores inyectados', () => {
   test('junta los mensajes de los hooks y agrega un mensaje de contexto adicional', async () => {
+    let contextInput: unknown
+    setCreateAttachmentMessageFn(input => {
+      contextInput = input
+      return fakeMessage('contexto')
+    })
     setExecuteSessionStartHooksFn(async function* () {
-      yield { message: { texto: 'primero' }, additionalContexts: ['ctx-a'] }
-      yield { message: { texto: 'segundo' }, additionalContexts: ['ctx-b'] }
+      yield { message: fakeMessage('primero'), additionalContexts: ['ctx-a'] }
+      yield { message: fakeMessage('segundo'), additionalContexts: ['ctx-b'] }
     })
 
     const result = await processSessionStartHooks('startup')
 
     expect(result).toHaveLength(3)
-    expect(result[0]).toEqual({ texto: 'primero' })
-    expect(result[1]).toEqual({ texto: 'segundo' })
-    expect(result[2]).toEqual({
+    expect(result[0]).toEqual(fakeMessage('primero'))
+    expect(result[1]).toEqual(fakeMessage('segundo'))
+    expect(result[2]).toEqual(fakeMessage('contexto'))
+    expect(contextInput).toEqual({
       type: 'hook_additional_context',
       content: ['ctx-a', 'ctx-b'],
       hookName: 'SessionStart',
@@ -165,12 +179,12 @@ describe('processSessionStartHooks — orquestación con colaboradores inyectado
   test('si loadPluginHooks falla, NO propaga el error — sigue ejecutando los hooks', async () => {
     setLoadPluginHooksFn(() => Promise.reject(new Error('ETIMEDOUT')))
     setExecuteSessionStartHooksFn(async function* () {
-      yield { message: { texto: 'igual-corrio' } }
+      yield { message: fakeMessage('igual-corrio') }
     })
 
     const result = await processSessionStartHooks('startup')
 
-    expect(result).toEqual([{ texto: 'igual-corrio' }])
+    expect(result).toEqual([fakeMessage('igual-corrio')])
   })
 
   test('devuelve [] cuando ningún hook produce mensajes', async () => {
@@ -185,32 +199,35 @@ describe('processSetupHooks', () => {
   })
 
   test('junta mensajes y agrega el mensaje de contexto con hookName "Setup"', async () => {
+    let contextInput: unknown
+    setCreateAttachmentMessageFn(input => {
+      contextInput = input
+      return fakeMessage('contexto-setup')
+    })
     setExecuteSetupHooksFn(async function* () {
-      yield { message: { texto: 'setup-1' }, additionalContexts: ['setup-ctx'] }
+      yield { message: fakeMessage('setup-1'), additionalContexts: ['setup-ctx'] }
     })
 
     const result = await processSetupHooks('init')
 
-    expect(result).toEqual([
-      { texto: 'setup-1' },
-      {
-        type: 'hook_additional_context',
-        content: ['setup-ctx'],
-        hookName: 'Setup',
-        toolUseID: 'Setup',
-        hookEvent: 'Setup',
-      },
-    ])
+    expect(result).toEqual([fakeMessage('setup-1'), fakeMessage('contexto-setup')])
+    expect(contextInput).toEqual({
+      type: 'hook_additional_context',
+      content: ['setup-ctx'],
+      hookName: 'Setup',
+      toolUseID: 'Setup',
+      hookEvent: 'Setup',
+    })
   })
 
   test('si loadPluginHooks falla, no lanza y sigue con los hooks de setup', async () => {
     setLoadPluginHooksFn(() => Promise.reject(new Error('boom')))
     setExecuteSetupHooksFn(async function* () {
-      yield { message: { texto: 'sobrevive' } }
+      yield { message: fakeMessage('sobrevive') }
     })
 
     expect(await processSetupHooks('maintenance')).toEqual([
-      { texto: 'sobrevive' },
+      fakeMessage('sobrevive'),
     ])
   })
 })

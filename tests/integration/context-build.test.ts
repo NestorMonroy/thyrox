@@ -62,8 +62,6 @@ describe('Context build: CLAUDE.md + system prompt integration', () => {
 // ─── CLAUDE.md Discovery with Real File System ───────────────────────
 
 describe('Context build: CLAUDE.md file system integration', () => {
-  let tempDir: string
-
   test('strips HTML comments from CLAUDE.md content', () => {
     const input = '<!-- this is a comment -->Actual content'
     const { content, stripped } = stripHtmlComments(input)

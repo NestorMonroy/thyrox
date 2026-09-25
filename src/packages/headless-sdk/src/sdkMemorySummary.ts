@@ -54,7 +54,6 @@ import { logEvent as obsLogEvent } from './internal/pendingCrossPackageDeps.ts'
  * but won't get a dedicated aggregate column.
  */
 const CHILD_KIND_WHITELIST = ['bash_shell', 'mcp_stdio', 'lsp', 'other'] as const
-type ChildKind = (typeof CHILD_KIND_WHITELIST)[number]
 
 type ChildRssEntry = {
   kind: string

@@ -1,0 +1,6 @@
+src/packages/agent/QueryEngine.ts(1328,32): error TS18048: 'result' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(1328,32): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(1330,22): error TS2339: Property 'type' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1331,45): error TS2339: Property 'text' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1333,34): error TS2339: Property 'text' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1335,28): error TS18048: 'result' is possibly 'undefined'.

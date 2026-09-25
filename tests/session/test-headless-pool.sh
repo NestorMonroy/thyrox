@@ -76,6 +76,20 @@ check "sin claude: exit 2" "$CODE" "2"
 SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
 
+# --memfree: la cota llega a GNU Parallel, y una ilegible rehusa sin resumen.
+cat > "$F/parallel" <<'SH'
+#!/usr/bin/env bash
+printf '%s\n' "$*" > "$(dirname "$0")/parallel.args"
+exec parallel "$@"
+SH
+chmod +x "$F/parallel"
+rm -rf "$F/out"; EXTRA="--memfree 1G" HEADLESS_POOL_PARALLEL="$F/parallel" corre alfa
+check "memfree: exit 0" "$CODE" "0"
+check "memfree: la cota llega a parallel" "$(grep -c -- '--memfree 1G' "$F/parallel.args")" "1"
+rm -rf "$F/out"; EXTRA="--memfree mucho" corre alfa
+check "memfree ilegible: exit 2" "$CODE" "2"
+check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
 exit $((fallos > 0))

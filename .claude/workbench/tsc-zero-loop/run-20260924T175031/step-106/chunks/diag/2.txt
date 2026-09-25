@@ -1,0 +1,13 @@
+src/packages/agent/QueryEngine.ts(622,18): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(623,12): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(624,13): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(631,34): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(655,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(718,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/agent/QueryEngine.ts(743,9): error TS2322: Type 'Tools' is not assignable to type 'RuntimeTool[]'.
+  Type '{ [key: string]: unknown; name: string; aliases?: string[] | undefined; }' is missing the following properties from type 'RuntimeTool': userFacingName, call
+src/packages/agent/QueryEngine.ts(744,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'RuntimeToolUseContext'.
+  Types of property 'options' are incompatible.
+    Property 'mainLoopModel' is missing in type 'Record<string, unknown>' but required in type '{ [key: string]: unknown; mainLoopModel: string; thinkingConfig?: unknown; tools?: unknown; querySource?: string | undefined; agentDefinitions?: { activeAgents: unknown[]; allowedAgentTypes: unknown[]; } | undefined; }'.

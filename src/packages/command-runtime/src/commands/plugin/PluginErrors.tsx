@@ -135,6 +135,5 @@ export function getErrorGuidance(error: PluginError): string | null {
     case 'generic-error':
       return null
   }
-  const _exhaustive: never = error
   return null
 }

@@ -87,7 +87,7 @@ export function readLedger(ledgerPath: string): ClaimRecord[] {
   const out: ClaimRecord[] = []
   const lines = raw.split('\n')
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
+    const line = (lines[i] ?? '').trim()
     if (!line) continue
     let rec: ClaimRecord
     try {
@@ -160,8 +160,10 @@ export function findOverlaps(records: ClaimRecord[]): Array<[ClaimRecord, ClaimR
   const pairs: Array<[ClaimRecord, ClaimRecord]> = []
   for (let i = 0; i < active.length; i++) {
     for (let j = i + 1; j < active.length; j++) {
-      if (active[i].owner === active[j].owner) continue
-      if (pathsOverlap(active[i].path, active[j].path)) pairs.push([active[i], active[j]])
+      const a = active[i]!
+      const b = active[j]!
+      if (a.owner === b.owner) continue
+      if (pathsOverlap(a.path, b.path)) pairs.push([a, b])
     }
   }
   return pairs
@@ -246,7 +248,7 @@ function classifyMergePath(
   try {
     const out = gitOut(cwd, 'check-attr', 'merge', '--', path)
     const m = out.match(/: merge: (.+)$/)
-    if (m) attr = m[1].trim()
+    if (m) attr = (m[1] ?? '').trim()
   } catch {
     /* deja unspecified */
   }

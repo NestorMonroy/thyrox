@@ -6,9 +6,8 @@ import { createMainProgram } from '../../src/packages/cli/src/entry/commander.js
 // main.tsx has heavy bootstrap dependencies; we test the CLI argument parsing
 // patterns it uses to ensure correct behavior.
 
-function createTestProgram(): Command {
-  const program = new Command()
-  program
+function createTestProgram() {
+  return new Command()
     .name('claude-code')
     .description('CLI test')
     .exitOverride() // prevent process.exit during tests
@@ -22,7 +21,6 @@ function createTestProgram(): Command {
       parseInt(value, 10),
     )
     .version('1.0.0', '-V, --version', 'display version')
-  return program
 }
 
 describe('CLI arguments: option parsing', () => {
@@ -106,7 +104,7 @@ describe('main CLI compatibility options', () => {
     const program = createMainProgram()
     program.parse(['--effort', 'xhigh'], { from: 'user' })
 
-    expect(program.opts().effort).toBe('xhigh')
+    expect(program.getOptionValue('effort')).toBe('xhigh')
     expect(program.helpInformation()).toContain(
       'none, low, medium, high, xhigh, max',
     )
@@ -115,7 +113,7 @@ describe('main CLI compatibility options', () => {
   test('accepts none effort for models that disable reasoning', () => {
     const program = createMainProgram()
     program.parse(['--effort', 'none'], { from: 'user' })
-    expect(program.opts().effort).toBe('none')
+    expect(program.getOptionValue('effort')).toBe('none')
   })
 
   test.each([
@@ -126,6 +124,6 @@ describe('main CLI compatibility options', () => {
     const program = createMainProgram()
     program.parse([flag], { from: 'user' })
 
-    expect(program.opts().promptSuggestions).toBe(expected)
+    expect(program.getOptionValue('promptSuggestions')).toBe(expected)
   })
 })

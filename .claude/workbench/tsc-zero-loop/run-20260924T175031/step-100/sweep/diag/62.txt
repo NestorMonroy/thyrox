@@ -1,0 +1,8 @@
+patron: stub-context-unknown-subset-typed-locally
+senal_del_verificador: Property '(bashTools|readFileState)' does not exist on type '\{\}'|Parameter '(ctx|context)' implicitly has an 'any' type|'(_|tip)' is of type 'unknown'
+fix_generico: El stub de TipContext es unknown: el consumidor declara la interfaz del subconjunto que lee con los tipos reales (ThemeName, FileStateCache).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/tips/tipRegistry.ts(679,54): error TS18046: '_' is of type 'unknown'.
+src/packages/repl/src/tips/tipRegistry.ts(682,44): error TS18046: '_' is of type 'unknown'.
+src/packages/repl/src/tips/tipRegistry.ts(682,53): error TS18046: '_' is of type 'unknown'.

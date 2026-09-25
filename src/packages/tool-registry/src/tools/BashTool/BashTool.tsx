@@ -1154,7 +1154,7 @@ async function* runShellCommand({
     fullOutput: string
     elapsedTimeSeconds: number
     totalLines: number
-    totalBytes?: number
+    totalBytes: number
     taskId?: string
     timeoutMs?: number
   },

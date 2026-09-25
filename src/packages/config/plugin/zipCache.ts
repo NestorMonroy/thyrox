@@ -81,17 +81,6 @@ export function getZipCacheKnownMarketplacesPath(): string {
 }
 
 /**
- * Get the path to installed_plugins.json in the zip cache.
- */
-function getZipCacheInstalledPluginsPath(): string {
-  const cachePath = getPluginZipCachePath()
-  if (!cachePath) {
-    throw new Error('Plugin zip cache is not enabled')
-  }
-  return join(cachePath, 'installed_plugins.json')
-}
-
-/**
  * Get the marketplaces directory within the zip cache.
  */
 export function getZipCacheMarketplacesDir(): string {
@@ -158,14 +147,6 @@ export async function cleanupSessionPluginCache(): Promise<void> {
     sessionPluginCachePath = null
     sessionPluginCachePromise = null
   }
-}
-
-/**
- * Reset the session plugin cache path (for testing).
- */
-function resetSessionPluginCache(): void {
-  sessionPluginCachePath = null
-  sessionPluginCachePromise = null
 }
 
 /**

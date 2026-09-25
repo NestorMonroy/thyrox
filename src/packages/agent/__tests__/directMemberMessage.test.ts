@@ -168,7 +168,13 @@ describe('sendDirectMemberMessage — error paths', () => {
 
 describe('sendDirectMemberMessage — happy path', () => {
   test('writes to mailbox and returns success', async () => {
-    const writeToMailbox = mock(async () => {})
+    const writeToMailbox = mock(
+      async (
+        _recipientName: string,
+        _message: { from: string; text: string; timestamp: string },
+        _teamName: string,
+      ) => {},
+    )
     const result = await sendDirectMemberMessage(
       'alice',
       'hello',

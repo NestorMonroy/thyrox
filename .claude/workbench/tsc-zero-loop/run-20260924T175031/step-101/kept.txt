@@ -1,0 +1,6 @@
+src/packages/agent/query.ts
+src/packages/headless-sdk/src/sdkMemorySummary.ts
+src/packages/mcp-runtime/src/client.ts
+src/packages/repl/src/components/agents/types.ts
+src/packages/storage/src/conversationChain.ts
+tests/integration/cli-arguments.test.ts

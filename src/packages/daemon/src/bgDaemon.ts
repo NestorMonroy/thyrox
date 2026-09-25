@@ -54,7 +54,8 @@ import {
   shouldPrewarm,
 } from './sparePool.js'
 import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
-import { type DaemonServer, err, ok, startSocketServer } from './socketServer.js'
+import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
+import type { ProtoOp } from './socketProto.js'
 import { WorkerVm } from './workerVm.js'
 
 /**
@@ -260,7 +261,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   // Cablea los manejadores de op de socket. Capturado en una variable
   // para que el watcher de spool de despacho por archivo (`ant 5165.js`)
   // pueda reusar la misma tabla de manejadores.
-  const opHandlers = {
+  const opHandlers: Partial<Record<ProtoOp, OpHandler>> = {
     ping: async () =>
       ok({ op: 'ping', uptime: Date.now() - state.startedAt }),
     nudge: async () => ok({ op: 'nudge', restarting: false }),

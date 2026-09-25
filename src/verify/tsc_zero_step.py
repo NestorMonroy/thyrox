@@ -43,6 +43,7 @@ from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC
 from verify.batch_verification import Proposal, _new_diagnostics, ledger_rows, verify_proposals
+from verify.source_copy_step import reachable_copies
 from verify.tsc_schedule import Candidate, schedule
 
 
@@ -113,7 +114,8 @@ def _queued(residual: Path) -> set[tuple[str, str]]:
 
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
-             before_lines: list[str] | None = None, net: bool = False) -> StepReport:
+             before_lines: list[str] | None = None, net: bool = False,
+             accept_partial: bool = False) -> StepReport:
     runs = 0
     if before_lines is None:
         before_lines = run_tsc(root, tsc, bench / "before.log")
@@ -168,9 +170,24 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
             net_kept = verdict.proposal_id
             outcomes[net_kept] = "accepted-net"
 
+    # Parcial conservable: bajan sus objetivos sin llegar a cero. Se trata
+    # como una aceptada, así que `settle` la revierte si deja algo nuevo.
+    # La que ya deja algo nuevo en sus propios archivos no entra: el
+    # verificador ya sabe que es culpable, y mandarla a `settle` cuesta
+    # ~2·log2(n) pasadas de tsc por culpable (paso 098: 13 pasadas).
+    if accept_partial:
+        new_files = {d.split(": ", 1)[0] for d in report.new_diagnostics}
+        for pid in applied:
+            if pid != net_kept and outcomes[pid] == "partial" \
+                    and not new_files & set(by_id[pid]["files"]):
+                outcomes[pid] = "accepted-partial"
+
+    keep = ("accepted", "accepted-net", "accepted-partial")
     patched = {pid: {file: (root / file).read_text() for file in applied[pid]} for pid in applied}
-    accepted = [pid for pid in applied if outcomes[pid] in ("accepted", "accepted-net")]
-    reverted = [pid for pid in applied if outcomes[pid] not in ("accepted", "accepted-net")]
+    accepted = [pid for pid in applied if outcomes[pid] in keep and pid != net_kept]
+    if net_kept is not None:
+        accepted = [net_kept]
+    reverted = [pid for pid in applied if outcomes[pid] not in keep]
     for pid in reverted:
         for file, text in applied[pid].items():
             (root / file).write_text(text)
@@ -211,7 +228,53 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
         # No se biseca: lo destapado ya se aceptó al conservarla por el neto.
         kept, final_lines = [net_kept], after_lines
     elif accepted:
-        kept, final_lines = settle(accepted, before_lines, None if reverted else after_lines)
+        lines = None if reverted else after_lines
+        if lines is None:
+            counter["n"] += 1
+            lines = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+        # Sólo es sospechosa la aceptada a cuyos archivos llega, por la cadena
+        # de imports, el archivo que lleva lo nuevo: las demás no pueden
+        # haberlo causado y no pagan bisección. Si el grafo no alcanza a
+        # ninguna, se biseca el conjunto entero, como antes.
+        new, new_by_file = _new_diagnostics(before_lines, lines)
+        suspects = accepted
+        if new:
+            owned = {file for pid in accepted for file in applied[pid]}
+            packages = root / "src" / "packages"
+            reached = reachable_copies(root, set(new_by_file), owned, root,
+                                       package_root=packages if packages.is_dir() else root)
+            reached |= set(new_by_file) & owned
+            hit = [pid for pid in accepted if set(applied[pid]) & reached]
+            if not hit:
+                # Nada llega a lo nuevo: antes de culpar a nadie se mide la
+                # base con todo revertido. Si lo nuevo sigue, el árbol no es el
+                # que midió `--before-log`, y bisecar culparía a inocentes
+                # (paso 098: 22 pasadas, las 11 parciales culpadas por un
+                # import sin usar que ninguna tocó).
+                for pid in accepted:
+                    write(pid, applied[pid])
+                counter["n"] += 1
+                base_now = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+                drift, _ = _new_diagnostics(before_lines, base_now)
+                if drift:
+                    raise RuntimeError(
+                        f"línea base desfasada: {len(drift)} diagnóstico(s) nuevo(s) con todas las "
+                        f"propuestas revertidas; el árbol no coincide con el log previo ({drift[0]})")
+                for pid in accepted:
+                    write(pid, patched[pid])
+            suspects = hit or accepted
+        clean = [pid for pid in accepted if pid not in suspects]
+        kept_suspects, final_lines = settle(suspects, before_lines, lines)
+        kept = clean + kept_suspects
+        if clean and final_lines is before_lines:
+            # `settle` devolvió la base sin nada aplicado; las limpias siguen
+            # en el árbol, así que el log final se mide.
+            counter["n"] += 1
+            final_lines = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+        if clean and _new_diagnostics(before_lines, final_lines)[0]:
+            # El grafo se equivocó: una limpia también rompe. Se biseca lo
+            # conservado, que es lo que está aplicado.
+            kept, final_lines = settle(kept, before_lines, final_lines)
     runs += counter["n"]
     for pid in revealed:
         outcomes[pid] = "revealed"
@@ -248,12 +311,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-batch", type=int)
     parser.add_argument("--net", action="store_true",
                         help="política neta: conservar una propuesta si bajan sus objetivos y el total")
+    parser.add_argument("--accept-partial", action="store_true",
+                        help="conservar la parcial que no deja nada nuevo en sus archivos")
     args = parser.parse_args(argv[:split])
     try:
         before = args.before_log.read_text().splitlines() if args.before_log else None
         report = run_step(args.root, _read_jsonl(args.candidates), argv[split + 1:], args.ledger,
                           args.bench, seed=args.seed, epsilon=args.epsilon, alpha0=args.alpha0,
-                          max_batch=args.max_batch, before_lines=before, net=args.net)
+                          max_batch=args.max_batch, before_lines=before, net=args.net,
+                          accept_partial=args.accept_partial)
     except (OSError, ValueError, RuntimeError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_zero_step: SIN MEDIR — {error}", file=sys.stderr)
         return 2

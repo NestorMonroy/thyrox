@@ -1,0 +1,13 @@
+tests/integration/cli-arguments.test.ts(38,27): error TS2339: Property 'print' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(44,27): error TS2339: Property 'print' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(50,27): error TS2339: Property 'resume' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(56,27): error TS2339: Property 'verbose' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(62,27): error TS2339: Property 'model' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(68,27): error TS2339: Property 'systemPrompt' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(74,27): error TS2339: Property 'maxTurns' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(80,27): error TS2339: Property 'print' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(81,27): error TS2339: Property 'verbose' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(82,27): error TS2339: Property 'model' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(109,27): error TS2339: Property 'effort' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(118,27): error TS2339: Property 'effort' does not exist on type '{}'.
+tests/integration/cli-arguments.test.ts(129,27): error TS2339: Property 'promptSuggestions' does not exist on type '{}'.

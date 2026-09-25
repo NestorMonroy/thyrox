@@ -271,5 +271,104 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("neta: si el total no baja se revierte aunque un objetivo baje",
                  ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
 
+
+# --- Parcial conservable (`accept_partial=True`) ------------------------------
+# Baja un objetivo de dos y no deja nada nuevo en su archivo: se conserva.
+# Una parcial que deja algo nuevo se revierte por la bisección, igual que
+# una aceptada.
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    ledger = base / "ledger.jsonl"
+    report = step.run_step(base, [row], tsc, ledger, base / "bench", seed=7, epsilon=0.5,
+                           alpha0=0.5, max_batch=None, accept_partial=True)
+    last = [json.loads(line) for line in ledger.read_text().splitlines()][-1]
+    assert_equal("parcial sin nada nuevo: se conserva",
+                 ("progress", 3, 2, "const a = BAD5\n", "accepted-partial"),
+                 (report.status, report.total_before, report.total_final, (base / "a.ts").read_text(),
+                  last["outcome"]))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("sin la opción, la misma parcial se revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    row, tsc = net_fixture(base, "BAD5 WORSE")
+    report = step.run_step(base, [row], tsc, base / "ledger.jsonl", base / "bench", seed=7,
+                           epsilon=0.5, alpha0=0.5, max_batch=None, accept_partial=True)
+    assert_equal("parcial con algo nuevo: la bisección la revierte",
+                 ("stalled", "const a = BAD1 BAD5\n"), (report.status, (base / "a.ts").read_text()))
+
+
+# El control que discrimina el coste: una parcial limpia y otra que deja algo
+# nuevo en su propio archivo. La culpable no entra a la bisección: una pasada
+# de confirmación para la limpia (3 en total) y no una por mitad (4).
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    a, c = "const a = BAD1 BAD5\n", "const c = BAD6 BAD7\n"
+    (base / "a.ts").write_text(a)
+    (base / "c.ts").write_text(c)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("clean:a.ts", "agent", "a.ts", a, "BAD1 BAD5", "BAD5",
+                     ["a.ts: TS9001: bad 1.", "a.ts: TS9001: bad 5."]),
+            proposal("dirty:c.ts", "agent", "c.ts", c, "BAD6 BAD7", "BAD7 WORSE",
+                      ["c.ts: TS9001: bad 6.", "c.ts: TS9001: bad 7."])]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None,
+                           accept_partial=True)
+    assert_equal("la parcial que rompe su archivo no paga bisección",
+                 (3, "accepted-partial", "partial", "const a = BAD5\n", c),
+                 (report.tsc_runs, report.outcomes["clean:a.ts"], report.outcomes["dirty:c.ts"],
+                  (base / "a.ts").read_text(), (base / "c.ts").read_text()))
+
+
+# Lo nuevo cae en OTRO archivo (z.ts) que importa a.ts: sólo la propuesta de
+# a.ts es sospechosa. Las otras tres no pagan bisección: una pasada para
+# medir el lote tras revertir a.ts, y no las cuatro de bisecar el conjunto.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    texts = {"a.ts": "const a = BAD1\n", "b.ts": "const b = BAD2\n", "c.ts": "const c = BAD3\n",
+             "d.ts": "const d = BAD4\n", "z.ts": "import { a } from './a.js'\n"}
+    for name, text in texts.items():
+        (base / name).write_text(text)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", texts["a.ts"], "BAD1", "REVEAL", ["a.ts: TS9001: bad 1."])]
+    rows += [proposal(f"fix:{n}.ts", "agent", f"{n}.ts", texts[f"{n}.ts"], f"BAD{i}", "1",
+                      [f"{n}.ts: TS9001: bad {i}."]) for n, i in (("b", 2), ("c", 3), ("d", 4))]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("el grafo de imports acota la bisección al sospechoso",
+                 (3, "revealed", ["fix:b.ts", "fix:c.ts", "fix:d.ts"], 1),
+                 (report.tsc_runs, report.outcomes["fix:a.ts"], sorted(report.accepted), report.total_final))
+
+
+# Línea base desfasada: el árbol trae un diagnóstico (e.ts) que el log previo
+# no tiene y que ninguna propuesta alcanza. El paso rehúsa en vez de culpar,
+# y deja el árbol sin las propuestas.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "a.ts").write_text("const a = BAD1\n")
+    (base / "b.ts").write_text("const b = BAD2\n")
+    (base / "e.ts").write_text("const e = BAD9\n")
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", "const a = BAD1\n", "BAD1", "1", ["a.ts: TS9001: bad 1."]),
+            proposal("fix:b.ts", "agent", "b.ts", "const b = BAD2\n", "BAD2", "2", ["b.ts: TS9001: bad 2."])]
+    stale = ["a.ts(1,1): error TS9001: bad 1.", "b.ts(1,1): error TS9001: bad 2."]
+    try:
+        step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl", base / "bench",
+                      seed=7, epsilon=0.5, alpha0=0.5, max_batch=None, before_lines=stale)
+        refused = "no rehusó"
+    except RuntimeError as error:
+        refused = "línea base desfasada" in str(error)
+    assert_equal("una línea base desfasada rehúsa y no culpa a nadie",
+                 (True, "const a = BAD1\n", False),
+                 (refused, (base / "a.ts").read_text(), (base / "ledger.jsonl").exists()))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

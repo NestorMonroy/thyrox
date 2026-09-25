@@ -5,6 +5,7 @@ import { dirname } from 'path'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import {
   builtInCommandNames,
+  type Command as RuntimeCommand,
   findCommand,
   getCommands,
   type PromptCommand,
@@ -79,7 +80,7 @@ import {
  * Gets all commands including MCP skills/prompts from AppState.
  * SkillTool needs this because getCommands() only returns local/bundled skills.
  */
-async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
+async function getAllCommands(context: ToolUseContext): Promise<RuntimeCommand[]> {
   // Only include MCP skills (loadedFrom === 'mcp'), not plain MCP prompts.
   // Before this filter, the model could invoke MCP prompts via SkillTool
   // if it guessed the mcp__server__prompt name — they weren't discoverable
@@ -87,7 +88,7 @@ async function getAllCommands(context: ToolUseContext): Promise<Command[]> {
   const mcpSkills = context
     .getAppState()
     .mcp.commands.filter(
-(      cmd: { type: string; loadedFrom: string }) => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
+      (cmd: RuntimeCommand) => cmd.type === 'prompt' && cmd.loadedFrom === 'mcp',
     )
   if (mcpSkills.length === 0) return getCommands(getProjectRoot())
   const localCommands = await getCommands(getProjectRoot())
@@ -915,7 +916,7 @@ const SAFE_SKILL_PROPERTIES = new Set([
   'userFacingName',
 ])
 
-function skillHasOnlySafeProperties(command: Command): boolean {
+function skillHasOnlySafeProperties(command: RuntimeCommand): boolean {
   for (const key of Object.keys(command)) {
     if (SAFE_SKILL_PROPERTIES.has(key)) {
       continue

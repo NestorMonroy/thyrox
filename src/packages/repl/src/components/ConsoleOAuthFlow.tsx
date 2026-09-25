@@ -122,10 +122,6 @@ export function ConsoleOAuthFlow({
     return mode === 'setup-token' || forceLoginMethod === 'claudeai'
   })
   const [loginWithCodex, setLoginWithCodex] = useState(false)
-  // Track which protocol the user is creating a connection for (API key forms)
-  const [connectionProtocol, setConnectionProtocol] = useState<
-    'anthropic' | 'openai' | 'codex' | 'gemini' | null
-  >(null)
   // Name for new API key connections
   const [connectionName, setConnectionName] = useState('')
 
@@ -587,7 +583,7 @@ function OAuthStatusMessage({
   setLoginWithCodex,
   onDone,
   connectionName,
-  setConnectionName,
+  setConnectionName: _setConnectionName,
 }: OAuthStatusMessageProps): React.ReactNode {
   switch (oauthStatus.state) {
     case 'select_connection': {
@@ -930,15 +926,6 @@ function OAuthStatusMessage({
             }
           },
           [activeField, baseUrl, apiKey, haikuModel, sonnetModel, opusModel],
-        )
-
-        const switchTo = useCallback(
-          (target: Field) => {
-            setOAuthStatus(buildState(activeField, inputValue, target))
-            setInputValue(displayValues[target] ?? '')
-            setInputCursorOffset((displayValues[target] ?? '').length)
-          },
-          [activeField, inputValue, displayValues, buildState, setOAuthStatus],
         )
 
         const doSave = useCallback(() => {

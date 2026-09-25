@@ -55,12 +55,13 @@ export function useSearchInput({
   onExit,
   onCancel,
   onExitUp,
-  columns,
+  columns: _columns,
   initialQuery = '',
   backspaceExitsOnEmpty = true,
 }: UseSearchInputOptions): UseSearchInputReturn {
-  const { columns: terminalColumns } = useTerminalSize()
-  const _effectiveColumns = columns ?? terminalColumns
+  // La fuente calcula el ancho efectivo y no lo usa; el hook se conserva
+  // porque suscribe el componente al tamaño de la terminal.
+  useTerminalSize()
   const [query, setQueryState] = useState(initialQuery)
   const [cursorOffset, setCursorOffset] = useState(initialQuery.length)
 
