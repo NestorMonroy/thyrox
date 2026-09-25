@@ -86,7 +86,7 @@ export function LogoV2(): React.ReactNode {
   // - First startup (numStartups === 1): show first announcement
   // - All other startups: randomly select from announcements
   const [announcement] = useState(() => {
-    const announcements = getInitialSettings().companyAnnouncements
+    const announcements = getInitialSettings().companyAnnouncements as string[] | undefined
     if (!announcements || announcements.length === 0) return undefined
     return config.numStartups === 1
       ? announcements[0]

@@ -178,6 +178,12 @@ export class OAuthService {
     rateLimitTier: RateLimitTier | null,
     profile?: OAuthProfileResponse,
   ): OAuthTokens {
+    if (!response.refresh_token) {
+      // El intercambio de código por token siempre devuelve refresh_token
+      // (grant `authorization_code` con `offline_access`); esta guarda sólo
+      // hace explícita esa garantía para el chequeo de tipos.
+      throw new Error('OAuth token exchange response missing refresh_token')
+    }
     return {
       accessToken: response.access_token,
       refreshToken: response.refresh_token,

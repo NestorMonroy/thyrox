@@ -50,6 +50,15 @@ setCreateTaskOutputFn(
 )
 setGetSandboxTmpDirNameFn(getClaudeTempDirName)
 
+function getPlatformForShellExecContext(): 'macos' | 'linux' | 'windows' {
+  const platform = getPlatform()
+  // `Platform` admite 'wsl' y 'unknown'; ShellExecContext sólo distingue las
+  // tres que su único consumidor compara contra 'windows'
+  // (bash/ShellSnapshot.ts) — wsl y desconocido ya caen hoy en esa misma
+  // rama, así que tratarlas como 'linux' aquí no cambia esa comparación.
+  return platform === 'macos' || platform === 'windows' ? platform : 'linux'
+}
+
 function createShellExecContext(): ShellExecContext {
   return {
     getCwd: pwd,
@@ -67,7 +76,7 @@ function createShellExecContext(): ShellExecContext {
     getTmuxEnv: async () => getClaudeTmuxEnv(),
     ensureTmuxSocket: ensureSocketInitialized,
     hasTmuxToolBeenUsed,
-    getPlatform,
+    getPlatform: getPlatformForShellExecContext,
     which,
     invalidateSessionEnvCache,
     getTaskOutputDir,

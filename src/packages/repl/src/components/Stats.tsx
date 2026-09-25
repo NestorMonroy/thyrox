@@ -28,8 +28,12 @@ import {
   type StatsDateRange,
 } from '@thyrox/local-observability/aggregates/stats.js'
 import { resolveThemeSetting } from '../systemTheme.js'
-import { getTheme, themeColorToAnsi } from '@anthropic/ink'
+import { getTheme, themeColorToAnsi, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
+
+function isThemeSetting(value: string): value is ThemeSetting {
+  return (THEME_SETTINGS as readonly string[]).includes(value)
+}
 
 function formatPeakDay(dateStr: string): string {
   const date = new Date(dateStr)
@@ -813,7 +817,8 @@ function generateTokenChart(
   }
 
   // Color palette for different models - use theme colors
-  const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme))
+  const rawTheme = getGlobalConfig().theme
+  const theme = getTheme(resolveThemeSetting(isThemeSetting(rawTheme) ? rawTheme : 'dark'))
   const colors = [
     themeColorToAnsi(theme.suggestion),
     themeColorToAnsi(theme.success),
@@ -970,7 +975,8 @@ function renderStatsToAnsi(
 
 function renderOverviewToAnsi(stats: ClaudeCodeStats): string[] {
   const lines: string[] = []
-  const theme = getTheme(resolveThemeSetting(getGlobalConfig().theme))
+  const rawTheme = getGlobalConfig().theme
+  const theme = getTheme(resolveThemeSetting(isThemeSetting(rawTheme) ? rawTheme : 'dark'))
   const h = (text: string) => applyColor(text, theme.claude as Color)
 
   // Two-column helper with fixed spacing

@@ -840,7 +840,7 @@ export async function loadMcpbFile(
   const unzipped = await unzipFile(Buffer.from(mcpbData))
   // fflate doesn't surface external_attr — parse the central directory so
   // native MCP server binaries keep their exec bit after extraction.
-  const modes = parseZipModes(mcpbData)
+  const modes = parseZipModes(mcpbData) as Record<string, number>
 
   // Check for manifest.json
   const manifestData = unzipped['manifest.json']

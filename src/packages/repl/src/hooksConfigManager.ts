@@ -378,9 +378,8 @@ export function getSortedMatchersForEvent(
 
 // Get hooks for a specific event and matcher
 export function getHooksForMatcher(
-  hooksByEventAndMatcher: Record<
-    HookEvent,
-    Record<string, IndividualHookConfig[]>
+  hooksByEventAndMatcher: Partial<
+    Record<string, Record<string, IndividualHookConfig[]>>
   >,
   event: HookEvent,
   matcher: string | null,
@@ -388,7 +387,8 @@ export function getHooksForMatcher(
   // For events without matchers, hooks are stored with empty string as key
   // because the record keys must be strings.
   const matcherKey = matcher ?? ''
-  return hooksByEventAndMatcher[event]?.[matcherKey] ?? []
+  const eventKey = String(event)
+  return hooksByEventAndMatcher[eventKey]?.[matcherKey] ?? []
 }
 
 // Get metadata for a specific event's matcher

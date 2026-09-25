@@ -13,7 +13,7 @@ import { installAgentHostBindings } from '../host.ts'
 
 // El host instala sus enlaces al arrancar; aquí se instala el de analítica
 // para observar el evento que `countLinesChanged` emite.
-const events: { event: string; metadata: Record<string, unknown> }[] = []
+const events: { event: string; metadata: Record<string, unknown> | undefined }[] = []
 beforeAll(() => {
   installAgentHostBindings({ logEvent: (event, metadata) => events.push({ event, metadata }) })
 })

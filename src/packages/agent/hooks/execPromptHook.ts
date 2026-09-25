@@ -451,7 +451,7 @@ Always include a "reason" field.`
             stdout: fullResponse,
             exitCode: 1,
           }),
-        }
+        } as HookResult
       }
 
       // Failed to meet condition
@@ -498,7 +498,7 @@ Always include a "reason" field.`
           preventContinuation:
             !isStopEvent && (hook as { continueOnBlock?: boolean }).continueOnBlock !== true,
           stopReason: parsed.data.reason,
-        }
+        } as HookResult
       }
 
       // Condition was met

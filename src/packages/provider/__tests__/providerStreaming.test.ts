@@ -28,7 +28,7 @@ const peticion: ProviderRequest = {
 }
 
 /** Un cuerpo SSE completo, con los eventos en el orden que el servicio los manda. */
-function cuerpoSse(eventos: Array<Record<string, unknown>>): string {
+function cuerpoSse(eventos: ReadonlyArray<Record<string, unknown>>): string {
   return eventos.map((e) => `event: ${e.type}\ndata: ${JSON.stringify(e)}\n\n`).join('')
 }
 
@@ -41,7 +41,7 @@ const EVENTOS_TEXTO = [
   { type: 'content_block_stop', index: 0 },
   { type: 'message_delta', delta: { stop_reason: 'end_turn', stop_sequence: null }, usage: { output_tokens: 12 } },
   { type: 'message_stop' },
-]
+] as const
 
 const EVENTOS_HERRAMIENTA = [
   { type: 'message_start', message: { id: 'msg_t', model: 'claude-opus-5', content: [], stop_reason: null,
@@ -52,7 +52,11 @@ const EVENTOS_HERRAMIENTA = [
   { type: 'content_block_stop', index: 0 },
   { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 4 } },
   { type: 'message_stop' },
-]
+] as const
+
+// Desestructurar en vez de indexar: bajo noUncheckedIndexedAccess el acceso
+// por corchete gana `| undefined`, pero la desestructuración de un array no.
+const [primerEventoHerramienta, segundoEventoHerramienta] = EVENTOS_HERRAMIENTA
 
 /** Un cuerpo entregado en trozos de N bytes: parte los eventos a media linea. */
 function respuestaTroceada(texto: string, tam: number): Response {
@@ -138,7 +142,7 @@ describe('AnthropicHttpProvider.stream — acumular hasta el turno (T-011)', () 
 
   test('un tool_use sin ningun delta queda con input vacio, no roto', async () => {
     const p = proveedor(() => new Response(cuerpoSse([
-      EVENTOS_HERRAMIENTA[0],
+      primerEventoHerramienta,
       { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'tu_2', name: 'Bash', input: {} } },
       { type: 'content_block_stop', index: 0 },
       { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },
@@ -149,7 +153,7 @@ describe('AnthropicHttpProvider.stream — acumular hasta el turno (T-011)', () 
 
   test('un JSON de herramienta invalido es error, NO un input a medias', async () => {
     const p = proveedor(() => new Response(cuerpoSse([
-      EVENTOS_HERRAMIENTA[0], EVENTOS_HERRAMIENTA[1],
+      primerEventoHerramienta, segundoEventoHerramienta,
       { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"command":' } },
       { type: 'content_block_stop', index: 0 },
       { type: 'message_delta', delta: { stop_reason: 'tool_use', stop_sequence: null }, usage: { output_tokens: 1 } },

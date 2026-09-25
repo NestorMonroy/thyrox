@@ -87,7 +87,7 @@ describe('TaskGetTool — 7 casos', () => {
 
   test('4. una tarea que existe vuelve con sus seis campos', async () => {
     const id = await crear('arreglar el login')
-    const { data } = await TaskGetTool.call({ taskId: id }, CTX)
+    const { data } = await TaskGetTool.call({ taskId: id })
     expect(data.task).toEqual({
       id,
       subject: 'arreglar el login',
@@ -99,7 +99,7 @@ describe('TaskGetTool — 7 casos', () => {
   })
 
   test('5. una tarea que NO existe vuelve nula, no revienta', async () => {
-    const { data } = await TaskGetTool.call({ taskId: '9999' }, CTX)
+    const { data } = await TaskGetTool.call({ taskId: '9999' })
     expect(data.task).toBeNull()
   })
 
@@ -143,14 +143,14 @@ describe('TaskListTool — 7 casos', () => {
   test('10. lista lo que hay en el listado', async () => {
     await crear('primera')
     await crear('segunda')
-    const { data } = await TaskListTool.call({}, CTX)
+    const { data } = await TaskListTool.call()
     expect(data.tasks.map(t => t.subject).sort()).toEqual(['primera', 'segunda'])
   })
 
   test('11. las tareas internas NO se listan', async () => {
     await crear('visible')
     await crear('interna', { metadata: { _internal: true } })
-    const { data } = await TaskListTool.call({}, CTX)
+    const { data } = await TaskListTool.call()
     expect(data.tasks.map(t => t.subject)).toEqual(['visible'])
   })
 

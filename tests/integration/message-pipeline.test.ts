@@ -25,8 +25,8 @@ describe('Message pipeline: message structure', () => {
   })
 
   test('user and assistant messages have different UUIDs', () => {
-    const user = createUserMessage('hello')
-    const assistant = createAssistantMessage('response')
+    const user = createUserMessage({ content: 'hello' })
+    const assistant = createAssistantMessage({ content: 'response' })
     expect(user.uuid).not.toBe(assistant.uuid)
   })
 })

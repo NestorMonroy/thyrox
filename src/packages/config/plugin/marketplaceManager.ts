@@ -208,7 +208,10 @@ export function getMarketplaceDeclaringSource(
 
   for (const source of editableSources) {
     const settings = getSettingsForSource(source)
-    if (settings?.extraKnownMarketplaces?.[name]) {
+    const extraKnownMarketplaces = settings?.extraKnownMarketplaces as
+      | Record<string, DeclaredMarketplace>
+      | undefined
+    if (extraKnownMarketplaces?.[name]) {
       return source
     }
   }
@@ -232,7 +235,10 @@ export function saveMarketplaceToSettings(
     | 'localSettings' = 'userSettings',
 ): void {
   const existing = getSettingsForSource(settingSource) ?? {}
-  const current = { ...existing.extraKnownMarketplaces }
+  const existingMarketplaces = existing.extraKnownMarketplaces as
+    | Record<string, DeclaredMarketplace>
+    | undefined
+  const current: Record<string, DeclaredMarketplace> = { ...existingMarketplaces }
   current[name] = entry
   updateSettingsForSource(settingSource, { extraKnownMarketplaces: current })
 }
@@ -2624,8 +2630,9 @@ export async function setMarketplaceAutoUpdate(
   // source that declared it to avoid creating duplicates at wrong scope
   const declaringSource = getMarketplaceDeclaringSource(name)
   if (declaringSource) {
-    const declared =
-      getSettingsForSource(declaringSource)?.extraKnownMarketplaces?.[name]
+    const declaredMarketplaces = getSettingsForSource(declaringSource)
+      ?.extraKnownMarketplaces as Record<string, DeclaredMarketplace> | undefined
+    const declared = declaredMarketplaces?.[name]
     if (declared) {
       saveMarketplaceToSettings(
         name,

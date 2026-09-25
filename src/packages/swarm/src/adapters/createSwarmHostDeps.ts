@@ -74,6 +74,21 @@ import type {
   SwarmHostDeps,
 } from '../types/deps.js'
 
+/**
+ * Forma mínima que este archivo necesita de `CoreTool` para invocar la
+ * herramienta. `CoreTool` es `unknown` por la divergencia de alcance ya
+ * declarada arriba, así que aquí se nombra sólo el contrato que este sitio
+ * de llamada usa, no el tipo completo de la fuente.
+ */
+type CallableSwarmTool = {
+  call: (
+    input: unknown,
+    context: ToolUseContext,
+    canUseTool: unknown,
+    parentMessage: unknown,
+  ) => Promise<{ data: unknown; mcpMeta?: unknown }>
+}
+
 type CreateSwarmHostDepsOptions = {
   context?: Partial<ToolUseContext>
   api?: Partial<HostApiProvider>
@@ -203,7 +218,7 @@ export function createSwarmHostDeps(
           message: { id: 'swarm-host-deps', content: [] },
           uuid: '00000000-0000-0000-0000-000000000000',
         } as const
-        const result = await tool.call(
+        const result = await (tool as CallableSwarmTool).call(
           input as never,
           context as ToolUseContext,
           canUseTool as never,

@@ -240,7 +240,10 @@ export function resolvePluginLspEnvironment(
     return expanded
   }
 
-  const resolved = { ...config }
+  // config ya fue validado contra LspServerConfigSchema por el productor;
+  // LspServerConfig es un alias opaco (unknown) a nivel de paquete.
+  const typedConfig = config as z.infer<ReturnType<typeof LspServerConfigSchema>>
+  const resolved = { ...typedConfig }
 
   // Resolve command path
   if (resolved.command) {

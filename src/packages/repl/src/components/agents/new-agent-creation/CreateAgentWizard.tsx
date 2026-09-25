@@ -1,9 +1,8 @@
-import { type ReactNode } from 'react'
+import { type ComponentType, type ReactNode } from 'react'
 import { isAutoMemoryEnabled } from '@thyrox/memory/paths'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
 import { WizardProvider } from '../../wizard/index.js'
-import type { WizardStepComponent } from '../../wizard/types.js'
 import type { AgentWizardData } from './types.js'
 import { ColorStep } from './wizard-steps/ColorStep.js'
 import { ConfirmStepWrapper } from './wizard-steps/ConfirmStepWrapper.js'
@@ -31,7 +30,7 @@ export function CreateAgentWizard({
   onCancel,
 }: Props): ReactNode {
   // Create step components with props
-  const steps: WizardStepComponent<AgentWizardData>[] = [
+  const steps: ComponentType[] = [
     LocationStep, // 0
     MethodStep, // 1
     GenerateStep, // 2
