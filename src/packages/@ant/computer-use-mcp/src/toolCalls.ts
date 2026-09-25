@@ -87,6 +87,8 @@ export type CuErrorKind =
   | "state_conflict" // wrong state for action (call sequence, mouse already held)
   | "grant_flag_required" // action needs a grant flag (systemKeyCombos, clipboard*) from request_access
   | "display_error" // display enumeration failed (platform)
+  | "launch_failed" // openTerminal/similar launch failed to start
+  | "element_not_found" // Windows UIA element lookup came back empty
   | "other";
 
 /**
@@ -152,17 +154,6 @@ function asRecord(args: unknown): Record<string, unknown> {
     return args as Record<string, unknown>;
   }
   return {};
-}
-
-function requireNumber(
-  args: Record<string, unknown>,
-  key: string,
-): number | Error {
-  const v = args[key];
-  if (typeof v !== "number" || !Number.isFinite(v)) {
-    return new Error(`"${key}" must be a finite number.`);
-  }
-  return v;
 }
 
 function requireString(
@@ -953,7 +944,6 @@ async function handleRequestAccess(
     bundleId: string;
     reason: "user_denied" | "not_installed";
   }> = [];
-  let dialogFlags: CuGrantFlags = overrides.grantFlags;
 
   if (needDialog.length > 0 || Object.keys(requestedFlags).length > 0) {
     const req: CuPermissionRequest = {
@@ -971,7 +961,6 @@ async function handleRequestAccess(
     const response = await overrides.onPermissionRequest(req);
     dialogGranted = response.granted;
     dialogDenied = response.denied;
-    dialogFlags = response.flags;
   }
 
   // Do NOT return display geometry or coordinateMode. See COORDINATES.md
@@ -1996,10 +1985,14 @@ function uniqueDisplayLabels(
  */
 async function buildMonitorNote(
   adapter: ComputerUseHostAdapter,
-  shotDisplayId: number,
+  shotDisplayId: number | undefined,
   lastDisplayId: number | undefined,
   canSwitchDisplay: boolean,
 ): Promise<string | undefined> {
+  // Sin displayId no hay monitor que nombrar — el llamador ya pasa
+  // `ScreenshotResult.displayId`, opcional en su tipo aunque en la práctica
+  // siempre presente.
+  if (shotDisplayId === undefined) return undefined;
   // listDisplays failure (e.g. Swift returns zero screens during monitor
   // hot-unplug) must not tank the screenshot — this note is optional context.
   let displays;

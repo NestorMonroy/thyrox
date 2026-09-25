@@ -414,10 +414,6 @@ import { RemoteCallout } from '../components/RemoteCallout.js';
 /* eslint-disable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
 const AntModelSwitchCallout =
   process.env.USER_TYPE === 'ant' ? require('../components/AntModelSwitchCallout.js').AntModelSwitchCallout : null;
-const shouldShowAntModelSwitch =
-  process.env.USER_TYPE === 'ant'
-    ? require('../components/AntModelSwitchCallout.js').shouldShowModelSwitchCallout
-    : (): boolean => false;
 const UndercoverAutoCallout =
   process.env.USER_TYPE === 'ant' ? require('../components/UndercoverAutoCallout.js').UndercoverAutoCallout : null;
 /* eslint-enable custom-rules/no-process-env-top-level, @typescript-eslint/no-require-imports */
@@ -585,8 +581,6 @@ export function REPL({
   pendingHookMessages,
   initialFileHistorySnapshots,
   initialContentReplacements,
-  initialAgentName,
-  initialAgentColor,
   mcpClients: initialMcpClients,
   dynamicMcpConfig: initialDynamicMcpConfig,
   autoConnectIdeFlag,
@@ -760,9 +754,7 @@ export function REPL({
     combinedInitialTools,
     commands,
     interactiveMcpClients,
-    mcp,
     mcpClients,
-    plugins,
     tools,
   } = useReplRuntimeViews({
     runtimeGraph,
@@ -1720,15 +1712,6 @@ export function REPL({
     // Hide spinner when streaming text is visible (the text IS the feedback),
     // but keep it when isBriefOnly suppresses the streaming text display
     (!visibleStreamingText || isBriefOnly);
-
-  // Check if any permission or ask question prompt is currently visible
-  // This is used to prevent the survey from opening while prompts are active
-  const hasActivePrompt =
-    toolUseConfirmQueue.length > 0 ||
-    promptQueue.length > 0 ||
-    sandboxPermissionRequestQueue.length > 0 ||
-    elicitation.queue.length > 0 ||
-    workerSandboxPermissions.queue.length > 0;
 
   const showIssueFlagBanner = useIssueFlagBanner(messages, submitCount);
 
@@ -5326,7 +5309,7 @@ export function REPL({
                         bashToolsProcessedIdx.current = 0;
                       }
                       skipIdleCheckRef.current = true;
-                      void onSubmitRef.current(pending.input, {
+                      void onSubmit(pending.input, {
                         setCursorOffset: () => {},
                         clearBuffer: () => {},
                         resetHistory: () => {},

@@ -1,0 +1,7 @@
+patron: dead-local-not-read
+senal_del_verificador: TS6133: '[^']+' is declared but its value is never read
+fix_generico: Un import, local o función que nadie lee: se retira si la fuente tampoco lo lee; un parámetro se conserva con prefijo _ (unused-parameter-as-in-source).
+
+diagnósticos de este archivo que casan la señal:
+tests/unit/utils/treeify.test.ts(12,11): error TS6133: 'colorKey' is declared but its value is never read.
+tests/unit/utils/treeify.test.ts(12,29): error TS6133: 'themeName' is declared but its value is never read.

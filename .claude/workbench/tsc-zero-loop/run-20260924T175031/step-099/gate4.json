@@ -1,0 +1,56 @@
+{
+ "reviewed": [
+  {
+   "pattern": "dead-local-not-read",
+   "files": [
+    "src/packages/@ant/computer-use-mcp/src/toolCalls.ts",
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "pattern": "undefined-name-inherited-from-source",
+   "files": [
+    "src/packages/repl/src/screens/REPLView.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-progress-data-read-without-guard",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx"
+   ]
+  },
+  {
+   "pattern": "local-context-with-unknown-tools",
+   "files": [
+    "src/packages/agent/query.ts"
+   ]
+  },
+  {
+   "pattern": "stub-context-unknown-subset-typed-locally",
+   "files": [
+    "src/packages/repl/src/tips/tipRegistry.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-command-builder-in-test",
+   "files": [
+    "tests/integration/cli-arguments.test.ts"
+   ]
+  },
+  {
+   "pattern": "loose-log-field-read-as-typed",
+   "files": [
+    "src/packages/agent/internal/fileHistoryCore.ts"
+   ]
+  },
+  {
+   "pattern": "content-union-read-without-narrowing",
+   "files": [
+    "src/packages/agent/localAgentTask.tsx",
+    "src/packages/repl/src/components/MessageRow.tsx",
+    "src/packages/repl/src/components/messages/GroupedToolUseContent.tsx",
+    "src/packages/tool-registry/src/teleport.tsx"
+   ]
+  }
+ ]
+}

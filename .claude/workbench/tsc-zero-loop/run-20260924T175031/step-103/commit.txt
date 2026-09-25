@@ -1,0 +1,8 @@
+Remove four more dead clusters with their imports
+
+Step 103 reran dead-declarations after it learned to keep written
+variables and to drop the imports a removed cluster leaves orphaned:
+1513 -> 1508 in 3 tsc passes, four clusters kept, each dead in the
+source too. The two rejected ones need judgment and go to step 104 by
+hand: a module state that is only ever written, and a schema built by
+a lazySchema call that the purity rule does not remove.

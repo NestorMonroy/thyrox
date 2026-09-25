@@ -1,0 +1,7 @@
+patron: dead-local-not-read
+senal_del_verificador: TS6133: '[^']+' is declared but its value is never read
+fix_generico: Un import, local o función que nadie lee: se retira si la fuente tampoco lo lee; un parámetro se conserva con prefijo _ (unused-parameter-as-in-source).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(287,7): error TS6133: 'coordinatorModeModule' is declared but its value is never read.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(297,7): error TS6133: 'extractMemoriesModule' is declared but its value is never read.

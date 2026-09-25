@@ -1,0 +1,14 @@
+Keep eight partial pool fixes and the union sweep
+
+Step 099 re-measured the eleven step-097 partials under
+--accept-partial with a baseline it measured itself, after step 098
+was spoiled by a stale one: 1663 -> 1589 in 3 tsc passes. It kept
+eight partials and the gate-4 sweep of content-union reads in
+teleport.tsx and MessageRow.tsx.
+
+Review of the transpiled output rejected installPluginBindings: it
+dropped mkdirSync options and rewired writeFileSync and
+gracefulShutdown to fit facade types. It is reverted and recorded as
+rejected-review. REPLView's onSubmitRef, which the source never
+declares, now calls onSubmit; AgentTool guards unknown progress data.
+Seven new patterns go to memory with their applied files.

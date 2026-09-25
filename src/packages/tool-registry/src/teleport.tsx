@@ -183,7 +183,10 @@ async function generateTitleAndBranch(
     })
 
     // Extract text from the response
-    const firstBlock = response.message.content[0]
+    // `MessageContent` admite la forma `string`; la respuesta del modelo es
+    // un arreglo de bloques, y cualquier otra forma cae al valor por defecto.
+    const responseContent = response.message.content
+    const firstBlock = Array.isArray(responseContent) ? responseContent[0] : undefined
     if (firstBlock?.type !== 'text') {
       return { title: fallbackTitle, branchName: fallbackBranch }
     }

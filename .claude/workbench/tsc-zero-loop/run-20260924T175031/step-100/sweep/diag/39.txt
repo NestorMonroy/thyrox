@@ -1,0 +1,9 @@
+patron: dead-local-not-read
+senal_del_verificador: TS6133: '[^']+' is declared but its value is never read
+fix_generico: Un import, local o función que nadie lee: se retira si la fuente tampoco lo lee; un parámetro se conserva con prefijo _ (unused-parameter-as-in-source).
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(126,10): error TS6133: 'connectionProtocol' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(126,30): error TS6133: 'setConnectionProtocol' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(590,3): error TS6133: 'setConnectionName' is declared but its value is never read.
+src/packages/repl/src/components/ConsoleOAuthFlow.tsx(935,15): error TS6133: 'switchTo' is declared but its value is never read.

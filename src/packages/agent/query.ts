@@ -27,7 +27,10 @@ import { executePostToolBatchHooks } from './hooks.js'
 // extends the partial with extra method slots (readFileState etc) that
 // query.ts doesn't model. The cast bridges the two views — runtime is the
 // same toolUseContext object either way.
-import type { ToolUseContext as CanonicalToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type {
+  ToolUseContext as CanonicalToolUseContext,
+  Tools,
+} from '@thyrox/tool-registry/Tool.js'
 import { productionDeps, type QueryDeps } from './internal/queryDeps.js'
 import {
   buildQueryConfig,
@@ -349,7 +352,7 @@ async function* queryLoop(
             ).catch(logError)
         : undefined,
       new Set(
-        toolUseContext.options.tools
+        (toolUseContext.options.tools as Tools)
           .filter(t => !Number.isFinite(t.maxResultSizeChars))
           .map(t => t.name),
       ),
@@ -655,9 +658,10 @@ async function* queryLoop(
                 streamingFallbackOccured = true
               },
               querySource, spawnedBySkill: toolUseContext.options.spawnedBySkill as string | undefined, activeSkill: toolUseContext.options.activeSkill as string | undefined,
-              agents: toolUseContext.options.agentDefinitions.activeAgents,
-              allowedAgentTypes:
-                toolUseContext.options.agentDefinitions.allowedAgentTypes,
+              agents: (toolUseContext.options.agentDefinitions as
+                CanonicalToolUseContext['options']['agentDefinitions']).activeAgents,
+              allowedAgentTypes: (toolUseContext.options.agentDefinitions as
+                CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
               hasAppendSystemPrompt:
                 !!toolUseContext.options.appendSystemPrompt,
               maxOutputTokensOverride,
@@ -733,7 +737,7 @@ async function* queryLoop(
                   block.input !== null
                 ) {
                   const tool = findToolByName(
-                    toolUseContext.options.tools,
+                    toolUseContext.options.tools as Tools,
                     block.name as string,
                   )
                   if (tool?.backfillObservableInput) {
@@ -1053,7 +1057,7 @@ async function* queryLoop(
       // prevents a spiral and the error surfaces.
       const isWithheldMedia =
         mediaRecoveryEnabled &&
-        Boolean(lastMessage) &&
+        lastMessage !== undefined &&
         isWithheldReactiveMediaSizeError(lastMessage)
       if (isWithheld413) {
         // First: drain all staged context-collapses. Gated on the PREVIOUS
@@ -1763,8 +1767,11 @@ async function* queryLoop(
     })
 
     // Refresh tools between turns so newly-connected MCP servers become available
-    if (updatedToolUseContext.options.refreshTools) {
-      const refreshedTools = updatedToolUseContext.options.refreshTools()
+    const refreshTools = updatedToolUseContext.options.refreshTools as
+      | (() => unknown[])
+      | undefined
+    if (refreshTools) {
+      const refreshedTools = refreshTools()
       if (refreshedTools !== updatedToolUseContext.options.tools) {
         updatedToolUseContext = {
           ...updatedToolUseContext,

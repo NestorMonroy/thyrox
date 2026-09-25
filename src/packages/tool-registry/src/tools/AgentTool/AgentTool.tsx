@@ -261,7 +261,11 @@ type InputSchema = ReturnType<typeof inputSchema>
 // fields even when .omit() strips them for gating (cwd, run_in_background).
 // subagent_type is optional; call() defaults it to general-purpose when the
 // fork gate is off, or routes to the fork path when the gate is on.
-type AgentToolInput = z.infer<ReturnType<typeof baseInputSchema>> & {
+type AgentToolInput = Omit<
+  z.infer<ReturnType<typeof baseInputSchema>>,
+  'run_in_background'
+> & {
+  run_in_background?: boolean
   name?: string
   team_name?: string
   mode?: z.infer<ReturnType<typeof permissionModeSchema>>
@@ -336,6 +340,19 @@ import type { AgentToolProgress, ShellProgress } from '../../progressTypes.js'
 // AgentTool forwards both its own progress events and shell progress
 // events from the sub-agent so the SDK receives tool_progress updates during bash/powershell runs.
 export type Progress = AgentToolProgress | ShellProgress
+
+// El `data` de un ProgressMessage del sub-agente llega tipado `unknown`
+// (ProgressMessage<T = unknown> en messageShapes.ts): esta guarda angosta
+// al shape real que BashTool/PowerShellTool ya escriben, sin cambiar la
+// comprobación que el código ya hacía sobre `.type`.
+function isShellProgressData(data: unknown): data is ShellProgress {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'type' in data &&
+    (data.type === 'bash_progress' || data.type === 'powershell_progress')
+  )
+}
 
 export const AgentTool = buildTool({
   async prompt({ agents, tools, getToolPermissionContext, allowedAgentTypes }) {
@@ -474,7 +491,7 @@ export const AgentTool = buildTool({
           plan_mode_required: spawnMode === 'plan',
           model: model ?? agentDef?.model,
           agent_type: subagent_type,
-          invokingRequestId: assistantMessage?.requestId,
+          invokingRequestId: assistantMessage?.requestId as string | undefined,
         },
         toolUseContext,
       )
@@ -535,7 +552,7 @@ export const AgentTool = buildTool({
       if (!found) {
         found = resolveSubagentTypeWithFuzzy(effectiveType, {
           allAgents, agents,
-          getDenyRule: (t, i) => getDenyRuleForAgent(appState.toolPermissionContext, t, i),
+          getDenyRule: (t, i) => getDenyRuleForAgent(appState.toolPermissionContext, t, i) ?? undefined,
         }) ?? undefined
       }
       if (!found) {
@@ -1010,7 +1027,7 @@ export const AgentTool = buildTool({
         depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
-        invokingRequestId: assistantMessage?.requestId,
+        invokingRequestId: assistantMessage?.requestId as string | undefined,
         invocationKind: 'spawn' as const,
         invocationEmitted: false,
       }
@@ -1082,7 +1099,7 @@ export const AgentTool = buildTool({
         depth: agentDepth(getAgentContext()) + 1,
         subagentName: selectedAgent.agentType,
         isBuiltIn: isBuiltInAgent(selectedAgent),
-        invokingRequestId: assistantMessage?.requestId,
+        invokingRequestId: assistantMessage?.requestId as string | undefined,
         invocationKind: 'spawn' as const,
         invocationEmitted: false,
       }
@@ -1484,8 +1501,8 @@ export const AgentTool = buildTool({
               // receives tool_progress events just as it does for the main agent.
               if (
                 message.type === 'progress' &&
-                (message.data.type === 'bash_progress' ||
-                  message.data.type === 'powershell_progress') &&
+                typeof message.toolUseID === 'string' &&
+                isShellProgressData(message.data) &&
                 onProgress
               ) {
                 onProgress({
@@ -1510,6 +1527,7 @@ export const AgentTool = buildTool({
 
               const normalizedNew = normalizeMessages([message])
               for (const m of normalizedNew) {
+                if (!m.message) continue
                 for (const content of m.message.content) {
                   if (
                     content.type !== 'tool_use' &&

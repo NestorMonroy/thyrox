@@ -8,7 +8,7 @@ import {
 } from '@thyrox/config/settings'
 import { shouldOfferTerminalSetup } from '../terminalSetup.js'
 import { getDesktopUpsellConfig } from '../components/DesktopUpsell/DesktopUpsellStartup.js'
-import { color } from '@anthropic/ink'
+import { color, type ThemeName } from '@anthropic/ink'
 import { shouldShowOverageCreditUpsell } from '../components/LogoV2/OverageCreditUpsell.js'
 import { getShortcutDisplay } from '../keybindings/shortcutFormat.js'
 import { isKairosCronEnabled } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
@@ -21,7 +21,7 @@ import {
   modelSupportsEffort,
 } from '@thyrox/agent/effort.js'
 import { env } from '@thyrox/config/env/paths'
-import { cacheKeys } from '@thyrox/tool-registry/fileStateCache'
+import { cacheKeys, type FileStateCache } from '@thyrox/tool-registry/fileStateCache'
 import { getWorktreeCount } from '@thyrox/storage/git.js'
 import {
   detectRunningIDEsCached,
@@ -57,6 +57,23 @@ import {
 import { getSessionsSinceLastShown } from './tipHistory.js'
 import type { Tip, TipContext } from './types.js'
 
+// Forma real del subconjunto de TipContext que este registro consume; el
+// stub de './types.js' lo declara como `unknown`.
+interface TipDisplayContext {
+  theme: ThemeName
+  bashTools?: Set<string>
+  readFileState?: FileStateCache
+}
+
+// Forma real de un Tip que este registro produce y consume; el stub de
+// './types.js' lo declara como `unknown`.
+interface TipEntry {
+  id: string
+  content: (context: TipDisplayContext) => Promise<string>
+  cooldownSessions: number
+  isRelevant: (context?: TipDisplayContext) => Promise<boolean>
+}
+
 let _isOfficialMarketplaceInstalledCache: boolean | undefined
 async function isOfficialMarketplaceInstalled(): Promise<boolean> {
   if (_isOfficialMarketplaceInstalledCache !== undefined) {
@@ -69,7 +86,7 @@ async function isOfficialMarketplaceInstalled(): Promise<boolean> {
 
 async function isMarketplacePluginRelevant(
   pluginName: string,
-  context: TipContext | undefined,
+  context: TipDisplayContext | undefined,
   signals: { filePath?: RegExp; cli?: string[] },
 ): Promise<boolean> {
   if (!(await isOfficialMarketplaceInstalled())) {
@@ -78,7 +95,7 @@ async function isMarketplacePluginRelevant(
   if (isPluginInstalled(`${pluginName}@${OFFICIAL_MARKETPLACE_NAME}`)) {
     return false
   }
-  const { bashTools } = context ?? {}
+  const bashTools = context?.bashTools
   if (signals.cli && bashTools?.size) {
     if (signals.cli.some(cmd => bashTools.has(cmd))) {
       return true
@@ -93,7 +110,7 @@ async function isMarketplacePluginRelevant(
   return false
 }
 
-const externalTips: Tip[] = [
+const externalTips: TipEntry[] = [
   {
     id: 'new-user-warmup',
     content: async () =>
@@ -446,7 +463,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'desktop-shortcut',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       return `Continue your session in Claude Code Desktop with ${blue('/desktop')}`
     },
@@ -492,24 +509,24 @@ const externalTips: Tip[] = [
   },
   {
     id: 'frontend-design-plugin',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       return `Working with HTML/CSS? Install the frontend-design plugin:\n${blue(`/plugin install frontend-design@${OFFICIAL_MARKETPLACE_NAME}`)}`
     },
     cooldownSessions: 3,
-    isRelevant: async context =>
+    isRelevant: async (context?: TipDisplayContext) =>
       isMarketplacePluginRelevant('frontend-design', context, {
         filePath: /\.(html|css|htm)$/i,
       }),
   },
   {
     id: 'vercel-plugin',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       return `Working with Vercel? Install the vercel plugin:\n${blue(`/plugin install vercel@${OFFICIAL_MARKETPLACE_NAME}`)}`
     },
     cooldownSessions: 3,
-    isRelevant: async context =>
+    isRelevant: async (context?: TipDisplayContext) =>
       isMarketplacePluginRelevant('vercel', context, {
         filePath: /(?:^|[/\\])vercel\.json$/i,
         cli: ['vercel'],
@@ -517,7 +534,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'effort-high-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const cmd = blue('/effort high')
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
@@ -547,7 +564,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'subagent-fanout-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
         'off' | 'copy_a' | 'copy_b'
@@ -569,7 +586,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'loop-command-nudge',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const blue = color('suggestion', ctx.theme)
       const variant = getFeatureValue_CACHED_MAY_BE_STALE<
         'off' | 'copy_a' | 'copy_b'
@@ -592,7 +609,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'guest-passes',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const claude = color('claude', ctx.theme)
       const reward = getCachedReferrerReward()
       return reward
@@ -611,7 +628,7 @@ const externalTips: Tip[] = [
   },
   {
     id: 'overage-credit',
-    content: async ctx => {
+    content: async (ctx: TipDisplayContext) => {
       const claude = color('claude', ctx.theme)
       const info = getCachedOverageCreditGrant()
       const amount = info ? formatGrantAmount(info) : null
@@ -623,7 +640,7 @@ const externalTips: Tip[] = [
     isRelevant: async () => shouldShowOverageCreditUpsell(),
   },
 ]
-const internalOnlyTips: Tip[] =
+const internalOnlyTips: TipEntry[] =
   process.env.USER_TYPE === 'ant'
     ? [
         {
@@ -643,7 +660,7 @@ const internalOnlyTips: Tip[] =
       ]
     : []
 
-function getCustomTips(): Tip[] {
+function getCustomTips(): TipEntry[] {
   const settings = getInitialSettings()
   const override = settings.spinnerTipsOverride
   if (!override?.tips?.length) return []
@@ -668,7 +685,7 @@ export async function getRelevantTips(context?: TipContext): Promise<Tip[]> {
 
   // Otherwise, filter built-in tips as before and combine with custom
   const tips = [...externalTips, ...internalOnlyTips]
-  const isRelevant = await Promise.all(tips.map(_ => _.isRelevant(context)))
+  const isRelevant = await Promise.all(tips.map(_ => _.isRelevant(context as TipDisplayContext | undefined)))
   const filtered = tips
     .filter((_, index) => isRelevant[index])
     .filter(_ => getSessionsSinceLastShown(_.id) >= _.cooldownSessions)

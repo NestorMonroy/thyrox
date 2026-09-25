@@ -1,0 +1,9 @@
+patron: undefined-name-inherited-from-source
+senal_del_verificador: TS2552: Cannot find name '[^']+'\. Did you mean
+fix_generico: La fuente usa un nombre que nunca declara (su strict:false lo deja pasar y revienta en ejecución): se usa el símbolo vivo que el mensaje sugiere, verificando que sea el mismo valor.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/runtime.ts(127,26): error TS2552: Cannot find name 'ToolPermissionContextLike'. Did you mean 'ToolPermissionContext'?
+src/packages/tool-registry/src/runtime.ts(134,26): error TS2552: Cannot find name 'ToolPermissionContextLike'. Did you mean 'ToolPermissionContext'?
+src/packages/tool-registry/src/runtime.ts(144,26): error TS2552: Cannot find name 'ToolPermissionContextLike'. Did you mean 'ToolPermissionContext'?
+src/packages/tool-registry/src/runtime.ts(155,26): error TS2552: Cannot find name 'ToolPermissionContextLike'. Did you mean 'ToolPermissionContext'?

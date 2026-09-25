@@ -1,0 +1,60 @@
+bun test v1.3.11 (af24e281)
+
+loopStreaming.test.ts:
+114 | 
+115 |   test('el estilo text imprime el texto UNA vez, no dos', () => {
+116 |     const d = dir()
+117 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--provider', 'recorded',
+118 |       '--grabacion', grabacion(d, 'uno dos tres'), '--cwd', d, '--transcript-dir', join(d, 'tr'), '--stream'])
+119 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/loopStreaming.test.ts:119:24)
+(fail) la CLI con --stream (T-038 + T-011) > el estilo text imprime el texto UNA vez, no dos [746.73ms]
+127 |   test('con --json cada delta sale como su propio evento', () => {
+128 |     const d = dir()
+129 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--provider', 'recorded',
+130 |       '--grabacion', grabacion(d, 'uno dos tres'), '--cwd', d, '--transcript-dir', join(d, 'tr'),
+131 |       '--stream', '--output-style', 'json'])
+132 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/loopStreaming.test.ts:132:24)
+(fail) la CLI con --stream (T-038 + T-011) > con --json cada delta sale como su propio evento [726.17ms]
+197 |         stdout: 'pipe', stderr: 'pipe',
+198 |       })
+199 |       const [salida, errores, codigo] = await Promise.all([
+200 |         new Response(p.stdout).text(), new Response(p.stderr).text(), p.exited,
+201 |       ])
+202 |       expect(errores).toBe('')
+                            ^
+error: expect(received).toBe(expected)
+
+- ""
++ "1 | })
++ 2 | {
++     ^
++ SyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.
++       at loadAndEvaluateModule (2:1)
++ 
++ Bun v1.3.11 (Linux x64)
++ "
+
+- Expected  - 1
++ Received  + 8
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/loopStreaming.test.ts:202:23)
+(fail) punta a punta: el binario contra un servidor local que habla SSE > escribe un archivo por herramienta y devuelve el texto del segundo turno [1050.28ms]
+
+ 7 pass
+ 3 fail
+ 17 expect() calls
+Ran 10 tests across 1 file. [4.12s]
