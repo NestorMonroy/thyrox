@@ -1,0 +1,19 @@
+== tests/session/test-wait-jobs.sh
+
+44 ok, 0 fallos
+== tests/session/test-run-task-pool-isolation.sh
+
+resultado: 11 de 11 aserciones en verde
+== tests/session/test-contrato-de-escotilla.sh
+
+6 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+== tests/session/test-process-group.sh
+  ok   dispatch: el .job no repite cmd
+test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+== tests/session/test-run-task-pool-scope.sh
+
+resumen: 8 ok, 0 fallo(s)
+== tests/session/test-run-task-pool.sh
+  ok   capar no deja trabajos sin lanzar
+test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+__BG_EXIT__=0
