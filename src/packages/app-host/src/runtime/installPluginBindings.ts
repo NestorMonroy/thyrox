@@ -238,10 +238,10 @@ export function installPluginBindings(): void {
     const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js')
     return ripGrep(...args)
   })
-  setUnzipFileFn((zipPath, destDir) => {
+  setUnzipFileFn(zipData => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { unzipFile } = require('@thyrox/config/dxt/zip.js')
-    return unzipFile(zipPath, destDir)
+    return unzipFile(zipData)
   })
   setParseZipModesFn((data: unknown) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

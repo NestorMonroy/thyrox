@@ -807,8 +807,12 @@ const [_getExecuteShellCommandsInPrompt, setExecuteShellCommandsInPromptFn_] =
 const [_getRipGrep, setRipGrepFn_] = makeSetter(
   async (..._args: unknown[]): Promise<string> => '',
 )
+// El contrato es el de dxt/zip.ts, que es lo que se inyecta y lo que los tres
+// llamadores usan: recibe el zip en memoria y devuelve sus archivos. La
+// fachada declaraba (zipPath, destDir): Promise<void>, como la fuente, y cada
+// llamador era TS2554 aunque en ejecución funcionara.
 const [_getUnzipFile, setUnzipFileFn_] = makeSetter(
-  async (_zipPath: string, _destDir: string): Promise<void> => {},
+  async (_zipData: Buffer): Promise<Record<string, Uint8Array>> => ({}),
 )
 export function extractDescriptionFromMarkdown(
   text: string,
@@ -831,8 +835,8 @@ export function executeShellCommandsInPrompt(
 export function ripGrep(...args: unknown[]): Promise<string> {
   return _getRipGrep()(...args)
 }
-export function unzipFile(zipPath: string, destDir: string): Promise<void> {
-  return _getUnzipFile()(zipPath, destDir)
+export function unzipFile(zipData: Buffer): Promise<Record<string, Uint8Array>> {
+  return _getUnzipFile()(zipData)
 }
 export const setExtractDescriptionFromMarkdownFn =
   setExtractDescriptionFromMarkdownFn_
