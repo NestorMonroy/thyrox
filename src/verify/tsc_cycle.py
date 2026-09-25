@@ -270,8 +270,12 @@ ROUTE_COMMANDS = {
 }
 
 
-def next_route(diagnostics, duplicates: dict[str, list[str]]) -> str:
-    """La ruta que toca ahora según el plan v3: la primera con trabajo."""
+def next_route(diagnostics, duplicates: dict[str, list[str]], exhausted: frozenset[str] | set[str] = frozenset()) -> str:
+    """La ruta que toca ahora según el plan v3: la primera con trabajo que no
+    se haya declarado agotada. Una ruta se agota cuando su lazo termina
+    `stalled`: tiene diagnósticos y no sabe producir nada para ellos (paso
+    132). Si todas las que tienen trabajo están agotadas, devuelve
+    `exhausted`, que no es lo mismo que `none`."""
     if not diagnostics:
         return "none"
     routes = tsc_routes.classify(diagnostics, duplicates)
@@ -283,15 +287,22 @@ def next_route(diagnostics, duplicates: dict[str, list[str]]) -> str:
         "shared": routes["shared"],
         "local": routes["local"],
     }
-    return next(route for route in ROUTE_ORDER if pending[route])
+    with_work = [route for route in ROUTE_ORDER if pending[route]]
+    available = [route for route in with_work if route not in exhausted]
+    return available[0] if available else "exhausted"
 
 
 def cmd_next(args) -> int:
     diagnostics = tsc_routes.parse_diagnostics(args.log.read_text(encoding="utf-8", errors="ignore"))
-    route = next_route(diagnostics, tsc_routes.duplicated_types(args.root / "src" / "packages"))
+    route = next_route(diagnostics, tsc_routes.duplicated_types(args.root / "src" / "packages"),
+                       exhausted=set(args.exhausted))
     if route == "none":
         # Un log sin diagnósticos no distingue «cero» de «tsc no corrió».
         print(f"tsc_cycle next: {args.log} sin diagnósticos — el cero lo confirma una medición", file=sys.stderr)
+        return 2
+    if route == "exhausted":
+        print(f"tsc_cycle next: toda ruta con trabajo está agotada ({', '.join(sorted(args.exhausted))}); "
+              "el siguiente paso no es un lazo, es juicio sobre lo que queda", file=sys.stderr)
         return 2
     print(f"next: {route} — {ROUTE_COMMANDS[route]}")
     return 0
@@ -412,6 +423,8 @@ def main(argv: list[str] | None = None) -> int:
     p = sub.add_parser("next", help="la ruta que toca según el plan v3 (1 → 2 → 3)")
     p.add_argument("--log", type=Path, required=True)
     p.add_argument("--root", type=Path, default=THYROX)
+    p.add_argument("--exhausted", action="append", default=[], choices=ROUTE_ORDER,
+                   help="una ruta cuyo lazo terminó stalled; repetible")
     p.set_defaults(func=cmd_next)
     args = parser.parse_args(argv)
     return args.func(args)

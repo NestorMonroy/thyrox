@@ -297,6 +297,32 @@ assert_equal("después, la cola compartida", "shared", route_of(SHARED + LOCAL, 
 assert_equal("al final, el pool por archivo", "local", route_of(LOCAL, dup))
 assert_equal("sin diagnósticos no hay ruta", "none", route_of(""))
 
+# Paso 132: la ruta determinista terminó `stalled`, sin propuestas para lo que
+# queda, y `next` la volvía a proponer. Quien sabe que una ruta se agotó lo
+# declara, y `next` pasa a la siguiente que tenga trabajo.
+def route_after(text: str, exhausted: set[str], duplicates=None) -> str:
+    return tc.next_route(tc.tsc_routes.parse_diagnostics(text), duplicates or {}, exhausted=exhausted)
+
+
+assert_equal("una ruta agotada cede a la siguiente con trabajo", "modules",
+             route_after(INFER + MISSING + SHARED + LOCAL, {"deterministic"}, dup))
+assert_equal("y salta las que no tienen trabajo", "local",
+             route_after(INFER + LOCAL, {"deterministic"}, dup))
+assert_equal("todas agotadas no es cero: lo dice", "exhausted",
+             route_after(INFER, {"deterministic"}, dup))
+with tempfile.TemporaryDirectory() as directory:
+    log = Path(directory) / "t.log"
+    log.write_text(INFER + LOCAL)
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = tc.main(["next", "--log", str(log), "--root", str(Path(directory)), "--exhausted", "deterministic"])
+    assert_equal("la CLI acepta --exhausted", (0, True), (code, out.getvalue().startswith("next: local")))
+    err = io.StringIO()
+    log.write_text(INFER)
+    with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+        code = tc.main(["next", "--log", str(log), "--root", str(Path(directory)), "--exhausted", "deterministic"])
+    assert_equal("todas agotadas rehúsa con exit 2 y lo nombra", (2, True), (code, "agotad" in err.getvalue()))
+
 # --- compare: el antes y el después de una medición ---------------------------
 # Suelto en `.claude/cache/cmp.py` vivía una copia de `_new_diagnostics`; la
 # comparación es la del paso, y se publica con su denominador.
