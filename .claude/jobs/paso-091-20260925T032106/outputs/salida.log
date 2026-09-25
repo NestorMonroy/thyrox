@@ -1,0 +1,2 @@
+{"status": "progress", "total_before": 1896, "total_final": 1870, "tsc_runs": 1, "accepted": ["agent:agent:model-config-without-codex"], "files_kept": ["src/packages/provider/src/model/configs.ts"], "outcomes": {"agent:agent:model-config-without-codex": "accepted-net"}}
+__BG_EXIT__=0

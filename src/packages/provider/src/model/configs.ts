@@ -1,7 +1,11 @@
 import type { ModelName } from '../model.js'
 import type { APIProvider } from '../providers.js'
 
-export type ModelConfig = Record<APIProvider, ModelName>
+// `codex` no tiene fila en esta tabla: sus modelos salen de
+// getDefaultModelsForProtocol('codex') (codex/fetchAdapter.ts). Con la clave
+// exigida, las trece configuraciones incumplían ModelConfig, y una lectura
+// ALL_MODEL_CONFIGS[k]['codex'] devolvía undefined tipada como ModelName.
+export type ModelConfig = Record<Exclude<APIProvider, 'codex'>, ModelName>
 
 // @[MODEL LAUNCH]: Add a new CLAUDE_*_CONFIG constant here. Double check the correct model strings
 // here since the pattern may change.
