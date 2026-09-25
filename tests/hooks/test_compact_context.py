@@ -21,7 +21,6 @@ import tempfile
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 from paths import reach  # noqa: E402
-from hooks import compact_context  # noqa: E402
 from session.job_ledger import JobLedger  # noqa: E402
 
 ROOT = reach.thyrox_root()
@@ -43,10 +42,13 @@ def git(repo: pathlib.Path, *args: str) -> None:
                     "-c", "commit.gpgsign=false", *args], check=True, capture_output=True)
 
 
+ENV: dict[str, str] = {}
+
+
 def run_hook(payload: dict, *args: str) -> dict:
     out = subprocess.run([sys.executable, str(ROOT / "src/hooks/compact_context.py"), *args],
                          input=json.dumps(payload), capture_output=True, text=True,
-                         env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
+                         env={**os.environ, **ENV, "PYTHONPATH": str(ROOT / "src")})
     try:
         return json.loads(out.stdout or "null")
     except ValueError:
@@ -60,9 +62,16 @@ with tempfile.TemporaryDirectory() as directory:
     git(repo, "init", "-q")
     git(repo, "commit", "-q", "--allow-empty", "-m", "seed")
     (repo / "in-progress.ts").write_text("x\n")
+    # Los hogares llegan por sus constantes, no por argumento: la raíz de los
+    # ledgers (`job_ledger.LEDGER_DIR_VAR`) y el banco (`THYROX_WORKBENCH_DIR`).
     ledgers = base / "jobs-ledger"
     JobLedger(ledgers / "session-1").register("suite", base / "suite.log", pid=None)
-    args = ("--root", str(repo), "--ledger-root", str(ledgers))
+    workbench = base / "workbench"
+    (workbench / "older-question-20260901T000000").mkdir(parents=True)
+    (workbench / "current-question-20260925T000000").mkdir()
+    os.utime(workbench / "older-question-20260901T000000", (1, 1))
+    ENV.update({"THYROX_JOBS_LEDGER_DIR": str(ledgers), "THYROX_WORKBENCH_DIR": str(workbench)})
+    args = ("--root", str(repo))
 
     context = run_hook({"hook_event_name": "SessionStart", "source": "compact",
                         "session_id": "session-1"}, *args)
@@ -72,6 +81,9 @@ with tempfile.TemporaryDirectory() as directory:
     check("nombra el clon con trabajo sin publicar", True, "clone-a" in text)
     check("y lo que tiene sin versionar", True, "1 untracked" in text)
     check("nombra el trabajo del ledger sin recoger", True, "suite" in text)
+    check("nombra el banco más reciente, que es donde vive lo que se hacía", True,
+          text.find("current-question") != -1
+          and (text.find("older-question") == -1 or text.find("current-question") < text.find("older-question")))
 
     startup = run_hook({"hook_event_name": "SessionStart", "source": "startup",
                         "session_id": "session-1"}, *args)
@@ -91,7 +103,7 @@ with tempfile.TemporaryDirectory() as directory:
          sys.executable, str(ROOT / "src/hooks/compact_context.py"), *args],
         input=json.dumps({"hook_event_name": "SessionStart", "source": "compact",
                           "session_id": "session-1"}),
-        capture_output=True, text=True, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
+        capture_output=True, text=True, env={**os.environ, **ENV, "PYTHONPATH": str(ROOT / "src")})
     check("por conducta, el hook no intenta escribir nada", 0, measured.returncode)
     if measured.returncode:
         print(measured.stdout[-800:], measured.stderr[-400:])

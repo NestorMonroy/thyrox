@@ -95,7 +95,14 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # de golpe y no correrlas seria publicar un verde que no medi. La cadena de
 # respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
 # el barrido es la tarea #91.
-LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_ROOT/.claude/jobs-ledger/$_SESSION}}"
+# La raiz de los ledgers es un hogar: la resuelve `job_ledger.ledger_root()`,
+# con sus dos entradas de entorno (`THYROX_JOBS_LEDGER_DIR` o el `.env`). Un
+# literal aqui seria su segunda fuente de verdad, y el hook de compactacion ya
+# lo copio una vez (H-THYROX-187).
+_LEDGER_ROOT="$(PYTHONPATH="$_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
+    'from session.job_ledger import ledger_root; print(ledger_root())')" || {
+    echo "wait-jobs.sh: no pude resolver la raiz de los ledgers" >&2; exit 2; }
+LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_LEDGER_ROOT/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 # Las dos formas de la familia: `EXIT=` del envoltorio a mano y
 # `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las

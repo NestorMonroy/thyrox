@@ -136,13 +136,14 @@ def declared_wiring(root: Path | None = None,
             # Tras compactar, el estado de trabajo (clones sin publicar,
             # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
             # por `PostCompact`, cuya salida solo ve el usuario (2.1.281,
-            # `BQe`). La raiz del ledger es la misma que usa `wait-jobs.sh`.
+            # `BQe`). La raiz del ledger y el banco los resuelve el hook con
+            # sus constantes (`ledger_root()`, `workbench_dir()`): un literal
+            # aqui seria otra fuente de verdad del hogar.
             "SessionStart": [{
                 "matcher": "compact",
                 "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
                               f"{base}/src/hooks/compact_context.py "
-                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items()))
-                              + f" --ledger-root {base}/.claude/jobs-ledger",
+                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
                               timeout=20)],
             }],
             "PreModelSwitch": [{"hooks": [
@@ -655,6 +656,9 @@ def main() -> int:
                         help="instala aunque cambie de valor un campo de la "
                              "clave de la cache de prompt (reescribe el "
                              "contexto entero: usalo entre turnos)")
+    parser.add_argument("--hooks-only", action="store_true",
+                        help="instala solo `hooks`, que no es campo de la clave "
+                             "de la cache: deja `advisorModel` como este")
     args = parser.parse_args()
 
     ruta = live_settings()
@@ -665,8 +669,15 @@ def main() -> int:
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y%m%dT%H%M%S")
         try:
+            declared = declared_wiring()
+            owned = OWNED_KEYS
+            if args.hooks_only:
+                # Solo lo que no enfria la cache: quien opera decide el
+                # advisor, y cambiarlo a mitad de sesion reescribe el
+                # contexto entero (H-DOCS-1012).
+                declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
             record = install(
-                ruta, declared_wiring(), BackgroundBackup(), stamp,
+                ruta, declared, BackgroundBackup(), stamp, owned=owned,
                 backups=args.backups,
                 allow_cache_key_change=args.allow_cache_key_change)
         except WiringRefused as e:

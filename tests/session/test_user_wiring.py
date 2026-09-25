@@ -621,5 +621,25 @@ check("17-bis.7 restaurada, vuelve a verlo",
       "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts",
       w._target_of(_REL, cwd="/home/user", bases=_BASES))
 
+
+# Instalar SOLO los hooks: con un settings vivo sin `advisorModel` (decisión de
+# quien opera), `--write` rehúsa por el cambio de la clave de caché y los hooks
+# nuevos nunca llegan. `--hooks-only` fusiona sólo `hooks`, que no es campo de
+# la clave (`createCacheSafeParams`, 2.1.266).
+import tempfile as _tf9  # noqa: E402
+with _tf9.TemporaryDirectory() as _d9:
+    _live9 = Path(_d9) / "settings.local.json"
+    _live9.write_text(_json.dumps({"permissions": {"allow": ["Bash(ls)"]}}))
+    _r9 = _sp0.run([sys.executable, str(HERE / "src/session/user_wiring.py"), "--write",
+                    "--hooks-only", "--backups", _d9],
+                   env={**_os0.environ, w.LIVE_SETTINGS_VAR: str(_live9),
+                        "PYTHONPATH": str(HERE / "src")},
+                   capture_output=True, text=True)
+    _after9 = _json.loads(_live9.read_text())
+    check("--hooks-only instala sin rehusar", 0, _r9.returncode)
+    check("--hooks-only escribe los hooks declarados", True, "SessionStart" in _after9.get("hooks", {}))
+    check("--hooks-only no toca advisorModel", False, "advisorModel" in _after9)
+    check("--hooks-only conserva permissions", {"allow": ["Bash(ls)"]}, _after9.get("permissions"))
+
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

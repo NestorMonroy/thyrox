@@ -23,7 +23,12 @@ Lo que el resumen de la compactación parafrasea y el disco sí conserva:
   del gate de ``Stop``);
 - los trabajos del ledger de la sesión que nadie ha recogido
   (``session.job_ledger``; pendiente significa «no recogido», no «no
-  terminado»).
+  terminado»);
+- los bancos más recientes del hogar declarado (``workbench_dir()``): ahí
+  viven el instrumento y las salidas de lo que se estaba midiendo.
+
+Cada hogar se resuelve por su constante (``ledger_root()``,
+``workbench_dir()``), nunca por un literal en el cableado.
 
 Sin trabajo pendiente no inyecta nada: un contexto vacío repetido en cada
 compactación se aprende a ignorar.
@@ -51,7 +56,8 @@ import sys
 from pathlib import Path
 
 from repo.pending_work import FIELDS, render, sweep
-from session.job_ledger import JobLedger
+from session.job_ledger import JobLedger, ledger_root
+from workbench.paths import WorkbenchHomeError, workbench_dir
 
 #: El valor de ``source`` con que el cliente marca el arranque tras compactar.
 COMPACT_SOURCE = "compact"
@@ -59,6 +65,10 @@ COMPACT_SOURCE = "compact"
 #: Las etiquetas de cada eje son los propios nombres de campo: el contexto lo
 #: lee el modelo, no una persona, y el nombre del campo es el término técnico.
 FIELD_LABELS = {field: field for field in FIELDS}
+
+#: Cuántos bancos recientes se nombran. Un banco es una pregunta medida con su
+#: instrumento y sus salidas: los últimos tocados son lo que se estaba haciendo.
+RECENT_BENCHES = 3
 
 
 def pending_jobs(ledger_root: Path, session_id: str) -> list[str]:
@@ -70,10 +80,24 @@ def pending_jobs(ledger_root: Path, session_id: str) -> list[str]:
     return [job.label for job in JobLedger(directory).jobs()]
 
 
-def build_context(roots: list[str], ledger_root: Path, session_id: str) -> str:
-    """El texto que se inyecta, o cadena vacía si no hay nada pendiente."""
+def recent_benches(home: Path | None, limit: int = RECENT_BENCHES) -> list[Path]:
+    """Los bancos más recientes del hogar declarado, del más nuevo al más
+    viejo. Sin hogar declarado no hay lista: ``workbench_dir`` rehúsa y aquí
+    no se inventa uno."""
+    if home is None or not home.is_dir():
+        return []
+    benches = [entry for entry in home.iterdir() if entry.is_dir()]
+    return sorted(benches, key=lambda entry: entry.stat().st_mtime, reverse=True)[:limit]
+
+
+def build_context(roots: list[str], ledger_home: Path, session_id: str,
+                  bench_home: Path | None = None) -> str:
+    """El texto que se inyecta, o cadena vacía si no hay nada pendiente.
+
+    Los bancos no deciden si hay algo que inyectar: sin trabajo sin publicar ni
+    trabajos sin recoger no se inyecta nada, aunque existan bancos."""
     repos = sweep(roots) if roots else []
-    jobs = pending_jobs(ledger_root, session_id)
+    jobs = pending_jobs(ledger_home, session_id)
     if not repos and not jobs:
         return ""
     lines = ["Estado de trabajo tras la compactación (medido en disco, no del resumen):"]
@@ -84,14 +108,19 @@ def build_context(roots: list[str], ledger_root: Path, session_id: str) -> str:
         lines.append("Trabajos del ledger sin recoger (recoger con `bin/wait-jobs wait`, "
                      "en segundo plano):")
         lines.extend(f"  - {label}" for label in jobs)
+    benches = recent_benches(bench_home)
+    if benches:
+        lines.append("Bancos más recientes (el instrumento y las salidas de lo que se estaba midiendo):")
+        lines.extend(f"  - {bench}" for bench in benches)
     return "\n".join(lines)
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", action="append", default=[], help="una raíz de repo; repetible")
-    parser.add_argument("--ledger-root", type=Path, required=True,
-                        help="directorio que contiene un ledger por sesión")
+    parser.add_argument("--ledger-root", type=Path, default=None,
+                        help="directorio con un ledger por sesión; por omisión, "
+                             "job_ledger.ledger_root()")
     args = parser.parse_args(argv)
     try:
         payload = json.load(sys.stdin)
@@ -102,7 +131,12 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     # `git status` no debe refrescar el índice: este hook sólo lee.
     os.environ["GIT_OPTIONAL_LOCKS"] = "0"
-    context = build_context(args.root, args.ledger_root, str(payload.get("session_id", "")))
+    try:
+        bench_home = workbench_dir()
+    except WorkbenchHomeError:
+        bench_home = None
+    context = build_context(args.root, args.ledger_root or ledger_root(),
+                            str(payload.get("session_id", "")), bench_home)
     if not context:
         print("{}")
         return 0

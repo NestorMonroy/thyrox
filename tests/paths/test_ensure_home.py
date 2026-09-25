@@ -111,5 +111,29 @@ finally:
         restore(var, previous)
 
 print()
+print("== 4. un hogar que YA existe se resuelve sin intentar escribir (strace) ==")
+# `mkdir(exist_ok=True)` emite la llamada aunque el directorio exista, y
+# `bin/assert_no_writes` la cuenta como escritura: un lector que sólo resuelve
+# un hogar —el hook de compactación— no podía demostrar que no escribe. Se mide
+# por conducta, no por el «idempotente» del docstring (H-THYROX-187).
+import subprocess  # noqa: E402
+
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+MODULES = {"log_dir": "session.background", "cache_dir": "cache.paths",
+           "jobs_dir": "session.job_runs", "workbench_dir": "workbench.paths"}
+for var, name, _ in RESOLVERS:
+    with tempfile.TemporaryDirectory() as tmp:
+        home = pathlib.Path(tmp) / "exists"
+        home.mkdir()
+        probe = [sys.executable, "-c", f"from {MODULES[name]} import {name}; {name}()"]
+        measured = subprocess.run(
+            ["bash", str(ROOT / "bin/assert_no_writes"), "--", *probe],
+            capture_output=True, text=True,
+            env={**os.environ, var: str(home), "PYTHONPATH": str(ROOT / "src")})
+        check(f"{name} sobre un hogar existente no escribe", 0, measured.returncode)
+        if measured.returncode:
+            print("        " + measured.stdout.strip().splitlines()[-1][:200])
+
+print()
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(0 if FAILED == 0 else 1)
