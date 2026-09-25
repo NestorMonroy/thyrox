@@ -58,6 +58,17 @@ export function topLevelDeclarations(path: string): Declaration[] {
   const line = (position: number): number => source.getLineAndCharacterOfPosition(position).line + 1
   const result: Declaration[] = []
   for (const statement of source.statements) {
+    // Un nombre reexportado (`export { a } from './b.js'`) ya existe en el
+    // módulo: paso 139, `plan` propuso portar seis funciones así presentes.
+    if (ts.isExportDeclaration(statement) && statement.exportClause
+      && ts.isNamedExports(statement.exportClause)) {
+      const start = line(statement.getStart(source, true))
+      const end = line(statement.getEnd())
+      for (const element of statement.exportClause.elements) {
+        result.push({ name: element.name.text, kind: 'declaration', start, end, references: [] })
+      }
+      continue
+    }
     const names = namesOf(statement)
     if (names.length === 0) continue
     const own = new Set(names)

@@ -122,6 +122,10 @@ def merge_imports(text: str) -> str:
         return text
     local = set(_LOCAL_DECLARATION.findall(text))
     merged: dict[tuple[str, str], list[str]] = {}
+    # El texto original de cada grupo: si un grupo tiene una sola sentencia y
+    # conserva sus nombres, se reescribe tal cual (paso 139: los imports de
+    # varias líneas que nadie tocó salían en una).
+    originals: dict[tuple[str, str], list[tuple[str, list[str]]]] = {}
     # Un mismo nombre importado desde dos módulos es TS2300: gana el primero.
     bound: set[str] = set()
     keep: list[str] = []
@@ -133,14 +137,22 @@ def merge_imports(text: str) -> str:
                 keep.append(statement)
             continue
         key = ((match.group(1) or "").strip(), match.group(3))
+        originals.setdefault(key, []).append(
+            (statement, [s.strip() for s in match.group(2).split(",") if s.strip()]))
         names = merged.setdefault(key, [])
         for specifier in (s.strip() for s in match.group(2).split(",")):
             name = _local_name(specifier) if specifier else ""
             if specifier and specifier not in names and name not in local and name not in bound:
                 names.append(specifier)
                 bound.add(name)
-    rebuilt = keep + [f"import {kind + ' ' if kind else ''}{{ {', '.join(names)} }} from {module}"
-                      for (kind, module), names in merged.items() if names]
+    def render(key: tuple[str, str], names: list[str]) -> str:
+        sources = originals.get(key, [])
+        if len(sources) == 1 and sources[0][1] == names:
+            return sources[0][0]
+        kind, module = key
+        return f"import {kind + ' ' if kind else ''}{{ {', '.join(names)} }} from {module}"
+
+    rebuilt = keep + [render(key, names) for key, names in merged.items() if names]
     first = spans[0][0]
     drop = {i for start, end in spans for i in range(start, end + 1)}
     body = [line for i, line in enumerate(lines) if i not in drop]

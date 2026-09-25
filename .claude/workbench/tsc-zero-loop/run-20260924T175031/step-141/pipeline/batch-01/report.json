@@ -1,0 +1,1 @@
+{"status": "stalled", "total_before": 221, "total_final": 221, "tsc_runs": 1, "accepted": [], "files_kept": [], "outcomes": {"agent:pool:src/packages/agent/attachments.ts": "partial"}}

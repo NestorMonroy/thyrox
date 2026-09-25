@@ -183,5 +183,19 @@ twice_anchor = mp.insert_anchors("import { a } from './a.js'\n", ["f", "g", "f"]
 assert_equal("un nombre repetido lleva una sola ancla de cada clase", (1, 1),
              (twice_anchor.count("// @port-slot: f\n"), twice_anchor.count("// @port-imports: f\n")))
 
+# Paso 139: `plan` propuso portar a `loadSkillsDir.ts` seis funciones que el
+# destino ya reexporta desde `./dynamicSkills.js`. Un nombre reexportado está
+# presente; y un import de varias líneas que nadie tocó conserva su forma.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "reexports.ts").write_text(
+        "export { getDynamicSkills, onLoaded as onDynamicSkillsLoaded } from './dynamicSkills.js'\n"
+        "export type { Kind } from './kind.js'\n")
+    names = {d["name"] for d in mp.top_level_declarations(base / "reexports.ts")}
+    assert_equal("un nombre reexportado cuenta como declarado en el destino",
+                 {"getDynamicSkills", "onDynamicSkillsLoaded", "Kind"}, names)
+untouched = "import {\n  a,\n  b,\n} from './a.js'\nimport { c } from './c.js'\nconst z = a + b + c\n"
+assert_equal("un import de varias líneas sin duplicados conserva su forma", untouched, mp.merge_imports(untouched))
+
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
