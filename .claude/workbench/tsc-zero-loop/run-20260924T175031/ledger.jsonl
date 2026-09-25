@@ -192,3 +192,4 @@
 {"proposal_id": "agent:agent:real-tool-use-context", "proposer": "agent", "outcome": "partial", "targets_before": 10, "targets_after": 2, "new_diagnostics": [], "total_before": 1991, "total_after": 1974}
 {"proposal_id": "agent:real-tool-use-context:net", "proposer": "agent", "outcome": "accepted-net", "targets_before": 8, "targets_after": 0, "new_diagnostics": ["src/packages/agent/hooks/apiQueryHookHelper.ts: TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'."], "total_before": 1991, "total_after": 1974}
 {"proposal_id": "agent:agent:typed-stream-event", "proposer": "agent", "outcome": "accepted-net", "targets_before": 25, "targets_after": 15, "new_diagnostics": [], "total_before": 1974, "total_after": 1964}
+{"proposal_id": "agent:agent:query-source-is-string", "proposer": "agent", "outcome": "accepted-net", "targets_before": 6, "targets_after": 2, "new_diagnostics": [], "total_before": 1964, "total_after": 1952}

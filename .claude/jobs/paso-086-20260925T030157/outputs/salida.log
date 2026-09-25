@@ -1,0 +1,2 @@
+{"status": "progress", "total_before": 1964, "total_final": 1952, "tsc_runs": 1, "accepted": ["agent:agent:query-source-is-string"], "files_kept": ["src/packages/agent/querySource.ts"], "outcomes": {"agent:agent:query-source-is-string": "accepted-net"}}
+__BG_EXIT__=0

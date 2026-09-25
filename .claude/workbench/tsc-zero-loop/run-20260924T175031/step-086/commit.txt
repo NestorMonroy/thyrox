@@ -1,0 +1,14 @@
+Declare QuerySource as the string it is used as
+
+Step 086 of the tsc-zero loop: 1964 -> 1952, accepted net.
+
+agent/querySource.ts kept the source's auto-generated stub,
+QuerySource = unknown. Every consumer uses it as a string
+(startsWith('repl_main_thread'), === 'sdk'), and provider already
+declares QuerySource = string. With unknown, each
+`!querySource || querySource.startsWith(...)` narrowed it to {}.
+
+The change is type-only. The unknown-absorbs-return-union pattern
+now states the general fix (type the unknown where it is declared);
+gate 4 exclusions name the origin of each remaining {} site, which
+is the queue for the next steps.
