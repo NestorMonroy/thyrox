@@ -119,6 +119,13 @@ y no se arregla instalando otra: se extrae el tramo a una variable, se
 modifica y se vuelve a montar la línea (primera forma de la fila de arriba).
 Directiva del ejecutor 2026-09-25.
 
+Su gate es `src/hooks/detect_awk_substr_target.py`, detector de
+`pretooluse_dispatch.py`: avisa cuando un comando que invoca awk pasa
+`substr()` como tercer argumento de `gsub`/`sub`. Sus cuatro mitades de juicio
+—el ancla de awk, la exclusión del método `.sub`, y saltar cadenas y literales
+`/regex/` al separar argumentos— se probaron por anulación: retirada cada una
+cae exactamente su caso (`python3 tests/hooks/test_detect_awk_substr_target.py`).
+
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
 nuevo, no por completitud.

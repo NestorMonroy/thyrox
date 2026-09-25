@@ -13,6 +13,7 @@ rehúsa.
 """
 from __future__ import annotations
 
+import json
 import sys
 from pathlib import Path
 
@@ -126,6 +127,15 @@ check("el detector irreversible esta en la lista", True,
       "detect_irreversible_operation" in dispatch.DETECTOR_NAMES)
 check("el de edicion en bucle tambien", True,
       "detect_edit_loop" in dispatch.DETECTOR_NAMES)
+check("el de substr como destino de gsub tambien", True,
+      "detect_awk_substr_target" in dispatch.DETECTOR_NAMES)
+registry, missing = dispatch.build_registry(dispatch.DETECTOR_DIR, dispatch.DETECTOR_NAMES)
+check("y carga sin faltantes", [], missing)
+awk_out = dispatch.dispatch(
+    {"tool_name": "Bash", "tool_input": {"command": "gawk '{gsub(/a/,\"X\",substr($0,1,3))}' f"}},
+    detectors=registry)
+check("el despacho real devuelve su aviso", True,
+      "AWK SUBSTR" in json.dumps(awk_out, ensure_ascii=False))
 
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

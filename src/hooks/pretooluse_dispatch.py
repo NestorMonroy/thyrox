@@ -80,6 +80,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_client_background",
     "detect_irreversible_operation",
     "detect_edit_loop",
+    "detect_awk_substr_target",
 )
 
 
