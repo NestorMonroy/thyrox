@@ -1,0 +1,14 @@
+-- FALLIDO src/packages/cli/src/structuredIO.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/25.txt
+-- FALLIDO src/packages/repl/src/components/VirtualMessageList.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/112.txt
+-- FALLIDO src/packages/repl/src/commands/plan/plan.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/107.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processSlashCommand.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/118.txt
+-- FALLIDO src/packages/repl/src/processUserInput/processUserInput.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/119.txt
+-- FALLIDO src/packages/tool-registry/src/tools/SkillTool/UI.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/122.txt
+-- FALLIDO src/packages/config/plugin/marketplaceManager.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/127.txt
+-- FALLIDO src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/124.txt
+-- FALLIDO src/packages/permission/src/components/FallbackPermissionRequest.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/144.txt
+-- FALLIDO src/packages/permission/src/components/hooks.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/147.txt
+-- FALLIDO src/packages/provider/src/gemini/indexImpl.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-107/diag/150.txt
+items=166 ok=155 fallidos=11
+166
+__BG_EXIT__=0
