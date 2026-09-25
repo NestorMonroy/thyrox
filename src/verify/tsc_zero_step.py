@@ -43,6 +43,7 @@ from pathlib import Path
 
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC
 from verify.batch_verification import Proposal, _new_diagnostics, ledger_rows, verify_proposals
+from verify.source_copy_step import reachable_copies
 from verify.tsc_schedule import Candidate, schedule
 
 
@@ -227,7 +228,36 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
         # No se biseca: lo destapado ya se aceptó al conservarla por el neto.
         kept, final_lines = [net_kept], after_lines
     elif accepted:
-        kept, final_lines = settle(accepted, before_lines, None if reverted else after_lines)
+        lines = None if reverted else after_lines
+        if lines is None:
+            counter["n"] += 1
+            lines = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+        # Sólo es sospechosa la aceptada a cuyos archivos llega, por la cadena
+        # de imports, el archivo que lleva lo nuevo: las demás no pueden
+        # haberlo causado y no pagan bisección. Si el grafo no alcanza a
+        # ninguna, se biseca el conjunto entero, como antes.
+        new, new_by_file = _new_diagnostics(before_lines, lines)
+        suspects = accepted
+        if new:
+            owned = {file for pid in accepted for file in applied[pid]}
+            packages = root / "src" / "packages"
+            reached = reachable_copies(root, set(new_by_file), owned, root,
+                                       package_root=packages if packages.is_dir() else root)
+            reached |= set(new_by_file) & owned
+            hit = [pid for pid in accepted if set(applied[pid]) & reached]
+            suspects = hit or accepted
+        clean = [pid for pid in accepted if pid not in suspects]
+        kept_suspects, final_lines = settle(suspects, before_lines, lines)
+        kept = clean + kept_suspects
+        if clean and final_lines is before_lines:
+            # `settle` devolvió la base sin nada aplicado; las limpias siguen
+            # en el árbol, así que el log final se mide.
+            counter["n"] += 1
+            final_lines = run_tsc(root, tsc, bench / f"settle-{counter['n']}.log")
+        if clean and _new_diagnostics(before_lines, final_lines)[0]:
+            # El grafo se equivocó: una limpia también rompe. Se biseca lo
+            # conservado, que es lo que está aplicado.
+            kept, final_lines = settle(kept, before_lines, final_lines)
     runs += counter["n"]
     for pid in revealed:
         outcomes[pid] = "revealed"

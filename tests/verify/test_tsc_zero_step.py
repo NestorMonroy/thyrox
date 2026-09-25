@@ -327,5 +327,25 @@ with tempfile.TemporaryDirectory() as directory:
                  (report.tsc_runs, report.outcomes["clean:a.ts"], report.outcomes["dirty:c.ts"],
                   (base / "a.ts").read_text(), (base / "c.ts").read_text()))
 
+
+# Lo nuevo cae en OTRO archivo (z.ts) que importa a.ts: sólo la propuesta de
+# a.ts es sospechosa. Las otras tres no pagan bisección: una pasada para
+# medir el lote tras revertir a.ts, y no las cuatro de bisecar el conjunto.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    texts = {"a.ts": "const a = BAD1\n", "b.ts": "const b = BAD2\n", "c.ts": "const c = BAD3\n",
+             "d.ts": "const d = BAD4\n", "z.ts": "import { a } from './a.js'\n"}
+    for name, text in texts.items():
+        (base / name).write_text(text)
+    (base / "fake_tsc.py").write_text(FAKE_TSC)
+    rows = [proposal("fix:a.ts", "agent", "a.ts", texts["a.ts"], "BAD1", "REVEAL", ["a.ts: TS9001: bad 1."])]
+    rows += [proposal(f"fix:{n}.ts", "agent", f"{n}.ts", texts[f"{n}.ts"], f"BAD{i}", "1",
+                      [f"{n}.ts: TS9001: bad {i}."]) for n, i in (("b", 2), ("c", 3), ("d", 4))]
+    report = step.run_step(base, rows, [sys.executable, "fake_tsc.py"], base / "ledger.jsonl",
+                           base / "bench", seed=7, epsilon=0.5, alpha0=0.5, max_batch=None)
+    assert_equal("el grafo de imports acota la bisección al sospechoso",
+                 (3, "revealed", ["fix:b.ts", "fix:c.ts", "fix:d.ts"], 1),
+                 (report.tsc_runs, report.outcomes["fix:a.ts"], sorted(report.accepted), report.total_final))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
