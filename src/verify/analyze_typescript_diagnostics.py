@@ -123,9 +123,17 @@ def diagnostic_key(match: re.Match[str]) -> str:
     )
 
 
+# Un nombre ausente es el mismo diagnóstico con o sin sugerencia: tsc cambia
+# de TS2304 a TS2552 en cuanto otro nombre parecido entra al alcance (paso
+# 141 revirtió una candidata de −20 por eso).
+_SUGGESTED_MISSING = re.compile(r": TS2552: (Cannot find name '[^']+')\. Did you mean '[^']+'\?$")
+
+
 def stable_key(key: str) -> str:
     """La clave para COMPARAR dos pasadas: las uniones, reducidas a su
-    tamaño. Sólo la usa el verificador; las señales leen `diagnostic_key`."""
+    tamaño, y el nombre ausente sin la sugerencia de tsc. Sólo la usa el
+    verificador; las señales leen `diagnostic_key`."""
+    key = _SUGGESTED_MISSING.sub(r": TS2304: \1.", key)
     return _QUOTED.sub(_stable_type, key)
 
 
