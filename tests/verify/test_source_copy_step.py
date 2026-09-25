@@ -113,6 +113,8 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("el log final queda en el banco", True, (base / "bench" / "final.log").exists())
     final = (base / "bench" / "final.log").read_text()
     assert_equal("el log final no trae el diagnóstico del consumidor", False, "TS9003" in final)
+    # batch + confirm (tras revertir lo propio) + imports: sin bisección.
+    assert_equal("el grafo de imports culpa sin bisecar", 3, report["tsc_runs"])
 
     again = step.run_copy_step(dest, source, FILES, final.splitlines(), tsc, ledger, base / "bench2",
                                rewrites=[("@claude-code-how-works/", "@thyrox/")], batch=10)

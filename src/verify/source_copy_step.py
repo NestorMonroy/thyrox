@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -67,6 +68,28 @@ def decided_files(ledger: Path) -> set[str]:
     if not ledger.exists():
         return set()
     return {json.loads(line)["file"] for line in ledger.read_text().splitlines() if line.strip()}
+
+
+_IMPORT = re.compile(r"""(?:from|import)\s*\(?\s*['"]([^'"]+)['"]""")
+
+
+def imported_copies(cwd: Path, consumers: set[str], applied: set[str], dest: Path) -> set[str]:
+    """Las copias aplicadas que algún consumidor afectado importa, por el nombre
+    del módulo (sin extensión): basta para culpar, no para resolver rutas."""
+    stems = {}
+    for rel in applied:
+        stems.setdefault(Path(rel).with_suffix("").name, set()).add(rel)
+    found: set[str] = set()
+    for consumer in consumers:
+        path = cwd / consumer
+        if not path.is_file():
+            continue
+        for spec in _IMPORT.findall(path.read_text(errors="ignore")):
+            name = Path(spec).name
+            for suffix in (".js", ".ts", ".tsx", ".mjs"):
+                name = name.removesuffix(suffix)
+            found |= stems.get(name, set())
+    return found
 
 
 class _Tree:
@@ -131,6 +154,19 @@ def run_copy_step(dest: Path, source: Path, files: list[str], before_lines: list
             half = len(group) // 2
             return culprits(group[:half]) + culprits(group[half:])
 
+        # Primero el grafo de imports: el consumidor que recibe un diagnóstico
+        # nuevo casi siempre importa la copia que lo rompió. Culparla directo
+        # ahorra la bisección; si no basta, se biseca lo que queda.
+        if new and applied:
+            _, by_file = _new_diagnostics(before_lines, after)
+            suspects = imported_copies(cwd, set(by_file), applied, dest)
+            if suspects:
+                trial = applied - suspects
+                lines = measure(tree, trial, "imports")
+                if not _new_diagnostics(before_lines, lines)[0]:
+                    for rel in suspects:
+                        outcomes[rel] = "rejected-consumer"
+                    applied, after, new = trial, lines, []
         while new and applied:
             blamed = culprits(sorted(applied)) or sorted(applied)
             for rel in blamed:
