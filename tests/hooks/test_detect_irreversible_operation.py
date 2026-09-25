@@ -67,6 +67,13 @@ def test_ignores_a_heredoc_body_written_to_a_file():
     assert _bash(command) is None
 
 
+
+def test_sees_a_command_after_the_heredoc_marker_on_the_same_line():
+    # El descarte anterior eliminaba el resto de la linea del ``<<MARCA``: el
+    # ``reset`` de aqui desaparecia del analisis. El cuerpo es texto; lo que
+    # sigue al marcador en su misma linea, no.
+    assert _asks("cat > t.sh <<'EOF' && git reset --hard origin/main\nhola\nEOF")
+
 def test_measures_each_segment_of_a_compound_command():
     assert _asks("cd repo && git reset --hard origin/main")
 

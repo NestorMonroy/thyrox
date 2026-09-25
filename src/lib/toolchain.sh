@@ -180,6 +180,44 @@ function thyrox_toolchain_parallel_home() {
 }
 export -f thyrox_toolchain_parallel_home
 
+# @description Adquiere un binario externo: el contrato comun de todo
+# `require_*` de esta cadena, en un solo sitio. Tres desenlaces:
+#
+#   presente                       -> 0, sin efectos;
+#   ausente y sin opt-in           -> 2, sin conteo;
+#   ausente con opt-in             -> instala y RE-COMPRUEBA el binario; el
+#                                     codigo de salida del instalador no
+#                                     decide (puede instalar en otro prefijo,
+#                                     o el proxy devolver otra cosa).
+#
+# El rechazo no emite conteo: un cero ahi no distinguiria «no hay» de «no
+# pude medir» (sub-patron D de `metrica-decide-la-conclusion.md`).
+# @arg $1 string El binario a resolver.
+# @arg $2 string El NOMBRE de la variable de opt-in (p. ej. THYROX_INSTALL_GAWK).
+# @arg $3 string El comando que lo instala.
+# @arg $4 string Opcional: el paquete que lo trae, para nombrarlo en el rechazo.
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_acquire_binary() {
+  local bin="$1" opt_in_var="$2" install_cmd="$3" package="${4:-}"
+  command -v "$bin" >/dev/null 2>&1 && return 0
+  if [[ "${!opt_in_var:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin'${package:+ (paquete $package)} y la instalacion es opt-in." >&2
+    echo "                  Reintenta con $opt_in_var=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+  $install_cmd >&2 2>&1 || true
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_acquire_binary
+
 # @description Asegura GNU parallel, idempotente y con la instalacion como
 # opt-in. Adopta el check-then-act de `vvv: provision/provision-helpers.sh:776`
 # (`vvv_is_apt_pkg_installed`): se pregunta por el estado antes de actuar, y
@@ -202,23 +240,8 @@ export -f thyrox_toolchain_parallel_home
 function thyrox_toolchain_require_parallel() {
   local bin="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
 
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    if [[ "${THYROX_INSTALL_PARALLEL:-}" != "1" ]]; then
-      echo "thyrox_toolchain: falta '$bin' y la instalacion es opt-in." >&2
-      echo "                  Reintenta con THYROX_INSTALL_PARALLEL=1." >&2
-      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
-      echo "                  «no hay» de «no pude medir»." >&2
-      return 2
-    fi
-    # El codigo de salida del instalador NO decide: puede instalar en otro
-    # interprete, o el proxy puede devolver algo que no es el paquete.
-    $THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD >&2 2>&1 || true
-    if ! command -v "$bin" >/dev/null 2>&1; then
-      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
-      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
-      return 2
-    fi
-  fi
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_PARALLEL \
+    "$THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD" parallel || return 2
 
   # `moreutils` instala otro `/usr/bin/parallel`. La presencia y el nombre
   # coinciden, pero su CLI no implementa `--jobs`, que es el contrato que
@@ -270,22 +293,8 @@ export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTAL
 # @exitcode 0 El binario esta disponible.
 # @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
 function thyrox_toolchain_require_pdf_text() {
-  local bin="${THYROX_TOOLCHAIN_PDFTOTEXT_BIN:-pdftotext}"
-  command -v "$bin" >/dev/null 2>&1 && return 0
-  if [[ "${THYROX_INSTALL_PDF_TEXT:-}" != "1" ]]; then
-    echo "thyrox_toolchain: falta '$bin' (paquete poppler-utils) y la instalacion es opt-in." >&2
-    echo "                  Reintenta con THYROX_INSTALL_PDF_TEXT=1." >&2
-    echo "                  NO se emite conteo: un vacio aqui no distinguiria" >&2
-    echo "                  «el PDF no tiene texto» de «no pude extraer»." >&2
-    return 2
-  fi
-  $THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD >&2 2>&1 || true
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
-    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
-    return 2
-  fi
-  return 0
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_PDFTOTEXT_BIN:-pdftotext}" \
+    THYROX_INSTALL_PDF_TEXT "$THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD" poppler-utils
 }
 export -f thyrox_toolchain_require_pdf_text
 
@@ -384,23 +393,8 @@ function thyrox_toolchain_require_gawk() {
   local bin="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
 
   # Eje 1 — PRESENCIA.
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    if [[ "${THYROX_INSTALL_GAWK:-}" != "1" ]]; then
-      echo "thyrox_toolchain: '$bin' no resuelve y la instalacion es opt-in." >&2
-      echo "                  Reintenta con THYROX_INSTALL_GAWK=1." >&2
-      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
-      echo "                  «no hay» de «no pude medir»." >&2
-      return 2
-    fi
-    # El codigo de salida del instalador NO decide: puede instalar en otro
-    # prefijo, o el proxy puede devolver algo que no es el paquete.
-    $THYROX_TOOLCHAIN_GAWK_INSTALL_CMD >&2 2>&1 || true
-    if ! command -v "$bin" >/dev/null 2>&1; then
-      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
-      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
-      return 2
-    fi
-  fi
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_GAWK \
+    "$THYROX_TOOLCHAIN_GAWK_INSTALL_CMD" gawk || return 2
 
   # Eje 2 — CONDUCTA. Es el que la presencia no puede ver.
   if ! thyrox_toolchain_awk_supports_intervals "$bin"; then

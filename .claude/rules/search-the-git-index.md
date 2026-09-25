@@ -61,16 +61,16 @@ alternativa en el aviso:
 
 No avisa sobre el texto de un heredoc: su cuerpo no se ejecuta. Su primer
 disparo real en sesión avisó sobre la prosa de esta misma regla, escrita con
-`cat > … <<'EOF'`; el cuerpo se pela con el instrumento de
-`detect_stdin_reading_interpreter`, no con una copia.
+`cat > … <<'EOF'`. El cuerpo se descarta con `src/hooks/shell_text.py`,
+el módulo que hoy comparten los tres detectores que lo necesitan.
 
 Avisa, no bloquea: no distingue la intención, y un `git log --all -S` puede
 querer de verdad la historia entera.
 
 Sus tres mitades de juicio se probaron por anulación, y cada una tumba
 exactamente su gemelo: `REQUIRE_GIT_TREE` (el `grep -r` fuera de git),
-`SKIP_BOUNDED_RANGE` (el pickaxe con rango acotado) y el pelado de heredocs
-(sus dos casos). La primera corrida de la segunda anulación tumbó el caso
+`SKIP_BOUNDED_RANGE` (el pickaxe con rango acotado) y el descarte de
+heredocs (sus dos casos). La primera corrida de la segunda anulación tumbó el caso
 equivocado: era el `.pyc` del paso anterior (mismo segundo, mismo tamaño),
 no el código; se repitió con `PYTHONDONTWRITEBYTECODE=1`.
 

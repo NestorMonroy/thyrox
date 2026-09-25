@@ -1,0 +1,10 @@
+== s/^REQUIRE_GIT_TREE = True/REQUIRE_GIT_TREE = False/
+  FALLO grep -r fuera de un work tree — esperado False, obtenido True
+test_detect_git_grep_opportunity: 13 casos — 12 ok, 1 fallo(s)
+== s/^SKIP_BOUNDED_RANGE = True/SKIP_BOUNDED_RANGE = False/
+  FALLO git log -S con rango acotado — esperado False, obtenido True
+test_detect_git_grep_opportunity: 13 casos — 12 ok, 1 fallo(s)
+== s/command = strip_heredoc_bodies(\(.*\))$/command = \1/
+  FALLO git log -S dentro de un heredoc — esperado False, obtenido True
+  FALLO grep -r dentro de un heredoc — esperado False, obtenido True
+test_detect_git_grep_opportunity: 13 casos — 11 ok, 2 fallo(s)

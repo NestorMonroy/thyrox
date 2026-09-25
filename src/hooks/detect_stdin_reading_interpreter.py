@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import re
 
+from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
+
 #: Los interpretes que, sin programa, lo leen de stdin.
 _INTERPRETER = re.compile(r"^(?:.*/)?(?:python(?:\d+(?:\.\d+)?)?|node)$")
 
@@ -39,24 +41,8 @@ _INTERPRETER = re.compile(r"^(?:.*/)?(?:python(?:\d+(?:\.\d+)?)?|node)$")
 _WRAPPERS = {"nohup", "exec", "command", "time"}
 
 _TOKEN = re.compile(r"""'[^']*'|"[^"]*"|\S+""")
-_HEREDOC = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
 _ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 _REDIRECT = re.compile(r"^\d*(>>?|>&|<&|<(?!<))")
-
-
-def _strip_heredoc_bodies(command: str) -> str:
-    """El comando sin los cuerpos de sus heredocs: su texto no son comandos."""
-    lines = command.split("\n")
-    kept: list[str] = []
-    pending: list[str] = []
-    for line in lines:
-        if pending:
-            if line.strip() == pending[0]:
-                pending.pop(0)
-            continue
-        kept.append(line)
-        pending.extend(match.group(2) for match in _HEREDOC.finditer(line))
-    return "\n".join(kept)
 
 
 def _segments(command: str) -> list[str]:
@@ -151,7 +137,7 @@ def detect(payload: dict) -> str | None:
     if not isinstance(command, str) or not command.strip():
         return None
     found = []
-    for segment in _segments(_strip_heredoc_bodies(command)):
+    for segment in _segments(strip_heredoc_bodies(command)):
         if has_provided_input(segment):
             continue
         # Cualquier etapa del tubo puede ser el interprete; sin entrada
