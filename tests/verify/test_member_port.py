@@ -86,5 +86,12 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("lee la salida de cada ítem por su número; la que falló no cuenta",
                  (["f"], []), (list(names), [e for e in names.get("g", {}).get("edits", [])]))
 
+final, final_report = mp.assemble(BASE, "t.ts", ["f", "g", "h"], {"f": outputs[0], "g": outputs[1]})
+assert_equal("assemble deja el archivo sin anclas, con lo aplicado y los imports fusionados",
+             (False, True, True, ["f"]),
+             ("@port-" in final, "export const g = 2" in final, "import { a, x } from './a.js'" in final,
+              final_report["applied"]))
+assert_equal("y nombra los ítems sin propuesta", ["h"], final_report["missing"])
+
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

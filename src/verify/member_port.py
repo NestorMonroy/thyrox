@@ -138,3 +138,55 @@ def merge_imports(text: str) -> str:
 def strip_anchors(text: str) -> str:
     """Retira las anclas que ningún ítem reemplazó."""
     return _ANCHOR_LINE.sub("", text)
+
+
+def assemble(text: str, target: str, names: list[str], proposals: dict[str, dict]) -> tuple[str, dict]:
+    """El archivo destino con todas las propuestas aplicadas: anclas, ediciones
+    de ancla, imports fusionados y anclas sin usar retiradas."""
+    text, report = apply_outputs(insert_anchors(text, names), target, proposals)
+    report["missing"] = [name for name in names if name not in proposals]
+    return strip_anchors(merge_imports(text)), report
+
+
+def item_name(item_file: Path) -> str:
+    """El nombre del ítem, de su línea `Ítem: <nombre>`."""
+    for line in item_file.read_text().splitlines():
+        if line.startswith("Ítem: "):
+            return line.split(": ", 1)[1]
+    raise ValueError(f"{item_file}: sin línea 'Ítem:'")
+
+
+def main(argv: list[str] | None = None) -> int:
+    """`member_port.py assemble --target F --items items.txt --outputs D [--outputs D2 --map M]`.
+
+    `--outputs` se repite por ola; la segunda ola numera sus salidas desde 1
+    sobre un subconjunto de ítems, así que lleva un `--map` con el número
+    original de cada uno. Escribe el destino y el informe en JSON por stdout.
+    """
+    import argparse
+    import sys
+    parser = argparse.ArgumentParser(description="porte de un módulo por miembros")
+    parser.add_argument("command", choices=("assemble",))
+    parser.add_argument("--target", type=Path, required=True)
+    parser.add_argument("--items", type=Path, required=True)
+    parser.add_argument("--outputs", type=Path, action="append", required=True)
+    parser.add_argument("--map", type=Path, action="append", default=[],
+                        help="por ola a partir de la segunda: JSON con el número original de cada salida")
+    args = parser.parse_args(argv)
+    lines = args.items.read_text().splitlines()
+    names = [item_name(Path(line.split()[1])) for line in lines]
+    proposals: dict[str, dict] = {}
+    for wave, directory in enumerate(args.outputs):
+        numbers = json.loads(args.map[wave - 1].read_text()) if wave else list(range(1, len(names) + 1))
+        wave_names = [names[n - 1] for n in numbers]
+        for name, proposal in read_outputs(directory, wave_names).items():
+            if any("@port-" in (e.get("old_string") or "") for e in proposal.get("edits", []) or []):
+                proposals[name] = proposal
+    text, report = assemble(args.target.read_text(), str(args.target), names, proposals)
+    args.target.write_text(text)
+    print(json.dumps(report, ensure_ascii=False, indent=1))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -17,3 +17,6 @@ test_member_port: 10 aserciones — 9 ok, 1 falla(s)
 == cortar el import multilinea
   FALLA las anclas de imports van tras el último import, incluso multilínea — esperado True, obtenido False
 test_member_port: 10 aserciones — 9 ok, 1 falla(s)
+== assemble sin retirar anclas
+  FALLA assemble deja el archivo sin anclas, con lo aplicado y los imports fusionados — esperado (False, True, True, [
+test_member_port: 12 aserciones — 11 ok, 1 falla(s)
