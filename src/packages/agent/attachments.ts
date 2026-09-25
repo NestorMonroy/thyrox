@@ -22,6 +22,42 @@
  *  3. `createAttachmentMessage` — el mensaje de transcripción que envuelve
  *     un adjunto: contrato de `Kd` en 2.1.275 (`chunk-mdt3sxrw.js`).
  *
+ *  4. Lo que `compaction/compact.ts` consume al re-anunciar el estado tras
+ *     una compactación: `generateFileAttachment` (:3121, con
+ *     `tryGetPDFReference`), `getAgentListingDeltaAttachment` (:1592),
+ *     `getMcpInstructionsDeltaAttachment` (:1661) y
+ *     `getDeferredToolsDeltaAttachment` (:1557). Los tipos de adjunto que
+ *     devuelven (`FileAttachment`, `PDFReferenceAttachment`, …) viven en la
+ *     fuente en `repl/replTypes/message.js`; aquí `AttachmentMessage` sólo
+ *     exige `{ type: string }`, así que se declaran localmente con los
+ *     campos que la fuente construye.
+ *
+ *     Dos de ellas quedan PARCIALES, declaradas, porque su dependencia
+ *     vive en un archivo fuera del alcance de este porte:
+ *
+ *     - `getDeferredToolsDeltaAttachment`: su cálculo
+ *       (`getDeferredToolsDelta`, `modelSupportsToolReference`,
+ *       `isDeferredToolsDeltaEnabled`, `DeferredToolsDeltaScanContext`)
+ *       vive en `toolSearch.ts`, y el gate que este árbol publica
+ *       (`provider/src/internal/legacyRuntimeSupport.ts`) devuelve `false`.
+ *       Se conserva su firma y las dos guardas que sí existen; hasta que
+ *       `toolSearch.ts` porte el resto devuelve `[]`, que es exactamente lo
+ *       que la fuente devuelve con el gate cerrado.
+ *     - `getAgentListingDeltaAttachment`: su gate
+ *       (`shouldInjectAgentListInMessages`) y el formato de cada línea
+ *       (`formatAgentLine`) viven en
+ *       `tool-registry/src/tools/AgentTool/prompt.ts`, que el mapa de
+ *       exports de `@thyrox/tool-registry` NO publica (sí publica
+ *       `AgentTool.js`, `constants.js`, `loadAgentsDir.js`…). Hasta que ese
+ *       mapa lo exponga, la función conserva su firma y devuelve `[]` —
+ *       lo que la fuente devuelve con el gate cerrado—. Por la misma razón
+ *       `generateFileAttachment` omite la comprobación previa de tamaño en
+ *       modo `at-mention` (`getDefaultFileReadingLimits`, de
+ *       `FileReadTool/limits.ts`, tampoco publicado): un archivo demasiado
+ *       grande sigue llegando a `FileReadTool`, que lanza
+ *       `FileTooLargeError`, y de ahí a la lectura truncada; lo que se
+ *       pierde es el corte temprano y su evento de telemetría.
+ *
  * NO se portan (sin consumidor en este árbol todavía): el resto del
  * orquestador — `getIdeSelectionAttachment`, `memoryFilesToAttachments`,
  * los builders de plan-mode/auto-mode/TODO reminder que consumen estas
@@ -30,8 +66,34 @@
  * `attachments/mailbox.ts` aplica a su propio recorte).
  */
 import { randomUUID } from 'node:crypto'
-import { dirname, parse, resolve } from 'node:path'
-import type { AttachmentMessage } from './messageShapes.js'
+import { dirname, parse, relative, resolve } from 'node:path'
+import type { AttachmentMessage, Message } from './messageShapes.js'
+import { logEvent } from '@thyrox/local-observability'
+import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+import type { Tools, ToolPermissionContext, ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import {
+  FileReadTool,
+  MaxFileReadTokenExceededError,
+  type Output as FileReadToolOutput,
+} from '@thyrox/tool-registry/tools/FileReadTool/FileReadTool.js'
+import { MAX_LINES_TO_READ } from '@thyrox/tool-registry/tools/FileReadTool/prompt.js'
+import { getPDFPageCount } from '@thyrox/tool-registry/pdf.js'
+import { FileTooLargeError } from '@thyrox/repl/readFileInRange.js'
+import { getFileModificationTimeAsync } from '@thyrox/storage/file.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { isPDFExtension } from '@thyrox/storage/pdfUtils.js'
+import { PDF_AT_MENTION_INLINE_THRESHOLD } from '@thyrox/provider/apiLimits.js'
+import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
+import { matchingRuleForInput } from '@thyrox/permission/filesystem'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import {
+  type ClientSideInstruction,
+  getMcpInstructionsDelta,
+  isMcpInstructionsDeltaEnabled,
+} from '@thyrox/mcp-runtime/mcpInstructionsDelta'
+import { isToolSearchEnabledOptimistic, isToolSearchToolAvailable } from './toolSearch.js'
+import { CLAUDE_IN_CHROME_MCP_SERVER_NAME } from './claudeInChromeCommon.js'
+import { CHROME_TOOL_SEARCH_INSTRUCTIONS } from './claudeInChrome/prompt.js'
 
 export const TODO_REMINDER_CONFIG = {
   TURNS_SINCE_WRITE: 10,
@@ -201,4 +263,330 @@ export function getSkillListingDelta<S extends { name: string }>(
   const isInitial = sent.size === 0
   for (const skill of newSkills) sent.add(skill.name)
   return { newSkills, isInitial }
+}
+
+// ---------------------------------------------------------------------------
+// Adjuntos de archivo y re-anuncio de estado tras compactación — porte de
+// `ccnmt: packages/agent/attachments.ts` (:1557-1688, :3087-3300, :3813).
+// ---------------------------------------------------------------------------
+
+/**
+ * Un adjunto de estado: lo único que `AttachmentMessage` exige es su `type`.
+ * NO se exporta: `repl/components/messages/AttachmentMessage.tsx` importa un
+ * `Attachment` de este módulo esperando la unión discriminada de la fuente
+ * (`repl/replTypes/message.js`), y publicar aquí esta forma laxa le
+ * volvería `unknown` cada campo (medido: 8 → 78 errores en ese archivo).
+ */
+type StateAttachment = { type: string; [key: string]: unknown }
+
+export type FileAttachment = {
+  type: 'file'
+  filename: string
+  content: FileReadToolOutput
+  truncated?: boolean
+  displayPath: string
+}
+
+export type CompactFileReferenceAttachment = {
+  type: 'compact_file_reference'
+  filename: string
+  displayPath: string
+}
+
+export type PDFReferenceAttachment = {
+  type: 'pdf_reference'
+  filename: string
+  pageCount: number
+  fileSize: number
+  displayPath: string
+}
+
+export type AlreadyReadFileAttachment = {
+  type: 'already_read_file'
+  filename: string
+  displayPath: string
+  content: {
+    type: 'text'
+    file: {
+      filePath: string
+      content: string
+      numLines: number
+      startLine: number
+      totalLines: number
+    }
+  }
+}
+
+/**
+ * Sitio de llamada del escaneo de herramientas diferidas
+ * (`ccnmt: packages/agent/toolSearch.ts:618`). Su hogar es `toolSearch.ts`;
+ * se declara aquí porque ese archivo queda fuera de este porte y la firma de
+ * `getDeferredToolsDeltaAttachment` lo necesita.
+ */
+export type DeferredToolsDeltaScanContext = {
+  callSite: 'attachments_main' | 'attachments_subagent' | 'compact_full' | 'compact_partial' | 'reactive_compact'
+  querySource?: string
+}
+
+/**
+ * Diferencia entre el pool de herramientas diferidas y lo ya anunciado en
+ * la conversación (`ccnmt: attachments.ts:1557`).
+ *
+ * PARCIAL, declarado en la cabecera: el gate y el cálculo del delta viven en
+ * `toolSearch.ts`, fuera de este porte. Las dos guardas que sí existen se
+ * conservan en su orden; el resto devuelve `[]`, que es lo que la fuente
+ * devuelve con `isDeferredToolsDeltaEnabled()` cerrado — el valor que este
+ * árbol publica hoy.
+ */
+export function getDeferredToolsDeltaAttachment(
+  tools: Tools,
+  model: string,
+  messages: Message[] | undefined,
+  scanContext?: DeferredToolsDeltaScanContext,
+): StateAttachment[] {
+  // pendiente: `isDeferredToolsDeltaEnabled()` (toolSearch.ts:639) — el gate
+  // de este árbol devuelve false, así que la fuente cortaría aquí.
+  if (!isToolSearchEnabledOptimistic()) return []
+  if (!isToolSearchToolAvailable(tools)) return []
+  // pendiente: `modelSupportsToolReference(model)` (toolSearch.ts:239) y
+  // `getDeferredToolsDelta(tools, messages ?? [], scanContext)`
+  // (toolSearch.ts:653) — sin ellos no hay delta que anunciar.
+  void model
+  void messages
+  void scanContext
+  return []
+}
+
+/**
+ * Diferencia entre el pool de agentes filtrado y lo ya anunciado en la
+ * conversación, reconstruido de los `agent_listing_delta` previos
+ * (`ccnmt: attachments.ts:1592`). Exportada para `compact.ts`: tras
+ * compactar, re-anuncia el pool entero.
+ *
+ * PARCIAL, declarado en la cabecera: devuelve `[]` hasta que
+ * `@thyrox/tool-registry` publique `tools/AgentTool/prompt.js`.
+ */
+export function getAgentListingDeltaAttachment(
+  toolUseContext: ToolUseContext,
+  messages: Message[] | undefined,
+): StateAttachment[] {
+  // pendiente: `shouldInjectAgentListInMessages()` (AgentTool/prompt.ts:59)
+  // es el gate de la fuente, y `formatAgentLine` (:43) el formato de cada
+  // línea anunciada; el filtrado (requisitos MCP → reglas de denegación →
+  // `allowedAgentTypes`) y la reconstrucción de lo ya anunciado a partir
+  // de los `agent_listing_delta` del historial van detrás de ese gate.
+  void toolUseContext
+  void messages
+  return []
+}
+
+/**
+ * Exportada para `compact.ts` / `reactiveCompact.ts` — única fuente del gate
+ * (`ccnmt: attachments.ts:1661`).
+ */
+export function getMcpInstructionsDeltaAttachment(
+  mcpClients: MCPServerConnection[],
+  tools: Tools,
+  model: string,
+  messages: Message[] | undefined,
+): StateAttachment[] {
+  if (!isMcpInstructionsDeltaEnabled()) return []
+
+  // La pista de ToolSearch para Chrome la redacta el cliente y depende de
+  // ToolSearch; las `instructions` reales del servidor son incondicionales.
+  // La parte del cliente se decide aquí y entra al diff como una entrada
+  // sintetizada.
+  // pendiente: `modelSupportsToolReference(model)` (toolSearch.ts:239) — la
+  // tercera condición de la fuente para la pista de Chrome; sin ella la
+  // pista se anuncia sólo con las dos guardas que este árbol tiene.
+  void model
+  const clientSide: ClientSideInstruction[] = []
+  if (isToolSearchEnabledOptimistic() && isToolSearchToolAvailable(tools)) {
+    clientSide.push({
+      serverName: CLAUDE_IN_CHROME_MCP_SERVER_NAME,
+      block: CHROME_TOOL_SEARCH_INSTRUCTIONS,
+    })
+  }
+
+  const delta = getMcpInstructionsDelta(mcpClients, messages ?? [], clientSide)
+  if (!delta) return []
+  return [{ type: 'mcp_instructions_delta', ...delta }]
+}
+
+export async function tryGetPDFReference(filename: string): Promise<PDFReferenceAttachment | null> {
+  const ext = parse(filename).ext.toLowerCase()
+  if (!isPDFExtension(ext)) {
+    return null
+  }
+  try {
+    const [stats, pageCount] = await Promise.all([getFsImplementation().stat(filename), getPDFPageCount(filename)])
+    // Con conteo de páginas se usa; si no, heurística de tamaño (~100KB por página).
+    const effectivePageCount = pageCount ?? Math.ceil(stats.size / (100 * 1024))
+    if (effectivePageCount > PDF_AT_MENTION_INLINE_THRESHOLD) {
+      logEvent('tengu_pdf_reference_attachment', {
+        pageCount: effectivePageCount,
+        fileSize: stats.size,
+        hadPdfinfo: pageCount !== null,
+      })
+      return {
+        type: 'pdf_reference',
+        filename,
+        pageCount: effectivePageCount,
+        fileSize: stats.size,
+        displayPath: relative(getCwd(), filename),
+      }
+    }
+  } catch {
+    // Si no se puede hacer stat, null: sigue la lectura normal.
+  }
+  return null
+}
+
+/**
+ * Lee un archivo con FileReadTool (contenido fresco, validación propia) y lo
+ * envuelve como adjunto (`ccnmt: attachments.ts:3121`). En modo `compact` un
+ * archivo demasiado grande se reduce a una referencia; en `at-mention` a su
+ * cabecera.
+ */
+export async function generateFileAttachment(
+  filename: string,
+  toolUseContext: ToolUseContext,
+  successEventName: string,
+  errorEventName: string,
+  mode: 'compact' | 'at-mention',
+  options?: {
+    offset?: number
+    limit?: number
+  },
+): Promise<FileAttachment | CompactFileReferenceAttachment | PDFReferenceAttachment | AlreadyReadFileAttachment | null> {
+  const { offset, limit } = options ?? {}
+
+  // ¿Hay una regla de denegación para este archivo?
+  const appState = toolUseContext.getAppState()
+  if (isFileReadDenied(filename, appState.toolPermissionContext)) {
+    return null
+  }
+
+  // pendiente: en modo `at-mention` la fuente corta antes de leer si el
+  // archivo supera `getDefaultFileReadingLimits().maxSizeBytes`
+  // (`FileReadTool/limits.ts`, no publicado por `@thyrox/tool-registry`) y
+  // emite `tengu_attachment_file_too_large`; aquí el archivo grande llega a
+  // `FileReadTool`, que lanza `FileTooLargeError`, y cae a la lectura
+  // truncada de más abajo.
+
+  // Un PDF grande mencionado con @ se devuelve como referencia ligera.
+  if (mode === 'at-mention') {
+    const pdfRef = await tryGetPDFReference(filename)
+    if (pdfRef) {
+      return pdfRef
+    }
+  }
+
+  // ¿El archivo ya está en contexto con su versión más reciente?
+  const existingFileState = toolUseContext.readFileState.get(filename)
+  if (existingFileState && mode === 'at-mention') {
+    try {
+      const mtimeMs = await getFileModificationTimeAsync(filename)
+
+      // FileReadTool guarda Date.now() al leer; FileEdit/Write guardan el
+      // mtimeMs del archivo. Sólo con un timestamp que coincida con el
+      // mtime se puede afirmar que el archivo no cambió.
+      if (existingFileState.timestamp <= mtimeMs && mtimeMs === existingFileState.timestamp) {
+        logEvent(successEventName, {})
+        return {
+          type: 'already_read_file',
+          filename,
+          displayPath: relative(getCwd(), filename),
+          content: {
+            type: 'text',
+            file: {
+              filePath: filename,
+              content: existingFileState.content,
+              numLines: countCharInString(existingFileState.content, '\n') + 1,
+              startLine: offset ?? 1,
+              totalLines: countCharInString(existingFileState.content, '\n') + 1,
+            },
+          },
+        }
+      }
+    } catch {
+      // Sin stat, sigue la lectura normal.
+    }
+  }
+
+  try {
+    const fileInput = {
+      file_path: filename,
+      offset,
+      limit,
+    }
+
+    const readTruncatedFile = async (): Promise<FileAttachment | CompactFileReferenceAttachment | null> => {
+      if (mode === 'compact') {
+        return {
+          type: 'compact_file_reference',
+          filename,
+          displayPath: relative(getCwd(), filename),
+        }
+      }
+
+      // Reglas de denegación también antes de la lectura truncada.
+      const appState = toolUseContext.getAppState()
+      if (isFileReadDenied(filename, appState.toolPermissionContext)) {
+        return null
+      }
+
+      try {
+        // Sólo las primeras MAX_LINES_TO_READ líneas de un archivo demasiado grande.
+        const truncatedInput = {
+          file_path: filename,
+          offset: offset ?? 1,
+          limit: MAX_LINES_TO_READ,
+        }
+        const result = await FileReadTool.call(truncatedInput, toolUseContext)
+        logEvent(successEventName, {})
+
+        return {
+          type: 'file',
+          filename,
+          content: result.data,
+          truncated: true,
+          displayPath: relative(getCwd(), filename),
+        }
+      } catch {
+        logEvent(errorEventName, {})
+        return null
+      }
+    }
+
+    // ¿La ruta es válida?
+    const isValid = await FileReadTool.validateInput(fileInput, toolUseContext)
+    if (!isValid.result) {
+      return null
+    }
+
+    try {
+      const result = await FileReadTool.call(fileInput, toolUseContext)
+      logEvent(successEventName, {})
+      return {
+        type: 'file',
+        filename,
+        content: result.data,
+        displayPath: relative(getCwd(), filename),
+      }
+    } catch (error) {
+      if (error instanceof MaxFileReadTokenExceededError || error instanceof FileTooLargeError) {
+        return await readTruncatedFile()
+      }
+      throw error
+    }
+  } catch {
+    logEvent(errorEventName, {})
+    return null
+  }
+}
+
+function isFileReadDenied(filePath: string, toolPermissionContext: ToolPermissionContext): boolean {
+  const denyRule = matchingRuleForInput(filePath, toolPermissionContext, 'read', 'deny')
+  return denyRule !== null
 }
