@@ -17,10 +17,11 @@
  * - El binario guarda un estado por clave de sesión (`sue()`); aquí hay uno
  *   por proceso. El único consumidor de este árbol es la sesión en curso.
  * - El cargador de un directorio de skills (`Kz`: leer `SKILL.md`, parsear
- *   el frontmatter, construir el comando) no está portado en este árbol. Es
- *   una costura (`setSkillDirectoryLoader`); sin cargador inyectado,
- *   `addSkillDirectories` no añade skills. Pendiente: portar `Kz` con el
- *   resto del cargador (`getSkillDirCommands`).
+ *   el frontmatter, construir el comando) es una costura
+ *   (`setSkillDirectoryLoader`). `loadSkillsDir.ts` lo inyecta al cargar el
+ *   módulo con su `loadSkillsFromSkillsDir` y la compuerta de política; sin
+ *   ese módulo cargado —o con el cargador puesto a `null` por una suite—,
+ *   `addSkillDirectories` no añade skills.
  * - `discoverSkillDirsForPaths` no aplica los prefijos que el almacenamiento
  *   v5 declara propios (`syncOwnedPrefixes`) ni la regla de nombres cortos
  *   8.3 de Windows: los dos dependen de piezas ausentes aquí.
@@ -114,6 +115,16 @@ export function getDynamicSkills(): DynamicPromptSkill[] {
 
 export function getConditionalSkills(): DynamicPromptSkill[] {
   return [...state.conditionalSkills.values()]
+}
+
+/**
+ * Si una condicional ya se activó en esta sesión. El cargador de arranque lo
+ * consulta para devolverla como incondicional en vez de volver a apartarla —
+ * la fuente lee `activatedConditionalSkillNames` directamente; aquí el
+ * estado vive en este módulo y se pregunta por esta costura.
+ */
+export function isConditionalSkillActivated(name: string): boolean {
+  return state.activatedConditionalSkillNames.has(name)
 }
 
 export function activateConditionalSkillsForPaths(filePaths: string[], cwd: string): string[] {

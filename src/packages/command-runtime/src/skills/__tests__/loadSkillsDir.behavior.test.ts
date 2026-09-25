@@ -160,7 +160,9 @@ describe('parseSkillFrontmatterFields', () => {
       PreToolUse: [{ matcher: 'Write', hooks: [{ type: 'command' as const, command: 'echo hi' }] }],
     }
     expect(parse({ hooks }).hooks).toEqual(hooks)
-    expect(parse({ hooks: { PreToolUse: 'nope' } }).hooks).toBeUndefined()
+    // Válido para el tipo (`HooksSettings`) e inválido para el esquema: un
+    // matcher exige al menos un hook (`HookMatcherSchema`, `.min(1)`).
+    expect(parse({ hooks: { PreToolUse: [{ matcher: 'Write', hooks: [] }] } }).hooks).toBeUndefined()
     expect(parse({}).hooks).toBeUndefined()
   })
 
