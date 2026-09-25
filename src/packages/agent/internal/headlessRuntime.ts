@@ -2,6 +2,7 @@ import { getAgentHostBindings } from '../host.js'
 import type { AgentMessage } from '../internalTypes.js'
 import type { Message } from '../messageShapes.js'
 import type { SetAppState } from '../messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export function registerStructuredOutputEnforcement(
@@ -79,7 +80,7 @@ export function sdkCompatToolName(toolName: string): string {
 
 export async function* handleOrphanedPermission(
   orphanedPermission: unknown,
-  tools: unknown[],
+  tools: Tools,
   messages: AgentMessage[],
   context: unknown,
 ): AsyncGenerator<SDKMessage> {

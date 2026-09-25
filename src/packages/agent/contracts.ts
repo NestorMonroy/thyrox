@@ -1,5 +1,6 @@
 import type { Message } from './messageShapes.js'
 import type { SetAppState } from './messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type {
   ModelUsage,
   SDKAssistantMessageError,
@@ -208,7 +209,7 @@ export type AgentHostBindings = {
   sdkCompatToolName?: (toolName: string) => string
   handleOrphanedPermission?: (
     orphanedPermission: unknown,
-    tools: unknown[],
+    tools: Tools,
     messages: AgentMessage[],
     context: unknown,
   ) => AsyncGenerator<SDKMessage>

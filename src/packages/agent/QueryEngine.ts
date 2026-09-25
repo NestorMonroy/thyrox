@@ -101,9 +101,9 @@ import { readEnv } from '@thyrox/config/env'
 import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
 import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AttributionState } from './commitAttribution.js'
 
-type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
 type AgentDefinition = { [key: string]: unknown }
 /** El mensaje de frontera con su `compactMetadata` estrechado; lo fija el bridge. */
 type SystemCompactBoundaryMessage = ReturnType<typeof createCompactBoundaryMessage>
