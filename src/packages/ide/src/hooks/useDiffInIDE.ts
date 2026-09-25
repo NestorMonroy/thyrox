@@ -1,18 +1,9 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/hooks/useDiffInIDE.ts`.
- *
- * `PermissionOption`/`ToolUseContext`/`FileEdit` — sólo TIPOS (erasados),
- * de `@thyrox/permission/...`, `@thyrox/tool-registry/Tool.js` y
- * `@thyrox/tool-registry/tools/FileEditTool/types.js` respectivamente.
- * `getEditsForPatch`/`getPatchForEdits` sí son VALUE imports — el paquete
- * `tool-registry` no existe en este árbol; reimplementación fiel recortada
- * en `../internal/pendingCrossPackageDeps.js` (ver el bloque 2h de ese
- * archivo para el detalle de qué se portó y qué se omitió del archivo
- * fuente de 775 líneas).
- */
 import { randomUUID } from 'crypto'
 import { basename } from 'path'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { logEvent } from '@thyrox/local-observability'
+import { readFileSync } from '@thyrox/storage/fileRead.js'
+import { expandPath } from '@thyrox/storage/path.js'
 import type { PermissionOption } from '@thyrox/permission/components/FilePermissionDialog/permissionOptions.js'
 import type {
   MCPServerConnection,
@@ -23,16 +14,11 @@ import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import type { FileEdit } from '@thyrox/tool-registry/tools/FileEditTool/types.js'
 import {
   getEditsForPatch,
-  getGlobalConfig,
   getPatchForEdits,
-  getPatchFromContents,
-  requireConfigPlatform,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-  requireLocalObservabilityRoot,
-  requireStorageFileRead,
-  requireStoragePath,
-} from '../internal/pendingCrossPackageDeps.js'
+} from '@thyrox/tool-registry/tools/FileEditTool/utils.js'
+import { getGlobalConfig } from '@thyrox/config'
+import { getPatchFromContents } from '@thyrox/agent/diff.js'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   callIdeRpc,
   getConnectedIdeClient,
@@ -40,6 +26,8 @@ import {
   hasAccessToIDEExtensionDiffFeature,
 } from '../ide.js'
 import { WindowsToWSLConverter } from '../idePathConversion.js'
+import { logError } from '@thyrox/local-observability/logging'
+import { getPlatform } from '@thyrox/config/platform'
 
 type Props = {
   onChange(
@@ -79,17 +67,14 @@ export function useDiffInIDE({
   const shouldShowDiffInIDE =
     hasAccessToIDEExtensionDiffFeature(toolUseContext.options.mcpClients) &&
     getGlobalConfig().diffTool === 'auto' &&
-    // Los diffs sólo deben ser para ediciones de archivo.
-    // Las escrituras de archivo pueden pasar por aquí pero no se soportan para diffs.
+    // Diffs should only be for file edits.
+    // File writes may come through here but are not supported for diffs.
     !filePath.endsWith('.ipynb')
 
   const ideName =
     getConnectedIdeName(toolUseContext.options.mcpClients) ?? 'IDE'
 
   async function showDiff(): Promise<void> {
-    const { logError } = requireLocalObservabilityLogging()
-    const { logEvent } = requireLocalObservabilityRoot()
-
     if (!shouldShowDiffInIDE) {
       return
     }
@@ -103,7 +88,7 @@ export function useDiffInIDE({
         toolUseContext,
         tabName,
       )
-      // Se salta si el componente ya se desmontó.
+      // Skip if component has been unmounted
       if (isUnmounted.current) {
         return
       }
@@ -118,14 +103,14 @@ export function useDiffInIDE({
       )
 
       if (newEdits.length === 0) {
-        // Sin cambios -- la edición se rechazó (p. ej. se revirtió).
+        // No changes -- edit was rejected (eg. reverted)
         logEvent('tengu_ext_diff_rejected', {})
-        // Se cierra la pestaña aquí porque 'no' ya no la cierra automáticamente.
+        // We close the tab here because 'no' no longer auto-closes
         const ideClient = getConnectedIdeClient(
           toolUseContext.options.mcpClients,
         )
         if (ideClient) {
-          // Cierra la pestaña en el IDE.
+          // Close the tab in the IDE
           await closeTabInIDE(tabName, ideClient)
         }
         onChange(
@@ -138,7 +123,7 @@ export function useDiffInIDE({
         return
       }
 
-      // El archivo se modificó - la edición se aceptó.
+      // File was modified - edit was accepted
       onChange(
         { type: 'accept-once' },
         {
@@ -155,7 +140,7 @@ export function useDiffInIDE({
   useEffect(() => {
     void showDiff()
 
-    // Fija la bandera al desmontar.
+    // Set flag on unmount
     return () => {
       isUnmounted.current = true
     }
@@ -179,9 +164,8 @@ export function useDiffInIDE({
 }
 
 /**
- * Recalcula las ediciones a partir del contenido viejo y nuevo. Es
- * necesario para aplicar cualquier edición que el usuario haya hecho sobre
- * el contenido nuevo.
+ * Re-computes the edits from the old and new contents. This is necessary
+ * to apply any edits the user may have made to the new contents.
  */
 export function computeEditsFromContents(
   filePath: string,
@@ -189,9 +173,7 @@ export function computeEditsFromContents(
   newContent: string,
   editMode: 'single' | 'multiple',
 ): FileEdit[] {
-  const { logError } = requireLocalObservabilityLogging()
-
-  // Usa patches sin formatear, si no las ediciones quedarían formateadas.
+  // Use unformatted patches, otherwise the edits will be formatted.
   const singleHunk = editMode === 'single'
   const patch = getPatchFromContents({
     filePath,
@@ -204,7 +186,7 @@ export function computeEditsFromContents(
     return []
   }
 
-  // En modo de edición única, se verifica que sólo se obtuvo un hunk.
+  // For single edit mode, verify we only got one hunk
   if (singleHunk && patch.length > 1) {
     logError(
       new Error(
@@ -213,23 +195,23 @@ export function computeEditsFromContents(
     )
   }
 
-  // Recalcula las ediciones para que coincidan con el patch.
-  return getEditsForPatch(patch) as unknown as FileEdit[]
+  // Re-compute the edits to match the patch
+  return getEditsForPatch(patch)
 }
 
 /**
- * Termina cuando:
+ * Done if:
  *
- * 1. La pestaña se cierra en el IDE.
- * 2. La pestaña se guarda en el IDE (entonces se cierra la pestaña).
- * 3. El usuario elige una opción en el IDE.
- * 4. El usuario elige una opción en la terminal (o presiona esc).
+ * 1. Tab is closed in IDE
+ * 2. Tab is saved in IDE (we then close the tab)
+ * 3. User selected an option in IDE
+ * 4. User selected an option in terminal (or hit esc)
  *
- * Se resuelve con el contenido nuevo del archivo.
+ * Resolves with the new file content.
  *
- * TODO: ¿Timeout tras 5 min de inactividad?
- * TODO: Actualizar la UI de auto-aprobación cuando el IDE sale.
- * TODO: Cerrar la pestaña del IDE cuando se desmonta el prompt de aprobación.
+ * TODO: Time out after 5 mins of inactivity?
+ * TODO: Update auto-approval UI when IDE exits
+ * TODO: Close the IDE tab when the approval prompt is unmounted
  */
 async function showDiffInIDE(
   file_path: string,
@@ -237,12 +219,6 @@ async function showDiffInIDE(
   toolUseContext: ToolUseContext,
   tabName: string,
 ): Promise<{ oldContent: string; newContent: string }> {
-  const { logError } = requireLocalObservabilityLogging()
-  const { isENOENT } = requireLocalObservabilityErrorHelpers()
-  const { expandPath } = requireStoragePath()
-  const { readFileSync } = requireStorageFileRead()
-  const { getPlatform } = requireConfigPlatform()
-
   let isCleanedUp = false
 
   const oldFilePath = expandPath(file_path)
@@ -256,14 +232,14 @@ async function showDiffInIDE(
   }
 
   async function cleanup() {
-    // Se tiene cuidado de evitar race conditions, ya que esta función se
-    // puede llamar desde varios lugares.
+    // Careful to avoid race conditions, since this
+    // function can be called from multiple places.
     if (isCleanedUp) {
       return
     }
     isCleanedUp = true
 
-    // No falla si esto falla.
+    // Don't fail if this fails
     try {
       await closeTabInIDE(tabName, ideClient)
     } catch (e) {
@@ -274,12 +250,11 @@ async function showDiffInIDE(
     toolUseContext.abortController.signal.removeEventListener('abort', cleanup)
   }
 
-  // Limpia si el usuario presiona esc para cancelar la llamada a la
-  // herramienta - o al salir.
+  // Cleanup if the user hits esc to cancel the tool call - or on exit
   toolUseContext.abortController.signal.addEventListener('abort', cleanup)
   process.on('beforeExit', cleanup)
 
-  // Abre el diff en el IDE.
+  // Open the diff in the IDE
   const ideClient = getConnectedIdeClient(toolUseContext.options.mcpClients)
   try {
     const { updatedFile } = getPatchForEdits({
@@ -293,7 +268,7 @@ async function showDiffInIDE(
     }
     let ideOldPath = oldFilePath
 
-    // Sólo se convierten rutas si estamos en WSL y el IDE está en Windows.
+    // Only convert paths if we're in WSL and IDE is on Windows
     const ideRunningInWindows =
       (ideClient.config as McpSSEIDEServerConfig | McpWebSocketIDEServerConfig)
         .ideRunningInWindows === true
@@ -317,10 +292,10 @@ async function showDiffInIDE(
       ideClient,
     )
 
-    // Convierte el resultado crudo del RPC a formato ToolCallResponse.
+    // Convert the raw RPC result to a ToolCallResponse format
     const data = Array.isArray(rpcResult) ? rpcResult : [rpcResult]
 
-    // Si el usuario guardó el archivo, se toma el contenido nuevo y se resuelve con eso.
+    // If the user saved the file then take the new contents and resolve with that.
     if (isSaveMessage(data)) {
       void cleanup()
       return {
@@ -341,8 +316,8 @@ async function showDiffInIDE(
       }
     }
 
-    // Indica que la llamada a la herramienta terminó sin ninguno de los
-    // resultados esperados. ¿El usuario cerró el IDE?
+    // Indicates that the tool call completed with none of the expected
+    // results. Did the user close the IDE?
     throw new Error('Not accepted')
   } catch (error) {
     logError(error as Error)
@@ -355,17 +330,16 @@ async function closeTabInIDE(
   tabName: string,
   ideClient?: MCPServerConnection | undefined,
 ): Promise<void> {
-  const { logError } = requireLocalObservabilityLogging()
   try {
     if (!ideClient || ideClient.type !== 'connected') {
       throw new Error('IDE client not available')
     }
 
-    // Usa RPC directo para cerrar la pestaña.
+    // Use direct RPC to close the tab
     await callIdeRpc('close_tab', { tab_name: tabName }, ideClient)
   } catch (error) {
     logError(error as Error)
-    // No se lanza - esto es una operación de limpieza.
+    // Don't throw - this is a cleanup operation
   }
 }
 
@@ -398,8 +372,8 @@ function isSaveMessage(
 ): data is [{ text: 'FILE_SAVED' }, { text: string }] {
   return (
     Array.isArray(data) &&
-    (data[0] as { type?: string } | undefined)?.type === 'text' &&
-    (data[0] as { text?: string }).text === 'FILE_SAVED' &&
-    typeof (data[1] as { text?: string }).text === 'string'
+    data[0]?.type === 'text' &&
+    data[0].text === 'FILE_SAVED' &&
+    typeof data[1].text === 'string'
   )
 }

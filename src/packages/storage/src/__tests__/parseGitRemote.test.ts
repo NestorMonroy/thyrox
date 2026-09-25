@@ -1,11 +1,8 @@
-/**
- * Porte verbatim de `ccnmt: packages/storage/src/__tests__/parseGitRemote.test.ts`.
- */
 import { describe, expect, test } from 'bun:test'
 import { parseGitRemote } from '../parseGitRemote.js'
 
-describe('parseGitRemote — formato SSH (git@host:owner/repo)', () => {
-  test('URL SSH básica con sufijo .git', () => {
+describe('parseGitRemote — SSH format (git@host:owner/repo)', () => {
+  test('basic SSH URL with .git suffix', () => {
     expect(parseGitRemote('git@github.com:owner/repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -13,7 +10,7 @@ describe('parseGitRemote — formato SSH (git@host:owner/repo)', () => {
     })
   })
 
-  test('URL SSH sin sufijo .git', () => {
+  test('SSH URL without .git suffix', () => {
     expect(parseGitRemote('git@github.com:owner/repo')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -37,7 +34,7 @@ describe('parseGitRemote — formato SSH (git@host:owner/repo)', () => {
     })
   })
 
-  test('URL SSH con owner/repo con guiones', () => {
+  test('SSH URL with hyphenated owner/repo', () => {
     expect(parseGitRemote('git@github.com:my-org/my-repo.git')).toEqual({
       host: 'github.com',
       owner: 'my-org',
@@ -45,26 +42,25 @@ describe('parseGitRemote — formato SSH (git@host:owner/repo)', () => {
     })
   })
 
-  test('rechaza hostnames alias de SSH (p. ej. "github.com-work")', () => {
-    // Contrato crítico: alias SSH como "github.com-work" usados en
-    // ~/.ssh/config parecen hosts reales pero NO lo son —
-    // looksLikeRealHostname exige que el último segmento DNS sea
-    // puramente alfabético. "com-work" contiene un guion → se rechaza.
-    // Sin esto, el descubrimiento de repos de GitHub enrutaría mal hacia
-    // el nombre del alias como si fuera el string del host.
+  test('rejects SSH alias hostnames (e.g., "github.com-work")', () => {
+    // Critical contract: SSH aliases like "github.com-work" used in
+    // ~/.ssh/config look like real hosts but are NOT — looksLikeRealHostname
+    // requires the last DNS segment to be purely alphabetic. "com-work"
+    // contains a hyphen → rejected. Without this, GitHub repo discovery
+    // would mis-route to the alias name as the host string.
     expect(parseGitRemote('git@github.com-work:owner/repo.git')).toBeNull()
   })
 
-  test('rechaza hostname pelado (sin punto)', () => {
+  test('rejects bare hostname (no dot)', () => {
     expect(parseGitRemote('git@localhost:owner/repo.git')).toBeNull()
   })
 
-  test('rechaza TLD solo-dígitos', () => {
-    // 192.168.1.1 — el último segmento es "1" (dígitos), que falla el alfa-solo.
+  test('rejects digit-only TLD', () => {
+    // 192.168.1.1 — last segment is "1" (digits), which fails alpha-only.
     expect(parseGitRemote('git@192.168.1.1:owner/repo.git')).toBeNull()
   })
 
-  test('preserva el espacio final vía trim', () => {
+  test('preserves trailing whitespace via trim', () => {
     expect(parseGitRemote('  git@github.com:owner/repo.git  ')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -73,8 +69,8 @@ describe('parseGitRemote — formato SSH (git@host:owner/repo)', () => {
   })
 })
 
-describe('parseGitRemote — formato HTTPS', () => {
-  test('URL HTTPS básica con .git', () => {
+describe('parseGitRemote — HTTPS format', () => {
+  test('basic HTTPS URL with .git', () => {
     expect(parseGitRemote('https://github.com/owner/repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -82,7 +78,7 @@ describe('parseGitRemote — formato HTTPS', () => {
     })
   })
 
-  test('URL HTTPS sin .git', () => {
+  test('HTTPS URL without .git', () => {
     expect(parseGitRemote('https://github.com/owner/repo')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -90,7 +86,7 @@ describe('parseGitRemote — formato HTTPS', () => {
     })
   })
 
-  test('URL HTTP (no solo HTTPS)', () => {
+  test('HTTP URL (not just HTTPS)', () => {
     expect(parseGitRemote('http://gitea.example.com/owner/repo.git')).toEqual({
       host: 'gitea.example.com',
       owner: 'owner',
@@ -98,7 +94,7 @@ describe('parseGitRemote — formato HTTPS', () => {
     })
   })
 
-  test('HTTPS con credenciales embebidas (user@host)', () => {
+  test('HTTPS with embedded credentials (user@host)', () => {
     expect(
       parseGitRemote('https://user:pass@github.com/owner/repo.git'),
     ).toEqual({
@@ -108,11 +104,10 @@ describe('parseGitRemote — formato HTTPS', () => {
     })
   })
 
-  test('HTTPS con puerto — el puerto se preserva en el host (solo https/http)', () => {
-    // Crítico: HTTPS/HTTP conservan el puerto en el string de host (p. ej.
-    // "ent.example.com:8443") porque el componente host naturalmente
-    // incluye :puerto para el enrutamiento HTTP. SSH/git strippean el
-    // puerto (convención distinta).
+  test('HTTPS with port — port preserved in host (https/http only)', () => {
+    // Critical: HTTPS/HTTP keep port in host string (e.g., "ent.example.com:8443")
+    // because the host component naturally includes :port for HTTP routing.
+    // SSH/git protocols strip the port (different convention).
     expect(parseGitRemote('https://example.com:8443/owner/repo.git')).toEqual({
       host: 'example.com:8443',
       owner: 'owner',
@@ -121,8 +116,8 @@ describe('parseGitRemote — formato HTTPS', () => {
   })
 })
 
-describe('parseGitRemote — formato git://', () => {
-  test('URL git://', () => {
+describe('parseGitRemote — git:// format', () => {
+  test('git:// URL', () => {
     expect(parseGitRemote('git://github.com/owner/repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -130,9 +125,9 @@ describe('parseGitRemote — formato git://', () => {
     })
   })
 
-  test('git:// elimina el puerto del host (convención distinta vs https)', () => {
-    // Para el protocolo git://, el puerto se elimina del host. Documenta
-    // esta asimetría frente a https donde el puerto se queda pegado.
+  test('git:// strips port from host (different convention vs https)', () => {
+    // For git:// protocol, port is stripped from host. Documents this
+    // asymmetry vs https where port stays attached.
     expect(parseGitRemote('git://example.com:9418/owner/repo.git')).toEqual({
       host: 'example.com',
       owner: 'owner',
@@ -141,8 +136,8 @@ describe('parseGitRemote — formato git://', () => {
   })
 })
 
-describe('parseGitRemote — formato ssh://', () => {
-  test('ssh:// con usuario embebido', () => {
+describe('parseGitRemote — ssh:// format', () => {
+  test('ssh:// with embedded user', () => {
     expect(parseGitRemote('ssh://git@github.com/owner/repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -150,7 +145,7 @@ describe('parseGitRemote — formato ssh://', () => {
     })
   })
 
-  test('ssh:// elimina el puerto del host', () => {
+  test('ssh:// strips port from host', () => {
     expect(parseGitRemote('ssh://git@example.com:22/owner/repo.git')).toEqual({
       host: 'example.com',
       owner: 'owner',
@@ -159,41 +154,40 @@ describe('parseGitRemote — formato ssh://', () => {
   })
 })
 
-describe('parseGitRemote — entradas inválidas', () => {
-  test('cadena vacía devuelve null', () => {
+describe('parseGitRemote — invalid inputs', () => {
+  test('empty string returns null', () => {
     expect(parseGitRemote('')).toBeNull()
   })
 
-  test('solo espacios en blanco devuelve null', () => {
+  test('whitespace-only returns null', () => {
     expect(parseGitRemote('   ')).toBeNull()
   })
 
-  test('texto plano devuelve null', () => {
+  test('plain text returns null', () => {
     expect(parseGitRemote('not a git url')).toBeNull()
   })
 
-  test('https sin path owner/repo devuelve null', () => {
+  test('https without owner/repo path returns null', () => {
     expect(parseGitRemote('https://github.com')).toBeNull()
   })
 
-  test('https con solo owner (sin repo) devuelve null', () => {
+  test('https with only owner (no repo) returns null', () => {
     expect(parseGitRemote('https://github.com/owner')).toBeNull()
   })
 
-  test('https con demasiados segmentos de path devuelve null', () => {
-    // El regex empareja ([^/]+)\/([^/]+) — exactamente dos segmentos
-    // después del host. /owner/repo/sub tendría un /sub final que no encaja.
+  test('https with too many path segments returns null', () => {
+    // The regex matches ([^/]+)\/([^/]+) — exactly two segments after host.
+    // /owner/repo/sub would have a trailing /sub that doesn't fit.
     expect(
       parseGitRemote('https://github.com/owner/repo/extra'),
     ).toBeNull()
   })
 
-  test('SSH con dos puntos extra los absorbe en el campo owner (regex permisivo)', () => {
-    // Documenta el comportamiento real: el regex `[^/]+` permite dos
-    // puntos dentro del segmento owner.
-    // `git@github.com:owner:extra/repo.git` empareja con
-    // owner='owner:extra'. Un endurecimiento futuro podría rechazar esto,
-    // pero el contrato actual es permisivo.
+  test('SSH with extra colons absorbs into owner field (regex permissive)', () => {
+    // Documents the actual behavior: regex `[^/]+` allows colons inside
+    // the owner segment. `git@github.com:owner:extra/repo.git` matches
+    // with owner='owner:extra'. A future tightening could reject this,
+    // but the current contract is permissive.
     expect(parseGitRemote('git@github.com:owner:extra/repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner:extra',
@@ -201,22 +195,21 @@ describe('parseGitRemote — entradas inválidas', () => {
     })
   })
 
-  test('protocolo no reconocido devuelve null', () => {
+  test('unrecognized protocol returns null', () => {
     expect(
       parseGitRemote('ftp://github.com/owner/repo.git'),
     ).toBeNull()
   })
 
-  test('basura con @ no empareja con la forma SSH', () => {
+  test('gibberish with @ does not match SSH form', () => {
     expect(parseGitRemote('xxx@yyy.zzz')).toBeNull()
   })
 })
 
-describe('parseGitRemote — manejo del sufijo del nombre del repo', () => {
-  test('elimina SOLO el .git final, no un .git interno', () => {
-    // Los nombres de repo con puntos/.git internos necesitan un manejo
-    // cuidadoso del regex. El +?(?:\.git)? no-codicioso captura la
-    // porción más larga que no sea .git.
+describe('parseGitRemote — repo name suffix handling', () => {
+  test('strips ONLY trailing .git, not internal .git', () => {
+    // Repo names with internal dots/.git need careful regex handling.
+    // The non-greedy +?(?:\.git)? captures the longest non-.git portion.
     expect(parseGitRemote('git@github.com:owner/my.repo.git')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -224,7 +217,7 @@ describe('parseGitRemote — manejo del sufijo del nombre del repo', () => {
     })
   })
 
-  test('nombre de repo sin extensión', () => {
+  test('repo name with no extension', () => {
     expect(parseGitRemote('git@github.com:owner/repo-name')).toEqual({
       host: 'github.com',
       owner: 'owner',
@@ -232,7 +225,7 @@ describe('parseGitRemote — manejo del sufijo del nombre del repo', () => {
     })
   })
 
-  test('nombre de repo con puntos (sin sufijo .git)', () => {
+  test('repo name with dots (no .git suffix)', () => {
     expect(parseGitRemote('git@github.com:owner/my.dotted.repo')).toEqual({
       host: 'github.com',
       owner: 'owner',

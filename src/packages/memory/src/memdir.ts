@@ -1,37 +1,27 @@
-/**
- * Puerto de `ccnmt: packages/memory/src/memdir.ts`, con tres ajustes
- * declarados:
- *
- * 1. Los dos `require()` perezosos guardados por `feature('TEAMMEM')`
- *    (`teamMemPaths`, `teamMemPrompts`) se portan como imports estáticos:
- *    no hay ciclo de import entre este archivo y esos dos en el grafo
- *    portado (`teamMemPaths.ts` no importa de vuelta `memdir.js`;
- *    `teamMemPrompts.ts` importa de `memoryEntrypoint`/`memoryTypes`/
- *    `paths`/`teamMemPaths`, ninguno de los cuales importa `memdir.js`).
- * 2. `getFeatureValue_CACHED_MAY_BE_STALE` / `getInitialSettings` vienen
- *    del sustituto local `./internal/pendingCrossPackageDeps.js`.
- * 3. `readEnv` viene de `@thyrox/config/env/utils` (mismo símbolo, otro
- *    subpath — la fuente lo importa de `config/env`, que en `@thyrox`
- *    reexporta desde `env/utils`).
- */
 import { feature } from 'bun:bundle'
-import { join } from 'node:path'
-import { readEnv } from '@thyrox/config/env/utils'
+import { join } from 'path'
 import { getAutoMemPath, isAutoMemoryEnabled } from './paths.js'
 import { getMemoryHostBindings } from './host.js'
-import { formatFileSize, isEnvTruthy } from './internalUtils.js'
-import {
-  getFeatureValue_CACHED_MAY_BE_STALE,
-  getInitialSettings,
-} from './internal/pendingCrossPackageDeps.js'
-import * as teamMemPathsModule from './teamMemPaths.js'
-import * as teamMemPromptsModule from './teamMemPrompts.js'
+import { isEnvTruthy, formatFileSize } from './internalUtils.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getInitialSettings } from '@thyrox/config/settings'
 
-const teamMemPaths = feature('TEAMMEM') ? teamMemPathsModule : null
-const teamMemPrompts = feature('TEAMMEM') ? teamMemPromptsModule : null
+/* eslint-disable @typescript-eslint/no-require-imports */
+const teamMemPaths = feature('TEAMMEM')
+  ? (require('./teamMemPaths.js') as typeof import('./teamMemPaths.js'))
+  : null
 
-/** Tipo de marca opaco para metadata de analítica — no debe contener código ni rutas de archivo. */
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+/** Opaque branded type for analytics metadata — must not contain code or file paths */
 type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS = never
+
+/* eslint-disable @typescript-eslint/no-require-imports */
+
+const teamMemPrompts = feature('TEAMMEM')
+  ? (require('./teamMemPrompts.js') as typeof import('./teamMemPrompts.js'))
+  : null
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 import {
   MEMORY_FRONTMATTER_EXAMPLE,
@@ -40,6 +30,7 @@ import {
   WHAT_NOT_TO_SAVE_SECTION,
   WHEN_TO_ACCESS_SECTION,
 } from './memoryTypes.js'
+import { readEnv } from '@thyrox/config/env'
 
 export {
   ENTRYPOINT_NAME,
@@ -52,10 +43,8 @@ import {
   MAX_ENTRYPOINT_LINES,
   buildSearchingPastContextSection,
 } from './memoryEntrypoint.js'
-
-// ~125 caracteres/línea a 200 líneas. En p97 hoy; atrapa índices de línea
-// larga que se cuelan bajo el tope de líneas (p100 observado: 197KB bajo
-// 200 líneas).
+// ~125 chars/line at 200 lines. At p97 today; catches long-line indexes that
+// slip past the line cap (p100 observed: 197KB under 200 lines).
 export const MAX_ENTRYPOINT_BYTES = 25_000
 const AUTO_MEM_DISPLAY_NAME = 'auto memory'
 
@@ -68,13 +57,12 @@ export type EntrypointTruncation = {
 }
 
 /**
- * Trunca el contenido de MEMORY.md a los topes de línea Y de byte,
- * agregando una advertencia que nombra cuál tope disparó. Trunca por línea
- * primero (límite natural), luego por byte en el último salto de línea
- * antes del tope, para no cortar a mitad de línea.
+ * Truncate MEMORY.md content to the line AND byte caps, appending a warning
+ * that names which cap fired. Line-truncates first (natural boundary), then
+ * byte-truncates at the last newline before the cap so we don't cut mid-line.
  *
- * Compartido por buildMemoryPrompt y claudemd getMemoryFiles (antes
- * duplicaba la lógica de solo-línea).
+ * Shared by buildMemoryPrompt and claudemd getMemoryFiles (previously
+ * duplicated the line-only logic).
  */
 export function truncateEntrypointContent(raw: string): EntrypointTruncation {
   const trimmed = raw.trim()
@@ -83,9 +71,8 @@ export function truncateEntrypointContent(raw: string): EntrypointTruncation {
   const byteCount = trimmed.length
 
   const wasLineTruncated = lineCount > MAX_ENTRYPOINT_LINES
-  // Verifica el conteo de bytes original — las líneas largas son el modo
-  // de fallo que el tope de bytes apunta, así que el tamaño
-  // post-truncado-por-línea subestimaría la advertencia.
+  // Check original byte count — long lines are the failure mode the byte cap
+  // targets, so post-line-truncation size would understate the warning.
   const wasByteTruncated = byteCount > MAX_ENTRYPOINT_BYTES
 
   if (!wasLineTruncated && !wasByteTruncated) {
@@ -126,19 +113,17 @@ export function truncateEntrypointContent(raw: string): EntrypointTruncation {
 }
 
 /**
- * Texto de guía compartido, agregado al final de cada línea de prompt de
- * directorio de memoria. Se envía porque Claude estaba quemando turnos en
- * `ls`/`mkdir -p` antes de escribir. El harness garantiza que el directorio
- * existe vía ensureMemoryDirExists().
+ * Shared guidance text appended to each memory directory prompt line.
+ * Shipped because Claude was burning turns on `ls`/`mkdir -p` before writing.
+ * Harness guarantees the directory exists via ensureMemoryDirExists().
  */
 export const DIR_EXISTS_GUIDANCE =
   'This directory already exists — write to it directly with the Write tool (do not run mkdir or check for its existence).'
 
 /**
- * Asegura que un directorio de memoria exista. Idempotente — se llama
- * desde loadMemoryPrompt (una vez por sesión vía la caché de
- * systemPromptSection) para que el modelo siempre pueda escribir sin
- * verificar existencia primero.
+ * Ensure a memory directory exists. Idempotent — called from loadMemoryPrompt
+ * (once per session via systemPromptSection cache) so the model can always
+ * write without checking existence first.
  */
 export async function ensureMemoryDirExists(memoryDir: string, signal?: AbortSignal): Promise<void> {
   const bindings = getMemoryHostBindings()
@@ -159,9 +144,8 @@ export async function ensureMemoryDirExists(memoryDir: string, signal?: AbortSig
 }
 
 /**
- * Loguea de forma asíncrona el conteo de archivos/subdirectorios de un
- * directorio de memoria. Fire-and-forget — no bloquea la construcción del
- * prompt.
+ * Log memory directory file/subdir counts asynchronously.
+ * Fire-and-forget — doesn't block prompt building.
  */
 function logMemoryDirCounts(
   memoryDir: string,
@@ -199,8 +183,7 @@ function logMemoryDirCounts(
 }
 
 /**
- * Construye las instrucciones de comportamiento de memoria tipada (sin el
- * contenido de MEMORY.md).
+ * Build the typed-memory behavioral instructions (without MEMORY.md content).
  */
 export function buildMemoryLines(
   displayName: string,
@@ -272,9 +255,8 @@ export function buildMemoryLines(
 }
 
 /**
- * Construye el prompt de memoria tipada con el contenido de MEMORY.md
- * incluido. Usado por memoria de agente (que no tiene equivalente de
- * getClaudeMds()).
+ * Build the typed-memory prompt with MEMORY.md content included.
+ * Used by agent memory (which has no getClaudeMds() equivalent).
  */
 export function buildMemoryPrompt(params: {
   displayName: string
@@ -286,14 +268,14 @@ export function buildMemoryPrompt(params: {
   const fs = bindings.getFsImplementation?.()
   const entrypoint = memoryDir + ENTRYPOINT_NAME
 
-  // Lee el entrypoint de memoria existente (sync: construir el prompt es
-  // síncrono).
+  // Read existing memory entrypoint (sync: prompt building is synchronous)
   let entrypointContent = ''
   if (fs) {
     try {
+      // eslint-disable-next-line custom-rules/no-sync-fs
       entrypointContent = fs.readFileSync(entrypoint, { encoding: 'utf-8' })
     } catch {
-      // Aún no hay archivo de memoria.
+      // No memory file yet
     }
   }
 
@@ -323,8 +305,7 @@ export function buildMemoryPrompt(params: {
 }
 
 /**
- * Prompt de bitácora diaria en modo asistente. Condicionado por
- * feature('KAIROS').
+ * Assistant-mode daily-log prompt. Gated behind feature('KAIROS').
  */
 function buildAssistantDailyLogPrompt(skipIndex = false): string {
   const memoryDir = getAutoMemPath()
@@ -366,8 +347,7 @@ function buildAssistantDailyLogPrompt(skipIndex = false): string {
 }
 
 /**
- * Carga el prompt de memoria unificado para incluirlo en el prompt de
- * sistema.
+ * Load the unified memory prompt for inclusion in the system prompt.
  */
 export async function loadMemoryPrompt(signal?: AbortSignal): Promise<string | null> {
   const autoEnabled = isAutoMemoryEnabled()
@@ -386,7 +366,8 @@ export async function loadMemoryPrompt(signal?: AbortSignal): Promise<string | n
     return buildAssistantDailyLogPrompt(skipIndex)
   }
 
-  const coworkExtraGuidelines = readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
+  const coworkExtraGuidelines =
+    readEnv('CLAUDE_COWORK_MEMORY_EXTRA_GUIDELINES')
   const extraGuidelines =
     coworkExtraGuidelines && coworkExtraGuidelines.trim().length > 0
       ? [coworkExtraGuidelines]

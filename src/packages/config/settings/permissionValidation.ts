@@ -1,15 +1,8 @@
-/**
- * Puerto de `ccnmt: packages/config/settings/permissionValidation.ts` (277
- * líneas fuente). Reimplementación fiel VERBATIM.
- *
- * `tryGetConfigHostBindings().parsePermissionRule` ya existe en
- * `contracts.ts` (verificado antes de portar).
- */
 import { z } from 'zod/v4'
-import { lazySchema } from '../internal/lazySchema.ts'
-import { tryGetConfigHostBindings } from '../host.ts'
+import { lazySchema } from '../internal/lazySchema.js'
+import { tryGetConfigHostBindings } from '../host.js'
 
-// Utilidades pequeñas inlineadas para no arrastrar dependencias de `src/`.
+// V7 §11.4 — inlined tiny string utilities to avoid pulling in src/ files.
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -28,11 +21,10 @@ import {
   getCustomValidation,
   isBashPrefixTool,
   isFilePatternTool,
-} from './toolValidationConfig.ts'
+} from './toolValidationConfig.js'
 
 /**
- * Comprueba si un carácter en un índice dado está escapado (precedido por
- * un número impar de backslashes).
+ * Checks if a character at a given index is escaped (preceded by odd number of backslashes).
  */
 function isEscaped(str: string, index: number): boolean {
   let backslashCount = 0
@@ -45,9 +37,8 @@ function isEscaped(str: string, index: number): boolean {
 }
 
 /**
- * Cuenta ocurrencias no escapadas de un carácter en una cadena. Un
- * carácter se considera escapado si está precedido por un número impar de
- * backslashes.
+ * Counts unescaped occurrences of a character in a string.
+ * A character is considered escaped if preceded by an odd number of backslashes.
  */
 function countUnescapedChar(str: string, char: string): number {
   let count = 0
@@ -60,14 +51,13 @@ function countUnescapedChar(str: string, char: string): number {
 }
 
 /**
- * Comprueba si una cadena contiene paréntesis vacíos "()" sin escapar.
- * Devuelve verdadero sólo si tanto el "(" como el ")" están sin escapar y
- * son adyacentes.
+ * Checks if a string contains unescaped empty parentheses "()".
+ * Returns true only if both the "(" and ")" are unescaped and adjacent.
  */
 function hasUnescapedEmptyParens(str: string): boolean {
   for (let i = 0; i < str.length - 1; i++) {
     if (str[i] === '(' && str[i + 1] === ')') {
-      // Comprueba si el paréntesis de apertura está sin escapar.
+      // Check if the opening paren is unescaped
       if (!isEscaped(str, i)) {
         return true
       }
@@ -77,7 +67,7 @@ function hasUnescapedEmptyParens(str: string): boolean {
 }
 
 /**
- * Valida el formato y contenido de una regla de permiso.
+ * Validates permission rule format and content
  */
 export function validatePermissionRule(rule: string): {
   valid: boolean
@@ -85,12 +75,12 @@ export function validatePermissionRule(rule: string): {
   suggestion?: string
   examples?: string[]
 } {
-  // Chequeo de regla vacía.
+  // Empty rule check
   if (!rule || rule.trim() === '') {
     return { valid: false, error: 'Permission rule cannot be empty' }
   }
 
-  // Chequea el balance de paréntesis primero (sólo cuenta paréntesis sin escapar).
+  // Check parentheses matching first (only count unescaped parens)
   const openCount = countUnescapedChar(rule, '(')
   const closeCount = countUnescapedChar(rule, ')')
   if (openCount !== closeCount) {
@@ -102,7 +92,7 @@ export function validatePermissionRule(rule: string): {
     }
   }
 
-  // Chequea paréntesis vacíos (consciente de escapes).
+  // Check for empty parentheses (escape-aware)
   if (hasUnescapedEmptyParens(rule)) {
     const toolName = rule.substring(0, rule.indexOf('('))
     if (!toolName) {
@@ -120,23 +110,22 @@ export function validatePermissionRule(rule: string): {
     }
   }
 
-  // Parsea la regla.
+  // Parse the rule
   const bindings = tryGetConfigHostBindings()
   const parsed = bindings.parsePermissionRule?.(rule) ?? { toolName: rule }
 
-  // Validación MCP — debe hacerse antes de la validación general de herramienta.
+  // MCP validation - must be done before general tool validation
   const mcpInfo = mcpInfoFromString(parsed.toolName)
   if (mcpInfo) {
-    // Las reglas MCP soportan permisos a nivel servidor, a nivel
-    // herramienta y wildcard. Formatos válidos:
-    // - mcp__server (nivel servidor, todas las herramientas)
-    // - mcp__server__* (wildcard, todas las herramientas - equivalente a nivel servidor)
-    // - mcp__server__tool (herramienta específica)
+    // MCP rules support server-level, tool-level, and wildcard permissions
+    // Valid formats:
+    // - mcp__server (server-level, all tools)
+    // - mcp__server__* (wildcard, all tools - equivalent to server-level)
+    // - mcp__server__tool (specific tool)
 
-    // Las reglas MCP no pueden tener ningún patrón/contenido (paréntesis).
-    // Chequea tanto el contenido parseado como la cadena cruda porque el
-    // parser normaliza wildcards standalone (p. ej. "mcp__server(*)") a
-    // ruleContent undefined.
+    // MCP rules cannot have any pattern/content (parentheses)
+    // Check both parsed content and raw string since the parser normalizes
+    // standalone wildcards (e.g., "mcp__server(*)") to undefined ruleContent
     if (parsed.ruleContent !== undefined || countUnescapedChar(rule, '(') > 0) {
       return {
         valid: false,
@@ -152,15 +141,15 @@ export function validatePermissionRule(rule: string): {
       }
     }
 
-    return { valid: true } // Regla MCP válida.
+    return { valid: true } // Valid MCP rule
   }
 
-  // Validación de nombre de herramienta (para herramientas no-MCP).
+  // Tool name validation (for non-MCP tools)
   if (!parsed.toolName || parsed.toolName.length === 0) {
     return { valid: false, error: 'Tool name cannot be empty' }
   }
 
-  // Chequea que el nombre de herramienta empiece con mayúscula (herramientas estándar).
+  // Check tool name starts with uppercase (standard tools)
   if (parsed.toolName[0] !== parsed.toolName[0]?.toUpperCase()) {
     return {
       valid: false,
@@ -169,7 +158,7 @@ export function validatePermissionRule(rule: string): {
     }
   }
 
-  // Chequea reglas de validación custom primero.
+  // Check for custom validation rules first
   const customValidation = getCustomValidation(parsed.toolName)
   if (customValidation && parsed.ruleContent !== undefined) {
     const customResult = customValidation(parsed.ruleContent)
@@ -178,11 +167,11 @@ export function validatePermissionRule(rule: string): {
     }
   }
 
-  // Validación específica de bash.
+  // Bash-specific validation
   if (isBashPrefixTool(parsed.toolName) && parsed.ruleContent !== undefined) {
     const content = parsed.ruleContent
 
-    // Chequea errores comunes de :* — :* debe estar al final (sintaxis legada de prefijo).
+    // Check for common :* mistakes - :* must be at the end (legacy prefix syntax)
     if (content.includes(':*') && !content.endsWith(':*')) {
       return {
         valid: false,
@@ -196,7 +185,7 @@ export function validatePermissionRule(rule: string): {
       }
     }
 
-    // Chequea :* sin prefijo.
+    // Check for :* without a prefix
     if (content === ':*') {
       return {
         valid: false,
@@ -206,28 +195,27 @@ export function validatePermissionRule(rule: string): {
       }
     }
 
-    // Nota: no se valida el balance de comillas porque las reglas de
-    // quoting de bash son complejas. Un comando como `grep '"'` tiene
-    // comillas dobles desbalanceadas válidas. Los usuarios que creen
-    // patrones con desajustes de comillas no intencionados lo descubrirán
-    // cuando el match no funcione como esperaban.
+    // Note: We don't validate quote balancing because bash quoting rules are complex.
+    // A command like `grep '"'` has valid unbalanced double quotes.
+    // Users who create patterns with unintended quote mismatches will discover
+    // the issue when matching doesn't work as expected.
 
-    // Los wildcards ya se permiten en cualquier posición para matching
-    // flexible de patrones. Ejemplos de patrones wildcard válidos:
-    // - "npm *" matchea "npm install", "npm run test", etc.
-    // - "* install" matchea "npm install", "yarn install", etc.
-    // - "git * main" matchea "git checkout main", "git push main", etc.
-    // - "npm * --save" matchea "npm install foo --save", etc.
+    // Wildcards are now allowed at any position for flexible pattern matching
+    // Examples of valid wildcard patterns:
+    // - "npm *" matches "npm install", "npm run test", etc.
+    // - "* install" matches "npm install", "yarn install", etc.
+    // - "git * main" matches "git checkout main", "git push main", etc.
+    // - "npm * --save" matches "npm install foo --save", etc.
     //
-    // La sintaxis legada :* sigue funcionando por compatibilidad hacia atrás:
-    // - "npm:*" matchea "npm" o "npm <cualquier cosa>" (prefix matching con límite de palabra)
+    // Legacy :* syntax continues to work for backwards compatibility:
+    // - "npm:*" matches "npm" or "npm <anything>" (prefix matching with word boundary)
   }
 
-  // Validación de herramienta de archivo.
+  // File tool validation
   if (isFilePatternTool(parsed.toolName) && parsed.ruleContent !== undefined) {
     const content = parsed.ruleContent
 
-    // Chequea :* en patrones de archivo (error común heredado de patrones Bash).
+    // Check for :* in file patterns (common mistake from Bash patterns)
     if (content.includes(':*')) {
       return {
         valid: false,
@@ -241,14 +229,14 @@ export function validatePermissionRule(rule: string): {
       }
     }
 
-    // Avisa sobre wildcards fuera de límites.
+    // Warn about wildcards not at boundaries
     if (
       content.includes('*') &&
       !content.match(/^\*|\*$|\*\*|\/\*|\*\.|\*\)/) &&
       !content.includes('**')
     ) {
-      // Chequeo laxo — wildcards en medio pueden ser válidos en algunos
-      // casos, pero suelen indicar confusión.
+      // This is a loose check - wildcards in the middle might be valid in some cases
+      // but often indicate confusion
       return {
         valid: false,
         error: 'Wildcard placement might be incorrect',
@@ -266,7 +254,7 @@ export function validatePermissionRule(rule: string): {
 }
 
 /**
- * Esquema Zod custom para arrays de reglas de permiso.
+ * Custom Zod schema for permission rule arrays
  */
 export const PermissionRuleSchema = lazySchema(() =>
   z.string().superRefine((val, ctx) => {

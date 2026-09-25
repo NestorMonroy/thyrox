@@ -1,79 +1,80 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/tee.test.ts`.
- * El caso que no es obvio es el del error: lo ya emitido tiene que llegar
- * ANTES del fallo, porque si no el consumidor pierde datos que la fuente si
- * produjo.
- */
 import { describe, expect, test } from 'bun:test'
-import { tee } from '../tee.ts'
+import { tee } from '../tee.js'
 
-async function* fuente<T>(...items: T[]): AsyncGenerator<T> {
-  for (const i of items) yield i
+async function* range(n: number): AsyncIterable<number> {
+  for (let i = 0; i < n; i++) yield i
 }
 
 async function collect<T>(it: AsyncIterable<T>): Promise<T[]> {
   const out: T[] = []
-  for await (const v of it) out.push(v)
+  for await (const x of it) out.push(x)
   return out
 }
 
 describe('tee', () => {
-  test('reparte en dos consumidores independientes por defecto', async () => {
-    const [a, b] = tee(fuente(1, 2, 3))
-    expect(await collect(a)).toEqual([1, 2, 3])
-    expect(await collect(b)).toEqual([1, 2, 3])
+  test('produces N independent iterables (default count=2)', async () => {
+    const [a, b] = tee(range(5))
+    const [valsA, valsB] = await Promise.all([collect(a!), collect(b!)])
+    expect(valsA).toEqual([0, 1, 2, 3, 4])
+    expect(valsB).toEqual([0, 1, 2, 3, 4])
   })
 
-  test('reparte en tres cuando count es tres', async () => {
-    const consumidores = tee(fuente('x', 'y'), 3)
-    expect(consumidores).toHaveLength(3)
-    for (const c of consumidores) expect(await collect(c)).toEqual(['x', 'y'])
+  test('produces N=3 iterables when count=3', async () => {
+    const [a, b, c] = tee(range(3), 3)
+    const all = await Promise.all([collect(a!), collect(b!), collect(c!)])
+    expect(all).toEqual([
+      [0, 1, 2],
+      [0, 1, 2],
+      [0, 1, 2],
+    ])
   })
 
-  test('una fuente vacia da consumidores vacios', async () => {
-    const [a, b] = tee(fuente<number>())
-    expect(await collect(a)).toEqual([])
-    expect(await collect(b)).toEqual([])
+  test('empty source yields empty consumers', async () => {
+    const [a, b] = tee(range(0))
+    expect(await collect(a!)).toEqual([])
+    expect(await collect(b!)).toEqual([])
   })
 
-  test('el consumidor lento no bloquea al rapido: el rapido acumula', async () => {
-    const [rapido, lento] = tee(fuente(1, 2, 3))
-    expect(await collect(rapido)).toEqual([1, 2, 3])
-    // El lento arranca cuando el otro ya termino: su cola conservo todo.
-    expect(await collect(lento)).toEqual([1, 2, 3])
+  test('slow consumer does not block fast consumer (buffering)', async () => {
+    async function* generator(): AsyncIterable<number> {
+      for (let i = 0; i < 4; i++) yield i
+    }
+    const [fast, slow] = tee(generator())
+    // Fast drains first
+    const fastVals = await collect(fast!)
+    expect(fastVals).toEqual([0, 1, 2, 3])
+    // Slow can still drain after — values were buffered
+    const slowVals = await collect(slow!)
+    expect(slowVals).toEqual([0, 1, 2, 3])
   })
 
-  test('un error tras emitir: primero lo emitido, DESPUES el error', async () => {
-    async function* rompe(): AsyncGenerator<number> {
+  test('source error after yields: pending consumers see error AFTER buffered values', async () => {
+    async function* failing(): AsyncIterable<number> {
+      yield 0
       yield 1
-      yield 2
-      throw new Error('reventon')
+      throw new Error('source-failed')
     }
-    const [a] = tee(rompe(), 1)
-    const vistos: number[] = []
-    let capturado: unknown
-    try {
-      for await (const v of a) vistos.push(v)
-    } catch (e) {
-      capturado = e
-    }
-    expect(vistos).toEqual([1, 2])
-    expect((capturado as Error).message).toBe('reventon')
+    const [a, b] = tee(failing())
+    // Both consumers receive the buffered values 0,1, then the error.
+    // Bug-fix 2026-04-29: previously close() resolved pending resolvers with
+    // done:true and the error was silently swallowed.
+    await expect(collect(a!)).rejects.toThrow('source-failed')
+    await expect(collect(b!)).rejects.toThrow('source-failed')
   })
 
-  test('una fuente que revienta de entrada rechaza a cada consumidor', async () => {
-    async function* rompeYa(): AsyncGenerator<number> {
-      throw new Error('de entrada')
+  test('source throws immediately: each consumer rejects with the error', async () => {
+    // biome-ignore lint/correctness/useYield: source must throw synchronously before any yield to simulate immediate failure
+    async function* failing(): AsyncIterable<number> {
+      throw new Error('source-failed-immediately')
     }
-    const consumidores = tee(rompeYa(), 2)
-    for (const c of consumidores) {
-      await expect(collect(c)).rejects.toThrow('de entrada')
-    }
+    const [a, b] = tee(failing())
+    await expect(collect(a!)).rejects.toThrow('source-failed-immediately')
+    await expect(collect(b!)).rejects.toThrow('source-failed-immediately')
   })
 
-  test('count uno da exactamente un consumidor', async () => {
-    const consumidores = tee(fuente(7), 1)
-    expect(consumidores).toHaveLength(1)
-    expect(await collect(consumidores[0])).toEqual([7])
+  test('count=1 yields exactly one consumer', async () => {
+    const iters = tee(range(3), 1)
+    expect(iters.length).toBe(1)
+    expect(await collect(iters[0]!)).toEqual([0, 1, 2])
   })
 })

@@ -1,20 +1,14 @@
 /**
- * Porte de `ccnmt: packages/agent/__tests__/eventMetadata.test.ts`.
- * Los casos, sus datos y sus aserciones vienen de la fuente; lo que cambia
- * es el idioma de la descripción.
+ * Tests for eventMetadata — pure helpers that flow tool/file
+ * metadata into telemetry (Statsig events). The type aliases on
+ * the return types document an explicit invariant: these values
+ * are NOT code or file paths, so they're safe to send to analytics
+ * regardless of opt-in flag.
  *
- * Tests de eventMetadata — helpers puros que llevan metadata de
- * tool/archivo a telemetría (eventos de Statsig en la fuente). Las
- * anotaciones de tipo sobre los valores de retorno documentan un
- * invariante explícito: estos valores NO son código ni rutas de archivo,
- * así que son seguros de enviar a analítica sin importar el flag de
- * opt-in.
- *
- * Una sanitización equivocada filtra el nombre real de un servidor MCP
- * (potencialmente la URL del usuario) al espacio de claves de analítica.
- * Un parseo de extensión equivocado desordena los dashboards de analítica
- * en cubos que no corresponden — y peor, filtra nombres de archivo a un
- * campo marcado como NO_CODE_OR_FILEPATHS.
+ * Wrong sanitization = a real MCP tool name leaks the user's
+ * server URL into the analytics keyspace. Wrong extension parsing
+ * = analytics dashboards mis-bucket files, and worse, leak
+ * filenames into a field marked NOT_CODE_OR_FILEPATHS.
  */
 import { describe, expect, test } from 'bun:test'
 import {
@@ -25,26 +19,25 @@ import {
   isToolDetailsLoggingEnabled,
   mcpToolDetailsForAnalytics,
   sanitizeToolNameForAnalytics,
-} from '../eventMetadata.ts'
+} from '../eventMetadata.js'
 
 describe('sanitizeToolNameForAnalytics', () => {
-  test('mcp__github__create_issue → "mcp_tool" (colapsado)', () => {
-    // Contrato documentado: TODAS las tools mcp__ colapsan a un único
-    // cubo, así que el nombre del servidor (potencialmente una URL que
-    // identifica al usuario) no se filtra al espacio de claves de
-    // analítica.
+  test('mcp__github__create_issue → "mcp_tool" (collapsed)', () => {
+    // Documented contract: ALL mcp__ tools collapse to a single
+    // bucket so the server name (potentially user-identifying URL)
+    // doesn't leak into the analytics keyspace.
     expect(sanitizeToolNameForAnalytics('mcp__github__create_issue')).toBe(
       'mcp_tool',
     )
   })
 
-  test('mcp__user-server__do_thing → "mcp_tool" (cualquier servidor)', () => {
+  test('mcp__user-server__do_thing → "mcp_tool" (any server)', () => {
     expect(sanitizeToolNameForAnalytics('mcp__personal-mcp__x')).toBe(
       'mcp_tool',
     )
   })
 
-  test('Bash → "Bash" (la incorporada pasa tal cual)', () => {
+  test('Bash → "Bash" (built-in passes through)', () => {
     expect(sanitizeToolNameForAnalytics('Bash')).toBe('Bash')
   })
 
@@ -52,12 +45,12 @@ describe('sanitizeToolNameForAnalytics', () => {
     expect(sanitizeToolNameForAnalytics('Edit')).toBe('Edit')
   })
 
-  test('cadena vacía → cadena vacía', () => {
+  test('empty string → empty string', () => {
     expect(sanitizeToolNameForAnalytics('')).toBe('')
   })
 
-  test('"mcp" sola (sin __) → no colapsa (no tiene el prefijo mcp__)', () => {
-    // Sólo el prefijo mcp__ dispara el colapso, no mcp.
+  test('"mcp" alone (no __) → not collapsed (not mcp__-prefixed)', () => {
+    // Only mcp__ prefix triggers collapse, not mcp.
     expect(sanitizeToolNameForAnalytics('mcp')).toBe('mcp')
   })
 })
@@ -70,43 +63,43 @@ describe('extractMcpToolDetails', () => {
     })
   })
 
-  test('mcp__server__tool__con__varios__separadores conserva las partes finales', () => {
+  test('mcp__server__tool__with__multiple__separators preserves trailing parts', () => {
     expect(
       extractMcpToolDetails('mcp__server__a__b__c'),
     ).toEqual({ serverName: 'server', mcpToolName: 'a__b__c' })
   })
 
-  test('sin el prefijo mcp__ → undefined', () => {
+  test('not mcp__ prefixed → undefined', () => {
     expect(extractMcpToolDetails('Bash')).toBeUndefined()
     expect(extractMcpToolDetails('NotMcp__server__tool')).toBeUndefined()
   })
 
-  test('mcp__server (sólo 2 partes) → undefined', () => {
+  test('mcp__server (only 2 parts) → undefined', () => {
     expect(extractMcpToolDetails('mcp__server')).toBeUndefined()
   })
 
-  test('mcp__ sola → undefined', () => {
+  test('mcp__ alone → undefined', () => {
     expect(extractMcpToolDetails('mcp__')).toBeUndefined()
   })
 
-  test('mcp__server__ (tool vacío) → undefined', () => {
-    // Documentado: serverName o mcpToolName vacíos → undefined.
+  test('mcp__server__ (empty tool) → undefined', () => {
+    // Documented: empty serverName or mcpToolName → undefined.
     expect(extractMcpToolDetails('mcp__server__')).toBeUndefined()
   })
 
-  test('mcp____tool (server vacío) → undefined', () => {
+  test('mcp____tool (empty server) → undefined', () => {
     expect(extractMcpToolDetails('mcp____tool')).toBeUndefined()
   })
 })
 
 describe('mcpToolDetailsForAnalytics', () => {
-  test('tool no-mcp → objeto vacío {}', () => {
+  test('non-mcp tool → empty object {}', () => {
     expect(mcpToolDetailsForAnalytics('Bash', undefined, undefined)).toEqual(
       {},
     )
   })
 
-  test('tool mcp válida → mapeada a las claves mcpServerName + mcpToolName', () => {
+  test('valid mcp tool → mapped to mcpServerName + mcpToolName keys', () => {
     expect(
       mcpToolDetailsForAnalytics(
         'mcp__github__create_issue',
@@ -119,7 +112,7 @@ describe('mcpToolDetailsForAnalytics', () => {
     })
   })
 
-  test('los argumentos mcpServerType + baseUrl se ignoran (prefijo underscore intencional)', () => {
+  test('mcpServerType + baseUrl args ignored (intentional underscore prefix)', () => {
     const r = mcpToolDetailsForAnalytics(
       'mcp__github__x',
       'http',
@@ -129,123 +122,121 @@ describe('mcpToolDetailsForAnalytics', () => {
       mcpServerName: 'github',
       mcpToolName: 'x',
     })
-    // El tipo/URL del servidor NO debe filtrarse al resultado.
+    // Server type / URL must NOT leak into the result.
     expect(JSON.stringify(r)).not.toContain('http')
     expect(JSON.stringify(r)).not.toContain('example.com')
   })
 })
 
 describe('extractSkillName', () => {
-  test('tool Skill con input de skill válido → el nombre del skill', () => {
+  test('Skill tool with valid skill input → skill name', () => {
     expect(extractSkillName('Skill', { skill: 'commit' })).toBe('commit')
   })
 
-  test('tool que no es Skill → undefined sin importar el input', () => {
+  test('non-Skill tool → undefined regardless of input', () => {
     expect(extractSkillName('Bash', { skill: 'commit' })).toBeUndefined()
   })
 
-  test('tool Skill sin input → undefined', () => {
+  test('Skill tool with no input → undefined', () => {
     expect(extractSkillName('Skill', null)).toBeUndefined()
     expect(extractSkillName('Skill', undefined)).toBeUndefined()
   })
 
-  test('tool Skill con input que no es un objeto → undefined', () => {
+  test('Skill tool with non-object input → undefined', () => {
     expect(extractSkillName('Skill', 'commit')).toBeUndefined()
     expect(extractSkillName('Skill', 42)).toBeUndefined()
   })
 
-  test('tool Skill con objeto sin la clave skill → undefined', () => {
+  test('Skill tool with object missing skill key → undefined', () => {
     expect(extractSkillName('Skill', { args: '-m foo' })).toBeUndefined()
   })
 
-  test('tool Skill con valor de skill que no es cadena → undefined', () => {
+  test('Skill tool with non-string skill value → undefined', () => {
     expect(extractSkillName('Skill', { skill: 42 })).toBeUndefined()
     expect(extractSkillName('Skill', { skill: null })).toBeUndefined()
   })
 })
 
 describe('getFileExtensionForAnalytics', () => {
-  test('archivo normal → extensión en minúsculas sin el punto', () => {
+  test('regular file → lowercase extension without dot', () => {
     expect(getFileExtensionForAnalytics('foo.ts')).toBe('ts')
     expect(getFileExtensionForAnalytics('bar.tsx')).toBe('tsx')
     expect(getFileExtensionForAnalytics('a.JSON')).toBe('json')
   })
 
-  test('ruta absoluta → sólo la extensión', () => {
+  test('absolute path → just the extension', () => {
     expect(getFileExtensionForAnalytics('/etc/passwd.bak')).toBe('bak')
   })
 
-  test('sin extensión → undefined', () => {
+  test('no extension → undefined', () => {
     expect(getFileExtensionForAnalytics('Makefile')).toBeUndefined()
     expect(getFileExtensionForAnalytics('foo')).toBeUndefined()
   })
 
-  test('archivo oculto sin extensión propia → undefined', () => {
-    // path.extname('.bashrc') devuelve '' en POSIX (se trata como sin
-    // extensión).
+  test('hidden file with no extension → undefined', () => {
+    // path.extname('.bashrc') returns '' on POSIX (treated as no ext).
     expect(getFileExtensionForAnalytics('.bashrc')).toBeUndefined()
   })
 
-  test('extensión > 10 caracteres → "other" (protección de PII: una extensión larga podría parecer un nombre de archivo)', () => {
+  test('extension > 10 chars → "other" (PII protection: long extensions could be filename-like)', () => {
     expect(
       getFileExtensionForAnalytics('foo.verylongextensionname'),
     ).toBe('other')
   })
 
-  test('extensión de exactamente 10 caracteres → se conserva (límite)', () => {
-    // El ratchet es normalized.length > 10, así que 10 caracteres pasa.
+  test('extension exactly 10 chars → kept (boundary)', () => {
+    // The ratchet is normalized.length > 10, so 10 chars passes.
     expect(getFileExtensionForAnalytics('x.abcdefghij')).toBe('abcdefghij')
   })
 
-  test('archivo con varios puntos (foo.tar.gz) → sólo la última extensión', () => {
+  test('multi-dot file (foo.tar.gz) → only last extension', () => {
     expect(getFileExtensionForAnalytics('foo.tar.gz')).toBe('gz')
   })
 
-  test('punto final (foo.) → undefined', () => {
-    // path.extname('foo.') devuelve '.', que la función rechaza.
+  test('trailing dot (foo.) → undefined', () => {
+    // path.extname('foo.') returns '.' which the function rejects.
     expect(getFileExtensionForAnalytics('foo.')).toBeUndefined()
   })
 })
 
 describe('getFileExtensionsFromBashCommand', () => {
-  test('comando con un archivo → su extensión', () => {
+  test('command with one file → its extension', () => {
     expect(getFileExtensionsFromBashCommand('cat foo.ts')).toBe('ts')
   })
 
-  test('varios archivos: extensiones sin duplicar, unidas por coma', () => {
+  test('multiple files: extensions deduped + comma-joined', () => {
     expect(
       getFileExtensionsFromBashCommand('mv a.ts b.ts c.tsx'),
     ).toBe('ts,tsx')
   })
 
-  test('comando sin extensiones de archivo → undefined', () => {
+  test('command with no file extensions → undefined', () => {
     expect(getFileExtensionsFromBashCommand('ls')).toBeUndefined()
   })
 
-  test('simulatedSedEditFilePath: la extensión se incluye aunque no esté en el comando', () => {
+  test('simulatedSedEditFilePath: extension included even if not in command', () => {
     expect(
       getFileExtensionsFromBashCommand('sed -i s/x/y/ foo', 'foo.json'),
     ).toBe('json')
   })
 
-  test('simulatedSedEditFilePath deduplica con los tokens del comando', () => {
+  test('simulatedSedEditFilePath dedupes with command tokens', () => {
     expect(
       getFileExtensionsFromBashCommand('cat foo.json bar.txt', 'baz.json'),
     ).toBe('json,txt')
   })
 
-  test('tokens que no son archivo con puntos: falso positivo (heurística de mejor esfuerzo)', () => {
-    // Limitación documentada: los tokens del comando se parten por
-    // espacio y a cada pieza se le toma su extname. Así que
-    // `npm i lodash@1.0.0` metería `0` como extensión en el cubo. Este
-    // test fija esa limitación.
+  test('non-file tokens with dots: false-positive (best-effort heuristic)', () => {
+    // Documented limitation: command tokens are split on whitespace and
+    // each piece's extname is taken. So `npm i lodash@1.0.0` would
+    // bucket `0` as an extension. This test locks the limitation.
     const r = getFileExtensionsFromBashCommand('echo abc.txt')
     expect(r).toBe('txt')
   })
 })
 
 describe('isToolDetailsLoggingEnabled', () => {
-  test('devuelve boolean (no lanza)', () => {
+  test('returns boolean (no throw)', () => {
     expect(typeof isToolDetailsLoggingEnabled()).toBe('boolean')
   })
 })

@@ -1,20 +1,12 @@
-/**
- * Porte COMPLETO de `ccnmt: packages/provider/src/mtls.ts` — sus 6
- * exportaciones, ninguna omitida.
- *
- * `./caCerts.js` de la fuente → `internal/caCerts.ts` (soporte interno, no
- * asignado a este pase; ver su cabecera).
- */
-
-import type * as https from 'node:https'
-import { Agent as HttpsAgent } from 'node:https'
+import type * as https from 'https'
+import { Agent as HttpsAgent } from 'https'
 import memoize from 'lodash-es/memoize.js'
-import type * as tls from 'node:tls'
+import type * as tls from 'tls'
 import type * as undici from 'undici'
 import { readEnv } from '@thyrox/config/env/utils'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
-import { getCACertificates } from './internal/caCerts.ts'
+import { getCACertificates } from './caCerts.js'
 
 export type MTLSConfig = {
   cert?: string
@@ -26,50 +18,77 @@ export type TLSConfig = MTLSConfig & {
   ca?: string | string[] | Buffer
 }
 
-/** Configuración mTLS desde variables de entorno. */
+/**
+ * Get mTLS configuration from environment variables
+ */
 export const getMTLSConfig = memoize((): MTLSConfig | undefined => {
   const config: MTLSConfig = {}
 
+  // Note: NODE_EXTRA_CA_CERTS is automatically handled by Node.js at runtime
+  // We don't need to manually load it - Node.js appends it to the built-in CAs automatically
+
+  // Client certificate
   const certPath = readEnv('CLAUDE_CODE_CLIENT_CERT')
   if (certPath) {
     try {
-      config.cert = getFsImplementation().readFileSync(certPath, { encoding: 'utf8' })
-      logForDebugging('mTLS: Loaded client certificate from CLAUDE_CODE_CLIENT_CERT')
+      config.cert = getFsImplementation().readFileSync(certPath, {
+        encoding: 'utf8',
+      })
+      logForDebugging(
+        'mTLS: Loaded client certificate from CLAUDE_CODE_CLIENT_CERT',
+      )
     } catch (error) {
-      logForDebugging(`mTLS: Failed to load client certificate: ${error}`, { level: 'error' })
+      logForDebugging(`mTLS: Failed to load client certificate: ${error}`, {
+        level: 'error',
+      })
     }
   }
 
+  // Client key
   const keyPath = readEnv('CLAUDE_CODE_CLIENT_KEY')
   if (keyPath) {
     try {
-      config.key = getFsImplementation().readFileSync(keyPath, { encoding: 'utf8' })
+      config.key = getFsImplementation().readFileSync(keyPath, {
+        encoding: 'utf8',
+      })
       logForDebugging('mTLS: Loaded client key from CLAUDE_CODE_CLIENT_KEY')
     } catch (error) {
-      logForDebugging(`mTLS: Failed to load client key: ${error}`, { level: 'error' })
+      logForDebugging(`mTLS: Failed to load client key: ${error}`, {
+        level: 'error',
+      })
     }
   }
 
+  // Key passphrase
   const passphrase = readEnv('CLAUDE_CODE_CLIENT_KEY_PASSPHRASE')
   if (passphrase) {
     config.passphrase = passphrase
     logForDebugging('mTLS: Using client key passphrase')
   }
 
-  if (Object.keys(config).length === 0) return undefined
+  // Only return config if at least one option is set
+  if (Object.keys(config).length === 0) {
+    return undefined
+  }
+
   return config
 })
 
-/** Agente HTTPS con configuración mTLS. */
+/**
+ * Create an HTTPS agent with mTLS configuration
+ */
 export const getMTLSAgent = memoize((): HttpsAgent | undefined => {
   const mtlsConfig = getMTLSConfig()
   const caCerts = getCACertificates()
 
-  if (!mtlsConfig && !caCerts) return undefined
+  if (!mtlsConfig && !caCerts) {
+    return undefined
+  }
 
   const agentOptions: https.AgentOptions = {
     ...mtlsConfig,
     ...(caCerts && { ca: caCerts }),
+    // Enable keep-alive for better performance
     keepAlive: true,
   }
 
@@ -77,15 +96,26 @@ export const getMTLSAgent = memoize((): HttpsAgent | undefined => {
   return new HttpsAgent(agentOptions)
 })
 
-/** Opciones TLS para conexiones WebSocket. */
+/**
+ * Get TLS options for WebSocket connections
+ */
 export function getWebSocketTLSOptions(): tls.ConnectionOptions | undefined {
   const mtlsConfig = getMTLSConfig()
   const caCerts = getCACertificates()
-  if (!mtlsConfig && !caCerts) return undefined
-  return { ...mtlsConfig, ...(caCerts && { ca: caCerts }) }
+
+  if (!mtlsConfig && !caCerts) {
+    return undefined
+  }
+
+  return {
+    ...mtlsConfig,
+    ...(caCerts && { ca: caCerts }),
+  }
 }
 
-/** Opciones de fetch con configuración TLS (mTLS + CA certs) para undici. */
+/**
+ * Get fetch options with TLS configuration (mTLS + CA certs) for undici
+ */
 export function getTLSFetchOptions(): {
   tls?: TLSConfig
   dispatcher?: undici.Dispatcher
@@ -93,14 +123,21 @@ export function getTLSFetchOptions(): {
   const mtlsConfig = getMTLSConfig()
   const caCerts = getCACertificates()
 
-  if (!mtlsConfig && !caCerts) return {}
+  if (!mtlsConfig && !caCerts) {
+    return {}
+  }
 
-  const tlsConfig: TLSConfig = { ...mtlsConfig, ...(caCerts && { ca: caCerts }) }
+  const tlsConfig: TLSConfig = {
+    ...mtlsConfig,
+    ...(caCerts && { ca: caCerts }),
+  }
 
   if (typeof Bun !== 'undefined') {
     return { tls: tlsConfig }
   }
   logForDebugging('TLS: Created undici agent with custom certificates')
+  // Create a custom undici Agent with TLS options. Lazy-required so that
+  // the ~1.5MB undici package is only loaded when mTLS/CA certs are configured.
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const undiciMod = require('undici') as typeof undici
   const agent = new undiciMod.Agent({
@@ -116,19 +153,29 @@ export function getTLSFetchOptions(): {
   return { dispatcher: agent }
 }
 
-/** Limpia la caché de configuración mTLS. */
+/**
+ * Clear the mTLS configuration cache.
+ */
 export function clearMTLSCache(): void {
   getMTLSConfig.cache.clear?.()
   getMTLSAgent.cache.clear?.()
   logForDebugging('Cleared mTLS configuration cache')
 }
 
-/** Configura settings TLS globales de Node.js. */
+/**
+ * Configure global Node.js TLS settings
+ */
 export function configureGlobalMTLS(): void {
   const mtlsConfig = getMTLSConfig()
-  if (!mtlsConfig) return
 
+  if (!mtlsConfig) {
+    return
+  }
+
+  // NODE_EXTRA_CA_CERTS is automatically handled by Node.js at runtime
   if (readEnv('NODE_EXTRA_CA_CERTS')) {
-    logForDebugging('NODE_EXTRA_CA_CERTS detected - Node.js will automatically append to built-in CAs')
+    logForDebugging(
+      'NODE_EXTRA_CA_CERTS detected - Node.js will automatically append to built-in CAs',
+    )
   }
 }

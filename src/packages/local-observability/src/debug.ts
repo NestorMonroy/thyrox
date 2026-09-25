@@ -1,55 +1,21 @@
-/**
- * Puerto de `ccnmt: packages/local-observability/src/debug.ts` (270
- * líneas fuente, 100 % portado). El subsistema real de debug-log — con
- * `logForDebugging` como el símbolo más importado por futuros
- * consumidores (100 líneas hacia `debug.js`, sólo detrás del barrel).
- *
- * Dependencias de paquete hermano sustituidas localmente (ninguna
- * exportada por el sibling real, verificado contra su `package.json`
- * `exports`):
- *
- * - `getSessionId`/`registerCleanup` — de `app-host/bootstrap/*`, subpath
- *   no exportado por `@thyrox/app-host`. Puntos de inyección en
- *   `internal/pendingCrossPackageDeps.ts`.
- * - `createBufferedWriter`/`BufferedWriter` — de `output/buffers`.
- *   `output` está en porte concurrente (otro agente, esta misma sesión);
- *   se sustituye localmente en `internal/bufferedWriter.ts` en vez de
- *   depender de un paquete en vuelo.
- * - `parseDebugFilter`/`shouldShowDebugMessage`/`DebugFilter` — de
- *   `repl/diagnostics/debugFilter.js`. El paquete `repl` no existe en
- *   este árbol; reimplementación fiel en `internal/debugFilter.ts`.
- * - `getFsImplementation` — de `storage/fsOperations.js`, subpath no
- *   exportado por `@thyrox/storage`. Sustituto mínimo en
- *   `internal/pendingCrossPackageDeps.ts`.
- * - `writeToStderr` — de `shell/process.js`. `@thyrox/shell` SÍ exporta
- *   `./process.js` pero el archivo real no declara ese símbolo todavía
- *   (0 hits de `export function writeToStderr`); sustituto fiel en
- *   `internal/pendingCrossPackageDeps.ts`.
- * - `getClaudeConfigHomeDir`/`isEnvTruthy` — `isEnvTruthy` SÍ está en
- *   `@thyrox/config: env/utils.ts` (reapuntado); `getClaudeConfigHomeDir`
- *   no está ahí y se sustituye en `pendingCrossPackageDeps.ts`.
- */
-
 import { appendFile, mkdir, symlink, unlink } from 'fs/promises'
 import memoize from 'lodash-es/memoize.js'
 import { dirname, join } from 'path'
-import { isEnvTruthy } from '@thyrox/config/env/utils'
-import {
-  getClaudeConfigHomeDir,
-  getFsImplementation,
-  getSessionId,
-  registerCleanup,
-  writeToStderr,
-} from './internal/pendingCrossPackageDeps.js'
-import { type BufferedWriter, createBufferedWriter } from './internal/bufferedWriter.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+
+import { type BufferedWriter, createBufferedWriter } from '@thyrox/output/buffers'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import {
   type DebugFilter,
   parseDebugFilter,
   shouldShowDebugMessage,
-} from './internal/debugFilter.js'
-// JSON.stringify plano — debug sólo lo usa para escapar saltos de línea en
-// cadenas simples. Importar slowOperations.jsonStringify cerraría un ciclo
-// de 3 archivos (slowOperations ↔ debug ↔ fsOperations ↔ slowOperations).
+} from '@thyrox/repl/diagnostics/debugFilter.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { writeToStderr } from '@thyrox/shell/process.js'
+// Plain JSON.stringify — debug only uses it for newline-escape on single
+// strings. Importing slowOperations.jsonStringify would close a 3-file
+// cycle (slowOperations ↔ debug ↔ fsOperations ↔ slowOperations).
 
 export type DebugLogLevel = 'verbose' | 'debug' | 'info' | 'warn' | 'error'
 
@@ -62,11 +28,10 @@ const LEVEL_ORDER: Record<DebugLogLevel, number> = {
 }
 
 /**
- * Nivel mínimo de log a incluir en la salida de debug. Por defecto
- * `'debug'`, que filtra los mensajes `'verbose'`. Fijar
- * `CLAUDE_CODE_DEBUG_LOG_LEVEL=verbose` para incluir diagnósticos de alto
- * volumen (comando completo de statusLine, shell, cwd, stdout/stderr) que
- * de otro modo ahogarían la salida de debug útil.
+ * Minimum log level to include in debug output. Defaults to 'debug', which
+ * filters out 'verbose' messages. Set CLAUDE_CODE_DEBUG_LOG_LEVEL=verbose to
+ * include high-volume diagnostics (e.g. full statusLine command, shell, cwd,
+ * stdout/stderr) that would otherwise drown out useful debug output.
  */
 export const getMinDebugLogLevel = memoize((): DebugLogLevel => {
   const raw = process.env.CLAUDE_CODE_DEBUG_LOG_LEVEL?.toLowerCase().trim()
@@ -86,16 +51,17 @@ export const isDebugMode = memoize((): boolean => {
     process.argv.includes('--debug') ||
     process.argv.includes('-d') ||
     isDebugToStdErr() ||
+    // Also check for --debug=pattern syntax
     process.argv.some(arg => arg.startsWith('--debug=')) ||
+    // --debug-file implicitly enables debug mode
     getDebugFilePath() !== null
   )
 })
 
 /**
- * Habilita el logging de debug a mitad de sesión (p. ej. vía `/debug`).
- * Quienes no son ants no escriben logs de debug por defecto, así que esto
- * les permite empezar a capturar sin reiniciar con `--debug`. Devuelve
- * `true` si el logging ya estaba activo.
+ * Enables debug logging mid-session (e.g. via /debug). Non-ants don't write
+ * debug logs by default, so this lets them start capturing without restarting
+ * with --debug. Returns true if logging was already active.
  */
 export function enableDebugLogging(): boolean {
   const wasActive = isDebugMode() || process.env.USER_TYPE === 'ant'
@@ -104,19 +70,24 @@ export function enableDebugLogging(): boolean {
   return wasActive
 }
 
-// Extrae y parsea el filtro de debug de los argumentos de línea de
-// comandos. Exportado para pruebas.
+// Extract and parse debug filter from command line arguments
+// Exported for testing purposes
 export const getDebugFilter = memoize((): DebugFilter | null => {
+  // Look for --debug=pattern in argv
   const debugArg = process.argv.find(arg => arg.startsWith('--debug='))
   if (!debugArg) {
     return null
   }
+
+  // Extract the pattern after the equals sign
   const filterPattern = debugArg.substring('--debug='.length)
   return parseDebugFilter(filterPattern)
 })
 
 export const isDebugToStdErr = memoize((): boolean => {
-  return process.argv.includes('--debug-to-stderr')
+  return (
+    process.argv.includes('--debug-to-stderr')
+  )
 })
 
 export const getDebugFilePath = memoize((): string | null => {
@@ -137,9 +108,8 @@ function shouldLogDebugMessage(message: string): boolean {
     return false
   }
 
-  // Quienes no son ants sólo escriben logs de debug cuando el modo debug
-  // está activo (vía --debug al arranque o /debug a mitad de sesión). Los
-  // ants siempre loguean, para /share y reportes de bug.
+  // Non-ants only write debug logs when debug mode is active (via --debug at
+  // startup or /debug mid-session). Ants always log for /share, bug reports.
   if (process.env.USER_TYPE !== 'ant' && !isDebugMode()) {
     return false
   }
@@ -167,8 +137,8 @@ export function getHasFormattedOutput(): boolean {
 let debugWriter: BufferedWriter | null = null
 let pendingWrite: Promise<void> = Promise.resolve()
 
-// A nivel de módulo para que .bind capture sólo sus args explícitos, no
-// el scope padre del closure de writeFn (Jarred, #22257).
+// Module-level so .bind captures only its explicit args, not the
+// writeFn closure's parent scope (Jarred, #22257).
 async function appendAsync(
   needMkdir: boolean,
   dir: string,
@@ -194,24 +164,23 @@ function getDebugWriter(): BufferedWriter {
         const needMkdir = ensuredDir !== dir
         ensuredDir = dir
         if (isDebugMode()) {
-          // modo inmediato: debe quedarse sync. Las escrituras async se
-          // pierden en un process.exit() directo y mantienen vivo el
-          // event loop en handlers beforeExit (bucle infinito con
-          // Perfetto tracing). Ver #22257.
+          // immediateMode: must stay sync. Async writes are lost on direct
+          // process.exit() and keep the event loop alive in beforeExit
+          // handlers (infinite loop with Perfetto tracing). See #22257.
           if (needMkdir) {
             try {
               getFsImplementation().mkdirSync(dir)
             } catch {
-              // El directorio ya existe
+              // Directory already exists
             }
           }
           getFsImplementation().appendFileSync(path, content)
           void updateLatestDebugLogSymlink()
           return
         }
-        // Camino con buffer (ants sin --debug): flushea ~1/seg para que
-        // la profundidad de la cadena se quede en ~1. .bind sobre un
-        // closure para retener sólo los args ligados, no este scope.
+        // Buffered path (ants without --debug): flushes ~1/sec so chain
+        // depth stays ~1. .bind over a closure so only the bound args are
+        // retained, not this scope.
         pendingWrite = pendingWrite
           .then(appendAsync.bind(null, needMkdir, dir, path, content))
           .catch(noop)
@@ -246,8 +215,7 @@ export function logForDebugging(
     return
   }
 
-  // Los mensajes multilínea rompen el formato de salida jsonl, así que
-  // cualquier mensaje multilínea se convierte a JSON.
+  // Multiline messages break the jsonl output format, so make any multiline messages JSON.
   if (hasFormattedOutput && message.includes('\n')) {
     message = JSON.stringify(message)
   }
@@ -270,9 +238,8 @@ export function getDebugLogPath(): string {
 }
 
 /**
- * Actualiza el symlink `latest` del log de debug para que apunte al
- * archivo de log de debug actual. Crea o actualiza un symlink en
- * `~/.claude/debug/latest`.
+ * Updates the latest debug log symlink to point to the current debug log file.
+ * Creates or updates a symlink at ~/.claude/debug/latest
  */
 const updateLatestDebugLogSymlink = memoize(async (): Promise<void> => {
   try {
@@ -283,12 +250,12 @@ const updateLatestDebugLogSymlink = memoize(async (): Promise<void> => {
     await unlink(latestSymlinkPath).catch(() => {})
     await symlink(debugLogPath, latestSymlinkPath)
   } catch {
-    // Falla en silencio si la creación del symlink falla.
+    // Silently fail if symlink creation fails
   }
 })
 
 /**
- * Loguea errores sólo para Ants, siempre visibles en producción.
+ * Logs errors for Ants only, always visible in production.
  */
 export function logAntError(context: string, error: unknown): void {
   if (process.env.USER_TYPE !== 'ant') {

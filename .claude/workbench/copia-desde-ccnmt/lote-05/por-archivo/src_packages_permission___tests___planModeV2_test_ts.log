@@ -1,0 +1,51 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/permission/__tests__/planModeV2.test.ts:
+277 |   if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+278 |     const apiKeyFromFd = getApiKeyFromFileDescriptor()
+279 |     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
+280 | 
+281 |     if (!apiKeyEnv && !readEnv('CLAUDE_CODE_OAUTH_TOKEN') && !readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+282 |       throw new Error('ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required')
+                      ^
+error: ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required
+      at getAnthropicApiKeyWithSource (/home/user/thyrox/src/packages/provider/src/authAlias.ts:282:17)
+      at isAnthropicAuthEnabled (/home/user/thyrox/src/packages/provider/src/authAlias.ts:183:36)
+      at getSubscriptionType (/home/user/thyrox/src/packages/provider/src/authAlias.ts:1366:8)
+      at getPlanModeV2AgentCount (/home/user/thyrox/src/packages/permission/src/planModeV2.ts:22:28)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/planModeV2.test.ts:43:14)
+(fail) getPlanModeV2AgentCount — la variable manda sobre el plan > 2. un valor FUERA de rango se ignora, no se recorta [2.03ms]
+277 |   if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+278 |     const apiKeyFromFd = getApiKeyFromFileDescriptor()
+279 |     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
+280 | 
+281 |     if (!apiKeyEnv && !readEnv('CLAUDE_CODE_OAUTH_TOKEN') && !readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+282 |       throw new Error('ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required')
+                      ^
+error: ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required
+      at getAnthropicApiKeyWithSource (/home/user/thyrox/src/packages/provider/src/authAlias.ts:282:17)
+      at isAnthropicAuthEnabled (/home/user/thyrox/src/packages/provider/src/authAlias.ts:183:36)
+      at getSubscriptionType (/home/user/thyrox/src/packages/provider/src/authAlias.ts:1366:8)
+      at getPlanModeV2AgentCount (/home/user/thyrox/src/packages/permission/src/planModeV2.ts:22:28)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/planModeV2.test.ts:50:12)
+(fail) getPlanModeV2AgentCount — la variable manda sobre el plan > 3. un valor NO numérico se ignora [0.31ms]
+277 |   if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+278 |     const apiKeyFromFd = getApiKeyFromFileDescriptor()
+279 |     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
+280 | 
+281 |     if (!apiKeyEnv && !readEnv('CLAUDE_CODE_OAUTH_TOKEN') && !readEnv('CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR')) {
+282 |       throw new Error('ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required')
+                      ^
+error: ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN env var is required
+      at getAnthropicApiKeyWithSource (/home/user/thyrox/src/packages/provider/src/authAlias.ts:282:17)
+      at isAnthropicAuthEnabled (/home/user/thyrox/src/packages/provider/src/authAlias.ts:183:36)
+      at getSubscriptionType (/home/user/thyrox/src/packages/provider/src/authAlias.ts:1366:8)
+      at getPlanModeV2AgentCount (/home/user/thyrox/src/packages/permission/src/planModeV2.ts:22:28)
+      at <anonymous> (/home/user/thyrox/src/packages/permission/__tests__/planModeV2.test.ts:55:15)
+(fail) getPlanModeV2AgentCount — la variable manda sobre el plan > 4. sin variable, el conteo está en el rango declarado [0.21ms]
+
+ 9 pass
+ 3 fail
+ 13 expect() calls
+Ran 12 tests across 1 file. [496.00ms]
+exit=1

@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/workbench.test.ts:
+234 | 
+235 | describe('la CLI — andamiar y medir desde fuera', () => {
+236 |   test('--workbench-new emite el contrato del SUCESOR, no el superado', () => {
+237 |     const base = root()
+238 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--workbench-new', 'measure-something', '--eventos', base])
+239 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/workbench.test.ts:239:24)
+(fail) la CLI — andamiar y medir desde fuera > --workbench-new emite el contrato del SUCESOR, no el superado [1013.06ms]
+253 |   test('--workbench-check no bloquea por defecto y si con --strict', () => {
+254 |     const dir = join(root(), 'broken-20260904T120000')
+255 |     mkdirSync(dir, { recursive: true })
+256 |     const run = (extra: string[]) =>
+257 |       Bun.spawnSync(['bun', 'run', BIN, '--workbench-check', dir, ...extra]).exitCode
+258 |     expect(run([])).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/workbench.test.ts:258:21)
+(fail) la CLI — andamiar y medir desde fuera > --workbench-check no bloquea por defecto y si con --strict [881.85ms]
+
+ 18 pass
+ 2 fail
+ 35 expect() calls
+Ran 20 tests across 1 file. [2.02s]
+exit=1

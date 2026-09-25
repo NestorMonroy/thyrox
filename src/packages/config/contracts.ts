@@ -1,145 +1,109 @@
-/**
- * Puerto de `ccnmt: packages/config/contracts.ts` (109 líneas fuente). No es
- * uno de los 15 del alcance — es la dependencia de hoja que `host.ts`
- * necesita (el tipo `ConfigHostBindings`) y que a su vez necesita
- * `remote/index.ts` a través de `getConfigHostBindings()`: cero `import`
- * propios (es puramente estructural), se porta en el sitio en vez de
- * bloquearse.
- *
- * El contrato de "ports-and-adapters" (V7 §7/§8.6 en la fuente) por el que
- * `@thyrox/config` declara qué necesita del resto del sistema sin importar
- * directamente de esas capas — el host (app-host/cli) instala la
- * implementación real vía `installConfigHostBindings()` (`./host.ts`).
- * Ningún método es obligatorio (todos opcionales): un binding no instalado
- * se llama con `?.` y queda como no-op silencioso, por diseño de la fuente.
- */
 export type ConfigHostBindings = {
   getConfigHomeDir?: () => string
   getProjectRoot?: () => string | undefined
   logDebug?: (message: string, metadata?: unknown) => void
-  // config no puede importar de mcp-runtime (capa de integración). El host
-  // conecta este binding a `getMcpConfigsByScope` de mcp-runtime en tiempo
-  // de composición, para que allErrors.ts agregue errores de validación MCP
-  // sin una dependencia directa entre capas.
+  // V7 §8.6 — config cannot import from mcp-runtime (integration layer).
+  // The host wires this binding to mcp-runtime's getMcpConfigsByScope at
+  // composition time so allErrors.ts can aggregate MCP validation errors
+  // without a direct cross-layer dependency.
   getMcpErrorsByScope?: (scope: string) => Array<{
     file?: string
     path: string
     message: string
     source?: string
   }>
-  // config no puede importar de provider/auth (Wave 3). El host lo conecta
-  // a la lógica completa de `isRemoteManagedSettingsEligible()` en tiempo
-  // de composición. config lo llama y cachea el booleano.
+  // V7 §8.6 — config cannot import from provider/auth (Wave 3). The host
+  // wires this to the full isRemoteManagedSettingsEligible() logic at
+  // composition time. Config calls it and caches the boolean.
   checkRemoteSettingsEligibility?: () => boolean
-  // Bindings de estado de arranque (bootstrap). config los lee pero no es
-  // dueño del estado de sesión (eso es app-host).
+  // V7 §7 — bootstrap state bindings. Config reads these but does not own
+  // session-level bootstrap state (that's app-host).
   getIsRemoteMode?: () => boolean
-  // Hook de ciclo de vida para limpieza al salir del proceso.
+  // V7 §8.6 — lifecycle hook for cleanup on process exit.
   registerCleanup?: (fn: () => Promise<void>) => () => void
-  // Puente de ejecución de hooks. config no puede importar el runtime de
-  // hooks. Devuelve `true` si algún hook bloqueó el cambio.
+  // V7 §8.6 — hook execution bridge. Config cannot import the hooks runtime.
+  // Returns true if any hook blocked the change.
   executeConfigChangeHooks?: (source: string) => Promise<{ blocked: boolean }>
-  // Puente a local-observability para logging de diagnóstico (telemetría MDM).
-  logDiagnostics?: (
-    level: string,
-    event: string,
-    data?: Record<string, unknown>,
-  ) => void
-  // Puente al profiler de arranque (opcional, no-op si no está instalado).
+  // V7 §8.6 — local-observability bridge for diagnostic logging (MDM telemetry).
+  logDiagnostics?: (level: string, event: string, data?: Record<string, unknown>) => void
+  // V7 §8.6 — startup profiler bridge (optional, no-op if not installed).
   profileCheckpoint?: (name: string) => void
-  // Accesores de estado de arranque. config los lee pero no es dueño del
-  // estado de sesión (eso es app-host). Añadidos para global/config.ts +
-  // settings/settings.ts, que necesitan CWD, trust, y flag settings.
+  // V7 §7 — bootstrap state accessors. Config reads these but does not own
+  // session-level state (that's app-host). Added for global/config.ts +
+  // settings/settings.ts which need CWD, trust, and flag settings info.
   getCwd?: () => string
   getOriginalCwd?: () => string
   getSessionTrustAccepted?: () => boolean
   getFlagSettingsPath?: () => string | undefined
   getFlagSettingsInline?: () => Record<string, unknown> | null
   getUseCoworkPlugins?: () => boolean
-  // Puente de logging de eventos (config no puede importar eventLogger).
+  // V7 §8.6 — event logging bridge (config cannot import eventLogger).
   logEvent?: (event: string, metadata?: Record<string, unknown>) => void
-  // Puente de utilidades git (config no puede importar utils de git).
+  // V7 §8.6 — git utility bridge (config cannot import git utils).
   findCanonicalGitRoot?: (cwd: string) => string | undefined
   addFileGlobRuleToGitignore?: (dir: string, glob: string) => void
-  // Ruta del archivo de config global (depende de detección de ruta legacy
-  // + OAuth).
+  // V7 §8.6 — global config file path (depends on legacy path detection + OAuth).
   getGlobalClaudeFile?: () => string
-  // Puente de auth/provider para sync de settings + remote settings. config
-  // no puede importar auth.ts ni providers.ts. El host provee la obtención
-  // del token OAuth, el check del provider de API, y el refresh del token.
+  // V7 §8.6 — auth/provider bridge for settings sync + remote settings.
+  // Config cannot import auth.ts or providers.ts. Host provides the
+  // OAuth token retrieval, API provider check, and token refresh.
   getSettingsSyncAuth?: () => {
     isEligible: boolean
     baseApiUrl: string
     getAuthHeaders: () => Promise<Record<string, string>>
-    // `force: true` salta la caché en memoria del access token y va directo
-    // al IdP por uno fresco. Lo usa el retry-en-401 de remote-settings.
+    // ant v2.1.140 3202.js:124 — `force: true` bypasses the in-memory access
+    // token cache and goes straight to the IdP for a fresh token. Used by
+    // remote-settings on-401 retry.
     refreshToken: (opts?: { force?: boolean }) => Promise<void>
-    // Obtiene el access token actual (sólo lectura, sin refresh). Se usa
-    // para comparar antes/después de un force-refresh y detectar rotación.
+    // ant v2.1.140 — fetch current access token (read-only, no refresh).
+    // Used to compare before/after force-refresh to detect a token rotation.
     getAccessToken?: () => Promise<string | undefined>
   } | null
   isInteractive?: () => boolean
-  // Puente al subsistema de memoria (config no puede importar claudemd).
+  // V7 §8.6 — memory subsystem bridge (config cannot import claudemd).
   clearMemoryFileCaches?: () => void
-  // Hash del repo git para el ID de proyecto del sync de settings.
+  // V7 §8.6 — git repo hash for settings sync project ID.
   getRepoRemoteHash?: () => Promise<string | null>
-  // Puente de operaciones de fs. config NO DEBE usar `node:fs` crudo porque
-  // la capa de fs virtual (getFsImplementation) es load-bearing para el modo
-  // sandbox y la inicialización del REPL. El host provee la fachada de fs
-  // correcta.
+  // V7 §8.6 — fs operations bridge. Config MUST NOT use raw node:fs because
+  // the virtual-fs layer (getFsImplementation) is load-bearing for sandbox
+  // mode and REPL initialization. Host provides the correct fs facade.
   readFileSync?: (path: string, encoding: string) => string
-  writeFileSyncAndFlush?: (
-    path: string,
-    content: string,
-    options?: { encoding?: string; mode?: number },
-  ) => void
+  writeFileSyncAndFlush?: (path: string, content: string, options?: { encoding?: string; mode?: number }) => void
   statSync?: (path: string) => { mtimeMs: number; size: number }
   existsSync?: (path: string) => boolean
   mkdirSync?: (path: string) => void
   readFileAsync?: (path: string, encoding: string) => Promise<string>
-  readdirSync?: (
-    path: string,
-  ) => Array<{ name: string; isFile(): boolean; isSymbolicLink(): boolean }>
-  // Puente de lockfile para escrituras atómicas de config.
-  lockSync?: (
-    file: string,
-    options?: { stale?: number; retries?: unknown },
-  ) => () => void
+  readdirSync?: (path: string) => Array<{ name: string; isFile(): boolean; isSymbolicLink(): boolean }>
+  // V7 §8.6 — lockfile bridge for atomic config writes.
+  lockSync?: (file: string, options?: { stale?: number; retries?: unknown }) => () => void
   unlock?: (file: string) => Promise<void>
-  // Default de auto-conexión del bridge. Chequeo con feature-gate.
+  // V7 §8.6 — bridge auto-connect default. Feature-gated bridge check.
   isBridgeAutoConnectDefault?: () => boolean
-  // Puentes de efecto-secundario al cambiar settings. config los dispara al
-  // cambiar settings para que las reglas de permiso y los snapshots de
-  // hooks se mantengan sincronizados sin que config importe de permission
-  // o hooks directamente.
+  // V7 §8.6 — settings-change side-effect bridges. Config triggers these
+  // when settings change so that permission rules and hooks snapshots stay
+  // in sync without config importing from permission or hooks directly.
   loadAllPermissionRulesFromDisk?: () => unknown[]
   updateHooksConfigSnapshot?: () => void
-  // UI de chequeo de seguridad. El diálogo de React no pertenece a config
-  // (hoja de Wave 1). El host provee la implementación que renderiza el
-  // diálogo Ink; config sólo le importa el resultado.
+  // V7 §8.24 — security check UI. The React dialog doesn't belong in
+  // config (Wave 1 leaf). Host provides the implementation which renders
+  // the Ink dialog; config only cares about the result.
   checkManagedSettingsSecurity?: (
     cachedSettings: unknown,
     newSettings: unknown,
   ) => Promise<'approved' | 'rejected' | 'no_check_needed'>
-  handleSecurityCheckResult?: (
-    result: 'approved' | 'rejected' | 'no_check_needed',
-  ) => boolean
-  // Puente de parseo de reglas de permiso (config no puede importar
-  // permission en Wave 1).
-  parsePermissionRule?: (rule: string) => {
-    toolName: string
-    ruleContent?: string
-  }
-  // Puente de chequeo de ruta de settings.
+  handleSecurityCheckResult?: (result: 'approved' | 'rejected' | 'no_check_needed') => boolean
+  // V7 §11.4 — permission rule parsing bridge (config cannot import permission in Wave 1).
+  parsePermissionRule?: (rule: string) => { toolName: string; ruleContent?: string }
+  // V7 §11.4 — settings path check bridge.
   isClaudeSettingsPath?: (filePath: string) => boolean
-  // Reconciliación del contexto de permisos tras un cambio de settings.
-  // Encapsula syncPermissionRulesFromDisk + filtrado de reglas
-  // demasiado-amplias + chequeo de modo bypass + transición de
-  // auto-modo-plan.
+  // V7 §11.4 — permission context reconciliation after settings change.
+  // Encapsulates syncPermissionRulesFromDisk + overly-broad filtering +
+  // bypass-mode check + plan-auto-mode transition.
   reconcilePermissionContext?: (
     prevContext: unknown,
     updatedRules: unknown[],
   ) => unknown
-  // Puente de la ruta de entrada automática de memoria.
+  // V7 §11.4 — memory auto-entry path bridge.
   getAutoMemEntrypoint?: () => string
 }
+

@@ -1,0 +1,107 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/tool-registry/src/__tests__/undercover.test.ts:
+75 |     // Clasificado interno, la rama automática lo APAGA: sólo la variable de
+76 |     // fuerza puede encenderlo. Sin esta precondición el caso no distinguiría
+77 |     // la variable del default.
+78 |     expect(isUndercover()).toBe(false)
+79 |     process.env[FUERZA] = '1'
+80 |     expect(isUndercover()).toBe(true)
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:80:28)
+(fail) isUndercover — la activación, y su default seguro > 1. la variable de fuerza lo enciende SOBRE un repositorio interno [575.17ms]
+83 |   test('2. la variable acepta las cuatro formas verdaderas', async () => {
+84 |     const { isUndercover } = await import('../undercover.ts')
+85 |     await clasificarComoInterno()
+86 |     for (const valor of ['1', 'true', 'YES', 'on']) {
+87 |       process.env[FUERZA] = valor
+88 |       expect(isUndercover()).toBe(true)
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:88:30)
+(fail) isUndercover — la activación, y su default seguro > 2. la variable acepta las cuatro formas verdaderas [0.65ms]
+104 |     _resetRepoClassCacheForTests()
+105 |     const { isInternalModelRepo } = await import(
+106 |       '@thyrox/agent/commitAttribution.js'
+107 |     )
+108 |     await isInternalModelRepo()
+109 |     expect(isUndercover()).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:109:28)
+(fail) isUndercover — la activación, y su default seguro > 2-bis. la lista de permitidos APAGA el modo, y es su único camino [0.43ms]
+117 |     _resetRepoClassCacheForTests()
+118 |     // `null` —la comprobación aún no corrió— resuelve a ENCENDIDO. No hay
+119 |     // fuerza-apagado: si no consta que el repositorio sea interno, se queda
+120 |     // encubierto. Un nombre en clave filtrado a un repositorio público no se
+121 |     // deshace.
+122 |     expect(isUndercover()).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:122:28)
+(fail) isUndercover — la activación, y su default seguro > 3. SIN clasificación confirmada, está ENCENDIDO [0.15ms]
+128 |       '@thyrox/agent/commitAttribution.js'
+129 |     )
+130 |     _resetRepoClassCacheForTests()
+131 |     await isInternalModelRepo()
+132 |     // Clasificado como `external` o `none`: los dos dejan el modo encendido.
+133 |     expect(isUndercover()).toBe(true)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:133:28)
+(fail) isUndercover — la activación, y su default seguro > 4. con la lista vacía, un repositorio con remoto NO lo apaga [0.21ms]
+139 |     const { getUndercoverInstructions } = await import('../undercover.ts')
+140 |     const texto = getUndercoverInstructions()
+141 |     // No son inventadas: `.claude/rules/git.md` prohíbe el remolque de
+142 |     // identidad del agente, y `model-selection-subagents.md` prohíbe el
+143 |     // identificador de modelo en el cuerpo y el título de un pull request.
+144 |     expect(texto).toContain('Co-Authored-By')
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Co-Authored-By"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:144:19)
+(fail) getUndercoverInstructions — lo que el texto tiene que nombrar > 5. nombra las dos prohibiciones que este árbol declara [0.15ms]
+145 |     expect(texto.toLowerCase()).toContain('pull request')
+146 |   })
+147 | 
+148 |   test('6. el texto NO va vacío', async () => {
+149 |     const { getUndercoverInstructions } = await import('../undercover.ts')
+150 |     expect(getUndercoverInstructions().length).toBeGreaterThan(100)
+                                                     ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 100
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/tool-registry/src/__tests__/undercover.test.ts:150:48)
+(fail) getUndercoverInstructions — lo que el texto tiene que nombrar > 6. el texto NO va vacío [0.10ms]
+
+ 4 pass
+ 7 fail
+ 16 expect() calls
+Ran 11 tests across 1 file. [674.00ms]
+exit=1

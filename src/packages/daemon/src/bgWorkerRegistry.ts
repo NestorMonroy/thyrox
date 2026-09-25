@@ -1,37 +1,34 @@
 /**
- * Registro de workers de jobs bg — estado del lado del daemon.
+ * Bg-job worker registry — daemon-side state.
  *
- * Espeja las instancias `vm` por-worker de `ant 4706.js`, pero recortado:
- * el daemon de ccb supervisa las mismas cosas que el de ant (subproceso
- * PTY-host, lista de attachers, poll de heartbeat, presupuesto de retry)
- * pero usa el esquema en disco existente de ccb
- * (`~/.claude/jobs/<short>/meta.json`) para persistencia, y se salta las
- * rutas de GrowthBook / telemetría / Datadog que no aplican a ccb.
+ * Mirrors ant 4706.js's per-worker `vm` instances, but trimmed:
+ * ccb's daemon supervises the same things ant's does (PTY-host
+ * subprocess, attacher list, heartbeat polling, retry budget) but
+ * uses ccb's existing on-disk schema (`~/.claude/jobs/<short>/meta.json`)
+ * for persistence, and skips the GrowthBook / telemetry / Datadog
+ * paths that don't apply to ccb.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/bgWorkerRegistry.ts`.
+ * @dynamicRequire
  */
 
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join, resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
 
-import { isPidAlive } from './internal/pendingCrossPackageDeps.js'
+import { isPidAlive } from '@thyrox/shell/genericProcessUtils.js'
 export { isPidAlive }
 
 /**
- * Máquina de estados del worker. Espeja las transiciones RW3 de ant
- * (4706.js:70-83):
+ * Worker state machine. Mirrors ant RW3 transitions (4706.js:70-83):
  *
- *   spawning ⇄ running    (ruta inicial; los ciclos de respawn vuelven aquí)
- *   running   → upgrading (binario actualizado a mitad de vuelo)
- *   running   → retiring  (apagado ordenado O kill forzado)
- *   upgrading → spawning  (reinicio desde attempt=0)
+ *   spawning ⇄ running    (initial path; respawn cycles return here)
+ *   running   → upgrading (binary upgraded mid-flight)
+ *   running   → retiring  (graceful shutdown OR force kill)
+ *   upgrading → spawning  (restart from attempt=0)
  *   retiring  → retired   (terminal)
  *
- * Retiring lleva una `reason`: 'grace' (esperar a estar inactivo), 'reap'
- * (kill forzado ahora), 'stop' (desatender sin esperar; registrar que
- * salió externamente).
+ * Retiring carries a `reason`: 'grace' (wait for idle), 'reap' (force
+ * kill now), 'stop' (detach without waiting; record exited externally).
  */
 export type WorkerPhase =
   | { kind: 'spawning'; attempt: number }
@@ -43,7 +40,7 @@ export type WorkerPhase =
     }
   | { kind: 'retired'; outcome: 'done' | 'crashed' | 'killed' }
 
-/** Registro de job persistido. Coincide con la forma existente de meta.json de ccb. */
+/** Persisted job record. Matches ccb's existing meta.json shape. */
 export interface WorkerRecord {
   short: string
   pid: number
@@ -55,44 +52,42 @@ export interface WorkerRecord {
   exitedAt?: number
   exitCode?: number
   /**
-   * Razón legible por humano que explica un estado terminal no natural —
-   * fallo de adopción ("el proceso desapareció mientras el supervisor
-   * estaba caído", ant 5166 UB8), agotamiento de respawn, etc. Se muestra
-   * en `ccb ps` para que el usuario vea POR QUÉ un job terminó de forma
-   * terminal.
+   * Human-readable reason explaining a non-natural terminal status —
+   * adoption failure ("process gone while supervisor was down", ant
+   * 5166 UB8), respawn exhaustion, etc. Surfaced by `ccb ps` so the
+   * user sees WHY a job ended terminally.
    */
   failedReason?: string
   mode?: 'detached' | 'pty'
   ptySocket?: string
-  /** Ruta del socket de rendezvous (control) — `<jobDir>/rv.sock`. El REPL
-   *  interno lo ata; el cliente rv del daemon se conecta para recibir
-   *  state/done/heartbeat fuera de banda. Persistido para que la ruta de
-   *  adopción reconecte tras un reinicio del daemon (el rosterEntry de
-   *  ant lleva `rendezvousSock`). */
+  /** Rendezvous (control) socket path — `<jobDir>/rv.sock`. The inner REPL
+   *  binds it; the daemon rv client connects to it to receive out-of-band
+   *  state/done/heartbeat. Persisted so the adopt path reconnects after a
+   *  daemon restart (ant rosterEntry carries `rendezvousSock`). */
   rendezvousSocket?: string
-  /** Timestamp procStart de /proc/<pid>/stat o el fallback de ps. */
+  /** procStart timestamp from /proc/<pid>/stat or ps fallback. */
   procStart?: number
-  /** Cantidad de intentos de respawn hasta ahora. Tope en 20. */
+  /** Number of respawn attempts so far. Capped at 20. */
   attempt?: number
-  /** Crashes consecutivos dentro de los 5s del spawn. >=3 → settle 'crashed'. */
+  /** Consecutive crashes within 5s of spawn. >=3 → settle 'crashed'. */
   fastCrashStreak?: number
-  /** Versión de ccb que generó este worker; usado por adopt para detectar upgrade. */
+  /** ccb version that spawned this worker; used by adopt to detect upgrade. */
   cliVersion?: string
-  /** Conteo de respawns disparados por attach-stall. ant 5164.js wF3:23. */
+  /** Count of attach-stall-triggered respawns. ant 5164.js wF3:23. */
   attachStallRespawns?: number
 }
 
-/** Tope de intentos de respawn (ant hXK = 20). */
+/** Cap on respawn attempts (ant hXK = 20). */
 export const MAX_RESPAWN_ATTEMPTS = 20
-/** Backoff antes de reintentar un worker crasheado (ant GW3 = 10000). */
+/** Backoff before retrying a crashed worker (ant GW3 = 10000). */
 export const RESPAWN_BACKOFF_MS = 10_000
-/** Umbral para la clasificación "fast crash" (ant SXK = 5000). */
+/** Threshold for "fast crash" classification (ant SXK = 5000). */
 export const FAST_CRASH_WINDOW_MS = 5_000
-/** Tras 3 fast crashes seguidos, settle del worker. */
+/** After 3 fast crashes in a row, settle the worker. */
 export const FAST_CRASH_LIMIT = 3
-/** Intervalo de poll de heartbeat (ant CXK = 5000). */
+/** Heartbeat poll interval (ant CXK = 5000). */
 export const HEARTBEAT_POLL_MS = 5_000
-/** Silencio máximo antes de registrar "stalled" (ant ZW3 = 120000). */
+/** Max silence before logging "stalled" (ant ZW3 = 120000). */
 export const STALLED_THRESHOLD_MS = 120_000
 
 function getJobsRoot(): string {
@@ -104,7 +99,7 @@ function getJobDir(short: string): string {
   return join(getJobsRoot(), short)
 }
 
-/** Lee un meta.json a un WorkerRecord. Devuelve null si falta o está corrupto. */
+/** Read a meta.json into a WorkerRecord. Returns null on missing/corrupt. */
 export function readWorkerRecord(short: string): WorkerRecord | null {
   const path = join(getJobDir(short), 'meta.json')
   if (!existsSync(path)) return null
@@ -115,13 +110,13 @@ export function readWorkerRecord(short: string): WorkerRecord | null {
   }
 }
 
-/** Persiste un registro de vuelta a meta.json. */
+/** Persist a record back to meta.json. */
 export function writeWorkerRecord(record: WorkerRecord): void {
   const dir = getJobDir(record.short)
   writeFileSync(join(dir, 'meta.json'), JSON.stringify(record, null, 2) + '\n')
 }
 
-/** Recorre el directorio jobs/ y lee todos los registros. Salta los no parseables. */
+/** Scan jobs/ directory and read all records. Skip unparseable. */
 export function readAllWorkerRecords(): WorkerRecord[] {
   const root = getJobsRoot()
   if (!existsSync(root)) return []
@@ -133,38 +128,36 @@ export function readAllWorkerRecords(): WorkerRecord[] {
   return out
 }
 
-// (la implementación canónica vive en el sustituto local de este paquete
-// — ver `internal/pendingCrossPackageDeps.ts` — porque
-// `@claude-code-how-works/shell/genericProcessUtils` no tiene hoy un
-// `@thyrox/shell` equivalente. El import + re-export arriba lo trae tanto
-// para el uso interno de este archivo como para quien importe isPidAlive
-// desde bgWorkerRegistry.)
+// (canonical impl lives in @thyrox/shell/genericProcessUtils — the
+// import + re-export at the top of this file pulls it in for both
+// internal use here AND for callers who import isPidAlive from
+// bgWorkerRegistry.)
 
 /**
- * Lee el campo 22 (starttime) de /proc/<pid>/stat en Linux. Cae al
- * parseo de `ps -o lstart= -p <pid>` en macOS/BSD. Devuelve 0 si ninguno
- * funciona (p. ej. WSL con /proc sin mapear). 0 significa "no se puede
- * verificar"; el llamador decide si usar la ruta de adopción no-verificada.
+ * Read /proc/<pid>/stat field 22 (starttime) on Linux. Falls back to
+ * `ps -o lstart= -p <pid>` parsing on macOS/BSD. Returns 0 if neither
+ * works (e.g. WSL with /proc unmapped). 0 means "can't verify"; the
+ * caller decides whether to use the unverified-adopt path.
  *
- * Se usa para detectar el reciclaje de PID: si `procStart` no coincide
- * entre intentos de adopción, el SO reasignó el PID a un proceso nuevo.
+ * Used to detect PID recycling: if `procStart` doesn't match between
+ * adoption attempts, the OS has reassigned the PID to a new process.
  */
 export function readProcStart(pid: number): number {
   try {
     if (process.platform === 'linux') {
-      // /proc/<pid>/stat: el campo 22 es starttime en ticks de reloj desde el boot
+      // /proc/<pid>/stat: field 22 is starttime in clock ticks since boot
       const stat = readFileSync(`/proc/${pid}/stat`, 'utf8')
-      // Tras el campo comm (que puede contener espacios), los campos van
-      // separados por espacio. Se necesita el campo 22 = starttime, pero
-      // saltando los paréntesis del comm.
+      // After comm field (which can contain spaces), fields are space-separated.
+      // We need field 22 = starttime, but skip the comm parens.
       const closeParen = stat.lastIndexOf(')')
       if (closeParen < 0) return 0
       const tail = stat.slice(closeParen + 2).split(' ')
-      // tail[0] = campo 3 (state), tail[19] = campo 22 (starttime)
+      // tail[0] = field 3 (state), tail[19] = field 22 (starttime)
       const starttime = parseInt(tail[19] ?? '0', 10)
       return Number.isFinite(starttime) ? starttime : 0
     }
-    // Fallback macOS/BSD: lee el epoch de lstart de ps vía shell
+    // macOS/BSD fallback: read ps lstart epoch via shell
+    const { spawnSync } = require('node:child_process') as typeof import('node:child_process')
     const r = spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], {
       encoding: 'utf8',
     })
@@ -179,12 +172,12 @@ export function readProcStart(pid: number): number {
 }
 
 /**
- * Verifica que el pid registrado en `record` sigue siendo el mismo
- * proceso que se generó. Compara timestamps procStart. Devuelve:
- *   'verified'   — pid vivo, procStart coincide → adoptar
- *   'recycled'   — pid vivo pero procStart no coincide → settle (se reusó)
- *   'dead'       — pid no vivo → settle exited
- *   'unverified' — no se puede leer procStart → adoptar con salvedad (poll)
+ * Verify that the pid recorded in `record` is still the same process
+ * we spawned. Compare procStart timestamps. Returns:
+ *   'verified'   — pid alive, procStart matches → adopt
+ *   'recycled'   — pid alive but procStart mismatch → settle (was reused)
+ *   'dead'       — pid not alive → settle exited
+ *   'unverified' — can't read procStart → adopt with caveat (poll)
  */
 export function verifyAdoption(
   record: WorkerRecord,
@@ -193,24 +186,22 @@ export function verifyAdoption(
   const current = readProcStart(record.pid)
   if (current === 0) return 'unverified'
   if (record.procStart === undefined) {
-    // Nunca se registró procStart para este worker. Se confía en el pid
-    // vivo, pero se captura procStart ahora para que verificaciones
-    // futuras puedan comparar.
+    // We've never recorded procStart for this worker. Trust the live
+    // pid, but capture procStart now so future verifies can compare.
     return 'verified'
   }
   return current === record.procStart ? 'verified' : 'recycled'
 }
 
 /**
- * Reconcilia el estado de un registro contra el estado real del proceso.
- * Lo usa `list` para mostrar el estado correcto sin un round-trip al
- * daemon.
+ * Reconcile a record's status against live process state. Used by
+ * `list` to surface accurate status without a daemon round-trip.
  */
 export function reconcileWorkerRecord(record: WorkerRecord): WorkerRecord {
   if (record.status !== 'running') return record
   const v = verifyAdoption(record)
   if (v === 'verified' || v === 'unverified') return record
-  // Muerto O pid reciclado → marcar exited.
+  // Dead OR pid recycled → mark exited.
   const updated: WorkerRecord = {
     ...record,
     status: 'exited',
@@ -219,7 +210,7 @@ export function reconcileWorkerRecord(record: WorkerRecord): WorkerRecord {
   try {
     writeWorkerRecord(updated)
   } catch {
-    // Best-effort; el daemon puede no tener acceso de escritura si el uid cambió.
+    // Best-effort; daemon may not have write access if uid changed.
   }
   return updated
 }

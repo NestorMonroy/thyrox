@@ -1,30 +1,10 @@
-/**
- * Traduccion del esquema de herramienta Anthropic al de llamada a funcion de
- * OpenAI — porte de `ccnmt: packages/provider/src/openai/convertTools.ts`
- * (134 lineas).
- *
- * El puerto es COMPLETO: la fuente declara el tipo `OpenAIToolSchema`,
- * `anthropicToolsToOpenAI`, `sanitizeJsonSchema` (privado) y
- * `anthropicToolChoiceToOpenAI`, y los cuatro estan aqui. Ninguno queda fuera.
- *
- * DIVERGENCIA DECLARADA — los tipos del lado OpenAI. La fuente los toma del
- * paquete `openai` (`ChatCompletionTool`, `ChatCompletionNamedToolChoice`), que
- * NO resuelve en este arbol: `Bun.resolveSync('openai', ...)` falla desde este
- * paquete, mientras `@anthropic-ai/sdk` si resuelve. Se declara aqui la forma
- * ESTRUCTURAL que el protocolo exige, con el mismo criterio que
- * `agent/messageShapes.ts` ya usa para los bloques del SDK de Anthropic:
- * se declara la forma, no se arrastra el paquete entero por un tipo. Cuando
- * `openai` entre al arbol, estos dos alias se sustituyen por los suyos y el
- * cuerpo no cambia.
- */
 import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  ChatCompletionNamedToolChoice,
+  ChatCompletionTool,
+} from 'openai/resources/chat/completions/completions.mjs'
 
-export type ChatCompletionNamedToolChoice = {
-  type: 'function'
-  function: { name: string }
-}
-
-export type OpenAIToolSchema = {
+type OpenAIToolSchema = ChatCompletionTool & {
   type: 'function'
   function: {
     name: string
@@ -34,28 +14,23 @@ export type OpenAIToolSchema = {
 }
 
 /**
- * Convierte esquemas de herramienta de Anthropic al formato de llamada a
- * funcion de OpenAI.
+ * Convert Anthropic tool schemas to OpenAI function calling format.
  *
- * Anthropic: `{ name, description, input_schema }`
- * OpenAI:    `{ type: "function", function: { name, description, parameters } }`
+ * Anthropic: { name, description, input_schema }
+ * OpenAI:    { type: "function", function: { name, description, parameters } }
  *
- * Los campos propios de Anthropic —`cache_control`, `defer_loading`— se
- * descartan: solo pasan `name`, `description` e `input_schema`. Dejarlos
- * escapar hace que la peticion responda 400 en el proveedor.
- *
- * Las herramientas de servidor (`type: 'server'`, como la busqueda web) NO se
- * traducen: no son llamadas a funcion y se filtran antes del mapeo.
+ * Anthropic-specific fields (cache_control, defer_loading, etc.) are stripped.
  */
-export function anthropicToolsToOpenAI(tools: BetaToolUnion[]): OpenAIToolSchema[] {
+export function anthropicToolsToOpenAI(
+  tools: BetaToolUnion[],
+): OpenAIToolSchema[] {
   return tools
     .filter(tool => {
       const type = (tool as unknown as { type?: string }).type
       return type !== 'server'
     })
     .map(tool => {
-      // El SDK de Anthropic tiene varias formas de herramienta; se lee por
-      // indice y con default para no depender del discriminante.
+      // Handle the various tool shapes from Anthropic SDK
       const anyTool = tool as unknown as Record<string, unknown>
       const name = (anyTool.name as string) || ''
       const description = (anyTool.description as string) || ''
@@ -66,75 +41,45 @@ export function anthropicToolsToOpenAI(tools: BetaToolUnion[]): OpenAIToolSchema
         function: {
           name,
           description,
-          parameters: sanitizeJsonSchema(
-            inputSchema || { type: 'object', properties: {} },
-          ),
+          parameters: sanitizeJsonSchema(inputSchema || { type: 'object', properties: {} }),
         },
       } satisfies OpenAIToolSchema
     })
 }
 
 /**
- * Sanea un JSON Schema, recursivamente, para proveedores compatibles con
- * OpenAI.
+ * Recursively sanitize a JSON Schema for OpenAI-compatible providers.
  *
- * Muchos endpoints compatibles —Ollama, DeepSeek, vLLM— no admiten la palabra
- * clave `const`. Se convierte a `enum` con un arreglo de un solo elemento, que
- * es semanticamente equivalente.
- *
- * La recursion recorre TRES grupos de claves, y cada grupo se trata distinto
- * porque su valor tiene forma distinta:
- *
- * - `objectKeys`: un mapa de nombre a esquema; se recorre cada valor.
- * - `singleKeys`: un unico esquema; se recorre directo. El guard
- *   `!Array.isArray` importa: `items` admite tambien la forma de tupla —un
- *   arreglo de esquemas— y ahi no aplica este camino.
- * - `arrayKeys`: un arreglo de esquemas; se mapea cada elemento.
+ * Many OpenAI-compatible endpoints (Ollama, DeepSeek, vLLM, etc.) do not
+ * support the `const` keyword in JSON Schema. Convert it to `enum` with a
+ * single-element array, which is semantically equivalent.
  */
-function sanitizeJsonSchema(
-  schema: Record<string, unknown>,
-): Record<string, unknown> {
+function sanitizeJsonSchema(schema: Record<string, unknown>): Record<string, unknown> {
   if (!schema || typeof schema !== 'object') return schema
 
-  // Copia superficial: el esquema de entrada no se muta.
   const result = { ...schema }
 
-  // `const` pasa a `enum: [valor]`.
+  // Convert `const` → `enum: [value]`
   if ('const' in result) {
     result.enum = [result.const]
     delete result.const
   }
 
-  const objectKeys = [
-    'properties',
-    'definitions',
-    '$defs',
-    'patternProperties',
-  ] as const
+  // Recursively process nested schemas
+  const objectKeys = ['properties', 'definitions', '$defs', 'patternProperties'] as const
   for (const key of objectKeys) {
     const nested = result[key]
     if (nested && typeof nested === 'object') {
       const sanitized: Record<string, unknown> = {}
       for (const [k, v] of Object.entries(nested as Record<string, unknown>)) {
-        sanitized[k] =
-          v && typeof v === 'object'
-            ? sanitizeJsonSchema(v as Record<string, unknown>)
-            : v
+        sanitized[k] = v && typeof v === 'object' ? sanitizeJsonSchema(v as Record<string, unknown>) : v
       }
       result[key] = sanitized
     }
   }
 
-  const singleKeys = [
-    'items',
-    'additionalProperties',
-    'not',
-    'if',
-    'then',
-    'else',
-    'contains',
-    'propertyNames',
-  ] as const
+  // Recursively process single-schema keys
+  const singleKeys = ['items', 'additionalProperties', 'not', 'if', 'then', 'else', 'contains', 'propertyNames'] as const
   for (const key of singleKeys) {
     const nested = result[key]
     if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
@@ -142,14 +87,13 @@ function sanitizeJsonSchema(
     }
   }
 
+  // Recursively process array-of-schemas keys
   const arrayKeys = ['anyOf', 'oneOf', 'allOf'] as const
   for (const key of arrayKeys) {
     const nested = result[key]
     if (Array.isArray(nested)) {
       result[key] = nested.map(item =>
-        item && typeof item === 'object'
-          ? sanitizeJsonSchema(item as Record<string, unknown>)
-          : item,
+        item && typeof item === 'object' ? sanitizeJsonSchema(item as Record<string, unknown>) : item
       )
     }
   }
@@ -158,13 +102,13 @@ function sanitizeJsonSchema(
 }
 
 /**
- * Traduce el `tool_choice` de Anthropic al de OpenAI.
+ * Map Anthropic tool_choice to OpenAI tool_choice format.
  *
- * - `{ type: "auto" }` da `"auto"`.
- * - `{ type: "any" }`  da `"required"`.
- * - `{ type: "tool", name }` da `{ type: "function", function: { name } }`.
- * - Cualquier otra cosa —undefined, null, una cadena, un type desconocido, un
- *   objeto sin type— da `undefined`, y el proveedor aplica su default.
+ * Anthropic → OpenAI:
+ * - { type: "auto" } → "auto"
+ * - { type: "any" }  → "required"
+ * - { type: "tool", name } → { type: "function", function: { name } }
+ * - undefined → undefined (use provider default)
  */
 export function anthropicToolChoiceToOpenAI(
   toolChoice: unknown,

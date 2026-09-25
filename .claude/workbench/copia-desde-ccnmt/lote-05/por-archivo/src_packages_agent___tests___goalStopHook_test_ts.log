@@ -1,0 +1,127 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/agent/__tests__/goalStopHook.test.ts:
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:144:5)
+(fail) goal Stop-hook lifecycle mutation > addGoalStopHook installs one Stop prompt hook, activeGoal, and set sentinel [0.75ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:164:5)
+(fail) goal Stop-hook lifecycle mutation > addGoalStopHook replaces the previous goal hook instead of stacking goals [0.12ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:179:5)
+(fail) goal Stop-hook lifecycle mutation > clearGoalStopHook removes goal hook, clears activeGoal, and appends clear sentinel [0.08ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:196:5)
+(fail) goal Stop-hook lifecycle mutation > pauseGoalStopHook removes Stop hook but keeps paused activeGoal [0.08ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:216:5)
+(fail) goal Stop-hook lifecycle mutation > resumeGoalStopHook restores Stop hook and unpauses activeGoal [0.09ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at restoreGoalFromTranscript (/home/user/thyrox/src/packages/agent/goalStopHook.ts:789:5)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:254:5)
+(fail) goal Stop-hook lifecycle mutation > restoreGoalFromTranscript re-arms unresolved transcript goal [0.23ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logForDebugging (/home/user/thyrox/src/packages/agent/internal/logging.ts:46:3)
+      at addHookToSession (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:291:3)
+      at addSessionHook (/home/user/thyrox/src/packages/agent/hooks/sessionHooks.ts:155:3)
+      at addGoalStopHook (/home/user/thyrox/src/packages/agent/goalStopHook.ts:358:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:271:5)
+(fail) goal Stop-hook lifecycle mutation > restoreGoalFromTranscript clears stale activeGoal after terminal transcript state [0.12ms]
+265 | 
+266 | export function getAgentHostBindings(): AgentHostBindings {
+267 |   if (!agentHostBindings) {
+268 |     throw new HostBindingsError(
+269 |       'Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.',
+270 |     )
+          ^
+AgentHostBindingsError: Agent host bindings have not been installed. Install host bindings before using @thyrox/agent runtime APIs.
+      at getAgentHostBindings (/home/user/thyrox/src/packages/agent/host.ts:270:5)
+      at logEvent (/home/user/thyrox/src/packages/agent/internal/logging.ts:18:3)
+      at restoreGoalFromTranscript (/home/user/thyrox/src/packages/agent/goalStopHook.ts:804:3)
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/goalStopHook.test.ts:420:5)
+(fail) findGoalToRestore (ant wbK) > restoreGoalFromTranscript restores paused goal without re-arming Stop hook [0.18ms]
+
+ 22 pass
+ 8 fail
+ 42 expect() calls
+Ran 30 tests across 1 file. [122.00ms]
+exit=1

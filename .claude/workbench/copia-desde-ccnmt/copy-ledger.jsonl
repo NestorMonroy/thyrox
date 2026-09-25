@@ -409,3 +409,83 @@
 {"file": "provider/src/openai/indexImpl.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
 {"file": "agent/__tests__/agentSwarmsEnabled.test.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
 {"file": "agent/__tests__/cronJitterConfig.test.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
+{"file": "provider/src/mtls.ts", "outcome": "copied", "sha_after": "ab37bf774d50af0c5ab97ca997ad7c62a60958780cd87a05beb40bd22658ff95"}
+{"file": "local-observability/src/__tests__/logOTelEvent.behavior.test.ts", "outcome": "copied", "sha_after": "6b932b2c3e8e42c5039de8303b255f1f888634066b60d38810cad3cddeafe2fa"}
+{"file": "memory/src/teamMemSyncTypes.ts", "outcome": "copied", "sha_after": "5d2b9fc83164698e5b5c330cc262f7d3a34044690296785d175e4f173d4d362d"}
+{"file": "provider/src/gemini/streamAdapter.ts", "outcome": "copied", "sha_after": "ecf12983512fcc2986ce501e944ce72649bc1f23c21ce30c39af9a237b521985"}
+{"file": "memory/src/memdir.ts", "outcome": "copied", "sha_after": "9f9969b9630d677114d69fe97dd49e27966c5541fe63e1a60565f506eaebe833"}
+{"file": "agent/frontmatterParser.ts", "outcome": "copied", "sha_after": "0dba0e694bff4f536ef83322f189a6f28142c6dc26a35579a59728126420d7a0"}
+{"file": "agent/__tests__/goalStopHook.test.ts", "outcome": "copied", "sha_after": "7d236a0795e4fd1823fa62e4c87d6628a51728f0710bfe23d9108254ca2cd2bc"}
+{"file": "local-observability/src/logging/error-log.ts", "outcome": "copied", "sha_after": "2592620427ab205546aea850cd42594db19c17894ce9ceac9aa3a74628ecf584"}
+{"file": "storage/src/__tests__/parseGitRemote.test.ts", "outcome": "copied", "sha_after": "3bbdb733b34cd8bfee8c482120b9be89adff0a26ad46f38bfe01ff433ad2d77a"}
+{"file": "command-runtime/src/gitignore.ts", "outcome": "rejected-consumer", "sha_after": "ab8d3090f7d2354a8dcfade88d044a0c73ae32bdd2c6e8d81de0bfdb59126149"}
+{"file": "shell/src/providers/powershellProvider.ts", "outcome": "copied", "sha_after": "29adc5c073025d108f018d5ef7b6d54f13ac886b02c1fa3f75c4fafd4d54866c"}
+{"file": "agent/__tests__/idleCollapse.test.ts", "outcome": "copied", "sha_after": "d3a3e599bf2e0d5935f0c689e4ab3d19062788795e241fe75b730143284ce735"}
+{"file": "config/settings/permissionValidation.ts", "outcome": "copied", "sha_after": "8244f3fb13665d44d16d4869021a5f2b61928f2d6ddc4c8bd7e246bcc0925e69"}
+{"file": "app-host/src/startup/skillLoadedEvent.ts", "outcome": "rejected-consumer", "sha_after": "d9022dfb15689afca538db1b38a68f21b71442a4f054bb056de00f2c95e154dc"}
+{"file": "permission/src/getNextPermissionMode.ts", "outcome": "rejected-own", "sha_after": "c88646b723e2efb18dec2887acd7003d2f781aa19600e4b4693bfbd6297a074c"}
+{"file": "tool-registry/src/imageStore.ts", "outcome": "copied", "sha_after": "4d65e3aad28117c18432138852d9d9d77b18a221c7a610ad2b843b0ffff65bdb"}
+{"file": "teleport/src/api.ts", "outcome": "copied", "sha_after": "e1e312710b387cd83a375468922c19c1b8f36d27548fffe517f2feda406b56dc"}
+{"file": "agent/__tests__/tee.test.ts", "outcome": "copied", "sha_after": "757c00d018461929db0a178f75066130bb4edcb6775a317634df1cea6bbf329f"}
+{"file": "swarm/src/backends/detection.ts", "outcome": "rejected-consumer", "sha_after": "4ee5cb0acff1577211ddb0a3dba35c01bb848750b163264c15fdaa0887604887"}
+{"file": "permission/src/permissionRuleParser.ts", "outcome": "copied", "sha_after": "f9bb67b6c363d82ec18f5d863c912afd7ba5c53aa4da4f4ed98c59d92404d166"}
+{"file": "storage/src/agentMetadata.ts", "outcome": "rejected-consumer", "sha_after": "ed0a8082e5b1f18b1c9ba0e8671ecaeacbfbe44ce98336a86d594ae52a799f64"}
+{"file": "permission/src/shellRuleMatching.ts", "outcome": "copied", "sha_after": "3cfdab83fc1faf610d2ddbd6702e01f079c7fd20b3458f094f169ddd732b6bb3"}
+{"file": "bridge/src/jwtUtils.ts", "outcome": "copied", "sha_after": "005627ec0671aa8af5f762e772253d8e14c9acf613b128dab7afe311bca8eb46"}
+{"file": "shell/src/legacy/__tests__/outputLimits.test.ts", "outcome": "copied", "sha_after": "e0cfbf3efddcae6f98e234bef3e23eff8cb8e9b736384701e7d440d4cab5210f"}
+{"file": "shell/src/which.ts", "outcome": "copied", "sha_after": "ad99423a9b01f303c248b719dc05643733a24cea02cbc89e0ec2d3a6705b3a9d"}
+{"file": "storage/src/sessionActivity.ts", "outcome": "rejected-consumer", "sha_after": "416ca85318d21ca3dc2b14e9604c1a4fdbc1c34e1aa99766d33019ef78d3b00c"}
+{"file": "storage/src/json.ts", "outcome": "copied", "sha_after": "30ef182178c2646f7ab919ab90c437cf1c58bd72fb5183a9bfbc8c52a05dde64"}
+{"file": "local-observability/src/slowLoggingTag.ts", "outcome": "copied", "sha_after": "eb7e4ceaca8e806d6d05fab97e5cdf78167be69f5ceebb18f002acdd74001586"}
+{"file": "memory/src/sessionMemoryUtils.ts", "outcome": "copied", "sha_after": "d9dbfc2b9ce134258b0605727be45e1f9b7ed8e9968770453de24e2d95d36784"}
+{"file": "ide/src/hooks/useDiffInIDE.ts", "outcome": "copied", "sha_after": "58c7b186845fe05a87060c87e088d10b9a6b6076e7ee47fedbb3f57c5bc4a49b"}
+{"file": "storage/src/getWorktreePaths.ts", "outcome": "rejected-consumer", "sha_after": "d2c2476c08268c10853118c136d444be79979e59bbb6443f1e510a9a138f7440"}
+{"file": "agent/__tests__/contentTextHelpers.test.ts", "outcome": "copied", "sha_after": "12c7085e28879114cbb57b4a5c7d817ca9b632875d056f8f6095d2af51d08a2d"}
+{"file": "local-observability/src/debug.ts", "outcome": "copied", "sha_after": "e43d1362abc9cfc12ac7878bb3dec5ae52414760248d9bbbe4cc123318d4189f"}
+{"file": "provider/src/openai/convertTools.ts", "outcome": "copied", "sha_after": "d588f50209b64e6a6d12f84d51224d94bd9daddce1b8e3806a7e93e917521587"}
+{"file": "cli/src/bg/ptyRing.ts", "outcome": "copied", "sha_after": "365d93085e4f0a681d3adbc4a8b1e9a0e8958ae60308105f3e87a1c022fb4a14"}
+{"file": "agent/__tests__/eventMetadata.test.ts", "outcome": "copied", "sha_after": "077543049b6e873d22654adbae6ee2ba5e5893db709282f519fae86e0c968129"}
+{"file": "tool-registry/src/toolRuntimeInstaller.ts", "outcome": "rejected-consumer", "sha_after": "191f5933b58db577f6555283d660cf4754f5d0ac0279da1c9e3b16f4b36a5a67"}
+{"file": "agent/runtime/mailbox.ts", "outcome": "copied", "sha_after": "6b5bced8af6fc829c6e9ca2e81735db078a3f9d1759f9b26a3113138b336dec4"}
+{"file": "swarm/src/worktree/__tests__/worktreeBranchAndSession.test.ts", "outcome": "copied", "sha_after": "985ea36a94961fc688330e1072acb7264efe83b672b810e03cf2f27c18fa0450"}
+{"file": "agent/__tests__/internalHeadlessRuntime.behavior.test.ts", "outcome": "copied", "sha_after": "ebef9bfc30151a14e065b1013caa6bda949210936bdee69ac07e0d079a01e2f4"}
+{"file": "tool-registry/src/utils/__tests__/objectGroupBy.test.ts", "outcome": "copied", "sha_after": "a4b0ac30e0ffd96e7148caf456d09d2c837ee35aeab2821650dd9eb1f06e146e"}
+{"file": "bridge/src/createSession.ts", "outcome": "copied", "sha_after": "45573d48adab31c1ac866e373bc7e56a366f9cb3a3cc971ad476854a71d4cf2f"}
+{"file": "tool-registry/src/utils/__tests__/semanticBoolean.test.ts", "outcome": "copied", "sha_after": "736e8953ec10b2698b460fe39de4f76bd48a2c96e0864229dbdb292d2530d191"}
+{"file": "shell/src/execFileNoThrowPortable.ts", "outcome": "rejected-own", "sha_after": "a551f25d991c7507e35fa75733a4d604c09bfcfa4fcf6d5da40f4cfd10505cac"}
+{"file": "agent/compaction/compactUtils.ts", "outcome": "rejected-own", "sha_after": "31a8a72c983a6ba750cec065cf462e524fa2ab2e268fa0796293bfc72b116c76"}
+{"file": "daemon/src/rvClient.ts", "outcome": "copied", "sha_after": "e80843b3773ff8dda66ac4f4b270810ab074c7483b1bf88a234868cbfe3a75a1"}
+{"file": "swarm/src/core/__tests__/teammateColors.test.ts", "outcome": "rejected-own", "sha_after": "9a6509cb8d457ae365e56075fc5b805b4c0513605dc307347be0b807e47fad43"}
+{"file": "bridge/src/envLessBridgeConfig.ts", "outcome": "copied", "sha_after": "455299e02251da5df7d7da66459bda9bc9f7cc30151a236404216c3fcbd60370"}
+{"file": "cli/src/entry/detect-mode.ts", "outcome": "rejected-consumer", "sha_after": "8136a9a4d6b93588e2aaaba2b80f707de454530a4d37b40c459d61c796d63cd0"}
+{"file": "agent/__tests__/messageContractStrings.behavior.test.ts", "outcome": "copied", "sha_after": "e495dc0260bdd8c74bf6458f7189e8773c1fb46b99b256da16a13b204eb30656"}
+{"file": "agent/messages/systemInit.ts", "outcome": "copied", "sha_after": "c785950a8515cf83b26f96eb77dbc0f5f33ac64852904341c4da9dec8c65f0be"}
+{"file": "bridge/src/__tests__/trustedDevice.test.ts", "outcome": "copied", "sha_after": "3e09e575f519dbf0171d29ac4eda65d3b6606a25c0f9fc97cece2a3e1b5e801a"}
+{"file": "daemon/src/roster.ts", "outcome": "copied", "sha_after": "e5cb46fe586589ec32014e5b9a187515dd869c64fbab6e58df3e175c7a60e232"}
+{"file": "agent/__tests__/agentErrors.test.ts", "outcome": "copied", "sha_after": "e53345f9119579bde4b13847c06a0768f28e0e93f6153c731b33a3ce61d3a39d"}
+{"file": "tool-registry/src/toolErrors.ts", "outcome": "copied", "sha_after": "116180602951b46230530ab9ee05593b20df46597ebbea7a72f66341fecf1409"}
+{"file": "tool-registry/src/undercover.ts", "outcome": "copied", "sha_after": "d86579f8e468c7d226d0281f6bb16aaa1d01f634d46acf1baa324dd3866b3728"}
+{"file": "permission/src/planModeV2.ts", "outcome": "copied", "sha_after": "aba81c38d8a59bbaa3f5278c56ffd58b5f958851d16a202e093157fa1594746c"}
+{"file": "ide/src/lsp/LSPServerManager.ts", "outcome": "copied", "sha_after": "198ea1115a73e1f0883608b7607df5d80f8f40ad607587eed1306faf41168d93"}
+{"file": "daemon/src/bgWorkerRegistry.ts", "outcome": "copied", "sha_after": "01e262a14ba69b46f362f906de18b52f22141ee53660b56bf76c11131cb3fada"}
+{"file": "config/plugin/builtin.ts", "outcome": "rejected-consumer", "sha_after": "f0875b8e68f18bfa9fdec6cc0c605198d3cac94ef32fdb805da57b564c41af37"}
+{"file": "config/contracts.ts", "outcome": "copied", "sha_after": "023a76d6a80f7e6c1dc5309d7d47214b93361f22466002532f374a60861c56b2"}
+{"file": "provider/src/openai/streamAdapter.ts", "outcome": "copied", "sha_after": "50e7646b350376201c4410668cd942594173f4df5f5a23efea5a73be12a8699b"}
+{"file": "daemon/src/main.ts", "outcome": "copied", "sha_after": "b30cce8dc9eb62189f5bee8e4a07fda287e65bd2d39259b38e1e4a94cbb39b43"}
+{"file": "command-runtime/src/promptShellExecution.ts", "outcome": "rejected-consumer", "sha_after": "602ace23cf3957d9660d4e6e56305227f4b12d9858600afe1297d5757a5c0440"}
+{"file": "local-observability/src/__tests__/structuredEvents.behavior.test.ts", "outcome": "copied", "sha_after": "04590a3858d30fc2a84ddfb06b109e6e72e5a455a2c1462e1249eefea71a20aa"}
+{"file": "storage/src/sessionState.ts", "outcome": "rejected-consumer", "sha_after": "e00580f456ddaa1d86abfe2024c84f8ca349f06644c3028275a48e848a44cf33"}
+{"file": "tool-registry/src/readEditContext.ts", "outcome": "copied", "sha_after": "2f6e11c8ee890d31600d7550b526da693fca80421f3a43f968fec2c66662bdc9"}
+{"file": "storage/src/__tests__/normalizeGitRemoteUrl.test.ts", "outcome": "copied", "sha_after": "27020b50480d6278597fe08642ed9c124fa104357a71b972fe774d604e9c1c38"}
+{"file": "server/src/upstreamproxy/upstreamproxy.ts", "outcome": "copied", "sha_after": "1a726ed9334b0f232c1a5ca8cc332422af6b8afe0651f309278f8bfa2ce57334"}
+{"file": "agent/compaction/sessionMemoryCalc.ts", "outcome": "copied", "sha_after": "c77009247b19f9dab931f377f8bd5f598df5049df6cc3c9d1d39389bf9102b98"}
+{"file": "bridge/src/bridgePointer.ts", "outcome": "rejected-own", "sha_after": "ba88f09632f32bb0c9e449b71884058c3d4d48b73d4bc12cc9460c5bead304a9"}
+{"file": "permission/src/permissionsLoader.ts", "outcome": "copied", "sha_after": "5513f436b7d29eefa13fbe8d86b57810d7076b30174d07da7faa326b4d95f4fd"}
+{"file": "config/env/paths.ts", "outcome": "copied", "sha_after": "c09b8a6c4251a325dbf2d6c13cacad617041f60fb1b0fac51048bbffb503df8f"}
+{"file": "swarm/src/__tests__/writeToMailboxIntegration.test.ts", "outcome": "copied", "sha_after": "99165d76798f694a87ddf6ae7e3d6a946ee9dfbbd590a553a08fed2ca05b3ed5"}
+{"file": "swarm/src/runtime/spawnUtils.ts", "outcome": "rejected-consumer", "sha_after": "fa6b2a0a9861be83799583e10cf036c3e23477c42cc5743fae8e5fe356844d80"}
+{"file": "agent/__tests__/goalStopHook.test.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
+{"file": "agent/__tests__/idleCollapse.test.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
+{"file": "bridge/src/__tests__/trustedDevice.test.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
+{"file": "permission/src/planModeV2.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}
+{"file": "tool-registry/src/undercover.ts", "outcome": "rejected-behavior", "note": "la copia pone en rojo una prueba que pasa en HEAD"}

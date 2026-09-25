@@ -1,53 +1,28 @@
-/**
- * Puerto de `ccnmt: packages/config/env/paths.ts` (348 líneas fuente).
- * Reimplementación fiel VERBATIM, salvo la resolución de las cinco
- * dependencias cruzadas, declarada abajo.
- *
- * `lodash-es` resuelve en este árbol (dependencia real, verificado) — se
- * importa estático. Las cinco dependencias cruzadas restantes se piden vía
- * `require()` diferido (`internal/pendingCrossPackageDeps.ts`), porque este
- * paquete no declara (ni debe declarar) `@thyrox/provider`, `@thyrox/shell`
- * ni `@thyrox/storage` como dependencias, y hoy no hay symlink de
- * workspace que las resuelva de forma estática:
- *
- *   - `isRunningWithBun` — `./bundledMode.ts`, HERMANO del mismo paquete
- *     (portado en este mismo pase): se importa relativo, sin envoltorio.
- *   - `fileSuffixForOauthConfig` — `@thyrox/provider/oauthConstants.js`
- *     (existe, verificado) → `requireProviderOauthConstants` (nuevo).
- *   - `findExecutable` — `@thyrox/shell/findExecutable.js` (existe) →
- *     `requireShellFindExecutable` (nuevo).
- *   - `which` — `@thyrox/shell/which.js` (existe) → `requireShellWhich`
- *     (nuevo).
- *   - `getFsImplementation` — `@thyrox/storage/fsOperations.js` (existe) →
- *     `requireStorageFsOperations` (ya existente).
- */
 import memoize from 'lodash-es/memoize.js'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { homedir } from 'os'
+import { join } from 'path'
 
-import { isRunningWithBun } from '../bundledMode.ts'
-import {
-  requireProviderOauthConstants,
-  requireShellFindExecutable,
-  requireShellWhich,
-  requireStorageFsOperations,
-} from '../internal/pendingCrossPackageDeps.ts'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './utils.ts'
+import { isRunningWithBun } from '@thyrox/config/bundledMode'
+import { fileSuffixForOauthConfig } from '@thyrox/provider/oauthConstants'
+import { findExecutable } from '@thyrox/shell/findExecutable.js'
+import { which } from '@thyrox/shell/which.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { getClaudeConfigHomeDir, isEnvTruthy } from './utils.js'
 
 type Platform = 'win32' | 'darwin' | 'linux'
 
-// Rutas de config y de datos.
+// Config and data paths
 export const getGlobalClaudeFile = memoize((): string => {
-  // Fallback legado por compatibilidad hacia atrás.
+  // Legacy fallback for backwards compatibility
   if (
-    requireStorageFsOperations().getFsImplementation().existsSync(
+    getFsImplementation().existsSync(
       join(getClaudeConfigHomeDir(), '.config.json'),
     )
   ) {
     return join(getClaudeConfigHomeDir(), '.config.json')
   }
 
-  const filename = `.claude${requireProviderOauthConstants().fileSuffixForOauthConfig()}.json`
+  const filename = `.claude${fileSuffixForOauthConfig()}.json`
   return join(process.env.CLAUDE_CONFIG_DIR || homedir(), filename)
 })
 
@@ -65,8 +40,8 @@ const hasInternetAccess = memoize(async (): Promise<boolean> => {
 
 async function isCommandAvailable(command: string): Promise<boolean> {
   try {
-    // `which` no ejecuta el archivo.
-    return !!(await requireShellWhich().which(command))
+    // which does not execute the file.
+    return !!(await which(command))
   } catch {
     return false
   }
@@ -93,47 +68,46 @@ const detectRuntimes = memoize(async (): Promise<string[]> => {
 })
 
 /**
- * Comprueba si se está corriendo en un entorno WSL.
- * @returns verdadero si se ejecuta en WSL, falso si no.
+ * Checks if we're running in a WSL environment
+ * @returns true if running in WSL, false otherwise
  */
 const isWslEnvironment = memoize((): boolean => {
   try {
-    // Comprueba el archivo WSLInterop, un indicador confiable de WSL.
-    return requireStorageFsOperations().getFsImplementation().existsSync(
+    // Check for WSLInterop file which is a reliable indicator of WSL
+    return getFsImplementation().existsSync(
       '/proc/sys/fs/binfmt_misc/WSLInterop',
     )
   } catch (_error) {
-    // Si hay un error al comprobar, asume que no es WSL.
+    // If there's an error checking, assume not WSL
     return false
   }
 })
 
 /**
- * Comprueba si el ejecutable npm está ubicado en el filesystem de Windows
- * dentro de WSL.
- * @returns verdadero si npm viene de Windows (empieza con /mnt/c/), falso si no.
+ * Checks if the npm executable is located in the Windows filesystem within WSL
+ * @returns true if npm is from Windows (starts with /mnt/c/), false otherwise
  */
 const isNpmFromWindowsPath = memoize((): boolean => {
   try {
-    // Sólo relevante en entorno WSL.
+    // Only relevant in WSL environment
     if (!isWslEnvironment()) {
       return false
     }
 
-    // Encuentra la ruta real del ejecutable npm.
-    const { cmd } = requireShellFindExecutable().findExecutable('npm', [])
+    // Find the actual npm executable path
+    const { cmd } = findExecutable('npm', [])
 
-    // Si npm está en ruta de Windows, empezará con /mnt/c/.
+    // If npm is in Windows path, it will start with /mnt/c/
     return cmd.startsWith('/mnt/c/')
   } catch (_error) {
-    // Si hay un error, asume que no viene de Windows.
+    // If there's an error, assume it's not from Windows
     return false
   }
 })
 
 /**
- * Comprueba si se está corriendo vía Conductor.
- * @returns verdadero si se ejecuta vía Conductor, falso si no.
+ * Checks if we're running via Conductor
+ * @returns true if running via Conductor, false otherwise
  */
 function isConductor(): boolean {
   return process.env.__CFBundleIdentifier === 'com.conductor.app'
@@ -158,10 +132,10 @@ export const JETBRAINS_IDES = [
   'androidstudio',
 ]
 
-// Detecta el tipo de terminal con fallbacks para todas las plataformas.
+// Detect terminal type with fallbacks for all platforms
 function detectTerminal(): string | null {
   if (process.env.CURSOR_TRACE_ID) return 'cursor'
-  // Cursor y Windsurf bajo WSL tienen TERM_PROGRAM=vscode.
+  // Cursor and Windsurf under WSL have TERM_PROGRAM=vscode
   if (process.env.VSCODE_GIT_ASKPASS_MAIN?.includes('cursor')) {
     return 'cursor'
   }
@@ -175,7 +149,7 @@ function detectTerminal(): string | null {
   if (bundleId?.includes('vscodium')) return 'codium'
   if (bundleId?.includes('windsurf')) return 'windsurf'
   if (bundleId?.includes('com.google.android.studio')) return 'androidstudio'
-  // Comprueba IDEs JetBrains en el bundle ID.
+  // Check for JetBrains IDEs in bundle ID
   if (bundleId) {
     for (const ide of JETBRAINS_IDES) {
       if (bundleId.includes(ide)) return ide
@@ -183,22 +157,21 @@ function detectTerminal(): string | null {
   }
 
   if (process.env.VisualStudioVersion) {
-    // Esto es Visual Studio de escritorio, no VS Code.
+    // This is desktop Visual Studio, not VS Code
     return 'visualstudio'
   }
 
-  // Comprueba terminal JetBrains en Linux/Windows.
+  // Check for JetBrains terminal on Linux/Windows
   if (process.env.TERMINAL_EMULATOR === 'JetBrains-JediTerm') {
-    // Para macOS, la detección de bundle ID de arriba ya cubre IDEs JetBrains.
+    // For macOS, bundle ID detection above already handles JetBrains IDEs
     if (process.platform === 'darwin') return 'pycharm'
 
-    // Para detección fina en Linux/Windows usar
-    // envDynamic.getTerminalWithJetBrainsDetection().
+    // For finegrained detection on Linux/Windows use envDynamic.getTerminalWithJetBrainsDetection()
     return 'pycharm'
   }
 
-  // Comprueba terminales específicos por TERM antes que TERM_PROGRAM.
-  // Esto maneja casos donde TERM y TERM_PROGRAM podrían ser inconsistentes.
+  // Check for specific terminals by TERM before TERM_PROGRAM
+  // This handles cases where TERM and TERM_PROGRAM might be inconsistent
   if (process.env.TERM === 'xterm-ghostty') {
     return 'ghostty'
   }
@@ -213,7 +186,7 @@ function detectTerminal(): string | null {
   if (process.env.TMUX) return 'tmux'
   if (process.env.STY) return 'screen'
 
-  // Comprueba variables de entorno específicas de terminal (comunes en Linux).
+  // Check for terminal-specific environment variables (common on Linux)
   if (process.env.KONSOLE_VERSION) return 'konsole'
   if (process.env.GNOME_TERMINAL_SERVICE) return 'gnome-terminal'
   if (process.env.XTERM_VERSION) return 'xterm'
@@ -225,7 +198,7 @@ function detectTerminal(): string | null {
   if (process.env.ALACRITTY_LOG) return 'alacritty'
   if (process.env.TILIX_ID) return 'tilix'
 
-  // Detección específica de Windows.
+  // Windows-specific detection
   if (process.env.WT_SESSION) return 'windows-terminal'
   if (process.env.SESSIONNAME && process.env.TERM === 'cygwin') return 'cygwin'
   if (process.env.MSYSTEM) return process.env.MSYSTEM.toLowerCase() // MINGW64, MSYS2, etc.
@@ -237,16 +210,16 @@ function detectTerminal(): string | null {
     return 'conemu'
   }
 
-  // Detección de WSL.
+  // WSL detection
   if (process.env.WSL_DISTRO_NAME) return `wsl-${process.env.WSL_DISTRO_NAME}`
 
-  // Detección de sesión SSH.
+  // SSH session detection
   if (isSSHSession()) {
     return 'ssh-session'
   }
 
-  // Cae a TERM, que es más universalmente disponible.
-  // Caso especial para identificadores comunes de terminal en TERM.
+  // Fall back to TERM which is more universally available
+  // Special case for common terminal identifiers in TERM
   if (process.env.TERM) {
     const term = process.env.TERM
     if (term.includes('alacritty')) return 'alacritty'
@@ -255,25 +228,24 @@ function detectTerminal(): string | null {
     return process.env.TERM
   }
 
-  // Detecta entorno no interactivo.
+  // Detect non-interactive environment
   if (!process.stdout.isTTY) return 'non-interactive'
 
   return null
 }
 
 /**
- * Detecta el entorno/plataforma de despliegue según las variables de
- * entorno.
- * @returns el nombre de la plataforma de despliegue, o 'unknown' si no se detecta.
+ * Detects the deployment environment/platform based on environment variables
+ * @returns The deployment platform name, or 'unknown' if not detected
  */
 export const detectDeploymentEnvironment = memoize((): string => {
-  // Entornos de desarrollo cloud.
+  // Cloud development environments
   if (isEnvTruthy(process.env.CODESPACES)) return 'codespaces'
   if (process.env.GITPOD_WORKSPACE_ID) return 'gitpod'
   if (process.env.REPL_ID || process.env.REPL_SLUG) return 'replit'
   if (process.env.PROJECT_DOMAIN) return 'glitch'
 
-  // Plataformas cloud.
+  // Cloud platforms
   if (isEnvTruthy(process.env.VERCEL)) return 'vercel'
   if (
     process.env.RAILWAY_ENVIRONMENT_NAME ||
@@ -290,15 +262,15 @@ export const detectDeploymentEnvironment = memoize((): string => {
   if (process.env.AWS_LAMBDA_FUNCTION_NAME) return 'aws-lambda'
   if (process.env.AWS_EXECUTION_ENV === 'AWS_ECS_FARGATE') return 'aws-fargate'
   if (process.env.AWS_EXECUTION_ENV === 'AWS_ECS_EC2') return 'aws-ecs'
-  // Comprueba EC2 vía el UUID de hypervisor.
+  // Check for EC2 via hypervisor UUID
   try {
-    const uuid = requireStorageFsOperations().getFsImplementation()
+    const uuid = getFsImplementation()
       .readFileSync('/sys/hypervisor/uuid', { encoding: 'utf8' })
       .trim()
       .toLowerCase()
     if (uuid.startsWith('ec2')) return 'aws-ec2'
   } catch {
-    // Ignora errores leyendo el UUID de hypervisor (ENOENT en no-EC2, etc.).
+    // Ignore errors reading hypervisor UUID (ENOENT on non-EC2, etc.)
   }
   if (process.env.K_SERVICE) return 'gcp-cloud-run'
   if (process.env.GOOGLE_CLOUD_PROJECT) return 'gcp'
@@ -310,22 +282,22 @@ export const detectDeploymentEnvironment = memoize((): string => {
   }
   if (process.env.SPACE_CREATOR_USER_ID) return 'huggingface-spaces'
 
-  // Plataformas CI/CD.
+  // CI/CD platforms
   if (isEnvTruthy(process.env.GITHUB_ACTIONS)) return 'github-actions'
   if (isEnvTruthy(process.env.GITLAB_CI)) return 'gitlab-ci'
   if (process.env.CIRCLECI) return 'circleci'
   if (process.env.BUILDKITE) return 'buildkite'
   if (isEnvTruthy(process.env.CI)) return 'ci'
 
-  // Orquestación de contenedores.
+  // Container orchestration
   if (process.env.KUBERNETES_SERVICE_HOST) return 'kubernetes'
   try {
-    if (requireStorageFsOperations().getFsImplementation().existsSync('/.dockerenv')) return 'docker'
+    if (getFsImplementation().existsSync('/.dockerenv')) return 'docker'
   } catch {
-    // Ignora errores comprobando Docker.
+    // Ignore errors checking for Docker
   }
 
-  // Fallback específico de plataforma para entornos no detectados.
+  // Platform-specific fallback for undetected environments
   if (env.platform === 'darwin') return 'unknown-darwin'
   if (env.platform === 'linux') return 'unknown-linux'
   if (env.platform === 'win32') return 'unknown-win32'
@@ -333,7 +305,7 @@ export const detectDeploymentEnvironment = memoize((): string => {
   return 'unknown'
 })
 
-// todas estas deberían ser inmutables.
+// all of these should be immutable
 function isSSHSession(): boolean {
   return !!(
     process.env.SSH_CONNECTION ||
@@ -362,11 +334,10 @@ export const env = {
 }
 
 /**
- * Devuelve la plataforma del host para reporte de analytics.
- * Si `CLAUDE_CODE_HOST_PLATFORM` está fijada a un valor de plataforma
- * válido, ese override tiene precedencia sobre la plataforma detectada.
- * Útil en entornos de contenedor/remoto donde `process.platform` reporta
- * el SO del contenedor pero la plataforma real del host difiere.
+ * Returns the host platform for analytics reporting.
+ * If CLAUDE_CODE_HOST_PLATFORM is set to a valid platform value, that overrides
+ * the detected platform. This is useful for container/remote environments where
+ * process.platform reports the container OS but the actual host platform differs.
  */
 export function getHostPlatformForAnalytics(): Platform {
   const override = process.env.CLAUDE_CODE_HOST_PLATFORM

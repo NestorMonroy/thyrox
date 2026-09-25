@@ -1,33 +1,15 @@
 /**
- * Test de integración de writeToMailbox + el pipeline de dedup por
- * (type, requestId).
+ * Integration test for writeToMailbox + the (type, requestId) dedup
+ * pipeline. Complements writeToMailboxDedup.test.ts (which exercises
+ * the helper extractDedupKey only) by going through the full path:
+ * lockfile, file IO, dedup decision, file write.
  *
- * Procedencia: `ccnmt: packages/swarm/src/__tests__/writeToMailboxIntegration.test.ts`
- * (293 líneas). Ese árbol declara `"license": "UNLICENSED"`, así que el
- * cuerpo se **reimplementa** y no se copia.
- *
- * Complementa a `writeToMailboxDedup.test.ts` (que sólo ejercita el
- * helper `extractDedupKey`) recorriendo el camino completo: lockfile,
- * E/S de archivo, decisión de dedup, escritura del archivo.
- *
- * El runtime de swarm usa un chequeo estricto en `installSwarmAppRuntime()`
- * — cada binding tiene que estar presente o la llamada lanza al primer
- * uso. El mapa de bindings se declara inline en este archivo (mismo
- * criterio que el resto de la suite de swarm); sólo las claves que esta
- * integración realmente toca reciben cuerpo funcional, el resto lanza si
- * se alcanza, para que un camino de código no intencional aflore de
- * inmediato en vez de engañar al test.
- *
- * DIVERGENCIA DECLARADA: `proper-lockfile` no era dependencia directa de
- * `@thyrox/swarm` (sólo la usan, hoy, `@thyrox/config`,
- * `@thyrox/local-observability` y `@thyrox/storage`) — en `ccnmt` resuelve
- * por hoisting del root del monorepo, que este árbol no tiene (cada
- * paquete instala aislado). Se añadió como `devDependency` (misma versión
- * que los tres hermanos: `^4.1.2` / `@types` `^4.1.4`) porque este test es
- * el único consumidor de swarm que construye el binding `lock`/`unlock`/
- * `check` con la librería real — el runtime de producción de swarm nunca
- * importa `proper-lockfile` directamente, sólo recibe esos tres nombres
- * como binding de host.
+ * The swarm runtime uses a strict installSwarmAppRuntime() check —
+ * every binding must be present or the call throws on first use. We
+ * inline the binding map per CLAUDE.md ("mock 模式必須內聯在測試
+ * 文件中"); only the keys this integration actually touches are
+ * given functional bodies, the rest throw if reached so unintended
+ * code paths surface immediately instead of fooling the test.
  */
 import {
   afterAll,
@@ -38,22 +20,62 @@ import {
   expect,
   test,
 } from 'bun:test'
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { mkdtemp, rm } from 'fs/promises'
+import { tmpdir } from 'os'
+import { join } from 'path'
 import * as lockfileLib from 'proper-lockfile'
 
 import {
   _test_resetSwarmAppRuntime,
   installSwarmAppRuntime,
-  SWARM_FUNCTION_BINDINGS,
-  SWARM_VALUE_BINDINGS,
 } from '../adapters/appRuntime.js'
 import {
   createShutdownRequestMessage,
   readMailbox,
   writeToMailbox,
 } from '../mailbox/index.js'
+
+const REQUIRED_BINDING_KEYS = [
+  'TEAMMATE_MESSAGE_TAG', 'ERROR_MESSAGE_USER_ABORT', 'BASH_TOOL_NAME',
+  'SEND_MESSAGE_TOOL_NAME', 'TASK_CREATE_TOOL_NAME', 'TASK_GET_TOOL_NAME',
+  'TASK_LIST_TOOL_NAME', 'TASK_UPDATE_TOOL_NAME', 'TEAM_CREATE_TOOL_NAME',
+  'TEAM_DELETE_TOOL_NAME', 'TURN_COMPLETION_VERBS', 'SUBAGENT_REJECT_MESSAGE',
+  'SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX', 'STOPPED_DISPLAY_MS',
+  'AGENT_COLORS', 'CLAUDE_OPUS_4_7_CONFIG', 'env', 'getSystemPrompt',
+  'processMailboxPermissionResponse', 'registerPermissionCallback',
+  'unregisterPermissionCallback', 'logEvent', 'getAutoCompactThreshold',
+  'buildPostCompactMessages', 'compactConversation', 'resetMicrocompactState',
+  'createTaskStateBase', 'generateTaskId', 'isTerminalTaskStatus',
+  'createActivityDescriptionResolver', 'createProgressTracker',
+  'getProgressUpdate', 'updateProgressFromMessage', 'runAgent',
+  'awaitClassifierAutoApproval', 'getSpinnerVerbs',
+  'createAssistantAPIErrorMessage', 'createUserMessage', 'evictTaskOutput',
+  'evictTerminalTask', 'registerTask', 'updateTaskState',
+  'tokenCountWithEstimation', 'createAbortController', 'runWithAgentContext',
+  'count', 'logForDebugging', 'logError', 'cloneFileStateCache',
+  'applyPermissionUpdates', 'persistPermissionUpdates', 'applyPermissionUpdate',
+  'hasPermissionsToUseTool', 'emitTaskTerminatedSdk', 'sleep', 'jsonParse',
+  'jsonStringify', 'asSystemPrompt', 'claimTask', 'listTasks', 'updateTask',
+  'sanitizePathComponent', 'getTasksDir', 'notifyTasksUpdated',
+  'createTeammateContext', 'runWithTeammateContext', 'getAgentId',
+  'getAgentName', 'getDynamicTeamContext', 'getTeamName', 'getTeammateColor',
+  'isTeammate', 'registerPerfettoAgent', 'unregisterPerfettoAgent',
+  'isPerfettoTracingEnabled', 'registerAgent', 'unregisterAgent',
+  'createContentReplacementState', 'formatAgentId', 'generateRequestId',
+  'parseAgentId', 'registerCleanup', 'getSessionId',
+  'getIsNonInteractiveSession', 'getChromeFlagOverride', 'getFlagSettingsPath',
+  'getInlinePlugins', 'getMainLoopModelOverride',
+  'getSessionBypassPermissionsMode', 'getSessionCreatedTeams', 'quote',
+  'isInBundledMode', 'getPlatform', 'getGlobalConfig', 'saveGlobalConfig',
+  'execFileNoThrow', 'execFileNoThrowWithCwd', 'getTeamsDir', 'errorMessage',
+  'getErrnoCode', 'lock', 'lockSync', 'unlock', 'check', 'gitExe',
+  'parseGitConfigValue', 'getCommonDir', 'readWorktreeHeadSha', 'resolveGitDir',
+  'resolveRef', 'findCanonicalGitRoot', 'findGitRoot', 'getBranch',
+  'getDefaultBranch', 'executeWorktreeCreateHook', 'executeWorktreeRemoveHook',
+  'hasWorktreeCreateHook', 'addFunctionHook', 'containsPathTraversal',
+  'getInitialSettings', 'getRelativeSettingsFilePathForSource', 'getCwd',
+  'saveCurrentProjectConfig', 'getAPIProvider',
+] as const
 
 const TEAM = 'mailbox-integration-tests'
 const collectedLogs: string[] = []
@@ -64,19 +86,16 @@ beforeAll(async () => {
   teamsDir = await mkdtemp(join(tmpdir(), 'ccb-mailbox-int-'))
 
   const bindings: Record<string, unknown> = {}
-  for (const key of SWARM_FUNCTION_BINDINGS) {
+  for (const key of REQUIRED_BINDING_KEYS) {
     bindings[key] = (..._args: unknown[]) => {
       throw new Error(
-        `llamada inesperada al binding de runtime de swarm "${key}" en el test de integración de buzón`,
+        `unexpected call to swarm runtime binding "${key}" in mailbox integration test`,
       )
     }
   }
-  for (const key of SWARM_VALUE_BINDINGS) {
-    bindings[key] = ''
-  }
 
-  // Sólo los bindings que writeToMailbox/readMailbox/markMessageAsReadByIndex
-  // realmente tocan reciben cuerpo funcional. El resto lanza.
+  // Only the bindings writeToMailbox / readMailbox / markMessageAsReadByIndex
+  // actually touch get functional bodies. Everything else throws.
   Object.assign(bindings, {
     TEAMMATE_MESSAGE_TAG: 'teammate-message',
     ERROR_MESSAGE_USER_ABORT: '',
@@ -108,8 +127,7 @@ beforeAll(async () => {
     getTeamName: () => TEAM,
     getAgentName: () => 'team-lead',
     getTeammateColor: () => 'blue',
-    // Shim de proper-lockfile — las APIs de escritura/lectura usan estos
-    // tres nombres para serializar.
+    // proper-lockfile shim — write/read APIs use these for serialization
     lock: lockfileLib.lock,
     unlock: lockfileLib.unlock,
     check: lockfileLib.check,
@@ -130,14 +148,14 @@ beforeEach(() => {
 })
 
 afterEach(async () => {
-  // Limpia los buzones entre tests para que el estado de dedup no se filtre.
+  // wipe inboxes between tests so dedup state doesn't leak
   await rm(join(teamsDir, TEAM), { recursive: true, force: true }).catch(
     () => {},
   )
 })
 
-describe('writeToMailbox — integración completa con dedup', () => {
-  test('un shutdown_request repetido con el mismo requestId se descarta en disco', async () => {
+describe('writeToMailbox — full integration with dedup', () => {
+  test('repeated shutdown_request with same requestId is dropped on disk', async () => {
     const msg = createShutdownRequestMessage({
       requestId: 'req-stuck',
       from: 'team-lead',
@@ -149,11 +167,10 @@ describe('writeToMailbox — integración completa con dedup', () => {
       timestamp: '2026-04-30T00:00:00Z',
     }
 
-    // Refleja el modo de fallo real: el líder reintenta el mismo
-    // shutdown 4 veces porque el botón de la UI se machacó o un
-    // handler de nivel superior reenvió sobre el mismo requestId.
-    // Antes del fix esto apilaba cuatro entradas en el buzón del
-    // agente fixer.
+    // Mirror the real-world failure mode: leader retries the same
+    // shutdown 4 times because the UI button got mashed or a
+    // higher-level handler resent on the same requestId. Pre-fix this
+    // stacked four entries in fixer-agent's inbox.
     await writeToMailbox('alice', env, TEAM)
     await writeToMailbox('alice', env, TEAM)
     await writeToMailbox('alice', env, TEAM)
@@ -161,12 +178,11 @@ describe('writeToMailbox — integración completa con dedup', () => {
 
     const inbox = await readMailbox('alice', TEAM)
     expect(inbox.length).toBe(1)
-    // Chequeo de cordura: el que se conservó es el original (no una
-    // variante corrupta).
+    // Sanity: the one we kept is the original (not a corrupted variant).
     expect(JSON.parse(inbox[0]!.text).requestId).toBe('req-stuck')
   })
 
-  test('el dedup queda registrado para visibilidad', async () => {
+  test('dedup logged for visibility', async () => {
     const msg = createShutdownRequestMessage({
       requestId: 'logged-1',
       from: 'team-lead',
@@ -182,7 +198,7 @@ describe('writeToMailbox — integración completa con dedup', () => {
     expect(dedupedLogs.length).toBeGreaterThan(0)
   })
 
-  test('requestIds distintos aterrizan todos', async () => {
+  test('different requestId values all land', async () => {
     for (let i = 0; i < 4; i++) {
       const msg = createShutdownRequestMessage({
         requestId: `req-${i}`,
@@ -202,7 +218,7 @@ describe('writeToMailbox — integración completa con dedup', () => {
     expect(inbox.length).toBe(4)
   })
 
-  test('destinatarios distintos deduplican de forma independiente', async () => {
+  test('different recipients dedup independently', async () => {
     const msg = createShutdownRequestMessage({
       requestId: 'broadcast-1',
       from: 'team-lead',
@@ -212,18 +228,17 @@ describe('writeToMailbox — integración completa con dedup', () => {
       text: JSON.stringify(msg),
       timestamp: 'x',
     }
-    // Cada destinatario es su propio archivo de buzón; el dedup es
-    // por-buzón.
+    // Each recipient is its own inbox file, dedup is per-inbox.
     await writeToMailbox('alice', env, TEAM)
     await writeToMailbox('bob', env, TEAM)
-    await writeToMailbox('alice', env, TEAM) // duplicado para alice
-    await writeToMailbox('bob', env, TEAM) // duplicado para bob
+    await writeToMailbox('alice', env, TEAM) // dup for alice
+    await writeToMailbox('bob', env, TEAM) // dup for bob
 
     expect((await readMailbox('alice', TEAM)).length).toBe(1)
     expect((await readMailbox('bob', TEAM)).length).toBe(1)
   })
 
-  test('los reintentos de texto plano se conservan (sin clave de dedup)', async () => {
+  test('plain-text retries are kept (no dedup key)', async () => {
     const env = {
       from: 'team-lead',
       text: 'check the deploy',
@@ -234,10 +249,10 @@ describe('writeToMailbox — integración completa con dedup', () => {
     expect((await readMailbox('alice', TEAM)).length).toBe(2)
   })
 
-  test('idle_notification (sin requestId) NO se dedupea', async () => {
-    // Las notificaciones de idle sólo llevan `type` — quien llama decide
-    // si le importan los duplicados. El buzón no los colapsa; eso es
-    // trabajo del generador del envoltorio de attachment.
+  test('idle_notification (no requestId) is NOT deduped', async () => {
+    // Idle notifications carry only `type` — caller decides whether
+    // duplicates matter. The mailbox does not collapse them; that's
+    // the attachment generator's job.
     const env = {
       from: 'alice',
       text: JSON.stringify({
@@ -252,11 +267,11 @@ describe('writeToMailbox — integración completa con dedup', () => {
     expect((await readMailbox('team-lead', TEAM)).length).toBe(2)
   })
 
-  test('escrituras concurrentes del mismo (type, requestId) colapsan a 1', async () => {
-    // El lockfile tiene que serializar las escrituras; el chequeo de
-    // dedup dentro de cada escritura tiene que observar a las otras.
-    // Antes del fix esto entraba en carrera y dejaba 4 entradas incluso
-    // con el lock, porque el chequeo de dedup no existía.
+  test('concurrent writes of same (type, requestId) collapse to 1', async () => {
+    // The lockfile must serialize the writes; the dedup check inside
+    // each write must observe the others. Pre-fix this would race
+    // and leave 4 entries even with locking, because the dedup
+    // check did not exist.
     const msg = createShutdownRequestMessage({
       requestId: 'race-1',
       from: 'team-lead',

@@ -1,47 +1,21 @@
-/**
- * Punto de entrada del daemon supervisor. Se llama desde `cli.tsx` vía:
- *   `claude daemon [subcommand]`
- *
- * Arranca y supervisa workers de larga vida. Actualmente genera un solo
- * worker `remoteControl` que corre el servidor headless del bridge.
- *
- * Subcomandos:
- *   (ninguno)  — arranca el supervisor con los workers default
- *   start      — igual que sin subcomando
- *   status     — imprime el estado de los workers (TODO: IPC)
- *   stop       — manda SIGTERM al supervisor (TODO: archivo PID)
- *
- * Puerto fiel de `ccnmt: packages/daemon/src/main.ts`. Los imports
- * dinámicos internos de la fuente (`await import('./bgDaemon.js')`, etc.)
- * se izan aquí a imports estáticos: son módulos del propio paquete que
- * siempre resuelven, así que la excepción de "lazy import" no aplica —
- * sólo cubre el especificador que no resuelve.
- */
-
-import { spawn, type ChildProcess } from 'node:child_process'
-import { resolve } from 'node:path'
-import { homedir } from 'node:os'
-import { join } from 'node:path'
-import { existsSync } from 'node:fs'
-import { errorMessage, logEvent } from './internal/pendingCrossPackageDeps.js'
-import { daemonRequest } from './daemonClient.js'
-import { bgDaemonMain } from './bgDaemon.js'
-import * as launchAgentMod from './launchAgent.js'
+import { spawn, type ChildProcess } from 'child_process'
+import { resolve } from 'path'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logEvent } from '@thyrox/local-observability'
 
 /**
- * Código de salida usado por los workers para fallos permanentes (no
- * reintentables).
+ * Exit code used by workers for permanent (non-retryable) failures.
  * @see workerRegistry.ts EXIT_CODE_PERMANENT
  */
 const EXIT_CODE_PERMANENT = 78
 
 /**
- * Configuración de backoff para reiniciar workers crasheados.
+ * Backoff config for restarting crashed workers.
  */
 const BACKOFF_INITIAL_MS = 2_000
 const BACKOFF_CAP_MS = 120_000
 const BACKOFF_MULTIPLIER = 2
-const MAX_RAPID_FAILURES = 5 // Aparcar el worker tras esta cantidad de crashes rápidos
+const MAX_RAPID_FAILURES = 5 // Park worker after this many fast crashes
 
 interface WorkerState {
   kind: string
@@ -53,17 +27,17 @@ interface WorkerState {
 }
 
 /**
- * Punto de entrada del daemon supervisor. Se llama desde `cli.tsx` vía:
+ * Daemon supervisor entry point. Called from `cli.tsx` via:
  *   `claude daemon [subcommand]`
  *
- * Arranca y supervisa workers de larga vida. Actualmente genera un solo
- * worker `remoteControl` que corre el servidor headless del bridge.
+ * Starts and supervises long-running workers. Currently spawns one
+ * `remoteControl` worker that runs the headless bridge server.
  *
- * Subcomandos:
- *   (ninguno)  — arranca el supervisor con los workers default
- *   start      — igual que sin subcomando
- *   status     — imprime el estado de los workers (TODO: IPC)
- *   stop       — manda SIGTERM al supervisor (TODO: archivo PID)
+ * Subcommands:
+ *   (none)  — start the supervisor with default workers
+ *   start   — same as no subcommand
+ *   status  — print worker status (TODO: IPC)
+ *   stop    — send SIGTERM to supervisor (TODO: PID file)
  */
 export async function daemonMain(args: string[]): Promise<void> {
   const subcommand = args[0] || 'start'
@@ -73,9 +47,9 @@ export async function daemonMain(args: string[]): Promise<void> {
       try {
         await runSupervisor(args.slice(1))
       } catch (e) {
-        // ant 5170 — startup_crash: el supervisor falló al arrancarse.
-        // Se registra para que los admins lo noten; se relanza para
-        // preservar la semántica del código de salida.
+        // ant 5170 — startup_crash: supervisor failed to bring itself
+        // online. Report so admins notice; rethrow to preserve exit
+        // code semantics.
         logEvent('tengu_daemon_startup_crash', {
           error: errorMessage(e).slice(0, 200),
         })
@@ -83,9 +57,10 @@ export async function daemonMain(args: string[]): Promise<void> {
       }
       break
     case 'bg': {
-      // ccb daemon bg [run|status|stop|install|uninstall|start|restart] — supervisor bg.
+      // ccb daemon bg [run|status|stop|install|uninstall|start|restart] — bg supervisor.
       const sub = args[1] || 'run'
       if (sub === 'run') {
+        const { bgDaemonMain } = await import('./bgDaemon.js')
         let code = 1
         try {
           code = await bgDaemonMain(args.slice(2))
@@ -120,17 +95,17 @@ export async function daemonMain(args: string[]): Promise<void> {
       break
     }
     case 'status':
-      // Delega al ping RPC del bg-daemon. El `status` de primer nivel es
-      // una abreviatura de `daemon bg status`; el supervisor de este
-      // archivo (runSupervisor) es un modelo de proceso separado sin RPC
-      // propio, así que mostrar el estado del bg daemon es la señal más
-      // útil aquí. Pasa --json.
+      // Delegate to the bg-daemon RPC ping. Top-level `status` is a
+      // shorthand for `daemon bg status`; the supervisor in this file
+      // (runSupervisor) is a separate process model with no RPC of its
+      // own, so showing the bg daemon's status is the most useful
+      // signal here. Pass --json through.
       await bgDaemonStatus(args.includes('--json'))
       break
     case 'stop':
-      // Misma razón de delegación que `status`. El bg daemon es dueño del
-      // op de shutdown; el supervisor legacy de este archivo responde a
-      // SIGTERM directamente y no es direccionable vía RPC de shutdown.
+      // Same delegation rationale as `status`. The bg daemon owns the
+      // shutdown op; the legacy supervisor in this file responds to
+      // SIGTERM directly and is not addressable via shutdown RPC.
       await bgDaemonStop()
       break
     case '--help':
@@ -145,6 +120,9 @@ export async function daemonMain(args: string[]): Promise<void> {
 }
 
 async function bgDaemonTailLog(): Promise<void> {
+  const { homedir } = await import('node:os')
+  const { join } = await import('node:path')
+  const { existsSync } = await import('node:fs')
   const today = new Date().toISOString().slice(0, 10)
   const logPath = join(homedir(), '.claude', 'telemetry', `events-${today}.jsonl`)
   if (!existsSync(logPath)) {
@@ -153,6 +131,7 @@ async function bgDaemonTailLog(): Promise<void> {
     process.exitCode = 1
     return
   }
+  const { spawn } = await import('node:child_process')
   const tail = spawn('tail', ['-f', logPath], { stdio: 'inherit' })
   await new Promise<void>(resolve => {
     tail.on('exit', code => {
@@ -167,6 +146,7 @@ async function bgDaemonTailLog(): Promise<void> {
 }
 
 async function bgDaemonStatus(asJson = false): Promise<void> {
+  const { daemonRequest } = await import('./daemonClient.js')
   const r = await daemonRequest('ping', {}, { timeoutMs: 1000 })
   if (!r.ok) {
     if (asJson) {
@@ -201,29 +181,32 @@ async function bgDaemonStatus(asJson = false): Promise<void> {
 async function daemonLaunchAgentVerb(
   verb: 'install' | 'uninstall' | 'enable' | 'disable' | 'restart' | 'is-stale' | 'is-active',
 ): Promise<void> {
+  const { homedir } = await import('node:os')
+  const { join } = await import('node:path')
+  const la = await import('./launchAgent.js')
   const ccbDir = join(homedir(), '.claude', 'daemon')
   const opts = {
     jsonPath: join(ccbDir, 'state.json'),
     logPath: join(ccbDir, 'daemon.log'),
   }
   if (verb === 'is-stale') {
-    const stale = await launchAgentMod.isLaunchAgentStale()
+    const stale = await la.isLaunchAgentStale()
     console.log(stale ? 'stale' : 'fresh')
     process.exitCode = stale ? 1 : 0
     return
   }
   if (verb === 'is-active') {
-    const active = await launchAgentMod.isLaunchAgentRunning()
+    const active = await la.isLaunchAgentRunning()
     console.log(active ? 'active' : 'inactive')
     process.exitCode = active ? 0 : 1
     return
   }
   let r: { ok: boolean; error?: string; servicePath?: string }
-  if (verb === 'install') r = await launchAgentMod.installLaunchAgent(opts)
-  else if (verb === 'uninstall') r = await launchAgentMod.uninstallLaunchAgent()
-  else if (verb === 'enable') r = await launchAgentMod.startLaunchAgent()
-  else if (verb === 'disable') r = await launchAgentMod.stopLaunchAgent()
-  else r = await launchAgentMod.restartLaunchAgent()
+  if (verb === 'install') r = await la.installLaunchAgent(opts)
+  else if (verb === 'uninstall') r = await la.uninstallLaunchAgent()
+  else if (verb === 'enable') r = await la.startLaunchAgent()
+  else if (verb === 'disable') r = await la.stopLaunchAgent()
+  else r = await la.restartLaunchAgent()
   if (!r.ok) {
     console.error(`bg daemon ${verb}: ${r.error}`)
     process.exitCode = 1
@@ -233,6 +216,7 @@ async function daemonLaunchAgentVerb(
 }
 
 async function bgDaemonStop(): Promise<void> {
+  const { daemonRequest } = await import('./daemonClient.js')
   const r = await daemonRequest('shutdown', {}, { timeoutMs: 2000 })
   if (!r.ok) {
     console.log(`bg daemon: not running (${r.code})`)
@@ -266,7 +250,7 @@ OPTIONS
 }
 
 /**
- * Parsea los argumentos del supervisor desde la CLI.
+ * Parse supervisor arguments from CLI.
  */
 function parseSupervisorArgs(args: string[]): Record<string, string> {
   const result: Record<string, string> = {}
@@ -300,8 +284,8 @@ function parseSupervisorArgs(args: string[]): Record<string, string> {
 }
 
 /**
- * Corre el loop del daemon supervisor. Genera workers y los reinicia al
- * crashear con backoff exponencial.
+ * Run the daemon supervisor loop. Spawns workers and restarts them
+ * on crash with exponential backoff.
  */
 async function runSupervisor(args: string[]): Promise<void> {
   const config = parseSupervisorArgs(args)
@@ -322,7 +306,7 @@ async function runSupervisor(args: string[]): Promise<void> {
 
   const controller = new AbortController()
 
-  // Apagado ordenado
+  // Graceful shutdown
   const shutdown = () => {
     console.log('[daemon] supervisor shutting down...')
     controller.abort()
@@ -335,14 +319,14 @@ async function runSupervisor(args: string[]): Promise<void> {
   process.on('SIGTERM', shutdown)
   process.on('SIGINT', shutdown)
 
-  // Genera y supervisa a los workers
+  // Spawn and supervise workers
   for (const worker of workers) {
     if (!controller.signal.aborted) {
       spawnWorker(worker, dir, config, controller.signal)
     }
   }
 
-  // Espera la señal de abort
+  // Wait for abort signal
   await new Promise<void>(resolve => {
     if (controller.signal.aborted) {
       resolve()
@@ -351,7 +335,7 @@ async function runSupervisor(args: string[]): Promise<void> {
     controller.signal.addEventListener('abort', () => resolve(), { once: true })
   })
 
-  // Espera a que todos los workers salgan
+  // Wait for all workers to exit
   await Promise.all(
     workers
       .filter(w => w.process && !w.process.killed)
@@ -363,7 +347,7 @@ async function runSupervisor(args: string[]): Promise<void> {
               return
             }
             w.process.on('exit', () => resolve())
-            // Fuerza el kill tras el período de gracia
+            // Force kill after grace period
             setTimeout(() => {
               if (w.process && !w.process.killed) {
                 w.process.kill('SIGKILL')
@@ -378,7 +362,7 @@ async function runSupervisor(args: string[]): Promise<void> {
 }
 
 /**
- * Genera un subproceso worker con las variables de entorno apropiadas.
+ * Spawn a worker child process with the appropriate env vars.
  */
 function spawnWorker(
   worker: WorkerState,
@@ -402,7 +386,7 @@ function spawnWorker(
     CLAUDE_CODE_SESSION_KIND: 'daemon-worker',
   }
 
-  // Arma el comando del worker: reusa el mismo entrypoint con el flag --daemon-worker
+  // Build the worker command: reuse the same entrypoint with --daemon-worker flag
   const execArgs = [
     ...process.execArgv,
     process.argv[1]!,
@@ -419,7 +403,7 @@ function spawnWorker(
 
   worker.process = child
 
-  // Reenvía stdout/stderr del worker al supervisor con prefijo
+  // Pipe worker stdout/stderr to supervisor with prefix
   child.stdout?.on('data', (data: Buffer) => {
     const lines = data.toString().trimEnd().split('\n')
     for (const line of lines) {
@@ -437,14 +421,13 @@ function spawnWorker(
     worker.process = null
 
     if (signal.aborted) {
-      // El supervisor se está apagando, no reiniciar
+      // Supervisor is shutting down, don't restart
       return
     }
 
     if (code === EXIT_CODE_PERMANENT) {
-      // ant 5170 — permanent_exit: el worker señalizó que nunca debe
-      // respawnearse (p. ej. un error de config irrecuperable). Se
-      // aparca, no se reintenta.
+      // ant 5170 — permanent_exit: worker signaled it should never be
+      // respawned (e.g. unrecoverable config error). Park, don't retry.
       logEvent('tengu_daemon_worker_permanent_exit', {
         worker_kind: worker.kind,
         exit_code: String(code),
@@ -457,9 +440,8 @@ function spawnWorker(
       return
     }
 
-    // ant 5170 — worker_crash: toda salida distinta de cero y no
-    // permanente dispara esto. Incluye la racha para que los consumidores
-    // vean la tendencia del crash-loop.
+    // ant 5170 — worker_crash: every non-zero non-permanent exit fires
+    // this. Includes the streak so consumers see the crash-loop trend.
     logEvent('tengu_daemon_worker_crash', {
       worker_kind: worker.kind,
       exit_code: String(code ?? -1),
@@ -468,7 +450,7 @@ function spawnWorker(
       uptime_ms: String(Date.now() - worker.lastStartTime),
     })
 
-    // Chequea fallo rápido (crasheó dentro de los 10s de arrancar)
+    // Check for rapid failure (crashed within 10s of starting)
     const runDuration = Date.now() - worker.lastStartTime
     if (runDuration < 10_000) {
       worker.failureCount++
@@ -480,7 +462,7 @@ function spawnWorker(
         return
       }
     } else {
-      // Corrió un tiempo razonable, resetea el conteo de fallos
+      // Ran for a reasonable time, reset failure count
       worker.failureCount = 0
       worker.backoffMs = BACKOFF_INITIAL_MS
     }
@@ -495,7 +477,7 @@ function spawnWorker(
       }
     }, worker.backoffMs)
 
-    // Backoff exponencial
+    // Exponential backoff
     worker.backoffMs = Math.min(
       worker.backoffMs * BACKOFF_MULTIPLIER,
       BACKOFF_CAP_MS,

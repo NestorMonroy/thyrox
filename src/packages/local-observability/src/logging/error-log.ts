@@ -1,48 +1,38 @@
 /**
- * Puerto de `ccnmt: packages/local-observability/src/logging/error-log.ts`
- * (225 líneas fuente). La familia `logError`/`logMCPError`/`logMCPDebug` +
- * el mecanismo de acople de sink + `captureAPIRequest`. Sin dependencias
- * pesadas propias — los eventos se encolan hasta que
- * `attachErrorLogSink()` conecta un sink real (`./error-log-sink.ts`).
+ * V7 §8.12 — error-log: the logError / logMCPError / logMCPDebug family.
  *
- * Reapuntado a `@thyrox/*` real:
- * - `isEnvTruthy` — `@thyrox/config` exporta `./env/utils`.
+ * Split out of src/utils/log.ts. Display/list helpers (getLogDisplayTitle,
+ * loadErrorLogs, etc.) stay in src/ because they depend on `LogOption`
+ * which reaches transitively into storage and fileHistory types.
  *
- * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`):
- * - `callSetLastAPIRequest`/`callSetLastAPIRequestMessages` — de
- *   `app-host/bootstrap/state.js`. Los símbolos reales SÍ existen en
- *   `@thyrox/app-host: src/bootstrap/state.ts` (`setLastAPIRequest`,
- *   `setLastAPIRequestMessages`) pero `./bootstrap/*` no está en su
- *   `exports`.
- * - `isEssentialTrafficOnly` — de `config/env/privacy-level.js`, ese
- *   archivo no existe en `@thyrox/config`.
+ * Design: this module contains the `logError` API surface + sink
+ * attachment mechanism. It has NO heavy deps — events queue until
+ * `attachErrorLogSink()` connects a real sink (see ./error-log-sink.ts).
  *
- * NO PORTADO: la rama `feature('HARD_FAIL') && isHardFailMode()` de
- * `logError` — `feature('HARD_FAIL')` (macro `bun:bundle`, ausente en
- * este árbol) resuelve siempre `false` fuera de un build ant, así que
- * `process.exit(1)` nunca se alcanza. Mismo precedente que
- * `slowLoggingTag.ts`/`fsOperations.ts`: se omite la rama entera en vez
- * de mantener un `isHardFailMode()` que nadie llamaría.
+ * Cross-boundary state (sessionId, lastAPIRequest, privacy flag) is
+ * imported directly from app-host/state and config/env (function-level
+ * access only — ESM resolves the cycle at call time).
  */
 
+import { feature } from 'bun:bundle'
 import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import memoize from 'lodash-es/memoize.js'
 
 import {
-  callSetLastAPIRequest,
-  callSetLastAPIRequestMessages,
-  isEssentialTrafficOnly,
-} from '../internal/pendingCrossPackageDeps.js'
+  setLastAPIRequest as callSetLastAPIRequest,
+  setLastAPIRequestMessages as callSetLastAPIRequestMessages,
+} from '@thyrox/app-host/bootstrap/state.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 import { toError } from '../errorHelpers.js'
 
 // ---------------------------------------------------------------------------
-// Tipos compartidos
+// Shared types
 // ---------------------------------------------------------------------------
 
 /**
- * Interfaz del sink para el backend de logging de errores. La
- * implementación vive en `./error-log-sink.ts` y se acopla al arrancar
- * la app.
+ * Sink interface for the error logging backend.
+ * Implementation lives in ./error-log-sink.ts and is attached on app startup.
  */
 export type ErrorLogSink = {
   logError: (error: Error) => void
@@ -58,7 +48,7 @@ type QueuedErrorEvent =
   | { type: 'mcpDebug'; serverName: string; message: string }
 
 // ---------------------------------------------------------------------------
-// Ring buffer de errores en memoria — siempre poblado, con o sin sink
+// In-memory error ring buffer — always populated regardless of sink
 // ---------------------------------------------------------------------------
 
 const MAX_IN_MEMORY_ERRORS = 100
@@ -79,20 +69,19 @@ export function getInMemoryErrors(): { error: string; timestamp: string }[] {
 }
 
 // ---------------------------------------------------------------------------
-// Acople de sink — idempotente; los eventos se encolan hasta que acopla
+// Sink attachment — idempotent; events queue until sink attaches
 // ---------------------------------------------------------------------------
 
 const errorQueue: QueuedErrorEvent[] = []
 let errorLogSink: ErrorLogSink | null = null
 
 /**
- * Acopla el sink de log de errores que recibirá todos los eventos de
- * error. Los eventos en cola se drenan de inmediato para no perder
- * ninguno.
+ * Attach the error log sink that will receive all error events.
+ * Queued events are drained immediately to ensure no errors are lost.
  *
- * Idempotente: si ya hay un sink acoplado, esto es no-op. Permite
- * llamarlo tanto desde el hook preAction (para subcomandos) como desde
- * setup() (para el comando por defecto) sin coordinación.
+ * Idempotent: if a sink is already attached, this is a no-op. This allows
+ * calling from both the preAction hook (for subcommands) and setup() (for
+ * the default command) without coordination.
  */
 export function attachErrorLogSink(newSink: ErrorLogSink): void {
   if (errorLogSink !== null) return
@@ -118,7 +107,7 @@ export function attachErrorLogSink(newSink: ErrorLogSink): void {
 }
 
 // ---------------------------------------------------------------------------
-// Helper de fecha (usado por error-log-sink para el timestamp del nombre)
+// Date helper (used by error-log-sink for filename stamping)
 // ---------------------------------------------------------------------------
 
 export function dateToFilename(date: Date): string {
@@ -126,11 +115,20 @@ export function dateToFilename(date: Date): string {
 }
 
 // ---------------------------------------------------------------------------
-// API pública logError / logMCPError / logMCPDebug
+// logError / logMCPError / logMCPDebug public API
 // ---------------------------------------------------------------------------
+
+const isHardFailMode = memoize((): boolean =>
+  process.argv.includes('--hard-fail'),
+)
 
 export function logError(error: unknown): void {
   const err = toError(error)
+  if (feature('HARD_FAIL') && isHardFailMode()) {
+    console.error('[HARD FAIL] logError called with:', err.stack || err.message)
+    // eslint-disable-next-line custom-rules/no-process-exit
+    process.exit(1)
+  }
   try {
     if (
       isEnvTruthy(process.env.CLAUDE_CODE_USE_BEDROCK) ||
@@ -156,7 +154,7 @@ export function logError(error: unknown): void {
 
     errorLogSink.logError(err)
   } catch {
-    // No pasa — loguear nunca debe lanzar.
+    // pass — logging must never throw
   }
 }
 
@@ -168,7 +166,7 @@ export function logMCPError(serverName: string, error: unknown): void {
     }
     errorLogSink.logMCPError(serverName, error)
   } catch {
-    // Falla en silencio.
+    // Silently fail
   }
 }
 
@@ -180,49 +178,44 @@ export function logMCPDebug(serverName: string, message: string): void {
     }
     errorLogSink.logMCPDebug(serverName, message)
   } catch {
-    // Falla en silencio.
+    // Silently fail
   }
 }
 
 // ---------------------------------------------------------------------------
-// captureAPIRequest — guarda los params del request (no los mensajes)
-// para reportes de bug
+// captureAPIRequest — stores request params (not messages) for bug reports
 // ---------------------------------------------------------------------------
 
 /**
- * Captura el último request de API para incluirlo en reportes de bug.
+ * Captures the last API request for inclusion in bug reports.
  *
- * Acepta `querySource: unknown` porque el tipo `QuerySource` vive en
- * `src/constants/querySource.ts` y no se cruza esa frontera de import
- * desde aquí. Quien llama pasa la cadena; aquí se compara con
- * `startsWith`.
+ * Accepts `querySource: unknown` because the QuerySource type lives in
+ * `src/constants/querySource.ts` and we don't cross the src/ import
+ * boundary. Host callers pass the string; we startsWith-match here.
  */
 export function captureAPIRequest(
   params: BetaMessageStreamParams,
   querySource?: unknown,
 ): void {
-  // startsWith, no coincidencia exacta — usuarios con output styles no
-  // default reciben variantes como
-  // 'repl_main_thread:outputStyle:Explanatory' (querySource.ts).
+  // startsWith, not exact match — users with non-default output styles get
+  // variants like 'repl_main_thread:outputStyle:Explanatory' (querySource.ts).
   if (typeof querySource !== 'string') return
   if (!querySource.startsWith('repl_main_thread')) return
 
-  // Guarda los params SIN los mensajes para no retener la conversación
-  // entera de todos los usuarios. Los mensajes ya están persistidos en el
-  // archivo de transcript y disponibles vía estado de React.
+  // Store params WITHOUT messages to avoid retaining the entire conversation
+  // for all users. Messages are already persisted to the transcript file and
+  // available via React state.
   const { messages, ...paramsWithoutMessages } = params
   callSetLastAPIRequest(paramsWithoutMessages)
-  callSetLastAPIRequestMessages(
-    process.env.USER_TYPE === 'ant' ? messages : null,
-  )
+  callSetLastAPIRequestMessages(process.env.USER_TYPE === 'ant' ? messages : null)
 }
 
 // ---------------------------------------------------------------------------
-// Utilidad de testing — resetea todo el estado del módulo
+// Testing utility — reset all module state for unit tests
 // ---------------------------------------------------------------------------
 
 /**
- * Resetea el estado del log de errores, sólo para pruebas.
+ * Reset error log state for testing purposes only.
  * @internal
  */
 export function _resetErrorLogForTesting(): void {

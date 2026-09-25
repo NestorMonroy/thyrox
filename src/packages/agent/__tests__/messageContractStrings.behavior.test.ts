@@ -1,21 +1,3 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/messageContractStrings.behavior.test.ts`.
- *
- * Fija el formato EXACTO de las cadenas de protocolo entre el harness y el
- * modelo. Son tres clases:
- *
- *  1. Interrupcion y cancelacion: el modelo las ve como mensajes de rol
- *     `user` y usa el prefijo literal para decidir si cede el turno o
- *     pregunta.
- *  2. Mensajes de rechazo: le dicen al modelo que la herramienta NO corrio
- *     y con que criterio reintentar, buscar un rodeo o abortar.
- *  3. Marcadores de relleno: contenido sintetico que el flujo del API
- *     inyecta para que el par `tool_use`/`tool_result` siga siendo valido.
- *
- * Cualquier deriva aqui cambia la conducta del modelo al interrumpir o al
- * denegar un permiso. Un refactor de «simplifiquemos la redaccion» ya ha
- * causado regresiones de conducta en produccion: por eso se fijan.
- */
 import { describe, expect, test } from 'bun:test'
 
 import {
@@ -34,112 +16,116 @@ import {
   SYNTHETIC_TOOL_RESULT_PLACEHOLDER,
 } from '../messages.ts'
 
-describe('cadenas de contrato del mensaje (harness ↔ modelo)', () => {
-  describe('interrupcion y cancelacion', () => {
-    test('INTERRUPT_MESSAGE conserva el formato exacto entre corchetes', () => {
+/**
+ * Pin the EXACT wire format of protocol strings between Claude Code and
+ * the model. Three classes of constants here:
+ *
+ *  1. Interrupt/cancel: the model sees these as user-role messages and
+ *     uses the EXACT prefix to decide whether to give up the turn vs ask.
+ *  2. Rejection messages: tell the model the tool didn't run AND give
+ *     guidance on whether to retry/find a workaround/abort.
+ *  3. Placeholders: synthetic content the API stream injects to keep
+ *     tool_use/tool_result pairing structurally valid — must be
+ *     recognizable so HFI rejects them at submission time.
+ *
+ * Any string drift here changes how the model behaves in interrupt /
+ * permission-deny scenarios. A "let's simplify the wording" refactor
+ * has caused production behavior regressions before — pin them.
+ */
+describe('Message contract strings (Claude Code ↔ model protocol)', () => {
+  describe('interrupt + cancel', () => {
+    test('INTERRUPT_MESSAGE matches the exact bracket format', () => {
       expect(INTERRUPT_MESSAGE).toBe('[Request interrupted by user]')
     })
 
-    test('INTERRUPT_MESSAGE_FOR_TOOL_USE distingue la interrupcion a media herramienta', () => {
-      // Se usa cuando el usuario pulsa Ctrl-C con una herramienta en
-      // ejecucion: el modelo necesita saber que lo cancelado fue LA
-      // HERRAMIENTA, no la peticion entera.
+    test('INTERRUPT_MESSAGE_FOR_TOOL_USE distinguishes mid-tool interrupt', () => {
+      // Used when the user hits Ctrl-C while a tool is executing.
+      // Model needs to know it was specifically the TOOL that got cancelled.
       expect(INTERRUPT_MESSAGE_FOR_TOOL_USE).toBe(
         '[Request interrupted by user for tool use]',
       )
     })
 
-    test('CANCEL_MESSAGE dice STOP en mayusculas para que el modelo se detenga', () => {
-      // La mayuscula de «STOP» es convencion con carga: el modelo la
-      // atiende como senal dura de alto.
+    test('CANCEL_MESSAGE explicitly says STOP (capitalized) so model halts', () => {
+      // The "STOP" capitalization is a load-bearing convention — the model
+      // pays attention to it as a hard halt signal.
       expect(CANCEL_MESSAGE).toContain('STOP what you are doing')
-      expect(CANCEL_MESSAGE).toContain(
-        'wait for the user to tell you how to proceed',
-      )
+      expect(CANCEL_MESSAGE).toContain('wait for the user to tell you how to proceed')
     })
   })
 
-  describe('mensajes de rechazo', () => {
-    test('REJECT_MESSAGE nombra el rechazo Y el ejemplo de la edicion no escrita', () => {
-      // El parentesis «(eg. if it was a file edit, the new_string was NOT
-      // written to the file)» es lo que impide que el modelo asuma que la
-      // edicion SI se escribio. Sin el, una sesion de editar-y-verificar se
-      // desincroniza tras una denegacion.
+  describe('rejection messages', () => {
+    test('REJECT_MESSAGE mentions tool was rejected AND example of file-edit non-write', () => {
+      // The "(eg. if it was a file edit, the new_string was NOT written
+      // to the file)" parenthetical is what stops the model from
+      // assuming the edit DID write. Drop this and edit-and-verify
+      // sessions desync after a deny.
       expect(REJECT_MESSAGE).toContain('was rejected')
-      expect(REJECT_MESSAGE).toContain(
-        'the new_string was NOT written to the file',
-      )
+      expect(REJECT_MESSAGE).toContain('the new_string was NOT written to the file')
       expect(REJECT_MESSAGE).toContain('STOP')
     })
 
-    test('REJECT_MESSAGE_WITH_REASON_PREFIX termina en salto de linea (el llamador anade la razon)', () => {
+    test('REJECT_MESSAGE_WITH_REASON_PREFIX ends in newline (caller appends reason)', () => {
       expect(REJECT_MESSAGE_WITH_REASON_PREFIX).toMatch(/\n$/)
       expect(REJECT_MESSAGE_WITH_REASON_PREFIX).toContain('the user said:')
     })
 
-    test('SUBAGENT_REJECT_MESSAGE le dice al subagente que adapte o reporte', () => {
-      // El rechazo a un subagente no es el del usuario: el usuario no puede
-      // intervenir, asi que el subagente debe adaptarse o reportar.
+    test('SUBAGENT_REJECT_MESSAGE tells the subagent to FALLBACK or REPORT', () => {
+      // Subagent rejections are different from user rejections — the
+      // user can't intervene, so the subagent must adapt or report.
+      // Pin the "Try a different approach or report" guidance.
       expect(SUBAGENT_REJECT_MESSAGE).toContain('was rejected')
-      expect(SUBAGENT_REJECT_MESSAGE).toContain(
-        'Try a different approach or report the limitation',
-      )
+      expect(SUBAGENT_REJECT_MESSAGE).toContain('Try a different approach or report the limitation')
     })
 
-    test('SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX termina en salto de linea', () => {
+    test('SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX ends in newline', () => {
       expect(SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX).toMatch(/\n$/)
     })
 
-    test('PLAN_REJECTION_PREFIX nombra el modo plan y la visibilidad del plan rechazado', () => {
-      // Tras rechazar el plan, su contenido se apenda. Se fija el prefijo
-      // estructural Y el marcador «Rejected plan:\n».
+    test('PLAN_REJECTION_PREFIX mentions plan mode + rejected plan visibility', () => {
+      // After rejecting plan, the rejected plan content is appended.
+      // Pin both the structural prefix AND the "Rejected plan:\n" marker.
       expect(PLAN_REJECTION_PREFIX).toContain('proposed a plan that was rejected')
       expect(PLAN_REJECTION_PREFIX).toContain('Rejected plan:\n')
     })
   })
 
-  describe('guia de rodeo ante una denegacion', () => {
-    test('DENIAL_WORKAROUND_GUIDANCE abre con el prefijo IMPORTANT que el modelo atiende', () => {
+  describe('denial workaround guidance', () => {
+    test('DENIAL_WORKAROUND_GUIDANCE has the IMPORTANT prefix the model attends to', () => {
       expect(DENIAL_WORKAROUND_GUIDANCE).toMatch(/^IMPORTANT:/)
     })
 
-    test('DENIAL_WORKAROUND_GUIDANCE admite el rodeo benigno y prohibe la evasion', () => {
-      // Dos frases fijadas que calibran la conducta del modelo:
-      // - «naturally be used to accomplish this goal» → admite head-vs-cat
-      // - «do not attempt to bypass the intent» → prohibe la evasion
-      expect(DENIAL_WORKAROUND_GUIDANCE).toContain(
-        'naturally be used to accomplish this goal',
-      )
-      expect(DENIAL_WORKAROUND_GUIDANCE).toContain(
-        'should not* attempt to work around this denial in malicious ways',
-      )
-      expect(DENIAL_WORKAROUND_GUIDANCE).toContain(
-        'bypass the intent behind this denial',
-      )
+    test('DENIAL_WORKAROUND_GUIDANCE allows benign workarounds but forbids bypass', () => {
+      // Two pinned phrases that calibrate model behavior:
+      // - "naturally be used to accomplish this goal" → allow head-vs-cat
+      // - "do not attempt to bypass the intent" → forbid evasion
+      expect(DENIAL_WORKAROUND_GUIDANCE).toContain('naturally be used to accomplish this goal')
+      expect(DENIAL_WORKAROUND_GUIDANCE).toContain('should not* attempt to work around this denial in malicious ways')
+      expect(DENIAL_WORKAROUND_GUIDANCE).toContain('bypass the intent behind this denial')
     })
 
-    test('AUTO_REJECT_MESSAGE compone el nombre de la herramienta con la guia', () => {
+    test('AUTO_REJECT_MESSAGE composes tool name + workaround guidance', () => {
       const msg = AUTO_REJECT_MESSAGE('Bash')
       expect(msg).toContain('Permission to use Bash has been denied.')
       expect(msg).toContain(DENIAL_WORKAROUND_GUIDANCE)
     })
 
-    test('DONT_ASK_REJECT_MESSAGE nombra el modo «don\'t ask» como denegacion autoexplicativa', () => {
+    test('DONT_ASK_REJECT_MESSAGE mentions "don\'t ask mode" for self-explanatory denial', () => {
       const msg = DONT_ASK_REJECT_MESSAGE('Write')
       expect(msg).toContain("Claude Code is running in don't ask mode")
       expect(msg).toContain('Permission to use Write has been denied')
     })
   })
 
-  describe('marcadores de relleno', () => {
-    test('NO_RESPONSE_REQUESTED es la cadena desnuda, sin espacio ni ajuste de punto', () => {
+  describe('placeholders', () => {
+    test('NO_RESPONSE_REQUESTED is the bare string (no leading space, no period adjustment)', () => {
       expect(NO_RESPONSE_REQUESTED).toBe('No response requested.')
     })
 
-    test('SYNTHETIC_TOOL_RESULT_PLACEHOLDER es reconocible y no vacio', () => {
-      // El filtro de entrada rechaza cargas que contengan esta cadena. Se
-      // fija su valor exacto para que un refactor no deje pasar en silencio
-      // un marcador sintetico real.
+    test('SYNTHETIC_TOOL_RESULT_PLACEHOLDER is recognizable + non-empty', () => {
+      // HFI rejects payloads containing this string. Pin the exact value
+      // so a refactor can't silently make the rejection check miss real
+      // synthetic placeholders.
       expect(SYNTHETIC_TOOL_RESULT_PLACEHOLDER).toBe(
         '[Tool result missing due to internal error]',
       )

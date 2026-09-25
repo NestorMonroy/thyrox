@@ -1,57 +1,53 @@
 /**
- * Roster de workers de todo el daemon — `~/.claude/daemon/roster.json`.
+ * Daemon-wide worker roster — `~/.claude/daemon/roster.json`.
  *
- * `ant 4139.js` (`_e`/`wm`/`MlH`/`d_3`/`RV8`) — un solo archivo JSON con un
- * snapshot de cada worker vivo, indexado por id corto. Sobrevive al
- * reinicio del daemon para que la nueva instancia pueda adoptar workers
- * huérfanos sin re-escanear el árbol jobs/ entero (y sin perder workers
- * cuyo meta.json está en un árbol-cwd distinto).
+ * ant 4139.js (`_e`/`wm`/`MlH`/`d_3`/`RV8`) — a single JSON file with a
+ * snapshot of every live worker keyed by short id. Survives daemon
+ * restart so the new daemon instance can adopt orphaned workers
+ * without rescanning the entire jobs/ tree (and without missing workers
+ * whose meta.json is in a different cwd-tree).
  *
- * Esquema (coincide con ant Ii7 — 4070.js:56-63):
+ * Schema (matches ant Ii7 — 4070.js:56-63):
  *   {
  *     proto: number          // PROTO_VERSION
- *     supervisorPid: number  // pid actual del daemon
- *     updatedAt: number      // epoch ms de la última escritura
+ *     supervisorPid: number  // current daemon pid
+ *     updatedAt: number      // ms epoch of last write
  *     workers: { [short]: RosterEntry }
- *     parseFailed?: boolean  // se fija al leer si el parse de JSON falló
+ *     parseFailed?: boolean  // set on read when JSON parse failed
  *   }
  *
- * RosterEntry (zs5 — 4070.js:38-55) es un subconjunto recortado de
- * WorkerRecord: pid, procStart, sessionId, rendezvousSock, ptySock,
- * cliVersion, startedAt, attempt, cwd, worktreePath, dispatch,
- * pendingRespawn.
+ * RosterEntry (zs5 — 4070.js:38-55) is a stripped subset of WorkerRecord:
+ *   pid, procStart, sessionId, rendezvousSock, ptySock, cliVersion,
+ *   startedAt, attempt, cwd, worktreePath, dispatch, pendingRespawn.
  *
- * Concurrencia: ant acota las escrituras con una promesa encadenada
- * (4139.js `MlH`) para que las actualizaciones concurrentes se serialicen.
- * ccb espeja con el mismo patrón `writeQueue.then(...)`. Gana la última
- * escritura; los campos supervisor pid + updatedAt marcan cada escritura.
+ * Concurrency: ant gates writes through a chained promise (4139.js
+ * `MlH`) so concurrent updates serialize. ccb mirrors with the same
+ * `writeQueue.then(...)` pattern. Last-write-wins; the supervisor pid
+ * + updatedAt fields tag every write.
  *
- * Manejo de corrupción: `ant 4139.js` `Ms7` renombra el archivo a
- * `roster.json.corrupt.<ts>` para que el siguiente supervisor igual reciba
- * un archivo fresco pero la copia mala se conserve para el postmortem.
- * ccb lo espeja.
+ * Corruption handling: ant 4139.js `Ms7` renames the file to
+ * `roster.json.corrupt.<ts>` so the next supervisor still gets a fresh
+ * file but the bad copy is preserved for postmortem. ccb mirrors.
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/roster.ts`.
+ * @dynamicRequire
  */
 
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 import type { WorkerRecord } from './bgWorkerRegistry.js'
 import { getDaemonHomeDir } from './socketPaths.js'
 import { PROTO_VERSION } from './socketProto.js'
 
 /**
- * Entrada de roster para un worker. Subconjunto de campos de WorkerRecord
- * que sobreviven al reinicio del supervisor (pid + sockets + envoltorio
- * de dispatch).
+ * Roster entry for one worker. Subset of WorkerRecord fields that
+ * survive supervisor restart (pid + sockets + dispatch envelope).
  *
- * `ant 4070.js` zs5 llama al socket de rendezvous `rendezvousSock` y al
- * socket PTY `ptySock`. El WorkerRecord de ccb usa `ptySocket`. Se llevan
- * los dos nombres para que las lecturas cross-versión sigan siendo
- * tolerantes.
+ * ant 4070.js zs5 names the rendezvous socket `rendezvousSock` and
+ * the PTY socket `ptySock`. ccb's WorkerRecord uses `ptySocket`. We
+ * carry both names so cross-version reads stay tolerant.
  */
 export interface RosterEntry {
   pid: number
@@ -77,12 +73,12 @@ export interface Roster {
   parseFailed?: boolean
 }
 
-/** Ruta a roster.json (un archivo global por uid, no por hash-de-repo). */
+/** Path to roster.json (one global file per uid, not per repo-hash). */
 export function getRosterPath(): string {
   return join(getDaemonHomeDir(), 'roster.json')
 }
 
-/** Roster vacío — lo devuelve readRoster ante archivo ausente o tras poner en cuarentena algo corrupto. */
+/** Empty roster — returned by readRoster on missing file or after corrupt-quarantine. */
 export function emptyRoster(): Roster {
   return {
     proto: PROTO_VERSION,
@@ -93,26 +89,23 @@ export function emptyRoster(): Roster {
 }
 
 /**
- * Proyecta un WorkerRecord a un RosterEntry. Lo usa el daemon al
- * persistir el mapa de workers vivos de vuelta a disco tras un
- * spawn / cambio de estado.
+ * Project a WorkerRecord into a RosterEntry. Used by daemon when
+ * persisting the live workers map back to disk after spawn / state-change.
  */
 export function recordToRosterEntry(r: WorkerRecord): RosterEntry {
   return {
     pid: r.pid,
     procStart: r.procStart,
-    // El socket rv (control de rendezvous) es un socket DISTINTO del
-    // socket de datos PTY — tiene que sobrevivir a un reinicio del
-    // supervisor para que adoptFromRoster pueda re-apuntar al cliente rv
-    // a la dirección correcta (ver el docstring de
-    // WorkerRecord.rendezvousSocket). Escribir aquí r.ptySocket (el valor
-    // histórico, de cuando `rendezvousSock` era un alias inocuo) mandaba
-    // el handshake {role:'supervisor'} del cliente rv al stream de DATOS
-    // PTY de cualquier worker adoptado por roster, corrompiendo la salida
-    // de attach Y reabriendo el hueco de "el worker sin attach no tiene
-    // señal de vivacidad" que este canal entero existe para cerrar.
-    // Undefined cuando el worker es anterior al canal rv — el cliente rv
-    // es no-op ante un socket ausente (degrada a poll de pid).
+    // The rv (rendezvous control) socket is a DISTINCT socket from the PTY
+    // data socket — it must survive a supervisor restart so adoptFromRoster
+    // can re-point the rv client at the right address (WorkerRecord.
+    // rendezvousSocket docstring). Writing r.ptySocket here (the historical
+    // value, from when `rendezvousSock` was a harmless alias) sent the rv
+    // client's {role:'supervisor'} handshake into the PTY DATA stream of any
+    // roster-adopted worker, corrupting attach output AND re-opening the
+    // "unattached worker has no liveness signal" gap this whole channel
+    // exists to close. Undefined when the worker predates the rv channel —
+    // the rv client no-ops on an absent socket (degrades to pid-poll).
     rendezvousSock: r.rendezvousSocket,
     ptySock: r.ptySocket,
     cliVersion: r.cliVersion,
@@ -123,9 +116,9 @@ export function recordToRosterEntry(r: WorkerRecord): RosterEntry {
 }
 
 /**
- * Valida un valor JSON parseado contra el esquema de Roster. Devuelve el
- * valor tipado, o null ante un desajuste de forma. Se evita traer zod
- * aquí para que la entrada del daemon quede con dependencias mínimas.
+ * Validate a parsed JSON value against the Roster schema. Returns
+ * the typed value, or null on shape mismatch. We avoid pulling zod
+ * here so the daemon entry stays minimal-deps.
  */
 function validateRoster(v: unknown): Roster | null {
   if (!v || typeof v !== 'object') return null
@@ -174,9 +167,8 @@ function validateRoster(v: unknown): Roster | null {
 }
 
 /**
- * Pone en cuarentena un roster.json corrupto — renombra a .corrupt.<ts>.
- * `ant 4139.js` Ms7. Best effort; los fallos se registran pero no se
- * propagan.
+ * Quarantine a corrupt roster.json — rename to .corrupt.<ts>. ant
+ * 4139.js Ms7. Best effort; failures are logged but don't propagate.
  */
 export async function quarantineCorruptRoster(): Promise<void> {
   const p = getRosterPath()
@@ -190,13 +182,13 @@ export async function quarantineCorruptRoster(): Promise<void> {
 }
 
 /**
- * Lee roster.json de disco. `ant 4139.js` `wm`. Devuelve:
- *   - roster vacío ante archivo ausente (ENOENT)
- *   - vacío + parseFailed:true ante error de parseo JSON (con cuarentena)
- *   - vacío + parseFailed:true ante desajuste de esquema (con cuarentena)
+ * Read roster.json from disk. ant 4139.js `wm`. Returns:
+ *   - empty roster on missing file (ENOENT)
+ *   - empty + parseFailed:true on JSON parse error (with quarantine)
+ *   - empty + parseFailed:true on schema mismatch (with quarantine)
  *
- * `silent` se salta la cuarentena + telemetría — lo usan herramientas que
- * sólo quieren espiar el roster sin mutarlo (`ccb doctor`).
+ * `silent` skips the quarantine + telemetry — used by tools that just
+ * want to peek at the roster without mutating it (`ccb doctor`).
  */
 export async function readRoster(opts?: { silent?: boolean }): Promise<Roster> {
   const p = getRosterPath()
@@ -245,10 +237,9 @@ export async function readRoster(opts?: { silent?: boolean }): Promise<Roster> {
 }
 
 /**
- * Conteo best-effort de las claves `workers` en un blob JSON posiblemente
- * malformado. `ant` Q_3 — se usa para estimar cuántos workers se están
- * dando por huérfanos al poner en cuarentena el archivo. Devuelve 0 ante
- * cualquier incertidumbre.
+ * Best-effort count of `workers` keys in a possibly-malformed JSON
+ * blob. ant Q_3 — used to estimate how many workers we're orphaning
+ * by quarantining the file. Returns 0 on any uncertainty.
  */
 function countWorkersInRawJson(raw: string): number {
   try {
@@ -258,14 +249,14 @@ function countWorkersInRawJson(raw: string): number {
       return Object.keys(w).length
     }
   } catch {
-    /* sigue adelante */
+    /* fall through */
   }
   return 0
 }
 
 /**
- * Escribe roster.json atómicamente. `ant 4139.js` d_3. Crea el directorio
- * del daemon con modo 0700 si falta; escribe el archivo con modo 0600.
+ * Atomically write roster.json. ant 4139.js d_3. Creates the daemon dir
+ * with mode 0700 if missing; writes file mode 0600.
  */
 export async function writeRoster(roster: Roster): Promise<void> {
   const p = getRosterPath()
@@ -276,13 +267,12 @@ export async function writeRoster(roster: Roster): Promise<void> {
 }
 
 /**
- * Actualiza el roster atómicamente vía un callback. `ant` MlH — encadena
- * las escrituras pendientes por una sola promesa para que las
- * actualizaciones concurrentes se serialicen con gana-la-última. Devuelve
- * el roster post-mutación.
+ * Update the roster atomically through a callback. ant MlH — chains
+ * pending writes through a single promise so concurrent updates
+ * serialize last-write-wins. Returns the post-mutation roster.
  *
- * El mutador puede devolver un Roster nuevo o mutar-in-place y devolver
- * undefined (coincide con la API de ant: `K(q) ?? q`).
+ * The mutator may either return a new Roster or mutate-in-place and
+ * return undefined (matching ant's API: `K(q) ?? q`).
  */
 let writeQueue: Promise<unknown> = Promise.resolve()
 export function updateRoster(

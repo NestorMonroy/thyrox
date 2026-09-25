@@ -1,10 +1,3 @@
-/**
- * Puerto de `ccnmt: packages/teleport/src/api.ts` (466 líneas fuente,
- * 100% portado). Cliente HTTP contra la Sessions API (`/v1/sessions`) y
- * la Environment API — listar/crear sesiones, enviar eventos, renombrar
- * y resolver credenciales OAuth + UUID de organización.
- */
-
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import { randomUUID } from 'crypto'
 import { getOauthConfig } from '@thyrox/provider/oauthConstants'
@@ -14,44 +7,42 @@ import { getClaudeAIOAuthTokens } from '@thyrox/provider/authAlias.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { parseGitHubRepository } from '@thyrox/storage/detectRepository.js'
 import { errorMessage, toError } from '@thyrox/local-observability/errorHelpers.js'
-import { lazySchema } from '@thyrox/config/internal/lazySchema.js'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { sleep } from '@thyrox/config/sleep'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
-// Configuracion de reintento para las peticiones de la API de teleport
-const TELEPORT_RETRY_DELAYS = [2000, 4000, 8000, 16000] // 4 reintentos con backoff exponencial
+// Retry configuration for teleport API requests
+const TELEPORT_RETRY_DELAYS = [2000, 4000, 8000, 16000] // 4 retries with exponential backoff
 const MAX_TELEPORT_RETRIES = TELEPORT_RETRY_DELAYS.length
 
 export const CCR_BYOC_BETA = 'ccr-byoc-2025-07-29'
 
 /**
- * Comprueba si un error de axios es un error de red transitorio que
- * deberia reintentarse.
+ * Checks if an axios error is a transient network error that should be retried
  */
 export function isTransientNetworkError(error: unknown): boolean {
   if (!axios.isAxiosError(error)) {
     return false
   }
 
-  // Reintenta ante errores de red (sin respuesta recibida)
+  // Retry on network errors (no response received)
   if (!error.response) {
     return true
   }
 
-  // Reintenta ante errores de servidor (5xx)
+  // Retry on server errors (5xx)
   if (error.response.status >= 500) {
     return true
   }
 
-  // No reintenta ante errores de cliente (4xx) - no son transitorios
+  // Don't retry on client errors (4xx) - they're not transient
   return false
 }
 
 /**
- * Hace una peticion GET de axios con reintento automatico ante errores
- * de red transitorios. Usa backoff exponencial: 2s, 4s, 8s, 16s (4
- * reintentos = 5 intentos totales).
+ * Makes an axios GET request with automatic retry for transient network errors
+ * Uses exponential backoff: 2s, 4s, 8s, 16s (4 retries = 5 total attempts)
  */
 export async function axiosGetWithRetry<T>(
   url: string,
@@ -65,12 +56,12 @@ export async function axiosGetWithRetry<T>(
     } catch (error) {
       lastError = error
 
-      // No reintenta si esto no es un error transitorio
+      // Don't retry if this isn't a transient error
       if (!isTransientNetworkError(error)) {
         throw error
       }
 
-      // No reintenta si ya se agotaron los reintentos
+      // Don't retry if we've exhausted all retries
       if (attempt >= MAX_TELEPORT_RETRIES) {
         logForDebugging(
           `Teleport request failed after ${attempt + 1} attempts: ${errorMessage(error)}`,
@@ -89,8 +80,7 @@ export async function axiosGetWithRetry<T>(
   throw lastError
 }
 
-// Tipos que calzan con la respuesta real de la Sessions API de
-// api/schemas/sessions/sessions.py
+// Types matching the actual Sessions API response from api/schemas/sessions/sessions.py
 export type SessionStatus = 'requires_action' | 'running' | 'idle' | 'archived'
 
 export type GitSource = {
@@ -107,7 +97,7 @@ export type KnowledgeBaseSource = {
 
 export type SessionContextSource = GitSource | KnowledgeBaseSource
 
-// Tipos de outcome de api/schemas/sandbox.py
+// Outcome types from api/schemas/sandbox.py
 export type OutcomeGitInfo = {
   type: 'github'
   repo: string
@@ -128,7 +118,7 @@ export type SessionContext = {
   custom_system_prompt: string | null
   append_system_prompt: string | null
   model: string | null
-  // Siembra el filesystem con un git bundle vía Files API
+  // Seed filesystem with a git bundle on Files API
   seed_bundle_file_id?: string
   github_pr?: { owner: string; repo: string; number: number }
   reuse_outcome_branches?: boolean
@@ -181,12 +171,12 @@ export const CodeSessionSchema = lazySchema(() =>
   }),
 )
 
-// Exporta el tipo inferido a partir del esquema Zod
+// Export the inferred type from the Zod schema
 export type CodeSession = z.infer<ReturnType<typeof CodeSessionSchema>>
 
 /**
- * Valida y prepara las peticiones a la API.
- * @returns Objeto con el access token y el UUID de organizacion
+ * Validates and prepares for API requests
+ * @returns Object containing access token and organization UUID
  */
 export async function prepareApiRequest(): Promise<{
   accessToken: string
@@ -208,9 +198,8 @@ export async function prepareApiRequest(): Promise<{
 }
 
 /**
- * Obtiene las sesiones de codigo desde la nueva Sessions API
- * (/v1/sessions).
- * @returns Array de sesiones de codigo
+ * Fetches code sessions from the new Sessions API (/v1/sessions)
+ * @returns Array of code sessions
  */
 export async function fetchCodeSessionsFromSessionsAPI(): Promise<
   CodeSession[]
@@ -234,16 +223,16 @@ export async function fetchCodeSessionsFromSessionsAPI(): Promise<
       throw new Error(`Failed to fetch code sessions: ${response.statusText}`)
     }
 
-    // Transforma SessionResource[] al formato CodeSession[]
+    // Transform SessionResource[] to CodeSession[] format
     const sessions: CodeSession[] = response.data.data.map(session => {
-      // Extrae la info del repositorio de las fuentes git
+      // Extract repository info from git sources
       const gitSource = session.session_context.sources.find(
         (source): source is GitSource => source.type === 'git_repository',
       )
 
       let repo: CodeSession['repo'] = null
       if (gitSource?.url) {
-        // Parsea la URL de GitHub con la utilidad ya existente
+        // Parse GitHub URL using the existing utility function
         const repoPath = parseGitHubRepository(gitSource.url)
         if (repoPath) {
           const [owner, name] = repoPath.split('/')
@@ -262,10 +251,10 @@ export async function fetchCodeSessionsFromSessionsAPI(): Promise<
       return {
         id: session.id,
         title: session.title || 'Untitled',
-        description: '', // SessionResource no tiene campo description
-        status: session.session_status as CodeSession['status'], // Mapea session_status a status
+        description: '', // SessionResource doesn't have description field
+        status: session.session_status as CodeSession['status'], // Map session_status to status
         repo,
-        turns: [], // SessionResource no tiene campo turns
+        turns: [], // SessionResource doesn't have turns field
         created_at: session.created_at,
         updated_at: session.updated_at,
       }
@@ -280,9 +269,9 @@ export async function fetchCodeSessionsFromSessionsAPI(): Promise<
 }
 
 /**
- * Crea las cabeceras OAuth para las peticiones a la API.
- * @param accessToken El access token OAuth
- * @returns Objeto de cabeceras con Authorization, Content-Type y anthropic-version
+ * Creates OAuth headers for API requests
+ * @param accessToken The OAuth access token
+ * @returns Headers object with Authorization, Content-Type, and anthropic-version
  */
 export function getOAuthHeaders(accessToken: string): Record<string, string> {
   return {
@@ -293,9 +282,9 @@ export function getOAuthHeaders(accessToken: string): Record<string, string> {
 }
 
 /**
- * Obtiene una sesion por ID desde la Sessions API.
- * @param sessionId El ID de la sesion a obtener
- * @returns El recurso de sesion
+ * Fetches a single session by ID from the Sessions API
+ * @param sessionId The session ID to fetch
+ * @returns The session resource
  */
 export async function fetchSession(
   sessionId: string,
@@ -316,7 +305,7 @@ export async function fetchSession(
   })
 
   if (response.status !== 200) {
-    // Extrae el mensaje de error de la respuesta, si esta disponible
+    // Extract error message from response if available
     const errorData = response.data as { error?: { message?: string } }
     const apiMessage = errorData?.error?.message
 
@@ -338,10 +327,9 @@ export async function fetchSession(
 }
 
 /**
- * Extrae el primer nombre de rama de los outcomes de repositorio git de
- * una sesion.
- * @param session El recurso de sesion del que extraer
- * @returns El primer nombre de rama, o undefined si no hay ninguno
+ * Extracts the first branch name from a session's git repository outcomes
+ * @param session The session resource to extract from
+ * @returns The first branch name, or undefined if none found
  */
 export function getBranchFromSession(
   session: SessionResource,
@@ -354,24 +342,21 @@ export function getBranchFromSession(
 }
 
 /**
- * Contenido de un mensaje de sesion remota.
- * Acepta un string plano o un array de bloques de contenido (texto,
- * imagen, etc.) siguiendo la especificacion de mensajes de la API de
- * Anthropic.
+ * Content for a remote session message.
+ * Accepts a plain string or an array of content blocks (text, image, etc.)
+ * following the Anthropic API messages spec.
  */
 export type RemoteMessageContent =
   | string
   | Array<{ type: string; [key: string]: unknown }>
 
 /**
- * Envia un evento de mensaje de usuario a una sesion remota existente via
- * la Sessions API.
- * @param sessionId El ID de la sesion a la que enviar el evento
- * @param messageContent El contenido del mensaje de usuario (string o bloques de contenido)
- * @param opts.uuid UUID opcional para el evento — los llamadores que ya
- *   agregaron un UserMessage local deben pasar su UUID para que el
- *   filtrado de eco pueda deduplicar
- * @returns Promise<boolean> True si tuvo exito, false en otro caso
+ * Sends a user message event to an existing remote session via the Sessions API
+ * @param sessionId The session ID to send the event to
+ * @param messageContent The user message content (string or content blocks)
+ * @param opts.uuid Optional UUID for the event — callers that added a local
+ *   UserMessage first should pass its UUID so echo filtering can dedup
+ * @returns Promise<boolean> True if successful, false otherwise
  */
 export async function sendEventToRemoteSession(
   sessionId: string,
@@ -406,9 +391,8 @@ export async function sendEventToRemoteSession(
     logForDebugging(
       `[sendEventToRemoteSession] Sending event to session ${sessionId}`,
     )
-    // El endpoint puede bloquear hasta que el worker de CCR este listo.
-    // Observado ~2.6s en casos normales; se deja un margen generoso para
-    // contenedores con arranque en frio.
+    // The endpoint may block until the CCR worker is ready. Observed ~2.6s
+    // in normal cases; allow a generous margin for cold-start containers.
     const response = await axios.post(url, requestBody, {
       headers,
       validateStatus: status => status < 500,
@@ -433,10 +417,10 @@ export async function sendEventToRemoteSession(
 }
 
 /**
- * Actualiza el titulo de una sesion remota existente via la Sessions API.
- * @param sessionId El ID de la sesion a actualizar
- * @param title El nuevo titulo para la sesion
- * @returns Promise<boolean> True si tuvo exito, false en otro caso
+ * Updates the title of an existing remote session via the Sessions API
+ * @param sessionId The session ID to update
+ * @param title The new title for the session
+ * @returns Promise<boolean> True if successful, false otherwise
  */
 export async function updateSessionTitle(
   sessionId: string,

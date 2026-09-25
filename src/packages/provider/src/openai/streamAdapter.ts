@@ -1,39 +1,33 @@
 /**
- * Adaptador de stream de OpenAI — porte de
- * `ccnmt: packages/provider/src/openai/streamAdapter.ts` (320 lineas).
- *
- * El puerto es COMPLETO: `adaptOpenAIStreamToAnthropic` (su unico export) y
- * `mapFinishReason` (privado). Ninguno queda fuera.
- *
- * El uso abundante de `as any` es un rodeo del sistema de tipos POR DISENO, y
- * viaja del original: las extensiones de OpenAI —`prompt_tokens_details`,
- * `reasoning_content`— son campos que existen en ejecucion y no estan en los
- * tipos publicados de `ChatCompletionChunk`.
+ * OpenAI stream adapter — SDK-to-SDK shape translation. Heavy `as any`
+ * usage is by-design type-system bypass: OpenAI extensions like
+ * `prompt_tokens_details` and `reasoning_content` are runtime fields
+ * not in the published `ChatCompletionChunk` types.
  */
 import type { BetaRawMessageStreamEvent } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import type { ChatCompletionChunk } from 'openai/resources/chat/completions/completions.mjs'
 import { randomUUID } from 'crypto'
 
 /**
- * Adapta una respuesta en streaming de OpenAI a los eventos de stream de
- * Anthropic.
+ * Adapt an OpenAI streaming response into Anthropic BetaRawMessageStreamEvent.
  *
- * El mapeo:
+ * Mapping:
+ *   First chunk              → message_start
+ *   delta.reasoning_content  → content_block_start(thinking) + thinking_delta + content_block_stop
+ *   delta.content            → content_block_start(text) + text_delta + content_block_stop
+ *   delta.tool_calls         → content_block_start(tool_use) + input_json_delta + content_block_stop
+ *   finish_reason            → message_delta(stop_reason) + message_stop
+ *   usage.cached_tokens      → cache_read_input_tokens in message_start usage
  *
- * - primer chunk              → `message_start`
- * - `delta.reasoning_content` → `content_block_start(thinking)` + `thinking_delta` + `content_block_stop`
- * - `delta.content`           → `content_block_start(text)` + `text_delta` + `content_block_stop`
- * - `delta.tool_calls`        → `content_block_start(tool_use)` + `input_json_delta` + `content_block_stop`
- * - `finish_reason`           → `message_delta(stop_reason)` + `message_stop`
- * - `usage.cached_tokens`     → `cache_read_input_tokens` del `message_start`
+ * Thinking support:
+ *   DeepSeek and compatible providers send `delta.reasoning_content` for chain-of-thought.
+ *   This is mapped to Anthropic's `thinking` content blocks:
+ *     content_block_start: { type: 'thinking', thinking: '', signature: '' }
+ *     content_block_delta: { type: 'thinking_delta', thinking: '...' }
  *
- * El pensamiento: DeepSeek y los proveedores compatibles mandan
- * `delta.reasoning_content` para la cadena de razonamiento, y se mapea a los
- * bloques `thinking` de Anthropic.
- *
- * La cache de prompt: OpenAI reporta los tokens cacheados en
- * `usage.prompt_tokens_details.cached_tokens`, y se mapean a
- * `cache_read_input_tokens`.
+ * Prompt caching:
+ *   OpenAI reports cached tokens in usage.prompt_tokens_details.cached_tokens.
+ *   This is mapped to Anthropic's cache_read_input_tokens.
  */
 export async function* adaptOpenAIStreamToAnthropic(
   stream: AsyncIterable<ChatCompletionChunk>,
@@ -44,37 +38,39 @@ export async function* adaptOpenAIStreamToAnthropic(
   let started = false
   let currentContentIndex = -1
 
-  // Bloques tool_use en curso: indice de tool_calls → su bloque.
-  const toolBlocks = new Map<
-    number,
-    { contentIndex: number; id: string; name: string; arguments: string }
-  >()
+  // Track tool_use blocks: tool_calls index → { contentIndex, id, name, arguments }
+  const toolBlocks = new Map<number, { contentIndex: number; id: string; name: string; arguments: string }>()
 
+  // Track thinking block state
   let thinkingBlockOpen = false
+
+  // Track text block state
   let textBlockOpen = false
 
+  // Track usage
   let inputTokens = 0
   let outputTokens = 0
   let cachedTokens = 0
 
-  // Indices de todo bloque abierto, para la limpieza final.
+  // Track all open content block indices (for cleanup)
   const openBlockIndices = new Set<number>()
 
   for await (const chunk of stream) {
     const choice = chunk.choices?.[0]
     const delta = choice?.delta
 
-    // El uso se extrae de cualquier chunk que lo traiga.
+    // Extract usage from any chunk that carries it
     if (chunk.usage) {
       inputTokens = chunk.usage.prompt_tokens ?? inputTokens
       outputTokens = chunk.usage.completion_tokens ?? outputTokens
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // OpenAI prompt caching: prompt_tokens_details.cached_tokens
       const details = (chunk.usage as any).prompt_tokens_details
       if (details?.cached_tokens) {
         cachedTokens = details.cached_tokens
       }
     }
 
+    // Emit message_start on first chunk
     if (!started) {
       started = true
 
@@ -100,8 +96,8 @@ export async function* adaptOpenAIStreamToAnthropic(
 
     if (!delta) continue
 
-    // reasoning_content da el bloque thinking de Anthropic.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Handle reasoning_content → Anthropic thinking block
+    // DeepSeek and compatible providers send delta.reasoning_content
     const reasoningContent = (delta as any).reasoning_content
     if (reasoningContent != null && reasoningContent !== '') {
       if (!thinkingBlockOpen) {
@@ -112,20 +108,28 @@ export async function* adaptOpenAIStreamToAnthropic(
         yield {
           type: 'content_block_start',
           index: currentContentIndex,
-          content_block: { type: 'thinking', thinking: '', signature: '' },
+          content_block: {
+            type: 'thinking',
+            thinking: '',
+            signature: '',
+          },
         } as BetaRawMessageStreamEvent
       }
 
       yield {
         type: 'content_block_delta',
         index: currentContentIndex,
-        delta: { type: 'thinking_delta', thinking: reasoningContent },
+        delta: {
+          type: 'thinking_delta',
+          thinking: reasoningContent,
+        },
       } as BetaRawMessageStreamEvent
     }
 
+    // Handle text content
     if (delta.content != null && delta.content !== '') {
       if (!textBlockOpen) {
-        // El pensamiento termino y empieza la respuesta: se cierra su bloque.
+        // Close thinking block if still open (reasoning done, now generating answer)
         if (thinkingBlockOpen) {
           yield {
             type: 'content_block_stop',
@@ -142,22 +146,30 @@ export async function* adaptOpenAIStreamToAnthropic(
         yield {
           type: 'content_block_start',
           index: currentContentIndex,
-          content_block: { type: 'text', text: '' },
+          content_block: {
+            type: 'text',
+            text: '',
+          },
         } as BetaRawMessageStreamEvent
       }
 
       yield {
         type: 'content_block_delta',
         index: currentContentIndex,
-        delta: { type: 'text_delta', text: delta.content },
+        delta: {
+          type: 'text_delta',
+          text: delta.content,
+        },
       } as BetaRawMessageStreamEvent
     }
 
+    // Handle tool calls
     if (delta.tool_calls) {
       for (const tc of delta.tool_calls) {
         const tcIndex = tc.index
 
         if (!toolBlocks.has(tcIndex)) {
+          // Close thinking block if open
           if (thinkingBlockOpen) {
             yield {
               type: 'content_block_stop',
@@ -167,6 +179,7 @@ export async function* adaptOpenAIStreamToAnthropic(
             thinkingBlockOpen = false
           }
 
+          // Close text block if open
           if (textBlockOpen) {
             yield {
               type: 'content_block_stop',
@@ -176,9 +189,9 @@ export async function* adaptOpenAIStreamToAnthropic(
             textBlockOpen = false
           }
 
+          // Start new tool_use block
           currentContentIndex++
-          const toolId =
-            tc.id || `toolu_${randomUUID().replace(/-/g, '').slice(0, 24)}`
+          const toolId = tc.id || `toolu_${randomUUID().replace(/-/g, '').slice(0, 24)}`
           const toolName = tc.function?.name || ''
 
           toolBlocks.set(tcIndex, {
@@ -201,19 +214,25 @@ export async function* adaptOpenAIStreamToAnthropic(
           } as BetaRawMessageStreamEvent
         }
 
+        // Stream argument fragments
         const argFragment = tc.function?.arguments
         if (argFragment) {
           toolBlocks.get(tcIndex)!.arguments += argFragment
           yield {
             type: 'content_block_delta',
             index: toolBlocks.get(tcIndex)!.contentIndex,
-            delta: { type: 'input_json_delta', partial_json: argFragment },
+            delta: {
+              type: 'input_json_delta',
+              partial_json: argFragment,
+            },
           } as BetaRawMessageStreamEvent
         }
       }
     }
 
+    // Handle finish
     if (choice?.finish_reason) {
+      // Close thinking block if still open
       if (thinkingBlockOpen) {
         yield {
           type: 'content_block_stop',
@@ -223,6 +242,7 @@ export async function* adaptOpenAIStreamToAnthropic(
         thinkingBlockOpen = false
       }
 
+      // Close text block if still open
       if (textBlockOpen) {
         yield {
           type: 'content_block_stop',
@@ -232,6 +252,7 @@ export async function* adaptOpenAIStreamToAnthropic(
         textBlockOpen = false
       }
 
+      // Close all tool blocks that haven't been closed yet
       for (const [, block] of toolBlocks) {
         if (openBlockIndices.has(block.contentIndex)) {
           yield {
@@ -242,26 +263,31 @@ export async function* adaptOpenAIStreamToAnthropic(
         }
       }
 
-      // Algunos backends devuelven «stop» aunque haya tool_calls. Se fuerza
-      // «tool_use» cuando se vio algun bloque de herramienta, porque si no el
-      // bucle de consulta no llega a ejecutarlas.
+      // Map finish_reason to Anthropic stop_reason.
+      // Some backends return "stop" even when tool_calls are present —
+      // force "tool_use" when we saw any tool blocks to ensure the query
+      // loop actually executes the tools.
       const hasToolCalls = toolBlocks.size > 0
-      const stopReason = hasToolCalls
-        ? 'tool_use'
-        : mapFinishReason(choice.finish_reason)
+      const stopReason = hasToolCalls ? 'tool_use' : mapFinishReason(choice.finish_reason)
 
       yield {
         type: 'message_delta',
-        delta: { stop_reason: stopReason, stop_sequence: null },
-        usage: { output_tokens: outputTokens },
+        delta: {
+          stop_reason: stopReason,
+          stop_sequence: null,
+        },
+        usage: {
+          output_tokens: outputTokens,
+        },
       } as BetaRawMessageStreamEvent
 
-      yield { type: 'message_stop' } as BetaRawMessageStreamEvent
+      yield {
+        type: 'message_stop',
+      } as BetaRawMessageStreamEvent
     }
   }
 
-  // Red de seguridad: si el stream acaba sin finish_reason, se cierra lo que
-  // quedara abierto. Sin esto el consumidor recibe un bloque que nunca cierra.
+  // Safety: close any remaining open blocks if stream ended without finish_reason
   for (const idx of openBlockIndices) {
     yield {
       type: 'content_block_stop',
@@ -271,10 +297,12 @@ export async function* adaptOpenAIStreamToAnthropic(
 }
 
 /**
- * Traduce el `finish_reason` de OpenAI al `stop_reason` de Anthropic.
+ * Map OpenAI finish_reason to Anthropic stop_reason.
  *
- * `stop` y `content_filter` dan `end_turn`; `tool_calls` da `tool_use`;
- * `length` da `max_tokens`. Cualquier otro valor cae a `end_turn`.
+ * stop           → end_turn
+ * tool_calls     → tool_use
+ * length         → max_tokens
+ * content_filter → end_turn
  */
 function mapFinishReason(reason: string): string {
   switch (reason) {

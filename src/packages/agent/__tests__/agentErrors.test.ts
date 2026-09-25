@@ -1,110 +1,104 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/agentErrors.test.ts`.
- * Lo que un consumidor compara es el `code`, no el mensaje: por eso los casos
- * miden el codigo, su prefijo y su unicidad, no la prosa.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   AgentBaseError,
   HostBindingsError,
   StateError,
-  TaskCycleError,
   UserAbort,
-} from '../errors.ts'
+} from '../errors.js'
 
 describe('AgentBaseError', () => {
-  test('conserva el codigo explicito', () => {
-    expect(new AgentBaseError('AGENT_X', 'boom').code).toBe('AGENT_X')
+  test('preserves explicit code', () => {
+    expect(new AgentBaseError('CUSTOM', 'm').code).toBe('CUSTOM')
   })
-
-  test('es una instancia de Error', () => {
-    expect(new AgentBaseError('AGENT_X', 'boom')).toBeInstanceOf(Error)
+  test('is an Error instance', () => {
+    expect(new AgentBaseError('X', 'm')).toBeInstanceOf(Error)
   })
-
-  test('propaga la causa', () => {
-    const cause = new Error('raiz')
-    expect(new AgentBaseError('AGENT_X', 'boom', { cause }).cause).toBe(cause)
+  test('forwards cause', () => {
+    const cause = new Error('underlying')
+    expect(new AgentBaseError('X', 'm', { cause }).cause).toBe(cause)
   })
-
-  test('su nombre por defecto es AgentBaseError', () => {
-    expect(new AgentBaseError('AGENT_X', 'boom').name).toBe('AgentBaseError')
+  test('default name is AgentBaseError', () => {
+    expect(new AgentBaseError('X', 'm').name).toBe('AgentBaseError')
   })
 })
 
 describe('HostBindingsError', () => {
-  test('su codigo es AGENT_HOST_BINDINGS_ERROR', () => {
-    expect(new HostBindingsError('sin ataduras').code).toBe('AGENT_HOST_BINDINGS_ERROR')
+  test('code is AGENT_HOST_BINDINGS_ERROR', () => {
+    expect(new HostBindingsError('m').code).toBe('AGENT_HOST_BINDINGS_ERROR')
   })
-
-  test('su nombre es AgentHostBindingsError', () => {
-    expect(new HostBindingsError('sin ataduras').name).toBe('AgentHostBindingsError')
+  test('name is AgentHostBindingsError', () => {
+    expect(new HostBindingsError('m').name).toBe('AgentHostBindingsError')
   })
-
-  test('extiende AgentBaseError', () => {
-    expect(new HostBindingsError('sin ataduras')).toBeInstanceOf(AgentBaseError)
+  test('extends AgentBaseError', () => {
+    expect(new HostBindingsError('m')).toBeInstanceOf(AgentBaseError)
   })
 })
 
 describe('StateError', () => {
-  test('su codigo es AGENT_STATE_ERROR', () => {
-    expect(new StateError('estado roto').code).toBe('AGENT_STATE_ERROR')
+  test('code is AGENT_STATE_ERROR', () => {
+    expect(new StateError('m').code).toBe('AGENT_STATE_ERROR')
   })
-
-  test('su nombre es AgentStateError', () => {
-    expect(new StateError('estado roto').name).toBe('AgentStateError')
+  test('name is AgentStateError', () => {
+    expect(new StateError('m').name).toBe('AgentStateError')
   })
-
-  test('extiende AgentBaseError', () => {
-    expect(new StateError('estado roto')).toBeInstanceOf(AgentBaseError)
+  test('extends AgentBaseError', () => {
+    expect(new StateError('m')).toBeInstanceOf(AgentBaseError)
   })
 })
 
-describe('TaskCycleError', () => {
-  test('lleva el camino que cerro el ciclo', () => {
-    expect(new TaskCycleError(['A', 'B', 'A']).path).toEqual(['A', 'B', 'A'])
-  })
+describe('UserAbort — unique symbol marker', () => {
+  // Critical contract: UserAbort is a SYMBOL, NOT an Error subclass.
+  // Callers distinguish cooperative user interrupts via `=== UserAbort`,
+  // not via instanceof or .message string match. This is the contract
+  // commented in the source.
 
-  test('el mensaje nombra el camino, que es lo accionable', () => {
-    expect(new TaskCycleError(['A', 'B', 'A']).message).toContain('A → B → A')
-  })
-
-  test('su codigo es AGENT_TASK_CYCLE', () => {
-    expect(new TaskCycleError(['A', 'A']).code).toBe('AGENT_TASK_CYCLE')
-  })
-})
-
-describe('UserAbort — marcador de simbolo unico', () => {
-  test('es un simbolo, no una subclase de Error', () => {
+  test('is a symbol (typeof check)', () => {
     expect(typeof UserAbort).toBe('symbol')
   })
 
-  test('su descripcion es UserAbort', () => {
+  test('description is "UserAbort"', () => {
     expect(UserAbort.description).toBe('UserAbort')
   })
 
-  test('se compara por identidad', () => {
-    const thrown: unknown = UserAbort
-    expect(thrown === UserAbort).toBe(true)
+  test('is reference-stable (=== check works across imports)', () => {
+    // The unique-symbol typing guarantees callers can compare with ===.
+    // If a future refactor accidentally moves UserAbort to a different
+    // module without re-export, callers' === checks would silently fail
+    // (they'd be comparing against a stale symbol).
+    expect(UserAbort).toBe(UserAbort)
   })
 
-  test('NO es constructor: `new` sobre el simbolo revienta', () => {
-    // @ts-expect-error — el contrato es justamente que no se puede construir
-    expect(() => new UserAbort()).toThrow()
+  test('NOT a constructor (cannot be `new UserAbort()`)', () => {
+    // Symbol is intentionally not a class — verify it's not callable
+    // with `new`.
+    expect(() => {
+      new (UserAbort as unknown as { new (): unknown })()
+    }).toThrow()
+  })
+
+  test('is type-narrowable in equality checks (compile-time contract)', () => {
+    // The exported type `typeof UserAbort` makes the equality check
+    // type-safe. Verifying via runtime that the value matches its
+    // own type binding.
+    const value: typeof UserAbort = UserAbort
+    expect(value === UserAbort).toBe(true)
   })
 })
 
-describe('unicidad de los codigos', () => {
-  const codes = [
-    new HostBindingsError('x').code,
-    new StateError('x').code,
-    new TaskCycleError(['a', 'a']).code,
-  ]
-
-  test('los codigos de las subclases son distintos entre si', () => {
-    expect(new Set(codes).size).toBe(codes.length)
+describe('agent error code uniqueness', () => {
+  test('all subclass codes are distinct', () => {
+    const codes = new Set([
+      new HostBindingsError('m').code,
+      new StateError('m').code,
+    ])
+    expect(codes.size).toBe(2)
   })
-
-  test('todos empiezan con el prefijo AGENT_', () => {
-    for (const c of codes) expect(c.startsWith('AGENT_')).toBe(true)
+  test('all subclass codes start with AGENT_ prefix', () => {
+    for (const code of [
+      new HostBindingsError('m').code,
+      new StateError('m').code,
+    ]) {
+      expect(code).toMatch(/^AGENT_/)
+    }
   })
 })

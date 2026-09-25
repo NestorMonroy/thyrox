@@ -1,36 +1,22 @@
-/**
- * Porte de `ccnmt: packages/agent/__tests__/contentTextHelpers.test.ts`.
- *
- * Fija el contrato de los ayudantes que extraen texto plano de un mensaje:
- * `extractTextContent` (el unico que ensambla texto desde bloques),
- * `getContentText` (enruta cadena vs arreglo, con el `trim()` que SOLO
- * aplica a la rama de arreglo — un refactor que unifique con
- * `result.trim()` recortaria en silencio las cadenas), `getUserMessageText`
- * (filtro por tipo `user`) y `textForResubmit`, cuya precedencia
- * bash-input > command-name > texto llano decide que ve el modelo al
- * reenviar un prompt con la flecha hacia arriba.
- */
 import { describe, expect, test } from 'bun:test'
 import {
   extractTextContent,
   getContentText,
   getUserMessageText,
   textForResubmit,
-} from '../messages.ts'
-import type { Message, UserMessage } from '../messageShapes.ts'
+} from '../messages.js'
+import type { Message, UserMessage } from '../messageShapes.js'
 
-describe('extractTextContent — ensamblador de bloques de texto', () => {
-  test('arreglo vacio → cadena vacia', () => {
+describe('extractTextContent — text-block joiner', () => {
+  test('empty array → empty string', () => {
     expect(extractTextContent([])).toBe('')
   })
 
-  test('extrae un unico bloque de texto', () => {
-    expect(extractTextContent([{ type: 'text', text: 'hello' }])).toBe(
-      'hello',
-    )
+  test('single text block extracted', () => {
+    expect(extractTextContent([{ type: 'text', text: 'hello' }])).toBe('hello')
   })
 
-  test('varios bloques de texto unidos con separador vacio (por defecto)', () => {
+  test('multiple text blocks joined with empty separator (default)', () => {
     expect(
       extractTextContent([
         { type: 'text', text: 'a' },
@@ -39,7 +25,7 @@ describe('extractTextContent — ensamblador de bloques de texto', () => {
     ).toBe('ab')
   })
 
-  test('un separador propio une los bloques', () => {
+  test('custom separator joins blocks', () => {
     expect(
       extractTextContent(
         [
@@ -51,7 +37,7 @@ describe('extractTextContent — ensamblador de bloques de texto', () => {
     ).toBe('a\nb')
   })
 
-  test('los bloques que no son texto se filtran', () => {
+  test('non-text blocks filtered out', () => {
     expect(
       extractTextContent([
         { type: 'text', text: 'keep' },
@@ -62,52 +48,51 @@ describe('extractTextContent — ensamblador de bloques de texto', () => {
     ).toBe('keepalso-keep')
   })
 
-  test('bloque de texto sin el campo `text` — se une como vacio (Array.join coacciona undefined)', () => {
-    // El filtro solo revisa type === 'text'. El map luego accede a .text,
-    // que es undefined. Array.prototype.join coacciona undefined a ''
-    // (NO a la cadena 'undefined'). Documenta el comportamiento seguro
-    // por accidente: un bloque de texto malformado desaparece en
-    // silencio de la salida.
+  test('text block missing `text` field — joined as empty (Array.join coerces undefined)', () => {
+    // Filter only checks type === 'text'. Map then accesses .text which
+    // is undefined. Array.prototype.join coerces undefined to '' (NOT
+    // the string 'undefined'). Documents the safe-by-accident behavior:
+    // a malformed text block silently disappears from output.
     const r = extractTextContent([
       { type: 'text' } as { type: 'text'; text: string },
     ])
     expect(r).toBe('')
   })
 
-  test('mezcla de bloques de texto validos e invalidos — solo caen los undefined', () => {
+  test('mix of valid + invalid text blocks — only undefineds drop', () => {
     expect(
       extractTextContent([
         { type: 'text', text: 'a' },
-        { type: 'text' } as { type: 'text'; text: string }, // campo ausente
+        { type: 'text' } as { type: 'text'; text: string }, // missing field
         { type: 'text', text: 'b' },
       ]),
     ).toBe('ab')
   })
 
-  test('acepta arreglos de solo lectura (tipado estructural)', () => {
+  test('readonly arrays accepted (structural typing)', () => {
     const blocks: ReadonlyArray<{ readonly type: string; readonly text?: string }> =
       Object.freeze([{ type: 'text', text: 'frozen' }])
     expect(extractTextContent(blocks as never)).toBe('frozen')
   })
 })
 
-describe('getContentText — enrutado cadena vs arreglo', () => {
-  test('contenido de cadena → se devuelve verbatim (sin trim)', () => {
+describe('getContentText — string vs array routing', () => {
+  test('string content → returned verbatim (no trim)', () => {
     expect(getContentText('hello world')).toBe('hello world')
   })
 
-  test('cadena con espacios al inicio/final preservados', () => {
-    // CRITICO: solo la rama de arreglo hace trim. La rama de cadena pasa
-    // sin cambios. Un refactor que unifique via `result.trim()` recortaria
-    // en silencio los espacios de las rutas de contenido en cadena.
+  test('string with leading/trailing whitespace preserved', () => {
+    // CRITICAL: only the array branch trims. String branch passes through
+    // unchanged. A refactor that unifies via `result.trim()` would silently
+    // strip whitespace from string-content paths.
     expect(getContentText('  spaced  ')).toBe('  spaced  ')
   })
 
-  test('cadena vacia → cadena vacia (NO null)', () => {
+  test('empty string → empty string (NOT null)', () => {
     expect(getContentText('')).toBe('')
   })
 
-  test('contenido en arreglo se une con \\n y luego se recorta', () => {
+  test('array content joined with \\n then trimmed', () => {
     expect(
       getContentText([
         { type: 'text', text: 'a' },
@@ -116,40 +101,40 @@ describe('getContentText — enrutado cadena vs arreglo', () => {
     ).toBe('a\nb')
   })
 
-  test('arreglo cuyo resultado tras el trim queda vacio devuelve null', () => {
-    // La funcion devuelve `result || null` — vacio tras el trim → null.
+  test('array with trim-empty result returns null', () => {
+    // The function returns `result || null` — empty after trim → null.
     expect(getContentText([] as never)).toBeNull()
   })
 
-  test('arreglo con texto solo de espacios → null tras el trim', () => {
+  test('array with whitespace-only text → null after trim', () => {
     expect(
       getContentText([{ type: 'text', text: '   ' }] as never),
     ).toBeNull()
   })
 
-  test('ni cadena ni arreglo → null', () => {
+  test('non-string non-array → null', () => {
     expect(getContentText(null as never)).toBeNull()
     expect(getContentText(undefined as never)).toBeNull()
     expect(getContentText({} as never)).toBeNull()
   })
 })
 
-describe('getUserMessageText — filtro solo-usuario', () => {
+describe('getUserMessageText — user-only filter', () => {
   function userMsg(content: string | Array<{ type: string; text?: string }>): Message {
     return { type: 'user', message: { content } } as Message
   }
 
-  test('mensaje de usuario con contenido de cadena → se devuelve', () => {
+  test('user message string content → returned', () => {
     expect(getUserMessageText(userMsg('hi'))).toBe('hi')
   })
 
-  test('mensaje de usuario con contenido en arreglo → unido y recortado', () => {
+  test('user message array content → joined+trimmed', () => {
     expect(
       getUserMessageText(userMsg([{ type: 'text', text: 'hi' }])),
     ).toBe('hi')
   })
 
-  test('tipos que no son de usuario → null', () => {
+  test('non-user message types → null', () => {
     expect(
       getUserMessageText({
         type: 'assistant',
@@ -164,26 +149,26 @@ describe('getUserMessageText — filtro solo-usuario', () => {
     ).toBeNull()
   })
 
-  test('mensaje de usuario con arreglo vacio → null', () => {
+  test('user message with empty array → null', () => {
     expect(getUserMessageText(userMsg([]))).toBeNull()
   })
 })
 
-describe('textForResubmit — precedencia de entrada bash', () => {
+describe('textForResubmit — bash-input precedence', () => {
   function userMsg(content: string): UserMessage {
     return { type: 'user', message: { content } } as UserMessage
   }
 
-  test('prompt llano — modo=prompt, texto sin cambios', () => {
+  test('plain prompt — mode=prompt, text passthrough', () => {
     expect(textForResubmit(userMsg('what is 2+2'))).toEqual({
       text: 'what is 2+2',
       mode: 'prompt',
     })
   })
 
-  test('bash-input gana sobre command-name (precedencia)', () => {
-    // La funcion revisa bash-input PRIMERO. Aunque ambas etiquetas esten
-    // presentes, bash-input domina.
+  test('bash-input wins over command-name (precedence)', () => {
+    // The function checks bash-input FIRST. Even if both tags present,
+    // bash-input dominates.
     expect(
       textForResubmit(
         userMsg(
@@ -193,15 +178,15 @@ describe('textForResubmit — precedencia de entrada bash', () => {
     ).toEqual({ text: 'ls -la', mode: 'bash' })
   })
 
-  test('command-name sin argumentos → "name " (espacio final)', () => {
-    // El formato es `${cmd} ${args}` con args por defecto en cadena
-    // vacia. Resultado: "compact " con espacio final. Lo documenta.
+  test('command-name without args → "name " (trailing space)', () => {
+    // The format is `${cmd} ${args}` with args defaulting to empty
+    // string. Result: "compact " with trailing space. Documents this.
     expect(
       textForResubmit(userMsg('<command-name>compact</command-name>')),
     ).toEqual({ text: 'compact ', mode: 'prompt' })
   })
 
-  test('command-name con command-args', () => {
+  test('command-name with command-args', () => {
     expect(
       textForResubmit(
         userMsg(
@@ -211,7 +196,7 @@ describe('textForResubmit — precedencia de entrada bash', () => {
     ).toEqual({ text: 'review PR-123', mode: 'prompt' })
   })
 
-  test('mensaje que no es de usuario → null', () => {
+  test('non-user message → null', () => {
     expect(
       textForResubmit({
         type: 'assistant',
@@ -220,7 +205,7 @@ describe('textForResubmit — precedencia de entrada bash', () => {
     ).toBeNull()
   })
 
-  test('mensaje de usuario sin contenido de texto → null', () => {
+  test('user message with no text content → null', () => {
     expect(
       textForResubmit({
         type: 'user',
@@ -229,20 +214,20 @@ describe('textForResubmit — precedencia de entrada bash', () => {
     ).toBeNull()
   })
 
-  test('prompt llano sin etiquetas pasa por stripIdeContextTags', () => {
-    // La rama de respaldo: el texto pasa por stripIdeContextTags. Para
-    // entrada que no es de IDE deberia pasar sin cambios.
+  test('plain prompt with no tags goes through stripIdeContextTags', () => {
+    // The fallback branch: text 經 stripIdeContextTags. For non-IDE
+    // input it should pass through unchanged.
     expect(textForResubmit(userMsg('please help'))).toEqual({
       text: 'please help',
       mode: 'prompt',
     })
   })
 
-  test('etiqueta bash-input vacia → texto bash vacio', () => {
-    // <bash-input></bash-input> — extractTag devuelve null ante contenido
-    // vacio (por el guard `if (depth === 0 && content)` de extractTag).
-    // Asi que la rama bash-input cae a command-name → null → la rama
-    // stripIdeContextTags.
+  test('empty bash-input tag → empty bash text', () => {
+    // <bash-input></bash-input> — extractTag returns null on empty
+    // content (per extractTag's `if (depth === 0 && content)` guard).
+    // So bash-input branch falls through to command-name → null →
+    // stripIdeContextTags branch.
     expect(
       textForResubmit(userMsg('<bash-input></bash-input>')),
     ).toEqual({ text: '<bash-input></bash-input>', mode: 'prompt' })

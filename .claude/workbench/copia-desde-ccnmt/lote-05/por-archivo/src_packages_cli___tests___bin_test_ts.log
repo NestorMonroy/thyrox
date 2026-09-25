@@ -1,0 +1,289 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/bin.test.ts:
+25 |       { id: 'm2', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso,
+26 |         content: [{ type: 'text', text: 'archivo escrito' }] },
+27 |     ]))
+28 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'escribe el archivo', '--provider', 'recorded',
+29 |       '--grabacion', join(d, 'turnos.json'), '--cwd', d, '--transcript-dir', join(d, 'tr'), '--json'])
+30 |     expect(p.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:30:24)
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > con turnos grabados ejecuta una herramienta real y devuelve el texto [1032.84ms]
+35 |     expect(Bun.file(marca).size).toBeGreaterThan(0)
+36 |   })
+37 | 
+38 |   test('sin --prompt imprime la ayuda y sale 2', () => {
+39 |     const p = Bun.spawnSync(['bun', 'run', BIN])
+40 |     expect(p.exitCode).toBe(2)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:40:24)
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > sin --prompt imprime la ayuda y sale 2 [627.41ms]
+43 | 
+44 |   test('--provider http sin credencial falla diciendo por que, no en silencio', () => {
+45 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--provider', 'http'],
+46 |       { env: { ...process.env, ANTHROPIC_API_KEY: '' } })
+47 |     expect(p.exitCode).not.toBe(0)
+48 |     expect(p.stderr.toString()).toContain('ANTHROPIC_API_KEY')
+                                     ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "ANTHROPIC_API_KEY"
+Received: "1 | })\n2 | {\n    ^\nSyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.11 (Linux x64)\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:48:33)
+(fail) src/entry/main.ts (T-009) — un ciclo completo de punta a punta > --provider http sin credencial falla diciendo por que, no en silencio [874.92ms]
+64 |   test('--output-style text anuncia cada herramienta mientras corre', () => {
+65 |     const d = mkdtempSync(join(tmpdir(), 'bin-'))
+66 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', turnos(d),
+67 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'text'])
+68 |     const salida = p.stdout.toString()
+69 |     expect(salida).toContain('Bash')
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "Bash"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:69:20)
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --output-style text anuncia cada herramienta mientras corre [987.95ms]
+74 |   test('--output-style quiet imprime la respuesta y calla el resto', () => {
+75 |     const d = mkdtempSync(join(tmpdir(), 'bin-'))
+76 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', turnos(d),
+77 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'quiet'])
+78 |     const salida = p.stdout.toString()
+79 |     expect(salida).toContain('terminado')
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "terminado"
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:79:20)
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --output-style quiet imprime la respuesta y calla el resto [630.11ms]
+82 | 
+83 |   test('--output-style json emite una linea JSON valida por evento', () => {
+84 |     const d = mkdtempSync(join(tmpdir(), 'bin-'))
+85 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', turnos(d),
+86 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'json'])
+87 |     const lineas = p.stdout.toString().trim().split('\n').map((l) => JSON.parse(l))
+               ^
+SyntaxError: JSON Parse error: Unexpected EOF
+      at map (1:11)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:87:59)
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --output-style json emite una linea JSON valida por evento [1035.99ms]
+91 | 
+92 |   test('un estilo inexistente se rechaza nombrando los validos', () => {
+93 |     const d = mkdtempSync(join(tmpdir(), 'bin-'))
+94 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', turnos(d),
+95 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'arcoiris'])
+96 |     expect(p.exitCode).toBe(2)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:96:24)
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > un estilo inexistente se rechaza nombrando los validos [988.09ms]
+101 |     const d = mkdtempSync(join(tmpdir(), 'bin-'))
+102 |     const tr = join(d, 'tr')
+103 |     Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'la pregunta original', '--grabacion', turnos(d),
+104 |       '--cwd', d, '--transcript-dir', tr, '--output-style', 'quiet'])
+105 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--sessions', '--transcript-dir', tr])
+106 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:106:24)
+(fail) la CLI dibuja el flujo de eventos (T-038, T-040) > --sessions lista lo que hay para reanudar, y sale sin correr el bucle [2089.36ms]
+120 |     writeFileSync(join(d, 'turnos.json'), JSON.stringify([
+121 |       { id: 'm', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'ya' }] },
+122 |     ]))
+123 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', join(d, 'turnos.json'),
+124 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--settings-source', 'project', '--output-style', 'quiet'])
+125 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:125:24)
+(fail) la CLI lee la configuracion del proyecto (T-044) > --settings-source project toma hooks y permisos de .claude/settings.json [797.61ms]
+135 |       { id: 'm2', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'te dije hola a ti' }] },
+136 |     ]))
+137 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--chat', '--grabacion', join(d, 'turnos.json'),
+138 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'quiet'],
+139 |       { stdin: Buffer.from('hola\nque me dijiste\n') })
+140 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:140:24)
+(fail) modo conversacion (T-039) > cada linea de stdin es un turno, y el segundo VE el primero [881.41ms]
+152 |       { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'ok' }] },
+153 |     ]))
+154 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--chat', '--grabacion', join(d, 'turnos.json'),
+155 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'quiet'],
+156 |       { stdin: Buffer.from('uno\n/salir\ndos\n') })
+157 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:157:24)
+(fail) modo conversacion (T-039) > la linea de salida termina la conversacion sin error [908.99ms]
+164 |       { id: 'm1', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'unico' }] },
+165 |     ]))
+166 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--chat', '--grabacion', join(d, 'turnos.json'),
+167 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'quiet'],
+168 |       { stdin: Buffer.from('\n   \nuno\n') })
+169 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:169:24)
+(fail) modo conversacion (T-039) > una linea vacia no gasta un turno [860.94ms]
+186 |     writeFileSync(join(d, 'turnos.json'), JSON.stringify([
+187 |       { id: 'm', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'ya' }] },
+188 |     ]))
+189 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', join(d, 'turnos.json'),
+190 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--settings-source', 'project', '--output-style', 'quiet'])
+191 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:191:24)
+(fail) la configuracion viene de @thyrox/config (T-044) > project y local se ACUMULAN en hooks, con la precedencia del paquete [680.47ms]
+200 |     writeFileSync(join(d, 'turnos.json'), JSON.stringify([
+201 |       { id: 'm', model: 'claude-opus-5', stop_reason: 'end_turn', usage: uso, content: [{ type: 'text', text: 'ya' }] },
+202 |     ]))
+203 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--grabacion', join(d, 'turnos.json'),
+204 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--settings-source', 'project', '--output-style', 'quiet'])
+205 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:205:24)
+(fail) la configuracion viene de @thyrox/config (T-044) > un settings.json invalido AVISA con su ruta y el arranque sigue [733.14ms]
+210 |     const d = mkdtempSync(join(tmpdir(), 'cfg-'))
+211 |     require('node:fs').mkdirSync(join(d, '.claude'), { recursive: true })
+212 |     writeFileSync(join(d, '.claude', 'settings.json'), JSON.stringify({ model: 'claude-opus-5' }))
+213 |     writeFileSync(join(d, '.claude', 'settings.local.json'), JSON.stringify({ model: 'claude-sonnet-5' }))
+214 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--config-origin', '--cwd', d, '--settings-source', 'project'])
+215 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:215:24)
+(fail) la configuracion viene de @thyrox/config (T-044) > --config-origin dice de que fuente salio cada clave [707.44ms]
+277 |     // `NODE_ENV=test`), sin lo cual las tres pruebas de este bloque pasarian
+278 |     // igual leyendo el stub -- un verde que no discrimina.
+279 |     const env = { ...process.env, HOME: home }
+280 |     delete env.NODE_ENV
+281 |     const p = Bun.spawnSync(args, { env })
+282 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:282:24)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:291:20)
+(fail) --connection activa @thyrox/config de verdad y decide compressToolResults (T-9) > sin --connection: el ruido de git status llega intacto (default apagado) [637.20ms]
+277 |     // `NODE_ENV=test`), sin lo cual las tres pruebas de este bloque pasarian
+278 |     // igual leyendo el stub -- un verde que no discrimina.
+279 |     const env = { ...process.env, HOME: home }
+280 |     delete env.NODE_ENV
+281 |     const p = Bun.spawnSync(args, { env })
+282 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:282:24)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:298:20)
+(fail) --connection activa @thyrox/config de verdad y decide compressToolResults (T-9) > --connection SIN compressToolResults en su providerSpecificData: sigue intacto [692.70ms]
+277 |     // `NODE_ENV=test`), sin lo cual las tres pruebas de este bloque pasarian
+278 |     // igual leyendo el stub -- un verde que no discrimina.
+279 |     const env = { ...process.env, HOME: home }
+280 |     delete env.NODE_ENV
+281 |     const p = Bun.spawnSync(args, { env })
+282 |     expect(p.exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:282:24)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:305:20)
+(fail) --connection activa @thyrox/config de verdad y decide compressToolResults (T-9) > --connection CON compressToolResults:true en su providerSpecificData (persistida via @thyrox/config): RTK recorta el ruido [625.90ms]
+339 |         '--connection', 'con-local', '--cwd', d, '--transcript-dir', join(d, 'tr'), '--output-style', 'json'],
+340 |         { env, stdout: 'pipe', stderr: 'pipe' })
+341 |       const exitCode = await p.exited
+342 |       const salidaEstandar = await new Response(p.stdout).text()
+343 | 
+344 |       expect(exitCode).toBe(0)
+                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:344:24)
+(fail) --connection dirige el ENDPOINT y la AUTH del transporte http real (T-10) > con --provider http, endpoint y auth de la conexion, el binario le pega al servidor local -- no a la API real [827.23ms]
+358 | 
+359 |   test('sin --connection, --provider http sin credencial sigue fallando igual que antes (T-10 no cambia el default)', () => {
+360 |     const p = Bun.spawnSync(['bun', 'run', BIN, '--prompt', 'x', '--provider', 'http'],
+361 |       { env: { ...process.env, ANTHROPIC_API_KEY: '' } })
+362 |     expect(p.exitCode).not.toBe(0)
+363 |     expect(p.stderr.toString()).toContain('ANTHROPIC_API_KEY')
+                                      ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "ANTHROPIC_API_KEY"
+Received: "1 | })\n2 | {\n    ^\nSyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.\n      at loadAndEvaluateModule (2:1)\n\nBun v1.3.11 (Linux x64)\n"
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/bin.test.ts:363:33)
+(fail) --connection dirige el ENDPOINT y la AUTH del transporte http real (T-10) > sin --connection, --provider http sin credencial sigue fallando igual que antes (T-10 no cambia el default) [696.50ms]
+
+ 0 pass
+ 20 fail
+ 21 expect() calls
+Ran 20 tests across 1 file. [17.44s]
+exit=1

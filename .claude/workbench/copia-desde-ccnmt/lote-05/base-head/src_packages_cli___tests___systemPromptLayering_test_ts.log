@@ -1,0 +1,68 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/systemPromptLayering.test.ts:
+88 | function correr(d: string, extra: string[] = []): string {
+89 |   const tr = join(d, `tr-${Math.random().toString(36).slice(2)}`)
+90 |   const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'hola',
+91 |     '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
+92 |     '--cwd', d, '--transcript-dir', tr, '--json', ...extra])
+93 |   expect(p.exitCode).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:93:22)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:99:12)
+(fail) A.4.2 — el prompt de la CLI se arma por capas > 1. el CLAUDE.md del proyecto llega al modelo [636.34ms]
+88 | function correr(d: string, extra: string[] = []): string {
+89 |   const tr = join(d, `tr-${Math.random().toString(36).slice(2)}`)
+90 |   const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'hola',
+91 |     '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
+92 |     '--cwd', d, '--transcript-dir', tr, '--json', ...extra])
+93 |   expect(p.exitCode).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:93:22)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:103:12)
+(fail) A.4.2 — el prompt de la CLI se arma por capas > 2. una regla SIN paths es del piso: entra siempre [644.62ms]
+88 | function correr(d: string, extra: string[] = []): string {
+89 |   const tr = join(d, `tr-${Math.random().toString(36).slice(2)}`)
+90 |   const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'hola',
+91 |     '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
+92 |     '--cwd', d, '--transcript-dir', tr, '--json', ...extra])
+93 |   expect(p.exitCode).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:93:22)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:107:15)
+(fail) A.4.2 — el prompt de la CLI se arma por capas > 3. sin ruta objetivo, NINGUNA condicional entra [625.78ms]
+88 | function correr(d: string, extra: string[] = []): string {
+89 |   const tr = join(d, `tr-${Math.random().toString(36).slice(2)}`)
+90 |   const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'hola',
+91 |     '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
+92 |     '--cwd', d, '--transcript-dir', tr, '--json', ...extra])
+93 |   expect(p.exitCode).toBe(0)
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at correr (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:93:22)
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/systemPromptLayering.test.ts:117:15)
+(fail) A.4.2 — el prompt de la CLI se arma por capas > 4. con ruta objetivo entra la que casa, y SOLO ella [659.59ms]
+
+ 0 pass
+ 4 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [2.68s]

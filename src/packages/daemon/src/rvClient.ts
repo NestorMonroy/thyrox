@@ -1,56 +1,53 @@
 /**
- * Cliente del socket de rendezvous (control) — lado supervisor.
+ * Rendezvous (control) socket CLIENT — supervisor side.
  *
- * Puerto 1:1 de `ant 5016.js` `naK`. El WorkerVm del daemon abre uno de
- * éstos contra el socket de rendezvous de cada worker (`<jobDir>/rv.sock`).
- * Es el canal de control fuera de banda, SEPARADO del socket de datos PTY:
+ * 1:1 port of ant 5016.js `naK`. The daemon's WorkerVm opens one of these
+ * against each worker's rendezvous socket (`<jobDir>/rv.sock`). It is the
+ * out-of-band control channel, SEPARATE from the PTY data socket:
  *
- *   - socket PTY  (ptyHost/ptyAdopter): bytes de pantalla, attach/replay.
- *   - socket rv   (éste + rvServer):    state/done/heartbeat autoritativos
- *                                       empujados por el REPL interno, más
- *                                       shutdown/repaint/reply/attacher-caps
- *                                       supervisor→worker.
+ *   - PTY socket  (ptyHost/ptyAdopter): screen bytes, attach/replay.
+ *   - rv socket   (this + rvServer):    authoritative state/done/heartbeat
+ *                                       pushed by the inner REPL, plus
+ *                                       supervisor→worker shutdown/repaint/
+ *                                       reply/attacher-caps.
  *
- * Modelo de conexión (ant naK, verbatim):
- *   - Al construirse, conecta de inmediato.
- *   - Al conectar: resetea el contador de intentos, manda la trama de
- *     handshake `{ proto, role: 'supervisor', supervisorPid }`, luego lee
- *     tramas JSON delimitadas por newline y reenvía cada mensaje tipado a
- *     `onMessage`.
- *   - Al cerrarse una conexión YA ESTABLECIDA: llama a `onDisconnect` (el
- *     WorkerVm lo usa para re-chequear de inmediato el pid del worker),
- *     luego programa una reconexión.
- *   - Backoff de reconexión: `[100, 250, 500, 1000, 2000]` ms (acotado a la
- *     última entrada), con tope de 30 intentos. Agotados, registra
- *     `tengu_bg_rv_connect_exhausted` y se detiene — el poll de pid del
- *     WorkerVm es el respaldo de vivacidad desde ese punto (rv es una
- *     optimización sobre el poll de pid, nunca la única señal).
- *   - `send()`: si no hay socket vivo y ya se había agotado, resetea el
- *     contador y reintenta (un send es evidencia de que el supervisor
- *     todavía le importa este worker). Devuelve false cuando la trama no
- *     se pudo escribir.
+ * Connection model (ant naK, verbatim):
+ *   - On construction, connect immediately.
+ *   - On connect: reset attempt counter, send the handshake frame
+ *     `{ proto, role: 'supervisor', supervisorPid }`, then read newline-
+ *     delimited JSON frames and forward each typed message to `onMessage`.
+ *   - On close of an ESTABLISHED connection: call `onDisconnect` (the
+ *     WorkerVm uses this to immediately re-check the worker pid), then
+ *     schedule a reconnect.
+ *   - Reconnect backoff: `[100, 250, 500, 1000, 2000]` ms (clamped to the
+ *     last entry), capped at 30 attempts. After exhaustion, log
+ *     `tengu_bg_rv_connect_exhausted` and stop — the WorkerVm's pid-poll is
+ *     the liveness backstop from that point on (rv is an optimisation over
+ *     pid-poll, never the only signal).
+ *   - `send()`: if there's no live socket and we'd exhausted, reset the
+ *     counter and retry (a send is evidence the supervisor still cares
+ *     about this worker). Returns false when the frame couldn't be written.
  *
- * El framing de cable coincide con el resto del protocolo del daemon
- * (socketProto.ts): un objeto JSON por línea, terminado en `\n`. El
- * handshake lleva un campo `role`; el servidor (rvServer.ts) descarta
- * cualquier trama que lo tenga, así que el handshake es un marcador puro y
- * nunca llega al manejador de comandos del worker (ant kb3:
- * `if("role"in _)return`).
+ * Wire framing matches the rest of the daemon protocol (socketProto.ts):
+ * one JSON object per line, `\n`-terminated. The handshake carries a
+ * `role` field; the server (rvServer.ts) discards any frame that has one,
+ * so the handshake is a pure marker and never reaches the worker's
+ * command handler (ant kb3: `if("role"in _)return`).
  *
- * Puerto fiel de `ccnmt: packages/daemon/src/rvClient.ts`.
+ * @dynamicRequire
  */
 
 import { Socket } from 'node:net'
 
-import { logEvent } from './internal/pendingCrossPackageDeps.js'
+import { logEvent } from '@thyrox/local-observability'
 
 import { PROTO_VERSION, createLineDecoder, encodeFrame } from './socketProto.js'
 
 /**
- * Mensajes que el servidor rv del worker empuja al supervisor. Espeja los
- * sends `no({type:...})` de `ant 4291.js` + el despacho onMessage
- * `connectRv` de 5017.js. El supervisor sólo ACTÚA sobre estos cinco
- * `type`s; tipos desconocidos se ignoran (compatible hacia adelante).
+ * Messages the worker's rv server pushes to the supervisor. Mirrors ant
+ * 4291.js `no({type:...})` sends + the 5017.js `connectRv` onMessage
+ * dispatch. The supervisor only ever ACTS on these five `type`s; unknown
+ * types are ignored (forward-compatible).
  */
 export type RvServerMessage =
   | { type: 'heartbeat' }
@@ -61,9 +58,8 @@ export type RvServerMessage =
   | { type: 'shutting-down' }
 
 /**
- * Mensajes que el supervisor manda al worker. Espeja las llamadas
- * `this.rv.send({type:...})` de `ant 5017.js` + el manejador `kb3` de
- * 4291.js.
+ * Messages the supervisor sends to the worker. Mirrors ant 5017.js
+ * `this.rv.send({type:...})` calls + the 4291.js `kb3` handler.
  */
 export type RvClientMessage =
   | { type: 'shutdown' }
@@ -72,27 +68,27 @@ export type RvClientMessage =
   | { type: 'attacher-caps'; caps: unknown }
 
 export interface RvClient {
-  /** Manda una trama de control al worker. Devuelve false si no es entregable. */
+  /** Send a control frame to the worker. Returns false if not deliverable. */
   send(msg: RvClientMessage): boolean
-  /** Desmonta: deja de reconectar + destruye el socket. */
+  /** Tear down: stop reconnecting + destroy the socket. */
   close(): void
 }
 
-/** Backoff de ant naK (`daK`, asignado en la init `iaK` de 5017.js). */
+/** ant naK backoff (`daK`, assigned in 5017.js iaK init). */
 const RV_BACKOFF_MS = [100, 250, 500, 1000, 2000] as const
-/** Máximo de intentos de ant naK (`caK = 30`). */
+/** ant naK max attempts (`caK = 30`). */
 const RV_MAX_ATTEMPTS = 30
 
 /**
- * Abre un cliente de rendezvous contra `socketPath`.
+ * Open a rendezvous client against `socketPath`.
  *
- * @param socketPath   la ruta del rv.sock del worker
- * @param onMessage    se invoca por cada trama tipada que el worker empuja
- * @param onDisconnect se invoca cada vez que una conexión YA ESTABLECIDA
- *                     se cae (ant `q`) — el WorkerVm lo conecta a checkPid()
- * @param onConnect    se invoca en cada (re)conexión exitosa (ant `K`) — el
- *                     WorkerVm lo conecta a marcar workerReady + volcar un
- *                     resize diferido + (re)mandar attacher-caps
+ * @param socketPath   the worker's rv.sock path
+ * @param onMessage    invoked per typed frame the worker pushes
+ * @param onDisconnect invoked whenever an ESTABLISHED connection drops
+ *                     (ant `q`) — the WorkerVm wires this to checkPid()
+ * @param onConnect    invoked on each successful (re)connect (ant `K`) —
+ *                     the WorkerVm wires this to mark workerReady + flush a
+ *                     deferred resize + (re)send attacher-caps
  */
 export function createRvClient(
   socketPath: string,
@@ -106,7 +102,7 @@ export function createRvClient(
   let gaveUp = false
   let reconnectTimer: NodeJS.Timeout | undefined
 
-  /** ant `Y` — abre un intento de conexión. */
+  /** ant `Y` — open one connection attempt. */
   function tryConnect(): void {
     if (closed) return
     const sock = new Socket()
@@ -115,8 +111,8 @@ export function createRvClient(
     sock.once('close', () => {
       if (socket === sock) socket = undefined
       if (closed) return
-      // Sólo dispara onDisconnect cuando la conexión realmente había
-      // abierto — un socket nunca-abierto sólo reintenta (ant: `if(J)q()`).
+      // Only fire onDisconnect when the connection had actually opened —
+      // a never-opened socket just retries (ant: `if(J)q()`).
       if (opened) onDisconnect()
       scheduleReconnect()
     })
@@ -126,9 +122,8 @@ export function createRvClient(
       gaveUp = false
       socket = sock
       onConnect()
-      // Handshake — `role` marca esta trama como del lado supervisor para
-      // que el manejador de comandos del worker la descarte (ant kb3
-      // `if("role"in _)return`).
+      // Handshake — `role` marks this frame as supervisor-side so the
+      // worker's command handler discards it (ant kb3 `if("role"in _)return`).
       try {
         sock.write(
           encodeFrame({
@@ -138,7 +133,7 @@ export function createRvClient(
           }),
         )
       } catch {
-        // best-effort — un fallo de escritura aquí dispara close/error → reintento.
+        // best-effort — a write failure here triggers close/error → retry.
       }
       const decode = createLineDecoder(
         msg => {
@@ -153,7 +148,7 @@ export function createRvClient(
     sock.connect(socketPath)
   }
 
-  /** ant `w` — programa la siguiente reconexión con backoff, o se rinde. */
+  /** ant `w` — schedule the next reconnect with backoff, or give up. */
   function scheduleReconnect(): void {
     if (closed || reconnectTimer || gaveUp) return
     if (attempt >= RV_MAX_ATTEMPTS) {
@@ -175,9 +170,8 @@ export function createRvClient(
   return {
     send(msg: RvClientMessage): boolean {
       if (!socket || socket.destroyed) {
-        // Un send significa que al supervisor todavía le importa — si se
-        // había rendido, resetea y arranca un ciclo de reconexión fresco
-        // (ant naK send()).
+        // A send means the supervisor still cares — if we'd given up,
+        // reset and kick a fresh reconnect cycle (ant naK send()).
         if (attempt >= RV_MAX_ATTEMPTS) {
           attempt = 0
           gaveUp = false

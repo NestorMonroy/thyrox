@@ -1,112 +1,129 @@
 /**
- * Adaptado de
- * `ccnmt: packages/swarm/src/worktree/__tests__/worktreeBranchAndSession.test.ts`.
+ * Tests for generateTmuxSessionName + worktreeBranchName — pure
+ * naming helpers used by the worktree subsystem.
  *
- * Tests de generateTmuxSessionName + worktreeBranchName — helpers de
- * nombrado puros usados por el subsistema de worktree.
+ * Wrong session naming = teammate panes collide in tmux (multiple
+ * sessions sharing the same name → tmux refuses to create or
+ * silently joins).
  *
- * Un nombrado de sesión incorrecto = los panes de compañeros colisionan
- * en tmux (varias sesiones compartiendo el mismo nombre → tmux rehúsa
- * crear o se une en silencio).
- *
- * Un nombrado de rama incorrecto = conflicto D/F (los refs de git no
- * pueden ser a la vez un archivo y un directorio en la misma ruta), la
- * creación del worktree falla.
+ * Wrong branch naming = D/F conflict (git refs can't be both a
+ * file and a directory at the same path), worktree creation fails.
  */
 import { describe, expect, test } from 'bun:test'
-import { generateTmuxSessionName, worktreeBranchName } from '../index.js'
+import {
+  generateTmuxSessionName,
+  worktreeBranchName,
+} from '../index.js'
 
 describe('generateTmuxSessionName', () => {
-  test('básico: repo + branch unidos con _', () => {
-    expect(generateTmuxSessionName('/path/to/myrepo', 'feature')).toBe('myrepo_feature')
+  test('basic: repo + branch joined with _', () => {
+    expect(generateTmuxSessionName('/path/to/myrepo', 'feature')).toBe(
+      'myrepo_feature',
+    )
   })
 
-  test('usa basename, no la ruta completa', () => {
-    expect(generateTmuxSessionName('/Users/alice/code/repo', 'main')).toBe('repo_main')
+  test('uses basename, not full path', () => {
+    expect(generateTmuxSessionName('/Users/alice/code/repo', 'main')).toBe(
+      'repo_main',
+    )
   })
 
-  test('slashes en la rama reemplazados por _', () => {
-    // Los nombres de sesión tmux no pueden contener slashes (se
-    // interpretarían como parte de la sintaxis de target).
-    expect(generateTmuxSessionName('/path/to/repo', 'feature/foo')).toBe('repo_feature_foo')
+  test('slashes in branch replaced with _', () => {
+    // tmux session names can't contain slashes (they'd be interpreted
+    // as part of the target syntax).
+    expect(
+      generateTmuxSessionName('/path/to/repo', 'feature/foo'),
+    ).toBe('repo_feature_foo')
   })
 
-  test('puntos en la rama reemplazados por _', () => {
-    expect(generateTmuxSessionName('/path/to/repo', 'v1.2.3')).toBe('repo_v1_2_3')
+  test('dots in branch replaced with _', () => {
+    expect(generateTmuxSessionName('/path/to/repo', 'v1.2.3')).toBe(
+      'repo_v1_2_3',
+    )
   })
 
-  test('puntos en el nombre del repo reemplazados por _', () => {
-    expect(generateTmuxSessionName('/path/to/my.repo', 'main')).toBe('my_repo_main')
+  test('dots in repo name replaced with _', () => {
+    expect(generateTmuxSessionName('/path/to/my.repo', 'main')).toBe(
+      'my_repo_main',
+    )
   })
 
-  test('ruta relativa: basename se extrae igual', () => {
+  test('relative path: basename still extracted', () => {
     expect(generateTmuxSessionName('./myrepo', 'main')).toBe('myrepo_main')
   })
 
-  test('slash final en la ruta: basename devuelve el nombre del directorio', () => {
-    // path.basename('/path/to/repo/') devuelve 'repo' en POSIX.
-    expect(generateTmuxSessionName('/path/to/repo/', 'main')).toBe('repo_main')
+  test('trailing slash on path: basename returns the directory name', () => {
+    // path.basename('/path/to/repo/') returns 'repo' on POSIX.
+    expect(generateTmuxSessionName('/path/to/repo/', 'main')).toBe(
+      'repo_main',
+    )
   })
 
-  test('guiones en la rama preservados', () => {
-    expect(generateTmuxSessionName('/path/repo', 'feat-add-auth')).toBe('repo_feat-add-auth')
+  test('branch with hyphens preserved', () => {
+    expect(generateTmuxSessionName('/path/repo', 'feat-add-auth')).toBe(
+      'repo_feat-add-auth',
+    )
   })
 
-  test('puntos + slashes mezclados: todos convertidos', () => {
-    expect(generateTmuxSessionName('/path/my.repo', 'feat/v1.0')).toBe('my_repo_feat_v1_0')
+  test('mixed dots + slashes: all converted', () => {
+    expect(generateTmuxSessionName('/path/my.repo', 'feat/v1.0')).toBe(
+      'my_repo_feat_v1_0',
+    )
   })
 })
 
 describe('worktreeBranchName', () => {
-  test('slug simple → "worktree-slug"', () => {
+  test('simple slug → "worktree-slug"', () => {
     expect(worktreeBranchName('foo')).toBe('worktree-foo')
   })
 
-  test('slug anidado: / → + (evita conflicto D/F)', () => {
-    // Contrato documentado: "user/feature" NO debe producir un ref de
-    // rama que entre en conflicto con el directorio padre "worktree-user".
+  test('nested slug: / → + (D/F conflict avoidance)', () => {
+    // Documented contract: "user/feature" must NOT produce a branch
+    // ref that conflicts with the parent dir "worktree-user".
     expect(worktreeBranchName('user/feature')).toBe('worktree-user+feature')
   })
 
-  test('múltiples slashes todos aplanados', () => {
+  test('multiple slashes all flattened', () => {
     expect(worktreeBranchName('a/b/c')).toBe('worktree-a+b+c')
   })
 
-  test('guiones en el slug preservados', () => {
-    expect(worktreeBranchName('feat-add-auth')).toBe('worktree-feat-add-auth')
+  test('hyphens in slug preserved', () => {
+    expect(worktreeBranchName('feat-add-auth')).toBe(
+      'worktree-feat-add-auth',
+    )
   })
 
-  test('guiones bajos en el slug preservados', () => {
+  test('underscores in slug preserved', () => {
     expect(worktreeBranchName('snake_case')).toBe('worktree-snake_case')
   })
 
-  test('puntos en el slug preservados', () => {
+  test('dots in slug preserved', () => {
     expect(worktreeBranchName('v1.0')).toBe('worktree-v1.0')
   })
 
-  test('el resultado siempre empieza con el prefijo "worktree-"', () => {
+  test('result always starts with "worktree-" prefix', () => {
     for (const slug of ['x', 'a/b', 'feat', 'v1.0']) {
       expect(worktreeBranchName(slug).startsWith('worktree-')).toBe(true)
     }
   })
 
-  test('el mapeo slug-a-rama es INYECTIVO para slugs VÁLIDOS', () => {
-    // Contrato documentado: + NO está en la lista blanca del slug
-    // ([a-zA-Z0-9._-]). Así que los slugs que pasan validateWorktreeSlug
-    // producen nombres de rama únicos.
-    // 'user+feature' es INVÁLIDO (+ no permitido), así que no se incluye.
+  test('slug-to-branch mapping is INJECTIVE for VALID slugs', () => {
+    // Documented contract: + is NOT in the slug allowlist
+    // ([a-zA-Z0-9._-]). So slugs that pass validateWorktreeSlug
+    // produce unique branch names.
+    // 'user+feature' is INVALID (+ not allowed), so we don't include it.
     const validSlugs = ['user/feature', 'user-feature', 'user']
     const branches = validSlugs.map(worktreeBranchName)
     expect(new Set(branches).size).toBe(branches.length)
   })
 })
 
-describe('worktreeBranchName + generateTmuxSessionName: composición', () => {
-  test('la rama generada puede pasar por el nombrado de sesión tmux', () => {
+describe('worktreeBranchName + generateTmuxSessionName: composition', () => {
+  test('generated branch can pass through tmux session naming', () => {
     const branch = worktreeBranchName('feat/v1.0')
     // = 'worktree-feat+v1.0'
     const session = generateTmuxSessionName('/path/repo', branch)
-    // Los puntos se reemplazan por _ en la sesión tmux, pero el + sobrevive.
+    // Dots get replaced with _ in tmux session, but + survives.
     expect(session).toBe('repo_worktree-feat+v1_0')
   })
 })

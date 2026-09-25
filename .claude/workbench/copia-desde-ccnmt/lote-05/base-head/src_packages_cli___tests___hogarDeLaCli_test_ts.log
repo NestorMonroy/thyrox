@@ -1,0 +1,40 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/cli/__tests__/hogarDeLaCli.test.ts:
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.
+      at requestImportModule (2:1)
+(fail) el paquete aloja el dibujo de la CLI > 1. exporta renderEvent y renderStatusLine [620.70ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.
+      at requestImportModule (2:1)
+(fail) el paquete aloja el dibujo de la CLI > 2. exporta el catalogo de estilos de salida [0.19ms]
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'runModeDispatch' not found in module '/home/user/thyrox/src/packages/cli/src/entry/mode-dispatch.ts'.
+      at requestImportModule (2:1)
+(fail) el paquete aloja el dibujo de la CLI > 3. exporta el selector de reanudacion [0.09ms]
+89 |         content: [{ type: 'text', text: 'archivo escrito' }] },
+90 |     ]))
+91 |     const p = Bun.spawnSync(['bun', 'run', ENTRADA, '--prompt', 'escribe el archivo',
+92 |       '--provider', 'recorded', '--grabacion', join(d, 'turnos.json'),
+93 |       '--cwd', d, '--transcript-dir', join(d, 'tr'), '--json'])
+94 |     expect(p.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/hogarDeLaCli.test.ts:94:24)
+(fail) el paquete aloja el punto de entrada > 6. y corre de punta a punta desde su nueva ruta [621.41ms]
+
+ 2 pass
+ 4 fail
+ 4 expect() calls
+Ran 6 tests across 1 file. [1364.00ms]

@@ -124,3 +124,26 @@ cada clase:
   `agentSwarmsEnabled.test.ts` y `cronJitterConfig.test.ts`.
 
 Las cuatro se revierten: quedan **67 copias**.
+
+## Fase 1 — lote 05 (75)
+
+El primer intento, con lotes de 200, se detuvo tras **52** pasadas de tsc
+(~30 s cada una): la atribución por imports era de todo o nada, y un solo
+culpable que no explicaba el grafo tiraba la atribución entera y se bisecaba
+el lote. Con la atribución por rondas (`src/verify/source_copy_step.py`,
+commit `7c6ae52b`): **3** pasadas. 58 copiados, 5 rechazados por su archivo,
+12 por un consumidor. tsc **2344 → 2318**, 0 diagnósticos nuevos frente a la
+base del lote.
+
+Pruebas: 108 derivadas, 5 regresiones, revertidas (`rejected-behavior`):
+
+- copias de **prueba** que fallan contra nuestro módulo:
+  `goalStopHook.test.ts`, `idleCollapse.test.ts`, `trustedDevice.test.ts`;
+- copias de **módulo** que rompen nuestras pruebas de fijación:
+  `permission/src/planModeV2.ts` (exige credencial al contar agentes) y
+  `tool-registry/src/undercover.ts` (la variable de fuerza deja de encenderlo).
+
+Tras revertir las cinco pasan y tsc confirma **2318**; quedan **53 copias**.
+Memoria: 53 archivos más en `file-diverged-from-source` (363 en total); el
+lote quitó 26 diagnósticos, 10 en sus propios archivos y el resto en
+consumidores.

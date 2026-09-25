@@ -1,53 +1,43 @@
-/**
- * Puerto fiel de `ccnmt: packages/bridge/src/envLessBridgeConfig.ts`.
- * `getFeatureValue_CACHED_MAY_BE_STALE`/`lazySchema`/`lt`/`getMacroVersion`
- * son sustitutos — ver `internal/pendingCrossPackageDeps.ts`.
- */
 import { z } from 'zod/v4'
-import {
-  getFeatureValue_CACHED_MAY_BE_STALE,
-  getMacroVersion,
-  lazySchema,
-  lt,
-} from './internal/pendingCrossPackageDeps.js'
+import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
+import { lt } from '@thyrox/config/semver'
 import { isEnvLessBridgeEnabled } from './bridgeEnabled.js'
 
 export type EnvLessBridgeConfig = {
-  // withRetry — backoff en fase de init (createSession, POST /bridge, recovery /bridge)
+  // withRetry — init-phase backoff (createSession, POST /bridge, recovery /bridge)
   init_retry_max_attempts: number
   init_retry_base_delay_ms: number
   init_retry_jitter_fraction: number
   init_retry_max_delay_ms: number
-  // timeout de axios para POST /sessions, POST /bridge, POST /archive
+  // axios timeout for POST /sessions, POST /bridge, POST /archive
   http_timeout_ms: number
-  // tamaño del ring de BoundedUUIDSet (dedup de echo + re-entrega)
+  // BoundedUUIDSet ring size (echo + re-delivery dedup)
   uuid_dedup_buffer_size: number
-  // Cadencia de heartbeat del worker de CCRClient. El TTL del servidor es 60s — 20s da 3× de margen.
+  // CCRClient worker heartbeat cadence. Server TTL is 60s — 20s gives 3× margin.
   heartbeat_interval_ms: number
-  // ±fracción del intervalo — jitter por beat para repartir la carga de la flota.
+  // ±fraction of interval — per-beat jitter to spread fleet load.
   heartbeat_jitter_fraction: number
-  // Dispara el refresh proactivo de JWT esto antes de expires_in. Buffer más
-  // grande = refresh más frecuente (cadencia de refresh ≈ expires_in - buffer).
+  // Fire proactive JWT refresh this long before expires_in. Larger buffer =
+  // more frequent refresh (refresh cadence ≈ expires_in - buffer).
   token_refresh_buffer_ms: number
-  // Timeout del POST de archive en teardown(). Distinto de http_timeout_ms
-  // porque gracefulShutdown corre runCleanupFunctions() contra un tope de
-  // 2s — un timeout de axios de 10s en un archive lento/colgado quema todo
-  // el presupuesto en un request que forceExit va a matar de todos modos.
+  // Archive POST timeout in teardown(). Distinct from http_timeout_ms because
+  // gracefulShutdown races runCleanupFunctions() against a 2s cap — a 10s
+  // axios timeout on a slow/stalled archive burns the whole budget on a
+  // request that forceExit will kill anyway.
   teardown_archive_timeout_ms: number
-  // Deadline para onConnect tras transport.connect(). Si ni onConnect ni
-  // onClose disparan antes de esto, emite
-  // tengu_bridge_repl_connect_timeout — la única telemetría para el ~1%
-  // de sesiones que emiten `started` y luego quedan en silencio (sin
-  // error, sin evento, sólo nada).
+  // Deadline for onConnect after transport.connect(). If neither onConnect
+  // nor onClose fires before this, emit tengu_bridge_repl_connect_timeout
+  // — the only telemetry for the ~1% of sessions that emit `started` then
+  // go silent (no error, no event, just nothing).
   connect_timeout_ms: number
-  // Piso semver para el camino env-less del bridge. Separado de la
-  // config v1 tengu_bridge_min_version para que un bug específico de v2
-  // pueda forzar upgrades sin bloquear a los clientes v1 (basados en
-  // env), y viceversa.
+  // Semver floor for the env-less bridge path. Separate from the v1
+  // tengu_bridge_min_version config so a v2-specific bug can force upgrades
+  // without blocking v1 (env-based) clients, and vice versa.
   min_version: string
-  // Cuando es true, avisa a los usuarios que su app claude.ai puede ser
-  // demasiado vieja para ver sesiones v2 — permite lanzar el bridge v2
-  // antes de que la app envíe la nueva query de lista de sesiones.
+  // When true, tell users their claude.ai app may be too old to see v2
+  // sessions — lets us roll the v2 bridge before the app ships the new
+  // session-list query.
   should_show_app_upgrade_message: boolean
 }
 
@@ -67,9 +57,8 @@ export const DEFAULT_ENV_LESS_BRIDGE_CONFIG: EnvLessBridgeConfig = {
   should_show_app_upgrade_message: false,
 }
 
-// Los pisos rechazan el objeto entero ante una violación (caen a
-// DEFAULT) en vez de confiar parcialmente — misma defensa en
-// profundidad que pollConfig.ts.
+// Floors reject the whole object on violation (fall back to DEFAULT) rather
+// than partially trusting — same defense-in-depth as pollConfig.ts.
 const envLessBridgeConfigSchema = lazySchema(() =>
   z.object({
     init_retry_max_attempts: z.number().int().min(1).max(10).default(3),
@@ -78,43 +67,39 @@ const envLessBridgeConfigSchema = lazySchema(() =>
     init_retry_max_delay_ms: z.number().int().min(500).default(4000),
     http_timeout_ms: z.number().int().min(2000).default(10_000),
     uuid_dedup_buffer_size: z.number().int().min(100).max(50_000).default(2000),
-    // El TTL del servidor es 60s. Piso 5s previene thrashing; tope 30s
-    // mantiene ≥2× de margen.
+    // Server TTL is 60s. Floor 5s prevents thrash; cap 30s keeps ≥2× margin.
     heartbeat_interval_ms: z
       .number()
       .int()
       .min(5000)
       .max(30_000)
       .default(20_000),
-    // ±fracción por beat. Tope 0.5: al intervalo máximo (30s) × 1.5 =
-    // 45s peor caso, todavía bajo el TTL de 60s.
+    // ±fraction per beat. Cap 0.5: at max interval (30s) × 1.5 = 45s worst case,
+    // still under the 60s TTL.
     heartbeat_jitter_fraction: z.number().min(0).max(0.5).default(0.1),
-    // Piso 30s previene tight-looping. Tope 30min rechaza la inversión
-    // semántica buffer-vs-delay: ops entrando expires_in-5min (el
-    // *delay hasta el refresh*) en vez de 5min (el *buffer antes de
-    // expirar*) da delayMs = expires_in - buffer ≈ 5min en vez de ≈4h.
-    // Ambos son duraciones positivas así que .min() solo no puede
-    // distinguirlas; .max() atrapa el valor invertido porque un buffer
-    // ≥ 30min no tiene sentido para un JWT de varias horas.
+    // Floor 30s prevents tight-looping. Cap 30min rejects buffer-vs-delay
+    // semantic inversion: ops entering expires_in-5min (the *delay until
+    // refresh*) instead of 5min (the *buffer before expiry*) yields
+    // delayMs = expires_in - buffer ≈ 5min instead of ≈4h. Both are positive
+    // durations so .min() alone can't distinguish; .max() catches the
+    // inverted value since buffer ≥ 30min is nonsensical for a multi-hour JWT.
     token_refresh_buffer_ms: z
       .number()
       .int()
       .min(30_000)
       .max(1_800_000)
       .default(300_000),
-    // Tope 2000 mantiene esto bajo la carrera de limpieza de 2s de
-    // gracefulShutdown — un timeout más alto sólo le mentiría a axios ya
-    // que forceExit mata el socket de todos modos.
+    // Cap 2000 keeps this under gracefulShutdown's 2s cleanup race — a higher
+    // timeout just lies to axios since forceExit kills the socket regardless.
     teardown_archive_timeout_ms: z
       .number()
       .int()
       .min(500)
       .max(2000)
       .default(1500),
-    // El p99 de connect observado es ~2-3s; 15s es ~5× de margen. Piso
-    // 5s acota la tasa de falsos positivos ante lentitud transitoria;
-    // tope 60s acota cuánto tiempo una sesión verdaderamente colgada
-    // queda a oscuras.
+    // Observed p99 connect is ~2-3s; 15s is ~5× headroom. Floor 5s bounds
+    // false-positive rate under transient slowness; cap 60s bounds how long
+    // a truly-stalled session stays dark.
     connect_timeout_ms: z.number().int().min(5_000).max(60_000).default(15_000),
     min_version: z
       .string()
@@ -132,14 +117,13 @@ const envLessBridgeConfigSchema = lazySchema(() =>
 )
 
 /**
- * Obtiene la config de timing del bridge env-less desde GrowthBook. Se
- * lee una vez por llamada a initEnvLessBridgeCore — la config queda
- * fija por la vida de una sesión de bridge.
+ * Fetch the env-less bridge timing config from GrowthBook. Read once per
+ * initEnvLessBridgeCore call — config is fixed for the lifetime of a bridge
+ * session.
  *
- * GrowthBook está stubeado en este build; el getter cacheado cae a
- * `defaultValue` (la config default del bridge env-less) cuando no hay
- * override fijado. Se queda async para preservar la firma existente de
- * la función para sus llamadores.
+ * GrowthBook is stubbed out in this build; the cached getter falls back to
+ * `defaultValue` (the env-less bridge default config) when no override is
+ * set. Kept async to preserve the function's existing signature for callers.
  */
 export async function getEnvLessBridgeConfig(): Promise<EnvLessBridgeConfig> {
   const raw = getFeatureValue_CACHED_MAY_BE_STALE<unknown>(
@@ -151,28 +135,26 @@ export async function getEnvLessBridgeConfig(): Promise<EnvLessBridgeConfig> {
 }
 
 /**
- * Devuelve un mensaje de error si la versión actual del CLI está por
- * debajo del mínimo requerido para el camino env-less (v2) del bridge, o
- * null si la versión está bien.
+ * Returns an error message if the current CLI version is below the minimum
+ * required for the env-less (v2) bridge path, or null if the version is fine.
  *
- * Análogo v2 de checkBridgeMinVersion() — lee de
- * tengu_bridge_repl_v2_config en vez de tengu_bridge_min_version para
- * que las dos implementaciones puedan imponer pisos independientes.
+ * v2 analogue of checkBridgeMinVersion() — reads from tengu_bridge_repl_v2_config
+ * instead of tengu_bridge_min_version so the two implementations can enforce
+ * independent floors.
  */
 export async function checkEnvLessBridgeMinVersion(): Promise<string | null> {
   const cfg = await getEnvLessBridgeConfig()
-  if (cfg.min_version && lt(getMacroVersion(), cfg.min_version)) {
-    return `Your version of Claude Code (${getMacroVersion()}) is too old for Remote Control.\nVersion ${cfg.min_version} or higher is required. Run \`claude update\` to update.`
+  if (cfg.min_version && lt(MACRO.VERSION, cfg.min_version)) {
+    return `Your version of Claude Code (${MACRO.VERSION}) is too old for Remote Control.\nVersion ${cfg.min_version} or higher is required. Run \`claude update\` to update.`
   }
   return null
 }
 
 /**
- * Si hay que empujar a los usuarios a actualizar su app claude.ai cuando
- * arranca una sesión Remote Control. True sólo cuando el bridge v2 está
- * activo Y el bit de config should_show_app_upgrade_message está fijado
- * — permite lanzar el bridge v2 antes de que la app envíe la nueva query
- * de lista de sesiones.
+ * Whether to nudge users toward upgrading their claude.ai app when a
+ * Remote Control session starts. True only when the v2 bridge is active
+ * AND the should_show_app_upgrade_message config bit is set — lets us
+ * roll the v2 bridge before the app ships the new session-list query.
  */
 export async function shouldShowAppUpgradeMessage(): Promise<boolean> {
   if (!isEnvLessBridgeEnabled()) return false

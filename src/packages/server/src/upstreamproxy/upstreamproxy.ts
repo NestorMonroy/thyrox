@@ -1,54 +1,39 @@
 /**
- * Puerto de `ccnmt: packages/server/src/upstreamproxy/upstreamproxy.ts`.
+ * CCR upstreamproxy — container-side wiring.
  *
- * upstreamproxy de CCR — cableado del lado contenedor.
+ * When running inside a CCR session container with upstreamproxy configured,
+ * this module:
+ *   1. Reads the session token from /run/ccr/session_token
+ *   2. Sets prctl(PR_SET_DUMPABLE, 0) to block same-UID ptrace of the heap
+ *   3. Downloads the upstreamproxy CA cert and concatenates it with the
+ *      system bundle so curl/gh/python trust the MITM proxy
+ *   4. Starts a local CONNECT→WebSocket relay (see relay.ts)
+ *   5. Unlinks the token file (token stays heap-only; file is gone before
+ *      the agent loop can see it, but only after the relay is confirmed up
+ *      so a supervisor restart can retry)
+ *   6. Exposes HTTPS_PROXY / SSL_CERT_FILE env vars for all agent subprocesses
  *
- * Cuando corre dentro de un contenedor de sesión CCR con upstreamproxy
- * configurado, este módulo:
- *   1. Lee el token de sesión de /run/ccr/session_token
- *   2. Fija prctl(PR_SET_DUMPABLE, 0) para bloquear el ptrace de mismo UID sobre el heap
- *   3. Descarga el cert CA de upstreamproxy y lo concatena con el bundle
- *      del sistema para que curl/gh/python confíen en el proxy MITM
- *   4. Arranca un relay local CONNECT→WebSocket (ver relay.ts)
- *   5. Borra el archivo de token (el token queda sólo en el heap; el
- *      archivo desaparece antes de que el bucle del agente pueda verlo,
- *      pero sólo después de confirmar que el relay está arriba, para que
- *      un reinicio del supervisor pueda reintentar)
- *   6. Expone las variables de entorno HTTPS_PROXY / SSL_CERT_FILE para
- *      todos los subprocesos del agente
+ * Every step fails open: any error logs a warning and disables the proxy.
+ * A broken proxy setup must never break an otherwise-working session.
  *
- * Cada paso falla en modo abierto: cualquier error loguea un warning y
- * desactiva el proxy. Un setup de proxy roto nunca debe romper una sesión
- * que de otro modo funcionaría.
- *
- * Doc de diseño: api-go/ccr/docs/plans/CCR_AUTH_DESIGN.md § "Week-1 pilot scope".
- *
- * `registerCleanup`/`logForDebugging`/`isEnvTruthy`/`isENOENT` — ver
- * `../internal/pendingCrossPackageDeps.js`.
- *
- * `require('bun:ffi')` se conserva EXACTAMENTE como la fuente: es un
- * módulo built-in de Bun (siempre resuelve bajo este runtime), guardado
- * tras `typeof Bun === 'undefined'` — no es un rodeo mío por Rule 3, es
- * la propia detección condicional de la fuente.
+ * Design doc: api-go/ccr/docs/plans/CCR_AUTH_DESIGN.md § "Week-1 pilot scope".
  */
+
 import { mkdir, readFile, unlink, writeFile } from 'fs/promises'
 import { homedir } from 'os'
 import { join } from 'path'
-import {
-  requireAppHostCleanupRegistry,
-  requireConfigEnvUtils,
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-} from '../internal/pendingCrossPackageDeps.js'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { isEnvTruthy } from '@thyrox/config/env/utils'
+import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import { startUpstreamProxyRelay } from './relay.js'
 
 export const SESSION_TOKEN_PATH = '/run/ccr/session_token'
 const SYSTEM_CA_BUNDLE = '/etc/ssl/certs/ca-certificates.crt'
 
-// Hosts que el proxy NO debe interceptar. Cubre loopback, RFC1918, el
-// rango de IMDS, y los registros de paquetes + GitHub a los que los
-// contenedores CCR ya llegan directo. Refleja
-// airlock/scripts/sandbox-shell-ccr.sh.
+// Hosts the proxy must NOT intercept. Covers loopback, RFC1918, the IMDS
+// range, and the package registries + GitHub that CCR containers already
+// reach directly. Mirrors airlock/scripts/sandbox-shell-ccr.sh.
 const NO_PROXY_LIST = [
   'localhost',
   '127.0.0.1',
@@ -57,13 +42,12 @@ const NO_PROXY_LIST = [
   '10.0.0.0/8',
   '172.16.0.0/12',
   '192.168.0.0/16',
-  // API de Anthropic: ninguna ruta upstream la va a matchear nunca, y el
-  // MITM rompe runtimes que no son Bun (httpx/certifi de Python no
-  // confía en la CA forjada). Tres formas porque el parseo de NO_PROXY
-  // difiere entre runtimes:
-  //   *.anthropic.com  — Bun, curl, Go (match de glob)
-  //   .anthropic.com   — urllib/httpx de Python (match de sufijo, quita el punto inicial)
-  //   anthropic.com    — fallback del dominio apex
+  // Anthropic API: no upstream route will ever match, and the MITM breaks
+  // non-Bun runtimes (Python httpx/certifi doesn't trust the forged CA).
+  // Three forms because NO_PROXY parsing differs across runtimes:
+  //   *.anthropic.com  — Bun, curl, Go (glob match)
+  //   .anthropic.com   — Python urllib/httpx (suffix match, strips leading dot)
+  //   anthropic.com    — apex domain fallback
   'anthropic.com',
   '.anthropic.com',
   '*.anthropic.com',
@@ -87,11 +71,10 @@ type UpstreamProxyState = {
 let state: UpstreamProxyState = { enabled: false }
 
 /**
- * Inicializa upstreamproxy. Se llama una vez desde init.ts. Seguro de
- * llamar cuando la feature está apagada o el archivo de token está
- * ausente — devuelve {enabled: false}.
+ * Initialize upstreamproxy. Called once from init.ts. Safe to call when the
+ * feature is off or the token file is absent — returns {enabled: false}.
  *
- * Las rutas sobreescribibles son para tests; producción usa los defaults.
+ * Overridable paths are for tests; production uses the defaults.
  */
 export async function initUpstreamProxy(opts?: {
   tokenPath?: string
@@ -99,18 +82,13 @@ export async function initUpstreamProxy(opts?: {
   caBundlePath?: string
   ccrBaseUrl?: string
 }): Promise<UpstreamProxyState> {
-  const { isEnvTruthy } = requireConfigEnvUtils()
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { registerCleanup } = requireAppHostCleanupRegistry()
-
   if (!isEnvTruthy(process.env.CLAUDE_CODE_REMOTE)) {
     return state
   }
-  // CCR evalúa ccr_upstream_proxy_enabled del lado servidor (donde
-  // GrowthBook está caliente) e inyecta esta variable de entorno vía
-  // StartupContext.EnvironmentVariables. Cada sesión CCR es un
-  // contenedor fresco sin caché de GB, así que un check de GB del lado
-  // cliente aquí siempre devolvía el default (false).
+  // CCR evaluates ccr_upstream_proxy_enabled server-side (where GrowthBook is
+  // warm) and injects this env var via StartupContext.EnvironmentVariables.
+  // Every CCR session is a fresh container with no GB cache, so a client-side
+  // GB check here always returned the default (false).
   if (!isEnvTruthy(process.env.CCR_UPSTREAM_PROXY_ENABLED)) {
     return state
   }
@@ -133,11 +111,10 @@ export async function initUpstreamProxy(opts?: {
 
   setNonDumpable()
 
-  // CCR inyecta ANTHROPIC_BASE_URL vía StartupContext (sessionExecutor.ts
-  // / sessionHandler.ts). getOauthConfig() está mal aquí: depende de
-  // USER_TYPE + USE_{LOCAL,STAGING}_OAUTH, ninguna de las cuales fija el
-  // contenedor, así que siempre devolvía la URL de prod y la descarga de
-  // CA daba 404.
+  // CCR injects ANTHROPIC_BASE_URL via StartupContext (sessionExecutor.ts /
+  // sessionHandler.ts). getOauthConfig() is wrong here: it keys off
+  // USER_TYPE + USE_{LOCAL,STAGING}_OAUTH, none of which the container sets,
+  // so it always returned the prod URL and the CA fetch 404'd.
   const baseUrl =
     opts?.ccrBaseUrl ??
     process.env.ANTHROPIC_BASE_URL ??
@@ -158,9 +135,8 @@ export async function initUpstreamProxy(opts?: {
     registerCleanup(async () => relay.stop())
     state = { enabled: true, port: relay.port, caBundlePath }
     logForDebugging(`[upstreamproxy] enabled on 127.0.0.1:${relay.port}`)
-    // Sólo borra el archivo tras confirmar que el listener está arriba:
-    // si la descarga de CA o el listen() fallan, un reinicio del
-    // supervisor puede reintentar con el token todavía en disco.
+    // Only unlink after the listener is up: if CA download or listen()
+    // fails, a supervisor restart can retry with the token still on disk.
     await unlink(tokenPath).catch(() => {
       logForDebugging('[upstreamproxy] token file unlink failed', {
         level: 'warn',
@@ -177,18 +153,17 @@ export async function initUpstreamProxy(opts?: {
 }
 
 /**
- * Variables de entorno para mezclar en cada subproceso del agente. Vacío
- * cuando el proxy está desactivado. Se llama desde subprocessEnv() para
- * que Bash/MCP/LSP/hooks hereden todos la misma receta.
+ * Env vars to merge into every agent subprocess. Empty when the proxy is
+ * disabled. Called from subprocessEnv() so Bash/MCP/LSP/hooks all inherit
+ * the same recipe.
  */
 export function getUpstreamProxyEnv(): Record<string, string> {
   if (!state.enabled || !state.port || !state.caBundlePath) {
-    // Los subprocesos hijos de CLI no pueden reinicializar el relay (el
-    // archivo de token lo borró el padre), pero el relay del padre sigue
-    // corriendo y es alcanzable en 127.0.0.1:<port>. Si heredamos las
-    // variables de proxy del padre (HTTPS_PROXY + SSL_CERT_FILE ambas
-    // fijadas), se pasan también para que nuestros subprocesos enruten
-    // por el relay del padre.
+    // Child CLI processes can't re-initialize the relay (token file was
+    // unlinked by the parent), but the parent's relay is still running and
+    // reachable at 127.0.0.1:<port>. If we inherited proxy vars from the
+    // parent (HTTPS_PROXY + SSL_CERT_FILE both set), pass them through so
+    // our subprocesses also route through the parent's relay.
     if (process.env.HTTPS_PROXY && process.env.SSL_CERT_FILE) {
       const inherited: Record<string, string> = {}
       for (const key of [
@@ -208,9 +183,9 @@ export function getUpstreamProxyEnv(): Record<string, string> {
     return {}
   }
   const proxyUrl = `http://127.0.0.1:${state.port}`
-  // Sólo HTTPS: el relay maneja CONNECT y nada más. El HTTP plano no
-  // tiene credenciales que inyectar, así que enrutarlo por el relay sólo
-  // rompería la petición con un 405.
+  // HTTPS only: the relay handles CONNECT and nothing else. Plain HTTP has
+  // no credentials to inject, so routing it through the relay would just
+  // break the request with a 405.
   return {
     HTTPS_PROXY: proxyUrl,
     https_proxy: proxyUrl,
@@ -223,14 +198,12 @@ export function getUpstreamProxyEnv(): Record<string, string> {
   }
 }
 
-/** Sólo para tests: resetea el estado del módulo entre casos de test. */
+/** Test-only: reset module state between test cases. */
 export function resetUpstreamProxyForTests(): void {
   state = { enabled: false }
 }
 
 async function readToken(path: string): Promise<string | null> {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { isENOENT } = requireLocalObservabilityErrorHelpers()
   try {
     const raw = await readFile(path, 'utf8')
     return raw.trim() || null
@@ -245,13 +218,12 @@ async function readToken(path: string): Promise<string | null> {
 }
 
 /**
- * prctl(PR_SET_DUMPABLE, 0) vía FFI a libc. Bloquea el ptrace de mismo
- * UID sobre este proceso, así un `gdb -p $PPID` inyectado por prompt no
- * puede rascar el token del heap. Sólo Linux; no-op en silencio en el resto.
+ * prctl(PR_SET_DUMPABLE, 0) via libc FFI. Blocks same-UID ptrace of this
+ * process, so a prompt-injected `gdb -p $PPID` can't scrape the token from
+ * the heap. Linux-only; silently no-ops elsewhere.
  */
 function setNonDumpable(): void {
   if (process.platform !== 'linux' || typeof Bun === 'undefined') return
-  const { logForDebugging } = requireLocalObservabilityDebug()
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ffi = require('bun:ffi') as typeof import('bun:ffi')
@@ -284,11 +256,11 @@ async function downloadCaBundle(
   systemCaPath: string,
   outPath: string,
 ): Promise<boolean> {
-  const { logForDebugging } = requireLocalObservabilityDebug()
   try {
+    // eslint-disable-next-line eslint-plugin-n/no-unsupported-features/node-builtins
     const resp = await fetch(`${baseUrl}/v1/code/upstreamproxy/ca-cert`, {
-      // Bun no tiene timeout de fetch por defecto — un endpoint colgado
-      // bloquearía el arranque del CLI para siempre. 5s es generoso para un PEM chico.
+      // Bun has no default fetch timeout — a hung endpoint would block CLI
+      // startup forever. 5s is generous for a small PEM.
       signal: AbortSignal.timeout(5000),
     })
     if (!resp.ok) {

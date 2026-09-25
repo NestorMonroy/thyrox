@@ -1,62 +1,54 @@
-/**
- * Puerto de `ccnmt: packages/ide/src/lsp/LSPServerManager.ts`.
- */
 import * as path from 'path'
 import { pathToFileURL } from 'url'
-import {
-  requireLocalObservabilityDebug,
-  requireLocalObservabilityErrorHelpers,
-  requireLocalObservabilityLogging,
-} from '../internal/pendingCrossPackageDeps.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { logError } from '@thyrox/local-observability/logging'
 import { getAllLspServers } from './config.js'
 import {
   createLSPServerInstance,
   type LSPServerInstance,
 } from './LSPServerInstance.js'
 import type { ScopedLspServerConfig } from './types.js'
-
 /**
- * Interfaz del Manager de Servidores LSP, devuelta por createLSPServerManager.
- * Gestiona múltiples instancias de servidor LSP y enruta requests según la
- * extensión del archivo.
+ * LSP Server Manager interface returned by createLSPServerManager.
+ * Manages multiple LSP server instances and routes requests based on file extensions.
  */
 export type LSPServerManager = {
-  /** Inicializa el manager cargando todos los servidores LSP configurados. */
+  /** Initialize the manager by loading all configured LSP servers */
   initialize(): Promise<void>
-  /** Apaga todos los servidores corriendo y limpia el estado. */
+  /** Shutdown all running servers and clear state */
   shutdown(): Promise<void>
-  /** Obtiene la instancia de servidor LSP para una ruta de archivo dada. */
+  /** Get the LSP server instance for a given file path */
   getServerForFile(filePath: string): LSPServerInstance | undefined
-  /** Asegura que el servidor LSP apropiado esté iniciado para el archivo dado. */
+  /** Ensure the appropriate LSP server is started for the given file */
   ensureServerStarted(filePath: string): Promise<LSPServerInstance | undefined>
-  /** Envía un request al servidor LSP apropiado para el archivo dado. */
+  /** Send a request to the appropriate LSP server for the given file */
   sendRequest<T>(
     filePath: string,
     method: string,
     params: unknown,
   ): Promise<T | undefined>
-  /** Obtiene todas las instancias de servidor corriendo. */
+  /** Get all running server instances */
   getAllServers(): Map<string, LSPServerInstance>
-  /** Sincroniza la apertura de un archivo al servidor LSP (envía notificación didOpen). */
+  /** Synchronize file open to LSP server (sends didOpen notification) */
   openFile(filePath: string, content: string): Promise<void>
-  /** Sincroniza el cambio de un archivo al servidor LSP (envía notificación didChange). */
+  /** Synchronize file change to LSP server (sends didChange notification) */
   changeFile(filePath: string, content: string): Promise<void>
-  /** Sincroniza el guardado de un archivo al servidor LSP (envía notificación didSave). */
+  /** Synchronize file save to LSP server (sends didSave notification) */
   saveFile(filePath: string): Promise<void>
-  /** Sincroniza el cierre de un archivo al servidor LSP (envía notificación didClose). */
+  /** Synchronize file close to LSP server (sends didClose notification) */
   closeFile(filePath: string): Promise<void>
-  /** Comprueba si un archivo ya está abierto en un servidor LSP compatible. */
+  /** Check if a file is already open on a compatible LSP server */
   isFileOpen(filePath: string): boolean
 }
 
 /**
- * Crea una instancia de manager de servidores LSP.
+ * Creates an LSP server manager instance.
  *
- * Gestiona múltiples instancias de servidor LSP y enruta requests según la
- * extensión del archivo. Usa el patrón factory function con closures para
- * encapsular el estado (evitando clases).
+ * Manages multiple LSP server instances and routes requests based on file extensions.
+ * Uses factory function pattern with closures for state encapsulation (avoiding classes).
  *
- * @returns Instancia del manager de servidores LSP.
+ * @returns LSP server manager instance
  *
  * @example
  * const manager = createLSPServerManager()
@@ -65,20 +57,16 @@ export type LSPServerManager = {
  * await manager.shutdown()
  */
 export function createLSPServerManager(): LSPServerManager {
-  const { logForDebugging } = requireLocalObservabilityDebug()
-  const { logError } = requireLocalObservabilityLogging()
-  const { errorMessage } = requireLocalObservabilityErrorHelpers()
-
-  // Estado privado gestionado vía closures.
+  // Private state managed via closures
   const servers: Map<string, LSPServerInstance> = new Map()
   const extensionMap: Map<string, string[]> = new Map()
-  // Rastrea qué archivos se abrieron en qué servidores (URI -> nombre de servidor).
+  // Track which files have been opened on which servers (URI -> server name)
   const openedFiles: Map<string, string> = new Map()
 
   /**
-   * Inicializa el manager cargando todos los servidores LSP configurados.
+   * Initialize the manager by loading all configured LSP servers.
    *
-   * @throws {Error} Si falla la carga de configuración.
+   * @throws {Error} If configuration loading fails
    */
   async function initialize(): Promise<void> {
     let serverConfigs: Record<string, ScopedLspServerConfig>
@@ -97,10 +85,10 @@ export function createLSPServerManager(): LSPServerManager {
       throw error
     }
 
-    // Construye el mapeo extensión → servidor.
+    // Build extension → server mapping
     for (const [serverName, config] of Object.entries(serverConfigs)) {
       try {
-        // Valida la config antes de usarla.
+        // Validate config before using it
         if (!config.command) {
           throw new Error(
             `Server ${serverName} missing required 'command' field`,
@@ -115,7 +103,7 @@ export function createLSPServerManager(): LSPServerManager {
           )
         }
 
-        // Mapea extensiones de archivo a este servidor (derivado de extensionToLanguage).
+        // Map file extensions to this server (derive from extensionToLanguage)
         const fileExtensions = Object.keys(config.extensionToLanguage)
         for (const ext of fileExtensions) {
           const normalized = ext.toLowerCase()
@@ -128,20 +116,20 @@ export function createLSPServerManager(): LSPServerManager {
           }
         }
 
-        // Crea la instancia del servidor.
+        // Create server instance
         const instance = createLSPServerInstance(serverName, config)
         servers.set(serverName, instance)
 
-        // Registra el handler para requests workspace/configuration del servidor.
-        // Algunos servidores (como TypeScript) los envían aunque digamos que no los soportamos.
+        // Register handler for workspace/configuration requests from the server
+        // Some servers (like TypeScript) send these even when we say we don't support them
         instance.onRequest(
           'workspace/configuration',
           (params: { items: Array<{ section?: string }> }) => {
             logForDebugging(
               `LSP: Received workspace/configuration request from ${serverName}`,
             )
-            // Devuelve config vacía/nula para cada item solicitado.
-            // Esto satisface el protocolo sin proveer configuración real.
+            // Return empty/null config for each requested item
+            // This satisfies the protocol without providing actual configuration
             return params.items.map(() => null)
           },
         )
@@ -152,7 +140,7 @@ export function createLSPServerManager(): LSPServerManager {
             `Failed to initialize LSP server ${serverName}: ${err.message}`,
           ),
         )
-        // Se continúa con los demás servidores - no se falla toda la inicialización.
+        // Continue with other servers - don't fail entire initialization
       }
     }
 
@@ -160,11 +148,11 @@ export function createLSPServerManager(): LSPServerManager {
   }
 
   /**
-   * Apaga todos los servidores corriendo y limpia el estado. Sólo los
-   * servidores en estado 'running' se detienen explícitamente; los que
-   * están en otros estados se limpian sin apagado.
+   * Shutdown all running servers and clear state.
+   * Only servers in 'running' state are explicitly stopped;
+   * servers in other states are cleared without shutdown.
    *
-   * @throws {Error} Si uno o más servidores fallan al detenerse.
+   * @throws {Error} If one or more servers fail to stop
    */
   async function shutdown(): Promise<void> {
     const toStop = Array.from(servers.entries()).filter(
@@ -197,9 +185,9 @@ export function createLSPServerManager(): LSPServerManager {
   }
 
   /**
-   * Obtiene la instancia de servidor LSP para una ruta de archivo dada. Si
-   * varios servidores manejan la misma extensión, devuelve el primero
-   * registrado. Devuelve `undefined` si ningún servidor maneja este tipo de archivo.
+   * Get the LSP server instance for a given file path.
+   * If multiple servers handle the same extension, returns the first registered server.
+   * Returns undefined if no server handles this file type.
    */
   function getServerForFile(filePath: string): LSPServerInstance | undefined {
     const ext = path.extname(filePath).toLowerCase()
@@ -209,7 +197,7 @@ export function createLSPServerManager(): LSPServerManager {
       return undefined
     }
 
-    // Usa el primer servidor (se puede agregar prioridad después).
+    // Use first server (can add priority later)
     const serverName = serverNames[0]
     if (!serverName) {
       return undefined
@@ -219,10 +207,10 @@ export function createLSPServerManager(): LSPServerManager {
   }
 
   /**
-   * Asegura que el servidor LSP apropiado esté iniciado para el archivo
-   * dado. Devuelve `undefined` si ningún servidor maneja este tipo de archivo.
+   * Ensure the appropriate LSP server is started for the given file.
+   * Returns undefined if no server handles this file type.
    *
-   * @throws {Error} Si el servidor falla al iniciarse.
+   * @throws {Error} If server fails to start
    */
   async function ensureServerStarted(
     filePath: string,
@@ -248,10 +236,10 @@ export function createLSPServerManager(): LSPServerManager {
   }
 
   /**
-   * Envía un request al servidor LSP apropiado para el archivo dado.
-   * Devuelve `undefined` si ningún servidor maneja este tipo de archivo.
+   * Send a request to the appropriate LSP server for the given file.
+   * Returns undefined if no server handles this file type.
    *
-   * @throws {Error} Si el servidor falla al iniciarse o el request falla.
+   * @throws {Error} If server fails to start or request fails
    */
   async function sendRequest<T>(
     filePath: string,
@@ -274,7 +262,7 @@ export function createLSPServerManager(): LSPServerManager {
     }
   }
 
-  // Devuelve la interfaz pública.
+  // Return public interface
   function getAllServers(): Map<string, LSPServerInstance> {
     return servers
   }
@@ -285,7 +273,7 @@ export function createLSPServerManager(): LSPServerManager {
 
     const fileUri = pathToFileURL(path.resolve(filePath)).href
 
-    // Se salta si ya está abierto en este servidor.
+    // Skip if already opened on this server
     if (openedFiles.get(fileUri) === server.name) {
       logForDebugging(
         `LSP: File already open, skipping didOpen for ${filePath}`,
@@ -293,7 +281,7 @@ export function createLSPServerManager(): LSPServerManager {
       return
     }
 
-    // Obtiene el languageId del mapeo extensionToLanguage del servidor.
+    // Get language ID from server's extensionToLanguage mapping
     const ext = path.extname(filePath).toLowerCase()
     const languageId = server.config.extensionToLanguage[ext] || 'plaintext'
 
@@ -306,7 +294,7 @@ export function createLSPServerManager(): LSPServerManager {
           text: content,
         },
       })
-      // Rastrea que este archivo ahora está abierto en este servidor.
+      // Track that this file is now open on this server
       openedFiles.set(fileUri, server.name)
       logForDebugging(
         `LSP: Sent didOpen for ${filePath} (languageId: ${languageId})`,
@@ -316,7 +304,7 @@ export function createLSPServerManager(): LSPServerManager {
         `Failed to sync file open ${filePath}: ${errorMessage(error)}`,
       )
       logError(err)
-      // Se relanza para propagar el error a quien llama.
+      // Re-throw to propagate error to caller
       throw err
     }
   }
@@ -329,8 +317,8 @@ export function createLSPServerManager(): LSPServerManager {
 
     const fileUri = pathToFileURL(path.resolve(filePath)).href
 
-    // Si el archivo no se abrió en este servidor todavía, se abre primero.
-    // Los servidores LSP requieren didOpen antes de didChange.
+    // If file hasn't been opened on this server yet, open it first
+    // LSP servers require didOpen before didChange
     if (openedFiles.get(fileUri) !== server.name) {
       return openFile(filePath, content)
     }
@@ -349,14 +337,14 @@ export function createLSPServerManager(): LSPServerManager {
         `Failed to sync file change ${filePath}: ${errorMessage(error)}`,
       )
       logError(err)
-      // Se relanza para propagar el error a quien llama.
+      // Re-throw to propagate error to caller
       throw err
     }
   }
 
   /**
-   * Guarda un archivo en los servidores LSP (envía notificación didSave).
-   * Se llama tras escribir el archivo a disco, para disparar diagnostics.
+   * Save a file in LSP servers (sends didSave notification)
+   * Called after file is written to disk to trigger diagnostics
    */
   async function saveFile(filePath: string): Promise<void> {
     const server = getServerForFile(filePath)
@@ -374,17 +362,17 @@ export function createLSPServerManager(): LSPServerManager {
         `Failed to sync file save ${filePath}: ${errorMessage(error)}`,
       )
       logError(err)
-      // Se relanza para propagar el error a quien llama.
+      // Re-throw to propagate error to caller
       throw err
     }
   }
 
   /**
-   * Cierra un archivo en los servidores LSP (envía notificación didClose).
+   * Close a file in LSP servers (sends didClose notification)
    *
-   * NOTA: disponible pero aún no integrado con el flujo de compact.
-   * TODO: integrar con compact - llamar a closeFile() cuando compact remueva archivos del contexto.
-   * Esto notificará a los servidores LSP que ciertos archivos ya no están en uso activo.
+   * NOTE: Currently available but not yet integrated with compact flow.
+   * TODO: Integrate with compact - call closeFile() when compact removes files from context
+   * This will notify LSP servers that files are no longer in active use.
    */
   async function closeFile(filePath: string): Promise<void> {
     const server = getServerForFile(filePath)
@@ -398,7 +386,7 @@ export function createLSPServerManager(): LSPServerManager {
           uri: fileUri,
         },
       })
-      // Se remueve del rastreo para que el archivo se pueda reabrir después.
+      // Remove from tracking so file can be reopened later
       openedFiles.delete(fileUri)
       logForDebugging(`LSP: Sent didClose for ${filePath}`)
     } catch (error) {
@@ -406,7 +394,7 @@ export function createLSPServerManager(): LSPServerManager {
         `Failed to sync file close ${filePath}: ${errorMessage(error)}`,
       )
       logError(err)
-      // Se relanza para propagar el error a quien llama.
+      // Re-throw to propagate error to caller
       throw err
     }
   }
