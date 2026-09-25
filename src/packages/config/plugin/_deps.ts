@@ -119,6 +119,25 @@ export function setLogForDiagnosticsNoPIIFn(
 // Helpers de FS + rutas
 // ---------------------------------------------------------------------------
 
+/**
+ * Lo que los cargadores de plugins leen de una entrada de directorio y de un
+ * `stat`. Los valores reales son `fs.Dirent` y `fs.Stats`, que ya traen
+ * `isFile` e `isSymbolicLink`; el tipo anterior los omitía y los cargadores
+ * que los llaman no compilaban.
+ */
+export type PluginDirent = {
+  name: string
+  isFile(): boolean
+  isDirectory(): boolean
+  isSymbolicLink(): boolean
+}
+export type PluginStats = {
+  mtime: Date
+  size: number
+  isFile(): boolean
+  isDirectory(): boolean
+}
+
 export type PluginFsImpl = {
   existsSync(path: string): boolean
   mkdirSync(path: string, options?: { recursive?: boolean }): void
@@ -126,8 +145,8 @@ export type PluginFsImpl = {
   readFileSync(path: string, encoding: 'utf8'): string
   readdirSync(
     path: string,
-  ): Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>
-  statSync(path: string): { mtime: Date; isDirectory(): boolean; size: number }
+  ): Array<PluginDirent>
+  statSync(path: string): PluginStats
   rmSync(path: string, options?: { recursive?: boolean; force?: boolean }): void
   rmdirSync(path: string): void
   renameSync(oldPath: string, newPath: string): void
@@ -144,8 +163,8 @@ export type PluginFsImpl = {
   mkdir(path: string, options?: { recursive?: boolean }): Promise<void>
   readdir(
     path: string,
-  ): Promise<Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>>
-  stat(path: string): Promise<{ mtime: Date; isDirectory(): boolean; size: number }>
+  ): Promise<Array<PluginDirent>>
+  stat(path: string): Promise<PluginStats>
   rm(path: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>
   rename(oldPath: string, newPath: string): Promise<void>
 }
@@ -163,17 +182,9 @@ function nodeFsFallback(): PluginFsImpl {
     writeFileSync: (p, d) => fs.writeFileSync(p, d),
     readFileSync: (p, e) => fs.readFileSync(p, e) as string,
     readdirSync: p =>
-      fs.readdirSync(p, { withFileTypes: true }) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      fs.readdirSync(p, { withFileTypes: true }) as PluginDirent[],
     statSync: p =>
-      fs.statSync(p) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      fs.statSync(p) as PluginStats,
     rmSync: (p, o) => fs.rmSync(p, o),
     rmdirSync: p => fs.rmdirSync(p),
     renameSync: (o, n) => fs.renameSync(o, n),
@@ -188,17 +199,9 @@ function nodeFsFallback(): PluginFsImpl {
       await fsp.mkdir(p, { recursive: true, ...(o ?? {}) })
     },
     readdir: async p =>
-      (await fsp.readdir(p, { withFileTypes: true })) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      (await fsp.readdir(p, { withFileTypes: true })) as PluginDirent[],
     stat: async p =>
-      (await fsp.stat(p)) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      (await fsp.stat(p)) as PluginStats,
     rm: async (p, o) => fsp.rm(p, o),
     rename: async (o, n) => fsp.rename(o, n),
   }
