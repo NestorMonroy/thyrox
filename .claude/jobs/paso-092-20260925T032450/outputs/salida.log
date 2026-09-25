@@ -1,0 +1,2 @@
+{"status": "progress", "total_before": 1870, "total_final": 1834, "tsc_runs": 1, "accepted": ["agent:agent:system-message-discriminated-union"], "files_kept": ["src/packages/agent/messageShapes.ts"], "outcomes": {"agent:agent:system-message-discriminated-union": "accepted-net"}}
+__BG_EXIT__=0

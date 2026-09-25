@@ -13,6 +13,7 @@
 // importa de `'node:crypto'`. Es el mismo modulo con el prefijo explicito que
 // distingue un builtin de un paquete de npm homonimo; no cambia el tipo.
 import type { UUID } from 'node:crypto'
+import type { APIError } from '@anthropic-ai/sdk'
 import type {
   ContentBlockParam,
   ContentBlock,
@@ -109,8 +110,39 @@ export type Message =
   | (MessageBase & { type: 'grouped_tool_use' | 'collapsed_read_search' })
 export type AttachmentMessage<_T = unknown> = MessageBase & { type: 'attachment'; attachment: { type: string; [key: string]: unknown } }
 export type ProgressMessage<T = unknown> = MessageBase & { type: 'progress'; data: T }
-export type SystemLocalCommandMessage = MessageBase & { type: 'system' }
-export type SystemMessage = MessageBase & { type: 'system' }
+/**
+ * Mensajes de sistema como UNIÓN DISCRIMINADA por `subtype`. Cada variante
+ * declara los campos que su productor (`agent/messages.ts`, `create*Message`)
+ * construye. Antes cada alias era `Message & { type: 'system' }`: estrechar por
+ * `message.subtype === 'bridge_status'` no traía `url` ni `content`, y el
+ * lector los veía `unknown` por la firma índice de `MessageBase`.
+ */
+type SystemBase<S extends string> = MessageBase & {
+  type: 'system'
+  subtype: S
+  timestamp?: string
+  isMeta?: boolean
+  level?: SystemMessageLevel
+  toolUseID?: string
+}
+export type SystemLocalCommandMessage = SystemBase<'local_command'> & { content: string }
+export type SystemMessage =
+  | SystemLocalCommandMessage
+  | SystemCompactBoundaryMessage
+  | SystemAPIErrorMessage
+  | SystemFileSnapshotMessage
+  | SystemAgentsKilledMessage
+  | SystemApiMetricsMessage
+  | SystemAwaySummaryMessage
+  | SystemBridgeStatusMessage
+  | SystemInformationalMessage
+  | SystemMemorySavedMessage
+  | SystemMicrocompactBoundaryMessage
+  | SystemPermissionRetryMessage
+  | SystemScheduledTaskFireMessage
+  | SystemStopHookSummaryMessage
+  | SystemTurnDurationMessage
+  | SystemThinkingMessage
 /**
  * DIVERGENCIA DECLARADA, misma clase y misma direccion que `AssistantMessage`
  * de arriba (TASK-THYROX-0228/0233): la fuente deja `message` opcional porque
@@ -152,8 +184,9 @@ export type StreamEvent = {
  * `TASK-THYROX-0199`, que en el store nombra otro sujeto — el ordinal
  * del board se habia citado como si fuera durable).
  */
-export type SystemCompactBoundaryMessage = Message & {
-  type: 'system'
+export type SystemCompactBoundaryMessage = SystemBase<'compact_boundary'> & {
+  content?: string
+  logicalParentUuid?: UUID
   compactMetadata: {
     preservedSegment?: {
       headUuid: UUID
@@ -202,8 +235,14 @@ export type CompactMetadata = {
     tailUuid: UUID
   }
 }
-export type SystemAPIErrorMessage = Message & { type: 'system' }
-export type SystemFileSnapshotMessage = Message & { type: 'system' }
+export type SystemAPIErrorMessage = SystemBase<'api_error'> & {
+  cause?: Error
+  error: APIError
+  retryInMs: number
+  retryAttempt: number
+  maxRetries: number
+}
+export type SystemFileSnapshotMessage = SystemBase<'file_snapshot'>
 /** Un mensaje del asistente tras `normalizeMessages`: un bloque, en arreglo. */
 export type NormalizedAssistantMessage<_T = unknown> = AssistantMessage & {
   message: AssistantMessage['message'] & { content: ContentItem[] }
@@ -226,16 +265,50 @@ export type StopHookInfo = {
   [key: string]: unknown
 }
 
-export type SystemAgentsKilledMessage = Message & { type: 'system' }
-export type SystemApiMetricsMessage = Message & { type: 'system' }
-export type SystemAwaySummaryMessage = Message & { type: 'system' }
-export type SystemBridgeStatusMessage = Message & { type: 'system' }
-export type SystemInformationalMessage = Message & { type: 'system' }
-export type SystemMemorySavedMessage = Message & { type: 'system' }
+export type SystemAgentsKilledMessage = SystemBase<'agents_killed'>
+export type SystemApiMetricsMessage = SystemBase<'api_metrics'> & {
+  ttftMs: number
+  otps: number
+  isP50?: boolean
+  hookDurationMs?: number
+  turnDurationMs?: number
+  toolDurationMs?: number
+  classifierDurationMs?: number
+  toolCount?: number
+  hookCount?: number
+  classifierCount?: number
+  configWriteCount?: number
+}
+export type SystemAwaySummaryMessage = SystemBase<'away_summary'> & { content: string }
+export type SystemBridgeStatusMessage = SystemBase<'bridge_status'> & {
+  content: string
+  url: string
+  upgradeNudge?: string
+}
+export type SystemInformationalMessage = SystemBase<'informational'> & {
+  content: string
+  preventContinuation?: boolean
+}
+export type SystemMemorySavedMessage = SystemBase<'memory_saved'> & {
+  writtenPaths: string[]
+  verb?: string
+}
 export type SystemMessageLevel = string
-export type SystemMicrocompactBoundaryMessage = Message & { type: 'system' }
-export type SystemPermissionRetryMessage = Message & { type: 'system' }
-export type SystemScheduledTaskFireMessage = Message & { type: 'system' }
+export type SystemMicrocompactBoundaryMessage = SystemBase<'microcompact_boundary'> & {
+  content?: string
+  microcompactMetadata: {
+    trigger: 'auto'
+    preTokens: number
+    tokensSaved: number
+    compactedToolIds: string[]
+    clearedAttachmentUUIDs: string[]
+  }
+}
+export type SystemPermissionRetryMessage = SystemBase<'permission_retry'> & {
+  content: string
+  commands: string[]
+}
+export type SystemScheduledTaskFireMessage = SystemBase<'scheduled_task_fire'> & { content: string }
 
 /**
  * DIVERGENCIA DECLARADA, y la causa es el TOOLCHAIN — misma clase que
@@ -254,16 +327,24 @@ export type SystemScheduledTaskFireMessage = Message & { type: 'system' }
  * fuera requerido. El protocolo NO garantiza el rotulo: un hook sin etiqueta
  * es un caso real que el constructor admite.
  */
-export type SystemStopHookSummaryMessage = Message & {
-  type: 'system'
-  subtype: string
+export type SystemStopHookSummaryMessage = SystemBase<'stop_hook_summary'> & {
+  hookErrors: string[]
+  preventedContinuation: boolean
+  stopReason?: string
+  hasOutput: boolean
   hookLabel?: string
   hookCount: number
   totalDurationMs?: number
   hookInfos: StopHookInfo[]
 }
 
-export type SystemTurnDurationMessage = Message & { type: 'system' }
+export type SystemTurnDurationMessage = SystemBase<'turn_duration'> & {
+  durationMs: number
+  budgetTokens?: number
+  budgetLimit?: number
+  budgetNudges?: number
+  messageCount?: number
+}
 
 export type GroupedToolUseMessage = Message & {
   type: 'grouped_tool_use'
@@ -323,7 +404,7 @@ export type CollapsedReadSearchGroup = {
 }
 
 export type HookResultMessage = Message
-export type SystemThinkingMessage = Message & { type: 'system' }
+export type SystemThinkingMessage = SystemBase<'thinking'> & { content?: string }
 
 /**
  * AÑADIDOS de este arbol, no de la fuente: los dos bloques que `messages.ts`

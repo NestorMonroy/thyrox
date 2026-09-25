@@ -1,0 +1,6 @@
+memoria [revealed] agent:reorder-messages-ui-free: CORRIGE la lección del paso 32: el genérico no era la causa. Los 3 errores de Messages.tsx (filterForBriefTool, dropTextInBriefTurns, applyGrouping) exigen message.content como arreglo, y NormalizedMessage en messageShapes.ts es sólo alias de Message (content string|opcional). Estaban ocultos mientras el import faltaba (any). Arreglo: dar a NormalizedMessage su forma normalizada, en un paso propio, junto con reorderMessagesInUI.
+receta step-034: Give NormalizedMessage its normalized shape
+receta step-036: Build the renderable message types from normalized ones
+receta step-037: Make Message the union of its variants
+receta step-065: Type CompactMetadata with the fields it carries
+receta step-072: Port the stream handler and real stream message shapes
