@@ -1,18 +1,37 @@
 import { homedir } from 'os'
 import { join } from 'path'
+import {
+  coerceDescriptionToString,
+  type FrontmatterData,
+  type FrontmatterShell,
+  parseBooleanFrontmatter,
+  parseShellFrontmatter,
+  splitPathInFrontmatter,
+} from '@thyrox/config/frontmatterParser.js'
+import { HooksSchema, type HooksSettings } from '@thyrox/config/types'
+import { extractDescriptionFromMarkdown } from '@thyrox/config/utils/markdownDescription.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { parseUserSpecifiedModel } from '@thyrox/provider/model.js'
+import { parseSlashCommandToolsFromFrontmatter } from '@thyrox/tool-registry/markdownConfigLoader.js'
+import { parseArgumentNames } from '../argumentSubstitution.js'
 import { clearDynamicSkills } from './dynamicSkills.js'
 import { getManagedFilePath } from './managedPath.js'
 
 /**
- * Porte PARCIAL de `ccnmt: packages/command-runtime/src/skills/loadSkillsDir.ts`
- * (1086 líneas) — sólo dos símbolos: `getSkillsPath` y
- * `estimateSkillFrontmatterTokens`, más sus dependencias directas. El resto
- * del archivo (descubrimiento de directorios, deduplicación por
- * `realpath`, hooks de settings, registro de skills MCP) no se porta: no
- * hay test que lo ejerza en este pase, y su alcance excede lo que este
- * porte declara cubrir.
+ * Porte de `ccnmt: packages/command-runtime/src/skills/loadSkillsDir.ts`
+ * (1086 líneas). Portado en este archivo: `getSkillsPath`,
+ * `estimateSkillFrontmatterTokens`, `parseSkillPaths` (la fuente no lo
+ * exporta; aquí sí, para su suite) y `parseSkillFrontmatterFields`, con sus
+ * helpers privados (`parseHooksFromFrontmatter`, el porte local de
+ * `parseEffortValue`). Su suite: `__tests__/loadSkillsDir.behavior.test.ts`,
+ * cada bloque escrito en rojo y probado por anulación.
  *
- * Dependencias sustituidas, ninguna con hogar en este árbol (DEC-04):
+ * Pendiente en este archivo (se porta en los pases siguientes de la misma
+ * tarea): `createSkillCommand`, `loadSkillsFromSkillsDir`, el cargador
+ * heredado de `/commands/`, `getSkillDirCommands` y el registro de
+ * constructores MCP. La mitad dinámica ya vive en `dynamicSkills.ts`.
+ *
+ * Dependencias sustituidas (DEC-04):
  *
  * - `SettingSource` — de `@claude-code-how-works/config/constants`. Ya
  *   existe como tipo real en `@thyrox/config`, pero ese paquete no está
@@ -137,6 +156,187 @@ export function estimateSkillFrontmatterTokens(
     .filter(Boolean)
     .join(' ')
   return roughTokenCountEstimation(frontmatterText)
+}
+
+// Segundo porte de `EFFORT_LEVELS`/`parseEffortValue` (fuente:
+// `@claude-code-how-works/agent/effort.js`). Su hogar en este árbol es
+// `@thyrox/agent/effort.ts`, que `command-runtime` no puede importar en
+// tiempo de ejecución (`agent` depende de `command-runtime`, no al revés);
+// el passthrough de `@thyrox/config/plugin/_deps.ts` tampoco sirve: es un
+// setter con retorno recortado a tres niveles. Copia fiel, declarada.
+const EFFORT_LEVELS = ['none', 'low', 'medium', 'high', 'xhigh', 'max'] as const
+type EffortLevel = (typeof EFFORT_LEVELS)[number]
+export type EffortValue = EffortLevel | number
+
+function isEffortLevel(value: string): value is EffortLevel {
+  return (EFFORT_LEVELS as readonly string[]).includes(value)
+}
+
+function parseEffortValue(value: unknown): EffortValue | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined
+  }
+  if (typeof value === 'number' && Number.isInteger(value)) {
+    return value
+  }
+  const str = String(value).toLowerCase()
+  if (isEffortLevel(str)) {
+    return str
+  }
+  const numericValue = parseInt(str, 10)
+  if (!Number.isNaN(numericValue) && Number.isInteger(numericValue)) {
+    return numericValue
+  }
+  return undefined
+}
+
+/**
+ * Parse and validate hooks from frontmatter.
+ * Returns undefined if hooks are not defined or invalid.
+ */
+function parseHooksFromFrontmatter(
+  frontmatter: FrontmatterData,
+  skillName: string,
+): HooksSettings | undefined {
+  if (!frontmatter.hooks) {
+    return undefined
+  }
+
+  // La fuente llama `HooksSchema()` (esquema perezoso); el de
+  // `@thyrox/config/types` es un `z.object` directo, misma forma de salida.
+  const result = HooksSchema.safeParse(frontmatter.hooks)
+  if (!result.success) {
+    logForDebugging(
+      `Invalid hooks in skill '${skillName}': ${result.error.message}`,
+    )
+    return undefined
+  }
+
+  return result.data
+}
+
+/**
+ * Parse paths frontmatter from a skill, using the same format as CLAUDE.md rules.
+ * Returns undefined if no paths are specified or if all patterns are match-all.
+ */
+export function parseSkillPaths(frontmatter: FrontmatterData): string[] | undefined {
+  if (!frontmatter.paths) {
+    return undefined
+  }
+
+  const patterns = splitPathInFrontmatter(frontmatter.paths)
+    .map(pattern => {
+      // Remove /** suffix - ignore library treats 'path' as matching both
+      // the path itself and everything inside it
+      return pattern.endsWith('/**') ? pattern.slice(0, -3) : pattern
+    })
+    .filter((p: string) => p.length > 0)
+
+  // If all patterns are ** (match-all), treat as no paths (undefined)
+  if (patterns.length === 0 || patterns.every((p: string) => p === '**')) {
+    return undefined
+  }
+
+  return patterns
+}
+
+// La fuente escribe `frontmatter.arguments as string | string[] | undefined`;
+// bajo `strict` el índice devuelve `unknown`, así que se estrecha midiendo.
+function asStringOrStringList(value: unknown): string | string[] | undefined {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value) && value.every(item => typeof item === 'string')) {
+    return value
+  }
+  return undefined
+}
+
+function asOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Parses all skill frontmatter fields that are shared between file-based and
+ * MCP skill loading. Caller supplies the resolved skill name and the
+ * source/loadedFrom/baseDir/paths fields separately.
+ */
+export function parseSkillFrontmatterFields(
+  frontmatter: FrontmatterData,
+  markdownContent: string,
+  resolvedName: string,
+  descriptionFallbackLabel: 'Skill' | 'Custom command' = 'Skill',
+): {
+  displayName: string | undefined
+  description: string
+  hasUserSpecifiedDescription: boolean
+  allowedTools: string[]
+  argumentHint: string | undefined
+  argumentNames: string[]
+  whenToUse: string | undefined
+  version: string | undefined
+  model: ReturnType<typeof parseUserSpecifiedModel> | undefined
+  disableModelInvocation: boolean
+  userInvocable: boolean
+  hooks: HooksSettings | undefined
+  executionContext: 'fork' | undefined
+  agent: string | undefined
+  effort: EffortValue | undefined
+  shell: FrontmatterShell | undefined
+} {
+  const validatedDescription = coerceDescriptionToString(
+    frontmatter.description,
+    resolvedName,
+  )
+  const description =
+    validatedDescription ??
+    extractDescriptionFromMarkdown(markdownContent, descriptionFallbackLabel)
+
+  const userInvocable =
+    frontmatter['user-invocable'] === undefined
+      ? true
+      : parseBooleanFrontmatter(frontmatter['user-invocable'])
+
+  const model =
+    frontmatter.model === 'inherit'
+      ? undefined
+      : frontmatter.model
+        ? parseUserSpecifiedModel(frontmatter.model)
+        : undefined
+
+  const effortRaw = frontmatter['effort']
+  const effort =
+    effortRaw !== undefined ? parseEffortValue(effortRaw) : undefined
+  if (effortRaw !== undefined && effort === undefined) {
+    logForDebugging(
+      `Skill ${resolvedName} has invalid effort '${effortRaw}'. Valid options: ${EFFORT_LEVELS.join(', ')} or an integer`,
+    )
+  }
+
+  return {
+    displayName:
+      frontmatter.name != null ? String(frontmatter.name) : undefined,
+    description,
+    hasUserSpecifiedDescription: validatedDescription !== null,
+    allowedTools: parseSlashCommandToolsFromFrontmatter(
+      frontmatter['allowed-tools'],
+    ),
+    argumentHint:
+      frontmatter['argument-hint'] != null
+        ? String(frontmatter['argument-hint'])
+        : undefined,
+    argumentNames: parseArgumentNames(asStringOrStringList(frontmatter.arguments)),
+    whenToUse: asOptionalString(frontmatter.when_to_use),
+    version: asOptionalString(frontmatter.version),
+    model,
+    disableModelInvocation: parseBooleanFrontmatter(
+      frontmatter['disable-model-invocation'],
+    ),
+    userInvocable,
+    hooks: parseHooksFromFrontmatter(frontmatter, resolvedName),
+    executionContext: frontmatter.context === 'fork' ? 'fork' : undefined,
+    agent: asOptionalString(frontmatter.agent),
+    effort,
+    shell: parseShellFrontmatter(frontmatter.shell, resolvedName),
+  }
 }
 
 // Skills dinámicas (porte de 2.1.275): viven en `dynamicSkills.ts` y se
