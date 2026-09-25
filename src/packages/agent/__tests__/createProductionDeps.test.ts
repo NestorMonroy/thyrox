@@ -123,6 +123,32 @@ describe('createProductionDeps', () => {
     expect(r.output).toBe('ok')
   })
 
+  test('4b. el canUseTool que recibe la herramienta responde con `behavior`', async () => {
+    // Quien consulta el permiso lee `behavior` (`PermissionAllowDecision`).
+    // El adaptador —y la fuente— respondían `{decision: 'allow'}`: una forma
+    // que nadie lee, así que la herramienta veía un permiso sin desenlace.
+    let respuesta: unknown
+    const deps = createProductionDeps({
+      tools: [
+        {
+          ...herramienta('Pregunta', 'ok'),
+          call: async (
+            _i: unknown,
+            _c: unknown,
+            canUseTool: () => Promise<unknown>,
+          ) => {
+            respuesta = await canUseTool()
+            return 'ok'
+          },
+        },
+      ] as never,
+      toolUseContext: contexto(),
+      canUseTool: permitirTodo as never,
+    })
+    await deps.tools.execute({ name: 'Pregunta' } as never, {}, { toolUseId: 'u1' } as never)
+    expect((respuesta as { behavior?: string }).behavior).toBe('allow')
+  })
+
   test('5. una herramienta desconocida da error, no una excepción', async () => {
     const deps = createProductionDeps({
       tools: [],
