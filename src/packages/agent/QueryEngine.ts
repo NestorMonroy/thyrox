@@ -14,7 +14,7 @@ import type {
   SDKUserMessageReplay,
 } from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
-import type { CompactMetadata, Message, ToolUseSummaryMessage } from './messageShapes.js'
+import type { Message, ToolUseSummaryMessage } from './messageShapes.js'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
 import { getGlobalConfig } from '@thyrox/config'
@@ -117,7 +117,8 @@ type AppState = {
 }
 type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
 type AgentDefinition = { [key: string]: unknown }
-type SystemCompactBoundaryMessage = Message & { compactMetadata: CompactMetadata }
+/** El mensaje de frontera con su `compactMetadata` estrechado; lo fija el bridge. */
+type SystemCompactBoundaryMessage = ReturnType<typeof createCompactBoundaryMessage>
 type OrphanedPermission = { [key: string]: unknown }
 type AttributionState = { [key: string]: unknown }
 type ProcessUserInputContext = {
