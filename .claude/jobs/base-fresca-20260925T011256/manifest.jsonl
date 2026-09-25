@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/workbench/tsc-zero-loop/run-20260924T175031/baselines/tras-d38c3d15.log 2>&1; bun src/verify/message_shape_audit.ts >> .claude/workbench/tsc-zero-loop/run-20260924T175031/baselines/tras-d38c3d15.log 2>&1; true", "started_at": "2026-09-25T01:12:56+00:00"}

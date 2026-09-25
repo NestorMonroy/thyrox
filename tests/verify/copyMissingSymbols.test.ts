@@ -85,10 +85,12 @@ describe('copy_missing_symbols', () => {
     expect(mod.newText).toContain("import { aliased } from '@thyrox/dep'")
   })
   test('el candidato lleva objetivos, base y una edición de archivo entero', () => {
-    const [candidate] = applyPlan(plan, { write: false })
-    expect(candidate.targets).toHaveLength(3)
-    expect(candidate.edits[0].start).toBe(0)
-    expect(Object.keys(candidate.bases)).toEqual(candidate.files)
+    const candidates = applyPlan(plan, { write: false })
+    expect(candidates).toHaveLength(1)
+    const [candidate] = candidates
+    expect(candidate?.targets).toHaveLength(3)
+    expect(candidate?.edits[0]?.start).toBe(0)
+    expect(Object.keys(candidate?.bases ?? {})).toEqual(candidate?.files ?? [])
   })
   test('el resultado compila: los tres TS2305 desaparecen', () => {
     applyPlan(plan, { write: true })

@@ -1,0 +1,13 @@
+Record step 075 and fix the copier test's strict errors
+
+The retry of seven symbol copies stalled again, and again six of them
+carried someone else's diagnostics: the copier's own test file is
+also measured by the root tsconfig and had five strict errors. The
+root cause is that both retries compared against a before-log taken
+before the copier and its test existed, so anything they added looked
+new. The test now guards its indexed reads, both copier files measure
+0 diagnostics alone, and the next retry uses a fresh baseline.
+
+The seventh, attachments.ts, is a real case: the copied Attachment
+type is wider than what the REPL and command registry consumers
+expect, so it needs those consumers adapted in the same step.
