@@ -1,0 +1,6 @@
+ 12 pass
+ 0 fail
+ 13 expect() calls
+Ran 12 tests across 1 file. [441.00ms]
+{"status": "progress", "total_before": 1991, "total_final": 1974, "tsc_runs": 1, "accepted": ["agent:real-tool-use-context:net"], "files_kept": ["src/packages/agent/contextCollapse/index.ts", "src/packages/agent/postSamplingHooks.ts", "src/packages/agent/skillSearch/prefetch.ts"], "outcomes": {"agent:real-tool-use-context:net": "accepted-net"}}
+__BG_EXIT__=0

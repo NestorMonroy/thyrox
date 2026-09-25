@@ -4,8 +4,7 @@
  * La fuente misma es un stub auto-generado: los tres símbolos son no-ops
  * tipados, sin lógica de prefetch real detrás. El porte lo refleja tal cual.
  *
- * DIVERGENCIA DE ALCANCE en los tipos de la firma — mismo criterio que
- * `postSamplingHooks.ts` para `ToolUseContext`:
+ * DIVERGENCIA DE ALCANCE en dos de los tipos de la firma:
  *
  * - `Attachment` (fuente: `../attachments.js`, ausente en este porte) se
  *   sustituye por `AttachmentEntry` de `./loop/context/attachments.ts`, que
@@ -13,9 +12,8 @@
  * - `Message` (fuente: `@claude-code-how-works/repl/replTypes/message.js`,
  *   paquete `repl` inexistente en este árbol) se sustituye por `Message` de
  *   `./messageShapes.ts`.
- * - `ToolUseContext` (fuente: `@claude-code-how-works/tool-registry/Tool.js`,
- *   bloqueado — otro agente de esta ola porta `tool-registry`) se sustituye
- *   por el `ToolUseContext` ya declarado en `./postSamplingHooks.ts`.
+ * - `ToolUseContext` viene ya de `@thyrox/tool-registry/Tool.js`, como en
+ *   la fuente.
  *
  * Como los tres cuerpos son no-ops que no inspeccionan ningún campo de estos
  * parámetros, la sustitución no cambia el comportamiento observable — sólo
@@ -24,7 +22,7 @@
 
 import type { AttachmentEntry } from './loop/context/attachments.ts'
 import type { Message } from './messageShapes.ts'
-import type { ToolUseContext } from './postSamplingHooks.ts'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 
 export const startSkillDiscoveryPrefetch: (
   input: string | null,

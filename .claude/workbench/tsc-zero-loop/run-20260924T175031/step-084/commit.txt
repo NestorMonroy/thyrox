@@ -1,0 +1,19 @@
+Use the real ToolUseContext in post-sampling hooks
+
+Step 084 of the tsc-zero loop: 1991 -> 1974, accepted net.
+
+postSamplingHooks.ts declared ToolUseContext as Record<string,
+unknown> "until tool-registry enters the tree", and prefetch.ts and
+contextCollapse/index.ts borrowed that placeholder. tool-registry is
+in the tree now, so the module is the source's again and the other
+two import ToolUseContext from @thyrox/tool-registry/Tool.js, as the
+source does. Every field read through a REPLHookContext stopped
+being unknown.
+
+The first attempt (intento-1/) stalled as partial: two targets in
+query.ts stay because toolUseContext reaches it through another type
+whose options.agentDefinitions is unknown, a different cause. Rerun
+with --net under a derived id, those two dropped from its targets.
+The postSamplingHooks tests pass (pruebas.log).
+
+Memory (gate 3b): placeholder-type-after-dependency-arrived.
