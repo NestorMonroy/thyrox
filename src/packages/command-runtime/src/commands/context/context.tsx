@@ -1,6 +1,7 @@
 import { feature } from 'bun:bundle'
 import * as React from 'react'
 import type { LocalJSXCommandContext } from '../../runtime.js'
+import type { AppState } from '@thyrox/app-host/state/AppStateStore.js'
 import { ContextVisualization } from '@thyrox/repl/components/ContextVisualization.js'
 import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
 import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
@@ -45,7 +46,7 @@ export async function call(
   // Get terminal width for responsive sizing
   const terminalWidth = process.stdout.columns || 80
 
-  const appState = getAppState()
+  const appState = (getAppState as () => AppState)()
 
   // Analyze context with compacted messages
   // Pass original messages as last parameter for accurate API usage extraction

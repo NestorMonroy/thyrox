@@ -2,7 +2,10 @@ import * as React from 'react'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
 import { Box, Text } from '@anthropic/ink'
 import type { Screen } from '../screens/REPL.js'
-import type { NormalizedUserMessage } from '@thyrox/agent/messageShapes'
+import type {
+  NormalizedUserMessage,
+  PartialCompactDirection,
+} from '@thyrox/agent/messageShapes'
 import { getUserMessageText } from '@thyrox/agent/messages.js'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { MessageResponse } from './MessageResponse.js'
@@ -15,7 +18,9 @@ type Props = {
 export function CompactSummary({ message, screen }: Props): React.ReactNode {
   const isTranscriptMode = screen === 'transcript'
   const textContent = getUserMessageText(message) || ''
-  const metadata = message.summarizeMetadata
+  const metadata = message.summarizeMetadata as
+    | { messagesSummarized: number; userContext?: string; direction?: PartialCompactDirection }
+    | undefined
 
   // "Summarize from here" with metadata
   if (metadata) {

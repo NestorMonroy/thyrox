@@ -199,7 +199,7 @@ describe('incrementPromptCount', () => {
   })
 
   test('snapshot includes incremented count (not original)', () => {
-    let savedCount: number | null = null
+    let savedCount: number | null | undefined = null
     const state = createEmptyAttributionState()
     state.promptCount = 10
     incrementPromptCount(state, snap => {

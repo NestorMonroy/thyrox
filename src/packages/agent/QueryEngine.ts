@@ -1320,6 +1320,13 @@ export class QueryEngine {
       return
     }
 
+    // isResultSuccessful() valida la forma del mensaje pero no es un type
+    // predicate, así que tsc no descarta undefined aunque el runtime ya lo
+    // garantice — se hace visible con una guarda explícita.
+    if (result === undefined) {
+      return
+    }
+
     // Extract the text result based on message type
     let textResult = ''
     let isApiError = false

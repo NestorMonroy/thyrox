@@ -5,7 +5,7 @@ import uniqBy from 'lodash-es/uniqBy.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { emitReplHydrationTelemetry, emitSpawnedBySkillTelemetry, maybeRecordForkContextRef, runReplHydration } from './runAgentTelemetry.js'
 import { getProjectRoot, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
-import { getCommand, getSkillToolCommands, hasCommand } from '@thyrox/command-runtime/runtime'
+import { getCommand, getSkillToolCommands, hasCommand, type Command } from '@thyrox/command-runtime/runtime'
 import {
   DEFAULT_AGENT_PROMPT,
   enhanceSystemPromptWithEnvDetails,
@@ -28,7 +28,6 @@ import type {
 } from '@thyrox/mcp-runtime/types.js'
 import type { Tool, Tools, ToolUseContext } from '../../Tool.js'
 import { killShellTasksForAgent } from '@thyrox/agent/tasks/LocalShellTask/killShellTasks.js'
-import type { Command } from '@thyrox/agent/command.js'
 import type { AgentId } from '@thyrox/agent/idTypes'
 import type {
   AssistantMessage,

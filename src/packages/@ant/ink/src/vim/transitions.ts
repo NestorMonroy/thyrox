@@ -248,7 +248,8 @@ function fromOperator(
   ctx: TransitionContext,
 ): TransitionResult {
   if (/\d/.test(input)) {
-    return { next: { type: 'operatorCount', ...state, digits: input } }
+    const next = { type: 'operatorCount', ...state, digits: input }
+    return { next }
   }
 
   if (input === state.op[0]) {

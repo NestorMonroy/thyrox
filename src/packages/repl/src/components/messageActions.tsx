@@ -5,6 +5,7 @@ import { Box, Text } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import { logEvent } from '@thyrox/local-observability'
 import type {
+  ContentItem,
   NormalizedUserMessage,
   RenderableMessage,
 } from '@thyrox/agent/messageShapes'
@@ -380,7 +381,7 @@ function copyTextOf(msg: NavigableMessage): string {
     case 'attachment': {
       const a = msg.attachment
       if (a.type === 'queued_command') {
-        const p = a.prompt
+        const p = a.prompt as string | ReadonlyArray<ContentItem>
         return typeof p === 'string'
           ? p
           : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')

@@ -22,7 +22,10 @@ export function getPlatform(): string {
     throw error
   }
 
-  if (os === 'linux' && envDynamic.isMuslEnvironment()) {
+  if (
+    os === 'linux' &&
+    (envDynamic as { isMuslEnvironment: () => boolean }).isMuslEnvironment()
+  ) {
     return `linux-${arch}-musl`
   }
 

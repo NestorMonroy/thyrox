@@ -215,7 +215,7 @@ export async function exec(
 
   // When onStdout is provided, use pipe mode
   const usePipeMode = !!onStdout
-  const taskId = generateTaskId('b')
+  const taskId = generateTaskId('local_bash')
   const taskOutputDir = ctx.getTaskOutputDir()
   await mkdir(taskOutputDir, { recursive: true })
 

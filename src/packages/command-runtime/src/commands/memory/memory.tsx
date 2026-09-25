@@ -43,12 +43,16 @@ function MemoryCommand({
       // Determine which environment variable controls the editor
       let editorSource = 'default'
       let editorValue = ''
-      if (readEnv('VISUAL')) {
+      const visualEnv = readEnv('VISUAL')
+      if (visualEnv) {
         editorSource = '$VISUAL'
-        editorValue = readEnv('VISUAL')
-      } else if (readEnv('EDITOR')) {
-        editorSource = '$EDITOR'
-        editorValue = readEnv('EDITOR')
+        editorValue = visualEnv
+      } else {
+        const editorEnv = readEnv('EDITOR')
+        if (editorEnv) {
+          editorSource = '$EDITOR'
+          editorValue = editorEnv
+        }
       }
 
       const editorInfo =

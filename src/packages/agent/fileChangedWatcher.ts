@@ -32,8 +32,8 @@ export function initializeFileChangedWatcher(cwd: string): void {
 
   const config = getHooksConfigFromSnapshot()
   hasEnvHooks =
-    (config?.CwdChanged?.length ?? 0) > 0 ||
-    (config?.FileChanged?.length ?? 0) > 0
+    ((config.CwdChanged as unknown[] | undefined)?.length ?? 0) > 0 ||
+    ((config.FileChanged as unknown[] | undefined)?.length ?? 0) > 0
 
   if (hasEnvHooks) {
     registerCleanup(async () => dispose())
@@ -139,8 +139,8 @@ export async function onCwdChangedForHooks(
   // Re-evaluate from the current snapshot so mid-session hook changes are picked up
   const config = getHooksConfigFromSnapshot()
   const currentHasEnvHooks =
-    (config?.CwdChanged?.length ?? 0) > 0 ||
-    (config?.FileChanged?.length ?? 0) > 0
+    ((config.CwdChanged as unknown[] | undefined)?.length ?? 0) > 0 ||
+    ((config.FileChanged as unknown[] | undefined)?.length ?? 0) > 0
   if (!currentHasEnvHooks) return
   currentCwd = newCwd
 

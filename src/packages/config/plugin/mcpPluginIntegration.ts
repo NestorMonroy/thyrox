@@ -237,7 +237,7 @@ async function loadMcpServersFromFile(
   }
 
   try {
-    const parsed = jsonParse(content)
+    const parsed = jsonParse(content) as { mcpServers?: Record<string, unknown> }
 
     // Check if it's in the .mcp.json format with mcpServers key
     const mcpServers = parsed.mcpServers || parsed

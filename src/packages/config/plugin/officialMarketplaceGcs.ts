@@ -115,7 +115,7 @@ export async function fetchOfficialMarketplaceFromGcs(
     // ourselves to recover exec bits. Without this, hooks/scripts extract as
     // 0644 and `sh -c "/path/script.sh"` (hooks.ts:~1002) fails with EACCES
     // on Unix. Git-clone preserves +x natively; this keeps GCS at parity.
-    const modes = parseZipModes(zipBuf)
+    const modes = parseZipModes(zipBuf) as Record<string, number>
 
     const staging = `${installLocation}.staging`
     await rm(staging, { recursive: true, force: true })

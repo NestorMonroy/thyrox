@@ -137,8 +137,9 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 }
 
 export function formatCreditAmount(reward: ReferrerRewardInfo): string {
-  const symbol = CURRENCY_SYMBOLS[reward.currency] ?? `${reward.currency} `
-  const amount = reward.amount_minor_units / 100
+  const info = reward as { currency: string; amount_minor_units: number }
+  const symbol = CURRENCY_SYMBOLS[info.currency] ?? `${info.currency} `
+  const amount = info.amount_minor_units / 100
   const formatted = amount % 1 === 0 ? amount.toString() : amount.toFixed(2)
   return `${symbol}${formatted}`
 }
@@ -203,7 +204,7 @@ export async function fetchAndStorePassesEligibility(): Promise<ReferralEligibil
       }))
 
       logForDebugging(
-        `Passes eligibility cached for org ${orgId}: ${response.eligible}`,
+        `Passes eligibility cached for org ${orgId}: ${(response as { eligible: boolean }).eligible}`,
       )
 
       return response

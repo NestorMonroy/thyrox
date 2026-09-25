@@ -19,5 +19,5 @@ export function getStandaloneAgentName(appState: AppState): string | undefined {
   if (getTeamName()) {
     return undefined
   }
-  return appState.standaloneAgentContext?.name
+  return (appState as { standaloneAgentContext?: { name?: string } }).standaloneAgentContext?.name
 }

@@ -34,7 +34,7 @@ function splitFrontmatter(raw: string): { meta: Map<string, string>; body: strin
 
   let end = -1
   for (let i = 1; i < lines.length; i++) {
-    if (lines[i].trimEnd() === close) { end = i; break }
+    if ((lines[i] ?? '').trimEnd() === close) { end = i; break }
   }
   if (end === -1) return { meta: new Map(), body: raw } // frontmatter sin cerrar
 
@@ -48,7 +48,7 @@ function splitFrontmatter(raw: string): { meta: Map<string, string>; body: strin
 
   // El cuerpo empieza tras el cierre; se recortan las líneas en blanco iniciales.
   let start = end + 1
-  while (start < lines.length && lines[start].trim() === '') start++
+  while (start < lines.length && (lines[start] ?? '').trim() === '') start++
   return { meta, body: lines.slice(start).join('\n') }
 }
 

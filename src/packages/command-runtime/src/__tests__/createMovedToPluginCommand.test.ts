@@ -200,7 +200,7 @@ describe('createMovedToPluginCommand — getPromptForCommand routing', () => {
 
   test('args are passed verbatim to fallback', async () => {
     process.env.USER_TYPE = 'external'
-    const fallback = mock(async () => [{ type: 'text' as const, text: '' }])
+    const fallback = mock(async (_args: string, _context: unknown) => [{ type: 'text' as const, text: '' }])
     const cmd = createMovedToPluginCommand({
       name: 'cmd',
       description: '',

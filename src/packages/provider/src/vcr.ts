@@ -133,6 +133,9 @@ function mapMessages(
     if (typeof _ === 'string') {
       return f(_)
     }
+    if (_ === undefined) {
+      return _
+    }
     return _.map(_ => {
       switch (_.type) {
         case 'tool_result':

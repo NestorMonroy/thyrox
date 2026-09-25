@@ -811,7 +811,9 @@ function UserMessageOption({
 
   const content = userMessage.message.content
   const lastBlock =
-    typeof content === 'string' ? null : content[content.length - 1]
+    content === undefined || typeof content === 'string'
+      ? null
+      : content[content.length - 1]
   const rawMessageText =
     typeof content === 'string'
       ? content.trim()
@@ -978,7 +980,9 @@ export function selectableUserMessagesFilter(
 
   const content = message.message.content
   const lastBlock =
-    typeof content === 'string' ? null : content[content.length - 1]
+    content === undefined || typeof content === 'string'
+      ? null
+      : content[content.length - 1]
   const messageText =
     typeof content === 'string'
       ? content.trim()
