@@ -1,0 +1,4 @@
+HEAD del worktree: 191ba7db
+-rw-r--r-- 1 root root 2278917 Sep 25 20:01 /home/user/thyrox/.claude/cache/tsc-incremental-buildinfo/measurement-worktree.tsbuildinfo
+-rw-r--r-- 1 root root 2356741 Sep 25 20:04 /home/user/thyrox/.claude/cache/tsc-incremental-buildinfo/measurement-worktree-declaration.tsbuildinfo
+-rw-r--r-- 1 root root 2471306 Sep 25 20:06 /home/user/thyrox/.claude/cache/tsc-incremental-buildinfo/measurement-worktree-declaration.tsbuildinfo

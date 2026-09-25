@@ -91,6 +91,10 @@ _UNION_BEFORE = 'src/packages/repl/src/components/MessageRow.tsx(197,7): error T
 _UNION_AFTER = 'src/packages/repl/src/components/MessageRow.tsx(200,7): error TS2322: Type \'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup\' is not assignable to type \'AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | ... 16 more ... | CollapsedReadSearchGroup\'.'
 
 
+_NESTED_PAIRS = json.loads(
+    (pathlib.Path(__file__).parent / "fixtures" / "nested-union-reprint-pairs.json").read_text())
+
+
 class StableUnionKeyTest(unittest.TestCase):
     def key(self, line: str) -> str:
         match = DIAGNOSTIC.match(line)
@@ -115,8 +119,49 @@ class StableUnionKeyTest(unittest.TestCase):
 
     def test_non_union_type_is_kept_verbatim(self) -> None:
         self.assertEqual(
-            "a.ts: TS2322: Type 'Array<A | B>' is not assignable to type 'C'.",
-            self.key("a.ts(1,1): error TS2322: Type 'Array<A | B>' is not assignable to type 'C'."))
+            "a.ts: TS2322: Type 'Array<C>' is not assignable to type 'D'.",
+            self.key("a.ts(1,1): error TS2322: Type 'Array<C>' is not assignable to type 'D'."))
+
+    # Hasta el 2026-09-25 una unión ANIDADA se conservaba literal. Medido ese
+    # día: tsc --incremental tras una edición reimprimió 4 uniones anidadas en
+    # otro orden —dentro de `{…}`, de `Record<…>` y de `(…)[]`— y el
+    # verificador las contaba como diagnósticos nuevos. Los 4 pares son reales
+    # (fixtures/nested-union-reprint-pairs.json).
+    def test_nested_unions_reprinted_in_another_order_are_the_same_key(self) -> None:
+        for pair in _NESTED_PAIRS:
+            with self.subTest(before=pair["before"][:80]):
+                self.assertEqual(self.key(pair["before"]), self.key(pair["after"]))
+
+    def test_nested_reprints_are_not_new_diagnostics(self) -> None:
+        before = [pair["before"] for pair in _NESTED_PAIRS]
+        after = [pair["after"] for pair in _NESTED_PAIRS]
+        self.assertEqual([], _new_diagnostics(before, after)[0])
+
+    def test_nested_unions_of_different_size_stay_distinct(self) -> None:
+        self.assertNotEqual(
+            self.key("a.ts(1,1): error TS2322: Type 'Array<A | B>' is not assignable to type 'C'."),
+            self.key("a.ts(1,1): error TS2322: Type 'Array<A | B | D>' is not assignable to type 'C'."))
+
+    def test_an_arrow_inside_a_group_does_not_close_it(self) -> None:
+        # Si `=>` cerrara el `{`, la unión de `g` quedaría fuera de la
+        # agrupación y sin normalizar.
+        self.assertEqual(
+            self.key("a.ts(1,1): error TS2345: Argument of type '{ f: (x: A) => B; g: C | D; }' is bad."),
+            self.key("a.ts(1,1): error TS2345: Argument of type '{ f: (x: A) => B; g: D | C; }' is bad."))
+
+    def test_an_arrow_does_not_collapse_distinct_diagnostics(self) -> None:
+        # Si `=>` bajara la profundidad, la unión de `g` quedaría en el nivel 0
+        # y el mensaje entero se reduciría a «unión de 2» en los dos lados.
+        self.assertNotEqual(
+            self.key("a.ts(1,1): error TS2345: Argument of type '{ f: (x: A) => B; g: C | D; }' is bad."),
+            self.key("a.ts(1,1): error TS2345: Argument of type '{ f: (x: A) => E; g: C | D; }' is bad."))
+
+    def test_fields_outside_the_union_still_tell_diagnostics_apart(self) -> None:
+        # Sin separar campos, el grupo entero se reduciría a «unión de 2» y
+        # dos diagnósticos distintos colisionarían.
+        self.assertNotEqual(
+            self.key("a.ts(1,1): error TS2322: Type '{ a: X | Y; b: Z; }' is bad."),
+            self.key("a.ts(1,1): error TS2322: Type '{ a: X | Y; b: W; }' is bad."))
 
 
 if __name__ == "__main__":

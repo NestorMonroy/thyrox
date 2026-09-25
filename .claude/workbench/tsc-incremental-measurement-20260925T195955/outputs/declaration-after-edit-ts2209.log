@@ -1,0 +1,1 @@
+error TS2209: The project root is ambiguous, but is required to resolve export map entry '.' in file '/home/user/thyrox-medicion/package.json'. Supply the `rootDir` compiler option to disambiguate.
