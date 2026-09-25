@@ -1,5 +1,4 @@
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
-import type { UUID } from 'crypto'
 
 export type LocalCommandResult =
   | { type: 'text'; value: string }
@@ -57,53 +56,30 @@ type LocalCommand = {
   load: () => Promise<LocalCommandModule>
 }
 
-export type ResumeEntrypoint =
-  | 'cli_flag'
-  | 'slash_command_picker'
-  | 'slash_command_session_id'
-  | 'slash_command_title'
-  | 'fork'
+// El contrato de un comando local-jsx vive en `@thyrox/agent/command.js`,
+// que es la forma que la fuente declara (`context: ToolUseContext &
+// LocalJSXCommandContext`, resultado `Promise<ReactNode>`). Esta copia local
+// lo había reducido a campos `unknown` y un índice abierto, y los comandos,
+// escritos contra el contrato completo, no le asignaban: 23 diagnósticos de
+// `LocalJSXCommandModule` con una sola causa. Se re-exporta en vez de
+// duplicarlo; el import es de tipos, así que la dependencia mutua entre los
+// dos paquetes no crea ciclo en tiempo de ejecución.
+import type {
+  CommandResultDisplay,
+  LocalJSXCommandCall,
+  LocalJSXCommandContext,
+  LocalJSXCommandModule,
+  LocalJSXCommandOnDone,
+  ResumeEntrypoint,
+} from '@thyrox/agent/command.js'
 
-export type CommandResultDisplay = 'skip' | 'system' | 'user'
-
-export type LocalJSXCommandContext = {
-  canUseTool?: unknown
-  setMessages: (updater: (prev: unknown[]) => unknown[]) => void
-  options: {
-    dynamicMcpConfig?: Record<string, unknown>
-    ideInstallationStatus: unknown
-    theme: unknown
-  }
-  onChangeAPIKey: () => void
-  onChangeDynamicMcpConfig?: (config: Record<string, unknown>) => void
-  onInstallIDEExtension?: (ide: unknown) => void
-  resume?: (
-    sessionId: UUID,
-    log: unknown,
-    entrypoint: ResumeEntrypoint,
-  ) => Promise<void>
-  [key: string]: unknown
-}
-
-export type LocalJSXCommandOnDone = (
-  result?: string,
-  options?: {
-    display?: CommandResultDisplay
-    shouldQuery?: boolean
-    metaMessages?: string[]
-    nextInput?: string
-    submitNextInput?: boolean
-  },
-) => void
-
-export type LocalJSXCommandCall = (
-  onDone: LocalJSXCommandOnDone,
-  context: LocalJSXCommandContext,
-  args: string,
-) => Promise<unknown>
-
-export type LocalJSXCommandModule = {
-  call: LocalJSXCommandCall
+export type {
+  CommandResultDisplay,
+  LocalJSXCommandCall,
+  LocalJSXCommandContext,
+  LocalJSXCommandModule,
+  LocalJSXCommandOnDone,
+  ResumeEntrypoint,
 }
 
 type LocalJSXCommand = {
