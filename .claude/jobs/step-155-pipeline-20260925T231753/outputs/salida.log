@@ -1,0 +1,2 @@
+GATE 3b BLOQUEADO: batch-01 conservó src/packages/agent/attachments.ts, src/packages/agent/messages.ts sin una entrada de memoria que lo cubra (ninguna salida trajo un patrón válido). No se exporta ni se continúa.
+__BG_EXIT__=3
