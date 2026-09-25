@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import re
+import subprocess
 from pathlib import Path
 
 from verify.pool_pipeline import read_output
@@ -167,6 +168,92 @@ def item_name(item_file: Path) -> str:
     raise ValueError(f"{item_file}: sin línea 'Ítem:'")
 
 
+# Por debajo de estas líneas, un ayudante con un solo llamador ausente viaja
+# con él (attachments-port-plan: absorbía sin partir el contexto del llamador).
+SMALL_HELPER_LINES = 20
+DECLARATIONS_ITEM = "__declarations__:types"
+
+
+def plan(declarations: list[dict], present: set[str]) -> dict[str, list[str]]:
+    """Reparte en ítems las declaraciones de nivel superior que el destino no
+    tiene. Una función ausente es su propio ítem, salvo un ayudante pequeño con
+    un solo llamador ausente, que sube hasta el primer dueño no absorbido; las
+    declaraciones que no son funciones van juntas en un ítem aparte."""
+    missing = {d["name"]: d for d in declarations if d["name"] not in present}
+    functions = {n for n, d in missing.items() if d["kind"] == "function"}
+    callers: dict[str, set[str]] = {n: set() for n in functions}
+    for name in functions:
+        for reference in missing[name].get("references", []):
+            if reference in functions and reference != name:
+                callers[reference].add(name)
+    owner = {n: next(iter(callers[n])) for n in functions
+             if len(callers[n]) == 1
+             and missing[n]["end"] - missing[n]["start"] + 1 < SMALL_HELPER_LINES}
+
+    def root(name: str) -> str:
+        seen: set[str] = set()
+        while name in owner and name not in seen:
+            seen.add(name)
+            name = owner[name]
+        return name
+
+    items: dict[str, list[str]] = {}
+    for name in sorted(functions):
+        items.setdefault(root(name), []).append(name)
+    others = sorted(n for n in missing if n not in functions)
+    if others:
+        items[DECLARATIONS_ITEM] = others
+    return {k: sorted(v) for k, v in items.items()}
+
+
+THYROX = Path(__file__).resolve().parents[2]
+EXTRACTOR = THYROX / "src/verify/top_level_declarations.ts"
+
+
+def top_level_declarations(module: Path) -> list[dict]:
+    """Las declaraciones de nivel superior de un módulo, por el compilador de
+    TypeScript (`top_level_declarations.ts`); rehúsa si bun falla."""
+    result = subprocess.run(["bun", str(EXTRACTOR), str(module)], capture_output=True, text=True, cwd=THYROX)
+    if result.returncode != 0:
+        raise RuntimeError(f"top_level_declarations {module}: {result.stderr.strip()}")
+    return json.loads(result.stdout)
+
+
+def item_text(target: str, source: str, name: str, members: list[str],
+              ranges: dict[str, tuple[int, int]], uses: list[str]) -> str:
+    """El texto de un ítem en el formato que `prompts/module-member-port.md` espera."""
+    heading = ("Declaraciones de nivel superior a portar" if name == DECLARATIONS_ITEM
+               else "Miembros a portar")
+    lines = [f"Módulo destino: {target}", f"Ítem: {name}", f"Ancla de cuerpo: {SLOT.format(name)}",
+             f"Ancla de imports: {IMPORTS.format(name)}", f"Fuente (sólo lectura): {source}", "",
+             f"{heading} (nombre: líneas de la fuente):"]
+    lines += [f"- {member}: {ranges[member][0]}-{ranges[member][1]}" for member in members]
+    if uses:
+        lines += ["", "Otros miembros del módulo que usan (existen o los porta otro ítem; "
+                      "úsalos por su nombre): " + ", ".join(uses)]
+    return "\n".join(lines) + "\n"
+
+
+def write_plan(source: Path, target: Path, bench: Path) -> int:
+    """Escribe `items/N.txt` e `items.txt`; devuelve cuántos ítems."""
+    declarations = top_level_declarations(source)
+    present = {d["name"] for d in top_level_declarations(target)} if target.is_file() else set()
+    items = plan(declarations, present)
+    ranges = {d["name"]: (d["start"], d["end"]) for d in declarations}
+    functions = {d["name"] for d in declarations if d["kind"] == "function"}
+    references = {d["name"]: set(d["references"]) for d in declarations}
+    (bench / "items").mkdir(parents=True, exist_ok=True)
+    lines = []
+    for number, (name, members) in enumerate(items.items(), 1):
+        used = set().union(*(references[m] for m in members)) & functions
+        uses = sorted(used - set(members))
+        path = bench / "items" / f"{number}.txt"
+        path.write_text(item_text(str(target), str(source), name, members, ranges, uses), encoding="utf-8")
+        lines.append(f"module:{target} {path}")
+    (bench / "items.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return len(lines)
+
+
 def wave_numbers(waves: int, maps: list[list[int]], items: int) -> list[list[int]]:
     """El número original de cada salida, por ola. Con un mapa por ola, cada
     una usa el suyo; con uno menos, la primera numera todos los ítems."""
@@ -187,13 +274,23 @@ def main(argv: list[str] | None = None) -> int:
     import argparse
     import sys
     parser = argparse.ArgumentParser(description="porte de un módulo por miembros")
-    parser.add_argument("command", choices=("assemble",))
+    parser.add_argument("command", choices=("assemble", "plan"))
     parser.add_argument("--target", type=Path, required=True)
-    parser.add_argument("--items", type=Path, required=True)
-    parser.add_argument("--outputs", type=Path, action="append", required=True)
+    parser.add_argument("--source", type=Path, help="plan: el módulo de la fuente")
+    parser.add_argument("--bench", type=Path, help="plan: el paso donde se escriben los ítems")
+    parser.add_argument("--items", type=Path)
+    parser.add_argument("--outputs", type=Path, action="append", default=[])
     parser.add_argument("--map", type=Path, action="append", default=[],
                         help="por ola a partir de la segunda: JSON con el número original de cada salida")
     args = parser.parse_args(argv)
+    if args.command == "plan":
+        if not (args.source and args.bench):
+            parser.error("plan exige --source y --bench")
+        count = write_plan(args.source, args.target, args.bench)
+        print(f"member_port plan: {count} ítem(s) -> {args.bench / 'items.txt'}")
+        return 0
+    if not (args.items and args.outputs):
+        parser.error("assemble exige --items y al menos un --outputs")
     lines = args.items.read_text().splitlines()
     names = [item_name(Path(line.split()[1])) for line in lines]
     proposals: dict[str, dict] = {}

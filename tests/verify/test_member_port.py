@@ -130,5 +130,52 @@ assert_equal("un ancla prefijo de otra se aplica sólo sobre su línea",
              (["getNested"], True, True),
              (report["applied"], "export const getNested = 1" in text, "// @port-slot: getNestedForFile" in text))
 
+# --- plan: el reparto en ítems, que vivía como guion de banco --------------
+# (attachments-port-plan-*/probes/build_items.py). Un ayudante pequeño con un
+# solo llamador ausente viaja con él; las declaraciones van en un ítem aparte;
+# lo que el destino ya tiene no se porta.
+declarations = [
+    {"name": "Kind", "kind": "declaration", "start": 1, "end": 3, "references": []},
+    {"name": "present", "kind": "function", "start": 4, "end": 8, "references": []},
+    {"name": "big", "kind": "function", "start": 10, "end": 60, "references": ["helper", "present", "Kind"]},
+    {"name": "helper", "kind": "function", "start": 61, "end": 66, "references": ["leaf"]},
+    {"name": "leaf", "kind": "function", "start": 67, "end": 70, "references": []},
+    {"name": "shared", "kind": "function", "start": 71, "end": 75, "references": []},
+    {"name": "a", "kind": "function", "start": 76, "end": 80, "references": ["shared"]},
+    {"name": "b", "kind": "function", "start": 81, "end": 85, "references": ["shared"]},
+]
+plan = mp.plan(declarations, {"present"})
+assert_equal("un ayudante pequeño de un solo llamador sube hasta su dueño no absorbido",
+             ["big", "helper", "leaf"], plan.get("big"))
+assert_equal("un ayudante con dos llamadores es su propio ítem", ["shared"], plan.get("shared"))
+assert_equal("lo que el destino ya tiene no se porta", False,
+             any("present" in members for members in plan.values()))
+assert_equal("las declaraciones ausentes van en su propio ítem", ["Kind"], plan.get("__declarations__:types"))
+big_helper = [dict(d, end=d["start"] + 40) if d["name"] == "helper" else d for d in declarations]
+assert_equal("un ayudante grande no se absorbe", ["helper", "leaf"], mp.plan(big_helper, {"present"}).get("helper"))
+
+# El CLI `plan`: extractor de TypeScript (bun) + reparto + ítems en el formato
+# que la plantilla `module-member-port.md` espera.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    (base / "source.ts").write_text(
+        "/** Documented. */\nexport type Kind = 'a' | 'b'\n\n"
+        "export function big(k: Kind): number {\n  return helper(k) + kept()\n}\n\n"
+        "const helper = (k: Kind): number => (k === 'a' ? 1 : 0)\n\n"
+        "export function kept(): number {\n  return 1\n}\n")
+    (base / "target.ts").write_text("export function kept(): number {\n  return 1\n}\n")
+    code = mp.main(["plan", "--source", str(base / "source.ts"), "--target", str(base / "target.ts"),
+                    "--bench", str(base / "step")])
+    lines = (base / "step/items.txt").read_text().splitlines()
+    assert_equal("plan escribe un ítem por grupo, en el formato de módulo",
+                 (0, 2, True), (code, len(lines), all(l.startswith("module:") for l in lines)))
+    texts = [Path(l.split()[1]).read_text() for l in lines]
+    big = next(t for t in texts if "Ítem: big" in t)
+    assert_equal("el ítem nombra ancla, rangos con JSDoc y los otros miembros que usa",
+                 (True, True, True, True),
+                 ("// @port-slot: big" in big, "- helper: 8-8" in big, "- big: 4-6" in big, "kept" in big))
+    declared = next(t for t in texts if "__declarations__" in t)
+    assert_equal("las declaraciones se listan con su rango, JSDoc incluido", True, "- Kind: 1-2" in declared)
+
 print(f"test_member_port: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
