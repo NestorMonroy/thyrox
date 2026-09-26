@@ -35,8 +35,11 @@ export function createSortedHelpConfig(): {
  * Creates and configures the main Commander program with all CLI options.
  * Returns the program without .action() or preAction hook attached —
  * those are wired in main.tsx's run() function.
+ *
+ * El tipo de retorno se infiere: la cadena de `.argument`/`.option` tipa el
+ * prompt posicional y cada opción, y un `Command` a secas los borraría.
  */
-export function createMainProgram(): CommanderCommand {
+export function createMainProgram() {
   return new CommanderCommand()
     .configureHelp(createSortedHelpConfig())
     .enablePositionalOptions()
@@ -425,3 +428,6 @@ export function createMainProgram(): CommanderCommand {
       'File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)',
     )
 }
+
+/** El programa principal, con su argumento posicional y sus opciones tipados. */
+export type MainProgram = ReturnType<typeof createMainProgram>

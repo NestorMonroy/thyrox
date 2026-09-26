@@ -19,6 +19,7 @@ import type {
   ContentBlock,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes.js'
 import type {
   BranchAction,
   CommitKind,
@@ -154,6 +155,8 @@ export type SystemMessage =
  */
 export type UserMessage = MessageBase & {
   type: 'user'
+  /** El modo activo al enviarlo (`createUserMessage`); el rewind lo restaura. */
+  permissionMode?: PermissionMode
   message: {
     role?: string
     id?: string

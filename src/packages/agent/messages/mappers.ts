@@ -113,6 +113,16 @@ export function fromSDKCompactMetadata(
   }
 }
 
+/**
+ * El mensaje del API tal como lo guarda `AssistantMessage` (un registro
+ * suelto) y como lo exige el SDK (`BetaMessage`). Su productor es la
+ * respuesta de la API, que ya tiene esa forma: la conversión es de tipo, no de
+ * datos, y vive aquí para que haya una sola.
+ */
+export function toSdkApiMessage(message: unknown): SDKAssistantMessage['message'] {
+  return message as SDKAssistantMessage['message']
+}
+
 export function toSDKMessages(messages: Message[]): SDKMessage[] {
   return messages.flatMap((message): SDKMessage[] => {
     switch (message.type) {
@@ -120,11 +130,11 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
         return [
           {
             type: 'assistant',
-            message: normalizeAssistantMessageForSDK(message as AssistantMessage),
+            message: toSdkApiMessage(normalizeAssistantMessageForSDK(message as AssistantMessage)),
             session_id: getSessionId(),
             parent_tool_use_id: null,
             uuid: message.uuid,
-            error: message.error,
+            error: message.error as SDKAssistantMessage['error'],
           },
         ]
       case 'user':
@@ -201,10 +211,12 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
  *
  * Strips ANSI (e.g. chalk.dim() in /cost) then unwraps the XML wrapper tags.
  */
+// `content` en la raíz no está en el esquema del SDK; el porte lo emite y no
+// consta en el binario si se retira, así que se declara en vez de borrarlo.
 export function localCommandOutputToSDKAssistantMessage(
   rawContent: string,
   uuid: UUID,
-): SDKAssistantMessage {
+): SDKAssistantMessage & { content?: unknown } {
   const cleanContent = stripAnsi(rawContent)
     .replace(/<local-command-stdout>([\s\S]*?)<\/local-command-stdout>/, '$1')
     .replace(/<local-command-stderr>([\s\S]*?)<\/local-command-stderr>/, '$1')
@@ -216,7 +228,7 @@ export function localCommandOutputToSDKAssistantMessage(
   return {
     type: 'assistant',
     content: synthetic.message?.content,
-    message: synthetic.message,
+    message: toSdkApiMessage(synthetic.message),
     parent_tool_use_id: null,
     session_id: getSessionId(),
     uuid,

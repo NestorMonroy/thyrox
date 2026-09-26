@@ -33,7 +33,10 @@ import {
   isSessionPersistenceDisabled,
   setCwdState,
 } from './internal/sessionRuntime.js'
-import type { BetaMessageDeltaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  BetaMessageDeltaUsage,
+  BetaRawMessageStreamEvent,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { accumulateUsage, updateUsage } from '@thyrox/provider/claudeLegacy'
 import stripAnsi from 'strip-ansi'
 import type { Command } from '@thyrox/command-runtime/runtime'
@@ -942,7 +945,9 @@ export class QueryEngine {
           break
         }
         case 'stream_event': {
-          const event = (message as unknown as { event: Record<string, unknown> }).event
+          // El evento crudo del stream del API: se estrecha por `type` abajo y se
+          // reenvía tal cual como `stream_event`, que exige esta forma.
+          const event = (message as unknown as { event: BetaRawMessageStreamEvent }).event
           if (event.type === 'message_start') {
             // Reset current message usage for new message
             currentMessageUsage = EMPTY_USAGE

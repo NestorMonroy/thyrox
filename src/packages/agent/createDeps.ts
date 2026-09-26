@@ -41,7 +41,7 @@ import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { handleStopHooks } from './internal/stopHooksCore.ts'
 import { getAgentHostBindings } from './host.ts'
 import { recordTranscript } from './internal/runtimeBridges.ts'
-import type { StreamEvent as AgentStreamEvent } from './types/events.ts'
+import type { AgentEvent, StreamEvent as AgentStreamEvent } from './types/events.ts'
 import {
   fromCoreMessage,
   fromCoreMessages,
@@ -448,7 +448,7 @@ function isAgentAssistantMessage(message: AgentMessage): message is AgentAssista
   return message.type === 'assistant' && typeof message.message === 'object' && message.message !== null
 }
 
-export function fromAgentEvent(event: { type: string; [key: string]: unknown }) {
+export function fromAgentEvent(event: AgentEvent) {
   switch (event.type) {
     case 'message': {
       // El core emite su mensaje plano; el bucle lo recibe en su modelo.

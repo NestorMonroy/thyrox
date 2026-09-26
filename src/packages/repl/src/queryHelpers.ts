@@ -34,6 +34,7 @@ import {
   type FileStateCache,
 } from '@thyrox/tool-registry/fileStateCache'
 import { isNotEmptyMessage, normalizeMessages } from '@thyrox/agent/messages.js'
+import { toSdkApiMessage } from '@thyrox/agent/messages/mappers.js'
 import { expandPath } from '@thyrox/storage/path.js'
 import type {
   inputSchema as permissionToolInputSchema,
@@ -113,16 +114,6 @@ export function isResultSuccessful(
 const MAX_TOOL_PROGRESS_TRACKING_ENTRIES = 100
 const TOOL_PROGRESS_THROTTLE_MS = 30000
 const toolProgressLastSentTime = new Map<string, number>()
-
-/**
- * El mensaje del API tal como lo guarda `AssistantMessage` (un registro
- * suelto) y como lo exige el SDK (`BetaMessage`). Su productor es la
- * respuesta de la API, que ya tiene esa forma: la conversión es de tipo, no de
- * datos, y vive aquí para que haya una sola.
- */
-function toSdkApiMessage(message: unknown): SDKAssistantMessage['message'] {
-  return message as SDKAssistantMessage['message']
-}
 
 export function* normalizeMessage(message: Message): Generator<SDKMessage> {
   switch (message.type) {

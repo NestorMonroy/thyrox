@@ -6,7 +6,7 @@ import type {
 import { randomUUID } from 'crypto'
 import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
 import type {
-  HookInput,
+  HookInput as SDKHookInput,
   HookJSONOutput,
   PermissionUpdate as SDKPermissionUpdate,
   SDKMessage,
@@ -666,17 +666,17 @@ export class StructuredIO {
     return {
       type: 'callback',
       timeout,
-      callback: async (
-        input: HookInput,
-        toolUseID: string | null,
-        abort: AbortSignal | undefined,
-      ): Promise<HookJSONOutput> => {
+      // Parámetros tipados por `HookCallback`: anotarlos con el `HookInput` del
+      // SDK exigía más de lo que el contrato entrega, y la función no cabía.
+      callback: async (input, toolUseID, abort): Promise<HookJSONOutput> => {
         try {
           const result = await this.sendRequest<HookJSONOutput>(
             {
               subtype: 'hook_callback',
               callback_id: callbackId,
-              input,
+              // El agente tipa la entrada con un shim suelto
+              // (`agent/types/hooks.ts`); lo que construye es la del evento.
+              input: input as SDKHookInput,
               tool_use_id: toolUseID || undefined,
             },
             hookJSONOutputSchema(),

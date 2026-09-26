@@ -1,4 +1,4 @@
-import type { Command } from '@commander-js/extra-typings'
+import type { ParentCommand } from './parentCommand.js'
 import { feature } from 'bun:bundle'
 import { isXaaEnabled } from '@thyrox/mcp-runtime'
 import { createSortedHelpConfig } from '../entry/commander.js'
@@ -26,7 +26,7 @@ interface RegisterMcpCommandsDeps {
 }
 
 export function registerMcpCommands(
-  program: Command,
+  program: ParentCommand,
   deps: RegisterMcpCommandsDeps = {},
 ): void {
   // claude mcp

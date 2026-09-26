@@ -12,7 +12,10 @@ import type {
   AttachmentMessage,
   ProgressMessage,
 } from '@thyrox/agent/messageShapes'
-import type { PermissionDecision } from '@thyrox/permission/permissionTypes'
+import type {
+  PermissionDecision,
+  PermissionDenyDecision,
+} from '@thyrox/permission/permissionTypes'
 import { createAttachmentMessage } from '@thyrox/agent/attachments.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
@@ -387,7 +390,10 @@ export async function resolveHookPermissionDecision(
       logForDebugging(
         `Hook approved tool use for ${tool.name}, but deny rule overrides: ${ruleCheck.message}`,
       )
-      return { decision: ruleCheck, input: hookInput }
+      // El motor de reglas declara una sola forma con `behavior` abierto; su
+      // rama de denegación siempre lleva `message` y `decisionReason`. Unificar
+      // los dos tipos de decisión es tarea aparte.
+      return { decision: ruleCheck as PermissionDenyDecision, input: hookInput }
     }
     // ask rule — dialog required despite hook approval
     logForDebugging(

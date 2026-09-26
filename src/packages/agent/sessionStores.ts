@@ -36,13 +36,10 @@
  *     — el paquete `repl` NO existe como miembro del workspace (medido:
  *     ausente de `src/packages/package.json`). Se deja SIN traducir y se
  *     difiere con `require()`.
- *   - `createStore` / `Store` (`.../app-host/state/store.js`) —
- *     `@thyrox/app-host` existe pero no expone `state/store.ts` (medido: 0
- *     hits de `export function createStore` en `app-host/src/`). El tipo
- *     `Store<T>` se re-declara localmente como `unknown` (erosionado, sólo
- *     para que `InteractiveSessionStore`/`HeadlessSessionStore` typechequen
- *     con la misma forma pública); `createStore`, el valor, se difiere con
- *     `require()`.
+ *   - `createStore` / `Store` (`.../app-host/state/store.js`) — el tipo
+ *     `Store<T>` se importa de ahí (el paquete ya exporta `./state/store.js`,
+ *     que reexporta `@thyrox/repl/stateStore`); `createStore`, el valor,
+ *     se sigue difiriendo con `require()`.
  *   - `parseEffortValue` / `toPersistableEffort` (`./effort.js`, hermano
  *     LOCAL en este mismo paquete) — SÍ resuelve (medido:
  *     `Bun.resolveSync('./effort.js', …)` → `agent/effort.ts`).
@@ -65,6 +62,7 @@
  * les falta, no en el import).
  */
 import { feature } from 'bun:bundle'
+import type { Store } from '@thyrox/app-host/state/store.js'
 import {
   type AppState,
   getDefaultAppState,
@@ -109,15 +107,10 @@ export type HeadlessStoreParams = {
   kairosEnabled?: boolean
 }
 
-// `Store<T>`: `@thyrox/app-host` no expone `state/store.ts` — ver
-// docstring. Forma erosionada mínima para que los dos alias de abajo
-// typechequen con la misma forma pública que la fuente.
-// biome-ignore-all assist/source/organizeImports: tipo local sustituto (ver docstring)
-type Store<T> = {
-  getState: () => T
-  setState: (next: T) => void
-  subscribe: (listener: (state: T) => void) => () => void
-}
+// `Store<T>` es el de `@thyrox/app-host/state/store.js`, que hoy sí se
+// exporta. La copia local que había (con `setState(next: T)`) inventaba una
+// firma que no es la real —la real recibe un actualizador— y el store
+// headless no cabía en `HostSessionStore`.
 
 export type InteractiveSessionStore = Store<AppState>
 export type HeadlessSessionStore = Store<AppState>
