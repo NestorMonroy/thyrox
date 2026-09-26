@@ -186,7 +186,9 @@ export type StreamEvent = {
  */
 export type SystemCompactBoundaryMessage = SystemBase<'compact_boundary'> & {
   content?: string
-  logicalParentUuid?: UUID
+  // `null` como en `TranscriptMessage` (logsTypes.ts): el transcript lo
+  // escribe así cuando `parentUuid` se anula en un corte de sesión.
+  logicalParentUuid?: UUID | null
   compactMetadata: {
     preservedSegment?: {
       headUuid: UUID

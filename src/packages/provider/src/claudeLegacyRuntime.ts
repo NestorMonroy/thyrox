@@ -94,6 +94,7 @@ import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { safeParseJSON } from '@thyrox/storage/json.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { randomUUID } from 'crypto'
 import type { Message, AssistantMessage, UserMessage } from '@thyrox/agent/messageShapes'
 import type { AgentId as AgentIdReal } from '@thyrox/agent/idTypes'
 
@@ -572,7 +573,8 @@ async function* queryModel(
 
   const assistantMessage: AssistantMessage = {
     type: 'assistant',
-    message: { role: 'assistant', content: textAccumulator, usage: usage as unknown },
+    uuid: randomUUID(),
+    message: { role: 'assistant', content: textAccumulator, usage },
   }
   yield assistantMessage
 }
