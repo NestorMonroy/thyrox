@@ -303,6 +303,42 @@ def cmd_local_plan(args) -> int:
     return plan_local(args.log, args.bench, args.root, args.run, excluded, args.size)
 
 
+#: Un archivo sale de la ruta local con al menos estos intentos juzgados…
+DEFER_MIN_TRIALS = 3
+#: …y una media de éxito no mayor que ésta (0 de 3 da 0.2).
+DEFER_MAX_MEAN = 0.25
+SOURCE_SUFFIXES = (".ts", ".tsx")
+
+
+def file_confidence(ledger: Path) -> dict[str, dict]:
+    """Éxito por archivo en la ruta local (L03, self-evolving-agents-2026):
+    las propuestas `agent:pool:<archivo>` que el ledger juzgó. Éxito =
+    `accepted*`, fracaso = `rejected*`, el resto neutro; `mean` es la media
+    de Laplace. Los barridos (`agent:pool:pattern:…`) no cuentan: su unidad
+    es el patrón, no el archivo.
+
+    Ciega a: la dificultad que cambia cuando otro paso toca el archivo; la
+    media pondera igual un rechazo viejo que uno reciente."""
+    counts: dict[str, dict] = {}
+    for line in ledger.read_text().splitlines() if ledger.exists() else []:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        pid = row.get("proposal_id", "")
+        if not pid.startswith("agent:pool:") or not pid.endswith(SOURCE_SUFFIXES):
+            continue
+        file = pid[len("agent:pool:"):]
+        if file.startswith(("pattern:", "module:", "type:")):
+            continue
+        entry = counts.setdefault(file, {"accepted": 0, "rejected": 0, "neutral": 0})
+        outcome = row.get("outcome", "")
+        entry["accepted" if outcome.startswith("accepted") else
+              "rejected" if outcome.startswith("rejected") else "neutral"] += 1
+    for entry in counts.values():
+        entry["mean"] = (entry["accepted"] + 1) / (entry["accepted"] + entry["rejected"] + 2)
+    return counts
+
+
 def plan_local(log_path: Path, bench: Path, root: Path, run: Path, excluded: set[str], size: int) -> int:
     """El plan de la ruta 3 detrás del gate 4; 2 si no hay nada que proponer."""
     log = log_path.read_text(encoding="utf-8", errors="ignore") if log_path.is_file() else ""
@@ -315,7 +351,22 @@ def plan_local(log_path: Path, bench: Path, root: Path, run: Path, excluded: set
               f"{instances} instancia(s) viva(s) sin aplicar, excluir ni cerrar; corre antes "
               "`tsc_cycle sweep plan`", file=sys.stderr)
         return 2
-    items = local_items(log, root, excluded, size)
+    confidence = file_confidence(run / "ledger.jsonl")
+    # Lo que el agente no resuelve tras intentos suficientes no vuelve al pool:
+    # va a otra ruta. Lo FÁCIL no se castiga (divergencia declarada de p(1-p):
+    # el objetivo es 0 errores, no entrenar), así que el resto se ordena de
+    # mayor a menor probabilidad de éxito.
+    deferred = {file: entry for file, entry in confidence.items()
+                if entry["accepted"] + entry["rejected"] >= DEFER_MIN_TRIALS and entry["mean"] <= DEFER_MAX_MEAN}
+    items = local_items(log, root, excluded | set(deferred), size)
+    items.sort(key=lambda item: -confidence.get(item[0], {"mean": 0.5})["mean"])
+    live = {file for file, _ in local_items(log, root, excluded, size)}
+    if deferred.keys() & live:
+        bench.mkdir(parents=True, exist_ok=True)
+        (bench / "deferred.txt").write_text("".join(
+            f"{file}\t{entry['accepted']} de {entry['accepted'] + entry['rejected']} aceptadas "
+            f"(media {entry['mean']:.2f})\truta: modules o manual\n"
+            for file, entry in sorted(deferred.items()) if file in live))
     if not items:
         print(f"tsc_cycle local plan: {log_path} no tiene diagnósticos locales fuera de lo excluido — "
               "nada que proponer", file=sys.stderr)

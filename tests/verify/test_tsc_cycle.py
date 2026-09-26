@@ -449,6 +449,45 @@ with tempfile.TemporaryDirectory() as tmp:
                          "--root", str(root), "--run", str(run)])
     assert_equal("excluidas con razón, la ruta local queda libre", 0, freed)
 
+# --- probabilidad de éxito por archivo (L03, self-evolving-agents-2026) -------
+# Medido en run-20260924T175031: 8 archivos acumulaban 47 propuestas
+# rechazadas sin ninguna aceptada, el 6.4 % del pool. L03 prefiere tareas en la
+# frontera, p(1-p); aquí sólo aplica la mitad de lo imposible: lo FÁCIL es lo
+# que el objetivo (0 errores) quiere primero, así que no se castiga.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    for name in ("easy", "hard", "fresh", "young"):
+        path = root / f"src/{name}.ts"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("\n".join(f"line {n}" for n in range(1, 21)) + "\n")
+    run_dir = root / "run"
+    run_dir.mkdir()
+    rows = ([("agent:pool:src/easy.ts", "accepted")] * 2 + [("agent:pool:src/easy.ts", "rejected")]
+            + [("agent:pool:src/hard.ts", "rejected")] * 2 + [("agent:pool:src/hard.ts", "rejected-review")]
+            + [("agent:pool:src/young.ts", "rejected")] * 2 + [("agent:pool:src/fresh.ts", "revealed")]
+            + [("agent:pool:pattern:x", "rejected")] * 5)
+    (run_dir / "ledger.jsonl").write_text("".join(json.dumps({"proposal_id": p, "outcome": o}) + "\n"
+                                                  for p, o in rows))
+    confidence = tc.file_confidence(run_dir / "ledger.jsonl")
+    assert_equal("la confianza por archivo sale del ledger de la ruta por archivo, no de los barridos",
+                 {"src/easy.ts": (2, 1), "src/hard.ts": (0, 3), "src/young.ts": (0, 2), "src/fresh.ts": (0, 0)},
+                 {k: (v["accepted"], v["rejected"]) for k, v in confidence.items()})
+    log = root / "p.log"
+    log.write_text("".join(f"src/{name}.ts(3,1): error TS2304: Cannot find name \x27{name}\x27.\n"
+                           for name in ("fresh", "hard", "young", "easy")))
+    code = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "step"), "--root", str(root),
+                    "--run", str(run_dir)])
+    planned = [line.split()[0] for line in (root / "step/items.txt").read_text().splitlines()]
+    assert_equal("sin salida posible (0 de 3) el archivo sale de la ruta local", (0, False),
+                 (code, "src/hard.ts" in planned))
+    deferred = (root / "step/deferred.txt").read_text() if (root / "step/deferred.txt").exists() else ""
+    assert_equal("y queda en deferred.txt con sus cifras y la ruta alternativa", (True, True, True),
+                 ("src/hard.ts" in deferred, "0 de 3" in deferred, "modules" in deferred))
+    assert_equal("con pocos intentos se sigue proponiendo, aunque su media esté en el umbral", True,
+                 "src/young.ts" in planned)
+    assert_equal("el resto va de mayor a menor probabilidad: el fácil primero, el sin historia después",
+                 ["src/easy.ts", "src/fresh.ts", "src/young.ts"], planned)
+
 # --- local overlap: el paso N+1 empieza en la cola del paso N ---------------
 # Pipeline parallelism (cs25-v6 L04, 1F1B): el tiempo muerto entre pasos es el
 # problema. Medido en el paso 155: 206 s del pool a ancho < 8, más el hueco de
