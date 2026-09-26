@@ -380,6 +380,7 @@ try:
         env = {**os.environ, jl.LEDGER_DIR_VAR: str(Path(_d) / "declared"),
                "CLAUDE_CODE_SESSION_ID": "s-1"}
         env.pop("THYROX_JOBS_DIR", None)
+        env.pop("THYROX_SESSION_LEDGER_DIR", None)
         env.pop("KX_TRABAJOS_DIR", None)
         subprocess.run(["bash", str(thyrox_root() / "bin/wait-jobs"), "register", "probe", str(log)],
                        env=env, capture_output=True, text=True)

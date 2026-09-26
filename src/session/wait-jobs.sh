@@ -102,7 +102,12 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 _LEDGER_ROOT="$(PYTHONPATH="$_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
     'from session.job_ledger import ledger_root; print(ledger_root())')" || {
     echo "wait-jobs.sh: no pude resolver la raiz de los ledgers" >&2; exit 2; }
-LEDGER="${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-$_LEDGER_ROOT/$_SESSION}}"
+# El ledger de ESTA sesión. `THYROX_SESSION_LEDGER_DIR` lo fija tal cual
+# (una suite, el respaldo de `user_wiring`); sin ella, cuelga de la raíz.
+# NO se lee `THYROX_JOBS_DIR`: ése es el hogar de las CORRIDAS (`job_runs`),
+# y el `.env` lo fija a `.claude/jobs` — quien lo exportara metía los `.job`
+# entre directorios que el gate del banco trata como bancos (TASK #31).
+LEDGER="${THYROX_SESSION_LEDGER_DIR:-${KX_TRABAJOS_DIR:-$_LEDGER_ROOT/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 # Las dos formas de la familia: `EXIT=` del envoltorio a mano y
 # `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las

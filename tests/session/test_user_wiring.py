@@ -224,6 +224,7 @@ _source = _tmp / "fuente.json"
 _source.write_text('{"marca": "contenido-original"}')
 _target = _tmp / "respaldos" / "fuente.json.SELLO"
 _os2.environ["THYROX_JOBS_DIR"] = str(_tmp / "ledger")
+_os2.environ["THYROX_SESSION_LEDGER_DIR"] = str(_tmp / "ledger")
 w.BackgroundBackup(timeout=30).backup(_source, _target)
 check("el respaldo aterrizo", True, _target.exists())
 check("con el contenido de la fuente", _source.read_text(), _target.read_text())
@@ -247,12 +248,12 @@ _foreign_log = _tmp / "ajeno.log"
 _foreign_log.write_text("")
 _sp2.run([_ledger_sh, "register", "ajeno", str(_foreign_log), str(_stalled.pid)],
          capture_output=True, text=True,
-         env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)})
+         env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)})
 _stalled.send_signal(19)  # SIGSTOP -> estado T
 _time.sleep(0.5)
 
 _classes = _sp2.run([_ledger_sh, "status"], capture_output=True, text=True,
-                   env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)}).stdout
+                   env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)}).stdout
 check("el ledger compartido lo clasifica DETENIDO", True, "DETENIDO" in _classes)
 
 _source2 = _tmp / "fuente2.json"

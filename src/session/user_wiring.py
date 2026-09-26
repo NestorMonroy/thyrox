@@ -276,7 +276,7 @@ class BackgroundBackup:
     los trabajos, incluido el que si termino**. El respaldo quedaria rehen de un
     trabajo ajeno que nadie va a revivir.
 
-    Por eso el respaldo corre en su PROPIO ledger —`THYROX_JOBS_DIR` junto a los
+    Por eso el respaldo corre en su PROPIO ledger —`THYROX_SESSION_LEDGER_DIR` junto a los
     respaldos, durable, no en `/tmp`—, de modo que la barrera mida exactamente
     este trabajo. El ledger compartido no se toca: se MIRA con `status` y sus
     clases atascadas se reportan, que es la adaptacion del roster — surfacing
@@ -321,7 +321,7 @@ class BackgroundBackup:
 
         # El ledger propio de este respaldo: durable, junto a lo que respalda.
         mine = destination.parent / "ledger"
-        env = {**_os.environ, "THYROX_JOBS_DIR": str(mine)}
+        env = {**_os.environ, "THYROX_SESSION_LEDGER_DIR": str(mine)}
 
         launch = (
             f'nohup bash -c "cp -p {source} {destination}; echo EXIT=\\$?" '

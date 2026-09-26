@@ -36,6 +36,7 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
 contiene_texto() { printf '%s\n' "$1" | grep -Eq -- "$2" && echo si || echo no; }
 
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 L1=$(fixture_file); L2=$(fixture_file)
 # `canal`: su nieto `cat` lee stdin de una tubería que nadie cierra.
 nohup bash -c "sleep 30 | cat" </dev/null >"$L1" 2>&1 & P1=$!; disown $P1

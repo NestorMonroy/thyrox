@@ -43,6 +43,7 @@ RAIZ="$(thyrox_root)" || exit 2
 
 # El ledger se AISLA: sin esto la suite registra en el de la sesion viva.
 export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0
@@ -103,6 +104,7 @@ af "el directorio lleva prefijo e ISO" si \
 #    esta vacio: la colision solo es observable MIENTRAS corren. Por eso los
 #    dos despachos van en segundo plano y se cuenta entre medias.
 export THYROX_JOBS_DIR="$T/ledger-vivo"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 export BG_DIR="$T/logs-vivo"
 printf 'sleep 4\n' > "$T/lento-a.txt"
 printf 'sleep 4\n' > "$T/lento-b.txt"
@@ -121,6 +123,7 @@ wait "$_pa" "$_pb" 2>/dev/null
 #    (`convention-naming.md`).
 # -------------------------------------------------------------------------
 export THYROX_JOBS_DIR="$T/ledger-nom"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 export BG_DIR="$T/logs-nom"
 printf 'prefijos-por-raiz\techo HOLA\nmediana-de-lineas\techo ADIOS\n' > "$T/nombrados.txt"
 despachar "$T/nombrados.txt"
@@ -136,6 +139,7 @@ af "ninguno quedo con nombre de ordinal"             0 \
 #    al ordinal dentro de su propio directorio, que ya es inambiguo.
 # -------------------------------------------------------------------------
 export THYROX_JOBS_DIR="$T/ledger-sin"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 export BG_DIR="$T/logs-sin"
 printf 'echo SIN-NOMBRE\n' > "$T/sin-nombre.txt"
 despachar "$T/sin-nombre.txt"
@@ -149,6 +153,7 @@ af "una linea sin tabulador sigue corriendo" 1 \
 #    y lanzar `awk` con la mitad del cuerpo.
 # -------------------------------------------------------------------------
 export THYROX_JOBS_DIR="$T/ledger-tab"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 export BG_DIR="$T/logs-tab"
 printf 'printf "A\\tB\\n"\n' > "$T/con-tab.txt"
 despachar "$T/con-tab.txt"

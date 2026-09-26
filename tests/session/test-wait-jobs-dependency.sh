@@ -35,6 +35,7 @@ afirmar() {
 
 echo "== 1. declarar la arista NO lanza el dependiente =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 TESTIGO=$(mktemp -u); fixture_adopt "$TESTIGO"   # si arranca, existe
 LA=$(fixture_file); nohup bash -c "sleep 2; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
 bash "$GUION" register primero "$LA" "$PA" >/dev/null
@@ -59,6 +60,7 @@ afirmar "tras dispatch, el dependiente SÍ arrancó" "presente" \
 
 echo "== 3. CONTROL — un predecesor que FALLA no arranca al dependiente, y lo DICE =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 T2=$(mktemp -u); fixture_adopt "$T2"
 LC=$(fixture_file); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LC" 2>&1 & PC=$!; disown $PC
 bash "$GUION" register malo "$LC" "$PC" >/dev/null
@@ -79,6 +81,7 @@ echo "== 3b. CONTROL — un predecesor que ASIENTA con codigo != 0 no es afterok
 # `__BG_EXIT__=3` (gate 3b bloqueado) quedo asentado OK, y una arista sobre el
 # habria lanzado al siguiente sobre una base sin asentar.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 T3=$(mktemp -u); fixture_adopt "$T3"
 LX=$(fixture_file); printf 'trabajo\nEXIT=3\n' > "$LX"
 bash "$GUION" register asentado_mal "$LX" >/dev/null
@@ -104,6 +107,7 @@ echo "== 4. un CANCELADO no deja el turno bloqueado para siempre =="
 # recoger y SI debe seguir pendiente. Medir los dos juntos no distinguiria
 # "cancelado no bloquea" de "nada bloquea".
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LE=$(fixture_file); printf 'EXIT=0\n' > "$LE"
 bash "$GUION" register pred "$LE" >/dev/null
 LF=$(fixture_file)
@@ -139,6 +143,7 @@ echo "== 6. lo LANZADO sobrevive al shell que lo lanzo: es LIDER de su grupo =="
 # grupo» significa, y no `pgid != pgid del lanzador`: esto último es cierto
 # también de un nieto cualquiera y no discriminaría.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LH=$(fixture_file); printf 'EXIT=0\n' > "$LH"
 bash "$GUION" register padre "$LH" >/dev/null
 GRUPO=$(fixture_file)
@@ -162,6 +167,7 @@ echo "== 9. wait SOLO mueve la cadena: nadie corre dispatch =="
 # El comentario de `dispatch` decía «lo llaman wait, status y pending» y ninguno
 # lo llamaba. Qué lo haría fallar: quitar la llamada de `wait` caen los dos.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 TESTIGO9=$(mktemp -u); fixture_adopt "$TESTIGO9"
 L9=$(fixture_file); nohup bash -c "echo EXIT=0" >"$L9" 2>&1 & P9=$!; disown $P9
 bash "$GUION" register antes9 "$L9" "$P9" >/dev/null
@@ -171,6 +177,7 @@ afirmar "wait lanza el dependiente y lo recoge OK, sin dispatch a mano" "0 medid
     "$RC9 $(cat "$TESTIGO9" 2>/dev/null) $(grep -q '^OK *despues9' <<<"$OUT9" && echo si || echo no)"
 
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 L10=$(fixture_file); nohup bash -c "echo EXIT=1" >"$L10" 2>&1 & P10=$!; disown $P10
 bash "$GUION" register falla10 "$L10" "$P10" >/dev/null
 bash "$GUION" register nunca10 "$(fixture_file)" --after-ok falla10 --run "true" >/dev/null

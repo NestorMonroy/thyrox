@@ -26,6 +26,7 @@ export THYROX_POOL_MEMINFO_PATH="$T/meminfo" THYROX_BG_MEMFREE_DIR="$T/memfree"
 export THYROX_BG_MEMFREE_POLL=0.2
 # Los runs de la familia `jobs` van al temporal, no al árbol.
 export THYROX_JOBS_DIR="$T/jobs"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 mem() { printf 'MemTotal: 16000000 kB\nMemAvailable: %s kB\n' "$1" > "$T/meminfo"; }
 passed=0; failed=0
 check() {

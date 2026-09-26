@@ -33,6 +33,7 @@ RAIZ="$(thyrox_root)" || exit 2
 # El ledger se AÍSLA: sin esto la suite registra en el de la sesión viva y un
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
 export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"
 OK=0; FALLA=0

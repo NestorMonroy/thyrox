@@ -19,6 +19,7 @@ _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 export THYROX_JOBS_DIR="$TMP/jobs"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 # El LECTOR COMPARTIDO, no un `json.load` por fixture. Resuelve el nombre del
 # archivo y despacha por sufijo; un lector propio aquí es una segunda fuente de

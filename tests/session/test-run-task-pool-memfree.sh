@@ -27,6 +27,7 @@ done
 POOL="$_thyrox_root/bin/run-task-pool"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 export THYROX_JOBS_DIR="$T/ledger"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 PASSED=0; FAILED=0
 
 assert_eq() { # assert_eq <descripcion> <esperado> <obtenido>

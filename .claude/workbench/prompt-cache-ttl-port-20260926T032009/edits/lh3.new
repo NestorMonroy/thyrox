@@ -1,0 +1,11 @@
+
+# Quien necesita el ledger en un directorio concreto —una suite, el respaldo
+# de `user_wiring`— lo declara con su nombre, no con el de las corridas.
+DIRECTO=$(fixture_dir)
+L2=$(fixture_file); nohup bash -c "echo EXIT=0" >"$L2" 2>&1 & P2=$!; disown $P2
+THYROX_JOBS_DIR="$RUNS" THYROX_SESSION_LEDGER_DIR="$DIRECTO" bash "$GUION" register dos "$L2" "$P2" >/dev/null 2>&1
+afirmar "THYROX_SESSION_LEDGER_DIR es el ledger de la sesión, tal cual" "si 0" \
+    "$( [[ -f "$DIRECTO/dos.job" ]] && echo si || echo no) $(find "$RUNS" -name '*.job' | wc -l)"
+
+echo
+printf '%d ok, %d fallos\n' "$OK" "$FALLO"

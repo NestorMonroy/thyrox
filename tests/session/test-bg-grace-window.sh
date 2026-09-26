@@ -36,6 +36,7 @@ trap 'rm -rf "$DIR"' EXIT
 # Los runs de la familia `jobs` —bg.sh crea su run-puntero aun con `--dir`— van
 # al temporal: sin esto la suite dejaba `lento-*` y `corto-*` en el árbol.
 export THYROX_JOBS_DIR="$DIR/jobs"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 # 1 — POLITICA: el default vive en la ventana en que un turno sigue
 # sintiendose vivo. 120 s no lo esta; el usuario lo midio por conducta.

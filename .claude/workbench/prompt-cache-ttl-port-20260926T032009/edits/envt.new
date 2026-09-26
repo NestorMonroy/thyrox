@@ -1,0 +1,21 @@
+THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD=
+
+# GNU Time, opt-in con `THYROX_INSTALL_GNU_TIME=1`: la memoria pico de cada
+# ítem del pool (`headless-pool` escribe `<n>.time`). El binario se verifica
+# por su identidad («GNU Time»), no por el código de salida del instalador.
+# Defaults: `/usr/bin/time` y `sudo apt-get install -y time`.
+THYROX_TOOLCHAIN_TIME_BIN=
+THYROX_TOOLCHAIN_TIME_INSTALL_CMD=
+
+# El TTL de la caché de prompt, en el orden de `QCt` del ejecutable 2.1.282
+# (`src/packages/agent/promptCacheTtl.ts`): forzar 5m gana a todo; luego la
+# variable del origen —la conversación principal y los `-p` leen la primera,
+# subagentes y demás la segunda—; luego lo declarado; luego activar 1h (o en
+# Bedrock, su variable). Un valor que no es "5m" ni "1h" rehúsa: no cae en
+# silencio al default. `headless-pool` las aplica sobre `--cache-ttl` y pasa
+# el TTL al ítem con los dos nombres (CLAUDE_CODE_* y THYROX_*).
+THYROX_FORCE_PROMPT_CACHING_5M=
+THYROX_CODE_PROMPT_CACHE_TTL=
+THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL=
+THYROX_ENABLE_PROMPT_CACHING_1H=
+THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=

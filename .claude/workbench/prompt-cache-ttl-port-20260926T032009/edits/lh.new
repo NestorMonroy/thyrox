@@ -1,0 +1,7 @@
+# `THYROX_JOBS_LEDGER_DIR` ya existía: es la RAÍZ de los ledgers
+# (`job_ledger.ledger_root()`), y cada sesión cuelga su subdirectorio.
+L=$(fixture_file); nohup bash -c "echo EXIT=0" >"$L" 2>&1 & P=$!; disown $P
+THYROX_JOBS_DIR="$RUNS" THYROX_JOBS_LEDGER_DIR="$LEDGER_X" CLAUDE_CODE_SESSION_ID=s1 \
+    bash "$GUION" register uno "$L" "$P" >/dev/null 2>&1
+afirmar "el .job cae bajo la raíz del ledger, en su sesión, y nada en las corridas" "si 0" \
+    "$( [[ -f "$LEDGER_X/s1/uno.job" ]] && echo si || echo no) $(find "$RUNS" -name '*.job' | wc -l)"
