@@ -515,6 +515,13 @@ with tempfile.TemporaryDirectory() as tmp:
 
     code, out, _ = cli(["local", "launch", "--bench", str(root / "step-201"), "--worktree", "/wt",
                         "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1", "--dry-run"])
+    pipeline_line = next(line for line in out.splitlines() if "pool_pipeline.py" in line)
+    expected = tc.step_setup.setup_record(route="local", model="claude-sonnet-5", scaffold=tc.THYROX / tc.LOCAL_PROMPT,
+                                          verifier=tc.TSC_COMMAND, policy={"net": False, "batch": 5})
+    assert_equal("launch pasa al pipeline el setup_id de su configuración (L02)", True,
+                 "--setup-id " + expected["setup_id"] in pipeline_line)
+    assert_equal("con --dry-run no se registra nada en la corrida", False,
+                 (root / "run" / tc.step_setup.SETUPS).exists())
     assert_equal("launch registra el pool y el pipeline: sin eso una arista no tiene predecesor",
                  (0, True, True),
                  (code, "thyrox-bg register step-201-pool" in out, "thyrox-bg register step-201-pipeline" in out))

@@ -140,16 +140,18 @@ def log_keys(lines: list[str]) -> list[str]:
 
 
 def step_command(wt: Path, candidates: Path, *, ledger: Path, bench_dir: Path, before_log: Path, seed: int,
-                 tsc: list[str], net: bool = False) -> list[str]:
+                 tsc: list[str], net: bool = False, setup_id: str | None = None) -> list[str]:
     """El paso de medición de un lote. `net` es la política de la ruta 2:
     conservar un cambio que baja el total aunque destape contratos."""
     return [sys.executable, str(HERE / "tsc_zero_step.py"), "--root", str(wt), "--candidates", str(candidates),
             "--ledger", str(ledger), "--bench", str(bench_dir), "--before-log", str(before_log),
-            "--seed", str(seed), "--accept-partial", *(["--net"] if net else []), "--", *tsc]
+            "--seed", str(seed), "--accept-partial", *(["--net"] if net else []),
+            *(["--setup-id", setup_id] if setup_id else []), "--", *tsc]
 
 
 def _speculative_batch(worktrees: list[Path], rows: list[dict], tsc: list[str], bench: Path, before_log: Path,
-                       ledger: Path, taken: set[str], kept: set[str], batch_no: int) -> tuple[Path, dict]:
+                       ledger: Path, taken: set[str], kept: set[str], batch_no: int,
+                       setup_id: str | None = None) -> tuple[Path, dict]:
     """Un lote de la ruta 2 en N worktrees: mide los prefijos a la vez y
     decide cada unidad contra el log del prefijo anterior. Lo que queda sin
     decidir —medido encima de un rechazo, o fuera del prefijo por cruzar
@@ -167,7 +169,7 @@ def _speculative_batch(worktrees: list[Path], rows: list[dict], tsc: list[str], 
     total_final = sum(1 for m in map(DIAGNOSTIC.match, decision.final_lines) if m)
     append_ledger(ledger, [{"proposal_id": pid, "proposer": by_id[pid]["proposer"], "outcome": outcome,
                             "total_before": total_before, "total_after": total_final}
-                           for pid, outcome in decision.outcomes.items()])
+                           for pid, outcome in decision.outcomes.items()], setup_id)
     final = bench / "final.log"
     final.write_text("\n".join(decision.final_lines) + "\n")
     (bench / "report.json").write_text(json.dumps({"kept": decision.kept, "outcomes": decision.outcomes,
@@ -386,14 +388,14 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
             taken.update(ready)
             if speculative:
                 before_log, entry = _speculative_batch(worktrees, rows, tsc, bench, before_log, args.ledger,
-                                                       taken, kept, batch_no)
+                                                       taken, kept, batch_no, getattr(args, "setup_id", None))
                 summary.append(entry)
                 print(json.dumps(entry), flush=True)
                 continue
             step = subprocess.run(
                 step_command(wt, bench / "candidates.jsonl", ledger=args.ledger.resolve(), bench_dir=bench,
                              before_log=before_log, seed=args.seed + batch_no, tsc=tsc,
-                             net=getattr(args, "net", False)),
+                             net=getattr(args, "net", False), setup_id=getattr(args, "setup_id", None)),
                 cwd=wt, capture_output=True, text=True, env={**os.environ, "PYTHONPATH": str(HERE.parent)})
             (bench / "report.json").write_text(step.stdout)
             try:
@@ -441,6 +443,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--bench", type=Path, required=True)
     parser.add_argument("--ledger", type=Path, required=True)
     parser.add_argument("--seed", type=int, required=True)
+    parser.add_argument("--setup-id", help="configuración del paso (step_setup); va en cada fila del ledger")
     parser.add_argument("--batch", type=int, default=20)
     parser.add_argument("--poll", type=float, default=20)
     parser.add_argument("--unit", choices=("file", "module"), default="file",

@@ -29,7 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from verify import tsc_reflect, tsc_routes, tsc_sweep
+from verify import step_setup, tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
 
@@ -157,6 +157,8 @@ MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
 SHARED_PROMPT = Path("src/verify/prompts/shared-type.md")
 LOCAL_PROMPT = Path("src/verify/prompts/file-local.md")
 SWEEP_PROMPT = Path("src/verify/prompts/pattern-sweep.md")
+#: El verificador del pipeline: parte de la configuración del paso (step_setup).
+TSC_COMMAND = ["bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
 
 
 def _unit_of(spec: str, consumer: str, root: Path | None, packages: dict) -> str:
@@ -351,8 +353,11 @@ def cmd_local_overlap(args) -> int:
               file=sys.stderr)
         return 2
     name, previous = args.bench.name, args.after.name
+    setup = step_setup_of(args.bench, args.model, args.worktree, "local")
+    if not args.dry_run:
+        step_setup.register(args.ledger.parent, setup)
     pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
-                                     route="local")
+                                     route="local", setup_id=setup["setup_id"])
     run = f"cd {shlex.quote(str(THYROX))} && {shlex.join(pipeline[pipeline.index('--') + 1:])}"
     commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
                 ["bash", "bin/wait-jobs", "register", f"{name}-pipeline", str(args.bench / "pipeline.log"),
@@ -520,8 +525,18 @@ def cmd_compare(args) -> int:
     return 0
 
 
+def step_setup_of(bench: Path, model: str, worktree: Path | list[Path], route: str) -> dict:
+    """La configuración con que el pipeline juzgará el paso (L02): ruta,
+    modelo, el scaffold de la ruta, el verificador y la política."""
+    shared = route == "shared"
+    worktrees = worktree if isinstance(worktree, list) else [worktree]
+    prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT, "sweep": SWEEP_PROMPT}.get(route, MODULE_PROMPT)
+    return step_setup.setup_record(route=route, model=model, scaffold=THYROX / prompt, verifier=TSC_COMMAND,
+                                   policy={"net": shared, "batch": len(worktrees) if shared else 5})
+
+
 def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
-                    width: int = 8, route: str = "modules") -> list[list[str]]:
+                    width: int = 8, route: str = "modules", setup_id: str | None = None) -> list[list[str]]:
     """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
@@ -543,7 +558,8 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
                 # Ruta 2: de a una y con la política neta (plan v3, paso 3):
                 # el efecto de cada unificación se mide antes de la siguiente.
                 "--batch", str(len(worktrees)) if shared else "5", "--poll", "10", "--unit", unit,
-                *(["--net"] if shared else []), "--", "bash", "-c", "bunx tsc --noEmit -p tsconfig.json"]
+                *(["--net"] if shared else []), *(["--setup-id", setup_id] if setup_id else []),
+                "--", *TSC_COMMAND]
     name = bench.name
     return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
             ["bash", "bin/thyrox-bg", "start", f"{name}-pipeline", "--grace", "0", "--",
@@ -555,8 +571,12 @@ def cmd_modules_launch(args) -> int:
         print(f"tsc_cycle modules launch: falta {args.bench / 'items.txt'} — corre antes `modules plan`",
               file=sys.stderr)
         return 2
+    route = getattr(args, "route", "modules")
+    setup = step_setup_of(args.bench, args.model, args.worktree, route)
+    if not args.dry_run:
+        step_setup.register(args.ledger.parent, setup)
     commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
-                               route=getattr(args, "route", "modules"))
+                               route=route, setup_id=setup["setup_id"])
     # Al ledger, para que la barrera los recoja y una arista `--after-ok` de
     # `local overlap` tenga predecesor: sin registrar, `dispatch` lo reporta
     # SIN-PREDECESOR y el paso siguiente no mide nunca.

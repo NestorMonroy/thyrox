@@ -120,7 +120,9 @@ def _apply(root: Path, row: dict) -> dict[str, str | None] | None:
     return originals
 
 
-def _append(ledger: Path, rows: list[dict]) -> None:
+def _append(ledger: Path, rows: list[dict], setup_id: str | None = None) -> None:
+    # La configuración del paso va en cada fila (L02, self-evolving-agents-2026).
+    rows = [{**row, "setup_id": setup_id} for row in rows] if setup_id else rows
     ledger.parent.mkdir(parents=True, exist_ok=True)
     with ledger.open("a", encoding="utf-8") as handle:
         for row in rows:
@@ -157,7 +159,7 @@ def net_outcome(before_lines: list[str], after_lines: list[str], row: dict) -> t
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
              before_lines: list[str] | None = None, net: bool = False,
-             accept_partial: bool = False) -> StepReport:
+             accept_partial: bool = False, setup_id: str | None = None) -> StepReport:
     runs = 0
     if before_lines is None:
         before_lines = run_tsc(root, tsc, bench / "before.log")
@@ -186,7 +188,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
              "total_before": total_before, "total_after": None} for r in infrastructure]
     outcomes = {r["proposal_id"]: "infrastructure" for r in infrastructure}
     if not applied:
-        _append(ledger, rows)
+        _append(ledger, rows, setup_id)
         return StepReport("stalled", total_before, total_before, runs, outcomes=outcomes)
 
     after_lines = run_tsc(root, tsc, bench / "batch.log")
@@ -316,7 +318,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
                           "new_diagnostics": (report.new_diagnostics if row["proposal_id"] == net_kept
                                               else revealed.get(row["proposal_id"], row["new_diagnostics"]))}
                          for row in ledger_rows(report)]
-    _append(ledger, ledger_out)
+    _append(ledger, ledger_out, setup_id)
     _append(residual, [{"proposal_id": pid, "proposer": by_id[pid]["proposer"], "bases": by_id[pid]["bases"],
                         "targets": by_id[pid]["targets"], "new_diagnostics": new}
                        for pid, new in revealed.items()])
@@ -345,6 +347,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-batch", type=int)
     parser.add_argument("--net", action="store_true",
                         help="política neta: conservar una propuesta si bajan sus objetivos y el total")
+    parser.add_argument("--setup-id", help="configuración del paso (step_setup); va en cada fila")
     parser.add_argument("--accept-partial", action="store_true",
                         help="conservar la parcial que no deja nada nuevo en sus archivos")
     args = parser.parse_args(argv[:split])
@@ -353,7 +356,7 @@ def main(argv: list[str] | None = None) -> int:
         report = run_step(args.root, _read_jsonl(args.candidates), argv[split + 1:], args.ledger,
                           args.bench, seed=args.seed, epsilon=args.epsilon, alpha0=args.alpha0,
                           max_batch=args.max_batch, before_lines=before, net=args.net,
-                          accept_partial=args.accept_partial)
+                          accept_partial=args.accept_partial, setup_id=args.setup_id)
     except (OSError, ValueError, RuntimeError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_zero_step: SIN MEDIR — {error}", file=sys.stderr)
         return 2

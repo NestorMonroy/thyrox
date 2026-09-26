@@ -420,5 +420,17 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("crear sobre un archivo que ya existe no se aplica", "const n = 0\n",
                  (base / "n.ts").read_text() if (base / "n.ts").exists() else None)
 
+# L02 de self-evolving-agents-2026: cada fila del ledger lleva la configuración
+# con que se juzgó (step_setup), para poder atribuir un cambio de aceptación.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    candidates, tsc = fixture(base)
+    ledger = base / "ledger.jsonl"
+    step.run_step(base, candidates, tsc, ledger, base / "bench", seed=7, epsilon=0.5, alpha0=0.5,
+                  max_batch=None, setup_id="s-123")
+    rows = [json.loads(line) for line in ledger.read_text().splitlines()]
+    assert_equal("todas las filas del ledger llevan el setup_id del paso, también la de infraestructura",
+                 (3, {"s-123"}), (len(rows), {row.get("setup_id") for row in rows}))
+
 print(f"test_tsc_zero_step: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

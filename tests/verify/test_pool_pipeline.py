@@ -314,7 +314,7 @@ def speculative_run(bad: str, directory: str) -> tuple[dict, Path, Path]:
         result = pp.run(argparse.Namespace(
             main=Path("."), worktree=[base / "wt1", base / "wt2"], items=Path("items.txt"),
             outputs=[Path("out")], bench=Path("bench"), ledger=Path("bench/ledger.jsonl"), seed=1,
-            batch=2, poll=0.1, net=True), [sys.executable, "fake_tsc.py"])
+            batch=2, poll=0.1, net=True, setup_id="s-spec"), [sys.executable, "fake_tsc.py"])
     finally:
         os.chdir(cwd)
     return result, main, base
@@ -335,6 +335,8 @@ with tempfile.TemporaryDirectory() as directory:
                                                       "agent:pool:src/b.ts": "rejected",
                                                       "agent:pool:src/c.ts": "accepted-net"},
                  {row["proposal_id"]: row["outcome"] for row in ledger_rows})
+    assert_equal("cada fila de la ruta especulativa lleva el setup_id del pipeline", {"s-spec"},
+                 {row.get("setup_id") for row in ledger_rows})
 # La mala es `a`, la primera del prefijo: se rechaza, y `b`, medido encima de
 # `a`, queda sin decidir. Tiene que volver en la ronda siguiente, no perderse.
 with tempfile.TemporaryDirectory() as directory:
@@ -350,6 +352,12 @@ assert_equal("el paso lleva --net cuando el pipeline lo pide", True,
              "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=True, **base_args))
 assert_equal("y no lo lleva cuando no", False,
              "--net" in pp.step_command(Path("/wt"), Path("/c.jsonl"), net=False, **base_args))
+with_id = pp.step_command(Path("/wt"), Path("/c.jsonl"), setup_id="s-1", **base_args)
+assert_equal("el paso lleva el setup_id del pipeline, antes del separador de tsc", True,
+             "--setup-id" in with_id and with_id[with_id.index("--setup-id") + 1] == "s-1"
+             and with_id.index("--setup-id") < with_id.index("--"))
+assert_equal("sin setup_id no inventa uno", False,
+             "--setup-id" in pp.step_command(Path("/wt"), Path("/c.jsonl"), **base_args))
 
 # Paso 137: un lote cuyas candidatas no se aplicaron (tsc_runs 0) no escribe
 # final.log; la base siguiente sigue siendo la anterior, no un archivo que no
