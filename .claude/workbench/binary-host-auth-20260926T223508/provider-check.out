@@ -1,0 +1,13 @@
+../../../node_modules/@thyrox/agent/flowHomes.ts(34,46): error TS2307: Cannot find module '../../paths/docs.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/agent/loop/index.ts(25,28): error TS2307: Cannot find module '../../../store/db.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/observability/src/clearedResults.ts(29,27): error TS2307: Cannot find module '../../../store/db.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/observability/src/store.ts(20,27): error TS2307: Cannot find module '../../../store/db.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/observability/src/store.ts(22,28): error TS2307: Cannot find module '../../../paths/reach.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/observability/src/store.ts(23,59): error TS2307: Cannot find module '../../../paths/reach.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/tools/src/tasks.ts(37,27): error TS2307: Cannot find module '../../../store/db.ts' or its corresponding type declarations.
+../../../node_modules/@thyrox/tools/src/tasks.ts(40,8): error TS2307: Cannot find module '../../../task/schema.ts' or its corresponding type declarations.
+src/logging.ts(165,8): error TS2304: Cannot find name 'MACRO'.
+src/logging.ts(166,30): error TS2304: Cannot find name 'MACRO'.
+src/user.ts(109,19): error TS2304: Cannot find name 'MACRO'.
+src/userAgent.ts(9,25): error TS2304: Cannot find name 'MACRO'.
+

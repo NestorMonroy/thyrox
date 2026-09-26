@@ -46,9 +46,11 @@ import { getConnection, getConnectionContextOptions, type ConnectionRecord } fro
  * dejo nombrado. `AnthropicHttpProvider` ya aceptaba `opts.baseUrl`/`opts.apiKey`
  * (`anthropicHttp.ts:68,60`); lo que faltaba era pasarselos desde aqui.
  *
- * Sólo `auth.type === 'api_key'` alimenta `apiKey`: OAuth no tiene una llave
- * estatica que reenviar tal cual -- ese camino queda sin cerrar, declarado,
- * no en silencio (ninguna conexion de este arbol usa OAuth todavia).
+ * Sólo `auth.type === 'api_key'` alimenta `apiKey`. Sin conexión con llave, el
+ * proveedor resuelve la credencial del entorno con la cadena portada de
+ * 2.1.282 (`@thyrox/provider: credentials.ts` — ANTHROPIC_AUTH_TOKEN,
+ * THYROX_CODE_OAUTH_TOKEN, su descriptor, ANTHROPIC_API_KEY y el transporte
+ * ANTHROPIC_UNIX_SOCKET).
  */
 function providerFor(argv: string[], connection: ConnectionRecord | undefined): Provider {
   const cual = flag(argv, 'provider') ?? 'recorded'
