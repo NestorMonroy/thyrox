@@ -1,0 +1,55 @@
+src/packages/repl/src/components/Message.tsx(181,15): error TS2322: Type 'ContentItem' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:171-191 ---
+    171        const isLatestBashOutput = latestBashOutputUUID === message.uuid
+    172        const content = (
+    173          <Box flexDirection="column" width={containerWidth ?? '100%'}>
+    174            {message.message.content.map((param, index) => (
+    175              <UserMessage
+    176                key={index}
+    177                message={message}
+    178                addMargin={addMargin}
+    179                tools={tools}
+    180                progressMessagesForMessage={progressMessagesForMessage}
+    181>               param={param}
+    182                style={style}
+    183                verbose={verbose}
+    184                imageIndex={imageIndices[index]!}
+    185                isUserContinuation={isUserContinuation}
+    186                lookups={lookups}
+    187                isTranscriptMode={isTranscriptMode}
+    188              />
+    189            ))}
+    190          </Box>
+    191        )
+  Type 'DocumentBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+    Type 'DocumentBlockParam' is not assignable to type 'ImageBlockParam'.
+      Types of property 'source' are incompatible.
+        Type 'Base64PDFSource | PlainTextSource | ContentBlockSource | URLPDFSource | FileDocumentSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+          Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+            Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource'.
+              Types of property 'media_type' are incompatible.
+                Type '"application/pdf"' is not assignable to type '"image/png" | "image/jpeg" | "image/gif" | "image/webp"'.
+src/packages/repl/src/components/Message.tsx(423,11): error TS2322: Type 'ToolUseBlockParam | ConnectorTextBlock | BetaToolUseBlock' is not assignable to type 'ToolUseBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:413-433 ---
+    413            width={width}
+    414            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    415          />
+    416        )
+    417      }
+    418    }
+    419    switch (param.type) {
+    420      case 'tool_use':
+    421        return (
+    422          <AssistantToolUseMessage
+    423>           param={param}
+    424            addMargin={addMargin}
+    425            tools={tools}
+    426            commands={commands}
+    427            verbose={verbose}
+    428            inProgressToolUseIDs={inProgressToolUseIDs}
+    429            progressMessagesForMessage={progressMessagesForMessage}
+    430            shouldAnimate={shouldAnimate}
+    431            shouldShowDot={shouldShowDot}
+    432            inProgressToolCallCount={inProgressToolCallCount}
+    433            lookups={lookups}
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name

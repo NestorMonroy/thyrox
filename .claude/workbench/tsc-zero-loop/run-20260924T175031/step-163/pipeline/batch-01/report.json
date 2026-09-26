@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 112, "total_final": 111, "tsc_runs": 1, "accepted": ["agent:pool:src/packages/repl/src/components/messages/AttachmentMessage.tsx"], "files_kept": ["src/packages/repl/src/components/messages/AttachmentMessage.tsx"], "outcomes": {"agent:pool:src/packages/repl/src/components/messages/AttachmentMessage.tsx": "accepted-partial"}}

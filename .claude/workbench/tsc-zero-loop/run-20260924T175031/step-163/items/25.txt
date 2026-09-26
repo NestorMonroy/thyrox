@@ -1,0 +1,51 @@
+src/packages/repl/src/queryHelpers.ts(154,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:144-164 ---
+    144                  message: _.message,
+    145                  parent_tool_use_id: message.parentToolUseID as string,
+    146                  session_id: getSessionId(),
+    147                  uuid: _.uuid,
+    148                  error: _.error,
+    149                }
+    150                break
+    151              case 'user':
+    152                yield {
+    153                  type: 'user',
+    154>                 message: _.message,
+    155                  parent_tool_use_id: message.parentToolUseID as string,
+    156                  session_id: getSessionId(),
+    157                  uuid: _.uuid,
+    158                  timestamp: _.timestamp as string | undefined,
+    159                  isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    160                  tool_use_result: _.mcpMeta
+    161                    ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    162                    : _.toolUseResult,
+    163                }
+    164                break
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+    Types of property 'role' are incompatible.
+      Type 'string | undefined' is not assignable to type '"system" | "user" | "assistant"'.
+        Type 'undefined' is not assignable to type '"system" | "user" | "assistant"'.
+src/packages/repl/src/queryHelpers.ts(218,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'MessageParam'.
+  --- código src/packages/repl/src/queryHelpers.ts:208-228 ---
+    208              uuid: message.uuid,
+    209            }
+    210          }
+    211        }
+    212        break
+    213      }
+    214      case 'user':
+    215        for (const _ of normalizeMessages([message])) {
+    216          yield {
+    217            type: 'user',
+    218>           message: _.message,
+    219            parent_tool_use_id: null,
+    220            session_id: getSessionId(),
+    221            uuid: _.uuid,
+    222            timestamp: _.timestamp as string | undefined,
+    223            isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
+    224            tool_use_result: _.mcpMeta
+    225              ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
+    226              : _.toolUseResult,
+    227          }
+    228        }
+  Type 'undefined' is not assignable to type 'MessageParam'.

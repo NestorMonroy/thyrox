@@ -1,0 +1,53 @@
+src/packages/agent/query.ts(509,60): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:499-519 ---
+    499        // so the breaker fires on the Nth fast refill, not just N within one
+    500        // hop.
+    501        tracking = {
+    502          compacted: true,
+    503          turnId: deps.uuid(),
+    504          turnCounter: 0,
+    505          consecutiveFailures: 0,
+    506          consecutiveRapidRefills,
+    507        }
+    508  
+    509>       const postCompactMessages = buildPostCompactMessages(compactionResult)
+    510  
+    511        for (const message of postCompactMessages) {
+    512          yield message
+    513        }
+    514  
+    515        // Continue on with the current query call using the post compact messages
+    516        messagesForQuery = postCompactMessages
+    517      } else if (consecutiveFailures !== undefined) {
+    518        // Autocompact failed — propagate failure count so the circuit breaker
+    519        // can stop retrying on the next iteration.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(516,7): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:506-526 ---
+    506          consecutiveRapidRefills,
+    507        }
+    508  
+    509        const postCompactMessages = buildPostCompactMessages(compactionResult)
+    510  
+    511        for (const message of postCompactMessages) {
+    512          yield message
+    513        }
+    514  
+    515        // Continue on with the current query call using the post compact messages
+    516>       messagesForQuery = postCompactMessages
+    517      } else if (consecutiveFailures !== undefined) {
+    518        // Autocompact failed — propagate failure count so the circuit breaker
+    519        // can stop retrying on the next iteration.
+    520        tracking = {
+    521          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    522          consecutiveFailures,
+    523        }
+    524      }
+    525  
+    526      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.

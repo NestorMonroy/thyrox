@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(387,44): error TS2339: Property 'pendingCacheEdits' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:377-397 ---
+    377      const microcompactResult = await deps.microcompact(
+    378        messagesForQuery,
+    379        toolUseContext,
+    380        querySource,
+    381      )
+    382      messagesForQuery = microcompactResult.messages
+    383      // For cached microcompact (cache editing), defer boundary message until after
+    384      // the API response so we can use actual cache_deleted_input_tokens.
+    385      // Gated behind feature() so the string is eliminated from external builds.
+    386      const pendingCacheEdits = feature('CACHED_MICROCOMPACT')
+    387>       ? microcompactResult.compactionInfo?.pendingCacheEdits
+    388        : undefined
+    389      queryCheckpoint('query_microcompact_end')
+    390  
+    391      // Project the collapsed context view and maybe commit more collapses.
+    392      // Runs BEFORE autocompact so that if collapse gets us under the
+    393      // autocompact threshold, autocompact is a no-op and we keep granular
+    394      // context instead of a single summary.
+    395      //
+    396      // Nothing is yielded — the collapsed view is a read-time projection
+    397      // over the REPL's full history. Summary messages live in the collapse
+src/packages/agent/query.ts(449,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:439-459 ---
+    439      // The compactor already logged + emitted telemetry; we don't yield a
+    440      // synthetic message because there's no actionable hint for the user
+    441      // beyond "your context is irrecoverably tight, start fresh". ant
+    442      // 3928.js exits the same way.
+    443      if (rapidRefillBreakerTripped) {
+    444        return { reason: 'rapid_refill_breaker' }
+    445      }
+    446  
+    447      if (compactionResult) {
+    448        const {
+    449>         preCompactTokenCount,
+    450          postCompactTokenCount,
+    451          truePostCompactTokenCount,
+    452          compactionUsage,
+    453        } = compactionResult
+    454  
+    455        logEvent('tengu_auto_compact_succeeded', {
+    456          originalMessageCount: messages.length,
+    457          compactedMessageCount:
+    458            compactionResult.summaryMessages.length +
+    459            compactionResult.attachments.length +

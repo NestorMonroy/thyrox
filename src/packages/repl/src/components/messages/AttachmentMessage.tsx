@@ -557,6 +557,7 @@ export function AttachmentMessage({
         | 'skill_discovery'
         | 'teammate_mailbox'
         | 'goal_status'
+        | 'bagel_console'
       return null
   }
 }

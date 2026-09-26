@@ -1,0 +1,49 @@
+src/packages/agent/QueryEngine.ts(830,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  --- código src/packages/agent/QueryEngine.ts:820-840 ---
+    820          yield {
+    821            type: 'system',
+    822            subtype: 'compact_boundary' as const,
+    823            session_id: getSessionId(),
+    824            uuid: compactBoundary.uuid,
+    825            compact_metadata: toSDKCompactMetadata(compactBoundary.compactMetadata),
+    826          }
+    827          continue
+    828        }
+    829  
+    830>       const message = fromAgentEvent(event)
+    831        if (!message) {
+    832          continue
+    833        }
+    834  
+    835        // Record assistant, user, and compact boundary messages
+    836        if (
+    837          message.type === 'assistant' ||
+    838          message.type === 'user' ||
+    839          (message.type === 'system' && message.subtype === 'compact_boundary')
+    840        ) {
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+src/packages/agent/QueryEngine.ts(980,15): error TS2322: Type 'Record<string, unknown>' is not assignable to type 'BetaRawMessageStreamEvent'.
+  --- código src/packages/agent/QueryEngine.ts:970-990 ---
+    970              // Accumulate current message usage into total
+    971              this.totalUsage = accumulateUsage(
+    972                this.totalUsage,
+    973                currentMessageUsage,
+    974              )
+    975            }
+    976  
+    977            if (includePartialMessages) {
+    978              yield {
+    979                type: 'stream_event' as const,
+    980>               event,
+    981                session_id: getSessionId(),
+    982                parent_tool_use_id: null,
+    983                uuid: randomUUID(),
+    984              }
+    985            }
+    986  
+    987            break
+    988          }
+    989          case 'attachment': {
+    990            const msg = message as Message
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaRawMessageDeltaEvent': context_management, delta, type, usage

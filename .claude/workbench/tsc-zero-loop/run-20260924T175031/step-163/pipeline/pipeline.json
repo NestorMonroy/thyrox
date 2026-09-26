@@ -1,0 +1,67 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 5,
+   "total_before": 112,
+   "total_final": 111,
+   "tsc_runs": 1,
+   "kept": 1
+  },
+  {
+   "batch": 2,
+   "files": 5,
+   "total_before": 111,
+   "total_final": 111,
+   "tsc_runs": 1,
+   "kept": 0
+  },
+  {
+   "batch": 3,
+   "files": 5,
+   "total_before": 111,
+   "total_final": 111,
+   "tsc_runs": 0,
+   "kept": 0
+  },
+  {
+   "batch": 4,
+   "files": 5,
+   "total_before": 111,
+   "total_final": 111,
+   "tsc_runs": 1,
+   "kept": 0
+  },
+  {
+   "batch": 5,
+   "files": 5,
+   "total_before": 111,
+   "total_final": 110,
+   "tsc_runs": 1,
+   "kept": 1
+  },
+  {
+   "batch": 6,
+   "files": 5,
+   "total_before": 110,
+   "total_final": 110,
+   "tsc_runs": 1,
+   "kept": 0
+  },
+  {
+   "batch": 7,
+   "files": 4,
+   "total_before": 110,
+   "total_final": 105,
+   "tsc_runs": 2,
+   "kept": 2
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/hooks.ts",
+  "src/packages/agent/task/framework.ts",
+  "src/packages/repl/src/commands/color/color.ts",
+  "src/packages/repl/src/components/messages/AttachmentMessage.tsx"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-163/pipeline/batch-07/final.log"
+}

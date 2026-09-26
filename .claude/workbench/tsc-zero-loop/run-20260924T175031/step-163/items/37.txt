@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(1428,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1418-1438 ---
+   1418      const toolUpdates = streamingToolExecutor
+   1419        ? streamingToolExecutor.getRemainingResults()
+   1420        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1421  
+   1422      for await (const update of toolUpdates) {
+   1423        if (update.message) {
+   1424          yield update.message
+   1425  
+   1426          if (
+   1427            update.message.type === 'attachment' &&
+   1428>           update.message.attachment.type === 'hook_stopped_continuation'
+   1429          ) {
+   1430            shouldPreventContinuation = true
+   1431          }
+   1432  
+   1433          toolResults.push(
+   1434            ...normalizeMessagesForAPI(
+   1435              [update.message],
+   1436              toolUseContext.options.tools,
+   1437            ).filter(_ => _.type === 'user'),
+   1438          )
+src/packages/agent/query.ts(1762,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1752-1772 ---
+   1752            notifyCommandLifecycle(cmd.uuid, 'started')
+   1753          }
+   1754        }
+   1755        removeFromQueue(consumedCommands)
+   1756      }
+   1757  
+   1758      // Instrumentation: Track file change attachments after they're added
+   1759      const fileChangeAttachmentCount = count(
+   1760        toolResults,
+   1761        tr =>
+   1762>         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+   1763      )
+   1764  
+   1765      logEvent('tengu_query_after_attachments', {
+   1766        totalToolResultsCount: toolResults.length,
+   1767        fileChangeAttachmentCount,
+   1768        queryChainId: queryChainIdForAnalytics,
+   1769        queryDepth: queryTracking.depth,
+   1770      })
+   1771  
+   1772      // Refresh tools between turns so newly-connected MCP servers become available

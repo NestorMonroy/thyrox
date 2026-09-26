@@ -1,0 +1,47 @@
+src/packages/repl/src/queryHelpers.ts(144,17): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined) & ({ ...; } & ((NonNullable<...> & { ...; }) | undefined))' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:134-154 ---
+    134        ) {
+    135          for (const _ of normalizeMessages([progressData.message])) {
+    136            switch (_.type) {
+    137              case 'assistant':
+    138                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    139                if (!isNotEmptyMessage(_)) {
+    140                  break
+    141                }
+    142                yield {
+    143                  type: 'assistant',
+    144>                 message: _.message,
+    145                  parent_tool_use_id: message.parentToolUseID as string,
+    146                  session_id: getSessionId(),
+    147                  uuid: _.uuid,
+    148                  error: _.error,
+    149                }
+    150                break
+    151              case 'user':
+    152                yield {
+    153                  type: 'user',
+    154                  message: _.message,
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+src/packages/repl/src/queryHelpers.ts(148,17): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:138-158 ---
+    138                // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    139                if (!isNotEmptyMessage(_)) {
+    140                  break
+    141                }
+    142                yield {
+    143                  type: 'assistant',
+    144                  message: _.message,
+    145                  parent_tool_use_id: message.parentToolUseID as string,
+    146                  session_id: getSessionId(),
+    147                  uuid: _.uuid,
+    148>                 error: _.error,
+    149                }
+    150                break
+    151              case 'user':
+    152                yield {
+    153                  type: 'user',
+    154                  message: _.message,
+    155                  parent_tool_use_id: message.parentToolUseID as string,
+    156                  session_id: getSessionId(),
+    157                  uuid: _.uuid,
+    158                  timestamp: _.timestamp as string | undefined,

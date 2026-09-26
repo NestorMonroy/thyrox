@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2363,50): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JSONRPCMessage'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2353-2373 ---
+   2353            const sdkClient = sdkClients.find(
+   2354              client => client.name === mcpRequest.server_name,
+   2355            )
+   2356            // Check client exists - dynamically added SDK servers may have
+   2357            // placeholder clients with null client until updateSdkMcp() runs
+   2358            if (
+   2359              sdkClient &&
+   2360              sdkClient.type === 'connected' &&
+   2361              sdkClient.client?.transport?.onmessage
+   2362            ) {
+   2363>             sdkClient.client.transport.onmessage(mcpRequest.message)
+   2364            }
+   2365            sendControlResponseSuccess(message)
+   2366          } else if (message.request.subtype === 'rewind_files') {
+   2367            const appState = getAppState()
+   2368            const result = await handleRewindFiles(
+   2369              message.request.user_message_id as UUID,
+   2370              appState,
+   2371              setAppState,
+   2372              message.request.dry_run ?? false,
+   2373            )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3292,29): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3282-3302 ---
+   3282                // onStateChange('failed', detail) before returning null.
+   3283                // Capture so the control-response error is actionable
+   3284                // ("/login", "disabled by your organization's policy", etc.)
+   3285                // instead of a generic "initialization failed".
+   3286                let bridgeFailureDetail: string | undefined
+   3287                try {
+   3288                  const handle = await initReplBridge({
+   3289                    onInboundMessage(msg) {
+   3290                      const fields = extractInboundMessageFields(msg)
+   3291                      if (!fields) return
+   3292>                     const { content, uuid } = fields
+   3293                      enqueue({
+   3294                        value: content,
+   3295                        mode: 'prompt' as const,
+   3296                        uuid,
+   3297                        skipSlashCommands: true,
+   3298                      })
+   3299                      void run()
+   3300                    },
+   3301                    onPermissionResponse(response) {
+   3302                      // Forward bridge permission responses into the

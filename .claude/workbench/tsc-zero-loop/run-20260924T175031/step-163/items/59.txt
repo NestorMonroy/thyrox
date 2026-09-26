@@ -1,0 +1,49 @@
+src/packages/repl/src/components/Message.tsx(440,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:430-450 ---
+    430            shouldAnimate={shouldAnimate}
+    431            shouldShowDot={shouldShowDot}
+    432            inProgressToolCallCount={inProgressToolCallCount}
+    433            lookups={lookups}
+    434            isTranscriptMode={isTranscriptMode}
+    435          />
+    436        )
+    437      case 'text':
+    438        return (
+    439          <AssistantTextMessage
+    440>           param={param}
+    441            addMargin={addMargin}
+    442            shouldShowDot={shouldShowDot}
+    443            verbose={verbose}
+    444            width={width}
+    445            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    446          />
+    447        )
+    448      case 'redacted_thinking':
+    449        if (!isTranscriptMode && !verbose) {
+    450          return null
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.
+src/packages/repl/src/components/Message.tsx(463,11): error TS2322: Type 'ThinkingBlockParam | ConnectorTextBlock | BetaThinkingBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+  --- código src/packages/repl/src/components/Message.tsx:453-473 ---
+    453      case 'thinking': {
+    454        if (!isTranscriptMode && !verbose) {
+    455          return null
+    456        }
+    457        // In transcript mode with hidePastThinking, only show the last thinking block
+    458        const isLastThinking =
+    459          !lastThinkingBlockId || thinkingBlockId === lastThinkingBlockId
+    460        return (
+    461          <AssistantThinkingMessage
+    462            addMargin={addMargin}
+    463>           param={param}
+    464            isTranscriptMode={isTranscriptMode}
+    465            verbose={verbose}
+    466            hideInTranscript={isTranscriptMode && !isLastThinking}
+    467          />
+    468        )
+    469      }
+    470      case 'server_tool_use':
+    471      case 'advisor_tool_result':
+    472        if (isAdvisorBlock(param)) {
+    473          return (
+  Type 'ConnectorTextBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+    Property 'thinking' is missing in type 'ConnectorTextBlock' but required in type 'ThinkingBlock'.

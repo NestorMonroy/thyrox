@@ -47,6 +47,7 @@ import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { getOriginalCwd, getProjectRoot, getRegisteredHooks, getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskOutput } from '@thyrox/tool-registry/task/TaskOutput.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { firstLineOf } from '@thyrox/output/utils/stringUtils.js'
 import { errorMessage, getErrnoCode, jsonStringify, pathExists } from './internalUtils.js'
 import { replaceExecArgTemplate, replaceExecArgUserConfig } from './hooks/hookExecArgs.js'
@@ -2583,6 +2584,22 @@ function matchesPattern(matchQuery: string, matcher: string): boolean {
     return false
   }
 }
+/**
+ * Representación tipada de la salida síncrona de un hook, acotada a los
+ * campos que `parseElicitationHookOutput` lee — puerto parcial del
+ * `TypedSyncHookOutput` de la fuente (`ccnmt: packages/agent/hooks.ts:558`),
+ * cuya unión discriminada completa depende de `PermissionRequestResult`, un
+ * tipo que este árbol no porta.
+ */
+type TypedSyncHookOutput = {
+  decision?: string
+  reason?: string
+  hookSpecificOutput?: {
+    hookEventName?: string
+    [key: string]: unknown
+  }
+}
+
 /**
  * Extrae los campos de elicitation de un HookOutsideReplResult.
  * Refleja las ramas relevantes del procesamiento de salida JSON de hooks

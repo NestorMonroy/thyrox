@@ -61,12 +61,15 @@ export function updateTaskState<T extends TaskState>(
       // spread so s.tasks subscribers don't re-render on unchanged state.
       return prev
     }
+    // `updated` es T, la unión relajada del genérico (para evitar el import
+    // circular con tasksTypes.ts); en runtime siempre es un miembro concreto
+    // de la unión real de AppState['tasks'].
     return {
       ...prev,
       tasks: {
         ...prev.tasks,
         [taskId]: updated,
-      },
+      } as AppState['tasks'],
     }
   })
 }
@@ -95,7 +98,10 @@ export function registerTask(task: TaskState, setAppState: SetAppState): void {
             pendingMessages: existing.pendingMessages,
           }
         : task
-    return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } }
+    // `merged` combina el TaskState relajado del parámetro con campos ya
+    // reales de la tarea existente; en runtime siempre resulta un miembro
+    // concreto de la unión real de AppState['tasks'].
+    return { ...prev, tasks: { ...prev.tasks, [task.id]: merged } as AppState['tasks'] }
   })
 
   // Replacement (resume) — not a new start. Skip to avoid double-emit.

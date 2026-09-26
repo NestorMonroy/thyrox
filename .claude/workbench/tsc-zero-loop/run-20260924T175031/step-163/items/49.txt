@@ -1,0 +1,23 @@
+src/packages/repl/src/commands/color/color.ts(12,8): error TS2307: Cannot find module '../../types/command.js' or its corresponding type declarations.
+  --- código src/packages/repl/src/commands/color/color.ts:2-22 ---
+      2  import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+      3  import type { AppState } from '@thyrox/app-host/state/AppState.js'
+      4  import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+      5  import {
+      6    AGENT_COLORS,
+      7    type AgentColorName,
+      8  } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
+      9  import type {
+     10    LocalJSXCommandContext,
+     11    LocalJSXCommandOnDone,
+     12> } from '../../types/command.js'
+     13  import {
+     14    getTranscriptPath,
+     15    saveAgentColor,
+     16  } from '@thyrox/storage/sessionStorage.js'
+     17  import { isTeammate } from '@thyrox/swarm/teammateState.js'
+     18  
+     19  const RESET_ALIASES = ['default', 'reset', 'none', 'gray', 'grey'] as const
+     20  
+     21  export async function call(
+     22    onDone: LocalJSXCommandOnDone,
