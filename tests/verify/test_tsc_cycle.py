@@ -501,6 +501,19 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("el resto va de mayor a menor probabilidad: el fácil primero, el sin historia después",
                  ["src/easy.ts", "src/fresh.ts", "src/young.ts"], planned)
 
+    # Si TODO lo vivo está diferido, no hay paso: el plan rehúsa y nombra los
+    # diferidos por stderr, sin dejar un banco con sólo `deferred.txt` — ese
+    # huérfano sin versionar hizo que el gate del banco tumbara el cierre del
+    # paso anterior (step 163).
+    only_hard = root / "only-hard.log"
+    only_hard.write_text("src/hard.ts(3,1): error TS2304: Cannot find name \x27hard\x27.\n")
+    stderr = io.StringIO()
+    with contextlib.redirect_stderr(stderr):
+        code = tc.main(["local", "plan", "--log", str(only_hard), "--bench", str(root / "orphan"),
+                        "--root", str(root), "--run", str(run_dir)])
+    assert_equal("todo diferido: rehúsa, nombra el diferido y no crea el banco", (2, True, False),
+                 (code, "src/hard.ts" in stderr.getvalue(), (root / "orphan").exists()))
+
 # --- local overlap: el paso N+1 empieza en la cola del paso N ---------------
 # Pipeline parallelism (cs25-v6 L04, 1F1B): el tiempo muerto entre pasos es el
 # problema. Medido en el paso 155: 206 s del pool a ancho < 8, más el hueco de

@@ -367,16 +367,21 @@ def plan_local(log_path: Path, bench: Path, root: Path, run: Path, excluded: set
     items = local_items(log, root, excluded | set(deferred), size)
     items.sort(key=lambda item: -confidence.get(item[0], {"mean": 0.5})["mean"])
     live = {file for file, _ in local_items(log, root, excluded, size)}
-    if deferred.keys() & live:
-        bench.mkdir(parents=True, exist_ok=True)
-        (bench / "deferred.txt").write_text("".join(
-            f"{file}\t{entry['accepted']} de {entry['accepted'] + entry['rejected']} aceptadas "
-            f"(media {entry['mean']:.2f})\truta: modules o manual\n"
-            for file, entry in sorted(deferred.items()) if file in live))
+    deferred_lines = "".join(
+        f"{file}\t{entry['accepted']} de {entry['accepted'] + entry['rejected']} aceptadas "
+        f"(media {entry['mean']:.2f})\truta: modules o manual\n"
+        for file, entry in sorted(deferred.items()) if file in live)
     if not items:
+        # Sin paso no hay banco: un `deferred.txt` suelto quedaba sin versionar
+        # dentro de la corrida y el gate del banco tumbaba el cierre de otro paso.
         print(f"tsc_cycle local plan: {log_path} no tiene diagnósticos locales fuera de lo excluido — "
               "nada que proponer", file=sys.stderr)
+        if deferred_lines:
+            print("diferidos (fuera de la ruta local):\n" + deferred_lines, end="", file=sys.stderr)
         return 2
+    if deferred_lines:
+        bench.mkdir(parents=True, exist_ok=True)
+        (bench / "deferred.txt").write_text(deferred_lines)
     write_items(bench, items)
     return 0
 
