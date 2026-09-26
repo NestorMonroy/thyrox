@@ -464,13 +464,24 @@ def _targets(pattern: dict, before_lines: list[str]) -> list[str]:
     return sorted(k for k in keys if signal.search(k))
 
 
-def propose(root: Path, pattern: dict, before_lines: list[str], *, split: bool) -> list[dict]:
+def rollout_width(run: Path, name: str) -> int:
+    """Cuántos archivos puede tocar el patrón en la próxima propuesta (L09,
+    lanzamiento gradual): 1 —el canario— sin ejecución juzgada o con algún
+    rechazo; con N aplicaciones aceptadas y ninguna rechazada, 2**N. El
+    alcance crece con la evidencia, no con los sitios que la señal casa."""
+    entry = pattern_confidence(run).get(name, {"accepted": 0, "rejected": 0})
+    return 1 if entry["rejected"] else 2 ** entry["accepted"]
+
+
+def propose(root: Path, pattern: dict, before_lines: list[str], *, split: bool,
+            limit: int | None = None) -> list[dict]:
     if not pattern.get("site"):
         raise ValueError(f"el patrón {pattern['name']!r} no es mecánico: su arreglo exige juicio "
                          "y se aplica con agent_proposal, que lo señala por archivo")
     found = sites(root, pattern)
     if not found:
         raise ValueError(f"el patrón {pattern['name']!r} no tiene sitios pendientes")
+    found = found[:limit] if limit is not None else found
     targets = _targets(pattern, before_lines)
     if not targets:
         raise ValueError(f"la señal de {pattern['name']!r} no nombra ningún diagnóstico del log")
@@ -508,6 +519,8 @@ def main(argv: list[str] | None = None) -> int:
     prop_p.add_argument("--name", required=True)
     prop_p.add_argument("--before-log", type=Path, required=True)
     prop_p.add_argument("--split", action="store_true")
+    prop_p.add_argument("--gradual", action="store_true",
+                        help="limita los archivos al ancho que la evidencia del patrón admite (L09)")
     app_p = sub.add_parser("applied")
     app_p.add_argument("--run", type=Path, required=True)
     app_p.add_argument("--name", required=True)
@@ -570,7 +583,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.name not in patterns:
                 raise ValueError(f"no hay patrón {args.name!r}")
             for row in propose(args.root, patterns[args.name],
-                               args.before_log.read_text().splitlines(), split=args.split):
+                               args.before_log.read_text().splitlines(), split=args.split,
+                               limit=rollout_width(args.run, args.name) if args.gradual else None):
                 print(json.dumps(row, ensure_ascii=False))
         elif args.command == "applied":
             print(json.dumps(mark_applied(args.run, args.name, args.files), ensure_ascii=False))

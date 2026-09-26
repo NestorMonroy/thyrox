@@ -18,6 +18,7 @@ Mide:
 from __future__ import annotations
 
 import hashlib
+import json
 import subprocess
 import sys
 import tempfile
@@ -108,6 +109,17 @@ def main() -> int:
         assert_equal("una propuesta por archivo",
                      ["pattern:local-appstate:pkg/a/src/one.ts", "pattern:local-appstate:pkg/a/src/two.ts"],
                      [r["proposal_id"] for r in split])
+
+        print("lanzamiento gradual (L09)")
+        canary = sweep.propose(root, pattern, BEFORE, split=True, limit=sweep.rollout_width(run, "local-appstate"))
+        assert_equal("sin ejecución juzgada, el canario: un solo archivo", ["pattern:local-appstate:pkg/a/src/one.ts"],
+                     [r["proposal_id"] for r in canary])
+        (run / "ledger.jsonl").write_text(json.dumps({"proposal_id": "pattern:local-appstate:x",
+                                                      "outcome": "accepted"}) + "\n")
+        assert_equal("una aceptada duplica el ancho", 2, sweep.rollout_width(run, "local-appstate"))
+        with (run / "ledger.jsonl").open("a") as ledger:
+            ledger.write(json.dumps({"proposal_id": "pattern:local-appstate:y", "outcome": "rejected"}) + "\n")
+        assert_equal("un rechazo lo devuelve al canario", 1, sweep.rollout_width(run, "local-appstate"))
 
         print("rehúsa")
         try:
