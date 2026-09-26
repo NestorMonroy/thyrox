@@ -80,7 +80,12 @@ def _last_measure(time_file: Path) -> tuple[int, float] | None:
 
 def record(history: Path, out_dir: Path) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
-    ningún ``.time`` fue medible (no se escribe una fila de ceros)."""
+    ningún ``.time`` fue medible (no se escribe una fila de ceros).
+
+    Sin ``shared_lock``, a propósito: es UN ``write`` en modo añadir de una
+    línea de menos de 4 KB, que Linux escribe entera; no hay leer-comprobar-
+    añadir como en ``step_setup.register``, así que dos pools concurrentes
+    dejan dos filas enteras y el lock no tendría caso que lo discrimine."""
     measures = [m for m in (_last_measure(p) for p in sorted(Path(out_dir).glob("*.time"))) if m]
     if not measures:
         return None
