@@ -109,6 +109,20 @@ case "$CACHE_TTL" in
     ""|5m|1h) ;;
     *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
 esac
+# El entorno manda sobre la opción, en el orden de `QCt` (2.1.282, extraído
+# con `bin/binary symbol chunk-c9jscxk0.js QCt`): forzar 5m, luego la variable
+# de la conversación principal —cada ítem es un `-p`, que el ejecutable cuenta
+# como principal—, luego lo que el llamador decidió. Porte TS de la misma
+# cadena: `src/packages/agent/promptCacheTtl.ts`.
+case "$(printf '%s' "${THYROX_FORCE_PROMPT_CACHING_5M:-}" | tr '[:upper:]' '[:lower:]')" in
+    1|true|yes|on) CACHE_TTL=5m; CACHE_TTL_WHY=force_5m_env ;;
+    *)
+        case "${THYROX_CODE_PROMPT_CACHE_TTL:-}" in
+            "") CACHE_TTL_WHY=option ;;
+            5m|1h) CACHE_TTL="$THYROX_CODE_PROMPT_CACHE_TTL"; CACHE_TTL_WHY=env ;;
+            *) rehusa "THYROX_CODE_PROMPT_CACHE_TTL va \"5m\" o \"1h\", no: $THYROX_CODE_PROMPT_CACHE_TTL" ;;
+        esac ;;
+esac
 
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
@@ -125,7 +139,9 @@ _headless_item() {
     local n="$1" item="$2"
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$HP_WORKDIR" || exit 1
-         [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+         # Con los dos nombres: `claude -p` lee CLAUDE_CODE_*; `thyrox -p`, THYROX_*.
+         [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL" \
+                                           THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
          # <n>.time; el codigo de salida es el del item, que time conserva.
          ${HP_TIME:+"$HP_TIME" -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
@@ -150,6 +166,8 @@ export HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 export HP_OUT="$(cd "$OUT" && pwd)" HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT"
 export HP_CLAUDE="$(command -v "$CLAUDE_BIN")" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+# Qué decidió el TTL, para que el paso lo registre y no haya que deducirlo.
+[[ -z "$CACHE_TTL" ]] || echo "cache-ttl: $CACHE_TTL ($CACHE_TTL_WHY)"
 
 # La memoria de cada item se mide con GNU Time si esta (se instala con
 # thyrox_toolchain_require_gnu_time). Sin el, el pool corre igual y lo declara:

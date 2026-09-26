@@ -1,0 +1,8 @@
+/** `EPt` con `QCt` dentro: el TTL de una petición del origen `source`. */
+export function resolvePromptCacheTtl(
+  source: string | undefined,
+  { agentCacheTtlOverride, ignoreOverage = false }: PromptCacheTtlOptions,
+  ctx: PromptCacheTtlContext,
+): PromptCacheTtlDecision {
+  const overage = ctx.isSubscriber && !ignoreOverage && ctx.isUsingOverage
+  if (flag(ctx.env.THYROX_FORCE_PROMPT_CACHING_5M)) return { ttl: '5m', reason: 'force_5m_env' }

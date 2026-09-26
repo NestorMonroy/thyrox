@@ -113,3 +113,29 @@ describe('resolveRequestCacheTtl — el TTL de UNA petición, siempre decidido',
     expect(r.why).toContain('sdk')
   })
 })
+
+// La cadena del ejecutable (`QCt`) va antes de lo declarado: una variable
+// `THYROX_*` gana a la definición y al hueco, como `CLAUDE_CODE_*` en 2.1.282.
+describe('resolveRequestCacheTtl — el entorno THYROX_* por encima de la definición', () => {
+  const pedido = { model: 'claude-sonnet-5', source: 'sdk' } as const
+  test('la variable de la conversación principal gana a lo declarado y la razón es env', () => {
+    const r = resolveRequestCacheTtl({ ...pedido, declared: '1h', env: { THYROX_CODE_PROMPT_CACHE_TTL: '5m' } })
+    expect([r.ttl, r.why]).toEqual(['5m', 'env: THYROX_CODE_PROMPT_CACHE_TTL (5m)'])
+  })
+  test('un subagente lee su propia variable, no la de la principal', () => {
+    const env = { THYROX_CODE_PROMPT_CACHE_TTL: '5m', THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL: '1h' }
+    expect(resolveRequestCacheTtl({ ...pedido, source: 'agent:custom', env }).ttl).toBe('1h')
+  })
+  test('forzar 5m gana a la variable', () => {
+    const env = { THYROX_FORCE_PROMPT_CACHING_5M: '1', THYROX_CODE_PROMPT_CACHE_TTL: '1h' }
+    expect(resolveRequestCacheTtl({ ...pedido, env }).ttl).toBe('5m')
+  })
+  test('sin variables, lo declarado sigue decidiendo con su razón de siempre', () => {
+    const r = resolveRequestCacheTtl({ ...pedido, declared: '5m', env: {} })
+    expect([r.ttl, r.why]).toEqual(['5m', 'TTL declarado en la definición (5m)'])
+  })
+  test('un valor ilegible lanza nombrando la variable', () => {
+    expect(() => resolveRequestCacheTtl({ ...pedido, env: { THYROX_CODE_PROMPT_CACHE_TTL: '30m' } }))
+      .toThrow('THYROX_CODE_PROMPT_CACHE_TTL')
+  })
+})

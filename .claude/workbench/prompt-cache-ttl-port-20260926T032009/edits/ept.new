@@ -1,0 +1,27 @@
+/** `EPt`: el TTL de una petición del origen `source`. */
+export function resolvePromptCacheTtl(
+  source: string | undefined,
+  { agentCacheTtlOverride, ignoreOverage = false }: PromptCacheTtlOptions,
+  ctx: PromptCacheTtlContext,
+): PromptCacheTtlDecision {
+  const overage = ctx.isSubscriber && !ignoreOverage && ctx.isUsingOverage
+  const explicit = resolveExplicitPromptCacheTtl(source, agentCacheTtlOverride, overage, ctx)
+  if (explicit !== undefined) return explicit
+  if (!ctx.isSubscriber || overage) return { ttl: '5m', reason: 'default' }
+  return matchesSource(source, ctx.allowlist ?? MAIN_THREAD_SOURCES)
+    ? { ttl: '1h', reason: 'subscriber' }
+    : { ttl: '5m', reason: 'default' }
+}
+
+/**
+ * `QCt`: las reglas que deciden por declaración —forzar 5m, variable,
+ * setting, frontmatter, activar 1h— o `undefined` si ninguna aplica y el TTL
+ * queda a la suscripción.
+ */
+export function resolveExplicitPromptCacheTtl(
+  source: string | undefined,
+  agentCacheTtlOverride: CacheTtl | undefined,
+  overage: boolean,
+  ctx: Pick<PromptCacheTtlContext, 'env' | 'settings' | 'provider'>,
+): PromptCacheTtlDecision | undefined {
+  if (flag(ctx.env.THYROX_FORCE_PROMPT_CACHING_5M)) return { ttl: '5m', reason: 'force_5m_env' }

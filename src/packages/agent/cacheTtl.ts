@@ -30,6 +30,12 @@
  */
 import { DEFAULT_TTL_BY_SOURCE } from '@thyrox/provider/cost/cacheRoutes'
 import { chooseCacheTtl } from '@thyrox/provider/cost/policy'
+import {
+  isMainThreadSource,
+  resolveExplicitPromptCacheTtl,
+  type PromptCacheTtlDecision,
+  type PromptCacheTtlEnv,
+} from './promptCacheTtl.ts'
 import type { AgentDefinition, CacheTtl } from './types.ts'
 
 /** El TTL resuelto y la razón por la que ése — o por la que ninguno. */
@@ -51,6 +57,8 @@ export type RequestCacheTtlInputs = {
   readonly model?: string
   readonly expectedGapMinutes?: number
   readonly source: RequestSource
+  /** Las variables `THYROX_*` del TTL; por defecto, el entorno del proceso. */
+  readonly env?: PromptCacheTtlEnv
 }
 
 /**
@@ -61,10 +69,28 @@ export type RequestCacheTtlInputs = {
  * modelo.
  */
 export function resolveRequestCacheTtl(inputs: RequestCacheTtlInputs): { ttl: CacheTtl; why: string } {
+  // Primero la cadena del ejecutable (`QCt`): forzar 5m, la variable y el
+  // setting van por encima de lo declarado. Lo declarado vuelve a su camino
+  // de siempre para conservar su razón y el costeo del hueco que le sigue.
+  const explicit = resolveExplicitPromptCacheTtl(inputs.source, inputs.declared, false,
+                                                 { env: inputs.env ?? process.env })
+  if (explicit !== undefined && explicit.reason !== 'agent_frontmatter') {
+    return { ttl: explicit.ttl, why: `${explicit.reason}: ${explicitVariable(inputs.source, explicit)} (${explicit.ttl})` }
+  }
   const decided = decidedTtl(inputs.declared, inputs.model, inputs.expectedGapMinutes)
   if (decided.ttl !== undefined) return { ttl: decided.ttl, why: decided.why }
   const ttl = DEFAULT_TTL_BY_SOURCE[inputs.source]
   return { ttl, why: `default del origen ${inputs.source} (${ttl}); ${decided.why}` }
+}
+
+/** La variable que decidió, para que la razón la nombre. */
+function explicitVariable(source: RequestSource, decision: PromptCacheTtlDecision): string {
+  switch (decision.reason) {
+    case 'force_5m_env': return 'THYROX_FORCE_PROMPT_CACHING_5M'
+    case 'enable_1h_env': return 'THYROX_ENABLE_PROMPT_CACHING_1H'
+    case 'env': return isMainThreadSource(source) ? 'THYROX_CODE_PROMPT_CACHE_TTL' : 'THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL'
+    default: return decision.reason
+  }
 }
 
 /** Los dos primeros pasos, compartidos: lo declarado y lo que el hueco justifica. */

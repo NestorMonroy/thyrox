@@ -31,7 +31,7 @@ done
 case "$entrada" in *FALLA*) echo "fallo simulado" >&2; exit 1 ;; esac
 case "$entrada" in *LENTO*) sleep 5 ;; esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}"
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}"
 if [[ "$formato" == stream-json ]]; then
   # Como el ejecutable: stream-json en -p exige --verbose.
   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
@@ -118,6 +118,24 @@ check "sin cache-ttl: no se fija" "$(ttl_de)" "ttl=sin"
 rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"
 check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+
+# El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
+# variable gana a la decisión calculada, y forzar 5m gana a la variable. El
+# ítem la recibe con los dos nombres: `claude -p` lee CLAUDE_CODE_*, y
+# `thyrox -p` —cuando el árbol llegue a 0 errores— leerá THYROX_*.
+thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
+rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "variable sin --cache-ttl: llega con los dos nombres" "$(thx_de)" "ttl=1h|thx=1h"
+check "variable: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(env\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "la variable gana a --cache-ttl" "$(thx_de)" "ttl=1h|thx=1h"
+rm -rf "$F/out"; EXTRA="--cache-ttl 1h" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "forzar 5m gana a la variable y a la opción" "$(thx_de)" "ttl=5m|thx=5m"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa
+check "sólo --cache-ttl: su razón es la opción" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(option\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
+check "variable ilegible: exit 2" "$CODE" "2"
+check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
 
 # --- la memoria de cada item, con GNU Time --------------------------------------
 # Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
