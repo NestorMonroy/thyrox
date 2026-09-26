@@ -232,7 +232,7 @@ def derived_signal(keys: list[str], file: str, code: str) -> str | None:
 
 
 def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str],
-                    keys: list[str] | None = None) -> list[str]:
+                    keys: list[str] | None = None, provenance: dict | None = None) -> list[str]:
     """Gate 3b, la mitad que escribe: el patrón que cada archivo conservado
     trajo en su salida va a la memoria (`patterns.jsonl` de la corrida) con
     los cuatro campos, y su `applied` nombra el archivo. Devuelve los motivos
@@ -257,6 +257,7 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                     continue
                 signal = RAW_LOG_PREFIX.sub("", pattern["senal_del_verificador"])
                 extra: dict[str, str] = {}
+                rule = "agent-signal"
                 if keys is not None:
                     own = [k for k in keys if k.startswith(f"{file}: ")]
                     try:
@@ -276,11 +277,16 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                         # código sí está en el archivo, así que la memoria
                         # guarda la clave medida y conserva la del agente.
                         extra = {"agent_signal": signal, "signal_origin": "derived-from-key"}
+                        rule = "derived-from-key"
                         signal = fallback
                 try:
                     row = tsc_sweep.add_pattern(run, {"name": pattern["patron"],
                                                 "signal": signal,
-                                                "fix": pattern["fix_generico"], **extra})
+                                                "fix": pattern["fix_generico"], **extra,
+                                                # Procedencia (L09): paso, evidencia, configuración,
+                                                # regla y archivo de donde salió la entrada.
+                                                **({"provenance": {**provenance, "rule": rule, "file": file}}
+                                                   if provenance else {})})
                 except (ValueError, re.error) as error:
                     problems.append(f"{file}: {pattern['patron']}: {error}")
                     continue
@@ -406,7 +412,9 @@ def run(args: argparse.Namespace, tsc: list[str]) -> dict:
             if kept_now and getattr(args, "unit", "file") == "file":
                 problems = record_patterns(args.ledger.parent, {
                     file: [data for n in grouped.get(file, []) for data in outputs.get(n, [])]
-                    for file in kept_now}, kept_now, keys)
+                    for file in kept_now}, kept_now, keys,
+                    provenance={"step": str(bench), "evidence": str(before_log),
+                                "setup_id": getattr(args, "setup_id", None)})
                 memory_gate(args.ledger.parent, bench, problems)
             if getattr(args, "unit", "file") == "module":
                 for unit in ready:

@@ -96,6 +96,9 @@ def add_pattern(run: Path, pattern: dict) -> dict:
                 and other["signal"] == pattern["signal"]
                 and (other.get("include") or "") == (pattern.get("include") or "")):
             other["aliases"] = sorted(set(other.get("aliases", [])) | {pattern["name"]})
+            if pattern.get("provenance"):
+                other["alias_provenance"] = {**other.get("alias_provenance", {}),
+                                             pattern["name"]: pattern["provenance"]}
             _save(run, patterns)
             return other
     previous = patterns.get(pattern["name"])
@@ -109,8 +112,13 @@ def add_pattern(run: Path, pattern: dict) -> dict:
         row["aliases"] = previous.get("aliases", [])
         if any(previous.get(key, "") != row.get(key, "") for key in VERSIONED):
             row["history"] = [*row["history"], {**{key: previous.get(key, "") for key in VERSIONED},
-                                                "version": row["version"]}]
+                                                "version": row["version"],
+                                                "provenance": previous.get("provenance")}]
             row["version"] += 1
+        elif previous.get("provenance"):
+            # Reescribir lo mismo no es una versión: la procedencia sigue siendo
+            # la de quien lo escribió primero.
+            row["provenance"] = previous["provenance"]
     else:
         row["version"] = 1
     patterns[row["name"]] = row
@@ -125,7 +133,8 @@ def revert_pattern(run: Path, name: str) -> dict:
     if not row or not row.get("history"):
         raise ValueError(f"el patrón {name!r} no tiene versión anterior que restaurar")
     *rest, last = row["history"]
-    row.update({key: last.get(key, "") for key in VERSIONED}, version=last["version"], history=rest)
+    row.update({key: last.get(key, "") for key in VERSIONED}, version=last["version"], history=rest,
+               provenance=last.get("provenance"))
     _save(run, patterns)
     return row
 

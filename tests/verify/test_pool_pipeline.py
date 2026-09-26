@@ -168,8 +168,14 @@ with tempfile.TemporaryDirectory() as directory:
          "fix_generico": "guardar el opcional", "edits": [0]},
         {"patron": "predicate-fixed-text", "senal_del_verificador": "TS2677.*'NormalizedMessage'",
          "fix_generico": "estrechar el predicado", "edits": [0]}]})}
-    problems = pp.record_patterns(run_dir, {"src/a.ts": [output]}, ["src/a.ts"], keys)
+    batch_origin = {"step": "bench/batch-03", "evidence": "bench/batch-03/base.log", "setup_id": "s-9"}
+    problems = pp.record_patterns(run_dir, {"src/a.ts": [output]}, ["src/a.ts"], keys, provenance=batch_origin)
     memory = pp.tsc_sweep.load_patterns(run_dir)
+    assert_equal("la procedencia de un patrón del agente nombra paso, evidencia, configuración, regla y archivo",
+                 {**batch_origin, "rule": "agent-signal", "file": "src/a.ts"},
+                 memory.get("missing-name", {}).get("provenance"))
+    assert_equal("la de uno derivado declara la regla con que se derivó", "derived-from-key",
+                 memory.get("chained-undefined", {}).get("provenance", {}).get("rule"))
     assert_equal("el prefijo 'error ' del log crudo se quita de la señal",
                  "TS2304: Cannot find name '(\\w+)'", memory.get("missing-name", {}).get("signal"))
     assert_equal("y el patrón normalizado queda aplicado al archivo", ["src/a.ts"],

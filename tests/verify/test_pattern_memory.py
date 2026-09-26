@@ -115,6 +115,26 @@ with tempfile.TemporaryDirectory() as tmp:
         refused = True
     assert_equal("descartar sin razón escrita se rehúsa", True, refused)
 
+# --- procedencia (L09: «registrar el origen de la experiencia, las reglas de
+# actualización, el conjunto de evaluación... y el alcance de vigencia») ------
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    origin = {"step": "step-9", "rule": "agent-signal", "evidence": "step-9/base.log", "setup_id": "s-1",
+              "file": "src/a.ts"}
+    ts.add_pattern(run, {**pattern("p", "TS5: a"), "provenance": origin})
+    assert_equal("el patrón guarda su procedencia", origin, ts.load_patterns(run)["p"].get("provenance"))
+    newer = {**origin, "step": "step-12", "evidence": "step-12/base.log"}
+    ts.add_pattern(run, {**pattern("p", "TS5: b"), "provenance": newer})
+    row = ts.load_patterns(run)["p"]
+    assert_equal("la versión nueva lleva la suya y la anterior queda en history con la de antes",
+                 ("step-12", "step-9"), (row["provenance"]["step"], (row["history"][-1].get("provenance") or {}).get("step")))
+    ts.add_pattern(run, {**pattern("p", "TS5: b"), "provenance": {**newer, "step": "step-13"}})
+    assert_equal("reescribir lo mismo no crea versión ni pisa la procedencia", ("step-12", 2),
+                 (ts.load_patterns(run)["p"]["provenance"]["step"], ts.load_patterns(run)["p"]["version"]))
+    ts.add_pattern(run, {**pattern("alias-of-p", "TS5: b"), "provenance": {**newer, "step": "step-14"}})
+    assert_equal("un alias fundido deja su procedencia bajo su nombre", "step-14",
+                 ts.load_patterns(run)["p"].get("alias_provenance", {}).get("alias-of-p", {}).get("step"))
+
 # --- fundir los duplicados que ya existían -------------------------------------
 # La deduplicación al escribir no arregla la memoria heredada: medido, 19
 # grupos con la misma señal y el mismo alcance. Se conserva el primero, se

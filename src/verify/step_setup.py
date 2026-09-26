@@ -4,8 +4,9 @@
 Origen: self-evolving-agents-2026, lección 2 (AgentOptimizer y ProRL):
 «llevar control de versiones por separado del model, el harness, el reward y
 el entorno, para evitar la imposibilidad de atribución». En este árbol esa
-palabra se reserva para la de Claude Code; lo que aquí se versiona se nombra
-por lo que es: la ruta, el modelo del pool, el `scaffold` (el CONTENIDO del
+palabra se reserva para la del proveedor que hospeda al agente —hoy Claude
+Code; thyrox admite n proveedores— y no nombra nada nuestro. Lo que aquí se
+versiona se nombra por lo que es: la ruta, el modelo del pool, el `scaffold` (el CONTENIDO del
 prompt de la ruta, término del glosario), el comando del verificador y la
 política de aceptación. El entorno es el árbol, que ya versiona git.
 
