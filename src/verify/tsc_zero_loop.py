@@ -37,7 +37,11 @@ class LoopResult:
 
 
 def _git(root: Path, *args: str) -> None:
-    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True)
+    # El commit del lazo es desatendido: nadie puede responder a un firmante.
+    # Con `commit.gpgsign=true` global y el firmante ausente, git sale 128
+    # sin que haya concurrencia alguna (medido; el paso 156 murió así).
+    subprocess.run(["git", "-c", "commit.gpgsign=false", *args], cwd=root,
+                   check=True, capture_output=True, text=True)
 
 
 def run_loop(root: Path, proposers: list[str], tsc: list[str], loop_dir: Path, *,
