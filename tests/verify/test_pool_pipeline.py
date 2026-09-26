@@ -217,6 +217,35 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("sin cita (TS2769 fija su primera línea) no hay señal que derivar", None,
                  pp.derived_signal(["src/a.ts: TS2769: No overload matches this call."], "src/a.ts", "TS2769"))
 
+# --- Procedencia reconstruida desde la evidencia de los pasos ------------------
+# Los patrones anteriores a la procedencia (f4b93081) no dicen de dónde salieron;
+# cada paso guarda items.txt (ítem -> archivo) y outputs/<n>.json con los
+# patrones que trajo el agente. La PRIMERA salida que nombra un patrón da su
+# archivo y su paso; lo reconstruido se marca como tal, no se presenta medido.
+with tempfile.TemporaryDirectory() as directory:
+    run_dir = Path(directory)
+    for step, file in (("step-001", "src/a.ts"), ("step-002", "src/b.ts")):
+        (run_dir / step / "outputs").mkdir(parents=True)
+        (run_dir / step / "items.txt").write_text(f"{file} {run_dir}/{step}/items/1.txt\n")
+        named = ["old-one"] + (["late-one"] if step == "step-002" else [])
+        (run_dir / step / "outputs/1.json").write_text(json.dumps({"result": "texto ```json\n" + json.dumps(
+            {"edits": [], "patterns": [{"patron": name, "senal_del_verificador": "TS7: x", "fix_generico": "f"}
+                                       for name in named]}) + "\n```"}))
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "old-one", "signal": "TS7: x", "fix": "f"})
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "late-one", "signal": "TS7: z", "fix": "f"})
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "new-one", "signal": "TS7: y", "fix": "f",
+                                       "provenance": {"step": "step-009", "file": "src/z.ts"}})
+    filled = pp.backfill_provenance(run_dir)
+    memory = pp.tsc_sweep.load_patterns(run_dir)
+    assert_equal("la procedencia reconstruida sale de la primera salida que nombra el patrón",
+                 {"step": "step-001", "file": "src/a.ts", "rule": "agent-signal", "source": "backfilled"},
+                 memory["old-one"].get("provenance"))
+    assert_equal("un patrón que ya tiene procedencia no se toca", "step-009", memory["new-one"]["provenance"]["step"])
+    assert_equal("el que sólo aparece después toma su propio paso", ("step-002", "src/b.ts"),
+                 (memory["late-one"]["provenance"]["step"], memory["late-one"]["provenance"]["file"]))
+    assert_equal("devuelve cuántos reconstruyó, y una segunda pasada no reconstruye nada", (2, 0),
+                 (filled, pp.backfill_provenance(run_dir)))
+
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los
 # consumidores que el ítem declara. Las ediciones se aplican con el porte del

@@ -47,6 +47,7 @@ ejecución real en el ledger) y descarte (`evict`, `close`).
 from __future__ import annotations
 
 import argparse
+import collections
 import hashlib
 import json
 import re
@@ -124,6 +125,17 @@ def add_pattern(run: Path, pattern: dict) -> dict:
     patterns[row["name"]] = row
     _save(run, patterns)
     return row
+
+
+def set_provenance(run: Path, name: str, provenance: dict) -> dict:
+    """Fija la procedencia de un patrón SIN versionarlo: no cambia su
+    contenido, sólo registra de dónde salió."""
+    patterns = load_patterns(run)
+    if name not in patterns:
+        raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
+    patterns[name]["provenance"] = provenance
+    _save(run, patterns)
+    return patterns[name]
 
 
 def revert_pattern(run: Path, name: str) -> dict:
@@ -238,6 +250,33 @@ def pattern_confidence(run: Path) -> dict[str, dict]:
     for entry in counts.values():
         entry["mean"] = (entry["accepted"] + 1) / (entry["accepted"] + entry["rejected"] + 2)
     return counts
+
+
+def pattern_transfer(run: Path) -> dict[str, dict]:
+    """¿Cambió el patrón la conducta futura? (L05: una reflexión que no cambia
+    la estrategia de ejecución no es automejora; L07: evaluar si transfiere
+    entre tareas.) Transferir es haberse aplicado con éxito —`applied`, que
+    sólo crece con lo aceptado— a archivos distintos del que se aprendió.
+
+    Veredicto: `transfiere`; `no transfiere` (tuvo intentos juzgados y ningún
+    archivo nuevo); `sin oportunidad` (ni lo uno ni lo otro: no se puede
+    juzgar); `sin procedencia` (patrón anterior a la procedencia: su origen
+    no se adivina).
+
+    Ciega a: una mejora que no pase por el barrido, como un agente del pool
+    que lea la memoria en su prompt y acierte sin nombrar el patrón."""
+    confidence = pattern_confidence(run)
+    report = {}
+    for name, row in load_patterns(run).items():
+        origin = (row.get("provenance") or {}).get("file")
+        entry = confidence.get(name, {"accepted": 0, "rejected": 0})
+        attempts = entry["accepted"] + entry["rejected"]
+        moved = sorted(set(row.get("applied", [])) - {origin}) if origin else []
+        verdict = ("sin procedencia" if not origin else "transfiere" if moved
+                   else "no transfiere" if attempts else "sin oportunidad")
+        report[name] = {"learned_from": origin, "transferred_to": moved, "attempts": attempts,
+                        "verdict": verdict}
+    return report
 
 
 def evict(run: Path, *, min_trials: int, max_mean: float, reason: str) -> list[str]:
@@ -403,6 +442,8 @@ def main(argv: list[str] | None = None) -> int:
     rev_p.add_argument("--name", required=True)
     conf_p = sub.add_parser("confidence", help="aplicaciones juzgadas por patrón, desde el ledger")
     conf_p.add_argument("--run", type=Path, required=True)
+    tr_p = sub.add_parser("transfer", help="¿cambió cada patrón la conducta futura? (transferencia)")
+    tr_p.add_argument("--run", type=Path, required=True)
     ev_p = sub.add_parser("evict", help="cierra los patrones de baja confianza con intentos suficientes")
     ev_p.add_argument("--run", type=Path, required=True)
     ev_p.add_argument("--min-trials", type=int, default=3)
@@ -438,6 +479,12 @@ def main(argv: list[str] | None = None) -> int:
                 print(json.dumps({"name": name, **entry}, ensure_ascii=False))
             print(f"confidence: {len(confidence)} patrón(es) con aplicaciones juzgadas de "
                   f"{len(load_patterns(args.run))} en la memoria")
+        elif args.command == "transfer":
+            report = pattern_transfer(args.run)
+            for name, entry in sorted(report.items()):
+                print(json.dumps({"name": name, **entry}, ensure_ascii=False))
+            verdicts = collections.Counter(entry["verdict"] for entry in report.values())
+            print("transfer: " + ", ".join(f"{v} {n}" for v, n in sorted(verdicts.items())))
         elif args.command == "evict":
             evicted = evict(args.run, min_trials=args.min_trials, max_mean=args.max_mean, reason=args.reason)
             print("\n".join(evicted))

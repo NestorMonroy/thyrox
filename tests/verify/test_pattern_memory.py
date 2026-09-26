@@ -156,5 +156,27 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("un cerrado no participa: su razón no se toca", "x", memory["closed-twin"]["closed_reason"])
     assert_equal("fundir dos veces no cierra nada más", [], ts.merge_duplicates(run, reason="otra vez"))
 
+# --- ¿cambió la conducta futura? (L05: una reflexión que no cambia la estrategia
+# de ejecución no es automejora; L07: evaluar si transfiere entre tareas) ------
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    for name, applied in (("moved", ["src/a.ts", "src/b.ts", "src/c.ts"]), ("stuck", ["src/a.ts"]),
+                          ("idle", ["src/a.ts"]),
+                          ("legacy", ["src/x.ts", "src/y.ts"])):
+        ts.add_pattern(run, {**pattern(name, f"TS6: {name}"),
+                             **({"provenance": {"file": "src/a.ts", "step": "s"}} if name != "legacy" else {})})
+        ts.mark_applied(run, name, applied)
+    (run / "ledger.jsonl").write_text("".join(json.dumps({"proposal_id": p, "outcome": o}) + "\n" for p, o in (
+        ("agent:pool:pattern:stuck", "rejected"), ("agent:pool:pattern:stuck", "rejected"))))
+    report = ts.pattern_transfer(run)
+    assert_equal("transfiere: aplicado con éxito fuera del archivo del que se aprendió",
+                 ["src/b.ts", "src/c.ts"], report["moved"]["transferred_to"])
+    assert_equal("no transfiere: dos intentos y ningún archivo nuevo", ([], 2),
+                 (report["stuck"]["transferred_to"], report["stuck"]["attempts"]))
+    assert_equal("sin procedencia no se adivina el origen: se declara", (None, "sin procedencia"),
+                 (report["legacy"]["learned_from"], report["legacy"]["verdict"]))
+    assert_equal("veredictos", ("transfiere", "no transfiere", "sin oportunidad"),
+                 (report["moved"]["verdict"], report["stuck"]["verdict"], report["idle"]["verdict"]))
+
 print(f"test_pattern_memory: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

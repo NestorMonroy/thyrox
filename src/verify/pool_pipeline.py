@@ -231,6 +231,48 @@ def derived_signal(keys: list[str], file: str, code: str) -> str | None:
     return shapes[0] if len(shapes) == 1 else "(?:" + "|".join(shapes) + ")"
 
 
+def output_patterns(output: dict) -> list[dict]:
+    """Los patrones que trajo la salida de un agente (el bloque JSON de su
+    `result`); una lista vacía si no trajo ninguno legible."""
+    block = re.search(r"\{.*\}", output.get("result", "") or "", re.S)
+    try:
+        patterns = json.loads(block.group(0)).get("patterns", []) if block else []
+    except ValueError:
+        return []
+    return [p for p in patterns or [] if isinstance(p, dict)]
+
+
+def backfill_provenance(run: Path) -> int:
+    """Reconstruye la procedencia de los patrones escritos antes de que se
+    registrara (L09): recorre los pasos en orden, y la PRIMERA salida de un
+    agente que nombra un patrón da su paso y su archivo (`items.txt`). Se
+    marca `source: backfilled` para no presentarla como medida al escribir.
+    Devuelve cuántos reconstruyó.
+
+    Ciega a: un patrón fundido como alias, que se nombró con otro nombre, y
+    a uno escrito por una ruta cuyas salidas no guardan `patterns`."""
+    missing = {name for name, row in tsc_sweep.load_patterns(run).items() if not row.get("provenance")}
+    found: dict[str, dict] = {}
+    for step in sorted(run.glob("step-*")):
+        items = step / "items.txt"
+        if not missing - found.keys() or not items.is_file():
+            continue
+        files = [line.split()[0] for line in items.read_text().splitlines() if line.strip()]
+        for n, file in enumerate(files, 1):
+            path = step / "outputs" / f"{n}.json"
+            try:
+                output = json.loads(path.read_text()) if path.is_file() else {}
+            except ValueError:
+                continue
+            for pattern in output_patterns(output):
+                name = pattern.get("patron")
+                if name in missing and name not in found:
+                    found[name] = {"step": step.name, "file": file, "rule": "agent-signal", "source": "backfilled"}
+    for name, provenance in found.items():
+        tsc_sweep.set_provenance(run, name, provenance)
+    return len(found)
+
+
 def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: list[str],
                     keys: list[str] | None = None, provenance: dict | None = None) -> list[str]:
     """Gate 3b, la mitad que escribe: el patrón que cada archivo conservado
@@ -246,12 +288,7 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
     problems = []
     for file in kept:
         for output in outputs_for_file.get(file, []):
-            block = re.search(r"\{.*\}", output.get("result", "") or "", re.S)
-            try:
-                patterns = json.loads(block.group(0)).get("patterns", []) if block else []
-            except ValueError:
-                patterns = []
-            for pattern in patterns or []:
+            for pattern in output_patterns(output):
                 if not all(str(pattern.get(field, "")).strip() for field in PATTERN_FIELDS):
                     problems.append(f"{file}: patrón sin los campos {', '.join(PATTERN_FIELDS)}")
                     continue
