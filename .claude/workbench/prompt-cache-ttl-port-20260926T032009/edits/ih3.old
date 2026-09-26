@@ -1,0 +1,4 @@
+    "TaskCompleted": [{"hooks": [
+        {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
+    ]}],
+}"""

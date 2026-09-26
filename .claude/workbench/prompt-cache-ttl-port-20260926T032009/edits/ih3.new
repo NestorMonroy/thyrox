@@ -1,0 +1,10 @@
+    "TaskCompleted": [{"hooks": [
+        {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
+    ]}],
+    "PreToolUse": [{"matcher": "Bash|Agent|Write|Edit|MultiEdit|Read", "hooks": [
+        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/pretooluse_dispatch.py"},
+    ]}],
+    "SessionStart": [{"matcher": "compact", "hooks": [
+        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/compact_context.py"},
+    ]}],
+}"""
