@@ -30,7 +30,7 @@ done
 case "$entrada" in *FALLA*) echo "fallo simulado" >&2; exit 1 ;; esac
 case "$entrada" in *LENTO*) sleep 5 ;; esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-jq -cn --arg r "$ultima|modelo=$modelo|persist=$persist|formato=$formato" '{result:$r}'
+jq -cn --arg r "$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}" '{result:$r}'
 SH
 chmod +x "$F/claude"
 printf 'Lee y resume.\n' > "$F/prompt.md"
@@ -89,6 +89,19 @@ check "memfree: la cota llega a parallel" "$(grep -c -- '--memfree 1G' "$F/paral
 rm -rf "$F/out"; EXTRA="--memfree mucho" corre alfa
 check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+
+# --cache-ttl: el TTL de la caché llega a cada `claude -p` por
+# CLAUDE_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
+# y un valor fuera de 5m|1h rehúsa sin resumen.
+ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5}' | sort -u | paste -sd,; }
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
+check "cache-ttl 5m: exit 0" "$CODE" "0"
+check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "ttl=5m"
+rm -rf "$F/out"; EXTRA="" CLAUDE_CODE_PROMPT_CACHE_TTL= corre alfa
+check "sin cache-ttl: no se fija" "$(ttl_de)" "ttl=sin"
+rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
+check "cache-ttl ilegible: exit 2" "$CODE" "2"
+check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"

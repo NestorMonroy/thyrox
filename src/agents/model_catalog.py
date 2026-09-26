@@ -233,6 +233,31 @@ def equivalent_tokens_with_basis(catalog: dict | None, model_id: str | None, usa
     return equivalent_tokens(catalog, model_id, usage), tier
 
 
+#: Por encima de este hueco entre turnos la caché de 5 m caduca; por encima
+#: del segundo, también la de 1 h.
+CACHE_5M_MINUTES = 5
+CACHE_1H_MINUTES = 60
+
+
+def ttl_break_even_expiries(catalog: dict, model_id: str) -> float:
+    """Gemelo de ``ttlBreakEvenExpiries``: cuántas caducidades de la caché de
+    5 m pagan la prima de escribir a 1 h, (1h − 5m) / 5m del tier."""
+    price = pricing_of(catalog, model_id)
+    return (price["cache_write_1h"] - price["cache_write_5m"]) / price["cache_write_5m"]
+
+
+def choose_cache_ttl(catalog: dict, model_id: str, expected_gap_minutes: float) -> tuple[str, str]:
+    """Gemelo de ``chooseCacheTtl``: el TTL que conviene declarar según el
+    mayor hueco esperado entre dos turnos, y el porqué."""
+    break_even = ttl_break_even_expiries(catalog, model_id)
+    if expected_gap_minutes > CACHE_1H_MINUTES:
+        return "5m", "el hueco supera la hora: ninguna caché sobrevive y la prima de 1 h se paga en vano"
+    if expected_gap_minutes > CACHE_5M_MINUTES:
+        return "1h", (f"un hueco de {expected_gap_minutes:g} min caduca la caché de 5 m; "
+                      f"una sola caducidad (≥ {break_even:.2f}) ya paga la prima")
+    return "5m", "turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada"
+
+
 def effort_cost_index(catalog: dict, model_id: str, level: str) -> float | None:
     """El índice relativo (``high`` = 1) que el registro declara; None si no lo declara."""
     model = models_by_id(catalog).get(model_id) or {}

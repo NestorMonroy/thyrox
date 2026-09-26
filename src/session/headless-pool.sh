@@ -25,7 +25,12 @@
 # --------
 #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
-#                    [--cwd DIR] [--memfree TAM]  < items (uno por linea)
+#                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
+#                    < items (uno por linea)
+#
+# `--cache-ttl` fija el TTL de la cache de cada `claude -p` con
+# CLAUDE_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
+# suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
 #
 # `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
 # item si queda menos que TAM; aplicacion: si baja de la mitad, mata al mas
@@ -60,7 +65,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-claude}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""
+TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -75,6 +80,7 @@ while [[ $# -gt 0 ]]; do
         --max-turns) MAX_TURNS="${2:-}"; shift 2 ;;
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
+        --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -90,6 +96,12 @@ case "$MODEL" in
     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
 esac
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
+# El TTL de la caché de cada `claude -p` (CLAUDE_CODE_PROMPT_CACHE_TTL). Sin
+# la opción no se fija y decide el cliente: 1 h en suscripción, 5 m con clave.
+case "$CACHE_TTL" in
+    ""|5m|1h) ;;
+    *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
+esac
 
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
@@ -105,7 +117,9 @@ done
 _headless_item() {
     local n="$1" item="$2"
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
-      | (cd "$HP_WORKDIR" && timeout "$HP_TIMEOUT" "$HP_CLAUDE" -p \
+      | (cd "$HP_WORKDIR" || exit 1
+         [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+         timeout "$HP_TIMEOUT" "$HP_CLAUDE" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             --max-turns "$HP_MAX_TURNS" --no-session-persistence \
@@ -116,7 +130,7 @@ export -f _headless_item
 export HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 export HP_OUT="$(cd "$OUT" && pwd)" HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT"
 export HP_CLAUDE="$(command -v "$CLAUDE_BIN")" HP_MODEL="$MODEL"
-export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS"
+export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 
 MEMFREE_ARGS=()
 if [[ -n "$MEMFREE_SPEC" ]]; then

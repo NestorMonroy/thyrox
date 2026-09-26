@@ -115,5 +115,17 @@ check("sin catálogo ni modelo: la fórmula fija, declarada",
       (10 + 100 * 1.25 + 1000 * 0.1 + 20 * 5, mc.FIXED_BASIS),
       mc.equivalent_tokens_with_basis(None, None, flat))
 
+print("== 8. choose_cache_ttl: gemelo de chooseCacheTtl (provider/src/cost/policy.ts) ==")
+TTL_CATALOG = {"pricing_tiers": {"tier_2_10": {"input": 2, "output": 10, "cache_write_5m": 2.5, "cache_write_1h": 4,
+                                       "cache_read": 0.2}},
+               "models": [{"id": "m-2-10", "pricing_tier": "tier_2_10"}]}
+check("umbral de caducidades: (1h − 5m) / 5m, del precio del tier", 0.6,
+      round(mc.ttl_break_even_expiries(TTL_CATALOG, "m-2-10"), 6))
+check("turnos seguidos (hueco ≤ 5 min): 5m", "5m", mc.choose_cache_ttl(TTL_CATALOG, "m-2-10", 4.91)[0])
+check("un hueco entre 5 y 60 min: 1h", "1h", mc.choose_cache_ttl(TTL_CATALOG, "m-2-10", 10)[0])
+check("un hueco de más de una hora: 5m, ninguna caché sobrevive", "5m",
+      mc.choose_cache_ttl(TTL_CATALOG, "m-2-10", 90)[0])
+check("el porqué se publica junto a la decisión", True, bool(mc.choose_cache_ttl(TTL_CATALOG, "m-2-10", 1)[1]))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)
