@@ -1,0 +1,8 @@
+Record the lock extraction from 2.1.282
+
+bin/binary symbol resolved ci, dIo and vm (3 of 3) in
+chunk-bzev8hcq.js: the executable's lock is proper-lockfile, an
+atomic mkdir plus an mtime heartbeat, with staleness decided by the
+heartbeat and not by a pid. callers-ci.txt lists what the executable
+protects with it; both are the source for porting a shared-state
+lock into thyrox.
