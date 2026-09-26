@@ -1,0 +1,3 @@
+(fail) isPathInSandboxWriteAllowlist (sandbox encendido) > una ruta dentro de allowOnly pasa [0.38ms]
+(fail) isPathInSandboxWriteAllowlist (sandbox encendido) > las variantes ya resueltas del llamador se usan tal cual [0.07ms]
+(fail) fallback-to-ask paths (ant xaH) — prompt, do not run the classifier > sandboxOverride ALONE falls through to the classifier (ant: no J in j||D||f) [0.26ms]

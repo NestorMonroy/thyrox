@@ -1,0 +1,47 @@
+== tests/agents/test-agent-store-sessions.sh
+9 ok, 0 fallos
+== tests/agents/test-agent-store-transcript-path.sh
+13 ok · 0 falla(s)  (alcance medido: 13 aserciones)
+== tests/agents/test-agent-store-type-source.sh
+19 ok · 0 falla(s)  (alcance medido: 19 aserciones)
+== tests/agents/test-agent-store-usage-columns.sh
+31 ok, 0 fallos
+== tests/agents/test-model-catalog.sh
+test-model-catalog: 17 ok, 0 fallos (alcance medido: 17 aserciones)
+== tests/agents/test-register-agent-session.sh
+25 ok, 0 fallos
+== tests/agents/test_final_message_closing.py
+14 ok, 0 fallos
+== tests/agents/test_model_catalog_paths.py
+OK
+== tests/agents/test_model_catalog_tokens.py
+15 ok, 0 fallos
+== tests/agents/test_payload_sin_transcript.py
+10 ok, 0 fallos
+== tests/agents/test_register_session.py
+17 ok, 0 fallos
+== tests/agents/test_stop_reason_provenance.py
+resultado: 19 de 19 aserciones en verde
+== tests/agents/test_store_home.py
+OK
+== tests/hooks/test-hook-error-log.sh
+22 ok, 0 fallos
+== tests/paths/test_child_env.py
+7 ok, 0 fallos
+== tests/session/test_transcripts_home.py
+16 aprobada(s) · 0 fallida(s) (alcance medido: session/transcripts.py y sus dos consumidores)
+== tests/session/test_user_wiring.py
+85 ok, 0 fallos
+== tests/store/test_agent_sessions.py
+28 ok, 0 fallos
+== tests/task/test_task_ids.py
+OK: todas las aserciones pasan
+== tests/task/test_task_source_citas.py
+OK: todas las aserciones pasan
+== tests/transcript/test_closing.py
+10 ok, 0 fallos
+== tests/transcript/test_model.py
+26 ok, 0 fallos
+== tests/verify/test_step_report.py
+test_step_report: 12 aserciones — 12 ok, 0 falla(s)
+__BG_EXIT__=0

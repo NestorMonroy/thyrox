@@ -1,0 +1,15 @@
+== tests/agents/test_register_session.py
+17 ok, 0 fallos
+== tests/agents/test_stop_reason_provenance.py
+resultado: 19 de 19 aserciones en verde
+== tests/transcript/test_closing.py
+10 ok, 0 fallos
+== tests/store/test_agent_sessions.py
+28 ok, 0 fallos
+== tests/store/test_store_home.py
+python3: can't open file '/home/user/thyrox/tests/store/test_store_home.py': [Errno 2] No such file or directory
+== tests/store/test-agent-store-usage-columns.sh
+bash: tests/store/test-agent-store-usage-columns.sh: No such file or directory
+== tests/agents/test-register-agent-session.sh
+25 ok, 0 fallos
+__BG_EXIT__=0
