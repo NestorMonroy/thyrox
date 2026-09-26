@@ -72,6 +72,14 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("costo en tokens equivalentes ponderados, y por aceptada", (1005.0, 502.5),
                  (report["cost"]["equiv_tokens"], report["cost"]["equiv_per_accepted"]))
     assert_equal("el USD de lista no se publica como costo", False, "usd" in json.dumps(report["cost"]).lower())
+    assert_equal("sin archivos .time la memoria se declara no medida, no cero", {"measured": 0},
+                 report["system"]["memory_kb"])
+    for n, peak in ((1, 300000), (2, 900000), (3, 600000)):
+        (bench / f"outputs/{n}.time").write_text(f"{peak} 12.00 3.00 1.00\n")
+    (bench / "outputs/4.time").write_text("no es una medida\n")
+    report = sr.step_report(bench, pipeline)
+    assert_equal("la memoria pico de los items: máxima, mediana y cuántos se midieron",
+                 {"measured": 3, "max": 900000, "median": 600000}, report["system"]["memory_kb"])
     assert_equal("sin modelUsage la base es la fórmula fija, declarada", {"(sin modelo)": "fija-3-15"},
                  report["cost"]["basis"])
 

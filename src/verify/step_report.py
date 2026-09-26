@@ -8,7 +8,8 @@ solape entre pasos, por ejemplo, mejora la primera y no toca la segunda.
 
 - **system**: pared del pool y fracción a ancho completo (del `joblog.tsv`
   de GNU Parallel), la cola lenta (ítem más lento sobre la mediana), ítems
-  fallidos y pasadas de tsc del pipeline.
+  fallidos, pasadas de tsc del pipeline y la memoria pico de los ítems (de
+  los `<n>.time` de GNU Time), que es con lo que se fija `--memfree`.
 - **data**: propuestas juzgadas, aceptadas (`accepted*`) y tasa.
 - **capability**: total de tsc del primer lote al último.
 - **cost**: tokens equivalentes con los cocientes del tier del modelo de
@@ -89,7 +90,22 @@ def _system(bench: Path, batches: list[dict]) -> dict:
     return {"pool_wall_s": round(wall, 3), "pool_width": peak,
             "full_width_share": round(at_width.get(peak, 0.0) / wall, 4) if wall else 0.0,
             "straggler_ratio": round(max(runtimes) / statistics.median(runtimes), 3) if runtimes else 0.0,
-            "failed_items": len(failed), "tsc_runs": sum(b.get("tsc_runs", 0) for b in batches)}
+            "failed_items": len(failed), "tsc_runs": sum(b.get("tsc_runs", 0) for b in batches),
+            "memory_kb": _memory(bench)}
+
+
+def _memory(bench: Path) -> dict:
+    """La memoria pico de los ítems, de los ``<n>.time`` que ``headless-pool``
+    escribe con GNU Time. Sin ninguno, ``measured: 0`` y nada más: una medida
+    ausente no es un cero. Una línea ilegible no cuenta como medida."""
+    peaks = []
+    for path in (bench / "outputs").glob("*.time"):
+        first = path.read_text(errors="ignore").split()
+        if first and first[0].isdigit():
+            peaks.append(int(first[0]))
+    if not peaks:
+        return {"measured": 0}
+    return {"measured": len(peaks), "max": max(peaks), "median": int(statistics.median(peaks))}
 
 
 def step_report(bench: Path, pipeline: Path) -> dict:
