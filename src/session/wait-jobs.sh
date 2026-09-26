@@ -268,6 +268,50 @@ cmd_pending() {
     return $any_pending
 }
 
+# El árbol de un pid, él incluido: los hijos de un trabajo son quienes de
+# verdad trabajan (el lazo duerme esperando a su proponedor).
+process_tree() {
+    local pid="$1" child
+    echo "$pid"
+    for child in $(pgrep -P "$pid" 2>/dev/null); do process_tree "$child"; done
+}
+
+# La sonda de stdin sobre el árbol de cada trabajo vivo, repartida con GNU
+# Parallel. Un proceso que lee stdin de un canal espera para siempre si su
+# productor ni escribe ni cierra: es la forma del `rg` sin archivo que corrió
+# 1 h 19 min, y nadie la ve sin mirar `/proc`. Avisa, no mata: una tubería
+# viva también es un canal.
+probe_jobs() {  # probe_jobs <archivo.job>...
+    local probe="$_ROOT/bin/stdin_probe" par="${WAIT_JOBS_PARALLEL:-parallel}" serial=""
+    [[ -f "$probe" ]] || { echo "sonda: falta $probe — no se sondea" >&2; return 0; }
+    command -v "$par" >/dev/null 2>&1 || serial=1
+    [[ -z "$serial" ]] || echo "sonda: sin GNU Parallel ($par) — en serie" >&2
+    local f label pid pids rows p target kind state cpu comm
+    for f in "$@"; do
+        label=$(basename "$f" .job); pid=$(sed -n 's/^pid=//p' "$f")
+        [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || continue
+        pids=$(process_tree "$pid")
+        if [[ -z "$serial" ]]; then
+            rows=$(printf '%s\n' $pids | "$par" -j8 -k bash "$probe" {} 2>/dev/null)
+        else
+            rows=$(for p in $pids; do bash "$probe" "$p" 2>/dev/null; done)
+        fi
+        while IFS=$'\t' read -r p target kind state cpu; do
+            [[ -n "$p" ]] || continue
+            comm=$(cat "/proc/$p/comm" 2>/dev/null || echo '?')
+            echo "sonda $label: $p $comm stdin=$kind($target) estado=$state cpu=${cpu}s" >&2
+            [[ "$kind" == channel ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
+                "— si su productor no escribe ni cierra, espera para siempre" >&2
+        done <<< "$rows"
+    done
+}
+
+cmd_probe() {
+    shopt -s nullglob; local jobs=("$LEDGER"/*.job); shopt -u nullglob
+    [[ ${#jobs[@]} -gt 0 ]] || { echo "sonda: ledger vacío ($LEDGER)"; return 0; }
+    probe_jobs "${jobs[@]}"
+}
+
 cmd_wait() {
     # `--only <etiqueta>` acota la espera a DOS formas: la etiqueta exacta y su
     # grupo `<etiqueta>-*`. Sin el, la barrera globea TODO el ledger — que es
@@ -354,6 +398,9 @@ cmd_wait() {
                 [[ -n "${settled_as[$e]:-}" ]] || alive+=("$e")
             done
             echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            local alive_jobs=()
+            for e in "${alive[@]}"; do alive_jobs+=("$LEDGER/$e.job"); done
+            probe_jobs "${alive_jobs[@]}"
             last_beat=$now
         fi
 
@@ -944,6 +991,7 @@ case "${1:-}" in
     wait|esperar)        shift; cmd_wait "$@" ;;
     pending|pendientes)  shift; cmd_pending "$@" ;;
     status|estado)       shift; cmd_status "$@" ;;
+    probe|sondear)       shift; cmd_probe "$@" ;;
     continue|continuar)  shift; cmd_continue "$@" ;;
     kill|matar)          shift; cmd_kill "$@" ;;
     forget|olvidar)      shift; cmd_forget "$@" ;;
