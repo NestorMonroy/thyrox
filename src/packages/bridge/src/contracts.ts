@@ -1,5 +1,6 @@
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { UUID } from 'crypto'
+import type { SDKControlResponse } from '@thyrox/headless-sdk/controlTypes.js'
 
 export type BridgeState = 'ready' | 'connected' | 'reconnecting' | 'failed'
 
@@ -29,7 +30,9 @@ export type ReplBridgeHandle = {
 
 export type InitBridgeOptions = {
   onInboundMessage?: (message: unknown) => void | Promise<void>
-  onPermissionResponse?: (response: unknown) => void
+  // El puente sólo entrega respuestas que ya pasaron `isSDKControlResponse`
+  // (`bridgeMessaging.ts`): es su salida, y se tipa como las demás.
+  onPermissionResponse?: (response: SDKControlResponse) => void
   onInterrupt?: () => void
   onSetModel?: (model: string | undefined) => void
   onSetMaxThinkingTokens?: (maxTokens: number | null) => void

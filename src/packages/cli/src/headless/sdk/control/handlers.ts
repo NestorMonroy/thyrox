@@ -467,7 +467,7 @@ export function handleChannelEnable(
         value: wrapChannelMessage(serverName, content, meta),
         priority: 'next',
         isMeta: true,
-        origin: { kind: 'channel', server: serverName } as unknown as string,
+        origin: { kind: 'channel', server: serverName },
         skipSlashCommands: true,
       })
     },
@@ -543,7 +543,7 @@ export function reregisterChannelHandlerAfterReconnect(
         value: wrapChannelMessage(connection.name, content, meta),
         priority: 'next',
         isMeta: true,
-        origin: { kind: 'channel', server: connection.name } as unknown as string,
+        origin: { kind: 'channel', server: connection.name },
         skipSlashCommands: true,
       })
     },

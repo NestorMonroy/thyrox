@@ -2,15 +2,17 @@
  * Handles unexpected permission responses by looking up the unresolved
  * tool call in the transcript and enqueuing it for execution.
  *
- * Pure function with all I/O injected via `deps`. Types are structural
- * so the package doesn't need to import SDKControlResponse /
- * PermissionResult from root.
+ * Pure function with all I/O injected via `deps`. El resultado y el mensaje
+ * usan los tipos reales (`PermissionResult` del SDK, `AssistantMessage` del
+ * agente): las copias estructurales de antes no cabían en la cola.
  *
  * Returns true if a permission was enqueued, false otherwise.
  *
  * Moved from src/cli/print.ts per V7 §10.2. The `setAppState` parameter
  * present in the original version was dead code and was dropped here.
  */
+import type { AssistantMessage } from '@thyrox/agent/messageShapes.js'
+import type { PermissionResult } from '@thyrox/headless-sdk/agentSdkTypes.js'
 
 export type OrphanedPermissionMessage = {
   response?: {
@@ -20,13 +22,15 @@ export type OrphanedPermissionMessage = {
   }
 }
 
-export type OrphanedPermissionResult = {
-  toolUseID?: string
-} & Record<string, unknown>
+// El resultado que el consumidor del SDK devuelve (allow/deny), con el
+// `toolUseID` que ambas variantes declaran. Era una copia estructural suelta
+// que la cola (`QueuedCommand`) no aceptaba.
+export type OrphanedPermissionResult = PermissionResult
 
-export type OrphanedAssistantMessage = {
-  message: { id: string }
-} & Record<string, unknown>
+// El mensaje del transcript con el tool_use sin resolver: la cola lo guarda
+// tal cual (`QueuedCommand.orphanedPermission`), así que es el `AssistantMessage`
+// real y no una copia estructural.
+export type OrphanedAssistantMessage = AssistantMessage
 
 export type OrphanedPermissionDeps = {
   findUnresolvedToolUse: (
@@ -34,7 +38,8 @@ export type OrphanedPermissionDeps = {
   ) => Promise<OrphanedAssistantMessage | null | undefined>
   enqueue: (entry: {
     mode: 'orphaned-permission'
-    value: unknown[]
+    // Siempre vacío: el permiso huérfano no trae texto de usuario.
+    value: []
     orphanedPermission: {
       permissionResult: OrphanedPermissionResult
       assistantMessage: OrphanedAssistantMessage
