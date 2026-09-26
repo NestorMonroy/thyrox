@@ -1,0 +1,4 @@
+afirmar "probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa" "si no" \
+    "$(contiene_texto "$OUT" '^sonda cerrado: [0-9]+ sleep stdin=channel.*sin escritor') $(contiene_texto "$OUT" 'AVISO cerrado')"
+
+OUT=$(WAIT_JOBS_PARALLEL=/no/existe bash "$GUION" probe 2>&1)

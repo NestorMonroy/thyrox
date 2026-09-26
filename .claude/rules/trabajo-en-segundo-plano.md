@@ -470,7 +470,10 @@ y a `db` y `server`, que no llevan ese archivo.
 `wait-jobs wait` sondea en **cada latido** (30 s por defecto) el árbol de
 cada trabajo vivo con `bin/stdin_probe`, repartido con GNU Parallel, y
 escribe por stderr una línea por proceso más un `AVISO` por cada uno que lee
-stdin de un canal: si su productor no escribe ni cierra, espera para siempre.
+stdin de un canal con escritor vivo, o de un socket: si su productor no
+escribe ni cierra, espera para siempre. Una tubería cuyo escritor ya salió
+(cada ítem del pool) da EOF y no se avisa; los escritores los cuenta la
+propia sonda, en su sexta columna.
 A mano, sin esperar:
 
 ```bash

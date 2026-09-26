@@ -41,8 +41,14 @@ L1=$(fixture_file); L2=$(fixture_file)
 nohup bash -c "sleep 30 | cat" </dev/null >"$L1" 2>&1 & P1=$!; disown $P1
 # `limpio`: todo su árbol con stdin en /dev/null.
 nohup bash -c "sleep 30" </dev/null >"$L2" 2>&1 & P2=$!; disown $P2
-sleep 1
+# `cerrado`: su nieto lee de una tubería cuyo escritor ya salió — la forma de
+# cada ítem del pool (`{ cat plantilla; printf item; } | claude -p`). Leer da
+# EOF, no espera: avisar ahí es una falsa alarma (medido en el paso 163).
+L3=$(fixture_file)
+nohup bash -c "echo hola | { sleep 1; exec sleep 30; }" </dev/null >"$L3" 2>&1 & P3=$!; disown $P3
+sleep 2
 bash "$GUION" register canal "$L1" "$P1" >/dev/null
+bash "$GUION" register cerrado "$L3" "$P3" >/dev/null
 bash "$GUION" register limpio "$L2" "$P2" >/dev/null
 
 OUT=$(bash "$GUION" probe 2>&1)
@@ -53,6 +59,9 @@ afirmar "probe: avisa de quien lee stdin de un canal, nombrando el trabajo" "si"
 afirmar "probe: el trabajo limpio se sondea y no se avisa" "si no" \
     "$(contiene_texto "$OUT" '^sonda limpio: [0-9]+ sleep stdin=devnull') $(contiene_texto "$OUT" 'AVISO limpio')"
 
+afirmar "probe: una tubería sin escritor vivo no es un cuelgue: se sondea y no se avisa" "si no" \
+    "$(contiene_texto "$OUT" '^sonda cerrado: [0-9]+ sleep stdin=channel.*sin escritor') $(contiene_texto "$OUT" 'AVISO cerrado')"
+
 OUT=$(WAIT_JOBS_PARALLEL=/no/existe bash "$GUION" probe 2>&1)
 afirmar "probe sin GNU Parallel: sondea en serie y lo dice" "si si" \
     "$(contiene_texto "$OUT" 'AVISO canal') $(contiene_texto "$OUT" 'sin GNU Parallel')"
@@ -62,7 +71,7 @@ WAIT_JOBS_INTERVAL=1 bash "$GUION" wait --only canal --timeout 3 --heartbeat 1 >
 afirmar "wait: el latido sondea al vivo sin que se lo pidan" "si" \
     "$(contiene_texto "$(cat "$ERR")" '^  AVISO canal: pid [0-9]+ \(cat\)')"
 
-pkill -P "$P1" 2>/dev/null; kill "$P1" "$P2" 2>/dev/null; pkill -P "$P2" 2>/dev/null
+for p in "$P1" "$P2" "$P3"; do pkill -P "$p" 2>/dev/null; kill "$p" 2>/dev/null; done
 echo
 printf '%d ok, %d fallos\n' "$OK" "$FALLO"
 exit $(( FALLO > 0 ))

@@ -1,0 +1,1 @@
+OUT=$(WAIT_JOBS_PARALLEL=/no/existe bash "$GUION" probe 2>&1)

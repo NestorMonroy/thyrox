@@ -1,0 +1,16 @@
+def fake_fd(proc: Path, pid: int, fd: int, target: str, flags: str) -> None:
+    """Un descriptor de otro proceso, con su modo de acceso en ``fdinfo``:
+    los dos bits bajos de ``flags`` (octal) son 0 lectura, 1 escritura, 2 ambas."""
+    (proc / str(pid) / "fd").mkdir(parents=True, exist_ok=True)
+    (proc / str(pid) / "fdinfo").mkdir(parents=True, exist_ok=True)
+    os.symlink(target, proc / str(pid) / "fd" / str(fd))
+    (proc / str(pid) / "fdinfo" / str(fd)).write_text(f"pos:\t0\nflags:\t{flags}\nmnt_id:\t15\n")
+
+
+with tempfile.TemporaryDirectory() as tmp:
+    proc = Path(tmp)
+    fake_process(proc, 101, "socket:[1452327]")
+    fake_process(proc, 102, "pipe:[99]", state="R")
+    fake_process(proc, 106, "pipe:[77]")
+    fake_fd(proc, 201, 1, "pipe:[99]", "01")        # escribe en la tubería de 102
+    fake_fd(proc, 202, 3, "pipe:[99]", "0100000")   # la tiene abierta sólo para leer

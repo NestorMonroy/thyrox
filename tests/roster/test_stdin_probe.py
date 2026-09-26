@@ -47,10 +47,22 @@ def fake_process(proc: Path, pid: int, stdin: str, state: str = "S", ticks: tupl
     (proc / str(pid) / "stat").write_text(" ".join(fields) + "\n")
 
 
+def fake_fd(proc: Path, pid: int, fd: int, target: str, flags: str) -> None:
+    """Un descriptor de otro proceso, con su modo de acceso en ``fdinfo``:
+    los dos bits bajos de ``flags`` (octal) son 0 lectura, 1 escritura, 2 ambas."""
+    (proc / str(pid) / "fd").mkdir(parents=True, exist_ok=True)
+    (proc / str(pid) / "fdinfo").mkdir(parents=True, exist_ok=True)
+    os.symlink(target, proc / str(pid) / "fd" / str(fd))
+    (proc / str(pid) / "fdinfo" / str(fd)).write_text(f"pos:\t0\nflags:\t{flags}\nmnt_id:\t15\n")
+
+
 with tempfile.TemporaryDirectory() as tmp:
     proc = Path(tmp)
     fake_process(proc, 101, "socket:[1452327]")
     fake_process(proc, 102, "pipe:[99]", state="R")
+    fake_process(proc, 106, "pipe:[77]")
+    fake_fd(proc, 201, 1, "pipe:[99]", "01")        # escribe en la tubería de 102
+    fake_fd(proc, 202, 3, "pipe:[99]", "0100000")   # la tiene abierta sólo para leer
     fake_process(proc, 103, "/dev/null")
     fake_process(proc, 104, "/home/user/a.txt")
     fake_process(proc, 105, "/dev/pts/0")
@@ -63,8 +75,16 @@ with tempfile.TemporaryDirectory() as tmp:
     check("un archivo regular tampoco", "file", probe(104).kind)
     check("una terminal se nombra aparte", "tty", probe(105).kind)
     check("un pid que no está: ilegible, no un stdin vacío", ("unreadable", None), (probe(999).kind, probe(999).stdin))
-    check("la línea es TSV: pid, destino, clase, estado, cpu",
-          "101\tsocket:[1452327]\tchannel\tS\t0.10", probe(101).tsv())
+    check("la línea es TSV: pid, destino, clase, estado, cpu, escritores",
+          "101\tsocket:[1452327]\tchannel\tS\t0.10\t-", probe(101).tsv())
+    # Lo que separa la espera eterna del EOF: si alguien más tiene la tubería
+    # abierta para escribir. Sin escritor, leer da EOF (cada ítem del pool:
+    # `{ cat plantilla; printf item; } | claude -p`); con uno vivo que no
+    # escribe, espera para siempre (`sleep | cat`).
+    check("una tubería cuenta a quien la tiene para escribir, no a quien sólo la lee", 1, probe(102).writers)
+    check("una tubería sin escritor vivo: 0, leer da EOF", 0, probe(106).writers)
+    check("un socket o un no-canal no se miden: ninguno, no cero", (None, None),
+          (probe(101).writers, probe(103).writers))
 
     code = sp.main(["--proc-root", str(proc), "abc"])
     check("un pid no numérico rehúsa con exit 2", 2, code)

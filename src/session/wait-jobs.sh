@@ -296,11 +296,15 @@ probe_jobs() {  # probe_jobs <archivo.job>...
         else
             rows=$(for p in $pids; do bash "$probe" "$p" 2>/dev/null; done)
         fi
-        while IFS=$'\t' read -r p target kind state cpu; do
+        while IFS=$'\t' read -r p target kind state cpu writers; do
             [[ -n "$p" ]] || continue
             comm=$(cat "/proc/$p/comm" 2>/dev/null || echo '?')
-            echo "sonda $label: $p $comm stdin=$kind($target) estado=$state cpu=${cpu}s" >&2
-            [[ "$kind" == channel ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
+            # Los escritores los mide la sonda, no este guion: 0 es una
+            # tubería cuyo escritor ya salió (leer da EOF); `-`, un socket,
+            # cuyo otro extremo no se ve.
+            local wr="escritores=${writers:--}"; [[ "$writers" == 0 ]] && wr="sin escritor"
+            echo "sonda $label: $p $comm stdin=$kind($target) $wr estado=$state cpu=${cpu}s" >&2
+            [[ "$kind" == channel && "$writers" != 0 ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
                 "— si su productor no escribe ni cierra, espera para siempre" >&2
         done <<< "$rows"
     done
