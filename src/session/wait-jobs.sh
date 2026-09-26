@@ -451,6 +451,14 @@ cmd_wait() {
         fi
         tail -10 "$log" 2>/dev/null | sed 's/^/       | /'
         [[ -s "$log" ]] || echo "       | (vacío — no emitió nada)"
+        # La memoria pico que el lanzador midio con GNU Time, junto al
+        # veredicto: es la cifra con la que se fija `--memfree`, y sin
+        # publicarla aqui nadie la lee. Sin `.time` no se dice nada — el
+        # lanzador ya declaro al lanzar que no media.
+        if [[ -s "$log.time" ]]; then
+            gawk 'NF && $1 ~ /^[0-9]+$/ { m = $1; w = $2 }
+                  END { if (m != "") printf "       memoria pico: %d KB (%.0f MB) · pared %ss\n", m, m / 1024, w }' "$log.time"
+        fi
         rm -f "$f"
     done
     return $(( had_bail ? 2 : 0 ))

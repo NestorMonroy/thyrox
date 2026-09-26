@@ -97,12 +97,18 @@ def _system(bench: Path, batches: list[dict]) -> dict:
 def _memory(bench: Path) -> dict:
     """La memoria pico de los ítems, de los ``<n>.time`` que ``headless-pool``
     escribe con GNU Time. Sin ninguno, ``measured: 0`` y nada más: una medida
-    ausente no es un cero. Una línea ilegible no cuenta como medida."""
+    ausente no es un cero. Una línea ilegible no cuenta como medida.
+
+    Se lee la ÚLTIMA línea con cifras, no la primera palabra del archivo: sin
+    ``-q``, GNU Time antepone ``Command exited with non-zero status N`` a la
+    medida de un ítem que falló, y ése —un ``claude -p`` que agotó su plazo—
+    suele ser el más pesado."""
     peaks = []
     for path in (bench / "outputs").glob("*.time"):
-        first = path.read_text(errors="ignore").split()
-        if first and first[0].isdigit():
-            peaks.append(int(first[0]))
+        lines = [l.split() for l in path.read_text(errors="ignore").splitlines()]
+        measured = [fields for fields in lines if fields and fields[0].isdigit()]
+        if measured:
+            peaks.append(int(measured[-1][0]))
     if not peaks:
         return {"measured": 0}
     return {"measured": len(peaks), "max": max(peaks), "median": int(statistics.median(peaks))}

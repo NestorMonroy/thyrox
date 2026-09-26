@@ -371,7 +371,23 @@ cmd_start() {
     # fondo NO es lider de grupo, asi que `setsid` no bifurca y hace `exec`
     # directamente. El contrato de pid del que cuelga el ledger se preserva; el
     # control positivo lo mide exigiendo `pgid == pid`.
-    nohup setsid bash -c "$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"" \
+    # GNU Time envuelve el comando INTERIOR y deja `<log>.time` con
+    # «memoria-pico-KB pared-s usuario-s sistema-s»: sin eso, lo que de verdad
+    # pesa en la maquina —la suite, un `tsc` de todo el arbol— no dejaba
+    # cifra y su `--memfree` seguia siendo una estimacion. Va dentro del
+    # `bash -c`, asi que el pid, el `setsid` y el marcador no cambian, y GNU
+    # Time devuelve el codigo del hijo. `-q` quita la linea «Command exited
+    # with non-zero status N» que antepone a la medida de un trabajo fallido.
+    # Sin GNU Time el trabajo corre igual y se declara: una medida ausente no
+    # es un cero.
+    local time_prefix=""
+    source "$_SRC_DIR/lib/toolchain.sh"
+    if thyrox_toolchain_require_gnu_time 2>/dev/null; then
+        time_prefix="$(printf '%q ' "$(thyrox_toolchain_gnu_time_bin)" -q -f '%M %e %U %S' -o "$LOG.time")"
+    else
+        echo "memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)"
+    fi
+    nohup setsid bash -c "${time_prefix}$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"" \
         > "$LOG" 2>&1 &
     local pid=$!
     disown "$pid" 2>/dev/null || true

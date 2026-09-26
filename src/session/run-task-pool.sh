@@ -126,6 +126,16 @@ MEMFREE=0
 # `parse_binary_size` y `mem_available_bytes` viven en `src/lib/memory.sh`,
 # compartidas con `bg.sh --memfree`.
 source "$HERE/../lib/memory.sh"
+source "$HERE/../lib/toolchain.sh"
+# GNU Time mide cada trabajo (memoria pico, pared y CPU a `<log>.time`); la
+# identidad la comprueba la cadena de herramientas, una vez por despacho. Sin
+# el, los trabajos corren igual y el despacho lo declara.
+TIME_BIN=""
+if thyrox_toolchain_require_gnu_time 2>/dev/null; then
+    TIME_BIN="$(thyrox_toolchain_gnu_time_bin)"
+else
+    echo "run-task-pool: sin GNU Time, no se mide la memoria de los trabajos (thyrox_toolchain_require_gnu_time)"
+fi
 
 if [ -n "$MEMFREE_SPEC" ]; then
     # El awk es el que declara `THYROX_TOOLCHAIN_AWK_BIN` —el mismo nombre que
@@ -453,7 +463,10 @@ while :; do
     # los hijos y no deje huerfanos. La nota larga esta en `bg.sh`: con el
     # control de trabajos apagado no bifurca, asi que `$!` sigue siendo el pid
     # que se registra.
-    nohup setsid bash -c 'bash -c "$1"; echo EXIT=$?' _ "$cmd" > "$LOG" 2>&1 &
+    # GNU Time va DENTRO del shell exterior, junto al interior: el `EXIT=` sigue
+    # leyendo el codigo del trabajo, porque GNU Time devuelve el de su hijo.
+    nohup setsid bash -c 'if [ -n "$3" ]; then "$3" -q -f "%M %e %U %S" -o "$2" bash -c "$1"; else bash -c "$1"; fi; echo EXIT=$?' \
+        _ "$cmd" "$LOG.time" "$TIME_BIN" > "$LOG" 2>&1 &
     PID=$!
     disown "$PID" 2>/dev/null || true
     ALIVE+=("$PID"); ALIVE_INDEX+=("$idx"); ALIVE_LABEL+=("$LABEL")
