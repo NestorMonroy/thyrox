@@ -236,5 +236,60 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("con razón declarada se guarda, y la razón queda en el patrón", (0, ["proven"]),
                  (accepted, (row.get("overlap_accepted") or {}).get("with")))
 
+# --- congelar una entrada (L06): lo validado no lo cambia un proceso automático
+def raises(call) -> bool:
+    try:
+        call()
+    except ValueError:
+        return True
+    return False
+
+
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    ts.add_pattern(run, pattern("kept", "TS4: a", "arreglo validado"))
+    ts.add_pattern(run, pattern("loose", "TS4: b", "arreglo suelto"))
+    assert_equal("congelar exige una razón", True, raises(lambda: ts.freeze(run, "kept", " ")))
+    ts.freeze(run, "kept", "validado en 12 aplicaciones")
+    assert_equal("reescribir el contenido de una entrada congelada rehúsa", True,
+                 raises(lambda: ts.add_pattern(run, pattern("kept", "TS4: a", "otro arreglo"))))
+    assert_equal("reescribir lo mismo no la toca", 1, ts.add_pattern(run, pattern("kept", "TS4: a", "arreglo validado"))["version"])
+    assert_equal("un alias no es cambio de contenido: se admite", ["alias"],
+                 ts.add_pattern(run, pattern("alias", "TS4: a", "otro"))["aliases"])
+    assert_equal("cerrarla a mano rehúsa: hay que descongelar", True,
+                 raises(lambda: ts.close_pattern(run, "kept", "ya no")))
+    (run / "ledger.jsonl").write_text("".join(json.dumps({"proposal_id": p, "outcome": "rejected"}) + "\n"
+                                              for p in ["pattern:kept"] * 4 + ["pattern:loose"] * 4))
+    assert_equal("el descarte automático la salta y descarta la suelta", ["loose"],
+                 ts.evict(run, min_trials=3, max_mean=0.25, reason="poca confianza"))
+    ts.add_pattern(run, pattern("twin", "TS4: c", "x"))
+    ts.add_pattern(run, pattern("frozen-twin", "TS4: d", "y"))
+    patterns = ts.load_patterns(run)
+    patterns["frozen-twin"]["signal"] = "TS4: c"
+    ts._save(run, patterns)
+    ts.freeze(run, "frozen-twin", "la buena")
+    ts.merge_duplicates(run, reason="barrido")
+    rows = ts.load_patterns(run)
+    assert_equal("al fundir duplicados se conserva la congelada", ("closed", None),
+                 (rows["twin"].get("status"), rows["frozen-twin"].get("status")))
+    ts.unfreeze(run, "kept", "se revisa")
+    ts.close_pattern(run, "kept", "ya no")
+    rows = ts.load_patterns(run)
+    assert_equal("descongelada se cierra, y las dos decisiones quedan registradas", ("closed", ["freeze", "unfreeze"]),
+                 (rows["kept"]["status"], [e["action"] for e in rows["kept"]["freeze_log"]]))
+
+with tempfile.TemporaryDirectory() as tmp:
+    # Aislado: aquí nada la cierra antes, así que sólo la congelación la salva.
+    run = Path(tmp)
+    ts.add_pattern(run, pattern("guarded", "TS5: a", "validado"))
+    ts.freeze(run, "guarded", "validado")
+    (run / "ledger.jsonl").write_text("".join(json.dumps({"proposal_id": "pattern:guarded", "outcome": "rejected"})
+                                              + "\n" for _ in range(4)))
+    assert_equal("el descarte automático no toca una entrada congelada", [],
+                 ts.evict(run, min_trials=3, max_mean=0.25, reason="poca confianza"))
+    with contextlib.redirect_stdout(io.StringIO()):
+        code = ts.main(["unfreeze", "--run", str(run), "--name", "guarded", "--reason", "por CLI"])
+    assert_equal("la CLI descongela con su razón", (0, None), (code, ts.load_patterns(run)["guarded"]["frozen"]))
+
 print(f"test_pattern_memory: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

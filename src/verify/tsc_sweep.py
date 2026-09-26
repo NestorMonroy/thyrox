@@ -113,6 +113,10 @@ def add_pattern(run: Path, pattern: dict) -> dict:
             _save(run, patterns)
             return other
     previous = patterns.get(pattern["name"])
+    if previous and previous.get("frozen") and any(
+            previous.get(key, "") != pattern.get(key, previous.get(key, "")) for key in VERSIONED):
+        raise ValueError(f"{pattern['name']!r} está congelado ({previous['frozen']['reason']}): "
+                         "descongélalo antes de cambiar su contenido")
     row = {"include": "", "exclude": [], "site": "", "replace": "", **pattern,
            "applied": previous.get("applied", []) if previous else []}
     # Versión (L07) y reversión (L09): sobrescribir el contenido guarda el
@@ -121,6 +125,10 @@ def add_pattern(run: Path, pattern: dict) -> dict:
         row["version"] = previous.get("version", 1)
         row["history"] = previous.get("history", [])
         row["aliases"] = previous.get("aliases", [])
+        # Congelar no es contenido: sobrevive a toda reescritura.
+        for key in ("frozen", "freeze_log"):
+            if previous.get(key) is not None:
+                row[key] = previous[key]
         if any(previous.get(key, "") != row.get(key, "") for key in VERSIONED):
             row["history"] = [*row["history"], {**{key: previous.get(key, "") for key in VERSIONED},
                                                 "version": row["version"],
@@ -202,6 +210,30 @@ def exclude_files(run: Path, name: str, files: list[str], reason: str) -> dict:
     return row
 
 
+def _set_frozen(run: Path, name: str, reason: str, frozen: bool) -> dict:
+    reason = _require_reason(reason)
+    patterns = load_patterns(run)
+    if name not in patterns:
+        raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
+    row = patterns[name]
+    row["frozen"] = {"reason": reason, "version": row.get("version", 1)} if frozen else None
+    row["freeze_log"] = [*row.get("freeze_log", []),
+                         {"action": "freeze" if frozen else "unfreeze", "reason": reason}]
+    _save(run, patterns)
+    return row
+
+
+def freeze(run: Path, name: str, reason: str) -> dict:
+    """Congela una entrada validada (L06): ni una reescritura de contenido ni
+    un cierre la cambian, y los procesos automáticos —descarte, amplitud,
+    fusión de duplicados— la saltan. Sólo `unfreeze`, con razón, la libera."""
+    return _set_frozen(run, name, reason, True)
+
+
+def unfreeze(run: Path, name: str, reason: str) -> dict:
+    return _set_frozen(run, name, reason, False)
+
+
 def close_pattern(run: Path, name: str, reason: str) -> dict:
     """Cierra un patrón: su señal ya no pide aplicación (agotado, o demasiado
     amplia para seguir usándola como gate)."""
@@ -209,6 +241,8 @@ def close_pattern(run: Path, name: str, reason: str) -> dict:
     patterns = load_patterns(run)
     if name not in patterns:
         raise ValueError(f"no hay patrón {name!r} en {run / PATTERNS}")
+    if patterns[name].get("frozen"):
+        raise ValueError(f"{name!r} está congelado: descongélalo antes de cerrarlo")
     patterns[name].update(status="closed", closed_reason=reason)
     _save(run, patterns)
     return patterns[name]
@@ -223,7 +257,8 @@ def merge_duplicates(run: Path, *, reason: str) -> list[str]:
     patterns = load_patterns(run)
     kept: dict[tuple[str, str], dict] = {}
     merged = []
-    for row in patterns.values():
+    # La congelada va primero: si tiene duplicados, es ella la que se conserva.
+    for row in sorted(patterns.values(), key=lambda r: not r.get("frozen")):
         if row.get("status") == "closed":
             continue
         key = (row["signal"], row.get("include") or "")
@@ -312,7 +347,8 @@ def evict(run: Path, *, min_trials: int, max_mean: float, reason: str) -> list[s
     evicted = []
     for name, entry in sorted(pattern_confidence(run).items()):
         trials = entry["accepted"] + entry["rejected"]
-        if patterns[name].get("status") == "closed" or trials < min_trials or entry["mean"] > max_mean:
+        if (patterns[name].get("status") == "closed" or patterns[name].get("frozen")
+                or trials < min_trials or entry["mean"] > max_mean):
             continue
         close_pattern(run, name, f"descartado por confianza: {entry['accepted']} de {trials} "
                                  f"aplicaciones aceptadas (media {entry['mean']:.2f}) — {reason}")
@@ -341,7 +377,7 @@ def undiscriminating(run: Path, log_lines: list[str]) -> dict[str, dict[str, int
     propia causa (no hay nada que rechazar), y a una señal precisa que el log
     todavía no ha podido desmentir; las dos quedan abiertas.
     """
-    rows = [row for row in load_patterns(run).values() if row.get("status") != "closed"]
+    rows = [row for row in load_patterns(run).values() if row.get("status") != "closed" and not row.get("frozen")]
     diagnostics = [(m.group("file"), m.group("code"), diagnostic_key(m))
                    for line in log_lines if (m := DIAGNOSTIC.match(line))]
     broad: dict[str, dict[str, int]] = {}
@@ -485,6 +521,12 @@ def main(argv: list[str] | None = None) -> int:
     close_p.add_argument("--run", type=Path, required=True)
     close_p.add_argument("--name", required=True)
     close_p.add_argument("--reason", required=True)
+    for command, text in (("freeze", "congela una entrada validada: lo automático no la cambia (L06)"),
+                          ("unfreeze", "descongela una entrada, con su razón")):
+        frz_p = sub.add_parser(command, help=text)
+        frz_p.add_argument("--run", type=Path, required=True)
+        frz_p.add_argument("--name", required=True)
+        frz_p.add_argument("--reason", required=True)
     broad_p = sub.add_parser("close-broad",
                              help="cierra los patrones cuya señal acepta toda la población de su código")
     broad_p.add_argument("--run", type=Path, required=True)
@@ -562,6 +604,9 @@ def main(argv: list[str] | None = None) -> int:
             for name, counts in sorted(closed.items()):
                 print(json.dumps({"name": name, **counts}, ensure_ascii=False))
             print(f"close-broad: {len(closed)} cerrado(s) de {evaluated} evaluado(s)")
+        elif args.command in ("freeze", "unfreeze"):
+            action = freeze if args.command == "freeze" else unfreeze
+            print(json.dumps(action(args.run, args.name, args.reason), ensure_ascii=False))
         else:
             print(json.dumps(close_pattern(args.run, args.name, args.reason), ensure_ascii=False))
     except (OSError, ValueError, KeyError, re.error, json.JSONDecodeError,
