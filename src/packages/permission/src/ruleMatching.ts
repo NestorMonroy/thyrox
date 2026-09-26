@@ -40,6 +40,7 @@ import {
   safeResolvePath,
 } from '@thyrox/storage/fsOperations.js'
 import { getPermissionHostBindings } from './host.js'
+import { foldPathCase } from './pathCase.js'
 import { getAllowRules, getAskRules, getDenyRules } from './permissions.js'
 import type { ToolPermissionContext } from './permissions.js'
 import type {
@@ -150,10 +151,7 @@ function logWarning(message: string): void {
 
 // ---- Primitivas de ruta ----
 
-/** Pliegue de mayúsculas para comparar rutas (≙ `_o`). */
-export function foldPathCase(path: string): string {
-  return path.toLowerCase().replace(/ı/g, 'i').replace(/ſ/g, 's')
-}
+export { foldPathCase }
 
 function toPosixOnWindows(path: string): string {
   return path.replace(/\\/g, '/')
