@@ -1,0 +1,1 @@
+{"route": "shared", "model": "claude-sonnet-5", "scaffold": "/home/user/thyrox/src/verify/prompts/shared-type.md", "scaffold_sha256": "88ad1674518d03d4d7314de726e5c5e8ba90ac0cc7eb2b5e0d94bb3c7b4a7add", "verifier": ["bash", "-c", "bunx tsc --noEmit -p tsconfig.json"], "policy": {"batch": 1, "cache_ttl": "5m", "net": true}, "setup_id": "132d888730c60361"}
