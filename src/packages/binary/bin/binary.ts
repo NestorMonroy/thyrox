@@ -7,7 +7,9 @@
  *   extract [--out R]    escribe el corpus en <R>/<version>/ con MANIFEST
  *   graph [--json]       grafo de imports entre modulos
  *   freshness [--root R] compara el corpus con el ejecutable vivo
- *   reflow <mod> [--out] reformatea un modulo para que sea citable
+ *   reflow <mod> [--out F] [--root R]
+ *                        reformatea un modulo para que sea citable; con
+ *                        --root lo lee del corpus y no del ejecutable vivo
  *   symbol <chunk> <nombre>... [--root R]
  *                        definiciones completas de cada nombre, por arbol
  *                        sintactico, siguiendo import/export entre chunks
@@ -97,12 +99,21 @@ if (orden === 'info') {
   console.log(f.reason)
   process.exit(f.stale ? 1 : 0)
 } else if (orden === 'reflow') {
-  const { payload, tabla } = abrir(argv)
   const nombre = argv[1]
   if (!nombre || nombre.startsWith('--')) guard('falta el nombre del modulo (ej. chunk-vw215j9f.js)')
-  const e = tabla.entries.find(x => x.name === BUNFS_PREFIX + nombre || x.name.endsWith('/' + nombre))
-  if (!e) guard(`la tabla no declara el modulo ${nombre}`)
-  const src = payload.subarray(e.offset, e.offset + e.length).toString('utf8')
+  // Con `--root`, el módulo sale del corpus versionado —como en `symbol`—;
+  // sin él, del ejecutable vivo, cuyos chunks llevan otros nombres.
+  const raiz = opcion(argv, '--root', '')
+  let src: string
+  if (raiz) {
+    if (!existsSync(`${raiz}/${nombre}`)) guard(`no existe ${raiz}/${nombre}`)
+    src = readFileSync(`${raiz}/${nombre}`, 'utf8')
+  } else {
+    const { payload, tabla } = abrir(argv)
+    const e = tabla.entries.find(x => x.name === BUNFS_PREFIX + nombre || x.name.endsWith('/' + nombre))
+    if (!e) guard(`la tabla no declara el modulo ${nombre}`)
+    src = payload.subarray(e.offset, e.offset + e.length).toString('utf8')
+  }
   const salida = reflow(src)
   const destino = opcion(argv, '--out', '')
   const linea = (s: string) => s.split('\n')

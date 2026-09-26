@@ -1,8 +1,21 @@
-Record the lock extraction from 2.1.282
+Port the executable's lock for shared state
 
-bin/binary symbol resolved ci, dIo and vm (3 of 3) in
-chunk-bzev8hcq.js: the executable's lock is proper-lockfile, an
-atomic mkdir plus an mtime heartbeat, with staleness decided by the
-heartbeat and not by a pid. callers-ci.txt lists what the executable
-protects with it; both are the source for porting a shared-state
-lock into thyrox.
+Pool workers write only their own files, but setups.jsonl, a
+template's history and a step's commit and push are shared, and
+nothing kept two writers apart: step_setup.register reads, checks and
+appends with no lock.
+
+shared_lock.py ports proper-lockfile as packaged in 2.1.282
+(chunk-bzev8hcq.js, extracted to the bench with bin/binary): an atomic
+mkdir of <file>.lock, an mtime heartbeat, a stale threshold, one steal
+attempt, exponential retries and a compromised warning on release.
+Two declared divergences: the lock carries owner.json, and a stale
+lock whose owner is alive on this host is not stolen but refused with
+its stdin_probe.
+
+bin/binary reflow gains --root, like symbol, so a module of the
+versioned corpus can be reflowed; it only read the live executable.
+
+Annulment: without the live-owner guard, the heartbeat or an exclusive
+mkdir, exactly their cases fail; without mkdir exclusivity six workers
+that must count 150 leave 68.
