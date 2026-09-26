@@ -75,5 +75,33 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("register devuelve el id y no duplica", (first["setup_id"], 1), (one, len(lines)))
     assert_equal("el registro guardado es el mismo", first, json.loads(lines[0]))
 
+# --- optimizar los scaffolds desde el ledger (L02) -----------------------------
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    scaffold_a, scaffold_b = run / "a.md", run / "b.md"
+    scaffold_a.write_text("plantilla A")
+    scaffold_b.write_text("plantilla B")
+    a = ss.setup_record(route="local", model="claude-sonnet-5", scaffold=scaffold_a, verifier=["tsc"], policy={})
+    b = ss.setup_record(route="local", model="claude-sonnet-5", scaffold=scaffold_b, verifier=["tsc"], policy={})
+    ss.register(run, a)
+    ss.register(run, b)
+    rows = [(a, "accepted", [])] * 3 + [(a, "rejected", ["src/x.ts(1,1): error TS2322: y"])] \
+        + [(b, "accepted", [])] + [(b, "rejected", ["src/x.ts(1,1): error TS2345: z"])] * 3 \
+        + [(None, "accepted", [])] * 5
+    (run / "ledger.jsonl").write_text("".join(json.dumps(
+        {"proposal_id": f"p{i}", "outcome": o, "new_diagnostics": d, **({"setup_id": s["setup_id"]} if s else {})})
+        + "\n" for i, (s, o, d) in enumerate(rows)))
+    scores = ss.scaffold_scores(run)
+    assert_equal("por configuración: intentos y media de Laplace", (4, 0.6667, 4, 0.3333),
+                 (scores[a["setup_id"]]["trials"], scores[a["setup_id"]]["mean"],
+                  scores[b["setup_id"]]["trials"], scores[b["setup_id"]]["mean"]))
+    assert_equal("los códigos que introducen los rechazos, material para revisar el scaffold", {"TS2345": 3},
+                 scores[b["setup_id"]]["rejection_codes"])
+    assert_equal("las filas sin configuración se cuentan aparte, no se descartan", 5,
+                 scores[None]["trials"])
+    assert_equal("la mejor configuración de la ruta, entre las que tienen evidencia", a["setup_id"],
+                 ss.best_setup(run, "local", min_trials=4))
+    assert_equal("sin evidencia suficiente no se elige ninguna", None, ss.best_setup(run, "local", min_trials=5))
+
 print(f"test_step_setup: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

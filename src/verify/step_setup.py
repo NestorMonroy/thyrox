@@ -19,8 +19,10 @@ fija; un cambio ahí no cambia el id.
 """
 from __future__ import annotations
 
+import collections
 import hashlib
 import json
+import re
 from pathlib import Path
 
 SETUPS = "setups.jsonl"
@@ -49,3 +51,53 @@ def register(run: Path, record: dict) -> str:
         with path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, ensure_ascii=False) + "\n")
     return record["setup_id"]
+
+
+def _setups(run: Path) -> dict[str, dict]:
+    path = run / SETUPS
+    rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()] if path.exists() else []
+    return {row["setup_id"]: row for row in rows}
+
+
+def scaffold_scores(run: Path, ledger: str = "ledger.jsonl") -> dict[str | None, dict]:
+    """Cómo rindió cada configuración de paso (L02, optimizar el scaffold con
+    sus trayectorias): intentos juzgados, media de Laplace de aceptación y
+    los códigos TS que introducen sus rechazos —el material concreto para
+    revisar la plantilla de esa ruta—. Las filas sin ``setup_id`` (anteriores
+    a que el ledger lo guardara) se agrupan bajo ``None``, no se descartan.
+
+    Ciega a: lo neutro (``partial``, ``revealed``) y a la diferencia entre
+    dos configuraciones que sólo cambian en algo que el registro no guarda."""
+    setups = _setups(run)
+    path = run / ledger
+    scores: dict[str | None, dict] = {}
+    for line in path.read_text().splitlines() if path.exists() else []:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        outcome = row.get("outcome", "")
+        if not outcome.startswith(("accepted", "rejected")):
+            continue
+        setup_id = row.get("setup_id")
+        entry = scores.setdefault(setup_id, {"route": (setups.get(setup_id) or {}).get("route"),
+                                             "scaffold": (setups.get(setup_id) or {}).get("scaffold"),
+                                             "accepted": 0, "rejected": 0, "codes": collections.Counter()})
+        if outcome.startswith("accepted"):
+            entry["accepted"] += 1
+        else:
+            entry["rejected"] += 1
+            entry["codes"].update(m for d in row.get("new_diagnostics") or [] for m in re.findall(r"TS\d+", d)[:1])
+    for entry in scores.values():
+        entry["trials"] = entry["accepted"] + entry["rejected"]
+        entry["mean"] = round((entry["accepted"] + 1) / (entry["trials"] + 2), 4)
+        entry["rejection_codes"] = dict(entry.pop("codes").most_common())
+    return scores
+
+
+def best_setup(run: Path, route: str, *, min_trials: int) -> str | None:
+    """La configuración de ``route`` con mejor media entre las que tienen al
+    menos ``min_trials`` intentos juzgados; ``None`` si ninguna tiene
+    evidencia suficiente: con pocos intentos no se elige."""
+    candidates = [(entry["mean"], setup_id) for setup_id, entry in scaffold_scores(run).items()
+                  if setup_id and entry["route"] == route and entry["trials"] >= min_trials]
+    return max(candidates)[1] if candidates else None
