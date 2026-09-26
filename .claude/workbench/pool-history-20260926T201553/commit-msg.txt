@@ -1,0 +1,22 @@
+Move the measured cycle into headless-pool
+
+The run-measure-adjust cycle lived only in tsc_cycle.py, so anyone
+calling bin/headless-pool directly ran without a decided cache TTL
+and with a fixed --memfree 3G, while the measured item peak was
+251-266 MB.
+
+pool_history.py keeps one history per prompt template. Each run
+measured with GNU Time appends a row (items, max wall, peak RSS); the
+next run derives what nobody declared: the TTL through
+choose_cache_ttl on the max wall, and --memfree as peak x 2 plus
+HEADLESS_POOL_MEMFREE_RESERVE, the memory of a neighbour running
+beside the pool. Declared values, option or environment, always win;
+with no history nothing is invented and the output says so.
+
+tsc_cycle no longer fixes --memfree 3G: the item part comes from the
+history and it declares only its neighbour, the full tsc, as the
+reserve. The three pool keys are declared in .env.example.
+
+Annulment: dropping record, letting history override declared values,
+reading the first row, reading the first .time line and dropping the
+reserve sum each fail exactly their dependent assertions.

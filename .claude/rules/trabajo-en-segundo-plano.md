@@ -82,6 +82,24 @@ ocupa** la anchura del tool `Agent` —que rechaza el lanzamiento N+1— y su
 salida es por item, no un resumen. Frente al proceso: sí paga tokens, así que
 sólo rinde cuando cada item exige juicio.
 
+**El ciclo medido vive en el pool, no en quien lo invoca.** Con GNU Time,
+cada ejecución deja su fila en el historial de la plantilla
+(`src/session/pool_history.py`, `bin/pool_history`), y la siguiente deriva lo
+que nadie declaró: el TTL con `choose_cache_ttl` sobre la pared máxima de un
+ítem —sus tres ramas: ≤ 5 min → `5m`, hasta 1 h → `1h`, más → `5m`— y
+`--memfree` como la memoria pico × 2 más `HEADLESS_POOL_MEMFREE_RESERVE`, la
+de un vecino que corre al lado. Lo declarado gana siempre; sin historial no
+se inventa, y la salida lo dice (`historial: sin ejecución previa…`). El
+`stdin_probe` lo corre `wait-jobs wait` sobre el árbol del trabajo, así que el
+pool se lanza con `thyrox-bg` y se recoge con la barrera. Antes vivía sólo en
+`tsc_cycle.py`, que además fijaba `--memfree 3G`: quien llamaba al pool
+directamente quedaba fuera del ciclo sin saberlo.
+
+`--memfree` es memoria del **sistema**. La VRAM es otro recurso y aquí no se
+mide: `claude -p` es un cliente, el modelo no corre en la GPU local, y en este
+contenedor no hay GPU (`nvidia-smi` ausente, sin `/dev/nvidia*`). Medirla
+tendría sentido sólo si el pool ejecutara trabajo local con CUDA.
+
 **El discriminador es distributivo, no numérico.** «Para cada una de las 365
 notas, extrae sus conceptos» es esta forma; «sobre los 22 archivos, decide
 cuáles son divergencia» es un juicio **conjunto** sobre el lote, y ése es de

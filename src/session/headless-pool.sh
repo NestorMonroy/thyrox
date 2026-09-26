@@ -44,6 +44,14 @@
 # corriendo junto a un `tsc` completo (2.0 GB) en el arbol de medicion
 # (`pool_pipeline.py`), la anchura sola no protege a ninguno de los dos.
 #
+# El historial (`pool_history.py`, uno por plantilla bajo
+# HEADLESS_POOL_HISTORY_DIR o el caché del repo): cada ejecución medida con
+# GNU Time deja una fila, y la siguiente deriva de ella lo que nadie declaró —
+# el TTL con `choose_cache_ttl` sobre la pared máxima, y `--memfree` como la
+# memoria pico × 2 más HEADLESS_POOL_MEMFREE_RESERVE (la de un vecino que corre
+# al lado). Lo declarado —opción o entorno— gana siempre; sin historial no se
+# inventa nada, y la salida lo dice.
+#
 # El prompt de cada item es la plantilla seguida de `Item: <linea>`. Por item
 # escribe `<out>/<n>.stream.jsonl` (una linea por evento de `--output-format
 # stream-json`, con el uso de cada peticion), `<n>.json` (su linea `result`) y
@@ -88,7 +96,7 @@ while [[ $# -gt 0 ]]; do
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
-        -h|--help) sed -n '2,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
@@ -128,6 +136,35 @@ if [[ -z "$CACHE_TTL" ]]; then
     case "$(printf '%s' "${THYROX_ENABLE_PROMPT_CACHING_1H:-}" | tr '[:upper:]' '[:lower:]')" in
         1|true|yes|on) CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env ;;
     esac
+fi
+
+# El historial de ESTA plantilla (`pool_history.py`): lo que nadie declaró
+# arriba —TTL ni `--memfree`— se deriva de la última ejecución medida. Va
+# después de toda la cadena de TTL, así que lo declarado gana siempre. Sin
+# historial no se inventa nada, y se dice.
+HP_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# El mismo parser de tamaños que `run-task-pool.sh` y `bg.sh`: una cota
+# ilegible no se deja a la interpretación de Parallel.
+source "$HP_HERE/../lib/memory.sh"
+pool_history() { PYTHONPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}" python3 "$HP_HERE/pool_history.py" "$@"; }
+HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"
+# La memoria de un VECINO que corre junto al pool —el `tsc` del pipeline en
+# `tsc_cycle`—, parámetro del consumidor: se suma a la medida del ítem.
+RESERVE_KB=0
+if [[ -n "${HEADLESS_POOL_MEMFREE_RESERVE:-}" ]]; then
+    RESERVE_BYTES="$(parse_binary_size "$HEADLESS_POOL_MEMFREE_RESERVE" 2>/dev/null)" \
+        || rehusa "HEADLESS_POOL_MEMFREE_RESERVE ilegible: '$HEADLESS_POOL_MEMFREE_RESERVE' (ej. 2G, 512M)"
+    RESERVE_KB=$(( RESERVE_BYTES / 1024 ))
+fi
+MEMFREE_WHY=option
+if [[ -z "$CACHE_TTL" || -z "$MEMFREE_SPEC" ]]; then
+    if IFS=$'\t' read -r H_TTL H_MEMFREE H_WHY < <(pool_history derive "$HISTORY" "$MODEL" --reserve-kb "$RESERVE_KB"); then
+        [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
+        [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
+        echo "historial: $H_WHY"
+    else
+        echo "historial: no se pudo derivar (sin catálogo de modelos); corre con lo declarado"
+    fi
 fi
 
 mapfile -t ITEMS < <(gawk 'NF')
@@ -190,11 +227,9 @@ export HP_TIME
 
 MEMFREE_ARGS=()
 if [[ -n "$MEMFREE_SPEC" ]]; then
-    # La cota se valida con el mismo parser que `run-task-pool.sh` y `bg.sh`:
-    # una cota ilegible no se deja a la interpretacion de Parallel.
-    source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../lib/memory.sh"
     parse_binary_size "$MEMFREE_SPEC" >/dev/null 2>&1 || rehusa "--memfree ilegible: '$MEMFREE_SPEC' (ej. 2G, 512M)"
     MEMFREE_ARGS=(--memfree "$MEMFREE_SPEC")
+    echo "memfree: $MEMFREE_SPEC ($MEMFREE_WHY)"
 fi
 
 "$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$OUT/joblog.tsv" \
@@ -210,5 +245,8 @@ gawk -F'\t' '
     END { printf "items=%d ok=%d fallidos=%d\n", total, ok, mal; exit (mal > 0) }
 ' "$OUT/index.tsv" "$OUT/joblog.tsv"
 STATUS=$?
+# La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
+# `.time` y `record` no escribe fila: una medida ausente no es un cero.
+[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" >/dev/null
 [[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
 exit $STATUS

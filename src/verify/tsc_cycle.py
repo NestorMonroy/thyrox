@@ -676,6 +676,12 @@ def step_setup_of(bench: Path, model: str, worktree: Path | list[Path], route: s
                                            "cache_ttl": cache_ttl})
 
 
+#: La memoria que el pool deja al `tsc` completo que el pipeline corre a su
+#: lado: 2.0 GB medidos (cabecera de `headless-pool.sh`). La del ítem ya no se
+#: fija aquí —la deriva el historial del pool—; esto es sólo el vecino.
+TSC_MEMORY_RESERVE = "2G"
+
+
 def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
                     width: int = 8, route: str = "modules", setup_id: str | None = None,
                     cache_ttl: str | None = None) -> list[list[str]]:
@@ -690,8 +696,8 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
     worktrees = worktrees if shared else worktrees[:1]
     prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT, "sweep": SWEEP_PROMPT}.get(route, MODULE_PROMPT)
     unit = "file" if route == "local" else "module"
-    pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
-            f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
+    pool = (f"HEADLESS_POOL_MEMFREE_RESERVE={TSC_MEMORY_RESERVE} bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
+            f" --model {shlex.quote(model)} --width {width} --timeout 900"
             f" --tools Read,Grep,Glob --max-turns 30"
             + (f" --cache-ttl {cache_ttl}" if cache_ttl else "")
             + f" < {shlex.quote(str(items))}")

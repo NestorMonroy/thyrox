@@ -223,6 +223,12 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("el pool es headless-pool con la plantilla de módulos, sobre items.txt", (True, True, True),
                  ("bin/headless-pool" in pool_text, "src/verify/prompts/module-port.md" in pool_text,
                   f"< {base / 'step/items.txt'}" in pool_text))
+    # La cota del pool NO va fija: la memoria del ítem la deriva el historial
+    # del pool, y lo único que `tsc_cycle` sabe y el pool no es su vecino —el
+    # `tsc` completo del pipeline—, que declara como reserva.
+    assert_equal("el pool no fija --memfree: deriva el ítem y recibe la reserva del tsc vecino",
+                 (False, True), ("--memfree" in pool_text,
+                                 f"HEADLESS_POOL_MEMFREE_RESERVE={tc.TSC_MEMORY_RESERVE}" in pool_text))
     assert_equal("el pipeline mide en modo módulo las salidas de ese pool", (True, True),
                  ("--unit module" in pipeline_text, f"--outputs {base / 'step/outputs'}" in pipeline_text))
 

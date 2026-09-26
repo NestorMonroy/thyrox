@@ -50,7 +50,9 @@ chmod +x "$F/claude"
 printf 'Lee y resume.\n' > "$F/prompt.md"
 export HEADLESS_POOL_CLAUDE="$F/claude"
 
-corre() { SALIDA="$(printf '%s\n' "$@" | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
+# Cada caso con un historial propio y vacío, salvo que declare `HIST`: sin eso,
+# el primero dejaría una fila y todos los siguientes derivarían su TTL de ella.
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
 
 # 1 — tres items: exit 0, una salida por item, y el item llega en el prompt.
 rm -rf "$F/out"; corre alfa beta gamma
@@ -173,6 +175,34 @@ check "con GNU time: el fallo del item sigue siendo fallo" "$(printf '%s' "$SALI
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
 check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
 check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "1"
+
+# --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --
+# `HIST` es el mismo en los cuatro casos: el primero no tiene historial, los
+# siguientes leen la fila que dejó. La medida del GNU time falso es fija
+# (12345 KB, 1.50 s): pared de 1.5 s -> turnos seguidos -> 5m; 12345 KB x 2
+# -> 25M hacia arriba.
+HIST="$F/historial-compartido"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "historial vacío: lo declara" "$(printf '%s' "$SALIDA" | gawk '/sin ejecución previa/{n++} END{print n+0}')" "1"
+check "historial vacío: no inventa TTL" "$(thx_de)" "ttl=sin|thx=sin"
+check "la ejecución deja una fila" "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | wc -l)" "1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=5m|thx=5m"
+check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
+check "con historial: --memfree sale de la memoria medida" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 25M \(history\)/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--cache-ttl 1h --memfree 1G" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "lo declarado gana al historial: TTL" "$(thx_de)" "ttl=1h|thx=1h"
+check "lo declarado gana al historial: memfree" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1G \(option\)/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H=1 HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "el entorno gana al historial" "$(thx_de)" "ttl=1h|thx=1h"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+check "la reserva del vecino se suma a lo medido" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1049M \(history\)/{n++} END{print n+0}')" "1"
+check "una plantilla, un solo historial" "$(find "$HIST" -name runs.jsonl | wc -l)" "1"
+unset HIST
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G corre alfa
+check "sin historial, la reserva sola es la cota" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1024M \(history\)/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=mucha corre alfa
+check "reserva ilegible: exit 2" "$CODE" "2"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
