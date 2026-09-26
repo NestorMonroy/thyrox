@@ -1,0 +1,2 @@
+    [[ -z "$monitor" ]] || wait "$monitor"
+    [[ -z "$HP_VRAM_NEED" ]] || bash "$HP_GPU" release --ledger "$HP_VRAM_LEDGER" --owner "$owner"

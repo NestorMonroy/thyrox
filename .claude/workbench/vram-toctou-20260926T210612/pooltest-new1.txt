@@ -1,0 +1,9 @@
+check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"
+# Lo comprometido por OTRO pool cuenta: 1000 libres, y un dueño vivo (este
+# shell, cuyo árbol no usa GPU) ya reservó 900. Sin el registro el ítem vería
+# 1000 >= 800 y arrancaría: es la carrera de comprobar-y-usar entre dos pools.
+printf '{"%s": 900}' "$$" > "$HIST/vram-reservations.json"
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=1000 HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admision: lo reservado por otro pool vivo no se vuelve a dar" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admision: la reserva ajena sigue en el registro" "$(jq -r --arg p "$$" '.[$p]' "$HIST/vram-reservations.json" 2>/dev/null)" "900"
+rm -f "$HIST/vram-reservations.json"

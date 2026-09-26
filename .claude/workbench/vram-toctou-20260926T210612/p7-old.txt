@@ -1,0 +1,1 @@
+    [[ -z "$monitor" ]] || wait "$monitor"

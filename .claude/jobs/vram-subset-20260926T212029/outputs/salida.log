@@ -1,0 +1,26 @@
+== tests/session/test_gpu_monitor.py
+
+test_gpu_monitor: 39 ok, 0 falla(s)
+== tests/session/test_pool_history.py
+
+test_pool_history: 36 ok, 0 falla(s)
+== tests/verify/test_step_report.py
+  ok    sin lotes medidos rehúsa en vez de publicar ceros
+test_step_report: 20 aserciones — 20 ok, 0 falla(s)
+== tests/verify/test_tsc_cycle.py
+  ok    el TTL es parte de la configuración del paso (setup_id)
+test_tsc_cycle: 102 aserciones — 102 ok, 0 falla(s)
+== tests/hooks/test_detect_agent_dispatch.py
+
+11 caso(s); 0 fallo(s)
+== tests/session/test-gpu-admission-cli.sh
+
+aserciones: 3 de 3 · fallos: 0
+== tests/session/test-headless-pool.sh
+
+aserciones: 74 de 74 · fallos: 0
+== tests/session/test-gnu-time-launchers.sh
+
+test-gnu-time-launchers: 13 ok, 0 falla(s)
+SUBSET_RC=0
+__BG_EXIT__=0

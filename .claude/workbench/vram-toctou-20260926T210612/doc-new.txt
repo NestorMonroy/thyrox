@@ -1,0 +1,1 @@
+    Comprobar sin reservar deja una ventana: con 5000 MiB libres dos ítems de

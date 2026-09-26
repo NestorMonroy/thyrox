@@ -53,11 +53,9 @@
 # inventa nada, y la salida lo dice.
 #
 # La VRAM (`gpu_monitor.py`), si hay nvidia-smi (HEADLESS_POOL_NVIDIA_SMI):
-# cada item deja <n>.gpu con su pico, media y uso de GPU, y antes de arrancar
-# RESERVA su pico en un registro compartido (HEADLESS_POOL_VRAM_LEDGER) bajo
-# lock: libre menos lo comprometido y aún no usado por otros items o pools
-# (la admision de --memfree, que Parallel no tiene para la GPU). Al terminar
-# suelta la reserva. La anchura con que se lanza es
+# cada item deja <n>.gpu con su pico, media y uso de GPU, y espera antes de
+# arrancar a que haya VRAM libre para su pico (la admision de --memfree, que
+# Parallel no tiene para la GPU). La anchura con que se lanza es
 # min(configurada, RAM, VRAM): cada tope es (libre - reserva) / (pico x 2),
 # con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
 # declara y no se mide.

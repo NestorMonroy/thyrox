@@ -182,6 +182,21 @@ def read_gpu_file(path: Path) -> GpuReading:
     return GpuReading("error", reason=f"ilegible: {text[:80]!r}")
 
 
+def wait_free(need_mib: int, nvidia_smi: str = "nvidia-smi", timeout_s: float = 600.0,
+              interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+    """La admisión por VRAM que GNU Parallel no tiene: espera a que la GPU con
+    más espacio tenga ``need_mib`` libres. La VRAM libre cambia mientras los
+    trabajos arrancan, así que leerla una vez al principio no basta."""
+    deadline = time.monotonic() + timeout_s
+    while True:
+        free = free_vram_mib(nvidia_smi)
+        if free is not None and free >= need_mib:
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(interval_s)
+
+
 #: Reintentos del lock del registro: la sección crítica es una lectura de
 #: nvidia-smi y una escritura, así que se espera a otro ítem, no a un paso.
 LEDGER_LOCK_RETRIES = 50
@@ -259,7 +274,7 @@ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia
           timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
     """La admisión por VRAM SIN carrera de comprobar-y-usar.
 
-    Comprobar sin reservar deja una ventana: con 5000 MiB libres dos ítems de
+    ``wait_free`` comprobaba sola cada ítem: con 5000 MiB libres dos ítems de
     3000 veían sitio los dos y arrancaban los dos (sonda:
     ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). Aquí cada pasada de
     comprobar-y-reservar corre bajo el lock del registro (``shared_lock``), así
@@ -298,24 +313,16 @@ def main(argv: list[str]) -> int:
     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
     p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
     p_avail.add_argument("--nvidia-smi", default="nvidia-smi")
-    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, o 3 al vencer el plazo")
-    p_admit.add_argument("need", type=int)
-    p_admit.add_argument("--ledger", type=Path, required=True)
-    p_admit.add_argument("--owner", type=int, required=True)
-    p_admit.add_argument("--nvidia-smi", default="nvidia-smi")
-    p_admit.add_argument("--timeout", type=float, default=600.0)
-    p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
-    p_release = sub.add_parser("release", help="suelta la reserva de OWNER")
-    p_release.add_argument("--ledger", type=Path, required=True)
-    p_release.add_argument("--owner", type=int, required=True)
+    p_wait = sub.add_parser("wait-free", help="espera a que haya NEED MiB libres; sale 0, o 3 al vencer")
+    p_wait.add_argument("need", type=int)
+    p_wait.add_argument("--nvidia-smi", default="nvidia-smi")
+    p_wait.add_argument("--timeout", type=float, default=600.0)
+    p_wait.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
     p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) de la GPU con más espacio")
     p_free.add_argument("--nvidia-smi", default="nvidia-smi")
     args = parser.parse_args(argv)
-    if args.order == "admit":
-        return 0 if admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval) else 3
-    if args.order == "release":
-        release(args.ledger, args.owner)
-        return 0
+    if args.order == "wait-free":
+        return 0 if wait_free(args.need, args.nvidia_smi, args.timeout, args.interval) else 3
     if args.order == "free":
         free = free_vram_mib(args.nvidia_smi)
         if free is None:

@@ -1,0 +1,70 @@
+#: Reintentos del lock del registro: la sección crítica es una lectura de
+#: nvidia-smi y una escritura, así que se espera a otro ítem, no a un paso.
+LEDGER_LOCK_RETRIES = 50
+
+
+def _reservations(ledger: Path) -> dict[str, int]:
+    try:
+        return {pid: int(mib) for pid, mib in json.loads(ledger.read_text()).items()}
+    except (OSError, ValueError):
+        return {}
+
+
+def _pending(reservations: dict[str, int], current: Sample) -> int:
+    """Lo comprometido que la GPU aún NO muestra: de cada reserva, la parte
+    que su árbol todavía no usa. Lo que ya usa ya está restado de lo libre, y
+    contarlo otra vez bloquearía VRAM que sí existe."""
+    pending = 0
+    for pid, mib in reservations.items():
+        used = sum(current.vram_by_pid.get(p, 0) for p in tree(int(pid)))
+        pending += max(0, mib - used)
+    return pending
+
+
+def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia-smi",
+          timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+    """La admisión por VRAM SIN carrera de comprobar-y-usar.
+
+    ``wait_free`` comprobaba sola cada ítem: con 5000 MiB libres dos ítems de
+    3000 veían sitio los dos y arrancaban los dos (sonda:
+    ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). Aquí la lectura del
+    registro, la medida, la decisión y la reserva van en UNA sección crítica
+    (``shared_lock``), y lo admisible es la VRAM libre menos lo comprometido
+    que la GPU aún no muestra. La reserva se suelta con ``release`` al terminar
+    el ítem, y la de un dueño muerto deja de contar."""
+    ledger = Path(ledger)
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    deadline = time.monotonic() + timeout_s
+    while True:
+        with shared_lock.held(ledger, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+                              min_wait_s=0.01, max_wait_s=0.2):
+            reservations = {pid: mib for pid, mib in _reservations(ledger).items() if _alive(int(pid))}
+            try:
+                current, free = sample(nvidia_smi), free_vram_mib(nvidia_smi)
+            except GpuUnavailable:
+                current, free = None, None
+            admitted = (current is not None and free is not None
+                        and free - _pending(reservations, current) >= need_mib)
+            if admitted:
+                reservations[str(owner_pid)] = need_mib
+            shared_lock.write_atomic(ledger, json.dumps(reservations, sort_keys=True))
+        if admitted:
+            return True
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(interval_s)
+
+
+def release(ledger: Path, owner_pid: int) -> None:
+    """Suelta la reserva de un ítem que terminó."""
+    ledger = Path(ledger)
+    if not ledger.exists():
+        return
+    with shared_lock.held(ledger, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+                          min_wait_s=0.01, max_wait_s=0.2):
+        reservations = _reservations(ledger)
+        reservations.pop(str(owner_pid), None)
+        shared_lock.write_atomic(ledger, json.dumps(reservations, sort_keys=True))
+
+
+def main(argv: list[str]) -> int:

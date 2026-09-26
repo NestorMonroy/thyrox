@@ -211,12 +211,27 @@ rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_
 rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=500 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
 check "admision: sin VRAM para su pico el item no arranca" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
 check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"
+# Lo comprometido por OTRO pool cuenta: 1000 libres, y un dueño vivo (este
+# shell, cuyo árbol no usa GPU) ya reservó 900. Sin el registro el ítem vería
+# 1000 >= 800 y arrancaría: es la carrera de comprobar-y-usar entre dos pools.
+printf '{"%s": 900}' "$$" > "$HIST/vram-reservations.json"
+# Sin GNU Time: si el ítem arrancara por error, no dejaría una fila que cambie
+# la anchura de los casos siguientes.
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=1000 HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admision: lo reservado por otro pool vivo no se vuelve a dar" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admision: la reserva ajena sigue en el registro" "$(jq -r --arg p "$$" '.[$p]' "$HIST/vram-reservations.json" 2>/dev/null)" "900"
+rm -f "$HIST/vram-reservations.json"
 rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
 check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
   "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
 # Lo que discrimina no es el mensaje sino el -j que llega a Parallel: un aviso
 # impreso sin aplicar la anchura pasaria la linea de arriba.
 check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"
+# Cada ítem admitido reserva y, al terminar, suelta: tras la ejecución el
+# registro no guarda nada suyo. Sin el `release` quedaría una fila por ítem.
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "reserva: los items admitidos arrancan" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
+check "reserva: el registro queda vacio al terminar" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
 unset HIST
 # RAM: MemAvailable 30000 KB y el item pico 12345 KB x 2 -> cabe 1.
 printf 'MemTotal: 100000 kB\nMemAvailable: 30000 kB\n' > "$F/meminfo"

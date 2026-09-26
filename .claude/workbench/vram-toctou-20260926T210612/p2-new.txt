@@ -1,0 +1,7 @@
+HP_GPU="$HP_BIN/gpu_monitor"
+HP_GPU_INTERVAL="${HEADLESS_POOL_GPU_INTERVAL:-0.5}"
+# El registro de VRAM comprometida, compartido por TODOS los pools que usan la
+# misma base de historial: lo que un pool reservó y aún no usa, otro no lo da.
+HP_VRAM_LEDGER="${HEADLESS_POOL_VRAM_LEDGER:-$(dirname "$HISTORY")/vram-reservations.json}"
+HP_NVIDIA_SMI=""
+if bash "$HP_GPU" available --nvidia-smi "$NVIDIA_SMI_BIN" 2>/dev/null; then

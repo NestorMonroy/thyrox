@@ -259,7 +259,7 @@ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia
           timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
     """La admisión por VRAM SIN carrera de comprobar-y-usar.
 
-    Comprobar sin reservar deja una ventana: con 5000 MiB libres dos ítems de
+    ``wait_free`` comprobaba sola cada ítem: con 5000 MiB libres dos ítems de
     3000 veían sitio los dos y arrancaban los dos (sonda:
     ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). Aquí cada pasada de
     comprobar-y-reservar corre bajo el lock del registro (``shared_lock``), así

@@ -1,0 +1,15 @@
+    print("== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==")
+    ledger9 = tmp / "ledger9.json"
+    owner9 = os.getpid()
+    free.write_text("0, 1000\n")
+    check("sin sitio y sin plazo: no admite", False,
+          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=0.5, interval_s=0.1))
+    free.write_text("0, 5000\n")
+    check("con sitio: admite enseguida", True,
+          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=0.5, interval_s=0.1))
+    gm.release(ledger9, owner9)
+    free.write_text("0, 1000\n")
+    subprocess.Popen(["bash", "-c", f"sleep 0.4; echo '0, 5000' > {free}"])
+    check("se libera mientras espera: admite", True,
+          gm.admit(2000, ledger9, owner9, str(smi), timeout_s=3, interval_s=0.1))
+    gm.release(ledger9, owner9)
