@@ -1231,10 +1231,13 @@ export class QueryEngine {
     // is a type predicate (message is Message), so inside the false branch
     // `result` narrows to never and these accesses don't typecheck.
     const edeResultType = result?.type ?? 'undefined'
+    const edeAssistantMessageContent =
+      result?.type === 'assistant' ? result.message.content : undefined
+    const edeLastContent = Array.isArray(edeAssistantMessageContent)
+      ? last(edeAssistantMessageContent)
+      : undefined
     const edeLastContentType =
-      result?.type === 'assistant'
-        ? (last(result.message.content)?.type ?? 'none')
-        : 'n/a'
+      result?.type === 'assistant' ? (edeLastContent?.type ?? 'none') : 'n/a'
 
     // Flush buffered transcript writes before yielding result.
     // The desktop app kills the CLI process immediately after receiving the

@@ -1,0 +1,3 @@
+-- FALLIDO pattern:optional-host-binding-yielded-without-guard .claude/workbench/tsc-zero-loop/run-20260924T175031/step-159/items/1.txt src/packages/agent/QueryEngine.ts src/packages/agent/query.ts
+items=14 ok=13 fallidos=1
+__BG_EXIT__=1

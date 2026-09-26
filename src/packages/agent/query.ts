@@ -84,6 +84,7 @@ import type {
   AgentToolUseContext as ToolUseContext,
   AgentToolUseSummaryMessage as ToolUseSummaryMessage,
 } from './internalTypes.js'
+import type { Message as CanonicalMessage } from './messageShapes.js'
 import { createBudgetTracker, checkTokenBudget } from './internal/tokenBudget.js'
 import { asSystemPrompt, count, type SystemPrompt } from './internalUtils.js'
 import {
@@ -525,7 +526,7 @@ async function* queryLoop(
     //TODO: no need to set toolUseContext.messages during set-up since it is updated here
     toolUseContext = {
       ...toolUseContext,
-      messages: messagesForQuery,
+      messages: messagesForQuery as CanonicalMessage[],
     }
 
     const assistantMessages: AssistantMessage[] = []

@@ -1164,7 +1164,9 @@ export function REPL({
 
   // Register the leader's setToolUseConfirmQueue for in-process teammates
   useEffect(() => {
-    registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+    registerLeaderToolUseConfirmQueue(updater =>
+      setToolUseConfirmQueue(prev => updater(prev) as ToolUseConfirm[]),
+    );
     return () => unregisterLeaderToolUseConfirmQueue();
   }, [setToolUseConfirmQueue]);
 

@@ -3434,7 +3434,7 @@ export function runHeadlessStreaming(
         const sessionId = getSessionId() as UUID
         const existsInSession = await doesMessageExistInSession(
           sessionId,
-          message.uuid,
+          message.uuid as UUID,
         )
 
         // Check both historical duplicates (from file) and runtime duplicates (this session)

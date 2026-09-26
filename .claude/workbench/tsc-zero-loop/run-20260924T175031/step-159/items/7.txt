@@ -1,0 +1,29 @@
+Patrón: sdk-message-uuid-string-vs-node-uuid-template
+Señal del verificador: TS2345: Argument of type 'string' is not assignable to parameter of type '\`\$\{string\}-\$\{string\}-\$\{string\}-\$\{string\}-\$\{string\}\`'
+Arreglo genérico: El campo `uuid` de un mensaje SDK está inferido de un esquema zod (`z.string()` vía `UUIDPlaceholder`), así que tipa como `string`, mientras que el consumidor (un `Set<UUID>`, una función de storage) exige el `UUID` de `node:crypto` (plantilla literal). Se afirma con `as UUID` en el sitio de uso — igual que ya hace el mismo archivo para `sessionId`/`user_message_id` — porque el productor del valor ya garantiza el formato; no se envuelve en validación nueva ni se cambia el flujo.
+Ya aplicado en: src/packages/cli/src/headless/sdk/session/run-streaming.ts
+Archivos donde la señal sigue viva: src/packages/cli/src/headless/sdk/session/run-streaming.ts
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3437,11): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3427-3447 ---
+   3427        }
+   3428  
+   3429        // First prompt message implicitly initializes if not already done.
+   3430        initialized = true
+   3431  
+   3432        // Check for duplicate user message - skip if already processed
+   3433        if (message.uuid) {
+   3434          const sessionId = getSessionId() as UUID
+   3435          const existsInSession = await doesMessageExistInSession(
+   3436            sessionId,
+   3437>           message.uuid,
+   3438          )
+   3439  
+   3440          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3441          if (existsInSession || receivedMessageUuids.has(message.uuid as UUID)) {
+   3442            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3443            // Send acknowledgment for duplicate message if replay mode is enabled
+   3444            if (options.replayUserMessages) {
+   3445              logForDebugging(
+   3446                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3447              )

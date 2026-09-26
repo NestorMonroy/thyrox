@@ -1,5 +1,6 @@
 import type { UUID } from 'crypto'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 import {
   AGENT_COLORS,
@@ -50,7 +51,7 @@ export async function call(
     // in sessionStorage.ts persist the reset across session restarts
     await saveAgentColor(sessionId, 'default', fullPath)
 
-    context.setAppState(prev => ({
+    context.setAppState((prev: AppState) => ({
       ...prev,
       standaloneAgentContext: {
         ...prev.standaloneAgentContext,
@@ -79,7 +80,7 @@ export async function call(
   await saveAgentColor(sessionId, colorArg, fullPath)
 
   // Update AppState for immediate effect
-  context.setAppState(prev => ({
+  context.setAppState((prev: AppState) => ({
     ...prev,
     standaloneAgentContext: {
       ...prev.standaloneAgentContext,

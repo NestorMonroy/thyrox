@@ -99,6 +99,7 @@ import type {
   AssistantMessage,
   AttachmentMessage,
   Message,
+  MessageContent,
   SystemCompactBoundaryMessage,
   SystemMessage,
   UserMessage,
