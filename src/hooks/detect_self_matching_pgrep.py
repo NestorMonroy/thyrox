@@ -67,6 +67,26 @@ def has_bracket_class(pattern: str) -> bool:
     return bool(_BRACKET.search(pattern))
 
 
+def matches_elsewhere(command: str, token_start: int, raw: str, pattern: str) -> bool:
+    """¿Casa el patron en otra parte del MISMO comando?
+
+    El corchete desacopla al patron de su propio literal, no del resto de la
+    linea de comando. Episodio 2026-09-26: un heredoc lanzado en la misma
+    llamada llevaba `nota-de-correccion-*)` y, mas adelante, `annul.sh`; el
+    `.*` de `[n]ota-de-correccion.*annul.sh` los unio y la espera casó con su
+    lanzador. Se busca el patron como regex —lo que `pgrep` hace— sobre el
+    comando con su propio token en blanco. Un patron que no compila es
+    INDECIDIBLE: cuenta como casado, para avisar en vez de callar.
+    """
+    blanked = command[:token_start] + " " * len(raw) + command[token_start + len(raw):]
+    try:
+        # `pgrep` compila con regcomp sin REG_NEWLINE: su `.` cruza el salto de
+        # linea de un heredoc, y el de Python no, salvo con DOTALL.
+        return re.search(pattern, blanked, re.DOTALL) is not None
+    except re.error:
+        return True
+
+
 def _strip_quotes(token: str) -> str:
     if len(token) >= 2 and token[0] == token[-1] and token[0] in "'\"":
         return token[1:-1]
@@ -122,7 +142,9 @@ def detect(payload: dict) -> str | None:
             # Un patron compuesto en tiempo de ejecucion no se puede
             # inspeccionar: avisar es la conducta conservadora, porque callar
             # seria publicar «no hay defecto» sobre lo que no se midio.
-            if "$" not in pattern and "`" not in pattern and has_bracket_class(pattern):
+            start = command.index(raw, match.end())
+            if ("$" not in pattern and "`" not in pattern and has_bracket_class(pattern)
+                    and not matches_elsewhere(command, start, raw, pattern)):
                 continue
         return (
             f"GATE DE ESPERA — este comando usa `{match.group(1)} -f` con un "
@@ -137,7 +159,10 @@ def detect(payload: dict) -> str | None:
             "trabajos, `bash bin/wait-jobs wait` como barrera. Si el `pgrep` es "
             "de una sola vez y su salida la lees tu, la salida minima es la "
             "clase de corchete —`'[p]atron'`—, que el regex casa y el literal "
-            "no."
+            "no; y sólo basta si nada más del comando casa el patrón: un heredoc "
+            "lanzado en la misma llamada lleva su texto en la línea del `bash -c`. "
+            "Para esperar a un proceso que TÚ lanzaste, la notificación del "
+            "cliente o `wait \"$pid\"`, nunca un patrón."
         )
     return None
 

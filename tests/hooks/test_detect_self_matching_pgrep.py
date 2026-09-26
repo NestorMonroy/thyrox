@@ -105,6 +105,24 @@ check("nombra marker_wait --pid-only", True, "--pid-only" in notice)
 check("nombra wait-jobs, para N trabajos", True, "wait-jobs" in notice)
 check("y nombra la clase de corchete como salida minima", True, "[c]" in notice or "[p]" in notice)
 
+# --- 8b. el corchete derrotado por el resto del mismo comando ----------------
+# Episodio 2026-09-26 (ai-course-notes, ola 6): un guion escrito con heredoc y
+# lanzado en la misma llamada esperaba con `while pgrep -f
+# '[n]ota-de-correccion.*annul.sh'`. El `bash -c` del cliente lleva TODO el
+# heredoc en su linea de comando, incluido `ls -d .../nota-de-correccion-*)` y,
+# mas adelante, `annul.sh`: el `.*` los une, el patron casa al lanzador y el
+# bucle no termino en 14 minutos. El corchete solo protege si nada mas del
+# comando casa el patron.
+DEFEATED = ("N=$(ls -d .claude/workbench/nota-de-correccion-*)\n"
+            "while pgrep -f '[n]ota-de-correccion.*annul.sh' >/dev/null; do sleep 20; done\n"
+            "bash $N/annul.sh")
+TWIN = ("N=$(ls -d .claude/workbench/nota-de-correccion-*)\n"
+        "while pgrep -f '[n]ota-de-correccion.*annul.sh' >/dev/null; do sleep 20; done")
+print("== 8b. el corchete no basta si el resto del comando casa el patron ==")
+check("avisa sobre el episodio de la ola 6", True, detect(DEFEATED) is not None)
+check("calla si la palabra aparece pero el patron entero no casa", None, detect(TWIN))
+
+
 # --- 9. control de anulacion de la excepcion del corchete --------------------
 print("== 9. anulada la excepcion del corchete, cae EXACTAMENTE ese caso ==")
 original = gate.has_bracket_class
