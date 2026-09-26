@@ -1,0 +1,21 @@
+def headroom(live: dict[str, int], nvidia_smi: str) -> int | None:
+    """El margen para un ítem nuevo: lo libre menos lo comprometido que la GPU
+    aún no muestra. ``None`` si no hay lectura de la GPU — sin medida no hay
+    margen, y un cero lo afirmaría. Es una consulta: no reserva ni bloquea."""
+    current, free = measure(nvidia_smi)
+    if free is None:
+        return None
+    usage = current.vram_by_pid if current else {}
+    trees = {int(pid): tree(int(pid)) for pid in live}
+    return free - pending(live, usage, trees)
+
+
+def _try_admit(ledger: VramLedger, need_mib: int, owner_pid: int, nvidia_smi: str) -> bool:
+    """Una pasada de comprobar-y-reservar. Se llama CON el lock sostenido: la
+    atomicidad es del lock, no de juntar las responsabilidades en una función."""
+    live = ledger.live()
+    if admissible(headroom(live, nvidia_smi), 0, need_mib):
+        ledger.reserve(owner_pid, need_mib)
+        return True
+    ledger.save(live)
+    return False

@@ -1,0 +1,4 @@
+state="${GPU_STATE:?}"
+# Sin estado no hay GPU que leer: falla como un nvidia-smi sin driver, no
+# responde un 0 que se leería como «GPU llena».
+[[ -r "$state/total" ]] || { echo "NVIDIA-SMI has failed" >&2; exit 9; }

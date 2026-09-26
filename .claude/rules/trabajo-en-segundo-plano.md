@@ -134,8 +134,31 @@ bash tests/session/test-gpu-admission-cli.sh
 ```
 
 Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
-medida, este contenedor no tiene GPU. Las suites usan un `nvidia-smi` falso:
-prueban el mecanismo, no la exactitud de `nvidia-smi` sobre una GPU real.
+medida, este contenedor no tiene GPU.
+
+**Tres niveles de prueba, y cada uno afirma sólo lo suyo.** El `nvidia-smi`
+falso es un MODELO de cómo creemos que se comporta una GPU NVIDIA; si el
+modelo está equivocado, la batería entera sale verde y falla en hardware.
+
+| Nivel | Qué prueba | Suite | Aquí |
+|---|---|---|---|
+| 1 — fake | la lógica: lock, registro, reserva lenta, sobreuso, SIGKILL, zombi, VRAM ajena, carrera con barrera, dos pools | `test_gpu_monitor.py`, `test_gpu_scenarios.py`, `test-gpu-admission-cli.sh`, `test-headless-pool.sh`, `gpuAdmission.test.ts` | corre |
+| 2 — GPU real | que el modelo del fake corresponde a ESTA GPU: PID visible, uso = asignado + contexto, lo libre baja lo que sube el uso, se libera al salir | `hardware/test_gpu_admission_real.py` | rehúsa, exit 2 |
+| 3 — carga real | dos `headless-pool` sobre una GPU real y un registro común no corren juntos | `hardware/test-gpu-pools-real.sh` | rehúsa, exit 2 |
+
+**Frontera de aceptación.** Que el nivel 1 pase permite afirmar «la lógica de
+admisión y reserva satisface estos escenarios»; NO «el control de VRAM está
+validado en NVIDIA real». Esa segunda frase exige los niveles 2 y 3 en verde
+sobre el hardware donde se va a usar.
+
+**El fake imita lo observado; no define el hardware.** El nivel 2 deja
+`trace.tsv` y `report.json`, y `bin/gpu_trace compare` nombra el parámetro del
+fake que la traza desmiente (`context_overhead_mib=N`, `hide_pids`). Si el
+modelo se aleja del hardware se corrige el fake con esa evidencia, nunca la
+lectura de la traza para que coincida con los tests. Que el comparador detecta
+un modelo equivocado se prueba aquí mismo, registrando contra el fake con
+sobrecarga y con PIDs ocultos (`test_gpu_trace.py`); que los arneses rehúsan
+sin GPU, en `test-gpu-hardware-refusal.sh`.
 
 **El discriminador es distributivo, no numérico.** «Para cada una de las 365
 notas, extrae sus conceptos» es esta forma; «sobre los 22 archivos, decide

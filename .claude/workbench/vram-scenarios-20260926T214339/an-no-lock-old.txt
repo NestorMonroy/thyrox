@@ -1,0 +1,2 @@
+        with shared_lock.held(book.path, run_id="vram-admission", retries=LEDGER_LOCK_RETRIES,
+                              min_wait_s=0.01, max_wait_s=0.2):
