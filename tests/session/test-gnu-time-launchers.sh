@@ -67,5 +67,20 @@ _contiene "el trabajo terminó con su marcador" "$(cat "$log")" "__BG_EXIT__=0"
 _es "no deja .time" "$([[ -e "$log.time" ]] && echo si || echo no)" "no"
 _contiene "y declara que no midió" "$salida" "sin GNU Time"
 
+echo "== 6. medir NO contamina el entorno del trabajo =="
+# Episodio: los lanzadores cargaban `toolchain.sh` para preguntar por GNU Time
+# y cada trabajo heredaba sus defaults exportados; un
+# `THYROX_TOOLCHAIN_INTERPRETER_PATH` que nadie declaro tumbo 3 de 6 casos de
+# `test-toolchain-sh.sh`. El trabajo ve el entorno de quien lo lanzo, no el de
+# la cadena de herramientas.
+salida="$(env -u THYROX_TOOLCHAIN_INTERPRETER_PATH bash bin/thyrox-bg start entorno --grace 0 -- \
+            bash -c 'echo "heredada=[${THYROX_TOOLCHAIN_INTERPRETER_PATH-ausente}]"' 2>&1)"
+log="$(sed -n 's/^LOG=//p' <<<"$salida")"
+bash bin/thyrox-bg wait entorno >/dev/null 2>&1
+_contiene "bg.sh: el trabajo no hereda la cadena de herramientas" "$(cat "$log")" "heredada=[ausente]"
+printf '%s\n' 'echo "heredada=[${THYROX_TOOLCHAIN_INTERPRETER_PATH-ausente}]"' > "$TMP/entorno.txt"
+salida="$(env -u THYROX_TOOLCHAIN_INTERPRETER_PATH bash bin/run-task-pool --width 1 --timeout 60 "$TMP/entorno.txt" 2>&1)"
+_contiene "run-task-pool: el trabajo no hereda la cadena de herramientas" "$salida" "heredada=[ausente]"
+
 printf '\ntest-gnu-time-launchers: %d ok, %d falla(s)\n' "$ok" "$fallo"
 [[ "$fallo" -eq 0 ]]

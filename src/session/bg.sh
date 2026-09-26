@@ -380,10 +380,13 @@ cmd_start() {
     # with non-zero status N» que antepone a la medida de un trabajo fallido.
     # Sin GNU Time el trabajo corre igual y se declara: una medida ausente no
     # es un cero.
-    local time_prefix=""
-    source "$_SRC_DIR/lib/toolchain.sh"
-    if thyrox_toolchain_require_gnu_time 2>/dev/null; then
-        time_prefix="$(printf '%q ' "$(thyrox_toolchain_gnu_time_bin)" -q -f '%M %e %U %S' -o "$LOG.time")"
+    # La consulta va en una SUBSHELL: `toolchain.sh` exporta sus defaults y,
+    # cargado aqui, los heredaria el trabajo (ver `run-task-pool.sh`).
+    local time_prefix="" time_bin
+    time_bin="$(source "$_SRC_DIR/lib/toolchain.sh"
+                thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || true
+    if [[ -n "$time_bin" ]]; then
+        time_prefix="$(printf '%q ' "$time_bin" -q -f '%M %e %U %S' -o "$LOG.time")"
     else
         echo "memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)"
     fi

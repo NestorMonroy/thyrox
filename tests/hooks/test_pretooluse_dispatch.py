@@ -129,6 +129,8 @@ check("el de edicion en bucle tambien", True,
       "detect_edit_loop" in dispatch.DETECTOR_NAMES)
 check("el de substr como destino de gsub tambien", True,
       "detect_awk_substr_target" in dispatch.DETECTOR_NAMES)
+check("y el de los momentos de gensub e -i inplace", True,
+      "detect_gawk_opportunity" in dispatch.DETECTOR_NAMES)
 registry, missing = dispatch.build_registry(dispatch.DETECTOR_DIR, dispatch.DETECTOR_NAMES)
 check("y carga sin faltantes", [], missing)
 awk_out = dispatch.dispatch(

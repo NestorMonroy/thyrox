@@ -126,14 +126,17 @@ MEMFREE=0
 # `parse_binary_size` y `mem_available_bytes` viven en `src/lib/memory.sh`,
 # compartidas con `bg.sh --memfree`.
 source "$HERE/../lib/memory.sh"
-source "$HERE/../lib/toolchain.sh"
 # GNU Time mide cada trabajo (memoria pico, pared y CPU a `<log>.time`); la
 # identidad la comprueba la cadena de herramientas, una vez por despacho. Sin
 # el, los trabajos corren igual y el despacho lo declara.
-TIME_BIN=""
-if thyrox_toolchain_require_gnu_time 2>/dev/null; then
-    TIME_BIN="$(thyrox_toolchain_gnu_time_bin)"
-else
+#
+# La consulta va en una SUBSHELL: `toolchain.sh` exporta sus defaults, y
+# cargado aqui los heredaba cada trabajo del pool — medido, un
+# `THYROX_TOOLCHAIN_INTERPRETER_PATH` que nadie declaro tumbaba 3 de 6 casos
+# de `test-toolchain-sh.sh`. De la subshell solo sale la ruta.
+TIME_BIN="$(source "$HERE/../lib/toolchain.sh"
+            thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || true
+if [[ -z "$TIME_BIN" ]]; then
     echo "run-task-pool: sin GNU Time, no se mide la memoria de los trabajos (thyrox_toolchain_require_gnu_time)"
 fi
 
