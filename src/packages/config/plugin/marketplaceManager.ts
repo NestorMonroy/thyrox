@@ -90,6 +90,9 @@ import {
 /**
  * Result of loading and caching a marketplace
  */
+/** `extraKnownMarketplaces` tal como lo trae un archivo de settings: nombre -> fuente. */
+type MarketplaceMap = Record<string, unknown>
+
 type LoadedPluginMarketplace = {
   marketplace: PluginMarketplace
   cachePath: string
@@ -1981,24 +1984,24 @@ export async function removeMarketplaceSource(name: string): Promise<void> {
   > = ['userSettings', 'projectSettings', 'localSettings']
 
   for (const source of editableSources) {
-    const settings = getSettingsForSource(source)
+    // La fachada de _deps tipa los settings como registro suelto; lo que el
+    // anfitrión inyecta es el `SettingsJson` del mismo paquete.
+    const settings = getSettingsForSource(source) as SettingsJson | undefined
     if (!settings) continue
 
     let needsUpdate = false
     const updates: {
-      extraKnownMarketplaces?: typeof settings.extraKnownMarketplaces
+      extraKnownMarketplaces?: MarketplaceMap
       enabledPlugins?: typeof settings.enabledPlugins
     } = {}
 
-    // Remove from extraKnownMarketplaces if present
-    if (settings.extraKnownMarketplaces?.[name]) {
-      const updatedMarketplaces: Partial<
-        SettingsJson['extraKnownMarketplaces']
-      > = { ...settings.extraKnownMarketplaces }
+    // Remove from extraKnownMarketplaces if present. El esquema ya no declara
+    // la clave (`settings/inventory.ts`: servicio externo), así que se lee
+    // como el mapa nombre -> fuente que el archivo de settings trae.
+    const knownMarketplaces = settings.extraKnownMarketplaces as MarketplaceMap | undefined
+    if (knownMarketplaces?.[name]) {
       // Use undefined values (NOT delete) to signal key removal via mergeWith
-      updatedMarketplaces[name] = undefined
-      updates.extraKnownMarketplaces =
-        updatedMarketplaces as SettingsJson['extraKnownMarketplaces']
+      updates.extraKnownMarketplaces = { ...knownMarketplaces, [name]: undefined }
       needsUpdate = true
     }
 

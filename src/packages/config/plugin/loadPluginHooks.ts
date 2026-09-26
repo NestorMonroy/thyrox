@@ -165,13 +165,12 @@ export async function pruneRemovedPluginHooks(): Promise<void> {
   // clearRegisteredPluginHooks; we only need to re-register survivors.
   const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
   for (const [event, matchers] of Object.entries(current)) {
-    // `current` cruza la frontera de _deps.ts tipado como `unknown[]`,
-    // aunque en runtime es un mapa por evento; se afirma el valor real
-    // (un arreglo) antes de filtrarlo, sin asumirlo sin comprobar.
-    if (!Array.isArray(matchers)) continue
-    const kept = matchers.filter(
-      (m: { pluginRoot: string }): m is PluginHookMatcher =>
-        'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
+    // Los matchers de callback conviven con los de plugin y este lado no los
+    // conoce: se reconoce el de plugin por su `pluginRoot`.
+    const kept = (matchers ?? []).filter(
+      (m): m is PluginHookMatcher =>
+        typeof m === 'object' && m !== null && 'pluginRoot' in m &&
+        enabledRoots.has((m as PluginHookMatcher).pluginRoot),
     )
     if (kept.length > 0) survivors[event as HookEvent] = kept
   }

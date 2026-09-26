@@ -3168,11 +3168,7 @@ async function assemblePluginLoadResult(
   // Load marketplace plugins and session-only plugins in parallel.
   // getInlinePlugins() is a synchronous state read with no dependency on
   // marketplace loading, so these two sources can be fetched concurrently.
-  const inlinePlugins = getInlinePlugins()
-  // getInlinePlugins() declara Record<string, unknown> | undefined en _deps.ts,
-  // pero en tiempo de ejecución siempre es un arreglo de rutas (ver
-  // app-host/bootstrap/state.ts) — se confirma con la guarda en vez de forzar el tipo.
-  const inlinePluginPaths = Array.isArray(inlinePlugins) ? inlinePlugins : []
+  const inlinePluginPaths = getInlinePlugins()
   const [marketplaceResult, sessionResult] = await Promise.all([
     marketplaceLoader(),
     inlinePluginPaths.length > 0
