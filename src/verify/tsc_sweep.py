@@ -464,6 +464,35 @@ def _targets(pattern: dict, before_lines: list[str]) -> list[str]:
     return sorted(k for k in keys if signal.search(k))
 
 
+def _step_order(path: Path) -> int:
+    match = re.fullmatch(r"step-(\d+)", path.name)
+    return int(match.group(1)) if match else -1
+
+
+def replay(run: Path, pattern: dict) -> list[dict]:
+    """Reproducción sin conexión (L09): ensaya ``pattern`` contra los logs que
+    la corrida ya guardó, sin tsc ni modelo. Por cada paso con algo que
+    reclamar: cuántos diagnósticos del ``before.log`` casa su señal y cuántos
+    de ésos ya no están en el ``after.log`` del paso — `None` si el paso no
+    guardó ``after.log``: no saberlo no es cero.
+
+    Ciega a: por qué desapareció un diagnóstico (otro arreglo pudo quitarlo)
+    y a los pasos que no guardaron su ``before.log``."""
+    steps = sorted((p for p in run.glob("step-*") if (p / "before.log").is_file()), key=_step_order)
+    if not steps:
+        raise ValueError(f"{run} no guarda ningún step-*/before.log: sin logs no hay qué reproducir")
+    rows = []
+    for step in steps:
+        targets = _targets(pattern, (step / "before.log").read_text(errors="ignore").splitlines())
+        if not targets:
+            continue
+        after = step / "after.log"
+        remaining = set(_targets(pattern, after.read_text(errors="ignore").splitlines())) if after.is_file() else None
+        rows.append({"step": step.name, "targets": len(targets),
+                     "resolved": None if remaining is None else len(set(targets) - remaining)})
+    return rows
+
+
 def rollout_width(run: Path, name: str) -> int:
     """Cuántos archivos puede tocar el patrón en la próxima propuesta (L09,
     lanzamiento gradual): 1 —el canario— sin ejecución juzgada o con algún
@@ -534,6 +563,9 @@ def main(argv: list[str] | None = None) -> int:
     close_p.add_argument("--run", type=Path, required=True)
     close_p.add_argument("--name", required=True)
     close_p.add_argument("--reason", required=True)
+    rep_p = sub.add_parser("replay", help="ensaya un patrón contra los logs guardados, sin tsc (L09)")
+    rep_p.add_argument("--run", type=Path, required=True)
+    rep_p.add_argument("--name", required=True)
     for command, text in (("freeze", "congela una entrada validada: lo automático no la cambia (L06)"),
                           ("unfreeze", "descongela una entrada, con su razón")):
         frz_p = sub.add_parser(command, help=text)
@@ -618,6 +650,12 @@ def main(argv: list[str] | None = None) -> int:
             for name, counts in sorted(closed.items()):
                 print(json.dumps({"name": name, **counts}, ensure_ascii=False))
             print(f"close-broad: {len(closed)} cerrado(s) de {evaluated} evaluado(s)")
+        elif args.command == "replay":
+            patterns = load_patterns(args.run)
+            if args.name not in patterns:
+                raise ValueError(f"no hay patrón {args.name!r}")
+            for row in replay(args.run, patterns[args.name]):
+                print(json.dumps(row, ensure_ascii=False))
         elif args.command in ("freeze", "unfreeze"):
             action = freeze if args.command == "freeze" else unfreeze
             print(json.dumps(action(args.run, args.name, args.reason), ensure_ascii=False))

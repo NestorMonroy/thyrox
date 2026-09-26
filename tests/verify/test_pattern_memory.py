@@ -291,5 +291,30 @@ with tempfile.TemporaryDirectory() as tmp:
         code = ts.main(["unfreeze", "--run", str(run), "--name", "guarded", "--reason", "por CLI"])
     assert_equal("la CLI descongela con su razón", (0, None), (code, ts.load_patterns(run)["guarded"]["frozen"]))
 
+# --- reproducción sin conexión (L09): ensayar contra los logs guardados ------
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    line = "src/{f}.ts(1,1): error TS2305: Module 'x' has no exported member '{m}'.\n"
+    (run / "step-7").mkdir()
+    (run / "step-7/before.log").write_text(line.format(f="a", m="foo") + line.format(f="b", m="foo")
+                                           + line.format(f="c", m="bar"))
+    (run / "step-7/after.log").write_text(line.format(f="b", m="foo") + line.format(f="c", m="bar"))
+    (run / "step-8").mkdir()
+    (run / "step-8/before.log").write_text(line.format(f="b", m="foo"))
+    (run / "step-9").mkdir()
+    (run / "step-9/before.log").write_text(line.format(f="c", m="bar"))
+    rows = ts.replay(run, pattern("foo", "'foo'", "reexporta foo"))
+    assert_equal("reproducción: por paso, lo que reclamaría y lo que desapareció en ese paso",
+                 [{"step": "step-7", "targets": 2, "resolved": 1}, {"step": "step-8", "targets": 1, "resolved": None}],
+                 rows)
+    ts.add_pattern(run, pattern("foo", "'foo'", "reexporta foo"))
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        code = ts.main(["replay", "--run", str(run), "--name", "foo"])
+    assert_equal("la CLI reproduce un patrón de la memoria, una línea por paso", (0, 2),
+                 (code, len(out.getvalue().splitlines())))
+    assert_equal("sin logs guardados, la reproducción rehúsa en vez de publicar un cero", True,
+                 raises(lambda: ts.replay(run / "vacio", pattern("foo", "x", "y"))))
+
 print(f"test_pattern_memory: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
