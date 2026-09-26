@@ -1,0 +1,26 @@
+== src/packages/tools
+ 24 pass
+ 0 fail
+ 80 expect() calls
+Ran 24 tests across 1 file. [1.51s]
+== src/packages/provider
+ 73 pass
+ 0 fail
+ 194 expect() calls
+Ran 73 tests across 4 files. [118.00ms]
+== src/packages/cli
+ 77 pass
+ 0 fail
+ 173 expect() calls
+Ran 77 tests across 7 files. [38.44s]
+== src/packages/agent
+ 161 pass
+ 1 fail
+ 616 expect() calls
+Ran 162 tests across 16 files. [10.92s]
+== src/packages/config
+ 26 pass
+ 0 fail
+ 57 expect() calls
+Ran 26 tests across 1 file. [113.00ms]
+__BG_EXIT__=0
