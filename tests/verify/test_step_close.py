@@ -65,6 +65,8 @@ def fixture(base: Path) -> tuple[Path, Path, Path]:
     run.mkdir(parents=True)
     for name in ("ledger.jsonl", "patterns.jsonl", "setups.jsonl"):
         (run / name).write_text("{}\n")
+    (run / "step-6").mkdir()
+    (run / "step-6/close.log").write_text("close: abc\n")
     git(repo, "add", ".")
     git(repo, "-c", "commit.gpgsign=false", "commit", "-q", "-m", "seed")
     git(repo, "remote", "add", "origin", str(remote))
@@ -90,6 +92,9 @@ def fixture(base: Path) -> tuple[Path, Path, Path]:
     (repo / ".claude/jobs/step-8-pool-20260101T000009").mkdir(parents=True)
     (repo / ".claude/jobs/step-8-pool-20260101T000009/x").write_text("otro paso\n")
     (run / "ledger.jsonl").write_text("{}\n{\"n\": 2}\n")
+    # El cierre anterior escribió su log DESPUÉS de commitear: queda modificado
+    # y sólo el cierre siguiente puede llevárselo.
+    (run / "step-6/close.log").write_text("close: abc\nEXIT=0\n")
     hook = repo / ".git/hooks/pre-commit"
     hook.write_text(HOOK)
     hook.chmod(0o755)
@@ -106,6 +111,7 @@ with tempfile.TemporaryDirectory() as tmp:
                   ".claude/jobs/step-7-pool-20260101T000000", ".claude/workbench/tsc-zero-loop/run-1/ledger.jsonl",
                   ".claude/workbench/tsc-zero-loop/run-1/patterns.jsonl",
                   ".claude/workbench/tsc-zero-loop/run-1/setups.jsonl",
+                  ".claude/workbench/tsc-zero-loop/run-1/step-6/close.log",
                   ".claude/workbench/tsc-zero-loop/run-1/step-7"], plan.paths)
 
     result = step_close.close_step(repo, run, bench)

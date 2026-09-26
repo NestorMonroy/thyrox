@@ -58,6 +58,20 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
                           capture_output=True, text=True)
 
 
+def _pending_close_logs(repo: Path, run: Path, bench: Path) -> list[str]:
+    """Los ``close.log`` de cierres anteriores que quedaron sin commitear: cada
+    cierre escribe el suyo DESPUÉS de su commit, así que sólo el siguiente
+    puede llevárselo."""
+    status = _git(repo, "status", "--porcelain", "--untracked-files=all", "--", str(run.resolve())).stdout
+    own = (bench / "close.log").resolve()
+    logs = []
+    for line in status.splitlines():
+        path = repo / line[3:]
+        if path.name == "close.log" and path.resolve() != own:
+            logs.append(str(path.resolve().relative_to(repo)))
+    return logs
+
+
 def close_plan(repo: Path, run: Path, bench: Path) -> ClosePlan:
     """Qué commitea el cierre y con qué asunto. Rehúsa sin ``pipeline.json``:
     sin él no se sabe qué conservó el paso."""
@@ -75,6 +89,7 @@ def close_plan(repo: Path, run: Path, bench: Path) -> ClosePlan:
     jobs = repo / ".claude" / "jobs"
     rest = [rel(p) for p in jobs.glob(f"{bench.name}-*") if p.is_dir()] if jobs.is_dir() else []
     rest += [rel(run / name) for name in RUN_MEMORY if (run / name).is_file()]
+    rest += _pending_close_logs(repo, run, bench)
     rest.append(rel(bench))
     kept = list(data.get("files_kept") or [])
     return ClosePlan(subject=subject, paths=kept + sorted(rest), files_kept=kept)
