@@ -1,0 +1,4 @@
+Record the job evidence of the VRAM commits
+
+The pre-commit log of the VRAM commit and the message used for
+ADR-THYROX-003 in kaupamex-docs.
