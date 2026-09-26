@@ -360,7 +360,13 @@ def settle_sweep(run: Path, unit: str, listed: list[str], kept: list[str], step:
     excluded = sorted(set(listed) - set(kept))
     if applied:
         tsc_sweep.mark_applied(run, name, applied)
-    if excluded:
+    policy = tsc_sweep.load_patterns(run).get(name, {}).get("on_failure", tsc_sweep.ON_FAILURE[0])
+    if excluded and policy == "close-pattern":
+        # La recuperación declarada del skill (L07): el rechazo dice que la
+        # regla está mal, no el archivo.
+        tsc_sweep.close_pattern(run, name, f"{step}: el barrido no conservó el arreglo en "
+                                           f"{len(excluded)} archivo(s) y el patrón declara close-pattern")
+    elif excluded:
         tsc_sweep.exclude_files(run, name, excluded,
                                 f"{step}: el barrido no conservó el arreglo en este archivo")
     return {"applied": applied, "excluded": excluded}

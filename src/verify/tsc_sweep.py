@@ -61,7 +61,13 @@ from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 PATTERNS = "patterns.jsonl"
 LEDGER = "ledger.jsonl"
 #: Los campos cuyo cambio es una versión nueva del patrón.
-VERSIONED = ("signal", "fix", "site", "replace", "include")
+VERSIONED = ("signal", "fix", "site", "replace", "include", "on_failure", "done_when")
+#: Recuperación ante un fallo del barrido (L07): excluir el archivo rechazado
+#: con su razón, o cerrar el patrón (su regla está mal, no el archivo).
+ON_FAILURE = ("exclude-file", "close-pattern")
+#: Criterio de terminación: el patrón acaba cuando su señal no tiene
+#: instancias vivas en su alcance (lo que mide el gate 4).
+DONE_WHEN = ("no-live-instances",)
 SUFFIXES = (".ts", ".tsx")
 
 
@@ -85,6 +91,10 @@ def add_pattern(run: Path, pattern: dict) -> dict:
     mechanical = [bool(str(pattern.get(k, "")).strip()) for k in ("site", "replace")]
     if mechanical[0] != mechanical[1]:
         raise ValueError("`site` y `replace` van juntos: uno sin el otro no es una sustitución")
+    pattern = {"on_failure": ON_FAILURE[0], "done_when": DONE_WHEN[0], **pattern}
+    if pattern["on_failure"] not in ON_FAILURE or pattern["done_when"] not in DONE_WHEN:
+        raise ValueError(f"un skill necesita recuperación en {ON_FAILURE} y terminación en {DONE_WHEN}; "
+                         f"llegó {pattern['on_failure']!r} / {pattern['done_when']!r}")
     re.compile(pattern["signal"])
     if mechanical[0]:
         re.compile(pattern["site"], re.M)
@@ -125,6 +135,19 @@ def add_pattern(run: Path, pattern: dict) -> dict:
     patterns[row["name"]] = row
     _save(run, patterns)
     return row
+
+
+def skill_card(row: dict) -> dict:
+    """La definición de un patrón como skill (L07): condición de activación,
+    entradas (su alcance), acciones, recuperación ante fallos y criterio de
+    terminación. `mechanical` separa la sustitución ejecutable del arreglo
+    en prosa que un agente interpreta."""
+    return {"activation": row["signal"],
+            "inputs": {"include": row.get("include", ""), "exclude": row.get("exclude", [])},
+            "action": {"fix": row["fix"], "mechanical": bool(row.get("site")),
+                       "site": row.get("site", ""), "replace": row.get("replace", "")},
+            "on_failure": row.get("on_failure", ON_FAILURE[0]),
+            "done_when": row.get("done_when", DONE_WHEN[0])}
 
 
 def set_provenance(run: Path, name: str, provenance: dict) -> dict:

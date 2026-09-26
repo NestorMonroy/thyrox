@@ -178,5 +178,25 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("veredictos", ("transfiere", "no transfiere", "sin oportunidad"),
                  (report["moved"]["verdict"], report["stuck"]["verdict"], report["idle"]["verdict"]))
 
+# --- definición completa de skill (L07: activación, entradas, acciones,
+# recuperación ante fallos y criterio de terminación) --------------------------
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    row = ts.add_pattern(run, pattern("s", "TS8: s"))
+    assert_equal("por defecto se recupera excluyendo el archivo y termina sin instancias vivas",
+                 ("exclude-file", "no-live-instances"), (row.get("on_failure"), row.get("done_when")))
+    try:
+        ts.add_pattern(run, {**pattern("bad", "TS8: b"), "on_failure": "retry-forever"})
+        refused = False
+    except ValueError:
+        refused = True
+    assert_equal("una recuperación que no existe se rechaza al escribir", True, refused)
+    card = ts.skill_card(ts.add_pattern(run, {**pattern("strict", "TS8: t", include="^src/"),
+                                              "on_failure": "close-pattern"}))
+    assert_equal("la tarjeta tiene las cinco partes de un skill",
+                 ["action", "activation", "done_when", "inputs", "on_failure"], sorted(card))
+    assert_equal("y dice si la acción es mecánica o exige juicio", (False, "^src/", "TS8: t"),
+                 (card["action"]["mechanical"], card["inputs"]["include"], card["activation"]))
+
 print(f"test_pattern_memory: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

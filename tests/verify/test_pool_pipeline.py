@@ -217,6 +217,21 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("sin cita (TS2769 fija su primera línea) no hay señal que derivar", None,
                  pp.derived_signal(["src/a.ts: TS2769: No overload matches this call."], "src/a.ts", "TS2769"))
 
+# --- La recuperación declarada gobierna el asiento del barrido (L07) ---------
+with tempfile.TemporaryDirectory() as directory:
+    run_dir = Path(directory)
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "soft", "signal": "TS9: s", "fix": "f"})
+    pp.tsc_sweep.add_pattern(run_dir, {"name": "hard", "signal": "TS9: h", "fix": "f", "on_failure": "close-pattern"})
+    pp.settle_sweep(run_dir, "pattern:soft", ["src/a.ts", "src/b.ts"], ["src/a.ts"], "step-7")
+    pp.settle_sweep(run_dir, "pattern:hard", ["src/a.ts", "src/b.ts"], ["src/a.ts"], "step-7")
+    memory = pp.tsc_sweep.load_patterns(run_dir)
+    assert_equal("exclude-file: el rechazado se excluye y el patrón sigue abierto", (["src/b.ts"], None),
+                 (memory["soft"]["exclude"], memory["soft"].get("status")))
+    assert_equal("close-pattern: un rechazo cierra el patrón, citando el paso", (True, True),
+                 (memory["hard"].get("status") == "closed", "step-7" in memory["hard"].get("closed_reason", "")))
+    assert_equal("y lo aceptado se marca aplicado en los dos casos", (["src/a.ts"], ["src/a.ts"]),
+                 (memory["soft"]["applied"], memory["hard"]["applied"]))
+
 # --- Procedencia reconstruida desde la evidencia de los pasos ------------------
 # Los patrones anteriores a la procedencia (f4b93081) no dicen de dónde salieron;
 # cada paso guarda items.txt (ítem -> archivo) y outputs/<n>.json con los
