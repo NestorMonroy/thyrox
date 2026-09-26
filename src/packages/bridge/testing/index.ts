@@ -1,4 +1,6 @@
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type {
+  InboundMessageFields,
   InitBridgeOptions,
   ReplBridgeHandle,
 } from '../src/contracts.js'
@@ -10,14 +12,15 @@ export class NullBridgeRuntime {
     return `https://example.test/code?bridge=${environmentId}`
   }
 
-  extractInboundMessageFields(message: unknown): unknown {
-    return message
+  // Sin puente no hay mensaje entrante que extraer.
+  extractInboundMessageFields(_message: unknown): InboundMessageFields | undefined {
+    return undefined
   }
 
   async resolveAndPrepend(
     _message: unknown,
-    content: string | unknown[],
-  ): Promise<string | unknown[]> {
+    content: string | ContentBlockParam[],
+  ): Promise<string | ContentBlockParam[]> {
     return content
   }
 

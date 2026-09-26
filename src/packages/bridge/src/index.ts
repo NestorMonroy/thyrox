@@ -1,6 +1,8 @@
 // Superficie pública de integración del bridge.
 // Puerto fiel de `ccnmt: packages/bridge/src/index.ts`.
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import {
+  type InboundMessageFields,
   type InitBridgeOptions,
   type ReplBridgeHandle,
 } from './contracts.js'
@@ -21,14 +23,14 @@ export function buildBridgeConnectUrl(
   return getBridgeHostBindings().buildBridgeConnectUrl(environmentId, ingressUrl)
 }
 
-export function extractInboundMessageFields(message: unknown): unknown {
+export function extractInboundMessageFields(message: unknown): InboundMessageFields | undefined {
   return getBridgeHostBindings().extractInboundMessageFields(message)
 }
 
 export function resolveAndPrepend(
   message: unknown,
-  content: string | unknown[],
-): Promise<string | unknown[]> {
+  content: string | ContentBlockParam[],
+): Promise<string | ContentBlockParam[]> {
   return getBridgeHostBindings().resolveAndPrepend(message, content)
 }
 

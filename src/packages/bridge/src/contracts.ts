@@ -1,4 +1,18 @@
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
+import type { UUID } from 'crypto'
+
 export type BridgeState = 'ready' | 'connected' | 'reconnecting' | 'failed'
+
+/**
+ * Lo que `inboundMessages.ts` extrae de un mensaje entrante. La entrada de
+ * los bindings sigue siendo `unknown` (deliberado, ver `initReplBridge.ts`),
+ * pero la salida tiene una sola forma y cada consumidor la necesita: con
+ * `unknown` también a la salida, `run-streaming.ts` leía `content` de `{}`.
+ */
+export type InboundMessageFields = {
+  content: string | ContentBlockParam[]
+  uuid: UUID | undefined
+}
 
 export type ReplBridgeHandle = {
   bridgeSessionId: string
@@ -38,11 +52,11 @@ export type BridgeHostBindings = {
     environmentId: string,
     ingressUrl?: string,
   ) => string
-  extractInboundMessageFields: (message: unknown) => unknown
+  extractInboundMessageFields: (message: unknown) => InboundMessageFields | undefined
   resolveAndPrepend: (
     message: unknown,
-    content: string | unknown[],
-  ) => Promise<string | unknown[]>
+    content: string | ContentBlockParam[],
+  ) => Promise<string | ContentBlockParam[]>
   initReplBridge: (
     options?: InitBridgeOptions,
   ) => Promise<ReplBridgeHandle | null>
