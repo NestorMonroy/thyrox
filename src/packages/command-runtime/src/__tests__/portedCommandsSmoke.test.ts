@@ -13,6 +13,7 @@
  * y que su metadata estática tiene la forma esperada.
  */
 import { describe, expect, test } from 'bun:test'
+import { isCommandEnabled } from '@thyrox/agent/command.js'
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
 import * as barrel from '../index.js'
 import { StubCommandRuntime } from '../testing/index.js'
@@ -106,7 +107,7 @@ describe('stubs/*', () => {
     expect(resetLimits.isHidden).toBe(true)
   })
   test('stubCommand — deshabilitado y oculto', () => {
-    expect(stubCommand.isEnabled()).toBe(false)
+    expect(isCommandEnabled(stubCommand)).toBe(false)
     expect(stubCommand.isHidden).toBe(true)
     expect(stubCommand.name).toBe('stub')
   })
