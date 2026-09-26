@@ -369,6 +369,10 @@ cmd_wait() {
     local total=${#jobs[@]}
 
     while true; do
+        # La cadena se mueve aquí: un dependiente cuyo predecesor asentó se
+        # lanza (o se cancela) sin que nadie corra `dispatch` a mano. Sus
+        # líneas van a stderr; stdout queda para el veredicto.
+        cmd_dispatch 2>&1 | gawk '/LANZADO|CANCELADO|SIN-PREDECESOR/' >&2
         local settled=0
         for f in "${jobs[@]}"; do
             local label; label=$(basename "$f" .job)
@@ -376,6 +380,11 @@ cmd_wait() {
                 (( settled++ )); continue
             fi
             [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }
+            if grep -q '^cancelled=' "$f"; then
+                settled_as[$label]=CANCELADO; (( settled++ ))
+                echo "asentado: $label -> CANCELADO ($settled de $total)" >&2
+                continue
+            fi
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
             mk=$(sed -n 's/^marker=//p' "$f")
@@ -589,9 +598,10 @@ class() {
 #   ESPERANDO lo deja como está — todavía no se sabe
 #
 # Es idempotente: un dependiente ya lanzado pierde su `after_ok=`, así que un
-# segundo `dispatch` no lo relanza. Y lo llaman `wait`, `status` y `pending`,
-# de modo que la cadena avanza con cualquier interacción, sin daemon y sin que
-# nadie tenga que quedarse esperando.
+# segundo `dispatch` no lo relanza. Lo llama `wait` en cada vuelta, de modo que
+# la cadena avanza mientras se espera, sin daemon. (Este comentario decía que
+# también `status` y `pending`, y ninguno de los tres lo llamaba: el cierre del
+# paso 161 esperó un `dispatch` a mano.)
 #
 # CANCELADO no es un estado silencioso a propósito: el trabajo se queda en el
 # ledger con `cancelled=` para que `status` lo muestre, y `pending` NO lo

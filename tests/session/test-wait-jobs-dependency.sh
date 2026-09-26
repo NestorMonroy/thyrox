@@ -155,6 +155,29 @@ afirmar "el dependiente arrancó y dejó su medición" "medido" \
 afirmar "y es LIDER de su propio grupo (pgid == pid)" "$HIJO_PID" "$HIJO_PGID"
 bash "$GUION" forget padre >/dev/null 2>&1
 bash "$GUION" forget hijo  >/dev/null 2>&1
+
+echo "== 9. wait SOLO mueve la cadena: nadie corre dispatch =="
+# Episodio: el cierre del paso 161 (`--after-ok step-161-pipeline`) quedó
+# BLOQUEADO con el pipeline ya asentado hasta que se corrió `dispatch` a mano.
+# El comentario de `dispatch` decía «lo llaman wait, status y pending» y ninguno
+# lo llamaba. Qué lo haría fallar: quitar la llamada de `wait` caen los dos.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+TESTIGO9=$(mktemp -u); fixture_adopt "$TESTIGO9"
+L9=$(fixture_file); nohup bash -c "echo EXIT=0" >"$L9" 2>&1 & P9=$!; disown $P9
+bash "$GUION" register antes9 "$L9" "$P9" >/dev/null
+bash "$GUION" register despues9 "$(fixture_file)" --after-ok antes9 --run "echo medido > $TESTIGO9" >/dev/null
+OUT9=$(WAIT_JOBS_INTERVAL=1 timeout 60 bash "$GUION" wait --timeout 20 2>/dev/null); RC9=$?
+afirmar "wait lanza el dependiente y lo recoge OK, sin dispatch a mano" "0 medido si" \
+    "$RC9 $(cat "$TESTIGO9" 2>/dev/null) $(grep -q '^OK *despues9' <<<"$OUT9" && echo si || echo no)"
+
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+L10=$(fixture_file); nohup bash -c "echo EXIT=1" >"$L10" 2>&1 & P10=$!; disown $P10
+bash "$GUION" register falla10 "$L10" "$P10" >/dev/null
+bash "$GUION" register nunca10 "$(fixture_file)" --after-ok falla10 --run "true" >/dev/null
+OUT10=$(WAIT_JOBS_INTERVAL=1 timeout 60 bash "$GUION" wait --timeout 8 2>/dev/null); RC10=$?
+afirmar "con el predecesor fallido, wait lo asienta CANCELADO en vez de agotar el timeout" "no si" \
+    "$( [[ $RC10 -eq 3 ]] && echo si || echo no) $(grep -q '^CANCELADO nunca10' <<<"$OUT10" && echo si || echo no)"
+
 echo
 printf 'resumen: %d ok, %d fallo(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]
