@@ -100,5 +100,20 @@ check("equivalent_tokens con todo a 1h es el gemelo con su TTL por defecto",
       mc.usage_equivalent_tokens(CATALOG, "m-10-50-cr", flat),
       mc.equivalent_tokens(CATALOG, "m-10-50-cr", {**flat, "cache_creation_1h": 100}))
 
+print("== 7. equivalent_tokens_with_basis: el valor y la base con que se ponderó ==")
+split = {**flat, "cache_creation_5m": 40, "cache_creation_1h": 60}
+check("modelo del catálogo: los cocientes de su tier, y el tier como base",
+      (mc.equivalent_tokens(CATALOG, "m-10-50-cr", split), "tier_10_50_cache_read_0_25"),
+      mc.equivalent_tokens_with_basis(CATALOG, "m-10-50-cr", split))
+check("fuera del catálogo: la fórmula fija con la escritura repartida por TTL, declarada",
+      (10 + (40 * 1.25 + 60 * 2.0) / 100 * 100 + 1000 * 0.1 + 20 * 5, mc.FIXED_BASIS),
+      mc.equivalent_tokens_with_basis(CATALOG, "claude-desconocido", split))
+check("sin reparto de TTL la escritura fija pesa 1.25×",
+      (10 + 100 * 1.25 + 1000 * 0.1 + 20 * 5, mc.FIXED_BASIS),
+      mc.equivalent_tokens_with_basis(CATALOG, "claude-desconocido", flat))
+check("sin catálogo ni modelo: la fórmula fija, declarada",
+      (10 + 100 * 1.25 + 1000 * 0.1 + 20 * 5, mc.FIXED_BASIS),
+      mc.equivalent_tokens_with_basis(None, None, flat))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

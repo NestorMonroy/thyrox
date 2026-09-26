@@ -204,6 +204,35 @@ def equivalent_tokens(catalog: dict, model_id: str, usage: dict) -> float:
             + usage_equivalent_tokens(catalog, model_id, {"cache_creation_tokens": write_1h}, cache_ttl="1h"))
 
 
+#: La base que se declara cuando el modelo no está en el catálogo: los
+#: cocientes del tier 3/15 aplicados a todo modelo, que el store usaba.
+FIXED_BASIS = "fija-3-15"
+FIXED_WRITE_RATIO = {"5m": 1.25, "1h": 2.0}
+
+
+def fixed_equivalent_tokens(usage: dict) -> float:
+    """La fórmula de pesos fijos (in 1×, lectura 0.1×, salida 5×), con la
+    escritura de caché ponderada por su reparto de TTL medido; sin reparto,
+    a 1.25×."""
+    write_5m = usage.get("cache_creation_5m", 0)
+    write_1h = usage.get("cache_creation_1h", 0)
+    measured = write_5m + write_1h
+    ratio = ((write_5m * FIXED_WRITE_RATIO["5m"] + write_1h * FIXED_WRITE_RATIO["1h"]) / measured
+             if measured else FIXED_WRITE_RATIO["5m"])
+    return (usage.get("input_tokens", 0) + ratio * usage.get("cache_creation_tokens", 0)
+            + 0.1 * usage.get("cache_read_tokens", 0) + 5 * usage.get("output_tokens", 0))
+
+
+def equivalent_tokens_with_basis(catalog: dict | None, model_id: str | None, usage: dict) -> tuple[float, str]:
+    """Los tokens equivalentes y la base con que se ponderaron: el tier del
+    modelo si el catálogo lo conoce; si no, la fórmula fija, declarada como
+    ``FIXED_BASIS`` para que dos bases no se sumen en silencio."""
+    tier = models_by_id(catalog).get(model_id, {}).get("pricing_tier") if catalog and model_id else None
+    if not tier:
+        return fixed_equivalent_tokens(usage), FIXED_BASIS
+    return equivalent_tokens(catalog, model_id, usage), tier
+
+
 def effort_cost_index(catalog: dict, model_id: str, level: str) -> float | None:
     """El índice relativo (``high`` = 1) que el registro declara; None si no lo declara."""
     model = models_by_id(catalog).get(model_id) or {}

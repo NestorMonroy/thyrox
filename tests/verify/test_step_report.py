@@ -72,6 +72,20 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("costo en tokens equivalentes ponderados, y por aceptada", (1005.0, 502.5),
                  (report["cost"]["equiv_tokens"], report["cost"]["equiv_per_accepted"]))
     assert_equal("el USD de lista no se publica como costo", False, "usd" in json.dumps(report["cost"]).lower())
+    assert_equal("sin modelUsage la base es la fórmula fija, declarada", {"(sin modelo)": "fija-3-15"},
+                 report["cost"]["basis"])
+
+    # El mismo uso en Opus 5.5, con la escritura a 1h: su tier lee a 0.05× y
+    # escribe a 2×; 10 + 100*2 + 1000*0.05 + 20*5 = 360, no 335.
+    opus_usage = {**usage, "cache_creation": {"ephemeral_1h_input_tokens": 100, "ephemeral_5m_input_tokens": 0}}
+    for n in (1, 2, 3):
+        (bench / f"outputs/{n}.json").write_text(json.dumps(
+            {"usage": opus_usage, "modelUsage": {"claude-opus-5-5": {"inputTokens": 10}}}))
+    report = sr.step_report(bench, pipeline)
+    assert_equal("costo con los cocientes del tier del modelo de cada salida", (1080.0, 540.0),
+                 (report["cost"]["equiv_tokens"], report["cost"]["equiv_per_accepted"]))
+    assert_equal("la base de cada modelo se publica", {"claude-opus-5-5": "tier_4_20_cache_read_0_20"},
+                 report["cost"]["basis"])
 
     empty = Path(tmp) / "empty"
     (empty / "outputs").mkdir(parents=True)

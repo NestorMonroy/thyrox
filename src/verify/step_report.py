@@ -11,9 +11,11 @@ solape entre pasos, por ejemplo, mejora la primera y no toca la segunda.
   fallidos y pasadas de tsc del pipeline.
 - **data**: propuestas juzgadas, aceptadas (`accepted*`) y tasa.
 - **capability**: total de tsc del primer lote al último.
-- **cost**: tokens equivalentes ponderados (in 1×, escritura de caché
-  1.25×, lectura 0.1×, salida 5×), la cifra que el proyecto cita; el USD
-  de las salidas es precio de lista y no se publica como costo.
+- **cost**: tokens equivalentes con los cocientes del tier del modelo de
+  cada salida (`model_catalog.equivalent_tokens_with_basis`), la cifra que
+  el proyecto cita, y la base usada por modelo; una salida sin modelo o con
+  un modelo fuera del catálogo cae a la fórmula fija y lo declara. El USD de
+  las salidas es precio de lista y no se publica como costo.
 
 Ciega a: el tiempo entre pasos (commit, plan, lanzamiento), que no vive en
 el banco de un paso; y a un ítem cuya salida no trae `usage`.
@@ -28,9 +30,27 @@ import statistics
 import sys
 from pathlib import Path
 
-#: Pesos del costo equivalente (calibration-verified-numbers: la cifra que se cita).
-WEIGHTS = {"input_tokens": 1.0, "cache_creation_input_tokens": 1.25, "cache_read_input_tokens": 0.1,
-           "output_tokens": 5.0}
+from agents import model_catalog
+
+#: La etiqueta de una salida que no declara su modelo.
+NO_MODEL = "(sin modelo)"
+
+
+def _item_costs(result: dict, catalog: dict | None) -> list[tuple[str, float, str]]:
+    """(modelo, tokens equivalentes, base) de una salida de ``claude -p``.
+    Con un solo modelo se usa ``usage``, que trae el reparto de la escritura
+    por TTL; con varios, el ``modelUsage`` de cada uno, sin ese reparto."""
+    models = result.get("modelUsage") or {}
+    if len(models) > 1:
+        usages = {model: {"input_tokens": u.get("inputTokens", 0),
+                          "cache_creation_tokens": u.get("cacheCreationInputTokens", 0),
+                          "cache_read_tokens": u.get("cacheReadInputTokens", 0),
+                          "output_tokens": u.get("outputTokens", 0)} for model, u in models.items()}
+    else:
+        model = next(iter(models), None)
+        usages = {model: model_catalog.usage_from_result(result.get("usage") or {})}
+    return [(model or NO_MODEL, *model_catalog.equivalent_tokens_with_basis(catalog, model, usage))
+            for model, usage in usages.items()]
 
 
 def _joblog(bench: Path) -> list[tuple[int, float, float, int]]:
@@ -80,20 +100,23 @@ def step_report(bench: Path, pipeline: Path) -> dict:
                          "distinguiría «no avanzó» de «no se midió»")
     outcomes = [o for b in batches for o in (b.get("outcomes") or {}).values()]
     accepted = sum(1 for o in outcomes if o.startswith("accepted"))
-    equiv = 0.0
+    catalog, _ = model_catalog.try_catalog()
+    equiv, basis = 0.0, {}
     for path in sorted((bench / "outputs").glob("*.json")):
         try:
-            usage = json.loads(path.read_text()).get("usage") or {}
+            result = json.loads(path.read_text())
         except ValueError:
             continue
-        equiv += sum(usage.get(key, 0) * weight for key, weight in WEIGHTS.items())
+        for model, value, model_basis in _item_costs(result, catalog):
+            equiv += value
+            basis[model] = model_basis
     return {
         "system": _system(bench, batches),
         "data": {"proposals": len(outcomes), "accepted": accepted,
                  "acceptance": round(accepted / len(outcomes), 4) if outcomes else 0.0},
         "capability": {"total_before": batches[0]["total_before"], "total_final": batches[-1]["total_final"],
                        "delta": batches[-1]["total_final"] - batches[0]["total_before"]},
-        "cost": {"equiv_tokens": round(equiv, 1),
+        "cost": {"equiv_tokens": round(equiv, 1), "basis": basis,
                  "equiv_per_accepted": round(equiv / accepted, 1) if accepted else None},
     }
 
