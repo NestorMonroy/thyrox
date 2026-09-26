@@ -158,6 +158,18 @@ with tempfile.TemporaryDirectory() as raw:
           gm.admit(2000, ledger9, owner9, str(smi), timeout_s=3, interval_s=0.1))
     gm.release(ledger9, owner9)
 
+    print("== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==")
+    # La primera ejecución de un pool con una base de historial nueva: el
+    # directorio del registro no existe todavía, y el lock no podía crearse.
+    fresh = tmp / "base-nueva" / "sub" / "vram.json"
+    free.write_text("0, 5000\n")
+    check("admite aunque el directorio no exista", True,
+          gm.admit(2000, fresh, os.getpid(), str(smi), timeout_s=0.5, interval_s=0.1))
+    gm.release(fresh, os.getpid())
+    check("y release deja el registro vacío", {}, gm.VramLedger(fresh).live())
+    check("release sobre un directorio inexistente no lanza", None,
+          gm.release(tmp / "otra-base" / "vram.json", os.getpid()))
+
     print("== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==")
     # 5000 libres y dos ítems de 3000 a la vez: comprobar sin reservar deja
     # arrancar a los dos (3000 + 3000 > 5000). Con el registro de lo comprometido,

@@ -1,0 +1,33 @@
+== nvidia-smi en PATH
+ausente
+== dispositivos /dev/nvidia* y /dev/dri
+ls: cannot access '/dev/nvidia*': No such file or directory
+ls: cannot access '/dev/dri': No such file or directory
+== driver NVIDIA cargado (/proc/driver/nvidia)
+ls: cannot access '/proc/driver/nvidia': No such file or directory
+== módulos del kernel con nvidia
+grep: /proc/modules: No such file or directory
+(fin módulos)
+== PCI: clase 0x03 (display) y vendor 0x10de (NVIDIA)
+(fin PCI filtrado)
+== total de dispositivos PCI
+11
+== librerías CUDA/NVML en el sistema
+ninguna
+== kernel
+6.18.44-fc-v37
+== los 11 dispositivos PCI: dirección, fabricante, clase
+0000:00:00.0 0x8086 0x060000
+0000:00:01.0 0x1af4 0xffff00
+0000:00:02.0 0x1af4 0x018000
+0000:00:03.0 0x1af4 0x018000
+0000:00:04.0 0x1af4 0x018000
+0000:00:05.0 0x1af4 0x018000
+0000:00:06.0 0x1af4 0x018000
+0000:00:07.0 0x1af4 0x018000
+0000:00:08.0 0x1af4 0x020000
+0000:00:09.0 0x1af4 0xffff00
+0000:00:0a.0 0x1af4 0xffff00
+== producto de la máquina
+cat: /sys/class/dmi/id/sys_vendor: No such file or directory
+cat: /sys/class/dmi/id/product_name: No such file or directory

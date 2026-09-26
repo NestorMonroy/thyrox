@@ -5,7 +5,7 @@
 # verían libre al empezar. Pasa si nunca corren a la vez, los dos terminan y el
 # registro queda vacío.
 #
-# Precondiciones: nvidia-smi, PyTorch con CUDA y GNU Time (la primera
+# Precondiciones: nvidia-smi, PyTorch con CUDA (`uv sync --group gpu`) y GNU Time (la primera
 # ejecución mide el pico con el que el pool deriva lo que pide cada ítem). Sin
 # alguna sale 2 nombrándola, sin publicar ningún conteo.
 # Deja su evidencia en OUT (primer argumento, o .claude/build-logs/gpu-pools-<fecha>).
@@ -15,16 +15,24 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 SMI="${HEADLESS_POOL_NVIDIA_SMI:-nvidia-smi}"
 rehusa() { echo "test-gpu-pools-real: REHÚSA — $*. No se midió nada." >&2; exit 2; }
 bash "$RAIZ/bin/gpu_monitor" available --nvidia-smi "$SMI" >/dev/null 2>&1 || rehusa "nvidia-smi no responde ($SMI)"
-python3 -c 'import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)' >/dev/null 2>&1 \
-  || rehusa "falta PyTorch con CUDA"
-TIME_BIN="${HEADLESS_POOL_TIME:-/usr/bin/time}"
-[[ "$("$TIME_BIN" --version 2>&1)" == *"GNU Time"* ]] || rehusa "falta GNU Time ($TIME_BIN)"
+# PyTorch vive en el entorno del proveedor (`uv sync --group gpu`), no en el
+# python3 del sistema.
+PY="${THYROX_PYTHON:-$RAIZ/.venv/bin/python}"
+"$PY" -c 'import torch, sys; sys.exit(0 if torch.cuda.is_available() else 1)' >/dev/null 2>&1 \
+  || rehusa "falta PyTorch con CUDA en $PY (uv sync --group gpu)"
+# GNU Time por el toolchain, la misma definición que usa el pool.
+( THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
+  source "$RAIZ/src/lib/toolchain.sh"; thyrox_toolchain_require_gnu_time >/dev/null 2>&1 ) \
+  || rehusa "falta GNU Time (thyrox_toolchain_require_gnu_time; THYROX_INSTALL_GNU_TIME=1 lo instala)"
 
 OUT="${1:-$RAIZ/.claude/build-logs/gpu-pools-$(date -u +%Y%m%dT%H%M%SZ)}"
 mkdir -p "$OUT/history"
 FREE="$(bash "$RAIZ/bin/gpu_monitor" free --nvidia-smi "$SMI")"
 export CUDA_ITEM_MIB=$(( FREE * 35 / 100 )) CUDA_ITEM_DELAY=3 CUDA_ITEM_HOLD=2
-export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_CLAUDE="$HERE/cuda_pool_item.py"
+# El ítem corre con el intérprete que tiene PyTorch, no con el del shebang.
+printf '#!/usr/bin/env bash\nexec "%s" "%s" "$@"\n' "$PY" "$HERE/cuda_pool_item.py" > "$OUT/cuda-item"
+chmod +x "$OUT/cuda-item"
+export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_CLAUDE="$OUT/cuda-item"
 export HEADLESS_POOL_HISTORY_DIR="$OUT/history" HEADLESS_POOL_NVIDIA_SMI="$SMI"
 printf 'Ítem de GPU.\n' > "$OUT/prompt.md"
 pool() { bash "$RAIZ/src/session/headless-pool.sh" --prompt "$OUT/prompt.md" --out "$OUT/out-$1" \
@@ -33,8 +41,9 @@ pool() { bash "$RAIZ/src/session/headless-pool.sh" --prompt "$OUT/prompt.md" --o
 # 1. Una ejecución sola, con GNU Time: su pico real alimenta lo que el pool pide.
 printf 'medida\n' | pool medida > "$OUT/pool-medida.salida" 2>&1
 : > "$RAMPA_LOG"
-# 2. Dos pools a la vez, sin GNU Time: no se toca el historial entre medio.
-for p in a b; do printf 'item-%s\n' "$p" | HEADLESS_POOL_TIME=/no-existe pool "$p" > "$OUT/pool-$p.salida" 2>&1 & done
+# 2. Dos pools a la vez, TAMBIÉN medidos: cada uno deja su fila, que es la
+#    evidencia de la carga concurrente real.
+for p in a b; do printf 'item-%s\n' "$p" | pool "$p" > "$OUT/pool-$p.salida" 2>&1 & done
 wait
 
 total=0; fallos=0

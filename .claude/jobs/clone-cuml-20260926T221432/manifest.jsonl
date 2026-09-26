@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c mkdir -p /home/user/nestormonroy && GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 https://github.com/NestorMonroy/cuml /home/user/nestormonroy/cuml 2>&1 | tail -3; git -C /home/user/nestormonroy/cuml rev-parse --short HEAD; git -C /home/user/nestormonroy/cuml remote get-url origin", "started_at": "2026-09-26T22:14:32+00:00"}

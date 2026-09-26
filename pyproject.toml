@@ -83,3 +83,13 @@ verify = ["numpy"]
 #
 #     uv sync --group corpus
 corpus = ["pdfplumber"]
+# El asignador CUDA real de los arneses de hardware de la admisión por VRAM
+# (`tests/session/hardware/`, niveles 2 y 3 de ADR-THYROX-004). Grupo y no
+# dependencia: la rueda de PyPI para Linux trae CUDA y pesa varios GB, y sólo
+# sirve en una máquina con GPU NVIDIA. Sin GPU se instala igual, pero
+# `torch.cuda.is_available()` da False y los arneses rehúsan con exit 2.
+# GNU Time, que el nivel 3 también exige, es un binario del sistema: su
+# instalador es `src/lib/toolchain.sh::thyrox_toolchain_require_gnu_time`.
+#
+#     uv sync --group gpu
+gpu = ["torch"]

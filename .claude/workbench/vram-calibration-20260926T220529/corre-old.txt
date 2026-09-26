@@ -1,0 +1,1 @@
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }

@@ -1,0 +1,1 @@
+    return exclusive_mib, f"pide la GPU entera

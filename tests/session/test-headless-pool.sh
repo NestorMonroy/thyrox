@@ -59,7 +59,11 @@ export HEADLESS_POOL_CLAUDE="$F/claude"
 
 # Cada caso con un historial propio y vacío, salvo que declare `HIST`: sin eso,
 # el primero dejaría una fila y todos los siguientes derivarían su TTL de ella.
-corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
+# GNU Time se DECLARA en cada caso —el falso, el real o ninguno—, nunca se
+# hereda del contenedor: heredado, el `/usr/bin/time` de la máquina grababa
+# filas reales en el historial y el resultado dependía del host
+# (H-THYROX-192). Sin declarar, ninguno.
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
 
 # 1 — tres items: exit 0, una salida por item, y el item llega en el prompt.
 rm -rf "$F/out"; corre alfa beta gamma
@@ -179,6 +183,16 @@ check "con GNU time: memoria pico, pared, usuario y sistema" "$(cat "$F/out/1.ti
 # lector (`int(campos[0])`) revienta con la linea de «Command exited…».
 check "con GNU time: el .time del item fallido es solo la medida" "$(cat "$F/out/2.time")" "12345 1.50 0.40 0.10"
 check "con GNU time: el fallo del item sigue siendo fallo" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=1 fallidos=1"
+# El GNU Time REAL, resuelto por el toolchain como en producción: la medida es
+# de verdad (memoria pico > 0 y cuatro campos numéricos), no la fija del falso.
+if [[ "$(/usr/bin/time --version 2>&1)" == *"GNU Time"* ]]; then
+  rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME=/usr/bin/time corre alfa
+  check "GNU time real: el .time trae cuatro cifras" \
+    "$(gawk 'NF == 4 && $1 ~ /^[0-9]+$/ && $1 > 0 {n++} END{print n+0}' "$F/out/1.time" 2>/dev/null)" "1"
+  check "GNU time real: no declara que falte" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "0"
+else
+  echo "SIN MEDIR: /usr/bin/time no es GNU Time; el caso del GNU Time real no corre"
+fi
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
 check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
 check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "1"
@@ -228,6 +242,13 @@ rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=1000 HEADLESS_POOL_TIME="$F/
 check "admision: lo reservado por otro pool vivo no se vuelve a dar" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
 check "admision: la reserva ajena sigue en el registro" "$(jq -r --arg p "$$" '.[$p]' "$HIST/vram-reservations.json" 2>/dev/null)" "900"
 rm -f "$HIST/vram-reservations.json"
+# Un error de la admisión no es un plazo vencido: con el registro en un sitio
+# donde no se puede escribir, el .err dice que la admisión FALLÓ y con qué
+# código, no «no hubo sitio» —eso afirmaría una medida que no ocurrió—.
+rm -rf "$F/out"; EXTRA="--timeout 2" HEADLESS_POOL_VRAM_LEDGER=/proc/no-se-puede/vram.json HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admisión con error: el ítem falla" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admisión con error: el .err dice que falló, no que venció" \
+  "$(gawk '/la admision por VRAM fallo \(exit [0-9]+\)/{a++} /admision por VRAM vencida/{b++} END{print a+0, b+0}' "$F/out/1.err")" "1 0"
 rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
 check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
   "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
@@ -262,7 +283,7 @@ check "dos pools: la ejecución de medida deja el pico del ítem" \
 dos_pools() {
   for p in a b; do
     rm -rf "$F/out-$p"
-    printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/no-existe" \
+    printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
       HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-$p" \
       --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
   done
@@ -275,6 +296,24 @@ check "dos pools: los dos items terminan" \
 check "dos pools: nunca corren juntos (máximo simultáneo 1)" \
   "$(sort -k2,2n "$RAMPA_LOG" | gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}')" "1"
 check "dos pools: el registro queda vacío" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+check "dos pools: la ejecución concurrente también se mide (una fila por pool)" \
+  "$(gawk 'END{print NR}' "$HIST"/*/runs.jsonl 2>/dev/null)" "3"
+# H-THYROX-192 en producción, no en el montaje del test: el historial trae un
+# pico 0 de ítems demasiado cortos para haber sido vistos, y NO hay ejecución
+# de medida antes. Sin calibrar, cada ítem pide la GPU entera: los dos pools
+# no corren juntos. Antes, el 0 hacía que no se pidiera nada.
+HIST="$F/historial-cero"
+HIST_DIR="$(HEADLESS_POOL_HISTORY_DIR="$HIST" bash "$RAIZ/bin/pool_history" dir "$F/prompt.md")"
+mkdir -p "$HIST_DIR"
+printf '{"items_measured": 2, "items_gpu_measured": 2, "min_wall_s": 0.1, "max_wall_s": 0.1, "peak_kb": 1000, "peak_vram_mib": 0}\n' \
+  > "$HIST_DIR/runs.jsonl"
+: > "$RAMPA_LOG"
+dos_pools
+check "pico 0 sin calibrar: los dos terminan" \
+  "$(cat "$F/pool-a.salida" "$F/pool-b.salida" | gawk '/^items=/{print}' | sort -u)" "items=1 ok=1 fallidos=0"
+check "pico 0 sin calibrar: nunca corren juntos" \
+  "$(sort -k2,2n "$RAMPA_LOG" | gawk '$1=="start"{n++; if (n>m) m=n} $1=="end"{n--} END{print m+0}')" "1"
+check "pico 0 sin calibrar: lo dice" "$(gawk '/hasta calibrar/{n++} END{print n+0}' "$F/pool-a.salida")" "1"
 unset GPU_STATE RAMPA_LOG
 unset HIST
 # RAM: MemAvailable 30000 KB y el item pico 12345 KB x 2 -> cabe 1.

@@ -1,0 +1,4 @@
+# El ítem corre con el intérprete que tiene PyTorch, no con el del shebang.
+printf '#!/usr/bin/env bash\nexec "%s" "%s" "$@"\n' "$PY" "$HERE/cuda_pool_item.py" > "$OUT/cuda-item"
+chmod +x "$OUT/cuda-item"
+export RAMPA_LOG="$OUT/rampa.log" HEADLESS_POOL_CLAUDE="$OUT/cuda-item"
