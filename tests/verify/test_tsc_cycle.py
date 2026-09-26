@@ -555,8 +555,8 @@ with tempfile.TemporaryDirectory() as tmp:
     code, out, _ = cli(["local", "launch", "--bench", str(root / "step-201"), "--worktree", "/wt",
                         "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1", "--dry-run"])
     pipeline_line = next(line for line in out.splitlines() if "pool_pipeline.py" in line)
-    expected = tc.step_setup.setup_record(route="local", model="claude-sonnet-5", scaffold=tc.THYROX / tc.LOCAL_PROMPT,
-                                          verifier=tc.TSC_COMMAND, policy={"net": False, "batch": 5})
+    expected = tc.step_setup_of(root / "step-201", "claude-sonnet-5", Path("/wt"), "local",
+                                cache_ttl=tc.pool_cache_ttl(root / "step-201", "claude-sonnet-5")[0])
     assert_equal("launch pasa al pipeline el setup_id de su configuración (L02)", True,
                  "--setup-id " + expected["setup_id"] in pipeline_line)
     assert_equal("con --dry-run no se registra nada en la corrida", False,
@@ -564,6 +564,38 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("launch registra el pool y el pipeline: sin eso una arista no tiene predecesor",
                  (0, True, True),
                  (code, "thyrox-bg register step-201-pool" in out, "thyrox-bg register step-201-pipeline" in out))
+
+# --- el TTL de caché del pool se decide con lo que midió el paso anterior -----
+# Cada ítem es un `claude -p`: su caché es de 5 m salvo que un hueco entre
+# turnos la haga caducar, y ningún hueco dentro de un ítem supera la duración
+# del ítem. El ítem más largo del paso anterior es la cota que decide.
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    previous = run / "step-154" / "outputs"
+    previous.mkdir(parents=True)
+    for n, minutes in enumerate((1.4, 4.91), 1):
+        (previous / f"{n}.json").write_text(json.dumps({"duration_ms": minutes * 60000}))
+    (previous / "joblog.tsv").write_text("no es json\n")
+    current = run / "step-155"
+    (current / "outputs").mkdir(parents=True)
+    assert_equal("la cota es el ítem más largo del paso anterior, en minutos", 4.91,
+                 tc.previous_item_bound(current))
+    ttl, why = tc.pool_cache_ttl(current, "claude-sonnet-5")
+    assert_equal("ítems de menos de 5 min: 5m, y el porqué", ("5m", True), (ttl, "turnos seguidos" in why))
+    (previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
+    assert_equal("un ítem de 12 min en el paso anterior: 1h", "1h", tc.pool_cache_ttl(current, "claude-sonnet-5")[0])
+    alone = Path(tmp) / "solo" / "step-1"
+    alone.mkdir(parents=True)
+    assert_equal("sin paso anterior medido no se decide: lo decide el cliente", None,
+                 tc.pool_cache_ttl(alone, "claude-sonnet-5")[0])
+    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
+                                 ledger=run / "ledger.jsonl", seed=1, cache_ttl="5m")
+    assert_equal("el TTL decidido llega al pool", True, "--cache-ttl 5m" in " ".join(pool))
+    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
+                                 ledger=run / "ledger.jsonl", seed=1)
+    assert_equal("sin TTL decidido el pool no lo fija", False, "--cache-ttl" in " ".join(pool))
+    assert_equal("el TTL es parte de la configuración del paso (setup_id)", "5m",
+                 tc.step_setup_of(current, "claude-sonnet-5", Path("/wt"), "modules", cache_ttl="5m")["policy"]["cache_ttl"])
 
 print(f"test_tsc_cycle: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

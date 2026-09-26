@@ -29,6 +29,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from agents import model_catalog
 from verify import step_setup, tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
@@ -576,18 +577,69 @@ def cmd_compare(args) -> int:
     return 0
 
 
-def step_setup_of(bench: Path, model: str, worktree: Path | list[Path], route: str) -> dict:
+def _step_number(bench: Path) -> int | None:
+    match = re.fullmatch(r"step-(\d+)", bench.name)
+    return int(match.group(1)) if match else None
+
+
+def previous_item_bound(bench: Path) -> float | None:
+    """La duración, en minutos, del ítem más largo del paso anterior medido.
+
+    Ningún hueco entre dos turnos de un `claude -p` supera la duración de su
+    ítem, así que el más largo acota el hueco que decide el TTL. `None` si no
+    hay paso anterior con salidas: sin medición no se inventa una cota."""
+    current = _step_number(bench)
+    if current is None:
+        return None
+    previous = sorted((n, p) for p in bench.parent.glob("step-*")
+                      if (n := _step_number(p)) is not None and n < current)
+    for _, step in reversed(previous):
+        durations = []
+        for path in (step / "outputs").glob("*.json"):
+            try:
+                duration = json.loads(path.read_text()).get("duration_ms")
+            except (ValueError, AttributeError):
+                continue
+            if isinstance(duration, (int, float)):
+                durations.append(duration / 60000)
+        if durations:
+            return round(max(durations), 2)
+    return None
+
+
+def pool_cache_ttl(bench: Path, model: str) -> tuple[str | None, str]:
+    """El TTL de la caché de cada `claude -p` del pool y su porqué: el que
+    `choose_cache_ttl` da para la cota del paso anterior. Sin cota, o con un
+    modelo fuera del catálogo, `None`: lo decide el cliente, y se dice."""
+    bound = previous_item_bound(bench)
+    if bound is None:
+        return None, "sin paso anterior medido: el TTL lo decide el cliente"
+    catalog, reason = model_catalog.try_catalog()
+    if catalog is None:
+        return None, reason or "sin catálogo de modelos"
+    try:
+        ttl, why = model_catalog.choose_cache_ttl(catalog, model, bound)
+    except KeyError as error:
+        return None, str(error)
+    return ttl, f"ítem más largo del paso anterior {bound} min: {why}"
+
+
+def step_setup_of(bench: Path, model: str, worktree: Path | list[Path], route: str,
+                  cache_ttl: str | None = None) -> dict:
     """La configuración con que el pipeline juzgará el paso (L02): ruta,
-    modelo, el scaffold de la ruta, el verificador y la política."""
+    modelo, el scaffold de la ruta, el verificador y la política, que incluye
+    el TTL de caché del pool."""
     shared = route == "shared"
     worktrees = worktree if isinstance(worktree, list) else [worktree]
     prompt = {"shared": SHARED_PROMPT, "local": LOCAL_PROMPT, "sweep": SWEEP_PROMPT}.get(route, MODULE_PROMPT)
     return step_setup.setup_record(route=route, model=model, scaffold=THYROX / prompt, verifier=TSC_COMMAND,
-                                   policy={"net": shared, "batch": len(worktrees) if shared else 5})
+                                   policy={"net": shared, "batch": len(worktrees) if shared else 5,
+                                           "cache_ttl": cache_ttl})
 
 
 def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
-                    width: int = 8, route: str = "modules", setup_id: str | None = None) -> list[list[str]]:
+                    width: int = 8, route: str = "modules", setup_id: str | None = None,
+                    cache_ttl: str | None = None) -> list[list[str]]:
     """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
@@ -601,7 +653,9 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
     unit = "file" if route == "local" else "module"
     pool = (f"bash bin/headless-pool --prompt {shlex.quote(str(prompt))} --out {shlex.quote(str(outputs))}"
             f" --model {shlex.quote(model)} --width {width} --memfree 3G --timeout 900"
-            f" --tools Read,Grep,Glob --max-turns 30 < {shlex.quote(str(items))}")
+            f" --tools Read,Grep,Glob --max-turns 30"
+            + (f" --cache-ttl {cache_ttl}" if cache_ttl else "")
+            + f" < {shlex.quote(str(items))}")
     pipeline = [sys.executable, "src/verify/pool_pipeline.py", "--main", ".",
                 *[arg for wt in worktrees for arg in ("--worktree", str(wt))],
                 "--items", str(items), "--outputs", str(outputs), "--bench", str(bench / "pipeline"),
@@ -623,11 +677,13 @@ def cmd_modules_launch(args) -> int:
               file=sys.stderr)
         return 2
     route = getattr(args, "route", "modules")
-    setup = step_setup_of(args.bench, args.model, args.worktree, route)
+    cache_ttl, ttl_why = pool_cache_ttl(args.bench, args.model)
+    print(f"cache-ttl: {cache_ttl or '(del cliente)'} — {ttl_why}", file=sys.stderr)
+    setup = step_setup_of(args.bench, args.model, args.worktree, route, cache_ttl=cache_ttl)
     if not args.dry_run:
         step_setup.register(args.ledger.parent, setup)
     commands = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
-                               route=route, setup_id=setup["setup_id"])
+                               route=route, setup_id=setup["setup_id"], cache_ttl=cache_ttl)
     # Al ledger, para que la barrera los recoja y una arista `--after-ok` de
     # `local overlap` tenga predecesor: sin registrar, `dispatch` lo reporta
     # SIN-PREDECESOR y el paso siguiente no mide nunca.
