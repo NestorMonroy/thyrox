@@ -28,6 +28,11 @@
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
 #                    < items (uno por linea)
 #
+# Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
+# con "memoria-pico-KB pared-s usuario-s sistema-s". La memoria pico incluye
+# al nieto que corre bajo `timeout`: medido, un proceso que reserva 200 MB bajo
+# `timeout` da 212 680 KB. Sin GNU Time el pool corre igual y lo declara.
+#
 # `--cache-ttl` fija el TTL de la cache de cada `claude -p` con
 # CLAUDE_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
 # suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
@@ -119,6 +124,9 @@ _headless_item() {
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$HP_WORKDIR" || exit 1
          [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+         # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
+         # <n>.time; el codigo de salida es el del item, que time conserva.
+         ${HP_TIME:+"$HP_TIME" -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
          timeout "$HP_TIMEOUT" "$HP_CLAUDE" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
@@ -131,6 +139,16 @@ export HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 export HP_OUT="$(cd "$OUT" && pwd)" HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT"
 export HP_CLAUDE="$(command -v "$CLAUDE_BIN")" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+
+# La memoria de cada item se mide con GNU Time si esta (se instala con
+# thyrox_toolchain_require_gnu_time). Sin el, el pool corre igual y lo declara:
+# una medida ausente no es un cero.
+TIME_BIN="${HEADLESS_POOL_TIME:-/usr/bin/time}"
+HP_TIME=""
+if [[ -x "$TIME_BIN" ]] && [[ "$("$TIME_BIN" --version 2>&1)" == *"GNU Time"* ]]; then
+    HP_TIME="$TIME_BIN"
+fi
+export HP_TIME
 
 MEMFREE_ARGS=()
 if [[ -n "$MEMFREE_SPEC" ]]; then
@@ -153,3 +171,6 @@ gawk -F'\t' '
       if ($7 == 0) ok++; else { printf "-- FALLIDO %s\n", item[n]; mal++ } }
     END { printf "items=%d ok=%d fallidos=%d\n", total, ok, mal; exit (mal > 0) }
 ' "$OUT/index.tsv" "$OUT/joblog.tsv"
+STATUS=$?
+[[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
+exit $STATUS

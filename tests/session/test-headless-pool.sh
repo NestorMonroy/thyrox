@@ -103,6 +103,29 @@ rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"
 check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
+# --- la memoria de cada item, con GNU Time --------------------------------------
+# Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
+# corre el comando conservando su codigo, como el real.
+cat > "$F/gnu-time" <<'SH'
+#!/usr/bin/env bash
+[[ "${1:-}" == --version ]] && { echo "time (GNU Time) UNKNOWN"; exit 0; }
+out=""
+while [[ "${1:-}" == -* ]]; do
+  case "$1" in -o) out="$2"; shift 2 ;; -f) shift 2 ;; *) shift ;; esac
+done
+"$@"; rc=$?
+printf "%s\n" "12345 1.50 0.40 0.10" > "$out"
+exit $rc
+SH
+chmod +x "$F/gnu-time"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa FALLA-beta
+check "con GNU time: un .time por item" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "2"
+check "con GNU time: memoria pico, pared, usuario y sistema" "$(cat "$F/out/1.time")" "12345 1.50 0.40 0.10"
+check "con GNU time: el fallo del item sigue siendo fallo" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=1 fallidos=1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
+check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
+check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "1"
+
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
 exit $((fallos > 0))
