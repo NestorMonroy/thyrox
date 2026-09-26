@@ -1,0 +1,63 @@
+     20 src/packages/agent/query.ts
+      8 src/packages/cli/src/headless/sdk/session/run-streaming.ts
+      7 src/packages/repl/src/queryHelpers.ts
+      7 src/packages/repl/src/components/Message.tsx
+      7 src/packages/app-host/src/runtime/runtimeHandles.ts
+      7 src/packages/app-host/src/runtime/commandRegistryRuntime.ts
+      5 src/packages/repl/src/screens/REPLView.tsx
+      4 src/packages/app-host/src/runtime/installPluginBindings.ts
+      3 src/packages/agent/messages/mappers.ts
+      3 src/packages/agent/hooks.ts
+      2 src/packages/storage/src/sessionStorage.ts
+      2 src/packages/repl/src/processUserInput/processTextPrompt.ts
+      2 src/packages/repl/src/components/messages/AttachmentMessage.tsx
+      2 src/packages/repl/src/components/StatusLine.tsx
+      2 src/packages/config/plugin/marketplaceManager.ts
+      2 src/packages/config/plugin/loadPluginHooks.ts
+      2 src/packages/agent/task/framework.ts
+      2 src/packages/agent/sessionTools/analyzeContext.ts
+      2 src/packages/agent/QueryEngine.ts
+      2     Argument of type '
+      1 tests/agents/save_result.test.ts
+      1 src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts
+      1 src/packages/tool-registry/src/tools/BashTool/UI.tsx
+      1 src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts
+      1 src/packages/tool-registry/src/services/toolHooks.ts
+      1 src/packages/repl/src/screens/repl/bgDetachSignal.ts
+      1 src/packages/repl/src/hooks/useReplBridge.tsx
+      1 src/packages/repl/src/conversationRecovery.tsx
+      1 src/packages/repl/src/components/Settings/Usage.tsx
+      1 src/packages/repl/src/components/PromptInput/Notifications.tsx
+      1 src/packages/repl/src/components/App.tsx
+      1 src/packages/repl/src/commands/color/color.ts
+      1 src/packages/provider/src/openai/streamAdapter.ts
+      1 src/packages/provider/src/claudeLegacyRuntime.ts
+      1 src/packages/mcp-runtime/src/useManageMCPConnections.ts
+      1 src/packages/config/plugin/pluginLoader.ts
+      1 src/packages/config/plugin/orphanedPluginFilter.ts
+      1 src/packages/config/plugin/mcpbHandler.ts
+      1 src/packages/command-runtime/src/commands/fork/index.ts
+      1 src/packages/cli/src/structuredIO.ts
+      1 src/packages/cli/src/entry/commander.ts
+      1 src/packages/app-host/src/launchRepl.tsx
+      1 src/packages/agent/commands/brief.ts
+      1   Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand
+      1   Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+      1   Type 'Command' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+      1   Type '
+      1   The types returned by 'getState
+      1   Property 'call' is missing in type 'typeof import
+      1   Overload 2 of 2, '
+      1   Overload 1 of 2, '
+      1     Type '{ isEnabled: 
+      1     Type 'HookInput' is not assignable to type '
+      1     Type 'CommandBase & PromptCommand' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+      1       Type '{ isEnabled: 
+      1       Type 'CommandBase & PromptCommand' is missing the following properties from type '{ type: "local"; name: string; description: string; isEnabled: 
+      1       Type '
+      1       Source has 1 element
+      1         Property 'description' is missing in type '{ isEnabled: 
+      1           Type '
+      1             Type '
+      1               Type 'TaskState' is not assignable to type 'import
+      1                 Type 'TaskState' is not assignable to type 'import

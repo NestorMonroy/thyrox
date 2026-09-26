@@ -66,3 +66,17 @@ sonda step-164-pipeline: 15791 bunx stdin=devnull(/dev/null) escritores=- estado
 sonda step-164-pipeline: 15792 node stdin=devnull(/dev/null) escritores=- estado=R cpu=53.66s
   LANZADO   step-164-close (tras 'step-164-pipeline' OK) pid=17169
 asentado: step-164-pipeline -> OK (1 de 3)
+asentado: step-164-close -> OK (1 de 3)
+== 3 trabajos asentados ==
+OK     step-164-close
+       | close: a2e8de7c
+       | EXIT=0
+OK     step-164-pipeline
+       | {"batch": 1, "files": 1, "total_before": 96, "total_final": 96, "tsc_runs": 0, "kept": 0}
+       | {"batches": 1, "files_kept": 0}
+       | __BG_EXIT__=0
+OK     step-164-pool
+       | cache-ttl: 1h (option)
+       | items=1 ok=1 fallidos=0
+       | __BG_EXIT__=0
+__BG_EXIT__=0

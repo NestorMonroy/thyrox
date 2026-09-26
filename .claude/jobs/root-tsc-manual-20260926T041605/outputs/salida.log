@@ -1,0 +1,28 @@
+122
+src/packages/app-host/src/launchRepl.tsx(36,6): error TS2322: Type '{ children: Element; store: HostSessionStore<AppState>; getFpsMetrics: () => TFpsMetrics | undefined; stats?: TStats | undefined; initialState: AppState; }' is not assignable to type 'Props'.
+src/packages/provider/src/claudeLegacyRuntime.ts(573,9): error TS2322: Type '{ type: "assistant"; message: { role: string; content: string; usage: NonNullableUsage; }; }' is not assignable to type 'AssistantMessage'.
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; container: null; context_management: null; diagnostics: null; stop_details: null; usage: { ...; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(58,38): error TS2322: Type 'string' is not assignable to type 'CommandElementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(78,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(88,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(99,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(109,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(119,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(130,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(141,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(151,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(161,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(171,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(181,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(191,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(201,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(211,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(221,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(231,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(241,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(251,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(260,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(269,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(279,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts(288,22): error TS2322: Type '"pipeline"' is not assignable to type 'StatementType'.
+__BG_EXIT__=0

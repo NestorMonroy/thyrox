@@ -1,0 +1,96 @@
+bun test v1.3.11 (af24e281)
+
+src/packages/app-host/src/__tests__/declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - bridge
+ - cli
+ - command-runtime
+ - config
+ - ide
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - server
+ - shell
+ - stdin-napi
+ - storage
+ - swarm
+ - teleport
+ - tool-registry
+ - voice
+size: 21
+
+src/packages/storage/src/__tests__/plans.test.ts:
+204 | 
+205 |     // Valida que la ruta se mantenga dentro de la raíz del proyecto,
+206 |     // para prevenir path traversal.
+207 |     if (!resolved.startsWith(cwd + sep) && resolved !== cwd) {
+208 |       logError(
+209 |         new Error(`plansDirectory must be within project root: ${settingsDir}`),
+                  ^
+error: plansDirectory must be within project root: ../fuera-del-proyecto
+      at getPlansDirectory (/home/user/thyrox/src/packages/storage/src/plans.ts:209:13)
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/plans.test.ts:69:17)
+
+112 | 
+113 | describe('getPlanFilePath / getPlan', () => {
+114 |   test('sin agentId, es {slug}.md bajo el directorio de planes', () => {
+115 |     setSessionId('sesion-path-1')
+116 |     const slug = getPlanSlug()
+117 |     expect(getPlanFilePath()).toBe(join(getPlansDirectory(), `${slug}.md`))
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/thyrox-tests-wQYrCA/plans-ekjFmK/plans/velvet-winds-bellows.md"
+Received: "/plans/plan.md"
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/plans.test.ts:117:31)
+(fail) getPlanFilePath / getPlan > sin agentId, es {slug}.md bajo el directorio de planes [0.37ms]
+118 |   })
+119 | 
+120 |   test('con agentId, es {slug}-agent-{id}.md', () => {
+121 |     setSessionId('sesion-path-2')
+122 |     const slug = getPlanSlug()
+123 |     expect(getPlanFilePath('subagente-42')).toBe(
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "/tmp/thyrox-tests-wQYrCA/plans-nuixGx/plans/steady-threads-cobble-agent-subagente-42.md"
+Received: "/plans/plan-agent-subagente-42.md"
+
+      at <anonymous> (/home/user/thyrox/src/packages/storage/src/__tests__/plans.test.ts:123:45)
+(fail) getPlanFilePath / getPlan > con agentId, es {slug}-agent-{id}.md [0.47ms]
+ENOENT: no such file or directory, open '/plans/plan.md'
+    path: "/plans/plan.md",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) getPlanFilePath / getPlan > getPlan lee el contenido cuando el archivo existe [0.48ms]
+Plan file missing during resume: /tmp/thyrox-tests-wQYrCA/plans-390jyw/plans/slug-recuperado-snap.md. Attempting recovery.
+Plan recovered from file snapshot, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-wQYrCA/plans-JqXiMH/plans/slug-recuperado-tooluse.md. Attempting recovery.
+Plan recovered from message history, 16 chars
+Plan file missing during resume: /tmp/thyrox-tests-wQYrCA/plans-9PNLfY/plans/slug-recuperado-plancontent.md. Attempting recovery.
+Plan recovered from message history, 19 chars
+Plan file missing during resume: /tmp/thyrox-tests-wQYrCA/plans-cgNJnV/plans/slug-recuperado-attachment.md. Attempting recovery.
+Plan recovered from message history, 18 chars
+Plan file missing during resume: /tmp/thyrox-tests-wQYrCA/plans-Gec0uL/plans/slug-sin-recuperacion-posible.md. Attempting recovery.
+Plan file recovery failed: no file snapshot or plan content found in message history
+ENOENT: no such file or directory, open '/plans/plan.md'
+    path: "/plans/plan.md",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+(fail) persistFileSnapshotIfRemote > con entorno remoto y un plan existente, no lanza — recordTranscript aún no existe en este árbol [0.24ms]
+
+ 555 pass
+ 4 fail
+ 1318 expect() calls
+Ran 559 tests across 34 files. [3.02s]

@@ -1,0 +1,11 @@
+Record the evidence of the zero-error typecheck
+
+The root tsc logs root-tsc-5 to root-tsc-30, their error-set diffs and
+the ledger runs that produced them. root-tsc-30 is the one that
+measured 0 errors after the code commit's changes; the diffs between
+consecutive logs are what showed which change introduced each new
+error along the way.
+
+The derived test subset (34 files) also lives here: its four failures
+in plans.test only appear in that combined run; the storage files pass
+alone and together, and the plans.ts change is type-only.

@@ -1,0 +1,8 @@
+d4805205 Port statusLine's padding, refreshInterval and vim flag
+73804168 Drop the partial fork.ts that shadowed the full port
+4e35aa02 Leave unmeasured analytics keys out of the event
+31d037c4 Record the active permission mode, internal ones included
+464791ab Type the orphaned permission path with the real types
+0a89ccd7 Narrow provider notifications and effort to what flows
+PUSHED
+__BG_EXIT__=0

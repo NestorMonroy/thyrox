@@ -1,0 +1,25 @@
+Bring the root typecheck to zero errors
+
+The root tsconfig went from 26 errors to 0 in this batch. The fixes
+type the seams that were declared as unknown or as a looser local copy
+of a shape the source already fixes:
+
+- query.ts: callModel and the stop hooks yield the loop's message
+  shape; compaction uses the builder that consumes the CompactionResult
+  autocompact returns; attachment types are read through one helper.
+- AgentSystemPrompt is a list of strings, as the source's SystemPrompt.
+- The bridge re-exports PermissionMode from the permission package; its
+  structural copy added an 'ask' mode the source does not have.
+- app-host contracts use method syntax so specialised handles are also
+  RuntimeHandles, and the session store is the real Store type.
+- The CLI keeps the inferred type of the main program; subcommand
+  registrars take ParentCommand, which any typed program satisfies.
+- isToolSearchEnabled is ported from 2.1.282 with its verdict, the
+  automatic threshold (tokens, then characters) and the model checks.
+  The Foundry capability latch, the mcpNonBlocking telemetry field and
+  the per-host memo are declared as pending in the file.
+
+Four boundaries keep a cast with its reason written next to it: the
+attachment rendered by Message.tsx, the deny decision in toolHooks
+(unifying the two decision types is separate work), the stream item
+handed from query to the REPL, and the partial fallback AppState.
