@@ -148,19 +148,25 @@ with tempfile.TemporaryDirectory() as directory:
 # Gate 3b, la validación de la señal (paso 155): los agentes trajeron sus
 # patrones con los cuatro campos y aun así ninguno cubría lo conservado. Dos
 # formas medidas: `error TS2304: …` copia el prefijo del log crudo, que la
-# clave de diagnóstico no lleva; y `TS2677.*'NormalizedMessage'` busca texto
-# que sólo está en las líneas encadenadas. La primera se normaliza; la segunda
-# no casa con ningún diagnóstico del archivo, no entra a la memoria, y el
-# motivo lo dice.
+# clave de diagnóstico no lleva; y `TS2322:.*Type 'undefined'…` busca texto
+# que sólo está en las líneas encadenadas. La primera se normaliza; la
+# segunda se DERIVA de la clave del archivo, pero sólo si esa clave nombra
+# algo propio (una cita) y literal: la primera derivación generalizó lo citado
+# y `TS2322: Type '[^']+' …` casó con 53 diagnósticos ajenos (BALTO, L07: la
+# atribución errónea contamina la memoria).
 with tempfile.TemporaryDirectory() as directory:
     run_dir = Path(directory)
     keys = ["src/a.ts: TS2304: Cannot find name 'foo'.",
+            "src/a.ts: TS2322: Type 'Foo' is not assignable to type 'Bar'.",
             "src/a.ts: TS2677: A type predicate's type must be assignable to its parameter's type.",
-            "src/b.ts: TS2304: Cannot find name 'bar'."]
+            "src/b.ts: TS2304: Cannot find name 'bar'.",
+            "src/b.ts: TS2322: Type 'Baz' is not assignable to type 'Bar'."]
     output = {"result": json.dumps({"edits": [{"old": "x", "new": "y"}], "patterns": [
         {"patron": "missing-name", "senal_del_verificador": "error TS2304: Cannot find name '(\\w+)'",
          "fix_generico": "importar el símbolo", "edits": [0]},
-        {"patron": "predicate-chained-text", "senal_del_verificador": "TS2677.*'NormalizedMessage'",
+        {"patron": "chained-undefined", "senal_del_verificador": "TS2322:.*Type 'undefined'",
+         "fix_generico": "guardar el opcional", "edits": [0]},
+        {"patron": "predicate-fixed-text", "senal_del_verificador": "TS2677.*'NormalizedMessage'",
          "fix_generico": "estrechar el predicado", "edits": [0]}]})}
     problems = pp.record_patterns(run_dir, {"src/a.ts": [output]}, ["src/a.ts"], keys)
     memory = pp.tsc_sweep.load_patterns(run_dir)
@@ -168,18 +174,20 @@ with tempfile.TemporaryDirectory() as directory:
                  "TS2304: Cannot find name '(\\w+)'", memory.get("missing-name", {}).get("signal"))
     assert_equal("y el patrón normalizado queda aplicado al archivo", ["src/a.ts"],
                  memory.get("missing-name", {}).get("applied"))
-    # La señal del agente casaba sólo con el texto encadenado, pero su código
-    # TS2677 sí está en las claves del archivo: la memoria guarda una señal
-    # DERIVADA de esa clave (la primera línea, que es lo que el barrido
-    # compara), generalizando lo citado, y conserva la del agente.
-    derived = memory.get("predicate-chained-text", {})
+    derived = memory.get("chained-undefined", {})
     assert_equal("una señal que sólo casa con texto encadenado entra DERIVADA de la clave del archivo",
-                 ("derived-from-key", "TS2677.*\x27NormalizedMessage\x27"),
+                 ("derived-from-key", "TS2322:.*Type 'undefined'"),
                  (derived.get("signal_origin"), derived.get("agent_signal")))
-    assert_equal("la señal derivada casa con la clave de su archivo y no con la de otro código", (True, False),
+    assert_equal("la derivada conserva lo citado LITERAL",
+                 "TS2322: Type 'Foo' is not assignable to type 'Bar'\\.", derived.get("signal"))
+    assert_equal("y no casa con otro diagnóstico del mismo código con otras citas", (True, False),
                  (bool(re.search(derived.get("signal", "(?!)"), keys[1])),
-                  bool(re.search(derived.get("signal", "(?!)"), keys[0]))))
+                  bool(re.search(derived.get("signal", "(?!)"), keys[4]))))
     assert_equal("y queda aplicada al archivo", ["src/a.ts"], derived.get("applied"))
+    assert_equal("una clave sin cita es el texto fijo del código: no se deriva ni entra", False,
+                 "predicate-fixed-text" in memory)
+    assert_equal("y el motivo la nombra", True,
+                 any("predicate-fixed-text" in p and "no casa" in p for p in problems))
 
     alien = {"result": json.dumps({"edits": [{"old": "x", "new": "y"}], "patterns": [
         {"patron": "code-not-in-file", "senal_del_verificador": "TS9999: nothing",
@@ -187,12 +195,11 @@ with tempfile.TemporaryDirectory() as directory:
     problems = pp.record_patterns(run_dir, {"src/a.ts": [alien]}, ["src/a.ts"], keys)
     assert_equal("si el código de la señal no está en el archivo, no se deriva y no entra", False,
                  "code-not-in-file" in pp.tsc_sweep.load_patterns(run_dir))
-    assert_equal("y el motivo la nombra", True,
-                 any("code-not-in-file" in p and "no casa" in p for p in problems))
 
-    quoted = pp.derived_signal(["src/a.ts: TS2304: Cannot find name \x27foo\x27."], "src/a.ts", "TS2304")
-    assert_equal("lo citado se generaliza y el resto se escapa",
-                 "TS2304: Cannot find name \x27[^\x27]+\x27\\.", quoted)
+    assert_equal("el apóstrofo de una palabra no es una cita", None,
+                 pp.derived_signal([keys[2]], "src/a.ts", "TS2677"))
+    assert_equal("sin cita (TS2769 fija su primera línea) no hay señal que derivar", None,
+                 pp.derived_signal(["src/a.ts: TS2769: No overload matches this call."], "src/a.ts", "TS2769"))
 
 # --- Módulo como ítem -----------------------------------------------------------
 # Un porte toca varios archivos, puede crear uno, y sus objetivos están en los

@@ -193,7 +193,9 @@ PATTERN_FIELDS = ("patron", "senal_del_verificador", "fix_generico")
 RAW_LOG_PREFIX = re.compile(r"(?<![\w-])error (?=TS\d)")
 
 
-QUOTED = re.compile(r"'[^']*'")
+# Una cita de tsc: comillas que no pegan con letras, así el apóstrofo de
+# `predicate's` no abre una cita.
+QUOTED = re.compile(r"(?<![A-Za-z])'[^']+'(?![A-Za-z])")
 METACHARACTER = re.compile(r"([.^$*+?{}\[\]\\|()])")
 
 
@@ -204,18 +206,22 @@ def _escape(text: str) -> str:
 
 def derived_signal(keys: list[str], file: str, code: str) -> str | None:
     """La señal que la clave medida ya contiene: los diagnósticos `code` de
-    `file`, sin el prefijo del archivo, con lo citado generalizado a
-    `'[^']+'` y el resto escapado. `None` si el archivo no tiene ninguno."""
+    `file`, sin el prefijo del archivo, escapados y con lo citado LITERAL.
+
+    Sólo una clave con cita propia deriva: sin cita, la primera línea es el
+    texto fijo del código (`TS2769: No overload matches this call.`) y casaría
+    con toda su población. Generalizar lo citado tiene el mismo defecto:
+    `TS2322: Type '[^']+' …` casó con 53 diagnósticos ajenos (BALTO, L07).
+    `None` si ninguna clave del archivo lo admite."""
     prefix = f"{file}: "
     shapes = []
     for key in keys:
         if not key.startswith(f"{prefix}{code}:"):
             continue
-        text, parts, last = key[len(prefix):], [], 0
-        for quoted in QUOTED.finditer(text):
-            parts += [_escape(text[last:quoted.start()]), "'[^']+'"]
-            last = quoted.end()
-        shape = "".join(parts) + _escape(text[last:])
+        text = key[len(prefix):]
+        if not QUOTED.search(text):
+            continue
+        shape = _escape(text)
         if shape not in shapes:
             shapes.append(shape)
     if not shapes:
