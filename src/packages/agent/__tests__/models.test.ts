@@ -91,7 +91,8 @@ describe('el catálogo', () => {
     const opus55 = CATALOG.models.find((m: { id: string }) => m.id === 'claude-opus-5-5')
     expect(opus55?.pricing_tier).toBe('tier_4_20_cache_read_0_20')
     const tier = CATALOG.pricing_tiers['tier_4_20_cache_read_0_20']
-    expect(tier.cache_read / tier.input).toBeCloseTo(0.05)
+    expect(tier).toBeDefined()
+    expect((tier?.cache_read ?? NaN) / (tier?.input ?? NaN)).toBeCloseTo(0.05)
   })
 
   test('Fable 5.1 está declarado con su tier de cache_read barato', () => {

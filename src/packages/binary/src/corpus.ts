@@ -34,7 +34,8 @@ export function extractStrings(bytes: Buffer, minimum: number = MIN_STRING): str
   const salida: string[] = []
   let inicio = -1
   for (let i = 0; i <= bytes.length; i++) {
-    const b = i < bytes.length ? bytes[i] : -1
+    // Pasado el final no hay byte: -1 cierra la última corrida.
+    const b = bytes[i] ?? -1
     const imprimible = b === 9 || (b >= 32 && b < 127)
     if (imprimible && inicio < 0) inicio = i
     if (!imprimible && inicio >= 0) {
