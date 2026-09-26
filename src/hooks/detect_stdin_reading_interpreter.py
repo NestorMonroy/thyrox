@@ -27,10 +27,26 @@ distingue el interprete olvidado del que se quiere interactivo.
 
 Ciego a: el interprete que llega por variable (``$PY -``) o por alias, y un
 stdin que otro proceso cierre a proposito.
+
+La segunda familia: el filtro sin archivo
+-----------------------------------------
+``rg``, ``grep``, ``wc``, ``cat``, ``head``, ``sed``, ``awk``… sin archivo
+tambien leen stdin. El caso que lo trajo: ``F=$(fd …)`` con ``fd`` sin
+instalar dejo ``F`` vacia, y ``rg -n <patron> $F`` quedo sin ruta y espero
+1 h 19 min. Y no hace falta segundo plano: medido el 2026-09-26, el stdin de
+esta herramienta es un socket que no se cierra (``/proc/$$/fd/0 ->
+socket:[…]``), asi que ``timeout 5 rg -n x`` sale 124 tambien en primer plano.
+
+Se avisa cuando los UNICOS archivos del filtro, en la primera etapa y sin
+``<``, son variables desnudas asignadas desde ``$(…)`` en el mismo comando; y
+se nombra el programa de la sustitucion si no esta instalado. Callan las
+comillas (vacia es un error, no stdin), ``${F:?}``, una asignacion literal y
+``$F/ruta``, que nunca queda vacia.
 """
 from __future__ import annotations
 
 import re
+import shutil
 
 from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
 
@@ -41,6 +57,17 @@ _INTERPRETER = re.compile(r"^(?:.*/)?(?:python(?:\d+(?:\.\d+)?)?|node)$")
 _WRAPPERS = {"nohup", "exec", "command", "time"}
 
 _TOKEN = re.compile(r"""'[^']*'|"[^"]*"|\S+""")
+
+#: Filtros que, sin archivo, leen stdin. En los primeros, el primer posicional
+#: es el patrón o el programa, no un archivo.
+_FILTERS_WITH_PATTERN = {"rg", "grep", "egrep", "fgrep", "sed", "awk", "gawk", "mawk"}
+_FILTERS = _FILTERS_WITH_PATTERN | {"wc", "cat", "head", "tail", "sort", "uniq", "cut", "tac"}
+
+#: Una variable desnuda: sin comillas y sin `${F:?}`, así que vacía desaparece.
+_BARE_VARIABLE = re.compile(r"^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$")
+
+#: `F=$(programa …)`: la variable sale de una sustitución, que puede quedar vacía.
+_SUBSTITUTION = re.compile(r"(?<![\w$])([A-Za-z_][A-Za-z0-9_]*)=\$\(\s*([^\s)|;&]+)")
 _ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 _REDIRECT = re.compile(r"^\d*(>>?|>&|<&|<(?!<))")
 
@@ -121,6 +148,58 @@ def _stdin_reader(stage: str) -> str | None:
     return program
 
 
+def _substituted_variables(command: str) -> dict[str, str]:
+    """Las variables que el comando asigna desde ``$(…)``, con el programa que
+    las produce."""
+    return {name: program for name, program in _SUBSTITUTION.findall(command)}
+
+
+def _empty_operand(stage: str, substituted: dict[str, str]) -> tuple[str, str] | None:
+    """(filtro, variable) si los únicos archivos del filtro son variables de
+    ``$(…)`` desnudas: vacías, el filtro no recibe ninguno y lee stdin."""
+    tokens = _TOKEN.findall(stage)
+    while tokens and (_ASSIGNMENT.match(tokens[0]) or tokens[0] in _WRAPPERS):
+        tokens.pop(0)
+    if tokens and tokens[0] == "timeout":
+        tokens = tokens[2:]
+    if not tokens or tokens[0].rsplit("/", 1)[-1] not in _FILTERS:
+        return None
+    program = tokens[0].rsplit("/", 1)[-1]
+    positional, skip_next = [], False
+    for arg in tokens[1:]:
+        if skip_next:
+            skip_next = False
+        elif _REDIRECT.match(arg):
+            skip_next = arg.lstrip("0123456789") in ("<", ">", ">>", "2>")
+        elif not arg.startswith("-"):
+            positional.append(arg)
+    files = positional[1:] if program in _FILTERS_WITH_PATTERN else positional
+    names = [m.group(1) for m in map(_BARE_VARIABLE.match, files) if m]
+    if files and len(names) == len(files) and all(name in substituted for name in names):
+        return program, names[0]
+    return None
+
+
+def _empty_operand_notices(command: str) -> list[str]:
+    """El aviso de cada filtro cuyo archivo puede quedar vacío."""
+    substituted = _substituted_variables(command)
+    notices = []
+    for segment in _segments(command):
+        if re.search(r"(?<![<>])<(?!\()", segment):
+            continue
+        # Sólo la primera etapa: las siguientes reciben la salida del tubo.
+        found = _empty_operand(_stages(segment)[0], substituted)
+        if found:
+            program, name = found
+            source = substituted.get(name)
+            if source is None:
+                notices.append(f"`{program} … ${name}`: `${name}` puede quedar vacía")
+                continue
+            missing = "" if shutil.which(source) else f" — y `{source}` no está instalado, así que quedará vacía"
+            notices.append(f"`{program} … ${name}`: `${name}` sale de `$({source} …)`{missing}")
+    return notices
+
+
 def has_provided_input(segment: str) -> bool:
     """Si el segmento le da entrada al interprete: heredoc, ``<`` o un tubo que
     desemboca en el."""
@@ -144,10 +223,24 @@ def detect(payload: dict) -> str | None:
         # provista, la que lo sea lee de un stdin que nadie cierra.
         if any(_stdin_reader(stage) for stage in _stages(segment)):
             found.append(segment.strip())
-    if not found:
+    empty = _empty_operand_notices(strip_heredoc_bodies(command))
+    if not found and not empty:
         return None
+    parts = []
+    if empty:
+        parts.append(
+            "GATE DE STDIN — " + "; ".join(empty) + ". Si la variable queda vacía el "
+            "filtro no recibe archivo y lee stdin, que en esta herramienta es un "
+            "socket que no se cierra: espera para siempre, también en primer plano. "
+            "Medido: `timeout 5 rg -n x` sale 124 con 0.007 s de CPU, y con "
+            "`</dev/null` sale en 0.3 s; el episodio corrió 1 h 19 min. Usa "
+            "`\"${F:?sin archivo}\"`, comprueba que el programa exista, o pasa "
+            "`</dev/null`."
+        )
+    if not found:
+        return " ".join(parts)
     shown = "; ".join(f"`{s}`" for s in found[:3])
-    return (
+    return " ".join(parts) + (" " if parts else "") + (
         f"GATE DE STDIN — {shown} invoca un interprete sin guion, `-c` ni `-m` y "
         "sin entrada provista, asi que lee su programa de stdin. En primer plano "
         "sale al instante; en SEGUNDO plano, al que el cliente puede promover "

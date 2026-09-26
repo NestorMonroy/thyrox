@@ -126,5 +126,26 @@ check("nombra el segundo, el que siguio vivo",
 check("calla el que recibe heredoc",
       False, episode_notice is not None and "/home/user/thyrox/.venv/bin/python" in episode_notice)
 
+print("== 9. un filtro cuyo UNICO archivo es una variable de $(...): si sale vacia, lee stdin ==")
+# El comando verbatim que se colgo 1 h 19 min el 2026-09-26: `fd` no esta
+# instalado, F quedo vacia, y `rg -n <patron> $F` sin ruta leyo el stdin de la
+# herramienta, un socket que no se cierra. Medido: `timeout 5 rg -n x` sale
+# 124 con 0.007 s de CPU; con `</dev/null` sale en 0.3 s.
+FILTER_EPISODE = (
+    "cd /home/user/kaupamex-docs && F=$(fd -t f 'plan-tsc-zero.rst' source | head -1); echo $F; "
+    "git branch --show-current; rg -n \":version:|^Versión|1\\.2\\.0|harness\" $F | head -20; wc -l < $F"
+)
+notice = detect(FILTER_EPISODE)
+check("avisa sobre el comando que se colgo de verdad", True, notice is not None)
+check("nombra la variable y el filtro", True, notice is not None and "$F" in notice and "rg" in notice)
+check("nombra el programa que no esta instalado", True, notice is not None and "`fd`" in notice)
+check("calla con la variable entre comillas: vacia es un error, no stdin", None,
+      detect("F=$(ls x); rg -n foo \"$F\""))
+check("calla con ${F:?}: vacia aborta", None, detect("F=$(ls x); rg -n foo ${F:?}"))
+check("calla con una asignacion literal", None, detect("F=docs/a.rst; rg -n foo $F"))
+check("calla con otro archivo literal", None, detect("F=$(ls x); rg -n foo src $F"))
+check("calla si la entrada llega por tubo", None, detect("F=$(ls x); cat a | rg -n foo $F"))
+check("calla ante $F/ruta: nunca queda vacia", None, detect("D=$(ls x); tail -5 $D/index.rst"))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
