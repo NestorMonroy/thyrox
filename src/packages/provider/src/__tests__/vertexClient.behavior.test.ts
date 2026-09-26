@@ -85,7 +85,9 @@ describe('Vertex client config (12s-timeout-prevention)', () => {
   test('Vertex region from getVertexRegionForModel (per-model)', () => {
     // Vertex doesn't have a single region; some models are only in
     // us-east5, others in us-central1, etc. Pin per-model lookup.
-    expect(source).toMatch(/region:\s*anthropic\.getVertexRegionForModel\(model\)/)
+    // `model` es opcional en la firma del cliente; sin modelo se pide la
+    // región por defecto (cadena vacía).
+    expect(source).toMatch(/region:\s*anthropic\.getVertexRegionForModel\(model \?\? ''\)/)
   })
 
   test('AnthropicVertex + google-auth-library both imported LAZILY', () => {

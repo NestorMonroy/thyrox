@@ -312,7 +312,35 @@ export function createBaseHookInput(
 
 function configuredMatchers(event: string): ConfiguredMatcher[] {
   const value = getHooksConfigFromSnapshot()[event]
-  return Array.isArray(value) ? (value as ConfiguredMatcher[]) : []
+  const fromSettings = Array.isArray(value) ? (value as ConfiguredMatcher[]) : []
+  return [...fromSettings, ...registeredPluginMatchers(event)]
+}
+
+/**
+ * Los hooks nativos de plugin viven en el registro del estado, no en el
+ * snapshot de settings, y el binario los cuenta igual: `dTt` lee `pL()`
+ * después del snapshot y salta a los de plugin con `allowManagedHooksOnly`.
+ * Cada hook se lleva su `pluginRoot` para exportarlo como
+ * `CLAUDE_PLUGIN_ROOT`. Los callbacks del SDK del mismo registro no tienen
+ * ejecutor en este camino y siguen por `getMatchingHooks`.
+ */
+function registeredPluginMatchers(event: string): ConfiguredMatcher[] {
+  if (shouldAllowManagedHooksOnly()) return []
+  const registered = (getRegisteredHooks()?.[event as HookEvent] ?? []) as Array<{
+    matcher?: string
+    hooks?: ConfiguredHook[]
+    pluginRoot?: unknown
+  }>
+  return registered.flatMap((group) =>
+    typeof group.pluginRoot === 'string'
+      ? [{ matcher: group.matcher, hooks: (group.hooks ?? []).map((hook) => ({ ...hook, pluginRoot: group.pluginRoot })) }]
+      : [],
+  )
+}
+
+/** El entorno de un hook de plugin: el del proceso más su raíz. */
+function hookEnv(hook: ConfiguredHook): Record<string, string | undefined> | undefined {
+  return typeof hook.pluginRoot === 'string' ? { ...process.env, CLAUDE_PLUGIN_ROOT: hook.pluginRoot } : undefined
 }
 
 function matchingHooks(event: string, matchQuery?: string): ConfiguredHook[] {
@@ -332,12 +360,20 @@ export function hasHookForEvent(event: string): boolean {
 
 type CommandRun = { status: number | null; stdout: string; stderr: string; aborted: boolean }
 
-async function runCommand(command: string, input: string, timeoutMs: number, signal?: AbortSignal, cwd?: string): Promise<CommandRun> {
+async function runCommand(
+  command: string,
+  input: string,
+  timeoutMs: number,
+  signal?: AbortSignal,
+  cwd?: string,
+  env?: Record<string, string | undefined>,
+): Promise<CommandRun> {
   const proc = Bun.spawn(['bash', '-c', command], {
     stdin: Buffer.from(input),
     stdout: 'pipe',
     stderr: 'pipe',
     cwd,
+    env,
   })
   let timer: ReturnType<typeof setTimeout> | undefined
   const expired = new Promise<'expired'>((r) => {
@@ -408,7 +444,7 @@ async function runOneOutsideRepl(
     return { command, succeeded: false, output: `tipo de hook sin ejecutor fuera del REPL: ${hook.type}`, blocked: false }
   }
   const limit = hook.timeout ? hook.timeout * 1000 : timeoutMs
-  const run = await runCommand(hook.command, input, limit, signal, cwd)
+  const run = await runCommand(hook.command, input, limit, signal, cwd, hookEnv(hook))
   if (run.aborted) return { command, succeeded: false, output: 'Hook cancelled', blocked: false, cancelled: true }
   if (run.status === null) return { command, succeeded: false, output: run.stderr, blocked: false }
   const json = parseJsonOutput(run.stdout)
@@ -560,7 +596,7 @@ export async function* executeHooks(params: {
   hooks.forEach((hook, index) => {
     const work = (async (): Promise<HookResult> => {
       if (hook.type === 'command' && hook.command) {
-        const run = await runCommand(hook.command, input, hook.timeout ? hook.timeout * 1000 : timeoutMs, signal, cwd)
+        const run = await runCommand(hook.command, input, hook.timeout ? hook.timeout * 1000 : timeoutMs, signal, cwd, hookEnv(hook))
         return resultFromCommand(event, hook, run, hookName, toolUseID)
       }
       // http/prompt/agent pasan por el camino fuera del REPL y se traducen:

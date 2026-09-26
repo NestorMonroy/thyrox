@@ -174,9 +174,9 @@ def _copy_toolchain(tree: pathlib.Path) -> None:
     """
     (tree / "src/lib").mkdir(parents=True, exist_ok=True)
     for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
-        origen = ROOT / "src/lib" / dependency
-        if origen.is_file():
-            shutil.copy2(origen, tree / "src/lib" / dependency)
+        source = ROOT / "src/lib" / dependency
+        if source.is_file():
+            shutil.copy2(source, tree / "src/lib" / dependency)
 
 
 def test_python_wrapper_falls_back_to_system_interpreter(
@@ -230,12 +230,12 @@ def test_python_wrapper_refuses_below_the_declared_floor(
     target.write_text('print("no deberia correr")\n')
     _copy_toolchain(tree)
 
-    falso = base / "python-viejo"
-    falso.write_text(
+    fake = base / "python-viejo"
+    fake.write_text(
         "#!/usr/bin/env bash\n"
         'if [ "$1" = "-c" ]; then exit 1; fi\n'
         "exit 1\n")
-    falso.chmod(0o755)
+    fake.chmod(0o755)
 
     wrapper_dir = tree / "bin"
     wrapper_dir.mkdir()
@@ -244,7 +244,7 @@ def test_python_wrapper_refuses_below_the_declared_floor(
     wrapper.chmod(0o755)
 
     entorno = dict(os.environ)
-    entorno["THYROX_PYTHON_FALLBACK"] = str(falso)
+    entorno["THYROX_PYTHON_FALLBACK"] = str(fake)
     r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
                        env=entorno)
     check("un repuesto bajo el piso hace rehusar el envoltorio",
@@ -310,11 +310,11 @@ def test_no_wrapper_asks_to_block_on_the_real_tree() -> None:
     veredictos suyos y no del envoltorio.
     """
     plan = gb.planned_files(ROOT)
-    culpables = sorted(nombre for nombre, cuerpo in plan.items()
-                       if "exit 2" in cuerpo)
+    culprits = sorted(nombre for nombre, body in plan.items()
+                       if "exit 2" in body)
     check("ningun envoltorio del arbol real lleva 'exit 2'",
-          not culpables,
-          f"{len(culpables)} lo llevan: {culpables[:6]}")
+          not culprits,
+          f"{len(culprits)} lo llevan: {culprits[:6]}")
     check("y el plan medido no esta vacio", len(plan) > 100, str(len(plan)))
 
 
@@ -967,19 +967,19 @@ def test_typescript_discriminator_is_shebang_and_parent(base: pathlib.Path) -> N
     real.write_text("#!/usr/bin/env bun\nconsole.log('soy entrypoint')\n")
 
     # Control NEGATIVO 1: la guarda sin shebang. Es la forma de exitCodes.ts.
-    guarda = tree / "src/packages/demo/exitCodes.ts"
-    guarda.write_text("export const X = 1\nif (import.meta.main) { console.log(X) }\n")
+    guard = tree / "src/packages/demo/exitCodes.ts"
+    guard.write_text("export const X = 1\nif (import.meta.main) { console.log(X) }\n")
 
     # Control NEGATIVO 2: shebang, pero fuera de un directorio bin/entry.
-    suelto = tree / "src/packages/demo/suelto.ts"
-    suelto.write_text("#!/usr/bin/env bun\nconsole.log('no soy entrypoint')\n")
+    loose = tree / "src/packages/demo/suelto.ts"
+    loose.write_text("#!/usr/bin/env bun\nconsole.log('no soy entrypoint')\n")
 
     check("un .ts con shebang bajo bin/ SI es entrypoint",
           gb.is_typescript_entrypoint(real))
     check("la guarda import.meta.main SIN shebang NO lo es",
-          not gb.is_typescript_entrypoint(guarda))
+          not gb.is_typescript_entrypoint(guard))
     check("un shebang fuera de bin/ o entry/ TAMPOCO lo es",
-          not gb.is_typescript_entrypoint(suelto))
+          not gb.is_typescript_entrypoint(loose))
 
 
 def test_typescript_names_resolve_stem_collisions(base: pathlib.Path) -> None:
@@ -992,17 +992,17 @@ def test_typescript_names_resolve_stem_collisions(base: pathlib.Path) -> None:
     precede en este mismo bin/.
     """
     tree = _make_tree(base / "ts-colision")
-    for familia in ("skills", "rules", "commands"):
-        d = tree / f"src/{familia}/bin"
+    for family in ("skills", "rules", "commands"):
+        d = tree / f"src/{family}/bin"
         d.mkdir(parents=True, exist_ok=True)
         (d / "emit.ts").write_text("#!/usr/bin/env bun\n")
 
-    hallados = gb.discover_typescript_entrypoints(tree)
+    found = gb.discover_typescript_entrypoints(tree)
     check("los tres emit.ts reciben nombres distintos",
-          len(hallados) == 3, str(sorted(hallados)))
+          len(found) == 3, str(sorted(found)))
     for esperado in ("skills-emit", "rules-emit", "commands-emit"):
-        check(f"{esperado} esta en el plan TS", esperado in hallados,
-              str(sorted(hallados)))
+        check(f"{esperado} esta en el plan TS", esperado in found,
+              str(sorted(found)))
 
     # El dueño y el stem que se repiten se colapsan: `shell/bin/shell.ts` es
     # `shell`, no `shell-shell`.
@@ -1032,10 +1032,10 @@ def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
     # es. Es la clase que TASK-THYROX-0235 ya registro para otro fixture.
     (tree / "src/lib").mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "src/lib/toolchain.sh", tree / "src/lib/toolchain.sh")
-    for dependencia in ("reach.sh", "assert.sh"):
-        origen = ROOT / "src/lib" / dependencia
-        if origen.is_file():
-            shutil.copy2(origen, tree / "src/lib" / dependencia)
+    for dependency in ("reach.sh", "assert.sh"):
+        source = ROOT / "src/lib" / dependency
+        if source.is_file():
+            shutil.copy2(source, tree / "src/lib" / dependency)
 
     wrapper_dir = tree / "bin"
     wrapper_dir.mkdir(exist_ok=True)
@@ -1067,9 +1067,9 @@ def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
           len(ts) >= 14, f"halle {len(ts)}: {sorted(ts)}")
 
     plan = gb.planned_files(ROOT)
-    faltan = [n for n in ts if n not in plan]
+    missing = [n for n in ts if n not in plan]
     check("todos los .ts del arbol llegan al plan de bin/",
-          not faltan, f"fuera del plan: {faltan}")
+          not missing, f"fuera del plan: {missing}")
 
     # Los cuatro emit.ts son el control de colision sobre el arbol REAL, no
     # sobre un fixture: si el nombre no estuviera cualificado, el plan tendria
@@ -1078,9 +1078,9 @@ def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
     # crea por paquete —30 medidos—. Una dependencia con un bin/*.ts
     # con shebang entraria al plan. Hoy son 0, asi que el `>= 14` de
     # arriba pasaria igual con una fuga: no discrimina, y este si.
-    fugas = [str(p) for p in ts.values() if "node_modules" in p.parts]
+    leaks = [str(p) for p in ts.values() if "node_modules" in p.parts]
     check("ningun entrypoint TS sale de un node_modules",
-          not fugas, str(fugas))
+          not leaks, str(leaks))
 
     emits = sorted(n for n in ts if n.endswith("-emit") or n == "emit")
     check("los cuatro emit.ts del arbol real estan los cuatro",
@@ -1158,11 +1158,11 @@ def test_no_wrapper_asks_to_block_on_the_real_tree() -> None:
     veredictos suyos y no del envoltorio.
     """
     plan = gb.planned_files(ROOT)
-    culpables = sorted(nombre for nombre, cuerpo in plan.items()
-                       if "exit 2" in cuerpo)
+    culprits = sorted(nombre for nombre, body in plan.items()
+                       if "exit 2" in body)
     check("ningun envoltorio del arbol real lleva 'exit 2'",
-          not culpables,
-          f"{len(culpables)} lo llevan: {culpables[:6]}")
+          not culprits,
+          f"{len(culprits)} lo llevan: {culprits[:6]}")
     check("y el plan medido no esta vacio", len(plan) > 100, str(len(plan)))
 
 
@@ -1881,9 +1881,9 @@ def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
     (tree / "src/lib").mkdir(parents=True, exist_ok=True)
     shutil.copy2(ROOT / "src/lib/toolchain.sh", tree / "src/lib/toolchain.sh")
     for dependency in ("reach.sh", "assert.sh"):
-        origen = ROOT / "src/lib" / dependency
-        if origen.is_file():
-            shutil.copy2(origen, tree / "src/lib" / dependency)
+        source = ROOT / "src/lib" / dependency
+        if source.is_file():
+            shutil.copy2(source, tree / "src/lib" / dependency)
 
     wrapper_dir = tree / "bin"
     wrapper_dir.mkdir(exist_ok=True)

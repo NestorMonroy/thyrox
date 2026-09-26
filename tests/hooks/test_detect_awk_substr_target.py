@@ -88,22 +88,22 @@ def dropped_under(name: str, replacement) -> list[str]:
     original = getattr(gate, name)
     setattr(gate, name, replacement)
     try:
-        cases = {"regex": REGEX_COMMA, "cadena": STRING_COMMA, "python": PYTHON_SUB,
-                 "texto": NOTE_TEXT, "base": SUBSTR_TARGET}
-        expected = {"regex": True, "cadena": True, "python": False, "texto": False, "base": True}
+        cases = {"regex": REGEX_COMMA, "string": STRING_COMMA, "python": PYTHON_SUB,
+                 "text": NOTE_TEXT, "base": SUBSTR_TARGET}
+        expected = {"regex": True, "string": True, "python": False, "text": False, "base": True}
         return sorted(k for k, c in cases.items() if warns(c) != expected[k])
     finally:
         setattr(gate, name, original)
 
 
 print("== 5. anulación: cada mitad de juicio hace caer exactamente sus casos ==")
-check("sin el ancla de awk cae sólo el texto", ["texto"],
+check("sin el ancla de awk cae sólo el texto", ["text"],
       dropped_under("invokes_awk", lambda command: True))
 check("sin excluir el método .sub cae sólo python", ["python"],
       dropped_under("_CALL", __import__("re").compile(r"g?sub\s*\(")))
 check("sin saltar literales /regex/ cae sólo regex", ["regex"],
       dropped_under("SKIP_REGEX_LITERALS", False))
-check("sin saltar cadenas cae sólo cadena", ["cadena"],
+check("sin saltar cadenas cae sólo cadena", ["string"],
       dropped_under("SKIP_STRINGS", False))
 
 print(f"\n{OK} ok, {FAILED} fallos")

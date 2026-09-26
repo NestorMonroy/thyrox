@@ -30,6 +30,7 @@ import sys
 from pathlib import Path
 
 from agents import model_catalog
+from paths import reach
 from verify import step_setup, tsc_reflect, tsc_routes, tsc_sweep
 from verify.batch_verification import _new_diagnostics
 from verify.source_copy_step import _package_map, _resolve_package, _resolve_relative
@@ -153,7 +154,7 @@ def cmd_reject(args) -> int:
 # member 'Y'`) y TS2724 (`'"X"' has no exported member named 'Y'`).
 MISSING_EXPORT = re.compile(r"""'"(?P<module>[^"]+)"' has no exported member (?:named )?'(?P<member>[^']+)'""")
 MISSING_EXPORT_CODES = {"TS2305", "TS2614", "TS2724"}
-THYROX = Path(__file__).resolve().parents[2]
+THYROX = reach.thyrox_root()
 MODULE_PROMPT = Path("src/verify/prompts/module-port.md")
 SHARED_PROMPT = Path("src/verify/prompts/shared-type.md")
 LOCAL_PROMPT = Path("src/verify/prompts/file-local.md")

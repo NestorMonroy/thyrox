@@ -32,6 +32,7 @@ import {
   resetHooksConfigSnapshot,
   setHooksConfigSnapshot,
 } from '../hooksConfigSnapshot.ts'
+import { clearRegisteredHooks, registerHookCallbacks } from '@thyrox/app-host/bootstrap/state.js'
 
 const cmd = (command: string, extra: Record<string, unknown> = {}) => ({
   type: 'command',
@@ -206,5 +207,38 @@ describe('eventos fuera del bucle', () => {
     expect(getSessionEndHookTimeoutMs()).toBe(60_000)
     process.env.CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS = '4321'
     expect(getSessionEndHookTimeoutMs()).toBe(4321)
+  })
+})
+
+describe('hooks nativos de plugin — el registro del estado cuenta (`dTt` lee `pL()`)', () => {
+  afterEach(() => clearRegisteredHooks())
+
+  test('un hook de plugin registrado corre, con CLAUDE_PLUGIN_ROOT en su entorno', async () => {
+    const root = '/raiz/del/plugin'
+    registerHookCallbacks({
+      PreCompact: [
+        {
+          matcher: '',
+          hooks: [cmd('printf %s "$CLAUDE_PLUGIN_ROOT"')],
+          pluginRoot: root,
+          pluginName: 'p',
+          pluginId: 'p',
+        },
+      ],
+    } as never)
+    const results = await executeHooksOutsideREPL({
+      hookInput: { ...createBaseHookInput(), hook_event_name: 'PreCompact' },
+    })
+    expect(results.map(r => r.output)).toEqual([root])
+  })
+
+  test('un callback del SDK del mismo registro NO entra por este camino', async () => {
+    registerHookCallbacks({
+      PreCompact: [{ matcher: '', hooks: [{ type: 'callback', callback: async () => ({}) }] }],
+    } as never)
+    const results = await executeHooksOutsideREPL({
+      hookInput: { ...createBaseHookInput(), hook_event_name: 'PreCompact' },
+    })
+    expect(results).toEqual([])
   })
 })

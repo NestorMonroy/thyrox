@@ -23,6 +23,7 @@ from session.background import LogHomeError, log_dir          # noqa: E402
 from cache.paths import cache_dir                             # noqa: E402
 from session.job_runs import jobs_dir                         # noqa: E402
 from workbench.paths import workbench_dir                     # noqa: E402
+from paths import reach                                       # noqa: E402
 
 OK = 0
 FAILED = 0
@@ -118,7 +119,7 @@ print("== 4. un hogar que YA existe se resuelve sin intentar escribir (strace) =
 # por conducta, no por el «idempotente» del docstring (H-THYROX-187).
 import subprocess  # noqa: E402
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 MODULES = {"log_dir": "session.background", "cache_dir": "cache.paths",
            "jobs_dir": "session.job_runs", "workbench_dir": "workbench.paths"}
 for var, name, _ in RESOLVERS:

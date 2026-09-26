@@ -21,9 +21,10 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
 from verify import tsc_reflect, tsc_sweep  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 passed = failed = 0
 
 

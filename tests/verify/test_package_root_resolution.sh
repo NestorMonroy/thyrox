@@ -16,6 +16,11 @@ set -uo pipefail
 AQUI="$(cd "$(dirname "$0")" && pwd)"
 THYROX="$(cd "$AQUI/../.." && pwd)"
 
+# Lo que se mide es la resolucion POR ARBOL. `tests/run.sh` y los envoltorios
+# de `bin/` exportan `THYROX_ROOT`, que el gate prefiere; heredada, apunta al
+# arbol real y los casos sinteticos leen «otra» sin haber medido nada.
+unset THYROX_ROOT
+
 ok=0; fallo=0
 afirmar() {
     local nombre="$1" esperado="$2" real="$3"

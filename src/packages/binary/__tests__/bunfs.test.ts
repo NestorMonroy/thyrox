@@ -56,6 +56,11 @@ const MEASURED: Record<string, { entries: number; tableBytes: number; extractedB
   // (2249 * 52, paso invariante) y 44 192 578 B de contenido. El corpus de esta
   // build NO se vendorizo en `_references/`: la referencia vigente es 2.1.275.
   '2.1.281': { entries: 2249, tableBytes: 116_948, extractedBytes: 44_192_578 },
+  // Medida el 2026-09-26T18:25:08 con `binary info` sobre la build viva, que el
+  // contenedor actualizó a 2.1.283. 122 entradas más (122 * 52 = 6344 B de
+  // tabla, paso invariante) y 1 210 799 B más de contenido. 2.1.282 no llegó
+  // a ser la build viva de ninguna medición, así que no tiene fila.
+  '2.1.283': { entries: 2371, tableBytes: 123_292, extractedBytes: 45_403_377 },
 }
 
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null

@@ -67,8 +67,11 @@ run() {  # run <archivos...> -> imprime la salida; deja el codigo en CODE
 # commit que sólo toca un `.sh` o el store no debe pagar los ~2 s de los gates.
 run ""
 assert_equal "sin archivos de prosa: exit 0" "0" "$CODE"
+# `check_cache_layout` corre en todo commit a proposito —mide el hogar del
+# cache, no la prosa— y es barato; lo que no debe correr son los gates de
+# prosa, asi que su linea no cuenta aqui.
 assert_equal "sin archivos de prosa: no gasta tiempo en gates" "0" \
-    "$(printf '%s' "$OUTPUT" | grep -c 'alcance medido')"
+    "$(printf '%s' "$OUTPUT" | grep -v '^check_cache_layout' | grep -c 'alcance medido')"
 
 # ---------------------------------------------------------------- caso 2
 # Forma vetada NUEVA en un archivo que el baseline no congela.
