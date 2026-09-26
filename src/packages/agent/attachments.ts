@@ -564,6 +564,10 @@ export type Attachment =
       // Renders as red "Goal could not be achieved" instead of dim
       // "Goal not yet met… continuing".
       failed?: boolean
+      // Lo escribe `pauseGoalStopHook` (la pausa pedida por el usuario). El
+      // binario anuncia las pausas por interrupción con un aviso aparte
+      // (2.1.282, `Lc`: "Goal paused · …"), no con este campo.
+      paused?: boolean
     }
 
 export type TeammateMailboxAttachment = {
