@@ -76,3 +76,10 @@ package = false
 #     uv sync --group verify
 [dependency-groups]
 verify = ["numpy"]
+# Respaldo OPCIONAL de `src/corpus/pdf_to_text.py`: el camino principal es el
+# binario `pdftotext` (poppler, instalador en `src/lib/toolchain.sh`), y la
+# biblioteca sólo entra si ese binario falta. Grupo y no dependencia por la
+# misma razón que `verify`: un `uv sync` corriente no la descarga.
+#
+#     uv sync --group corpus
+corpus = ["pdfplumber"]
