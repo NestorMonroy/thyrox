@@ -1,4 +1,5 @@
 import type { Message } from './messageShapes.js'
+import type { QueryDeps } from './internal/queryDeps.ts'
 import type { SetAppState } from './messageQueueManager.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
@@ -17,7 +18,6 @@ export type InMemoryError = { error: string; timestamp: string }
 import type {
   AgentHookResult,
   AgentMessage,
-  AgentQuerySource,
   AgentREPLHookContext,
   AgentStopHookInfo,
   AgentTask,
@@ -265,23 +265,11 @@ export type AgentHostBindings = {
   getCurrentTurnTokenBudget?: () => number
   getTurnOutputTokens?: () => number
   incrementBudgetContinuationCount?: () => void
-  microcompactMessages?: (
-    messages: AgentMessage[],
-    toolUseContext?: AgentToolUseContext,
-    querySource?: AgentQuerySource,
-  ) => Promise<{ messages: AgentMessage[]; [key: string]: unknown }>
-  autoCompactIfNeeded?: (
-    messages: AgentMessage[],
-    toolUseContext: AgentToolUseContext,
-    cacheSafeParams: unknown,
-    querySource?: AgentQuerySource,
-    tracking?: unknown,
-    snipTokensFreed?: number,
-  ) => Promise<{
-    wasCompacted: boolean
-    compactionResult?: unknown
-    consecutiveFailures?: number
-  }>
+  // Una sola firma: la que el query loop consume (`internal/queryDeps.ts`).
+  // Aquí había una copia con `compactionResult?: unknown`, y la intersección
+  // con la de `queryDeps` conservaba ese `unknown`.
+  microcompactMessages?: QueryDeps['microcompact']
+  autoCompactIfNeeded?: QueryDeps['autocompact']
   getTotalAPIDuration?: () => number
   getTotalCost?: () => number
   getModelUsage?: () => Record<string, ModelUsage>

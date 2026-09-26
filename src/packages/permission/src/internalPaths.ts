@@ -419,7 +419,9 @@ function isProjectStoragePath(path: string, cwd: string = currentCwd()): boolean
 export function getBundledSkillsRoot(): string {
   if (bundledSkillsRoot !== undefined) return bundledSkillsRoot
   const temp = filesystem()?.getClaudeTempDir() ?? nodePath.join('/tmp', 'claude')
-  const version = process.env.THYROX_VERSION ?? '0.0.0'
+  // La referencia compone la ruta con la versión de build (`MACRO.VERSION`),
+  // no con una variable de entorno: fuera de una build, el define no existe.
+  const version = typeof MACRO !== 'undefined' ? MACRO.VERSION : '0.0.0-dev'
   bundledSkillsRoot = nodePath.join(temp, 'bundled-skills', version, randomBytes(16).toString('hex'))
   return bundledSkillsRoot
 }

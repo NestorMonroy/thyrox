@@ -6,20 +6,24 @@
  * `annotateBoundaryWithPreservedSegment` (:348) y `createCompactCanUseTool`
  * (:1064).
  *
- * `@thyrox/storage/plans.js` se sustituye con `mock.module`: el plan real
- * vive bajo el directorio de configuración del usuario, que un test no debe
- * tocar. El resto —agrupación por ronda, estimación de tokens, estado de
- * skills invocadas— es el mecanismo real. La bandera de build
+ * El plan se lee con `@thyrox/storage/plans.js` real, sobre un
+ * `CLAUDE_CONFIG_DIR` temporal: el directorio del usuario no se toca. Antes se
+ * sustituía el módulo con `mock.module`, y en Bun ese sustituto vive el resto
+ * del proceso, así que `plans.test.ts` corrido después en el mismo lote
+ * recibía el falso y fallaba. El resto —agrupación por ronda, estimación de
+ * tokens, estado de skills invocadas— es el mecanismo real. La bandera de build
  * `EXPERIMENTAL_SKILL_SEARCH` no se puede encender desde un test.
  */
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-
-let planContent: string | null = null
-mock.module('@thyrox/storage/plans.js', () => ({
-  getPlan: () => planContent,
-  getPlanFilePath: (agentId?: string) => (agentId ? `/plans/plan-agent-${agentId}.md` : '/plans/plan.md'),
-}))
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { dirname, join } from 'node:path'
+import {
+  clearAllPlanSlugs,
+  getPlanFilePath,
+  setInitialSettingsForTest,
+} from '@thyrox/storage/plans.js'
 
 import {
   annotateBoundaryWithPreservedSegment,
@@ -128,20 +132,35 @@ describe('truncateHeadForPTLRetry', () => {
 })
 
 describe('createPlanAttachmentIfNeeded', () => {
-  afterEach(() => {
-    planContent = null
+  const originalConfigDir = process.env.CLAUDE_CONFIG_DIR
+  let configDir = ''
+
+  beforeEach(async () => {
+    configDir = await mkdtemp(join(tmpdir(), 'compact-plan-'))
+    process.env.CLAUDE_CONFIG_DIR = configDir
+    setInitialSettingsForTest({})
+    clearAllPlanSlugs()
+  })
+
+  afterEach(async () => {
+    if (originalConfigDir === undefined) delete process.env.CLAUDE_CONFIG_DIR
+    else process.env.CLAUDE_CONFIG_DIR = originalConfigDir
+    clearAllPlanSlugs()
+    await rm(configDir, { recursive: true, force: true })
   })
 
   test('sin plan no hay adjunto', () => {
     expect(createPlanAttachmentIfNeeded()).toBeNull()
   })
 
-  test('con plan devuelve su ruta y su contenido, por agente', () => {
-    planContent = '# plan\n1. medir'
+  test('con plan devuelve su ruta y su contenido, por agente', async () => {
+    const planFilePath = getPlanFilePath('ag-7' as AgentId)
+    await mkdir(dirname(planFilePath), { recursive: true })
+    await writeFile(planFilePath, '# plan\n1. medir')
     const message = createPlanAttachmentIfNeeded('ag-7' as AgentId)
     expect(message?.attachment).toEqual({
       type: 'plan_file_reference',
-      planFilePath: '/plans/plan-agent-ag-7.md',
+      planFilePath,
       planContent: '# plan\n1. medir',
     })
   })

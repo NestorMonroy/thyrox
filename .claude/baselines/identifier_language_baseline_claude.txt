@@ -2146,3 +2146,6 @@ tests/corpus/test_term_census.py::credito
 tests/corpus/test_term_census.py::ano
 tests/corpus/test_term_census.py::digitaliza
 tests/corpus/test_term_census.py::nada
+tests/agents/test_model_catalog_tokens.py::fuente
+tests/verify/test_pool_pipeline.py::fix_generico
+tests/verify/test_pool_pipeline.py::senal_del_verificador

@@ -18,7 +18,10 @@ import { isConnectorTextBlock } from '@thyrox/provider/connectorTextTypes'
 import type { SpinnerMode } from '@thyrox/repl/components/Spinner.js'
 import type { APIError } from '@anthropic-ai/sdk'
 import type { SDKAssistantMessageError } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { PermissionMode } from './types.ts'
+// El modo que estaba activo al enviar el mensaje, interno incluido
+// (`auto`, `bubble`), no el que puede declarar el frontmatter de un agente
+// (`./types.ts`).
+import type { PermissionMode } from '@thyrox/permission/permissionTypes.js'
 import { logForDebugging, logAntError } from '@thyrox/local-observability/debug.js'
 import { formatTokens, formatFileSize, formatNumber } from '@thyrox/output/formatters'
 import { readEnv } from '@thyrox/config/env/utils.js'

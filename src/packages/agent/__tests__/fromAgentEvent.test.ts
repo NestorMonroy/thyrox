@@ -22,7 +22,13 @@ import {
   fromCoreMessages,
   toCoreMessages,
 } from '../createDeps.js'
+import type { AgentEvent } from '../types/events.ts'
 import { toCoreMessage } from '../messageAdapters.ts'
+
+// Los casos alimentan a propósito eventos malformados —tipos que el core no
+// emite, campos ausentes o nulos— para fijar que el proyector los descarta.
+// El contrato tipado no los admite, así que entran por aquí como dato crudo.
+const project = (event: unknown) => fromAgentEvent(event as AgentEvent)
 
 describe('fromAgentEvent — eventos message', () => {
   // El core emite su mensaje en forma plana (`CoreMessage`); el proyector lo
@@ -32,12 +38,12 @@ describe('fromAgentEvent — eventos message', () => {
 
   test('un mensaje que entro al core vuelve como el MISMO objeto del bucle', () => {
     const agent = { type: 'assistant', uuid: 'a-1', message: { role: 'assistant', content: [] } }
-    const r = fromAgentEvent({ type: 'message', message: toCoreMessage(agent) })
+    const r = project({ type: 'message', message: toCoreMessage(agent) })
     expect(r).toBe(agent)
   })
 
   test('un mensaje creado por el core en forma plana se entrega anidado, no se descarta', () => {
-    const r = fromAgentEvent({
+    const r = project({
       type: 'message',
       message: { type: 'assistant', uuid: 'c-1', role: 'assistant', content: [{ type: 'text', text: 'x' }] },
     }) as { type: string; message: { content: unknown } }
@@ -46,20 +52,20 @@ describe('fromAgentEvent — eventos message', () => {
   })
 
   test('evento message sin campo message → undefined', () => {
-    expect(fromAgentEvent({ type: 'message' })).toBeUndefined()
+    expect(project({ type: 'message' })).toBeUndefined()
   })
 
   test('evento message con message nulo → undefined', () => {
-    expect(fromAgentEvent({ type: 'message', message: null })).toBeUndefined()
+    expect(project({ type: 'message', message: null })).toBeUndefined()
   })
 
   test('un objeto de un tipo que el core no emite → undefined', () => {
-    expect(fromAgentEvent({ type: 'message', message: { type: 'noinner' } })).toBeUndefined()
+    expect(project({ type: 'message', message: { type: 'noinner' } })).toBeUndefined()
   })
 
   test('evento message con message primitivo (string) → undefined', () => {
     expect(
-      fromAgentEvent({ type: 'message', message: 'string' as never }),
+      project({ type: 'message', message: 'string' as never }),
     ).toBeUndefined()
   })
 })
@@ -67,18 +73,18 @@ describe('fromAgentEvent — eventos message', () => {
 describe('fromAgentEvent — eventos stream', () => {
   test('evento stream devuelve el evento interior verbatim', () => {
     const innerEvent = { type: 'content_block_start', index: 0 }
-    const r = fromAgentEvent({ type: 'stream', event: innerEvent })
+    const r = project({ type: 'stream', event: innerEvent })
     expect(r).toBe(innerEvent)
   })
 
   test('evento stream con event indefinido → undefined', () => {
-    expect(fromAgentEvent({ type: 'stream' })).toBeUndefined()
+    expect(project({ type: 'stream' })).toBeUndefined()
   })
 })
 
 describe('fromAgentEvent — eventos request_start', () => {
   test('devuelve el marcador sintético stream_request_start', () => {
-    expect(fromAgentEvent({ type: 'request_start' })).toEqual({
+    expect(project({ type: 'request_start' })).toEqual({
       type: 'stream_request_start',
     })
   })
@@ -86,7 +92,7 @@ describe('fromAgentEvent — eventos request_start', () => {
   test('campos extra en el input se ignoran — la salida es sólo el marcador', () => {
     // Contrato documentado: request_start sintetiza un marcador de forma
     // fija; cualquier campo extra que pase el llamador se descarta.
-    const r = fromAgentEvent({
+    const r = project({
       type: 'request_start',
       requestId: 'abc',
       extra: 'data',
@@ -97,29 +103,29 @@ describe('fromAgentEvent — eventos request_start', () => {
 
 describe('fromAgentEvent — evento done', () => {
   test('evento done → undefined (descarta, señala fin del stream)', () => {
-    expect(fromAgentEvent({ type: 'done' })).toBeUndefined()
+    expect(project({ type: 'done' })).toBeUndefined()
   })
 
   test('evento done con campos extra → sigue siendo undefined', () => {
     expect(
-      fromAgentEvent({ type: 'done', usage: { input_tokens: 100 } }),
+      project({ type: 'done', usage: { input_tokens: 100 } }),
     ).toBeUndefined()
   })
 })
 
 describe('fromAgentEvent — tipos de evento desconocidos', () => {
   test('tipo desconocido → undefined (la rama default descarta)', () => {
-    expect(fromAgentEvent({ type: 'unknown_type' })).toBeUndefined()
+    expect(project({ type: 'unknown_type' })).toBeUndefined()
   })
 
   test('type vacío → undefined', () => {
-    expect(fromAgentEvent({ type: '' })).toBeUndefined()
+    expect(project({ type: '' })).toBeUndefined()
   })
 
   test('mal tipeado (p.ej. "Message" capitalizado) → undefined', () => {
     // El switch distingue mayúsculas/minúsculas.
     expect(
-      fromAgentEvent({
+      project({
         type: 'Message',
         message: { type: 'x', message: {} },
       } as never),
@@ -138,7 +144,7 @@ describe('fromAgentEvent — invariantes de la forma de retorno', () => {
       { type: 'random' },
     ]
     for (const s of samples) {
-      const r = fromAgentEvent(s)
+      const r = project(s)
       expect(r === undefined || (typeof r === 'object' && r !== null)).toBe(true)
     }
   })

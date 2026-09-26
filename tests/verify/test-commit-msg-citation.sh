@@ -47,7 +47,10 @@ trap 'rm -rf "$WORK"' EXIT
 # Se le da al gate los mensajes recientes y se toma una de las que EL declara
 # resueltas: la derivacion usa la misma puerta que el sujeto, no una segunda
 # lectura del store que pueda divergir de la suya.
-git log --format=%B -30 > "$WORK/historial.txt"
+# Los 30 commits que CITAN una tarea, no los 30 ultimos: una racha de commits
+# sin cita vaciaba la ventana y el caso quedaba SIN MEDIR por la historia
+# reciente, no por el store.
+git log -E --grep='TASK-[A-Z]+-[0-9]{4}' --format=%B -30 > "$WORK/historial.txt"
 VIVA="$(bash bin/citation_resolution "$WORK/historial.txt" 2>/dev/null \
     | grep -oE '^  (TASK-[A-Z]+-[0-9]{4}) ->' | grep -oE 'TASK-[A-Z]+-[0-9]{4}' | head -1)"
 if [[ -z "$VIVA" ]]; then

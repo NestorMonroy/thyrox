@@ -17,7 +17,7 @@ import {
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import type { Message } from '@thyrox/agent/messageShapes.js'
 import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { InitBridgeOptions as HostInitBridgeOptions } from './contracts.js'
+import type { InboundMessageFields, InitBridgeOptions as HostInitBridgeOptions } from './contracts.js'
 
 /**
  * Adaptadores entre el contrato laxo de host-bindings (`unknown` en
@@ -26,15 +26,15 @@ import type { InitBridgeOptions as HostInitBridgeOptions } from './contracts.js'
  * único llamador de `installBridgeHostBindings`, así que lo que aquí se
  * afirma siempre llega con la forma precisa.
  */
-function extractInboundMessageFieldsForHost(message: unknown): unknown {
+function extractInboundMessageFieldsForHost(message: unknown): InboundMessageFields | undefined {
   return extractInboundMessageFields(message as SDKMessage)
 }
 
 function resolveAndPrependForHost(
   message: unknown,
-  content: string | unknown[],
-): Promise<string | unknown[]> {
-  return resolveAndPrepend(message, content as string | ContentBlockParam[])
+  content: string | ContentBlockParam[],
+): Promise<string | ContentBlockParam[]> {
+  return resolveAndPrepend(message, content)
 }
 
 function initReplBridgeForHost(

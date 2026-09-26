@@ -14,6 +14,7 @@ medirlo sobre un árbol con esa forma es medir lo que corre de verdad.
 """
 import json
 import os
+import re
 import pathlib
 import sqlite3
 import shutil
@@ -29,20 +30,12 @@ GATE = THYROX / 'src' / 'verify' / 'check_provider_evidence.py'
 # sintetico porque el hook REHUSA por su ausencia — es su contrato, no un
 # descuido. Sin copiarlos, esta suite entera se pondria roja por el arreglo.
 PACKAGE_GATES = ('check-agent-artifacts.sh', 'check-cli-typecheck.sh')
-# El tercero NO esta en el bucle de rehuse del hook —se invoca sin comprobar
-# que exista— asi que su ausencia no produce el mensaje de «verde falso»
-# sino un `bash: no such file` que pone CODE=1. Viaja al repo sintetico por
-# eso: sin el, el commit semilla de ESTA suite fallaba y sus seis casos
-# morian en setUp. Medido: 6 de 6 rojos por deriva del fixture, no por el
-# contrato que dicen medir.
-UNCHECKED_GATES = ('check-cross-model-read.sh', 'check_bench_untracked.py')
-# `check_bench_untracked.py` entro al hook despues (la guarda del banco a medio
-# commitear) con la misma forma: se invoca sin comprobar que exista. Sin copia,
-# el commit semilla moria con `can't open file` y los casos caian en setUp —
-# la misma deriva del fixture que el parrafo de arriba ya habia medido.
-# El gate de identidad. Viaja al fixture porque el hook lo invoca en todo
-# commit; su ausencia pondria rojos los casos que no miden identidad.
-IDENTITY_GATE = 'commit_identity.py'
+# Los gates que el hook invoca se DERIVAN del propio hook, no se enumeran a
+# mano. La tupla escrita a mano derivo tres veces —`check-cross-model-read.sh`,
+# `check_bench_untracked.py` y `check_cache_layout.py` entraron al hook sin
+# entrar al fixture— y cada vez el commit semilla moria en setUp: todos los
+# casos rojos por deriva del fixture, no por el contrato que dicen medir.
+HOOK_GATES = tuple(sorted(set(re.findall(r'\$GATES/([\w.-]+)', HOOK.read_text()))))
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
@@ -62,9 +55,11 @@ class PreCommitHook(unittest.TestCase):
         # stub convierte el caso en un ImportError que no mide nada.
         shutil.copytree(THYROX / 'src' / 'paths', self.repo / 'src' / 'paths')
         shutil.copytree(THYROX / 'src' / 'workbench', self.repo / 'src' / 'workbench')
+        # `check_cache_layout.py` resuelve su hogar con `cache.paths`.
+        shutil.copytree(THYROX / 'src' / 'cache', self.repo / 'src' / 'cache')
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
+        for gate in HOOK_GATES:
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()
@@ -186,8 +181,12 @@ class PreCommitHook(unittest.TestCase):
     def test_el_clon_real_lo_tiene_activado(self):
         """`core.hooksPath` no se versiona: se comprueba que este clon lo fijo."""
         configured = git(THYROX, 'config', 'core.hooksPath').stdout.strip()
-        self.assertEqual(configured, '.githooks',
-                         'core.hooksPath sin fijar: corre `bash scripts/install-hooks.sh`')
+        # Relativa (`.githooks`, la que escribe install-hooks.sh) o absoluta al
+        # mismo directorio: las dos activan el hook. Se compara el directorio
+        # resuelto, no la grafía.
+        self.assertTrue(configured, 'core.hooksPath sin fijar: corre `bash scripts/install-hooks.sh`')
+        self.assertEqual((THYROX / configured).resolve(), HOOK.parent.resolve(),
+                         'core.hooksPath no apunta al .githooks de este clon')
         self.assertTrue(os.access(HOOK, os.X_OK), f'{HOOK} sin permiso de ejecucion')
 
 
@@ -212,12 +211,12 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         self.repo = pathlib.Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.repo, ignore_errors=True)
         (self.repo / 'src').mkdir()
-        for package in ('paths', 'workbench', 'task'):
+        for package in ('paths', 'workbench', 'task', 'cache'):
             shutil.copytree(THYROX / 'src' / package, self.repo / 'src' / package,
                             ignore=shutil.ignore_patterns('__pycache__'))
         (self.repo / 'src' / 'verify').mkdir()
         shutil.copy(GATE, self.repo / 'src' / 'verify' / GATE.name)
-        for gate in PACKAGE_GATES + UNCHECKED_GATES + (IDENTITY_GATE,):
+        for gate in HOOK_GATES:
             shutil.copy(THYROX / 'src' / 'verify' / gate,
                         self.repo / 'src' / 'verify' / gate)
         (self.repo / '.githooks').mkdir()

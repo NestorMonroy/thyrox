@@ -365,7 +365,7 @@ async function main(): Promise<void> {
   const { startCapturingEarlyInput } = await import('@thyrox/repl/earlyInput.js')
   startCapturingEarlyInput()
   profileCheckpoint('cli_before_main_import')
-  const { main: cliMain } = await import('./main.jsx')
+  const { main: cliMain } = await import('./main.tsx')
   profileCheckpoint('cli_after_main_import')
   await cliMain()
   profileCheckpoint('cli_after_main_complete')

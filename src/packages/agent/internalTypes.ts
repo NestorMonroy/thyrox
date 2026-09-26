@@ -110,7 +110,9 @@ export type AgentToolUseContext = ToolUseContext
 // ── Tipo de system prompt ────────────────────────────────────────────────────
 
 /** Forma mínima de SystemPrompt. */
-export type AgentSystemPrompt = Array<{ content: unknown }>
+// El prompt de sistema es la lista de secciones de texto de la fuente
+// (`SystemPrompt`, `readonly string[]` con marca); aquí sin la marca.
+export type AgentSystemPrompt = readonly string[]
 
 // ── Fuente de la query ───────────────────────────────────────────────────────
 

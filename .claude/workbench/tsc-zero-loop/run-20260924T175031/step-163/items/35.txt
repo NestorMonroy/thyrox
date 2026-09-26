@@ -1,0 +1,53 @@
+src/packages/agent/query.ts(1123,64): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:1113-1133 ---
+   1113            if (params.taskBudget) {
+   1114              const preCompactContext =
+   1115                finalContextTokensFromLastResponse(messagesForQuery)
+   1116              taskBudgetRemaining = Math.max(
+   1117                0,
+   1118                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1119                  preCompactContext,
+   1120              )
+   1121            }
+   1122  
+   1123>           const postCompactMessages = buildPostCompactMessages(compacted)
+   1124            for (const msg of postCompactMessages) {
+   1125              yield msg
+   1126            }
+   1127            const next: State = {
+   1128              messages: postCompactMessages,
+   1129              toolUseContext,
+   1130              autoCompactTracking: undefined,
+   1131              maxOutputTokensRecoveryCount,
+   1132              hasAttemptedReactiveCompact: true,
+   1133              maxOutputTokensOverride: undefined,
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+src/packages/agent/query.ts(1128,13): error TS2322: Type 'CompactableMessage[]' is not assignable to type 'AgentMessage[]'.
+  --- código src/packages/agent/query.ts:1118-1138 ---
+   1118                (taskBudgetRemaining ?? params.taskBudget.total) -
+   1119                  preCompactContext,
+   1120              )
+   1121            }
+   1122  
+   1123            const postCompactMessages = buildPostCompactMessages(compacted)
+   1124            for (const msg of postCompactMessages) {
+   1125              yield msg
+   1126            }
+   1127            const next: State = {
+   1128>             messages: postCompactMessages,
+   1129              toolUseContext,
+   1130              autoCompactTracking: undefined,
+   1131              maxOutputTokensRecoveryCount,
+   1132              hasAttemptedReactiveCompact: true,
+   1133              maxOutputTokensOverride: undefined,
+   1134              pendingToolUseSummary: undefined,
+   1135              stopHookActive: undefined,
+   1136              stopHookBlockingCount: 0,
+   1137              turnCount,
+   1138              transition: { reason: 'reactive_compact_retry' },
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+          Types of property 'content' are incompatible.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.

@@ -319,7 +319,17 @@ export const SettingsSchema = lazySchema(() => z
     // El sub-esquema de sandbox ya portado; con `unknown` cada lector de
     // `settings.sandbox` veía `{}` y no podía leer ninguna de sus claves.
     sandbox: SandboxSettingsSchema().optional(),
-    statusLine: z.object({ type: z.literal('command'), command: z.string() }).optional(),
+    // 2.1.282: un `refreshInterval` inválido se descarta (`.catch`) en vez de
+    // invalidar el archivo de settings entero.
+    statusLine: z.object({
+      type: z.literal('command'),
+      command: z.string(),
+      padding: z.number().optional(),
+      refreshInterval: z.number().min(1).optional().catch(undefined)
+        .describe('Re-run the status line command every N seconds in addition to event-driven updates'),
+      hideVimModeIndicator: z.boolean().optional()
+        .describe('Hide the built-in `-- INSERT --` / `-- VISUAL --` indicator below the prompt. Use this when your status line script renders `vim.mode` itself.'),
+    }).optional(),
     outputStyle: z.string().optional(),
     /**
      * Selección de pruebas por impacto (T-051). **No la trae el cliente**: es

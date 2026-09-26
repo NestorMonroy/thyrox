@@ -125,6 +125,7 @@
     "./packages/command-runtime/src/commands/mcp": "./src/packages/command-runtime/src/commands/mcp/index.ts",
     "./packages/command-runtime/src/commands/memory": "./src/packages/command-runtime/src/commands/memory/index.ts",
     "./packages/command-runtime/src/commands/model": "./src/packages/command-runtime/src/commands/model/index.ts",
+    "./packages/command-runtime/src/commands/pause-memory": "./src/packages/command-runtime/src/commands/pause-memory/index.ts",
     "./packages/command-runtime/src/commands/powerup": "./src/packages/command-runtime/src/commands/powerup/index.ts",
     "./packages/command-runtime/src/commands/powerup/lessons": "./src/packages/command-runtime/src/commands/powerup/lessons/index.ts",
     "./packages/command-runtime/src/commands/privacy-settings": "./src/packages/command-runtime/src/commands/privacy-settings/index.ts",

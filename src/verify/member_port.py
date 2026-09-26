@@ -23,6 +23,7 @@ import re
 import subprocess
 from pathlib import Path
 
+from paths import reach
 from verify.pool_pipeline import read_output
 
 SLOT = "// @port-slot: {}"
@@ -223,7 +224,7 @@ def plan(declarations: list[dict], present: set[str]) -> dict[str, list[str]]:
     return {k: sorted(v) for k, v in items.items()}
 
 
-THYROX = Path(__file__).resolve().parents[2]
+THYROX = reach.thyrox_root()
 EXTRACTOR = THYROX / "src/verify/top_level_declarations.ts"
 
 

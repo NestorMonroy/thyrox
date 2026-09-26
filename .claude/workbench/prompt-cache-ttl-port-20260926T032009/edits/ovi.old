@@ -1,0 +1,5 @@
+    setup = step_setup_of(args.bench, args.model, args.worktree, "local")
+    if not args.dry_run:
+        step_setup.register(args.ledger.parent, setup)
+    pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+                                     route="local", setup_id=setup["setup_id"])

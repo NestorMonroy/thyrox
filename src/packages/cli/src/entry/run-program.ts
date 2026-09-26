@@ -11,7 +11,6 @@
  *  - the parseAsync + post-parse profiler report
  */
 
-import type { Command as CommanderCommand } from '@commander-js/extra-typings'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import type { RuntimeHandles } from '@thyrox/app-host'
@@ -31,7 +30,7 @@ import {
 } from '@thyrox/app-host/startup/startupProfiler.js'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 
-import { createMainProgram } from './commander.js'
+import { createMainProgram, type MainProgram } from './commander.js'
 import { runModeDispatch } from './mode-dispatch.js'
 import type { PendingHandles } from './preprocess-argv.js'
 import { registerMcpCommands } from '../commands/mcp-commands.js'
@@ -43,7 +42,7 @@ import { registerProjectCommands } from '../commands/project-commands.js'
  * Handles the shared bootstrap shape: settings ready, sinks installed,
  * migrations applied, remote managed settings kicked off.
  */
-function attachPreActionHook(program: CommanderCommand): void {
+function attachPreActionHook(program: MainProgram): void {
   program.hook('preAction', async thisCommand => {
     if (
       program.getOptionValue('promptSuggestions') &&
@@ -156,7 +155,7 @@ function attachPreActionHook(program: CommanderCommand): void {
  * `createMainProgram()` option block. These are either ANT-only, feature
  * flagged, or bridge/teleport-specific.
  */
-function attachSecondaryOptions(program: CommanderCommand): void {
+function attachSecondaryOptions(program: MainProgram): void {
   // Worktree flags
   program.option(
     '-w, --worktree [name]',
@@ -362,7 +361,7 @@ function attachSecondaryOptions(program: CommanderCommand): void {
 export async function runCliProgram(
   runtimeHandles: RuntimeHandles,
   pendings: PendingHandles,
-): Promise<CommanderCommand> {
+): Promise<MainProgram> {
   profileCheckpoint('run_function_start')
 
   const program = createMainProgram()

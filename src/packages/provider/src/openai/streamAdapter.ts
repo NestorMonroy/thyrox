@@ -84,11 +84,25 @@ export async function* adaptOpenAIStreamToAnthropic(
           model,
           stop_reason: null,
           stop_sequence: null,
+          // Los cuatro campos que `BetaMessage` exige y OpenAI no trae, como
+          // los rellena el adaptador hermano (`gemini/streamAdapter.ts`).
+          container: null,
+          context_management: null,
+          diagnostics: null,
+          stop_details: null,
           usage: {
             input_tokens: inputTokens,
             output_tokens: 0,
             cache_creation_input_tokens: 0,
             cache_read_input_tokens: cachedTokens,
+            cache_creation: null,
+            fallback_credit: null,
+            inference_geo: null,
+            iterations: null,
+            output_tokens_details: null,
+            server_tool_use: null,
+            service_tier: null,
+            speed: null,
           },
         },
       } as BetaRawMessageStreamEvent

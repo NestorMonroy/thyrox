@@ -53,9 +53,17 @@ class CloseResult:
     lowered: dict[str, int] = field(default_factory=dict)
 
 
+class GitError(RuntimeError):
+    """Un git que falló, con su stderr: capturar la salida sin devolverla dejó
+    un cierre roto sin causa legible en ``close.log``."""
+
+
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess:
-    return subprocess.run(["git", "-c", "commit.gpgsign=false", *args], cwd=repo, check=True,
+    done = subprocess.run(["git", "-c", "commit.gpgsign=false", *args], cwd=repo,
                           capture_output=True, text=True)
+    if done.returncode != 0:
+        raise GitError(f"git {args[0]} salió {done.returncode}:\n{done.stderr}{done.stdout}")
+    return done
 
 
 def _pending_close_logs(repo: Path, run: Path, bench: Path) -> list[str]:

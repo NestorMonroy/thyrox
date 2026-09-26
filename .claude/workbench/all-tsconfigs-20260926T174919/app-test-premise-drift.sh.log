@@ -1,0 +1,27 @@
+== primera ejecucion sin baseline: el gate REHUSA
+  ok   exit 2, no 0
+  ok   sin baseline NO emite ninguna cifra de cambios
+== escribir el baseline
+  ok   el baseline aterriza
+== sin cambios entre ejecuciones
+  ok   exit 0 cuando nada cambio
+  ok   publica su denominador
+== una ficha CAMBIA de veredicto (firme -> pide re-encuadre)
+  ok   el cambio se detecta
+  ok   nombra la ficha que cambio
+  ok   --strict sale 1 con un cambio
+== y en el sentido contrario (pide re-encuadre -> firme)
+  ok   el cambio inverso tambien se detecta
+== una ficha NUEVA no es un cambio de veredicto
+  ok   la ficha nueva se cuenta aparte, no como cambio
+== el camino POR DEFECTO se ejerce, no solo el de --tasks-dir
+  ok   sin --tasks-dir resuelve el tablero y no revienta
+  ok   y publica su alcance medido
+== el baseline es JSONL: un registro por linea
+  ok   el baseline tiene una linea por ficha (2)
+  ok   json.load sobre el archivo entero FALLA: no es un documento unico
+  ok   cada linea parsea por separado
+== guard: sin el directorio de fichas NO se emite cifra
+  ok   exit 2 y sin conteo
+
+16 ok, 0 fallo(s)  (alcance medido: 16 asercion(es))

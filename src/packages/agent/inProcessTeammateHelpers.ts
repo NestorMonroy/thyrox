@@ -1,4 +1,10 @@
-import { type PlanApprovalResponseMessage } from '@thyrox/swarm'
+// `InProcessTeammateTaskState` es el tipo real de `@thyrox/swarm`, el mismo
+// que la unión de tareas del estado de la aplicación: una copia estructural
+// local no era miembro de esa unión y `updateTaskState` la rechazaba.
+import {
+  type InProcessTeammateTaskState,
+  type PlanApprovalResponseMessage,
+} from '@thyrox/swarm'
 import { updateTaskState } from './task/framework.js'
 /**
  * Helpers de teammate in-process — porte PARCIAL de
@@ -9,8 +15,9 @@ import { updateTaskState } from './task/framework.js'
  * `InProcessTeammateTaskState`, `isInProcessTeammateTask`,
  * `isPermissionResponse`, `isSandboxPermissionResponse` y
  * `PlanApprovalResponseMessage` de `@claude-code-how-works/swarm`, y
- * `updateTaskState` de `./task/framework.js` — ninguno de los dos existe en
- * este árbol. Se portan sólo `findInProcessTeammateTaskId` y su
+ * `updateTaskState` de `./task/framework.js`. Cuando se escribió este porte
+ * ninguno de los dos existía; hoy los dos existen y de `@thyrox/swarm` se toma
+ * el tipo de la tarea (2026-09-26). Se portan sólo `findInProcessTeammateTaskId` y su
  * discriminador de tipo `isInProcessTeammateTask`, porque son el único
  * símbolo que ejercita el test que este archivo porta
  * (`__tests__/findInProcessTeammateTaskId.test.ts`).
@@ -32,13 +39,6 @@ import { updateTaskState } from './task/framework.js'
 
 type AppState = import('@thyrox/app-host/state/AppState.js').AppState
 
-type InProcessTeammateTaskState = {
-  type: 'in_process_teammate'
-  id: string
-  identity: { agentName: string; teamName: string }
-  status: string
-  awaitingPlanApproval: boolean
-}
 
 /**
  * Discrimina si una tarea es un teammate in-process. Deliberadamente sólo

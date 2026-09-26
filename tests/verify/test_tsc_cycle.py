@@ -426,6 +426,19 @@ with tempfile.TemporaryDirectory() as tmp:
                            "--root", str(root), "--run", str(run)])
     assert_equal("gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa", (2, True, False),
                  (blocked, "GATE 4 BLOQUEADO" in err.getvalue(), (root / "local/items.txt").exists()))
+    # Las instancias en archivos que OTRO paso tiene en vuelo no bloquean: ése
+    # las está resolviendo, y el solape no las toca. Episodio: el solape del
+    # paso 164 rehusó por una instancia en AttachmentMessage.tsx que el 163
+    # tenía en su pool en ese momento.
+    in_flight = root / "en-vuelo.txt"
+    in_flight.write_text("src/b.ts\nsrc/c.ts\n")
+    with contextlib.redirect_stderr(io.StringIO()):
+        overlapped = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "overlap"),
+                              "--root", str(root), "--run", str(run), "--exclude", str(in_flight)])
+    planned = [line.split()[0] for line in (root / "overlap/items.txt").read_text().splitlines()] \
+        if (root / "overlap/items.txt").exists() else []
+    assert_equal("gate 4 descuenta las instancias en vuelo en otro paso, y no las planea", (0, ["src/d.ts"]),
+                 (overlapped, planned))
     code = tc.main(["sweep", "plan", "--log", str(log), "--bench", str(root / "sweep"), "--root", str(root),
                     "--run", str(run)])
     lines = (root / "sweep/items.txt").read_text().splitlines()
@@ -488,6 +501,19 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("el resto va de mayor a menor probabilidad: el fácil primero, el sin historia después",
                  ["src/easy.ts", "src/fresh.ts", "src/young.ts"], planned)
 
+    # Si TODO lo vivo está diferido, no hay paso: el plan rehúsa y nombra los
+    # diferidos por stderr, sin dejar un banco con sólo `deferred.txt` — ese
+    # huérfano sin versionar hizo que el gate del banco tumbara el cierre del
+    # paso anterior (step 163).
+    only_hard = root / "only-hard.log"
+    only_hard.write_text("src/hard.ts(3,1): error TS2304: Cannot find name \x27hard\x27.\n")
+    stderr = io.StringIO()
+    with contextlib.redirect_stderr(stderr):
+        code = tc.main(["local", "plan", "--log", str(only_hard), "--bench", str(root / "orphan"),
+                        "--root", str(root), "--run", str(run_dir)])
+    assert_equal("todo diferido: rehúsa, nombra el diferido y no crea el banco", (2, True, False),
+                 (code, "src/hard.ts" in stderr.getvalue(), (root / "orphan").exists()))
+
 # --- local overlap: el paso N+1 empieza en la cola del paso N ---------------
 # Pipeline parallelism (cs25-v6 L04, 1F1B): el tiempo muerto entre pasos es el
 # problema. Medido en el paso 155: 206 s del pool a ancho < 8, más el hueco de
@@ -535,6 +561,13 @@ with tempfile.TemporaryDirectory() as tmp:
                  (1, True, False),
                  (len(edge), bool(edge) and "--after-ok step-200-pipeline" in edge[0],
                   any("thyrox-bg start step-201-pipeline" in line for line in commands)))
+    os.environ["THYROX_ENABLE_PROMPT_CACHING_1H"] = "1"
+    try:
+        _, out_ttl, _ = overlap(previous, "step-202")
+    finally:
+        del os.environ["THYROX_ENABLE_PROMPT_CACHING_1H"]
+    assert_equal("overlap fija el TTL del pool como launch, con el entorno por delante", True,
+                 "--cache-ttl 1h" in out_ttl)
     assert_equal("overlap también encadena su cierre a su propio pipeline", True,
                  any("wait-jobs register step-201-close" in line and "--after-ok step-201-pipeline" in line
                      for line in commands))
@@ -593,6 +626,29 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("ítems de menos de 5 min: 5m, y el porqué", ("5m", True), (ttl, "turnos seguidos" in why))
     (previous / "3.json").write_text(json.dumps({"duration_ms": 12 * 60000}))
     assert_equal("un ítem de 12 min en el paso anterior: 1h", "1h", tc.pool_cache_ttl(current, "claude-sonnet-5")[0])
+    # El entorno THYROX_* va antes que la cota: la cota es un DEFAULT
+    # derivado, no una declaración — en el orden de `QCt` (2.1.282) forzar
+    # 5m, la variable del origen y activar 1h le ganan. Sin esto,
+    # `THYROX_ENABLE_PROMPT_CACHING_1H=1` no llegaba nunca: el pool recibía
+    # `--cache-ttl 5m` de la cota y la opción ganaba a activar 1h.
+    (previous / "3.json").unlink()
+    enable = {"THYROX_ENABLE_PROMPT_CACHING_1H": "1"}
+    ttl, why = tc.pool_cache_ttl(current, "claude-sonnet-5", env=enable)
+    assert_equal("activar 1h gana a la cota de 4.91 min, y lo dice", ("1h", True), (ttl, "enable_1h_env" in why))
+    assert_equal("la variable del origen gana a activar 1h", "5m",
+                 tc.pool_cache_ttl(current, "claude-sonnet-5",
+                                   env={**enable, "THYROX_CODE_PROMPT_CACHE_TTL": "5m"})[0])
+    assert_equal("forzar 5m gana a todo", "5m",
+                 tc.pool_cache_ttl(current, "claude-sonnet-5",
+                                   env={"THYROX_FORCE_PROMPT_CACHING_5M": "1",
+                                        "THYROX_CODE_PROMPT_CACHE_TTL": "1h"})[0])
+    try:
+        tc.pool_cache_ttl(current, "claude-sonnet-5", env={"THYROX_CODE_PROMPT_CACHE_TTL": "30m"})
+        illegible = "no rehusó"
+    except ValueError as error:
+        illegible = "THYROX_CODE_PROMPT_CACHE_TTL" in str(error)
+    assert_equal("un valor ilegible rehúsa nombrando la variable", True, illegible)
+    assert_equal("sin entorno, la cota decide como antes", "5m", tc.pool_cache_ttl(current, "claude-sonnet-5", env={})[0])
     alone = Path(tmp) / "solo" / "step-1"
     alone.mkdir(parents=True)
     assert_equal("sin paso anterior medido no se decide: lo decide el cliente", None,

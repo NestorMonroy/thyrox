@@ -52,6 +52,8 @@ export const FRAME_SIZE_CAP = 1024 * 1024
  *   `heartbeat` anfitrión → cliente, sigue vivo
  *   `resize`    cliente → anfitrión, cambia el tamaño del PTY
  *   `kill`      cliente → anfitrión, manda una señal
+ *   `detach`    sesión bg → anfitrión, pide soltar a los clientes
+ *               (`bgDetachSignal.ts`; lo atiende `ptyHost.handleCtrl`)
  *   `claim`     demonio → trabajador de reserva, le entrega la intención
  *   `reply`     demonio → trabajador, encola texto como próximo turno
  */
@@ -61,6 +63,7 @@ export type CtrlFrame =
   | { t: 'exit'; code: number; signal?: string }
   | { t: 'resize'; cols: number; rows: number }
   | { t: 'kill'; sig: 'SIGKILL' | 'SIGTERM' }
+  | { t: 'detach' }
   | { t: 'claim'; intent: string; cwd?: string; sessionId?: string }
   | { t: 'reply'; text: string }
   | { t: 'heartbeat'; ts: number; state?: string }

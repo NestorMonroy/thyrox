@@ -19,6 +19,7 @@ import type {
   ContentBlock,
 } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes.js'
 import type {
   BranchAction,
   CommitKind,
@@ -154,6 +155,8 @@ export type SystemMessage =
  */
 export type UserMessage = MessageBase & {
   type: 'user'
+  /** El modo activo al enviarlo (`createUserMessage`); el rewind lo restaura. */
+  permissionMode?: PermissionMode
   message: {
     role?: string
     id?: string
@@ -186,7 +189,9 @@ export type StreamEvent = {
  */
 export type SystemCompactBoundaryMessage = SystemBase<'compact_boundary'> & {
   content?: string
-  logicalParentUuid?: UUID
+  // `null` como en `TranscriptMessage` (logsTypes.ts): el transcript lo
+  // escribe así cuando `parentUuid` se anula en un corte de sesión.
+  logicalParentUuid?: UUID | null
   compactMetadata: {
     preservedSegment?: {
       headUuid: UUID
@@ -217,7 +222,20 @@ export type ToolUseSummaryMessage = {
   uuid: UUID
   timestamp: string
 }
-export type MessageOrigin = string
+/**
+ * De dónde viene un mensaje encolado. Era `string`, y ningún productor ni
+ * lector lo usaba así: todos escriben y leen `{ kind, … }`. Medido en 2.1.282
+ * (`origin:{kind:…}` en bunfs-root): `human`, `channel` (con `server`),
+ * `task-notification` (con `source`, `slug`, `displayName`),
+ * `auto-continuation`, `peer`, `coordinator`, `observer-activity`, y
+ * otros; el conjunto crece entre builds, así que `kind` queda abierto.
+ */
+export type MessageOrigin = {
+  kind: string
+  server?: string
+  source?: string
+  [key: string]: unknown
+}
 /**
  * La forma que `createCompactBoundaryMessage` escribe (`messages.ts`) mas el
  * tramo preservado que la compactacion parcial anade. Antes era

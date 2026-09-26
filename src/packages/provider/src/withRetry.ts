@@ -9,6 +9,10 @@ import type { QuerySource } from '@thyrox/agent/querySource'
 import type { SystemAPIErrorMessage } from '@thyrox/agent/messageShapes'
 import { isAwsCredentialsProviderError } from './aws.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import {
+  FOUNDRY_PURPOSE_REQUEST_FAILURE,
+  handleFoundryCapabilityRejection,
+} from './foundryCapabilities.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { createSystemAPIErrorMessage } from '@thyrox/agent/messages.js'
 import { getAPIProviderForStatsig } from './providers.js'
@@ -309,6 +313,23 @@ export async function* withRetry<T>(
       if (wasFastModeActive && isFastModeNotEnabledError(error)) {
         handleFastModeRejectedByAPI()
         retryContext.fastMode = false
+        continue
+      }
+
+      // Foundry (`GDn`, 2.1.282): un 400 que nombra capacidades que el
+      // despliegue no admite las deja registradas y se reintenta — la
+      // petición siguiente ya no las pide. La que existe para usar la
+      // capacidad rechazada (la búsqueda web) no se reintenta.
+      const foundryVerdict = handleFoundryCapabilityRejection(
+        error,
+        retryContext.model,
+        options.querySource,
+      )
+      if (foundryVerdict === FOUNDRY_PURPOSE_REQUEST_FAILURE) {
+        throw new CannotRetryError(error, retryContext)
+      }
+      if (foundryVerdict !== null) {
+        logForDebugging(`[foundry-capabilities] ${foundryVerdict}`)
         continue
       }
 

@@ -19,6 +19,7 @@ import {
 import type {
   AssistantMessage,
   AttachmentMessage as AttachmentMessageType,
+  ContentItem,
   CollapsedReadSearchGroup as CollapsedReadSearchGroupType,
   GroupedToolUseMessage as GroupedToolUseMessageType,
   NormalizedUserMessage,
@@ -28,6 +29,7 @@ import type {
 import { type AdvisorBlock, isAdvisorBlock } from '@thyrox/provider/advisor.js'
 import { isFullscreenEnvEnabled } from '../fullscreen.js'
 import { logError } from '@thyrox/local-observability/logging'
+import type { Attachment } from '@thyrox/agent/attachments.js'
 import type { buildMessageLookups } from '@thyrox/agent/messages.js'
 import { CompactSummary } from './CompactSummary.js'
 import { AdvisorMessage } from './messages/AdvisorMessage.js'
@@ -105,7 +107,9 @@ function MessageImpl({
       return (
         <AttachmentMessage
           addMargin={addMargin}
-          attachment={message.attachment}
+          // El mensaje lleva el adjunto con la forma abierta de la fuente; quien
+          // lo produce es `getAttachments`, que sólo emite la unión `Attachment`.
+          attachment={message.attachment as Attachment}
           verbose={verbose}
           isTranscriptMode={isTranscriptMode}
         />
@@ -113,7 +117,9 @@ function MessageImpl({
     case 'assistant':
       return (
         <Box flexDirection="column" width={containerWidth ?? '100%'}>
-          {(message.message.content ?? []).map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+          {/* El `content` de un asistente es un arreglo (`BetaMessage`); el tipo
+              local admite `string`, que aquí no se pinta. */}
+          {(Array.isArray(message.message.content) ? (message.message.content as AssistantContentBlock[]) : []).map((_, index) => (
             <AssistantMessageBlock
               key={index}
               param={_}
@@ -302,11 +308,9 @@ function UserMessage({
   addMargin: boolean
   tools: Tools
   progressMessagesForMessage: ProgressMessage[]
-  param:
-    | TextBlockParam
-    | ImageBlockParam
-    | ToolUseBlockParam
-    | ToolResultBlockParam
+  // Un bloque de usuario puede ser de cualquier clase; los que no se pintan
+  // caen en la rama `default` del switch.
+  param: ContentItem
   style?: 'condensed'
   verbose: boolean
   imageIndex?: number
@@ -355,6 +359,19 @@ function UserMessage({
   }
 }
 
+// Los bloques que el contenido de un asistente puede traer. El tipo local del
+// mensaje admite cualquier `ContentBlockParam`; lo que la API devuelve para
+// un asistente cae en esta unión, y lo demás acaba en la rama `default`.
+type AssistantContentBlock =
+  | BetaContentBlock
+  | ConnectorTextBlock
+  | AdvisorBlock
+  | TextBlockParam
+  | ImageBlockParam
+  | ThinkingBlockParam
+  | ToolUseBlockParam
+  | ToolResultBlockParam
+
 function AssistantMessageBlock({
   param,
   addMargin,
@@ -374,15 +391,7 @@ function AssistantMessageBlock({
   lastThinkingBlockId,
   advisorModel,
 }: {
-  param:
-    | BetaContentBlock
-    | ConnectorTextBlock
-    | AdvisorBlock
-    | TextBlockParam
-    | ImageBlockParam
-    | ThinkingBlockParam
-    | ToolUseBlockParam
-    | ToolResultBlockParam
+  param: AssistantContentBlock
   addMargin: boolean
   tools: Tools
   commands: Command[]
@@ -492,10 +501,11 @@ function AssistantMessageBlock({
 
 export function hasThinkingContent(m: {
   type: string
-  message?: { content: Array<{ type: string }> }
+  message?: { content?: unknown }
 }): boolean {
-  if (m.type !== 'assistant' || !m.message) return false
-  return m.message.content.some(
+  const content = m.message?.content
+  if (m.type !== 'assistant' || !Array.isArray(content)) return false
+  return (content as Array<{ type: string }>).some(
     b => b.type === 'thinking' || b.type === 'redacted_thinking',
   )
 }

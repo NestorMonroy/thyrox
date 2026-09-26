@@ -655,9 +655,9 @@ def typescript_bin_name(target: pathlib.Path, root: pathlib.Path) -> str:
     # El dueño es el segmento anterior al directorio de entrypoint. Con
     # `entry` hay un `src/` de paquete en medio (`cli/src/entry/main.ts`), asi
     # que se sube uno mas.
-    partes = relative.parts
-    indice = len(partes) - 2
-    owner = partes[indice - 1] if partes[indice] == "bin" else partes[indice - 2]
+    parts = relative.parts
+    index = len(parts) - 2
+    owner = parts[index - 1] if parts[index] == "bin" else parts[index - 2]
     owner = _kebab(owner)
     if owner in stem or stem in owner:
         return owner if len(owner) >= len(stem) else stem

@@ -4,7 +4,13 @@ import {
   getSessionId,
   isSessionPersistenceDisabled,
 } from '@thyrox/app-host/bootstrap/state.js'
-import type { SDKMessage } from '@thyrox/headless-sdk/agentSdkTypes.js'
+// La frontera interna -> SDK: `Message` guarda el mensaje del API y el error sin
+// tipar (su productor es la API, no este módulo); el SDK los exige con su forma.
+import type {
+  SDKAssistantMessage,
+  SDKMessage,
+  SDKUserMessage,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
 import type { CanUseToolFn } from './hooks/useCanUseTool.js'
 import { runTools } from '@thyrox/tool-registry/services/toolOrchestration.js'
 import { findToolByName, type Tool, type Tools } from '@thyrox/tool-registry/Tool.js'
@@ -28,6 +34,7 @@ import {
   type FileStateCache,
 } from '@thyrox/tool-registry/fileStateCache'
 import { isNotEmptyMessage, normalizeMessages } from '@thyrox/agent/messages.js'
+import { toSdkApiMessage } from '@thyrox/agent/messages/mappers.js'
 import { expandPath } from '@thyrox/storage/path.js'
 import type {
   inputSchema as permissionToolInputSchema,
@@ -118,11 +125,11 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
         }
         yield {
           type: 'assistant',
-          message: _.message,
+          message: toSdkApiMessage(_.message),
           parent_tool_use_id: null,
           session_id: getSessionId(),
           uuid: _.uuid,
-          error: _.error,
+          error: _.error as SDKAssistantMessage['error'],
         }
       }
       return
@@ -141,17 +148,17 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
               }
               yield {
                 type: 'assistant',
-                message: _.message,
+                message: toSdkApiMessage(_.message),
                 parent_tool_use_id: message.parentToolUseID as string,
                 session_id: getSessionId(),
                 uuid: _.uuid,
-                error: _.error,
+                error: _.error as SDKAssistantMessage['error'],
               }
               break
             case 'user':
               yield {
                 type: 'user',
-                message: _.message,
+                message: _.message as SDKUserMessage['message'],
                 parent_tool_use_id: message.parentToolUseID as string,
                 session_id: getSessionId(),
                 uuid: _.uuid,
@@ -215,7 +222,7 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
       for (const _ of normalizeMessages([message])) {
         yield {
           type: 'user',
-          message: _.message,
+          message: _.message as SDKUserMessage['message'],
           parent_tool_use_id: null,
           session_id: getSessionId(),
           uuid: _.uuid,
@@ -336,11 +343,15 @@ export async function* handleOrphanedPermission(
     }
   }
 
-  const sdkAssistantMessage: SDKMessage = {
-    ...assistantMessage,
-    session_id: getSessionId(),
+  // Los mismos campos que `normalizeMessage` emite para un asistente.
+  const sdkAssistantMessage: SDKAssistantMessage = {
+    type: 'assistant',
+    message: toSdkApiMessage(assistantMessage.message),
     parent_tool_use_id: null,
-  } as SDKMessage
+    session_id: getSessionId(),
+    uuid: assistantMessage.uuid,
+    error: assistantMessage.error as SDKAssistantMessage['error'],
+  }
   yield sdkAssistantMessage
 
   // Execute the tool - errors are handled internally by runToolUse

@@ -12,9 +12,9 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-from pathlib import Path
+from paths import reach
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = reach.thyrox_root()
 ENTRYPOINT = ROOT / "src/packages/tool-registry/bin/applyEdits.ts"
 
 

@@ -62,9 +62,11 @@ describe('firstParty / Codex / Anthropic-compat client dispatch', () => {
       // If both Authorization (Bearer OAuth) AND x-api-key go to a
       // proxy, the proxy gets confused — often signs the wrong direction
       // or rejects with "multiple auth methods". Pin the delete.
-      expect(source).toMatch(
-        /delete clientConfig\.defaultHeaders\?\.\['Authorization'\]/,
-      )
+      // Se borra del objeto `defaultHeaders` que viaja en `ARGS` y que
+      // `clientConfig` esparce: es el mismo objeto que recibe el cliente.
+      expect(source).toMatch(/delete defaultHeaders\['Authorization'\]/)
+      expect(source).toMatch(/const ARGS = \{\s*defaultHeaders,/)
+      expect(source).toMatch(/const clientConfig[\s\S]*?\.\.\.ARGS,/)
     })
 
     test('apiKey from connection (NOT from authCredentials) when useCompatibleConn', () => {

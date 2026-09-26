@@ -19,13 +19,12 @@
 import { feature } from 'bun:bundle'
 import type { Message as MessageType } from '@thyrox/agent/messageShapes'
 import { createUserMessage } from '@thyrox/agent/messages.js'
-import { asAgentId, type AgentId } from '@thyrox/agent/idTypes'
+import { asAgentId } from '@thyrox/agent/idTypes'
 import { createAgentId } from '@thyrox/agent/uuid.js'
 import { runWithAgentContext } from '@thyrox/agent/agentContext.js'
 import { registerAsyncAgent } from '@thyrox/agent/localAgentTask.js'
 import { getSystemPrompt } from '@thyrox/agent/prompts.js'
 import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
-import { runWithCwdOverride } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -230,7 +229,7 @@ export const call: LocalJSXCommandCall = async (onDone, rawContext, args) => {
   // by its slug (e.g. "find-bug" → 8a3b...). Mirrors AgentTool's
   // registration path (AgentTool.tsx:972-978) and ant 4656.js mJK
   // line 53 (`agentLifecycle.registerName(T, QT(z))`).
-  setAppState((prev: { agentNameRegistry?: Map<string, AgentId> }) => {
+  setAppState(prev => {
     const existing = prev.agentNameRegistry
     if (!(existing instanceof Map)) return prev
     const next = new Map(existing)
@@ -268,53 +267,53 @@ export const call: LocalJSXCommandCall = async (onDone, rawContext, args) => {
   )
   const forkReplLog = reconstructLog(toolUseContext.messages as MessageType[])
 
-  // Fire-and-forget. runWithAgentContext threads the analytics context,
-  // runWithCwdOverride preserves cwd if the parent had one. Errors during
+  // Fire-and-forget. runWithAgentContext lleva el contexto de analítica; el
+  // cwd sobrescrito del padre, si lo hay, llega al ciclo de vida por el mismo
+  // contexto asíncrono. (Envolverlo en runWithCwdOverride(undefined) borraba
+  // esa sobrescritura en vez de conservarla.) Errors during
   // the lifecycle are surfaced inside the lifecycle (task notification
   // with status=failed) — we don't await the promise.
   void runWithAgentContext(asyncAgentContext, () =>
-    runWithCwdOverride(undefined, () =>
-      runAsyncAgentLifecycle({
-        taskId: agentBackgroundTask.agentId,
-        abortController: agentBackgroundTask.abortController!,
-        makeStream: onCacheSafeParams =>
-          runAgent({
-            agentDefinition: FORK_AGENT,
-            promptMessages,
-            toolUseContext,
-            canUseTool,
-            isAsync: true,
-            forkContextMessages: toolUseContext.messages as MessageType[],
-            querySource: `agent:builtin:${FORK_AGENT.agentType}`,
-            override: {
-              systemPrompt: forkParentSystemPrompt,
-              agentId: asAgentId(agentBackgroundTask.agentId),
-              abortController: agentBackgroundTask.abortController!,
-              replHydration: {
-                kind: 'fork' as const,
-                log: forkReplLog,
-              },
+    runAsyncAgentLifecycle({
+      taskId: agentBackgroundTask.agentId,
+      abortController: agentBackgroundTask.abortController!,
+      makeStream: onCacheSafeParams =>
+        runAgent({
+          agentDefinition: FORK_AGENT,
+          promptMessages,
+          toolUseContext,
+          canUseTool,
+          isAsync: true,
+          forkContextMessages: toolUseContext.messages as MessageType[],
+          querySource: `agent:builtin:${FORK_AGENT.agentType}`,
+          override: {
+            systemPrompt: forkParentSystemPrompt,
+            agentId: asAgentId(agentBackgroundTask.agentId),
+            abortController: agentBackgroundTask.abortController!,
+            replHydration: {
+              kind: 'fork' as const,
+              log: forkReplLog,
             },
-            availableTools: toolUseContext.options.tools,
-            useExactTools: true,
-            onCacheSafeParams,
-            description,
-            // ant 4656.js:92 — propagate skill attribution.
-            spawnedBySkill:
-              toolUseContext.options.spawnedBySkill ??
-              toolUseContext.options.activeSkill,
-            // ant 4656.js:105 / 3930.js:313 — symbolic agent name.
-            name: slug,
-          }),
-        metadata,
-        description,
-        toolUseContext,
-        rootSetAppState: setAppState,
-        agentIdForCleanup: agentBackgroundTask.agentId,
-        enableSummarization: true,
-        getWorktreeResult: async () => ({}),
-      }),
-    ),
+          },
+          availableTools: toolUseContext.options.tools,
+          useExactTools: true,
+          onCacheSafeParams,
+          description,
+          // ant 4656.js:92 — propagate skill attribution.
+          spawnedBySkill:
+            toolUseContext.options.spawnedBySkill ??
+            toolUseContext.options.activeSkill,
+          // ant 4656.js:105 / 3930.js:313 — symbolic agent name.
+          name: slug,
+        }),
+      metadata,
+      description,
+      toolUseContext,
+      rootSetAppState: setAppState,
+      agentIdForCleanup: agentBackgroundTask.agentId,
+      enableSummarization: true,
+      getWorktreeResult: async () => ({}),
+    }),
   ).catch((error: unknown) => {
     logForDebugging(`[fork] runAsyncAgentLifecycle failed: ${String(error)}`)
   })

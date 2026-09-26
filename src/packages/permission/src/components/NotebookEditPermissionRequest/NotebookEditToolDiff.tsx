@@ -15,7 +15,7 @@ import { safeParseJSON } from '@thyrox/storage/json.js'
 import { parseCellId } from '@thyrox/tool-registry/notebook.js'
 import { HighlightedCode } from '@thyrox/repl/components/HighlightedCode.js'
 import { StructuredDiff } from '@thyrox/repl/components/StructuredDiff.js'
-import { StructuredPatchHunk } from 'diff'
+import type { StructuredPatchHunk } from 'diff'
 
 type Props = {
   notebook_path: string

@@ -9,7 +9,7 @@ import {
 import type {
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
-} from '../../types/command.js'
+} from '@thyrox/agent/command.js'
 import {
   getTranscriptPath,
   saveAgentColor,

@@ -1,0 +1,47 @@
+src/packages/repl/src/queryHelpers.ts(121,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:111-131 ---
+    111  export function* normalizeMessage(message: Message): Generator<SDKMessage> {
+    112    switch (message.type) {
+    113      case 'assistant':
+    114        for (const _ of normalizeMessages([message])) {
+    115          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    116          if (!isNotEmptyMessage(_)) {
+    117            continue
+    118          }
+    119          yield {
+    120            type: 'assistant',
+    121>           message: _.message,
+    122            parent_tool_use_id: null,
+    123            session_id: getSessionId(),
+    124            uuid: _.uuid,
+    125            error: _.error,
+    126          }
+    127        }
+    128        return
+    129      case 'progress': {
+    130        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    131        if (
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+src/packages/repl/src/queryHelpers.ts(125,11): error TS2322: Type 'unknown' is not assignable to type '"unknown" | "max_output_tokens" | "authentication_failed" | "oauth_org_not_allowed" | "account_on_hold" | "verification_required" | "billing_error" | "rate_limit" | "overloaded" | ... 4 more ... | undefined'.
+  --- código src/packages/repl/src/queryHelpers.ts:115-135 ---
+    115          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    116          if (!isNotEmptyMessage(_)) {
+    117            continue
+    118          }
+    119          yield {
+    120            type: 'assistant',
+    121            message: _.message,
+    122            parent_tool_use_id: null,
+    123            session_id: getSessionId(),
+    124            uuid: _.uuid,
+    125>           error: _.error,
+    126          }
+    127        }
+    128        return
+    129      case 'progress': {
+    130        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    131        if (
+    132          progressData.type === 'agent_progress' ||
+    133          progressData.type === 'skill_progress'
+    134        ) {
+    135          for (const _ of normalizeMessages([progressData.message])) {

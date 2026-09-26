@@ -1,0 +1,6 @@
+backgrounded · 7b38cd7f
+  ccb ps                    list sessions
+  ccb logs 7b38cd7f         show recent output
+  ccb logs 7b38cd7f -f      follow output live
+  ccb stop 7b38cd7f         stop this session (SIGTERM)
+  ccb rm   7b38cd7f         remove the job directory

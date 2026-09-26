@@ -65,11 +65,11 @@ if not DECL.is_file():
 # el repo censado y el árbol de referencia. Sin ellos el censo rehúsa con 2
 # —correcto— y leer ese 2 como rojo publicaría «el censo falla» donde lo
 # cierto es «no había con qué medir».
-CENSADO = DOMINIO["THYROX_CENSUS_ROOT"]
-AUSENTES = [] if CENSADO in reach.reach_roots() else [f"la raíz {CENSADO!r}"]
-AUSENTES += [] if Path(REFERENCIA).is_dir() else [REFERENCIA]
-if AUSENTES:
-    print(f"REHÚSA — faltan los sujetos del censo: {', '.join(AUSENTES)}. "
+CENSUSED = DOMINIO["THYROX_CENSUS_ROOT"]
+MISSING = [] if CENSUSED in reach.reach_roots() else [f"la raíz {CENSUSED!r}"]
+MISSING += [] if Path(REFERENCIA).is_dir() else [REFERENCIA]
+if MISSING:
+    print(f"REHÚSA — faltan los sujetos del censo: {', '.join(MISSING)}. "
           f"Sin ellos el censo no puede medir, y un rojo aquí no diría nada "
           f"del censo.")
     raise SystemExit(2)

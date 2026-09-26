@@ -31,6 +31,10 @@
       "types": "./dist/settings/settings.d.ts",
       "default": "./settings/settings.ts"
     },
+    "./settings/settings.js": {
+      "types": "./dist/settings/settings.d.ts",
+      "default": "./settings/settings.ts"
+    },
     "./env": {
       "types": "./dist/env/index.d.ts",
       "default": "./env/index.ts"
@@ -156,6 +160,10 @@
       "default": "./feature-flags.ts"
     },
     "./frontmatterParser.js": {
+      "types": "./dist/frontmatterParser.d.ts",
+      "default": "./frontmatterParser.ts"
+    },
+    "./frontmatterParser": {
       "types": "./dist/frontmatterParser.d.ts",
       "default": "./frontmatterParser.ts"
     },
@@ -492,6 +500,10 @@
       "default": "./utils/markdownDescription.ts"
     },
     "./yaml.js": {
+      "types": "./dist/yaml.d.ts",
+      "default": "./yaml.ts"
+    },
+    "./yaml": {
       "types": "./dist/yaml.d.ts",
       "default": "./yaml.ts"
     }

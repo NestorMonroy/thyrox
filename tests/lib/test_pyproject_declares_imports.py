@@ -26,7 +26,10 @@ import re
 import sys
 import tomllib
 
-ROOT = pathlib.Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 SRC = ROOT / "src"
 VENDORED = SRC / "packages" / "@ant"
 INJECTED = {"hook_error_log"}

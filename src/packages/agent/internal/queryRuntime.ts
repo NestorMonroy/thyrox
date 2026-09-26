@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto'
 import { getAgentHostBindings } from '../host.js'
 import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { CompactionResult } from '../compaction/compact.js'
 import type { AgentMessage, AgentToolUseContext } from '../internalTypes.js'
 
 // Costura dinámica: el host inyecta funciones por nombre, y cada envoltorio
@@ -420,9 +421,13 @@ export function isWithheldReactiveMediaSizeError(
   return getBindings().isWithheldReactiveMediaSizeError?.(message) === true
 }
 
-export function tryReactiveCompact(params: unknown): Promise<unknown> {
+export function tryReactiveCompact(
+  params: unknown,
+): Promise<CompactionResult | null | undefined> {
   return (
-    getBindings().tryReactiveCompact?.(params) as Promise<unknown> | undefined
+    getBindings().tryReactiveCompact?.(params) as
+      | Promise<CompactionResult | null>
+      | undefined
   ) ?? Promise.resolve(undefined)
 }
 

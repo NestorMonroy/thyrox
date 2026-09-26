@@ -4673,8 +4673,3 @@ export interface RemovableFieldsMessage {
   [key: string]: unknown
 }
 
-/** El resultado de `removeExtraFields` — sin `parentUuid` ni `isSidechain`. */
-export type SerializedMessage = Omit<
-  RemovableFieldsMessage,
-  'parentUuid' | 'isSidechain'
->

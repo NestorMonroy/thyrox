@@ -12,9 +12,9 @@ import {
 import {
   getFeatureValue_CACHED_MAY_BE_STALE,
 } from '@thyrox/config/feature-flags'
-import {
-  buildPostCompactMessages,
-} from './compaction/index.js'
+// El de `compact.ts` y no el de `compactUtils.ts`: consume el
+// `CompactionResult` que devuelven autocompact y la compactación reactiva.
+import { buildPostCompactMessages } from './compaction/compact.js'
 import {
   evaluateStopHookBlockOutcome,
   handleStopHooks,
@@ -185,6 +185,19 @@ export type QueryParams = {
 }
 
 // -- query loop state
+
+/**
+ * La clase del adjunto de un mensaje, o `undefined` si no es un adjunto. El
+ * mensaje del bucle lleva `attachment` como campo abierto (`unknown`); los
+ * adjuntos que produce `getAttachments` declaran siempre su `type`.
+ */
+function attachmentTypeOf(message: {
+  type: string
+  attachment?: unknown
+}): string | undefined {
+  if (message.type !== 'attachment') return undefined
+  return (message.attachment as { type?: string } | undefined)?.type
+}
 
 // Mutable state carried between loop iterations
 export async function* query(
@@ -760,9 +773,9 @@ async function* queryLoop(
               }
               if (clonedContent) {
                 yieldMessage = {
-                  ...(message as Record<string, unknown>),
+                  ...assistantMsg,
                   message: { ...(assistantMsg.message ?? {}), content: clonedContent },
-                } as typeof message
+                } as Message
               }
             }
             // Withhold recoverable errors (prompt-too-long, max-output-tokens)
@@ -1424,8 +1437,7 @@ async function* queryLoop(
         yield update.message
 
         if (
-          update.message.type === 'attachment' &&
-          update.message.attachment.type === 'hook_stopped_continuation'
+          attachmentTypeOf(update.message) === 'hook_stopped_continuation'
         ) {
           shouldPreventContinuation = true
         }
@@ -1759,7 +1771,7 @@ async function* queryLoop(
     const fileChangeAttachmentCount = count(
       toolResults,
       tr =>
-        tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+        attachmentTypeOf(tr) === 'edited_text_file',
     )
 
     logEvent('tengu_query_after_attachments', {

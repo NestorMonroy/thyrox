@@ -52,8 +52,9 @@
  * (`stripExcessMediaItems`), calcular betas base (soporte local), llamar
  * al SDK real de Anthropic vía `internal/anthropicClient.ts` (que sí usa
  * `getAuthHeaders`/`getProxyFetchOptions`/`getAPIProvider`, reales),
- * acumular uso (`updateUsage`) y producir eventos/mensaje final— pero NO
- * reproduce: selección dinámica de tool search, cached-microcompact,
+ * acumular uso (`updateUsage`), enviar las herramientas con su carga
+ * diferida y el recorte de Foundry (`buildRequestTools`) y producir
+ * eventos/mensaje final— pero NO reproduce: cached-microcompact,
  * advisor server-side, fast mode, scrub cross-conexión de thinking,
  * instrucciones de Chrome, telemetría de spans/checkpoints, VCR de
  * grabado/reproducción, ni el backoff multi-intento con fallback de
@@ -94,6 +95,7 @@ import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { safeParseJSON } from '@thyrox/storage/json.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { randomUUID } from 'crypto'
 import type { Message, AssistantMessage, UserMessage } from '@thyrox/agent/messageShapes'
 import type { AgentId as AgentIdReal } from '@thyrox/agent/idTypes'
 
@@ -101,6 +103,15 @@ import { asSystemPrompt, type SystemPrompt } from './systemPromptType.ts'
 import type { ThinkingConfig } from './internal/providerTypes.ts'
 import { getAnthropicClient, CLIENT_REQUEST_ID_HEADER } from './internal/anthropicClient.ts'
 import { getAPIProvider, getProviderForModel } from './providers.ts'
+import { isToolSearchEnabled } from '@thyrox/agent/toolSearch.js'
+import type {
+  ToolPermissionContext as RegistryToolPermissionContext,
+  Tools as RegistryTools,
+} from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition as RegistryAgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import { isDeferredTool } from '@thyrox/tool-registry/tools/ToolSearchTool/prompt.js'
+import { stripUnsupportedToolFields } from './foundryCapabilities.ts'
+import { toolToAPISchema } from './legacy/api.ts'
 import { unpackModelId } from './connections.ts'
 import { getDefaultOpusModel, getDefaultSonnetModel, getSmallFastModel } from './model.ts'
 import { getOauthAccountInfo, isClaudeAISubscriber } from './authAlias.ts'
@@ -474,6 +485,43 @@ export type Options = {
 }
 
 /**
+ * Las herramientas de la petición: el esquema de cada una (`toolToAPISchema`),
+ * con `defer_loading` en las diferidas cuando la búsqueda de herramientas está
+ * activa, más los esquemas extra del llamador; y, sobre la lista, lo que un
+ * despliegue de Foundry ya rechazó se quita (`Apo`, 2.1.282).
+ */
+export async function buildRequestTools(tools: Tools, options: Options): Promise<BetaToolUnion[]> {
+  // El `Tools` local es una vista relajada de los mismos objetos de
+  // `@thyrox/tool-registry`; las funciones reales piden su tipo.
+  const registryTools = tools as unknown as RegistryTools
+  const agents = options.agents as unknown as RegistryAgentDefinition[]
+  const getToolPermissionContext =
+    options.getToolPermissionContext as unknown as () => Promise<RegistryToolPermissionContext>
+  const toolSearch =
+    registryTools.length > 0 &&
+    (await isToolSearchEnabled(
+      options.model,
+      registryTools,
+      getToolPermissionContext,
+      agents,
+      options.querySource,
+    ))
+  const schemas = await Promise.all(
+    registryTools.map(tool =>
+      toolToAPISchema(tool, {
+        getToolPermissionContext,
+        tools: registryTools,
+        agents,
+        allowedAgentTypes: options.allowedAgentTypes,
+        model: options.model,
+        deferLoading: toolSearch && isDeferredTool(tool),
+      }),
+    ),
+  )
+  return stripUnsupportedToolFields([...schemas, ...(options.extraToolSchemas ?? [])], options.model)
+}
+
+/**
  * `queryModel` interna (no exportada, como en la fuente) — REDUCIDA. Hace
  * el trabajo esencial de un turno contra el modelo real y omite la
  * orquestación profunda documentada en la cabecera del archivo.
@@ -520,11 +568,14 @@ async function* queryModel(
     source: 'query',
   })
 
+  const requestTools = await buildRequestTools(tools, options)
+
   const params: BetaMessageStreamParams = {
     model: options.model,
     max_tokens: maxTokens,
     messages: messageParams,
     system: systemBlocks,
+    ...(requestTools.length > 0 && { tools: requestTools }),
     ...(tools.length > 0 && { tool_choice: options.toolChoice }),
     ...(betas.length > 0 && { betas }),
     ...(Object.keys(outputConfig).length > 0 && { output_config: outputConfig }),
@@ -572,7 +623,8 @@ async function* queryModel(
 
   const assistantMessage: AssistantMessage = {
     type: 'assistant',
-    message: { role: 'assistant', content: textAccumulator, usage: usage as unknown },
+    uuid: randomUUID(),
+    message: { role: 'assistant', content: textAccumulator, usage },
   }
   yield assistantMessage
 }

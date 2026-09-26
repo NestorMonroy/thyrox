@@ -1,0 +1,50 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3477,9): error TS2322: Type 'string | unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3467-3487 ---
+   3467          }
+   3468  
+   3469          // Track this UUID to prevent runtime duplicates
+   3470          trackReceivedMessageUuid(message.uuid as UUID)
+   3471        }
+   3472  
+   3473        enqueue({
+   3474          mode: 'prompt' as const,
+   3475          // file_attachments rides the protobuf catchall from the web composer.
+   3476          // Same-ref no-op when absent (no 'file_attachments' key).
+   3477>         value: await resolveAndPrepend(message, message.message.content),
+   3478          uuid: message.uuid,
+   3479          priority: message.priority,
+   3480        })
+   3481        // Increment prompt count for attribution tracking and save snapshot
+   3482        // The snapshot persists promptCount so it survives compaction
+   3483        if (feature('COMMIT_ATTRIBUTION')) {
+   3484          setAppState(prev => ({
+   3485            ...prev,
+   3486            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3487              void recordAttributionSnapshot(snapshot).catch(error => {
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3478,9): error TS2322: Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3468-3488 ---
+   3468  
+   3469          // Track this UUID to prevent runtime duplicates
+   3470          trackReceivedMessageUuid(message.uuid as UUID)
+   3471        }
+   3472  
+   3473        enqueue({
+   3474          mode: 'prompt' as const,
+   3475          // file_attachments rides the protobuf catchall from the web composer.
+   3476          // Same-ref no-op when absent (no 'file_attachments' key).
+   3477          value: await resolveAndPrepend(message, message.message.content),
+   3478>         uuid: message.uuid,
+   3479          priority: message.priority,
+   3480        })
+   3481        // Increment prompt count for attribution tracking and save snapshot
+   3482        // The snapshot persists promptCount so it survives compaction
+   3483        if (feature('COMMIT_ATTRIBUTION')) {
+   3484          setAppState(prev => ({
+   3485            ...prev,
+   3486            attribution: incrementPromptCount(prev.attribution, snapshot => {
+   3487              void recordAttributionSnapshot(snapshot).catch(error => {
+   3488                logForDebugging(`Attribution: Failed to save snapshot: ${error}`)
+  Type 'string' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.

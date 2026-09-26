@@ -1,0 +1,6 @@
+Record the evidence of the suite repair
+
+The bench keeps the logs behind c00fa30a: the smoke, Python and shell
+batches before and after each fix, the rename and collision probes, and
+the pool that compiled all 21 tsconfigs, root included, with EXIT=0 and
+no error TS lines. The job directories are the ledger of those runs.

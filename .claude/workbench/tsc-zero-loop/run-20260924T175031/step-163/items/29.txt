@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(450,9): error TS2339: Property 'postCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:440-460 ---
+    440      // synthetic message because there's no actionable hint for the user
+    441      // beyond "your context is irrecoverably tight, start fresh". ant
+    442      // 3928.js exits the same way.
+    443      if (rapidRefillBreakerTripped) {
+    444        return { reason: 'rapid_refill_breaker' }
+    445      }
+    446  
+    447      if (compactionResult) {
+    448        const {
+    449          preCompactTokenCount,
+    450>         postCompactTokenCount,
+    451          truePostCompactTokenCount,
+    452          compactionUsage,
+    453        } = compactionResult
+    454  
+    455        logEvent('tengu_auto_compact_succeeded', {
+    456          originalMessageCount: messages.length,
+    457          compactedMessageCount:
+    458            compactionResult.summaryMessages.length +
+    459            compactionResult.attachments.length +
+    460            compactionResult.hookResults.length,
+src/packages/agent/query.ts(451,9): error TS2339: Property 'truePostCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:441-461 ---
+    441      // beyond "your context is irrecoverably tight, start fresh". ant
+    442      // 3928.js exits the same way.
+    443      if (rapidRefillBreakerTripped) {
+    444        return { reason: 'rapid_refill_breaker' }
+    445      }
+    446  
+    447      if (compactionResult) {
+    448        const {
+    449          preCompactTokenCount,
+    450          postCompactTokenCount,
+    451>         truePostCompactTokenCount,
+    452          compactionUsage,
+    453        } = compactionResult
+    454  
+    455        logEvent('tengu_auto_compact_succeeded', {
+    456          originalMessageCount: messages.length,
+    457          compactedMessageCount:
+    458            compactionResult.summaryMessages.length +
+    459            compactionResult.attachments.length +
+    460            compactionResult.hookResults.length,
+    461          preCompactTokenCount,

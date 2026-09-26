@@ -42,7 +42,7 @@ function createSnapshotStore<T>(initialState: T): SnapshotStore<T> {
   return createStore(initialState)
 }
 
-type RuntimeHandleSet = RuntimeHandles & {
+type RuntimeHandleSet = {
   permission: PermissionRuntimeHandle<ToolPermissionContext, PermissionUpdate>
   mcp: McpRuntimeHandle<
     MCPServerConnection,
@@ -86,7 +86,9 @@ export function createRuntimeHandles(
           needsRefresh: false,
         },
         agentDefinitions: { activeAgents: [], allAgents: [] },
-      } as AppState
+        // Respaldo parcial: sólo las ramas que los handles leen. El resto del
+        // estado lo trae `getDefaultAppState` cuando no falla.
+      } satisfies Partial<AppState> as Partial<AppState> as AppState
     }
   })(),
 ): RuntimeHandleSet {

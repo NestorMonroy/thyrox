@@ -7,18 +7,24 @@ export type RuntimeBindingInstallers = {
   installCliBindings?: () => void
 }
 
+// Los miembros que reciben un parámetro genérico van en sintaxis de método,
+// que TypeScript compara de forma bivariante: así un handle especializado
+// (`PermissionRuntimeHandle<ToolPermissionContext, …>`) es también un
+// `RuntimeHandles` para el anfitrión. Con propiedades flecha no lo era, y
+// `runtimeHandles.ts` tenía que intersecar los dos tipos, lo que dejaba sus
+// callbacks tipados con `unknown`.
 export type HostSessionStore<TState = unknown> = {
   getState: () => TState
-  setState: (updater: (prev: TState) => TState) => void
+  setState(updater: (prev: TState) => TState): void
   subscribe: (listener: () => void) => () => void
 }
 
 export type PermissionRuntimeHandle<TContext = unknown, TUpdate = unknown> = {
   getContext: () => TContext
-  setContext: (next: TContext) => void
+  setContext(next: TContext): void
   buildUpdates: (...args: unknown[]) => TUpdate[]
-  applyUpdates: (updates: TUpdate[]) => TContext
-  persistUpdates: (updates: TUpdate[]) => void
+  applyUpdates(updates: TUpdate[]): TContext
+  persistUpdates(updates: TUpdate[]): void
 }
 
 export type McpRuntimeSnapshot<
@@ -46,16 +52,16 @@ export type McpRuntimeHandle<
     TMcpCommand,
     TMcpResource
   >
-  setSnapshot?: (
+  setSnapshot?(
     snapshot: McpRuntimeSnapshot<
       TMcpClient,
       TMcpTool,
       TMcpCommand,
       TMcpResource
     >,
-  ) => void
+  ): void
   subscribe: (listener: () => void) => () => void
-  refresh: (configs?: Record<string, TMcpConfig>) => Promise<void> | void
+  refresh(configs?: Record<string, TMcpConfig>): Promise<void> | void
   getResources: (serverName: string) => TMcpResource[]
 }
 
@@ -90,21 +96,21 @@ export type PluginRuntimeHandle<
   TPluginError = unknown,
 > = {
   getSnapshot: () => PluginRuntimeSnapshot<TPlugin, TPluginCommand, TPluginError>
-  setSnapshot?: (
+  setSnapshot?(
     snapshot: PluginRuntimeSnapshot<TPlugin, TPluginCommand, TPluginError>,
-  ) => void
+  ): void
   subscribe: (listener: () => void) => () => void
   refresh: () => Promise<void> | void
 }
 
 export type AgentCatalogHandle<TAgentDefinitions = unknown> = {
   getDefinitions: () => TAgentDefinitions
-  setDefinitions?: (next: TAgentDefinitions) => void
+  setDefinitions?(next: TAgentDefinitions): void
   refresh: () => Promise<void> | void
 }
 
 export type SessionStoreFactory = {
-  createHeadlessStore?: (params?: unknown) => HostSessionStore
+  createHeadlessStore?(params?: unknown): HostSessionStore
 }
 
 export type RuntimeHandles = {

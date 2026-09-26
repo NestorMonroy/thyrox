@@ -186,7 +186,7 @@ export async function* handleStopHooks(
   toolUseContext: AgentToolUseContext,
   querySource: AgentQuerySource,
   stopHookActive?: boolean,
-): AsyncGenerator<unknown, StopHookResult> {
+): AsyncGenerator<AgentMessage, StopHookResult> {
   const hookStartTime = Date.now()
   const host = () => getAgentHostBindings()
 
@@ -542,7 +542,7 @@ export async function* handleStopHooks(
 async function* resolverObjetivoAlcanzado(
   result: StopHookExecutionResult,
   toolUseContext: AgentToolUseContext,
-): AsyncGenerator<unknown, void> {
+): AsyncGenerator<AgentMessage, void> {
   const host = getAgentHostBindings()
   const hook = result.hook as { type?: string; prompt?: string } | undefined
   if (hook?.type !== 'prompt' || !hook.prompt) return
@@ -622,7 +622,7 @@ async function* resolverObjetivoAlcanzado(
 async function* hooksDeTeammate(
   permissionMode: string,
   toolUseContext: AgentToolUseContext,
-): AsyncGenerator<unknown, StopHookResult> {
+): AsyncGenerator<AgentMessage, StopHookResult> {
   const host = () => getAgentHostBindings()
   const teammateName = host().getAgentName?.() ?? ''
   const teamName = host().getTeamName?.() ?? ''
@@ -636,7 +636,7 @@ async function* hooksDeTeammate(
     gen: AsyncGenerator<StopHookExecutionResult, void>,
     nombreDelHook: 'TaskCompleted' | 'TeammateIdle',
     mensajeDeBloqueo: (e: { blockingError: string }) => string,
-  ): AsyncGenerator<unknown, boolean> {
+  ): AsyncGenerator<AgentMessage, boolean> {
     for await (const result of gen) {
       if (result.message) {
         const msg = result.message as { type: string; toolUseID?: string }

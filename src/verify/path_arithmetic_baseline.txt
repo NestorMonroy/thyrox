@@ -55,4 +55,5 @@
 .claude/workbench/retirar-path-insert-de-src-20260918T194559/remove_inserts.py:21
 .claude/workbench/session-task-dump-20260910T070654/dump_session_board.py:51
 .claude/workbench/triar-rojos-de-python-20260917T111331/test_censar_scripts.pristine.py:23
+.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/probes/classify_outputs.py:3
 tests/verify/test_rst_gate_root.py:57

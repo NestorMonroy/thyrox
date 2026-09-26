@@ -2360,7 +2360,10 @@ export function runHeadlessStreaming(
             sdkClient.type === 'connected' &&
             sdkClient.client?.transport?.onmessage
           ) {
-            sdkClient.client.transport.onmessage(mcpRequest.message)
+            // El esquema de control deja el mensaje sin tipar
+            // (`JSONRPCMessagePlaceholder`) y el binario lo reenvía tal cual
+            // (2.1.282: `Byo(ie,F.message)`), sin validarlo.
+            sdkClient.client.transport.onmessage(mcpRequest.message as JSONRPCMessage)
           }
           sendControlResponseSuccess(message)
         } else if (message.request.subtype === 'rewind_files') {
@@ -3475,7 +3478,7 @@ export function runHeadlessStreaming(
         // file_attachments rides the protobuf catchall from the web composer.
         // Same-ref no-op when absent (no 'file_attachments' key).
         value: await resolveAndPrepend(message, message.message.content),
-        uuid: message.uuid,
+        uuid: message.uuid as UUID | undefined,
         priority: message.priority,
       })
       // Increment prompt count for attribution tracking and save snapshot

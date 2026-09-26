@@ -195,6 +195,7 @@ export {
 export type { TeammateMessage } from './mailbox/index.js'
 export {
   markMessagesAsRead,
+  markMessagesAsReadByPredicate,
   readUnreadMessages,
   sendShutdownRequestToMailbox,
   writeToMailbox,

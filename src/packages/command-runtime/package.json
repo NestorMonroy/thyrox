@@ -21,7 +21,7 @@
     },
     "./commands/fork/fork.js": {
       "types": "./dist/commands/fork/fork.d.ts",
-      "default": "./src/commands/fork/fork.ts"
+      "default": "./src/commands/fork/fork.tsx"
     },
     "./createMovedToPluginCommand.js": {
       "types": "./dist/createMovedToPluginCommand.d.ts",

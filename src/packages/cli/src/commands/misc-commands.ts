@@ -1,4 +1,4 @@
-import type { Command } from '@commander-js/extra-typings'
+import type { ParentCommand } from './parentCommand.js'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import { bridgeMain } from '@thyrox/bridge'
@@ -12,7 +12,7 @@ import { getBaseRenderOptions } from '@thyrox/output/render-options'
 import { validateUuid } from '@thyrox/agent/uuid.js'
 import { TASK_STATUSES } from '@thyrox/agent/tasks.js'
 
-export function registerMiscCommands(program: Command): void {
+export function registerMiscCommands(program: ParentCommand): void {
   // Background session subcommands. The actual handlers run in the
   // cli.tsx fast-path BEFORE Commander parses argv (skips loading
   // commander + main.tsx for the perf-sensitive `ps` / `logs` etc).

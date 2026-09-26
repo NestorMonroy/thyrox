@@ -1,18 +1,15 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
+import type { PermissionHostBindings } from '../contracts.js'
+import { installPermissionHostBindings } from '../host.js'
+import { createReadRuleSuggestion, extractRules, hasRules } from '../PermissionUpdate.js'
 
-// Mock host bindings BEFORE importing PermissionUpdate.
-// PermissionUpdate → filesystem → getPermissionHostBindings throws if
-// not installed. We provide a stub that lets toPosixPath (via getPlatform)
-// fall through to its process.platform-based default.
-const realHost = await import('../host.js')
-mock.module('../host.js', () => ({
-  ...realHost,
-  getPermissionHostBindings: () => ({}),
-}))
-
-const { createReadRuleSuggestion, extractRules, hasRules } = await import(
-  '../PermissionUpdate.js'
-)
+// PermissionUpdate → filesystem → getPermissionHostBindings lanza si no hay
+// enlaces instalados. Unos enlaces vacíos dejan que toPosixPath (vía
+// getPlatform) caiga a su valor por defecto de process.platform. Se instalan
+// con la API real y no con `mock.module`: en Bun ese sustituto vive el resto
+// del proceso, y los enlaces que otro archivo instalaba después quedaban
+// ocultos por el getter falso (sandboxWriteAllowlist.test.ts fallaba en lote).
+installPermissionHostBindings({} as PermissionHostBindings)
 import type { PermissionUpdate } from '../PermissionUpdateSchema.js'
 
 describe('extractRules — flatMap over addRules', () => {

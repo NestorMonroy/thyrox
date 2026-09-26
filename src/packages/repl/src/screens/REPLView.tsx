@@ -2959,7 +2959,9 @@ export function REPL({
         toolUseContext,
         querySource: getQuerySourceForREPL(),
       })) {
-        onQueryEvent(event);
+        // El bucle emite la forma mínima (`AgentMessage`); lo que produce son
+        // los mensajes concretos que el manejador del stream distingue.
+        onQueryEvent(event as Parameters<typeof onQueryEvent>[0]);
       }
 
       queryCheckpoint('query_end');
@@ -3277,8 +3279,12 @@ export function REPL({
       }
 
       // Atomically: clear initial message, set permission mode and rules, and store plan for verification
-      const shouldStorePlanForVerification =
-        initialMsg.message.planContent && process.env.USER_TYPE === 'ant' && isEnvTruthy(undefined);
+      // El plan a verificar, o null si no aplica: `planContent` llega sin tipar.
+      const planContent = initialMsg.message.planContent;
+      const planForVerification =
+        typeof planContent === 'string' && planContent && process.env.USER_TYPE === 'ant' && isEnvTruthy(undefined)
+          ? planContent
+          : null;
 
       setAppState(prev => {
         // Build and apply permission updates (mode + allowedPrompts rules)
@@ -3302,9 +3308,9 @@ export function REPL({
           ...prev,
           initialMessage: null,
           toolPermissionContext: updatedToolPermissionContext,
-          ...(shouldStorePlanForVerification && {
+          ...(planForVerification !== null && {
             pendingPlanVerification: {
-              plan: initialMsg.message.planContent!,
+              plan: planForVerification,
               verificationStarted: false,
               verificationCompleted: false,
             },

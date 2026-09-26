@@ -57,7 +57,9 @@ export function installCliBindings(): void {
       const store = createHeadlessSessionStore(params as HeadlessStoreParams)
       return {
         getState: () => store.getState(),
-        setState: (...args: unknown[]) => store.setState(args[0] as AppState),
+        // Lo que llega es el actualizador de `setAppState`; el store lo aplica.
+        setState: (...args: unknown[]) =>
+          store.setState(args[0] as (prev: AppState) => AppState),
       }
     },
     runHeadless: (...args) =>

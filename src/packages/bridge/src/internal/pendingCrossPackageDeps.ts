@@ -1221,24 +1221,13 @@ export function setGetMainLoopModelFn(fn: () => string): void {
 }
 
 /**
- * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`
- * (verbatim: `permission/src/PermissionMode.ts:8` re-exporta el alias desde
- * `./types/permissions.js` → `../permissionTypes.js`). `@thyrox/permission`
- * aún no porta ese archivo (su `permissions.ts` es porte PARCIAL DECLARADO
- * enfocado en `getDenyRuleForTool`, y cita `PermissionMode.js` como sibling
- * no portado). Se declara aquí el tipo estructural — únicamente los seis
- * modos que `EXTERNAL_PERMISSION_MODES` fija en la fuente
- * (`permissionTypes.ts:16-22`); el séptimo (`'auto'`) sólo entra bajo
- * `feature('TRANSCRIPT_CLASSIFIER')`, que este árbol no resuelve — se omite
- * por lo mismo que `feature()` de este archivo defaultea esa bandera a OFF.
+ * `PermissionMode` — de `@claude-code-how-works/permission/PermissionMode.js`,
+ * que re-exporta el alias de `permissionTypes.ts:29`. `@thyrox/permission` ya
+ * porta ese tipo, así que se re-exporta en vez de redeclararlo. La copia
+ * estructural anterior añadía un `'ask'` que la fuente no tiene, y por eso el
+ * modo que llegaba del puente no cabía en el estado de la sesión.
  */
-export type PermissionMode =
-  | 'acceptEdits'
-  | 'bypassPermissions'
-  | 'default'
-  | 'dontAsk'
-  | 'plan'
-  | 'ask'
+export type { PermissionMode } from '@thyrox/permission/permissionTypes'
 
 /**
  * `EMPTY_USAGE` — de `@claude-code-how-works/provider/emptyUsage.js`

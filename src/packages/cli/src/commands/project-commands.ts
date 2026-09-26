@@ -14,7 +14,7 @@
  *
  * --dry-run prints the plan and exits without confirmation.
  */
-import type { Command } from '@commander-js/extra-typings'
+import type { ParentCommand } from './parentCommand.js'
 import { createInterface } from 'node:readline'
 import { resolve as pathResolve } from 'node:path'
 import { createSortedHelpConfig } from '../entry/commander.js'
@@ -237,7 +237,7 @@ async function runSingleProjectPurge(
   )
 }
 
-export function registerProjectCommands(program: Command): void {
+export function registerProjectCommands(program: ParentCommand): void {
   const project = program
     .command('project')
     .description('Manage Claude Code project state')

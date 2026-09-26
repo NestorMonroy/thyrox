@@ -8,6 +8,7 @@ import { GENERAL_PURPOSE_AGENT } from './built-in/generalPurposeAgent.js'
 import { PLAN_AGENT } from './built-in/planAgent.js'
 import { STATUSLINE_SETUP_AGENT } from './built-in/statuslineSetup.js'
 import { VERIFICATION_AGENT } from './built-in/verificationAgent.js'
+import { getCoordinatorAgents } from './built-in/workerAgent.js'
 import type { AgentDefinition } from './loadAgentsDir.js'
 
 export function areExplorePlanAgentsEnabled(): boolean {
@@ -29,15 +30,11 @@ export function getBuiltInAgents(): AgentDefinition[] {
     return []
   }
 
-  // Use lazy require inside the function body to avoid circular dependency
-  // issues at module init time. The coordinatorMode module depends on tools
-  // which depend on AgentTool which imports this file.
+  // El require perezoso apuntaba a `loadAgentsDir.js`, que nunca declaró
+  // `getCoordinatorAgents`: el binario lo carga de su propio módulo, portado
+  // en `built-in/workerAgent.ts`, que sólo importa constantes y no cierra ciclo.
   if (feature('COORDINATOR_MODE')) {
     if (isEnvTruthy(process.env.CLAUDE_CODE_COORDINATOR_MODE)) {
-      /* eslint-disable @typescript-eslint/no-require-imports */
-      const { getCoordinatorAgents } =
-        require('./loadAgentsDir.js') as typeof import('./loadAgentsDir.js')
-      /* eslint-enable @typescript-eslint/no-require-imports */
       return getCoordinatorAgents()
     }
   }

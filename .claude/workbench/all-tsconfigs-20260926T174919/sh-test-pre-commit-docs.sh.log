@@ -1,0 +1,11 @@
+  ok   sin archivos de prosa: exit 0
+  FALLA sin archivos de prosa: no gasta tiempo en gates — esperado [0] obtenido [1]
+  ok   forma vetada nueva: bloquea
+  ok   forma vetada nueva: la nombra
+  ok   sintaxis RST rota: bloquea
+  ok   prosa limpia: pasa
+  ok   el archivo mas citado del repo NO bloquea
+  ok   un .md tambien se mide
+  ok   el bloqueo nombra el escape hatch
+
+8 ok · 1 falla(s)

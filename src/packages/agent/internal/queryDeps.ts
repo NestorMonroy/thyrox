@@ -39,20 +39,29 @@
 import { randomUUID } from 'crypto'
 import { queryModelWithStreaming } from '@thyrox/provider/claudeLegacy'
 import { getAgentHostBindings } from '../host.ts'
-import type { AgentHostBindings } from '../host.ts'
 import type {
   AgentMessage,
   AgentQuerySource,
+  AgentStreamEvent,
   AgentToolUseContext,
 } from '../internalTypes.ts'
+import type { CompactionResult } from '../compaction/compact.ts'
+import type { MicrocompactResult } from '../compaction/types.ts'
 
 export type QueryDeps = {
-  callModel: typeof queryModelWithStreaming
+  // El proveedor no depende del agente, así que su generador declara
+  // `unknown`; lo que emite son mensajes del bucle y eventos de stream.
+  callModel: (
+    args: Parameters<typeof queryModelWithStreaming>[0],
+  ) => AsyncGenerator<AgentMessage | AgentStreamEvent, void>
   microcompact: (
     messages: AgentMessage[],
     toolUseContext?: AgentToolUseContext,
     querySource?: AgentQuerySource,
-  ) => Promise<{ messages: AgentMessage[]; [key: string]: unknown }>
+  ) => Promise<{
+    messages: AgentMessage[]
+    compactionInfo?: MicrocompactResult['compactionInfo']
+  }>
   autocompact: (
     messages: AgentMessage[],
     toolUseContext: AgentToolUseContext,
@@ -62,7 +71,9 @@ export type QueryDeps = {
     snipTokensFreed?: number,
   ) => Promise<{
     wasCompacted: boolean
-    compactionResult?: unknown
+    // El de `compaction/compact.ts`: el que `autoCompactIfNeeded` devuelve y el
+    // que `buildPostCompactMessages` consume.
+    compactionResult?: CompactionResult
     consecutiveFailures?: number
     // ant 3970.js — se fija cuando autocompact desiste porque el breaker
     // de rellenado rápido saltó. El caller sale del query loop con razón
@@ -73,25 +84,11 @@ export type QueryDeps = {
   uuid: () => string
 }
 
-/**
- * Los dos bindings de compactación que `contracts.ts` (285 líneas, sin
- * portar) declara para el host, con la firma exacta que este módulo ya
- * consume — el subconjunto local de `AgentHostBindings` en `host.ts`
- * todavía no los expone. Se amplían aquí, no en `host.ts`, porque este
- * archivo es el único punto del árbol portado que los consume.
- */
-type CompactionHostBindings = {
-  microcompactMessages?: QueryDeps['microcompact']
-  autoCompactIfNeeded?: QueryDeps['autocompact']
-}
-
 export function productionDeps(): QueryDeps {
   return {
-    callModel: queryModelWithStreaming,
+    callModel: queryModelWithStreaming as QueryDeps['callModel'],
     microcompact: async (messages, toolUseContext, querySource) =>
-      (await (
-        getAgentHostBindings() as AgentHostBindings & CompactionHostBindings
-      ).microcompactMessages?.(
+      (await getAgentHostBindings().microcompactMessages?.(
         messages,
         toolUseContext,
         querySource,
@@ -104,9 +101,7 @@ export function productionDeps(): QueryDeps {
       tracking,
       snipTokensFreed,
     ) =>
-      (await (
-        getAgentHostBindings() as AgentHostBindings & CompactionHostBindings
-      ).autoCompactIfNeeded?.(
+      (await getAgentHostBindings().autoCompactIfNeeded?.(
         messages,
         toolUseContext,
         cacheSafeParams,

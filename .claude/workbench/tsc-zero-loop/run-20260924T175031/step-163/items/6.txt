@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(2962,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2952-2972 ---
+   2952  
+   2953        for await (const event of query({
+   2954          messages: messagesIncludingNewMessages,
+   2955          systemPrompt,
+   2956          userContext,
+   2957          systemContext,
+   2958          canUseTool,
+   2959          toolUseContext,
+   2960          querySource: getQuerySourceForREPL(),
+   2961        })) {
+   2962>         onQueryEvent(event);
+   2963        }
+   2964  
+   2965        queryCheckpoint('query_end');
+   2966  
+   2967        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2968        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2969        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2970          const entries = apiMetricsRef.current;
+   2971  
+   2972          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3305,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3295-3315 ---
+   3295              ...updatedToolPermissionContext,
+   3296              mode: 'auto',
+   3297              prePlanMode: undefined,
+   3298            });
+   3299          }
+   3300  
+   3301          return {
+   3302            ...prev,
+   3303            initialMessage: null,
+   3304            toolPermissionContext: updatedToolPermissionContext,
+   3305>           ...(shouldStorePlanForVerification && {
+   3306              pendingPlanVerification: {
+   3307                plan: initialMsg.message.planContent!,
+   3308                verificationStarted: false,
+   3309                verificationCompleted: false,
+   3310              },
+   3311            }),
+   3312          };
+   3313        });
+   3314  
+   3315        // Create file history snapshot for code rewind

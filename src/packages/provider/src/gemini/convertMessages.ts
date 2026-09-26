@@ -134,12 +134,15 @@ function convertUserContentBlockToGeminiParts(
 
   // Convert an Anthropic image block into Gemini inlineData
   if (block.type === 'image') {
+    // Un bloque de imagen sin fuente no produce parte; uno base64 sin
+    // `media_type` se envía como PNG, el formato por defecto de la fuente.
     const source = block.source
+    if (!source) return []
     if (source.type === 'base64') {
       return [
         {
           inlineData: {
-            mimeType: source.media_type,
+            mimeType: source.media_type ?? 'image/png',
             data: source.data,
           },
         },

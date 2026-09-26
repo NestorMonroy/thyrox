@@ -69,6 +69,8 @@ import type {
   ExecFileWithCwdOptions,
 } from '@thyrox/shell/execFileNoThrow.js'
 import type { McpbManifestAny } from '@anthropic-ai/mcpb'
+import type { LoadedPlugin } from './types.js'
+import type { HookEvent, PluginHookMatcher } from '../settings/types.js'
 import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
@@ -257,8 +259,9 @@ export function setSafeResolvePathFn(fn: typeof _safeResolvePath): void {
 let _getSessionId: () => string = () => 'unknown-session'
 let _getOriginalCwd: () => string = () => process.cwd()
 let _getCwd: () => string = () => process.cwd()
-let _getInlinePlugins: () => Record<string, unknown> | undefined = () =>
-  undefined
+// Las rutas de `--plugin-dir`: el estado del anfitrión es un arreglo
+// (`app-host/bootstrap/state.ts`, `getInlinePlugins`).
+let _getInlinePlugins: () => string[] = () => []
 
 export function getSessionId(): string {
   return _getSessionId()
@@ -269,7 +272,7 @@ export function getOriginalCwd(): string {
 export function getCwd(): string {
   return _getCwd()
 }
-export function getInlinePlugins(): Record<string, unknown> | undefined {
+export function getInlinePlugins(): string[] {
   return _getInlinePlugins()
 }
 export function setGetSessionIdFn(fn: typeof _getSessionId): void {
@@ -601,7 +604,8 @@ export function setWalkMarkdownFilesFn(fn: typeof _walkMarkdownFiles): void {
 // sustitución de argumentos de CLI)
 // ---------------------------------------------------------------------------
 
-type BuiltinPluginResult = { enabled: unknown[]; disabled: unknown[] }
+// El contrato es el de `./builtin.ts` (`getBuiltinPlugins`), que es lo inyectado.
+type BuiltinPluginResult = { enabled: LoadedPlugin[]; disabled: LoadedPlugin[] }
 
 let _getBuiltinPluginsFn: () => BuiltinPluginResult = () => ({
   enabled: [],
@@ -808,8 +812,10 @@ const [_getExecuteShellCommandsInPrompt, setExecuteShellCommandsInPromptFn_] =
   makeSetter(
     async (prompt: string, ..._rest: unknown[]): Promise<string> => prompt,
   )
+// El contrato es el de `tool-registry/src/ripgrep.ts:715`, que es lo que se
+// inyecta: devuelve una línea por coincidencia, no el texto entero.
 const [_getRipGrep, setRipGrepFn_] = makeSetter(
-  async (..._args: unknown[]): Promise<string> => '',
+  async (_args: string[], _target: string, _abortSignal: AbortSignal): Promise<string[]> => [],
 )
 // El contrato es el de dxt/zip.ts, que es lo que se inyecta y lo que los tres
 // llamadores usan: recibe el zip en memoria y devuelve sus archivos. La
@@ -836,8 +842,8 @@ export function executeShellCommandsInPrompt(
 ): Promise<string> {
   return _getExecuteShellCommandsInPrompt()(prompt, ...rest)
 }
-export function ripGrep(...args: unknown[]): Promise<string> {
-  return _getRipGrep()(...args)
+export function ripGrep(args: string[], target: string, abortSignal: AbortSignal): Promise<string[]> {
+  return _getRipGrep()(args, target, abortSignal)
 }
 export function unzipFile(zipData: Buffer): Promise<Record<string, Uint8Array>> {
   return _getUnzipFile()(zipData)
@@ -1051,11 +1057,15 @@ export const setParseAndValidateManifestFromBytesFn =
   setParseAndValidateManifestFromBytesFn_
 
 // -- hooks registrados, cachés de agente/comando
+// El contrato es el de `app-host/bootstrap/state.ts`: un mapa por evento, o
+// `null` sin registro. Este lado sólo registra matchers de plugin, y al leer no
+// distingue los de callback, que no conoce: por eso `unknown[]` por evento.
+type RegisteredHooksByEvent = Partial<Record<HookEvent, unknown[]>>
 const [_getRegisteredHooks_, setGetRegisteredHooksFn_] = makeSetter(
-  (): unknown[] => [],
+  (): RegisteredHooksByEvent | null => null,
 )
 const [_getRegisterHookCallbacks, setRegisterHookCallbacksFn_] = makeSetter(
-  (_hooks: unknown[]): void => {},
+  (_hooks: Partial<Record<HookEvent, PluginHookMatcher[]>>): void => {},
 )
 const [
   _getGetAgentDefinitionsWithOverrides,
@@ -1065,10 +1075,10 @@ const [
   // no un arreglo, que `refresh` leería como `allAgents` indefinido.
   async (_cwd: string): Promise<AgentDefinitionsResult> => ({ activeAgents: [], allAgents: [] }),
 )
-export function getRegisteredHooks(): unknown[] {
+export function getRegisteredHooks(): RegisteredHooksByEvent | null {
   return _getRegisteredHooks_()()
 }
-export function registerHookCallbacks(hooks: unknown[]): void {
+export function registerHookCallbacks(hooks: Partial<Record<HookEvent, PluginHookMatcher[]>>): void {
   _getRegisterHookCallbacks()(hooks)
 }
 export function getAgentDefinitionsWithOverrides(
@@ -1155,8 +1165,10 @@ export const setHasShownHintThisSessionFn = setHasShownHintThisSessionFn_
 export const setSetPendingHintFn = setSetPendingHintFn_
 
 // -- directorios de sistema + git + varios
+// El contrato es el de `agent/misc/systemDirectories.ts`: nombre -> ruta
+// (HOME, DESKTOP…), que es lo que `getMcpConfigForManifest` espera.
 const [_getGetSystemDirectories, setGetSystemDirectoriesFn_] = makeSetter(
-  (): string[] => [],
+  (): Record<string, string> => ({}),
 )
 const [_getFindCanonicalGitRoot, setFindCanonicalGitRootFn_] = makeSetter(
   (_cwd: string): string | null => null,
@@ -1200,7 +1212,7 @@ type WriteFileSyncFn = (
 const [_getWriteFileSync, setWriteFileSyncFn_] = makeSetter<WriteFileSyncFn>(
   (p, d) => getFsImplementation().writeFileSync(p, d),
 )
-export function getSystemDirectories(): string[] {
+export function getSystemDirectories(): Record<string, string> {
   return _getGetSystemDirectories()()
 }
 export function findCanonicalGitRoot(cwd: string): string | null {

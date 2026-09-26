@@ -177,6 +177,7 @@ import {
 } from '@thyrox/shell/execFileNoThrow.js'
 import { pathExists, writeFileSyncAndFlush } from '@thyrox/storage/file.js'
 import { getFsImplementation, safeResolvePath } from '@thyrox/storage/fsOperations.js'
+import { resolve as resolvePath } from 'node:path'
 import { gitExe } from '@thyrox/storage/git.js'
 import { getHeadForDir } from '@thyrox/config/gitFilesystem.js'
 import { logError } from '@thyrox/local-observability/logging'
@@ -212,8 +213,8 @@ export function installPluginBindings(): void {
   // escribe en los placeholders de _deps.ts, agent/hooks.ts lee del
   // STATE de app-host. Sin estos tres wires las dos mitades divergen y
   // todo hook de plugin aterriza en silencio en un slot no-op.)
-  setGetRegisteredHooksFn(() => getRegisteredHooks() as never)
-  setRegisterHookCallbacksFn(hooks => registerHookCallbacks(hooks as never))
+  setGetRegisteredHooksFn(() => getRegisteredHooks())
+  setRegisterHookCallbacksFn(hooks => registerHookCallbacks(hooks))
   setClearRegisteredPluginHooksFn(() => clearRegisteredPluginHooks())
 
   // --- secureStorage (wire hermano del anterior: mismo patrón de slot
@@ -233,10 +234,10 @@ export function installPluginBindings(): void {
   //     import estático es para evitar problemas de orden de carga
   //     cuando el módulo de implementación también toca el estado del
   //     host durante su propia inicialización.
-  setRipGrepFn(async (...args: unknown[]) => {
+  setRipGrepFn(async (args, target, abortSignal) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js')
-    return ripGrep(...args)
+    const { ripGrep } = require('@thyrox/tool-registry/ripgrep.js') as typeof import('@thyrox/tool-registry/ripgrep.js')
+    return ripGrep(args, target, abortSignal)
   })
   setUnzipFileFn(zipData => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -260,7 +261,7 @@ export function installPluginBindings(): void {
   })
   setGetSystemDirectoriesFn(() => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { getSystemDirectories } = require('@thyrox/agent/misc/systemDirectories.js')
+    const { getSystemDirectories } = require('@thyrox/agent/misc/systemDirectories.js') as typeof import('@thyrox/agent/misc/systemDirectories.js')
     return getSystemDirectories()
   })
   setGetAdditionalDirectoriesForClaudeMdFn(() => {
@@ -459,9 +460,7 @@ export function installPluginBindings(): void {
   setGetSessionIdFn(() => getSessionId())
   setGetOriginalCwdFn(() => getOriginalCwd())
   setGetCwdFn(() => getCwd())
-  setGetInlinePluginsFn(() =>
-    getInlinePlugins() as Record<string, unknown> | undefined,
-  )
+  setGetInlinePluginsFn(() => getInlinePlugins())
 
   // --- settings
   setGetSettingsFn(() => getSettings() as any)
@@ -476,7 +475,7 @@ export function installPluginBindings(): void {
   setFsImplementationFn({
     existsSync: p => getFsImplementation().existsSync(p),
     mkdirSync: p => getFsImplementation().mkdirSync(p),
-    writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    writeFileSync: (p, d) => nodeFs.writeFileSync(p, d),
     readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
     readdirSync: p =>
       nodeFs.readdirSync(p, { withFileTypes: true }),
@@ -501,7 +500,10 @@ export function installPluginBindings(): void {
     rename: async (o, n) => nodeFsp.rename(o, n),
   })
   setPathExistsFn(p => pathExists(p))
-  setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+  // La ranura recibe (base, relativa); el de storage, (fs, ruta) y devuelve
+  // la ruta con los enlaces ya resueltos.
+  setSafeResolvePathFn((base, rel) =>
+    safeResolvePath(getFsImplementation(), resolvePath(base, rel)).resolvedPath)
   setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
   setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
   setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))

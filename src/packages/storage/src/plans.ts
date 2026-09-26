@@ -121,15 +121,18 @@ function getInitialSettings(): InitialSettings {
 // Tipos aplanados de mensaje — ver docstring del archivo.
 // ---------------------------------------------------------------------------
 
+// `content` e `input` como en el transcript real: opcional el primero,
+// sin tipar el segundo. Con la forma más estricta, un `LogOption` del agente
+// no se podía pasar a este módulo.
 type PlanMessageContentBlock = {
   type: string
   name?: string
-  input?: Record<string, unknown>
+  input?: unknown
 }
 export type PlanMessage = {
   type: string
   slug?: string
-  message?: { content: PlanMessageContentBlock[] | string }
+  message?: { content?: PlanMessageContentBlock[] | string }
   planContent?: string
   attachment?: { type: string; planContent?: string }
   subtype?: string
@@ -412,7 +415,7 @@ function recoverPlanFromMessages(log: LogOption): string | null {
             block.type === 'tool_use' &&
             block.name === EXIT_PLAN_MODE_V2_TOOL_NAME
           ) {
-            const plan = block.input?.plan
+            const plan = (block.input as { plan?: unknown } | undefined)?.plan
             if (typeof plan === 'string' && plan.length > 0) {
               return plan
             }
