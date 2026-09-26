@@ -1,0 +1,28 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 48,
+   "total_before": 159,
+   "total_final": 128,
+   "tsc_runs": 2,
+   "kept": 13
+  }
+ ],
+ "files_kept": [
+  "src/packages/agent/QueryEngine.ts",
+  "src/packages/agent/attachments.ts",
+  "src/packages/agent/messages.ts",
+  "src/packages/agent/messages/mappers.ts",
+  "src/packages/app-host/src/runtime/installPluginBindings.ts",
+  "src/packages/cli/src/headless/sdk/session/run-streaming.ts",
+  "src/packages/config/settings/inventory.ts",
+  "src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts",
+  "src/packages/repl/src/components/BridgeDialog.tsx",
+  "src/packages/repl/src/components/messages/AttachmentMessage.tsx",
+  "src/packages/repl/src/queryHelpers.ts",
+  "src/packages/repl/src/screens/REPLView.tsx",
+  "src/packages/storage/src/claudemd.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/pipeline-derived/batch-01/final.log"
+}

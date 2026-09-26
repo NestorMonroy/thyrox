@@ -475,7 +475,7 @@ export function installPluginBindings(): void {
   const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
   setFsImplementationFn({
     existsSync: p => getFsImplementation().existsSync(p),
-    mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    mkdirSync: p => getFsImplementation().mkdirSync(p),
     writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
     readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
     readdirSync: p =>

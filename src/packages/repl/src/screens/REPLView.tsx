@@ -1826,9 +1826,15 @@ export function REPL({
 
         // Restore standalone agent context from the resumed conversation
         // Always reset to the new session's values (or clear if none)
+        const restoredStandaloneAgentContext = computeStandaloneAgentContext(log.agentName, log.agentColor);
         setAppState(prev => ({
           ...prev,
-          standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+          standaloneAgentContext: restoredStandaloneAgentContext
+            ? {
+                ...restoredStandaloneAgentContext,
+                color: restoredStandaloneAgentContext.color as AgentColorName | undefined,
+              }
+            : undefined,
         }));
         void updateSessionName(log.agentName);
 
@@ -2389,7 +2395,9 @@ export function REPL({
 
   // Register the leader's setToolPermissionContext for in-process teammates
   useEffect(() => {
-    registerLeaderSetToolPermissionContext(setToolPermissionContext);
+    registerLeaderSetToolPermissionContext((context, options) =>
+      setToolPermissionContext(context as ToolPermissionContext, options),
+    );
     return () => unregisterLeaderSetToolPermissionContext();
   }, [setToolPermissionContext]);
 
@@ -2618,7 +2626,7 @@ export function REPL({
         }
       }
       const uniqueNotifications = notificationMessages.filter(
-(        m: { attachment: { type: string; prompt: string; }; }) =>
+        m =>
           m.attachment.type === 'queued_command' &&
           (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
       );
@@ -2802,7 +2810,7 @@ export function REPL({
       // title silently fell through to the "Claude Code" default.
       if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
         const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
-        const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+        const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content ?? '') : null;
         // Skip synthetic breadcrumbs — slash-command output, prompt-skill
         // expansions (/commit → <command-message>), local-command headers
         // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
@@ -5052,7 +5060,6 @@ export function REPL({
                   mode={streamMode}
                   spinnerTip={spinnerTip}
                   responseLengthRef={responseLengthRef}
-                  apiMetricsRef={apiMetricsRef}
                   overrideMessage={spinnerMessage}
                   spinnerSuffix={stopHookSpinnerSuffix}
                   verbose={verbose}

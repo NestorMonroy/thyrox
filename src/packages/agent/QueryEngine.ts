@@ -554,7 +554,7 @@ export class QueryEngine {
     ])
     headlessProfilerCheckpoint('after_skills_plugins')
 
-    yield buildSystemInitMessage({
+    const systemInitMessage = buildSystemInitMessage({
       tools,
       mcpClients,
       model: mainLoopModel,
@@ -566,6 +566,11 @@ export class QueryEngine {
       plugins: enabledPlugins,
       fastMode: initialAppState.fastMode,
     })
+    // buildSystemInitMessage puede devolver undefined cuando el host binding
+    // no está instalado o falla al cargar (ver internal/headlessRuntime.ts).
+    if (systemInitMessage) {
+      yield systemInitMessage
+    }
 
     // Record when system message is yielded for headless latency tracking
     headlessProfilerCheckpoint('system_message_yielded')
@@ -703,7 +708,10 @@ export class QueryEngine {
         canUseTool: wrappedCanUseTool,
         querySource: 'sdk',
         contextOverrides: {
-          systemPrompt,
+          // Colisión de nombre declarada en createDeps.ts: el SystemPrompt del
+          // provider es el arreglo de cadenas marcado; el de AgentDeps es el
+          // bloque { content }. Se envuelve igual que ContextDepImpl ya lo hace.
+          systemPrompt: [{ content: systemPrompt }],
           userContext,
           systemContext,
         },
@@ -794,7 +802,7 @@ export class QueryEngine {
       }
 
       if (event.type === 'compaction') {
-        this.mutableMessages = fromCoreMessages(event.after)
+        this.mutableMessages = fromCoreMessages(event.after) as Message[]
         messages.splice(0, messages.length, ...this.mutableMessages)
 
         const compactBoundary = createCompactBoundaryMessage(

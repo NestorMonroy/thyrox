@@ -157,7 +157,10 @@ export function deferredCondition(key: string): string | undefined {
 
 export function keysByStatus(): Record<KeyStatus, string[]> {
   const out: Record<KeyStatus, string[]> = { consumida: [], declarada: [], diferida: [] }
-  for (const k of CLIENT_SETTING_KEYS) out[KEY_STATUS[k]].push(k)
+  for (const k of CLIENT_SETTING_KEYS) {
+    const status = KEY_STATUS[k]
+    if (status) out[status].push(k)
+  }
   return out
 }
 

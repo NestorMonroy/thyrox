@@ -68,7 +68,8 @@ export function isResultSuccessful(
   if (!message) return false
 
   if (message.type === 'assistant') {
-    const lastContent = last(message.message.content)
+    const content = message.message.content
+    const lastContent = Array.isArray(content) ? last(content) : undefined
     return (
       lastContent?.type === 'text' ||
       lastContent?.type === 'thinking' ||

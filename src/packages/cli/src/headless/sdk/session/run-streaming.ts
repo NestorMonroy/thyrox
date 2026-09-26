@@ -191,6 +191,7 @@ import { executeNotificationHooks } from '@thyrox/agent/hooks.js'
 import {
   ElicitRequestSchema,
   ElicitationCompleteNotificationSchema,
+  type JSONRPCMessage,
 } from '@modelcontextprotocol/sdk/types.js'
 import {
   toInternalMessages,
@@ -789,7 +790,7 @@ export function runHeadlessStreaming(
       // Re-initialize all SDK MCP servers with current config
       const sdkSetup = await setupSdkMcpClients(
         sdkMcpConfigs,
-        (serverName, message) =>
+        (serverName: string, message: JSONRPCMessage) =>
           structuredIO.sendMcpMessage(serverName, message),
       )
       sdkClients = sdkSetup.clients
@@ -2714,7 +2715,9 @@ export function runHeadlessStreaming(
                 controller.signal,
                 {
                   skipBrowserOpen: true,
-                  onWaitingForCallback: submit => {
+                  onWaitingForCallback: (
+                    submit: (callbackUrl: string) => void,
+                  ) => {
                     oauthCallbackSubmitters.set(serverName, submit)
                   },
                 },
@@ -2810,7 +2813,7 @@ export function runHeadlessStreaming(
                     ],
                   }
                 })
-                .catch(error => {
+                .catch((error: unknown) => {
                   logForDebugging(
                     `MCP OAuth failed for ${serverName}: ${error}`,
                     { level: 'error' },
@@ -3435,7 +3438,7 @@ export function runHeadlessStreaming(
         )
 
         // Check both historical duplicates (from file) and runtime duplicates (this session)
-        if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+        if (existsInSession || receivedMessageUuids.has(message.uuid as UUID)) {
           logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
           // Send acknowledgment for duplicate message if replay mode is enabled
           if (options.replayUserMessages) {
@@ -3464,7 +3467,7 @@ export function runHeadlessStreaming(
         }
 
         // Track this UUID to prevent runtime duplicates
-        trackReceivedMessageUuid(message.uuid)
+        trackReceivedMessageUuid(message.uuid as UUID)
       }
 
       enqueue({

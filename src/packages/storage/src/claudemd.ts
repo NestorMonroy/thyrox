@@ -1170,7 +1170,7 @@ function resolveExcludePatterns(patterns: string[]): string[] {
 }
 
 // --- porte por miembros: un ancla por ítem ---
-function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+export function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
   if (!shouldFireHook) return undefined
   shouldFireHook = false
   const reason = nextEagerLoadReason
@@ -1351,7 +1351,7 @@ export async function getMemoryFilesForNestedDirectory(
 
   return result
 }
-function isInstructionsMemoryType(
+export function isInstructionsMemoryType(
   type: MemoryType,
 ): type is InstructionsMemoryType {
   return (
@@ -1502,15 +1502,6 @@ function stripHtmlCommentsFromTokens(tokens: ReturnType<Lexer['lex']>): {
 
   return { content: result, stripped }
 }
-// `teamMemPaths` depende de `feature('TEAMMEM')` (macro `bun:bundle`) y de
-// `require('@claude-code-how-works/memory/teamMemPaths')`, un módulo externo
-// ausente en este monorepo. La macro nunca evalúa a `true` fuera del build de
-// ant (mismo precedente que `sessionStoragePredicates.ts`/
-// `filePersistence.ts`: GATEO OMITIDO, constante), así que se porta
-// directamente la rama `null` que esa condición siempre toma aquí.
-const teamMemPaths = null
-
-let hasLoggedInitialLoad = false
 
 const MEMORY_INSTRUCTION_PROMPT =
   'Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written.'

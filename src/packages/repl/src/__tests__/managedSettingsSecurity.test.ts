@@ -57,21 +57,21 @@ describe('extractDangerousSettings — shell settings (always dangerous)', () =>
   })
 
   test('statusLine extracted', () => {
-    const result = extractDangerousSettings({
-      statusLine: 'echo $USER',
-    } as SettingsJson)
+    const statusLineSettings: Record<string, unknown> = { statusLine: 'echo $USER' }
+    const result = extractDangerousSettings(statusLineSettings as SettingsJson)
     expect(result.shellSettings.statusLine).toBe('echo $USER')
   })
 
   test('all 6 dangerous shell settings extracted', () => {
-    const result = extractDangerousSettings({
+    const allShellSettings: Record<string, unknown> = {
       apiKeyHelper: 'a',
       awsAuthRefresh: 'b',
       awsCredentialExport: 'c',
       gcpAuthRefresh: 'd',
       otelHeadersHelper: 'e',
       statusLine: 'f',
-    } as SettingsJson)
+    }
+    const result = extractDangerousSettings(allShellSettings as SettingsJson)
     expect(Object.keys(result.shellSettings).sort()).toEqual([
       'apiKeyHelper',
       'awsAuthRefresh',

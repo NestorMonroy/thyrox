@@ -4375,7 +4375,7 @@ function getResolvedHookCount(
   const uniqueHookNames = new Set(
     messages
       .filter(
-        (_): _ is AttachmentMessage =>
+        (_): _ is NormalizedMessage & AttachmentMessage =>
           isHookAttachmentMessage(_) &&
           _.attachment.toolUseID === toolUseID &&
           _.attachment.hookEvent === hookEvent,

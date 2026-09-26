@@ -80,7 +80,7 @@ import { FileTooLargeError, readFileInRange } from '@thyrox/repl/readFileInRange
 import { getFileModificationTimeAsync } from '@thyrox/storage/file.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { isPDFExtension } from '@thyrox/storage/pdfUtils.js'
-import { getConditionalRulesForCwdLevelDirectory, type MemoryFileInfo, getManagedAndUserConditionalRules } from '@thyrox/storage/claudemd.js'
+import { getConditionalRulesForCwdLevelDirectory, type MemoryFileInfo, getManagedAndUserConditionalRules, getMemoryFilesForNestedDirectory } from '@thyrox/storage/claudemd.js'
 import { PDF_AT_MENTION_INLINE_THRESHOLD } from '@thyrox/provider/apiLimits.js'
 import { countCharInString } from '@thyrox/output/utils/stringUtils.js'
 import { matchingRuleForInput, pathInAllowedWorkingPath } from '@thyrox/permission/filesystem'
@@ -3522,6 +3522,3 @@ export function memoryFilesToAttachments(
 
   return attachments
 }
-const sessionTranscriptModule = feature('KAIROS')
-  ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
-  : null

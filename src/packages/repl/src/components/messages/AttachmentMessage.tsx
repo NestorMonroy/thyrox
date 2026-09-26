@@ -31,7 +31,7 @@ import {
 } from './PlanApprovalMessage.js'
 import { BLACK_CIRCLE } from '@thyrox/output/constants/figures.js'
 import { TeammateMessageContent } from './UserTeammateMessage.js'
-import { isShutdownApproved, type TeammateMessage } from '@thyrox/swarm'
+import { isShutdownApproved } from '@thyrox/swarm'
 import { CtrlOToExpand } from '../CtrlOToExpand.js'
 
 import { feature } from 'bun:bundle'
@@ -62,7 +62,7 @@ export function AttachmentMessage({
   if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
     // Filter out idle notifications BEFORE counting - they are hidden in the UI
     // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
-    const visibleMessages = attachment.messages.filter((msg: TeammateMessage) => {
+    const visibleMessages = attachment.messages.filter((msg) => {
       if (isShutdownApproved(msg.text)) {
         return false
       }
@@ -196,7 +196,7 @@ export function AttachmentMessage({
         <Line>
           Read <Text bold>{attachment.displayPath}</Text> (
           {attachment.content.type === 'text'
-            ? `${attachment.content.file.numLines}${attachment.truncated ? '+' : ''} lines`
+            ? `${attachment.content.file.numLines}${(attachment.type === 'file' && attachment.truncated) ? '+' : ''} lines`
             : formatFileSize(attachment.content.file.originalSize)}
           )
         </Line>

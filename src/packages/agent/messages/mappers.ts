@@ -131,7 +131,13 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
         return [
           {
             type: 'user',
-            message: message.message,
+            message: {
+              role:
+                message.message.role === 'assistant' || message.message.role === 'system'
+                  ? message.message.role
+                  : 'user',
+              content: message.message.content ?? '',
+            },
             session_id: getSessionId(),
             parent_tool_use_id: null,
             uuid: message.uuid,
