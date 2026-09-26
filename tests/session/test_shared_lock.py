@@ -49,8 +49,9 @@ def plant(target: Path, pid: int, age_s: float, host: str | None = None) -> None
     """Un lock ajeno, con su dueño y una mtime de hace `age_s` segundos."""
     lock = sl.lock_path(target)
     lock.mkdir()
-    (lock / sl.OWNER_FILE).write_text(json.dumps({"pid": pid, "host": host or socket.gethostname(),
-                                                   "run_id": "ajeno", "step_id": "s0"}))
+    sl.owner_path(target).write_text(json.dumps({"pid": pid, "host": host or socket.gethostname(),
+                                                  "run_id": "ajeno", "step_id": "s0",
+                                                  "lock_ino": lock.stat().st_ino}))
     when = time.time() - age_s
     os.utime(lock, (when, when))
 
@@ -84,13 +85,19 @@ with tempfile.TemporaryDirectory() as raw:
     print("== 1. adquirir crea el lock con su dueño; soltar lo retira (De, it) ==")
     target = tmp / "setups.jsonl"
     with sl.held(target, run_id="r1", step_id="step-160") as lock:
-        owner = json.loads((sl.lock_path(target) / sl.OWNER_FILE).read_text())
+        owner = sl.read_owner(target)
         check("el lock es <archivo>.lock (ne)", tmp / "setups.jsonl.lock", sl.lock_path(target))
         check("el dueño declara pid, host, run y step",
               (os.getpid(), socket.gethostname(), "r1", "step-160"),
               (owner["pid"], owner["host"], owner["run_id"], owner["step_id"]))
         check("check() lo ve tomado (Pt)", True, sl.check(target))
+        # `proper-lockfile` suelta y roba con `rmdir`, que falla sobre un
+        # directorio no vacío: el dueño va en un archivo HERMANO para que un
+        # lock tomado desde .py lo pueda soltar o recuperar el lado .ts.
+        check("el directorio del lock queda vacío (compatible con rmdir)", [], list(sl.lock_path(target).iterdir()))
+        check("el dueño es <archivo>.lock.owner.json", tmp / "setups.jsonl.lock.owner.json", sl.owner_path(target))
     check("al soltar no queda lock", False, sl.lock_path(target).exists())
+    check("ni su dueño", False, sl.owner_path(target).exists())
     check("check() lo ve libre", False, sl.check(target))
 
     print("== 2. un lock fresco de otro es ELOCKED y nombra a su dueño (De) ==")
@@ -112,7 +119,7 @@ with tempfile.TemporaryDirectory() as raw:
     print("== 4. huérfano con dueño muerto: se recupera (rt, nt) ==")
     plant(target, dead_pid(), age_s=120)
     with sl.held(target, run_id="r4", stale_s=60) as lock:
-        owner = json.loads((sl.lock_path(target) / sl.OWNER_FILE).read_text())
+        owner = sl.read_owner(target)
         check("el dueño nuevo es este proceso", ("r4", os.getpid()), (owner["run_id"], owner["pid"]))
 
     print("== 5. huérfano con dueño VIVO en este host: NO se roba ==")
@@ -130,7 +137,7 @@ with tempfile.TemporaryDirectory() as raw:
     print("== 6. huérfano de OTRO host: no se puede sondear, se recupera por latido ==")
     plant(target, os.getpid(), age_s=120, host="otra-maquina")
     with sl.held(target, run_id="r6", stale_s=60):
-        check("recuperado", "r6", json.loads((sl.lock_path(target) / sl.OWNER_FILE).read_text())["run_id"])
+        check("recuperado", "r6", sl.read_owner(target)["run_id"])
 
     print("== 7. el latido mantiene fresca la mtime (pe) ==")
     with sl.held(target, run_id="r7", stale_s=2, update_s=1):
@@ -156,7 +163,16 @@ with tempfile.TemporaryDirectory() as raw:
     check("los seis terminan bien", [0] * 6, codes)
     check("150 incrementos, 150 en el archivo", "150", counter.read_text())
 
-    print("== 10. escritura atómica: tmp + rename, sin restos ==")
+    print("== 10. un dueño de OTRO lock (robado por quien no escribe dueño) no se atribuye ==")
+    lock = sl.lock_path(target)
+    lock.mkdir()
+    sl.owner_path(target).write_text(json.dumps({"pid": os.getpid(), "host": socket.gethostname(),
+                                                  "run_id": "viejo", "lock_ino": -1}))
+    check("el dueño cuyo inodo no es el del lock se ignora", {}, sl.read_owner(target))
+    sl.force_remove(target)
+    check("force_remove retira también el dueño", False, sl.owner_path(target).exists())
+
+    print("== 11. escritura atómica: tmp + rename, sin restos ==")
     data = tmp / "estado.json"
     data.write_text("viejo")
     sl.write_atomic(data, "nuevo")

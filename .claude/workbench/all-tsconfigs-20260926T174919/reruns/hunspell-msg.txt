@@ -1,0 +1,13 @@
+Exempt hunspell from the Spanish lexicon
+
+The merge from feature/ai-course-notes-l1 brought
+tests/lib/test-toolchain-hunspell.sh, and the language gate read
+"hunspell" as a Spanish word, turning test-script-naming.sh red on
+the real tree. That red cascaded into test-suite-discrimina.sh, whose
+case 6 needs a clean baseline in that suite.
+
+hunspell is a product name, the class TECHNICAL_VOCABULARY exists for.
+Removing the entry turns the real-tree assertion red again.
+
+Also records the evidence of full suite 3 and the derived subset of
+the pool history change.

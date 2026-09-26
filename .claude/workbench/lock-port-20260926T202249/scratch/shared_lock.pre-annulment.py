@@ -35,12 +35,10 @@ y lo deja al umbral ``stale_s``.
 """
 from __future__ import annotations
 
-import argparse
 import atexit
 import json
 import os
 import socket
-import subprocess
 import sys
 import tempfile
 import threading
@@ -285,52 +283,3 @@ def append_line(path: str | os.PathLike, line: str) -> None:
         handle.write(line.rstrip("\n") + "\n")
         handle.flush()
         os.fsync(handle.fileno())
-
-
-#: Sale 3 si el lock es de otro, distinto de cualquier código del comando
-#: protegido que se reenvía tal cual; 2 si el uso no es válido.
-EXIT_HELD = 3
-EXIT_USAGE = 2
-
-
-def main(argv: list[str]) -> int:
-    """La cara de shell: ``run <archivo> [...] -- <comando>`` y ``check <archivo>``."""
-    command: list[str] = []
-    if "--" in argv:
-        cut = argv.index("--")
-        argv, command = argv[:cut], argv[cut + 1:]
-    parser = argparse.ArgumentParser(prog="shared_lock", description=__doc__.splitlines()[0])
-    sub = parser.add_subparsers(dest="order", required=True)
-    p_run = sub.add_parser("run", help="corre un comando con el lock tomado")
-    p_run.add_argument("target")
-    p_run.add_argument("--run-id", default="")
-    p_run.add_argument("--step-id", default="")
-    p_run.add_argument("--stale", type=float, default=DEFAULT_STALE_S)
-    p_run.add_argument("--retries", type=int, default=0)
-    p_run.add_argument("--min-wait", type=float, default=DEFAULT_MIN_WAIT_S)
-    p_run.add_argument("--max-wait", type=float, default=float("inf"))
-    p_check = sub.add_parser("check", help="imprime tomado o libre")
-    p_check.add_argument("target")
-    p_check.add_argument("--stale", type=float, default=DEFAULT_STALE_S)
-    try:
-        args = parser.parse_args(argv)
-    except SystemExit:
-        return EXIT_USAGE
-    if args.order == "check":
-        print("tomado" if check(args.target, args.stale) else "libre")
-        return 0
-    if not command:
-        print("shared_lock run: falta el comando tras `--`", file=sys.stderr)
-        return EXIT_USAGE
-    try:
-        with held(args.target, run_id=args.run_id, step_id=args.step_id, stale_s=args.stale,
-                  retries=args.retries, min_wait_s=args.min_wait, max_wait_s=args.max_wait):
-            code = subprocess.run(command).returncode
-    except LockHeld as busy:
-        print(f"shared_lock: ELOCKED — {busy}", file=sys.stderr)
-        return EXIT_HELD
-    return code if code >= 0 else 128 - code
-
-
-if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))

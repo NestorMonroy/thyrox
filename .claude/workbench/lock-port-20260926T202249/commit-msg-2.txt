@@ -1,0 +1,17 @@
+Give the shared lock a shell face and a sibling owner
+
+The TS side already locks with the real proper-lockfile, which
+releases and steals with rmdir; an owner.json inside the lock
+directory would make that rmdir fail with ENOTEMPTY. The owner now
+lives beside the lock, <file>.lock.owner.json, carrying the inode of
+the lock it belongs to, so an owner left behind by a writer that
+steals without declaring one is ignored.
+
+bin/shared_lock is the shell face: run <file> -- <cmd> runs the
+command holding the lock and returns its code, or 3 without running
+it when another owner holds it; check prints taken or free.
+
+Also rescues this session's scratchpad into the benches: annulment
+originals, rerun logs of the two red suites and the l1 merge lists.
+
+Annulment: without the inode check the stolen-owner case fails.

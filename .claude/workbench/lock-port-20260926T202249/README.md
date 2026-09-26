@@ -34,10 +34,12 @@ Valores que usan los llamadores reales (`callers-ci.txt`): `stale: 60000`,
 
 ## Divergencias declaradas
 
-1. **Dueño en el lock.** El ejecutable deja el directorio vacío y decide la
-   vida sólo por el latido. El porte escribe `owner.json` (`run_id`,
-   `step_id`, `pid`, `host`, `acquired_at`) dentro: soltar es
-   `unlink(owner.json)` + `rmdir`.
+1. **Dueño al lado del lock.** El ejecutable deja el directorio vacío y
+   decide la vida sólo por el latido. El porte escribe
+   `<archivo>.lock.owner.json` (`run_id`, `step_id`, `pid`, `host`,
+   `acquired_at`, `lock_ino`) AL LADO, no dentro: la cara .ts usa
+   `proper-lockfile` real, que suelta y roba con `rmdir`, y un directorio no
+   vacío la rompería. `lock_ino` descarta el dueño de un lock ya robado.
 2. **No se roba a un dueño vivo.** Ante un lock huérfano por latido cuyo
    dueño es de ESTE host y su pid vive, el ejecutable lo robaría; el porte
    rehúsa con ELOCKED, motivo «dueño vivo sin latido», y adjunta la sonda
