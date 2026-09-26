@@ -13,7 +13,7 @@ import type {
   Command,
   LocalJSXCommandContext,
   LocalJSXCommandOnDone,
-} from '../types/command.js'
+} from '../command.js'
 import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 
 // Zod guards against fat-fingered GB pushes (same pattern as pollConfig.ts /
@@ -86,7 +86,7 @@ const brief = {
         // without the tool, emitting plain text the filter hides.
         setUserMsgOptIn(newState)
 
-        context.setAppState((prev: { isBriefOnly: boolean }) => {
+        context.setAppState(prev => {
           if (prev.isBriefOnly === newState) return prev
           return { ...prev, isBriefOnly: newState }
         })
