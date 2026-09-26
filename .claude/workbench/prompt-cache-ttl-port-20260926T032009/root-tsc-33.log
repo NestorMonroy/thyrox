@@ -1,0 +1,7 @@
+src/packages/provider/src/__tests__/foundryCapabilities.test.ts(115,68): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(expected: NoInfer<({ name: string; description: string; strict: boolean; defer_loading?: undefined; } | { name: string; description: string; defer_loading: boolean; strict?: undefined; })[]>): void', gave the following error.
+    Type '{ name: string; description: string; }' is not assignable to type '{ name: string; description: string; strict: boolean; defer_loading?: undefined; } | { name: string; description: string; defer_loading: boolean; strict?: undefined; }'.
+      Property 'defer_loading' is missing in type '{ name: string; description: string; }' but required in type '{ name: string; description: string; defer_loading: boolean; strict?: undefined; }'.
+  Overload 2 of 2, '(expected: NoInfer<({ name: string; description: string; strict: boolean; defer_loading?: undefined; } | { name: string; description: string; defer_loading: boolean; strict?: undefined; })[]>): void', gave the following error.
+    Type '{ name: string; description: string; }' is not assignable to type '{ name: string; description: string; strict: boolean; defer_loading?: undefined; } | { name: string; description: string; defer_loading: boolean; strict?: undefined; }'.
+      Property 'defer_loading' is missing in type '{ name: string; description: string; }' but required in type '{ name: string; description: string; defer_loading: boolean; strict?: undefined; }'.
