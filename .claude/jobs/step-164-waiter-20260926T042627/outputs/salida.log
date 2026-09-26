@@ -1,0 +1,68 @@
+esperando: 0 de 3 asentados, 30s; vivos: step-164-close step-164-pipeline step-164-pool
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.06s
+sonda step-164-pool: 6973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6981 bash stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.01s
+sonda step-164-pool: 7001 parallel stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.39s
+sonda step-164-pool: 7042 bash stdin=channel(pipe:[1749083]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7046 time stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7049 timeout stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7051 claude stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=2.48s
+esperando: 0 de 3 asentados, 60s; vivos: step-164-close step-164-pipeline step-164-pool
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.06s
+sonda step-164-pool: 6973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6981 bash stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.01s
+sonda step-164-pool: 7001 parallel stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.48s
+sonda step-164-pool: 7042 bash stdin=channel(pipe:[1749083]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7046 time stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7049 timeout stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7051 claude stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=3.46s
+esperando: 0 de 3 asentados, 92s; vivos: step-164-close step-164-pipeline step-164-pool
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda step-164-pool: 6973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6981 bash stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.01s
+sonda step-164-pool: 7001 parallel stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.58s
+sonda step-164-pool: 7042 bash stdin=channel(pipe:[1749083]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7046 time stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7049 timeout stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7051 claude stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=4.07s
+esperando: 0 de 3 asentados, 123s; vivos: step-164-close step-164-pipeline step-164-pool
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda step-164-pool: 6973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6981 bash stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.01s
+sonda step-164-pool: 7001 parallel stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.69s
+sonda step-164-pool: 7042 bash stdin=channel(pipe:[1749083]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7046 time stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7049 timeout stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7051 claude stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=4.49s
+esperando: 0 de 3 asentados, 153s; vivos: step-164-close step-164-pipeline step-164-pool
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda step-164-pool: 6973 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6978 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pool: 6981 bash stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.01s
+sonda step-164-pool: 7001 parallel stdin=file(/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-164/items.txt) escritores=- estado=S cpu=0.77s
+sonda step-164-pool: 7042 bash stdin=channel(pipe:[1749083]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7046 time stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7049 timeout stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=0.00s
+sonda step-164-pool: 7051 claude stdin=channel(pipe:[1748234]) sin escritor estado=S cpu=5.16s
+asentado: step-164-pool -> OK (1 de 3)
+esperando: 1 de 3 asentados, 183s; vivos: step-164-close step-164-pipeline
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda step-164-pipeline: 15791 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 15792 node stdin=devnull(/dev/null) escritores=- estado=R cpu=9.03s
+esperando: 1 de 3 asentados, 214s; vivos: step-164-close step-164-pipeline
+sonda step-164-pipeline: 7003 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 7006 python stdin=devnull(/dev/null) escritores=- estado=S cpu=0.07s
+sonda step-164-pipeline: 15791 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda step-164-pipeline: 15792 node stdin=devnull(/dev/null) escritores=- estado=R cpu=53.66s
+  LANZADO   step-164-close (tras 'step-164-pipeline' OK) pid=17169
+asentado: step-164-pipeline -> OK (1 de 3)
