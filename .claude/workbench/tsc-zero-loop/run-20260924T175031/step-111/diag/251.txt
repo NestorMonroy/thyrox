@@ -1,0 +1,851 @@
+src/packages/repl/src/screens/REPLView.tsx(300,10): error TS2724: '"@thyrox/agent/promptCategory.js"' has no exported member named 'getQuerySourceForREPL'. Did you mean 'getQuerySourceForAgent'?
+  --- código src/packages/repl/src/screens/REPLView.tsx:290-310 ---
+    290  import { useMailboxBridge } from '../hooks/useMailboxBridge.js';
+    291  import { queryCheckpoint, logQueryProfileReport } from '@thyrox/local-observability/aggregates/queryProfiler.js';
+    292  import type {
+    293    Message as MessageType,
+    294    UserMessage,
+    295    HookResultMessage,
+    296    PartialCompactDirection,
+    297  } from '@thyrox/agent/messageShapes';
+    298  import { query } from '@thyrox/agent/query';
+    299  import { mergeClients } from '../hooks/useMergedClients.js';
+    300> import { getQuerySourceForREPL } from '@thyrox/agent/promptCategory.js';
+    301  import { mergeAndFilterTools } from '../toolPool.js';
+    302  import { useCommandReload } from '../hooks/useCommandReload.js';
+    303  import { Messages } from '../components/Messages.js';
+    304  import { TaskListV2 } from '../components/TaskListV2.js';
+    305  import { TeammateViewHeader } from '../components/TeammateViewHeader.js';
+    306  import { useTasksV2WithCollapseEffect } from '../hooks/useTasksV2.js';
+    307  import { maybeMarkProjectOnboardingComplete } from '../projectOnboardingState.js';
+    308  import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js';
+    309  import type { ScopedMcpServerConfig } from '@thyrox/mcp-runtime/types.js';
+    310  import { randomUUID, type UUID } from 'crypto';
+src/packages/repl/src/screens/REPLView.tsx(348,10): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'partialCompactConversation'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:338-358 ---
+    338  } from '@thyrox/storage/sessionStorage.js';
+    339  import { deserializeMessages } from '../conversationRecovery.js';
+    340  import { extractReadFilesFromMessages, extractBashToolsFromMessages } from '../queryHelpers.js';
+    341  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js';
+    342  import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js';
+    343  import {
+    344    provisionContentReplacementState,
+    345    reconstructContentReplacementState,
+    346    type ContentReplacementRecord,
+    347  } from '@thyrox/storage/toolResultStorage.js';
+    348> import { partialCompactConversation } from '@thyrox/agent/compaction/compact.js';
+    349  import type { LogOption } from '@thyrox/agent/logsTypes.js';
+    350  import type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js';
+    351  import {
+    352    fileHistoryMakeSnapshot,
+    353    type FileHistoryState,
+    354    fileHistoryRewind,
+    355    type FileHistorySnapshot,
+    356    copyFileHistoryForResume,
+    357    fileHistoryEnabled,
+    358    fileHistoryHasAnyChanges,
+src/packages/repl/src/screens/REPLView.tsx(506,3): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'getQueuedCommandAttachments'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:496-516 ---
+    496    MessageActionsKeybindings,
+    497    MessageActionsBar,
+    498    type MessageActionsState,
+    499    type MessageActionsNav,
+    500    type MessageActionCaps,
+    501  } from '../components/messageActions.js'
+    502  import { setClipboard } from '@anthropic/ink'
+    503  import type { ScrollBoxHandle } from '@anthropic/ink'
+    504  import {
+    505    createAttachmentMessage,
+    506>   getQueuedCommandAttachments,
+    507  } from '@thyrox/agent/attachments.js'
+    508  
+    509  // Stable stub for useAssistantHistory's non-KAIROS branch — avoids a new
+    510  // function identity each render, which would break composedOnScroll's memo.
+    511  const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
+    512  // Window after a user-initiated scroll during which type-into-empty does NOT
+    513  // repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+    514  // up to read the start → start typing → before this fix, snapped to bottom.
+    515  // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
+    516  const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+  Types of parameters 'value' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<ToolUseConfirm[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: ToolUseConfirm[]) => ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+src/packages/repl/src/screens/REPLView.tsx(1553,35): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1543-1563 ---
+   1543      for (const tool of extractBashToolsFromMessages(newMessages)) {
+   1544        bashTools.current.add(tool);
+   1545      }
+   1546      bashToolsProcessedIdx.current = messagesRef.current.length;
+   1547      void getTipToShowOnSpinner({
+   1548        theme,
+   1549        readFileState: readFileState.current,
+   1550        bashTools: bashTools.current,
+   1551      }).then(async tip => {
+   1552        if (tip) {
+   1553>         const content = await tip.content({ theme });
+   1554          setAppState(prev => ({
+   1555            ...prev,
+   1556            spinnerTip: content,
+   1557          }));
+   1558          recordShownTip(tip);
+   1559        } else {
+   1560          setAppState(prev => {
+   1561            if (prev.spinnerTip === undefined) return prev;
+   1562            return { ...prev, spinnerTip: undefined };
+   1563          });
+src/packages/repl/src/screens/REPLView.tsx(1794,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1784-1804 ---
+   1784            agentType: mainThreadAgentDefinition?.agentType,
+   1785            model: mainLoopModel,
+   1786          });
+   1787  
+   1788          // Append hook messages to the conversation
+   1789          messages.push(...hookMessages);
+   1790          // For forks, generate a new plan slug and copy the plan content so the
+   1791          // original and forked sessions don't clobber each other's plan files.
+   1792          // For regular resumes, reuse the original session's plan slug.
+   1793          if (entrypoint === 'fork') {
+   1794>           void copyPlanForFork(log, asSessionId(sessionId));
+   1795          } else {
+   1796            void copyPlanForResume(log, asSessionId(sessionId));
+   1797          }
+   1798  
+   1799          // Restore file history and attribution state from the resumed conversation
+   1800          restoreSessionStateFromLog(log, setAppState);
+   1801          if (log.fileHistorySnapshots) {
+   1802            void copyFileHistoryForResume(log);
+   1803          }
+   1804  
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1796,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1786-1806 ---
+   1786          });
+   1787  
+   1788          // Append hook messages to the conversation
+   1789          messages.push(...hookMessages);
+   1790          // For forks, generate a new plan slug and copy the plan content so the
+   1791          // original and forked sessions don't clobber each other's plan files.
+   1792          // For regular resumes, reuse the original session's plan slug.
+   1793          if (entrypoint === 'fork') {
+   1794            void copyPlanForFork(log, asSessionId(sessionId));
+   1795          } else {
+   1796>           void copyPlanForResume(log, asSessionId(sessionId));
+   1797          }
+   1798  
+   1799          // Restore file history and attribution state from the resumed conversation
+   1800          restoreSessionStateFromLog(log, setAppState);
+   1801          if (log.fileHistorySnapshots) {
+   1802            void copyFileHistoryForResume(log);
+   1803          }
+   1804  
+   1805          // Restore agent setting from the resumed conversation
+   1806          // Always reset to the new session's values (or clear if none),
+  Types of property 'messages' are incompatible.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+        Type 'MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+          Types of property 'message' are incompatible.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+                Types of property 'content' are incompatible.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+src/packages/repl/src/screens/REPLView.tsx(1800,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1790-1810 ---
+   1790          // For forks, generate a new plan slug and copy the plan content so the
+   1791          // original and forked sessions don't clobber each other's plan files.
+   1792          // For regular resumes, reuse the original session's plan slug.
+   1793          if (entrypoint === 'fork') {
+   1794            void copyPlanForFork(log, asSessionId(sessionId));
+   1795          } else {
+   1796            void copyPlanForResume(log, asSessionId(sessionId));
+   1797          }
+   1798  
+   1799          // Restore file history and attribution state from the resumed conversation
+   1800>         restoreSessionStateFromLog(log, setAppState);
+   1801          if (log.fileHistorySnapshots) {
+   1802            void copyFileHistoryForResume(log);
+   1803          }
+   1804  
+   1805          // Restore agent setting from the resumed conversation
+   1806          // Always reset to the new session's values (or clear if none),
+   1807          // matching the standaloneAgentContext pattern below
+   1808          const { agentDefinition: restoredAgent } = restoreAgentFromSession(
+   1809            log.agentSetting,
+   1810            initialMainThreadAgentDefinition,
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/repl/src/screens/REPLView.tsx(1820,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1810-1830 ---
+   1810            initialMainThreadAgentDefinition,
+   1811            agentDefinitions,
+   1812          );
+   1813          setMainThreadAgentDefinition(restoredAgent);
+   1814          setAppState(prev => ({ ...prev, agent: restoredAgent?.agentType }));
+   1815  
+   1816          // Restore standalone agent context from the resumed conversation
+   1817          // Always reset to the new session's values (or clear if none)
+   1818          setAppState(prev => ({
+   1819            ...prev,
+   1820>           standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+   1821          }));
+   1822          void updateSessionName(log.agentName);
+   1823  
+   1824          // Restore read file state from the message history
+   1825          restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
+   1826  
+   1827          // Clear any active loading state (no queryId since we're not in a query)
+   1828          resetLoadingState();
+   1829          setAbortController(null);
+   1830  
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+src/packages/repl/src/screens/REPLView.tsx(2016,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2006-2026 ---
+   2006    // Permission and interactive dialogs can show even when toolJSX is set,
+   2007    // as long as shouldContinueAnimation is true. This prevents deadlocks when
+   2008    // agents set background hints while waiting for user interaction.
+   2009    const allowDialogsWithAnimation = !toolJSX || toolJSX.shouldContinueAnimation;
+   2010    const focusedInputDialog = getFocusedInputDialog({
+   2011      isExiting,
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016>     allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022      idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+  Type 'undefined' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2012-2032 ---
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016      allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022>     idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+   2027      showModelSwitchCallout,
+   2028      showUndercoverCallout,
+   2029      showEffortCallout,
+   2030      showRemoteCallout,
+   2031      lspRecommendation,
+   2032      hintRecommendation,
+  Type 'null' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2371-2391 ---
+   2371            });
+   2372            return currentQueue;
+   2373          });
+   2374        }, setToolUseConfirmQueue);
+   2375      },
+   2376      [setAppState, setToolUseConfirmQueue],
+   2377    );
+   2378  
+   2379    // Register the leader's setToolPermissionContext for in-process teammates
+   2380    useEffect(() => {
+   2381>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2382      return () => unregisterLeaderSetToolPermissionContext();
+   2383    }, [setToolPermissionContext]);
+   2384  
+   2385    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2386  
+   2387    const requestPrompt = useCallback(
+   2388      (title: string, toolInputSummary?: string | null) =>
+   2389        (request: PromptRequest): Promise<PromptResponse> =>
+   2390          new Promise<PromptResponse>((resolve, reject) => {
+   2391            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2447,9): error TS2322: Type '(action: React.SetStateAction<MessageType[]>) => void' is not assignable to type '(updater: (prev: unknown[]) => unknown[]) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2437-2457 ---
+   2437            dynamicMcpConfig,
+   2438            theme,
+   2439            agentDefinitions: allowedAgentTypes ? { ...s.agentDefinitions, allowedAgentTypes } : s.agentDefinitions,
+   2440            customSystemPrompt,
+   2441            appendSystemPrompt,
+   2442            refreshTools: computeTools,
+   2443          },
+   2444          getAppState: () => store.getState(),
+   2445          setAppState,
+   2446          messages,
+   2447>         setMessages,
+   2448          updateFileHistoryState(updater: (prev: FileHistoryState) => FileHistoryState) {
+   2449            // Perf: skip the setState when the updater returns the same reference
+   2450            // (e.g. fileHistoryTrackEdit returns `state` when the file is already
+   2451            // tracked). Otherwise every no-op call would notify all store listeners.
+   2452            setAppState(prev => {
+   2453              const updated = updater(prev.fileHistory);
+   2454              if (updated === prev.fileHistory) return prev;
+   2455              return { ...prev, fileHistory: updated };
+   2456            });
+   2457          },
+  Types of parameters 'action' and 'updater' are incompatible.
+    Type '(prev: unknown[]) => unknown[]' is not assignable to type 'SetStateAction<Message[]>'.
+      Type '(prev: unknown[]) => unknown[]' is not assignable to type '(prevState: Message[]) => Message[]'.
+        Type 'unknown[]' is not assignable to type 'Message[]'.
+          Type 'unknown' is not assignable to type 'Message'.
+src/packages/repl/src/screens/REPLView.tsx(2478,9): error TS2322: Type '(config: Record<string, ScopedMcpServerConfig>) => void' is not assignable to type '(config: Record<string, unknown>) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2468-2488 ---
+   2468            }
+   2469          },
+   2470          onChangeAPIKey: reverify,
+   2471          readFileState: readFileState.current,
+   2472          setToolJSX,
+   2473          addNotification,
+   2474          appendSystemMessage: msg => setMessages(prev => [...prev, msg]),
+   2475          sendOSNotification: opts => {
+   2476            void sendNotification(opts, terminal);
+   2477          },
+   2478>         onChangeDynamicMcpConfig,
+   2479          onInstallIDEExtension: setIDEToInstallExtension,
+   2480          nestedMemoryAttachmentTriggers: new Set<string>(),
+   2481          loadedNestedMemoryPaths: loadedNestedMemoryPathsRef.current,
+   2482          dynamicSkillDirTriggers: new Set<string>(),
+   2483          discoveredSkillNames: discoveredSkillNamesRef.current,
+   2484          setResponseLength,
+   2485          pushApiMetricsEntry:
+   2486            process.env.USER_TYPE === 'ant'
+   2487              ? (ttftMs: number) => {
+   2488                  const now = Date.now();
+  Types of parameters 'config' and 'config' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/repl/src/screens/REPLView.tsx(2479,9): error TS2322: Type 'Dispatch<SetStateAction<IdeType | null>>' is not assignable to type '(ide: unknown) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2469-2489 ---
+   2469          },
+   2470          onChangeAPIKey: reverify,
+   2471          readFileState: readFileState.current,
+   2472          setToolJSX,
+   2473          addNotification,
+   2474          appendSystemMessage: msg => setMessages(prev => [...prev, msg]),
+   2475          sendOSNotification: opts => {
+   2476            void sendNotification(opts, terminal);
+   2477          },
+   2478          onChangeDynamicMcpConfig,
+   2479>         onInstallIDEExtension: setIDEToInstallExtension,
+   2480          nestedMemoryAttachmentTriggers: new Set<string>(),
+   2481          loadedNestedMemoryPaths: loadedNestedMemoryPathsRef.current,
+   2482          dynamicSkillDirTriggers: new Set<string>(),
+   2483          discoveredSkillNames: discoveredSkillNamesRef.current,
+   2484          setResponseLength,
+   2485          pushApiMetricsEntry:
+   2486            process.env.USER_TYPE === 'ant'
+   2487              ? (ttftMs: number) => {
+   2488                  const now = Date.now();
+   2489                  const baseline = responseLengthRef.current;
+  Types of parameters 'value' and 'ide' are incompatible.
+    Type 'unknown' is not assignable to type 'SetStateAction<IdeType | null>'.
+src/packages/repl/src/screens/REPLView.tsx(2527,9): error TS2322: Type '(sessionId: UUID, log: LogOption, entrypoint: ResumeEntrypoint) => Promise<void>' is not assignable to type '(sessionId: `${string}-${string}-${string}-${string}-${string}`, log: unknown, entrypoint: ResumeEntrypoint) => Promise<void>'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2517-2537 ---
+   2517                setSpinnerMessage(null);
+   2518                setSpinnerColor(null);
+   2519                setSpinnerShimmerColor(null);
+   2520                break;
+   2521            }
+   2522          },
+   2523          setInProgressToolUseIDs,
+   2524          setHasInterruptibleToolInProgress: (v: boolean) => {
+   2525            hasInterruptibleToolInProgressRef.current = v;
+   2526          },
+   2527>         resume,
+   2528          setConversationId,
+   2529          requestPrompt: feature('HOOK_PROMPTS') ? requestPrompt : undefined,
+   2530          contentReplacementState: contentReplacementStateRef.current,
+   2531        };
+   2532      },
+   2533      [
+   2534        commands,
+   2535        combinedInitialTools,
+   2536        mainThreadAgentDefinition,
+   2537        debug,
+  Types of parameters 'log' and 'log' are incompatible.
+    Type 'unknown' is not assignable to type 'LogOption'.
+src/packages/repl/src/screens/REPLView.tsx(2610,9): error TS7006: Parameter 'm' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2600-2620 ---
+   2600          if (
+   2601            m.type === 'attachment' &&
+   2602            m.attachment.type === 'queued_command' &&
+   2603            m.attachment.commandMode === 'task-notification' &&
+   2604            typeof m.attachment.prompt === 'string'
+   2605          ) {
+   2606            existingPrompts.add(m.attachment.prompt);
+   2607          }
+   2608        }
+   2609        const uniqueNotifications = notificationMessages.filter(
+   2610>         m =>
+   2611            m.attachment.type === 'queued_command' &&
+   2612            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2613        );
+   2614  
+   2615        startBackgroundSession({
+   2616          messages: [...messagesRef.current, ...uniqueNotifications],
+   2617          queryParams: {
+   2618            systemPrompt,
+   2619            userContext,
+   2620            systemContext,
+src/packages/repl/src/screens/REPLView.tsx(2621,11): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2611-2631 ---
+   2611            m.attachment.type === 'queued_command' &&
+   2612            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2613        );
+   2614  
+   2615        startBackgroundSession({
+   2616          messages: [...messagesRef.current, ...uniqueNotifications],
+   2617          queryParams: {
+   2618            systemPrompt,
+   2619            userContext,
+   2620            systemContext,
+   2621>           canUseTool,
+   2622            toolUseContext,
+   2623            querySource: getQuerySourceForREPL(),
+   2624          },
+   2625          description: terminalTitle,
+   2626          setAppState,
+   2627          agentDefinition: mainThreadAgentDefinition,
+   2628        });
+   2629      })();
+   2630    }, [
+   2631      abortController,
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/repl/src/screens/REPLView.tsx(2622,11): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2612-2632 ---
+   2612            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2613        );
+   2614  
+   2615        startBackgroundSession({
+   2616          messages: [...messagesRef.current, ...uniqueNotifications],
+   2617          queryParams: {
+   2618            systemPrompt,
+   2619            userContext,
+   2620            systemContext,
+   2621            canUseTool,
+   2622>           toolUseContext,
+   2623            querySource: getQuerySourceForREPL(),
+   2624          },
+   2625          description: terminalTitle,
+   2626          setAppState,
+   2627          agentDefinition: mainThreadAgentDefinition,
+   2628        });
+   2629      })();
+   2630    }, [
+   2631      abortController,
+   2632      mainLoopModel,
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2680,80): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2670-2690 ---
+   2670              } else {
+   2671                setMessages(() => [newMessage]);
+   2672              }
+   2673              // Bump conversationId so Messages.tsx row keys change and
+   2674              // stale memoized rows remount with post-compact content.
+   2675              setConversationId(randomUUID());
+   2676              // Compaction succeeded — clear the context-blocked flag so ticks resume
+   2677              if (feature('PROACTIVE') || feature('KAIROS')) {
+   2678                proactiveModule?.setContextBlocked(false);
+   2679              }
+   2680>           } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
+   2681              // Replace the previous ephemeral progress tick for the same tool
+   2682              // call instead of appending. Sleep/Bash emit a tick per second and
+   2683              // only the last one is rendered; appending blows up the messages
+   2684              // array (13k+ observed) and the transcript (120MB of sleep_progress
+   2685              // lines). useLogMessages tracks length, so same-length replacement
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+src/packages/repl/src/screens/REPLView.tsx(2696,17): error TS18046: 'last.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }
+src/packages/repl/src/screens/REPLView.tsx(2696,36): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }
+src/packages/repl/src/screens/REPLView.tsx(2782,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2772-2792 ---
+   2772  
+   2773        // Extract a session title from the first real user message. One-shot
+   2774        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2775        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2776        // which was broken by SessionStart hook messages (prepended via
+   2777        // useDeferredHookMessages) and attachment messages (appended by
+   2778        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2779        // title silently fell through to the "Claude Code" default.
+   2780        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2781          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2782>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2783          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2784          // expansions (/commit → <command-message>), local-command headers
+   2785          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2786          // None of these are the user's topic; wait for real prose.
+   2787          if (
+   2788            text &&
+   2789            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2790            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2791            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2792            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2821,72): error TS7006: Parameter 'v' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2811-2831 ---
+   2811        // createGetAppStateWithAllowedTools in forkedAgent.ts reads this field, so
+   2812        // stale skill tools would otherwise leak into forked agent permissions.
+   2813        // Previously this write was hidden inside getToolUseContext's getAppState
+   2814        // (~85 calls/turn); hoisting it here makes getAppState a pure read and stops
+   2815        // ephemeral contexts (permission dialog, BackgroundTasksDialog) from
+   2816        // accidentally clearing it mid-turn.
+   2817        store.setState(prev => {
+   2818          const cur = prev.toolPermissionContext.alwaysAllowRules.command;
+   2819          if (
+   2820            cur === additionalAllowedTools ||
+   2821>           (cur?.length === additionalAllowedTools.length && cur.every((v, i) => v === additionalAllowedTools[i]))
+   2822          ) {
+   2823            return prev;
+   2824          }
+   2825          return {
+   2826            ...prev,
+   2827            toolPermissionContext: {
+   2828              ...prev.toolPermissionContext,
+   2829              alwaysAllowRules: {
+   2830                ...prev.toolPermissionContext.alwaysAllowRules,
+   2831                command: additionalAllowedTools,
+src/packages/repl/src/screens/REPLView.tsx(2821,75): error TS7006: Parameter 'i' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2811-2831 ---
+   2811        // createGetAppStateWithAllowedTools in forkedAgent.ts reads this field, so
+   2812        // stale skill tools would otherwise leak into forked agent permissions.
+   2813        // Previously this write was hidden inside getToolUseContext's getAppState
+   2814        // (~85 calls/turn); hoisting it here makes getAppState a pure read and stops
+   2815        // ephemeral contexts (permission dialog, BackgroundTasksDialog) from
+   2816        // accidentally clearing it mid-turn.
+   2817        store.setState(prev => {
+   2818          const cur = prev.toolPermissionContext.alwaysAllowRules.command;
+   2819          if (
+   2820            cur === additionalAllowedTools ||
+   2821>           (cur?.length === additionalAllowedTools.length && cur.every((v, i) => v === additionalAllowedTools[i]))
+   2822          ) {
+   2823            return prev;
+   2824          }
+   2825          return {
+   2826            ...prev,
+   2827            toolPermissionContext: {
+   2828              ...prev.toolPermissionContext,
+   2829              alwaysAllowRules: {
+   2830                ...prev.toolPermissionContext.alwaysAllowRules,
+   2831                command: additionalAllowedTools,
+src/packages/repl/src/screens/REPLView.tsx(2925,9): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2915-2935 ---
+   2915        queryCheckpoint('query_query_start');
+   2916        resetTurnHookDuration();
+   2917        resetTurnToolDuration();
+   2918        resetTurnClassifierDuration();
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925>         canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929          onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/repl/src/screens/REPLView.tsx(2926,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2916-2936 ---
+   2916        resetTurnHookDuration();
+   2917        resetTurnToolDuration();
+   2918        resetTurnClassifierDuration();
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926>         toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929          onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2919-2939 ---
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929>         onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2937          const entries = apiMetricsRef.current;
+   2938  
+   2939          const ttfts = entries.map(e => e.ttftMs);
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+src/packages/repl/src/screens/REPLView.tsx(3033,36): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3023-3043 ---
+   3023        // Returns null if already running — no separate check-then-set.
+   3024        const thisGeneration = queryGuard.tryStart();
+   3025        if (thisGeneration === null) {
+   3026          logEvent('tengu_concurrent_onquery_detected', {});
+   3027  
+   3028          // Extract and enqueue user message text, skipping meta messages
+   3029          // (e.g. expanded skill content, tick prompts) that should not be
+   3030          // replayed as user-visible text.
+   3031          newMessages
+   3032            .filter((m): m is UserMessage => m.type === 'user' && !m.isMeta)
+   3033>           .map(_ => getContentText(_.message.content))
+   3034            .filter(_ => _ !== null)
+   3035            .forEach((msg, i) => {
+   3036              enqueue({ value: msg, mode: 'prompt' });
+   3037              if (i === 0) {
+   3038                logEvent('tengu_concurrent_onquery_enqueued', {});
+   3039              }
+   3040            });
+   3041          return;
+   3042        }
+   3043  
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(3272,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3262-3282 ---
+   3262              ...updatedToolPermissionContext,
+   3263              mode: 'auto',
+   3264              prePlanMode: undefined,
+   3265            });
+   3266          }
+   3267  
+   3268          return {
+   3269            ...prev,
+   3270            initialMessage: null,
+   3271            toolPermissionContext: updatedToolPermissionContext,
+   3272>           ...(shouldStorePlanForVerification && {
+   3273              pendingPlanVerification: {
+   3274                plan: initialMsg.message.planContent!,
+   3275                verificationStarted: false,
+   3276                verificationCompleted: false,
+   3277              },
+   3278            }),
+   3279          };
+   3280        });
+   3281  
+   3282        // Create file history snapshot for code rewind
+src/packages/repl/src/screens/REPLView.tsx(3488,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3478-3498 ---
+   3478  
+   3479              const mod = await matchingCommand.load();
+   3480              const jsx = await mod.call(onDone, context, commandArgs);
+   3481  
+   3482              // Skip if onDone already fired — prevents stuck isLocalJSXCommand
+   3483              // (see processSlashCommand.tsx local-jsx case for full mechanism).
+   3484              if (jsx && !doneWasCalled) {
+   3485                // shouldHidePromptInput: false keeps Notifications mounted
+   3486                // so the onDone result isn't lost
+   3487                setToolJSX({
+   3488>                 jsx,
+   3489                  shouldHidePromptInput: false,
+   3490                  isLocalJSXCommand: true,
+   3491                });
+   3492              }
+   3493            };
+   3494            void executeImmediateCommand();
+   3495            return; // Always return early - don't add to history or queue
+   3496          }
+   3497        }
+   3498  
+src/packages/repl/src/screens/REPLView.tsx(3977,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: getQuerySourceForREPL; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3967-3987 ---
+   3967          (
+   3968            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   3969          ).resetContextCollapse();
+   3970          /* eslint-enable @typescript-eslint/no-require-imports */
+   3971        }
+   3972  
+   3973        // Restore state from the message we're rewinding to
+   3974        setAppState(prev => ({
+   3975          ...prev,
+   3976          // Restore permission mode from the message
+   3977>         toolPermissionContext:
+   3978            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   3979              ? {
+   3980                  ...prev.toolPermissionContext,
+   3981                  mode: message.permissionMode,
+   3982                }
+   3983              : prev.toolPermissionContext,
+   3984          // Clear stale prompt suggestion from previous conversation state
+   3985          promptSuggestion: {
+   3986            text: null,
+   3987            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.
+src/packages/repl/src/screens/REPLView.tsx(4017,26): error TS7053: Element implicitly has an 'any' type because expression of type 'number' can't be used to index type '{}'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:4007-4027 ---
+   4007          setInputMode(r.mode);
+   4008        }
+   4009  
+   4010        // Restore pasted images
+   4011        if (Array.isArray(message.message.content) && message.message.content.some(block => block.type === 'image')) {
+   4012          const imageBlocks: Array<ImageBlockParam> = message.message.content.filter(block => block.type === 'image');
+   4013          if (imageBlocks.length > 0) {
+   4014            const newPastedContents: Record<number, PastedContent> = {};
+   4015            imageBlocks.forEach((block, index) => {
+   4016              if (block.source.type === 'base64') {
+   4017>               const id = message.imagePasteIds?.[index] ?? index + 1;
+   4018                newPastedContents[id] = {
+   4019                  id,
+   4020                  type: 'image',
+   4021                  content: block.source.data,
+   4022                  mediaType: block.source.media_type,
+   4023                };
+   4024              }
+   4025            });
+   4026            setPastedContents(newPastedContents);
+   4027          }
+  No index signature with a parameter of type 'number' was found on type '{}'.
+src/packages/repl/src/screens/REPLView.tsx(5028,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:5018-5038 ---
+   5018                  </Box>
+   5019                )}
+   5020                {process.env.USER_TYPE === 'ant' && <TungstenLiveMonitor />}
+   5021                {feature('WEB_BROWSER_TOOL') ? WebBrowserPanelModule && <WebBrowserPanelModule.WebBrowserPanel /> : null}
+   5022                <Box flexGrow={1} />
+   5023                {showSpinner && (
+   5024                  <SpinnerWithVerb
+   5025                    mode={streamMode}
+   5026                    spinnerTip={spinnerTip}
+   5027                    responseLengthRef={responseLengthRef}
+   5028>                   apiMetricsRef={apiMetricsRef}
+   5029                    overrideMessage={spinnerMessage}
+   5030                    spinnerSuffix={stopHookSpinnerSuffix}
+   5031                    verbose={verbose}
+   5032                    loadingStartTimeRef={loadingStartTimeRef}
+   5033                    totalPausedMsRef={totalPausedMsRef}
+   5034                    pauseStartTimeRef={pauseStartTimeRef}
+   5035                    overrideColor={spinnerColor}
+   5036                    overrideShimmerColor={spinnerShimmerColor}
+   5037                    hasActiveTools={inProgressToolUseIDs.size > 0}
+   5038                    leaderIsIdle={!isLoading}
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.

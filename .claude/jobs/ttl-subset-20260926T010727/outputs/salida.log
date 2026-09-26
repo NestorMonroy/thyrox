@@ -1,0 +1,26 @@
+== src/packages/tools
+ 24 pass
+ 0 fail
+ 80 expect() calls
+Ran 24 tests across 1 file. [1374.00ms]
+== src/packages/provider
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "__tests__/provider.test.ts __tests__/providerStreaming.test.ts __tests__/cost.test.ts __tests__/compaction.test.ts" filter as a path, run "bun test ./__tests__/provider.test.ts __tests__/providerStreaming.test.ts __tests__/cost.test.ts __tests__/compaction.test.ts"
+
+== src/packages/cli
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "__tests__/cli.test.ts __tests__/systemPromptLayering.test.ts __tests__/loopStreaming.test.ts __tests__/impact.test.ts __tests__/bin.test.ts __tests__/thinking.test.ts __tests__/compressToolResultsWiring.test.ts" filter as a path, run "bun test ./__tests__/cli.test.ts __tests__/systemPromptLayering.test.ts __tests__/loopStreaming.test.ts __tests__/impact.test.ts __tests__/bin.test.ts __tests__/thinking.test.ts __tests__/compressToolResultsWiring.test.ts"
+
+== src/packages/agent
+
+note: Tests need ".test", "_test_", ".spec" or "_spec_" in the filename (ex: "MyApp.test.ts")
+note: To treat the "__tests__/cacheTtl.test.ts __tests__/loopCacheTtl.test.ts __tests__/tokenBudgetLoop.test.ts __tests__/contextGovernance.test.ts __tests__/emit.test.ts __tests__/cacheRoutes.test.ts __tests__/equivalentTokens.test.ts __tests__/attachments.test.ts __tests__/hooksEvents.test.ts __tests__/contextCompressionWiring.test.ts __tests__/loop.test.ts __tests__/taskReminder.test.ts __tests__/contextPressure.test.ts __tests__/stream.test.ts __tests__/compat.test.ts __tests__/causalChain.test.ts" filter as a path, run "bun test ./__tests__/cacheTtl.test.ts __tests__/loopCacheTtl.test.ts __tests__/tokenBudgetLoop.test.ts __tests__/contextGovernance.test.ts __tests__/emit.test.ts __tests__/cacheRoutes.test.ts __tests__/equivalentTokens.test.ts __tests__/attachments.test.ts __tests__/hooksEvents.test.ts __tests__/contextCompressionWiring.test.ts __tests__/loop.test.ts __tests__/taskReminder.test.ts __tests__/contextPressure.test.ts __tests__/stream.test.ts __tests__/compat.test.ts __tests__/causalChain.test.ts"
+
+== src/packages/config
+ 26 pass
+ 0 fail
+ 57 expect() calls
+Ran 26 tests across 1 file. [189.00ms]
+__BG_EXIT__=0

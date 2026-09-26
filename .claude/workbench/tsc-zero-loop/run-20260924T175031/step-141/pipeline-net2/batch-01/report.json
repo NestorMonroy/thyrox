@@ -1,0 +1,1 @@
+{"status": "progress", "total_before": 218, "total_final": 198, "tsc_runs": 1, "accepted": ["agent:pool:src/packages/agent/attachments.ts"], "files_kept": ["src/packages/agent/attachments.ts"], "outcomes": {"agent:pool:src/packages/agent/attachments.ts": "accepted-net"}}

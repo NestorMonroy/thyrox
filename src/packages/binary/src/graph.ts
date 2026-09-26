@@ -33,7 +33,7 @@ export function importsOf(src: string, self?: string): string[] {
   const vistos = new Set<string>()
   for (const m of src.matchAll(IMPORT_RE)) {
     const destino = m[1]
-    if (destino === self) continue
+    if (destino === undefined || destino === self) continue
     vistos.add(destino)
   }
   return [...vistos]

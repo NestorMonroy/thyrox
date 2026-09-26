@@ -1,0 +1,2 @@
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(200,31): error TS18046: 'hooks' is of type 'unknown'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(203,15): error TS2538: Type 'unknown' cannot be used as an index type.

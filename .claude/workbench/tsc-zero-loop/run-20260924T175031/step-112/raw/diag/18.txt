@@ -1,0 +1,4 @@
+src/packages/agent/QueryEngine.ts(985,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  Type 'NonNullableUsage' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 8 more.
+src/packages/agent/QueryEngine.ts(990,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  Index signature for type 'string' is missing in type 'BetaUsage'.

@@ -1,0 +1,6 @@
+tests/session/test-wait-jobs.sh
+tests/session/test-run-task-pool-isolation.sh
+tests/session/test-contrato-de-escotilla.sh
+tests/session/test-process-group.sh
+tests/session/test-run-task-pool-scope.sh
+tests/session/test-run-task-pool.sh

@@ -1,0 +1,74 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/gemini/convertMessages.ts(41,32): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:31-51 ---
+     31  
+     32    for (const msg of messages) {
+     33      if (msg.type === 'assistant') {
+     34        const content = convertInternalAssistantMessage(
+     35          msg as ProviderAssistantMessage,
+     36        )
+     37        if (content.parts.length > 0) {
+     38          contents.push(content)
+     39        }
+     40  
+     41>       const assistantContent = msg.message.content
+     42        if (Array.isArray(assistantContent)) {
+     43          for (const block of assistantContent) {
+     44            if (typeof block !== 'string' && block.type === 'tool_use') {
+     45              toolNamesById.set(block.id, block.name)
+     46            }
+     47          }
+     48        }
+     49        continue
+     50      }
+     51  
+src/packages/provider/src/gemini/convertMessages.ts(86,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:76-96 ---
+     76  
+     77  function systemPromptToText(systemPrompt: ProviderSystemPrompt): string {
+     78    if (!systemPrompt || systemPrompt.length === 0) return ''
+     79    return systemPrompt.filter(Boolean).join('\n\n')
+     80  }
+     81  
+     82  function convertInternalUserMessage(
+     83    msg: ProviderUserMessage,
+     84    toolNamesById: ReadonlyMap<string, string>,
+     85  ): GeminiContent {
+     86>   const content = msg.message.content
+     87  
+     88    if (typeof content === 'string') {
+     89      return {
+     90        role: 'user',
+     91        parts: createTextGeminiParts(content),
+     92      }
+     93    }
+     94  
+     95    if (!Array.isArray(content)) {
+     96      return { role: 'user', parts: [] }
+src/packages/provider/src/gemini/convertMessages.ts(157,19): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/provider/src/gemini/convertMessages.ts:147-167 ---
+    147        return createTextGeminiParts(`[image: ${source.url}]`)
+    148      }
+    149    }
+    150  
+    151    return []
+    152  }
+    153  
+    154  function convertInternalAssistantMessage(
+    155    msg: ProviderAssistantMessage,
+    156  ): GeminiContent {
+    157>   const content = msg.message.content
+    158  
+    159    if (typeof content === 'string') {
+    160      return {
+    161        role: 'model',
+    162        parts: createTextGeminiParts(content),
+    163      }
+    164    }
+    165  
+    166    if (!Array.isArray(content)) {
+    167      return { role: 'model', parts: [] }

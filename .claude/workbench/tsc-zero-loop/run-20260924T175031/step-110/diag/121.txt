@@ -1,0 +1,24 @@
+src/packages/config/plugin/zipCache.ts(317,33): error TS2345: Argument of type 'Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  --- código src/packages/config/plugin/zipCache.ts:307-327 ---
+    307   * Extract a ZIP file to a target directory.
+    308   *
+    309   * @param zipPath - Path to the ZIP file
+    310   * @param targetDir - Directory to extract into
+    311   */
+    312  export async function extractZipToDirectory(
+    313    zipPath: string,
+    314    targetDir: string,
+    315  ): Promise<void> {
+    316    const zipBuf = await getFsImplementation().readFileBytes(zipPath)
+    317>   const files = await unzipFile(zipBuf)
+    318    // fflate doesn't surface external_attr — parse the central directory so
+    319    // exec bits survive extraction (hooks/scripts need +x to run via `sh -c`).
+    320    const modes = parseZipModes(zipBuf) as Record<string, number>
+    321  
+    322    await getFsImplementation().mkdir(targetDir)
+    323  
+    324    for (const [relPath, data] of Object.entries(files)) {
+    325      // Skip directory entries (trailing slash)
+    326      if (relPath.endsWith('/')) {
+    327        await getFsImplementation().mkdir(join(targetDir, relPath))
+  Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'Buffer<ArrayBufferLike>': write, toJSON, equals, compare, and 66 more.

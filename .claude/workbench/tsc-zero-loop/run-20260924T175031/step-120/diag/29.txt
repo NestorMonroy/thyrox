@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(1427,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1417-1437 ---
+   1417      const toolUpdates = streamingToolExecutor
+   1418        ? streamingToolExecutor.getRemainingResults()
+   1419        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1420  
+   1421      for await (const update of toolUpdates) {
+   1422        if (update.message) {
+   1423          yield update.message
+   1424  
+   1425          if (
+   1426            update.message.type === 'attachment' &&
+   1427>           update.message.attachment.type === 'hook_stopped_continuation'
+   1428          ) {
+   1429            shouldPreventContinuation = true
+   1430          }
+   1431  
+   1432          toolResults.push(
+   1433            ...normalizeMessagesForAPI(
+   1434              [update.message],
+   1435              toolUseContext.options.tools,
+   1436            ).filter(_ => _.type === 'user'),
+   1437          )

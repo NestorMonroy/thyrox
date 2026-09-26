@@ -350,5 +350,46 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         os.chdir(previo)
 
+# La raíz de los ledgers es un HOGAR y pasa por una constante con sus dos
+# entradas de entorno (directiva del ejecutor 2026-09-06): el valor en el
+# proceso, o la declaración del `.env` que `THYROX_ENV_FILE` nombra. Antes vivía
+# como literal `.claude/jobs-ledger` en `wait-jobs.sh`, y el hook de
+# compactación lo copió.
+import subprocess  # noqa: E402
+from paths.reach import thyrox_root  # noqa: E402
+from workbench.paths import state_dir  # noqa: E402
+
+_saved = {k: os.environ.pop(k, None) for k in (jl.LEDGER_DIR_VAR, "THYROX_ENV_FILE")}
+try:
+    check("sin declaración, la raíz cuelga del directorio de estado",
+          thyrox_root() / state_dir() / jl.LEDGER_DIR_DEFAULT, jl.ledger_root())
+    with tempfile.TemporaryDirectory() as _d:
+        os.environ[jl.LEDGER_DIR_VAR] = str(Path(_d) / "from-process")
+        check("entrada 1: el valor del proceso gana", Path(_d) / "from-process", jl.ledger_root())
+        del os.environ[jl.LEDGER_DIR_VAR]
+        env_file = Path(_d) / ".env"
+        env_file.write_text(f"{jl.LEDGER_DIR_VAR}={_d}/from-file\n")
+        os.environ["THYROX_ENV_FILE"] = str(env_file)
+        check("entrada 2: la declaración del .env", Path(_d) / "from-file", jl.ledger_root())
+        del os.environ["THYROX_ENV_FILE"]
+
+        # wait-jobs.sh resuelve la MISMA constante: un trabajo registrado cae
+        # bajo la raíz declarada, en el ledger de su sesión.
+        log = Path(_d) / "w.log"
+        log.write_text("")
+        env = {**os.environ, jl.LEDGER_DIR_VAR: str(Path(_d) / "declared"),
+               "CLAUDE_CODE_SESSION_ID": "s-1"}
+        env.pop("THYROX_JOBS_DIR", None)
+        env.pop("THYROX_SESSION_LEDGER_DIR", None)
+        env.pop("KX_TRABAJOS_DIR", None)
+        subprocess.run(["bash", str(thyrox_root() / "bin/wait-jobs"), "register", "probe", str(log)],
+                       env=env, capture_output=True, text=True)
+        check("wait-jobs registra bajo la raíz declarada", True,
+              (Path(_d) / "declared" / "s-1" / "probe.job").is_file())
+finally:
+    for k, v in _saved.items():
+        if v is not None:
+            os.environ[k] = v
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

@@ -1,0 +1,2 @@
+src/packages/repl/src/components/IdeOnboardingDialog.tsx(93,45): error TS2538: Type '{}' cannot be used as an index type.
+src/packages/repl/src/components/IdeOnboardingDialog.tsx(105,7): error TS2464: A computed property name must be of type 'string', 'number', 'symbol', or 'any'.

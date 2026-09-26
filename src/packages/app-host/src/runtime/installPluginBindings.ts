@@ -447,8 +447,12 @@ export function installPluginBindings(): void {
   })
   setGracefulShutdownFn(async (code?: number) => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js')
-    return gracefulShutdown(code)
+    const { gracefulShutdown } = require('../bootstrap/gracefulShutdown.js') as typeof import('../bootstrap/gracefulShutdown.js')
+    // DIVERGENCIA DECLARADA: el binding exige Promise<never> (nunca
+    // resuelve), pero la implementación real puede retornar cuando el
+    // apagado ya está en curso — mismo patrón ya documentado para este
+    // binding en permission/src/permissionSetup.ts.
+    return gracefulShutdown(code) as Promise<never>
   })
 
   // --- sesión / cwd
@@ -471,15 +475,11 @@ export function installPluginBindings(): void {
   const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
   setFsImplementationFn({
     existsSync: p => getFsImplementation().existsSync(p),
-    mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    mkdirSync: p => getFsImplementation().mkdirSync(p),
     writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
-    readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    readFileSync: (p, e) => getFsImplementation().readFileSync(p, { encoding: e }) as string,
     readdirSync: p =>
-      nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      nodeFs.readdirSync(p, { withFileTypes: true }),
     statSync: p => getFsImplementation().statSync(p) as any,
     rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
     rmdirSync: p => nodeFs.rmdirSync(p),
@@ -495,11 +495,7 @@ export function installPluginBindings(): void {
       await nodeFsp.mkdir(p, { recursive: true, ...(o ?? {}) })
     },
     readdir: async p =>
-      (await nodeFsp.readdir(p, { withFileTypes: true })) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      (await nodeFsp.readdir(p, { withFileTypes: true })),
     stat: async p => (await nodeFsp.stat(p)) as any,
     rm: async (p, o) => nodeFsp.rm(p, o),
     rename: async (o, n) => nodeFsp.rename(o, n),
@@ -528,7 +524,9 @@ export function installPluginBindings(): void {
 
   // --- telemetría
   setBuildPluginTelemetryFieldsFn((...args) =>
-    buildPluginTelemetryFields(...args),
+    buildPluginTelemetryFields(
+      ...(args as [string, string | undefined, (Set<string> | null)?]),
+    ),
   )
   setClassifyPluginCommandErrorFn(error =>
     classifyPluginCommandError(error) as any,

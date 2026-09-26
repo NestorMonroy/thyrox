@@ -1,0 +1,4 @@
+src/packages/app-host/src/launchRepl.tsx(32,24): error TS2322: Type 'HostSessionStore<TState>' is not assignable to type 'AppStateStore'.
+  The types returned by 'getState()' are incompatible between these types.
+    Type 'TState' is not assignable to type 'AppState'.
+      Type 'TState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

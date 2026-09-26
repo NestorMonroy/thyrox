@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "node_modules/.bin/tsc --noEmit -p tsconfig.json", "started_at": "2026-09-25T18:30:49+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-25T18:31:34+00:00", "duration_seconds": 45.432438}

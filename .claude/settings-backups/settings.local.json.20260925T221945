@@ -1,0 +1,79 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/measure_delta.py --start --repo docs=/home/user/kaupamex-docs --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/register_session.py --start"
+          }
+        ]
+      }
+    ],
+    "PreModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run /home/user/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=/home/user/thyrox/src python3 /home/user/thyrox/src/hooks/pretooluse_dispatch.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /home/user/thyrox/src/agents/save_result.mjs --log-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/measure_delta.py --stop --repo docs=/home/user/kaupamex-docs --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/agents/register_session.py --stop"
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/hooks/task_lifecycle.py"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /home/user/thyrox/src/hooks/task_lifecycle.py"
+          }
+        ]
+      }
+    ]
+  }
+}

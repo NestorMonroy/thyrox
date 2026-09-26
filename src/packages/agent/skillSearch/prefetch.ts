@@ -7,11 +7,11 @@
  * DIVERGENCIA DE ALCANCE en dos de los tipos de la firma:
  *
  * - `Attachment` (fuente: `../attachments.js`, ausente en este porte) se
- *   sustituye por `AttachmentEntry` de `./loop/context/attachments.ts`, que
+ *   sustituye por `AttachmentEntry` de `../loop/context/attachments.ts`, que
  *   es el tipo de adjunto que este árbol ya declara.
  * - `Message` (fuente: `@claude-code-how-works/repl/replTypes/message.js`,
  *   paquete `repl` inexistente en este árbol) se sustituye por `Message` de
- *   `./messageShapes.ts`.
+ *   `../messageShapes.ts`.
  * - `ToolUseContext` viene ya de `@thyrox/tool-registry/Tool.js`, como en
  *   la fuente.
  *
@@ -20,8 +20,8 @@
  * la forma declarada del tipo.
  */
 
-import type { AttachmentEntry } from './loop/context/attachments.ts'
-import type { Message } from './messageShapes.ts'
+import type { AttachmentEntry } from '../loop/context/attachments.ts'
+import type { Message } from '../messageShapes.ts'
 import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
 
 export const startSkillDiscoveryPrefetch: (

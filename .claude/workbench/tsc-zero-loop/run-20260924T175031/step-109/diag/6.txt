@@ -1,0 +1,51 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/__tests__/contextGovernance.test.ts(197,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TaskToolOptions'.
+  --- código src/packages/agent/__tests__/contextGovernance.test.ts:187-207 ---
+    187      })
+    188      expect(r.stop).toBe('compaction_failed')
+    189    })
+    190  })
+    191  
+    192  describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista', () => {
+    193    test('4. el tablero se reinyecta en el turno siguiente, sin esperar 10+10', async () => {
+    194      const d = dir()
+    195      const db = join(d, 'tablero.sqlite3')
+    196      const ctx = { cwd: d, sessionId: 'ses-1', abort: new AbortController().signal, messages: [] }
+    197>     const crear = taskTools(db).find((t) => t.name === 'TaskCreate')!
+    198      await crear.run({ subject: 'la tarea que no se puede perder' }, ctx)
+    199  
+    200      process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
+    201      const p = new RecordedProvider([pide(1), texto('fin')])
+    202      await runLoop({
+    203        ...base(d), prompt: 'hola', provider: p,
+    204        resume: sembrar(d, [relleno(20_000)]),
+    205        // Un resumen que SÍ reduce: se mide la restauración, no el guard.
+    206        context: { summarize: async () => 'el resumen', keepMessages: 1 },
+    207        taskReminder: { dbPath: db, sessionId: 'ses-1' },
+src/packages/agent/__tests__/contextGovernance.test.ts(221,29): error TS2345: Argument of type 'string' is not assignable to parameter of type 'TaskToolOptions'.
+  --- código src/packages/agent/__tests__/contextGovernance.test.ts:211-231 ---
+    211      // traer el tablero. Con el gate de 10+10 intacto, la primera ocasión
+    212      // sería la petición 11 — que este recorrido nunca alcanza.
+    213      expect(p.requests.length).toBeGreaterThanOrEqual(2)
+    214      expect(traeTablero(p.requests[1]!)).toBe(true)
+    215    })
+    216  
+    217    test('5. el control: sin compactación, el turno 2 NO lo trae', async () => {
+    218      const d = dir()
+    219      const db = join(d, 'tablero.sqlite3')
+    220      const ctx = { cwd: d, sessionId: 'ses-2', abort: new AbortController().signal, messages: [] }
+    221>     const crear = taskTools(db).find((t) => t.name === 'TaskCreate')!
+    222      await crear.run({ subject: 'la misma tarea, sin presión' }, ctx)
+    223  
+    224      // Sin override, el umbral queda en 967 000: no hay compactación que
+    225      // restaurar. Si el caso 4 pasara también aquí, mediría la inyección
+    226      // periódica y no la restauración.
+    227      const p = new RecordedProvider([pide(1), texto('fin')])
+    228      await runLoop({
+    229        ...base(d), prompt: 'hola', provider: p,
+    230        resume: sembrar(d, [relleno(20_000)]),
+    231        context: { summarize: async () => 'el resumen', keepMessages: 1 },

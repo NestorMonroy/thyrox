@@ -96,7 +96,8 @@ function baseMetadata(
   return {
     messageID:
       messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-    toolName: sanitizeToolNameForAnalytics(toolName),
+    toolName:
+      sanitizeToolNameForAnalytics(toolName) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
     sandboxEnabled: SandboxManager.isSandboxingEnabled(),
     // Only include wait time when the user was actually prompted (not auto-approved)
     ...(waitMs !== undefined && { waiting_for_user_permission_ms: waitMs }),

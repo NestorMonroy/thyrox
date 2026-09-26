@@ -1,0 +1,46 @@
+src/packages/config/plugin/marketplaceHelpers.ts(164,3): error TS2740: Type '{}' is missing the following properties from type '({ source: "url"; url: string; headers?: Record<string, string> | undefined; } | { source: "github"; repo: string; ref?: string | undefined; path?: string | undefined; sparsePaths?: string[] | undefined; } | ... 6 more ... | { ...; })[]': length, pop, push, concat, and 35 more.
+  --- código src/packages/config/plugin/marketplaceHelpers.ts:154-174 ---
+    154  
+    155  /**
+    156   * Get the strict marketplace source allowlist from policy settings.
+    157   * Returns null if no restriction is in place, or an array of allowed sources.
+    158   */
+    159  export function getStrictKnownMarketplaces(): MarketplaceSource[] | null {
+    160    const policySettings = getSettingsForSource('policySettings')
+    161    if (!policySettings?.strictKnownMarketplaces) {
+    162      return null // No restrictions
+    163    }
+    164>   return policySettings.strictKnownMarketplaces
+    165  }
+    166  
+    167  /**
+    168   * Get the marketplace source blocklist from policy settings.
+    169   * Returns null if no blocklist is in place, or an array of blocked sources.
+    170   */
+    171  export function getBlockedMarketplaces(): MarketplaceSource[] | null {
+    172    const policySettings = getSettingsForSource('policySettings')
+    173    if (!policySettings?.blockedMarketplaces) {
+    174      return null // No blocklist
+src/packages/config/plugin/marketplaceHelpers.ts(176,3): error TS2740: Type '{}' is missing the following properties from type '({ source: "url"; url: string; headers?: Record<string, string> | undefined; } | { source: "github"; repo: string; ref?: string | undefined; path?: string | undefined; sparsePaths?: string[] | undefined; } | ... 6 more ... | { ...; })[]': length, pop, push, concat, and 35 more.
+  --- código src/packages/config/plugin/marketplaceHelpers.ts:166-186 ---
+    166  
+    167  /**
+    168   * Get the marketplace source blocklist from policy settings.
+    169   * Returns null if no blocklist is in place, or an array of blocked sources.
+    170   */
+    171  export function getBlockedMarketplaces(): MarketplaceSource[] | null {
+    172    const policySettings = getSettingsForSource('policySettings')
+    173    if (!policySettings?.blockedMarketplaces) {
+    174      return null // No blocklist
+    175    }
+    176>   return policySettings.blockedMarketplaces
+    177  }
+    178  
+    179  /**
+    180   * Get the custom plugin trust message from policy settings.
+    181   * Returns undefined if not configured.
+    182   */
+    183  export function getPluginTrustMessage(): string | undefined {
+    184    return getSettingsForSource('policySettings')?.pluginTrustMessage
+    185  }
+    186  

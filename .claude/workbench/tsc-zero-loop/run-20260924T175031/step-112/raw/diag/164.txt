@@ -1,0 +1,2 @@
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(513,9): error TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.
+src/packages/repl/src/components/PromptInput/PromptInput.tsx(1903,9): error TS2322: Type 'string' is not assignable to type 'InternalPermissionMode'.

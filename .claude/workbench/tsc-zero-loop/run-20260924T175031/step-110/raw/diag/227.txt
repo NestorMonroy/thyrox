@@ -1,0 +1,4 @@
+src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx(11,3): error TS2322: Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; } | null' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; } | null'.
+  Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; }' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; }'.
+    Types of property 'toolUse' are incompatible.
+      Type 'AnyBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name

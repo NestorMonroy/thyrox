@@ -1,0 +1,50 @@
+src/packages/agent/__tests__/createAttachmentMessage.test.ts(14,21): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/createAttachmentMessage.test.ts:4-22 ---
+      4  import { describe, expect, test } from 'bun:test'
+      5  import { createAttachmentMessage } from '../attachments.js'
+      6  
+      7  describe('createAttachmentMessage (Kd)', () => {
+      8    test('envuelve el adjunto con uuid y marca de tiempo ISO', () => {
+      9      const attachment = { type: 'queued_command', prompt: 'hola' }
+     10      const m = createAttachmentMessage(attachment)
+     11      expect(m.type).toBe('attachment')
+     12      expect(m.attachment).toBe(attachment)
+     13      expect(m.uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+     14>     expect(new Date(m.timestamp).toISOString()).toBe(m.timestamp)
+     15    })
+     16    test('cada mensaje lleva su propio uuid', () => {
+     17      expect(createAttachmentMessage({ type: 'x' }).uuid).not.toBe(createAttachmentMessage({ type: 'x' }).uuid)
+     18    })
+     19    test('no lleva más claves que las cuatro del binario', () => {
+     20      expect(Object.keys(createAttachmentMessage({ type: 'x' })).sort()).toEqual(['attachment', 'timestamp', 'type', 'uuid'])
+     21    })
+     22  })
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/packages/agent/__tests__/createAttachmentMessage.test.ts(14,54): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/createAttachmentMessage.test.ts:4-22 ---
+      4  import { describe, expect, test } from 'bun:test'
+      5  import { createAttachmentMessage } from '../attachments.js'
+      6  
+      7  describe('createAttachmentMessage (Kd)', () => {
+      8    test('envuelve el adjunto con uuid y marca de tiempo ISO', () => {
+      9      const attachment = { type: 'queued_command', prompt: 'hola' }
+     10      const m = createAttachmentMessage(attachment)
+     11      expect(m.type).toBe('attachment')
+     12      expect(m.attachment).toBe(attachment)
+     13      expect(m.uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+     14>     expect(new Date(m.timestamp).toISOString()).toBe(m.timestamp)
+     15    })
+     16    test('cada mensaje lleva su propio uuid', () => {
+     17      expect(createAttachmentMessage({ type: 'x' }).uuid).not.toBe(createAttachmentMessage({ type: 'x' }).uuid)
+     18    })
+     19    test('no lleva más claves que las cuatro del binario', () => {
+     20      expect(Object.keys(createAttachmentMessage({ type: 'x' })).sort()).toEqual(['attachment', 'timestamp', 'type', 'uuid'])
+     21    })
+     22  })
+  Overload 1 of 2, '(expected: string): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string'.
+  Overload 2 of 2, '(expected: string): void', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string'.

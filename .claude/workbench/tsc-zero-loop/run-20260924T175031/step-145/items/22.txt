@@ -1,0 +1,69 @@
+src/packages/storage/src/claudemd.ts(49,48): error TS2307: Cannot find module '@thyrox/tool-registry/fileStateCache.js' or its corresponding type declarations.
+  --- código src/packages/storage/src/claudemd.ts:39-59 ---
+     39   *   — el mismo comportamiento que el test fija ("es un no-op cuando la
+     40   *   bandera es false, el default").
+     41   */
+     42  import picomatch from 'picomatch'
+     43  import type { Dirent } from 'node:fs'
+     44  import { realpathSync } from 'node:fs'
+     45  import { lstat, readdir, readFile, stat } from 'node:fs/promises'
+     46  import { homedir } from 'node:os'
+     47  import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
+     48  import type { InstructionsLoadReason } from '@thyrox/agent/hooks.js'
+     49> import { cacheKeys, type FileStateCache } from '@thyrox/tool-registry/fileStateCache.js'
+     50  import { logEvent } from '@thyrox/local-observability'
+     51  import { getErrnoCode, getFsImplementation, safeResolvePath } from './fsOperations.js'
+     52  import { getInitialSettings } from '@thyrox/config/settings'
+     53  import { safePicomatch, safeIgnoreMatch } from './safePatternMatch.js'
+     54  import { parseFrontmatter, splitPathInFrontmatter } from '@thyrox/config/frontmatterParser.js'
+     55  import { pathInWorkingPath } from '@thyrox/permission/filesystem'
+     56  import { normalizePathForComparison } from './file.js'
+     57  import { getOriginalCwd } from './sessionPaths.js'
+     58  
+     59  
+src/packages/storage/src/claudemd.ts(740,10): error TS6133: 'consumeNextEagerLoadReason' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:730-750 ---
+    730      // eslint-disable-next-line @typescript-eslint/no-require-imports
+    731      project = (require('@thyrox/config') as { getCurrentProjectConfig: () => typeof project }).getCurrentProjectConfig()
+    732    } catch {
+    733      // Sin registro de proyecto no hay aprobación que consultar.
+    734    }
+    735    if (project.hasClaudeMdExternalIncludesApproved || project.hasClaudeMdExternalIncludesWarningShown) return false
+    736    return hasExternalClaudeMdIncludes(await getMemoryFiles(true))
+    737  }
+    738  
+    739  // --- porte por miembros: un ancla por ítem ---
+    740> function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+    741    if (!shouldFireHook) return undefined
+    742    shouldFireHook = false
+    743    const reason = nextEagerLoadReason
+    744    nextEagerLoadReason = 'session_start'
+    745    return reason
+    746  }
+    747  
+    748  /**
+    749   * Get all memory file paths from both standard discovery and readFileState.
+    750   * Combines:
+src/packages/storage/src/claudemd.ts(743,18): error TS2304: Cannot find name 'nextEagerLoadReason'.
+  --- código src/packages/storage/src/claudemd.ts:733-753 ---
+    733      // Sin registro de proyecto no hay aprobación que consultar.
+    734    }
+    735    if (project.hasClaudeMdExternalIncludesApproved || project.hasClaudeMdExternalIncludesWarningShown) return false
+    736    return hasExternalClaudeMdIncludes(await getMemoryFiles(true))
+    737  }
+    738  
+    739  // --- porte por miembros: un ancla por ítem ---
+    740  function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+    741    if (!shouldFireHook) return undefined
+    742    shouldFireHook = false
+    743>   const reason = nextEagerLoadReason
+    744    nextEagerLoadReason = 'session_start'
+    745    return reason
+    746  }
+    747  
+    748  /**
+    749   * Get all memory file paths from both standard discovery and readFileState.
+    750   * Combines:
+    751   * - getMemoryFiles() paths (CWD upward to root)
+    752   * - readFileState paths matching memory patterns (includes child directories)
+    753   */

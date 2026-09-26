@@ -53,6 +53,11 @@ export const getHookEventMetadata = memoize(
           values: toolNames,
         },
       },
+      PostToolBatch: {
+        summary: 'After a batch of tool calls resolves',
+        description:
+          'Fires once after every tool call in a batch has resolved, before the next model request. Input includes tool_calls (array of {tool_name, tool_input, tool_use_id, tool_response}).\nReturn additionalContext via hookSpecificOutput to inject context once for the whole batch.\nExit code 2 - stop the agentic loop (stderr shown to user only)\nOther exit codes - show stderr to user only',
+      },
       PermissionDenied: {
         summary: 'After auto mode classifier denies a tool call',
         description:
@@ -82,6 +87,15 @@ export const getHookEventMetadata = memoize(
         summary: 'When the user submits a prompt',
         description:
           'Input to command is JSON with original user prompt text.\nExit code 0 - stdout shown to Claude\nExit code 2 - block processing, erase original prompt, and show stderr to user only\nOther exit codes - show stderr to user only',
+      },
+      UserPromptExpansion: {
+        summary: 'When a user-typed slash command expands into a prompt',
+        description:
+          'Input to command is JSON with expansion_type, command_name, command_args, command_source, and original prompt.\nExit code 0 - stdout shown to Claude\nExit code 2 - block expansion and show stderr to user only\nOther exit codes - show stderr to user only',
+        matcherMetadata: {
+          fieldToMatch: 'command_name',
+          values: [],
+        },
       },
       SessionStart: {
         summary: 'When a new session is started',
@@ -275,9 +289,11 @@ export function groupHooksByEventAndMatcher(
     PreToolUse: {},
     PostToolUse: {},
     PostToolUseFailure: {},
+    PostToolBatch: {},
     PermissionDenied: {},
     Notification: {},
     UserPromptSubmit: {},
+    UserPromptExpansion: {},
     SessionStart: {},
     SessionEnd: {},
     Stop: {},
@@ -378,9 +394,8 @@ export function getSortedMatchersForEvent(
 
 // Get hooks for a specific event and matcher
 export function getHooksForMatcher(
-  hooksByEventAndMatcher: Record<
-    HookEvent,
-    Record<string, IndividualHookConfig[]>
+  hooksByEventAndMatcher: Partial<
+    Record<string, Record<string, IndividualHookConfig[]>>
   >,
   event: HookEvent,
   matcher: string | null,
@@ -388,7 +403,8 @@ export function getHooksForMatcher(
   // For events without matchers, hooks are stored with empty string as key
   // because the record keys must be strings.
   const matcherKey = matcher ?? ''
-  return hooksByEventAndMatcher[event]?.[matcherKey] ?? []
+  const eventKey = String(event)
+  return hooksByEventAndMatcher[eventKey]?.[matcherKey] ?? []
 }
 
 // Get metadata for a specific event's matcher

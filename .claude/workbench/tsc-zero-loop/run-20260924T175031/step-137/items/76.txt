@@ -1,0 +1,78 @@
+src/packages/repl/src/screens/REPLView.tsx(1806,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1796-1816 ---
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800            void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802            void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806>         restoreSessionStateFromLog(log, setAppState);
+   1807          if (log.fileHistorySnapshots) {
+   1808            void copyFileHistoryForResume(log);
+   1809          }
+   1810  
+   1811          // Restore agent setting from the resumed conversation
+   1812          // Always reset to the new session's values (or clear if none),
+   1813          // matching the standaloneAgentContext pattern below
+   1814          const { agentDefinition: restoredAgent } = restoreAgentFromSession(
+   1815            log.agentSetting,
+   1816            initialMainThreadAgentDefinition,
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+src/packages/repl/src/screens/REPLView.tsx(1826,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1816-1836 ---
+   1816            initialMainThreadAgentDefinition,
+   1817            agentDefinitions,
+   1818          );
+   1819          setMainThreadAgentDefinition(restoredAgent);
+   1820          setAppState(prev => ({ ...prev, agent: restoredAgent?.agentType }));
+   1821  
+   1822          // Restore standalone agent context from the resumed conversation
+   1823          // Always reset to the new session's values (or clear if none)
+   1824          setAppState(prev => ({
+   1825            ...prev,
+   1826>           standaloneAgentContext: computeStandaloneAgentContext(log.agentName, log.agentColor),
+   1827          }));
+   1828          void updateSessionName(log.agentName);
+   1829  
+   1830          // Restore read file state from the message history
+   1831          restoreReadFileState(messages, log.projectPath ?? getOriginalCwd());
+   1832  
+   1833          // Clear any active loading state (no queryId since we're not in a query)
+   1834          resetLoadingState();
+   1835          setAbortController(null);
+   1836  
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+    Types of property 'color' are incompatible.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+src/packages/repl/src/screens/REPLView.tsx(2387,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2377-2397 ---
+   2377            });
+   2378            return currentQueue;
+   2379          });
+   2380        }, setToolUseConfirmQueue);
+   2381      },
+   2382      [setAppState, setToolUseConfirmQueue],
+   2383    );
+   2384  
+   2385    // Register the leader's setToolPermissionContext for in-process teammates
+   2386    useEffect(() => {
+   2387>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2388      return () => unregisterLeaderSetToolPermissionContext();
+   2389    }, [setToolPermissionContext]);
+   2390  
+   2391    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2392  
+   2393    const requestPrompt = useCallback(
+   2394      (title: string, toolInputSummary?: string | null) =>
+   2395        (request: PromptRequest): Promise<PromptResponse> =>
+   2396          new Promise<PromptResponse>((resolve, reject) => {
+   2397            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.

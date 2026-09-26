@@ -339,7 +339,11 @@ export function useInboxPoller({
           // Deduplicate: if markMessagesAsRead failed on a prior poll,
           // the same message will be re-read — skip if already queued.
           setToolUseConfirmQueue(queue => {
-            if (queue.some(q => q.toolUseID === parsed.tool_use_id)) {
+            if (
+              queue.some(
+                q => (q as { toolUseID: string }).toolUseID === parsed.tool_use_id,
+              )
+            ) {
               return queue
             }
             return [...queue, entry]

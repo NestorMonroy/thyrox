@@ -1,0 +1,23 @@
+src/packages/agent/fileChangedWatcher.ts(55,19): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/agent/fileChangedWatcher.ts:45-65 ---
+     45    startWatching(paths)
+     46  }
+     47  
+     48  function resolveWatchPaths(
+     49    config?: ReturnType<typeof getHooksConfigFromSnapshot>,
+     50  ): string[] {
+     51    const matchers = (config ?? getHooksConfigFromSnapshot())?.FileChanged ?? []
+     52  
+     53    // Matcher field: filenames to watch in cwd, pipe-separated (e.g. ".envrc|.env")
+     54    const staticPaths: string[] = []
+     55>   for (const m of matchers) {
+     56      if (!m.matcher) continue
+     57      for (const name of m.matcher.split('|').map((s: string) => s.trim())) {
+     58        if (!name) continue
+     59        staticPaths.push(isAbsolute(name) ? name : join(currentCwd, name))
+     60      }
+     61    }
+     62  
+     63    // Combine static matcher paths with dynamic paths from hook output
+     64    return [...new Set([...staticPaths, ...dynamicWatchPaths])]
+     65  }

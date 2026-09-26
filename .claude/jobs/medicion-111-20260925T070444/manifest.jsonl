@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > .claude/workbench/tsc-zero-loop/run-20260924T175031/step-111/base.log 2>&1; bun src/verify/message_shape_audit.ts >> .claude/workbench/tsc-zero-loop/run-20260924T175031/step-111/base.log 2>&1; grep -c ': error' .claude/workbench/tsc-zero-loop/run-20260924T175031/step-111/base.log", "started_at": "2026-09-25T07:04:44+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-25T07:36:03+00:00", "duration_seconds": 1879.147041}

@@ -1,0 +1,24 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/permission/src/components/utils.ts(20,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/components/utils.ts:10-25 ---
+     10      },
+     11    }: ToolUseConfirm,
+     12    event: 'accept' | 'reject',
+     13    hasFeedback?: boolean,
+     14  ): void {
+     15    void logUnaryEvent({
+     16      completion_type,
+     17      event,
+     18      metadata: {
+     19        language_name: 'none',
+     20>       message_id,
+     21        platform: getHostPlatformForAnalytics(),
+     22        hasFeedback: hasFeedback ?? false,
+     23      },
+     24    })
+     25  }
+  Type 'undefined' is not assignable to type 'string'.

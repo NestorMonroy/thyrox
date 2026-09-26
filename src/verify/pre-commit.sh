@@ -108,6 +108,12 @@ if [ "${#PY_STAGED[@]}" -gt 0 ]; then
     python3 "$GATES/check_mutante_en_staging.py" "${PY_STAGED[@]}" || CODE=1
 fi
 
+# El cache guarda trabajo reutilizable entre modelos: cada unidad va en su
+# carpeta con su README.md, como jobs/ (`check_cache_layout.py`). El hogar lo
+# resuelven las constantes (THYROX_CACHE_*), y `--staged` mide solo las
+# unidades que este commit toca: la deuda heredada no bloquea.
+python3 "$GATES/check_cache_layout.py" --root "$CONSUMER" --staged --strict || CODE=1
+
 # Los `.rst` se miden ademas por sintaxis y convenciones; un `.md` de reglas no
 # es RST y esos dos gates no le aplican.
 RST=()

@@ -1,0 +1,23 @@
+src/packages/agent/attachments.ts(3177,13): error TS2304: Cannot find name 'getTeamContextAttachment'.
+  --- código src/packages/agent/attachments.ts:3167-3187 ---
+   3167            // true and it reads+marks-as-read the leader's DMs as ephemeral attachments,
+   3168            // silently stealing messages that should be delivered as permanent turns.
+   3169            ...(querySource === 'session_memory'
+   3170              ? []
+   3171              : [
+   3172                  maybe('teammate_mailbox', async () =>
+   3173                    getTeammateMailboxAttachments(toolUseContext),
+   3174                  ),
+   3175                ]),
+   3176            maybe('team_context', async () =>
+   3177>             getTeamContextAttachment(messages ?? []),
+   3178            ),
+   3179          ]
+   3180        : []),
+   3181      maybe('agent_pending_messages', async () =>
+   3182        getAgentPendingMessageAttachments(toolUseContext),
+   3183      ),
+   3184      maybe('critical_system_reminder', () =>
+   3185        Promise.resolve(getCriticalSystemReminderAttachment(toolUseContext)),
+   3186      ),
+   3187      ...(feature('COMPACTION_REMINDERS')

@@ -1,0 +1,24 @@
+src/packages/provider/src/oauth/index.ts(183,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/provider/src/oauth/index.ts:173-193 ---
+    173    }
+    174  
+    175    private formatTokens(
+    176      response: OAuthTokenExchangeResponse,
+    177      subscriptionType: SubscriptionType | null,
+    178      rateLimitTier: RateLimitTier | null,
+    179      profile?: OAuthProfileResponse,
+    180    ): OAuthTokens {
+    181      return {
+    182        accessToken: response.access_token,
+    183>       refreshToken: response.refresh_token,
+    184        expiresAt: Date.now() + response.expires_in * 1000,
+    185        scopes: client.parseScopes(response.scope),
+    186        subscriptionType,
+    187        rateLimitTier,
+    188        profile,
+    189        tokenAccount: response.account
+    190          ? {
+    191              uuid: response.account.uuid,
+    192              emailAddress: response.account.email_address,
+    193              organizationUuid: response.organization?.uuid,
+  Type 'undefined' is not assignable to type 'string'.

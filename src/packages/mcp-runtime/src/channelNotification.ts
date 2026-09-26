@@ -282,7 +282,7 @@ export function gateChannelServer(
     if (!entry.dev) {
       const { entries, source } = getEffectiveChannelAllowlist(
         sub,
-        policy?.allowedChannelPlugins,
+        policy?.allowedChannelPlugins as ChannelAllowlistEntry[] | undefined,
       )
       if (
         !entries.some(

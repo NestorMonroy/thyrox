@@ -55,8 +55,9 @@ export function getMockHeaderless429Message(): string | null {
     return null
   }
   // Env var path for -p / SDK testing where slash commands aren't available
-  if (readEnv('CLAUDE_MOCK_HEADERLESS_429')) {
-    return readEnv('CLAUDE_MOCK_HEADERLESS_429')
+  const headerless429Override = readEnv('CLAUDE_MOCK_HEADERLESS_429')
+  if (headerless429Override) {
+    return headerless429Override
   }
   if (!mockEnabled) {
     return null

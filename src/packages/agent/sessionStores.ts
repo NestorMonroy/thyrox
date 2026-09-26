@@ -73,7 +73,7 @@ import {
   projectHostSessionState,
   type HostSessionState,
 } from '@thyrox/app-host/state/hostSessionState.js'
-import { parseEffortValue, toPersistableEffort } from './effort.js'
+import { parseEffortValue, toPersistableEffort, type EffortLevel } from './effort.js'
 
 // ---- Tipos estructurales mínimos — ver docstring del módulo. ----
 // `Tool`/`ToolPermissionContext`: el paquete tool-registry está ausente por
@@ -151,7 +151,7 @@ function buildHeadlessCompatState(
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { getInitialSettings } = require('@thyrox/config/settings') as {
     getInitialSettings: () => {
-      effortLevel?: string
+      effortLevel?: EffortLevel
       fastModePerSessionOptIn?: boolean
       fastMode?: boolean
     }

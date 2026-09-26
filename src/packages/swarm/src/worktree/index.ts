@@ -368,6 +368,10 @@ async function getOrCreateWorktree(
     }
   }
 
+  if (baseSha === null) {
+    throw new Error(`Failed to resolve base branch "${baseBranch}": no SHA available`)
+  }
+
   return {
     worktreePath,
     worktreeBranch,
@@ -420,7 +424,7 @@ export async function copyWorktreeIncludeFiles(
     return []
   }
 
-  const entries = gitignored.stdout.trim().split('\n').filter(Boolean)
+  const entries: string[] = gitignored.stdout.trim().split('\n').filter(Boolean)
   const matcher = ignore()
   try {
     matcher.add(includeContent)
@@ -768,7 +772,7 @@ export async function createWorktreeForSession(
   }
 
   // Save to project config for persistence
-  saveCurrentProjectConfig(current => ({
+  saveCurrentProjectConfig((current: Record<string, unknown>) => ({
     ...current,
     activeWorktreeSession: currentWorktreeSession ?? undefined,
   }))
@@ -791,7 +795,7 @@ export async function keepWorktree(): Promise<void> {
     currentWorktreeSession = null
 
     // Update config
-    saveCurrentProjectConfig(current => ({
+    saveCurrentProjectConfig((current: Record<string, unknown>) => ({
       ...current,
       activeWorktreeSession: undefined,
     }))
@@ -854,7 +858,7 @@ export async function cleanupWorktree(): Promise<void> {
 
     currentWorktreeSession = null
 
-    saveCurrentProjectConfig(current => ({
+    saveCurrentProjectConfig((current: Record<string, unknown>) => ({
       ...current,
       activeWorktreeSession: undefined,
     }))

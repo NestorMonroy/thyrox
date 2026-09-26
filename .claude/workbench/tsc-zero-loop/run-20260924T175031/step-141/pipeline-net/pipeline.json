@@ -1,0 +1,14 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 1,
+   "total_before": 218,
+   "total_final": 218,
+   "tsc_runs": 1,
+   "kept": 0
+  }
+ ],
+ "files_kept": [],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-141/pipeline-net/batch-01/final.log"
+}

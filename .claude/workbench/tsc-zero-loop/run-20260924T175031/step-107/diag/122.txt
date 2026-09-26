@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/SkillTool/UI.tsx(110,26): error TS18046: 'progressMessage.data' is of type 'unknown'.
+  --- código src/packages/tool-registry/src/tools/SkillTool/UI.tsx:100-120 ---
+    100      progressMessages.map(pm => pm.data),
+    101    )
+    102  
+    103    return (
+    104      <MessageResponse>
+    105        <Box flexDirection="column">
+    106          <SubAgentProvider>
+    107            {displayedMessages.map(progressMessage => (
+    108              <Box key={progressMessage.uuid} height={1} overflow="hidden">
+    109                <MessageComponent
+    110>                 message={progressMessage.data.message}
+    111                  lookups={EMPTY_LOOKUPS}
+    112                  addMargin={false}
+    113                  tools={tools}
+    114                  commands={[]}
+    115                  verbose={verbose}
+    116                  inProgressToolUseIDs={inProgressToolUseIDs}
+    117                  progressMessagesForMessage={[]}
+    118                  shouldAnimate={false}
+    119                  shouldShowDot={false}
+    120                  style="condensed"

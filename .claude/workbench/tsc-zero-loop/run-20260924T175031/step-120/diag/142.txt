@@ -1,0 +1,23 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(35,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:25-45 ---
+     25    SystemMessage,
+     26    UserMessage,
+     27  } from '@thyrox/agent/messageShapes'
+     28  import type { PermissionMode } from '@thyrox/permission/permissionTypes'
+     29  import {
+     30    isValidImagePaste,
+     31    type PromptInputMode,
+     32  } from '../textInputTypes.js'
+     33  import {
+     34    createAttachmentMessage,
+     35>   getAttachmentMessages,
+     36  } from '@thyrox/agent/attachments.js'
+     37  import type { PastedContent } from '@thyrox/config'
+     38  import type { EffortValue } from '@thyrox/agent/effort.js'
+     39  import { toArray } from '@thyrox/config/generators'
+     40  import {
+     41    executeUserPromptSubmitHooks,
+     42    getUserPromptSubmitHookBlockingMessage,
+     43  } from '@thyrox/agent/hooks.js'
+     44  import {
+     45    createImageMetadataText,

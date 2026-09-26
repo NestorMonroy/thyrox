@@ -1,0 +1,17 @@
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts(267,31): error TS2345: Argument of type '{ type: string; message: { content: null; }; }' is not assignable to parameter of type 'Message'.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts:257-269 ---
+    257      expect(getLastToolUseName(msg)).toBe("Edit");
+    258    });
+    259  
+    260    test("returns undefined for non-assistant message", () => {
+    261      const msg = makeUserMessage("hello");
+    262      expect(getLastToolUseName(msg)).toBeUndefined();
+    263    });
+    264  
+    265    test("handles message with null content", () => {
+    266      const msg = { type: "assistant", message: { content: null } };
+    267>     expect(getLastToolUseName(msg)).toBeUndefined();
+    268    });
+    269  });
+  Type '{ type: string; message: { content: null; }; }' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Property 'uuid' is missing in type '{ type: string; message: { content: null; }; }' but required in type 'MessageBase'.

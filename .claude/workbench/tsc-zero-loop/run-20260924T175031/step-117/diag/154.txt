@@ -1,0 +1,21 @@
+src/packages/shell/src/shellCommand.ts(466,5): error TS2322: Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.
+  --- código src/packages/shell/src/shellCommand.ts:456-473 ---
+    456    const taskOutput: TaskOutputPort = new StubTaskOutput(generateTaskId('local_bash'))
+    457    return {
+    458      status: 'completed' as const,
+    459      result: Promise.resolve({
+    460        code: 1,
+    461        stdout: '',
+    462        stderr: preSpawnError,
+    463        interrupted: false,
+    464        preSpawnError,
+    465      }),
+    466>     taskOutput,
+    467      background(): boolean {
+    468        return false
+    469      },
+    470      kill(): void {},
+    471      cleanup(): void {},
+    472    }
+    473  }
+  Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

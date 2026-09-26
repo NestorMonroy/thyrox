@@ -1,0 +1,27 @@
+src/packages/command-runtime/src/commands/bridge/bridge.tsx(152,5): error TS2769: No overload matches this call.
+  --- código src/packages/command-runtime/src/commands/bridge/bridge.tsx:142-162 ---
+    142    const [qrText, setQrText] = useState('')
+    143  
+    144    const displayUrl = sessionActive ? sessionUrl : connectUrl
+    145  
+    146    // Generate QR code when URL changes or QR is toggled on
+    147    useEffect(() => {
+    148      if (!showQR || !displayUrl) {
+    149        setQrText('')
+    150        return
+    151      }
+    152>     qrToString(displayUrl, {
+    153        type: 'utf8',
+    154        errorCorrectionLevel: 'L',
+    155        small: true,
+    156      })
+    157        .then(setQrText)
+    158        .catch(() => setQrText(''))
+    159    }, [showQR, displayUrl])
+    160  
+    161    function handleDisconnect(): void {
+    162      setAppState(prev => {
+  Overload 1 of 3, '(text: string | QRCodeSegment[], callback: (error: Error | null | undefined, string: string) => void): void', gave the following error.
+    Object literal may only specify known properties, and 'type' does not exist in type '(error: Error | null | undefined, string: string) => void'.
+  Overload 2 of 3, '(text: string | QRCodeSegment[], options?: QRCodeToStringOptions | undefined): Promise<string>', gave the following error.
+    Object literal may only specify known properties, and 'small' does not exist in type 'QRCodeToStringOptionsOther'.

@@ -1,0 +1,16 @@
+src/packages/repl/src/components/Settings/Usage.tsx(4,10): error TS2459: Module '"@thyrox/provider/costTracker.js"' declares 'formatCost' locally, but it is not exported.
+  --- código src/packages/repl/src/components/Settings/Usage.tsx:1-14 ---
+      1  import * as React from 'react'
+      2  import { useEffect, useState } from 'react'
+      3  import { extraUsage as extraUsageCommand } from '../../extraUsage.js'
+      4> import { formatCost } from '@thyrox/provider/costTracker.js'
+      5  import { getSubscriptionType } from '@thyrox/provider/authAlias.js'
+      6  import { useTerminalSize } from '@anthropic/ink'
+      7  import { Box, Text } from '@anthropic/ink'
+      8  import { useKeybinding } from '@anthropic/ink/keybindings'
+      9  import {
+     10    type CodexUtilization,
+     11    type ExtraUsage,
+     12    fetchUtilization,
+     13    type RateLimit,
+     14    type Utilization,

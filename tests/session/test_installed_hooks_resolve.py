@@ -30,6 +30,7 @@ del texto es lo que separa «el instalador está bien» de «yo creo que está b
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -61,8 +62,11 @@ CONSUMER = reach.root("docs")
 #: que la cifra caduca cuando el productor crece, y ya caduco una vez:
 #: `thyrox@6531f327` añadio el ciclo de vida de la tarjeta a las 23:53 y este
 #: conjunto quedo en los tres de las 12:54 del mismo dia.
+#: Caducó otra vez con `PreToolUse` (los detectores de `pretooluse_dispatch`,
+#: 2026-09-24) y `SessionStart` (el contexto tras compactar, `965a9eed`): la
+#: suite quedó roja dos días sin que nadie la corriera.
 EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop",
-                   "TaskCreated", "TaskCompleted"}
+                   "TaskCreated", "TaskCompleted", "PreToolUse", "SessionStart"}
 
 #: Intérprete -> en qué posición del comando va la ruta del archivo.
 INTERPRETERS = {"python3": 1, "node": 1, "bun": 2}  # `bun run <ruta>`
@@ -94,8 +98,10 @@ def missing_files(settings: dict) -> list[str]:
 #: - los SEIS primeros son verbatim como el instalador los componia hasta
 #:   `thyrox@5862183f`. No es un incumplidor fabricado — es el texto que estuvo
 #:   vivo en el arbol, y ese TEXTO es lo que el control no toca.
-#: - los DOS del ciclo de vida de la tarjeta (`TaskCreated`/`TaskCompleted`)
-#:   nunca vivieron asi: el productor los añadio en `thyrox@6531f327`, ya
+#: - los DOS del ciclo de vida de la tarjeta (`TaskCreated`/`TaskCompleted`),
+#:   y del mismo modo `PreToolUse` y `SessionStart` (con el prefijo
+#:   `PYTHONPATH=` de su forma real), nunca vivieron asi: el productor los
+#:   añadio en `thyrox@6531f327`, ya
 #:   apuntando al proveedor. Aqui se compone su forma contraria con el MISMO
 #:   patron de stub que los seis, para que la mutacion siga siendo de UN SOLO
 #:   eje —la topologia— y no mezcle «apunta al consumidor» con «le faltan dos
@@ -129,6 +135,12 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
     "TaskCompleted": [{"hooks": [
         {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
     ]}],
+    "PreToolUse": [{"matcher": "Bash|Agent|Write|Edit|MultiEdit|Read", "hooks": [
+        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/pretooluse_dispatch.py"},
+    ]}],
+    "SessionStart": [{"matcher": "compact", "hooks": [
+        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/compact_context.py"},
+    ]}],
 }"""
 
 
@@ -136,7 +148,8 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
 #: comando de esa topologia que NO los usa (`preModelSwitch.ts`) va por
 #: `THYROX_DIR` y existe en el arbol del proveedor: no necesita stub.
 CONTRARY_TARGETS = ("medir_delta_subagente.py", "register_agent_session.py",
-                    "save-agent-result.mjs", "task_lifecycle.py")
+                    "save-agent-result.mjs", "task_lifecycle.py",
+                    "pretooluse_dispatch.py", "compact_context.py")
 
 
 def stub_home(home: Path) -> Path:
@@ -192,6 +205,11 @@ def commands(settings: dict) -> list[tuple[str, str]]:
 
 def named_file(command: str) -> Path | None:
     parts = command.split()
+    # Las asignaciones de entorno que preceden al intérprete no son el
+    # programa: `PYTHONPATH=<src> python3 <ruta>` es la forma del hook de
+    # `SessionStart`, y sin saltarlas el intérprete se leía como no reconocido.
+    while parts and re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*=\S*", parts[0]):
+        parts = parts[1:]
     if not parts:
         return None
     index = INTERPRETERS.get(Path(parts[0]).name)

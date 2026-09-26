@@ -13,7 +13,7 @@ function mockStream(
           if (index >= chunks.length) {
             return { done: true, value: undefined }
           }
-          return { done: false, value: chunks[index++] }
+          return { done: false, value: chunks[index++]! }
         },
       }
     },

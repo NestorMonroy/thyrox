@@ -1,0 +1,1 @@
+src/packages/cli/src/entry/runLoop.ts(106,29): error TS2504: Type 'ReadableStream<Uint8Array<ArrayBuffer>>' must have a '[Symbol.asyncIterator]()' method that returns an async iterator.

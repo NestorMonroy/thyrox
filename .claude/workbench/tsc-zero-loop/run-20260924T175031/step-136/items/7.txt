@@ -1,0 +1,8 @@
+Tipo: PermissionMode
+Copias:
+  src/packages/@ant/claude-for-chrome-mcp/src/types.ts
+  src/packages/agent/types.ts
+  src/packages/bridge/src/internal/pendingCrossPackageDeps.ts
+
+src/packages/repl/src/processUserInput/processTextPrompt.ts(79): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+src/packages/repl/src/processUserInput/processTextPrompt.ts(92): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.

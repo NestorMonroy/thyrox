@@ -306,7 +306,7 @@ export function buildTranscriptEntries(messages: Message[]): TranscriptEntry[] {
       }
     } else if (msg.type === 'assistant') {
       const blocks: TranscriptBlock[] = []
-      for (const block of msg.message.content) {
+      for (const block of msg.message.content ?? []) {
         // Sólo se incluyen los bloques tool_use: el texto del asistente lo
         // escribe el modelo, y podría estar compuesto para influir en la
         // decisión del clasificador.

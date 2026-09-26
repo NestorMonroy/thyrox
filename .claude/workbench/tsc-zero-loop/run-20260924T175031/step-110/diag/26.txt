@@ -1,0 +1,23 @@
+src/packages/agent/compaction/autoCompact.ts(23,3): error TS2305: Module '"./compact.js"' has no exported member 'compactConversation'.
+  --- código src/packages/agent/compaction/autoCompact.ts:13-33 ---
+     13  import { hasExactErrorMessage } from '@thyrox/local-observability/errorHelpers.js'
+     14  import type { CacheSafeParams } from '../forkedAgent.js'
+     15  import { logError } from '@thyrox/local-observability/logging'
+     16  import { tokenCountWithEstimation } from '../tokens.js'
+     17  import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+     18  import { getMaxOutputTokensForModel } from '@thyrox/provider/claude.js'
+     19  import { notifyCompaction } from '@thyrox/provider/promptCacheBreakDetection.js'
+     20  import { setLastSummarizedMessageId } from '../SessionMemory/sessionMemoryUtils.js'
+     21  import {
+     22    type CompactionResult,
+     23>   compactConversation,
+     24    ERROR_MESSAGE_USER_ABORT,
+     25    type RecompactionInfo,
+     26  } from './compact.js'
+     27  import { runPostCompactCleanup } from './postCompactCleanup.js'
+     28  import { trySessionMemoryCompaction } from './sessionMemoryCompact.js'
+     29  import { readEnv } from '@thyrox/config/env'
+     30  
+     31  // Reserve this many tokens for output during compaction
+     32  // Based on p99.99 of compact summary output being 17,387 tokens.
+     33  const MAX_OUTPUT_TOKENS_FOR_SUMMARY = 20_000

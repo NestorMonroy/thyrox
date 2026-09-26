@@ -9,6 +9,7 @@ import {
   MAX_TASK_OUTPUT_BYTES_DISPLAY,
 } from '@thyrox/storage/task/diskOutput.js'
 import { TaskOutput } from '@thyrox/tool-registry/task/TaskOutput.js'
+import type { TaskOutputPort } from '../taskOutputPort.js'
 
 export type ExecResult = {
   stdout: string
@@ -42,8 +43,12 @@ export type ShellCommand = {
   onTimeout?: (
     callback: (backgroundFn: (taskId: string) => boolean) => void,
   ) => void
-  /** The TaskOutput instance that owns all stdout/stderr data and progress. */
-  taskOutput: TaskOutput
+  /**
+   * Dueño de stdout/stderr y del progreso. El contrato declara el puerto,
+   * no la clase `TaskOutput`: los consumidores sólo leen miembros del
+   * puerto, y la otra implementación (`shellCommand.ts`) lo satisface.
+   */
+  taskOutput: TaskOutputPort
 }
 
 const SIGKILL = 137

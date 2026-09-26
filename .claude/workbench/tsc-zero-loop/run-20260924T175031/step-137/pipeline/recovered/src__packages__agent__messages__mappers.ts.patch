@@ -1,0 +1,14 @@
+diff --git a/src/packages/agent/messages/mappers.ts b/src/packages/agent/messages/mappers.ts
+index 6855916c..f2d471f7 100644
+--- a/src/packages/agent/messages/mappers.ts
++++ b/src/packages/agent/messages/mappers.ts
+@@ -135,7 +135,8 @@ export function toSDKMessages(messages: Message[]): SDKMessage[] {
+             session_id: getSessionId(),
+             parent_tool_use_id: null,
+             uuid: message.uuid,
+-            timestamp: message.timestamp,
++            timestamp:
++              typeof message.timestamp === 'string' ? message.timestamp : undefined,
+             isSynthetic: message.isMeta || message.isVisibleInTranscriptOnly,
+             // Structured tool output (not the string content sent to the
+             // model — the full Output object). Rides the protobuf catchall

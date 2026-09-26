@@ -1,6 +1,5 @@
 import { readFileSync } from 'fs';
 import { REMOTE_CONTROL_DISCONNECTED_MSG } from '@thyrox/bridge/types.js';
-import type { Command } from '@thyrox/command-runtime/runtime';
 import { DIAMOND_OPEN } from '@thyrox/output/constants/figures.js';
 import { getRemoteSessionUrl } from '@thyrox/config/product';
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags';
@@ -16,7 +15,7 @@ import {
   type RemoteAgentTaskState,
   registerRemoteAgentTask,
 } from '@thyrox/tool-registry/tasks/RemoteAgentTask.js';
-import type { LocalJSXCommandCall } from '@thyrox/agent/command.js';
+import type { Command, LocalJSXCommandCall } from '@thyrox/agent/command.js';
 import { logForDebugging } from '@thyrox/local-observability/debug.js';
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js';
 import { logError } from '@thyrox/local-observability/log.js';

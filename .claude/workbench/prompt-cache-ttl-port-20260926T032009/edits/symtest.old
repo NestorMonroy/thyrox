@@ -1,0 +1,1 @@
+  test('un símbolo definido en el propio chunk no sale de él', () => {

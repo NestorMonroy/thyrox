@@ -936,6 +936,7 @@ if ([CuWinMgmt]::GetWindowRect([IntPtr]::new([long]${boundHwnd}), [ref]$rect)) {
 `)
     if (!out || out === 'FAIL') return null
     const [l, t, r, b] = out.split(',').map(Number)
+    if (l === undefined || t === undefined || r === undefined || b === undefined) return null
     return { x: l, y: t, width: r - l, height: b - t }
   },
 }

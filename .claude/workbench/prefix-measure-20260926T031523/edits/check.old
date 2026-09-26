@@ -1,0 +1,1 @@
+check "sin sesion persistida y en json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=json"

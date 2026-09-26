@@ -48,9 +48,8 @@
  *   binding estático que fallaría igual que un `import` (sin symlink de
  *   workspace). Se intenta `require()` y, si falla, se cae al valor real
  *   copiado — no inventado — como fallback.
- * - `coerceDescriptionToString` — de `@thyrox/agent/frontmatterParser.ts`
- *   (existe). Es función, así que se envuelve como función (no como
- *   binding estático).
+ * - `coerceDescriptionToString` — reexportada de `../frontmatterParser.ts`,
+ *   su hogar en este mismo paquete.
  * - `FRONTMATTER_REGEX` — de `../frontmatterParser.ts`, no portado en este
  *   pase. Se declara localmente con el valor exacto de la fuente
  *   (`/^---\s*\n([\s\S]*?)---\s*\n?/`, verificado leyendo el archivo) — es
@@ -71,7 +70,6 @@ import type {
 } from '@thyrox/shell/execFileNoThrow.js'
 import type { McpbManifestAny } from '@anthropic-ai/mcpb'
 import type { SecureStorage } from '@thyrox/storage/secureStorage/types.js'
-import { requireAgentFrontmatterParser } from '../internal/pendingCrossPackageDeps.js'
 import { expandEnvVarsInString as _canonicalExpandEnvVarsInString } from '../utils/envExpansion.js'
 import { expandTilde as _canonicalExpandTilde } from '../utils/expandTilde.js'
 import { extractDescriptionFromMarkdown as _canonicalExtractDescriptionFromMarkdown } from '../utils/markdownDescription.js'
@@ -119,6 +117,25 @@ export function setLogForDiagnosticsNoPIIFn(
 // Helpers de FS + rutas
 // ---------------------------------------------------------------------------
 
+/**
+ * Lo que los cargadores de plugins leen de una entrada de directorio y de un
+ * `stat`. Los valores reales son `fs.Dirent` y `fs.Stats`, que ya traen
+ * `isFile` e `isSymbolicLink`; el tipo anterior los omitía y los cargadores
+ * que los llaman no compilaban.
+ */
+export type PluginDirent = {
+  name: string
+  isFile(): boolean
+  isDirectory(): boolean
+  isSymbolicLink(): boolean
+}
+export type PluginStats = {
+  mtime: Date
+  size: number
+  isFile(): boolean
+  isDirectory(): boolean
+}
+
 export type PluginFsImpl = {
   existsSync(path: string): boolean
   mkdirSync(path: string, options?: { recursive?: boolean }): void
@@ -126,8 +143,8 @@ export type PluginFsImpl = {
   readFileSync(path: string, encoding: 'utf8'): string
   readdirSync(
     path: string,
-  ): Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>
-  statSync(path: string): { mtime: Date; isDirectory(): boolean; size: number }
+  ): Array<PluginDirent>
+  statSync(path: string): PluginStats
   rmSync(path: string, options?: { recursive?: boolean; force?: boolean }): void
   rmdirSync(path: string): void
   renameSync(oldPath: string, newPath: string): void
@@ -144,8 +161,8 @@ export type PluginFsImpl = {
   mkdir(path: string, options?: { recursive?: boolean }): Promise<void>
   readdir(
     path: string,
-  ): Promise<Array<{ name: string; isFile(): boolean; isDirectory(): boolean }>>
-  stat(path: string): Promise<{ mtime: Date; isDirectory(): boolean; size: number }>
+  ): Promise<Array<PluginDirent>>
+  stat(path: string): Promise<PluginStats>
   rm(path: string, options?: { recursive?: boolean; force?: boolean }): Promise<void>
   rename(oldPath: string, newPath: string): Promise<void>
 }
@@ -163,17 +180,9 @@ function nodeFsFallback(): PluginFsImpl {
     writeFileSync: (p, d) => fs.writeFileSync(p, d),
     readFileSync: (p, e) => fs.readFileSync(p, e) as string,
     readdirSync: p =>
-      fs.readdirSync(p, { withFileTypes: true }) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      fs.readdirSync(p, { withFileTypes: true }) as PluginDirent[],
     statSync: p =>
-      fs.statSync(p) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      fs.statSync(p) as PluginStats,
     rmSync: (p, o) => fs.rmSync(p, o),
     rmdirSync: p => fs.rmdirSync(p),
     renameSync: (o, n) => fs.renameSync(o, n),
@@ -188,17 +197,9 @@ function nodeFsFallback(): PluginFsImpl {
       await fsp.mkdir(p, { recursive: true, ...(o ?? {}) })
     },
     readdir: async p =>
-      (await fsp.readdir(p, { withFileTypes: true })) as Array<{
-        name: string
-        isFile(): boolean
-        isDirectory(): boolean
-      }>,
+      (await fsp.readdir(p, { withFileTypes: true })) as PluginDirent[],
     stat: async p =>
-      (await fsp.stat(p)) as {
-        mtime: Date
-        isDirectory(): boolean
-        size: number
-      },
+      (await fsp.stat(p)) as PluginStats,
     rm: async (p, o) => fsp.rm(p, o),
     rename: async (o, n) => fsp.rename(o, n),
   }
@@ -712,7 +713,11 @@ function loadEffortLevels(): readonly string[] {
 export const EFFORT_LEVELS = loadEffortLevels()
 
 // Tipos (passthroughs estructurales)
-export type ClaudeCodeHint = { id: string; message: string; cta?: string }
+// La forma real del aviso es la del protocolo (`v`, `type`, `value`, …) que
+// declara `tool-registry/claudeCodeHints.ts`; la copia de aquí había
+// inventado otra (`id`, `message`, `cta`) que nadie emite.
+import type { ClaudeCodeHint } from '@thyrox/tool-registry/claudeCodeHints.js'
+export type { ClaudeCodeHint }
 // Misma forma que `@thyrox/local-observability/errorHelpers.js`: la ruta
 // del archivo y la configuración por defecto que debe usarse en su lugar.
 export class ConfigParseError extends Error {
@@ -775,14 +780,12 @@ export const setClearRegisteredPluginHooksFn =
   setClearRegisteredPluginHooksFn_
 
 /**
- * `coerceDescriptionToString` — reexport de la impl real en
- * `@thyrox/agent/frontmatterParser.ts` (existe, verificado). Se envuelve
- * como función (no como binding estático de `export {...} from`, que
- * fallaría por falta de symlink de workspace).
+ * `coerceDescriptionToString` vive en este mismo paquete
+ * (`../frontmatterParser.ts`). Antes se pedía a `@thyrox/agent/frontmatterParser`,
+ * que sólo reexporta este módulo: la vuelta por `agent` tipaba el resultado
+ * como `unknown` y rompía la descripción de cada comando de plugin.
  */
-export function coerceDescriptionToString(...args: unknown[]): unknown {
-  return requireAgentFrontmatterParser().coerceDescriptionToString(...args)
-}
+export { coerceDescriptionToString } from '../frontmatterParser.js'
 
 /**
  * `extractDescriptionFromMarkdown` lives in
@@ -921,7 +924,7 @@ const [_getParseEffortValue, setParseEffortValueFn_] = makeSetter(
 )
 const [_getParseYaml, setParseYamlFn_] = makeSetter((_s: string): unknown => null)
 const [_getParseArgumentNames, setParseArgumentNamesFn_] = makeSetter(
-  (_s: string): string[] => [],
+  (_s: string | string[] | undefined): string[] => [],
 )
 const [_getParseUserSpecifiedModel, setParseUserSpecifiedModelFn_] =
   makeSetter((_v: unknown): string | undefined => undefined)
@@ -1000,7 +1003,7 @@ export function parseEffortValue(
 export function parseYaml(s: string): unknown {
   return _getParseYaml()(s)
 }
-export function parseArgumentNames(s: string): string[] {
+export function parseArgumentNames(s: string | string[] | undefined): string[] {
   return _getParseArgumentNames()(s)
 }
 export function parseUserSpecifiedModel(v: unknown): string | undefined {
@@ -1057,7 +1060,11 @@ const [_getRegisterHookCallbacks, setRegisterHookCallbacksFn_] = makeSetter(
 const [
   _getGetAgentDefinitionsWithOverrides,
   setGetAgentDefinitionsWithOverridesFn_,
-] = makeSetter(async (..._args: unknown[]): Promise<unknown[]> => [])
+] = makeSetter(
+  // Sin host enlazado no hay agentes: el resultado vacío con su forma real,
+  // no un arreglo, que `refresh` leería como `allAgents` indefinido.
+  async (_cwd: string): Promise<AgentDefinitionsResult> => ({ activeAgents: [], allAgents: [] }),
+)
 export function getRegisteredHooks(): unknown[] {
   return _getRegisteredHooks_()()
 }
@@ -1065,9 +1072,9 @@ export function registerHookCallbacks(hooks: unknown[]): void {
   _getRegisterHookCallbacks()(hooks)
 }
 export function getAgentDefinitionsWithOverrides(
-  ...args: unknown[]
-): Promise<unknown[]> {
-  return _getGetAgentDefinitionsWithOverrides()(...args)
+  cwd: string,
+): Promise<AgentDefinitionsResult> {
+  return _getGetAgentDefinitionsWithOverrides()(cwd)
 }
 export const setGetRegisteredHooksFn = setGetRegisteredHooksFn_
 export const setRegisterHookCallbacksFn = setRegisterHookCallbacksFn_
@@ -1271,52 +1278,21 @@ export function setGracefulShutdownFn(fn: typeof _gracefulShutdown): void {
 }
 
 // ---------------------------------------------------------------------------
-// Slots de tipo forward-compat — las definiciones precisas viven en
-// subsistemas de capa superior (tool-registry para Command, skills para
-// BundledSkillDefinition). Usar tipos estructurales equivalentes a
-// `unknown` mantiene la capa del paquete plugin limpia.
+// Tipos de capa superior: `Command` (agent) y `BundledSkillDefinition`
+// (command-runtime). Se re-exportan sólo como tipos; hasta 2026-09-25 eran
+// ranuras de campos `unknown` con índice abierto, y los consumidores que les
+// pasaban los tipos reales fallaban (ver H-THYROX-176).
 // ---------------------------------------------------------------------------
 
-export type Command = {
-  type: string
-  name: string
-  description?: string
-  hasUserSpecifiedDescription?: boolean
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  contentLength?: number
-  source?: string
-  loadedFrom?: string
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  isHidden?: boolean
-  progressMessage?: string
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// El `Command` real vive en `@thyrox/agent/command.js`. Esta ranura lo
+// sustituía por un objeto de campos `unknown` con índice abierto, y cada lista
+// de comandos de plugin fallaba al entregarse a quien espera el `Command`
+// completo. Se re-exporta sólo el tipo: la capa de plugin no gana ninguna
+// dependencia de ejecución.
+export type { Command } from '@thyrox/agent/command.js'
 
-export type BundledSkillDefinition = {
-  name: string
-  description?: string
-  allowedTools?: string[]
-  argumentHint?: string
-  whenToUse?: string
-  model?: string
-  disableModelInvocation?: boolean
-  userInvocable?: boolean
-  hooks?: unknown
-  context?: unknown
-  agent?: unknown
-  isEnabled?: () => boolean
-  getPromptForCommand?: unknown
-  [key: string]: unknown
-}
+// Igual que `Command`: la definición real vive en el paquete de comandos.
+export type { BundledSkillDefinition } from '@thyrox/command-runtime/skills/bundledSkills.js'
 
 // El paquete ya existe: se reexportan los bindings canónicos en vez de
 // conservar la prosa heredada que afirmaba que estaba ausente.
@@ -1327,12 +1303,13 @@ export { FILE_WRITE_TOOL_NAME } from '@thyrox/tool-registry/tools/FileWriteTool/
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { HookEvent } from '../settings/types.js'
-export type { LspServerConfig } from './types.js'
+export type { LspServerConfig, ScopedLspServerConfig } from './types.js'
 export type { McpServerConfig } from '../mcpConfigSchema.js'
 export type { OutputStyleConfig } from '../outputStyles.js'
 
 // Tipos que sus consumidores piden aquí y que son de otro paquete; entran
 // por una clave declarada de su exports (medido con src/verify/namedImports.ts).
 export type { AgentColorName } from '@thyrox/tool-registry/tools/AgentTool/agentColorManager.js'
-export type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { AgentDefinitionsResult } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+export type { AgentDefinitionsResult }
 export type { AppState } from '@thyrox/tool-registry/appStateTypes'

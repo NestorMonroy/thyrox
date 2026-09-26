@@ -1,0 +1,5 @@
+src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts(97,67): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"'.
+  Overload 2 of 2, '(expected: "userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"): void', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type '"userSettings" | "projectSettings" | "localSettings" | "cliArg" | "session"'.

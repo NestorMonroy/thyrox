@@ -140,6 +140,7 @@ describe('evaluateStopHookBlockOutcome', () => {
       blockCapEnv: undefined,
     })
     expect(d.kind).toBe('continue')
+    if (d.kind !== 'continue') throw new Error('unreachable')
     expect(d.nextTurnCount).toBe(5)
   })
 

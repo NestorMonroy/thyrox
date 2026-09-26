@@ -1,0 +1,171 @@
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(50,20): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:40-60 ---
+     40      ).toBeUndefined()
+     41    })
+     42  
+     43    test('getSystemPrompt is a function (not a static string)', () => {
+     44      expect(typeof GENERAL_PURPOSE_AGENT.getSystemPrompt).toBe('function')
+     45    })
+     46  })
+     47  
+     48  describe('GENERAL_PURPOSE_AGENT.getSystemPrompt — content', () => {
+     49    test('returns a non-empty string', () => {
+     50>     const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     51      expect(typeof prompt).toBe('string')
+     52      expect(prompt.length).toBeGreaterThan(100)
+     53    })
+     54  
+     55    test('contains anchor phrases for the role', () => {
+     56      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     57      expect(prompt).toContain("Anthropic's official CLI")
+     58      expect(prompt).toContain('use the tools available')
+     59    })
+     60  
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(56,20): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:46-66 ---
+     46  })
+     47  
+     48  describe('GENERAL_PURPOSE_AGENT.getSystemPrompt — content', () => {
+     49    test('returns a non-empty string', () => {
+     50      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     51      expect(typeof prompt).toBe('string')
+     52      expect(prompt.length).toBeGreaterThan(100)
+     53    })
+     54  
+     55    test('contains anchor phrases for the role', () => {
+     56>     const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     57      expect(prompt).toContain("Anthropic's official CLI")
+     58      expect(prompt).toContain('use the tools available')
+     59    })
+     60  
+     61    test('contains "Complete the task fully" anti-half-done directive', () => {
+     62      // Critical phrase — caller infers from this that the agent will
+     63      // not leave work in progress. A refactor that drops it would
+     64      // change behavior in ways that affect AgentTool consumers.
+     65      expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     66        'Complete the task fully',
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(65,12): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:55-75 ---
+     55    test('contains anchor phrases for the role', () => {
+     56      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     57      expect(prompt).toContain("Anthropic's official CLI")
+     58      expect(prompt).toContain('use the tools available')
+     59    })
+     60  
+     61    test('contains "Complete the task fully" anti-half-done directive', () => {
+     62      // Critical phrase — caller infers from this that the agent will
+     63      // not leave work in progress. A refactor that drops it would
+     64      // change behavior in ways that affect AgentTool consumers.
+     65>     expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     66        'Complete the task fully',
+     67      )
+     68      expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     69        "don't gold-plate",
+     70      )
+     71    })
+     72  
+     73    test('contains NEVER-create-files guard', () => {
+     74      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     75      expect(prompt).toContain(
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(68,12): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:58-78 ---
+     58      expect(prompt).toContain('use the tools available')
+     59    })
+     60  
+     61    test('contains "Complete the task fully" anti-half-done directive', () => {
+     62      // Critical phrase — caller infers from this that the agent will
+     63      // not leave work in progress. A refactor that drops it would
+     64      // change behavior in ways that affect AgentTool consumers.
+     65      expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     66        'Complete the task fully',
+     67      )
+     68>     expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     69        "don't gold-plate",
+     70      )
+     71    })
+     72  
+     73    test('contains NEVER-create-files guard', () => {
+     74      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     75      expect(prompt).toContain(
+     76        "NEVER create files unless they're absolutely necessary",
+     77      )
+     78      expect(prompt).toContain(
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(74,20): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:64-84 ---
+     64      // change behavior in ways that affect AgentTool consumers.
+     65      expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     66        'Complete the task fully',
+     67      )
+     68      expect(GENERAL_PURPOSE_AGENT.getSystemPrompt!()).toContain(
+     69        "don't gold-plate",
+     70      )
+     71    })
+     72  
+     73    test('contains NEVER-create-files guard', () => {
+     74>     const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     75      expect(prompt).toContain(
+     76        "NEVER create files unless they're absolutely necessary",
+     77      )
+     78      expect(prompt).toContain(
+     79        'NEVER proactively create documentation files',
+     80      )
+     81    })
+     82  
+     83    test('contains "concise report" reporting contract', () => {
+     84      // The agent must report concisely to the parent — the parent will
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(86,20): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:76-96 ---
+     76        "NEVER create files unless they're absolutely necessary",
+     77      )
+     78      expect(prompt).toContain(
+     79        'NEVER proactively create documentation files',
+     80      )
+     81    })
+     82  
+     83    test('contains "concise report" reporting contract', () => {
+     84      // The agent must report concisely to the parent — the parent will
+     85      // relay to the user. Verbose reports waste tokens and mislead.
+     86>     const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     87      expect(prompt).toContain('concise report')
+     88      expect(prompt).toContain('caller will relay this to the user')
+     89    })
+     90  
+     91    test('returns the same content per call (deterministic)', () => {
+     92      const a = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     93      const b = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     94      expect(a).toBe(b)
+     95    })
+     96  })
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(92,15): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:82-96 ---
+     82  
+     83    test('contains "concise report" reporting contract', () => {
+     84      // The agent must report concisely to the parent — the parent will
+     85      // relay to the user. Verbose reports waste tokens and mislead.
+     86      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     87      expect(prompt).toContain('concise report')
+     88      expect(prompt).toContain('caller will relay this to the user')
+     89    })
+     90  
+     91    test('returns the same content per call (deterministic)', () => {
+     92>     const a = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     93      const b = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     94      expect(a).toBe(b)
+     95    })
+     96  })
+src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts(93,15): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts:83-96 ---
+     83    test('contains "concise report" reporting contract', () => {
+     84      // The agent must report concisely to the parent — the parent will
+     85      // relay to the user. Verbose reports waste tokens and mislead.
+     86      const prompt = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     87      expect(prompt).toContain('concise report')
+     88      expect(prompt).toContain('caller will relay this to the user')
+     89    })
+     90  
+     91    test('returns the same content per call (deterministic)', () => {
+     92      const a = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     93>     const b = GENERAL_PURPOSE_AGENT.getSystemPrompt!()
+     94      expect(a).toBe(b)
+     95    })
+     96  })

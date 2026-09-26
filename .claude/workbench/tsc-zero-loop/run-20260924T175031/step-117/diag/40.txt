@@ -1,0 +1,31 @@
+src/packages/cli/src/handlers/util.tsx(29,25): error TS2769: No overload matches this call.
+  --- código src/packages/cli/src/handlers/util.tsx:19-39 ---
+     19  
+     20  export async function setupTokenHandler(root: Root): Promise<void> {
+     21    logEvent('tengu_setup_token_command', {})
+     22  
+     23    const showAuthWarning = !isAnthropicAuthEnabled()
+     24    const { ConsoleOAuthFlow } = await import(
+     25      '@thyrox/repl/components/ConsoleOAuthFlow.js'
+     26    )
+     27    await new Promise<void>(resolve => {
+     28      root.render(
+     29>       <AppStateProvider onChangeAppState={onChangeAppState}>
+     30          <KeybindingSetup>
+     31            <Box flexDirection="column" gap={1}>
+     32              <WelcomeV2 />
+     33              {showAuthWarning && (
+     34                <Box flexDirection="column">
+     35                  <Text color="warning">
+     36                    Warning: You already have authentication configured via
+     37                    environment variable or API key helper.
+     38                  </Text>
+     39                  <Text color="warning">
+  Overload 1 of 2, '(props: { children?: ReactNode; onChangeAppState?: ((prev: unknown, next: unknown) => void) | undefined; }, context?: any): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void' is not assignable to type '(prev: unknown, next: unknown) => void'.
+      Types of parameters '__0' and 'prev' are incompatible.
+        Type 'unknown' is not assignable to type '{ newState: AppState; oldState: AppState; }'.
+  Overload 2 of 2, '(props: { children?: ReactNode; onChangeAppState?: ((prev: unknown, next: unknown) => void) | undefined; }): string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | ... 4 more ... | undefined', gave the following error.
+    Type '({ newState, oldState, }: { newState: AppState; oldState: AppState; }) => void' is not assignable to type '(prev: unknown, next: unknown) => void'.
+      Types of parameters '__0' and 'prev' are incompatible.
+        Type 'unknown' is not assignable to type '{ newState: AppState; oldState: AppState; }'.

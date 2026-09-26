@@ -1,0 +1,8 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(6,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(63,56): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(83,31): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(83,36): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(151,14): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(255,37): error TS7006: Parameter 'm' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(325,43): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(341,48): error TS7006: Parameter 's' implicitly has an 'any' type.

@@ -1,0 +1,23 @@
+src/packages/config/plugin/orphanedPluginFilter.ts(72,32): error TS2339: Property 'map' does not exist on type 'string'.
+  --- código src/packages/config/plugin/orphanedPluginFilter.ts:62-82 ---
+     62          '--no-ignore',
+     63          '--max-depth',
+     64          '4',
+     65          '--glob',
+     66          ORPHANED_AT_FILENAME,
+     67        ],
+     68        cachePath,
+     69        new AbortController().signal,
+     70      )
+     71  
+     72>     const exclusions = markers.map((markerPath: string): string => {
+     73        // ripgrep may return absolute or relative — normalize to relative.
+     74        const versionDir = dirname(markerPath)
+     75        const rel = isAbsolute(versionDir)
+     76          ? relative(cachePath, versionDir)
+     77          : versionDir
+     78        // ripgrep glob patterns always use forward slashes, even on Windows
+     79        const posixRelative = rel.replace(/\\/g, '/')
+     80        return `!**/${posixRelative}/**`
+     81      })
+     82      cachedExclusions = exclusions

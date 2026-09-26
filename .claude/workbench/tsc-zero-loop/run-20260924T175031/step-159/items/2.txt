@@ -1,0 +1,34 @@
+Patrón: agent-message-to-message-boundary-cast
+Señal del verificador: TS2322:.*Type 'AgentMessage(\[\])?' is not assignable to type '(Message|MessageBase)(\[\])?'
+Arreglo genérico: fromCoreMessages/fromCoreMessage (messageAdapters.ts) devuelven AgentMessage, un tipo laxo con `type: string`, mientras que el modelo del bucle usa Message, con `type: MessageType` (unión estrecha). El archivo ya resuelve esta frontera en otros seis sitios con `message as Message` (cast de un solo paso, legal porque Message es estructuralmente más estrecho que AgentMessage). Aplicar el mismo cast en el punto de asignación/uso, sin tocar la declaración de AgentMessage ni de fromCoreMessages.
+Ya aplicado en: src/packages/agent/QueryEngine.ts
+Archivos donde la señal sigue viva: src/packages/agent/query.ts
+
+src/packages/agent/query.ts(528,7): error TS2322: Type 'AgentMessage[]' is not assignable to type 'Message[]'.
+  --- código src/packages/agent/query.ts:518-538 ---
+    518        // can stop retrying on the next iteration.
+    519        tracking = {
+    520          ...(tracking ?? { compacted: false, turnId: '', turnCounter: 0 }),
+    521          consecutiveFailures,
+    522        }
+    523      }
+    524  
+    525      //TODO: no need to set toolUseContext.messages during set-up since it is updated here
+    526      toolUseContext = {
+    527        ...toolUseContext,
+    528>       messages: messagesForQuery,
+    529      }
+    530  
+    531      const assistantMessages: AssistantMessage[] = []
+    532      const toolResults: (UserMessage | AttachmentMessage)[] = []
+    533      // @see https://docs.claude.com/en/docs/build-with-claude/tool-use
+    534      // Note: stop_reason === 'tool_use' is unreliable -- it's not always set correctly.
+    535      // Set during streaming whenever a tool_use block arrives — the sole
+    536      // loop-exit signal. If false after streaming, we're done (modulo stop-hook retry).
+    537      const toolUseBlocks: ToolUseBlock[] = []
+    538      let needsFollowUp = false
+  Type 'AgentMessage' is not assignable to type 'Message'.
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type 'MessageType'.

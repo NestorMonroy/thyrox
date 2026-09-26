@@ -34,10 +34,14 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { getDumpPromptsPath } from '@thyrox/provider/dumpPrompts.js'
-import { buildPostCompactMessages } from '@thyrox/agent/compaction/compact.js'
+import {
+  buildPostCompactMessages,
+  type CompactionResult,
+} from '@thyrox/agent/compaction/compact.js'
 import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
 import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
 import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+import type { AgentToolProgress } from '@thyrox/tool-registry/progressTypes'
 import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
 import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
 import type { CommandResultDisplay } from '@thyrox/agent/command.js'
@@ -91,6 +95,7 @@ import { logOTelEvent, redactIfDisabled } from '@thyrox/local-observability/tele
 import { emitSlashUserPrompt } from './slashUserPromptTelemetry.js'
 import { buildPluginCommandTelemetryFields } from '@thyrox/tool-registry/telemetry/pluginTelemetry.js'
 import { getAssistantMessageContentLength } from '@thyrox/agent/tokens.js'
+import { parseEffortValue } from '@thyrox/agent/effort.js'
 import { createAgentId } from '@thyrox/agent/uuid.js'
 import { getWorkload } from '@thyrox/provider/workloadContext.js'
 import type {
@@ -142,10 +147,14 @@ async function executeForkedSlashCommand(
   const { skillContent, modifiedGetAppState, baseAgent, promptMessages } =
     await prepareForkedCommandContext(command, args, context)
 
-  // Merge skill's effort into the agent definition so runAgent applies it
+  // Merge skill's effort into the agent definition so runAgent applies it.
+  // command.effort llega tipado `unknown`; parseEffortValue lo normaliza al
+  // mismo EffortValue que ya exige AgentDefinition, sin cambiar el valor
+  // para un efecto ya válido (parseEffortValue lo devuelve intacto).
+  const parsedEffort = parseEffortValue(command.effort)
   const agentDefinition =
-    command.effort !== undefined
-      ? { ...baseAgent, effort: command.effort }
+    parsedEffort !== undefined
+      ? { ...baseAgent, effort: parsedEffort }
       : baseAgent
 
   logForDebugging(
@@ -258,7 +267,10 @@ async function executeForkedSlashCommand(
     return {
       type: 'progress',
       data: {
-        message,
+        // Un mensaje de asistente real de la API SIEMPRE trae `usage`
+        // poblado y `content` como arreglo — mismo supuesto que
+        // AgentTool.tsx:1553 ya documenta para este mismo campo.
+        message: message as AgentToolProgress['message'],
         type: 'agent_progress',
         prompt: skillContent,
         agentId,
@@ -538,10 +550,15 @@ export async function processSlashCommand(
         eventData.plugin_version =
           pluginManifest.version as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS
       }
-      Object.assign(
-        eventData,
-        buildPluginCommandTelemetryFields(returnedCommand.pluginInfo),
-      )
+      if (pluginManifest.name) {
+        Object.assign(
+          eventData,
+          buildPluginCommandTelemetryFields({
+            pluginManifest: { ...pluginManifest, name: pluginManifest.name },
+            repository,
+          }),
+        )
+      }
     }
 
     logEvent('tengu_input_command', {
@@ -918,10 +935,14 @@ async function getMessagesForSlashCommand(
                   ]
                 : []),
             ]
+            // compactionResult llega tipado como unknown desde LocalCommandResult,
+            // pero mod.call() para 'compact' siempre produce un CompactionResult
+            // (compact.ts / sessionMemoryCompact.ts garantizan esa forma).
+            const compactionResult = result.compactionResult as CompactionResult
             const compactionResultWithSlashMessages = {
-              ...result.compactionResult,
+              ...compactionResult,
               messagesToKeep: [
-                ...(result.compactionResult.messagesToKeep ?? []),
+                ...(compactionResult.messagesToKeep ?? []),
                 ...slashCommandMessages,
               ],
             }
@@ -931,9 +952,21 @@ async function getMessagesForSlashCommand(
             // (UUIDs never repeat, so they're never looked up).
             resetMicrocompactState()
             return {
+              // `buildPostCompactMessages` (de `agent/compaction/compact.js`) declara
+              // su retorno como `Message[]`, la unión COMPLETA de
+              // `messageShapes.ts` — incluye 'grouped_tool_use' y
+              // 'collapsed_read_search', dos variantes SÓLO de UI que
+              // `groupToolUses.ts`/`collapseReadSearch.ts` sintetizan para
+              // pantalla y que nunca entran a un `CompactionResult`: sus
+              // campos (`boundaryMarker`, `summaryMessages`,
+              // `messagesToKeep`, `attachments`, `hookResults`) salen de la
+              // conversación real o de mensajes creados en este mismo
+              // módulo, ninguno de esos dos tipos. Mismo criterio que la
+              // aserción de `compactionResult` arriba: el tipo es más ancho
+              // que lo que el valor puede contener en runtime.
               messages: buildPostCompactMessages(
                 compactionResultWithSlashMessages,
-              ),
+              ) as ProcessUserInputBaseResult['messages'],
               shouldQuery: false,
               command,
             }

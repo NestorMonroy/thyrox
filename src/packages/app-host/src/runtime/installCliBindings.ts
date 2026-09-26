@@ -45,6 +45,7 @@ import {
 import { runHeadless } from '@thyrox/cli/print.js'
 import { getStructuredIO } from '@thyrox/cli/structuredIOHelper.js'
 import { createHeadlessSessionStore } from '@thyrox/agent/sessionStores.js'
+import type { AppState } from './appStateCompatShim.js'
 
 let cliBindingsInstalled = false
 
@@ -52,10 +53,15 @@ export function installCliBindings(): void {
   if (cliBindingsInstalled) return
 
   installCliHostBindings({
-    createHeadlessStore: params =>
-      createHeadlessSessionStore(params as HeadlessStoreParams),
+    createHeadlessStore: params => {
+      const store = createHeadlessSessionStore(params as HeadlessStoreParams)
+      return {
+        getState: () => store.getState(),
+        setState: (...args: unknown[]) => store.setState(args[0] as AppState),
+      }
+    },
     runHeadless: (...args) =>
-      runHeadless(...(args as Parameters<typeof runHeadless>)),
+      runHeadless(...(args as Parameters<typeof runHeadless>)) as Promise<void>,
     getStructuredIO,
   })
 

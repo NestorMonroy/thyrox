@@ -1,0 +1,19 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/standalone/standaloneAgent.ts(22,10): error TS18046: 'appState' is of type 'unknown'.
+  --- código src/packages/agent/standalone/standaloneAgent.ts:12-23 ---
+     12  
+     13  /**
+     14   * Returns the standalone agent name if set and not a swarm teammate.
+     15   * Uses getTeamName() for consistency with isTeammate() swarm detection.
+     16   */
+     17  export function getStandaloneAgentName(appState: AppState): string | undefined {
+     18    // If in a team (swarm), don't return standalone name
+     19    if (getTeamName()) {
+     20      return undefined
+     21    }
+     22>   return appState.standaloneAgentContext?.name
+     23  }

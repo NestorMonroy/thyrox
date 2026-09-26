@@ -1,0 +1,15 @@
+src/packages/command-runtime/src/commands/bridge/bridge.tsx(2,40): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/user/thyrox/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  --- código src/packages/command-runtime/src/commands/bridge/bridge.tsx:1-12 ---
+      1  import { feature } from 'bun:bundle'
+      2> import { toString as qrToString } from 'qrcode'
+      3  import * as React from 'react'
+      4  import { useEffect, useState } from 'react'
+      5  import { getBridgeAccessToken } from '@thyrox/bridge/bridgeConfig.js'
+      6  import {
+      7    checkBridgeMinVersion,
+      8    getBridgeDisabledReason,
+      9    isEnvLessBridgeEnabled,
+     10  } from '@thyrox/bridge/bridgeEnabled.js'
+     11  import { checkEnvLessBridgeMinVersion } from '@thyrox/bridge/envLessBridgeConfig.js'
+     12  import {
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`

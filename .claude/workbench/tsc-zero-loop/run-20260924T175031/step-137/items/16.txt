@@ -1,0 +1,69 @@
+src/packages/agent/query.ts(1562,25): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1552-1572 ---
+   1552              result.type === 'user' &&
+   1553              Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562>           Array.isArray(toolResult.message.content)
+   1563              ? toolResult.message.content.find(
+   1564                  (c): c is ToolResultBlockParam =>
+   1565                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1566                )
+   1567              : undefined
+   1568          return {
+   1569            name: block.name,
+   1570            input: block.input,
+   1571            output:
+   1572              resultContent && 'content' in resultContent
+src/packages/agent/query.ts(1563,15): error TS18048: 'toolResult.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1553-1573 ---
+   1553              Array.isArray(result.message.content) &&
+   1554              result.message.content.some(
+   1555                content =>
+   1556                  content.type === 'tool_result' &&
+   1557                  content.tool_use_id === block.id,
+   1558              ),
+   1559          )
+   1560          const resultContent =
+   1561            toolResult?.type === 'user' &&
+   1562            Array.isArray(toolResult.message.content)
+   1563>             ? toolResult.message.content.find(
+   1564                  (c): c is ToolResultBlockParam =>
+   1565                    c.type === 'tool_result' && c.tool_use_id === block.id,
+   1566                )
+   1567              : undefined
+   1568          return {
+   1569            name: block.name,
+   1570            input: block.input,
+   1571            output:
+   1572              resultContent && 'content' in resultContent
+   1573                ? resultContent.content
+src/packages/agent/query.ts(1756,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1746-1766 ---
+   1746            notifyCommandLifecycle(cmd.uuid, 'started')
+   1747          }
+   1748        }
+   1749        removeFromQueue(consumedCommands)
+   1750      }
+   1751  
+   1752      // Instrumentation: Track file change attachments after they're added
+   1753      const fileChangeAttachmentCount = count(
+   1754        toolResults,
+   1755        tr =>
+   1756>         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+   1757      )
+   1758  
+   1759      logEvent('tengu_query_after_attachments', {
+   1760        totalToolResultsCount: toolResults.length,
+   1761        fileChangeAttachmentCount,
+   1762        queryChainId: queryChainIdForAnalytics,
+   1763        queryDepth: queryTracking.depth,
+   1764      })
+   1765  
+   1766      // Refresh tools between turns so newly-connected MCP servers become available

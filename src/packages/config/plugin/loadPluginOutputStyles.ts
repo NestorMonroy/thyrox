@@ -54,7 +54,9 @@ async function loadOutputStyleFromFile(
     // Namespace output styles with plugin name, consistent with commands and agents
     const name = `${pluginName}:${baseStyleName}`
     const description =
-      coerceDescriptionToString(frontmatter.description, name) ??
+      (coerceDescriptionToString(frontmatter.description, name) as
+        | string
+        | null) ??
       extractDescriptionFromMarkdown(
         markdownContent,
         `Output style from ${pluginName} plugin`,
@@ -128,7 +130,12 @@ export const loadPluginOutputStyles = memoize(
         for (const stylePath of plugin.outputStylesPaths) {
           try {
             const fs = getFsImplementation()
-            const stats = await fs.stat(stylePath)
+            const stats = (await fs.stat(stylePath)) as {
+              mtime: Date
+              isDirectory(): boolean
+              isFile(): boolean
+              size: number
+            }
 
             if (stats.isDirectory()) {
               // Load all .md files from directory

@@ -59,7 +59,7 @@ export async function withVCR(
   )
 
   const dehydratedInput = mapMessages(
-    messagesForAPI.map(_ => _.message.content),
+    messagesForAPI.map((_: UserMessage | AssistantMessage) => _.message.content),
     dehydrateValue,
   )
   const filename = join(
@@ -132,6 +132,9 @@ function mapMessages(
   return messages.map(_ => {
     if (typeof _ === 'string') {
       return f(_)
+    }
+    if (_ === undefined) {
+      return _
     }
     return _.map(_ => {
       switch (_.type) {

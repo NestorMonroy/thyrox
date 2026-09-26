@@ -41,6 +41,7 @@ import type { Transcript } from './transcript.ts'
 import { registry, toolSpecs } from '@thyrox/tools/registry'
 import type { ContentBlock, HarnessEvent, LoopResult, LoopStop, Message, Provider, Tool, Usage } from './types.ts'
 import { USAGE_CERO } from './types.ts'
+import { resolveRequestCacheTtl, type RequestSource } from '../cacheTtl.ts'
 
 export type LoopOptions = {
   provider: Provider
@@ -60,7 +61,12 @@ export type LoopOptions = {
    */
   tokenBudget?: number
   maxTokens?: number
+  /** TTL declarado; sin él lo decide `resolveRequestCacheTtl`. */
   cacheTtl?: '5m' | '1h'
+  /** El mayor hueco esperado entre dos turnos: por encima de 5 min la caché de 5 m caduca. */
+  expectedGapMinutes?: number
+  /** Quién pide: `sdk` (el bucle, por defecto) o un subagente, con su TTL propio. */
+  requestSource?: RequestSource
   hooks?: HookConfig
   permissions?: PermissionPolicy
   /** Compactación. Sin esta clave, el bucle no toca el historial. */
@@ -175,6 +181,11 @@ const textoDe = (bloques: ContentBlock[]): string =>
  */
 export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEvent, LoopResult> {
   const maxTurns = opts.maxTurns ?? 20
+  // Una sola decisión de TTL por bucle: la usan la petición y el costo.
+  const { ttl: cacheTtl } = resolveRequestCacheTtl({
+    declared: opts.cacheTtl, model: opts.model, expectedGapMinutes: opts.expectedGapMinutes,
+    source: opts.requestSource ?? 'sdk',
+  })
   const herramientas = registry(opts.tools)
   const sesion = openSession({ cwd: opts.cwd, transcriptDir: opts.transcriptDir, resume: opts.resume })
   const shared = { session_id: sesion.id, transcript_path: sesion.transcriptPath, cwd: opts.cwd }
@@ -365,7 +376,7 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
       tools: toolSpecs(opts.tools),
       messages: mensajes,
       maxTokens: opts.maxTokens ?? 8192,
-      cacheTtl: opts.cacheTtl ?? '1h',
+      cacheTtl,
       ...(opts.stream ? { stream: true as const } : {}),
     }
     let turn
@@ -478,7 +489,7 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
     // El modelo del coste es el que los turnos DECLARARON, no el que se pidió:
     // el proveedor puede haber caído a su respaldo, y cobrar por el alias
     // solicitado mediría el modelo equivocado.
-    usd: turnCost(modeloServido ?? opts.model, usage, opts.cacheTtl ?? '1h').usd,
+    usd: turnCost(modeloServido ?? opts.model, usage, cacheTtl).usd,
   }
 
   // `SessionEnd` va DESPUÉS de `Stop` y del resultado: `Stop` puede vetar el

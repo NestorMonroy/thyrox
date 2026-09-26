@@ -1,0 +1,2 @@
+src/packages/repl/src/components/hooks/SelectHookMode.tsx(45,9): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+src/packages/repl/src/components/hooks/SelectHookMode.tsx(62,7): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.

@@ -195,6 +195,12 @@ Begin your analysis now. Do this in 3 steps:
 
 Your final reply must contain the markdown report and nothing else.`
 
+type CommandContextWithAppState = {
+  getAppState: () => {
+    toolPermissionContext: { alwaysAllowRules: Record<string, unknown> }
+  }
+}
+
 export default createMovedToPluginCommand({
   name: 'security-review',
   description:
@@ -215,9 +221,9 @@ export default createMovedToPluginCommand({
     const processedContent = await executeShellCommandsInPrompt(
       parsed.content,
       {
-        ...context,
+        ...(context as Record<string, unknown>),
         getAppState() {
-          const appState = context.getAppState()
+          const appState = (context as CommandContextWithAppState).getAppState()
           return {
             ...appState,
             toolPermissionContext: {

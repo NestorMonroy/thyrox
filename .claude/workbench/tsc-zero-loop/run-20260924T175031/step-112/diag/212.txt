@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(3488,17): error TS2322: Type '{}' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3478-3498 ---
+   3478  
+   3479              const mod = await matchingCommand.load();
+   3480              const jsx = await mod.call(onDone, context, commandArgs);
+   3481  
+   3482              // Skip if onDone already fired — prevents stuck isLocalJSXCommand
+   3483              // (see processSlashCommand.tsx local-jsx case for full mechanism).
+   3484              if (jsx && !doneWasCalled) {
+   3485                // shouldHidePromptInput: false keeps Notifications mounted
+   3486                // so the onDone result isn't lost
+   3487                setToolJSX({
+   3488>                 jsx,
+   3489                  shouldHidePromptInput: false,
+   3490                  isLocalJSXCommand: true,
+   3491                });
+   3492              }
+   3493            };
+   3494            void executeImmediateCommand();
+   3495            return; // Always return early - don't add to history or queue
+   3496          }
+   3497        }
+   3498  
+src/packages/repl/src/screens/REPLView.tsx(3977,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: getQuerySourceForREPL; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3967-3987 ---
+   3967          (
+   3968            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   3969          ).resetContextCollapse();
+   3970          /* eslint-enable @typescript-eslint/no-require-imports */
+   3971        }
+   3972  
+   3973        // Restore state from the message we're rewinding to
+   3974        setAppState(prev => ({
+   3975          ...prev,
+   3976          // Restore permission mode from the message
+   3977>         toolPermissionContext:
+   3978            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   3979              ? {
+   3980                  ...prev.toolPermissionContext,
+   3981                  mode: message.permissionMode,
+   3982                }
+   3983              : prev.toolPermissionContext,
+   3984          // Clear stale prompt suggestion from previous conversation state
+   3985          promptSuggestion: {
+   3986            text: null,
+   3987            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

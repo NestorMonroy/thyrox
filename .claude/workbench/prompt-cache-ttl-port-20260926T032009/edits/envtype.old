@@ -1,0 +1,8 @@
+/** Como el entorno del proceso: una variable ausente vale `undefined`. */
+export type PromptCacheTtlEnv = {
+  THYROX_FORCE_PROMPT_CACHING_5M?: string | undefined
+  THYROX_CODE_PROMPT_CACHE_TTL?: string | undefined
+  THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL?: string | undefined
+  THYROX_ENABLE_PROMPT_CACHING_1H?: string | undefined
+  THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK?: string | undefined
+}

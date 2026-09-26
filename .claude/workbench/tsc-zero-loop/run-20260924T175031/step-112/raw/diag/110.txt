@@ -1,0 +1,2 @@
+src/packages/command-runtime/src/commands/recap/recap.ts(28,7): error TS18046: 'context.abortController' is of type 'unknown'.
+src/packages/command-runtime/src/commands/recap/recap.ts(30,9): error TS18046: 'context.abortController' is of type 'unknown'.

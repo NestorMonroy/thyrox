@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx(32,44): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ConfirmStep.tsx:22-42 ---
+     22    error?: string | null
+     23  }
+     24  
+     25  export function ConfirmStep({
+     26    tools,
+     27    existingAgents,
+     28    onSave,
+     29    onSaveAndEdit,
+     30    error,
+     31  }: Props): ReactNode {
+     32>   const { goBack, wizardData } = useWizard<AgentWizardData>()
+     33  
+     34    useKeybinding('confirm:no', goBack, { context: 'Confirmation' })
+     35  
+     36    const handleKeyDown = (e: KeyboardEvent) => {
+     37      if (e.key === 's' || e.key === 'return') {
+     38        e.preventDefault()
+     39        onSave()
+     40      } else if (e.key === 'e') {
+     41        e.preventDefault()
+     42        onSaveAndEdit()

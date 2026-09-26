@@ -1,0 +1,23 @@
+src/packages/repl/src/components/hooks/ViewHookMode.tsx(35,31): error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+  --- código src/packages/repl/src/components/hooks/ViewHookMode.tsx:25-45 ---
+     25  }: Props): React.ReactNode {
+     26    return (
+     27      <Dialog
+     28        title="Hook details"
+     29        onCancel={onCancel}
+     30        inputGuide={() => <Text>Esc to go back</Text>}
+     31      >
+     32        <Box flexDirection="column" gap={1}>
+     33          <Box flexDirection="column">
+     34            <Text>
+     35>             Event: <Text bold>{selectedHook.event}</Text>
+     36            </Text>
+     37            {eventSupportsMatcher && (
+     38              <Text>
+     39                Matcher: <Text bold>{selectedHook.matcher || '(all)'}</Text>
+     40              </Text>
+     41            )}
+     42            <Text>
+     43              Type: <Text bold>{selectedHook.config.type}</Text>
+     44            </Text>
+     45            <Text>

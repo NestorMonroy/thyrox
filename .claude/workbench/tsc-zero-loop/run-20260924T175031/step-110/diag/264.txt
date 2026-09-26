@@ -1,0 +1,46 @@
+src/packages/swarm/__tests__/createSwarmHostDeps.test.ts(152,23): error TS7006: Parameter 't' implicitly has an 'any' type.
+  --- código src/packages/swarm/__tests__/createSwarmHostDeps.test.ts:142-162 ---
+    142    test('running, failed y killed caen los tres en in_progress', async () => {
+    143      await installBindings({
+    144        listTasks: async () => [
+    145          { id: 'a', subject: 's', status: 'running' },
+    146          { id: 'b', subject: 's', status: 'failed' },
+    147          { id: 'c', subject: 's', status: 'killed' },
+    148        ],
+    149      })
+    150      const { createSwarmHostDeps } = await import(RUTA)
+    151      const tareas = await createSwarmHostDeps().tasks.listTasks('lista-1')
+    152>     expect(tareas.map(t => t.status)).toEqual([
+    153        'in_progress', 'in_progress', 'in_progress',
+    154      ])
+    155    })
+    156  
+    157    test('pending y completed se conservan', async () => {
+    158      await installBindings({
+    159        listTasks: async () => [
+    160          { id: 'a', subject: 's', status: 'pending' },
+    161          { id: 'b', subject: 's', status: 'completed' },
+    162        ],
+src/packages/swarm/__tests__/createSwarmHostDeps.test.ts(166,23): error TS7006: Parameter 't' implicitly has an 'any' type.
+  --- código src/packages/swarm/__tests__/createSwarmHostDeps.test.ts:156-176 ---
+    156  
+    157    test('pending y completed se conservan', async () => {
+    158      await installBindings({
+    159        listTasks: async () => [
+    160          { id: 'a', subject: 's', status: 'pending' },
+    161          { id: 'b', subject: 's', status: 'completed' },
+    162        ],
+    163      })
+    164      const { createSwarmHostDeps } = await import(RUTA)
+    165      const tareas = await createSwarmHostDeps().tasks.listTasks('lista-1')
+    166>     expect(tareas.map(t => t.status)).toEqual(['pending', 'completed'])
+    167    })
+    168  
+    169    test('blockedBy ausente se normaliza a lista vacía, no a undefined', async () => {
+    170      await installBindings({
+    171        listTasks: async () => [{ id: 'a', subject: 's', status: 'pending' }],
+    172      })
+    173      const { createSwarmHostDeps } = await import(RUTA)
+    174      const [tarea] = await createSwarmHostDeps().tasks.listTasks('lista-1')
+    175      expect(tarea.blockedBy).toEqual([])
+    176    })

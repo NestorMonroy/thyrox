@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { getAgentHostBindings } from '../host.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AgentMessage, AgentToolUseContext } from '../internalTypes.js'
 
 // Costura dinámica: el host inyecta funciones por nombre, y cada envoltorio
@@ -101,7 +102,7 @@ export function isPromptTooLongMessage(message: unknown): boolean {
 
 export function normalizeMessagesForAPI(
   messages: AgentMessage[],
-  tools: unknown[],
+  tools: Tools,
 ): AgentMessage[] {
   return (
     getBindings().normalizeMessagesForAPI?.(messages, tools) as
@@ -308,7 +309,7 @@ export function executeStopFailureHooks(
 }
 
 export function createStreamingToolExecutor(
-  tools: unknown[],
+  tools: Tools,
   canUseTool: unknown,
   toolUseContext: AgentToolUseContext,
 ): StreamingToolExecutorLike | null {

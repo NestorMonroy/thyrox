@@ -1,0 +1,1 @@
+src/packages/repl/src/screens/Doctor.tsx(147,20): error TS2339: Property 'mcpErrorMetadata' does not exist on type 'SettingsError'.

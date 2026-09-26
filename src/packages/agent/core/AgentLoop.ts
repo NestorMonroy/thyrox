@@ -379,9 +379,9 @@ export class AgentLoop {
     if (event.type === 'content_block_delta' && 'delta' in event) {
       const delta = event.delta as { type?: string; text?: string; thinking?: string; partial_json?: string }
       if (delta?.type === 'text_delta' && delta.text != null && turnState.currentTextBlockIndex >= 0) {
-        turnState.textBlocks[turnState.currentTextBlockIndex].text += delta.text
+        turnState.textBlocks[turnState.currentTextBlockIndex]!.text += delta.text
       } else if (delta?.type === 'thinking_delta' && delta.thinking != null && turnState.currentThinkingBlockIndex >= 0) {
-        turnState.thinkingBlocks[turnState.currentThinkingBlockIndex].thinking += delta.thinking
+        turnState.thinkingBlocks[turnState.currentThinkingBlockIndex]!.thinking += delta.thinking
       }
     }
     if (event.type === 'message_delta' && 'delta' in event) {

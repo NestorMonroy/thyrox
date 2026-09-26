@@ -51,6 +51,7 @@ fixture_arm   # compone: `trap` reemplaza, no acumula
 
 echo "== 1. CONTROL — con un tercero vivo en el ledger, el pool NO lo espera =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 THYROX_BACKGROUND_LOG_DIR=$(fixture_dir); export THYROX_BACKGROUND_LOG_DIR
 spawn_sentinel
 CMDS=$(fixture_file); printf '%s\n' "true" "true" > "$CMDS"
@@ -84,6 +85,7 @@ echo "== 4. --only ve una etiqueta LLANA, no solo un grupo con guion =="
 # registrados» y salia 0 sobre un trabajo que SI estaba en el ledger.
 # Control positivo real, no fabricado: es el flujo que esta suite ya prescribe.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LOG_LLANO=$(fixture_file)
 nohup bash -c 'echo EXIT=0' >"$LOG_LLANO" 2>&1 & PID_LLANO=$!; disown $PID_LLANO
 bash "$BARRERA" register pyreds "$LOG_LLANO" "$PID_LLANO" >/dev/null
@@ -95,6 +97,7 @@ afirmar "y NO publica «sin trabajos registrados» sobre un trabajo real" 1 $?
 
 echo "== 5. el grupo con guion sigue funcionando — el default no se rompe =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LOG_GRUPO=$(fixture_file)
 nohup bash -c 'echo EXIT=0' >"$LOG_GRUPO" 2>&1 & PID_GRUPO=$!; disown $PID_GRUPO
 bash "$BARRERA" register lote-001 "$LOG_GRUPO" "$PID_GRUPO" >/dev/null

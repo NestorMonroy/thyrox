@@ -35,8 +35,7 @@ import {
   getCommandName,
 } from '@thyrox/command-runtime/runtime'
 import type { ModelInfo } from '@thyrox/headless-sdk/agentSdkTypes.js'
-import type { HookCallbackMatcher } from '@thyrox/agent/types/hooks.js'
-import type { HookEvent } from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { HookCallbackMatcher, HookEvent } from '@thyrox/agent/types/hooks.js'
 import type { PermissionMode as InternalPermissionMode } from '@thyrox/permission/permissionTypes'
 import type { AppState } from '@thyrox/app-host/state/AppState.js'
 import { parsePluginIdentifier } from '@thyrox/config/plugin/pluginIdentifier'
@@ -56,7 +55,7 @@ import {
   getAllOutputStyles,
 } from '@thyrox/config/outputStyles.js'
 import { getAccountInformation } from '@thyrox/provider/authAlias.js'
-import { getAPIProvider } from '@thyrox/provider/providers.js'
+import { type APIProvider, getAPIProvider } from '@thyrox/provider/providers.js'
 import {
   isFastModeEnabled,
   isFastModeAvailable,
@@ -71,6 +70,32 @@ import { enqueue } from '@thyrox/agent/messageQueueManager.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { randomUUID } from 'crypto'
 import { StructuredIO } from '../../../structuredIO.js'
+
+// El compat layer de mcp-runtime (compat.ts) tipa ChannelMessageNotificationSchema()
+// de forma genérica y pierde la forma real del schema; el contrato real vive en
+// mcp-runtime/src/channelNotification.ts.
+type ChannelNotificationParams = {
+  content: string
+  meta?: Record<string, string>
+}
+
+// El schema del protocolo (AccountInfoSchema) sólo declara los cuatro
+// backends que se resuelven por login OAuth; un proveedor de MODELO alterno
+// (openai/gemini/codex) no es un backend de cuenta y se representa como
+// ausente, igual que el resto de los campos bajo un 3P provider.
+function toAccountApiProvider(
+  provider: APIProvider,
+): 'firstParty' | 'bedrock' | 'vertex' | 'foundry' | undefined {
+  switch (provider) {
+    case 'firstParty':
+    case 'bedrock':
+    case 'vertex':
+    case 'foundry':
+      return provider
+    default:
+      return undefined
+  }
+}
 
 export async function handleInitializeRequest(
   request: SDKControlInitializeRequest,
@@ -215,7 +240,7 @@ export async function handleInitializeRequest(
       // getAccountInformation() returns undefined under 3P providers, so the
       // other fields are all absent. apiProvider disambiguates "not logged
       // in" (firstParty + tokenSource:none) from "3P, login not applicable".
-      apiProvider: getAPIProvider(),
+      apiProvider: toAccountApiProvider(getAPIProvider()),
     },
     pid: process.pid,
   }
@@ -424,7 +449,7 @@ export function handleChannelEnable(
   connection.client.setNotificationHandler(
     ChannelMessageNotificationSchema(),
     async notification => {
-      const { content, meta } = notification.params
+      const { content, meta } = notification.params as ChannelNotificationParams
       logMCPDebug(
         serverName,
         `notifications/claude/channel: ${content.slice(0, 80)}`,
@@ -487,7 +512,7 @@ export function reregisterChannelHandlerAfterReconnect(
   )
   if (gate.action !== 'register') return
 
-  const entry = findChannelEntry(connection.name, getAllowedChannels())
+  const entry = findChannelEntry(connection.name, getAllowedChannels()) as ChannelEntry | undefined
   const pluginId =
     entry?.kind === 'plugin'
       ? (`${entry.name}@${entry.marketplace}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
@@ -500,7 +525,7 @@ export function reregisterChannelHandlerAfterReconnect(
   connection.client.setNotificationHandler(
     ChannelMessageNotificationSchema(),
     async notification => {
-      const { content, meta } = notification.params
+      const { content, meta } = notification.params as ChannelNotificationParams
       logMCPDebug(
         connection.name,
         `notifications/claude/channel: ${content.slice(0, 80)}`,

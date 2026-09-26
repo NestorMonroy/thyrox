@@ -1,0 +1,51 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/core/AgentLoop.ts(382,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/core/AgentLoop.ts:372-392 ---
+    372          turnState.textBlocks.push({ type: 'text', text: '' })
+    373          turnState.currentTextBlockIndex = turnState.textBlocks.length - 1
+    374        } else if (block.type === 'thinking') {
+    375          turnState.thinkingBlocks.push({ type: 'thinking', thinking: '' })
+    376          turnState.currentThinkingBlockIndex = turnState.thinkingBlocks.length - 1
+    377        }
+    378      }
+    379      if (event.type === 'content_block_delta' && 'delta' in event) {
+    380        const delta = event.delta as { type?: string; text?: string; thinking?: string; partial_json?: string }
+    381        if (delta?.type === 'text_delta' && delta.text != null && turnState.currentTextBlockIndex >= 0) {
+    382>         turnState.textBlocks[turnState.currentTextBlockIndex].text += delta.text
+    383        } else if (delta?.type === 'thinking_delta' && delta.thinking != null && turnState.currentThinkingBlockIndex >= 0) {
+    384          turnState.thinkingBlocks[turnState.currentThinkingBlockIndex].thinking += delta.thinking
+    385        }
+    386      }
+    387      if (event.type === 'message_delta' && 'delta' in event) {
+    388        const delta = event.delta as { stop_reason?: string }
+    389        if (delta.stop_reason) {
+    390          turnState.stopReason = delta.stop_reason
+    391        }
+    392        if ('usage' in event) {
+src/packages/agent/core/AgentLoop.ts(384,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/agent/core/AgentLoop.ts:374-394 ---
+    374        } else if (block.type === 'thinking') {
+    375          turnState.thinkingBlocks.push({ type: 'thinking', thinking: '' })
+    376          turnState.currentThinkingBlockIndex = turnState.thinkingBlocks.length - 1
+    377        }
+    378      }
+    379      if (event.type === 'content_block_delta' && 'delta' in event) {
+    380        const delta = event.delta as { type?: string; text?: string; thinking?: string; partial_json?: string }
+    381        if (delta?.type === 'text_delta' && delta.text != null && turnState.currentTextBlockIndex >= 0) {
+    382          turnState.textBlocks[turnState.currentTextBlockIndex].text += delta.text
+    383        } else if (delta?.type === 'thinking_delta' && delta.thinking != null && turnState.currentThinkingBlockIndex >= 0) {
+    384>         turnState.thinkingBlocks[turnState.currentThinkingBlockIndex].thinking += delta.thinking
+    385        }
+    386      }
+    387      if (event.type === 'message_delta' && 'delta' in event) {
+    388        const delta = event.delta as { stop_reason?: string }
+    389        if (delta.stop_reason) {
+    390          turnState.stopReason = delta.stop_reason
+    391        }
+    392        if ('usage' in event) {
+    393          const usage = event.usage as { output_tokens: number }
+    394          turnState.turnUsage.output_tokens += usage.output_tokens

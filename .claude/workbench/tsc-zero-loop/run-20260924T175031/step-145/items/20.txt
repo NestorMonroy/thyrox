@@ -1,0 +1,34 @@
+src/packages/agent/messages.ts(5069,6): error TS6196: 'ToolUseRequestMessage' is declared but never used.
+  --- código src/packages/agent/messages.ts:5059-5075 ---
+   5059  - **Hard limit: 40 lines.** If the plan is longer, delete prose — not file paths.`
+   5060  
+   5061  type ThinkingBlockType =
+   5062    | ThinkingBlock
+   5063    | RedactedThinkingBlock
+   5064    | ThinkingBlockParam
+   5065    | RedactedThinkingBlockParam
+   5066    | BetaThinkingBlock
+   5067    | BetaRedactedThinkingBlock
+   5068  
+   5069> type ToolUseRequestMessage = NormalizedAssistantMessage & {
+   5070    message: { content: [ToolUseBlock] }
+   5071  }
+   5072  
+   5073  type ToolUseResultMessage = NormalizedUserMessage & {
+   5074    message: { content: [ToolResultBlockParam] }
+   5075  }
+src/packages/agent/messages.ts(5073,6): error TS6196: 'ToolUseResultMessage' is declared but never used.
+  --- código src/packages/agent/messages.ts:5063-5075 ---
+   5063    | RedactedThinkingBlock
+   5064    | ThinkingBlockParam
+   5065    | RedactedThinkingBlockParam
+   5066    | BetaThinkingBlock
+   5067    | BetaRedactedThinkingBlock
+   5068  
+   5069  type ToolUseRequestMessage = NormalizedAssistantMessage & {
+   5070    message: { content: [ToolUseBlock] }
+   5071  }
+   5072  
+   5073> type ToolUseResultMessage = NormalizedUserMessage & {
+   5074    message: { content: [ToolResultBlockParam] }
+   5075  }

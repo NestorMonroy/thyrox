@@ -43,7 +43,7 @@ import {
 } from './constants.ts'
 import { getToolRegistryHostBindings } from './host.ts'
 import { ensureToolRegistryRuntimeInstalled } from './toolRuntimeInstaller.ts'
-import type { ToolPermissionContextLike } from './contracts.ts'
+import type { ToolLike, ToolPermissionContextLike } from './contracts.ts'
 
 // Los tipos son los canónicos de `Tool.ts`: una segunda declaración
 // estructural hacía que un `Tools` de esta puerta no se pudiera pasar a

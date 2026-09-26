@@ -64,7 +64,7 @@ import { logEvent as obsLogEvent } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getTotalOutputTokens } from '@thyrox/app-host/bootstrap/state.js'
 import { getAgentHostBindings } from '../host.js'
-import type { HostTask, StopHookExecutionResult } from '../host.js'
+import type { StopHookExecutionResult } from '../host.js'
 import {
   addSessionHook,
   getSessionHooks,
@@ -78,6 +78,7 @@ import type {
   AgentREPLHookContext,
   AgentStopHookInfo,
   AgentSystemPrompt,
+  AgentTask,
   AgentToolUseContext,
 } from '../internalTypes.js'
 
@@ -282,7 +283,7 @@ export async function* handleStopHooks(
     if (appState.activeGoal) {
       try {
         const taskListId = host().getTaskListId?.()
-        const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+        const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
         const hayTrabajoDeFondo = tasks.some(
           t =>
             (t.status === 'in_progress' || t.status === 'running') &&
@@ -403,21 +404,16 @@ export async function* handleStopHooks(
         let esBloqueoDeObjetivo = false
         const hook = result.hook as { type?: string; prompt?: string } | undefined
         if (hook?.type === 'prompt') {
-          const estado = toolUseContext.getAppState() as {
-            activeGoal?: {
-              condition: string
-              iterations: number
-              paused?: boolean
-            }
-          }
-          const activo = estado.activeGoal
+          const activo = toolUseContext.getAppState().activeGoal
           if (activo && !activo.paused && activo.condition === hook.prompt) {
             esBloqueoDeObjetivo = true
             const reason = result.stopReason
-            toolUseContext.setAppState((prev: unknown) => ({
-              ...(prev as object),
+            // Como el binario 2.1.281: el objetivo nuevo esparce el que se
+            // leyó (`{...Je, iterations: Je.iterations+1, lastReason}`).
+            toolUseContext.setAppState?.(prev => ({
+              ...prev,
               activeGoal: {
-                ...((prev as { activeGoal: object }).activeGoal),
+                ...activo,
                 iterations: activo.iterations + 1,
                 lastReason: reason,
               },
@@ -582,8 +578,8 @@ async function* resolverObjetivoAlcanzado(
   } catch {
     // Limpieza de mejor esfuerzo.
   }
-  toolUseContext.setAppState((prev: unknown) => ({
-    ...(prev as object),
+  toolUseContext.setAppState?.(prev => ({
+    ...prev,
     activeGoal: undefined,
   }))
 
@@ -639,7 +635,7 @@ async function* hooksDeTeammate(
   const consumir = async function* (
     gen: AsyncGenerator<StopHookExecutionResult, void>,
     nombreDelHook: 'TaskCompleted' | 'TeammateIdle',
-    mensajeDeBloqueo: (e: unknown) => string,
+    mensajeDeBloqueo: (e: { blockingError: string }) => string,
   ): AsyncGenerator<unknown, boolean> {
     for await (const result of gen) {
       if (result.message) {
@@ -675,7 +671,7 @@ async function* hooksDeTeammate(
   }
 
   const taskListId = host().getTaskListId?.()
-  const tasks: HostTask[] = (await host().listTasks?.(taskListId)) ?? []
+  const tasks: AgentTask[] = (await host().listTasks?.(taskListId)) ?? []
   for (const task of tasks.filter(
     t => t.status === 'in_progress' && t.owner === teammateName,
   )) {

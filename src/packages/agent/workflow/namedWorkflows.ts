@@ -68,7 +68,7 @@ async function loadWorkflowsFromDir(
     return []
   }
   const loaded = await Promise.all(
-    entries.map(async entry => {
+    entries.map(async (entry): Promise<NamedWorkflow | null> => {
       if (!(entry.isFile() || entry.isSymbolicLink())) return null
       if (!entry.name.endsWith('.js')) return null
       const filePath = join(dir, entry.name)

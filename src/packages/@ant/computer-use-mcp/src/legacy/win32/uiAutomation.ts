@@ -197,7 +197,7 @@ export function findElement(
 
   let conditionExpr: string
   if (conditions.length === 1) {
-    conditionExpr = conditions[0]
+    conditionExpr = conditions[0]!
   } else {
     conditionExpr = `[System.Windows.Automation.AndCondition]::new(@(${conditions.join(', ')}))`
   }

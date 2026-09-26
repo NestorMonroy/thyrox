@@ -1,0 +1,28 @@
+patron: mock-sin-tipar-infiere-tupla-vacia
+senal_del_verificador: TS2493|TS18048|TS2769.*is not assignable to parameter of type 'undefined'
+fix_generico: Cuando `mock()` de bun:test recibe una función sin parámetros anotados (`async () => {}`), TypeScript infiere ese literal como la firma del mock, así que `.mock.calls[0]` queda tipado como la tupla `[]` y cualquier destructuring o `expect(arg).toBe(...)` posterior falla (TS2493 al indexar, TS2769 porque el parámetro esperado es `undefined`, TS18048 en accesos encadenados). Se corrige anotando explícitamente los parámetros del callback pasado a `mock()` con el tipo real de la función que reemplaza — normalmente el tipo del parámetro de callback del productor (por ejemplo `WriteToMailboxFn`) — para que `bun:test` infiera la tupla correcta de `mock.calls`.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/sessionTools/analyzeContext.ts(773,23): error TS18048: 'msg.message.content' is possibly 'undefined'.
+  --- código src/packages/agent/sessionTools/analyzeContext.ts:763-783 ---
+    763  ): void {
+    764    // Handle both string and array content
+    765    if (typeof msg.message.content === 'string') {
+    766      // Simple string content
+    767      const tokens = roughTokenCountEstimation(msg.message.content)
+    768      breakdown.userMessageTokens += tokens
+    769      return
+    770    }
+    771  
+    772    // Process each content block individually
+    773>   for (const block of msg.message.content) {
+    774      const blockStr = jsonStringify(block)
+    775      const blockTokens = roughTokenCountEstimation(blockStr)
+    776  
+    777      if ('type' in block && block.type === 'tool_result') {
+    778        breakdown.toolResultTokens += blockTokens
+    779        const toolUseId = 'tool_use_id' in block ? block.tool_use_id : undefined
+    780        const toolName =
+    781          (toolUseId ? toolUseIdToName.get(toolUseId) : undefined) || 'unknown'
+    782        breakdown.toolResultsByType.set(
+    783          toolName,

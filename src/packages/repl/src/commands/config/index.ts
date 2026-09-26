@@ -1,4 +1,4 @@
-import type { Command } from '@thyrox/command-runtime/runtime'
+import type { Command } from '@thyrox/agent/command.js'
 
 const config = {
   aliases: ['settings'],

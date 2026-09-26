@@ -1,0 +1,16 @@
+{
+ "applied": [
+  "cacheExtraUsageDisabledReason",
+  "checkQuotaStatus",
+  "computeNewLimitsFromHeaders",
+  "getTimeRelativeEarlyWarning",
+  "extractQuotaStatusFromError",
+  "extractQuotaStatusFromHeaders",
+  "getEarlyWarningFromHeaders",
+  "getHeaderBasedEarlyWarning",
+  "getRateLimitDisplayName",
+  "__declarations__:types"
+ ],
+ "rejected": {},
+ "missing": []
+}

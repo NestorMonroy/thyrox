@@ -180,6 +180,34 @@ def _recheck_after_death(job: Job, marker_pattern: str) -> bool:
     return _has_marker(job.log, marker_pattern)
 
 
+#: Entrada 1 del hogar de los ledgers — el valor. La entrada 2 es la
+#: declaración del `.env` que ``THYROX_ENV_FILE`` nombra; ``env_value`` consulta
+#: las dos, en ese orden (directiva del ejecutor 2026-09-06).
+LEDGER_DIR_VAR = "THYROX_JOBS_LEDGER_DIR"
+
+#: El segmento que cuelga del directorio de estado cuando nada se declara. Un
+#: ledger por sesión vive debajo: ``<raíz>/<session_id>/``.
+LEDGER_DIR_DEFAULT = "jobs-ledger"
+
+
+def ledger_root(start: Path | None = None) -> Path:
+    """La raíz que contiene un ledger por sesión.
+
+    Es un hogar, así que no se compone con un literal: antes vivía como
+    ``$_ROOT/.claude/jobs-ledger`` en ``wait-jobs.sh`` y el hook de
+    compactación lo copió. Ahora las dos piezas preguntan aquí. Se resuelve en
+    una función y no en una constante de módulo para no fijarla al importar.
+    """
+    from paths.reach import env_value, resolve_home, thyrox_root  # noqa: PLC0415 — evita el ciclo de import
+    from workbench.paths import state_dir  # noqa: PLC0415
+
+    base = thyrox_root(start)
+    declared = env_value(LEDGER_DIR_VAR, start)
+    if declared:
+        return resolve_home(declared, base)
+    return base / state_dir(start) / LEDGER_DIR_DEFAULT
+
+
 class JobLedger:
     """El registro de trabajos de una sesión, en un directorio propio.
 
@@ -189,7 +217,11 @@ class JobLedger:
 
     def __init__(self, directory: Path) -> None:
         self._directory = Path(directory)
-        self._directory.mkdir(parents=True, exist_ok=True)
+        # `mkdir(exist_ok=True)` intenta la llamada aunque el directorio exista;
+        # un lector que sólo consulta un ledger ya creado no debe mutar nada
+        # (medido con `bin/assert_no_writes` en la suite de `compact_context`).
+        if not self._directory.is_dir():
+            self._directory.mkdir(parents=True, exist_ok=True)
 
     def _path_for(self, label: str) -> Path:
         # El guion original sanea la barra (`${label//\//_}`) porque el

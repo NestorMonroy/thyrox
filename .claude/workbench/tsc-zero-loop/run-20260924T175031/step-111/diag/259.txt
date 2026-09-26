@@ -1,0 +1,46 @@
+src/packages/shell/src/shellCommand.ts(426,57): error TS2345: Argument of type '"b"' is not assignable to parameter of type 'TaskType'.
+  --- código src/packages/shell/src/shellCommand.ts:416-436 ---
+    416  class AbortedShellCommand implements ShellCommandWithOutput {
+    417    readonly status = 'killed' as const
+    418    readonly result: Promise<ExecResult>
+    419    readonly taskOutput: TaskOutputPort
+    420  
+    421    constructor(opts?: {
+    422      backgroundTaskId?: string
+    423      stderr?: string
+    424      code?: number
+    425    }) {
+    426>     this.taskOutput = new StubTaskOutput(generateTaskId('b'))
+    427      this.result = Promise.resolve({
+    428        code: opts?.code ?? 145,
+    429        stdout: '',
+    430        stderr: opts?.stderr ?? 'Command aborted before execution',
+    431        interrupted: true,
+    432        backgroundTaskId: opts?.backgroundTaskId,
+    433      })
+    434    }
+    435  
+    436    background(): boolean {
+src/packages/shell/src/shellCommand.ts(456,72): error TS2345: Argument of type '"b"' is not assignable to parameter of type 'TaskType'.
+  --- código src/packages/shell/src/shellCommand.ts:446-466 ---
+    446    backgroundTaskId?: string,
+    447    opts?: { stderr?: string; code?: number },
+    448  ): ShellCommandWithOutput {
+    449    return new AbortedShellCommand({
+    450      backgroundTaskId,
+    451      ...opts,
+    452    })
+    453  }
+    454  
+    455  export function createFailedCommand(preSpawnError: string): ShellCommandWithOutput {
+    456>   const taskOutput: TaskOutputPort = new StubTaskOutput(generateTaskId('b'))
+    457    return {
+    458      status: 'completed' as const,
+    459      result: Promise.resolve({
+    460        code: 1,
+    461        stdout: '',
+    462        stderr: preSpawnError,
+    463        interrupted: false,
+    464        preSpawnError,
+    465      }),
+    466      taskOutput,

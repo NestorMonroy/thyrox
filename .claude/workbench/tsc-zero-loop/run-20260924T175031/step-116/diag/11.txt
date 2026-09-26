@@ -1,0 +1,54 @@
+src/packages/agent/compaction/sessionMemoryCompact.ts(489,5): error TS2322: Type 'CompactBoundaryMessage' is not assignable to type 'SystemMessage'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:479-499 ---
+    479        content: summaryContent,
+    480        isCompactSummary: true,
+    481        isVisibleInTranscriptOnly: true,
+    482      }),
+    483    ]
+    484  
+    485    const planAttachment = createPlanAttachmentIfNeeded(agentId)
+    486    const attachments = planAttachment ? [planAttachment] : []
+    487  
+    488    return {
+    489>     boundaryMarker: annotateBoundaryWithPreservedSegment(
+    490        boundaryMarker,
+    491        summaryMessages[summaryMessages.length - 1]!.uuid,
+    492        messagesToKeep,
+    493      ),
+    494      summaryMessages,
+    495      attachments,
+    496      hookResults,
+    497      messagesToKeep,
+    498      preCompactTokenCount,
+    499      // SM-compact has no compact-API-call, so postCompactTokenCount (kept for
+  Type 'CompactBoundaryMessage' is not assignable to type 'SystemThinkingMessage'.
+    Type 'CompactBoundaryMessage' is not assignable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type 'string | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+          Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(490,7): error TS2345: Argument of type 'SystemCompactBoundaryMessage' is not assignable to parameter of type 'CompactBoundaryMessage'.
+  --- código src/packages/agent/compaction/sessionMemoryCompact.ts:480-500 ---
+    480        isCompactSummary: true,
+    481        isVisibleInTranscriptOnly: true,
+    482      }),
+    483    ]
+    484  
+    485    const planAttachment = createPlanAttachmentIfNeeded(agentId)
+    486    const attachments = planAttachment ? [planAttachment] : []
+    487  
+    488    return {
+    489      boundaryMarker: annotateBoundaryWithPreservedSegment(
+    490>       boundaryMarker,
+    491        summaryMessages[summaryMessages.length - 1]!.uuid,
+    492        messagesToKeep,
+    493      ),
+    494      summaryMessages,
+    495      attachments,
+    496      hookResults,
+    497      messagesToKeep,
+    498      preCompactTokenCount,
+    499      // SM-compact has no compact-API-call, so postCompactTokenCount (kept for
+    500      // event continuity) and truePostCompactTokenCount converge to the same value.
+  Type 'SystemCompactBoundaryMessage' is not assignable to type '{ type: "system"; subtype?: string | undefined; compactMetadata?: { [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { ...; } | undefined; } | undefined; }'.
+    Types of property 'compactMetadata' are incompatible.
+      Type '{ [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string}-${string}`; anchorUuid: `${string}-${string}-${string}-${string}-${string}`; } | undefined; }' is missing the following properties from type '{ [key: string]: unknown; trigger: string; preTokens: number; preCompactDiscoveredTools?: string[] | undefined; preservedSegment?: { headUuid: string; anchorUuid: string; tailUuid: string; } | undefined; }': trigger, preTokens

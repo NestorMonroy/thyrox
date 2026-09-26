@@ -1,0 +1,20 @@
+src/packages/repl/src/commands/rewind/index.ts(10,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/rewind/rewind")>' is not assignable to type 'Promise<LocalCommandModule>'.
+  --- código src/packages/repl/src/commands/rewind/index.ts:1-13 ---
+      1  import type { Command } from '@thyrox/command-runtime/runtime'
+      2  
+      3  const rewind = {
+      4    description: `Restore the code and/or conversation to a previous point`,
+      5    name: 'rewind',
+      6    aliases: ['checkpoint'],
+      7    argumentHint: '',
+      8    type: 'local',
+      9    supportsNonInteractive: false,
+     10>   load: () => import('./rewind.js'),
+     11  } satisfies Command
+     12  
+     13  export default rewind
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/rewind/rewind")' is not assignable to type 'LocalCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(_args: string, context: ToolUseContext) => Promise<LocalCommandResult>' is not assignable to type 'LocalCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

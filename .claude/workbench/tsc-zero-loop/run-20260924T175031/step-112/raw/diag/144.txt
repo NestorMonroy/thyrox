@@ -1,0 +1,5 @@
+src/packages/repl/src/commands/usage/usage.tsx(5,37): error TS2322: Type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...' is not assignable to type 'LocalJSXCommandContext'.
+  Types of property 'setMessages' are incompatible.
+    Types of parameters 'updater' and 'updater' are incompatible.
+      Type 'unknown[]' is not assignable to type 'Message[]'.
+        Type 'unknown' is not assignable to type 'Message'.

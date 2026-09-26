@@ -1,0 +1,100 @@
+src/packages/agent/__tests__/messageFactories.test.ts(85,20): error TS2352: Conversion of type 'string | ToolResultBlockParam[]' to type '{ text: string; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/messageFactories.test.ts:75-95 ---
+     75      const m = createUserMessage({ content: 'x' })
+     76      // Should round-trip through Date
+     77      expect(new Date(m.timestamp).toISOString()).toBe(m.timestamp)
+     78    })
+     79  })
+     80  
+     81  describe('createUserInterruptionMessage', () => {
+     82    test('default (no toolUse) emits non-tool interrupt text', () => {
+     83      const m = createUserInterruptionMessage({})
+     84      expect(Array.isArray(m.message.content)).toBe(true)
+     85>     const block = (m.message.content as Array<{ text: string }>)[0]
+     86      expect(block?.text).toBe('[Request interrupted by user]')
+     87    })
+     88  
+     89    test('toolUse=true emits tool-specific interrupt text', () => {
+     90      const m = createUserInterruptionMessage({ toolUse: true })
+     91      const block = (m.message.content as Array<{ text: string }>)[0]
+     92      expect(block?.text).toBe('[Request interrupted by user for tool use]')
+     93    })
+     94  
+     95    test('SKIP_FIRST_PROMPT_PATTERN must match this text', () => {
+  Type 'ToolResultBlockParam[]' is not comparable to type '{ text: string; }[]'.
+    Property 'text' is missing in type 'ToolResultBlockParam' but required in type '{ text: string; }'.
+src/packages/agent/__tests__/messageFactories.test.ts(91,20): error TS2352: Conversion of type 'string | ToolResultBlockParam[]' to type '{ text: string; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/messageFactories.test.ts:81-101 ---
+     81  describe('createUserInterruptionMessage', () => {
+     82    test('default (no toolUse) emits non-tool interrupt text', () => {
+     83      const m = createUserInterruptionMessage({})
+     84      expect(Array.isArray(m.message.content)).toBe(true)
+     85      const block = (m.message.content as Array<{ text: string }>)[0]
+     86      expect(block?.text).toBe('[Request interrupted by user]')
+     87    })
+     88  
+     89    test('toolUse=true emits tool-specific interrupt text', () => {
+     90      const m = createUserInterruptionMessage({ toolUse: true })
+     91>     const block = (m.message.content as Array<{ text: string }>)[0]
+     92      expect(block?.text).toBe('[Request interrupted by user for tool use]')
+     93    })
+     94  
+     95    test('SKIP_FIRST_PROMPT_PATTERN must match this text', () => {
+     96      // Cross-check: the pattern that filters interrupts out of session
+     97      // titles must match the text emitted here. If they drift apart, the
+     98      // interrupt message becomes the visible session title.
+     99      const SKIP_PATTERN =
+    100        /^(?:\s*<[a-z][\w-]*[\s>]|\[Request interrupted by user[^\]]*\])/
+    101      const m1 = createUserInterruptionMessage({})
+  Type 'ToolResultBlockParam[]' is not comparable to type '{ text: string; }[]'.
+    Property 'text' is missing in type 'ToolResultBlockParam' but required in type '{ text: string; }'.
+src/packages/agent/__tests__/messageFactories.test.ts(103,17): error TS2352: Conversion of type 'string | ToolResultBlockParam[]' to type '{ text: string; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/messageFactories.test.ts:93-113 ---
+     93    })
+     94  
+     95    test('SKIP_FIRST_PROMPT_PATTERN must match this text', () => {
+     96      // Cross-check: the pattern that filters interrupts out of session
+     97      // titles must match the text emitted here. If they drift apart, the
+     98      // interrupt message becomes the visible session title.
+     99      const SKIP_PATTERN =
+    100        /^(?:\s*<[a-z][\w-]*[\s>]|\[Request interrupted by user[^\]]*\])/
+    101      const m1 = createUserInterruptionMessage({})
+    102      const m2 = createUserInterruptionMessage({ toolUse: true })
+    103>     const t1 = (m1.message.content as Array<{ text: string }>)[0]?.text ?? ''
+    104      const t2 = (m2.message.content as Array<{ text: string }>)[0]?.text ?? ''
+    105      expect(SKIP_PATTERN.test(t1)).toBe(true)
+    106      expect(SKIP_PATTERN.test(t2)).toBe(true)
+    107    })
+    108  })
+    109  
+    110  describe('createSystemMessage', () => {
+    111    test('basic system message has subtype=informational and isMeta=false', () => {
+    112      const m = createSystemMessage('hello', 'info')
+    113      expect(m.type).toBe('system')
+  Type 'ToolResultBlockParam[]' is not comparable to type '{ text: string; }[]'.
+    Property 'text' is missing in type 'ToolResultBlockParam' but required in type '{ text: string; }'.
+src/packages/agent/__tests__/messageFactories.test.ts(104,17): error TS2352: Conversion of type 'string | ToolResultBlockParam[]' to type '{ text: string; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/messageFactories.test.ts:94-114 ---
+     94  
+     95    test('SKIP_FIRST_PROMPT_PATTERN must match this text', () => {
+     96      // Cross-check: the pattern that filters interrupts out of session
+     97      // titles must match the text emitted here. If they drift apart, the
+     98      // interrupt message becomes the visible session title.
+     99      const SKIP_PATTERN =
+    100        /^(?:\s*<[a-z][\w-]*[\s>]|\[Request interrupted by user[^\]]*\])/
+    101      const m1 = createUserInterruptionMessage({})
+    102      const m2 = createUserInterruptionMessage({ toolUse: true })
+    103      const t1 = (m1.message.content as Array<{ text: string }>)[0]?.text ?? ''
+    104>     const t2 = (m2.message.content as Array<{ text: string }>)[0]?.text ?? ''
+    105      expect(SKIP_PATTERN.test(t1)).toBe(true)
+    106      expect(SKIP_PATTERN.test(t2)).toBe(true)
+    107    })
+    108  })
+    109  
+    110  describe('createSystemMessage', () => {
+    111    test('basic system message has subtype=informational and isMeta=false', () => {
+    112      const m = createSystemMessage('hello', 'info')
+    113      expect(m.type).toBe('system')
+    114      expect(m.subtype).toBe('informational')
+  Type 'ToolResultBlockParam[]' is not comparable to type '{ text: string; }[]'.
+    Property 'text' is missing in type 'ToolResultBlockParam' but required in type '{ text: string; }'.

@@ -1,0 +1,24 @@
+src/packages/config/plugin/marketplaceManager.ts(2628,7): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  --- código src/packages/config/plugin/marketplaceManager.ts:2618-2638 ---
+   2618      ...entry,
+   2619      autoUpdate,
+   2620    }
+   2621    await saveKnownMarketplacesConfig(config)
+   2622  
+   2623    // Also update intent in settings if declared there — write to the SAME
+   2624    // source that declared it to avoid creating duplicates at wrong scope
+   2625    const declaringSource = getMarketplaceDeclaringSource(name)
+   2626    if (declaringSource) {
+   2627      const declared =
+   2628>       getSettingsForSource(declaringSource)?.extraKnownMarketplaces?.[name]
+   2629      if (declared) {
+   2630        saveMarketplaceToSettings(
+   2631          name,
+   2632          { source: declared.source, autoUpdate },
+   2633          declaringSource,
+   2634        )
+   2635      }
+   2636    }
+   2637  
+   2638    logForDebugging(`Set autoUpdate=${autoUpdate} for marketplace: ${name}`)
+  No index signature with a parameter of type 'string' was found on type '{}'.

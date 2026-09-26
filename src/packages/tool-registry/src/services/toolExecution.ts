@@ -772,7 +772,7 @@ async function checkPermissionsAndCallTool(
     tool,
     processedInput,
     toolUseID,
-    assistantMessage.message.id,
+    messageId,
     requestId,
     mcpServerType,
     mcpServerBaseUrl,
@@ -1021,7 +1021,7 @@ async function checkPermissionsAndCallTool(
     if (rejectContentBlocks?.length) {
       const imageCount = count(
         rejectContentBlocks,
-        (b: ContentBlockParam) => b.type === 'image',
+        b => b.type === 'image',
       )
       if (imageCount > 0) {
         const startId = getNextImagePasteId(toolUseContext.messages)
@@ -1235,7 +1235,7 @@ async function checkPermissionsAndCallTool(
       }
 
       if (Object.keys(contentAttributes).length > 0) {
-        addToolContentEvent('tool.output', contentAttributes)
+        addToolContentEvent(undefined, { event: 'tool.output', ...contentAttributes })
       }
     }
 
@@ -1403,7 +1403,7 @@ async function checkPermissionsAndCallTool(
       if (allowContentBlocks?.length) {
         const imageCount = count(
           allowContentBlocks,
-          (b: ContentBlockParam) => b.type === 'image',
+          b => b.type === 'image',
         )
         if (imageCount > 0) {
           const startId = getNextImagePasteId(toolUseContext.messages)
@@ -1445,7 +1445,7 @@ async function checkPermissionsAndCallTool(
       toolUseContext,
       tool,
       toolUseID,
-      assistantMessage.message.id,
+      messageId,
       processedInput,
       toolOutput,
       requestId,

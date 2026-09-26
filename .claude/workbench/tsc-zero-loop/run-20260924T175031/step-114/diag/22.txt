@@ -1,0 +1,46 @@
+src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(708,31): error TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: "oauth" | "new" | "existing"; step: "error" | "success" | "warnings" | "api-key" | "check-gh" | "choose-repo" | "install-app" | ... 4 more ... | "creating"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.
+  --- código src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx:698-718 ---
+    698            onSelectOption={handleApiKeyOptionChange}
+    699          />
+    700        )
+    701      case 'creating':
+    702        return (
+    703          <CreatingStep
+    704            currentWorkflowInstallStep={state.currentWorkflowInstallStep}
+    705            secretExists={state.secretExists}
+    706            useExistingSecret={state.useExistingSecret}
+    707            secretName={state.secretName}
+    708>           skipWorkflow={state.workflowAction === 'skip'}
+    709            selectedWorkflows={state.selectedWorkflows}
+    710          />
+    711        )
+    712      case 'success':
+    713        return (
+    714          <Box tabIndex={0} autoFocus onKeyDown={handleDismissKeyDown}>
+    715            <SuccessStep
+    716              secretExists={state.secretExists}
+    717              useExistingSecret={state.useExistingSecret}
+    718              secretName={state.secretName}
+src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx(719,33): error TS2339: Property 'workflowAction' does not exist on type '{ useExistingKey: boolean; selectedApiKeyOption: "oauth" | "new" | "existing"; step: "error" | "success" | "warnings" | "api-key" | "check-gh" | "choose-repo" | "install-app" | ... 4 more ... | "creating"; ... 14 more ...; errorInstructions?: string[] | undefined; }'.
+  --- código src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx:709-729 ---
+    709            selectedWorkflows={state.selectedWorkflows}
+    710          />
+    711        )
+    712      case 'success':
+    713        return (
+    714          <Box tabIndex={0} autoFocus onKeyDown={handleDismissKeyDown}>
+    715            <SuccessStep
+    716              secretExists={state.secretExists}
+    717              useExistingSecret={state.useExistingSecret}
+    718              secretName={state.secretName}
+    719>             skipWorkflow={state.workflowAction === 'skip'}
+    720            />
+    721          </Box>
+    722        )
+    723      case 'error':
+    724        return (
+    725          <Box tabIndex={0} autoFocus onKeyDown={handleDismissKeyDown}>
+    726            <ErrorStep
+    727              error={state.error}
+    728              errorReason={state.errorReason}
+    729              errorInstructions={state.errorInstructions}

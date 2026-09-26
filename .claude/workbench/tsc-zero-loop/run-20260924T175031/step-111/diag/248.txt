@@ -1,0 +1,69 @@
+src/packages/repl/src/promptSuggestionSpeculation.tsx(255,49): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:245-265 ---
+    245      // (query.ts createUserInterruptionMessage). Strip it so it isn't surfaced
+    246      // to the model as real user input.
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255>       if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256        const content = msg.message.content.filter(keep)
+    257        if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+src/packages/repl/src/promptSuggestionSpeculation.tsx(256,23): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:246-266 ---
+    246      // to the model as real user input.
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255        if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256>       const content = msg.message.content.filter(keep)
+    257        if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+    266        return { ...msg, message: { ...msg.message, content } } as typeof msg
+src/packages/repl/src/promptSuggestionSpeculation.tsx(257,30): error TS18048: 'msg.message' is possibly 'undefined'.
+  --- código src/packages/repl/src/promptSuggestionSpeculation.tsx:247-267 ---
+    247      !(
+    248        b.type === 'text' &&
+    249        (b.text === INTERRUPT_MESSAGE ||
+    250          b.text === INTERRUPT_MESSAGE_FOR_TOOL_USE)
+    251      )
+    252  
+    253    return messages
+    254      .map(msg => {
+    255        if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+    256        const content = msg.message.content.filter(keep)
+    257>       if (content.length === msg.message.content.length) return msg
+    258        if (content.length === 0) return null
+    259        // Drop messages where all remaining blocks are whitespace-only text
+    260        // (API rejects these with 400: "text content blocks must contain non-whitespace text")
+    261        const hasNonWhitespaceContent = content.some(
+    262          (b: { type: string; text?: string }) =>
+    263            b.type !== 'text' || (b.text !== undefined && b.text.trim() !== ''),
+    264        )
+    265        if (!hasNonWhitespaceContent) return null
+    266        return { ...msg, message: { ...msg.message, content } } as typeof msg
+    267      })

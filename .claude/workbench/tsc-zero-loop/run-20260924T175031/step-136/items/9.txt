@@ -1,0 +1,7 @@
+Tipo: EffortValue
+Copias:
+  src/packages/agent/command.ts
+  src/packages/agent/effort.ts
+  src/packages/command-runtime/src/skills/loadSkillsDir.ts
+
+src/packages/agent/query.ts(671): error TS2322: Type 'EffortValue | undefined' is not assignable to type 'string | undefined'.

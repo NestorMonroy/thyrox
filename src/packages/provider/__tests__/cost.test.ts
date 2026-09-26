@@ -49,7 +49,7 @@ describe('TTL — la prima de 1 h contra la caducidad de 5 m', () => {
   })
 })
 
-describe('recommend — evalúa los 19 registros del catálogo, no una lista a mano', () => {
+describe('recommend — evalúa los 20 registros del catálogo, no una lista a mano', () => {
   test('ningún requisito nombra un modelo: sólo rango y esfuerzo', () => {
     for (const r of Object.values(TASK_REQUIREMENTS)) {
       expect(typeof r.minAdvisorRank).toBe('number')
@@ -70,7 +70,8 @@ describe('recommend — evalúa los 19 registros del catálogo, no una lista a m
     expect(r.effortIndex).toBe(0.47)
     // 400 000 × 0.2 / 1e6 + 100 × 10 / 1e6
     expect(r.usdPerTurn.toFixed(4)).toBe('0.0810')
-    expect(r.ranked[1]?.model).toBe('claude-fable-5-1') // 0.25 de lectura, rango 5
+    // 2.1.282: Opus 5.5 (lectura 0.2, salida 20) queda a 0.082, por delante de Fable 5.1.
+    expect(r.ranked[1]?.model).toBe('claude-opus-5-5')
   })
   test('mecánica con 100 k de contexto: entra haiku-4-5 y gana por lectura a 0.1', () => {
     const r = recommend('mecanica', { contextTokens: 100_000 })
@@ -85,9 +86,12 @@ describe('recommend — evalúa los 19 registros del catálogo, no una lista a m
     expect(r.ranked[0]!.reachableByAlias).toBe(true)
     expect(r.ranked[1]!.reachableByAlias).toBe(false)
   })
-  test('adversarial: rango ≥ 4 — opus 4.7/4.8/5 a 0.5 y fable-5-1 a 0.25 por delante', () => {
+  test('adversarial: rango ≥ 4 — opus-5-5 a 0.2 de lectura por delante de fable-5-1 a 0.25', () => {
+    // 2.1.282 declara Opus 5.5 en tier_4_20_cache_read_0_20: con 400 k de
+    // contexto releído, la lectura manda y es el más barato con rango 4.
     const r = recommend('adversarial', { contextTokens: 400_000 })
-    expect(r.model).toBe('claude-fable-5-1')
+    expect(r.model).toBe('claude-opus-5-5')
+    expect(r.ranked[1]?.model).toBe('claude-fable-5-1')
     expect(r.ranked.every((c) => c.advisorRank >= 4)).toBe(true)
   })
   test('un perfil que ninguna ventana cubre rehúsa, no devuelve el primero', () => {

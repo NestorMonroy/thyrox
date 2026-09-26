@@ -1,0 +1,8 @@
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(29,5): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(46,9): error TS2322: Type '{ matcher: string; sources: unknown[]; hookCount: any; }[]' is not assignable to type 'MatcherWithSource[]'.
+  Type '{ matcher: string; sources: unknown[]; hookCount: any; }' is not assignable to type 'MatcherWithSource'.
+    Types of property 'sources' are incompatible.
+      Type 'unknown[]' is not assignable to type 'HookSource[]'.
+        Type 'unknown' is not assignable to type 'HookSource'.
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(48,44): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/components/hooks/SelectMatcherMode.tsx(49,52): error TS7006: Parameter 'h' implicitly has an 'any' type.

@@ -1,0 +1,5 @@
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(155,24): error TS2345: Argument of type 'true' is not assignable to parameter of type 'FleetOutcome | null'.
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(159,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(160,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(164,55): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.
+src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts(168,34): error TS2345: Argument of type 'false' is not assignable to parameter of type 'FleetOutcome | null'.

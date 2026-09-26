@@ -1,0 +1,1 @@
+src/packages/repl/src/screens/repl/bgDetachSignal.ts(53,40): error TS2322: Type '"detach"' is not assignable to type '"claim" | "exit" | "resize" | "kill" | "reply" | "heartbeat" | "hello" | "live"'.

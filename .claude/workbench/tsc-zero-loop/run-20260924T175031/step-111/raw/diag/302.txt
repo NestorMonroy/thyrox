@@ -1,0 +1,1 @@
+tests/smoke/lib/runtime-probe.ts(157,13): error TS2339: Property 'getMatchingHooks' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/hooks")'.

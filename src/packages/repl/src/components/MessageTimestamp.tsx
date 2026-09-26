@@ -21,7 +21,7 @@ export function MessageTimestamp({
     return null
   }
 
-  const formattedTimestamp = new Date(message.timestamp).toLocaleTimeString(
+  const formattedTimestamp = new Date(message.timestamp as string | number).toLocaleTimeString(
     'en-US',
     {
       hour: '2-digit',

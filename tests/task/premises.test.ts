@@ -32,7 +32,7 @@ function io(mundo: {
     read: (path) => files[path] ?? '',
     exists: (path) => path in files,
     env: (name) => mundo.env?.[name],
-    run: (command) => (command in (mundo.exits ?? {}) ? (mundo.exits as Record<string, number | null>)[command] : null),
+    run: (command) => (command in (mundo.exits ?? {}) ? ((mundo.exits as Record<string, number | null>)[command] ?? null) : null),
   }
 }
 

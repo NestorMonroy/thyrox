@@ -1,0 +1,10 @@
+export function resolveRequestCacheTtl(inputs: RequestCacheTtlInputs): { ttl: CacheTtl; why: string } {
+  // Primero la cadena del ejecutable (`QCt`): forzar 5m, la variable y el
+  // setting van por encima de lo declarado. Lo declarado vuelve a su camino
+  // de siempre para conservar su razón y el costeo del hueco que le sigue.
+  const explicit = resolveExplicitPromptCacheTtl(inputs.source, inputs.declared, false,
+                                                 { env: inputs.env ?? process.env })
+  if (explicit !== undefined && explicit.reason !== 'agent_frontmatter') {
+    return { ttl: explicit.ttl, why: `${explicit.reason}: ${explicitVariable(inputs.source, explicit)} (${explicit.ttl})` }
+  }
+  const decided = decidedTtl(inputs.declared, inputs.model, inputs.expectedGapMinutes)

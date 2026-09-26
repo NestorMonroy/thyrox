@@ -1,0 +1,11 @@
+LLAMADAS PERDIDAS src/packages/app-host/src/runtime/commandRegistryRuntime.ts: filter×1
+LLAMADAS PERDIDAS src/packages/app-host/src/runtime/installPluginBindings.ts: writeFileSync×1, getFsImplementation×1
+LLAMADAS PERDIDAS src/packages/cli/src/headless/sdk/session/run.ts: applySettingsChange×1
+LLAMADAS PERDIDAS src/packages/provider/__tests__/providerStreaming.test.ts: for×1
+4 de 34 archivos pierden llamadas al transpilar
+TESTS
+1 src/packages/cli/__tests__/hogarDeLaCli.test.ts
+1 src/packages/cli/__tests__/impactCli.test.ts
+1 tests/integration/slash-commands.test.ts
+36
+__BG_EXIT__=0

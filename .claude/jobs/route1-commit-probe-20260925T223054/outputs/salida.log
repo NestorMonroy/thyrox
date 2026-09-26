@@ -1,0 +1,31 @@
+../repl/src/screens/REPLView.tsx(1800,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+../repl/src/screens/REPLView.tsx(1802,34): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/logsTypes").LogOption' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/storage/src/plans").LogOption'.
+../repl/src/screens/REPLView.tsx(1806,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+../repl/src/screens/REPLView.tsx(1826,11): error TS2322: Type 'StandaloneAgentContext | undefined' is not assignable to type '{ name: string; color?: AgentColorName | undefined; } | undefined'.
+../repl/src/screens/REPLView.tsx(2387,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+../repl/src/screens/REPLView.tsx(2616,1): error TS2769: No overload matches this call.
+../repl/src/screens/REPLView.tsx(2800,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+../repl/src/screens/REPLView.tsx(2947,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+../repl/src/screens/REPLView.tsx(3290,11): error TS2698: Spread types may only be created from object types.
+../repl/src/screens/REPLView.tsx(3995,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+../repl/src/screens/REPLView.tsx(5050,19): error TS2322: Type '{ mode: SpinnerMode; spinnerTip: string | undefined; responseLengthRef: RefObject<number>; apiMetricsRef: RefObject<{ ttftMs: number; firstTokenTime: number; lastTokenTime: number; responseLengthBaseline: number; endResponseLength: number; }[]>; ... 9 more ...; leaderIsIdle: boolean; }' is not assignable to type 'IntrinsicAttributes & Props'.
+../repl/src/screens/repl/bgDetachSignal.ts(53,40): error TS2322: Type '"detach"' is not assignable to type '"kill" | "resize" | "exit" | "reply" | "heartbeat" | "hello" | "live" | "claim"'.
+../storage/src/claudemd.ts(863,12): error TS2304: Cannot find name 'parseMemoryFileContent'.
+../storage/src/sessionStorage.ts(94,3): error TS2440: Import declaration conflicts with local declaration of 'SerializedMessage'.
+../storage/src/sessionStorage.ts(740,15): error TS2322: Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 14 more ...; agentId: string | undefined; } | ... 17 more ... | { ...; }' is not assignable to type 'TranscriptMessage'.
+../storage/src/sessionStorage.ts(4663,15): error TS2304: Cannot find name 'MessageContent'.
+../tool-registry/src/services/toolHooks.ts(390,16): error TS2322: Type 'import("/home/user/thyrox/src/packages/permission/src/ruleBasedPermissions").PermissionDecision' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").PermissionDecision'.
+../tool-registry/src/tools/AgentTool/builtInAgents.ts(38,15): error TS2339: Property 'getCoordinatorAgents' does not exist on type 'typeof import("/home/user/thyrox/src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir")'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,7): error TS2345: Argument of type 'Message[]' is not assignable to parameter of type 'AnyMessage[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(83,32): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(88,5): error TS2345: Argument of type 'AnyMessage[]' is not assignable to parameter of type 'Message[]'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(186,7): error TS2322: Type 'AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/AgentTool/resumeAgent.ts(187,7): error TS2322: Type 'UserMessage | AnyMessage' is not assignable to type 'Message'.
+../tool-registry/src/tools/BashTool/UI.tsx(41,25): error TS2322: Type 'unknown' is not assignable to type 'AppState'.
+check-cli-typecheck: tsconfig.json CRECE — 161 sobre un baseline de 146.
+check-cli-typecheck: tsconfig.tests.json CRECE — 161 sobre un baseline de 146.
+check-cli-typecheck: proyectos medidos: 2 de 2
+rutas: 342 pares de modelo, 1026 lecturas acreditadas | despacho: 31 definiciones en 4 grupos, 3 lecturas acreditadas
+cross-model-read: 0 lecturas cruzadas (superficie real auditada)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+__BG_EXIT__=0

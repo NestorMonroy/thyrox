@@ -1,0 +1,34 @@
+{
+ "reviewed": [
+  {
+   "pattern": "passthrough-settings-field-typed-as-empty-object",
+   "files": [
+    "src/packages/config/plugin/marketplaceManager.ts"
+   ]
+  },
+  {
+   "pattern": "passthrough-field-indexed-as-empty-object",
+   "files": [
+    "src/packages/config/plugin/marketplaceManager.ts"
+   ]
+  },
+  {
+   "pattern": "optional-field-from-shared-response-type-assigned-to-required-field",
+   "files": [
+    "src/packages/provider/src/oauth/index.ts"
+   ]
+  },
+  {
+   "pattern": "unknown-typed-guard-in-conditional-spread",
+   "files": [
+    "src/packages/provider/src/openai/client.ts"
+   ]
+  },
+  {
+   "pattern": "global-config-theme-stub-string",
+   "files": [
+    "src/packages/repl/src/components/FastIcon.tsx"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(45,50): error TS2554: Expected 0 arguments, but got 1.
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(67,7): error TS2554: Expected 1 arguments, but got 2.
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(73,7): error TS2554: Expected 0 arguments, but got 2.
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(82,9): error TS2554: Expected 1 arguments, but got 2.
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(88,9): error TS2554: Expected 1 arguments, but got 2.
+src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts(94,9): error TS2554: Expected 1 arguments, but got 2.

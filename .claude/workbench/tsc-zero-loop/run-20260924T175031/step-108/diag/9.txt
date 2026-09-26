@@ -1,0 +1,165 @@
+src/packages/@ant/ink/src/core/ink.tsx(355,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:345-365 ---
+    345          const t0 = performance.now()
+    346          this.rootNode.yogaNode.setWidth(this.terminalColumns)
+    347          this.rootNode.yogaNode.calculateLayout(this.terminalColumns)
+    348          const ms = performance.now() - t0
+    349          recordYogaMs(ms)
+    350          const c = getYogaCounters()
+    351          this.lastYogaCounters = { ms, ...c }
+    352        }
+    353      }
+    354  
+    355>     // @ts-expect-error @types/react-reconciler@0.32.3 declares 11 args with transitionCallbacks,
+    356      // but react-reconciler 0.33.0 source only accepts 10 args (no transitionCallbacks)
+    357      this.container = reconciler.createContainer(
+    358        this.rootNode,
+    359        ConcurrentRoot,
+    360        null,
+    361        false,
+    362        null,
+    363        'id',
+    364        noop, // onUncaughtError
+    365        noop, // onCaughtError
+src/packages/@ant/ink/src/core/ink.tsx(955,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:945-965 ---
+    945          yogaMeasured: yc.measured,
+    946          yogaCacheHits: yc.cacheHits,
+    947          yogaLive: yc.live,
+    948        },
+    949        flickers,
+    950      })
+    951    }
+    952  
+    953    pause(): void {
+    954      // Flush pending React updates and render before pausing.
+    955>     // @ts-expect-error flushSyncFromReconciler exists in react-reconciler 0.31 but not in @types/react-reconciler
+    956      reconciler.flushSyncFromReconciler()
+    957      this.onRender()
+    958  
+    959      this.isPaused = true
+    960    }
+    961  
+    962    resume(): void {
+    963      this.isPaused = false
+    964      this.onRender()
+    965    }
+src/packages/@ant/ink/src/core/ink.tsx(1771,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:1761-1781 ---
+   1761          onCursorDeclaration={this.setCursorDeclaration}
+   1762          dispatchKeyboardEvent={this.dispatchKeyboardEvent}
+   1763          onReaderControl={this.setNativeReaderControl}
+   1764        >
+   1765          <TerminalWriteProvider value={this.writeRaw}>
+   1766            {node}
+   1767          </TerminalWriteProvider>
+   1768        </App>
+   1769      )
+   1770  
+   1771>     // @ts-expect-error updateContainerSync exists in react-reconciler but not in @types/react-reconciler
+   1772      reconciler.updateContainerSync(tree, this.container, null, noop)
+   1773      // @ts-expect-error flushSyncWork exists in react-reconciler but not in @types/react-reconciler
+   1774      reconciler.flushSyncWork()
+   1775    }
+   1776  
+   1777    // When true, unmount() skips resolving/rejecting the exit promise. Used for
+   1778    // REPL → FleetView handoff: the REPL's renderAndRun chain awaits
+   1779    // waitUntilExit() and then calls gracefulShutdown(0) — but a handoff is NOT
+   1780    // a session exit, it's a transfer of the terminal to FleetView in the same
+   1781    // process. Resolving the exit promise here would make the REPL launcher
+src/packages/@ant/ink/src/core/ink.tsx(1773,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:1763-1783 ---
+   1763          onReaderControl={this.setNativeReaderControl}
+   1764        >
+   1765          <TerminalWriteProvider value={this.writeRaw}>
+   1766            {node}
+   1767          </TerminalWriteProvider>
+   1768        </App>
+   1769      )
+   1770  
+   1771      // @ts-expect-error updateContainerSync exists in react-reconciler but not in @types/react-reconciler
+   1772      reconciler.updateContainerSync(tree, this.container, null, noop)
+   1773>     // @ts-expect-error flushSyncWork exists in react-reconciler but not in @types/react-reconciler
+   1774      reconciler.flushSyncWork()
+   1775    }
+   1776  
+   1777    // When true, unmount() skips resolving/rejecting the exit promise. Used for
+   1778    // REPL → FleetView handoff: the REPL's renderAndRun chain awaits
+   1779    // waitUntilExit() and then calls gracefulShutdown(0) — but a handoff is NOT
+   1780    // a session exit, it's a transfer of the terminal to FleetView in the same
+   1781    // process. Resolving the exit promise here would make the REPL launcher
+   1782    // tear the whole process down right after FleetView mounts. The bridge
+   1783    // (openAgentsFromRepl) sets this so the launcher's await never resolves and
+src/packages/@ant/ink/src/core/ink.tsx(1896,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:1886-1906 ---
+   1886        this.nativeReaderControl = null
+   1887      }
+   1888  
+   1889      // Cancel any pending throttled renders to prevent accessing freed Yoga nodes
+   1890      this.scheduleRender.cancel?.()
+   1891      if (this.drainTimer !== null) {
+   1892        clearTimeout(this.drainTimer)
+   1893        this.drainTimer = null
+   1894      }
+   1895  
+   1896>     // @ts-expect-error updateContainerSync exists in react-reconciler but not in @types/react-reconciler
+   1897      reconciler.updateContainerSync(null, this.container, null, noop)
+   1898      // @ts-expect-error flushSyncWork exists in react-reconciler but not in @types/react-reconciler
+   1899      reconciler.flushSyncWork()
+   1900      instances.delete(this.options.stdout)
+   1901  
+   1902      // Free the root yoga node, then clear its reference. Children are already
+   1903      // freed by the reconciler's removeChildFromContainer; using .free() (not
+   1904      // .freeRecursive()) avoids double-freeing them.
+   1905      this.rootNode.yogaNode?.free()
+   1906      this.rootNode.yogaNode = undefined
+src/packages/@ant/ink/src/core/ink.tsx(1898,5): error TS2578: Unused '@ts-expect-error' directive.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:1888-1908 ---
+   1888  
+   1889      // Cancel any pending throttled renders to prevent accessing freed Yoga nodes
+   1890      this.scheduleRender.cancel?.()
+   1891      if (this.drainTimer !== null) {
+   1892        clearTimeout(this.drainTimer)
+   1893        this.drainTimer = null
+   1894      }
+   1895  
+   1896      // @ts-expect-error updateContainerSync exists in react-reconciler but not in @types/react-reconciler
+   1897      reconciler.updateContainerSync(null, this.container, null, noop)
+   1898>     // @ts-expect-error flushSyncWork exists in react-reconciler but not in @types/react-reconciler
+   1899      reconciler.flushSyncWork()
+   1900      instances.delete(this.options.stdout)
+   1901  
+   1902      // Free the root yoga node, then clear its reference. Children are already
+   1903      // freed by the reconciler's removeChildFromContainer; using .free() (not
+   1904      // .freeRecursive()) avoids double-freeing them.
+   1905      this.rootNode.yogaNode?.free()
+   1906      this.rootNode.yogaNode = undefined
+   1907  
+   1908      if (this.suppressExitPromiseOnUnmount) {
+src/packages/@ant/ink/src/core/ink.tsx(2020,60): error TS2345: Argument of type '((err?: Error | undefined) => void) | undefined' is not assignable to parameter of type '((err?: Error | null | undefined) => void) | undefined'.
+  --- código src/packages/@ant/ink/src/core/ink.tsx:2010-2030 ---
+   2010        encodingOrCb?: BufferEncoding | ((err?: Error) => void),
+   2011        cb?: (err?: Error) => void,
+   2012      ): boolean => {
+   2013        const callback = typeof encodingOrCb === 'function' ? encodingOrCb : cb
+   2014        // Reentrancy guard: logger.debug → writeToStderr → here. Pass
+   2015        // through to the original so --debug-to-stderr still works and we
+   2016        // don't stack-overflow.
+   2017        if (reentered) {
+   2018          const encoding =
+   2019            typeof encodingOrCb === 'string' ? encodingOrCb : undefined
+   2020>         return originalWrite.call(stderr, chunk, encoding, callback)
+   2021        }
+   2022        reentered = true
+   2023        try {
+   2024          const text =
+   2025            typeof chunk === 'string'
+   2026              ? chunk
+   2027              : Buffer.from(chunk).toString('utf8')
+   2028          this.logger.debug(`[stderr] ${text}`, { level: 'warn' })
+   2029          if (this.altScreenActive && !this.isUnmounted && !this.isPaused) {
+   2030            this.prevFrameContaminated = true
+  Type '(err?: Error | undefined) => void' is not assignable to type '(err?: Error | null | undefined) => void'.
+    Types of parameters 'err' and 'err' are incompatible.
+      Type 'Error | null | undefined' is not assignable to type 'Error | undefined'.
+        Type 'null' is not assignable to type 'Error | undefined'.

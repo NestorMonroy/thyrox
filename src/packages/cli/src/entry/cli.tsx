@@ -319,7 +319,7 @@ async function main(): Promise<void> {
       '@thyrox/agent/worktreeModeEnabled.js'
     )
     if (isWorktreeModeEnabled()) {
-      const { execIntoTmuxWorktree } = await import('@thyrox/swarm')
+      const { execIntoTmuxWorktree } = await import('@thyrox/swarm/worktree')
       const result = await execIntoTmuxWorktree(args)
       if (result.handled) {
         return

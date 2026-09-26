@@ -1,0 +1,46 @@
+src/packages/agent/commands/commit.ts(70,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/commands/commit.ts:60-80 ---
+     60    description: 'Create a git commit',
+     61    allowedTools: ALLOWED_TOOLS,
+     62    contentLength: 0, // Dynamic content
+     63    progressMessage: 'creating commit',
+     64    source: 'builtin',
+     65    async getPromptForCommand(_args, context) {
+     66      const promptContent = getPromptContent()
+     67      const finalContent = await executeShellCommandsInPrompt(
+     68        promptContent,
+     69        {
+     70>         ...context,
+     71          getAppState() {
+     72            const appState = context.getAppState()
+     73            return {
+     74              ...appState,
+     75              toolPermissionContext: {
+     76                ...appState.toolPermissionContext,
+     77                alwaysAllowRules: {
+     78                  ...appState.toolPermissionContext.alwaysAllowRules,
+     79                  command: ALLOWED_TOOLS,
+     80                },
+src/packages/agent/commands/commit.ts(72,28): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/commit.ts:62-82 ---
+     62    contentLength: 0, // Dynamic content
+     63    progressMessage: 'creating commit',
+     64    source: 'builtin',
+     65    async getPromptForCommand(_args, context) {
+     66      const promptContent = getPromptContent()
+     67      const finalContent = await executeShellCommandsInPrompt(
+     68        promptContent,
+     69        {
+     70          ...context,
+     71          getAppState() {
+     72>           const appState = context.getAppState()
+     73            return {
+     74              ...appState,
+     75              toolPermissionContext: {
+     76                ...appState.toolPermissionContext,
+     77                alwaysAllowRules: {
+     78                  ...appState.toolPermissionContext.alwaysAllowRules,
+     79                  command: ALLOWED_TOOLS,
+     80                },
+     81              },
+     82            }

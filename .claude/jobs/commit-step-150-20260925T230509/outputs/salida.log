@@ -1,0 +1,8 @@
+check-cli-typecheck: tsconfig.json FALLA (proyectos medidos: 1 de 2)
+check-cli-typecheck: tsconfig.tests.json FALLA (proyectos medidos: 2 de 2)
+check-cli-typecheck: tsconfig.json baja: 131 bajo un baseline de 158 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check-cli-typecheck: tsconfig.tests.json baja: 131 bajo un baseline de 158 — baja el baseline en /home/user/thyrox/.claude/baselines/cli_typecheck_baseline.txt para que no vuelva a subir.
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 5 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 119 versionado(s) bajo /home/user/thyrox/.claude/cache)
+69e97742 Apply the step 150 memory sweep (193 to 160)
+__BG_EXIT__=0

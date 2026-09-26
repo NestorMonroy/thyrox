@@ -1,0 +1,302 @@
+                              Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                            Type 'T' is not assignable to type 'TaskStateBase'.
+                          Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                        Type 'TaskState' is not assignable to type 'DreamTaskState'.
+                      Type 'T' is not assignable to type 'DreamTaskState'.
+                    Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                    Type 'undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                  Type 'MessageContent | undefined' is not assignable to type 'string | PlanMessageContentBlock[]'.
+                  Type 'TaskState' is missing the following properties from type 'TaskStateBase': description, startTime, outputFile, outputOffset, notified
+                  Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                Type '"application/pdf"' is not assignable to type '"image/png" | "image/jpeg" | "image/gif" | "image/webp"'.
+                Type 'TaskState' is not assignable to type 'InProcessTeammateTaskState'.
+                Type 'TaskState' is not assignable to type 'import
+                Types of property 'content' are incompatible.
+              Type 'T' is not assignable to type 'TaskState'.
+              Type 'TaskState' is not assignable to type 'import
+              Type 'string' is not assignable to type 'Priority'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.
+              Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; }'.
+              Types of property 'media_type' are incompatible.
+            Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+            Property 'prompt' is missing in type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' but required in type '{ type: string; prompt: string; }'.
+            Type '
+            Type '"ask"' is not assignable to type 'InternalPermissionMode'.
+            Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource'.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+            Type 'T | TaskState' is not assignable to type 'TaskState'.
+            Type 'TaskState | TaskState' is not assignable to type 'TaskState'.
+            Type 'TextBlockParam' is not assignable to type 'string'.
+            Type 'null' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+            Type 'unknown' is not assignable to type 'ContentBlockParam'.
+            Type 'unknown' is not assignable to type 'string | readonly unknown[] | undefined'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: string | PlanMessageContentBlock[]; } | undefined'.
+            Types of property 'priority' are incompatible.
+          'string' index signatures are incompatible.
+          Type '
+          Type 'Base64PDFSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+          Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+          Type 'PermissionMode' is not assignable to type 'InternalPermissionMode'.
+          Type 'ProviderNotification' is not assignable to type 'BaseNotification'.
+          Type '`${string}-${string}-${string}-${string}-${string}` | null | undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}` | undefined'.
+          Type 'string' is not assignable to type 'MessageType'.
+          Type 'unknown' is not assignable to type 'ToolUseConfirm'.
+          Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+          Types of property 'attachment' are incompatible.
+          Types of property 'content' are incompatible.
+          Types of property 'message' are incompatible.
+        'number' index signatures are incompatible.
+        Property 'description' is missing in type 'DynamicPromptSkill' but required in type 'CommandBase'.
+        Property 'description' is missing in type '{ isEnabled: 
+        Property 'read' is missing in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type 'TeammateMessage'.
+        The types of 'toolPermissionContext.mode' are incompatible between these types.
+        Type '"passthrough"' is not assignable to type '"ask"'.
+        Type 'AttachmentMessage<_T>' is not assignable to type '{ attachment: { type: string; prompt: string; }; }'.
+        Type 'Base64PDFSource | PlainTextSource | ContentBlockSource | URLPDFSource | FileDocumentSource' is not assignable to type 'Base64ImageSource | URLImageSource | FileImageSource'.
+        Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd
+        Type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; }' is not assignable to type 'PlanMessage'.
+        Type 'ProviderNotification' is not assignable to type 'TextNotification'.
+        Type 'string' is not assignable to type 'AgentColorName | undefined'.
+        Type 'string' is not assignable to type 'MessageType'.
+        Type 'undefined' is not assignable to type '"user" | "assistant" | "system"'.
+        Type 'unknown[]' is not assignable to type 'ToolUseConfirm[]'.
+        Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+        Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; }' is not assignable to type 'AgentMessageBody'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; }'.
+        Type '{ [x: string]: T | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+        Type '{ [x: string]: TaskState | TaskState; }' is not assignable to type '{ [taskId: string]: TaskState; }'.
+        Types of parameters 'next' and 'updater' are incompatible.
+        Types of property 'logicalParentUuid' are incompatible.
+        Types of property 'type' are incompatible.
+      Property 'color' is optional in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.
+      Source has 1 element
+      Type '
+      Type '"ask" | "passthrough" | "deny" | "allow"' is not assignable to type '"ask"'.
+      Type '"org_spend_cap_reached"' is not assignable to type '"unknown" | "overage_not_provisioned" | "org_level_disabled" | "org_level_disabled_until" | "out_of_credits" | "seat_tier_level_disabled" | "member_level_disabled" | "seat_tier_zero_credit_limit" | ... 5 more ... | undefined'.
+      Type 'AgentMessage' is not assignable to type 'MessageBase'.
+      Type 'AnyMessage' is not assignable to type 'MessageBase'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.
+      Type 'AssistantMessage' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+      Type 'CommandBase & PromptCommand' is missing the following properties from type '{ type: "local"; name: string; description: string; isEnabled: 
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+      Type 'DynamicPromptSkill' is not assignable to type 'CommandBase & PromptCommand'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+      Type 'Message' is missing the following properties from type 'MessageBase': type, uuid
+      Type 'ProviderNotification' is not assignable to type 'Notification'.
+      Type 'SerializedMessage' is not assignable to type 'PlanMessage'.
+      Type 'SettingsChangeTarget' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': verbose, mainLoopModel, mainLoopModelForSession, statusLineText, and 24 more.
+      Type 'TState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+      Type 'null' is not assignable to type 'AutoUpdaterResult'.
+      Type 'string | undefined' is not assignable to type '"user" | "assistant" | "system"'.
+      Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'string | ContentBlockParam[]'.
+      Type 'unknown' is not assignable to type 'ContentBlockParam'.
+      Type '{ [key: string]: unknown; content?: unknown; usage?: unknown; id?: string | undefined; } | undefined' is not assignable to type 'AgentMessageBody | undefined'.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details
+      Type '{ isEnabled: 
+      Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+      Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type '{ content?: string | undefined; logicalParentUuid?: `${string}-${string}-${string}-${string}-${string}` | undefined; compactMetadata: { [key: string]: unknown; preservedSegment?: { [key: string]: unknown; headUuid: `${string}-${string}-${string}-${string}-${string}`; tailUuid: `${string}-${string}-${string}-${string...'.
+      Types of parameters 'm' and 'value' are incompatible.
+      Types of parameters 'msg' and 'value' are incompatible.
+      Types of parameters 's' and 'value' are incompatible.
+      Types of property 'source' are incompatible.
+      Types of property 'tasks' are incompatible.
+      Types of property 'type' are incompatible.
+      Types of property 'value' are incompatible.
+    Argument of type '
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+    Object literal may only specify known properties, and 'small' does not exist in type 'QRCodeToStringOptionsOther'.
+    Object literal may only specify known properties, and 'type' does not exist in type '
+    Property 'thinking' is missing in type 'ConnectorTextBlock' but required in type 'ThinkingBlock'.
+    Type '
+    Type 'AgentMessage' is missing the following properties from type 'ToolUseSummaryMessage': summary, precedingToolUseIds, timestamp
+    Type 'AgentMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+    Type 'AnyMessage' is not assignable to type 'MessageBase'.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+    Type 'AssistantMessage | null' is not assignable to type 'OrphanedAssistantMessage | null | undefined'.
+    Type 'AssistantMessage' is missing the following properties from type 'Message': role, content
+    Type 'AutoUpdaterResult | null' is not assignable to type 'AutoUpdaterResult'.
+    Type 'BuiltInAgentDefinition' is missing the following properties from type 'AgentDefinition': name, description, prompt
+    Type 'CommandBase & PromptCommand' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+    Type 'DocumentBlockParam' is not assignable to type 'ImageBlockParam'.
+    Type 'DynamicPromptSkill' is not assignable to type 'Command'.
+    Type 'HookInput' is not assignable to type '
+    Type 'Message' is not comparable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: 
+    Type 'MessageContent | undefined' is not assignable to type 'string | ContentBlockParam[]'.
+    Type 'OverageDisabledReason | undefined' is not assignable to type '"unknown" | "overage_not_provisioned" | "org_level_disabled" | "org_level_disabled_until" | "out_of_credits" | "seat_tier_level_disabled" | "member_level_disabled" | "seat_tier_zero_credit_limit" | ... 5 more ... | undefined'.
+    Type 'SerializedMessage[]' is not assignable to type 'PlanMessage[]'.
+    Type 'SettingsChangeTarget' is not assignable to type 'AppState'.
+    Type 'StateAttachment' is missing the following properties from type 'HookSuccessAttachment': content, hookName, toolUseID, hookEvent
+    Type 'TState' is not assignable to type 'AppState'.
+    Type '[string | undefined]' is not assignable to type '[]'.
+    Type 'null' is not assignable to type 'Command'.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.
+    Type 'unknown' is not assignable to type 'LoadedPlugin'.
+    Type 'unknown' is not assignable to type 'MCPServerConnection'.
+    Type 'unknown' is not assignable to type 'PermissionUpdate'.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+    Type 'unknown[]' is not assignable to type 'ContentBlockParam[]'.
+    Type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' is not assignable to type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.
+    Type '{ isEnabled: 
+    Type '{ mode: "orphaned-permission"; value: unknown[]; orphanedPermission: { permissionResult: OrphanedPermissionResult; assistantMessage: OrphanedAssistantMessage; }; }' is not assignable to type 'QueuedCommand'.
+    Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+    Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+    Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'MessageBase & { type: "system"; subtype: "compact_boundary"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; } & { ...; }'.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.
+    Types of parameters 'notif' and 'notif' are incompatible.
+    Types of property 'behavior' are incompatible.
+    Types of property 'color' are incompatible.
+    Types of property 'message' are incompatible.
+    Types of property 'role' are incompatible.
+    Types of property 'setState' are incompatible.
+  Index signature for type 'string' is missing in type 'string[]'.
+  No index signature with a parameter of type 'number' was found on type '{}'.
+  No index signature with a parameter of type 'string' was found on type 'Partial<unknown>'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+  Overload 1 of 2, '
+  Overload 1 of 3, '
+  Overload 2 of 2, '
+  Overload 2 of 3, '
+  Property 'apiMetricsRef' does not exist on type 'IntrinsicAttributes & Props'.
+  Property 'call' is missing in type 'typeof import
+  Property 'map' does not exist on type 'string'.
+  Property 'store' does not exist on type 'IntrinsicAttributes & { initialState: AppState; children: ReactNode; }'.
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.
+  Property 'truncated' does not exist on type 'AlreadyReadFileAttachment'.
+  Property 'type' is missing in type 'Message' but required in type 'AnyMessage'.
+  The types returned by 'getState
+  Type '
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.
+  Type '"bagel_console"' is not assignable to type '"hook_additional_context" | "hook_success" | "task_reminder" | "structured_output" | "output_style" | "goal_status" | "hook_cancelled" | "auto_mode" | "max_turns_reached" | ... 25 more ... | "team_context"'.
+  Type 'AgentMessage' is not assignable to type 'Message'.
+  Type 'AgentMessage' is not assignable to type 'StreamedItem'.
+  Type 'AnyMessage' is not assignable to type 'Message'.
+  Type 'AnyMessage' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }'.
+  Type 'AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to type 'AppState'.
+  Type 'AssistantMessage' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  Type 'Command | DynamicPromptSkill' is not assignable to type 'Command'.
+  Type 'Command' is not assignable to type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+  Type 'CompactableMessage' is not assignable to type 'AgentMessage'.
+  Type 'ConnectorTextBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+  Type 'ConnectorTextBlock' is not assignable to type 'ThinkingBlockParam | ThinkingBlock | { type: "thinking"; thinking: string; }'.
+  Type 'DocumentBlockParam' is not assignable to type 'TextBlockParam | ImageBlockParam | ToolUseBlockParam | ToolResultBlockParam'.
+  Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<AppState>'.
+  Type 'McpRuntimeSnapshot<unknown, unknown, unknown, unknown>' is not assignable to type 'McpRuntimeSnapshot<MCPServerConnection, unknown, Command, ServerResource>'.
+  Type 'Message' is not comparable to type 'NormalizedMessage'.
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+  Type 'Partial<Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+  Type 'PermissionDecision' is not assignable to type 'PermissionAskDecision<{ [key: string]: unknown; }>'.
+  Type 'PluginRuntimeSnapshot<unknown, unknown, unknown>' is not assignable to type 'PluginRuntimeSnapshot<LoadedPlugin, Command, PluginError>'.
+  Type 'Promise<AssistantMessage | null>' is not assignable to type 'Promise<OrphanedAssistantMessage | null | undefined>'.
+  Type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaRawMessageDeltaEvent': context_management, delta, type, usage
+  Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+  Type 'StateAttachment' is not assignable to type 'Attachment'.
+  Type 'import
+  Type 'never' has no call signatures.
+  Type 'number' is not assignable to type 'string'.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.
+  Type 'string' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  Type 'undefined' is not assignable to type 'BetaMessage'.
+  Type 'undefined' is not assignable to type 'MessageParam'.
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+  Type 'undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }'.
+  Type 'unknown' is not assignable to type 'LoadedPlugin'.
+  Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+  Type 'unknown[]' is not assignable to type 'PermissionUpdate[]'.
+  Type 'unknown[]' is not assignable to type 'string | ContentBlockParam[]'.
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.
+  Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }' is not assignable to type 'MessageParam'.
+  Type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' is missing the following properties from type 'HookSuccessAttachment': content, hookName, hookEvent
+  Type '{ recursive?: boolean | undefined; }' has no properties in common with type '{ mode?: number | undefined; }'.
+  Type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' is not comparable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; }'.
+  Type '{ tasks: { [x: string]: T | TaskState; }; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; ... 78 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+  Type '{ tasks: { [x: string]: TaskState | TaskState; }; settings: SettingsJson; verbose: boolean; ... 79 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+  Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+  Type '{ type: "local"; name: string; description: string; aliases: string[]; supportsNonInteractive: false; load: 
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+  Type '{ type: "prompt"; name: string; description: string; allowedTools: string[]; readonly contentLength: number; progressMessage: string; source: "builtin"; getPromptForCommand
+  Type '{ userType: string; entrypoint: string | undefined; cwd: string; sessionId: SessionId; timestamp: string; version: string; gitBranch: string | undefined; slug: string | undefined; ... 19 more ...; agentId: string | undefined; }' is not assignable to type 'TranscriptMessage'.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults
+  Types of parameters 'command' and 'entry' are incompatible.
+  Types of parameters 'context' and 'context' are incompatible.
+  Types of parameters 'f' and 'f' are incompatible.
+  Types of parameters 'input' and 'input' are incompatible.
+  Types of parameters 'msg' and 'value' are incompatible.
+  Types of parameters 'result' and 'autoUpdaterResult' are incompatible.
+  Types of parameters 'updater' and 'f' are incompatible.
+  Types of parameters 'value' and 'updater' are incompatible.
+  Types of property 'content' are incompatible.
+  Types of property 'messages' are incompatible.
+  Types of property 'mode' are incompatible.
+  Types of property 'overageDisabledReason' are incompatible.
+  Types of property 'processedArgs' are incompatible.
+  Types of property 'statusLine' are incompatible.
+src/packages/agent/QueryEngine.ts
+src/packages/agent/__tests__/sdkRateLimitInfo.test.ts
+src/packages/agent/commands/brief.ts
+src/packages/agent/messages/mappers.ts
+src/packages/agent/query.ts
+src/packages/agent/sessionTools/analyzeContext.ts
+src/packages/agent/task/framework.ts
+src/packages/app-host/src/launchRepl.tsx
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts
+src/packages/app-host/src/runtime/installPluginBindings.ts
+src/packages/app-host/src/runtime/runtimeHandles.ts
+src/packages/cli/src/entry/commander.ts
+src/packages/cli/src/headless/sdk/session/run-streaming.ts
+src/packages/cli/src/headless/sdk/session/run.ts
+src/packages/cli/src/structuredIO.ts
+src/packages/command-runtime/src/commands/bridge/bridge.tsx
+src/packages/command-runtime/src/commands/fork/index.ts
+src/packages/config/plugin/loadPluginHooks.ts
+src/packages/config/plugin/marketplaceManager.ts
+src/packages/config/plugin/mcpbHandler.ts
+src/packages/config/plugin/orphanedPluginFilter.ts
+src/packages/config/plugin/pluginLoader.ts
+src/packages/config/settings/inventory.ts
+src/packages/mcp-runtime/src/channelNotification.ts
+src/packages/mcp-runtime/src/useManageMCPConnections.ts
+src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts
+src/packages/permission/src/toolPermission/PermissionContext.ts
+src/packages/provider/src/claudeLegacyRuntime.ts
+src/packages/provider/src/openai/streamAdapter.ts
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+src/packages/repl/src/commands/color/color.ts
+src/packages/repl/src/components/App.tsx
+src/packages/repl/src/components/BridgeDialog.tsx
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx
+src/packages/repl/src/components/Message.tsx
+src/packages/repl/src/components/PromptInput/Notifications.tsx
+src/packages/repl/src/components/Settings/Usage.tsx
+src/packages/repl/src/components/StatusLine.tsx
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/DescriptionStep.tsx
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/GenerateStep.tsx
+src/packages/repl/src/components/messages/AttachmentMessage.tsx
+src/packages/repl/src/conversationRecovery.tsx
+src/packages/repl/src/hooks/useReplBridge.tsx
+src/packages/repl/src/processUserInput/processTextPrompt.ts
+src/packages/repl/src/queryHelpers.ts
+src/packages/repl/src/screens/REPLView.tsx
+src/packages/repl/src/screens/repl/bgDetachSignal.ts
+src/packages/storage/src/sessionStorage.ts
+src/packages/tool-registry/src/services/toolHooks.ts
+src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts
+src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts
+src/packages/tool-registry/src/tools/BashTool/UI.tsx
+src/packages/tool-registry/src/tools/PowerShellTool/__tests__/powershellSecurity.test.ts
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts
+tests/agents/save_result.test.ts
+tests/smoke/lib/runtime-probe.ts
+tests/smoke/live-fire-smoke.test.ts

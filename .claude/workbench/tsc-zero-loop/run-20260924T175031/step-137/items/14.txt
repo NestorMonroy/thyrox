@@ -1,0 +1,70 @@
+src/packages/agent/query.ts(1247,9): error TS2345: Argument of type 'SystemPrompt' is not assignable to parameter of type 'AgentSystemPrompt'.
+  --- código src/packages/agent/query.ts:1237-1257 ---
+   1237        // real response — hooks evaluating it create a death spiral:
+   1238        // error → hook blocking → retry → error → …
+   1239        if (lastMessage?.isApiErrorMessage) {
+   1240          void executeStopFailureHooks(lastMessage, toolUseContext)
+   1241          return { reason: 'completed' }
+   1242        }
+   1243  
+   1244        const stopHookResult = yield* handleStopHooks(
+   1245          messagesForQuery,
+   1246          assistantMessages,
+   1247>         systemPrompt,
+   1248          userContext,
+   1249          systemContext,
+   1250          toolUseContext,
+   1251          querySource,
+   1252          stopHookActive,
+   1253        )
+   1254  
+   1255        // ant v2.1.143 3999.js: a run of consecutive blocks just ended (this
+   1256        // turn produced none, but earlier ones in the streak did) — record how
+   1257        // long the streak was so dashboards can see /goal blocking pressure.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type '{ content: unknown; }[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/query.ts(1427,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1417-1437 ---
+   1417      const toolUpdates = streamingToolExecutor
+   1418        ? streamingToolExecutor.getRemainingResults()
+   1419        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1420  
+   1421      for await (const update of toolUpdates) {
+   1422        if (update.message) {
+   1423          yield update.message
+   1424  
+   1425          if (
+   1426            update.message.type === 'attachment' &&
+   1427>           update.message.attachment.type === 'hook_stopped_continuation'
+   1428          ) {
+   1429            shouldPreventContinuation = true
+   1430          }
+   1431  
+   1432          toolResults.push(
+   1433            ...normalizeMessagesForAPI(
+   1434              [update.message],
+   1435              toolUseContext.options.tools,
+   1436            ).filter(_ => _.type === 'user'),
+   1437          )
+src/packages/agent/query.ts(1461,27): error TS18048: 'result.message' is possibly 'undefined'.
+  --- código src/packages/agent/query.ts:1451-1471 ---
+   1451      // rollup point hooks need for batch-level bookkeeping. Skipped on
+   1452      // empty batches and when aborted (the next model request never happens
+   1453      // anyway in the abort path).
+   1454      if (
+   1455        toolUseBlocks.length > 0 &&
+   1456        !toolUseContext.abortController.signal.aborted
+   1457      ) {
+   1458        const batchToolCalls = toolUseBlocks.map(block => {
+   1459          const toolResult = toolResults.find(result => {
+   1460            if (result.type !== 'user') return false
+   1461>           const content = result.message.content
+   1462            if (!Array.isArray(content)) return false
+   1463            return (content as ToolResultBlockParam[]).some(
+   1464              c => c.type === 'tool_result' && c.tool_use_id === block.id,
+   1465            )
+   1466          })
+   1467          const messageContent =
+   1468            toolResult?.type === 'user' ? toolResult.message.content : undefined
+   1469          const resultContent = Array.isArray(messageContent)
+   1470            ? (messageContent as ToolResultBlockParam[]).find(
+   1471                (c): c is ToolResultBlockParam =>

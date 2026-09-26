@@ -1,0 +1,23 @@
+src/packages/agent/hooks.ts(2628,35): error TS2304: Cannot find name 'TypedSyncHookOutput'.
+  --- código src/packages/agent/hooks.ts:2618-2638 ---
+   2618    try {
+   2619      const parsed = hookJSONOutputSchema().parse(JSON.parse(trimmed))
+   2620      if (isAsyncHookJSONOutput(parsed)) {
+   2621        return {}
+   2622      }
+   2623      if (!isSyncHookJSONOutput(parsed)) {
+   2624        return {}
+   2625      }
+   2626  
+   2627      // Cast a la interfaz tipada para acceso type-safe a propiedades
+   2628>     const typedParsed = parsed as TypedSyncHookOutput
+   2629  
+   2630      // Decisión de nivel superior: 'block' (exit code 0 + bloqueo JSON)
+   2631      if (typedParsed.decision === 'block' || result.blocked) {
+   2632        return {
+   2633          blockingError: {
+   2634            blockingError: typedParsed.reason || 'Elicitation blocked by hook',
+   2635            command: result.command,
+   2636          },
+   2637        }
+   2638      }

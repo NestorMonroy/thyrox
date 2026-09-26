@@ -1,0 +1,7 @@
+src/packages/shell/src/shellCommand.ts(138,12): error TS2416: Property 'taskOutput' in type 'ShellCommandImpl' is not assignable to the same property in base type 'ShellCommandWithOutput'.
+  Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.
+    Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.
+src/packages/shell/src/shellCommand.ts(403,3): error TS2322: Type 'ShellCommandImpl' is not assignable to type 'ShellCommandWithOutput'.
+  Type 'ShellCommandImpl' is not assignable to type 'ShellCommand'.
+    Types of property 'taskOutput' are incompatible.
+      Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

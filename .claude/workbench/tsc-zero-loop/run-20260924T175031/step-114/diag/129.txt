@@ -1,0 +1,51 @@
+src/packages/shell/src/shellCommand.ts(138,12): error TS2416: Property 'taskOutput' in type 'ShellCommandImpl' is not assignable to the same property in base type 'ShellCommandWithOutput'.
+  --- código src/packages/shell/src/shellCommand.ts:128-148 ---
+    128    #maxOutputBytes: number
+    129    #abortSignal: AbortSignal
+    130    #onTimeoutCallback:
+    131      | ((backgroundFn: (taskId: string) => boolean) => void)
+    132      | undefined
+    133    #timeout: number
+    134    #shouldAutoBackground: boolean
+    135    #resultResolver: ((result: ExecResult) => void) | null = null
+    136    #exitCodeResolver: ((code: number) => void) | null = null
+    137    #boundAbortHandler: (() => void) | null = null
+    138>   readonly taskOutput: TaskOutputPort
+    139  
+    140    static #handleTimeout(self: ShellCommandImpl): void {
+    141      if (self.#shouldAutoBackground && self.#onTimeoutCallback) {
+    142        self.#onTimeoutCallback(self.background.bind(self))
+    143      } else {
+    144        self.#doKill(SIGTERM)
+    145      }
+    146    }
+    147  
+    148    readonly result: Promise<ExecResult>
+  Type 'TaskOutputPort' is not assignable to type 'TaskOutput & TaskOutputPort'.
+    Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.
+src/packages/shell/src/shellCommand.ts(403,3): error TS2322: Type 'ShellCommandImpl' is not assignable to type 'ShellCommandWithOutput'.
+  --- código src/packages/shell/src/shellCommand.ts:393-413 ---
+    393   * Wraps a child process to enable flexible handling of shell command execution.
+    394   */
+    395  export function wrapSpawn(
+    396    childProcess: ChildProcess,
+    397    abortSignal: AbortSignal,
+    398    timeout: number,
+    399    taskOutput: TaskOutputPort,
+    400    shouldAutoBackground = false,
+    401    maxOutputBytes = MAX_TASK_OUTPUT_BYTES,
+    402  ): ShellCommandWithOutput {
+    403>   return new ShellCommandImpl(
+    404      childProcess,
+    405      abortSignal,
+    406      timeout,
+    407      taskOutput,
+    408      shouldAutoBackground,
+    409      maxOutputBytes,
+    410    )
+    411  }
+    412  
+    413  /**
+  Type 'ShellCommandImpl' is not assignable to type 'ShellCommand'.
+    Types of property 'taskOutput' are incompatible.
+      Type 'TaskOutputPort' is missing the following properties from type 'TaskOutput': #stdoutBuffer, #stderrBuffer, #disk, #recentLines, and 13 more.

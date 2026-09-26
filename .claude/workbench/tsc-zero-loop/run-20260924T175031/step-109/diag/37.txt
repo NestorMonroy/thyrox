@@ -1,0 +1,28 @@
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/bridge/src/runtimeHostSetup.ts(28,5): error TS2322: Type '(msg: { type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 4 more ... | undefined; } | ... 23 more ... | { ...; }) => { ...; } | undefined' is not assignable to type '(message: unknown) => unknown'.
+  --- código src/packages/bridge/src/runtimeHostSetup.ts:18-38 ---
+     18  let installed = false
+     19  
+     20  export function installBridgeBindings(): void {
+     21    if (installed) {
+     22      return
+     23    }
+     24  
+     25    installBridgeHostBindings({
+     26      bridgeMain,
+     27      buildBridgeConnectUrl,
+     28>     extractInboundMessageFields,
+     29      resolveAndPrepend,
+     30      initReplBridge,
+     31      getBridgeDisabledReason,
+     32      isCcrMirrorEnabled,
+     33      isBridgeEnabledBlocking,
+     34      clearTrustedDeviceToken,
+     35      enrollTrustedDevice,
+     36      getTrustedDeviceToken,
+     37    })
+     38  

@@ -12,7 +12,7 @@ import type { AgentDefinition } from '../types.ts'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const PACKAGE = join(HERE, '..')
 const REPO_ROOT = join(PACKAGE, '..', '..', '..')
-const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.275', 'claude_strings.txt')
+const DUMP = join(REPO_ROOT, '_references', 'claude-code-bin', '2.1.282', 'claude_strings.txt')
 const CATALOG_FILE = join(PACKAGE, 'models.jsonl')
 
 describe('src/models.jsonl es derivado, no escrito a mano', () => {
@@ -23,7 +23,7 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
    * en H-DOCS-1003: el JSON era válido y estable y llevaba 63 booleanos
    * invertidos.
    */
-  test('coincide byte a byte con la extracción del volcado 2.1.275', () => {
+  test('coincide byte a byte con la extracción del volcado 2.1.282', () => {
     const result = Bun.spawnSync([
       'python3', join(PACKAGE, 'bin', 'extract_model_registry.py'), DUMP, '--stdout',
     ])
@@ -75,18 +75,26 @@ describe('src/models.jsonl es derivado, no escrito a mano', () => {
       'alias_migration', 'aliases', 'best', 'defaults', 'fuente',
       'latest_per_family', 'models', 'pricing_tiers', 'schema_version',
     ])
-    expect(CATALOG.models.length).toBe(19)
-    expect(Object.keys(CATALOG.pricing_tiers).length).toBe(8)
+    expect(CATALOG.models.length).toBe(20)
+    expect(Object.keys(CATALOG.pricing_tiers).length).toBe(9)
   })
 
   test('declara su fuente y su forma', () => {
-    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.275/claude_strings.txt')
+    expect(CATALOG.fuente).toContain('claude-code-bin/2.1.282/claude_strings.txt')
     expect(CATALOG.schema_version).toBe(2)
     expect(MODEL_IDS.length).toBe(CATALOG.models.length)
   })
 })
 
 describe('el catálogo', () => {
+  test('Opus 5.5 (2.1.282) está declarado con su tier propio, lectura de caché a 0.05× de la entrada', () => {
+    const opus55 = CATALOG.models.find((m: { id: string }) => m.id === 'claude-opus-5-5')
+    expect(opus55?.pricing_tier).toBe('tier_4_20_cache_read_0_20')
+    const tier = CATALOG.pricing_tiers['tier_4_20_cache_read_0_20']
+    expect(tier).toBeDefined()
+    expect((tier?.cache_read ?? NaN) / (tier?.input ?? NaN)).toBeCloseTo(0.05)
+  })
+
   test('Fable 5.1 está declarado con su tier de cache_read barato', () => {
     const fable = MODELS['claude-fable-5-1']
     expect(fable!.display_name).toBe('Fable 5.1')

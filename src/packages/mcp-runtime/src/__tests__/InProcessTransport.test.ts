@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test'
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js'
 import { createLinkedTransportPair } from '../InProcessTransport.js'
 
 describe('createLinkedTransportPair — basic structure', () => {
@@ -27,7 +28,7 @@ describe('createLinkedTransportPair — basic structure', () => {
 describe('send/onmessage — message delivery', () => {
   test('a.send delivers to b.onmessage', async () => {
     const [a, b] = createLinkedTransportPair()
-    const handler = mock(() => {})
+    const handler = mock((_message: JSONRPCMessage) => {})
     b.onmessage = handler
     await a.send({ jsonrpc: '2.0', method: 'ping', id: 1 } as never)
     // queueMicrotask delivery — wait for next tick
@@ -154,8 +155,8 @@ describe('isolation — multiple pairs do not cross-talk', () => {
   test('two pairs deliver independently', async () => {
     const [a1, b1] = createLinkedTransportPair()
     const [a2, b2] = createLinkedTransportPair()
-    const b1Handler = mock(() => {})
-    const b2Handler = mock(() => {})
+    const b1Handler = mock((_message: JSONRPCMessage) => {})
+    const b2Handler = mock((_message: JSONRPCMessage) => {})
     b1.onmessage = b1Handler
     b2.onmessage = b2Handler
     await a1.send({ jsonrpc: '2.0', method: 'p1', id: 1 } as never)

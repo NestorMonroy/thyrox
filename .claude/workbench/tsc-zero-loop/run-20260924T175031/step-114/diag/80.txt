@@ -1,0 +1,30 @@
+src/packages/repl/src/components/MessageRow.tsx(345,24): error TS2345: Argument of type 'NormalizedUserMessage | NormalizedAssistantMessage<unknown> | (MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }) | ... 18 more ... | CollapsedReadSearchGroup' is not assignable to parameter of type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+  --- código src/packages/repl/src/components/MessageRow.tsx:335-355 ---
+    335    // latestBashOutputUUID affects rendering (full vs truncated output)
+    336    const prevIsLatestBash = prev.latestBashOutputUUID === prev.message.uuid
+    337    const nextIsLatestBash = next.latestBashOutputUUID === next.message.uuid
+    338    if (prevIsLatestBash !== nextIsLatestBash) return false
+    339  
+    340    // lastThinkingBlockId affects thinking block visibility — but only for
+    341    // messages that HAVE thinking content. Checking unconditionally busts the
+    342    // memo for every scrollback message whenever thinking starts/stops (CC-941).
+    343    if (
+    344      prev.lastThinkingBlockId !== next.lastThinkingBlockId &&
+    345>     hasThinkingContent(next.message)
+    346    ) {
+    347      return false
+    348    }
+    349  
+    350    // Check if this message is still "in flight"
+    351    const isStreaming = isMessageStreaming(prev.message, prev.streamingToolUseIDs)
+    352    const isResolved = allToolsResolved(
+    353      prev.message,
+    354      prev.lookups.resolvedToolUseIDs,
+    355    )
+  Type 'MessageBase & { type: "system"; subtype: "local_command"; timestamp?: string | undefined; isMeta?: boolean | undefined; level?: string | undefined; toolUseID?: string | undefined; } & { ...; } & { ...; }' is not assignable to type '{ type: string; message?: { content: { type: string; }[]; } | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined' is not assignable to type '{ content: { type: string; }[]; } | undefined'.
+        Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; }' is not assignable to type '{ content: { type: string; }[]; }'.
+          Types of property 'content' are incompatible.
+            Type 'MessageContent | undefined' is not assignable to type '{ type: string; }[]'.
+              Type 'undefined' is not assignable to type '{ type: string; }[]'.

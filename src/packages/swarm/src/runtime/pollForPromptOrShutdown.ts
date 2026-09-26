@@ -55,6 +55,7 @@ import {
   isShutdownRequest,
   markMessageAsReadByIndex,
   readMailbox,
+  type TeammateMessage,
 } from '../mailbox/index.js'
 import type { InProcessTeammateTaskState, TeammateIdentity } from '../tasks/types.js'
 
@@ -282,7 +283,7 @@ export async function waitForNextPromptOrShutdown(
         const msg = allMessages[shutdownIndex]!
         const skippedUnread = count(
           allMessages.slice(0, shutdownIndex),
-          m => !m.read,
+          (m: TeammateMessage) => !m.read,
         )
         logForDebugging(
           `[inProcessRunner] ${identity.agentName} received shutdown request from ${shutdownParsed?.from} (prioritized over ${skippedUnread} unread messages)`,

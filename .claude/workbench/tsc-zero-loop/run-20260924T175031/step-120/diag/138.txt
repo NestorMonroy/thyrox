@@ -1,0 +1,23 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(52,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:42-62 ---
+     42  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     43  import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+     44  import type { AgentToolProgress } from '@thyrox/tool-registry/progressTypes'
+     45  import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+     46  import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
+     47  import type { CommandResultDisplay } from '@thyrox/agent/command.js'
+     48  import { createAbortController } from '@thyrox/agent/abortController.js'
+     49  import { getAgentContext } from '@thyrox/agent/agentContext.js'
+     50  import {
+     51    createAttachmentMessage,
+     52>   getAttachmentMessages,
+     53  } from '@thyrox/agent/attachments.js'
+     54  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     55  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     56  import { AbortError, MalformedCommandError } from '@thyrox/local-observability/errorHelpers.js'
+     57  import { getDisplayPath } from '@thyrox/storage/file.js'
+     58  import {
+     59    extractResultText,
+     60    prepareForkedCommandContext,
+     61  } from '@thyrox/agent/forkedAgent.js'
+     62  import { getFsImplementation } from '@thyrox/storage/fsOperations.js'

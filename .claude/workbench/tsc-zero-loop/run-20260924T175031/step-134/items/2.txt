@@ -1,0 +1,26 @@
+Tipo: AppState
+Copias:
+  src/packages/agent/hooks/sessionHooks.ts
+  src/packages/agent/inProcessTeammateHelpers.ts
+  src/packages/agent/messageQueueManager.ts
+  src/packages/agent/queryContext.ts
+  src/packages/agent/standalone/standaloneAgent.ts
+  src/packages/agent/task/framework.ts
+  src/packages/agent/types/hooks.ts
+  src/packages/app-host/src/bootstrap/gracefulShutdown.ts
+  src/packages/app-host/src/runtime/appStateCompatShim.ts
+  src/packages/app-host/src/state/AppStateCompat.ts
+  src/packages/cli/src/appStateShim.tsx
+  src/packages/mcp-runtime/src/appStateHooks.ts
+  src/packages/permission/src/appStateHooks.ts
+  src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
+  src/packages/swarm/src/adapters/appRuntime.ts
+  src/packages/swarm/src/runtime/pollForPromptOrShutdown.ts
+  src/packages/swarm/src/teammateState.ts
+
+src/packages/agent/task/framework.ts(53): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: T | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; ... 68 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermi...' is not assignable to parameter of type '(prev: AppState) => AppState'.
+src/packages/agent/task/framework.ts(79): error TS2345: Argument of type '(prev: AppState) => { tasks: { [x: string]: TaskState | TaskState; }; settings: { [x: string]: unknown; $schema?: string | undefined; ... 70 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+src/packages/app-host/src/runtime/runtimeHandles.ts(68): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/packages/app-host/src/runtime/runtimeHandles.ts(154): error TS2322: Type 'HeadlessSessionStore' is not assignable to type 'HostSessionStore<unknown> | HostSessionStore<AppState>'.
+src/packages/repl/src/hooks/useReplBridge.tsx(536): error TS2345: Argument of type '(prev: AppState) => AppState | { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; ... 81 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+src/packages/tool-registry/src/tools/BashTool/UI.tsx(41): error TS2322: Type 'unknown' is not assignable to type 'AppState'.

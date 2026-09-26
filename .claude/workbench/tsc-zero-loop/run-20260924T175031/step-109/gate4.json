@@ -1,0 +1,229 @@
+{
+ "reviewed": [
+  {
+   "pattern": "unguarded-regex-match-group",
+   "files": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/uiAutomation.ts",
+    "src/packages/agent/__tests__/emit.test.ts",
+    "src/packages/agent/loop/context/systemPrompt.ts",
+    "src/packages/binary/bin/binary.ts",
+    "src/packages/binary/src/graph.ts",
+    "src/packages/permission/src/permission.ts",
+    "src/packages/repl/src/screens/agentFleet/helpers/repoGroup.ts",
+    "src/packages/skills/src/fromDir.ts",
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts",
+    "src/task/rst.ts",
+    "tests/skills/markdown.test.ts"
+   ]
+  },
+  {
+   "pattern": "spread-of-never-typed-test-double",
+   "files": [
+    "src/packages/agent/commands/commit-push-pr.ts"
+   ]
+  },
+  {
+   "pattern": "regex-capture-group-possibly-undefined",
+   "files": [
+    "src/packages/binary/src/freshness.ts",
+    "src/packages/repl/src/screens/agentFleet/helpers/extractRepoCwd.ts",
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts"
+   ]
+  },
+  {
+   "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+   "files": [
+    "src/packages/cli/src/structuredIOHelper.ts"
+   ]
+  },
+  {
+   "pattern": "length-on-possibly-undefined-getter-stub",
+   "files": [
+    "src/packages/config/plugin/loadPluginCommands.ts"
+   ]
+  },
+  {
+   "pattern": "spread-de-any-en-vez-de-array-ya-tipado",
+   "files": [
+    "src/packages/swarm/src/install/installSwarmHost.ts"
+   ]
+  },
+  {
+   "pattern": "string-literal-field-without-as-const-widened-by-spread",
+   "excluded": [
+    "src/packages/@ant/computer-use-mcp/src/legacy/platforms/darwin.ts",
+    "src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts",
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/__tests__/contextGovernance.test.ts",
+    "src/packages/agent/compaction/sessionMemoryCompact.ts",
+    "src/packages/agent/forkedAgent.ts",
+    "src/packages/agent/goalStopHook.ts",
+    "src/packages/agent/hooks/execAgentHook.ts",
+    "src/packages/agent/loop/context/autocompact.ts",
+    "src/packages/agent/workflow/workflowWorktree.ts",
+    "src/packages/app-host/src/runtime/installPluginBindings.ts",
+    "src/packages/cli/src/headless/sdk/control/permission-helpers.ts",
+    "src/packages/cli/src/structuredIO.ts",
+    "src/packages/config/plugin/loadPluginCommands.ts",
+    "src/packages/provider/src/anthropic/client.ts",
+    "src/packages/repl/src/components/MessageModel.tsx",
+    "src/packages/repl/src/components/MessageRow.tsx",
+    "src/packages/repl/src/components/Messages.tsx",
+    "src/packages/repl/src/components/messageStaticness.ts",
+    "src/packages/repl/src/components/messages/HookProgressMessage.tsx",
+    "src/packages/repl/src/hooks/useRemoteSession.ts",
+    "src/packages/repl/src/hooks/useReplBridge.tsx",
+    "src/packages/shell/src/shellCommand.ts",
+    "src/packages/tool-registry/src/__tests__/integration.test.ts",
+    "src/packages/tool-registry/src/notebook.ts",
+    "src/packages/tool-registry/src/services/toolExecution.ts",
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts",
+    "src/packages/tool-registry/src/tools/BashTool/pathValidation.ts",
+    "tests/unit/utils/tokens.test.ts"
+   ]
+  },
+  {
+   "pattern": "jsonparse-unknown-result-accessed-without-narrowing",
+   "excluded": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/commands/commit.ts",
+    "src/packages/agent/commands/security-review.ts",
+    "src/packages/cli/src/setup/setup.ts",
+    "src/packages/command-runtime/src/commands/login/login.tsx",
+    "src/packages/command-runtime/src/commands/recap/recap.ts",
+    "src/packages/config/plugin/loadPluginHooks.ts",
+    "src/packages/config/plugin/pluginLoader.ts",
+    "src/packages/permission/src/components/rules/PermissionRuleList.tsx",
+    "src/packages/provider/src/__tests__/integration.test.ts",
+    "src/packages/repl/src/commands/add-dir/add-dir.tsx",
+    "src/packages/repl/src/commands/plan/plan.tsx",
+    "src/packages/repl/src/components/Settings/Config.tsx",
+    "src/packages/repl/src/components/VirtualMessageList.tsx",
+    "src/packages/repl/src/components/hooks/HooksConfigMenu.tsx",
+    "src/packages/repl/src/components/hooks/SelectEventMode.tsx",
+    "src/packages/repl/src/hooks/useInboxPoller.ts",
+    "src/packages/repl/src/hooks/useReplBridge.tsx",
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx",
+    "src/packages/repl/src/processUserInput/processUserInput.ts",
+    "src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts",
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts",
+    "src/packages/tool-registry/src/tools/SkillTool/UI.tsx",
+    "src/packages/tool-registry/src/tools/WebSearchTool/adapters/apiAdapter.ts"
+   ]
+  },
+  {
+   "pattern": "spread-of-never-typed-test-double",
+   "excluded": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/commands/commit.ts",
+    "src/packages/agent/commands/security-review.ts",
+    "src/packages/config/plugin/lspPluginIntegration.ts",
+    "src/packages/config/plugin/marketplaceManager.ts",
+    "src/packages/provider/src/openai/client.ts",
+    "src/packages/provider/src/referral.ts",
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "pattern": "mock-sin-tipar-infiere-tupla-vacia",
+   "excluded": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/sessionTools/analyzeContext.ts",
+    "src/packages/agent/sessionTools/transcriptSearch.ts",
+    "src/packages/output/src/render/exportRenderer.tsx",
+    "src/packages/permission/src/yoloClassifier.ts",
+    "src/packages/provider/src/gemini/convertMessages.ts",
+    "src/packages/provider/src/openai/convertMessages.ts",
+    "src/packages/repl/src/components/Message.tsx",
+    "src/packages/repl/src/promptSuggestionSpeculation.tsx",
+    "src/packages/repl/src/screens/repl/onlySleepToolActive.ts"
+   ]
+  },
+  {
+   "pattern": "unguarded-regex-match-group",
+   "excluded": [
+    "src/packages/agent/QueryEngine.ts",
+    "src/packages/agent/workflow/workflowWorktree.ts",
+    "src/packages/binary/src/reflow.ts",
+    "src/packages/permission/src/components/hooks.ts",
+    "src/packages/permission/src/components/utils.ts",
+    "src/packages/provider/src/anthropic/client.ts",
+    "src/packages/provider/src/legacy/api.ts",
+    "src/packages/provider/src/modelAgent.ts",
+    "src/packages/provider/src/thinking.ts",
+    "src/packages/provider/src/withRetry.ts",
+    "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts",
+    "src/packages/skills/src/fromDir.ts",
+    "src/packages/tool-registry/src/services/toolExecution.ts"
+   ]
+  },
+  {
+   "pattern": "sync-external-store-snapshot-inferred-unknown-from-untyped-require",
+   "excluded": [
+    "src/packages/agent/hooks/AsyncHookRegistry.ts",
+    "src/packages/agent/task/framework.ts",
+    "src/packages/repl/src/components/messageActions.tsx"
+   ]
+  },
+  {
+   "pattern": "optional-field-narrower-than-always-assigned-value",
+   "excluded": [
+    "src/packages/agent/hooks/apiQueryHookHelper.ts",
+    "src/packages/agent/internal/loopDynamicCore.ts",
+    "src/packages/app-host/src/providerHostSetup.ts",
+    "src/packages/bridge/src/bridgeMain.ts",
+    "src/packages/bridge/src/runtimeHostSetup.ts",
+    "src/packages/config/manager.ts",
+    "src/packages/permission/src/components/FallbackPermissionRequest.tsx",
+    "src/packages/permission/src/components/FilePermissionDialog/useFilePermissionDialog.ts",
+    "src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx",
+    "src/packages/permission/src/components/hooks.ts",
+    "src/packages/permission/src/components/utils.ts",
+    "src/packages/permission/src/toolPermission/PermissionContext.ts",
+    "src/packages/provider/src/gemini/indexImpl.ts",
+    "src/packages/provider/src/mockRateLimits.ts",
+    "src/packages/provider/src/oauth/index.ts",
+    "src/packages/provider/src/openai/indexImpl.ts",
+    "src/packages/provider/src/openai/modelMapping.ts",
+    "src/packages/repl/src/queryHelpers.ts",
+    "src/packages/repl/src/screens/agentFleet/FleetView.tsx",
+    "src/packages/repl/src/screens/agentFleet/helpers/spinnerFrames.ts",
+    "tests/task/premises.test.ts"
+   ]
+  },
+  {
+   "pattern": "spread-de-any-en-vez-de-array-ya-tipado",
+   "excluded": [
+    "src/packages/app-host/src/runtime/installPluginBindings.ts",
+    "src/packages/cli/src/transports.ts"
+   ]
+  },
+  {
+   "pattern": "fresh-object-literal-excess-property-check-against-narrow-param",
+   "excluded": [
+    "src/packages/cli/src/structuredIO.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-narrowed-by-loop-bound-not-visible-to-tsc",
+   "excluded": [
+    "src/packages/config/plugin/pluginLoader.ts",
+    "src/packages/repl/src/promptSuggestion.tsx"
+   ]
+  },
+  {
+   "pattern": "tool-provider-discover-not-awaited",
+   "excluded": [
+    "src/packages/provider/__tests__/providerStreaming.test.ts",
+    "src/packages/repl/src/components/PromptInput/PromptInput.tsx",
+    "src/packages/tool-registry/src/collapseReadSearch.ts"
+   ]
+  },
+  {
+   "pattern": "length-on-possibly-undefined-getter-stub",
+   "excluded": [
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts"
+   ]
+  }
+ ]
+}

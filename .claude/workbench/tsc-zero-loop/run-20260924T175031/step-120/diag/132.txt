@@ -1,0 +1,23 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(65,56): error TS7006: Parameter 'msg' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:55-75 ---
+     55    const bg = useSelectedMessageBg()
+     56    // Hoisted to mount-time — per-message component, re-renders on every scroll.
+     57    const isDemoEnv = feature('EXPERIMENTAL_SKILL_SEARCH')
+     58      ?
+     59        useMemo(() => isEnvTruthy(process.env.IS_DEMO), [])
+     60      : false
+     61    // Handle teammate_mailbox BEFORE switch
+     62    if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
+     63      // Filter out idle notifications BEFORE counting - they are hidden in the UI
+     64      // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
+     65>     const visibleMessages = attachment.messages.filter(msg => {
+     66        if (isShutdownApproved(msg.text)) {
+     67          return false
+     68        }
+     69        try {
+     70          const parsed = jsonParse(msg.text)
+     71          return (
+     72            parsed?.type !== 'idle_notification' &&
+     73            parsed?.type !== 'teammate_terminated'
+     74          )
+     75        } catch {

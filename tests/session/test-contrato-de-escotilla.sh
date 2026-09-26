@@ -51,6 +51,7 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
 }
 
 THYROX_JOBS_DIR=$(mktemp -d); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 echo "== 1. la escotilla sobre un trabajo REAL =="
 bash "$GUION" registrar presente /dev/null 0 >/dev/null 2>&1

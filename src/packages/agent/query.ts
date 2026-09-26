@@ -84,6 +84,7 @@ import type {
   AgentToolUseContext as ToolUseContext,
   AgentToolUseSummaryMessage as ToolUseSummaryMessage,
 } from './internalTypes.js'
+import type { Message as CanonicalMessage } from './messageShapes.js'
 import { createBudgetTracker, checkTokenBudget } from './internal/tokenBudget.js'
 import { asSystemPrompt, count, type SystemPrompt } from './internalUtils.js'
 import {
@@ -129,12 +130,9 @@ import {
   type StreamingToolExecutorLike,
 } from './internal/queryRuntime.js'
 import { readEnv } from '@thyrox/config/env'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 
 const SLEEP_TOOL_NAME = 'Sleep'
-type CanUseToolFn = (...args: unknown[]) => Promise<{
-  behavior: 'allow' | 'deny' | 'ask'
-  updatedInput?: unknown
-}>
 
 type State = QueryLoopState
 
@@ -528,7 +526,7 @@ async function* queryLoop(
     //TODO: no need to set toolUseContext.messages during set-up since it is updated here
     toolUseContext = {
       ...toolUseContext,
-      messages: messagesForQuery,
+      messages: messagesForQuery as CanonicalMessage[],
     }
 
     const assistantMessages: AssistantMessage[] = []
@@ -725,7 +723,7 @@ async function* queryLoop(
             // assistantMessages.push below — it flows back to the API and
             // mutating it would break prompt caching (byte mismatch).
             let yieldMessage: typeof message = message
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMsg = message as AssistantMessage
               const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
               let clonedContent: typeof contentArr | undefined
@@ -762,7 +760,7 @@ async function* queryLoop(
               }
               if (clonedContent) {
                 yieldMessage = {
-                  ...message,
+                  ...(message as Record<string, unknown>),
                   message: { ...(assistantMsg.message ?? {}), content: clonedContent },
                 } as typeof message
               }
@@ -804,7 +802,7 @@ async function* queryLoop(
             if (!withheld) {
               yield yieldMessage
             }
-            if (message.type === 'assistant') {
+            if ((message as { type: string }).type === 'assistant') {
               const assistantMessage = message as AssistantMessage
               assistantMessages.push(assistantMessage)
 
@@ -1461,6 +1459,7 @@ async function* queryLoop(
       const batchToolCalls = toolUseBlocks.map(block => {
         const toolResult = toolResults.find(result => {
           if (result.type !== 'user') return false
+          if (!result.message) return false
           const content = result.message.content
           if (!Array.isArray(content)) return false
           return (content as ToolResultBlockParam[]).some(
@@ -1468,7 +1467,9 @@ async function* queryLoop(
           )
         })
         const messageContent =
-          toolResult?.type === 'user' ? toolResult.message.content : undefined
+          toolResult?.type === 'user' && toolResult.message
+            ? toolResult.message.content
+            : undefined
         const resultContent = Array.isArray(messageContent)
           ? (messageContent as ToolResultBlockParam[]).find(
               (c): c is ToolResultBlockParam =>
@@ -1553,6 +1554,7 @@ async function* queryLoop(
         const toolResult = toolResults.find(
           result =>
             result.type === 'user' &&
+            result.message &&
             Array.isArray(result.message.content) &&
             result.message.content.some(
               content =>
@@ -1562,6 +1564,7 @@ async function* queryLoop(
         )
         const resultContent =
           toolResult?.type === 'user' &&
+          toolResult.message &&
           Array.isArray(toolResult.message.content)
             ? toolResult.message.content.find(
                 (c): c is ToolResultBlockParam =>
@@ -1767,9 +1770,7 @@ async function* queryLoop(
     })
 
     // Refresh tools between turns so newly-connected MCP servers become available
-    const refreshTools = updatedToolUseContext.options.refreshTools as
-      | (() => unknown[])
-      | undefined
+    const refreshTools = updatedToolUseContext.options.refreshTools
     if (refreshTools) {
       const refreshedTools = refreshTools()
       if (refreshedTools !== updatedToolUseContext.options.tools) {

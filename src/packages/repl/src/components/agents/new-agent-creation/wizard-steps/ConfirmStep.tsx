@@ -29,7 +29,7 @@ export function ConfirmStep({
   onSaveAndEdit,
   error,
 }: Props): ReactNode {
-  const { goBack, wizardData } = useWizard<AgentWizardData>()
+  const { goBack, wizardData } = useWizard<AgentWizardData & Record<string, unknown>>()
 
   useKeybinding('confirm:no', goBack, { context: 'Confirmation' })
 

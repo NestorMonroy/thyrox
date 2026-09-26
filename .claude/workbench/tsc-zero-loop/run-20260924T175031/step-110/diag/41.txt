@@ -1,0 +1,46 @@
+src/packages/agent/skillSearch/prefetch.ts(23,38): error TS2307: Cannot find module './loop/context/attachments.ts' or its corresponding type declarations.
+  --- código src/packages/agent/skillSearch/prefetch.ts:13-33 ---
+     13   *   paquete `repl` inexistente en este árbol) se sustituye por `Message` de
+     14   *   `./messageShapes.ts`.
+     15   * - `ToolUseContext` viene ya de `@thyrox/tool-registry/Tool.js`, como en
+     16   *   la fuente.
+     17   *
+     18   * Como los tres cuerpos son no-ops que no inspeccionan ningún campo de estos
+     19   * parámetros, la sustitución no cambia el comportamiento observable — sólo
+     20   * la forma declarada del tipo.
+     21   */
+     22  
+     23> import type { AttachmentEntry } from './loop/context/attachments.ts'
+     24  import type { Message } from './messageShapes.ts'
+     25  import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+     26  
+     27  export const startSkillDiscoveryPrefetch: (
+     28    input: string | null,
+     29    messages: Message[],
+     30    toolUseContext: ToolUseContext,
+     31  ) => Promise<AttachmentEntry[]> = async () => []
+     32  
+     33  export const collectSkillDiscoveryPrefetch: (
+src/packages/agent/skillSearch/prefetch.ts(24,30): error TS2307: Cannot find module './messageShapes.ts' or its corresponding type declarations.
+  --- código src/packages/agent/skillSearch/prefetch.ts:14-34 ---
+     14   *   `./messageShapes.ts`.
+     15   * - `ToolUseContext` viene ya de `@thyrox/tool-registry/Tool.js`, como en
+     16   *   la fuente.
+     17   *
+     18   * Como los tres cuerpos son no-ops que no inspeccionan ningún campo de estos
+     19   * parámetros, la sustitución no cambia el comportamiento observable — sólo
+     20   * la forma declarada del tipo.
+     21   */
+     22  
+     23  import type { AttachmentEntry } from './loop/context/attachments.ts'
+     24> import type { Message } from './messageShapes.ts'
+     25  import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+     26  
+     27  export const startSkillDiscoveryPrefetch: (
+     28    input: string | null,
+     29    messages: Message[],
+     30    toolUseContext: ToolUseContext,
+     31  ) => Promise<AttachmentEntry[]> = async () => []
+     32  
+     33  export const collectSkillDiscoveryPrefetch: (
+     34    pending: Promise<AttachmentEntry[]>,

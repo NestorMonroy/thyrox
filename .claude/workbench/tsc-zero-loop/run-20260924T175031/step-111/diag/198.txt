@@ -1,0 +1,26 @@
+src/packages/repl/src/components/PromptInput/Notifications.tsx(390,11): error TS2322: Type '(result: AutoUpdaterResult) => void' is not assignable to type '(autoUpdaterResult: AutoUpdaterResult | null) => void'.
+  --- código src/packages/repl/src/components/PromptInput/Notifications.tsx:380-400 ---
+    380          </Box>
+    381        )}
+    382        {!isBriefOnly && (
+    383          <TokenWarning tokenUsage={tokenUsage} model={mainLoopModel} />
+    384        )}
+    385        {shouldShowAutoUpdater && (
+    386          <AutoUpdaterWrapper
+    387            isUpdating={isAutoUpdating}
+    388            onChangeIsUpdating={onChangeIsUpdating}
+    389            autoUpdaterResult={autoUpdaterResult}
+    390>           onAutoUpdaterResult={onAutoUpdaterResult}
+    391            showSuccessMessage={!isShowingCompactMessage}
+    392            verbose={verbose}
+    393          />
+    394        )}
+    395        {feature('VOICE_MODE')
+    396          ? voiceEnabled &&
+    397            voiceError && (
+    398              <Box>
+    399                <Text color="error" wrap="truncate">
+    400                  {voiceError}
+  Types of parameters 'result' and 'autoUpdaterResult' are incompatible.
+    Type 'AutoUpdaterResult | null' is not assignable to type 'AutoUpdaterResult'.
+      Type 'null' is not assignable to type 'AutoUpdaterResult'.

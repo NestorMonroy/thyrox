@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790368721.709	    46.181	0	0	2	0	cd /home/user/thyrox-medicion && bash -c 'bunx tsc --noEmit -p tsconfig.json' > /home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-134/pipeline/batch-04/prefix-1.log 2>&1

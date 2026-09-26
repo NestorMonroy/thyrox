@@ -1,0 +1,3 @@
+            echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            probe_jobs "${alive[@]/#/$LEDGER/}"
+            last_beat=$now

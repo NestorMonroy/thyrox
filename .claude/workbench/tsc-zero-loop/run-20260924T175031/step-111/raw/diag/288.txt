@@ -1,0 +1,14 @@
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(633,9): error TS2345: Argument of type 'CommandBase & PromptCommand' is not assignable to parameter of type 'CommandBase & PromptCommand & { type: "prompt"; }'.
+  Type 'CommandBase & PromptCommand' is not assignable to type 'PromptCommand'.
+    Types of property 'source' are incompatible.
+      Type 'string' is not assignable to type '"userSettings" | "projectSettings" | "localSettings" | "plugin" | "bundled" | "mcp" | "flagSettings" | "policySettings" | "builtin"'.
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(733,48): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts(837,13): error TS2322: Type '() => { effortValue: {} | null; settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 80 more ...; chann...' is not assignable to type '() => AppState'.
+  Type '{ effortValue: {} | null; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; mainLoopModelForSession: ModelSetting; ... 77 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type 'AppState'.
+    Type '{ effortValue: {} | null; settings: SettingsJson; verbose: boolean; mainLoopModel: ModelSetting; mainLoopModelForSession: ModelSetting; ... 77 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks; }' is not assignable to type '{ tasks: { [taskId: string]: TaskState; }; agentNameRegistry: Map<string, AgentId>; foregroundedTaskId?: string | undefined; viewingAgentTaskId?: string | undefined; ... 46 more ...; channelPermissionCallbacks?: ChannelPermissionCallbacks | undefined; }'.
+      Types of property 'effortValue' are incompatible.
+        Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+          Type 'null' is not assignable to type 'EffortValue | undefined'.

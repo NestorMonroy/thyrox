@@ -1,0 +1,3 @@
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(24,7): error TS18046: 'm.data' is of type 'unknown'.
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,8): error TS18046: 'm.data' is of type 'unknown'.
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,39): error TS18046: 'm.data' is of type 'unknown'.

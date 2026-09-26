@@ -1,0 +1,44 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(523,7): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:513-530 ---
+    513      },
+    514    })
+    515  
+    516    // We need to bubble this up, so that the tool call throws, causing us to return
+    517    // an is_error tool_use block to the server, and render a red dot in the UI.
+    518    if (signal.aborted) {
+    519      throw new AbortError()
+    520    }
+    521  
+    522    const { content } = assistantMessage.message
+    523>   if (content.length > 0) {
+    524      const contentBlock = content[0]
+    525      if (contentBlock && typeof contentBlock === 'object' && 'text' in contentBlock) {
+    526        return (contentBlock as { text: string }).text
+    527      }
+    528    }
+    529    return 'No response from model'
+    530  }
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(524,26): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:514-530 ---
+    514    })
+    515  
+    516    // We need to bubble this up, so that the tool call throws, causing us to return
+    517    // an is_error tool_use block to the server, and render a red dot in the UI.
+    518    if (signal.aborted) {
+    519      throw new AbortError()
+    520    }
+    521  
+    522    const { content } = assistantMessage.message
+    523    if (content.length > 0) {
+    524>     const contentBlock = content[0]
+    525      if (contentBlock && typeof contentBlock === 'object' && 'text' in contentBlock) {
+    526        return (contentBlock as { text: string }).text
+    527      }
+    528    }
+    529    return 'No response from model'
+    530  }

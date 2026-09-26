@@ -1,0 +1,99 @@
+Patrón: dynamic-import-of-typeless-js-stub
+Señal del verificador: TS2307.*Cannot find module '@thyrox/.+\.js'
+Arreglo genérico: cuando `import('@thyrox/paquete/ruta/Archivo.js')` falla con TS2307 porque el módulo destino es un `.js` sin `.d.ts` (fuera de `include` del tsconfig, sin `allowJs`), se sustituye por `require('@thyrox/paquete/ruta/Archivo.js') as <tipo-mínimo-del-uso>`, con `// eslint-disable-next-line @typescript-eslint/no-require-imports` en la línea anterior — es el mismo patrón ya usado en `BuiltInToolsProvider.ts` y en otros paquetes del árbol (`memdir.ts`, `agentHostBindings.ts`) para referenciar estos stubs .js sin tipos
+Ya aplicado en: src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts, src/packages/agent/messages.ts
+
+src/packages/agent/hooks.ts(72,52): error TS2307: Cannot find module '@thyrox/config/plugin/schemas.js' or its corresponding type declarations.
+  --- código src/packages/agent/hooks.ts:62-82 ---
+     62  import { registerPendingAsyncHook } from './hooks/AsyncHookRegistry.js'
+     63  import { enqueuePendingNotification } from './messageQueueManager.js'
+     64  import { wrapInSystemReminder, extractTextContent, getLastAssistantMessage } from './messages.js'
+     65  import { emitHookResponse } from './hooks/hookEvents.js'
+     66  import { getAgentTranscriptPath } from '@thyrox/storage/sessionStorage.js'
+     67  import { asAgentId } from './idTypes.js'
+     68  import type { AppState } from '@thyrox/app-host/state/AppState.js'
+     69  import type { HookMatcher, PluginHookMatcher, SkillHookMatcher } from '@thyrox/config/settings/types.js'
+     70  import { getSessionHooks, getSessionFunctionHooks, type SessionDerivedHookMatcher } from './hooks/sessionHooks.js'
+     71  import { basename } from 'node:path'
+     72> import { ALLOWED_OFFICIAL_MARKETPLACE_NAMES } from '@thyrox/config/plugin/schemas.js'
+     73  import { normalizeLegacyToolName, getLegacyToolNames } from '@thyrox/permission/permissionRuleParser.js'
+     74  import { findToolByName } from '@thyrox/tool-registry/Tool.js'
+     75  import { permissionRuleValueFromString } from '@thyrox/permission/permissionRuleParser'
+     76  import { checkHasTrustDialogAccepted } from '@thyrox/config/global/config.js'
+     77  import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
+     78  import type { ElicitResult } from '@modelcontextprotocol/sdk/types.js'
+     79  
+     80  
+     81  
+     82  
+
+src/packages/agent/messages.ts(56,45): error TS2307: Cannot find module '@thyrox/tool-registry/tools/AgentTool/builtInAgents.js' or its corresponding type declarations.
+  --- código src/packages/agent/messages.ts:46-66 ---
+     46  import { getStrictToolResultPairing } from '@thyrox/app-host/bootstrap/state.js'
+     47  import type { HookEvent } from './types/hooks.ts'
+     48  import { isPlanModeInterviewPhaseEnabled, getPewterLedgerVariant, getPlanModeV2AgentCount, getPlanModeV2ExploreAgentCount } from '@thyrox/permission/planModeV2.js'
+     49  import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+     50  import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+     51  import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+     52  import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+     53  import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+     54  import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+     55  import { getCurrentProjectConfig } from '@thyrox/config'
+     56> import { areExplorePlanAgentsEnabled } from '@thyrox/tool-registry/tools/AgentTool/builtInAgents.js'
+     57  import { EXPLORE_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/exploreAgent.js'
+     58  import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+     59  import { PLAN_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/planAgent.js'
+     60  import type { AgentId } from './idTypes.ts'
+     61  import { safeParseJSON } from '@thyrox/storage/json.js'
+     62  import { sanitizeToolNameForAnalytics } from './eventMetadata.ts'
+     63  import { normalizeToolInput } from '@thyrox/provider/legacy/api.js'
+     64  import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
+     65  
+     66  /**
+src/packages/agent/messages.ts(57,31): error TS2307: Cannot find module '@thyrox/tool-registry/tools/AgentTool/built-in/exploreAgent.js' or its corresponding type declarations.
+  --- código src/packages/agent/messages.ts:47-67 ---
+     47  import type { HookEvent } from './types/hooks.ts'
+     48  import { isPlanModeInterviewPhaseEnabled, getPewterLedgerVariant, getPlanModeV2AgentCount, getPlanModeV2ExploreAgentCount } from '@thyrox/permission/planModeV2.js'
+     49  import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+     50  import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+     51  import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+     52  import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+     53  import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+     54  import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+     55  import { getCurrentProjectConfig } from '@thyrox/config'
+     56  import { areExplorePlanAgentsEnabled } from '@thyrox/tool-registry/tools/AgentTool/builtInAgents.js'
+     57> import { EXPLORE_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/exploreAgent.js'
+     58  import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+     59  import { PLAN_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/planAgent.js'
+     60  import type { AgentId } from './idTypes.ts'
+     61  import { safeParseJSON } from '@thyrox/storage/json.js'
+     62  import { sanitizeToolNameForAnalytics } from './eventMetadata.ts'
+     63  import { normalizeToolInput } from '@thyrox/provider/legacy/api.js'
+     64  import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
+     65  
+     66  /**
+     67   * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
+src/packages/agent/messages.ts(59,28): error TS2307: Cannot find module '@thyrox/tool-registry/tools/AgentTool/built-in/planAgent.js' or its corresponding type declarations.
+  --- código src/packages/agent/messages.ts:49-69 ---
+     49  import { ExitPlanModeV2Tool } from '@thyrox/tool-registry/tools/ExitPlanModeTool/ExitPlanModeV2Tool.js'
+     50  import { FileEditTool } from '@thyrox/tool-registry/tools/FileEditTool/FileEditTool.js'
+     51  import { FileWriteTool } from '@thyrox/tool-registry/tools/FileWriteTool/FileWriteTool.js'
+     52  import { GLOB_TOOL_NAME } from '@thyrox/tool-registry/tools/GlobTool/prompt.js'
+     53  import { GREP_TOOL_NAME } from '@thyrox/tool-registry/tools/GrepTool/prompt.js'
+     54  import { hasEmbeddedSearchTools } from '@thyrox/config/embeddedTools.js'
+     55  import { getCurrentProjectConfig } from '@thyrox/config'
+     56  import { areExplorePlanAgentsEnabled } from '@thyrox/tool-registry/tools/AgentTool/builtInAgents.js'
+     57  import { EXPLORE_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/exploreAgent.js'
+     58  import { ASK_USER_QUESTION_TOOL_NAME } from '@thyrox/tool-registry/tools/AskUserQuestionTool/prompt.js'
+     59> import { PLAN_AGENT } from '@thyrox/tool-registry/tools/AgentTool/built-in/planAgent.js'
+     60  import type { AgentId } from './idTypes.ts'
+     61  import { safeParseJSON } from '@thyrox/storage/json.js'
+     62  import { sanitizeToolNameForAnalytics } from './eventMetadata.ts'
+     63  import { normalizeToolInput } from '@thyrox/provider/legacy/api.js'
+     64  import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
+     65  
+     66  /**
+     67   * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
+     68   * de INYECCION DE PROMPT —ordenes del sistema—, no etiquetas de presentacion:
+     69   * esas las retira otro mecanismo, en el paquete de salida.

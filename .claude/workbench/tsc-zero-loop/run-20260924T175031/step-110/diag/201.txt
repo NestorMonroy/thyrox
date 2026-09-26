@@ -1,0 +1,23 @@
+src/packages/repl/src/components/Settings/Status.tsx(65,7): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'IDEExtensionInstallationStatus | null | undefined'.
+  --- código src/packages/repl/src/components/Settings/Status.tsx:55-75 ---
+     55    mcp: AppState['mcp']
+     56    theme: ThemeName
+     57    context: LocalJSXCommandContext
+     58  }): Property[] {
+     59    const modelLabel = getModelDisplayLabel(mainLoopModel)
+     60  
+     61    return [
+     62      { label: 'Model', value: modelLabel },
+     63      ...buildIDEProperties(
+     64        mcp.clients,
+     65>       context.options.ideInstallationStatus,
+     66        theme,
+     67      ),
+     68      ...buildMcpProperties(mcp.clients, theme),
+     69      ...buildSandboxProperties(),
+     70      ...buildSettingSourcesProperties(),
+     71    ]
+     72  }
+     73  
+     74  export async function buildDiagnostics(): Promise<Diagnostic[]> {
+     75    return [

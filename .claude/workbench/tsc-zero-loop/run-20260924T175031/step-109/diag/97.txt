@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/hooks/useInboxPoller.ts(342,33): error TS18046: 'q' is of type 'unknown'.
+  --- código src/packages/repl/src/hooks/useInboxPoller.ts:332-352 ---
+    332                )
+    333              },
+    334              async recheckPermission() {
+    335                // No-op for tmux workers — permission state is on the worker side
+    336              },
+    337            }
+    338  
+    339            // Deduplicate: if markMessagesAsRead failed on a prior poll,
+    340            // the same message will be re-read — skip if already queued.
+    341            setToolUseConfirmQueue(queue => {
+    342>             if (queue.some(q => q.toolUseID === parsed.tool_use_id)) {
+    343                return queue
+    344              }
+    345              return [...queue, entry]
+    346            })
+    347          } else {
+    348            logForDebugging(
+    349              `[InboxPoller] ToolUseConfirmQueue unavailable, dropping permission request from ${parsed.agent_id}`,
+    350            )
+    351          }
+    352        }

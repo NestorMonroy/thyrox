@@ -10,6 +10,7 @@ import {
 } from './hooks.js'
 import { clearCwdEnvFiles } from '@thyrox/storage/sessionEnvironment.js'
 import { getHooksConfigFromSnapshot } from './hooksConfigSnapshot.js'
+import type { HookCallbackMatcher } from './types/hooks.js'
 
 let watcher: FSWatcher | null = null
 let currentCwd: string
@@ -32,8 +33,8 @@ export function initializeFileChangedWatcher(cwd: string): void {
 
   const config = getHooksConfigFromSnapshot()
   hasEnvHooks =
-    (config?.CwdChanged?.length ?? 0) > 0 ||
-    (config?.FileChanged?.length ?? 0) > 0
+    ((config.CwdChanged as unknown[] | undefined)?.length ?? 0) > 0 ||
+    ((config.FileChanged as unknown[] | undefined)?.length ?? 0) > 0
 
   if (hasEnvHooks) {
     registerCleanup(async () => dispose())
@@ -48,7 +49,10 @@ export function initializeFileChangedWatcher(cwd: string): void {
 function resolveWatchPaths(
   config?: ReturnType<typeof getHooksConfigFromSnapshot>,
 ): string[] {
-  const matchers = (config ?? getHooksConfigFromSnapshot())?.FileChanged ?? []
+  const matchers =
+    ((config ?? getHooksConfigFromSnapshot())?.FileChanged as
+      | HookCallbackMatcher[]
+      | undefined) ?? []
 
   // Matcher field: filenames to watch in cwd, pipe-separated (e.g. ".envrc|.env")
   const staticPaths: string[] = []
@@ -139,8 +143,8 @@ export async function onCwdChangedForHooks(
   // Re-evaluate from the current snapshot so mid-session hook changes are picked up
   const config = getHooksConfigFromSnapshot()
   const currentHasEnvHooks =
-    (config?.CwdChanged?.length ?? 0) > 0 ||
-    (config?.FileChanged?.length ?? 0) > 0
+    ((config.CwdChanged as unknown[] | undefined)?.length ?? 0) > 0 ||
+    ((config.FileChanged as unknown[] | undefined)?.length ?? 0) > 0
   if (!currentHasEnvHooks) return
   currentCwd = newCwd
 

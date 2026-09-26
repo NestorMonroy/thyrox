@@ -1,0 +1,1 @@
+    assert_equal("el comando de la arista es el pipeline de la ruta 3, con su marcador", (True, True, True),

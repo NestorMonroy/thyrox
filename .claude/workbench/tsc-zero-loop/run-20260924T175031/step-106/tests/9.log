@@ -1,0 +1,9 @@
+bun test v1.3.11 (af24e281)
+fatal: Not a valid object name no/existe/ref
+fatal: Not a valid object name no/existe/ref
+
+ 27 pass
+ 2 skip
+ 0 fail
+ 42 expect() calls
+Ran 29 tests across 1 file. [698.00ms]

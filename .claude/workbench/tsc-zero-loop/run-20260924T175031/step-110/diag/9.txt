@@ -1,0 +1,50 @@
+src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts(190,27): error TS2339: Property 'promptCount' does not exist on type 'never'.
+  --- código src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts:180-200 ---
+    180  
+    181  describe('incrementPromptCount', () => {
+    182    test('increments by 1 + saves snapshot', () => {
+    183      let savedSnapshot: AttributionSnapshotMessage | null = null
+    184      const state = createEmptyAttributionState()
+    185      const result = incrementPromptCount(state, snap => {
+    186        savedSnapshot = snap
+    187      })
+    188      expect(result.promptCount).toBe(1)
+    189      expect(savedSnapshot).not.toBeNull()
+    190>     expect(savedSnapshot?.promptCount).toBe(1)
+    191    })
+    192  
+    193    test('does NOT mutate original state', () => {
+    194      const state = createEmptyAttributionState()
+    195      state.promptCount = 5
+    196      const result = incrementPromptCount(state, () => {})
+    197      expect(result.promptCount).toBe(6)
+    198      expect(state.promptCount).toBe(5) // original unchanged
+    199    })
+    200  
+src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts(208,29): error TS2769: No overload matches this call.
+  --- código src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts:198-218 ---
+    198      expect(state.promptCount).toBe(5) // original unchanged
+    199    })
+    200  
+    201    test('snapshot includes incremented count (not original)', () => {
+    202      let savedCount: number | null | undefined = null
+    203      const state = createEmptyAttributionState()
+    204      state.promptCount = 10
+    205      incrementPromptCount(state, snap => {
+    206        savedCount = snap.promptCount
+    207      })
+    208>     expect(savedCount).toBe(11)
+    209    })
+    210  
+    211    test('preserves all OTHER counter fields', () => {
+    212      const state = createEmptyAttributionState()
+    213      state.promptCount = 1
+    214      state.promptCountAtLastCommit = 0
+    215      state.permissionPromptCount = 5
+    216      state.escapeCount = 3
+    217      const result = incrementPromptCount(state, () => {})
+    218      expect(result.promptCountAtLastCommit).toBe(0)
+  Overload 1 of 2, '(expected: null): void', gave the following error.
+    Argument of type '11' is not assignable to parameter of type 'null'.
+  Overload 2 of 2, '(expected: null): void', gave the following error.
+    Argument of type '11' is not assignable to parameter of type 'null'.

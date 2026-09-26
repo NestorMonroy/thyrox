@@ -1,0 +1,6 @@
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064,32): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1064,53): error TS2339: Property 'isPrimary' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(1969,20): error TS2339: Property 'label' does not exist on type 'DisplayGeometry'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2081,14): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2119,16): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.
+src/packages/@ant/computer-use-mcp/src/toolCalls.ts(2120,33): error TS2339: Property 'captureError' does not exist on type 'ResolvePrepareCaptureResult'.

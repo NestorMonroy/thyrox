@@ -1,0 +1,24 @@
+src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts(175,27): error TS2352: Conversion of type 'Command' to type '{ getPromptForCommand: (a: string) => Promise<{ type: string; text: string; }[]>; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/command-runtime/src/__tests__/portedCommandsSmoke.test.ts:165-185 ---
+    165    test('goal (local-jsx + local)', () => {
+    166      expect(goalJsxCommand.name).toBe('goal')
+    167      expect(goalJsxCommand.type).toBe('local-jsx')
+    168      expect(goalLocalCommand.name).toBe('goal')
+    169      expect(goalLocalCommand.type).toBe('local')
+    170      expect(goalLocalCommand.supportsNonInteractive).toBe(true)
+    171    })
+    172    test('review + ultrareview', async () => {
+    173      expect(reviewCommand.name).toBe('review')
+    174      expect(reviewCommand.type).toBe('prompt')
+    175>     const blocks = await (reviewCommand as { getPromptForCommand: (a: string) => Promise<{ type: string; text: string }[]> }).getPromptForCommand('42')
+    176      expect(blocks[0]?.text).toContain('PR number: 42')
+    177      expect(ultrareview.name).toBe('ultrareview')
+    178      expect(ultrareview.type).toBe('local-jsx')
+    179    })
+    180    test('getGoalConditionMaxLength resuelve @thyrox/agent (ya declarado)', () => {
+    181      // command-runtime SI declara @thyrox/agent en package.json desde
+    182      // thyrox@97ac49b0 (cierre de tests/package/dependencies.test.ts) — el
+    183      // require diferido de pendingCrossPackageDeps.ts ya resuelve contra el
+    184      // simbolo real en vez de fallar al llamarse. Valor real de la fuente:
+    185      // agent/goalStopHook.ts:115, GOAL_CONDITION_MAX_LENGTH = 4000.
+  Property 'getPromptForCommand' is missing in type 'CommandBase & LocalJSXCommand' but required in type '{ getPromptForCommand: (a: string) => Promise<{ type: string; text: string; }[]>; }'.

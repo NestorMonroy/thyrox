@@ -1,0 +1,69 @@
+src/packages/swarm/src/core/It2SetupPrompt.tsx(166,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/core/It2SetupPrompt.tsx:156-176 ---
+    156            To use native iTerm2 split panes for teammates, you need the{' '}
+    157            <Text bold>it2</Text> CLI tool.
+    158          </Text>
+    159          <Text dimColor>
+    160            This enables teammates to appear as split panes within your current
+    161            window.
+    162          </Text>
+    163          <Box marginTop={1}>
+    164            <Select
+    165              options={options}
+    166>             onChange={value => {
+    167                switch (value) {
+    168                  case 'install':
+    169                    void handleInstall()
+    170                    break
+    171                  case 'tmux':
+    172                    handleUseTmux()
+    173                    break
+    174                  case 'cancel':
+    175                    onDone('cancelled')
+    176                    break
+src/packages/swarm/src/core/It2SetupPrompt.tsx(236,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/core/It2SetupPrompt.tsx:226-246 ---
+    226            You can try installing manually:{' '}
+    227            {packageManager === 'uvx'
+    228              ? 'uv tool install it2'
+    229              : packageManager === 'pipx'
+    230                ? 'pipx install it2'
+    231                : 'pip install --user it2'}
+    232          </Text>
+    233          <Box marginTop={1}>
+    234            <Select
+    235              options={options}
+    236>             onChange={value => {
+    237                switch (value) {
+    238                  case 'retry':
+    239                    void handleInstall()
+    240                    break
+    241                  case 'tmux':
+    242                    handleUseTmux()
+    243                    break
+    244                  case 'cancel':
+    245                    onDone('cancelled')
+    246                    break
+src/packages/swarm/src/core/It2SetupPrompt.tsx(326,23): error TS7006: Parameter 'value' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/core/It2SetupPrompt.tsx:316-336 ---
+    316          <Text color="error">Verification failed</Text>
+    317          {error && <Text dimColor>{error}</Text>}
+    318          <Text>Make sure:</Text>
+    319          <Box flexDirection="column" paddingLeft={2}>
+    320            <Text>· Python API is enabled in iTerm2 preferences</Text>
+    321            <Text>· You may need to restart iTerm2 after enabling</Text>
+    322          </Box>
+    323          <Box marginTop={1}>
+    324            <Select
+    325              options={options}
+    326>             onChange={value => {
+    327                switch (value) {
+    328                  case 'retry':
+    329                    setStep('verifying')
+    330                    void verifyIt2Setup().then(result => {
+    331                      if (result.success) {
+    332                        markIt2SetupComplete()
+    333                        setStep('success')
+    334                        setTimeout(onDone, 1500, 'installed' as const)
+    335                      } else {
+    336                        setError(result.error || 'Verification failed')

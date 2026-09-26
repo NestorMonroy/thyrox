@@ -1,0 +1,11 @@
+  test('un import de un módulo fuera del corpus se declara externo, no revienta', () => {
+    // Forma real de chunk-ga02wneq.js (2.1.282): el resolvedor abría
+    // `fs/promises` como si fuera un chunk y moría con ENOENT, perdiendo
+    // los nombres ya resueltos del mismo comando.
+    writeFileSync(join(root, 'chunk-d.js'),
+      'import{lstat as fb,realpath as Is}from"fs/promises";function use(){return Is()}')
+    const found = resolveSymbol(root, 'chunk-d.js', 'Is')
+    expect(found.map(d => [d.file, d.kind, d.name])).toEqual([['fs/promises', 'external', 'realpath']])
+  })
+
+  test('un símbolo definido en el propio chunk no sale de él', () => {

@@ -1,0 +1,34 @@
+{
+ "reviewed": [
+  {
+   "pattern": "loose-unknown-host-binding-contract-vs-precise-callback",
+   "files": [
+    "src/packages/bridge/src/runtimeHostSetup.ts"
+   ]
+  },
+  {
+   "pattern": "app-state-like-callback-boundary",
+   "files": [
+    "src/packages/cli/src/headless/sdk/session/load.ts"
+   ]
+  },
+  {
+   "pattern": "escape-hatch-record-unknown-narrowed-locally",
+   "files": [
+    "src/packages/command-runtime/src/commands/ide/ide.tsx"
+   ]
+  },
+  {
+   "pattern": "cast-que-debilita-narrowing-de-union-discriminada",
+   "files": [
+    "src/packages/command-runtime/src/commands/review/reviewRemote.ts"
+   ]
+  },
+  {
+   "pattern": "repeated-index-access-not-narrowed",
+   "files": [
+    "src/packages/command-runtime/src/skills/bundled/keybindings.ts"
+   ]
+  }
+ ]
+}

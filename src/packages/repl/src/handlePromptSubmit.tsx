@@ -1,4 +1,5 @@
 import type { UUID } from 'crypto'
+import type { ReactNode } from 'react'
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata.js'
 import { type Command, getCommandName, isCommandEnabled } from '@thyrox/command-runtime/runtime'
@@ -298,7 +299,7 @@ export async function handlePromptSubmit(
       }
 
       const impl = await immediateCommand.load()
-      const jsx = await impl.call(onDone, context, commandArgs)
+      const jsx = (await impl.call(onDone, context, commandArgs)) as ReactNode
 
       // Skip if onDone already fired — prevents stuck isLocalJSXCommand
       // (see processSlashCommand.tsx local-jsx case for full mechanism).

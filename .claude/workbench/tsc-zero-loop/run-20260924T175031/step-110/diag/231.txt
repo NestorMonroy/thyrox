@@ -1,0 +1,25 @@
+src/packages/repl/src/components/tasks/WorkflowsDialog.tsx(297,56): error TS2322: Type '(e: KeyboardEvent) => void' is not assignable to type '(event: KeyboardEvent) => void'.
+  --- código src/packages/repl/src/components/tasks/WorkflowsDialog.tsx:287-307 ---
+    287    // 'x' to stop the selected running workflow (ant m4O `x` handler). Raw key
+    288    // handler (not a registered keybinding action) — matches BackgroundTasksDialog.
+    289    const handleKeyDown = (e: KeyboardEvent) => {
+    290      if (e.key === 'x' && selected?.isRunning) {
+    291        e.preventDefault()
+    292        handleStop()
+    293      }
+    294    }
+    295  
+    296    return (
+    297>     <Box flexDirection="column" tabIndex={0} autoFocus onKeyDown={handleKeyDown}>
+    298        <Dialog
+    299          title="Workflows"
+    300          subtitle={subtitle}
+    301          onCancel={handleClose}
+    302          color="background"
+    303          inputGuide={() => <Byline>{actions}</Byline>}
+    304        >
+    305          {rows.length === 0 ? (
+    306            <Text dimColor>No workflows in this session.</Text>
+    307          ) : (
+  Types of parameters 'e' and 'event' are incompatible.
+    Type 'KeyboardEvent' is missing the following properties from type 'KeyboardEvent': altKey, charCode, code, ctrlKey, and 27 more.

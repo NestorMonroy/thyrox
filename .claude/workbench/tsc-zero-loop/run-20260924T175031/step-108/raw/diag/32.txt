@@ -1,0 +1,25 @@
+src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts(26,29): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { requestId: string; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ requestId: string; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?
+src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts(61,7): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { requestId: string; method: string; params: { a: number; }; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; method: string; params: { a: number; }; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ requestId: string; method: string; params: { a: number; }; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; method: string; params: { a: number; }; }'. Did you mean to write 'requestId'?
+src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts(74,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { type: string; response: { requestId: string; }; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ type: string; response: { requestId: string; }; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?
+src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts(84,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { response: { requestId: string; subtype: string; data: { x: number; }; }; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; subtype: string; data: { x: number; }; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ response: { requestId: string; subtype: string; data: { x: number; }; }; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; subtype: string; data: { x: number; }; }'. Did you mean to write 'requestId'?
+src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts(96,19): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: { requestId: string; response: { requestId: string; }; }): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?
+  Overload 2 of 2, '(expected: NoInfer<{ requestId: string; response: { requestId: string; }; }>): void', gave the following error.
+    Object literal may only specify known properties, but 'request_id' does not exist in type '{ requestId: string; }'. Did you mean to write 'requestId'?

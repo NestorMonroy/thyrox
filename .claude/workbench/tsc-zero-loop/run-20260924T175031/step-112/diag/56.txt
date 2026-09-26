@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(1759,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1749-1769 ---
+   1749            notifyCommandLifecycle(cmd.uuid, 'started')
+   1750          }
+   1751        }
+   1752        removeFromQueue(consumedCommands)
+   1753      }
+   1754  
+   1755      // Instrumentation: Track file change attachments after they're added
+   1756      const fileChangeAttachmentCount = count(
+   1757        toolResults,
+   1758        tr =>
+   1759>         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+   1760      )
+   1761  
+   1762      logEvent('tengu_query_after_attachments', {
+   1763        totalToolResultsCount: toolResults.length,
+   1764        fileChangeAttachmentCount,
+   1765        queryChainId: queryChainIdForAnalytics,
+   1766        queryDepth: queryTracking.depth,
+   1767      })
+   1768  
+   1769      // Refresh tools between turns so newly-connected MCP servers become available

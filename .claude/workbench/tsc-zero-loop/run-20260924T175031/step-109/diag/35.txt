@@ -1,0 +1,105 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/binary/src/reflow.ts(99,20): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/binary/src/reflow.ts:89-109 ---
+     89        const fin = finDeExpresionRegular(src, i)
+     90        if (fin > i) {
+     91          yield* emitirCodigo()
+     92          yield { kind: 'regex', text: src.slice(i, fin) }
+     93          previo = '/'
+     94          i = fin
+     95          continue
+     96        }
+     97      }
+     98      codigo += c
+     99>     if (!/\s/.test(c)) previo = c
+    100      i++
+    101    }
+    102    yield* emitirCodigo()
+    103  }
+    104  
+    105  /** Tras estos, `/` es division; en cualquier otro sitio abre una regex. */
+    106  function abreExpresionRegular(previo: string): boolean {
+    107    if (previo === '') return true
+    108    return !/[\w$)\]"'`]/.test(previo)
+    109  }
+src/packages/binary/src/reflow.ts(99,24): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/binary/src/reflow.ts:89-109 ---
+     89        const fin = finDeExpresionRegular(src, i)
+     90        if (fin > i) {
+     91          yield* emitirCodigo()
+     92          yield { kind: 'regex', text: src.slice(i, fin) }
+     93          previo = '/'
+     94          i = fin
+     95          continue
+     96        }
+     97      }
+     98      codigo += c
+     99>     if (!/\s/.test(c)) previo = c
+    100      i++
+    101    }
+    102    yield* emitirCodigo()
+    103  }
+    104  
+    105  /** Tras estos, `/` es division; en cualquier otro sitio abre una regex. */
+    106  function abreExpresionRegular(previo: string): boolean {
+    107    if (previo === '') return true
+    108    return !/[\w$)\]"'`]/.test(previo)
+    109  }
+src/packages/binary/src/reflow.ts(133,73): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/binary/src/reflow.ts:123-143 ---
+    123    let j = i + 1
+    124    while (j < src.length) {
+    125      if (src[j] === '\\') { j += 2; continue }
+    126      if (src[j] === '`') return j + 1
+    127      if (src[j] === '$' && src[j + 1] === '{') {
+    128        let nivel = 1
+    129        j += 2
+    130        while (j < src.length && nivel > 0) {
+    131          if (src[j] === '\\') { j += 2; continue }
+    132          if (src[j] === '`') { j = finDePlantilla(src, j); continue }
+    133>         if (src[j] === '"' || src[j] === "'") { j = finDeCadena(src, j, src[j]); continue }
+    134          if (src[j] === '{') nivel++
+    135          else if (src[j] === '}') nivel--
+    136          j++
+    137        }
+    138        continue
+    139      }
+    140      j++
+    141    }
+    142    return src.length
+    143  }
+src/packages/binary/src/reflow.ts(157,46): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/binary/src/reflow.ts:147-167 ---
+    147    let j = i + 1
+    148    let enClase = false
+    149    while (j < src.length) {
+    150      const c = src[j]
+    151      if (c === '\\') { j += 2; continue }
+    152      if (c === '\n') return 0
+    153      if (enClase) { if (c === ']') enClase = false }
+    154      else if (c === '[') enClase = true
+    155      else if (c === '/') {
+    156        j++
+    157>       while (j < src.length && /[a-z]/i.test(src[j])) j++
+    158        return j
+    159      }
+    160      j++
+    161    }
+    162    return 0
+    163  }
+    164  
+    165  const SANGRIA = '  '
+    166  
+    167  /**

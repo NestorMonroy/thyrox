@@ -252,7 +252,7 @@ export function prepareMessagesForInjection(messages: Message[]): Message[] {
 
   return messages
     .map(msg => {
-      if (!('message' in msg) || !Array.isArray(msg.message.content)) return msg
+      if (!msg.message || !Array.isArray(msg.message.content)) return msg
       const content = msg.message.content.filter(keep)
       if (content.length === msg.message.content.length) return msg
       if (content.length === 0) return null

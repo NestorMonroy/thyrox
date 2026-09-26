@@ -1,0 +1,14 @@
+src/packages/agent/QueryEngine.ts
+src/packages/agent/contracts.ts
+src/packages/agent/internal/headlessRuntime.ts
+src/packages/agent/internal/sdkRuntime.ts
+src/packages/agent/internal/sdkMappers.ts
+src/packages/agent/internal/runtimeBridges.ts
+src/packages/agent/messages/mappers.ts
+src/packages/repl/src/queryHelpers.ts
+src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx
+src/packages/config/plugin/loadPluginCommands.ts
+src/packages/config/plugin/loadPluginAgents.ts
+src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts
+src/packages/config/settings/settings.ts
+src/packages/command-runtime/src/skills/loadSkillsDir.ts

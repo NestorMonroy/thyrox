@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(1895,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1885-1905 ---
+   1885    const { signal: abortSignal, cleanup } = createCombinedAbortSignal(signal, {
+   1886      timeoutMs: callbackTimeoutMs,
+   1887    })
+   1888  
+   1889    try {
+   1890      // Check if already aborted
+   1891      if (abortSignal.aborted) {
+   1892        cleanup()
+   1893        return {
+   1894          outcome: 'cancelled',
+   1895>         hook,
+   1896        }
+   1897      }
+   1898  
+   1899      // Execute callback with abort signal
+   1900      const passed = await new Promise<boolean>((resolve, reject) => {
+   1901        // Handle abort signal
+   1902        const onAbort = () => reject(new Error('Function hook cancelled'))
+   1903        abortSignal.addEventListener('abort', onAbort)
+   1904  
+   1905        // Execute callback
+src/packages/agent/hooks.ts(1922,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1912-1932 ---
+   1912            abortSignal.removeEventListener('abort', onAbort)
+   1913            reject(error)
+   1914          })
+   1915      })
+   1916  
+   1917      cleanup()
+   1918  
+   1919      if (passed) {
+   1920        return {
+   1921          outcome: 'success',
+   1922>         hook,
+   1923        }
+   1924      }
+   1925      return {
+   1926        blockingError: {
+   1927          blockingError: hook.errorMessage,
+   1928          command: 'function',
+   1929        },
+   1930        outcome: 'blocking',
+   1931        hook,
+   1932      }
+src/packages/agent/hooks.ts(1931,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1921-1941 ---
+   1921          outcome: 'success',
+   1922          hook,
+   1923        }
+   1924      }
+   1925      return {
+   1926        blockingError: {
+   1927          blockingError: hook.errorMessage,
+   1928          command: 'function',
+   1929        },
+   1930        outcome: 'blocking',
+   1931>       hook,
+   1932      }
+   1933    } catch (error) {
+   1934      cleanup()
+   1935  
+   1936      // Handle cancellation
+   1937      if (
+   1938        error instanceof Error &&
+   1939        (error.message === 'Function hook cancelled' || // V7-EXEMPT: legacy hook abort sentinel
+   1940          error.name === 'AbortError')
+   1941      ) {

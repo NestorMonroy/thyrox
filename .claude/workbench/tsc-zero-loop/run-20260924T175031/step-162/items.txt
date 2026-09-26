@@ -1,0 +1,2 @@
+pattern:optional-host-binding-yielded-without-guard .claude/workbench/tsc-zero-loop/run-20260924T175031/step-162/items/1.txt src/packages/agent/QueryEngine.ts
+pattern:standalone-agent-context-color-string-vs-literal-union .claude/workbench/tsc-zero-loop/run-20260924T175031/step-162/items/2.txt src/packages/repl/src/screens/REPLView.tsx

@@ -1,0 +1,238 @@
+{
+ "reviewed": [
+  {
+   "pattern": "test-forces-excluded-value-past-narrowed-signature",
+   "files": [
+    "src/packages/config/__tests__/pluginIdentifier.test.ts"
+   ]
+  },
+  {
+   "pattern": "seam-getdata-arg-unsupported-by-wrapper-signature",
+   "files": [
+    "src/packages/config/plugin/headlessPluginInstall.ts"
+   ]
+  },
+  {
+   "pattern": "type-reexported-by-deps-facade-but-missing",
+   "files": [
+    "src/packages/config/plugin/loadPluginAgents.ts"
+   ]
+  },
+  {
+   "pattern": "deps-coerce-description-wrapper-returns-unknown",
+   "files": [
+    "src/packages/config/plugin/loadPluginOutputStyles.ts"
+   ]
+  },
+  {
+   "pattern": "plugin-fs-impl-stat-missing-isFile",
+   "files": [
+    "src/packages/config/plugin/loadPluginOutputStyles.ts"
+   ]
+  },
+  {
+   "pattern": "outer-let-narrowing-lost-across-file-scope-closure",
+   "files": [
+    "src/packages/config/plugin/orphanedPluginFilter.ts"
+   ]
+  },
+  {
+   "pattern": "mcp-error-file-optional-vs-settings-error-required",
+   "files": [
+    "src/packages/config/settings/allErrors.ts"
+   ]
+  },
+  {
+   "pattern": "optional-bound-method-call-adds-undefined-to-null-typed-result",
+   "files": [
+    "src/packages/config/sync/index.ts"
+   ]
+  },
+  {
+   "pattern": "switch-case-literal-not-in-narrowed-union-dead-branch",
+   "files": [
+    "src/packages/config/sync/index.ts"
+   ]
+  },
+  {
+   "pattern": "callback-arrow-expression-returns-non-void",
+   "files": [
+    "src/packages/daemon/src/__tests__/dispatchSpool.test.ts"
+   ]
+  },
+  {
+   "pattern": "mutated-object-toequal-stale-literal-type",
+   "files": [
+    "src/packages/headless-sdk/src/__tests__/controlMessageCompat.test.ts"
+   ]
+  },
+  {
+   "pattern": "inline-callback-param-narrower-than-real-lsp-type",
+   "files": [
+    "src/packages/ide/src/lsp/passiveFeedback.ts"
+   ]
+  },
+  {
+   "pattern": "discriminant-narrowing-defeated-by-sibling-wide-type-property",
+   "files": [
+    "src/packages/local-observability/src/aggregates/stats.ts"
+   ]
+  },
+  {
+   "pattern": "readdir-return-type-picks-last-overload",
+   "files": [
+    "src/packages/local-observability/src/log.ts"
+   ]
+  },
+  {
+   "pattern": "overload-preserves-literal-key-type",
+   "files": [
+    "src/packages/mcp-runtime/src/__tests__/sanitization.test.ts"
+   ]
+  },
+  {
+   "pattern": "object-literal-cast-to-required-interface-with-incompatible-shared-property",
+   "files": [
+    "src/packages/mcp-runtime/src/__tests__/utilsHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "generic-call-arg-count-and-order-drifted-from-declaration",
+   "files": [
+    "src/packages/mcp-runtime/src/api.ts"
+   ]
+  },
+  {
+   "pattern": "fake-state-cast-on-dead-callback-path",
+   "files": [
+    "src/packages/mcp-runtime/src/clientRuntime.ts"
+   ]
+  },
+  {
+   "pattern": "write-callback-narrower-than-node-signature",
+   "files": [
+    "src/packages/output/src/capture/asciicast.ts"
+   ]
+  },
+  {
+   "pattern": "union-member-only-property-read",
+   "files": [
+    "src/packages/permission/__tests__/permissionPersistence.test.ts"
+   ]
+  },
+  {
+   "pattern": "cast-de-zod-issue-a-record-string-unknown",
+   "files": [
+    "src/packages/permission/__tests__/permissionSchemas.test.ts"
+   ]
+  },
+  {
+   "pattern": "object-literal-string-widened-vs-union-literal-type",
+   "files": [
+    "src/packages/permission/src/__tests__/createPermissionRequestMessage.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-array-narrowed-against-as-const-tuple",
+   "files": [
+    "src/packages/permission/src/__tests__/dangerousPatterns.test.ts"
+   ]
+  },
+  {
+   "pattern": "object-literal-widened-string-instead-of-literal-type",
+   "files": [
+    "src/packages/permission/src/__tests__/memoryPausePermissions.test.ts"
+   ]
+  },
+  {
+   "pattern": "union-narrowing-via-jest-assertion-not-recognized-by-tsc",
+   "files": [
+    "src/packages/permission/src/__tests__/pathSafety.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-array-widened-to-string-for-enum-comparison",
+   "files": [
+    "src/packages/permission/src/__tests__/permissionSchemas.behavior.test.ts"
+   ]
+  },
+  {
+   "pattern": "find-callback-narrower-than-optional-field",
+   "files": [
+    "src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx"
+   ]
+  },
+  {
+   "pattern": "unbranded-analytics-string-needs-cast-at-callsite",
+   "files": [
+    "src/packages/permission/src/toolPermission/permissionLogging.ts"
+   ]
+  },
+  {
+   "pattern": "unused-parameter-property",
+   "files": [
+    "src/packages/plan/src/mode.ts"
+   ]
+  },
+  {
+   "pattern": "provider-host-bindings-stub-falta-campo",
+   "files": [
+    "src/packages/provider/__tests__/contractsHostSmoke.test.ts"
+   ]
+  },
+  {
+   "pattern": "cast-a-tipo-no-solapado-sin-pasar-por-unknown",
+   "files": [
+    "src/packages/provider/src/__tests__/advisor.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-typed-const-compared-via-arithmetic",
+   "files": [
+    "src/packages/provider/src/__tests__/modelCost.test.ts"
+   ]
+  },
+  {
+   "pattern": "narrowing-perdido-por-discriminante-no-literal",
+   "files": [
+    "src/packages/provider/src/adapters.ts"
+   ]
+  },
+  {
+   "pattern": "narrowed-property-lost-on-whole-object-pass",
+   "files": [
+    "src/packages/provider/src/imageDimensionStrip.ts"
+   ]
+  },
+  {
+   "pattern": "record-literal-missing-non-anthropic-provider-keys",
+   "files": [
+    "src/packages/provider/src/model/deprecation.ts"
+   ]
+  },
+  {
+   "pattern": "content-block-literal-type-widened-to-string",
+   "files": [
+    "src/packages/provider/src/openai/__tests__/convertMessages.test.ts"
+   ]
+  },
+  {
+   "pattern": "indexed-access-type-on-optional-property",
+   "files": [
+    "src/packages/provider/src/runtimeHelpers.ts"
+   ]
+  },
+  {
+   "pattern": "pasted-content-fixture-missing-content-field",
+   "files": [
+    "src/packages/repl/src/__tests__/history.test.ts"
+   ]
+  },
+  {
+   "pattern": "nullable-return-accessed-without-narrowing-in-test",
+   "files": [
+    "src/packages/repl/src/__tests__/killRing.test.ts"
+   ]
+  }
+ ]
+}

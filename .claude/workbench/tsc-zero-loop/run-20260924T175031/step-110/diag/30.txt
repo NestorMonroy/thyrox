@@ -1,0 +1,24 @@
+src/packages/agent/inProcessTeammateHelpers.ts(92,19): error TS2344: Type 'InProcessTeammateTaskState' does not satisfy the constraint 'TaskState'.
+  --- código src/packages/agent/inProcessTeammateHelpers.ts:82-102 ---
+     82   *
+     83   * @param taskId - Task ID of the in-process teammate
+     84   * @param setAppState - AppState setter
+     85   * @param awaiting - Whether teammate is awaiting plan approval
+     86   */
+     87  export function setAwaitingPlanApproval(
+     88    taskId: string,
+     89    setAppState: SetAppState,
+     90    awaiting: boolean,
+     91  ): void {
+     92>   updateTaskState<InProcessTeammateTaskState>(taskId, setAppState, task => ({
+     93      ...task,
+     94      awaitingPlanApproval: awaiting,
+     95    }))
+     96  }
+     97  /**
+     98   * Handle plan approval response for an in-process teammate.
+     99   * Called by the message callback when a plan_approval_response arrives.
+    100   *
+    101   * This resets awaitingPlanApproval to false. The permissionMode from the
+    102   * response is handled separately by the agent loop (Task #11).
+  Property 'status' is missing in type 'InProcessTeammateTaskState' but required in type 'TaskState'.

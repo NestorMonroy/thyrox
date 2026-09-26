@@ -1,0 +1,50 @@
+src/packages/repl/src/processUserInput/processUserInput.ts(525,9): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:515-535 ---
+    515      : []
+    516    queryCheckpoint('query_attachment_loading_end')
+    517  
+    518    // Bash commands
+    519    if (inputString !== null && mode === 'bash') {
+    520      const { processBashCommand } = await import('./processBashCommand.js')
+    521      return addImageMetadataMessage(
+    522        await processBashCommand(
+    523          inputString,
+    524          precedingInputBlocks,
+    525>         attachmentMessages,
+    526          context,
+    527          setToolJSX,
+    528        ),
+    529        imageMetadataTexts,
+    530      )
+    531    }
+    532  
+    533    // Slash commands
+    534    // Skip for remote bridge messages — input from CCR clients is plain text
+    535    if (
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.
+src/packages/repl/src/processUserInput/processUserInput.ts(545,7): error TS2345: Argument of type 'unknown[]' is not assignable to parameter of type 'AttachmentMessage<_T>[]'.
+  --- código src/packages/repl/src/processUserInput/processUserInput.ts:535-555 ---
+    535    if (
+    536      inputString !== null &&
+    537      !effectiveSkipSlash &&
+    538      inputString.startsWith('/')
+    539    ) {
+    540      const { processSlashCommand } = await import('./processSlashCommand.js')
+    541      const slashResult = await processSlashCommand(
+    542        inputString,
+    543        precedingInputBlocks,
+    544        imageContentBlocks,
+    545>       attachmentMessages,
+    546        context,
+    547        setToolJSX,
+    548        uuid,
+    549        isAlreadyProcessing,
+    550        canUseTool,
+    551      )
+    552      return addImageMetadataMessage(slashResult, imageMetadataTexts)
+    553    }
+    554  
+    555    // Log agent mention queries for analysis
+  Type 'unknown' is not assignable to type 'AttachmentMessage<_T>'.
+    Type 'unknown' is not assignable to type 'MessageBase'.

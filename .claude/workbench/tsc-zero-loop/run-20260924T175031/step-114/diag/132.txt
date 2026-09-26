@@ -1,0 +1,23 @@
+src/packages/swarm/src/adapters/createSwarmHostDeps.ts(206,30): error TS18046: 'tool' is of type 'unknown'.
+  --- código src/packages/swarm/src/adapters/createSwarmHostDeps.ts:196-216 ---
+    196            : async () => ({ behavior: 'allow' as const, updatedInput: input })
+    197  
+    198          if (!context) {
+    199            notImplemented('tools.execute without ToolUseContext')
+    200          }
+    201          const parentMessage = {
+    202            type: 'assistant',
+    203            message: { id: 'swarm-host-deps', content: [] },
+    204            uuid: '00000000-0000-0000-0000-000000000000',
+    205          } as const
+    206>         const result = await tool.call(
+    207            input as never,
+    208            context as ToolUseContext,
+    209            canUseTool as never,
+    210            parentMessage as never,
+    211          )
+    212          return { content: result.data, metadata: result.mcpMeta } as never
+    213        },
+    214        ...options.tools,
+    215      } satisfies HostToolRegistry,
+    216  

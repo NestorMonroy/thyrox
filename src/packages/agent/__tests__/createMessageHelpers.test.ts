@@ -98,7 +98,7 @@ describe('createProgressMessage', () => {
     const m = createProgressMessage({
       toolUseID: 'tu_1',
       parentToolUseID: 'tu_parent',
-      data: { type: 'bash', stdout: 'hello' } as never,
+      data: { type: 'bash', stdout: 'hello' },
     })
     expect(m.type).toBe('progress')
     expect(m.toolUseID).toBe('tu_1')

@@ -1,0 +1,48 @@
+src/packages/repl/src/hooks/useTextInput.ts(30,7): error TS2322: Type '() => void' is not assignable to type 'InputHandler'.
+  --- código src/packages/repl/src/hooks/useTextInput.ts:20-40 ---
+     20  } from '../Cursor.js'
+     21  import { env } from '@thyrox/config/env/paths'
+     22  import { isFullscreenEnvEnabled } from '../fullscreen.js'
+     23  import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
+     24  import { isModifierPressed, prewarmModifiers } from '@thyrox/output/modifiers.js'
+     25  import { useDoublePress } from '@anthropic/ink'
+     26  
+     27  type MaybeCursor = undefined | Cursor
+     28  type InputHandler = (input: string) => MaybeCursor
+     29  type InputMapper = (input: string) => MaybeCursor
+     30> const NOOP_HANDLER: InputHandler = () => {}
+     31  function mapInput(input_map: Array<[string, InputHandler]>): InputMapper {
+     32    const map = new Map(input_map)
+     33    return function (input: string): MaybeCursor {
+     34      return (map.get(input) ?? NOOP_HANDLER)(input)
+     35    }
+     36  }
+     37  
+     38  export type UseTextInputProps = {
+     39    value: string
+     40    onChange: (value: string) => void
+  Type 'void' is not assignable to type 'MaybeCursor'.
+src/packages/repl/src/hooks/useTextInput.ts(346,11): error TS2322: Type '() => void' is not assignable to type 'InputHandler'.
+  --- código src/packages/repl/src/hooks/useTextInput.ts:336-356 ---
+    336      const after = cursor.text.slice(start + length)
+    337      const newText = before + text + after
+    338      const newOffset = start + text.length
+    339      updateYankLength(text.length)
+    340      return Cursor.fromText(newText, columns, newOffset)
+    341    }
+    342  
+    343    const handleCtrl = mapInput([
+    344      ['a', () => cursor.startOfLine()],
+    345      ['b', () => cursor.left()],
+    346>     ['c', handleCtrlC],
+    347      ['d', handleCtrlD],
+    348      ['e', () => cursor.endOfLine()],
+    349      ['f', () => cursor.right()],
+    350      ['h', () => cursor.deleteTokenBefore() ?? cursor.backspace()],
+    351      ['k', killToLineEnd],
+    352      ['n', () => downOrHistoryDown()],
+    353      ['p', () => upOrHistoryUp()],
+    354      ['u', killToLineStart],
+    355      ['w', killWordBefore],
+    356      ['y', yank],
+  Type 'void' is not assignable to type 'MaybeCursor'.

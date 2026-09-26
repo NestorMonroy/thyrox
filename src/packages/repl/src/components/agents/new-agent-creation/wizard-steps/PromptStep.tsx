@@ -6,11 +6,9 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import TextInput from '../../../TextInput.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
-import type { AgentWizardData } from '../types.js'
 
 export function PromptStep(): ReactNode {
-  const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+  const { goNext, goBack, updateWizardData, wizardData } = useWizard()
   const [systemPrompt, setSystemPrompt] = useState(
     wizardData.systemPrompt || '',
   )

@@ -13,6 +13,7 @@
  */
 import { runHooks, type HookConfig } from '../hooks.ts'
 import { planResume } from './index.ts'
+import { resolveRequestCacheTtl, type RequestSource } from '../../cacheTtl.ts'
 
 export type SwitchOptions = {
   transcriptPath: string
@@ -22,6 +23,8 @@ export type SwitchOptions = {
   hooks?: HookConfig
   /** TTL declarado de la caché; viaja al hook porque decide el precio de reescribirla. */
   cacheTtl?: '5m' | '1h'
+  /** Quién pidió los turnos cuya caché se abandona; sin TTL declarado decide el suyo. */
+  requestSource?: RequestSource
 }
 
 export type SwitchResult = {
@@ -51,7 +54,9 @@ export async function switchModel(opts: SwitchOptions): Promise<SwitchResult> {
     // hay entrada que abandonar, y decir lo contrario haría que el hook
     // cobrara una reescritura que nadie va a pagar.
     prompt_cache_warm: plan.fromModel !== null,
-    cache_ttl: opts.cacheTtl ?? '1h',
+    cache_ttl: resolveRequestCacheTtl({
+      declared: opts.cacheTtl, model: plan.fromModel ?? undefined, source: opts.requestSource ?? 'sdk',
+    }).ttl,
   }
   const pre = await runHooks(opts.hooks ?? {}, 'PreModelSwitch', carga)
   if (pre.blocked) {

@@ -1,0 +1,47 @@
+src/packages/repl/src/screens/REPLView.tsx(2782,73): error TS2345: Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'string | readonly ContentBlockParam[]'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2772-2792 ---
+   2772  
+   2773        // Extract a session title from the first real user message. One-shot
+   2774        // via ref (was tengu_birch_mist experiment: first-message-only to save
+   2775        // Haiku calls). The ref replaces the old `messages.length <= 1` check,
+   2776        // which was broken by SessionStart hook messages (prepended via
+   2777        // useDeferredHookMessages) and attachment messages (appended by
+   2778        // processTextPrompt) — both pushed length past 1 on turn one, so the
+   2779        // title silently fell through to the "Claude Code" default.
+   2780        if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
+   2781          const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
+   2782>         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content) : null;
+   2783          // Skip synthetic breadcrumbs — slash-command output, prompt-skill
+   2784          // expansions (/commit → <command-message>), local-command headers
+   2785          // (/help → <command-name>), and bash-mode (!cmd → <bash-input>).
+   2786          // None of these are the user's topic; wait for real prose.
+   2787          if (
+   2788            text &&
+   2789            !text.startsWith(`<${LOCAL_COMMAND_STDOUT_TAG}>`) &&
+   2790            !text.startsWith(`<${COMMAND_MESSAGE_TAG}>`) &&
+   2791            !text.startsWith(`<${COMMAND_NAME_TAG}>`) &&
+   2792            !text.startsWith(`<${BASH_INPUT_TAG}>`)
+  Type 'undefined' is not assignable to type 'string | readonly ContentBlockParam[]'.
+src/packages/repl/src/screens/REPLView.tsx(2821,72): error TS7006: Parameter 'v' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2811-2831 ---
+   2811        // createGetAppStateWithAllowedTools in forkedAgent.ts reads this field, so
+   2812        // stale skill tools would otherwise leak into forked agent permissions.
+   2813        // Previously this write was hidden inside getToolUseContext's getAppState
+   2814        // (~85 calls/turn); hoisting it here makes getAppState a pure read and stops
+   2815        // ephemeral contexts (permission dialog, BackgroundTasksDialog) from
+   2816        // accidentally clearing it mid-turn.
+   2817        store.setState(prev => {
+   2818          const cur = prev.toolPermissionContext.alwaysAllowRules.command;
+   2819          if (
+   2820            cur === additionalAllowedTools ||
+   2821>           (cur?.length === additionalAllowedTools.length && cur.every((v, i) => v === additionalAllowedTools[i]))
+   2822          ) {
+   2823            return prev;
+   2824          }
+   2825          return {
+   2826            ...prev,
+   2827            toolPermissionContext: {
+   2828              ...prev.toolPermissionContext,
+   2829              alwaysAllowRules: {
+   2830                ...prev.toolPermissionContext.alwaysAllowRules,
+   2831                command: additionalAllowedTools,

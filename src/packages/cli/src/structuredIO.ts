@@ -207,7 +207,6 @@ export class StructuredIO {
     this.prependedLines.push(
       jsonStringify({
         type: 'user',
-        content,
         uuid: '',
         session_id: '',
         message: { role: 'user', content },

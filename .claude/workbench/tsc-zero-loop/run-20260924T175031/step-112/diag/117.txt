@@ -1,0 +1,46 @@
+src/packages/config/plugin/loadPluginCommands.ts(327,33): error TS7006: Parameter 'args' implicitly has an 'any' type.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:317-337 ---
+    317        loadedFrom: isSkill || config.isSkillMode ? 'plugin' : undefined,
+    318        pluginInfo: {
+    319          pluginManifest,
+    320          repository: sourceName,
+    321        },
+    322        isHidden: !userInvocable,
+    323        progressMessage: isSkill || config.isSkillMode ? 'loading' : 'running',
+    324        userFacingName(): string {
+    325          return displayName || commandName
+    326        },
+    327>       async getPromptForCommand(args, context) {
+    328          // For skills from skills/ directory, include base directory
+    329          let finalContent = config.isSkillMode
+    330            ? `Base directory for this skill: ${dirname(file.filePath)}\n\n${content}`
+    331            : content
+    332  
+    333          finalContent = substituteArguments(
+    334            finalContent,
+    335            args,
+    336            true,
+    337            argumentNames,
+src/packages/config/plugin/loadPluginCommands.ts(327,39): error TS7006: Parameter 'context' implicitly has an 'any' type.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:317-337 ---
+    317        loadedFrom: isSkill || config.isSkillMode ? 'plugin' : undefined,
+    318        pluginInfo: {
+    319          pluginManifest,
+    320          repository: sourceName,
+    321        },
+    322        isHidden: !userInvocable,
+    323        progressMessage: isSkill || config.isSkillMode ? 'loading' : 'running',
+    324        userFacingName(): string {
+    325          return displayName || commandName
+    326        },
+    327>       async getPromptForCommand(args, context) {
+    328          // For skills from skills/ directory, include base directory
+    329          let finalContent = config.isSkillMode
+    330            ? `Base directory for this skill: ${dirname(file.filePath)}\n\n${content}`
+    331            : content
+    332  
+    333          finalContent = substituteArguments(
+    334            finalContent,
+    335            args,
+    336            true,
+    337            argumentNames,

@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(667,37): error TS18046: 'appState.mcp' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:657-677 ---
+    657                querySource, spawnedBySkill: toolUseContext.options.spawnedBySkill as string | undefined, activeSkill: toolUseContext.options.activeSkill as string | undefined,
+    658                agents: (toolUseContext.options.agentDefinitions as
+    659                  CanonicalToolUseContext['options']['agentDefinitions']).activeAgents,
+    660                allowedAgentTypes: (toolUseContext.options.agentDefinitions as
+    661                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    662                hasAppendSystemPrompt:
+    663                  !!toolUseContext.options.appendSystemPrompt,
+    664                maxOutputTokensOverride,
+    665                fetchOverride: dumpPromptsFetch,
+    666                mcpTools: appState.mcp.tools,
+    667>               hasPendingMcpServers: appState.mcp.clients.some(
+    668  (                c: { type: string }) => c.type === 'pending',
+    669                ),
+    670                queryTracking,
+    671                effortValue: appState.effortValue,
+    672                advisorModel: appState.advisorModel,
+    673                skipCacheWrite,
+    674                agentId: toolUseContext.agentId,
+    675                addNotification: toolUseContext.addNotification,
+    676                ...(params.taskBudget && {
+    677                  taskBudget: {

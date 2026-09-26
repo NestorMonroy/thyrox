@@ -1,0 +1,4 @@
+src/packages/repl/src/__tests__/killRing.test.ts(121,12): error TS18047: 'popped1' is possibly 'null'.
+src/packages/repl/src/__tests__/killRing.test.ts(123,12): error TS18047: 'popped2' is possibly 'null'.
+src/packages/repl/src/__tests__/killRing.test.ts(134,12): error TS18047: 'popped' is possibly 'null'.
+src/packages/repl/src/__tests__/killRing.test.ts(135,12): error TS18047: 'popped' is possibly 'null'.

@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c bash bin/check-cli-typecheck --strict 2>&1 | grep -E 'CRECE|baja|igual|sin cambios|proyectos medidos: 2' ; echo exit=${PIPESTATUS[0]}", "started_at": "2026-09-25T07:52:03+00:00"}

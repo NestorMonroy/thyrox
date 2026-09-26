@@ -39,7 +39,7 @@ afterEach(() => setMemoryPaused(false))
 const file = () => `${getAutoMemPath()}MEMORY.md`
 const READ = 'Cannot read memory while it is paused. Run /pause-memory to resume automemory.'
 const WRITE = 'Cannot write to memory while it is paused. Run /pause-memory to resume automemory.'
-const REASON = { type: 'safetyCheck', reason: 'memory access blocked by /pause-memory', classifierApprovable: false }
+const REASON = { type: 'safetyCheck', reason: 'memory access blocked by /pause-memory', classifierApprovable: false } as const
 
 describe('pausa de memoria en las guardas de ruta', () => {
   test('sin pausa, la memoria automática se lee y se edita', () => {

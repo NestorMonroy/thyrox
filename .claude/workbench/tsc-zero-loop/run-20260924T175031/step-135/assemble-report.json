@@ -1,0 +1,62 @@
+{
+ "applied": [
+  "buildImageContentBlocks",
+  "collectRecentSuccessfulTools",
+  "extractAgentMentions",
+  "extractAtMentionedFiles",
+  "filterToBundledAndMcp",
+  "__declarations__:values",
+  "collectSurfacedMemories",
+  "filterDuplicateMemoryAttachments",
+  "getAsyncHookResponseAttachments",
+  "getAttachmentMessages",
+  "getAutoModeAttachmentTurnCount",
+  "getAutoModeAttachments",
+  "getAutoModeExitAttachment",
+  "getChangedFiles",
+  "getCompactionReminderAttachment",
+  "getContextEfficiencyAttachment",
+  "getDateChangeAttachments",
+  "getDiagnosticAttachments",
+  "getDynamicSkillAttachments",
+  "getLSPDiagnosticAttachments",
+  "getMaxBudgetUsdAttachment",
+  "getNestedMemoryAttachmentsForFile",
+  "getOpenedFileFromIDE",
+  "getPlanModeAttachmentTurnCount",
+  "getPlanModeAttachments",
+  "getPlanModeExitAttachment",
+  "getQueuedCommandAttachments",
+  "getSelectedLinesFromIDE",
+  "getTaskReminderAttachments",
+  "getTaskReminderTurnCounts",
+  "getTodoReminderAttachments",
+  "getTodoReminderTurnCounts",
+  "getTokenUsageAttachment",
+  "getUltrathinkEffortAttachment",
+  "getUnifiedTaskAttachments",
+  "getVerifyPlanReminderAttachment",
+  "getVerifyPlanReminderTurnCount",
+  "hasToolResultContent",
+  "isToolResultBlock",
+  "maybe",
+  "memoryFilesToAttachments",
+  "processAgentMentions",
+  "processMcpResourceAttachments",
+  "readMemoriesForSurfacing",
+  "startRelevantMemoryPrefetch"
+ ],
+ "rejected": {
+  "getNestedMemoryAttachments": [
+   "src/packages/agent/attachments.ts: el ancla no está una sola vez",
+   "src/packages/agent/attachments.ts: el ancla no está una sola vez"
+  ]
+ },
+ "missing": [
+  "__declarations__:types",
+  "getAttachments",
+  "getRelevantMemoryAttachments",
+  "getSkillListingAttachments",
+  "processAtMentionedFiles"
+ ]
+}

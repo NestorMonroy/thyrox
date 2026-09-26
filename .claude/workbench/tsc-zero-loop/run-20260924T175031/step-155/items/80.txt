@@ -1,0 +1,60 @@
+src/packages/repl/src/screens/REPLView.tsx(2392,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2382-2402 ---
+   2382            });
+   2383            return currentQueue;
+   2384          });
+   2385        }, setToolUseConfirmQueue);
+   2386      },
+   2387      [setAppState, setToolUseConfirmQueue],
+   2388    );
+   2389  
+   2390    // Register the leader's setToolPermissionContext for in-process teammates
+   2391    useEffect(() => {
+   2392>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2393      return () => unregisterLeaderSetToolPermissionContext();
+   2394    }, [setToolPermissionContext]);
+   2395  
+   2396    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2397  
+   2398    const requestPrompt = useCallback(
+   2399      (title: string, toolInputSummary?: string | null) =>
+   2400        (request: PromptRequest): Promise<PromptResponse> =>
+   2401          new Promise<PromptResponse>((resolve, reject) => {
+   2402            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+src/packages/repl/src/screens/REPLView.tsx(2621,1): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2611-2631 ---
+   2611          if (
+   2612            m.type === 'attachment' &&
+   2613            m.attachment.type === 'queued_command' &&
+   2614            m.attachment.commandMode === 'task-notification' &&
+   2615            typeof m.attachment.prompt === 'string'
+   2616          ) {
+   2617            existingPrompts.add(m.attachment.prompt);
+   2618          }
+   2619        }
+   2620        const uniqueNotifications = notificationMessages.filter(
+   2621> (        m: { attachment: { type: string; prompt: string; }; }) =>
+   2622            m.attachment.type === 'queued_command' &&
+   2623            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2624        );
+   2625  
+   2626        startBackgroundSession({
+   2627          messages: [...messagesRef.current, ...uniqueNotifications],
+   2628          queryParams: {
+   2629            systemPrompt,
+   2630            userContext,
+   2631            systemContext,
+  Overload 1 of 2, '(predicate: (value: AttachmentMessage<_T>, index: number, array: AttachmentMessage<_T>[]) => value is AttachmentMessage<_T>, thisArg?: any): AttachmentMessage<...>[]', gave the following error.
+    Argument of type '(m: { attachment: { type: string; prompt: string; }; }) => boolean' is not assignable to parameter of type '(value: AttachmentMessage<_T>, index: number, array: AttachmentMessage<_T>[]) => value is AttachmentMessage<_T>'.
+      Types of parameters 'm' and 'value' are incompatible.
+        Type 'AttachmentMessage<_T>' is not assignable to type '{ attachment: { type: string; prompt: string; }; }'.
+          Types of property 'attachment' are incompatible.
+            Property 'prompt' is missing in type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' but required in type '{ type: string; prompt: string; }'.
+  Overload 2 of 2, '(predicate: (value: AttachmentMessage<_T>, index: number, array: AttachmentMessage<_T>[]) => unknown, thisArg?: any): AttachmentMessage<_T>[]', gave the following error.
+    Argument of type '(m: { attachment: { type: string; prompt: string; }; }) => boolean' is not assignable to parameter of type '(value: AttachmentMessage<_T>, index: number, array: AttachmentMessage<_T>[]) => unknown'.
+      Types of parameters 'm' and 'value' are incompatible.
+        Type 'AttachmentMessage<_T>' is not assignable to type '{ attachment: { type: string; prompt: string; }; }'.
+          Types of property 'attachment' are incompatible.
+            Property 'prompt' is missing in type '{ [key: string]: unknown; type: string; toolUseID?: string | undefined; } & { [key: string]: unknown; type: string; }' but required in type '{ type: string; prompt: string; }'.

@@ -1,0 +1,31 @@
+bun test v1.3.11 (af24e281)
+
+declaredDependencies.test.ts:
+=== @thyrox/<name> derivados de app-host/src ===
+ - agent
+ - bridge
+ - cli
+ - command-runtime
+ - config
+ - ide
+ - local-observability
+ - mcp-runtime
+ - memory
+ - output
+ - permission
+ - provider
+ - repl
+ - server
+ - shell
+ - stdin-napi
+ - storage
+ - swarm
+ - teleport
+ - tool-registry
+ - voice
+size: 21
+
+ 27 pass
+ 0 fail
+ 27 expect() calls
+Ran 27 tests across 1 file. [32.00ms]

@@ -1,0 +1,23 @@
+tests/agents/save_result.test.ts(17,21): error TS7016: Could not find a declaration file for module '../../src/agents/save_result.mjs'. '/home/user/thyrox-medicion/src/agents/save_result.mjs' implicitly has an 'any' type.
+  --- código tests/agents/save_result.test.ts:7-27 ---
+      7   * la entrada—. NO viaja el destino del log, que en la fuente se derivaba por
+      8   * aritmetica de ruta (`dirname(dirname(here))`) y por tanto anclaba al
+      9   * consumidor: aqui es parametro, y sin el se rehusa.
+     10   *
+     11   * El caso que DISCRIMINA es el 4: un agente cortado por maxTurns no deja
+     12   * mensaje final PERO si deja uso. La fuente lo declara verbatim
+     13   * (H-DOCS-106: 240 708 tokens, salida vacia); un puerto que sólo registrara
+     14   * cuando hay texto escondería justo las ejecuciones que cuestan sin entregar.
+     15   */
+     16  import { describe, expect, test } from 'bun:test'
+     17> import * as sr from '../../src/agents/save_result.mjs'
+     18  
+     19  const linea = (id: string, texto: string, uso: Record<string, number>) =>
+     20    JSON.stringify({
+     21      type: 'assistant',
+     22      message: { role: 'assistant', id, content: [{ type: 'text', text: texto }], usage: uso },
+     23    })
+     24  
+     25  const USO = {
+     26    input_tokens: 10,
+     27    cache_creation_input_tokens: 100,

@@ -1,0 +1,2 @@
+            echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            last_beat=$now

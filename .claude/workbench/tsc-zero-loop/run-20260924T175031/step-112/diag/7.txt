@@ -1,0 +1,52 @@
+src/packages/agent/QueryEngine.ts(358,9): error TS2345: Argument of type 'MCPServerConnection[]' is not assignable to parameter of type 'readonly { name: string; }[]'.
+  --- código src/packages/agent/QueryEngine.ts:348-368 ---
+    348        additionalWorkingDirectories: Array.from(
+    349          initialAppState.toolPermissionContext.additionalWorkingDirectories.keys(),
+    350        ),
+    351        mcpClients,
+    352        customSystemPrompt: customPrompt,
+    353      })
+    354      headlessProfilerCheckpoint('after_getSystemPrompt')
+    355      const userContext = {
+    356        ...baseUserContext,
+    357        ...getCoordinatorUserContext(
+    358>         mcpClients,
+    359          isScratchpadEnabled() ? getScratchpadDir() : undefined,
+    360        ),
+    361      }
+    362  
+    363      // When an SDK caller provides a custom system prompt AND has set
+    364      // CLAUDE_COWORK_MEMORY_PATH_OVERRIDE, inject the memory-mechanics prompt.
+    365      // The env var is an explicit opt-in signal — the caller has wired up
+    366      // a memory directory and needs Claude to know how to use it (which
+    367      // Write/Edit tools to call, MEMORY.md filename, loading semantics).
+    368      // The caller can layer their own policy text via appendSystemPrompt.
+  Type 'MCPServerConnection' is not assignable to type '{ name: string; }'.
+    Types of property 'name' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(385,43): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: unknown) => unknown) => void'.
+  --- código src/packages/agent/QueryEngine.ts:375-395 ---
+    375        ...(customPrompt !== undefined ? [customPrompt] : defaultSystemPrompt),
+    376        ...(memoryMechanicsPrompt ? [memoryMechanicsPrompt] : []),
+    377        ...(appendSystemPrompt ? [appendSystemPrompt] : []),
+    378      ])
+    379  
+    380      // Register function hook for structured output enforcement
+    381      const hasStructuredOutputTool = tools.some(t =>
+    382        toolMatchesName(t, SYNTHETIC_OUTPUT_TOOL_NAME),
+    383      )
+    384      if (jsonSchema && hasStructuredOutputTool) {
+    385>       registerStructuredOutputEnforcement(setAppState, getSessionId())
+    386      }
+    387  
+    388      let processUserInputContext: ProcessUserInputContext = {
+    389        messages: this.mutableMessages,
+    390        // Slash commands that mutate the message array (e.g. /force-snip)
+    391        // call setMessages(fn).  In interactive mode this writes back to
+    392        // AppState; in print mode we write back to mutableMessages so the
+    393        // rest of the query loop (push at :389, snapshot at :392) sees
+    394        // the result.  The second processUserInputContext below (after
+    395        // slash-command processing) keeps the no-op — nothing else calls
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'unknown' is not assignable to type 'AppState'.

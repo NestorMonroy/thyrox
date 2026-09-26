@@ -1,0 +1,23 @@
+src/packages/repl/src/components/hooks/SelectEventMode.tsx(70,44): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/SelectEventMode.tsx:60-80 ---
+     60          </Box>
+     61  
+     62          <Box flexDirection="column">
+     63            <Select
+     64              onChange={value => {
+     65                onSelectEvent(value as HookEvent)
+     66              }}
+     67              onCancel={onCancel}
+     68              options={Object.entries(hookEventMetadata).map(
+     69                ([name, metadata]) => {
+     70>                 const count = hooksByEvent[name as HookEvent] || 0
+     71                  return {
+     72                    label:
+     73                      count > 0 ? (
+     74                        <Text>
+     75                          {name} <Text color="suggestion">({count})</Text>
+     76                        </Text>
+     77                      ) : (
+     78                        name
+     79                      ),
+     80                    value: name,

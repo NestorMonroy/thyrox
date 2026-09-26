@@ -647,7 +647,12 @@ def ensure_home(path: str | Path) -> Path:
     mecanismo pueda satisfacer.
     """
     home = Path(path)
-    home.mkdir(parents=True, exist_ok=True)
+    # `exist_ok=True` no evita la llamada: `mkdir` se emite aunque el
+    # directorio exista, y bajo `strace` un resolutor que sólo consulta su
+    # hogar aparece escribiendo (H-THYROX-187). Sobre un archivo, `is_dir` es
+    # falso y `mkdir` sigue propagando su `FileExistsError`.
+    if not home.is_dir():
+        home.mkdir(parents=True, exist_ok=True)
     return home
 
 

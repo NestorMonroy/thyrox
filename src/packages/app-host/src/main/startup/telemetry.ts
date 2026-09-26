@@ -175,7 +175,7 @@ export async function logStartupTelemetry(deps: StartupTelemetryDeps = {}): Prom
     are_unsandboxed_commands_allowed: (deps.areUnsandboxedCommandsAllowed ?? (() => false))(),
     is_auto_bash_allowed_if_sandbox_enabled: (deps.isAutoAllowBashIfSandboxedEnabled ?? (() => false))(),
     auto_updater_disabled: (deps.isAutoUpdaterDisabled ?? (() => false))(),
-    prefers_reduced_motion: (deps.getInitialSettings ?? (() => ({})))().prefersReducedMotion ?? false,
+    prefers_reduced_motion: (deps.getInitialSettings ?? ((): { prefersReducedMotion?: boolean } => ({})))().prefersReducedMotion ?? false,
     ...getCertEnvVarTelemetry(),
   })
 }

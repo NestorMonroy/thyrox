@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(461,28): error TS2339: Property 'attachments' does not exist on type '{}'.
+src/packages/agent/query.ts(462,28): error TS2339: Property 'hookResults' does not exist on type '{}'.

@@ -1,0 +1,24 @@
+src/packages/tool-registry/src/services/toolExecution.ts(1448,7): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1438-1458 ---
+   1438      if (!isMcpTool(tool)) {
+   1439        await addToolResult(toolOutput, mappedToolResultBlock)
+   1440      }
+   1441  
+   1442      const postToolHookInfos: StopHookInfo[] = []
+   1443      const postToolHookStart = Date.now()
+   1444      for await (const hookResult of runPostToolUseHooks(
+   1445        toolUseContext,
+   1446        tool,
+   1447        toolUseID,
+   1448>       assistantMessage.message.id,
+   1449        processedInput,
+   1450        toolOutput,
+   1451        requestId,
+   1452        mcpServerType,
+   1453        mcpServerBaseUrl,
+   1454      )) {
+   1455        if ('updatedMCPToolOutput' in hookResult) {
+   1456          if (isMcpTool(tool)) {
+   1457            toolOutput = hookResult.updatedMCPToolOutput
+   1458          }
+  Type 'undefined' is not assignable to type 'string'.

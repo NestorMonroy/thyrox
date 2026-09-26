@@ -1,0 +1,23 @@
+src/packages/config/plugin/lspPluginIntegration.ts(243,22): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/config/plugin/lspPluginIntegration.ts:233-253 ---
+    233        resolved = substituteUserConfigVariables(resolved, userConfig)
+    234      }
+    235  
+    236      // Finally expand general environment variables
+    237      const { expanded, missingVars } = expandEnvVarsInString(resolved)
+    238      allMissingVars.push(...missingVars)
+    239  
+    240      return expanded
+    241    }
+    242  
+    243>   const resolved = { ...config }
+    244  
+    245    // Resolve command path
+    246    if (resolved.command) {
+    247      resolved.command = resolveValue(resolved.command)
+    248    }
+    249  
+    250    // Resolve args
+    251    if (resolved.args) {
+    252      resolved.args = resolved.args.map((arg: string): string => resolveValue(arg))
+    253    }

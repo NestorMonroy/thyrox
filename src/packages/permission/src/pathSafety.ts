@@ -35,7 +35,7 @@ import { homedir } from 'node:os'
 import * as nodePath from 'node:path'
 import { getPlatform } from '@thyrox/config/platform.js'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
-import { foldPathCase } from './ruleMatching.js'
+import { foldPathCase } from './pathCase.js'
 
 export type TrustedNetworkDirectories = Map<string, readonly string[]>
 

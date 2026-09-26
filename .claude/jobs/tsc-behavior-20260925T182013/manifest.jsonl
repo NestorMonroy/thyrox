@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "node_modules/.bin/tsc --noEmit -p /tmp/claude-0/-home-user/efec8688-6a45-5d65-b899-cd988aa8816f/scratchpad/tsconfig.behavior.json", "started_at": "2026-09-25T18:20:13+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-09-25T18:20:56+00:00", "duration_seconds": 43.578865}

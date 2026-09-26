@@ -309,7 +309,7 @@ export async function getAnthropicClient({
 
     const vertexArgs: ConstructorParameters<typeof AnthropicVertex>[0] = {
       ...ARGS,
-      region: anthropic.getVertexRegionForModel(model),
+      region: anthropic.getVertexRegionForModel(model ?? ''),
       googleAuth: googleAuth as any,
       ...(anthropic.isDebugToStdErr() && { logger: createStderrLogger() }),
     }
@@ -396,7 +396,7 @@ export async function getAnthropicClient({
     // Override the OAuth Authorization header from earlier; api_key path
     // uses x-api-key (set by the SDK from `apiKey:` above). Drop any
     // OAuth Bearer header so the proxy doesn't see two auth methods.
-    delete clientConfig.defaultHeaders?.['Authorization']
+    delete defaultHeaders['Authorization']
   }
 
   return new Anthropic(clientConfig)

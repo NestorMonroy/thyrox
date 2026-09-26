@@ -1,8 +1,9 @@
 import { afterAll, describe, expect, test } from 'bun:test'
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { corpusVersion } from '../src/freshness.ts'
 import { extractSymbol, resolveSymbol } from '../src/symbol.ts'
 
 // Sustituye a `probes/extraer.ts` (crecer hasta el primer `}` que parsea):
@@ -82,6 +83,16 @@ describe('resolveSymbol', () => {
     expect(found.map(d => [d.file, d.kind, d.text])).toEqual([['chunk-c.js', 'method', 'refreshClients(){return 1}']])
   })
 
+  test('un import de un módulo fuera del corpus se declara externo, no revienta', () => {
+    // Forma real de chunk-ga02wneq.js (2.1.282): el resolvedor abría
+    // `fs/promises` como si fuera un chunk y moría con ENOENT, perdiendo
+    // los nombres ya resueltos del mismo comando.
+    writeFileSync(join(root, 'chunk-d.js'),
+      'import{lstat as fb,realpath as Is}from"fs/promises";function use(){return Is()}')
+    const found = resolveSymbol(root, 'chunk-d.js', 'Is')
+    expect(found.map(d => [d.file, d.kind, d.name])).toEqual([['fs/promises', 'external', 'realpath']])
+  })
+
   test('un símbolo definido en el propio chunk no sale de él', () => {
     const [d] = resolveSymbol(root, 'chunk-a.js', 'use')
     expect([d!.file, d!.name]).toEqual(['chunk-a.js', 'use'])
@@ -104,15 +115,27 @@ describe.skipIf(!existsSync(join(CORPUS, 'chunk-q2gh92k2.js')))('corpus 2.1.275'
 // Sin `--root`, `symbol` lee la build MÁS RECIENTE del corpus, no una fijada
 // a mano: el literal `2.1.275` dejó de ser la última al extraer 2.1.281.
 const CORPUS_ROOT = join(import.meta.dir, '../../../../_references/claude-code-bin')
-describe.skipIf(!existsSync(join(CORPUS_ROOT, '2.1.281', 'MANIFEST.tsv')))('symbol sin --root', () => {
+// La build se deriva, no se nombra: el literal `2.1.281` quedó atrás al
+// extraer 2.1.282 y el test fallaba sin que `symbol` hubiera cambiado. El
+// chunk elegido existe en la última build y NO en la anterior, así que sólo
+// resuelve si `symbol` lee la última.
+const LATEST = corpusVersion(CORPUS_ROOT)
+const builds = existsSync(CORPUS_ROOT)
+  ? readdirSync(CORPUS_ROOT).filter(v => existsSync(join(CORPUS_ROOT, v, 'MANIFEST.tsv')))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+  : []
+const PREVIOUS = LATEST ? builds[builds.indexOf(LATEST) - 1] : undefined
+describe.skipIf(!LATEST || !PREVIOUS)('symbol sin --root', () => {
   test('resuelve contra la última build del corpus', () => {
-    // `vse` sólo existe con ese nombre en 2.1.281 (en 2.1.275 era `Gge`).
-    const file = Bun.spawnSync(['sh', '-c', "grep -lF 'function vse(' *.js | head -1"], { cwd: join(CORPUS_ROOT, '2.1.281', 'bunfs-root') })
-      .stdout.toString().trim()
-    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '../bin/binary.ts'), 'symbol', file, 'vse'], {
+    const latestRoot = join(CORPUS_ROOT, LATEST!, 'bunfs-root')
+    const file = readdirSync(latestRoot).find(f => /^chunk-.*\.js$/.test(f)
+      && !existsSync(join(CORPUS_ROOT, PREVIOUS!, 'bunfs-root', f))
+      && /^function ([\w$]+)\(/m.test(readFileSync(join(latestRoot, f), 'utf8')))!
+    const name = /function ([\w$]+)\(/.exec(readFileSync(join(latestRoot, file), 'utf8'))![1]!
+    const result = Bun.spawnSync([process.execPath, join(import.meta.dir, '../bin/binary.ts'), 'symbol', file, name], {
       cwd: join(import.meta.dir, '../../../..'),
     })
     expect(result.exitCode).toBe(0)
-    expect(result.stdout.toString()).toContain('requested permissions to write to')
+    expect(result.stdout.toString()).toContain(`function ${name}(`)
   })
 })

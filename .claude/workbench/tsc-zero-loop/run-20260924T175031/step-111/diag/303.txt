@@ -1,0 +1,23 @@
+tests/smoke/live-fire-smoke.test.ts(79,13): error TS2339: Property 'executeStopHooks' does not exist on type 'typeof import("/home/user/thyrox/src/packages/agent/hooks")'.
+  --- código tests/smoke/live-fire-smoke.test.ts:69-89 ---
+     69              },
+     70            ],
+     71            pluginRoot: FIXTURE_ROOT,
+     72            pluginName: 'smoke-fake-plugin',
+     73            pluginId: 'smoke-fake-plugin',
+     74          },
+     75        ],
+     76      } as never)
+     77  
+     78      // Now invoke executeStopHooks via the same generator the agent loop uses.
+     79>     const { executeStopHooks } = await import('@thyrox/agent/hooks.js')
+     80      const { AbortController } = globalThis
+     81  
+     82      // Build a minimal toolUseContext that satisfies what executeStopHooks reads.
+     83      const ac = new AbortController()
+     84      const toolUseContext = {
+     85        abortController: ac,
+     86        agentId: undefined,
+     87        agentType: 'main',
+     88        getAppState: () => ({
+     89          toolPermissionContext: { mode: 'default' },

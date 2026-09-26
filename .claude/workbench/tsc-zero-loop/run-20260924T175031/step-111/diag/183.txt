@@ -1,0 +1,70 @@
+src/packages/repl/src/commands/plan/plan.tsx(49,20): error TS18046: 'getAppState' is of type 'unknown'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:39-59 ---
+     39      </Box>
+     40    )
+     41  }
+     42  
+     43  export async function call(
+     44    onDone: LocalJSXCommandOnDone,
+     45    context: LocalJSXCommandContext,
+     46    args: string,
+     47  ): Promise<React.ReactNode> {
+     48    const { getAppState, setAppState } = context
+     49>   const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55      setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58          prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+src/packages/repl/src/commands/plan/plan.tsx(55,5): error TS18046: 'setAppState' is of type 'unknown'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:45-65 ---
+     45    context: LocalJSXCommandContext,
+     46    args: string,
+     47  ): Promise<React.ReactNode> {
+     48    const { getAppState, setAppState } = context
+     49    const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55>     setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58          prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+     60        ),
+     61      }))
+     62      const description = args.trim()
+     63      if (description && description !== 'open') {
+     64        onDone('Enabled plan mode', { shouldQuery: true })
+     65      } else {
+src/packages/repl/src/commands/plan/plan.tsx(58,35): error TS2345: Argument of type '{ [key: string]: unknown; permissionRules: unknown; }' is not assignable to parameter of type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:48-68 ---
+     48    const { getAppState, setAppState } = context
+     49    const appState = getAppState()
+     50    const currentMode = appState.toolPermissionContext.mode
+     51  
+     52    // If not in plan mode, enable it
+     53    if (currentMode !== 'plan') {
+     54      handlePlanModeTransition(currentMode, 'plan')
+     55      setAppState((prev: { toolPermissionContext: { [key: string]: unknown; permissionRules: unknown } }) => ({
+     56        ...prev,
+     57        toolPermissionContext: applyPermissionUpdate(
+     58>         prepareContextForPlanMode(prev.toolPermissionContext),
+     59          { type: 'setMode', mode: 'plan', destination: 'session' },
+     60        ),
+     61      }))
+     62      const description = args.trim()
+     63      if (description && description !== 'open') {
+     64        onDone('Enabled plan mode', { shouldQuery: true })
+     65      } else {
+     66        onDone('Enabled plan mode')
+     67      }
+     68      return null
+  Type '{ [key: string]: unknown; permissionRules: unknown; }' is missing the following properties from type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }': mode, additionalWorkingDirectories, alwaysAllowRules, alwaysDenyRules, and 2 more.

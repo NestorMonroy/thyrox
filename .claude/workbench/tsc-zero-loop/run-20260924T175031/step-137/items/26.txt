@@ -1,0 +1,72 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(68,14): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:58-78 ---
+     58        params?: HeadlessStoreParams,
+     59      ) => HostSessionStore<AppState>
+     60    }
+     61  }
+     62  
+     63  export function createRuntimeHandles(
+     64    initialState: AppState = (() => {
+     65      try {
+     66        return getDefaultAppState()
+     67      } catch {
+     68>       return {
+     69          toolPermissionContext: getEmptyToolPermissionContext(),
+     70          mcp: {
+     71            clients: [],
+     72            tools: [],
+     73            commands: [],
+     74            resources: {},
+     75            pluginReconnectKey: 0,
+     76          },
+     77          plugins: {
+     78            enabled: [],
+  Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+src/packages/app-host/src/runtime/runtimeHandles.ts(120,58): error TS2322: Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:110-130 ---
+    110      commands: initialState.plugins.commands,
+    111      errors: initialState.plugins.errors,
+    112      installationStatus: initialState.plugins.installationStatus,
+    113      needsRefresh: initialState.plugins.needsRefresh,
+    114    })
+    115    const agentCatalogStore = createSnapshotStore(initialState.agentDefinitions)
+    116  
+    117    return {
+    118      permission: {
+    119        getContext: () => permissionStore.getState(),
+    120>       setContext: next => permissionStore.setState(() => next),
+    121        buildUpdates: (...args: unknown[]) =>
+    122          (Array.isArray(args[0]) ? args[0] : []) as PermissionUpdate[],
+    123        applyUpdates: updates => {
+    124          let nextContext = permissionStore.getState()
+    125          nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)
+src/packages/app-host/src/runtime/runtimeHandles.ts(125,66): error TS2345: Argument of type 'unknown[] | PermissionUpdate[]' is not assignable to parameter of type 'PermissionUpdate[]'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:115-135 ---
+    115    const agentCatalogStore = createSnapshotStore(initialState.agentDefinitions)
+    116  
+    117    return {
+    118      permission: {
+    119        getContext: () => permissionStore.getState(),
+    120        setContext: next => permissionStore.setState(() => next),
+    121        buildUpdates: (...args: unknown[]) =>
+    122          (Array.isArray(args[0]) ? args[0] : []) as PermissionUpdate[],
+    123        applyUpdates: updates => {
+    124          let nextContext = permissionStore.getState()
+    125>         nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)
+    131        },
+    132      },
+    133      mcp: {
+    134        getSnapshot: () => mcpStore.getState(),
+    135        setSnapshot: snapshot => mcpStore.setState(() => snapshot),
+  Type 'unknown[]' is not assignable to type 'PermissionUpdate[]'.
+    Type 'unknown' is not assignable to type 'PermissionUpdate'.

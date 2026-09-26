@@ -507,6 +507,10 @@
       "types": "./dist/tools/PowerShellTool/toolName.d.ts",
       "default": "./src/tools/PowerShellTool/toolName.ts"
     },
+    "./tools/REPLTool/REPLTool.js": {
+      "types": "./dist/tools/REPLTool/REPLTool.d.ts",
+      "default": "./src/tools/REPLTool/REPLTool.ts"
+    },
     "./tools/REPLTool/constants.js": {
       "types": "./dist/tools/REPLTool/constants.d.ts",
       "default": "./src/tools/REPLTool/constants.ts"

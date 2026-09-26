@@ -1,0 +1,22 @@
+LLAMADAS PERDIDAS src/packages/@ant/computer-use-mcp/src/legacy/win32/ocr.ts: parts.map×1
+LLAMADAS PERDIDAS src/packages/agent/goalStopHook.ts: getSessionHooks×1, hooksMap.get×1
+LLAMADAS PERDIDAS src/packages/agent/internal/fileHistoryCore.ts: getAgentHostBindings×6
+LLAMADAS PERDIDAS src/packages/agent/sessionTools/transcriptSearch.ts: msg.attachment.memories.map×1
+LLAMADAS PERDIDAS src/packages/cli/src/entry/cli.tsx: import×1
+LLAMADAS PERDIDAS src/packages/command-runtime/src/skills/bundled/keybindings.ts: keys.push×1
+LLAMADAS PERDIDAS src/packages/provider/src/mockRateLimits.ts: readEnv×1
+LLAMADAS PERDIDAS src/packages/provider/src/modelAgent.ts: readEnv×1
+LLAMADAS PERDIDAS src/packages/provider/src/openai/modelMapping.ts: readEnv×1
+LLAMADAS PERDIDAS src/packages/provider/src/thinking.ts: readEnv×1
+LLAMADAS PERDIDAS src/packages/provider/src/withRetry.ts: readEnv×1
+LLAMADAS PERDIDAS src/packages/repl/src/screens/repl/onlySleepToolActive.ts: lastAssistant.message.content.filter×1
+LLAMADAS PERDIDAS src/packages/swarm/src/adapters/createSwarmHostDeps.ts: options.permissions.canUseTool×1
+LLAMADAS PERDIDAS src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts: optional×1, HooksSchema×2, safeParse×1
+14 de 98 archivos pierden llamadas al transpilar
+TESTS
+1 src/packages/agent/sessionTools/__tests__/analyzeContext.behavior.test.ts
+1 src/packages/permission/src/__tests__/classifierTranscriptMeta.test.ts
+1 src/packages/storage/src/__tests__/sessionRestoreHelpers.test.ts
+1 src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+56
+__BG_EXIT__=0

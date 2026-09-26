@@ -1,0 +1,69 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3434,11): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3424-3444 ---
+   3424        }
+   3425  
+   3426        // First prompt message implicitly initializes if not already done.
+   3427        initialized = true
+   3428  
+   3429        // Check for duplicate user message - skip if already processed
+   3430        if (message.uuid) {
+   3431          const sessionId = getSessionId() as UUID
+   3432          const existsInSession = await doesMessageExistInSession(
+   3433            sessionId,
+   3434>           message.uuid,
+   3435          )
+   3436  
+   3437          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3438          if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+   3439            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3440            // Send acknowledgment for duplicate message if replay mode is enabled
+   3441            if (options.replayUserMessages) {
+   3442              logForDebugging(
+   3443                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3444              )
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3438,57): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3428-3448 ---
+   3428  
+   3429        // Check for duplicate user message - skip if already processed
+   3430        if (message.uuid) {
+   3431          const sessionId = getSessionId() as UUID
+   3432          const existsInSession = await doesMessageExistInSession(
+   3433            sessionId,
+   3434            message.uuid,
+   3435          )
+   3436  
+   3437          // Check both historical duplicates (from file) and runtime duplicates (this session)
+   3438>         if (existsInSession || receivedMessageUuids.has(message.uuid)) {
+   3439            logForDebugging(`Skipping duplicate user message: ${message.uuid}`)
+   3440            // Send acknowledgment for duplicate message if replay mode is enabled
+   3441            if (options.replayUserMessages) {
+   3442              logForDebugging(
+   3443                `Sending acknowledgment for duplicate user message: ${message.uuid}`,
+   3444              )
+   3445              output.enqueue({
+   3446                type: 'user',
+   3447                content: message.message?.content ?? '',
+   3448                message: message.message,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(3467,34): error TS2345: Argument of type 'string' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:3457-3477 ---
+   3457            // ran but its lifecycle was never closed (interrupted before ack).
+   3458            // Runtime dups don't need this — the original enqueue path closes them.
+   3459            if (existsInSession) {
+   3460              notifyCommandLifecycle(message.uuid, 'completed')
+   3461            }
+   3462            // Don't enqueue duplicate messages for execution
+   3463            continue
+   3464          }
+   3465  
+   3466          // Track this UUID to prevent runtime duplicates
+   3467>         trackReceivedMessageUuid(message.uuid)
+   3468        }
+   3469  
+   3470        enqueue({
+   3471          mode: 'prompt' as const,
+   3472          // file_attachments rides the protobuf catchall from the web composer.
+   3473          // Same-ref no-op when absent (no 'file_attachments' key).
+   3474          value: await resolveAndPrepend(message, message.message.content),
+   3475          uuid: message.uuid,
+   3476          priority: message.priority,
+   3477        })

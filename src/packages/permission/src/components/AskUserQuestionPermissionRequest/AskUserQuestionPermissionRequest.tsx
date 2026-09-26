@@ -22,6 +22,7 @@ import { useAppState } from '../../appStateHooks.js'
 import type { Question } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { AskUserQuestionTool } from '@thyrox/tool-registry/tools/AskUserQuestionTool/AskUserQuestionTool.js'
 import { getInitialSettings } from '@thyrox/config/settings'
+import type { AskUserQuestionTimeout } from '@thyrox/config/settings'
 import { useQuestionAutoContinue } from './useQuestionAutoContinue.js'
 import {
   type CliHighlight,
@@ -601,8 +602,6 @@ function getQuestionTimeoutMs(value: AskUserQuestionTimeout | undefined): number
   if (value === '10m') return 600_000
   return 0
 }
-
-type AskUserQuestionTimeout = '60s' | '5m' | '10m' | 'never'
 
 async function convertImagesToBlocks(
   images: PastedContent[],

@@ -1,0 +1,56 @@
+src/packages/repl/src/queryHelpers.ts(71,30): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/queryHelpers.ts:61-81 ---
+     61   * - Last message is the user prompt but the API completed with end_turn
+     62   *   (model chose to emit no content blocks)
+     63   */
+     64  export function isResultSuccessful(
+     65    message: Message | undefined,
+     66    stopReason: string | null = null,
+     67  ): message is Message {
+     68    if (!message) return false
+     69  
+     70    if (message.type === 'assistant') {
+     71>     const lastContent = last(message.message.content)
+     72      return (
+     73        lastContent?.type === 'text' ||
+     74        lastContent?.type === 'thinking' ||
+     75        lastContent?.type === 'redacted_thinking'
+     76      )
+     77    }
+     78  
+     79    if (message.type === 'user') {
+     80      // Check if all content blocks are tool_result type
+     81      const content = message.message.content
+  Overload 1 of 2, '(array: readonly [...unknown[], ContentBlockParam]): ContentBlockParam', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'readonly [...unknown[], ContentBlockParam]'.
+      Type 'undefined' is not assignable to type 'readonly [...unknown[], ContentBlockParam]'.
+  Overload 2 of 2, '(array: List<string> | null | undefined): string | undefined', gave the following error.
+    Argument of type 'MessageContent | undefined' is not assignable to parameter of type 'List<string> | null | undefined'.
+      Type 'ContentBlockParam[]' is not assignable to type 'ArrayLike<string>'.
+        'number' index signatures are incompatible.
+          Type 'ContentBlockParam' is not assignable to type 'string'.
+            Type 'TextBlockParam' is not assignable to type 'string'.
+src/packages/repl/src/queryHelpers.ts(120,11): error TS2322: Type '({ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }) | ... 4 more ... | undefined' is not assignable to type 'BetaMessage'.
+  --- código src/packages/repl/src/queryHelpers.ts:110-130 ---
+    110  export function* normalizeMessage(message: Message): Generator<SDKMessage> {
+    111    switch (message.type) {
+    112      case 'assistant':
+    113        for (const _ of normalizeMessages([message])) {
+    114          // Skip empty messages (e.g., "(no content)") that shouldn't be output to SDK
+    115          if (!isNotEmptyMessage(_)) {
+    116            continue
+    117          }
+    118          yield {
+    119            type: 'assistant',
+    120>           message: _.message,
+    121            parent_tool_use_id: null,
+    122            session_id: getSessionId(),
+    123            uuid: _.uuid,
+    124            error: _.error,
+    125          }
+    126        }
+    127        return
+    128      case 'progress': {
+    129        const progressData = message.data as { type: string; message: Message; elapsedTimeSeconds: number; taskId: string }
+    130        if (
+  Type 'undefined' is not assignable to type 'BetaMessage'.

@@ -106,6 +106,13 @@ You have the capability to call multiple tools in a single response. You MUST do
 Return the PR URL when you're done, so the user can see it.`
 }
 
+type CommandContextWithAppState = {
+  getAppState: () => {
+    attribution?: unknown
+    toolPermissionContext: { alwaysAllowRules: Record<string, unknown> }
+  }
+}
+
 const command = {
   type: 'prompt',
   name: 'commit-push-pr',
@@ -121,7 +128,7 @@ const command = {
     // Get default branch and enhanced PR attribution
     const [defaultBranch, prAttribution] = await Promise.all([
       getDefaultBranch(),
-      getEnhancedPRAttribution(context.getAppState),
+      getEnhancedPRAttribution((context as CommandContextWithAppState).getAppState),
     ])
     let promptContent = getPromptContent(defaultBranch, prAttribution)
 
@@ -134,9 +141,9 @@ const command = {
     const finalContent = await executeShellCommandsInPrompt(
       promptContent,
       {
-        ...context,
+        ...(context as Record<string, unknown>),
         getAppState() {
-          const appState = context.getAppState()
+          const appState = (context as CommandContextWithAppState).getAppState()
           return {
             ...appState,
             toolPermissionContext: {

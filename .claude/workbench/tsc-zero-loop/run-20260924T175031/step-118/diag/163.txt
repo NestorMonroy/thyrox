@@ -1,0 +1,23 @@
+src/packages/repl/src/components/StatusLine.tsx(347,29): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+  --- código src/packages/repl/src/components/StatusLine.tsx:337-357 ---
+    337      logNextResultRef.current = true
+    338      void doUpdate()
+    339    }, [statusLineCommand, doUpdate])
+    340  
+    341    // Separate effect for logging on mount
+    342    useEffect(() => {
+    343      const statusLine = settings?.statusLine
+    344      if (statusLine) {
+    345        logEvent('tengu_status_line_mount', {
+    346          command_length: statusLine.command.length,
+    347>         padding: statusLine.padding,
+    348        })
+    349        // Log if status line is configured but disabled by disableAllHooks
+    350        if (settings.disableAllHooks === true) {
+    351          logForDebugging(
+    352            'Status line is configured but disableAllHooks is true',
+    353            { level: 'warn' },
+    354          )
+    355        }
+    356        // executeStatusLineCommand (hooks.ts) returns undefined when trust is
+    357        // blocked — statusLineText stays undefined forever, user sees nothing,

@@ -1,0 +1,23 @@
+src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx(51,9): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'ChannelAllowlistEntry[] | undefined'.
+  --- código src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx:41-61 ---
+     41            policyBlocked: false,
+     42            list: '',
+     43            unmatched: [] as Unmatched[],
+     44          }
+     45        const l = ch.map(formatEntry).join(', ')
+     46        const sub = getSubscriptionType()
+     47        const managed = sub === 'team' || sub === 'enterprise'
+     48        const policy = getSettingsForSource('policySettings')
+     49        const allowlist = getEffectiveChannelAllowlist(
+     50          sub,
+     51>         policy?.allowedChannelPlugins,
+     52        )
+     53        return {
+     54          channels: ch,
+     55          disabled: !isChannelsEnabled(),
+     56          noAuth: !getClaudeAIOAuthTokens()?.accessToken,
+     57          policyBlocked: managed && policy?.channelsEnabled !== true,
+     58          list: l,
+     59          unmatched: findUnmatched(ch, allowlist),
+     60        }
+     61      })

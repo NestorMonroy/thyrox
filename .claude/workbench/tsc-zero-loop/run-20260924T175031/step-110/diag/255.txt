@@ -1,0 +1,23 @@
+src/packages/shell/src/legacy/bashProvider.ts(65,7): error TS2554: Expected 2-3 arguments, but got 1.
+  --- código src/packages/shell/src/legacy/bashProvider.ts:55-75 ---
+     55    return null
+     56  }
+     57  
+     58  export async function createBashShellProvider(
+     59    shellPath: string,
+     60    options?: { skipSnapshot?: boolean },
+     61  ): Promise<ShellProvider> {
+     62    let currentSandboxTmpDir: string | undefined
+     63    const snapshotPromise: Promise<string | undefined> = options?.skipSnapshot
+     64      ? Promise.resolve(undefined)
+     65>     : createAndSaveSnapshot(shellPath).catch(error => {
+     66          logForDebugging(`Failed to create shell snapshot: ${error}`)
+     67          return undefined
+     68        })
+     69    // Track the last resolved snapshot path for use in getSpawnArgs
+     70    let lastSnapshotFilePath: string | undefined
+     71  
+     72    return {
+     73      type: 'bash',
+     74      shellPath,
+     75      detached: true,

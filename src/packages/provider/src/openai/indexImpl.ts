@@ -103,7 +103,7 @@ export async function* queryModelOpenAI(
         toolToAPISchema(tool, {
           getToolPermissionContext: options.getToolPermissionContext,
           tools,
-          agents: options.agents,
+          agents: options.agents || [],
           allowedAgentTypes: options.allowedAgentTypes,
           model: options.model,
           deferLoading: useToolSearch && deferredToolNames.has(tool.name),

@@ -1,0 +1,10 @@
+    state: str | None
+    cpu_seconds: float | None
+    #: Otros procesos con la tubería abierta para escribir; ``None`` si no es
+    #: una tubería (un socket no se mide así, un archivo no espera).
+    writers: int | None = None
+
+    def tsv(self) -> str:
+        cpu = "-" if self.cpu_seconds is None else f"{self.cpu_seconds:.2f}"
+        writers = "-" if self.writers is None else str(self.writers)
+        return "\t".join((str(self.pid), self.stdin or "-", self.kind, self.state or "-", cpu, writers))

@@ -1,0 +1,14 @@
+src/packages/repl/src/hooksConfigManager.ts(399,42): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksConfigManager.ts:389-400 ---
+    389    // because the record keys must be strings.
+    390    const matcherKey = matcher ?? ''
+    391    return hooksByEventAndMatcher[event]?.[matcherKey] ?? []
+    392  }
+    393  
+    394  // Get metadata for a specific event's matcher
+    395  export function getMatcherMetadata(
+    396    event: HookEvent,
+    397    toolNames: string[],
+    398  ): MatcherMetadata | undefined {
+    399>   return getHookEventMetadata(toolNames)[event].matcherMetadata
+    400  }

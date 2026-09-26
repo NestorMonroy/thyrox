@@ -1,0 +1,20 @@
+# commit-step-154-plan
+
+## Qué se lanzó
+
+```
+bash -c GIT_AUTHOR_NAME='Nestor Monroy' GIT_AUTHOR_EMAIL='46802445+NestorMonroy@users.noreply.github.com' git -c user.name=jcg-admin -c user.email=169318663+jcg-admin@users.noreply.github.com -c commit.gpgsign=false commit -q -m 'Lower the CLI ratchet to 127 and plan step 154
+
+Step 153 took both CLI projects from 131 to 127. The next route is
+the memory sweep again: 5 patterns with live instances remain, one
+file each, after step 150 applied or excluded the rest.' -- .claude/baselines/cli_typecheck_baseline.txt .claude/workbench/tsc-zero-loop/run-20260924T175031/step-154 2>&1 | gawk '/check-cli-typecheck: tsconfig|CRECE|fuera/'; git log -1 --format='%h %s'; git push -q origin HEAD
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

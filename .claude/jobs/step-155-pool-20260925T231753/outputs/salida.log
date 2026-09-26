@@ -1,0 +1,24 @@
+-- FALLIDO src/packages/agent/messages/mappers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/9.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/13.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/17.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/16.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/14.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/18.txt
+-- FALLIDO src/packages/agent/query.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/19.txt
+-- FALLIDO src/packages/app-host/src/runtime/runtimeHandles.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/32.txt
+-- FALLIDO src/packages/app-host/src/runtime/runtimeHandles.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/33.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/41.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/39.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/42.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/session/run-streaming.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/44.txt
+-- FALLIDO src/packages/repl/src/commands/color/color.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/58.txt
+-- FALLIDO src/packages/repl/src/hooks/useReplBridge.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/72.txt
+-- FALLIDO src/packages/repl/src/components/messages/AttachmentMessage.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/69.txt
+-- FALLIDO src/packages/repl/src/components/Message.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/62.txt
+-- FALLIDO src/packages/repl/src/queryHelpers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/75.txt
+-- FALLIDO src/packages/repl/src/queryHelpers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/76.txt
+-- FALLIDO src/packages/repl/src/queryHelpers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/77.txt
+-- FALLIDO src/packages/repl/src/screens/REPLView.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/82.txt
+-- FALLIDO src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-155/items/94.txt
+items=96 ok=74 fallidos=22
+__BG_EXIT__=1

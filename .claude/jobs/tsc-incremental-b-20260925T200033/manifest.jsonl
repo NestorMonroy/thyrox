@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/tsc-incremental-measurement-20260925T195955/probes/measure.sh .claude/workbench/tsc-incremental-measurement-20260925T195955/outputs .claude/cache/tsc-incremental-buildinfo", "started_at": "2026-09-25T20:00:33+00:00"}

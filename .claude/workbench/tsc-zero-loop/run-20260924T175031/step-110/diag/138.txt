@@ -1,0 +1,57 @@
+src/packages/output/src/capture/asciicast.ts(209,35): error TS2769: No overload matches this call.
+  --- código src/packages/output/src/capture/asciicast.ts:199-219 ---
+    199      cb?: (err?: Error) => void,
+    200    ): boolean {
+    201      // Record the output event
+    202      const elapsed = (performance.now() - startTime) / 1000
+    203      const text =
+    204        typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
+    205      writer.write(jsonStringify([elapsed, 'o', text]) + '\n')
+    206  
+    207      // Pass through to the real stdout
+    208      if (typeof encodingOrCb === 'function') {
+    209>       return originalWrite(chunk, encodingOrCb)
+    210      }
+    211      return originalWrite(chunk, encodingOrCb, cb)
+    212    } as typeof process.stdout.write
+    213  
+    214    // Handle terminal resize events
+    215    function onResize(): void {
+    216      const elapsed = (performance.now() - startTime) / 1000
+    217      const { cols: newCols, rows: newRows } = getTerminalSize()
+    218      writer.write(jsonStringify([elapsed, 'r', `${newCols}x${newRows}`]) + '\n')
+    219    }
+  Overload 1 of 2, '(buffer: string | Uint8Array<ArrayBufferLike>, cb?: ((err?: Error | null | undefined) => void) | undefined): boolean', gave the following error.
+    Argument of type '(err?: Error | undefined) => void' is not assignable to parameter of type '(err?: Error | null | undefined) => void'.
+      Types of parameters 'err' and 'err' are incompatible.
+        Type 'Error | null | undefined' is not assignable to type 'Error | undefined'.
+          Type 'null' is not assignable to type 'Error | undefined'.
+  Overload 2 of 2, '(str: string | Uint8Array<ArrayBufferLike>, encoding?: BufferEncoding | undefined, cb?: ((err?: Error | null | undefined) => void) | undefined): boolean', gave the following error.
+    Argument of type '(err?: Error | undefined) => void' is not assignable to parameter of type 'BufferEncoding | undefined'.
+src/packages/output/src/capture/asciicast.ts(211,47): error TS2345: Argument of type '((err?: Error | undefined) => void) | undefined' is not assignable to parameter of type '((err?: Error | null | undefined) => void) | undefined'.
+  --- código src/packages/output/src/capture/asciicast.ts:201-221 ---
+    201      // Record the output event
+    202      const elapsed = (performance.now() - startTime) / 1000
+    203      const text =
+    204        typeof chunk === 'string' ? chunk : Buffer.from(chunk).toString('utf-8')
+    205      writer.write(jsonStringify([elapsed, 'o', text]) + '\n')
+    206  
+    207      // Pass through to the real stdout
+    208      if (typeof encodingOrCb === 'function') {
+    209        return originalWrite(chunk, encodingOrCb)
+    210      }
+    211>     return originalWrite(chunk, encodingOrCb, cb)
+    212    } as typeof process.stdout.write
+    213  
+    214    // Handle terminal resize events
+    215    function onResize(): void {
+    216      const elapsed = (performance.now() - startTime) / 1000
+    217      const { cols: newCols, rows: newRows } = getTerminalSize()
+    218      writer.write(jsonStringify([elapsed, 'r', `${newCols}x${newRows}`]) + '\n')
+    219    }
+    220    process.stdout.on('resize', onResize)
+    221  
+  Type '(err?: Error | undefined) => void' is not assignable to type '(err?: Error | null | undefined) => void'.
+    Types of parameters 'err' and 'err' are incompatible.
+      Type 'Error | null | undefined' is not assignable to type 'Error | undefined'.
+        Type 'null' is not assignable to type 'Error | undefined'.

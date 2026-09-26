@@ -1,0 +1,97 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/fileChangedWatcher.ts(35,26): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/fileChangedWatcher.ts:25-45 ---
+     25    notifyCallback = cb
+     26  }
+     27  
+     28  export function initializeFileChangedWatcher(cwd: string): void {
+     29    if (initialized) return
+     30    initialized = true
+     31    currentCwd = cwd
+     32  
+     33    const config = getHooksConfigFromSnapshot()
+     34    hasEnvHooks =
+     35>     (config?.CwdChanged?.length ?? 0) > 0 ||
+     36      (config?.FileChanged?.length ?? 0) > 0
+     37  
+     38    if (hasEnvHooks) {
+     39      registerCleanup(async () => dispose())
+     40    }
+     41  
+     42    const paths = resolveWatchPaths(config)
+     43    if (paths.length === 0) return
+     44  
+     45    startWatching(paths)
+src/packages/agent/fileChangedWatcher.ts(36,27): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/fileChangedWatcher.ts:26-46 ---
+     26  }
+     27  
+     28  export function initializeFileChangedWatcher(cwd: string): void {
+     29    if (initialized) return
+     30    initialized = true
+     31    currentCwd = cwd
+     32  
+     33    const config = getHooksConfigFromSnapshot()
+     34    hasEnvHooks =
+     35      (config?.CwdChanged?.length ?? 0) > 0 ||
+     36>     (config?.FileChanged?.length ?? 0) > 0
+     37  
+     38    if (hasEnvHooks) {
+     39      registerCleanup(async () => dispose())
+     40    }
+     41  
+     42    const paths = resolveWatchPaths(config)
+     43    if (paths.length === 0) return
+     44  
+     45    startWatching(paths)
+     46  }
+src/packages/agent/fileChangedWatcher.ts(142,26): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/fileChangedWatcher.ts:132-152 ---
+    132  
+    133  export async function onCwdChangedForHooks(
+    134    oldCwd: string,
+    135    newCwd: string,
+    136  ): Promise<void> {
+    137    if (oldCwd === newCwd) return
+    138  
+    139    // Re-evaluate from the current snapshot so mid-session hook changes are picked up
+    140    const config = getHooksConfigFromSnapshot()
+    141    const currentHasEnvHooks =
+    142>     (config?.CwdChanged?.length ?? 0) > 0 ||
+    143      (config?.FileChanged?.length ?? 0) > 0
+    144    if (!currentHasEnvHooks) return
+    145    currentCwd = newCwd
+    146  
+    147    await clearCwdEnvFiles()
+    148    const hookResult = await executeCwdChangedHooks(oldCwd, newCwd).catch((e: unknown) => {
+    149      const msg = errorMessage(e)
+    150      logForDebugging(`CwdChanged hook failed: ${msg}`, {
+    151        level: 'error',
+    152      })
+src/packages/agent/fileChangedWatcher.ts(143,27): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/fileChangedWatcher.ts:133-153 ---
+    133  export async function onCwdChangedForHooks(
+    134    oldCwd: string,
+    135    newCwd: string,
+    136  ): Promise<void> {
+    137    if (oldCwd === newCwd) return
+    138  
+    139    // Re-evaluate from the current snapshot so mid-session hook changes are picked up
+    140    const config = getHooksConfigFromSnapshot()
+    141    const currentHasEnvHooks =
+    142      (config?.CwdChanged?.length ?? 0) > 0 ||
+    143>     (config?.FileChanged?.length ?? 0) > 0
+    144    if (!currentHasEnvHooks) return
+    145    currentCwd = newCwd
+    146  
+    147    await clearCwdEnvFiles()
+    148    const hookResult = await executeCwdChangedHooks(oldCwd, newCwd).catch((e: unknown) => {
+    149      const msg = errorMessage(e)
+    150      logForDebugging(`CwdChanged hook failed: ${msg}`, {
+    151        level: 'error',
+    152      })
+    153      notifyCallback?.(msg, true)

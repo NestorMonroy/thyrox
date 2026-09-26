@@ -1,0 +1,69 @@
+src/packages/agent/attachments.ts(1946,9): error TS7006: Parameter 'f' implicitly has an 'any' type.
+  --- código src/packages/agent/attachments.ts:1936-1956 ---
+   1936      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+   1937      // Sólo reglas condicionales (las incondicionales ya se cargaron antes)
+   1938      for (const dir of cwdLevelDirs) {
+   1939        const conditionalRules = (
+   1940          await getConditionalRulesForCwdLevelDirectory(
+   1941            dir,
+   1942            filePath,
+   1943            processedPaths,
+   1944          )
+   1945        ).filter(
+   1946>         f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1947        )
+   1948        attachments.push(
+   1949          ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1950        )
+   1951      }
+   1952    } catch (error) {
+   1953      logError(error)
+   1954    }
+   1955  
+   1956    return attachments
+src/packages/agent/attachments.ts(1949,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1939-1959 ---
+   1939        const conditionalRules = (
+   1940          await getConditionalRulesForCwdLevelDirectory(
+   1941            dir,
+   1942            filePath,
+   1943            processedPaths,
+   1944          )
+   1945        ).filter(
+   1946          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1947        )
+   1948        attachments.push(
+   1949>         ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1950        )
+   1951      }
+   1952    } catch (error) {
+   1953      logError(error)
+   1954    }
+   1955  
+   1956    return attachments
+   1957  }
+   1958  async function getOpenedFileFromIDE(
+   1959    ideSelection: IDESelection | null,
+src/packages/agent/attachments.ts(2257,11): error TS2304: Cannot find name 'isThinkingMessage'.
+  --- código src/packages/agent/attachments.ts:2247-2267 ---
+   2247    let lastTaskManagementIndex = -1
+   2248    let lastReminderIndex = -1
+   2249    let assistantTurnsSinceTaskManagement = 0
+   2250    let assistantTurnsSinceReminder = 0
+   2251  
+   2252    // Iterate backwards to find most recent events
+   2253    for (let i = messages.length - 1; i >= 0; i--) {
+   2254      const message = messages[i]
+   2255  
+   2256      if (message?.type === 'assistant') {
+   2257>       if (isThinkingMessage(message)) {
+   2258          // Skip thinking messages
+   2259          continue
+   2260        }
+   2261  
+   2262        // Check for TaskCreate or TaskUpdate usage BEFORE incrementing counter
+   2263        if (
+   2264          lastTaskManagementIndex === -1 &&
+   2265          'message' in message &&
+   2266          Array.isArray(message.message?.content) &&
+   2267          message.message.content.some(

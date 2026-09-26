@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(2821,75): error TS7006: Parameter 'i' implicitly has an 'any' type.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2811-2831 ---
+   2811        // createGetAppStateWithAllowedTools in forkedAgent.ts reads this field, so
+   2812        // stale skill tools would otherwise leak into forked agent permissions.
+   2813        // Previously this write was hidden inside getToolUseContext's getAppState
+   2814        // (~85 calls/turn); hoisting it here makes getAppState a pure read and stops
+   2815        // ephemeral contexts (permission dialog, BackgroundTasksDialog) from
+   2816        // accidentally clearing it mid-turn.
+   2817        store.setState(prev => {
+   2818          const cur = prev.toolPermissionContext.alwaysAllowRules.command;
+   2819          if (
+   2820            cur === additionalAllowedTools ||
+   2821>           (cur?.length === additionalAllowedTools.length && cur.every((v, i) => v === additionalAllowedTools[i]))
+   2822          ) {
+   2823            return prev;
+   2824          }
+   2825          return {
+   2826            ...prev,
+   2827            toolPermissionContext: {
+   2828              ...prev.toolPermissionContext,
+   2829              alwaysAllowRules: {
+   2830                ...prev.toolPermissionContext.alwaysAllowRules,
+   2831                command: additionalAllowedTools,
+src/packages/repl/src/screens/REPLView.tsx(2925,9): error TS2322: Type 'CanUseToolFn<Record<string, unknown>>' is not assignable to type 'CanUseToolFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2915-2935 ---
+   2915        queryCheckpoint('query_query_start');
+   2916        resetTurnHookDuration();
+   2917        resetTurnToolDuration();
+   2918        resetTurnClassifierDuration();
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925>         canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929          onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.

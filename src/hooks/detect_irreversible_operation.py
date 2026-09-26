@@ -27,8 +27,8 @@ from __future__ import annotations
 
 import re
 
-#: Los cuerpos de heredoc: desde la línea del ``<<MARCA`` hasta la ``MARCA``.
-_HEREDOC = re.compile(r"<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n.*?\n\s*\1\s*(?:\n|$)", re.S)
+from hooks.shell_text import strip_heredoc_bodies  # noqa: E402
+
 
 #: Separadores de segmento en una línea de shell.
 _SEGMENTS = re.compile(r"&&|\|\||;|\||\n")
@@ -41,7 +41,7 @@ _DB_DESTRUCTIVE = re.compile(r"\b(?:DROP\s+(?:TABLE|DATABASE|SCHEMA)|TRUNCATE)\b
 
 
 def _segments(command: str) -> list[str]:
-    body = _HEREDOC.sub("\n", command)
+    body = strip_heredoc_bodies(command)
     return [s.strip() for s in _SEGMENTS.split(body) if s.strip()]
 
 

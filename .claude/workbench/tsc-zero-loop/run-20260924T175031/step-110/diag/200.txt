@@ -1,0 +1,25 @@
+src/packages/repl/src/components/PromptInput/PromptInputQueuedCommands.tsx(145,13): error TS2322: Type 'NormalizedMessage' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.
+  --- código src/packages/repl/src/components/PromptInput/PromptInputQueuedCommands.tsx:135-155 ---
+    135  
+    136    return (
+    137      <Box marginTop={1} flexDirection="column">
+    138        {messages.map((message, i) => (
+    139          <QueuedMessageProvider
+    140            key={i}
+    141            isFirst={i === 0}
+    142            useBriefLayout={useBriefLayout}
+    143          >
+    144            <Message
+    145>             message={message}
+    146              lookups={EMPTY_LOOKUPS}
+    147              addMargin={false}
+    148              tools={[]}
+    149              commands={[]}
+    150              verbose={false}
+    151              inProgressToolUseIDs={EMPTY_SET}
+    152              progressMessagesForMessage={[]}
+    153              shouldAnimate={false}
+    154              shouldShowDot={false}
+    155              isTranscriptMode={false}
+  Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type 'AssistantMessage | AttachmentMessage<_T> | SystemLocalCommandMessage | SystemCompactBoundaryMessage | ... 16 more ... | CollapsedReadSearchGroup'.
+    Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is missing the following properties from type 'CollapsedReadSearchGroup': searchCount, readCount, listCount, replCount, and 7 more.

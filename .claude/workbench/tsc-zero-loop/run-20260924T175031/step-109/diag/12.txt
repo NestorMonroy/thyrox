@@ -1,0 +1,28 @@
+patron: tool-provider-discover-not-awaited
+senal_del_verificador: TS2339.*Property '(length|map)' does not exist on type '.*Promise<Tools>.*'|TS2488.*must have a '\[Symbol\.iterator\]\(\)' method
+fix_generico: El contrato `ToolProvider.discover()` está tipado como `Promise<Tools> | Tools`, aun cuando una implementación concreta (como `BuiltInToolsProvider`) lo declare como síncrono, porque la constante se anota con el tipo de la interfaz. Cualquier llamador que use el valor devuelto por `discover()` a través de una referencia tipada como `ToolProvider` debe tratarlo como posible promesa: convertir el test/función que lo consume en `async` y hacer `await` de la llamada. El TS7006 sobre el parámetro del `.map()` desaparece solo, porque una vez resuelto el tipo a `Tools` (`readonly Tool[]`), TypeScript infiere el tipo del callback sin anotación explícita.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/fileChangedWatcher.ts(55,19): error TS2488: Type '{}' must have a '[Symbol.iterator]()' method that returns an iterator.
+  --- código src/packages/agent/fileChangedWatcher.ts:45-65 ---
+     45    startWatching(paths)
+     46  }
+     47  
+     48  function resolveWatchPaths(
+     49    config?: ReturnType<typeof getHooksConfigFromSnapshot>,
+     50  ): string[] {
+     51    const matchers = (config ?? getHooksConfigFromSnapshot())?.FileChanged ?? []
+     52  
+     53    // Matcher field: filenames to watch in cwd, pipe-separated (e.g. ".envrc|.env")
+     54    const staticPaths: string[] = []
+     55>   for (const m of matchers) {
+     56      if (!m.matcher) continue
+     57      for (const name of m.matcher.split('|').map((s: string) => s.trim())) {
+     58        if (!name) continue
+     59        staticPaths.push(isAbsolute(name) ? name : join(currentCwd, name))
+     60      }
+     61    }
+     62  
+     63    // Combine static matcher paths with dynamic paths from hook output
+     64    return [...new Set([...staticPaths, ...dynamicWatchPaths])]
+     65  }

@@ -1,0 +1,28 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/cli/src/structuredIO.ts(210,9): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.
+  --- código src/packages/cli/src/structuredIO.ts:200-220 ---
+    200  
+    201    /**
+    202     * Queue a user turn to be yielded before the next message from this.input.
+    203     * Works before iteration starts and mid-stream — read() re-checks
+    204     * prependedLines between each yielded message.
+    205     */
+    206    prependUserMessage(content: string): void {
+    207      this.prependedLines.push(
+    208        jsonStringify({
+    209          type: 'user',
+    210>         content,
+    211          uuid: '',
+    212          session_id: '',
+    213          message: { role: 'user', content },
+    214          parent_tool_use_id: null,
+    215        } satisfies SDKUserMessage) + '\n',
+    216      )
+    217    }
+    218  
+    219    private async *read() {
+    220      let content = ''

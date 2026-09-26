@@ -1,0 +1,27 @@
+src/packages/repl/src/screens/REPLView.tsx(2628,11): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2618-2638 ---
+   2618            (typeof m.attachment.prompt !== 'string' || !existingPrompts.has(m.attachment.prompt)),
+   2619        );
+   2620  
+   2621        startBackgroundSession({
+   2622          messages: [...messagesRef.current, ...uniqueNotifications],
+   2623          queryParams: {
+   2624            systemPrompt,
+   2625            userContext,
+   2626            systemContext,
+   2627            canUseTool,
+   2628>           toolUseContext,
+   2629            querySource: getQuerySourceForREPL(),
+   2630          },
+   2631          description: terminalTitle,
+   2632          setAppState,
+   2633          agentDefinition: mainThreadAgentDefinition,
+   2634        });
+   2635      })();
+   2636    }, [
+   2637      abortController,
+   2638      mainLoopModel,
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

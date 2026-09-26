@@ -1,0 +1,10 @@
+tests/unit/gemini/streamAdapter.test.ts(9,5): error TS2322: Type '() => { next(): Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>; }' is not assignable to type '() => AsyncIterator<GeminiStreamChunk, any, any>'.
+  Call signature return types '{ next(): Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>; }' and 'AsyncIterator<GeminiStreamChunk, any, any>' are incompatible.
+    The types returned by 'next(...)' are incompatible between these types.
+      Type 'Promise<{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }>' is not assignable to type 'Promise<IteratorResult<GeminiStreamChunk, any>>'.
+        Type '{ done: true; value: undefined; } | { done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorResult<GeminiStreamChunk, any>'.
+          Type '{ done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorResult<GeminiStreamChunk, any>'.
+            Type '{ done: false; value: GeminiStreamChunk | undefined; }' is not assignable to type 'IteratorYieldResult<GeminiStreamChunk>'.
+              Types of property 'value' are incompatible.
+                Type 'GeminiStreamChunk | undefined' is not assignable to type 'GeminiStreamChunk'.
+                  Type 'undefined' is not assignable to type 'GeminiStreamChunk'.

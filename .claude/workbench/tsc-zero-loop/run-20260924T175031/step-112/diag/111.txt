@@ -1,0 +1,18 @@
+src/packages/command-runtime/src/commands/recap/recap.ts(41,9): error TS18046: 'context.abortController' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/recap/recap.ts:31-46 ---
+     31        return { type: 'text', value: 'Recap cancelled.' }
+     32      }
+     33      if (summary === null) {
+     34        return {
+     35          type: 'text',
+     36          value: "Couldn't generate a recap. Run with --debug for details.",
+     37        }
+     38      }
+     39      return { type: 'text', value: summary }
+     40    } catch (err) {
+     41>     if (context.abortController.signal.aborted) {
+     42        return { type: 'text', value: 'Recap cancelled.' }
+     43      }
+     44      throw err
+     45    }
+     46  }

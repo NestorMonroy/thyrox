@@ -18,15 +18,20 @@
  *
  * PORTE PARCIAL declarado. Símbolos de la fuente OMITIDOS, y por qué:
  *
- *   - `promptRequestSchema`, `PromptRequest`, `PromptResponse` — el
- *     protocolo de elicitación por prompt. Depende de `lazySchema` de
- *     `@claude-code-how-works/tool-registry/utils/lazySchema.js`, paquete
- *     ausente en este árbol. Ningún test de este pase lo ejercita.
- *   - `syncHookResponseSchema`, `hookJSONOutputSchema` — los esquemas Zod
- *     de validación en tiempo de ejecución. Mismo bloqueo de `lazySchema`,
- *     más los tipos de permisos (`permissionBehaviorSchema`,
- *     `permissionUpdateSchema` de `@claude-code-how-works/permission/*`,
- *     tampoco presentes). `isSyncHookJSONOutput`/`isAsyncHookJSONOutput`
+ *   - `promptRequestSchema` — PORTADO junto con `PromptRequest`/
+ *     `PromptResponse` (ya expuestos más abajo): el consumidor apareció en
+ *     `../hooks.ts`, que lo llama como `promptRequestSchema().safeParse(...)`
+ *     para reconocer una solicitud de elicitación en el stdout de un hook.
+ *     Se re-exporta `PromptRequestSchema` de
+ *     `@thyrox/headless-sdk/coreSchemas.js`, que ya porta el mismo esquema
+ *     Zod con `lazySchema` resuelto localmente — sin depender del paquete
+ *     `@claude-code-how-works/tool-registry/utils/lazySchema.js`, ausente en
+ *     este árbol.
+ *   - `syncHookResponseSchema` — el esquema Zod de la respuesta síncrona
+ *     suelta: ningún consumidor lo importa. `hookJSONOutputSchema` sí se
+ *     expone, como re-export de `HookJSONOutputSchema` de
+ *     `@thyrox/headless-sdk/coreSchemas.js`, que ya porta la misma unión
+ *     asíncrona | síncrona. `isSyncHookJSONOutput`/`isAsyncHookJSONOutput`
  *     no necesitan el esquema — son guardas estructurales puras sobre la
  *     clave `async`.
  *   - `HookCallbackContext`, `HookCallback`, `HookCallbackMatcher` —
@@ -51,6 +56,8 @@
  */
 
 import type { AttributionState } from '../commitAttribution.js'
+export { HookJSONOutputSchema as hookJSONOutputSchema } from '@thyrox/headless-sdk/coreSchemas.js'
+export { PromptRequestSchema as promptRequestSchema } from '@thyrox/headless-sdk/coreSchemas.js'
 
 /**
  * Universo de eventos de hook. Inlineado verbatim desde

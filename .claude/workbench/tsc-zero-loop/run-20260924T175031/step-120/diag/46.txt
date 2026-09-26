@@ -1,0 +1,23 @@
+src/packages/app-host/src/runtime/runtimeHandles.ts(120,58): error TS2322: Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:110-130 ---
+    110      commands: initialState.plugins.commands,
+    111      errors: initialState.plugins.errors,
+    112      installationStatus: initialState.plugins.installationStatus,
+    113      needsRefresh: initialState.plugins.needsRefresh,
+    114    })
+    115    const agentCatalogStore = createSnapshotStore(initialState.agentDefinitions)
+    116  
+    117    return {
+    118      permission: {
+    119        getContext: () => permissionStore.getState(),
+    120>       setContext: next => permissionStore.setState(() => next),
+    121        buildUpdates: (...args: unknown[]) =>
+    122          (Array.isArray(args[0]) ? args[0] : []) as PermissionUpdate[],
+    123        applyUpdates: updates => {
+    124          let nextContext = permissionStore.getState()
+    125          nextContext = applyPermissionUpdates(nextContext as any, updates)
+    126          permissionStore.setState(() => nextContext)
+    127          return nextContext
+    128        },
+    129        persistUpdates: updates => {
+    130          persistPermissionUpdates(updates as any)

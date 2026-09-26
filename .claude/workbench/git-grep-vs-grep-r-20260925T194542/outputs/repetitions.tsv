@@ -1,0 +1,10 @@
+forma	rep	segundos
+grep-r	1	0.453
+git-grep-indice	1	0.165
+git-grep-HEAD	1	0.529
+grep-r	2	0.445
+git-grep-indice	2	0.182
+git-grep-HEAD	2	0.563
+grep-r	3	0.444
+git-grep-indice	3	0.170
+git-grep-HEAD	3	0.536

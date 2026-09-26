@@ -44,6 +44,7 @@ from pathlib import Path
 from hooks.error_log import run_and_log  # noqa: E402
 
 from agents import agents_paths  # noqa: E402
+from agents import model_catalog  # noqa: E402
 from paths import reach  # noqa: E402
 
 #: El store es el hermano de este módulo — aritmética DENTRO de thyrox, que es
@@ -258,6 +259,19 @@ def _moda(conteo: dict[str, int]) -> str | None:
     return max(conteo, key=lambda k: conteo[k]) if conteo else None
 
 
+#: La base declarada cuando el modelo no está en el catálogo: los cocientes
+#: del tier 3/15 (in 1×, lectura 0.1×, salida 5×) aplicados a todo modelo.
+def _equivalent_cost(model: str | None, totals: dict) -> tuple[int, str]:
+    """``equiv_cost`` y la base con que se ponderó: el tier del modelo o, fuera
+    del catálogo, la fórmula fija declarada (``model_catalog``)."""
+    catalog, _ = model_catalog.try_catalog()
+    usage = {"input_tokens": totals["input"], "cache_creation_tokens": totals["cache_creation"],
+             "cache_creation_5m": totals["cache_5m"], "cache_creation_1h": totals["cache_1h"],
+             "cache_read_tokens": totals["cache_read"], "output_tokens": totals["output"]}
+    value, basis = model_catalog.equivalent_tokens_with_basis(catalog, model, usage)
+    return round(value), basis
+
+
 def _extract_usage(transcript_path: str) -> dict:
     """Uso de tokens del transcript, deduplicado por ``message.id``.
 
@@ -416,12 +430,9 @@ def _extract_usage(transcript_path: str) -> dict:
     else:
         razon = RAZON_CACHE_WRITE["5m"]
 
-    equiv = round(
-        totales["input"] + razon * totales["cache_creation"]
-        + 0.1 * totales["cache_read"] + 5 * totales["output"]
-    )
     crudo = max(modelos, key=lambda m: modelos[m]) if modelos else None
     modelo = normalize_model(crudo)
+    equiv, equiv_basis = _equivalent_cost(modelo, totales)
     return {
         # Sin ningun mensaje no-sintetico, ``turns`` cae al conteo de ids: es
         # el comportamiento anterior, y no hay con que mejorarlo.
@@ -482,6 +493,9 @@ def _extract_usage(transcript_path: str) -> dict:
             "cache_write_1h": totales["cache_1h"],
             "cache_write_ratio": round(razon, 4),
             "ttl_medido": bool(con_ttl),
+            # Con qué cocientes se ponderó ``equiv_cost``: el tier del modelo
+            # en el catálogo, o la fórmula fija si el modelo no está en él.
+            "equiv_basis": equiv_basis,
             # Verbatim, incluido ``<synthetic>``: el perfil registra lo que el
             # transcript declaro, no lo que la columna ``model`` acepta.
             "modelos_vistos": dict(modelos),

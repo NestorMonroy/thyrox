@@ -158,17 +158,14 @@ function createAttachmentMessageStub(input: {
   // El stub sigue siendo stub —`createAttachmentMessage` vive en
   // `agent/attachments.js` y sigue en la lista de ausentes del docstring de
   // cabecera—, pero AHORA devuelve una forma conforme en vez de su entrada
-  // cruda. Antes devolvia `input` tal cual, que no es un `Message`: le falta
-  // `uuid` y su `type` es `string`, no `MessageType`. Con el tipo laxo eso
-  // pasaba callado; con el real es TS2741.
-  //
-  // Un cast lo habria silenciado igual y habria dejado el defecto EN TIEMPO
-  // DE EJECUCION para quien leyera `uuid`. La forma la fija la fuente
-  // (`ccnmt: packages/agent/attachments.ts:3302`): `type: 'attachment'`,
-  // `uuid: randomUUID()`, `timestamp`. Lo que falta sigue siendo el
-  // subsistema —el `Attachment` real—, no la envoltura.
+  // cruda. La fuente (`ccnmt: packages/agent/attachments.ts:3302`) no esparce
+  // su parametro: lo envuelve bajo `attachment`, junto a `type: 'attachment'`,
+  // `uuid: randomUUID()` y `timestamp`. Esparcir `input` producia un objeto
+  // sin la propiedad `attachment` que `AttachmentMessage` exige — pasaba
+  // callado con el tipo laxo, TS2322 con el real. Lo que falta sigue siendo
+  // el subsistema —el `Attachment` real—, no la envoltura.
   return {
-    ...input,
+    attachment: input,
     type: 'attachment',
     uuid: randomUUID(),
     timestamp: new Date().toISOString(),

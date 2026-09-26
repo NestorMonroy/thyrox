@@ -1,0 +1,64 @@
+{
+ "reviewed": [
+  {
+   "pattern": "concrete-setter-into-generic-unknown-store-contract",
+   "files": [
+    "src/packages/app-host/src/runtime/installCliBindings.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-bridge-helper-return-narrowed-via-assertion",
+   "files": [
+    "src/packages/app-host/src/runtime/installCliBindings.ts"
+   ]
+  },
+  {
+   "pattern": "literal-union-set-has-widened-to-string",
+   "files": [
+    "src/packages/app-host/src/runtime/toolRegistryRuntime.ts"
+   ]
+  },
+  {
+   "pattern": "empty-array-literal-infers-never-breaks-as-cast",
+   "files": [
+    "src/packages/bridge/src/__tests__/inboundMessages.test.ts"
+   ]
+  },
+  {
+   "pattern": "config-string-alias-vs-literal-union",
+   "files": [
+    "src/packages/cli/src/entry/main.tsx"
+   ]
+  },
+  {
+   "pattern": "pending-types-imported-from-simplified-mode-dispatch",
+   "files": [
+    "src/packages/cli/src/entry/preprocess-argv.ts"
+   ]
+  },
+  {
+   "pattern": "for-await-sobre-readablestream-sin-asynciterator",
+   "files": [
+    "src/packages/cli/src/entry/runLoop.ts"
+   ]
+  },
+  {
+   "pattern": "optional-command-base-method-invoked-without-guard",
+   "files": [
+    "src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts"
+   ]
+  },
+  {
+   "pattern": "command-union-variant-field-accessed-without-narrowing",
+   "files": [
+    "src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts"
+   ]
+  },
+  {
+   "pattern": "import-from-barrel-that-does-not-reexport-symbol",
+   "files": [
+    "src/packages/command-runtime/src/commands/clear/caches.ts"
+   ]
+  }
+ ]
+}

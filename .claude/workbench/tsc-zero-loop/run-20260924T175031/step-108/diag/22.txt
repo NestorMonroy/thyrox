@@ -1,0 +1,164 @@
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(55,5): error TS2322: Type '(configs: Record<string, ScopedMcpServerConfig>) => Promise<MCPServerConnection[]>' is not assignable to type '(configs: Record<string, unknown>) => Promise<unknown[]>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:45-65 ---
+     45    unknown,
+     46    unknown
+     47  >
+     48  
+     49  export function installMcpRuntimeBindings(): void {
+     50    if (installed) {
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55>     connectAll: clientRuntime.connectAll,
+     56      discover: clientRuntime.discover,
+     57      executeTool: clientRuntime.executeTool,
+     58      getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60      prefetchResources: clientRuntime.prefetchResources,
+     61      prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+  Types of parameters 'configs' and 'configs' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(56,5): error TS2322: Type '(configs?: Record<string, ScopedMcpServerConfig> | undefined) => Promise<McpDiscoverySnapshot>' is not assignable to type '(configs?: Record<string, unknown> | undefined) => Promise<{ clients: unknown[]; tools: unknown[]; commands: unknown[]; resources?: Record<string, unknown[]> | undefined; }>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:46-66 ---
+     46    unknown
+     47  >
+     48  
+     49  export function installMcpRuntimeBindings(): void {
+     50    if (installed) {
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55      connectAll: clientRuntime.connectAll,
+     56>     discover: clientRuntime.discover,
+     57      executeTool: clientRuntime.executeTool,
+     58      getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60      prefetchResources: clientRuntime.prefetchResources,
+     61      prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+     66      legacy: {
+  Types of parameters 'configs' and 'configs' are incompatible.
+    Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, ScopedMcpServerConfig> | undefined'.
+      Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+        'string' index signatures are incompatible.
+          Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(57,5): error TS2322: Type '(call: { serverName: string; serverConfig: ScopedMcpServerConfig; toolName: string; input: Record<string, unknown>; meta?: Record<string, unknown> | undefined; signal?: AbortSignal | undefined; }) => Promise<...>' is not assignable to type '(call: { serverName: string; serverConfig: unknown; toolName: string; input: Record<string, unknown>; meta?: Record<string, unknown> | undefined; signal?: AbortSignal | undefined; }) => Promise<...>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:47-67 ---
+     47  >
+     48  
+     49  export function installMcpRuntimeBindings(): void {
+     50    if (installed) {
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55      connectAll: clientRuntime.connectAll,
+     56      discover: clientRuntime.discover,
+     57>     executeTool: clientRuntime.executeTool,
+     58      getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60      prefetchResources: clientRuntime.prefetchResources,
+     61      prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+     66      legacy: {
+     67        ...clientRuntime,
+  Types of parameters 'call' and 'call' are incompatible.
+    Type '{ serverName: string; serverConfig: unknown; toolName: string; input: Record<string, unknown>; meta?: Record<string, unknown> | undefined; signal?: AbortSignal | undefined; }' is not assignable to type '{ serverName: string; serverConfig: ScopedMcpServerConfig; toolName: string; input: Record<string, unknown>; meta?: Record<string, unknown> | undefined; signal?: AbortSignal | undefined; }'.
+      Types of property 'serverConfig' are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(58,5): error TS2322: Type '(onConnectionAttempt: (params: { client: MCPServerConnection; tools: Tool[]; commands: Command[]; resources?: ServerResource[] | undefined; }) => void, mcpConfigs?: Record<...> | undefined) => Promise<...>' is not assignable to type '(onConnectionAttempt: (params: { client: unknown; tools: unknown[]; commands: unknown[]; resources?: unknown[] | undefined; }) => void, sdkMcpConfigs?: Record<string, unknown> | undefined) => Promise<void>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:48-68 ---
+     48  
+     49  export function installMcpRuntimeBindings(): void {
+     50    if (installed) {
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55      connectAll: clientRuntime.connectAll,
+     56      discover: clientRuntime.discover,
+     57      executeTool: clientRuntime.executeTool,
+     58>     getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60      prefetchResources: clientRuntime.prefetchResources,
+     61      prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+     66      legacy: {
+     67        ...clientRuntime,
+     68        ChannelMessageNotificationSchema,
+  Types of parameters 'mcpConfigs' and 'sdkMcpConfigs' are incompatible.
+    Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, ScopedMcpServerConfig> | undefined'.
+      Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+        'string' index signatures are incompatible.
+          Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(60,5): error TS2322: Type '(configs: Record<string, ScopedMcpServerConfig>) => Promise<McpDiscoverySnapshot>' is not assignable to type '(configs: Record<string, unknown>) => Promise<{ clients: unknown[]; tools: unknown[]; commands: unknown[]; resources?: Record<string, unknown[]> | undefined; }>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:50-70 ---
+     50    if (installed) {
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55      connectAll: clientRuntime.connectAll,
+     56      discover: clientRuntime.discover,
+     57      executeTool: clientRuntime.executeTool,
+     58      getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60>     prefetchResources: clientRuntime.prefetchResources,
+     61      prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+     66      legacy: {
+     67        ...clientRuntime,
+     68        ChannelMessageNotificationSchema,
+     69        areMcpConfigsAllowedWithEnterpriseMcpConfig,
+     70        dedupClaudeAiMcpServers,
+  Types of parameters 'configs' and 'configs' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/mcp-runtime/src/runtimeHostSetup.ts(61,5): error TS2322: Type '(mcpConfigs: Record<string, ScopedMcpServerConfig>) => Promise<{ clients: MCPServerConnection[]; tools: Tool[]; commands: Command[]; }>' is not assignable to type '(mcpConfigs: Record<string, unknown>) => Promise<{ clients: unknown[]; tools: unknown[]; commands: unknown[]; }>'.
+  --- código src/packages/mcp-runtime/src/runtimeHostSetup.ts:51-71 ---
+     51      return
+     52    }
+     53  
+     54    const bindings: AnyBindings = {
+     55      connectAll: clientRuntime.connectAll,
+     56      discover: clientRuntime.discover,
+     57      executeTool: clientRuntime.executeTool,
+     58      getMcpToolsCommandsAndResources:
+     59        clientRuntime.getMcpToolsCommandsAndResources,
+     60      prefetchResources: clientRuntime.prefetchResources,
+     61>     prefetchAllMcpResources: clientRuntime.prefetchAllMcpResources,
+     62      handleMcpSetServers:
+     63        handleMcpSetServers as AnyBindings['handleMcpSetServers'],
+     64      reconcileMcpServers:
+     65        reconcileMcpServers as AnyBindings['reconcileMcpServers'],
+     66      legacy: {
+     67        ...clientRuntime,
+     68        ChannelMessageNotificationSchema,
+     69        areMcpConfigsAllowedWithEnterpriseMcpConfig,
+     70        dedupClaudeAiMcpServers,
+     71        doesEnterpriseMcpConfigExist,
+  Types of parameters 'mcpConfigs' and 'mcpConfigs' are incompatible.
+    Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+      'string' index signatures are incompatible.
+        Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.

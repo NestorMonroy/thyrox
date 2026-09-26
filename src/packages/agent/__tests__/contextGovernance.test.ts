@@ -194,7 +194,7 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
     const d = dir()
     const db = join(d, 'tablero.sqlite3')
     const ctx = { cwd: d, sessionId: 'ses-1', abort: new AbortController().signal, messages: [] }
-    const crear = taskTools(db).find((t) => t.name === 'TaskCreate')!
+    const crear = taskTools({ dbPath: db, sessionId: 'ses-1' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la tarea que no se puede perder' }, ctx)
 
     process.env.CLAUDE_AUTOCOMPACT_PCT_OVERRIDE = '1'
@@ -218,7 +218,7 @@ describe('A.4.5 — tras compactar, la semántica de trabajo vuelve a la vista',
     const d = dir()
     const db = join(d, 'tablero.sqlite3')
     const ctx = { cwd: d, sessionId: 'ses-2', abort: new AbortController().signal, messages: [] }
-    const crear = taskTools(db).find((t) => t.name === 'TaskCreate')!
+    const crear = taskTools({ dbPath: db, sessionId: 'ses-2' }).find((t) => t.name === 'TaskCreate')!
     await crear.run({ subject: 'la misma tarea, sin presión' }, ctx)
 
     // Sin override, el umbral queda en 967 000: no hay compactación que

@@ -1,0 +1,9 @@
+src/packages/app-host/src/runtime/installCliBindings.ts(55,5): error TS2322: Type '(params: unknown) => HeadlessSessionStore' is not assignable to type '(params: unknown) => HeadlessStateStore<unknown>'.
+  Call signature return types 'HeadlessSessionStore' and 'HeadlessStateStore<unknown>' are incompatible.
+    The types of 'setState' are incompatible between these types.
+      Type '(next: AppState) => void' is not assignable to type '(...args: unknown[]) => unknown'.
+        Types of parameters 'next' and 'args' are incompatible.
+          Type 'unknown' is not assignable to type 'AppState'.
+            Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.
+src/packages/app-host/src/runtime/installCliBindings.ts(57,5): error TS2322: Type '(...args: unknown[]) => unknown' is not assignable to type '(...args: unknown[]) => Promise<void>'.
+  Type 'unknown' is not assignable to type 'Promise<void>'.

@@ -32,7 +32,7 @@ def assert_equal(name: str, expected, obtained) -> None:
 
 
 def git(cwd: Path, *args: str) -> None:
-    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=cwd, check=True,
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "-c", "commit.gpgsign=false", *args], cwd=cwd, check=True,
                    capture_output=True)
 
 
@@ -77,6 +77,20 @@ with tempfile.TemporaryDirectory() as directory:
     mw.sync(main, wt)
     assert_equal("sync deja el worktree igual al principal otra vez", "export const a = 3\n",
                  (wt / "src/a.ts").read_text())
+
+    # Episodio del 2026-09-25: el alcance `@types` se reflejó con 13 paquetes;
+    # luego se instalaron 7 más en el principal y la siguiente preparación los
+    # saltó porque el directorio de alcance ya existía. El worktree medía un
+    # programa distinto: TS7016 en `semver`, `qrcode` y `stack-utils`, que en
+    # el principal sí tenían sus tipos.
+    (main / "node_modules/@types/old").mkdir(parents=True)
+    mw.prepare(main, wt)
+    (main / "node_modules/@types/new").mkdir(parents=True)
+    (main / "node_modules/@types/new/index.d.ts").write_text("export {}\n")
+    mw.prepare(main, wt)
+    assert_equal("un paquete nuevo en un alcance ya reflejado también se refleja",
+                 True, (wt / "node_modules/@types/new/index.d.ts").exists())
+    assert_equal("y el que ya estaba sigue", True, (wt / "node_modules/@types/old").exists())
 
 print(f"test_measure_worktree: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)

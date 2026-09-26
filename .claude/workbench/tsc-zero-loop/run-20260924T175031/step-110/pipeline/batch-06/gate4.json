@@ -1,0 +1,232 @@
+{
+ "reviewed": [
+  {
+   "pattern": "command-runtime-loose-command-type-vs-agent-strict-call",
+   "files": [
+    "src/packages/repl/src/commands/usage/index.ts"
+   ]
+  },
+  {
+   "pattern": "unknown-timestamp-field-from-message-base-index-signature",
+   "files": [
+    "src/packages/repl/src/components/MessageTimestamp.tsx"
+   ]
+  },
+  {
+   "pattern": "normalize-messages-return-widened-to-union",
+   "files": [
+    "src/packages/repl/src/components/PromptInput/PromptInputQueuedCommands.tsx"
+   ]
+  },
+  {
+   "pattern": "local-jsx-context-option-typed-unknown",
+   "files": [
+    "src/packages/repl/src/components/Settings/Status.tsx"
+   ]
+  },
+  {
+   "pattern": "app-state-provider-sin-initial-state",
+   "files": [
+    "src/packages/repl/src/components/TeleportProgress.tsx"
+   ]
+  },
+  {
+   "pattern": "dead-cache-clear-on-unmemoized-plans-directory",
+   "files": [
+    "src/packages/repl/src/components/WorktreeExitDialog.tsx"
+   ]
+  },
+  {
+   "pattern": "explicit-generic-arg-fails-stub-constraint",
+   "files": [
+    "src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-hookevent-as-reactnode",
+   "files": [
+    "src/packages/repl/src/components/hooks/SelectHookMode.tsx"
+   ]
+  },
+  {
+   "pattern": "hookevent-stub-unknown-rendered-as-reactnode",
+   "files": [
+    "src/packages/repl/src/components/hooks/ViewHookMode.tsx"
+   ]
+  },
+  {
+   "pattern": "shared-validation-error-missing-mcp-metadata",
+   "files": [
+    "src/packages/repl/src/components/mcp/McpParsingWarnings.tsx"
+   ]
+  },
+  {
+   "pattern": "any-block-map-value-cast-to-sdk-block-param",
+   "files": [
+    "src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx"
+   ]
+  },
+  {
+   "pattern": "plain-color-string-not-in-color-union",
+   "files": [
+    "src/packages/repl/src/components/skills/SkillsMenu.tsx"
+   ]
+  },
+  {
+   "pattern": "handler-usa-dom-keyboardevent-en-vez-del-de-ink",
+   "files": [
+    "src/packages/repl/src/components/tasks/WorkflowsDialog.tsx"
+   ]
+  },
+  {
+   "pattern": "diagnostic-info-mode-missing-napi-variant",
+   "files": [
+    "src/packages/repl/src/doctorDiagnostic.ts"
+   ]
+  },
+  {
+   "pattern": "local-request-shape-missing-discriminant-subtype",
+   "files": [
+    "src/packages/repl/src/hooks/useSSHSession.ts"
+   ]
+  },
+  {
+   "pattern": "void-callback-assigned-to-cursor-returning-handler",
+   "files": [
+    "src/packages/repl/src/hooks/useTextInput.ts"
+   ]
+  },
+  {
+   "pattern": "standalone-agent-context-color-widened-to-string",
+   "files": [
+    "src/packages/repl/src/screens/ResumeConversation.tsx"
+   ]
+  },
+  {
+   "pattern": "command-satisfies-wrong-duplicate-command-type",
+   "files": [
+    "src/packages/repl/src/ultraplan.ts"
+   ]
+  },
+  {
+   "pattern": "callback-generico-unknown-args-vs-firma-concreta",
+   "files": [
+    "src/packages/shell/src/exec.ts"
+   ]
+  },
+  {
+   "pattern": "execfile-callback-error-typed-as-errnoexception",
+   "files": [
+    "src/packages/shell/src/execFileNoThrow.ts"
+   ]
+  },
+  {
+   "pattern": "create-and-save-snapshot-missing-context-arg",
+   "files": [
+    "src/packages/shell/src/legacy/bashProvider.ts"
+   ]
+  },
+  {
+   "pattern": "find-predicate-widened-loses-narrowing",
+   "files": [
+    "src/packages/shell/src/legacy/prefix.ts"
+   ]
+  },
+  {
+   "pattern": "require-of-unported-settings-export",
+   "files": [
+    "src/packages/shell/src/sandbox/sandbox-adapter.ts"
+   ]
+  },
+  {
+   "pattern": "assercion-de-modulo-con-firma-de-retorno-obsoleta",
+   "files": [
+    "src/packages/storage/src/plans.ts"
+   ]
+  },
+  {
+   "pattern": "spread-flat-input-into-discriminated-union-variant",
+   "files": [
+    "src/packages/storage/src/sessionStart.ts"
+   ]
+  },
+  {
+   "pattern": "mock-literal-vs-real-interface-en-toEqual",
+   "files": [
+    "src/packages/swarm/__tests__/buildSwarmAgentDeps.test.ts"
+   ]
+  },
+  {
+   "pattern": "callback-param-implicit-any-on-dynamic-import-result",
+   "files": [
+    "src/packages/swarm/__tests__/createSwarmHostDeps.test.ts"
+   ]
+  },
+  {
+   "pattern": "select-onchange-loses-contextual-type",
+   "files": [
+    "src/packages/swarm/src/core/It2SetupPrompt.tsx"
+   ]
+  },
+  {
+   "pattern": "host-binding-callback-param-loses-context",
+   "files": [
+    "src/packages/swarm/src/runtime/pollForPromptOrShutdown.ts"
+   ]
+  },
+  {
+   "pattern": "missing-contracts-like-type-import",
+   "files": [
+    "src/packages/tool-registry/src/runtime.ts"
+   ]
+  },
+  {
+   "pattern": "test-literal-bypasses-permissive-factory",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts"
+   ]
+  },
+  {
+   "pattern": "assertion-on-property-outside-declared-return-type",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts"
+   ]
+  },
+  {
+   "pattern": "cache-clear-on-unmemoized-getplansdirectory-port",
+   "files": [
+    "src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts"
+   ]
+  },
+  {
+   "pattern": "plans-directory-not-memoized-cache-clear",
+   "files": [
+    "src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts"
+   ]
+  },
+  {
+   "pattern": "map-callback-explicit-supertype-annotation",
+   "files": [
+    "src/packages/tool-registry/src/tools/McpAuthTool/McpAuthTool.ts"
+   ]
+  },
+  {
+   "pattern": "callback-param-narrower-than-array-element-with-optional-field",
+   "files": [
+    "src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts"
+   ]
+  },
+  {
+   "pattern": "record-indexed-access-callback-return-type",
+   "files": [
+    "src/rules/emit/markdown.ts"
+   ]
+  },
+  {
+   "pattern": "const-tuple-length-literal-vs-number-toBe",
+   "files": [
+    "tests/conformance/harnessChecklist.test.ts"
+   ]
+  }
+ ]
+}

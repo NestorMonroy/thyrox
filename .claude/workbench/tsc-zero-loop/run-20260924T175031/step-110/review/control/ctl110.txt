@@ -1,0 +1,6 @@
+cd /home/user/thyrox-control/src/packages/cli/__tests__ && timeout 180 bun test premisesCli.test.ts > /home/user/thyrox/.claude/cache/ctl-1.log 2>&1; echo "$? premisesCli" >> /home/user/thyrox/.claude/cache/ctl-v.txt
+cd /home/user/thyrox-control/src/packages/cli/__tests__ && timeout 180 bun test binAgentWiring.test.ts > /home/user/thyrox/.claude/cache/ctl-2.log 2>&1; echo "$? binAgentWiring" >> /home/user/thyrox/.claude/cache/ctl-v.txt
+cd /home/user/thyrox-control/src/packages/cli/__tests__ && timeout 180 bun test compressToolResultsWiring.test.ts > /home/user/thyrox/.claude/cache/ctl-3.log 2>&1; echo "$? compressToolResultsWiring" >> /home/user/thyrox/.claude/cache/ctl-v.txt
+cd /home/user/thyrox-control/src/packages/cli/__tests__ && timeout 180 bun test rstTasks.test.ts > /home/user/thyrox/.claude/cache/ctl-4.log 2>&1; echo "$? rstTasks" >> /home/user/thyrox/.claude/cache/ctl-v.txt
+cd /home/user/thyrox-control/src/packages/permission/src/__tests__ && timeout 180 bun test pathSafety.test.ts > /home/user/thyrox/.claude/cache/ctl-5.log 2>&1; echo "$? pathSafety" >> /home/user/thyrox/.claude/cache/ctl-v.txt
+cd /home/user/thyrox-control/tests/integration && timeout 180 bun test agent-loop.test.ts > /home/user/thyrox/.claude/cache/ctl-6.log 2>&1; echo "$? agent-loop" >> /home/user/thyrox/.claude/cache/ctl-v.txt

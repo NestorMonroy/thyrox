@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/commands/commit.ts(72,28): error TS18046: 'context' is of type 'unknown'.
+  --- código src/packages/agent/commands/commit.ts:62-82 ---
+     62    contentLength: 0, // Dynamic content
+     63    progressMessage: 'creating commit',
+     64    source: 'builtin',
+     65    async getPromptForCommand(_args, context) {
+     66      const promptContent = getPromptContent()
+     67      const finalContent = await executeShellCommandsInPrompt(
+     68        promptContent,
+     69        {
+     70          ...context,
+     71          getAppState() {
+     72>           const appState = context.getAppState()
+     73            return {
+     74              ...appState,
+     75              toolPermissionContext: {
+     76                ...appState.toolPermissionContext,
+     77                alwaysAllowRules: {
+     78                  ...appState.toolPermissionContext.alwaysAllowRules,
+     79                  command: ALLOWED_TOOLS,
+     80                },
+     81              },
+     82            }

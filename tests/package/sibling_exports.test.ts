@@ -267,7 +267,6 @@ describe('exports de los paquetes hermanos', () => {
         './tools/TerminalCaptureTool/TerminalCaptureTool.js': "feature('TERMINAL_PANEL')",
         './tools/WebBrowserTool/WebBrowserTool.js': "feature('WEB_BROWSER_TOOL')",
         './tools/SnipTool/SnipTool.js': "feature('HISTORY_SNIP')",
-        './tools/REPLTool/REPLTool.js': 'import() dinamico dentro de try (runAgentTelemetry)',
       },
     }
 

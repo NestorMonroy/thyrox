@@ -26,7 +26,7 @@ type Props = {
   selectedEvent: HookEvent
   matchersForSelectedEvent: string[]
   hooksByEventAndMatcher: Record<
-    HookEvent,
+    string,
     Record<string, IndividualHookConfig[]>
   >
   eventDescription: string
@@ -45,7 +45,7 @@ export function SelectMatcherMode({
   // Group matchers with their sources (already sorted by priority in parent)
   const matchersWithSources: MatcherWithSource[] = React.useMemo(() => {
     return matchersForSelectedEvent.map(matcher => {
-      const hooks = hooksByEventAndMatcher[selectedEvent]?.[matcher] || []
+      const hooks = hooksByEventAndMatcher[selectedEvent as string]?.[matcher] || []
       const sources = Array.from(new Set(hooks.map(h => h.source)))
       return {
         matcher,

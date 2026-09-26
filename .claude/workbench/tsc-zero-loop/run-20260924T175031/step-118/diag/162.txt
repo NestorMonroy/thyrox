@@ -1,0 +1,18 @@
+src/packages/repl/src/components/Settings/questionTimeoutSetting.ts(19,49): error TS2322: Type '"never" | "5m" | "60s" | "10m"' is not assignable to type 'number | undefined'.
+  --- código src/packages/repl/src/components/Settings/questionTimeoutSetting.ts:9-23 ---
+      9  ) {
+     10    return {
+     11      id: 'askUserQuestionTimeout',
+     12      label: 'Question auto-continue timeout',
+     13      value: value ?? 'never',
+     14      options: [...ASK_USER_QUESTION_TIMEOUTS],
+     15      type: 'enum' as const,
+     16      onChange(next: string) {
+     17        const timeout = ASK_USER_QUESTION_TIMEOUTS.find(item => item === next)
+     18        if (!timeout) return
+     19>       updateSettingsForSource('userSettings', { askUserQuestionTimeout: timeout })
+     20        onSaved(timeout)
+     21      },
+     22    }
+     23  }
+  Type 'string' is not assignable to type 'number'.

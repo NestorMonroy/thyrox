@@ -1,0 +1,29 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/agent/loop/context/autocompact.ts(91,27): error TS2345: Argument of type 'Message | undefined' is not assignable to parameter of type 'Message'.
+  --- código src/packages/agent/loop/context/autocompact.ts:81-101 ---
+     81  export type CompactResult = { messages: Message[]; boundary: number; compacted: number }
+     82  
+     83  const bloques = (m: Message, tipo: ContentBlock['type']) => m.content.some((b) => b.type === tipo)
+     84  
+     85  /**
+     86   * Corre la frontera hacia atrás hasta que la cola no empiece con un
+     87   * `tool_result` huérfano — su `tool_use` vive en el mensaje anterior.
+     88   */
+     89  function fronteraSegura(messages: Message[], propuesta: number): number {
+     90    let i = propuesta
+     91>   while (i > 0 && bloques(messages[i], 'tool_result')) i -= 1
+     92    return i
+     93  }
+     94  
+     95  /** Sustituye todo lo anterior a la frontera por un único mensaje de resumen. */
+     96  export function compactMessages(messages: Message[], opts: CompactOptions): CompactResult {
+     97    if (messages.length <= opts.keepLast) {
+     98      return { messages, boundary: 0, compacted: 0 }
+     99    }
+    100    const boundary = fronteraSegura(messages, messages.length - opts.keepLast)
+    101    if (boundary <= 0) {
+  Type 'undefined' is not assignable to type 'Message'.

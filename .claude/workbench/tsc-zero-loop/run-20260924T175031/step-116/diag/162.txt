@@ -1,0 +1,46 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(325,43): error TS7006: Parameter 'id' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:315-335 ---
+    315          attachment.imagePasteIds && attachment.imagePasteIds.length > 0
+    316        return (
+    317          <Box flexDirection="column">
+    318            <UserTextMessage
+    319              addMargin={addMargin}
+    320              param={{ text, type: 'text' }}
+    321              verbose={verbose}
+    322              isTranscriptMode={isTranscriptMode}
+    323            />
+    324            {hasImages &&
+    325>             attachment.imagePasteIds?.map(id => (
+    326                <UserImageMessage key={id} imageId={id} />
+    327              ))}
+    328          </Box>
+    329        )
+    330      }
+    331      case 'plan_file_reference':
+    332        return (
+    333          <Line>
+    334            Plan file referenced ({getDisplayPath(attachment.planFilePath)})
+    335          </Line>
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(341,48): error TS7006: Parameter 's' implicitly has an 'any' type.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:331-351 ---
+    331      case 'plan_file_reference':
+    332        return (
+    333          <Line>
+    334            Plan file referenced ({getDisplayPath(attachment.planFilePath)})
+    335          </Line>
+    336        )
+    337      case 'invoked_skills': {
+    338        if (attachment.skills.length === 0) {
+    339          return null
+    340        }
+    341>       const skillNames = attachment.skills.map(s => s.name).join(', ')
+    342        return <Line>Skills restored ({skillNames})</Line>
+    343      }
+    344      case 'diagnostics':
+    345        return <DiagnosticsDisplay attachment={attachment} verbose={verbose} />
+    346      case 'mcp_resource':
+    347        return (
+    348          <Line>
+    349            Read MCP resource <Text bold>{attachment.name}</Text> from{' '}
+    350            {attachment.server}
+    351          </Line>

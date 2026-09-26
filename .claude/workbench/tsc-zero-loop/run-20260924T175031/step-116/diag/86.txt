@@ -1,0 +1,24 @@
+src/packages/config/plugin/mcpbHandler.ts(424,5): error TS2322: Type 'string[]' is not assignable to type 'Record<string, string>'.
+  --- código src/packages/config/plugin/mcpbHandler.ts:414-434 ---
+    414    manifest: McpbManifest,
+    415    extractedPath: string,
+    416    userConfig: UserConfigValues = {},
+    417  ): Promise<McpServerConfig> {
+    418    // Lazy import: @anthropic-ai/mcpb barrel pulls in zod v3 schemas (~700KB of
+    419    // bound closures). See dxt/helpers.ts for details.
+    420    const { getMcpConfigForManifest } = await import('@anthropic-ai/mcpb')
+    421    const mcpConfig = await getMcpConfigForManifest({
+    422      manifest,
+    423      extensionPath: extractedPath,
+    424>     systemDirs: getSystemDirectories(),
+    425      userConfig,
+    426      pathSeparator: '/',
+    427    })
+    428  
+    429    if (!mcpConfig) {
+    430      const error = new Error(
+    431        `Failed to generate MCP server configuration from manifest "${manifest.name}"`,
+    432      )
+    433      logError(error)
+    434      throw error
+  Index signature for type 'string' is missing in type 'string[]'.

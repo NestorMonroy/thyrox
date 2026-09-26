@@ -1,0 +1,7 @@
+src/packages/repl/src/conversationRecovery.tsx(187,30): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'Message' is not comparable to type 'NormalizedMessage'.
+    Type 'Message' is not comparable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+      Type 'Message' is missing the following properties from type 'MessageBase': type, uuid
+src/packages/repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content

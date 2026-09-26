@@ -1,0 +1,18 @@
+case "$CACHE_TTL" in
+    ""|5m|1h) ;;
+    *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
+esac
+# El entorno manda sobre la opción, en el orden de `QCt` (2.1.282, extraído
+# con `bin/binary symbol chunk-c9jscxk0.js QCt`): forzar 5m, luego la variable
+# de la conversación principal —cada ítem es un `-p`, que el ejecutable cuenta
+# como principal—, luego lo que el llamador decidió. Porte TS de la misma
+# cadena: `src/packages/agent/promptCacheTtl.ts`.
+case "$(printf '%s' "${THYROX_FORCE_PROMPT_CACHING_5M:-}" | tr '[:upper:]' '[:lower:]')" in
+    1|true|yes|on) CACHE_TTL=5m; CACHE_TTL_WHY=force_5m_env ;;
+    *)
+        case "${THYROX_CODE_PROMPT_CACHE_TTL:-}" in
+            "") CACHE_TTL_WHY=option ;;
+            5m|1h) CACHE_TTL="$THYROX_CODE_PROMPT_CACHE_TTL"; CACHE_TTL_WHY=env ;;
+            *) rehusa "THYROX_CODE_PROMPT_CACHE_TTL va \"5m\" o \"1h\", no: $THYROX_CODE_PROMPT_CACHE_TTL" ;;
+        esac ;;
+esac

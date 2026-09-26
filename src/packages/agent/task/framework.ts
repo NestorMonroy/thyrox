@@ -105,8 +105,8 @@ export function registerTask(task: TaskState, setAppState: SetAppState): void {
     type: 'system',
     subtype: 'task_started',
     task_id: task.id,
-    tool_use_id: task.toolUseId,
-    description: task.description,
+    tool_use_id: task.toolUseId as string | undefined,
+    description: String(task.description),
     task_type: task.type,
     workflow_name:
       'workflowName' in task
@@ -308,5 +308,7 @@ function getStatusText(status: TaskStatus): string {
       return 'is running'
     case 'pending':
       return 'is pending'
+    case 'paused':
+      return 'is paused'
   }
 }

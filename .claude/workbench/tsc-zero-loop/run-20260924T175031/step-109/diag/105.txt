@@ -1,0 +1,224 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+patron: spread-of-never-typed-test-double
+senal_del_verificador: TS2698: Spread types may only be created from object types
+fix_generico: Un doble de prueba declarado como `const x = {...} as never` no se puede esparcir directamente (`{ ...x, extra }`): `never` no es un tipo objeto para el spread. Se castea la variable a un tipo objeto concreto (p. ej. `Record<string, unknown>`) sólo en el punto del spread, dejando el `as never` exterior para el literal combinado que viaja como argumento.
+
+patron: optional-field-narrower-than-always-assigned-value
+senal_del_verificador: TS2322: Type '.*\| undefined' is not assignable to type '(?!.*undefined)
+fix_generico: Cuando el productor del valor (un acumulador local, una variable `let` con valor por defecto no-undefined) garantiza que el campo siempre lleva un dato definido, el tipo que lo declara opcional (`campo?: T`) se angosta a obligatorio (`campo: T`) en la propia declaración — nunca se relaja el consumidor con `!`, `as` o un valor por defecto artificial. Se verifica leyendo cada asignación al campo antes de tocar el tipo.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/screens/REPLView.tsx(1167,39): error TS2345: Argument of type 'Dispatch<SetStateAction<ToolUseConfirm[]>>' is not assignable to parameter of type 'SetToolUseConfirmQueueFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1157-1177 ---
+   1157    // 3P default: off — OSC 21337 is ant-only while the spec stabilizes.
+   1158    // Gated so we can roll back if the sidebar indicator conflicts with
+   1159    // the title spinner in terminals that render both. When the flag is
+   1160    // on, the user-facing config setting controls whether it's active.
+   1161    const tabStatusGateEnabled = getFeatureValue_CACHED_MAY_BE_STALE('tengu_terminal_sidebar', false);
+   1162    const showStatusInTerminalTab = tabStatusGateEnabled && (getGlobalConfig().showStatusInTerminalTab ?? false);
+   1163    useTabStatus(titleDisabled || !showStatusInTerminalTab ? null : sessionStatus);
+   1164  
+   1165    // Register the leader's setToolUseConfirmQueue for in-process teammates
+   1166    useEffect(() => {
+   1167>     registerLeaderToolUseConfirmQueue(setToolUseConfirmQueue);
+   1168      return () => unregisterLeaderToolUseConfirmQueue();
+   1169    }, [setToolUseConfirmQueue]);
+   1170  
+   1171    const [messages, rawSetMessages] = useState<MessageType[]>(initialMessages ?? []);
+   1172    const messagesRef = useRef(messages);
+   1173  
+   1174    // Bg-session FleetView sync (see hook JSDoc for ant 3988.js lineage):
+   1175    // state.json disk writes + rv-channel mirror on each turn transition.
+   1176    useBgFleetStateSync(isLoading, messages);
+   1177    useBgRendezvousServer(isLoading); // ant 4291.js rv server: 30s heartbeat + startup-wedge (no-op unless bg+rv-sock)
+src/packages/repl/src/screens/REPLView.tsx(1553,35): error TS2339: Property 'content' does not exist on type '{}'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1543-1563 ---
+   1543      for (const tool of extractBashToolsFromMessages(newMessages)) {
+   1544        bashTools.current.add(tool);
+   1545      }
+   1546      bashToolsProcessedIdx.current = messagesRef.current.length;
+   1547      void getTipToShowOnSpinner({
+   1548        theme,
+   1549        readFileState: readFileState.current,
+   1550        bashTools: bashTools.current,
+   1551      }).then(async tip => {
+   1552        if (tip) {
+   1553>         const content = await tip.content({ theme });
+   1554          setAppState(prev => ({
+   1555            ...prev,
+   1556            spinnerTip: content,
+   1557          }));
+   1558          recordShownTip(tip);
+   1559        } else {
+   1560          setAppState(prev => {
+   1561            if (prev.spinnerTip === undefined) return prev;
+   1562            return { ...prev, spinnerTip: undefined };
+   1563          });
+src/packages/repl/src/screens/REPLView.tsx(2016,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2006-2026 ---
+   2006    // Permission and interactive dialogs can show even when toolJSX is set,
+   2007    // as long as shouldContinueAnimation is true. This prevents deadlocks when
+   2008    // agents set background hints while waiting for user interaction.
+   2009    const allowDialogsWithAnimation = !toolJSX || toolJSX.shouldContinueAnimation;
+   2010    const focusedInputDialog = getFocusedInputDialog({
+   2011      isExiting,
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016>     allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022      idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+src/packages/repl/src/screens/REPLView.tsx(2381,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2371-2391 ---
+   2371            });
+   2372            return currentQueue;
+   2373          });
+   2374        }, setToolUseConfirmQueue);
+   2375      },
+   2376      [setAppState, setToolUseConfirmQueue],
+   2377    );
+   2378  
+   2379    // Register the leader's setToolPermissionContext for in-process teammates
+   2380    useEffect(() => {
+   2381>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2382      return () => unregisterLeaderSetToolPermissionContext();
+   2383    }, [setToolPermissionContext]);
+   2384  
+   2385    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2386  
+   2387    const requestPrompt = useCallback(
+   2388      (title: string, toolInputSummary?: string | null) =>
+   2389        (request: PromptRequest): Promise<PromptResponse> =>
+   2390          new Promise<PromptResponse>((resolve, reject) => {
+   2391            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+src/packages/repl/src/screens/REPLView.tsx(2680,80): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2670-2690 ---
+   2670              } else {
+   2671                setMessages(() => [newMessage]);
+   2672              }
+   2673              // Bump conversationId so Messages.tsx row keys change and
+   2674              // stale memoized rows remount with post-compact content.
+   2675              setConversationId(randomUUID());
+   2676              // Compaction succeeded — clear the context-blocked flag so ticks resume
+   2677              if (feature('PROACTIVE') || feature('KAIROS')) {
+   2678                proactiveModule?.setContextBlocked(false);
+   2679              }
+   2680>           } else if (newMessage.type === 'progress' && isEphemeralToolProgress(newMessage.data.type)) {
+   2681              // Replace the previous ephemeral progress tick for the same tool
+   2682              // call instead of appending. Sleep/Bash emit a tick per second and
+   2683              // only the last one is rendered; appending blows up the messages
+   2684              // array (13k+ observed) and the transcript (120MB of sleep_progress
+   2685              // lines). useLogMessages tracks length, so same-length replacement
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+src/packages/repl/src/screens/REPLView.tsx(2696,17): error TS18046: 'last.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }
+src/packages/repl/src/screens/REPLView.tsx(2696,36): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }
+src/packages/repl/src/screens/REPLView.tsx(2929,22): error TS2345: Argument of type 'AgentMessage | AgentStreamEvent | AgentRequestStartEvent | AgentTombstoneMessage | AgentToolUseSummaryMessage' is not assignable to parameter of type 'StreamedItem'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2919-2939 ---
+   2919  
+   2920        for await (const event of query({
+   2921          messages: messagesIncludingNewMessages,
+   2922          systemPrompt,
+   2923          userContext,
+   2924          systemContext,
+   2925          canUseTool,
+   2926          toolUseContext,
+   2927          querySource: getQuerySourceForREPL(),
+   2928        })) {
+   2929>         onQueryEvent(event);
+   2930        }
+   2931  
+   2932        queryCheckpoint('query_end');
+   2933  
+   2934        // Capture ant-only API metrics before resetLoadingState clears the ref.
+   2935        // For multi-request turns (tool use loops), compute P50 across all requests.
+   2936        if (process.env.USER_TYPE === 'ant' && apiMetricsRef.current.length > 0) {
+   2937          const entries = apiMetricsRef.current;
+   2938  
+   2939          const ttfts = entries.map(e => e.ttftMs);
+src/packages/repl/src/screens/REPLView.tsx(3272,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3262-3282 ---
+   3262              ...updatedToolPermissionContext,
+   3263              mode: 'auto',
+   3264              prePlanMode: undefined,
+   3265            });
+   3266          }
+   3267  
+   3268          return {
+   3269            ...prev,
+   3270            initialMessage: null,
+   3271            toolPermissionContext: updatedToolPermissionContext,
+   3272>           ...(shouldStorePlanForVerification && {
+   3273              pendingPlanVerification: {
+   3274                plan: initialMsg.message.planContent!,
+   3275                verificationStarted: false,
+   3276                verificationCompleted: false,
+   3277              },
+   3278            }),
+   3279          };
+   3280        });
+   3281  
+   3282        // Create file history snapshot for code rewind

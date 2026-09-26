@@ -39,12 +39,39 @@
  *   — el mismo comportamiento que el test fija ("es un no-op cuando la
  *   bandera es false, el default").
  */
+import picomatch from 'picomatch'
 import type { Dirent } from 'node:fs'
 import { realpathSync } from 'node:fs'
 import { lstat, readdir, readFile, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
-import picomatch from 'picomatch'
+import { cacheKeys, type FileStateCache } from '@thyrox/tool-registry/fileStateCache'
+import { logEvent } from '@thyrox/local-observability'
+import { getErrnoCode, getFsImplementation, safeResolvePath } from './fsOperations.js'
+import { getInitialSettings } from '@thyrox/config/settings'
+import { safePicomatch, safeIgnoreMatch } from './safePatternMatch.js'
+import { pathInWorkingPath } from '@thyrox/permission/filesystem'
+import { normalizePathForComparison } from './file.js'
+import { getOriginalCwd } from './sessionPaths.js'
+import type { InstructionsLoadReason, InstructionsMemoryType } from '@thyrox/agent/hooks.js'
+import {
+  parseFrontmatter,
+  splitPathInFrontmatter,
+} from '@thyrox/config/frontmatterParser.js'
+import { Lexer } from 'marked'
+import { expandPath } from './path.js'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
+
+
+
+
+
+
+
+
+
+
+
 
 /** Subconjunto de tipos de memoria que este porte necesita declarar. */
 export type MemoryType = 'User' | 'Project' | 'Local' | 'Managed' | 'AutoMem' | 'TeamMem'
@@ -717,3 +744,920 @@ export async function shouldShowClaudeMdExternalIncludesWarning(): Promise<boole
   if (project.hasClaudeMdExternalIncludesApproved || project.hasClaudeMdExternalIncludesWarningShown) return false
   return hasExternalClaudeMdIncludes(await getMemoryFiles(true))
 }
+
+/**
+ * Get all memory file paths from both standard discovery and readFileState.
+ * Combines:
+ * - getMemoryFiles() paths (CWD upward to root)
+ * - readFileState paths matching memory patterns (includes child directories)
+ */
+export function getAllMemoryFilePaths(
+  files: MemoryFileInfo[],
+  readFileState: FileStateCache,
+): string[] {
+  const paths = new Set<string>()
+  for (const file of files) {
+    if (file.content.trim().length > 0) {
+      paths.add(file.path)
+    }
+  }
+
+  // Add memory files from readFileState (includes child directories)
+  for (const filePath of cacheKeys(readFileState)) {
+    if (isMemoryFilePath(filePath)) {
+      paths.add(filePath)
+    }
+  }
+
+  return Array.from(paths)
+}
+/**
+ * Obtiene las reglas condicionales de un directorio a nivel de CWD (desde la raíz hasta el CWD).
+ * Sólo procesa reglas condicionales, ya que las incondicionales ya se cargan de forma anticipada.
+ *
+ * @param dir El directorio a procesar
+ * @param targetPath La ruta del archivo objetivo (para el matching de reglas condicionales)
+ * @param processedPaths Conjunto de rutas ya procesadas (se muta)
+ * @returns Array de objetos MemoryFileInfo
+ */
+export async function getConditionalRulesForCwdLevelDirectory(
+  dir: string,
+  targetPath: string,
+  processedPaths: Set<string>,
+): Promise<MemoryFileInfo[]> {
+  const rulesDir = join(dir, '.claude', 'rules')
+  return processConditionedMdRules(
+    targetPath,
+    rulesDir,
+    'Project',
+    processedPaths,
+    false,
+  )
+}
+/**
+ * Reglas condicionales Managed y User que matchean `targetPath`.
+ * Primera fase de la carga de memoria anidada.
+ */
+export async function getManagedAndUserConditionalRules(
+  targetPath: string,
+  processedPaths: Set<string>,
+): Promise<MemoryFileInfo[]> {
+  const config = loaderConfig()
+  const result: MemoryFileInfo[] = []
+
+  result.push(
+    ...(await processConditionedMdRules(
+      targetPath,
+      join(config.managedDir, '.claude', 'rules'),
+      'Managed',
+      processedPaths,
+      false,
+    )),
+  )
+
+  if (config.userEnabled) {
+    result.push(
+      ...(await processConditionedMdRules(
+        targetPath,
+        join(config.configHome, 'rules'),
+        'User',
+        processedPaths,
+        true,
+      )),
+    )
+  }
+
+  return result
+}
+function handleMemoryFileReadError(error: unknown, filePath: string): void {
+  const code = getErrnoCode(error)
+  // ENOENT = el archivo no existe, EISDIR = es un directorio — ambos esperados
+  if (code === 'ENOENT' || code === 'EISDIR') {
+    return
+  }
+  // Los errores de permisos (EACCES) son accionables, se registran
+  if (code === 'EACCES') {
+    let homeDir = ''
+    try {
+      // @thyrox/config depende de este paquete (ver loaderConfig arriba):
+      // se resuelve tarde con require, nunca por import estático.
+      const env = require('@thyrox/config/env/utils.js') as {
+        getClaudeConfigHomeDir?: () => string
+      }
+      homeDir = env.getClaudeConfigHomeDir?.() ?? ''
+    } catch {
+      homeDir = ''
+    }
+    // No se registra la ruta completa por PII/seguridad
+    logEvent('tengu_claude_md_permission_error', {
+      is_access_error: 1,
+      has_home_dir: filePath.includes(homeDir) ? 1 : 0,
+    })
+  }
+}
+
+/**
+ * La usa processMemoryFile → getMemoryFiles para que el event loop siga
+ * respondiendo durante el recorrido del directorio (muchos intentos de
+ * readFile, casi todos ENOENT). Cuando se da includeBasePath, las rutas
+ * @include se resuelven en el mismo paso léxico y se devuelven junto al
+ * archivo parseado.
+ */
+async function safelyReadMemoryFileAsync(
+  filePath: string,
+  type: MemoryType,
+  includeBasePath?: string,
+): Promise<{ info: MemoryFileInfo | null; includePaths: string[] }> {
+  try {
+    const fs = getFsImplementation()
+    const rawContent = await fs.readFile(filePath, { encoding: 'utf-8' })
+    return parseMemoryFileContent(rawContent, filePath, type, includeBasePath)
+  } catch (error) {
+    handleMemoryFileReadError(error, filePath)
+    return { info: null, includePaths: [] }
+  }
+}
+/**
+ * Comprueba si una ruta de CLAUDE.md queda excluida por `claudeMdExcludes`.
+ * Sólo aplica a los tipos User, Project y Local; Managed, AutoMem y TeamMem
+ * nunca se excluyen.
+ *
+ * Cotejar tanto la ruta original como la resuelta por realpath cubre
+ * symlinks (p. ej. /tmp -> /private/tmp en macOS).
+ */
+function isClaudeMdExcluded(filePath: string, type: MemoryType): boolean {
+  if (type !== 'User' && type !== 'Project' && type !== 'Local') {
+    return false
+  }
+
+  const patterns = getInitialSettings().claudeMdExcludes
+  if (!patterns || patterns.length === 0) {
+    return false
+  }
+
+  const matchOpts = { dot: true }
+  const normalizedPath = filePath.replaceAll('\\', '/')
+
+  const expandedPatterns = resolveExcludePatterns(patterns).filter(
+    p => p.length > 0,
+  )
+  if (expandedPatterns.length === 0) {
+    return false
+  }
+
+  return safePicomatch(normalizedPath, expandedPatterns, matchOpts)
+}
+
+// pendiente: parseMemoryFileContent — depende de `Lexer` de `marked` (npm, no
+// instalado; misma ausencia que `stripHtmlComments` ya declara arriba) para
+// compartir tokens entre el strip de comentarios y la extracción de
+// `@include`, y de `truncateEntrypointContent`
+// (`@claude-code-how-works/memory/memdir`, portado en `@thyrox/memory/memdir.js`
+// pero no declarado como dependencia de `@thyrox/storage`) para el truncado de
+// MEMORY.md. Nada en este árbol referencia hoy esta función; `readMemoryFile`
+// ya cubre el mismo propósito con las variantes divergentes basadas en
+// contenido (`stripHtmlComments`, `extractIncludePaths`) de este archivo.
+/** `pathInOriginalCwd`: si la ruta cae dentro del cwd original de la sesión. */
+function pathInOriginalCwd(path: string): boolean {
+  return pathInWorkingPath(path, loaderConfig().originalCwd)
+}
+
+/**
+ * Procesa recursivamente un archivo de memoria y sus referencias `@include`.
+ * Devuelve un array de `MemoryFileInfo` con los includes primero y el
+ * archivo principal al final.
+ */
+export async function processMemoryFile(
+  filePath: string,
+  type: MemoryType,
+  processedPaths: Set<string>,
+  includeExternal: boolean,
+  depth: number = 0,
+  parent?: string,
+): Promise<MemoryFileInfo[]> {
+  // Se omite si ya fue procesado o si se excedió la profundidad máxima.
+  // Las rutas se normalizan para la comparación por las diferencias de
+  // mayúsculas en la letra de unidad de Windows (p. ej. C:\Users vs c:\Users).
+  const normalizedPath = normalizePathForComparison(filePath)
+  if (processedPaths.has(normalizedPath) || depth >= MAX_INCLUDE_DEPTH) {
+    return []
+  }
+
+  // Se omite si la ruta está excluida por el ajuste claudeMdExcludes
+  if (isClaudeMdExcluded(filePath, type)) {
+    return []
+  }
+
+  // Resuelve el symlink temprano para la resolución de @import
+  const { resolvedPath, isSymlink } = safeResolvePath(getFsImplementation(), filePath)
+
+  processedPaths.add(normalizedPath)
+  if (isSymlink) {
+    processedPaths.add(normalizePathForComparison(resolvedPath))
+  }
+
+  const { info: memoryFile, includePaths: resolvedIncludePaths } =
+    await safelyReadMemoryFileAsync(filePath, type, resolvedPath)
+  if (!memoryFile || !memoryFile.content.trim()) {
+    return []
+  }
+
+  // Añade la información del padre
+  if (parent) {
+    memoryFile.parent = parent
+  }
+
+  const result: MemoryFileInfo[] = []
+
+  // Añade el archivo principal primero (el padre antes que los hijos)
+  result.push(memoryFile)
+
+  for (const resolvedIncludePath of resolvedIncludePaths) {
+    const isExternal = !pathInOriginalCwd(resolvedIncludePath)
+    if (isExternal && !includeExternal) {
+      continue
+    }
+
+    // Procesa recursivamente los archivos incluidos con este archivo como padre
+    const includedFiles = await processMemoryFile(
+      resolvedIncludePath,
+      type,
+      processedPaths,
+      includeExternal,
+      depth + 1,
+      filePath, // Pasa el archivo actual como padre
+    )
+    result.push(...includedFiles)
+  }
+
+  return result
+}
+/**
+ * Processes all .md files in the .claude/rules/ directory and its subdirectories,
+ * filtering to only include files with frontmatter paths that match the target path
+ * @param targetPath The file path to match against frontmatter glob patterns
+ * @param rulesDir The path to the rules directory
+ * @param type Type of memory file (User, Project, Local)
+ * @param processedPaths Set of already processed file paths
+ * @param includeExternal Whether to include external files
+ * @returns Array of MemoryFileInfo objects that match the target path
+ */
+export async function processConditionedMdRules(
+  targetPath: string,
+  rulesDir: string,
+  type: MemoryType,
+  processedPaths: Set<string>,
+  includeExternal: boolean,
+): Promise<MemoryFileInfo[]> {
+  const conditionedRuleMdFiles = await processMdRules({
+    rulesDir,
+    type,
+    processedPaths,
+    includeExternal,
+    conditionalRule: true,
+  })
+
+  // Filter to only include files whose globs patterns match the targetPath
+  return conditionedRuleMdFiles.filter(file => {
+    if (!file.globs || file.globs.length === 0) {
+      return false
+    }
+
+    // For Project rules: glob patterns are relative to the directory containing .claude
+    // For Managed/User rules: glob patterns are relative to the original CWD
+    const baseDir =
+      type === 'Project'
+        ? dirname(dirname(rulesDir)) // Parent of .claude
+        : getOriginalCwd() // Project root for managed/user rules
+
+    const relativePath = isAbsolute(targetPath)
+      ? relative(baseDir, targetPath)
+      : targetPath
+    // ignore() throws on empty strings, paths escaping the base (../),
+    // and absolute paths (Windows cross-drive relative() returns absolute).
+    // Files outside baseDir can't match baseDir-relative globs anyway.
+    if (
+      !relativePath ||
+      relativePath.startsWith('..') ||
+      isAbsolute(relativePath)
+    ) {
+      return false
+    }
+    return safeIgnoreMatch(file.globs, relativePath)
+  })
+}
+/**
+ * Recorre `.claude/rules/` y sus subdirectorios cargando cada `.md` como
+ * entrada de memoria, separando las que llevan frontmatter `paths:`
+ * (`conditionalRule`) de las que no.
+ */
+export async function processMdRules({
+  rulesDir,
+  type,
+  processedPaths,
+  includeExternal,
+  conditionalRule,
+  visitedDirs = new Set(),
+}: {
+  rulesDir: string
+  type: MemoryType
+  processedPaths: Set<string>
+  includeExternal: boolean
+  conditionalRule: boolean
+  visitedDirs?: Set<string>
+}): Promise<MemoryFileInfo[]> {
+  if (visitedDirs.has(rulesDir)) {
+    return []
+  }
+
+  try {
+    const fs = getFsImplementation()
+
+    const { resolvedPath: resolvedRulesDir, isSymlink } = safeResolvePath(fs, rulesDir)
+
+    visitedDirs.add(rulesDir)
+    if (isSymlink) {
+      visitedDirs.add(resolvedRulesDir)
+    }
+
+    const result: MemoryFileInfo[] = []
+    let entries: Dirent[]
+    try {
+      entries = await fs.readdir(resolvedRulesDir)
+    } catch (e: unknown) {
+      const code = getErrnoCode(e)
+      if (code === 'ENOENT' || code === 'EACCES' || code === 'ENOTDIR') {
+        return []
+      }
+      throw e
+    }
+
+    for (const entry of entries) {
+      const entryPath = join(rulesDir, entry.name)
+      const { resolvedPath: resolvedEntryPath, isSymlink } = safeResolvePath(fs, entryPath)
+
+      // Usa los métodos de Dirent para los no-symlink y evita un stat extra;
+      // para un symlink hace falta stat para saber qué es el destino.
+      const stats = isSymlink ? await fs.stat(resolvedEntryPath) : null
+      const isDirectory = stats ? stats.isDirectory() : entry.isDirectory()
+      const isFile = stats ? stats.isFile() : entry.isFile()
+
+      if (isDirectory) {
+        result.push(
+          ...(await processMdRules({
+            rulesDir: resolvedEntryPath,
+            type,
+            processedPaths,
+            includeExternal,
+            conditionalRule,
+            visitedDirs,
+          })),
+        )
+      } else if (isFile && entry.name.endsWith('.md')) {
+        const files = await processMemoryFile(resolvedEntryPath, type, processedPaths, includeExternal)
+        result.push(...files.filter(f => (conditionalRule ? f.globs : !f.globs)))
+      }
+    }
+
+    return result
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('EACCES')) {
+      logEvent('tengu_claude_rules_md_permission_error', {
+        is_access_error: 1,
+        has_home_dir: rulesDir.includes(loaderConfig().configHome) ? 1 : 0,
+      })
+    }
+    return []
+  }
+}
+/**
+ * Expande los patrones de exclusión resolviendo enlaces simbólicos en los
+ * prefijos de ruta absolutos. Para cada patrón absoluto (que empieza por /),
+ * intenta resolver el prefijo de directorio existente más largo vía
+ * `realpathSync` y añade la versión resuelta. Los patrones glob (con `*`)
+ * resuelven su prefijo estático.
+ */
+function resolveExcludePatterns(patterns: string[]): string[] {
+  const expanded: string[] = patterns.map(p => p.replaceAll('\\', '/'))
+
+  for (const normalized of expanded) {
+    // Sólo se resuelven los patrones absolutos — los patrones puramente glob
+    // como "**/*.md" no tienen un prefijo de sistema de archivos que resolver
+    if (!normalized.startsWith('/')) {
+      continue
+    }
+
+    // Encuentra el prefijo estático antes de cualquier carácter de glob
+    const globStart = normalized.search(/[*?{[]/)
+    const staticPrefix =
+      globStart === -1 ? normalized : normalized.slice(0, globStart)
+    const dirToResolve = dirname(staticPrefix)
+
+    try {
+      // IO síncrona: se llama desde contexto síncrono (isClaudeMdExcluded -> processMemoryFile -> getMemoryFiles)
+      const resolvedDir = realpathSync(dirToResolve).replaceAll('\\', '/')
+      if (resolvedDir !== dirToResolve) {
+        const resolvedPattern =
+          resolvedDir + normalized.slice(dirToResolve.length)
+        expanded.push(resolvedPattern)
+      }
+    } catch {
+      // El directorio no existe; se omite la resolución para este patrón
+    }
+  }
+
+  return expanded
+}
+
+// --- porte por miembros: un ancla por ítem ---
+export function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+  if (!shouldFireHook) return undefined
+  shouldFireHook = false
+  const reason = nextEagerLoadReason
+  nextEagerLoadReason = 'session_start'
+  return reason
+}
+// Extrae referencias de inclusión @path de tokens ya lexeados y las
+// resuelve a rutas absolutas. Salta los tokens html para que los @paths
+// dentro de comentarios de bloque se ignoren — quien llama puede pasar
+// tokens previos al strip.
+// El parámetro se tipa como `MarkdownToken[]` (no `ReturnType<Lexer['lex']>`
+// de la fuente): `marked` no es dependencia de `@thyrox/storage`, y el
+// cuerpo ya trataba `tokens` como `MarkdownToken[]` al final.
+function extractIncludePathsFromTokens(
+  tokens: MarkdownToken[],
+  basePath: string,
+): string[] {
+  const absolutePaths = new Set<string>()
+
+  // Extrae @paths de un texto y agrega las rutas resueltas a absolutePaths.
+  function extractPathsFromText(textContent: string) {
+    const includeRegex = /(?:^|\s)@((?:[^\s\\]|\\ )+)/g
+    let match
+    while ((match = includeRegex.exec(textContent)) !== null) {
+      let path = match[1]
+      if (!path) continue
+
+      // Quita identificadores de fragmento (#heading, #section-name, etc.)
+      const hashIndex = path.indexOf('#')
+      if (hashIndex !== -1) {
+        path = path.substring(0, hashIndex)
+      }
+      if (!path) continue
+
+      // Desescapa los espacios en la ruta
+      path = path.replace(/\\ /g, ' ')
+
+      // Acepta @path, @./path, @~/path, o @/path
+      if (path) {
+        const isValidPath =
+          path.startsWith('./') ||
+          path.startsWith('~/') ||
+          (path.startsWith('/') && path !== '/') ||
+          (!path.startsWith('@') &&
+            !path.match(/^[#%^&*()]+/) &&
+            path.match(/^[a-zA-Z0-9._-]/))
+
+        if (isValidPath) {
+          const resolvedPath = expandPath(path, dirname(basePath))
+          absolutePaths.add(resolvedPath)
+        }
+      }
+    }
+  }
+
+  // Procesa elementos recursivamente para encontrar nodos de texto
+  function processElements(elements: MarkdownToken[]) {
+    for (const element of elements) {
+      if (element.type === 'code' || element.type === 'codespan') {
+        continue
+      }
+
+      // Para tokens html que contienen comentarios, quita los tramos de
+      // comentario y revisa el residuo por @paths (p. ej.
+      // `<!-- note --> @./file.md`). Otros tokens html (etiquetas que no son
+      // comentario) se saltan por completo.
+      if (element.type === 'html') {
+        const raw = element.raw || ''
+        const trimmed = raw.trimStart()
+        if (trimmed.startsWith('<!--') && trimmed.includes('-->')) {
+          const commentSpan = /<!--[\s\S]*?-->/g
+          const residue = raw.replace(commentSpan, '')
+          if (residue.trim().length > 0) {
+            extractPathsFromText(residue)
+          }
+        }
+        continue
+      }
+
+      // Procesa nodos de texto
+      if (element.type === 'text') {
+        extractPathsFromText(element.text || '')
+      }
+
+      // Recurre en los tokens hijos
+      if (element.tokens) {
+        processElements(element.tokens)
+      }
+
+      // Manejo especial para estructuras de lista
+      if (element.items) {
+        processElements(element.items)
+      }
+    }
+  }
+
+  processElements(tokens)
+  return [...absolutePaths]
+}
+/**
+ * Obtiene los archivos de memoria de un único directorio anidado (entre el
+ * CWD y el destino). Carga CLAUDE.md, reglas incondicionales y reglas
+ * condicionales de ese directorio.
+ *
+ * @param dir El directorio a procesar
+ * @param targetPath La ruta del archivo objetivo (para el matching de reglas condicionales)
+ * @param processedPaths Conjunto de rutas ya procesadas (se muta)
+ * @returns Array de objetos MemoryFileInfo
+ */
+export async function getMemoryFilesForNestedDirectory(
+  dir: string,
+  targetPath: string,
+  processedPaths: Set<string>,
+): Promise<MemoryFileInfo[]> {
+  const config = loaderConfig()
+  const result: MemoryFileInfo[] = []
+
+  // Procesa los archivos de memoria del proyecto (CLAUDE.md y .claude/CLAUDE.md)
+  if (config.projectEnabled) {
+    const projectPath = join(dir, 'CLAUDE.md')
+    result.push(
+      ...(await processMemoryFile(
+        projectPath,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
+    const dotClaudePath = join(dir, '.claude', 'CLAUDE.md')
+    result.push(
+      ...(await processMemoryFile(
+        dotClaudePath,
+        'Project',
+        processedPaths,
+        false,
+      )),
+    )
+  }
+
+  // Procesa el archivo de memoria local (CLAUDE.local.md)
+  if (config.localEnabled) {
+    const localPath = join(dir, 'CLAUDE.local.md')
+    result.push(
+      ...(await processMemoryFile(localPath, 'Local', processedPaths, false)),
+    )
+  }
+
+  const rulesDir = join(dir, '.claude', 'rules')
+
+  // Procesa las reglas incondicionales del proyecto en .claude/rules/*.md, que no se cargaron de forma anticipada.
+  // Usa un set de processedPaths separado para no marcar los archivos de reglas condicionales como procesados
+  const unconditionalProcessedPaths = new Set(processedPaths)
+  result.push(
+    ...(await processMdRules({
+      rulesDir,
+      type: 'Project',
+      processedPaths: unconditionalProcessedPaths,
+      includeExternal: false,
+      conditionalRule: false,
+    })),
+  )
+
+  // Procesa las reglas condicionales del proyecto en .claude/rules/*.md
+  result.push(
+    ...(await processConditionedMdRules(
+      targetPath,
+      rulesDir,
+      'Project',
+      processedPaths,
+      false,
+    )),
+  )
+
+  // processedPaths se siembra con las rutas incondicionales para los directorios subsiguientes
+  for (const path of unconditionalProcessedPaths) {
+    processedPaths.add(path)
+  }
+
+  return result
+}
+export function isInstructionsMemoryType(
+  type: MemoryType,
+): type is InstructionsMemoryType {
+  return (
+    type === 'User' ||
+    type === 'Project' ||
+    type === 'Local' ||
+    type === 'Managed'
+  )
+}
+/**
+ * Parsea el contenido crudo para extraer tanto el contenido como los
+ * patrones de glob del frontmatter.
+ * @param rawContent Contenido crudo del archivo con frontmatter
+ * @returns Objeto con content y globs (undefined si no hay paths o el patrón es match-all)
+ */
+function parseFrontmatterPaths(rawContent: string): {
+  content: string
+  paths?: string[]
+} {
+  const { frontmatter, content } = parseFrontmatter(rawContent)
+
+  if (!frontmatter.paths) {
+    return { content }
+  }
+
+  const patterns = splitPathInFrontmatter(frontmatter.paths)
+    .map(pattern => {
+      // Quita el sufijo /** - la librería de ignore trata 'path' como coincidente
+      // tanto con el propio path como con todo lo que contiene
+      return pattern.endsWith('/**') ? pattern.slice(0, -3) : pattern
+    })
+    .filter((p: string) => p.length > 0)
+
+  // Si todos los patrones son ** (match-all), se trata como sin globs (undefined)
+  // Esto significa que el archivo aplica a todos los paths
+  if (patterns.length === 0 || patterns.every((p: string) => p === '**')) {
+    return { content }
+  }
+
+  return { content, paths: patterns }
+}
+/**
+ * Analiza el contenido crudo de un archivo de memoria en un `MemoryFileInfo`.
+ * Función pura — sin I/O.
+ *
+ * Cuando se da `includeBasePath`, las rutas `@include` se resuelven en el
+ * mismo paso de lexer y se devuelven junto al archivo parseado, para que
+ * `processMemoryFile` no tenga que analizar el mismo contenido dos veces.
+ *
+ * pendiente: el truncado de `MEMORY.md` para `AutoMem`/`TeamMem`
+ * (`truncateEntrypointContent`, `@claude-code-how-works/memory/memdir`) no se
+ * aplica — ese símbolo vive en `@thyrox/memory/memdir.ts` pero el paquete no
+ * expone `./memdir` en su `exports` map ni es dependencia declarada de
+ * `@thyrox/storage` (`node_modules/@thyrox/memory` no está enlazado desde
+ * este paquete); la misma ausencia que ya declara la cabecera de este
+ * archivo para `stripHtmlComments` y `filterInjectedMemoryFiles`.
+ */
+function parseMemoryFileContent(
+  rawContent: string,
+  filePath: string,
+  type: MemoryType,
+  includeBasePath?: string,
+): { info: MemoryFileInfo | null; includePaths: string[] } {
+  // Salta archivos no-texto para no cargar datos binarios (imágenes, PDFs…) en memoria.
+  const ext = extname(filePath).toLowerCase()
+  if (ext && !TEXT_FILE_EXTENSIONS.has(ext)) {
+    logForDebugging(`Skipping non-text file in @include: ${filePath}`)
+    return { info: null, includePaths: [] }
+  }
+
+  const { content: withoutFrontmatter, paths } =
+    parseFrontmatterPaths(rawContent)
+
+  // Un solo lex para que strip y la extracción de @include compartan tokens.
+  // gfm:false lo exige la extracción (para que ~/ruta no tokenice como
+  // tachado) y no afecta al strip (los bloques HTML son regla CommonMark).
+  const hasComment = withoutFrontmatter.includes('<!--')
+  const tokens =
+    hasComment || includeBasePath !== undefined
+      ? new Lexer({ gfm: false }).lex(withoutFrontmatter)
+      : undefined
+
+  // Sólo se reconstruye vía tokens cuando de verdad hay un comentario que
+  // quitar — marked normaliza \r\n al lexear, así que ir y volver por
+  // token.raw invertiría un archivo CRLF sin comentarios en
+  // contentDiffersFromDisk de forma espuria.
+  const strippedContent =
+    hasComment && tokens
+      ? stripHtmlCommentsFromTokens(tokens).content
+      : withoutFrontmatter
+
+  const includePaths =
+    tokens && includeBasePath !== undefined
+      ? extractIncludePathsFromTokens(tokens, includeBasePath)
+      : []
+
+  const finalContent = strippedContent
+
+  // Cubre el strip de frontmatter y el strip de comentarios HTML.
+  const contentDiffersFromDisk = finalContent !== rawContent
+  return {
+    info: {
+      path: filePath,
+      type,
+      content: finalContent,
+      globs: paths,
+      contentDiffersFromDisk,
+      rawContent: contentDiffersFromDisk ? rawContent : undefined,
+    },
+    includePaths,
+  }
+}
+/**
+ * Quita los comentarios HTML de los tokens de `marked`, conservando el resto
+ * de la línea que CommonMark incluye en el bloque. Porte de
+ * `ccnmt: packages/storage/src/claudemd.ts:312-343`; lo llama
+ * `parseMemoryFileContent`. Se trae ahora que `marked` es dependencia
+ * declarada de `@thyrox/storage`.
+ */
+function stripHtmlCommentsFromTokens(tokens: ReturnType<Lexer['lex']>): {
+  content: string
+  stripped: boolean
+} {
+  let result = ''
+  let stripped = false
+
+  // Un comentario HTML bien formado. No codicioso para que varios comentarios
+  // en la misma línea se emparejen por separado; [\s\S] para cruzar saltos.
+  const commentSpan = /<!--[\s\S]*?-->/g
+
+  for (const token of tokens) {
+    if (token.type === 'html') {
+      const trimmed = token.raw.trimStart()
+      if (trimmed.startsWith('<!--') && trimmed.includes('-->')) {
+        // En CommonMark un bloque HTML de tipo 2 termina en la LÍNEA que
+        // contiene `-->`: lo que siga en esa línea pertenece al token. Se
+        // quitan sólo los comentarios y se conserva el residuo.
+        const residue = token.raw.replace(commentSpan, '')
+        stripped = true
+        if (residue.trim().length > 0) {
+          result += residue
+        }
+        continue
+      }
+    }
+    result += token.raw
+  }
+
+  return { content: result, stripped }
+}
+
+
+// File extensions that are allowed for @include directives
+// This prevents binary files (images, PDFs, etc.) from being loaded into memory
+const TEXT_FILE_EXTENSIONS = new Set([
+  // Markdown and text
+  '.md',
+  '.txt',
+  '.text',
+  // Data formats
+  '.json',
+  '.yaml',
+  '.yml',
+  '.toml',
+  '.xml',
+  '.csv',
+  // Web
+  '.html',
+  '.htm',
+  '.css',
+  '.scss',
+  '.sass',
+  '.less',
+  // JavaScript/TypeScript
+  '.js',
+  '.ts',
+  '.tsx',
+  '.jsx',
+  '.mjs',
+  '.cjs',
+  '.mts',
+  '.cts',
+  // Python
+  '.py',
+  '.pyi',
+  '.pyw',
+  // Ruby
+  '.rb',
+  '.erb',
+  '.rake',
+  // Go
+  '.go',
+  // Rust
+  '.rs',
+  // Java/Kotlin/Scala
+  '.java',
+  '.kt',
+  '.kts',
+  '.scala',
+  // C/C++
+  '.c',
+  '.cpp',
+  '.cc',
+  '.cxx',
+  '.h',
+  '.hpp',
+  '.hxx',
+  // C#
+  '.cs',
+  // Swift
+  '.swift',
+  // Shell
+  '.sh',
+  '.bash',
+  '.zsh',
+  '.fish',
+  '.ps1',
+  '.bat',
+  '.cmd',
+  // Config
+  '.env',
+  '.ini',
+  '.cfg',
+  '.conf',
+  '.config',
+  '.properties',
+  // Database
+  '.sql',
+  '.graphql',
+  '.gql',
+  // Protocol
+  '.proto',
+  // Frontend frameworks
+  '.vue',
+  '.svelte',
+  '.astro',
+  // Templating
+  '.ejs',
+  '.hbs',
+  '.pug',
+  '.jade',
+  // Other languages
+  '.php',
+  '.pl',
+  '.pm',
+  '.lua',
+  '.r',
+  '.R',
+  '.dart',
+  '.ex',
+  '.exs',
+  '.erl',
+  '.hrl',
+  '.clj',
+  '.cljs',
+  '.cljc',
+  '.edn',
+  '.hs',
+  '.lhs',
+  '.elm',
+  '.ml',
+  '.mli',
+  '.f',
+  '.f90',
+  '.f95',
+  '.for',
+  // Build files
+  '.cmake',
+  '.make',
+  '.makefile',
+  '.gradle',
+  '.sbt',
+  // Documentation
+  '.rst',
+  '.adoc',
+  '.asciidoc',
+  '.org',
+  '.tex',
+  '.latex',
+  // Lock files (often text-based)
+  '.lock',
+  // Misc
+  '.log',
+  '.diff',
+  '.patch',
+])
+
+type MarkdownToken = {
+  type: string
+  text?: string
+  href?: string
+  tokens?: MarkdownToken[]
+  raw?: string
+  items?: MarkdownToken[]
+}
+
+// Load reason to report for top-level (non-included) files on the next eager
+// getMemoryFiles() pass. Set to 'compact' by resetGetMemoryFilesCache when
+// compaction clears the cache, so the InstructionsLoaded hook reports the
+// reload correctly instead of misreporting it as 'session_start'. One-shot:
+// reset to 'session_start' after being read.
+let nextEagerLoadReason: InstructionsLoadReason = 'session_start'
+
+// Whether the InstructionsLoaded hook should fire on the next cache miss.
+// true initially (for session_start), consumed after firing, re-enabled only
+// by resetGetMemoryFilesCache(). Callers that only need cache invalidation
+// for correctness (e.g. worktree enter/exit, settings sync, /memory dialog)
+// should use clearMemoryFileCaches() instead to avoid spurious hook fires.
+let shouldFireHook = true

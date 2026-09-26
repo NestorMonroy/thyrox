@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx(11,58): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/LocationStep.tsx:1-21 ---
+      1  import { type ReactNode } from 'react'
+      2  import { Box, Byline, KeyboardShortcutHint } from '@anthropic/ink'
+      3  import type { SettingSource } from '@thyrox/config/constants'
+      4  import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
+      5  import { Select } from '../../../CustomSelect/select.js'
+      6  import { useWizard } from '../../../wizard/index.js'
+      7  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      8  import type { AgentWizardData } from '../types.js'
+      9  
+     10  export function LocationStep(): ReactNode {
+     11>   const { goNext, updateWizardData, cancel } = useWizard<AgentWizardData>()
+     12  
+     13    const locationOptions = [
+     14      {
+     15        label: 'Project (.claude/agents/)',
+     16        value: 'projectSettings' as SettingSource,
+     17      },
+     18      {
+     19        label: 'Personal (~/.claude/agents/)',
+     20        value: 'userSettings' as SettingSource,
+     21      },

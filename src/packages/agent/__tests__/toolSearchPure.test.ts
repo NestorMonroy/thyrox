@@ -246,7 +246,7 @@ describe('extractDiscoveredToolNames — tool_reference extraction', () => {
           content: [
             {
               type: 'tool_result',
-              content: [{ type: 'tool_reference', tool_name: 42 }],
+              content: [{ type: 'tool_reference', tool_name: 42 as unknown }],
             },
           ],
         },

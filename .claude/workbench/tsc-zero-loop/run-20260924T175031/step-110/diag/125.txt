@@ -1,0 +1,85 @@
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(99,29): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+  --- código src/packages/daemon/src/__tests__/dispatchSpool.test.ts:89-109 ---
+     89      expect(reason).toBe('deliver-failed')
+     90    })
+     91  })
+     92  
+     93  describe('drainSpool', () => {
+     94    test('processes all pending envelopes on boot', async () => {
+     95      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 1 } })
+     96      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 2 } })
+     97      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 3 } })
+     98      const ids: unknown[] = []
+     99>     await drainSpool(env => ids.push((env.d as { id: number }).id))
+    100      expect(ids.sort()).toEqual([1, 2, 3])
+    101    })
+    102  
+    103    test('skips .tmp files', async () => {
+    104      writeFileSync(join(SPOOL, '12345.tmp'), '{}')
+    105      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: {} })
+    106      let count = 0
+    107      await drainSpool(() => count++)
+    108      expect(count).toBe(1)
+    109    })
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(107,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+  --- código src/packages/daemon/src/__tests__/dispatchSpool.test.ts:97-117 ---
+     97      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: { id: 3 } })
+     98      const ids: unknown[] = []
+     99      await drainSpool(env => ids.push((env.d as { id: number }).id))
+    100      expect(ids.sort()).toEqual([1, 2, 3])
+    101    })
+    102  
+    103    test('skips .tmp files', async () => {
+    104      writeFileSync(join(SPOOL, '12345.tmp'), '{}')
+    105      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: {} })
+    106      let count = 0
+    107>     await drainSpool(() => count++)
+    108      expect(count).toBe(1)
+    109    })
+    110  
+    111    test('empty dir is a no-op', async () => {
+    112      let count = 0
+    113      await drainSpool(() => count++)
+    114      expect(count).toBe(0)
+    115    })
+    116  
+    117    test('handles missing dir', async () => {
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(113,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+  --- código src/packages/daemon/src/__tests__/dispatchSpool.test.ts:103-123 ---
+    103    test('skips .tmp files', async () => {
+    104      writeFileSync(join(SPOOL, '12345.tmp'), '{}')
+    105      writeSpoolEnvelope({ createdAt: Date.now(), op: 'spawn', d: {} })
+    106      let count = 0
+    107      await drainSpool(() => count++)
+    108      expect(count).toBe(1)
+    109    })
+    110  
+    111    test('empty dir is a no-op', async () => {
+    112      let count = 0
+    113>     await drainSpool(() => count++)
+    114      expect(count).toBe(0)
+    115    })
+    116  
+    117    test('handles missing dir', async () => {
+    118      rmSync(SPOOL, { recursive: true, force: true })
+    119      let count = 0
+    120      await drainSpool(() => count++)
+    121      expect(count).toBe(0)
+    122    })
+    123  })
+src/packages/daemon/src/__tests__/dispatchSpool.test.ts(120,28): error TS2322: Type 'number' is not assignable to type 'void | Promise<void>'.
+  --- código src/packages/daemon/src/__tests__/dispatchSpool.test.ts:110-123 ---
+    110  
+    111    test('empty dir is a no-op', async () => {
+    112      let count = 0
+    113      await drainSpool(() => count++)
+    114      expect(count).toBe(0)
+    115    })
+    116  
+    117    test('handles missing dir', async () => {
+    118      rmSync(SPOOL, { recursive: true, force: true })
+    119      let count = 0
+    120>     await drainSpool(() => count++)
+    121      expect(count).toBe(0)
+    122    })
+    123  })

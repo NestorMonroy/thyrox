@@ -31,7 +31,9 @@ export function getSettingsWithAllErrors(): SettingsWithErrors {
   }
   // 'dynamic' scope does not have errors returned; it throws and is set on cli startup
   const scopes = ['user', 'project', 'local'] as const
-  const mcpErrors = scopes.flatMap(scope => getMcpErrors(scope))
+  const mcpErrors = scopes.flatMap(scope =>
+    getMcpErrors(scope).map(e => ({ ...e, file: e.file ?? '' })),
+  )
   return {
     settings: result.settings,
     errors: [...result.errors, ...mcpErrors],

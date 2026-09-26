@@ -1,0 +1,71 @@
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(42,12): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+  --- código src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts:32-52 ---
+     32  
+     33    test('userFacingName returns the same name', () => {
+     34      const cmd = createMovedToPluginCommand({
+     35        name: 'visible-name',
+     36        description: '',
+     37        progressMessage: '',
+     38        pluginName: 'p',
+     39        pluginCommand: 'c',
+     40        getPromptWhileMarketplaceIsPrivate: async () => [],
+     41      })
+     42>     expect(cmd.userFacingName()).toBe('visible-name')
+     43    })
+     44  
+     45    test('preserves description and progressMessage', () => {
+     46      const cmd = createMovedToPluginCommand({
+     47        name: 'n',
+     48        description: 'desc here',
+     49        progressMessage: 'in-progress',
+     50        pluginName: 'p',
+     51        pluginCommand: 'c',
+     52        getPromptWhileMarketplaceIsPrivate: async () => [],
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(55,16): error TS2339: Property 'progressMessage' does not exist on type 'Command'.
+  --- código src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts:45-65 ---
+     45    test('preserves description and progressMessage', () => {
+     46      const cmd = createMovedToPluginCommand({
+     47        name: 'n',
+     48        description: 'desc here',
+     49        progressMessage: 'in-progress',
+     50        pluginName: 'p',
+     51        pluginCommand: 'c',
+     52        getPromptWhileMarketplaceIsPrivate: async () => [],
+     53      })
+     54      expect(cmd.description).toBe('desc here')
+     55>     expect(cmd.progressMessage).toBe('in-progress')
+     56    })
+     57  
+     58    test('source is "builtin"', () => {
+     59      const cmd = createMovedToPluginCommand({
+     60        name: 'n',
+     61        description: '',
+     62        progressMessage: '',
+     63        pluginName: 'p',
+     64        pluginCommand: 'c',
+     65        getPromptWhileMarketplaceIsPrivate: async () => [],
+  Property 'progressMessage' does not exist on type 'CommandBase & LocalCommand'.
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(79,16): error TS2339: Property 'contentLength' does not exist on type 'Command'.
+  --- código src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts:69-89 ---
+     69  
+     70    test('contentLength is 0 (dynamic content)', () => {
+     71      const cmd = createMovedToPluginCommand({
+     72        name: 'n',
+     73        description: '',
+     74        progressMessage: '',
+     75        pluginName: 'p',
+     76        pluginCommand: 'c',
+     77        getPromptWhileMarketplaceIsPrivate: async () => [],
+     78      })
+     79>     expect(cmd.contentLength).toBe(0)
+     80    })
+     81  })
+     82  
+     83  describe('createMovedToPluginCommand — getPromptForCommand routing', () => {
+     84    // The function has TWO branches based on USER_TYPE env var.
+     85    // ant: returns the install instructions
+     86    // non-ant: defers to getPromptWhileMarketplaceIsPrivate
+     87  
+     88    let savedUserType: string | undefined
+     89  
+  Property 'contentLength' does not exist on type 'CommandBase & LocalCommand'.

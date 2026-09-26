@@ -1,0 +1,25 @@
+src/packages/repl/src/conversationRecovery.tsx(188,7): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message[]' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message[]'.
+  --- código src/packages/repl/src/conversationRecovery.tsx:178-198 ---
+    178          msg.type === 'user' &&
+    179          msg.permissionMode !== undefined &&
+    180          !validModes.has(msg.permissionMode as string)
+    181        ) {
+    182          msg.permissionMode = undefined
+    183        }
+    184      }
+    185  
+    186      // Filter out unresolved tool uses and any synthetic messages that follow them
+    187      const filteredToolUses = filterUnresolvedToolUses(
+    188>       migratedMessages,
+    189      ) as NormalizedMessage[]
+    190  
+    191      // Filter out orphaned thinking-only assistant messages that can cause API errors
+    192      // during resume. These occur when streaming yields separate messages per content
+    193      // block and interleaved user messages prevent proper merging by message.id.
+    194      const filteredThinking = filterOrphanedThinkingOnlyMessages(
+    195        filteredToolUses,
+    196      ) as NormalizedMessage[]
+    197  
+    198      // Filter out assistant messages with only whitespace text content.
+  Type 'import("/home/user/thyrox/src/packages/agent/messageShapes").Message' is not assignable to type 'import("/home/user/thyrox/src/packages/agent/loop/types").Message'.
+    Type 'UserMessage' is missing the following properties from type 'Message': role, content

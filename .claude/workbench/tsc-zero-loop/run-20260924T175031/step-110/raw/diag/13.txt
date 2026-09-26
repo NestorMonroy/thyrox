@@ -1,0 +1,2 @@
+src/packages/agent/__tests__/createProductionDeps.test.ts(165,14): error TS2339: Property 'reason' does not exist on type 'PermissionResult'.
+  Property 'reason' does not exist on type '{ allowed: true; }'.

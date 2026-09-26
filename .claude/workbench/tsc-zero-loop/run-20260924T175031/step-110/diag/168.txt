@@ -1,0 +1,70 @@
+src/packages/provider/src/runtimeHelpers.ts(61,31): error TS2339: Property 'content' does not exist on type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: ProviderMessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined'.
+  --- código src/packages/provider/src/runtimeHelpers.ts:51-71 ---
+     51      error: args.error,
+     52      errorDetails: args.errorDetails,
+     53      message,
+     54    } as ProviderAssistantMessage
+     55  }
+     56  
+     57  export function normalizeContentFromAPI(
+     58    blocks: unknown,
+     59    _tools: ProviderTools,
+     60    _agentId?: string,
+     61> ): ProviderMessage['message']['content'] {
+     62    if (!Array.isArray(blocks)) return []
+     63    return blocks.map(block => {
+     64      if (!block || typeof block !== 'object') return block
+     65      const typed = block as Record<string, unknown>
+     66      if (typed.type === 'tool_use' && typeof typed.input === 'string') {
+     67        return {
+     68          ...typed,
+     69          input: safeParseJSON(typed.input) ?? {},
+     70        }
+     71      }
+src/packages/provider/src/runtimeHelpers.ts(79,36): error TS2339: Property 'content' does not exist on type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: ProviderMessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } | undefined'.
+  --- código src/packages/provider/src/runtimeHelpers.ts:69-89 ---
+     69          input: safeParseJSON(typed.input) ?? {},
+     70        }
+     71      }
+     72      if (typed.type === 'server_tool_use' && typeof typed.input === 'string') {
+     73        return {
+     74          ...typed,
+     75          input: safeParseJSON(typed.input) ?? {},
+     76        }
+     77      }
+     78      return typed
+     79>   }) as ProviderMessage['message']['content']
+     80  }
+     81  
+     82  export function normalizeMessagesForAPI(
+     83    messages: readonly ProviderMessage[],
+     84    _tools: ProviderTools,
+     85  ): ProviderMessage[] {
+     86    return messages.filter(
+     87      msg =>
+     88        (msg.type === 'user' || msg.type === 'assistant') &&
+     89        !msg.isVirtual &&
+src/packages/provider/src/runtimeHelpers.ts(154,10): error TS2352: Conversion of type 'Record<string, unknown>' to type 'BetaToolUnion' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/runtimeHelpers.ts:144-164 ---
+    144      input_schema: getToolInputSchema(tool),
+    145    }
+    146  
+    147    if (options.deferLoading) {
+    148      schema.defer_loading = true
+    149    }
+    150    if (options.cacheControl) {
+    151      schema.cache_control = options.cacheControl
+    152    }
+    153  
+    154>   return schema as BetaToolUnion
+    155  }
+    156  
+    157  export function calculateUSDCost(_model: string, _usage: unknown): number {
+    158    return 0
+    159  }
+    160  
+    161  export function isDeferredTool(tool: ProviderTool): boolean {
+    162    return tool.isMcp === true || tool.shouldDefer === true
+    163  }
+    164  
+  Type 'Record<string, unknown>' is missing the following properties from type 'BetaWebFetchTool20260318': name, type

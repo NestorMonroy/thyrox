@@ -13,7 +13,7 @@ type Props = {
 
 export function ToolsStep({ tools }: Props): ReactNode {
   const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard<AgentWizardData & Record<string, unknown>>()
 
   const handleComplete = (selectedTools: string[] | undefined): void => {
     updateWizardData({ selectedTools })

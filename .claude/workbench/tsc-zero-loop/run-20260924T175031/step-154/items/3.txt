@@ -1,0 +1,29 @@
+Patrón: unknown-via-in-operator-on-index-signature
+Señal del verificador: : TS2322: Type 'unknown' is not assignable to type 'string'\.
+Arreglo genérico: Cuando el objeto narrowed es una intersección con `MessageBase` (que lleva `[key: string]: unknown`), el operador `in` confirma la presencia de la propiedad pero no la tipa: sigue siendo `unknown` vía la firma índice. Se convierte explícitamente con `String(valor)` (mismo patrón que el caso hermano `String(msg.error)`) en vez de asumir el tipo con una aserción.
+Ya aplicado en: src/packages/agent/task/framework.ts, src/packages/repl/src/components/messageActions.tsx
+Archivos donde la señal sigue viva: src/packages/agent/task/framework.ts
+
+src/packages/agent/task/framework.ts(109,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/agent/task/framework.ts:99-119 ---
+     99    })
+    100  
+    101    // Replacement (resume) — not a new start. Skip to avoid double-emit.
+    102    if (isReplacement) return
+    103  
+    104    enqueueSdkEvent({
+    105      type: 'system',
+    106      subtype: 'task_started',
+    107      task_id: task.id,
+    108      tool_use_id: task.toolUseId as string | undefined,
+    109>     description: task.description,
+    110      task_type: task.type,
+    111      workflow_name:
+    112        'workflowName' in task
+    113          ? (task.workflowName as string | undefined)
+    114          : undefined,
+    115      prompt: 'prompt' in task ? (task.prompt as string) : undefined,
+    116    })
+    117  }
+    118  
+    119  /**

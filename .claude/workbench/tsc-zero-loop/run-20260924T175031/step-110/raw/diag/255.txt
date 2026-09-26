@@ -1,0 +1,1 @@
+src/packages/shell/src/legacy/bashProvider.ts(65,7): error TS2554: Expected 2-3 arguments, but got 1.

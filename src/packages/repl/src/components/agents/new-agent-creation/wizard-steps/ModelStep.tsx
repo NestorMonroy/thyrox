@@ -4,11 +4,9 @@ import { Byline, KeyboardShortcutHint } from '@anthropic/ink'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
 import { ModelSelector } from '../../ModelSelector.js'
-import type { AgentWizardData } from '../types.js'
 
 export function ModelStep(): ReactNode {
-  const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+  const { goNext, goBack, updateWizardData, wizardData } = useWizard()
 
   const handleComplete = (model?: string): void => {
     updateWizardData({ selectedModel: model })

@@ -1,0 +1,4 @@
+src/packages/repl/src/commands/add-dir/add-dir.tsx(59,20): error TS18046: 'context.getAppState' is of type 'unknown'.
+src/packages/repl/src/commands/add-dir/add-dir.tsx(74,28): error TS18046: 'context.getAppState' is of type 'unknown'.
+src/packages/repl/src/commands/add-dir/add-dir.tsx(79,5): error TS18046: 'context.setAppState' is of type 'unknown'.
+src/packages/repl/src/commands/add-dir/add-dir.tsx(79,25): error TS7006: Parameter 'prev' implicitly has an 'any' type.

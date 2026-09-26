@@ -163,7 +163,7 @@ export function It2SetupPrompt({
         <Box marginTop={1}>
           <Select
             options={options}
-            onChange={value => {
+            onChange={(value: string) => {
               switch (value) {
                 case 'install':
                   void handleInstall()
@@ -233,7 +233,7 @@ export function It2SetupPrompt({
         <Box marginTop={1}>
           <Select
             options={options}
-            onChange={value => {
+            onChange={(value: string) => {
               switch (value) {
                 case 'retry':
                   void handleInstall()
@@ -323,7 +323,7 @@ export function It2SetupPrompt({
         <Box marginTop={1}>
           <Select
             options={options}
-            onChange={value => {
+            onChange={(value: string) => {
               switch (value) {
                 case 'retry':
                   setStep('verifying')

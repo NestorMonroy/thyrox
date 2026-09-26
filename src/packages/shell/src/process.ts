@@ -3,13 +3,18 @@
  *
  * `registerProcessOutputErrorHandlers`, `writeToStdout` y `writeToStderr`
  * se portan (2026-09-24) desde 2.1.275 (`pur`, `dr`, `OX` y sus auxiliares
- * `pkt`, `v`, `HQe` en `chunk-q4s29khb.js`). pendiente: `exitWithError`
- * (`tlo`) no tiene consumidor en este árbol, y de la contabilidad de
- * vaciado de stdout sólo se porta el conteo de bytes pendientes: la espera
- * de vaciado al salir (`OQe`) vive con el cierre del proceso, que no está.
+ * `pkt`, `v`, `HQe` en `chunk-q4s29khb.js`). `exitWithError` (`tlo`) y
+ * su marcador de causa de salida `writeExitCause` (`Om`) se portan
+ * (2026-09-25) al aparecer su consumidor, `cli/src/entry/cli.tsx`. De la
+ * contabilidad de vaciado de stdout sólo se porta el conteo de bytes
+ * pendientes: la espera de vaciado al salir (`OQe`) vive con el cierre del
+ * proceso, que no está.
  *
  * @module
  */
+
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 // Usado por el modo `-p` para distinguir un productor de pipe real de un
 // stdin heredado pero inactivo. Espera a que el stream tipo stdin cierre,
@@ -113,4 +118,28 @@ export function writeToStdout(data: string): void {
 /** `OX`: escribe en stderr si sigue vivo. */
 export function writeToStderr(data: string): void {
   writeToStream(process.stderr as unknown as OutputStream, data)
+}
+
+// Nombre del archivo que un trabajo en segundo plano deja en su directorio
+// (`CLAUDE_JOB_DIR`) para declarar por qué terminó (`y` en la fuente).
+const EXIT_CAUSE_FILE = 'exit-cause'
+
+// Anota la causa de salida en el directorio del trabajo (`Om`). Sin
+// directorio no hay trabajo que la lea; un fallo de escritura se traga
+// porque el proceso ya va de salida y la causa es informativa.
+export function writeExitCause(cause: string, jobDir?: string): void {
+  const dir = jobDir ?? process.env.CLAUDE_JOB_DIR
+  if (!dir) return
+  try {
+    writeFileSync(join(dir, EXIT_CAUSE_FILE), cause)
+  } catch {}
+}
+
+// Imprime el mensaje por stderr, anota la causa y termina con código 1
+// (`tlo`).
+export function exitWithError(message: string): never {
+  console.error(message)
+  writeExitCause('exit_with_error')
+  // eslint-disable-next-line custom-rules/no-process-exit
+  process.exit(1)
 }

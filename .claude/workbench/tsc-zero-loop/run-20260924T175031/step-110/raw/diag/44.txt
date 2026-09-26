@@ -1,0 +1,2 @@
+src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts(3,31): error TS2307: Cannot find module '../../state/AppState.js' or its corresponding type declarations.
+src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts(4,30): error TS2307: Cannot find module '../../types/ids.js' or its corresponding type declarations.

@@ -1,0 +1,24 @@
+src/packages/agent/__tests__/diffDisplay.test.ts(18,82): error TS2322: Type 'Record<string, string | number | boolean> | undefined' is not assignable to type 'Record<string, unknown>'.
+  --- código src/packages/agent/__tests__/diffDisplay.test.ts:8-28 ---
+      8   */
+      9  import { beforeAll, describe, expect, test } from 'bun:test'
+     10  import { getTotalLinesAdded, getTotalLinesRemoved } from '@thyrox/app-host/bootstrap/state.js'
+     11  import { countLinesChanged, getPatchForDisplay, getPatchFromContents } from '../diff.ts'
+     12  import { installAgentHostBindings } from '../host.ts'
+     13  
+     14  // El host instala sus enlaces al arrancar; aquí se instala el de analítica
+     15  // para observar el evento que `countLinesChanged` emite.
+     16  const events: { event: string; metadata: Record<string, unknown> }[] = []
+     17  beforeAll(() => {
+     18>   installAgentHostBindings({ logEvent: (event, metadata) => events.push({ event, metadata }) })
+     19  })
+     20  
+     21  const lines = (hunks: { lines: string[] }[]) => hunks.flatMap(h => h.lines)
+     22  
+     23  describe('getPatchForDisplay', () => {
+     24    test('una edición sin replace_all cambia sólo la primera aparición', () => {
+     25      const hunks = getPatchForDisplay({
+     26        filePath: 'a.txt',
+     27        fileContents: 'x\ny\nx\n',
+     28        edits: [{ old_string: 'x', new_string: 'z' }],
+  Type 'undefined' is not assignable to type 'Record<string, unknown>'.

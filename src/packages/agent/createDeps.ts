@@ -36,7 +36,8 @@
 import { getProviderAdapter, getProviderContextPipeline } from '@thyrox/provider'
 import '@thyrox/provider/providerHostSetup'
 import { logError } from '@thyrox/local-observability/logging'
-import { findToolByName } from '@thyrox/tool-registry/Tool.js'
+import { findToolByName, type Tool, type Tools, type ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
 import { handleStopHooks } from './internal/stopHooksCore.ts'
 import { getAgentHostBindings } from './host.ts'
 import { recordTranscript } from './internal/runtimeBridges.ts'
@@ -52,9 +53,9 @@ import type {
   AgentAssistantMessage,
   AgentMessage,
 } from './internalTypes.ts'
+import type { AssistantMessage } from './messageShapes.ts'
 import type {
   AgentDeps,
-  ContextDep,
   CoreMessage,
   HookDep,
   OutputDep,
@@ -68,51 +69,16 @@ import type {
   SystemPrompt,
   ToolDep,
 } from './agentDeps.ts'
+import type { CoreTool, PermissionResult, ToolInputJSONSchema } from './types/tools.ts'
 
-/** Una herramienta del registro, en la forma que este adaptador consume. */
-type RuntimeTool = {
-  name: string
-  aliases?: string[]
-  inputJSONSchema?: unknown
-  isMcp?: boolean
-  userFacingName: (input?: unknown) => string
-  call: (
-    input: unknown,
-    context: RuntimeToolUseContext,
-    canUseTool: (...args: unknown[]) => Promise<unknown>,
-    parentMessage: AgentAssistantMessage,
-    onProgress?: (progress: unknown) => void,
-  ) => Promise<unknown>
-}
-
-type RuntimeToolUseContext = {
-  abortController: AbortController
-  renderedSystemPrompt?: unknown
-  getAppState?: () => {
-    toolPermissionContext: { mode: string }
-    mcp?: { tools?: unknown; clients?: { type?: string }[] }
-  }
-  options: {
-    mainLoopModel: string
-    thinkingConfig?: unknown
-    tools?: unknown
-    querySource?: string
-    agentDefinitions?: { activeAgents: unknown[]; allowedAgentTypes: unknown[] }
-    [key: string]: unknown
-  }
-  [key: string]: unknown
-}
-
-type CanUseToolFn = (
-  tool: RuntimeTool,
-  input: Record<string, unknown>,
-  context: RuntimeToolUseContext,
-  assistantMessage: AgentAssistantMessage,
-  toolUseId: string,
-) => Promise<{ behavior: 'allow' | 'deny' | 'ask'; updatedInput?: unknown }>
+// La herramienta, su contexto y el permiso son los contratos reales del
+// registro y del REPL. Antes eran copias reducidas locales, y QueryEngine
+// —que tiene los tipos reales— no podía pasárselos.
+type RuntimeTool = Tool
+type RuntimeToolUseContext = ToolUseContext
 
 export interface CreateDepsParams {
-  tools: RuntimeTool[]
+  tools: Tools
   toolUseContext: RuntimeToolUseContext
   canUseTool: CanUseToolFn
   emitFn?: (event: unknown) => void
@@ -125,12 +91,12 @@ export interface CreateDepsParams {
 }
 
 /** Un mensaje de asistente vacío, el que los adaptadores pasan como padre. */
-function mensajePadre(): AgentAssistantMessage {
+function mensajePadre(): AssistantMessage {
   return {
     type: 'assistant',
     uuid: crypto.randomUUID(),
     message: { role: 'assistant', content: [] },
-  } as AgentAssistantMessage
+  } as AssistantMessage
 }
 
 class ProviderDepImpl implements ProviderDep {
@@ -192,14 +158,12 @@ class ProviderDepImpl implements ProviderDep {
 
 class ToolDepImpl implements ToolDep {
   constructor(
-    private readonly tools: RuntimeTool[],
+    private readonly tools: Tools,
     private readonly toolUseContext: RuntimeToolUseContext,
   ) {}
 
   find(name: string) {
-    const tool = findToolByName(this.tools as never, name) as
-      | RuntimeTool
-      | undefined
+    const tool = findToolByName(this.tools, name)
     return tool ? this.toCoreTool(tool) : undefined
   }
 
@@ -212,18 +176,19 @@ class ToolDepImpl implements ToolDep {
     input: unknown,
     context: { toolUseId: string },
   ) {
-    const realTool = findToolByName(this.tools as never, tool.name) as
-      | RuntimeTool
-      | undefined
+    const realTool = findToolByName(this.tools, tool.name)
     if (!realTool) {
       return { output: `Tool not found: ${tool.name}`, error: true }
     }
 
     try {
+      // El despacho recibe el input sin validar; la herramienta lo parsea.
       const result = await realTool.call(
-        input,
+        input as Record<string, unknown>,
         { ...this.toolUseContext, toolUseId: context.toolUseId },
-        async () => ({ decision: 'allow' as const }),
+        // `PermissionAllowDecision` se lee por `behavior`; la fuente respondía
+        // `{decision: 'allow'}`, una forma que ningún consultor lee.
+        async () => ({ behavior: 'allow' as const }),
         mensajePadre(),
         () => {},
       )
@@ -243,14 +208,11 @@ class ToolDepImpl implements ToolDep {
     }
   }
 
-  private toCoreTool(tool: RuntimeTool) {
+  private toCoreTool(tool: RuntimeTool): CoreTool {
     return {
       name: tool.name,
       description: '',
-      inputSchema: (tool.inputJSONSchema ?? { type: 'object' }) as Record<
-        string,
-        unknown
-      >,
+      inputSchema: (tool.inputJSONSchema ?? { type: 'object' }) as ToolInputJSONSchema,
       userFacingName: tool.userFacingName(undefined),
       isLocal: !tool.isMcp,
       isMcp: !!tool.isMcp,
@@ -262,13 +224,11 @@ class PermissionDepImpl implements PermissionDep {
   constructor(
     private readonly canUseToolFn: CanUseToolFn,
     private readonly toolUseContext: RuntimeToolUseContext,
-    private readonly tools: RuntimeTool[],
+    private readonly tools: Tools,
   ) {}
 
-  async canUseTool(tool: { name: string }, input: unknown) {
-    const realTool = findToolByName(this.tools as never, tool.name) as
-      | RuntimeTool
-      | undefined
+  async canUseTool(tool: { name: string }, input: unknown): Promise<PermissionResult> {
+    const realTool = findToolByName(this.tools, tool.name)
     if (!realTool) {
       return { allowed: false, reason: `Unknown tool: ${tool.name}` }
     }
@@ -369,7 +329,7 @@ class HookDepImpl implements HookDep {
   }
 }
 
-class ContextDepImpl implements ContextDep {
+class ContextDepImpl {
   constructor(
     private readonly toolUseContext: RuntimeToolUseContext,
     private readonly overrides?: CreateDepsParams['contextOverrides'],
@@ -391,7 +351,10 @@ class ContextDepImpl implements ContextDep {
   getSystemPrompt(): SystemPrompt[] {
     if (this.overrides?.systemPrompt) return this.overrides.systemPrompt
     if (this.toolUseContext.renderedSystemPrompt) {
-      return [this.toolUseContext.renderedSystemPrompt as SystemPrompt]
+      // Dos contratos con el mismo nombre: el del provider es el arreglo
+      // de cadenas marcado; el de deps, el bloque {content}. Se conserva la
+      // conversión que el código ya hacía sobre el stub `unknown`.
+      return [this.toolUseContext.renderedSystemPrompt as unknown as SystemPrompt]
     }
     return []
   }

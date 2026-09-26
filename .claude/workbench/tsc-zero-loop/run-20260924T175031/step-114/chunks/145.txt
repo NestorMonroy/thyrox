@@ -1,0 +1,3 @@
+tests/integration/context-build.test.ts(49,7): error TS2322: Type 'string' is not assignable to type 'string[]'.
+tests/integration/context-build.test.ts(100,32): error TS2345: Argument of type '{ path: string; content: string; }[]' is not assignable to parameter of type 'MemoryFileInfo[]'.
+  Property 'type' is missing in type '{ path: string; content: string; }' but required in type 'MemoryFileInfo'.

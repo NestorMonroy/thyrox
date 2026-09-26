@@ -35,6 +35,7 @@ afirmar() {
 
 echo "== 1. declarar la arista NO lanza el dependiente =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 TESTIGO=$(mktemp -u); fixture_adopt "$TESTIGO"   # si arranca, existe
 LA=$(fixture_file); nohup bash -c "sleep 2; echo EXIT=0" >"$LA" 2>&1 & PA=$!; disown $PA
 bash "$GUION" register primero "$LA" "$PA" >/dev/null
@@ -59,6 +60,7 @@ afirmar "tras dispatch, el dependiente SÍ arrancó" "presente" \
 
 echo "== 3. CONTROL — un predecesor que FALLA no arranca al dependiente, y lo DICE =="
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 T2=$(mktemp -u); fixture_adopt "$T2"
 LC=$(fixture_file); nohup bash -c "echo arrancando; sleep 1; kill -9 \$\$" >"$LC" 2>&1 & PC=$!; disown $PC
 bash "$GUION" register malo "$LC" "$PC" >/dev/null
@@ -73,11 +75,39 @@ afirmar "dispatch DICE que lo canceló (no calla)" 0 $?
 grep -qi "malo" <<<"$SALIDA"
 afirmar "nombra al predecesor que falló" 0 $?
 
+echo "== 3b. CONTROL — un predecesor que ASIENTA con codigo != 0 no es afterok =="
+# El marcador dice «termino», no «termino bien». `qsub -W depend=afterok`
+# exige salida 0; medido en el paso 155: un pipeline que salio con
+# `__BG_EXIT__=3` (gate 3b bloqueado) quedo asentado OK, y una arista sobre el
+# habria lanzado al siguiente sobre una base sin asentar.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
+T3=$(mktemp -u); fixture_adopt "$T3"
+LX=$(fixture_file); printf 'trabajo\nEXIT=3\n' > "$LX"
+bash "$GUION" register asentado_mal "$LX" >/dev/null
+LY=$(fixture_file)
+bash "$GUION" register hijo3 "$LY" --after-ok asentado_mal --run "touch $T3" >/dev/null
+SALIDA=$(bash "$GUION" dispatch 2>&1)
+sleep 1
+afirmar "con EXIT=3 el dependiente NO arranco" "ausente" \
+    "$( [[ -e "$T3" ]] && echo presente || echo ausente )"
+grep -q "CANCELADO.*hijo3.*asentado_mal.*3" <<<"$SALIDA"
+afirmar "y dispatch lo dice, con el predecesor y su codigo" 0 $?
+LZ=$(fixture_file); printf '__BG_EXIT__=0\n' > "$LZ"
+bash "$GUION" register bien_bg "$LZ" --marker '^__BG_EXIT__=[0-9]+' >/dev/null
+T4=$(mktemp -u); fixture_adopt "$T4"
+bash "$GUION" register hijo4 "$(fixture_file)" --after-ok bien_bg --run "touch $T4" >/dev/null
+bash "$GUION" dispatch >/dev/null 2>&1
+sleep 1
+afirmar "con el marcador de bg.sh y codigo 0 SI arranca" "presente" \
+    "$( [[ -e "$T4" ]] && echo presente || echo ausente )"
+
 echo "== 4. un CANCELADO no deja el turno bloqueado para siempre =="
 # Se aisla: en el caso 3 el ledger conserva ademas a `malo`, que es un BAIL sin
 # recoger y SI debe seguir pendiente. Medir los dos juntos no distinguiria
 # "cancelado no bloquea" de "nada bloquea".
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LE=$(fixture_file); printf 'EXIT=0\n' > "$LE"
 bash "$GUION" register pred "$LE" >/dev/null
 LF=$(fixture_file)
@@ -113,6 +143,7 @@ echo "== 6. lo LANZADO sobrevive al shell que lo lanzo: es LIDER de su grupo =="
 # grupo» significa, y no `pgid != pgid del lanzador`: esto último es cierto
 # también de un nieto cualquiera y no discriminaría.
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 LH=$(fixture_file); printf 'EXIT=0\n' > "$LH"
 bash "$GUION" register padre "$LH" >/dev/null
 GRUPO=$(fixture_file)
@@ -129,6 +160,31 @@ afirmar "el dependiente arrancó y dejó su medición" "medido" \
 afirmar "y es LIDER de su propio grupo (pgid == pid)" "$HIJO_PID" "$HIJO_PGID"
 bash "$GUION" forget padre >/dev/null 2>&1
 bash "$GUION" forget hijo  >/dev/null 2>&1
+
+echo "== 9. wait SOLO mueve la cadena: nadie corre dispatch =="
+# Episodio: el cierre del paso 161 (`--after-ok step-161-pipeline`) quedó
+# BLOQUEADO con el pipeline ya asentado hasta que se corrió `dispatch` a mano.
+# El comentario de `dispatch` decía «lo llaman wait, status y pending» y ninguno
+# lo llamaba. Qué lo haría fallar: quitar la llamada de `wait` caen los dos.
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
+TESTIGO9=$(mktemp -u); fixture_adopt "$TESTIGO9"
+L9=$(fixture_file); nohup bash -c "echo EXIT=0" >"$L9" 2>&1 & P9=$!; disown $P9
+bash "$GUION" register antes9 "$L9" "$P9" >/dev/null
+bash "$GUION" register despues9 "$(fixture_file)" --after-ok antes9 --run "echo medido > $TESTIGO9" >/dev/null
+OUT9=$(WAIT_JOBS_INTERVAL=1 timeout 60 bash "$GUION" wait --timeout 20 2>/dev/null); RC9=$?
+afirmar "wait lanza el dependiente y lo recoge OK, sin dispatch a mano" "0 medido si" \
+    "$RC9 $(cat "$TESTIGO9" 2>/dev/null) $(grep -q '^OK *despues9' <<<"$OUT9" && echo si || echo no)"
+
+THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
+L10=$(fixture_file); nohup bash -c "echo EXIT=1" >"$L10" 2>&1 & P10=$!; disown $P10
+bash "$GUION" register falla10 "$L10" "$P10" >/dev/null
+bash "$GUION" register nunca10 "$(fixture_file)" --after-ok falla10 --run "true" >/dev/null
+OUT10=$(WAIT_JOBS_INTERVAL=1 timeout 60 bash "$GUION" wait --timeout 8 2>/dev/null); RC10=$?
+afirmar "con el predecesor fallido, wait lo asienta CANCELADO en vez de agotar el timeout" "no si" \
+    "$( [[ $RC10 -eq 3 ]] && echo si || echo no) $(grep -q '^CANCELADO nunca10' <<<"$OUT10" && echo si || echo no)"
+
 echo
 printf 'resumen: %d ok, %d fallo(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]

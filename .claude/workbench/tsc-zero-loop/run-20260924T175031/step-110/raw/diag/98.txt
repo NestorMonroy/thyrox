@@ -1,0 +1,6 @@
+src/packages/command-runtime/src/commands/review/reviewRemote.ts(151,36): error TS2345: Argument of type '(error: BackgroundRemoteSessionPrecondition) => string' is not assignable to parameter of type '(value: { type: string; }, index: number, array: { type: string; }[]) => string'.
+  Types of parameters 'error' and 'value' are incompatible.
+    Type '{ type: string; }' is not assignable to type 'BackgroundRemoteSessionPrecondition'.
+      Type '{ type: string; }' is not assignable to type '{ type: "policy_blocked"; }'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type '"policy_blocked"'.

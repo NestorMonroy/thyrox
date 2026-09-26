@@ -1,0 +1,6 @@
+src/packages/repl/src/components/ValidationErrorsList.tsx(121,21): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/ValidationErrorsList.tsx(121,41): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/ValidationErrorsList.tsx(123,34): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/ValidationErrorsList.tsx(123,60): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/ValidationErrorsList.tsx(126,35): error TS2339: Property 'suggestion' does not exist on type 'SettingsError'.
+src/packages/repl/src/components/ValidationErrorsList.tsx(127,32): error TS2339: Property 'docLink' does not exist on type 'SettingsError'.

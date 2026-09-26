@@ -1,0 +1,46 @@
+src/packages/command-runtime/src/commands/recap/recap.ts(18,7): error TS18046: 'context.messages' is of type 'unknown'.
+  --- código src/packages/command-runtime/src/commands/recap/recap.ts:8-28 ---
+      8   * Divergencia declarada: `LocalCommandCall` es el propio de `../../types.js`
+      9   * en vez del de `agent/command.js` (mismo nombre y forma), para no acoplar
+     10   * este archivo a un paquete en construcción concurrente.
+     11   *
+     12   * Cuerpo del comando `/recap` — llama a `generateAwaySummary` bajo demanda.
+     13   */
+     14  import type { LocalCommandCall } from '../../types.js'
+     15  import { requireAgentAwaySummary } from '../../internal/pendingCrossPackageDeps.js'
+     16  
+     17  export const call: LocalCommandCall = async (_args, context) => {
+     18>   if (context.messages.length === 0) {
+     19      return {
+     20        type: 'text',
+     21        value: 'Nothing to recap yet — send a message first.',
+     22      }
+     23    }
+     24    try {
+     25      const { generateAwaySummary } = requireAgentAwaySummary()
+     26      const summary = await generateAwaySummary(
+     27        context.messages,
+     28        context.abortController.signal,
+src/packages/command-runtime/src/commands/recap/recap.ts(27,7): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/command-runtime/src/commands/recap/recap.ts:17-37 ---
+     17  export const call: LocalCommandCall = async (_args, context) => {
+     18    if (context.messages.length === 0) {
+     19      return {
+     20        type: 'text',
+     21        value: 'Nothing to recap yet — send a message first.',
+     22      }
+     23    }
+     24    try {
+     25      const { generateAwaySummary } = requireAgentAwaySummary()
+     26      const summary = await generateAwaySummary(
+     27>       context.messages,
+     28        context.abortController.signal,
+     29      )
+     30      if (context.abortController.signal.aborted) {
+     31        return { type: 'text', value: 'Recap cancelled.' }
+     32      }
+     33      if (summary === null) {
+     34        return {
+     35          type: 'text',
+     36          value: "Couldn't generate a recap. Run with --debug for details.",
+     37        }

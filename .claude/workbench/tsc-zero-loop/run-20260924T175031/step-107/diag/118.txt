@@ -1,0 +1,28 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(924,21): error TS18046: 'result.compactionResult' is of type 'unknown'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:914-934 ---
+    914                        // the timestamp of the last message to be slightly after the current time
+    915                        // This is mostly important for sdk / -p mode
+    916                        timestamp: new Date(Date.now() + 100).toISOString(),
+    917                      }),
+    918                    ]
+    919                  : []),
+    920              ]
+    921              const compactionResultWithSlashMessages = {
+    922                ...result.compactionResult,
+    923                messagesToKeep: [
+    924>                 ...(result.compactionResult.messagesToKeep ?? []),
+    925                  ...slashCommandMessages,
+    926                ],
+    927              }
+    928              // Reset microcompact state since full compact replaces all
+    929              // messages — old tool IDs are no longer relevant. Budget state
+    930              // (on toolUseContext) needs no reset: stale entries are inert
+    931              // (UUIDs never repeat, so they're never looked up).
+    932              resetMicrocompactState()
+    933              return {
+    934                messages: buildPostCompactMessages(

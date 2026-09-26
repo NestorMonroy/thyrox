@@ -1,0 +1,11 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(292,7): error TS2322: Type 'BuiltInAgentDefinition | CustomAgentDefinition | PluginAgentDefinition | { effort: {} | null; agentType: string; ... 22 more ...; getSystemPrompt: (params: { ...; }) => string; } | { ...; } | { ...; }' is not assignable to type 'AgentDefinition'.
+  Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BuiltInAgentDefinition'.
+      Type '{ effort: {} | null; agentType: string; whenToUse: string; tools?: string[]; disallowedTools?: string[]; skills?: string[]; mcpServers?: AgentMcpServerSpec[]; ... 17 more ...; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; }' is not assignable to type 'BaseAgentDefinition'.
+        Types of property 'effort' are incompatible.
+          Type '{} | null' is not assignable to type 'EffortValue | undefined'.
+            Type 'null' is not assignable to type 'EffortValue | undefined'.
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(543,43): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

@@ -1487,6 +1487,24 @@ export const fetchToolsForClient = memoizeWithLRU(
         client.config.type === 'sdk' &&
         isEnvTruthy(process.env.CLAUDE_AGENT_SDK_MCP_NO_PREFIX)
 
+      // Estados de progreso del ciclo de vida de una llamada MCP que este
+      // archivo emite (inicio/fin/fallo), además del progreso reenviado por
+      // el SDK que ya modela `MCPProgress`.
+      type McpToolLifecycleProgress =
+        | {
+            type: 'mcp_progress'
+            status: 'started'
+            serverName: string
+            toolName: string
+          }
+        | {
+            type: 'mcp_progress'
+            status: 'completed' | 'failed'
+            serverName: string
+            toolName: string
+            elapsedTimeMs: number
+          }
+
       // Convert MCP tools to our Tool format
       return toolsToProcess
         .map((tool): Tool => {
@@ -1560,7 +1578,7 @@ export const fetchToolsForClient = memoizeWithLRU(
               context,
               _canUseTool,
               parentMessage,
-              onProgress?: ToolCallProgress<MCPProgress>,
+              onProgress?: ToolCallProgress<MCPProgress | McpToolLifecycleProgress>,
             ) {
               const toolUseId = extractToolUseId(parentMessage)
               const meta = toolUseId
@@ -2275,9 +2293,10 @@ export async function executeTool(call: {
     args: call.input,
     meta: call.meta,
     signal,
-    setAppState: updater => {
-      void updater({ elicitation: { queue: [] } } as AppState)
-    },
+    // No-op: executeTool siempre pasa handleElicitation, así que la rama
+    // de cola de elicitation en modo REPL (dentro de callMCPToolWithUrlElicitationRetry)
+    // nunca invoca este updater.
+    setAppState: () => {},
     handleElicitation: async () => ({ action: 'cancel' }),
   })
 }

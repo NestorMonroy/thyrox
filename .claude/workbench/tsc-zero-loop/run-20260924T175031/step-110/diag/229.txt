@@ -1,0 +1,23 @@
+src/packages/repl/src/components/skills/SkillsMenu.tsx(171,17): error TS2322: Type 'string' is not assignable to type 'Color | keyof Theme | undefined'.
+  --- código src/packages/repl/src/components/skills/SkillsMenu.tsx:161-181 ---
+    161      const pluginName =
+    162        skill.source === 'plugin'
+    163          ? skill.pluginInfo?.pluginManifest.name
+    164          : undefined
+    165      const scopeTag = getScopeTag(skill.source as SkillSource)
+    166  
+    167      return (
+    168        <Box key={`${skill.name}-${skill.source}`}>
+    169          <Text>{getCommandName(skill)}</Text>
+    170          {scopeTag && (
+    171>           <Text color={scopeTag.color}> [{scopeTag.label}]</Text>
+    172          )}
+    173          <Text dimColor>
+    174            {pluginName ? ` · ${pluginName}` : ''} · {tokenDisplay} description
+    175            tokens
+    176          </Text>
+    177        </Box>
+    178      )
+    179    }
+    180  
+    181    const renderSkillGroup = (source: SkillSource) => {

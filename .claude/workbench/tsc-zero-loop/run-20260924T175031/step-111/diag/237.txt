@@ -1,0 +1,29 @@
+src/packages/repl/src/hooks/useManagePlugins.ts(77,9): error TS2322: Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command[]' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command[]'.
+  --- código src/packages/repl/src/hooks/useManagePlugins.ts:67-87 ---
+     67            priority: 'high',
+     68          })
+     69        }
+     70  
+     71        // Load commands, agents, and hooks with individual error handling
+     72        // Errors are added to the errors array for user visibility in Doctor UI
+     73        let commands: Command[] = []
+     74        let agents: AgentDefinition[] = []
+     75  
+     76        try {
+     77>         commands = await getPluginCommands()
+     78        } catch (error) {
+     79          const errorMessage =
+     80            error instanceof Error ? error.message : String(error)
+     81          errors.push({
+     82            type: 'generic-error',
+     83            source: 'plugin-commands',
+     84            error: `Failed to load plugin commands: ${errorMessage}`,
+     85          })
+     86        }
+     87  
+  Type 'import("/home/user/thyrox/src/packages/config/plugin/_deps").Command' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").Command'.
+    Type 'Command' is not assignable to type 'CommandBase & PromptCommand'.
+      Type 'Command' is not assignable to type 'CommandBase'.
+        Types of property 'description' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,23 @@
+src/packages/repl/src/__tests__/history.test.ts(89,7): error TS2741: Property 'content' is missing in type '{ id: number; type: "image"; mediaType: string; }' but required in type 'PastedContent'.
+  --- código src/packages/repl/src/__tests__/history.test.ts:79-99 ---
+     79      const input = 'hello [Pasted text #1 +2 lines] world'
+     80      const out = expandPastedTextRefs(input, {
+     81        1: { id: 1, type: 'text', content: 'a\nb\nc' },
+     82      })
+     83      expect(out).toBe('hello a\nb\nc world')
+     84    })
+     85  
+     86    test('leaves image refs alone', () => {
+     87      const input = 'see [Image #1] here'
+     88      const out = expandPastedTextRefs(input, {
+     89>       1: { id: 1, type: 'image', mediaType: 'image/png' },
+     90      })
+     91      expect(out).toBe('see [Image #1] here')
+     92    })
+     93  
+     94    test('skips refs with missing pastedContents entry', () => {
+     95      const input = 'see [Pasted text #99] here'
+     96      const out = expandPastedTextRefs(input, {})
+     97      expect(out).toBe('see [Pasted text #99] here')
+     98    })
+     99  

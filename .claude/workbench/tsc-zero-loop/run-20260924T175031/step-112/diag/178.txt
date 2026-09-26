@@ -1,0 +1,47 @@
+src/packages/repl/src/hooks/useReplBridge.tsx(234,59): error TS2345: Argument of type 'string | ContentBlockParam[]' is not assignable to parameter of type 'string'.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:224-244 ---
+    224                // Dynamic import keeps the bridge code out of non-BRIDGE_MODE builds.
+    225                const { resolveAndPrepend } = await import(
+    226                  '@thyrox/bridge/inboundAttachments.js'
+    227                )
+    228                let sanitized = fields.content
+    229                if (feature('KAIROS_GITHUB_WEBHOOKS')) {
+    230                  /* eslint-disable @typescript-eslint/no-require-imports */
+    231                  const { sanitizeInboundWebhookContent } =
+    232                    require('@thyrox/bridge/webhookSanitizer.js') as typeof import('@thyrox/bridge/webhookSanitizer.js')
+    233                  /* eslint-enable @typescript-eslint/no-require-imports */
+    234>                 sanitized = sanitizeInboundWebhookContent(fields.content)
+    235                }
+    236                const content = await resolveAndPrepend(msg, sanitized)
+    237  
+    238                const preview =
+    239                  typeof content === 'string'
+    240                    ? content.slice(0, 80)
+    241                    : `[${content.length} content blocks]`
+    242                logForDebugging(
+    243                  `[bridge:repl] Injecting inbound user message: ${preview}${uuid ? ` uuid=${uuid}` : ''}`,
+    244                )
+  Type 'ContentBlockParam[]' is not assignable to type 'string'.
+src/packages/repl/src/hooks/useReplBridge.tsx(520,17): error TS2367: This comparison appears to be unintentional because the types 'PermissionMode' and '"auto"' have no overlap.
+  --- código src/packages/repl/src/hooks/useReplBridge.tsx:510-530 ---
+    510                  ) {
+    511                    return {
+    512                      ok: false,
+    513                      error:
+    514                        'Cannot set permission mode to bypassPermissions because the session was not launched with --dangerously-skip-permissions',
+    515                    }
+    516                  }
+    517                }
+    518                if (
+    519                  feature('TRANSCRIPT_CLASSIFIER') &&
+    520>                 mode === 'auto' &&
+    521                  !isAutoModeGateEnabled()
+    522                ) {
+    523                  const reason = getAutoModeUnavailableReason()
+    524                  return {
+    525                    ok: false,
+    526                    error: reason
+    527                      ? `Cannot set permission mode to auto: ${getAutoModeUnavailableNotification(reason)}`
+    528                      : 'Cannot set permission mode to auto',
+    529                  }
+    530                }

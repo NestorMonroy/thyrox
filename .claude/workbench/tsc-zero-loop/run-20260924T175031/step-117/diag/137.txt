@@ -1,0 +1,50 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(52,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:42-62 ---
+     42  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     43  import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+     44  import type { AgentToolProgress } from '@thyrox/tool-registry/progressTypes'
+     45  import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+     46  import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
+     47  import type { CommandResultDisplay } from '@thyrox/agent/command.js'
+     48  import { createAbortController } from '@thyrox/agent/abortController.js'
+     49  import { getAgentContext } from '@thyrox/agent/agentContext.js'
+     50  import {
+     51    createAttachmentMessage,
+     52>   getAttachmentMessages,
+     53  } from '@thyrox/agent/attachments.js'
+     54  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     55  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     56  import { AbortError, MalformedCommandError } from '@thyrox/local-observability/errorHelpers.js'
+     57  import { getDisplayPath } from '@thyrox/storage/file.js'
+     58  import {
+     59    extractResultText,
+     60    prepareForkedCommandContext,
+     61  } from '@thyrox/agent/forkedAgent.js'
+     62  import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(955,15): error TS2322: Type 'Message[]' is not assignable to type '(UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage)[]'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:945-965 ---
+    945                  ...(compactionResult.messagesToKeep ?? []),
+    946                  ...slashCommandMessages,
+    947                ],
+    948              }
+    949              // Reset microcompact state since full compact replaces all
+    950              // messages — old tool IDs are no longer relevant. Budget state
+    951              // (on toolUseContext) needs no reset: stale entries are inert
+    952              // (UUIDs never repeat, so they're never looked up).
+    953              resetMicrocompactState()
+    954              return {
+    955>               messages: buildPostCompactMessages(
+    956                  compactionResultWithSlashMessages,
+    957                ),
+    958                shouldQuery: false,
+    959                command,
+    960              }
+    961            }
+    962  
+    963            // Port of ant v2.1.136 3753.js qm5 'query' branch — local command
+    964            // returns visible stdout PLUS an invisible meta-message prompt;
+    965            // `shouldQuery:true` so the agent picks up the directive without
+  Type 'Message' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+    Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'UserMessage | AssistantMessage | AttachmentMessage<_T> | SystemMessage | ProgressMessage'.
+      Type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' is not assignable to type 'ProgressMessage'.
+        Property 'data' is missing in type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; }' but required in type '{ type: "progress"; data: unknown; }'.

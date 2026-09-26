@@ -103,8 +103,11 @@ function outputStyleOf(argv: string[]): OutputStyle {
 
 async function* stdinLines(): AsyncGenerator<string> {
   let rest = ''
-  for await (const chunk of Bun.stdin.stream()) {
-    rest += new TextDecoder().decode(chunk)
+  const reader = Bun.stdin.stream().getReader()
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    rest += new TextDecoder().decode(value)
     let corte = rest.indexOf('\n')
     while (corte >= 0) {
       yield rest.slice(0, corte)

@@ -38,7 +38,6 @@ export async function prefetchAllMcpResources<
   commands: TMcpCommand[]
 }> {
   return getMcpRuntimeHostBindings<
-    unknown,
     TMcpTool,
     TMcpCommand,
     unknown,

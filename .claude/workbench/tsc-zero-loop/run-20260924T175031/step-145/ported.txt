@@ -1,0 +1,6 @@
+src/packages/agent/attachments.ts
+src/packages/agent/attachments/mailbox.ts
+src/packages/agent/hooks.ts
+src/packages/agent/messages.ts
+src/packages/provider/src/claudeAiLimits.ts
+src/packages/storage/src/claudemd.ts

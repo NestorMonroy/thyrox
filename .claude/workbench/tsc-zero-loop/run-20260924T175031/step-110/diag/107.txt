@@ -1,0 +1,27 @@
+src/packages/config/__tests__/pluginIdentifier.test.ts(226,64): error TS2769: No overload matches this call.
+  --- código src/packages/config/__tests__/pluginIdentifier.test.ts:216-236 ---
+    216  
+    217    test('localSettings → local', () => {
+    218      expect(settingSourceToScope('localSettings')).toBe('local')
+    219    })
+    220  
+    221    test('flagSettings → flag (session-only, NOT persisted)', () => {
+    222      // 'flag' scope is session-only — it's the --plugin-dir CLI flag.
+    223      // Persistence layer must filter this out before writing
+    224      // installed_plugins.json. Documents the existence of this fourth
+    225      // scope value.
+    226>     expect(settingSourceToScope('flagSettings' as never)).toBe('flag')
+    227    })
+    228  })
+    229  
+    230  // El conjunto de mercados oficiales del binario 2.1.275, verbatim. thyrox
+    231  // declaraba 8 de 14; cualquier nombre que falte aquí deja de reconocerse como
+    232  // oficial, que es una frontera de seguridad.
+    233  const BINARY_OFFICIAL_MARKETPLACES = [
+    234    'claude-code-marketplace', 'claude-code-plugins', 'claude-plugins-official',
+    235    'anthropic-marketplace', 'anthropic-plugins', 'agent-skills',
+    236    'anthropic-agent-skills', 'life-sciences', 'knowledge-work-plugins',
+  Overload 1 of 2, '(expected: "user" | "local" | "project"): void', gave the following error.
+    Argument of type '"flag"' is not assignable to parameter of type '"user" | "local" | "project"'.
+  Overload 2 of 2, '(expected: "user" | "local" | "project"): void', gave the following error.
+    Argument of type '"flag"' is not assignable to parameter of type '"user" | "local" | "project"'.

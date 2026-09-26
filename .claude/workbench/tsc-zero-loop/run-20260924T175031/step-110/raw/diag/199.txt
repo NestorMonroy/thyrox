@@ -1,0 +1,2 @@
+src/packages/repl/src/components/PromptInput/PromptInputFooterSuggestions.tsx(165,15): error TS2322: Type '"yellow" | undefined' is not assignable to type 'Color | keyof Theme | undefined'.
+  Type '"yellow"' is not assignable to type 'Color | keyof Theme | undefined'.

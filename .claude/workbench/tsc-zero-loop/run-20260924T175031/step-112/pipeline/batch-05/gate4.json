@@ -1,0 +1,94 @@
+{
+ "reviewed": [
+  {
+   "pattern": "any-message-lookup-return-vs-progress-message-prop",
+   "files": [
+    "src/packages/repl/src/components/MessageRow.tsx"
+   ]
+  },
+  {
+   "pattern": "sanitizer-string-only-called-with-union-content",
+   "files": [
+    "src/packages/repl/src/hooks/useReplBridge.tsx"
+   ]
+  },
+  {
+   "pattern": "narrowed-permission-mode-excludes-auto",
+   "files": [
+    "src/packages/repl/src/hooks/useReplBridge.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-effort-not-narrowed-to-effort-value",
+   "files": [
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "pattern": "optional-plugin-manifest-name-into-required-name",
+   "files": [
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-field-with-known-producer-type",
+   "files": [
+    "src/packages/repl/src/processUserInput/processSlashCommand.tsx"
+   ]
+  },
+  {
+   "pattern": "campo-mcp-ausente-en-settingserror",
+   "files": [
+    "src/packages/repl/src/screens/Doctor.tsx"
+   ]
+  },
+  {
+   "pattern": "cast-through-optional-field-reintroduces-undefined",
+   "files": [
+    "src/packages/shell/src/Shell.ts"
+   ]
+  },
+  {
+   "pattern": "nullable-returning-fn-assigned-to-non-null-interface-method",
+   "files": [
+    "src/packages/shell/src/Shell.ts"
+   ]
+  },
+  {
+   "pattern": "forwarded-param-mismatched-with-real-implementation-signature",
+   "files": [
+    "src/packages/shell/src/Shell.ts"
+   ]
+  },
+  {
+   "pattern": "missing-source-export-consumed-locally",
+   "files": [
+    "src/packages/shell/src/sandbox/sandbox-adapter.ts"
+   ]
+  },
+  {
+   "pattern": "loose-object-cast-widens-discriminated-content-union",
+   "files": [
+    "src/packages/storage/src/toolResultStorage.ts"
+   ]
+  },
+  {
+   "pattern": "explicit-callback-annotation-forces-cross-package-generic-inference",
+   "files": [
+    "src/packages/tool-registry/src/services/toolExecution.ts"
+   ]
+  },
+  {
+   "pattern": "span-helper-migrated-to-tracked-state-stale-caller-signature",
+   "files": [
+    "src/packages/tool-registry/src/services/toolExecution.ts"
+   ]
+  },
+  {
+   "pattern": "optional-field-reread-instead-of-narrowed-local",
+   "files": [
+    "src/packages/tool-registry/src/services/toolExecution.ts"
+   ]
+  }
+ ]
+}

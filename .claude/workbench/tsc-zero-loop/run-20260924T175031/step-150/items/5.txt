@@ -1,0 +1,29 @@
+Patrón: fresh-object-literal-excess-property-check-against-narrow-param
+Señal del verificador: TS2353: .*does not exist in type
+Arreglo genérico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+Ya aplicado en: src/packages/agent/__tests__/contentTextHelpers.test.ts, src/packages/cli/src/structuredIOHelper.ts
+Archivos donde la señal sigue viva: src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts
+
+src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts(29,33): error TS2353: Object literal may only specify known properties, and 'expandPath' does not exist in type 'PermissionHostBindings'.
+  --- código src/packages/permission/src/__tests__/sandboxWriteAllowlist.test.ts:19-39 ---
+     19        allowOnly: ['/work'],
+     20        denyWithinAllow: ['/work/secret'],
+     21      }),
+     22    },
+     23  }))
+     24  
+     25  const { isPathInSandboxWriteAllowlist } = await import('../pathValidation.js')
+     26  const { installPermissionHostBindings } = await import('../host.js')
+     27  const { containsPathTraversal, expandPath } = await import('@thyrox/storage/path.js')
+     28  // `pathInWorkingPath` expande y valida rutas por los bindings del anfitrion.
+     29> installPermissionHostBindings({ expandPath, containsPathTraversal })
+     30  
+     31  describe('isPathInSandboxWriteAllowlist (sandbox encendido)', () => {
+     32    test('una ruta dentro de allowOnly pasa', () => {
+     33      expect(isPathInSandboxWriteAllowlist('/work/a.txt')).toBe(true)
+     34    })
+     35    test('deny gana dentro de allow', () => {
+     36      expect(isPathInSandboxWriteAllowlist('/work/secret/key')).toBe(false)
+     37    })
+     38    test('fuera de allowOnly no pasa', () => {
+     39      expect(isPathInSandboxWriteAllowlist('/other/file')).toBe(false)

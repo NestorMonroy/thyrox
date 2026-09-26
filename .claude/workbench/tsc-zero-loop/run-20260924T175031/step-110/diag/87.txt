@@ -1,0 +1,52 @@
+src/packages/command-runtime/src/commands/ide/ide.tsx(432,58): error TS2345: Argument of type 'Record<string, unknown> | undefined' is not assignable to parameter of type 'Record<string, ScopedMcpServerConfig> | undefined'.
+  --- código src/packages/command-runtime/src/commands/ide/ide.tsx:422-442 ---
+    422          />
+    423        )
+    424      } else if (runningIDEs.length === 1) {
+    425        return <InstallOnMount ide={runningIDEs[0]!} onInstall={onInstall} />
+    426      }
+    427    }
+    428  
+    429    const availableIDEs = detectedIDEs.filter(ide => ide.isValid)
+    430    const unavailableIDEs = detectedIDEs.filter(ide => !ide.isValid)
+    431  
+    432>   const currentIDE = await findCurrentIDE(availableIDEs, dynamicMcpConfig)
+    433  
+    434    return (
+    435      <IDECommandFlow
+    436        availableIDEs={availableIDEs}
+    437        unavailableIDEs={unavailableIDEs}
+    438        currentIDE={currentIDE}
+    439        dynamicMcpConfig={dynamicMcpConfig}
+    440        onChangeDynamicMcpConfig={onChangeDynamicMcpConfig}
+    441        onDone={onDone}
+    442      />
+  Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.
+src/packages/command-runtime/src/commands/ide/ide.tsx(439,7): error TS2322: Type 'Record<string, unknown> | undefined' is not assignable to type 'Record<string, ScopedMcpServerConfig> | undefined'.
+  --- código src/packages/command-runtime/src/commands/ide/ide.tsx:429-449 ---
+    429    const availableIDEs = detectedIDEs.filter(ide => ide.isValid)
+    430    const unavailableIDEs = detectedIDEs.filter(ide => !ide.isValid)
+    431  
+    432    const currentIDE = await findCurrentIDE(availableIDEs, dynamicMcpConfig)
+    433  
+    434    return (
+    435      <IDECommandFlow
+    436        availableIDEs={availableIDEs}
+    437        unavailableIDEs={unavailableIDEs}
+    438        currentIDE={currentIDE}
+    439>       dynamicMcpConfig={dynamicMcpConfig}
+    440        onChangeDynamicMcpConfig={onChangeDynamicMcpConfig}
+    441        onDone={onDone}
+    442      />
+    443    )
+    444  }
+    445  
+    446  // Connection timeout slightly longer than the 30s MCP connection timeout
+    447  const IDE_CONNECTION_TIMEOUT_MS = 35000
+    448  
+    449  type IDECommandFlowProps = {
+  Type 'Record<string, unknown>' is not assignable to type 'Record<string, ScopedMcpServerConfig>'.
+    'string' index signatures are incompatible.
+      Type 'unknown' is not assignable to type 'ScopedMcpServerConfig'.

@@ -1,0 +1,2 @@
+src/packages/repl/src/hooksConfigManager.ts(274,25): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/hooksConfigManager.ts(308,32): error TS2538: Type 'unknown' cannot be used as an index type.

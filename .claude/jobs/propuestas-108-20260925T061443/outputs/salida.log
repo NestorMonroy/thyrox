@@ -1,0 +1,11 @@
+-- FALLIDO src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/3.txt
+-- FALLIDO src/packages/tool-registry/src/tools/BashTool/BashTool.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/8.txt
+-- FALLIDO src/packages/app-host/src/runtime/runtimeHandles.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/14.txt
+-- FALLIDO src/packages/cli/src/headless/sdk/control/handlers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/4.txt
+-- FALLIDO src/packages/agent/internal/fileHistoryCore.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/12.txt
+-- FALLIDO src/packages/config/plugin/refresh.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/31.txt
+-- FALLIDO src/packages/tool-registry/src/tools/AgentTool/UI.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/27.txt
+-- FALLIDO src/packages/@ant/ink/src/components/Box.tsx .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/19.txt
+-- FALLIDO src/packages/agent/messages/mappers.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/diag/13.txt
+items=40 ok=31 fallidos=9
+__BG_EXIT__=1

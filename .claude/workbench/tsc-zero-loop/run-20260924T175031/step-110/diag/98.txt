@@ -1,0 +1,28 @@
+src/packages/command-runtime/src/commands/review/reviewRemote.ts(151,36): error TS2345: Argument of type '(error: BackgroundRemoteSessionPrecondition) => string' is not assignable to parameter of type '(value: { type: string; }, index: number, array: { type: string; }[]) => string'.
+  --- código src/packages/command-runtime/src/commands/review/reviewRemote.ts:141-161 ---
+    141        e => e.type !== 'no_remote_environment',
+    142      )
+    143      if (blockers.length > 0) {
+    144        logEvent('tengu_review_remote_precondition_failed', {
+    145          precondition_errors: blockers
+    146            .map(e => e.type)
+    147            .join(
+    148              ',',
+    149            ) as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    150        })
+    151>       const reasons = blockers.map(formatPreconditionError).join('\n')
+    152        return [
+    153          {
+    154            type: 'text',
+    155            text: `Ultrareview cannot launch:\n${reasons}`,
+    156          },
+    157        ]
+    158      }
+    159    }
+    160  
+    161    const resolvedBillingNote = billingNote ?? ''
+  Types of parameters 'error' and 'value' are incompatible.
+    Type '{ type: string; }' is not assignable to type 'BackgroundRemoteSessionPrecondition'.
+      Type '{ type: string; }' is not assignable to type '{ type: "policy_blocked"; }'.
+        Types of property 'type' are incompatible.
+          Type 'string' is not assignable to type '"policy_blocked"'.

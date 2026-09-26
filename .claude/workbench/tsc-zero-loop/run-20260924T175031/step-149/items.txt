@@ -1,0 +1,1 @@
+type:Message .claude/workbench/tsc-zero-loop/run-20260924T175031/step-149/items/1.txt src/packages/agent/QueryEngine.ts src/packages/agent/loop/types.ts src/packages/agent/query.ts src/packages/context-compression/src/lite.ts src/packages/repl/src/conversationRecovery.tsx src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts

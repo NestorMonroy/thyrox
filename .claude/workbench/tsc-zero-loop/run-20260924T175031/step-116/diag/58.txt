@@ -1,0 +1,47 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(225,7): error TS2322: Type 'APIProvider' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:215-235 ---
+    215      models: modelInfos,
+    216      account: {
+    217        email: accountInfo?.email,
+    218        organization: accountInfo?.organization,
+    219        subscriptionType: accountInfo?.subscription,
+    220        tokenSource: accountInfo?.tokenSource,
+    221        apiKeySource: accountInfo?.apiKeySource,
+    222        // getAccountInformation() returns undefined under 3P providers, so the
+    223        // other fields are all absent. apiProvider disambiguates "not logged
+    224        // in" (firstParty + tokenSource:none) from "3P, login not applicable".
+    225>       apiProvider: getAPIProvider(),
+    226      },
+    227      pid: process.pid,
+    228    }
+    229  
+    230    if (isFastModeEnabled() && isFastModeAvailable()) {
+    231      const appState = getAppState()
+    232      initResponse.fast_mode_state = getFastModeState(
+    233        options.userSpecifiedModel ?? null,
+    234        appState.fastMode,
+    235      )
+  Type '"codex"' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(520,24): error TS2339: Property 'dev' does not exist on type 'ChannelEntry'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:510-530 ---
+    510        const { content, meta } = notification.params as ChannelNotificationParams
+    511        logMCPDebug(
+    512          connection.name,
+    513          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    514        )
+    515        logEvent('tengu_mcp_channel_message', {
+    516          content_length: content.length,
+    517          meta_key_count: Object.keys(meta ?? {}).length,
+    518          entry_kind:
+    519            entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    520>         is_dev: entry?.dev ?? false,
+    521          plugin: pluginId,
+    522        })
+    523        enqueue({
+    524          mode: 'prompt',
+    525          value: wrapChannelMessage(connection.name, content, meta),
+    526          priority: 'next',
+    527          isMeta: true,
+    528          origin: { kind: 'channel', server: connection.name } as unknown as string,
+    529          skipSlashCommands: true,
+    530        })

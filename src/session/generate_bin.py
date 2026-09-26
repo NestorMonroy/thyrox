@@ -158,7 +158,7 @@ SOURCE_DIRS: tuple[str, ...] = (
     "src/agents", "src/typescript", "src/corpus", "src/docs", "src/graph", "src/hallazgo",
     "src/hooks", "src/lib", "src/paths", "src/peer_mailbox", "src/repo",
     "src/measurement",
-    "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
+    "src/roster", "src/session", "src/task", "src/transcript", "src/verify", "src/workbench",
 )
 
 #: La guarda que separa un módulo CLI de uno de biblioteca. Tolerante a

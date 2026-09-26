@@ -1,0 +1,115 @@
+src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts(48,47): error TS2554: Expected 0 arguments, but got 1.
+  --- código src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts:38-58 ---
+     38      expect(text).toContain('Pass `servers` to wait for specific ones')
+     39      expect(text).toContain('Returns ready=true when servers are')
+     40      expect(text).toContain(
+     41        'You do not need to ask the user for confirmation to use this tool.',
+     42      )
+     43    })
+     44  })
+     45  
+     46  describe('tool surface (ant g37)', () => {
+     47    test('isReadOnly: true', () => {
+     48>     expect(WaitForMcpServersTool.isReadOnly?.({} as never)).toBe(true)
+     49    })
+     50    test('isConcurrencySafe: false', () => {
+     51      expect(WaitForMcpServersTool.isConcurrencySafe?.()).toBe(false)
+     52    })
+     53    test('name matches constant', () => {
+     54      expect(WaitForMcpServersTool.name).toBe(WAIT_FOR_MCP_SERVERS_TOOL_NAME)
+     55    })
+     56    test('userFacingName = "MCP Wait For Servers" (ant B37)', () => {
+     57      expect(WaitForMcpServersTool.userFacingName?.({} as never)).toBe(
+     58        'MCP Wait For Servers',
+src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts(57,51): error TS2554: Expected 0 arguments, but got 1.
+  --- código src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts:47-67 ---
+     47    test('isReadOnly: true', () => {
+     48      expect(WaitForMcpServersTool.isReadOnly?.({} as never)).toBe(true)
+     49    })
+     50    test('isConcurrencySafe: false', () => {
+     51      expect(WaitForMcpServersTool.isConcurrencySafe?.()).toBe(false)
+     52    })
+     53    test('name matches constant', () => {
+     54      expect(WaitForMcpServersTool.name).toBe(WAIT_FOR_MCP_SERVERS_TOOL_NAME)
+     55    })
+     56    test('userFacingName = "MCP Wait For Servers" (ant B37)', () => {
+     57>     expect(WaitForMcpServersTool.userFacingName?.({} as never)).toBe(
+     58        'MCP Wait For Servers',
+     59      )
+     60    })
+     61    test('renderToolUseMessage(no servers) = "Wait for pending MCP servers..."', () => {
+     62      expect(
+     63        WaitForMcpServersTool.renderToolUseMessage?.({} as never, {} as never),
+     64      ).toBe('Wait for pending MCP servers to connect')
+     65    })
+     66    test('renderToolUseMessage(with servers) lists names', () => {
+     67      expect(
+src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts(63,65): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts:53-73 ---
+     53    test('name matches constant', () => {
+     54      expect(WaitForMcpServersTool.name).toBe(WAIT_FOR_MCP_SERVERS_TOOL_NAME)
+     55    })
+     56    test('userFacingName = "MCP Wait For Servers" (ant B37)', () => {
+     57      expect(WaitForMcpServersTool.userFacingName?.({} as never)).toBe(
+     58        'MCP Wait For Servers',
+     59      )
+     60    })
+     61    test('renderToolUseMessage(no servers) = "Wait for pending MCP servers..."', () => {
+     62      expect(
+     63>       WaitForMcpServersTool.renderToolUseMessage?.({} as never, {} as never),
+     64      ).toBe('Wait for pending MCP servers to connect')
+     65    })
+     66    test('renderToolUseMessage(with servers) lists names', () => {
+     67      expect(
+     68        WaitForMcpServersTool.renderToolUseMessage?.(
+     69          { servers: ['github', 'gitlab'] } as never,
+     70          {} as never,
+     71        ),
+     72      ).toBe('Wait for MCP servers to connect: github, gitlab')
+     73    })
+src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts(70,9): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts:60-80 ---
+     60    })
+     61    test('renderToolUseMessage(no servers) = "Wait for pending MCP servers..."', () => {
+     62      expect(
+     63        WaitForMcpServersTool.renderToolUseMessage?.({} as never, {} as never),
+     64      ).toBe('Wait for pending MCP servers to connect')
+     65    })
+     66    test('renderToolUseMessage(with servers) lists names', () => {
+     67      expect(
+     68        WaitForMcpServersTool.renderToolUseMessage?.(
+     69          { servers: ['github', 'gitlab'] } as never,
+     70>         {} as never,
+     71        ),
+     72      ).toBe('Wait for MCP servers to connect: github, gitlab')
+     73    })
+     74  })
+     75  
+     76  describe('checkPermissions (ant: always allow)', () => {
+     77    test('returns behavior:allow with unchanged input', async () => {
+     78      const input = { servers: ['x'] }
+     79      const result = await WaitForMcpServersTool.checkPermissions?.(
+     80        input as never,
+src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts(81,7): error TS2554: Expected 1 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts:71-91 ---
+     71        ),
+     72      ).toBe('Wait for MCP servers to connect: github, gitlab')
+     73    })
+     74  })
+     75  
+     76  describe('checkPermissions (ant: always allow)', () => {
+     77    test('returns behavior:allow with unchanged input', async () => {
+     78      const input = { servers: ['x'] }
+     79      const result = await WaitForMcpServersTool.checkPermissions?.(
+     80        input as never,
+     81>       {} as never,
+     82      )
+     83      expect(result?.behavior).toBe('allow')
+     84    })
+     85  })
+     86  
+     87  // ─── normalizeServerName (ant l1, 0676.js) ─────────────────────────────
+     88  // CRITICAL: prior ccb impl did `.toLowerCase().replace(/[^a-z0-9]+/g, '_')`
+     89  // which (a) lowercased, (b) collapsed runs unconditionally, (c) dropped `_`
+     90  // and `-` from the char class. Ant `l1` does NONE of these — it preserves
+     91  // case, keeps `_-` in the safe class, and only runs the collapse + strip

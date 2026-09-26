@@ -1,0 +1,13 @@
+== s/^REQUIRE_PER_ELEMENT_XARGS = True/REQUIRE_PER_ELEMENT_XARGS = False/
+  FALLA xargs sin -n/-L/-I agrupa en una invocación y calla — esperado silencio
+  FALLA xargs agrupado aunque edite en sitio calla — esperado silencio
+test_detect_parallel_opportunity: 18 ok, 2 fallos
+== s/^SKIP_SHARED_WRITE = True/SKIP_SHARED_WRITE = False/
+  FALLA un bucle que modifica un archivo común calla — esperado silencio
+test_detect_parallel_opportunity: 19 ok, 1 fallos
+== s/        return len(shlex.split(items))/        return len(items.split())/
+  FALLA tres elementos citados con espacios son una lista corta — esperado silencio
+test_detect_parallel_opportunity: 19 ok, 1 fallos
+== s/command = strip_heredoc_bodies(\(.*\))$/command = \1/
+  FALLA un bucle dentro de un heredoc calla — esperado silencio
+test_detect_parallel_opportunity: 19 ok, 1 fallos

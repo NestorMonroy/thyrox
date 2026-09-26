@@ -44,6 +44,8 @@ describe('internal/runtimeBridges', () => {
 
     test('falls back to in-process construction when host returns nothing', () => {
       expect(source).toMatch(
+        // El cast apunta al alias local que estrecha `compactMetadata` a
+        // `CompactMetadata`; antes apuntaba al tipo ancho de messageShapes.
         /if \(created\) \{\s*\n?\s*return created as CompactBoundaryMessage\s*\n?\s*\}/,
       )
     })

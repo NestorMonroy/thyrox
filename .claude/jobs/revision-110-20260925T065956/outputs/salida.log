@@ -1,0 +1,19 @@
+LLAMADAS PERDIDAS src/packages/agent/background/fleet/generateJobName.ts: trim×1
+LLAMADAS PERDIDAS src/packages/app-host/src/runtime/toolRegistryRuntime.ts: REPL_ONLY_TOOLS.has×1
+LLAMADAS PERDIDAS src/packages/cli/src/entry/runLoop.ts: await×1
+LLAMADAS PERDIDAS src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx: setState×1
+LLAMADAS PERDIDAS src/packages/config/__tests__/pluginIdentifier.test.ts: settingSourceToScope×1
+LLAMADAS PERDIDAS src/packages/mcp-runtime/src/clientRuntime.ts: updater×1
+LLAMADAS PERDIDAS src/packages/shell/src/sandbox/sandbox-adapter.ts: require×1, getSandboxBinaryPath×1
+LLAMADAS PERDIDAS src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts: ctx×1
+LLAMADAS PERDIDAS tests/unit/utils/notebook.test.ts: result.content.filter×1, result.content.map×1
+9 de 134 archivos pierden llamadas al transpilar
+TESTS
+1 src/packages/cli/__tests__/premisesCli.test.ts
+1 src/packages/cli/__tests__/binAgentWiring.test.ts
+1 src/packages/cli/__tests__/compressToolResultsWiring.test.ts
+1 src/packages/cli/__tests__/rstTasks.test.ts
+1 src/packages/permission/src/__tests__/pathSafety.test.ts
+1 tests/integration/agent-loop.test.ts
+77
+__BG_EXIT__=0

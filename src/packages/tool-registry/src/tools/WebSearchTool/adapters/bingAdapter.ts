@@ -114,14 +114,18 @@ export function extractBingResults(html: string): SearchResult[] {
 
   while ((blockMatch = algoBlockRegex.exec(html)) !== null) {
     const block = blockMatch[1]
+    if (block === undefined) continue
 
     // Extract the primary link from <h2><a href="...">...</a></h2>
     const h2LinkRegex = /<h2[^>]*>\s*<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i
     const linkMatch = h2LinkRegex.exec(block)
     if (!linkMatch) continue
 
-    const rawUrl = decodeHtmlEntities(linkMatch[1])
+    const rawUrlMatch = linkMatch[1]
+    if (rawUrlMatch === undefined) continue
+    const rawUrl = decodeHtmlEntities(rawUrlMatch)
     const titleHtml = linkMatch[2]
+    if (titleHtml === undefined) continue
 
     // Resolve Bing redirect URLs (bing.com/ck/a?...&u=a1aHR0cHM6Ly9...)
     // or skip Bing-internal / relative links
@@ -146,21 +150,21 @@ function extractSnippet(block: string): string | undefined {
   const lineclampRegex = /<p[^>]*class="b_lineclamp[^"]*"[^>]*>([\s\S]*?)<\/p>/i
   let match = lineclampRegex.exec(block)
   if (match) {
-    return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    return decodeHtmlEntities((match[1] ?? '').replace(/<[^>]+>/g, '').trim())
   }
 
   // 2. Try <p> inside b_caption
   const captionPRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i
   match = captionPRegex.exec(block)
   if (match) {
-    return decodeHtmlEntities(match[1].replace(/<[^>]+>/g, '').trim())
+    return decodeHtmlEntities((match[1] ?? '').replace(/<[^>]+>/g, '').trim())
   }
 
   // 3. Fallback: any text inside b_caption <div>
   const fallbackRegex = /<div[^>]*class="b_caption[^"]*"[^>]*>([\s\S]*?)<\/div>/i
   const fallbackMatch = fallbackRegex.exec(block)
   if (fallbackMatch) {
-    const text = fallbackMatch[1].replace(/<[^>]+>/g, '').trim()
+    const text = (fallbackMatch[1] ?? '').replace(/<[^>]+>/g, '').trim()
     if (text) return decodeHtmlEntities(text)
   }
 
@@ -182,7 +186,7 @@ export function resolveBingUrl(rawUrl: string): string | undefined {
   // Try to extract the `u` parameter from Bing redirect URLs
   const uMatch = rawUrl.match(/[?&]u=([a-zA-Z0-9+/_=-]+)/)
   if (uMatch) {
-    const encoded = uMatch[1]
+    const encoded = uMatch[1] ?? ''
     if (encoded.length >= 3) {
       const b64 = encoded.slice(2)
       try {

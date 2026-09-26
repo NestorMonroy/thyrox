@@ -1,0 +1,46 @@
+src/packages/config/plugin/loadPluginCommands.ts(479,109): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:469-489 ---
+    469            `Plugin ${plugin.name} has commandsPaths: ${plugin.commandsPaths.join(', ')}`,
+    470          )
+    471          // Process all commandsPaths in parallel. isDuplicatePath is synchronous
+    472          // (check-and-add), so concurrent access to loadedPaths is safe.
+    473          const pathResults = await Promise.all(
+    474            plugin.commandsPaths.map(async (commandPath): Promise<Command[]> => {
+    475              try {
+    476                const fs = getFsImplementation()
+    477                const stats = await fs.stat(commandPath)
+    478                logForDebugging(
+    479>                 `Checking commandPath ${commandPath} - isDirectory: ${stats.isDirectory()}, isFile: ${stats.isFile()}`,
+    480                )
+    481  
+    482                if (stats.isDirectory()) {
+    483                  // Load all .md files and skill directories from directory
+    484                  const commands = await loadCommandsFromDirectory(
+    485                    commandPath,
+    486                    plugin.name,
+    487                    plugin.source,
+    488                    plugin.manifest,
+    489                    plugin.path,
+src/packages/config/plugin/loadPluginCommands.ts(505,32): error TS2339: Property 'isFile' does not exist on type '{ mtime: Date; isDirectory(): boolean; size: number; }'.
+  --- código src/packages/config/plugin/loadPluginCommands.ts:495-515 ---
+    495                    logForDebugging(
+    496                      `Loaded ${commands.length} commands from plugin ${plugin.name} custom path: ${commandPath}`,
+    497                    )
+    498                  } else {
+    499                    logForDebugging(
+    500                      `Warning: No commands found in plugin ${plugin.name} custom directory: ${commandPath}. Expected .md files or SKILL.md in subdirectories.`,
+    501                      { level: 'warn' },
+    502                    )
+    503                  }
+    504                  return commands
+    505>               } else if (stats.isFile() && commandPath.endsWith('.md')) {
+    506                  if (isDuplicatePath(commandPath, loadedPaths)) {
+    507                    return []
+    508                  }
+    509  
+    510                  // Load single command file
+    511                  const content = await fs.readFile(commandPath, {
+    512                    encoding: 'utf-8',
+    513                  })
+    514                  const { frontmatter, content: markdownContent } =
+    515                    parseFrontmatter(content, commandPath)

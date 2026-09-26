@@ -468,4 +468,15 @@ printf '  %-14s %s\n' TOTAL "$TOTAL"
 [[ -n "$DETAIL" ]] && { echo; echo "$DETAIL"; }
 echo "Sólo 'desaparecido' autoriza relanzar, y sólo vía --confirmar-muerte <id>."
 echo "'indecidible' NO es 'muerto': es que este instrumento no puede verlo."
+# El worktree de un agente es otro eje: el candado de git lo pone el CLIENTE
+# con su pid y no dice si el agente sigue. Lo deciden su entrega, su rama y su
+# árbol (`thyrox: src/roster/worktree_state.py`), y cada veredicto trae qué
+# hacer con el trabajo — ninguno retira uno cuyo trabajo no está en HEAD.
+REPO_TOP=$(git rev-parse --show-toplevel 2>/dev/null || true)
+if [[ -n "$REPO_TOP" ]]; then
+  echo
+  echo "== worktrees de agente =="
+  PYTHONPATH="$READER" python3 "$READER/roster/worktree_state.py" --repo "$REPO_TOP" --tasks-dir "$ROSTER" \
+    || echo "  (no se pudo medir: worktree_state salió con error)"
+fi
 exit 0

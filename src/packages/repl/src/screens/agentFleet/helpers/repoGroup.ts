@@ -24,7 +24,7 @@ import type { FleetJobState } from '@thyrox/agent/background/fleet/fleetTypes.js
 export function spawnOrigin(state: FleetJobState): string {
   if (state.originCwd) return state.originCwd
   const match = state.cwd.match(/^(.+?)[/\\]\.claude[/\\]worktrees[/\\]/)
-  return match ? match[1] : state.cwd
+  return match?.[1] ?? state.cwd
 }
 
 /**

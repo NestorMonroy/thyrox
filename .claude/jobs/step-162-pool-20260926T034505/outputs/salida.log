@@ -1,0 +1,4 @@
+cache-ttl: 5m (option)
+-- FALLIDO pattern:optional-host-binding-yielded-without-guard .claude/workbench/tsc-zero-loop/run-20260924T175031/step-162/items/1.txt src/packages/agent/QueryEngine.ts
+items=2 ok=1 fallidos=1
+__BG_EXIT__=1

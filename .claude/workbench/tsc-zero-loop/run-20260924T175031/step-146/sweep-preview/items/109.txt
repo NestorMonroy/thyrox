@@ -1,0 +1,29 @@
+Patrón: unported-zod-schema-companion-of-stub-type
+Señal del verificador: TS2724:.*has no exported member named '\w*Schema'
+Arreglo genérico: Cuando el porte de un tipo deja el símbolo como stub estructural (p. ej. `Record<string, unknown>`) y omite deliberadamente su esquema Zod de validación (declarado como PORTE PARCIAL en el propio archivo), no se reintroduce el esquema faltante: se construye en el sitio de uso un `z.record(z.string(), z.unknown())` (u otro combinador Zod equivalente a la forma del stub) y se retira el símbolo inexistente del import.
+Ya aplicado en: src/packages/cli/src/structuredIO.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(27,46): error TS2724: '"./types/hooks.js"' has no exported member named 'promptRequestSchema'. Did you mean 'PromptRequest'?
+  --- código src/packages/agent/hooks.ts:17-37 ---
+     17   * `HookBlockingError` se declara con `command` opcional porque el test de
+     18   * los formateadores construye el objeto sin él; el motor siempre lo rellena.
+     19   */
+     20  
+     21  import { getHooksConfigFromSnapshot, shouldDisableAllHooksIncludingManaged, shouldAllowManagedHooksOnly } from './hooksConfigSnapshot.js'
+     22  import { createAttachmentMessage } from './internal/queryRuntime.js'
+     23  import { getSessionId as runtimeSessionId, getCwdState } from './internal/sessionRuntime.js'
+     24  import { execHttpHook } from './hooks/execHttpHook.js'
+     25  import type { AgentMessage } from './internalTypes.js'
+     26  import { buildHookProgressMessage, type HookDisplaySource, type HookProgressMessage } from './hooks/hookProgress.js'
+     27> import { isHookEvent, isAsyncHookJSONOutput, promptRequestSchema, type HookCommand, type HookEvent, type PromptRequest, type PromptResponse, isSyncHookJSONOutput, hookJSONOutputSchema } from './types/hooks.js'
+     28  import type { PermissionUpdate } from '@thyrox/permission/permissionTypes.js'
+     29  import { spawn, type ChildProcessWithoutNullStreams } from 'node:child_process'
+     30  import {
+     31    DEFAULT_HOOK_SHELL,
+     32    buildPowerShellArgs,
+     33    formatShellPrefixCommand,
+     34    getCachedPowerShellPath,
+     35    quote,
+     36    subprocessEnv,
+     37    wrapSpawn,

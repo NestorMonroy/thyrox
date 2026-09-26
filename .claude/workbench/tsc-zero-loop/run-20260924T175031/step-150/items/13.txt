@@ -1,0 +1,76 @@
+Patrón: union-member-property-access-without-narrowing
+Señal del verificador: TS2339: Property '\w+' does not exist on type '\{ type: "
+Arreglo genérico: Cuando un valor tiene un tipo unión discriminada (varios miembros con un campo `type` literal) y sólo algunos miembros llevan la propiedad accedida, agregar antes del acceso una guarda `if (valor?.type !== '<miembro-esperado>') { throw new Error(...) }` (o el equivalente narrowing) que angosta al miembro correcto, en vez de acceder con `?.` directo sobre el valor sin angostar.
+Ya aplicado en: src/packages/permission/src/__tests__/permissionUpdatePure.test.ts
+Archivos donde la señal sigue viva: src/packages/repl/src/components/StatusLine.tsx, src/packages/repl/src/components/messages/AttachmentMessage.tsx
+
+src/packages/repl/src/components/StatusLine.tsx(347,29): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+  --- código src/packages/repl/src/components/StatusLine.tsx:337-357 ---
+    337      logNextResultRef.current = true
+    338      void doUpdate()
+    339    }, [statusLineCommand, doUpdate])
+    340  
+    341    // Separate effect for logging on mount
+    342    useEffect(() => {
+    343      const statusLine = settings?.statusLine
+    344      if (statusLine) {
+    345        logEvent('tengu_status_line_mount', {
+    346          command_length: statusLine.command.length,
+    347>         padding: statusLine.padding,
+    348        })
+    349        // Log if status line is configured but disabled by disableAllHooks
+    350        if (settings.disableAllHooks === true) {
+    351          logForDebugging(
+    352            'Status line is configured but disableAllHooks is true',
+    353            { level: 'warn' },
+    354          )
+    355        }
+    356        // executeStatusLineCommand (hooks.ts) returns undefined when trust is
+    357        // blocked — statusLineText stays undefined forever, user sees nothing,
+src/packages/repl/src/components/StatusLine.tsx(389,42): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+  --- código src/packages/repl/src/components/StatusLine.tsx:379-399 ---
+    379      return () => {
+    380        abortControllerRef.current?.abort()
+    381        if (debounceTimerRef.current !== undefined) {
+    382          clearTimeout(debounceTimerRef.current)
+    383        }
+    384      }
+    385      // eslint-disable-next-line react-hooks/exhaustive-deps
+    386    }, []) // Only run once on mount, not when doUpdate changes
+    387  
+    388    // Get padding from settings or default to 0
+    389>   const paddingX = settings?.statusLine?.padding ?? 0
+    390  
+    391    // StatusLine must have stable height in fullscreen — the footer is
+    392    // flexShrink:0 so a 0→1 row change when the command finishes steals
+    393    // a row from ScrollBox and shifts content. Reserve the row while loading
+    394    // (same trick as PromptInputFooterLeftSide).
+    395    return (
+    396      <Box paddingX={paddingX} gap={2}>
+    397        {statusLineText ? (
+    398          <Text dimColor wrap="truncate">
+    399            <Ansi>{statusLineText}</Ansi>
+
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(474,35): error TS2339: Property 'paused' does not exist on type '{ type: "goal_status"; met: boolean; condition: string; sentinel?: boolean | undefined; reason?: string | undefined; iterations?: number | undefined; durationMs?: number | undefined; tokens?: number | undefined; failed?: boolean | undefined; }'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:464-484 ---
+    464        //   2. met:    green ✔ "Goal achieved (stats)"
+    465        //   3. pending: dim ○ "Goal not yet met… continuing"
+    466        // Sentinels (set/clear lifecycle events) are invisible.
+    467        // Stats render for met OR failed.
+    468        // Click-to-expand: when this row is hovered/selected (isItemClickable
+    469        // wired in Messages.tsx) the parent flips `verbose=true` and Goal:/
+    470        // Reason: details show. Failure path renders the failure reason
+    471        // inline without a label so users instantly see why.
+    472        if (attachment.sentinel) return null
+    473        const isFailed = attachment.failed === true
+    474>       const isPaused = attachment.paused === true
+    475        const stats: string[] = []
+    476        if (attachment.met || isFailed || isPaused) {
+    477          if (attachment.durationMs !== undefined) {
+    478            stats.push(formatDurationCompact(attachment.durationMs))
+    479          }
+    480          if (attachment.iterations !== undefined) {
+    481            stats.push(
+    482              `${attachment.iterations} ${plural(attachment.iterations, 'turn')}`,
+    483            )
+    484          }

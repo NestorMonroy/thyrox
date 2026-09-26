@@ -68,7 +68,8 @@ export function isResultSuccessful(
   if (!message) return false
 
   if (message.type === 'assistant') {
-    const lastContent = last(message.message.content)
+    const content = message.message.content
+    const lastContent = Array.isArray(content) ? last(content) : undefined
     return (
       lastContent?.type === 'text' ||
       lastContent?.type === 'thinking' ||
@@ -154,7 +155,7 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
                 parent_tool_use_id: message.parentToolUseID as string,
                 session_id: getSessionId(),
                 uuid: _.uuid,
-                timestamp: _.timestamp,
+                timestamp: _.timestamp as string | undefined,
                 isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
                 tool_use_result: _.mcpMeta
                   ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }
@@ -218,7 +219,7 @@ export function* normalizeMessage(message: Message): Generator<SDKMessage> {
           parent_tool_use_id: null,
           session_id: getSessionId(),
           uuid: _.uuid,
-          timestamp: _.timestamp,
+          timestamp: _.timestamp as string | undefined,
           isSynthetic: _.isMeta || _.isVisibleInTranscriptOnly,
           tool_use_result: _.mcpMeta
             ? { content: _.toolUseResult, ...(_.mcpMeta as Record<string, unknown>) }

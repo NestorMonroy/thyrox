@@ -10,18 +10,11 @@
  * opcionales) se resuelve caso por caso con el operador `?.` en el módulo
  * que la consume, nunca aquí.
  *
- * DIVERGENCIA DE ALCANCE, declarada: la fuente importa `AgentHostBindings`
- * de `./contracts.ts` (285 líneas) — no está portado todavía en este
- * árbol. Este archivo declara el tipo **localmente**, acotado a los
- * bindings que los módulos ya portados de `internal/` consumen
- * (`runtimeSignals.ts`, `sdkRuntime.ts`, `sessionRuntime.ts`,
- * `runtimeBridges.ts`, `logging.ts`, `headlessRuntime.ts`, `commandQueue.ts`). Es un
- * subconjunto, no una reinvención: cada campo copia la firma exacta que
- * `contracts.ts` declara para ese binding. Se amplía según se porten más
- * módulos de `internal/` que consuman bindings adicionales — no se
- * completa en un solo pase (mismo criterio que
- * `atributos-de-clase-de-modelo.md` en el proyecto hermano `kaupamex-docs`:
- * lo que la fuente declara para el símbolo que se porta, ni más ni menos).
+ * `AgentHostBindings` se importa de `./contracts.ts`, como en la fuente.
+ * Hasta 2026-09-25 este archivo declaraba un subconjunto local porque
+ * `contracts.ts` no estaba portado; ya lo está (85 bindings, que contienen
+ * los 65 del subconjunto), y la copia reducida hacía fallar a los
+ * consumidores de los bindings que le faltaban.
  *
  * `./internalTypes.ts` SÍ está portado (es autocontenido, sin
  * dependencias externas) — por eso `AgentMessage` se importa de ahí en
@@ -31,6 +24,7 @@
  */
 import { HostBindingsError } from './errors.ts'
 import type { AgentMessage } from './internalTypes.ts'
+import type { AgentHostBindings } from './contracts.ts'
 
 /**
  * Forma mínima de un mensaje de agente para el binding
@@ -47,191 +41,10 @@ export type DumpPromptsFetch = (
   init?: RequestInit,
 ) => Promise<Response>
 
-export type AgentHostBindings = {
-  // ── Logging (internal/logging.ts) ──────────────────────────────────────
-  logEvent?: (
-    event: string,
-    metadata: Record<string, string | number | boolean>,
-  ) => void
-  logError?: (error: unknown) => void
-  logAntError?: (message: string, error: unknown) => void
-  logDebug?: (message: string, metadata?: unknown) => void
-
-  // ── Observabilidad (runtimeSignals.ts) ─────────────────────────────────
-  headlessProfilerCheckpoint?: (name: string) => void
-  queryCheckpoint?: (name: string) => void
-  notifyCommandLifecycle?: (
-    uuid: string,
-    state: 'started' | 'completed',
-  ) => void
-
-  // ── Envelope del SDK (sdkRuntime.ts) ────────────────────────────────────
-  getInMemoryErrors?: () => unknown[]
-  categorizeRetryableAPIError?: (error: unknown) => unknown
-  getTotalAPIDuration?: () => number
-  getTotalCost?: () => number
-  getModelUsage?: () => Record<string, unknown>
-  getFastModeState?: (model: string, fastMode?: boolean) => unknown
-
-  // ── Estado de sesión (sessionRuntime.ts) ────────────────────────────────
-  getSessionId?: () => string
-  getSdkBetas?: () => string[]
-  getCurrentTurnTokenBudget?: () => number
-  getTurnOutputTokens?: () => number
-  incrementBudgetContinuationCount?: () => void
-  getCwdState?: () => string
-  setCwdState?: (cwd: string) => void
-  getOriginalCwd?: () => string
-  isSessionPersistenceDisabled?: () => boolean
-
-  // ── Pipeline de hooks Stop (`internal/stopHooksCore.ts`) ────────────────
-  // Las once que `handleStopHooks` conduce. Se declaran juntas porque su
-  // ausencia no rompía la compilación —cada llamada es opcional— sino que
-  // dejaba al generador conduciendo el vacío: compilaba, corría y no hacía
-  // nada. Ése es el defecto que #262 nombra, y el que su anulación atrapa.
-  executeStopHooks?: (
-    permissionMode: string,
-    signal: AbortSignal,
-    extra: unknown,
-    stopHookActive: boolean,
-    agentId: string | undefined,
-    toolUseContext: unknown,
-    messages: unknown[],
-    agentType: string | undefined,
-  ) => AsyncGenerator<StopHookExecutionResult, void>
-  executeTaskCompletedHooks?: (
-    taskId: string,
-    subject: string,
-    description: string | undefined,
-    teammateName: string,
-    teamName: string,
-    permissionMode: string,
-    signal: AbortSignal,
-    extra: unknown,
-    toolUseContext: unknown,
-  ) => AsyncGenerator<StopHookExecutionResult, void>
-  executeTeammateIdleHooks?: (
-    teammateName: string,
-    teamName: string,
-    permissionMode: string,
-    signal: AbortSignal,
-  ) => AsyncGenerator<StopHookExecutionResult, void>
-  createAttachmentMessage?: (attachment: unknown) => AgentMessage | undefined
-  createStopHookSummaryMessage?: (
-    hookCount: number,
-    hookInfos: unknown[],
-    hookErrors: string[],
-    preventedContinuation: boolean,
-    stopReason: string,
-    hasOutput: boolean,
-    kind: string,
-    toolUseID: string,
-  ) => AgentMessage | undefined
-  getStopHookMessage?: (blockingError: unknown) => string
-  getTaskCompletedHookMessage?: (blockingError: unknown) => string
-  getTeammateIdleHookMessage?: (blockingError: unknown) => string
-  classifyJobState?: (
-    jobDir: string | undefined,
-    assistantMessages: unknown[],
-  ) => Promise<void> | undefined
-  executePromptSuggestion?: (context: unknown) => Promise<void> | void
-  cleanupComputerUseAfterTurn?: (
-    toolUseContext: unknown,
-  ) => Promise<void> | void
-
-  // ── Snapshot de params seguro para caché (`/btw`, side_question) ────────
-  createCacheSafeParams?: (context: unknown) => unknown
-  saveCacheSafeParams?: (params: unknown) => void
-
-  // ── Tablero de tareas, leído por el pipeline de Stop ────────────────────
-  getTaskListId?: () => string | undefined
-  listTasks?: (taskListId: string | undefined) => Promise<HostTask[]>
-  isTeammate?: () => boolean
-  getAgentName?: () => string
-  getTeamName?: () => string
-  getShortcutDisplay?: (
-    action: string,
-    scope: string,
-    fallback: string,
-  ) => string
-
-  // ── Puentes de runtime (runtimeBridges.ts) ──────────────────────────────
-  createCompactBoundaryMessage?: (
-    trigger: 'manual' | 'auto',
-    preTokens: number,
-    lastPreCompactMessageUuid?: string,
-    userContext?: string,
-    messagesSummarized?: number,
-  ) => AgentMessageLike
-  recordTranscript?: (
-    messages: AgentMessageLike[],
-    teamInfo?: unknown,
-    startingParentUuidHint?: string,
-    allMessages?: readonly AgentMessageLike[],
-  ) => Promise<string | null>
-  flushSessionStorage?: () => Promise<void>
-  recordContentReplacement?: (
-    replacements: unknown[],
-    agentId?: string,
-  ) => Promise<void>
-  createDumpPromptsFetch?: (agentIdOrSessionId: string) => DumpPromptsFetch
-
-  // ── Modo headless / --print (internal/headlessRuntime.ts) ──────────────
-  registerStructuredOutputEnforcement?: (
-    setAppState: (f: (prev: unknown) => unknown) => void,
-    sessionId: string,
-  ) => void
-  getMainLoopModel?: () => string
-  parseUserSpecifiedModel?: (model: string) => string
-  loadAllPluginsCacheOnly?: () => Promise<{
-    enabled: unknown[]
-    [key: string]: unknown
-  }>
-  processUserInput?: (params: unknown) => Promise<{
-    messages: AgentMessage[]
-    shouldQuery: boolean
-    allowedTools: unknown
-    model?: string
-    resultText?: string
-    [key: string]: unknown
-  }>
-  fetchSystemPromptParts?: (params: unknown) => Promise<{
-    defaultSystemPrompt: string[]
-    userContext: Record<string, string>
-    systemContext: Record<string, string>
-  }>
-  shouldEnableThinkingByDefault?: () => boolean | undefined
-  buildSystemInitMessage?: (params: unknown) => unknown
-  sdkCompatToolName?: (toolName: string) => string
-  handleOrphanedPermission?: (
-    orphanedPermission: unknown,
-    tools: unknown[],
-    messages: AgentMessage[],
-    context: unknown,
-  ) => AsyncGenerator<unknown>
-  isResultSuccessful?: (
-    result: AgentMessage | undefined,
-    lastStopReason: string | null,
-  ) => boolean
-  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<unknown>
-  selectableUserMessagesFilter?: (message: AgentMessage) => boolean
-  getCoordinatorUserContext?: (
-    mcpClients: ReadonlyArray<{ name: string }>,
-    scratchpadDir?: string,
-  ) => Record<string, string>
-  isSnipBoundaryMessage?: (message: AgentMessage) => boolean
-  snipCompactIfNeeded?: (
-    messages: AgentMessage[],
-    options?: { force?: boolean },
-  ) => { messages: AgentMessage[]; executed: boolean } | undefined
-
-  // ── Cola de comandos (internal/commandQueue.ts) ─────────────────────────
-  getCommandsByMaxPriority?: (
-    maxPriority: 'now' | 'next' | 'later',
-  ) => AgentMessage[]
-  removeCommandsFromQueue?: (commands: AgentMessage[]) => void
-  isSlashCommand?: (command: AgentMessage) => boolean
-}
+// El contrato completo vive en `./contracts.ts`, como en la fuente; se re-exporta
+// para que `installAgentHostBindings`/`getAgentHostBindings` y sus consumidores
+// lo sigan tomando de aquí.
+export type { AgentHostBindings }
 
 let agentHostBindings: AgentHostBindings | null = null
 

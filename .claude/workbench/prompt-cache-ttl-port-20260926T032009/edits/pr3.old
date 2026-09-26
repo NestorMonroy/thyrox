@@ -1,0 +1,2 @@
+sleep 1
+bash "$GUION" register canal "$L1" "$P1" >/dev/null

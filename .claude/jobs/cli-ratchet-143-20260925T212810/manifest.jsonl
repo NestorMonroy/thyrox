@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash src/verify/check-cli-typecheck.sh --strict src/packages/agent/hooks.ts", "started_at": "2026-09-25T21:28:10+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-09-25T21:29:11+00:00", "duration_seconds": 61.972982}

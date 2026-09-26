@@ -17,6 +17,7 @@ import {
   EMPTY_LOOKUPS,
   normalizeMessages,
 } from '@thyrox/agent/messages.js'
+import type { NormalizedUserMessage } from '@thyrox/agent/messageShapes.js'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import { Message } from '../Message.js'
 
@@ -115,6 +116,11 @@ function PromptInputQueuedCommandsImpl(): React.ReactNode {
     const visibleCommands = queuedCommands.filter(isQueuedCommandVisible)
     if (visibleCommands.length === 0) return null
     const processedCommands = processQueuedCommands(visibleCommands)
+    // normalizeMessages() declara retorno union (NormalizedMessage) porque
+    // procesa mensajes de cualquier tipo, pero cada entrada aqui viene de
+    // createUserMessage: su rama 'user' preserva ese tipo, asi que el
+    // resultado real es siempre NormalizedUserMessage[], el unico miembro
+    // de la union que <Message> acepta para este llamador.
     return normalizeMessages(
       processedCommands.map(cmd => {
         let content = cmd.value
@@ -125,7 +131,7 @@ function PromptInputQueuedCommandsImpl(): React.ReactNode {
         // paste time), so the queue preview shows them without stub blocks.
         return createUserMessage({ content })
       }),
-    )
+    ) as NormalizedUserMessage[]
   }, [queuedCommands])
 
   // Don't show leader's queued commands when viewing any agent's transcript

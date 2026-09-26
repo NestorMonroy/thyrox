@@ -113,7 +113,7 @@ function MessageImpl({
     case 'assistant':
       return (
         <Box flexDirection="column" width={containerWidth ?? '100%'}>
-          {message.message.content.map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
+          {(message.message.content ?? []).map((_: ConnectorTextBlock|TextBlockParam|ImageBlockParam|ThinkingBlockParam|ToolUseBlockParam|ToolResultBlockParam|BetaContentBlock|AdvisorBlock, index: React.Key|null|undefined) => (
             <AssistantMessageBlock
               key={index}
               param={_}
@@ -132,7 +132,7 @@ function MessageImpl({
               onOpenRateLimitOptions={onOpenRateLimitOptions}
               thinkingBlockId={`${message.uuid}:${index}`}
               lastThinkingBlockId={lastThinkingBlockId}
-              advisorModel={message.advisorModel}
+              advisorModel={message.advisorModel as string | undefined}
             />
           ))}
         </Box>
@@ -153,9 +153,13 @@ function MessageImpl({
       // closure so the compiler can memoize MessageImpl.
       const imageIndices: number[] = []
       let imagePosition = 0
+      // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma
+      // de indice de `MessageBase`, o sea `unknown`. Mismo estrechamiento que
+      // `PromptInput.tsx:3205`.
+      const imagePasteIds = message.imagePasteIds as number[] | undefined
       for (const param of message.message.content) {
         if (param.type === 'image') {
-          const id = message.imagePasteIds?.[imagePosition]
+          const id = imagePasteIds?.[imagePosition]
           imagePosition++
           imageIndices.push(id ?? imagePosition)
         } else {
@@ -318,9 +322,9 @@ function UserMessage({
           addMargin={addMargin}
           param={param}
           verbose={verbose}
-          planContent={message.planContent}
+          planContent={message.planContent as string | undefined}
           isTranscriptMode={isTranscriptMode}
-          timestamp={message.timestamp}
+          timestamp={message.timestamp as string | undefined}
         />
       )
     case 'image':

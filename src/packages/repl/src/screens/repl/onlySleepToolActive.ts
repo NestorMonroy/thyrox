@@ -1,5 +1,5 @@
 import { SLEEP_TOOL_NAME } from '@thyrox/tool-registry/tools/SleepTool/prompt.js'
-import type { Message } from '@thyrox/agent/messageShapes'
+import type { ContentItem, Message } from '@thyrox/agent/messageShapes'
 
 /**
  * Returns true iff the last assistant message has in-progress tool_use
@@ -15,13 +15,14 @@ export function isOnlySleepToolActive(
 ): boolean {
   const lastAssistant = messages.findLast(m => m.type === 'assistant')
   if (lastAssistant?.type !== 'assistant') return false
-  const inProgressToolUses = lastAssistant.message.content.filter(
-(    b: { type: string; id: string }) => b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
+  const content = lastAssistant.message.content
+  const contentItems: ContentItem[] = Array.isArray(content) ? content : []
+  const inProgressToolUses = contentItems.filter(
+    (b): b is Extract<ContentItem, { type: 'tool_use' }> =>
+      b.type === 'tool_use' && inProgressToolUseIDs.has(b.id),
   )
   return (
     inProgressToolUses.length > 0 &&
-    inProgressToolUses.every(
-(      b: { type: string; name: string }) => b.type === 'tool_use' && b.name === SLEEP_TOOL_NAME,
-    )
+    inProgressToolUses.every(b => b.name === SLEEP_TOOL_NAME)
   )
 }

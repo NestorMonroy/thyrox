@@ -1,0 +1,5 @@
+src/packages/mcp-runtime/src/clientRuntime.ts(1576,21): error TS2322: Type '"started"' is not assignable to type '"progress"'.
+src/packages/mcp-runtime/src/clientRuntime.ts(1614,25): error TS2322: Type '"completed"' is not assignable to type '"progress"'.
+src/packages/mcp-runtime/src/clientRuntime.ts(1655,25): error TS2322: Type '"failed"' is not assignable to type '"progress"'.
+src/packages/mcp-runtime/src/clientRuntime.ts(2279,20): error TS2352: Conversion of type '{ elicitation: { queue: never[]; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ elicitation: { queue: never[]; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.

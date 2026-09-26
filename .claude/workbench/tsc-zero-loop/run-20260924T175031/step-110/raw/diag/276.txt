@@ -1,0 +1,4 @@
+src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts(88,12): error TS2349: This expression is not callable.
+  Type 'ZodObject<{ SessionStart: ZodOptional<ZodArray<ZodObject<{ matcher: ZodOptional<ZodString>; hooks: ZodArray<ZodObject<{ type: ZodLiteral<"command">; command: ZodString; timeout: ZodOptional<ZodNumber>; }, $strip>>; }, $strip>>>; ... 10 more ...; SubagentStop: ZodOptional<...>; }, $strict>' has no call signatures.
+src/packages/tool-registry/src/tools/AgentTool/loadAgentsDir.ts(432,18): error TS2349: This expression is not callable.
+  Type 'ZodObject<{ SessionStart: ZodOptional<ZodArray<ZodObject<{ matcher: ZodOptional<ZodString>; hooks: ZodArray<ZodObject<{ type: ZodLiteral<"command">; command: ZodString; timeout: ZodOptional<ZodNumber>; }, $strip>>; }, $strip>>>; ... 10 more ...; SubagentStop: ZodOptional<...>; }, $strict>' has no call signatures.

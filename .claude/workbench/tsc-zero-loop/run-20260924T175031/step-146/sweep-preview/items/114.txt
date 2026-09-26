@@ -1,0 +1,169 @@
+Patrón: unknown-field-with-known-producer-type
+Señal del verificador: TS2698|TS18046.*is of type 'unknown'
+Arreglo genérico: Cuando un campo de una unión discriminada está tipado `unknown` en su declaración compartida pero su(s) productor(es) real(es) —localizables siguiendo la función que construye ese valor— siempre devuelven un tipo concreto conocido, se importa ese tipo (como `import type`) en el archivo consumidor y se asigna el valor a una variable local con `as <TipoConcreto>` antes de usarlo (spread, acceso a propiedad). No se edita la declaración compartida si cae fuera del archivo permitido.
+Ya aplicado en: src/packages/repl/src/processUserInput/processSlashCommand.tsx
+Archivos donde la señal sigue viva: src/packages/agent/query.ts, src/packages/cli/src/headless/sdk/session/run-streaming.ts, src/packages/repl/src/screens/REPLView.tsx
+
+src/packages/agent/query.ts(725,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:715-735 ---
+    715                    toolUseContext,
+    716                  )
+    717                }
+    718              }
+    719              // Backfill tool_use inputs on a cloned message before yield so
+    720              // SDK stream output and transcript serialization see legacy/derived
+    721              // fields. The original `message` is left untouched for
+    722              // assistantMessages.push below — it flows back to the API and
+    723              // mutating it would break prompt caching (byte mismatch).
+    724              let yieldMessage: typeof message = message
+    725>             if (message.type === 'assistant') {
+    726                const assistantMsg = message as AssistantMessage
+    727                const contentArr = Array.isArray(assistantMsg.message?.content) ? assistantMsg.message.content as unknown as Array<{ type: string; input?: unknown; name?: string; [key: string]: unknown }> : []
+    728                let clonedContent: typeof contentArr | undefined
+    729                for (let i = 0; i < contentArr.length; i++) {
+    730                  const block = contentArr[i]!
+    731                  if (
+    732                    block.type === 'tool_use' &&
+    733                    typeof block.input === 'object' &&
+    734                    block.input !== null
+    735                  ) {
+src/packages/agent/query.ts(762,19): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/agent/query.ts:752-772 ---
+    752                      )
+    753                      if (addedFields) {
+    754                        clonedContent ??= [...contentArr]
+    755                        clonedContent[i] = { ...block, input: inputCopy }
+    756                      }
+    757                    }
+    758                  }
+    759                }
+    760                if (clonedContent) {
+    761                  yieldMessage = {
+    762>                   ...message,
+    763                    message: { ...(assistantMsg.message ?? {}), content: clonedContent },
+    764                  } as typeof message
+    765                }
+    766              }
+    767              // Withhold recoverable errors (prompt-too-long, max-output-tokens)
+    768              // until we know whether recovery (collapse drain / reactive
+    769              // compact / truncation retry) can succeed. Still pushed to
+    770              // assistantMessages so the recovery checks below find them.
+    771              // Either subsystem's withhold is sufficient — they're
+    772              // independent so turning one off doesn't break the other's
+src/packages/agent/query.ts(804,17): error TS18046: 'message' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:794-814 ---
+    794                isWithheldReactiveMediaSizeError(message as Message)
+    795              ) {
+    796                withheld = true
+    797              }
+    798              if (isWithheldMaxOutputTokens(message)) {
+    799                withheld = true
+    800              }
+    801              if (!withheld) {
+    802                yield yieldMessage
+    803              }
+    804>             if (message.type === 'assistant') {
+    805                const assistantMessage = message as AssistantMessage
+    806                assistantMessages.push(assistantMessage)
+    807  
+    808                const msgToolUseBlocks = (Array.isArray(assistantMessage.message?.content) ? assistantMessage.message.content : []).filter(
+    809                  (content: { type: string }) => content.type === 'tool_use',
+    810                ) as ToolUseBlock[]
+    811                if (msgToolUseBlocks.length > 0) {
+    812                  toolUseBlocks.push(...msgToolUseBlocks)
+    813                  needsFollowUp = true
+    814                }
+src/packages/agent/query.ts(1427,11): error TS18046: 'update.message.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1417-1437 ---
+   1417      const toolUpdates = streamingToolExecutor
+   1418        ? streamingToolExecutor.getRemainingResults()
+   1419        : runTools(toolUseBlocks, assistantMessages, canUseTool, toolUseContext)
+   1420  
+   1421      for await (const update of toolUpdates) {
+   1422        if (update.message) {
+   1423          yield update.message
+   1424  
+   1425          if (
+   1426            update.message.type === 'attachment' &&
+   1427>           update.message.attachment.type === 'hook_stopped_continuation'
+   1428          ) {
+   1429            shouldPreventContinuation = true
+   1430          }
+   1431  
+   1432          toolResults.push(
+   1433            ...normalizeMessagesForAPI(
+   1434              [update.message],
+   1435              toolUseContext.options.tools,
+   1436            ).filter(_ => _.type === 'user'),
+   1437          )
+src/packages/agent/query.ts(1756,37): error TS18046: 'tr.attachment' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:1746-1766 ---
+   1746            notifyCommandLifecycle(cmd.uuid, 'started')
+   1747          }
+   1748        }
+   1749        removeFromQueue(consumedCommands)
+   1750      }
+   1751  
+   1752      // Instrumentation: Track file change attachments after they're added
+   1753      const fileChangeAttachmentCount = count(
+   1754        toolResults,
+   1755        tr =>
+   1756>         tr.type === 'attachment' && tr.attachment.type === 'edited_text_file',
+   1757      )
+   1758  
+   1759      logEvent('tengu_query_after_attachments', {
+   1760        totalToolResultsCount: toolResults.length,
+   1761        fileChangeAttachmentCount,
+   1762        queryChainId: queryChainIdForAnalytics,
+   1763        queryDepth: queryTracking.depth,
+   1764      })
+   1765  
+   1766      // Refresh tools between turns so newly-connected MCP servers become available
+
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
+
+src/packages/repl/src/screens/REPLView.tsx(3290,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3280-3300 ---
+   3280              ...updatedToolPermissionContext,
+   3281              mode: 'auto',
+   3282              prePlanMode: undefined,
+   3283            });
+   3284          }
+   3285  
+   3286          return {
+   3287            ...prev,
+   3288            initialMessage: null,
+   3289            toolPermissionContext: updatedToolPermissionContext,
+   3290>           ...(shouldStorePlanForVerification && {
+   3291              pendingPlanVerification: {
+   3292                plan: initialMsg.message.planContent!,
+   3293                verificationStarted: false,
+   3294                verificationCompleted: false,
+   3295              },
+   3296            }),
+   3297          };
+   3298        });
+   3299  
+   3300        // Create file history snapshot for code rewind

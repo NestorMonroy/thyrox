@@ -69,11 +69,12 @@ function RateLimitOptionsMenu({
       // Org spend cap depleted - non-admins can't request more since there's nothing to allocate
       // - out_of_credits: wallet empty
       // - org_level_disabled_until: org spend cap hit for the month
-      // - org_service_zero_credit_limit: org service has zero credit limit
+      // - org_spend_cap_reached: el mismo tope, con el nombre de la cabecera
+      // (2.1.281 retiró org_service_zero_credit_limit; `urn` usa estos tres)
       const isOrgSpendCapDepleted =
         claudeAiLimits.overageDisabledReason === 'out_of_credits' ||
         claudeAiLimits.overageDisabledReason === 'org_level_disabled_until' ||
-        claudeAiLimits.overageDisabledReason === 'org_service_zero_credit_limit'
+        claudeAiLimits.overageDisabledReason === 'org_spend_cap_reached'
 
       // Hide for non-admin Team/Enterprise users when org spend cap is depleted
       if (needsToRequestFromAdmin && isOrgSpendCapDepleted) {

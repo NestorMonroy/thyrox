@@ -1,0 +1,13 @@
+src/packages/command-runtime/src/commands/skills/skills.tsx(10,64): error TS2339: Property 'commands' does not exist on type '{ dynamicMcpConfig?: Record<string, unknown> | undefined; ideInstallationStatus: unknown; theme: unknown; }'.
+  --- código src/packages/command-runtime/src/commands/skills/skills.tsx:1-11 ---
+      1  import * as React from 'react'
+      2  import type { LocalJSXCommandContext } from '../../runtime.js'
+      3  import { SkillsMenu } from '@thyrox/repl/components/skills/SkillsMenu.js'
+      4  import type { LocalJSXCommandOnDone } from '@thyrox/agent/command.js'
+      5  
+      6  export async function call(
+      7    onDone: LocalJSXCommandOnDone,
+      8    context: LocalJSXCommandContext,
+      9  ): Promise<React.ReactNode> {
+     10>   return <SkillsMenu onExit={onDone} commands={context.options.commands} />
+     11  }

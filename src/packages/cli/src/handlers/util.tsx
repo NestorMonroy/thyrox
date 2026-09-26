@@ -13,7 +13,7 @@ import { Box, Text } from '@anthropic/ink'
 import { KeybindingSetup } from '@thyrox/repl/keybindings/KeybindingProviderSetup.js'
 import { logEvent } from '@thyrox/local-observability'
 import { MCPConnectionManager } from '@thyrox/mcp-runtime/MCPConnectionManager.js'
-import { AppStateProvider } from '../appStateShim.js'
+import { AppStateProvider, type AppState } from '../appStateShim.js'
 import { onChangeAppState } from '@thyrox/repl/onChangeAppState.js'
 import { isAnthropicAuthEnabled } from '@thyrox/provider/authAlias.js'
 
@@ -26,7 +26,11 @@ export async function setupTokenHandler(root: Root): Promise<void> {
   )
   await new Promise<void>(resolve => {
     root.render(
-      <AppStateProvider onChangeAppState={onChangeAppState}>
+      <AppStateProvider
+        onChangeAppState={prev =>
+          onChangeAppState(prev as { newState: AppState; oldState: AppState })
+        }
+      >
         <KeybindingSetup>
           <Box flexDirection="column" gap={1}>
             <WelcomeV2 />

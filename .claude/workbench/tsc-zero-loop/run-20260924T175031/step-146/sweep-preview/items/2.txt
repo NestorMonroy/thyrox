@@ -1,0 +1,29 @@
+Patrón: unknown-absorbs-return-union
+Señal del verificador: TS2339: Property '[^']+' does not exist on type '\{\}'
+Arreglo genérico: Un valor unknown estrechado por veracidad (if (!x) ..., x?.y, !x || x.f()) queda como {} y cada lectura es TS2339. Se tipa el unknown donde se declara, con el contrato que el propio arbol ya tiene para ese valor: la rama de retorno (fromAgentEvent, paso 085) o el stub de tipo (QuerySource, paso 086). No se castea en el consumidor.
+Ya aplicado en: src/packages/agent/createDeps.ts, src/packages/agent/querySource.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(2756,38): error TS2339: Property 'length' does not exist on type '{}'.
+  --- código src/packages/agent/hooks.ts:2746-2766 ---
+   2746   * para evitar construir hook inputs por cada archivo de instrucciones cuando no hay
+   2747   * ningún hook configurado.
+   2748   *
+   2749   * Comprueba tanto los hooks de settings-file (getHooksConfigFromSnapshot) como los
+   2750   * hooks registrados (plugin hooks + SDK callback hooks vía registerHookCallbacks).
+   2751   * Los hooks derivados de la sesión (structured output enforcement, etc.) son
+   2752   * internos y no se comprueban.
+   2753   */
+   2754  export function hasInstructionsLoadedHook(): boolean {
+   2755    const snapshotHooks = getHooksConfigFromSnapshot()?.['InstructionsLoaded']
+   2756>   if (snapshotHooks && snapshotHooks.length > 0) return true
+   2757    const registeredHooks = getRegisteredHooks()?.['InstructionsLoaded']
+   2758    if (registeredHooks && registeredHooks.length > 0) return true
+   2759    return false
+   2760  }
+   2761  function isInternalHook(matched: MatchedHook): boolean {
+   2762    return matched.hook.type === 'callback' && matched.hook.internal === true
+   2763  }
+   2764  /**
+   2765   * Comprueba si una query de match coincide con el patrón de un matcher de hook.
+   2766   * @param matchQuery La query a comparar (p.ej. 'Write', 'Edit', 'Bash')

@@ -1,0 +1,12 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(448,25): error TS2345: Argument of type '(code?: number) => Promise<any>' is not assignable to parameter of type '(code: number) => Promise<never>'.
+  Type 'Promise<any>' is not assignable to type 'Promise<never>'.
+    Type 'any' is not assignable to type 'never'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(459,5): error TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'string[]'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(474,61): error TS2345: Argument of type '{ recursive?: boolean | undefined; } | undefined' is not assignable to parameter of type '{ mode?: number | undefined; } | undefined'.
+  Type '{ recursive?: boolean | undefined; }' has no properties in common with type '{ mode?: number | undefined; }'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(475,52): error TS2551: Property 'writeFileSync' does not exist on type 'FsOperations'. Did you mean 'readFileSync'?
+src/packages/app-host/src/runtime/installPluginBindings.ts(476,67): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ encoding: BufferEncoding; }'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(508,39): error TS2322: Type '{ resolvedPath: string; isSymlink: boolean; isCanonical: boolean; }' is not assignable to type 'string'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(508,55): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FsOperations'.
+src/packages/app-host/src/runtime/installPluginBindings.ts(531,32): error TS2556: A spread argument must either have a tuple type or be passed to a rest parameter.

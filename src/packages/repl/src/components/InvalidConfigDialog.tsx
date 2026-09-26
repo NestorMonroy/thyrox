@@ -2,6 +2,7 @@ import React from 'react'
 import { Box, Dialog, wrappedRender as render, Text } from '@anthropic/ink'
 import { KeybindingSetup } from '../keybindings/KeybindingProviderSetup.js'
 import { AppStateProvider } from '../appStateHooks.js'
+import { getDefaultAppState } from '@thyrox/app-host/state/AppStateStore.js'
 import type { ConfigParseError } from '@thyrox/local-observability/errorHelpers.js'
 import { getBaseRenderOptions } from '@thyrox/output/render-options'
 import {
@@ -86,7 +87,7 @@ export async function showInvalidConfigDialog({
   // biome-ignore lint/suspicious/noAsyncPromiseExecutor: decompiled code
   await new Promise<void>(async resolve => {
     const { unmount } = await render(
-      <AppStateProvider>
+      <AppStateProvider initialState={getDefaultAppState()}>
         <KeybindingSetup>
           <InvalidConfigDialog
             filePath={error.filePath}

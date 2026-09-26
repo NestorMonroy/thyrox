@@ -95,52 +95,19 @@ _SESSION="${CLAUDE_CODE_SESSION_ID:-sin-sesion}"
 # de golpe y no correrlas seria publicar un verde que no medi. La cadena de
 # respaldo hace que el barrido pueda ser gradual sin dejar nada roto en medio;
 # el barrido es la tarea #91.
-# El hogar del ledger tiene clave PROPIA desde H-THYROX-179:
-# THYROX_JOBS_LEDGER_DIR, la RAIZ bajo la que cada sesion recibe su
-# subdirectorio. THYROX_JOBS_DIR no servia para eso en un consumer: en
-# `job_runs.py` esa misma clave nombra el hogar de los RUNS, y un consumer que
-# la declara con ese significado mezclaria los `.job` con los runs y perderia
-# la separacion por sesion. Una clave, dos referentes.
-#
-# Precedencia, de la declaracion mas inmediata a la mas general:
-#   1. THYROX_JOBS_LEDGER_DIR exportada           -> <valor>/<sesion>
-#   2. THYROX_JOBS_DIR / KX_TRABAJOS_DIR exportadas -> <valor>, tal cual
-#      (forma heredada; la usan las suites de shell para aislar su ledger)
-#   3. THYROX_JOBS_LEDGER_DIR en el `.env`         -> <valor>/<sesion>
-#      (el que THYROX_ENV_FILE nombra, leido con `thyrox_config_value`: un
-#      `grep` propio del `.env` seria una segunda fuente de verdad)
-#   4. <thyrox>/.claude/jobs-ledger/<sesion>
-#
-# THYROX_JOBS_DIR NO se lee del `.env`, a proposito: ahi su significado es el
-# de runs, y leerla como ledger reproduciria la mezcla que esto corrige.
-_resolve_ledger() {
-    local root="${THYROX_JOBS_LEDGER_DIR:-}" code
-    if [[ -z "$root" ]]; then
-        if [[ -n "${THYROX_JOBS_DIR:-${KX_TRABAJOS_DIR:-}}" ]]; then
-            printf '%s' "${THYROX_JOBS_DIR:-$KX_TRABAJOS_DIR}"
-            return 0
-        fi
-        # Exit 1 de `thyrox_config_value` es «no declarada» y cae al default;
-        # cualquier otro es un fallo del mecanismo, y caer al default en
-        # silencio llevaria el ledger a donde nadie lo pidio.
-        # stdout y stderr juntos: el aviso de «sin declarar» es esperado en el
-        # exit 1 y se descarta; en cualquier otro fallo se reenvia.
-        root="$(source "$_ROOT/src/lib/reach.sh" && thyrox_config_value THYROX_JOBS_LEDGER_DIR 2>&1)"; code=$?
-        if (( code == 1 )); then
-            printf '%s' "$_ROOT/.claude/jobs-ledger/$_SESSION"
-            return 0
-        elif (( code != 0 )); then
-            echo "wait-jobs: no se pudo leer THYROX_JOBS_LEDGER_DIR (exit $code): $root" >&2
-            return 2
-        fi
-    fi
-    if [[ "$root" != /* ]]; then
-        echo "wait-jobs: THYROX_JOBS_LEDGER_DIR debe ser una ruta absoluta; se recibio '$root'." >&2
-        return 2
-    fi
-    printf '%s' "${root%/}/$_SESSION"
-}
-LEDGER="$(_resolve_ledger)" || exit 2
+# La raiz de los ledgers es un hogar: la resuelve `job_ledger.ledger_root()`,
+# con sus dos entradas de entorno (`THYROX_JOBS_LEDGER_DIR` o el `.env`). Un
+# literal aqui seria su segunda fuente de verdad, y el hook de compactacion ya
+# lo copio una vez (H-THYROX-187).
+_LEDGER_ROOT="$(PYTHONPATH="$_ROOT/src${PYTHONPATH:+:$PYTHONPATH}" python3 -c \
+    'from session.job_ledger import ledger_root; print(ledger_root())')" || {
+    echo "wait-jobs.sh: no pude resolver la raiz de los ledgers" >&2; exit 2; }
+# El ledger de ESTA sesión. `THYROX_SESSION_LEDGER_DIR` lo fija tal cual
+# (una suite, el respaldo de `user_wiring`); sin ella, cuelga de la raíz.
+# NO se lee `THYROX_JOBS_DIR`: ése es el hogar de las CORRIDAS (`job_runs`),
+# y el `.env` lo fija a `.claude/jobs` — quien lo exportara metía los `.job`
+# entre directorios que el gate del banco trata como bancos (TASK #31).
+LEDGER="${THYROX_SESSION_LEDGER_DIR:-${KX_TRABAJOS_DIR:-$_LEDGER_ROOT/$_SESSION}}"
 _ARCHIVE_DIR="${THYROX_JOBS_ARCHIVE_DIR:-${KX_TRABAJOS_ARCHIVO_DIR:-$_ROOT/.claude/jobs}}"
 # Las dos formas de la familia: `EXIT=` del envoltorio a mano y
 # `__BG_EXIT__=` de `bg.sh`. Ver marker_wait.MARKER_PATTERN, que las
@@ -306,6 +273,54 @@ cmd_pending() {
     return $any_pending
 }
 
+# El árbol de un pid, él incluido: los hijos de un trabajo son quienes de
+# verdad trabajan (el lazo duerme esperando a su proponedor).
+process_tree() {
+    local pid="$1" child
+    echo "$pid"
+    for child in $(pgrep -P "$pid" 2>/dev/null); do process_tree "$child"; done
+}
+
+# La sonda de stdin sobre el árbol de cada trabajo vivo, repartida con GNU
+# Parallel. Un proceso que lee stdin de un canal espera para siempre si su
+# productor ni escribe ni cierra: es la forma del `rg` sin archivo que corrió
+# 1 h 19 min, y nadie la ve sin mirar `/proc`. Avisa, no mata: una tubería
+# viva también es un canal.
+probe_jobs() {  # probe_jobs <archivo.job>...
+    local probe="$_ROOT/bin/stdin_probe" par="${WAIT_JOBS_PARALLEL:-parallel}" serial=""
+    [[ -f "$probe" ]] || { echo "sonda: falta $probe — no se sondea" >&2; return 0; }
+    command -v "$par" >/dev/null 2>&1 || serial=1
+    [[ -z "$serial" ]] || echo "sonda: sin GNU Parallel ($par) — en serie" >&2
+    local f label pid pids rows p target kind state cpu comm
+    for f in "$@"; do
+        label=$(basename "$f" .job); pid=$(sed -n 's/^pid=//p' "$f")
+        [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || continue
+        pids=$(process_tree "$pid")
+        if [[ -z "$serial" ]]; then
+            rows=$(printf '%s\n' $pids | "$par" -j8 -k bash "$probe" {} 2>/dev/null)
+        else
+            rows=$(for p in $pids; do bash "$probe" "$p" 2>/dev/null; done)
+        fi
+        while IFS=$'\t' read -r p target kind state cpu writers; do
+            [[ -n "$p" ]] || continue
+            comm=$(cat "/proc/$p/comm" 2>/dev/null || echo '?')
+            # Los escritores los mide la sonda, no este guion: 0 es una
+            # tubería cuyo escritor ya salió (leer da EOF); `-`, un socket,
+            # cuyo otro extremo no se ve.
+            local wr="escritores=${writers:--}"; [[ "$writers" == 0 ]] && wr="sin escritor"
+            echo "sonda $label: $p $comm stdin=$kind($target) $wr estado=$state cpu=${cpu}s" >&2
+            [[ "$kind" == channel && "$writers" != 0 ]] && echo "  AVISO $label: pid $p ($comm) lee stdin de un canal ($target)" \
+                "— si su productor no escribe ni cierra, espera para siempre" >&2
+        done <<< "$rows"
+    done
+}
+
+cmd_probe() {
+    shopt -s nullglob; local jobs=("$LEDGER"/*.job); shopt -u nullglob
+    [[ ${#jobs[@]} -gt 0 ]] || { echo "sonda: ledger vacío ($LEDGER)"; return 0; }
+    probe_jobs "${jobs[@]}"
+}
+
 cmd_wait() {
     # `--only <etiqueta>` acota la espera a DOS formas: la etiqueta exacta y su
     # grupo `<etiqueta>-*`. Sin el, la barrera globea TODO el ledger — que es
@@ -363,6 +378,10 @@ cmd_wait() {
     local total=${#jobs[@]}
 
     while true; do
+        # La cadena se mueve aquí: un dependiente cuyo predecesor asentó se
+        # lanza (o se cancela) sin que nadie corra `dispatch` a mano. Sus
+        # líneas van a stderr; stdout queda para el veredicto.
+        cmd_dispatch 2>&1 | gawk '/LANZADO|CANCELADO|SIN-PREDECESOR/' >&2
         local settled=0
         for f in "${jobs[@]}"; do
             local label; label=$(basename "$f" .job)
@@ -370,6 +389,11 @@ cmd_wait() {
                 (( settled++ )); continue
             fi
             [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }
+            if grep -q '^cancelled=' "$f"; then
+                settled_as[$label]=CANCELADO; (( settled++ ))
+                echo "asentado: $label -> CANCELADO ($settled de $total)" >&2
+                continue
+            fi
             local log pid ps0 v
             log=$(sed -n 's/^log=//p' "$f"); pid=$(sed -n 's/^pid=//p' "$f")
             mk=$(sed -n 's/^marker=//p' "$f")
@@ -392,6 +416,9 @@ cmd_wait() {
                 [[ -n "${settled_as[$e]:-}" ]] || alive+=("$e")
             done
             echo "esperando: $settled de $total asentados, $((now - started_at))s; vivos: ${alive[*]}" >&2
+            local alive_jobs=()
+            for e in "${alive[@]}"; do alive_jobs+=("$LEDGER/$e.job"); done
+            probe_jobs "${alive_jobs[@]}"
             last_beat=$now
         fi
 
@@ -580,9 +607,10 @@ class() {
 #   ESPERANDO lo deja como está — todavía no se sabe
 #
 # Es idempotente: un dependiente ya lanzado pierde su `after_ok=`, así que un
-# segundo `dispatch` no lo relanza. Y lo llaman `wait`, `status` y `pending`,
-# de modo que la cadena avanza con cualquier interacción, sin daemon y sin que
-# nadie tenga que quedarse esperando.
+# segundo `dispatch` no lo relanza. Lo llama `wait` en cada vuelta, de modo que
+# la cadena avanza mientras se espera, sin daemon. (Este comentario decía que
+# también `status` y `pending`, y ninguno de los tres lo llamaba: el cierre del
+# paso 161 esperó un `dispatch` a mano.)
 #
 # CANCELADO no es un estado silencioso a propósito: el trabajo se queda en el
 # ledger con `cancelled=` para que `status` lo muestre, y `pending` NO lo
@@ -612,6 +640,14 @@ cmd_dispatch() {
         plog=$(sed -n 's/^log=//p' "$pf");  ppid=$(sed -n 's/^pid=//p' "$pf")
         pps=$(sed -n 's/^proc_start=//p' "$pf"); pmk=$(sed -n 's/^marker=//p' "$pf")
         v=$(verdict "$plog" "$ppid" "$pattern" "$pps" "$pmk")
+        # El marcador dice «termino»; afterok exige «termino con 0». Se lee el
+        # codigo de la ultima linea del marcador — el de `bg.sh` y el `EXIT=`
+        # propio acaban en el numero — y uno distinto de 0 cancela.
+        local pcode=""
+        if [[ "$v" == OK ]]; then
+            pcode=$(grep -E "${pmk:-$pattern}" "$plog" 2>/dev/null | tail -1 | grep -oE "[0-9]+$")
+            [[ -n "$pcode" && "$pcode" != 0 ]] && v=BAIL
+        fi
         case "$v" in
             OK)
                 run=$(sed -n 's/^run=//p' "$f")
@@ -644,7 +680,11 @@ cmd_dispatch() {
                 grep -v '^after_ok=\|^run=' "$f" > "$tmp"
                 printf 'cancelled=%s\n' "$after_ok" >> "$tmp"
                 mv -f "$tmp" "$f"
-                echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                if [[ -n "$pcode" && "$pcode" != 0 ]]; then
+                    echo "  CANCELADO $label — su predecesor '$after_ok' asentó con código $pcode, no 0; no se lanza"
+                else
+                    echo "  CANCELADO $label — su predecesor '$after_ok' terminó en BAIL; no se lanza"
+                fi
                 cancelados=$((cancelados + 1))
                 ;;
             *)
@@ -970,6 +1010,7 @@ case "${1:-}" in
     wait|esperar)        shift; cmd_wait "$@" ;;
     pending|pendientes)  shift; cmd_pending "$@" ;;
     status|estado)       shift; cmd_status "$@" ;;
+    probe|sondear)       shift; cmd_probe "$@" ;;
     continue|continuar)  shift; cmd_continue "$@" ;;
     kill|matar)          shift; cmd_kill "$@" ;;
     forget|olvidar)      shift; cmd_forget "$@" ;;

@@ -157,7 +157,10 @@ export function deferredCondition(key: string): string | undefined {
 
 export function keysByStatus(): Record<KeyStatus, string[]> {
   const out: Record<KeyStatus, string[]> = { consumida: [], declarada: [], diferida: [] }
-  for (const k of CLIENT_SETTING_KEYS) out[KEY_STATUS[k]].push(k)
+  for (const k of CLIENT_SETTING_KEYS) {
+    const status = KEY_STATUS[k]
+    if (status) out[status].push(k)
+  }
   return out
 }
 
@@ -166,8 +169,11 @@ export function deferredKeysPresent(data: unknown): { key: string; reason: strin
   if (typeof data !== 'object' || data === null) return []
   return Object.keys(data)
     .filter((k) => DIFERIDAS[k])
-    .map((k) => ({
-      key: k,
-      reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
-    }))
+    .map((k) => {
+      const deferred = DIFERIDAS[k]
+      return {
+        key: k,
+        reason: `${deferred?.motivo ?? ''}; todavía no se declara — entraría ${deferred?.condicion ?? ''}`,
+      }
+    })
 }

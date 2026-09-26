@@ -226,7 +226,10 @@ export function useReplBridge(
                 '@thyrox/bridge/inboundAttachments.js'
               )
               let sanitized = fields.content
-              if (feature('KAIROS_GITHUB_WEBHOOKS')) {
+              if (
+                feature('KAIROS_GITHUB_WEBHOOKS') &&
+                typeof fields.content === 'string'
+              ) {
                 /* eslint-disable @typescript-eslint/no-require-imports */
                 const { sanitizeInboundWebhookContent } =
                   require('@thyrox/bridge/webhookSanitizer.js') as typeof import('@thyrox/bridge/webhookSanitizer.js')
@@ -517,7 +520,7 @@ export function useReplBridge(
               }
               if (
                 feature('TRANSCRIPT_CLASSIFIER') &&
-                mode === 'auto' &&
+                (mode as PermissionMode) === 'auto' &&
                 !isAutoModeGateEnabled()
               ) {
                 const reason = getAutoModeUnavailableReason()
@@ -547,7 +550,14 @@ export function useReplBridge(
               setImmediate(() => {
                 getLeaderToolUseConfirmQueue()?.(currentQueue => {
                   currentQueue.forEach(item => {
-                    void item.recheckPermission()
+                    if (
+                      item !== null &&
+                      typeof item === 'object' &&
+                      'recheckPermission' in item &&
+                      typeof item.recheckPermission === 'function'
+                    ) {
+                      void item.recheckPermission()
+                    }
                   })
                   return currentQueue
                 })

@@ -1,0 +1,8 @@
+src/packages/agent/workflow/namedWorkflows.ts(104,3): error TS2322: Type '({ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; } | null)[]' is not assignable to type 'NamedWorkflow[]'.
+  Type '{ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; } | null' is not assignable to type 'NamedWorkflow'.
+    Type 'null' is not assignable to type 'NamedWorkflow'.
+src/packages/agent/workflow/namedWorkflows.ts(104,34): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Type 'NamedWorkflow' is not assignable to type '{ source: "userSettings" | "projectSettings"; name: string; description: string; whenToUse: string | undefined; script: string; filePath: string; }'.
+    Types of property 'source' are incompatible.
+      Type '"userSettings" | "projectSettings" | "built-in"' is not assignable to type '"userSettings" | "projectSettings"'.
+        Type '"built-in"' is not assignable to type '"userSettings" | "projectSettings"'.

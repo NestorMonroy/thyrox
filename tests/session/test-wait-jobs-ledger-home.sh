@@ -50,8 +50,15 @@ echo "== 3. la clave nueva exportada en el proceso, sin .env =="
 assert_eq "ledger-home sale del proceso" "$T/from-process" \
     "$(run_clean THYROX_JOBS_LEDGER_DIR="$T/from-process" bash "$SCRIPT" ledger-home 2>&1)"
 
-echo "== 4. THYROX_JOBS_DIR exportada (forma heredada) conserva su precedencia =="
-assert_eq "el ledger heredado gana" "$T/legacy" \
+# feature/thyrox-l6 retiró la forma heredada: `THYROX_JOBS_DIR` es el hogar de
+# las ejecuciones y, exportada como ledger, metía los `.job` entre ellas
+# (TASK #31). La clave que fija el ledger de una sesión tal cual es ahora
+# `THYROX_SESSION_LEDGER_DIR`.
+echo "== 4. THYROX_SESSION_LEDGER_DIR exportada fija el ledger tal cual =="
+assert_eq "el ledger de sesión gana" "$T/legacy" \
+    "$(run_clean THYROX_SESSION_LEDGER_DIR="$T/legacy" THYROX_ENV_FILE="$T/consumer.env" \
+        bash "$SCRIPT" ledger-home 2>&1)"
+assert_eq "y THYROX_JOBS_DIR exportada ya no es el ledger" "$T/ledgers" \
     "$(run_clean THYROX_JOBS_DIR="$T/legacy" THYROX_ENV_FILE="$T/consumer.env" \
         bash "$SCRIPT" ledger-home 2>&1)"
 
@@ -62,12 +69,13 @@ assert_eq "sin la clave nueva, el ledger queda en su default" "$ROOT/.claude/job
 assert_eq "y el hogar de runs no recibe un ledger" "no" \
     "$([[ -e "$T/runs/$SID" ]] && echo si || echo no)"
 
-echo "== 6. un valor relativo se rechaza =="
+# En feature/thyrox-l6 la raíz la resuelve `ledger_root()` con `resolve_home`,
+# la convención de todos los hogares: un valor relativo cuelga de la raíz de
+# thyrox, no se rechaza.
+echo "== 6. un valor relativo se resuelve contra la raíz, como todo hogar =="
 printf 'THYROX_JOBS_LEDGER_DIR=relative/ledgers\n' > "$T/relative.env"
-out="$(run_clean THYROX_ENV_FILE="$T/relative.env" bash "$SCRIPT" ledger-home 2>&1)"; code=$?
-assert_eq "sale 2" "2" "$code"
-assert_eq "y nombra la clave" "si" \
-    "$(grep -q THYROX_JOBS_LEDGER_DIR <<<"$out" && echo si || echo no)"
+assert_eq "cuelga de la raíz de thyrox" "$ROOT/relative/ledgers" \
+    "$(run_clean THYROX_ENV_FILE="$T/relative.env" bash "$SCRIPT" ledger-home 2>&1)"
 
 # El caso 5 crea el subdirectorio de sesion en el default del PROVIDER; se
 # retira para no dejar estado de prueba en el arbol.

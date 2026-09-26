@@ -1,0 +1,7 @@
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(5,15): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'Attachment'.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(26,6): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(26,11): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(36,32): error TS7006: Parameter 'file' implicitly has an 'any' type.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(36,38): error TS7006: Parameter 'fileIndex' implicitly has an 'any' type.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(58,36): error TS7006: Parameter 'diagnostic' implicitly has an 'any' type.
+src/packages/repl/src/components/DiagnosticsDisplay.tsx(58,48): error TS7006: Parameter 'diagIndex' implicitly has an 'any' type.

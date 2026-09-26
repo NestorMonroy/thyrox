@@ -1,0 +1,4 @@
+src/packages/cli/src/headless/sdk/session/run.ts(180,33): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: SettingsChangeTarget) => SettingsChangeTarget) => void'.
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'SettingsChangeTarget' is not assignable to type 'AppState'.
+      Type 'SettingsChangeTarget' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': verbose, mainLoopModel, mainLoopModelForSession, statusLineText, and 24 more.

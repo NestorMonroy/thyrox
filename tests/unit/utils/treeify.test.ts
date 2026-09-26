@@ -1,4 +1,5 @@
 import { mock, describe, expect, test } from 'bun:test'
+import type { TreeNode } from '@thyrox/repl/uiHelpers/treeify.js'
 
 mock.module('figures', () => ({
   default: {
@@ -52,7 +53,7 @@ describe('treeify', () => {
   })
 
   test('detects circular references', () => {
-    const obj: Record<string, unknown> = { name: 'root' }
+    const obj: TreeNode = { name: 'root' }
     obj.self = obj
     const result = treeify(obj)
     expect(result).toContain('[Circular]')

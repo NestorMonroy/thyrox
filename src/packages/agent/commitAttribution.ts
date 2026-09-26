@@ -20,7 +20,7 @@
  * cargar el modulo, de modo que «gana el mas especifico» es una propiedad
  * del mecanismo y no del orden del archivo.
  */
-import { createHash, randomUUID } from 'node:crypto'
+import { createHash, randomUUID, type UUID } from 'node:crypto'
 import { stat } from 'node:fs/promises'
 import { isAbsolute, join, relative, sep } from 'node:path'
 import type {
@@ -287,7 +287,7 @@ export function createEmptyAttributionState(): AttributionState {
 /** Convierte el estado de atribucion en un mensaje de snapshot persistible. */
 export function stateToSnapshotMessage(
   state: AttributionState,
-  messageId: string,
+  messageId: UUID,
 ): AttributionSnapshotMessage {
   const fileStates: Record<string, FileAttributionState> = {}
   for (const [path, fileState] of state.fileStates) {

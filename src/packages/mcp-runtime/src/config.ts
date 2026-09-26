@@ -56,6 +56,22 @@ import { normalizeNameForMCP } from './normalization.js'
 import { getProjectMcpServerStatus } from './utils.js'
 
 /**
+ * `ValidationError` portado en `@thyrox/config/validation` no incluye
+ * `suggestion` ni `mcpErrorMetadata` — la fuente sí los declara en su
+ * `ValidationError` (packages/config/settings/validation.ts), y este módulo
+ * los produce en varios puntos. Se amplía localmente en vez de tocar el
+ * paquete `config`, que está fuera del alcance de este archivo.
+ */
+type McpValidationError = ValidationError & {
+  suggestion?: string
+  mcpErrorMetadata?: {
+    scope: ConfigScope
+    serverName?: string
+    severity?: 'fatal' | 'warning'
+  }
+}
+
+/**
  * Get the path to the managed MCP configuration file
  */
 export function getEnterpriseMcpFilePath(): string {
@@ -1321,7 +1337,7 @@ export function parseMcpConfig(params: {
     return {
       config: null,
       errors: schemaResult.error.issues.map(issue => ({
-        ...(filePath && { file: filePath }),
+        file: filePath || '',
         path: issue.path.join('.'),
         message: 'Does not adhere to MCP server configuration schema',
         mcpErrorMetadata: {
@@ -1333,7 +1349,7 @@ export function parseMcpConfig(params: {
   }
 
   // Validate each server and expand variables if requested
-  const errors: ValidationError[] = []
+  const errors: McpValidationError[] = []
   const validatedServers: Record<string, McpServerConfig> = {}
 
   for (const [name, config] of Object.entries(schemaResult.data.mcpServers)) {
@@ -1344,7 +1360,7 @@ export function parseMcpConfig(params: {
 
       if (missingVars.length > 0) {
         errors.push({
-          ...(filePath && { file: filePath }),
+          file: filePath || '',
           path: `mcpServers.${name}`,
           message: `Missing environment variables: ${missingVars.join(', ')}`,
           suggestion: `Set the following environment variables: ${missingVars.join(', ')}`,
@@ -1369,7 +1385,7 @@ export function parseMcpConfig(params: {
         configToCheck.command.endsWith('/npx'))
     ) {
       errors.push({
-        ...(filePath && { file: filePath }),
+        file: filePath || '',
         path: `mcpServers.${name}`,
         message: `Windows requires 'cmd /c' wrapper to execute npx`,
         suggestion: `Change command to "cmd" with args ["/c", "npx", ...]. See: https://code.claude.com/docs/en/mcp#configure-mcp-servers`,
@@ -1400,7 +1416,7 @@ export function parseMcpConfigFromFilePath(params: {
   scope: ConfigScope
 }): {
   config: McpJsonConfig | null
-  errors: ValidationError[]
+  errors: McpValidationError[]
 } {
   const { filePath, expandVars, scope } = params
   const fs = getFsImplementation()

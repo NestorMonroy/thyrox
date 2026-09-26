@@ -1,0 +1,51 @@
+patron: jsonparse-unknown-result-accessed-without-narrowing
+senal_del_verificador: TS(2339|18046): .*(is of type 'unknown'\.|does not exist on type '\{\}'\.)
+fix_generico: `jsonParse` (de `./_deps.js`) devuelve `unknown` a propósito. Acceder a una propiedad del resultado (directo o con `?.`) exige primero una afirmación de tipo local y acotada al uso real, p. ej. `jsonParse(x) as { version?: unknown }` — el mismo patrón ya usado en `validatePlugin.ts:470`. No se usa `as any` ni `as unknown as`; la forma declarada es sólo la que el código ya consume.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(567,22): error TS18046: 'opt' is of type 'unknown'.
+  --- código src/packages/permission/src/components/rules/PermissionRuleList.tsx:557-577 ---
+    557      isActive: isSearchModeActive && !isSearchMode,
+    558    })
+    559  
+    560    const handleDeleteRule = () => {
+    561      if (!selectedRule) return
+    562  
+    563      // Find the adjacent rule to focus on after deletion
+    564      const { options } = getRulesOptions(selectedRule.ruleBehavior as TabType)
+    565      const selectedKey = jsonStringify(selectedRule)
+    566      const ruleKeys = options
+    567>       .filter(opt => opt.value !== 'add-new-rule')
+    568        .map(opt => opt.value)
+    569      const currentIndex = ruleKeys.indexOf(selectedKey)
+    570  
+    571      // Try to focus on the next rule, or the previous if deleting the last one
+    572      let nextFocusKey: string | undefined
+    573      if (currentIndex !== -1) {
+    574        if (currentIndex < ruleKeys.length - 1) {
+    575          // Focus on the next rule
+    576          nextFocusKey = ruleKeys[currentIndex + 1]
+    577        } else if (currentIndex > 0) {
+src/packages/permission/src/components/rules/PermissionRuleList.tsx(568,19): error TS18046: 'opt' is of type 'unknown'.
+  --- código src/packages/permission/src/components/rules/PermissionRuleList.tsx:558-578 ---
+    558    })
+    559  
+    560    const handleDeleteRule = () => {
+    561      if (!selectedRule) return
+    562  
+    563      // Find the adjacent rule to focus on after deletion
+    564      const { options } = getRulesOptions(selectedRule.ruleBehavior as TabType)
+    565      const selectedKey = jsonStringify(selectedRule)
+    566      const ruleKeys = options
+    567        .filter(opt => opt.value !== 'add-new-rule')
+    568>       .map(opt => opt.value)
+    569      const currentIndex = ruleKeys.indexOf(selectedKey)
+    570  
+    571      // Try to focus on the next rule, or the previous if deleting the last one
+    572      let nextFocusKey: string | undefined
+    573      if (currentIndex !== -1) {
+    574        if (currentIndex < ruleKeys.length - 1) {
+    575          // Focus on the next rule
+    576          nextFocusKey = ruleKeys[currentIndex + 1]
+    577        } else if (currentIndex > 0) {
+    578          // Focus on the previous rule (we're deleting the last one)

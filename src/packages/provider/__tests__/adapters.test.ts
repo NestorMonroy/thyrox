@@ -237,8 +237,10 @@ describe('los tres invariantes que la suite de la fuente mide', () => {
 
   test('3. un fallo de OpenAI sale como mensaje de asistente, no como excepcion', async () => {
     const adaptador = getProviderAdapter('openai')
-    const malFetch = (async () =>
-      new Response('boom', { status: 500, statusText: 'server error' })) as typeof fetch
+    const malFetch: typeof fetch = Object.assign(
+      async () => new Response('boom', { status: 500, statusText: 'server error' }),
+      { preconnect: () => {} },
+    )
     const eventos: Array<Record<string, unknown>> = []
     for await (const e of adaptador.queryStream(argumentos(malFetch) as never)) {
       eventos.push(e as unknown as Record<string, unknown>)

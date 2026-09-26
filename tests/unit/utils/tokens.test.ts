@@ -1,4 +1,5 @@
 import { mock, describe, expect, test } from 'bun:test'
+import type { BetaUsage } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 
 // Mock heavy dependency chain: tokenEstimation.ts → log.ts → bootstrap/state.ts
 mock.module('src/utils/log.ts', () => ({
@@ -87,6 +88,25 @@ function makeUserMessage(text: string) {
   }
 }
 
+// Rellena los campos de BetaUsage no ejercitados por el test con sus valores neutros.
+function makeUsage(overrides: Partial<BetaUsage> = {}): BetaUsage {
+  return {
+    cache_creation: null,
+    cache_creation_input_tokens: 0,
+    cache_read_input_tokens: 0,
+    fallback_credit: null,
+    inference_geo: null,
+    input_tokens: 0,
+    iterations: null,
+    output_tokens: 0,
+    output_tokens_details: null,
+    server_tool_use: null,
+    service_tier: null,
+    speed: null,
+    ...overrides,
+  }
+}
+
 // ─── getTokenCountFromUsage ─────────────────────────────────────────────
 
 describe('getTokenCountFromUsage', () => {
@@ -96,6 +116,14 @@ describe('getTokenCountFromUsage', () => {
       output_tokens: 50,
       cache_creation_input_tokens: 20,
       cache_read_input_tokens: 10,
+      cache_creation: null,
+      fallback_credit: null,
+      inference_geo: null,
+      iterations: null,
+      output_tokens_details: null,
+      server_tool_use: null,
+      service_tier: null,
+      speed: null,
     }
     expect(getTokenCountFromUsage(usage)).toBe(180)
   })
@@ -104,17 +132,27 @@ describe('getTokenCountFromUsage', () => {
     const usage = {
       input_tokens: 100,
       output_tokens: 50,
+      cache_creation_input_tokens: null,
+      cache_read_input_tokens: null,
+      cache_creation: null,
+      fallback_credit: null,
+      inference_geo: null,
+      iterations: null,
+      output_tokens_details: null,
+      server_tool_use: null,
+      service_tier: null,
+      speed: null,
     }
     expect(getTokenCountFromUsage(usage)).toBe(150)
   })
 
   test('handles zero values', () => {
-    const usage = {
+    const usage = makeUsage({
       input_tokens: 0,
       output_tokens: 0,
       cache_creation_input_tokens: 0,
       cache_read_input_tokens: 0,
-    }
+    })
     expect(getTokenCountFromUsage(usage)).toBe(0)
   })
 })

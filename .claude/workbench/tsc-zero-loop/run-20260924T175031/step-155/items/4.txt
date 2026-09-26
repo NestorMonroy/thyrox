@@ -1,0 +1,38 @@
+src/packages/agent/attachments.ts(1930,15): error TS2304: Cannot find name 'getMemoryFilesForNestedDirectory'.
+  --- código src/packages/agent/attachments.ts:1920-1940 ---
+   1920  
+   1921      const skipProjectLevel = getFeatureValue_CACHED_MAY_BE_STALE(
+   1922        'tengu_paper_halyard',
+   1923        false,
+   1924      )
+   1925  
+   1926      // Fase 3: procesar directorios anidados (CWD → destino)
+   1927      // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+   1928      for (const dir of nestedDirs) {
+   1929        const memoryFiles = (
+   1930>         await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
+   1931        ).filter(
+   1932          (f: MemoryFileInfo) =>
+   1933            !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1934        )
+   1935        attachments.push(
+   1936          ...memoryFilesToAttachments(memoryFiles, toolUseContext, filePath),
+   1937        )
+   1938      }
+   1939  
+   1940      // Fase 4: procesar directorios a nivel CWD (raíz → CWD)
+src/packages/agent/attachments.ts(3525,7): error TS6133: 'sessionTranscriptModule' is declared but its value is never read.
+  --- código src/packages/agent/attachments.ts:3515-3527 ---
+   3515              triggerFilePath,
+   3516              parentFilePath: memoryFile.parent,
+   3517            },
+   3518          )
+   3519        }
+   3520      }
+   3521    }
+   3522  
+   3523    return attachments
+   3524  }
+   3525> const sessionTranscriptModule = feature('KAIROS')
+   3526    ? (require('./sessionTranscript/sessionTranscript.js') as typeof import('./sessionTranscript/sessionTranscript.js'))
+   3527    : null

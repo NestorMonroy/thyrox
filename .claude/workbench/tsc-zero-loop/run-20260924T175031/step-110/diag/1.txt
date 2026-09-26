@@ -1,0 +1,25 @@
+src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts(60,21): error TS2345: Argument of type '(prev: unknown) => unknown' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/@ant/computer-use-mcp/src/legacy/cleanup.ts:50-70 ---
+     50      const unhide = unhideComputerUseApps([...hidden]).catch(err =>
+     51        logForDebugging(
+     52          `[Computer Use MCP] auto-unhide failed: ${errorMessage(err)}`,
+     53        ),
+     54      )
+     55      const timeout = withResolvers<void>()
+     56      const timer = setTimeout(timeout.resolve, UNHIDE_TIMEOUT_MS)
+     57      await Promise.race([unhide, timeout.promise]).finally(() =>
+     58        clearTimeout(timer),
+     59      )
+     60>     ctx.setAppState((prev: unknown) => {
+     61        const slice = prev as ComputerUseAppStateSlice
+     62        if (slice.computerUseMcpState?.hiddenDuringTurn === undefined) return prev
+     63        return {
+     64          ...(slice as object),
+     65          computerUseMcpState: {
+     66            ...slice.computerUseMcpState,
+     67            hiddenDuringTurn: undefined,
+     68          },
+     69        }
+     70      })
+  Type 'unknown' is not assignable to type 'AppState'.
+    Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

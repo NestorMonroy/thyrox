@@ -1,0 +1,92 @@
+tests/integration/tool-chain.test.ts(116,7): error TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.
+  --- código tests/integration/tool-chain.test.ts:106-126 ---
+    106      }
+    107    })
+    108  })
+    109  
+    110  // ─── buildTool + findToolByName end-to-end ─────────────────────────────
+    111  
+    112  describe('Tool chain: buildTool + findToolByName', () => {
+    113    test('a built tool can be found in a custom list', () => {
+    114      const customTool = buildTool({
+    115        name: 'TestTool',
+    116>       description: 'A test tool',
+    117        inputSchema: {
+    118          type: 'object' as const,
+    119          properties: { input: { type: 'string' } },
+    120          required: ['input'],
+    121        },
+    122        call: async () => ({ output: 'test' }),
+    123      })
+    124  
+    125      const found = findToolByName([customTool], 'TestTool')
+    126      expect(found).toBe(customTool)
+tests/integration/tool-chain.test.ts(122,25): error TS2322: Type 'Promise<{ output: string; }>' is not assignable to type 'Promise<ToolResult<any>>'.
+  --- código tests/integration/tool-chain.test.ts:112-132 ---
+    112  describe('Tool chain: buildTool + findToolByName', () => {
+    113    test('a built tool can be found in a custom list', () => {
+    114      const customTool = buildTool({
+    115        name: 'TestTool',
+    116        description: 'A test tool',
+    117        inputSchema: {
+    118          type: 'object' as const,
+    119          properties: { input: { type: 'string' } },
+    120          required: ['input'],
+    121        },
+    122>       call: async () => ({ output: 'test' }),
+    123      })
+    124  
+    125      const found = findToolByName([customTool], 'TestTool')
+    126      expect(found).toBe(customTool)
+    127    })
+    128  
+    129    test('built tool defaults are correctly applied', () => {
+    130      const tool = buildTool({
+    131        name: 'MinimalTool',
+    132        description: 'Minimal',
+  Property 'data' is missing in type '{ output: string; }' but required in type 'ToolResult<any>'.
+tests/integration/tool-chain.test.ts(132,7): error TS2322: Type 'string' is not assignable to type '(input: any, options: { isNonInteractiveSession: boolean; toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; tools: Tools; }) => Promise<...>'.
+  --- código tests/integration/tool-chain.test.ts:122-142 ---
+    122        call: async () => ({ output: 'test' }),
+    123      })
+    124  
+    125      const found = findToolByName([customTool], 'TestTool')
+    126      expect(found).toBe(customTool)
+    127    })
+    128  
+    129    test('built tool defaults are correctly applied', () => {
+    130      const tool = buildTool({
+    131        name: 'MinimalTool',
+    132>       description: 'Minimal',
+    133        inputSchema: {
+    134          type: 'object' as const,
+    135          properties: {},
+    136        },
+    137        call: async () => ({}),
+    138      })
+    139  
+    140      expect(tool.isEnabled()).toBe(true)
+    141      expect(tool.isConcurrencySafe()).toBe(false)
+    142      expect(tool.isReadOnly()).toBe(false)
+tests/integration/tool-chain.test.ts(137,25): error TS2322: Type 'Promise<{}>' is not assignable to type 'Promise<ToolResult<any>>'.
+  --- código tests/integration/tool-chain.test.ts:127-145 ---
+    127    })
+    128  
+    129    test('built tool defaults are correctly applied', () => {
+    130      const tool = buildTool({
+    131        name: 'MinimalTool',
+    132        description: 'Minimal',
+    133        inputSchema: {
+    134          type: 'object' as const,
+    135          properties: {},
+    136        },
+    137>       call: async () => ({}),
+    138      })
+    139  
+    140      expect(tool.isEnabled()).toBe(true)
+    141      expect(tool.isConcurrencySafe()).toBe(false)
+    142      expect(tool.isReadOnly()).toBe(false)
+    143      expect(tool.isDestructive()).toBe(false)
+    144    })
+    145  })
+  Property 'data' is missing in type '{}' but required in type 'ToolResult<any>'.

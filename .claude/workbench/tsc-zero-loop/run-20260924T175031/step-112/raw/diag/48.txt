@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(728,17): error TS18046: 'message' is of type 'unknown'.
+src/packages/agent/query.ts(765,19): error TS2698: Spread types may only be created from object types.

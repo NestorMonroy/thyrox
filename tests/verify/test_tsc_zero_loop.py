@@ -14,6 +14,7 @@ Qué haría fallar a este control:
 """
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -64,6 +65,15 @@ for path in sorted(pathlib.Path(".").glob("*.ts")):
 '''
 
 
+# Configuración global hostil, la misma de este contenedor: firma activada
+# con un firmante que no existe. El lazo tiene que commitear igual; sin
+# esto el test dependía de la máquina que lo corría (en ésta moría con 128
+# en el commit de la semilla, en otra pasaba sin probar nada).
+_HOSTILE = Path(tempfile.mkdtemp()) / "gitconfig"
+_HOSTILE.write_text("[commit]\n\tgpgsign = true\n[gpg]\n\tprogram = /nonexistent/signer\n")
+os.environ["GIT_CONFIG_GLOBAL"] = str(_HOSTILE)
+
+
 def git(repo: Path, *args: str) -> str:
     return subprocess.run(["git", *args], cwd=repo, check=True, capture_output=True, text=True).stdout
 
@@ -77,7 +87,9 @@ def fixture(base: Path) -> None:
     (base / "fake_tsc.py").write_text(FAKE_TSC)
     (base / "fake_proposer.py").write_text(FAKE_PROPOSER)
     git(base, "add", ".")
-    git(base, "commit", "-q", "-m", "seed")
+    # La semilla no es el sujeto: se firma apagado para que sólo el lazo
+    # enfrente la configuración hostil.
+    git(base, "-c", "commit.gpgsign=false", "commit", "-q", "-m", "seed")
 
 
 print("test_tsc_zero_loop:")

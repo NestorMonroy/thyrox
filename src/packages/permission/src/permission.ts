@@ -52,7 +52,11 @@ export function decide(policy: PermissionPolicy | undefined, capability: Capabil
 /** `Bash(git push:*)` da herramienta `Bash` y patrón `git push:*`. */
 function partirRegla(rule: string): { tool: string; pattern?: string } {
   const m = /^([A-Za-z_][A-Za-z0-9_]*)\((.*)\)$/.exec(rule)
-  return m ? { tool: m[1], pattern: m[2] } : { tool: rule }
+  if (m === null) return { tool: rule }
+  const tool = m[1]
+  const pattern = m[2]
+  if (tool === undefined) return { tool: rule }
+  return pattern === undefined ? { tool } : { tool, pattern }
 }
 
 /** El argumento sobre el que casa el patrón: el comando o la ruta, según la herramienta. */
@@ -90,7 +94,10 @@ export function matchesRule(rule: string, toolName: string, input: Record<string
   if (pattern === undefined || pattern === '*') return true
   const valor = objetivo(input)
   const prefijo = /^(.*):\*$/.exec(pattern)
-  if (prefijo) return valor === prefijo[1] || valor.startsWith(prefijo[1])
+  if (prefijo !== null) {
+    const sufijo = prefijo[1]
+    if (sufijo !== undefined) return valor === sufijo || valor.startsWith(sufijo)
+  }
   return globARegExp(pattern).test(valor)
 }
 

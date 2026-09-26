@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { describe, expect, test } from 'bun:test'
 
 /**
@@ -30,15 +31,14 @@ describe('agent message queue e2e', () => {
 
     enqueue({
       mode: 'prompt',
-      text: 'hello',
-      images: [],
-      uuid: 'test-uuid-1',
+      value: 'hello',
+      uuid: randomUUID(),
     })
 
     expect(getCommandQueueLength()).toBe(1)
     const q = getCommandQueue()
     expect(q.length).toBe(1)
-    expect(q[0]?.text).toBe('hello')
+    expect(q[0]?.value).toBe('hello')
     expect(q[0]?.mode).toBe('prompt')
 
     // Cleanup
@@ -52,20 +52,19 @@ describe('agent message queue e2e', () => {
     )
 
     removeByFilter(() => true)
-    enqueue({ mode: 'prompt', text: 'A', images: [], uuid: 'a' })
+    enqueue({ mode: 'prompt', value: 'A', uuid: randomUUID() })
     enqueue({
       mode: 'task-notification',
-      text: 'B',
-      images: [],
-      uuid: 'b',
+      value: 'B',
+      uuid: randomUUID(),
     })
-    enqueue({ mode: 'prompt', text: 'C', images: [], uuid: 'c' })
+    enqueue({ mode: 'prompt', value: 'C', uuid: randomUUID() })
 
     expect(getCommandQueueLength()).toBe(3)
 
     const removed = removeByFilter(c => c.mode === 'task-notification')
     expect(removed.length).toBe(1)
-    expect(removed[0]?.text).toBe('B')
+    expect(removed[0]?.value).toBe('B')
     expect(getCommandQueueLength()).toBe(2)
 
     removeByFilter(() => true)

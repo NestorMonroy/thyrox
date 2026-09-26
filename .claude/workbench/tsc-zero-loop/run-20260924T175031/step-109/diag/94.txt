@@ -1,0 +1,28 @@
+patron: sync-external-store-snapshot-inferred-unknown-from-untyped-require
+senal_del_verificador: TS2322: Type 'unknown' is not assignable to type '(boolean|string|number)'
+fix_generico: Cuando `getSnapshot` (o `subscribe`) de `useSyncExternalStore` viene de un `require(...)` sin anotar (por feature-flag dead-code-elimination), su tipo es `any`/`unknown` y TypeScript no puede inferir el genérico `Snapshot`, colapsándolo a `unknown` en el punto de consumo. Se arregla pasando el tipo explícito como argumento genérico — `React.useSyncExternalStore<TipoReal>(subscribe, getSnapshot)` — sin tocar la conducta en ejecución, porque el valor real (booleano/string/etc.) ya lo garantiza el stub o el módulo condicional.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/repl/src/components/messageActions.tsx(378,29): error TS2322: Type 'unknown' is not assignable to type 'string'.
+  --- código src/packages/repl/src/components/messageActions.tsx:368-388 ---
+    368          .flatMap(m =>
+    369            m.type === 'user'
+    370              ? [toolResultText(m)]
+    371              : m.type === 'grouped_tool_use'
+    372                ? m.results.map(toolResultText)
+    373                : [],
+    374          )
+    375          .filter(Boolean)
+    376          .join('\n\n')
+    377      case 'system':
+    378>       if ('content' in msg) return msg.content
+    379        if ('error' in msg) return String(msg.error)
+    380        return msg.subtype
+    381      case 'attachment': {
+    382        const a = msg.attachment
+    383        if (a.type === 'queued_command') {
+    384          const p = a.prompt as string | ReadonlyArray<ContentItem>
+    385          return typeof p === 'string'
+    386            ? p
+    387            : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
+    388        }

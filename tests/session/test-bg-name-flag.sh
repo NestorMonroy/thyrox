@@ -30,6 +30,7 @@ _contiene() { if [[ "$2" == *"$3"* ]]; then echo "  ok    $1"; ok=$((ok+1));
 
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 export THYROX_JOBS_DIR="$TMP/jobs"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 
 echo "== 1. el caso real del episodio: --label como nombre =="
 salida="$(bash "$BG" start --label etiqueta-x -- true 2>&1)"; codigo=$?

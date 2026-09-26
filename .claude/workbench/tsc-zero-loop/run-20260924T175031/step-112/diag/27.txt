@@ -1,0 +1,52 @@
+src/packages/agent/forkedAgent.ts(550,7): error TS2322: Type 'import("/home/user/thyrox/src/packages/repl/src/hooks/useCanUseTool").CanUseToolFn' is not assignable to type 'CanUseToolFn'.
+  --- código src/packages/agent/forkedAgent.ts:540-560 ---
+    540          : null
+    541    }
+    542  
+    543    // Run the query loop with isolated context (cache-safe params preserved)
+    544    try {
+    545      for await (const message of query({
+    546        messages: initialMessages,
+    547        systemPrompt,
+    548        userContext,
+    549        systemContext,
+    550>       canUseTool,
+    551        toolUseContext: isolatedToolUseContext,
+    552        querySource,
+    553        maxOutputTokensOverride: maxOutputTokens,
+    554        maxTurns,
+    555        skipCacheWrite,
+    556      })) {
+    557        // Extract real usage from message_delta stream events (final usage per API call)
+    558        if (message.type === 'stream_event' && 'event' in message) {
+    559          const streamMsg = message as typeof message & {
+    560            event?: { type?: string; usage?: unknown }
+  Types of parameters 'tool' and 'args' are incompatible.
+    Type 'unknown' is not assignable to type 'Tool'.
+src/packages/agent/forkedAgent.ts(551,7): error TS2322: Type 'ToolUseContext' is not assignable to type 'AgentToolUseContext'.
+  --- código src/packages/agent/forkedAgent.ts:541-561 ---
+    541    }
+    542  
+    543    // Run the query loop with isolated context (cache-safe params preserved)
+    544    try {
+    545      for await (const message of query({
+    546        messages: initialMessages,
+    547        systemPrompt,
+    548        userContext,
+    549        systemContext,
+    550        canUseTool,
+    551>       toolUseContext: isolatedToolUseContext,
+    552        querySource,
+    553        maxOutputTokensOverride: maxOutputTokens,
+    554        maxTurns,
+    555        skipCacheWrite,
+    556      })) {
+    557        // Extract real usage from message_delta stream events (final usage per API call)
+    558        if (message.type === 'stream_event' && 'event' in message) {
+    559          const streamMsg = message as typeof message & {
+    560            event?: { type?: string; usage?: unknown }
+    561          }
+  Types of property 'setAppState' are incompatible.
+    Types of parameters 'f' and 'f' are incompatible.
+      Type 'unknown' is not assignable to type 'AppState'.
+        Type 'unknown' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

@@ -37,6 +37,8 @@ import { CtrlOToExpand } from '../CtrlOToExpand.js'
 import { feature } from 'bun:bundle'
 import { useSelectedMessageBg } from '../messageActions.js'
 
+type RelevantMemory = { path: string; content: string }
+
 type Props = {
   addMargin: boolean
   attachment: Attachment
@@ -60,7 +62,7 @@ export function AttachmentMessage({
   if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
     // Filter out idle notifications BEFORE counting - they are hidden in the UI
     // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
-    const visibleMessages = attachment.messages.filter(msg => {
+    const visibleMessages = attachment.messages.filter((msg) => {
       if (isShutdownApproved(msg.text)) {
         return false
       }
@@ -80,7 +82,7 @@ export function AttachmentMessage({
     }
     return (
       <Box flexDirection="column">
-        {visibleMessages.map((msg, idx) => {
+        {visibleMessages.map((msg, idx: number) => {
           // Try to parse as JSON for task_assignment messages
           let parsedMsg: {
             type?: string
@@ -148,7 +150,7 @@ export function AttachmentMessage({
       // turn is still fresh. External users (when this un-gates) just see
       // names — shortId is undefined outside ant builds anyway.
       const names = attachment.skills
-        .map(s => (s.shortId ? `${s.name} [${s.shortId}]` : s.name))
+        .map((s: { name: string; shortId?: string }) => (s.shortId ? `${s.name} [${s.shortId}]` : s.name))
         .join(', ')
       const firstId = attachment.skills[0]?.shortId
       const hint =
@@ -194,7 +196,7 @@ export function AttachmentMessage({
         <Line>
           Read <Text bold>{attachment.displayPath}</Text> (
           {attachment.content.type === 'text'
-            ? `${attachment.content.file.numLines}${attachment.truncated ? '+' : ''} lines`
+            ? `${attachment.content.file.numLines}${(attachment.type === 'file' && attachment.truncated) ? '+' : ''} lines`
             : formatFileSize(attachment.content.file.originalSize)}
           )
         </Line>
@@ -252,7 +254,7 @@ export function AttachmentMessage({
             </Text>
           </Box>
           {(verbose || isTranscriptMode) &&
-            attachment.memories.map(m => (
+            attachment.memories.map((m: RelevantMemory) => (
               <Box key={m.path} flexDirection="column">
                 <MessageResponse>
                   <Text dimColor>
@@ -322,7 +324,7 @@ export function AttachmentMessage({
             isTranscriptMode={isTranscriptMode}
           />
           {hasImages &&
-            attachment.imagePasteIds?.map(id => (
+            attachment.imagePasteIds?.map((id: number) => (
               <UserImageMessage key={id} imageId={id} />
             ))}
         </Box>
@@ -338,7 +340,7 @@ export function AttachmentMessage({
       if (attachment.skills.length === 0) {
         return null
       }
-      const skillNames = attachment.skills.map(s => s.name).join(', ')
+      const skillNames = attachment.skills.map((s: { name: string; path: string; content: string }) => s.name).join(', ')
       return <Line>Skills restored ({skillNames})</Line>
     }
     case 'diagnostics':

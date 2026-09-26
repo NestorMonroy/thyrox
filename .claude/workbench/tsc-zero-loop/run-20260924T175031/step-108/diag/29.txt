@@ -1,0 +1,138 @@
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(87,34): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:77-97 ---
+     77      // Cada despertar es una llamada al proveedor, y la caché de prompt
+     78      // caduca a los 5 minutos de inactividad: dormir de más no es gratis.
+     79      expect(SLEEP_TOOL_PROMPT).toContain('API call')
+     80      expect(SLEEP_TOOL_PROMPT).toContain('5 minutes')
+     81    })
+     82  })
+     83  
+     84  describe('TestingPermissionTool — 7 casos', () => {
+     85    test('6. se nombra igual en el protocolo y ante la persona', () => {
+     86      expect(TestingPermissionTool.name).toBe('TestingPermission')
+     87>     expect(TestingPermissionTool.userFacingName()).toBe('TestingPermission')
+     88    })
+     89  
+     90    test('7. SÓLO se habilita bajo NODE_ENV=test', () => {
+     91      // Es la guarda que impide que un útil cuyo único acto es abrir un
+     92      // diálogo de permiso aparezca en una sesión real.
+     93      //
+     94      // LA MUTACIÓN VIVE DENTRO DEL CASO, CON `finally`. Estaba en un
+     95      // `beforeEach`/`afterEach`, y eso dejaba `NODE_ENV` fuera de su valor
+     96      // durante TODO el archivo: `bun test` corre archivos en el mismo
+     97      // proceso, así que la ventana la ve cualquiera. Medido: ningún otro
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(117,34): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:107-127 ---
+    107        expect(TestingPermissionTool.isEnabled()).toBe(false)
+    108        delete process.env.NODE_ENV
+    109        expect(TestingPermissionTool.isEnabled()).toBe(false)
+    110      } finally {
+    111        if (previo === undefined) delete process.env.NODE_ENV
+    112        else process.env.NODE_ENV = previo
+    113      }
+    114    })
+    115  
+    116    test('8. es de sólo lectura y seguro ante concurrencia', () => {
+    117>     expect(TestingPermissionTool.isReadOnly()).toBe(true)
+    118      expect(TestingPermissionTool.isConcurrencySafe()).toBe(true)
+    119    })
+    120  
+    121    test('9. SIEMPRE pide permiso — es su razón de existir', () => {
+    122      // No hay rama de `allow`: el útil existe para que la suite de extremo a
+    123      // extremo tenga un diálogo de permiso que ejercitar.
+    124      expect(TestingPermissionTool.checkPermissions({} as never, CTX)).resolves.toEqual({
+    125        behavior: 'ask',
+    126        message: 'Run test?',
+    127      })
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(118,34): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:108-128 ---
+    108        delete process.env.NODE_ENV
+    109        expect(TestingPermissionTool.isEnabled()).toBe(false)
+    110      } finally {
+    111        if (previo === undefined) delete process.env.NODE_ENV
+    112        else process.env.NODE_ENV = previo
+    113      }
+    114    })
+    115  
+    116    test('8. es de sólo lectura y seguro ante concurrencia', () => {
+    117      expect(TestingPermissionTool.isReadOnly()).toBe(true)
+    118>     expect(TestingPermissionTool.isConcurrencySafe()).toBe(true)
+    119    })
+    120  
+    121    test('9. SIEMPRE pide permiso — es su razón de existir', () => {
+    122      // No hay rama de `allow`: el útil existe para que la suite de extremo a
+    123      // extremo tenga un diálogo de permiso que ejercitar.
+    124      expect(TestingPermissionTool.checkPermissions({} as never, CTX)).resolves.toEqual({
+    125        behavior: 'ask',
+    126        message: 'Run test?',
+    127      })
+    128    })
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(148,14): error TS2554: Expected 3 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:138-158 ---
+    138      // Las seis devuelven `null` a propósito: el útil no tiene nada que
+    139      // mostrar, y un render vacío ensuciaría el transcript de la suite.
+    140      for (const render of [
+    141        TestingPermissionTool.renderToolUseMessage,
+    142        TestingPermissionTool.renderToolUseProgressMessage,
+    143        TestingPermissionTool.renderToolUseQueuedMessage,
+    144        TestingPermissionTool.renderToolUseRejectedMessage,
+    145        TestingPermissionTool.renderToolResultMessage,
+    146        TestingPermissionTool.renderToolUseErrorMessage,
+    147      ]) {
+    148>       expect(render({} as never, {} as never)).toBeNull()
+    149      }
+    150    })
+    151  
+    152    test('12. al ejecutarse dice que se ejecutó, y el bloque lo repite', async () => {
+    153      const { data } = await TestingPermissionTool.call({} as never, CTX)
+    154      expect(data).toBe('TestingPermission executed successfully')
+    155      const bloque = TestingPermissionTool.mapToolResultToToolResultBlockParam(
+    156        data,
+    157        'uso-1',
+    158      )
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(148,14): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:138-158 ---
+    138      // Las seis devuelven `null` a propósito: el útil no tiene nada que
+    139      // mostrar, y un render vacío ensuciaría el transcript de la suite.
+    140      for (const render of [
+    141        TestingPermissionTool.renderToolUseMessage,
+    142        TestingPermissionTool.renderToolUseProgressMessage,
+    143        TestingPermissionTool.renderToolUseQueuedMessage,
+    144        TestingPermissionTool.renderToolUseRejectedMessage,
+    145        TestingPermissionTool.renderToolResultMessage,
+    146        TestingPermissionTool.renderToolUseErrorMessage,
+    147      ]) {
+    148>       expect(render({} as never, {} as never)).toBeNull()
+    149      }
+    150    })
+    151  
+    152    test('12. al ejecutarse dice que se ejecutó, y el bloque lo repite', async () => {
+    153      const { data } = await TestingPermissionTool.call({} as never, CTX)
+    154      expect(data).toBe('TestingPermission executed successfully')
+    155      const bloque = TestingPermissionTool.mapToolResultToToolResultBlockParam(
+    156        data,
+    157        'uso-1',
+    158      )
+src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts(153,50): error TS2554: Expected 4-5 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts:143-163 ---
+    143        TestingPermissionTool.renderToolUseQueuedMessage,
+    144        TestingPermissionTool.renderToolUseRejectedMessage,
+    145        TestingPermissionTool.renderToolResultMessage,
+    146        TestingPermissionTool.renderToolUseErrorMessage,
+    147      ]) {
+    148        expect(render({} as never, {} as never)).toBeNull()
+    149      }
+    150    })
+    151  
+    152    test('12. al ejecutarse dice que se ejecutó, y el bloque lo repite', async () => {
+    153>     const { data } = await TestingPermissionTool.call({} as never, CTX)
+    154      expect(data).toBe('TestingPermission executed successfully')
+    155      const bloque = TestingPermissionTool.mapToolResultToToolResultBlockParam(
+    156        data,
+    157        'uso-1',
+    158      )
+    159      expect(bloque).toEqual({
+    160        type: 'tool_result',
+    161        content: 'TestingPermission executed successfully',
+    162        tool_use_id: 'uso-1',
+    163      })

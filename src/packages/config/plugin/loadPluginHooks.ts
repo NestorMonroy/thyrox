@@ -29,33 +29,18 @@ function convertPluginHooksToMatchers(
   plugin: LoadedPlugin,
 ): Record<HookEvent, PluginHookMatcher[]> {
   const pluginMatchers: Record<HookEvent, PluginHookMatcher[]> = {
-    PreToolUse: [],
-    PostToolUse: [],
-    PostToolUseFailure: [],
-    PermissionDenied: [],
-    Notification: [],
-    UserPromptSubmit: [],
     SessionStart: [],
     SessionEnd: [],
+    UserPromptSubmit: [],
+    PreToolUse: [],
+    PostToolUse: [],
     Stop: [],
-    StopFailure: [],
     SubagentStart: [],
     SubagentStop: [],
+    PreModelSwitch: [],
+    PostModelSwitch: [],
     PreCompact: [],
     PostCompact: [],
-    PermissionRequest: [],
-    Setup: [],
-    TeammateIdle: [],
-    TaskCreated: [],
-    TaskCompleted: [],
-    Elicitation: [],
-    ElicitationResult: [],
-    ConfigChange: [],
-    WorktreeCreate: [],
-    WorktreeRemove: [],
-    InstructionsLoaded: [],
-    CwdChanged: [],
-    FileChanged: [],
   }
 
   if (!plugin.hooksConfig) {
@@ -91,33 +76,18 @@ function convertPluginHooksToMatchers(
 export const loadPluginHooks = memoize(async (): Promise<void> => {
   const { enabled } = await loadAllPluginsCacheOnly()
   const allPluginHooks: Record<HookEvent, PluginHookMatcher[]> = {
-    PreToolUse: [],
-    PostToolUse: [],
-    PostToolUseFailure: [],
-    PermissionDenied: [],
-    Notification: [],
-    UserPromptSubmit: [],
     SessionStart: [],
     SessionEnd: [],
+    UserPromptSubmit: [],
+    PreToolUse: [],
+    PostToolUse: [],
     Stop: [],
-    StopFailure: [],
     SubagentStart: [],
     SubagentStop: [],
+    PreModelSwitch: [],
+    PostModelSwitch: [],
     PreCompact: [],
     PostCompact: [],
-    PermissionRequest: [],
-    Setup: [],
-    TeammateIdle: [],
-    TaskCreated: [],
-    TaskCompleted: [],
-    Elicitation: [],
-    ElicitationResult: [],
-    ConfigChange: [],
-    WorktreeCreate: [],
-    WorktreeRemove: [],
-    InstructionsLoaded: [],
-    CwdChanged: [],
-    FileChanged: [],
   }
 
   // Process each enabled plugin
@@ -195,6 +165,10 @@ export async function pruneRemovedPluginHooks(): Promise<void> {
   // clearRegisteredPluginHooks; we only need to re-register survivors.
   const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
   for (const [event, matchers] of Object.entries(current)) {
+    // `current` cruza la frontera de _deps.ts tipado como `unknown[]`,
+    // aunque en runtime es un mapa por evento; se afirma el valor real
+    // (un arreglo) antes de filtrarlo, sin asumirlo sin comprobar.
+    if (!Array.isArray(matchers)) continue
     const kept = matchers.filter(
       (m: { pluginRoot: string }): m is PluginHookMatcher =>
         'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
@@ -238,9 +212,19 @@ export function getPluginAffectingSettingsSnapshot(): string {
   // schema-stable order.
   const sortKeys = <T extends Record<string, unknown>>(o: T | undefined) =>
     o ? Object.fromEntries(Object.entries(o).sort()) : {}
+  // `extraKnownMarketplaces` no está en el esquema tipado de Settings
+  // (retirado en `settings/inventory.ts`, servicio externo) y llega por el
+  // índice `passthrough()` como `unknown`; se acota a registro antes de
+  // ordenar sus claves, con la misma forma que ya asume
+  // `addDirPluginSettings.ts` al leerlo.
+  const extraKnownMarketplaces =
+    typeof merged.extraKnownMarketplaces === 'object' &&
+    merged.extraKnownMarketplaces !== null
+      ? (merged.extraKnownMarketplaces as Record<string, unknown>)
+      : undefined
   return jsonStringify({
     enabledPlugins: sortKeys(merged.enabledPlugins),
-    extraKnownMarketplaces: sortKeys(merged.extraKnownMarketplaces),
+    extraKnownMarketplaces: sortKeys(extraKnownMarketplaces),
     strictKnownMarketplaces: policy?.strictKnownMarketplaces ?? [],
     blockedMarketplaces: policy?.blockedMarketplaces ?? [],
   })

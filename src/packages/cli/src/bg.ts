@@ -45,6 +45,7 @@ import {
   truncate,
 } from './bg/jobUtil.js'
 import { extractRespawnArgs } from './bg/respawnArgs.js'
+import type { RespawnJobMeta } from './bg/respawnJob.js'
 import { tailFile } from './bg/tailFile.js'
 
 import { getDefaultLauncher } from '@thyrox/repl/relaunch.js'
@@ -892,7 +893,15 @@ export async function respawnHandler(args: readonly string[]): Promise<void> {
     return
   }
 
-  const helpers = { getJobDir, generateShortId, spawnBgJob, writeJobMeta }
+  // RespawnJobMeta es una vista reducida de JobMeta (declarada aparte en
+  // respawnJob.ts para evitar un ciclo de imports); el valor real que
+  // respawnSingle escribe siempre trae los campos completos de JobMeta.
+  const helpers = {
+    getJobDir,
+    generateShortId,
+    spawnBgJob,
+    writeJobMeta: (meta: RespawnJobMeta) => writeJobMeta(meta as JobMeta),
+  }
 
   if (args.includes('--all')) {
     const { respawnSingle } = await import('./bg/respawnJob.js')

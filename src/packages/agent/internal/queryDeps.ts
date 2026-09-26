@@ -39,6 +39,7 @@
 import { randomUUID } from 'crypto'
 import { queryModelWithStreaming } from '@thyrox/provider/claudeLegacy'
 import { getAgentHostBindings } from '../host.ts'
+import type { AgentHostBindings } from '../host.ts'
 import type {
   AgentMessage,
   AgentQuerySource,
@@ -72,11 +73,25 @@ export type QueryDeps = {
   uuid: () => string
 }
 
+/**
+ * Los dos bindings de compactación que `contracts.ts` (285 líneas, sin
+ * portar) declara para el host, con la firma exacta que este módulo ya
+ * consume — el subconjunto local de `AgentHostBindings` en `host.ts`
+ * todavía no los expone. Se amplían aquí, no en `host.ts`, porque este
+ * archivo es el único punto del árbol portado que los consume.
+ */
+type CompactionHostBindings = {
+  microcompactMessages?: QueryDeps['microcompact']
+  autoCompactIfNeeded?: QueryDeps['autocompact']
+}
+
 export function productionDeps(): QueryDeps {
   return {
     callModel: queryModelWithStreaming,
     microcompact: async (messages, toolUseContext, querySource) =>
-      (await getAgentHostBindings().microcompactMessages?.(
+      (await (
+        getAgentHostBindings() as AgentHostBindings & CompactionHostBindings
+      ).microcompactMessages?.(
         messages,
         toolUseContext,
         querySource,
@@ -89,7 +104,9 @@ export function productionDeps(): QueryDeps {
       tracking,
       snipTokensFreed,
     ) =>
-      (await getAgentHostBindings().autoCompactIfNeeded?.(
+      (await (
+        getAgentHostBindings() as AgentHostBindings & CompactionHostBindings
+      ).autoCompactIfNeeded?.(
         messages,
         toolUseContext,
         cacheSafeParams,

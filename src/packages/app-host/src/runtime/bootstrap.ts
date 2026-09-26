@@ -50,6 +50,7 @@
  */
 import { installPackageHostBindings } from '../packageHostSetup.ts'
 import { createInteractiveSessionStore } from '@thyrox/agent/sessionStores'
+import type { AppState } from './appStateCompatShim.ts'
 import { getCwd } from '../bootstrap/cwd.ts'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations'
@@ -127,8 +128,21 @@ export function installRuntimeSkeletonBindings(): void {
 
   installPackageHostBindings(
     {
-      createInteractiveStore: initialState =>
-        createInteractiveSessionStore(initialState as never),
+      createInteractiveStore: initialState => {
+        // `createInteractiveSessionStore` expone un store de valor directo
+        // (`setState(next)`), y `HostSessionStore` (contracts.ts) exige uno de
+        // actualizador (`setState(updater)`); se adapta aquí sin cambiar la
+        // conducta: el actualizador se aplica sobre el estado actual y el
+        // resultado se reenvía al store real.
+        const store = createInteractiveSessionStore(initialState as never)
+        return {
+          getState: () => store.getState(),
+          setState: updater => {
+            store.setState(updater(store.getState()) as AppState)
+          },
+          subscribe: listener => store.subscribe(() => listener()),
+        }
+      },
       getConfigHomeDir: () => requireClaudeConfigHomeDir()(),
       getGlobalClaudeFile: () => requireGlobalClaudeFile()(),
       getProjectRoot: () => requireFindCanonicalGitRoot()(getCwd()),

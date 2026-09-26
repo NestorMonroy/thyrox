@@ -1,0 +1,29 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/provider/src/anthropic/client.ts(312,49): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/anthropic/client.ts:302-322 ---
+    302            // Mitigation: Users can set GOOGLE_CLOUD_PROJECT to override
+    303            ...(hasProjectEnvVar || hasKeyFile
+    304              ? {}
+    305              : {
+    306                  projectId: readEnv('ANTHROPIC_VERTEX_PROJECT_ID'),
+    307                }),
+    308          })
+    309  
+    310      const vertexArgs: ConstructorParameters<typeof AnthropicVertex>[0] = {
+    311        ...ARGS,
+    312>       region: anthropic.getVertexRegionForModel(model),
+    313        googleAuth: googleAuth as any,
+    314        ...(anthropic.isDebugToStdErr() && { logger: createStderrLogger() }),
+    315      }
+    316      // we have always been lying about the return type - this doesn't support batching or models
+    317      return new AnthropicVertex(vertexArgs) as unknown as Anthropic
+    318    }
+    319  
+    320    // V7 §11.6 — when an Anthropic Compatible connection matches the
+    321    // requested model, override apiKey + baseURL with the connection's
+    322    // values. This keeps Claude Account OAuth (api.anthropic.com + OAuth
+  Type 'undefined' is not assignable to type 'string'.

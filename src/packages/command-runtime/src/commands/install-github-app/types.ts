@@ -35,6 +35,8 @@ export type State = {
   secretName: string
   useExistingSecret: boolean
   workflowExists: boolean
+  /** Lo que eligió quien instala ante un workflow ya existente; no existe hasta que elige. */
+  workflowAction?: 'update' | 'skip' | 'exit'
   selectedWorkflows: Workflow[]
   selectedApiKeyOption: 'existing' | 'new' | 'oauth'
   authType: 'api_key' | 'oauth_token'

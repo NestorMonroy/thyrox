@@ -1,0 +1,6 @@
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts(61,42): error TS2345: Argument of type '{ agentType: string; source: string; name: string; }[]' is not assignable to parameter of type 'AgentDefinition[]'.
+  Type '{ agentType: string; source: string; name: string; }' is not assignable to type 'AgentDefinition'.
+    Type '{ agentType: string; source: string; name: string; }' is not assignable to type 'PluginAgentDefinition'.
+      Property 'whenToUse' is missing in type '{ agentType: string; source: string; name: string; }' but required in type 'BaseAgentDefinition'.
+src/packages/tool-registry/src/tools/AgentTool/__tests__/agentDisplay.test.ts(62,23): error TS2339: Property 'name' does not exist on type 'ResolvedAgent'.
+  Property 'name' does not exist on type 'BaseAgentDefinition & { source: "built-in"; baseDir: "built-in"; callback?: (() => void) | undefined; getSystemPrompt: (params: { toolUseContext: Pick<ToolUseContext, "options">; }) => string; } & { ...; }'.

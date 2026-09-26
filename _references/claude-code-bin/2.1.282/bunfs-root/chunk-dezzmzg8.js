@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.282
+import{Ne}from"/$bunfs/root/chunk-zt13kgz5.js";import{K,W}from"/$bunfs/root/chunk-zwm3fybx.js";import{L}from"/$bunfs/root/chunk-2s9xnv72.js";var r=new Set(["hipaa"]);class o{latched=new Set;latchedTaints=[];taints=[];current=[];changed=Ne();verdict=void 0;replaceTaints(t){this.current=L(t).sort();for(let i of t)if(r.has(i))this.latched.add(i);if(this.latched.size!==this.latchedTaints.length)this.latchedTaints=Array.from(this.latched).sort();return this.refreshEffectiveTaints()}latchTaints(t){let i=!1;for(let n of t)if(r.has(n)&&!this.latched.has(n))this.latched.add(n),i=!0;if(!i)return!1;return this.latchedTaints=Array.from(this.latched).sort(),this.refreshEffectiveTaints()}refreshEffectiveTaints(){let t=L([...this.latchedTaints,...this.current]).sort();if(t.length===this.taints.length&&t.every((i,n)=>i===this.taints[n]))return!1;return this.taints=t,this.changed.emit(this.taints),!0}registerVerdict(t){this.verdict=t}resetForTesting(){this.latched.clear(),this.latchedTaints=[],this.taints=[],this.current=[]}}var a=new K(()=>new o);function e(){return a.of(W().host)}function qGn(t){return e().replaceTaints(t)}function fRo(t){return e().latchTaints(t)}function mRo(t){return r.has(t)}function eu(t){return e().taints.includes(t)}function n$(){return e().taints}function tAe(){return e().current}function KGn(){return e().latchedTaints}function wNe(t){return e().changed.subscribe(t)}function gRo(){e().resetForTesting()}function hRo(t){e().registerVerdict(t)}function r$(t){return e().verdict?.isPolicyAllowed(t)??!1}function yRo(t){try{return e().verdict?.commandPolicyGateAllows(t)??!1}catch{return!1}}function yV(t){let i=e().verdict;if(!i)return"unregistered";return i.policyDenyKind(t)}function Tge(t,i,n){return e().verdict?.policyDeniedReason(t,i,n)??null}function QDt(){return e().verdict?.complianceTaintsSettled()??!1}
+export{qGn,fRo,mRo,eu,n$,tAe,KGn,wNe,gRo,hRo,r$,yRo,yV,Tge,QDt};

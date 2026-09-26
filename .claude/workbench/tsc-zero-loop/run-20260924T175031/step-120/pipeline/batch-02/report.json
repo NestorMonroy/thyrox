@@ -1,0 +1,1 @@
+{"status": "stalled", "total_before": 253, "total_final": 253, "tsc_runs": 1, "accepted": [], "files_kept": [], "outcomes": {"agent:pool:src/packages/provider/src/claudeLegacyRuntime.ts": "rejected", "agent:pool:src/packages/provider/src/openai/streamAdapter.ts": "rejected", "agent:pool:src/packages/repl/src/components/BridgeDialog.tsx": "rejected"}}

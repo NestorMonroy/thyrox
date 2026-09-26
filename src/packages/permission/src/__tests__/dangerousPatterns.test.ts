@@ -48,7 +48,7 @@ describe("CROSS_PLATFORM_CODE_EXEC", () => {
       "npx",
       "bunx",
       "tsx",
-    ];
+    ] as const;
     const set = new Set(CROSS_PLATFORM_CODE_EXEC);
     for (const entry of expected) {
       expect(set.has(entry)).toBe(true);

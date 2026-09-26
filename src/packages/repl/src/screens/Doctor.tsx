@@ -144,7 +144,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
     getInitialSettings()?.autoUpdatesChannel ?? 'latest'
 
   const errorsExcludingMcp = validationErrors.filter(
-    error => error.mcpErrorMetadata === undefined,
+    error => !('mcpErrorMetadata' in error),
   )
 
   const envValidationErrors = useMemo(() => {

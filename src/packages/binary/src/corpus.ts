@@ -17,6 +17,60 @@ import { BUNFS_PREFIX, BUNFS_ROOT_DIR, type ModuleEntry } from './bunfs.ts'
 
 /** El archivo que declara que una build esta extraida. Lo comparte `freshness`. */
 export const MANIFEST = 'MANIFEST.tsv'
+/** El volcado de cadenas del ejecutable entero: la forma de `strings -n 4`. */
+export const STRINGS = 'claude_strings.txt'
+/** La descripcion del corpus, derivada del MANIFEST y del volcado. */
+export const README = 'README.md'
+/** Longitud minima de una cadena: la de `strings -n 4`, con que se citan todas. */
+const MIN_STRING = 4
+
+/**
+ * Las corridas de caracteres imprimibles de al menos `MIN_STRING` bytes, una
+ * por linea: lo que `strings -n 4` de GNU imprime (ASCII 0x20-0x7e mas el
+ * tabulador). El volcado se cita contra esa herramienta, asi que tiene que
+ * coincidir con ella byte a byte; el test lo compara con la real.
+ */
+export function extractStrings(bytes: Buffer, minimum: number = MIN_STRING): string {
+  const salida: string[] = []
+  let inicio = -1
+  for (let i = 0; i <= bytes.length; i++) {
+    // Pasado el final no hay byte: -1 cierra la última corrida.
+    const b = bytes[i] ?? -1
+    const imprimible = b === 9 || (b >= 32 && b < 127)
+    if (imprimible && inicio < 0) inicio = i
+    if (!imprimible && inicio >= 0) {
+      if (i - inicio >= minimum) salida.push(bytes.toString('latin1', inicio, i))
+      inicio = -1
+    }
+  }
+  return salida.length ? salida.join('\n') + '\n' : ''
+}
+
+/**
+ * El README de una build, derivado de sus cifras — no se transcribe a mano
+ * (`calibration-verified-numbers.md`) — con la forma del de 2.1.281.
+ */
+export function renderReadme(version: string, files: number, bytes: number, stringLines: number): string {
+  const base = `_references/claude-code-bin/${version}`
+  return [
+    `# claude-code ${version} — corpus extraído`, '',
+    'Extraído con `@thyrox/binary` (`bun src/packages/binary/bin/binary.ts extract`).',
+    'Este README se **deriva** del `MANIFEST.tsv` y del historial, no se transcribe:',
+    'la cifra que vive en un artefacto que crece no se copia a prosa',
+    '(`calibration-verified-numbers.md`).', '',
+    '| Eje | Valor |', '|---|---|',
+    `| Archivos en \`bunfs-root/\` | ${files} |`,
+    `| Bytes de contenido | ${bytes} |`,
+    '| Primer commit del MANIFEST | (sin registrar) |', '',
+    `\`claude_strings.txt\` — ${stringLines} líneas.`, '',
+    'Para re-derivar estas cifras sin leer este archivo:', '',
+    '```bash',
+    `gawk 'NR>1' ${base}/MANIFEST.tsv | wc -l`,
+    `gawk 'NR>1 {s+=$2} END{print s}' ${base}/MANIFEST.tsv`,
+    `git log --diff-filter=A --format=%cI -1 -- ${base}/MANIFEST.tsv`,
+    '```', '',
+  ].join('\n')
+}
 
 export type CorpusResult = { root: string; files: number; bytes: number }
 
@@ -59,6 +113,7 @@ export function writeCorpus(
   version: string,
   payload: Buffer,
   entries: ModuleEntry[],
+  binary?: Buffer,
 ): CorpusResult {
   const base = join(root, version)
   // El discriminador es el MANIFEST, el mismo que usa `corpusVersion`. Con la
@@ -80,5 +135,13 @@ export function writeCorpus(
   }
 
   writeFileSync(join(base, MANIFEST), filas.join('\n') + '\n')
+  if (binary) {
+    // El volcado y el README son parte del corpus: una build sin ellos queda
+    // a medias y alguien los termina a mano (medido en 2.1.282).
+    const cadenas = extractStrings(binary)
+    writeFileSync(join(base, STRINGS), cadenas)
+    const lineas = cadenas ? cadenas.split('\n').length - 1 : 0
+    writeFileSync(join(base, README), renderReadme(version, entries.length, total, lineas))
+  }
   return { root: base, files: entries.length, bytes: total }
 }

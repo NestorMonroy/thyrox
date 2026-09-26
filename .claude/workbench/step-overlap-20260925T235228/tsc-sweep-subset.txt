@@ -1,0 +1,6 @@
+tests/verify/test_pattern_memory.py
+tests/verify/test_pool_pipeline.py
+tests/verify/test_tsc_cycle.py
+tests/verify/test_tsc_reflect.py
+tests/verify/test_tsc_sweep.py
+tests/verify/test_tsc_sweep_breadth.py

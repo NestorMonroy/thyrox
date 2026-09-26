@@ -1,0 +1,109 @@
+Patrón: narrow-schema-field-cast-via-record-unknown
+Señal del verificador: TS2352:.*may be a mistake because neither type sufficiently overlaps
+Arreglo genérico: Cuando un literal de prueba fija un campo con un tipo más estrecho (p. ej. un string) que el tipo real de ese campo en el esquema de producción (p. ej. un objeto `{ type: 'command'; command: string }`), no castear el literal directamente con `as SettingsJson` (o el tipo del esquema que sea). Declarar antes una variable tipada `Record<string, unknown>` con el mismo literal, y castear esa variable — el índice `[x: string]: unknown` del esquema hace la conversión estructuralmente válida sin recurrir a `as unknown as` ni a `any`. Ya es el patrón que el propio archivo usa para `hooks: null` (`nullHooksSettings`).
+Ya aplicado en: src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts
+Archivos donde la señal sigue viva: src/packages/app-host/src/runtime/installPluginBindings.ts, src/packages/app-host/src/runtime/runtimeHandles.ts, src/packages/provider/src/openai/streamAdapter.ts, src/packages/repl/src/queryHelpers.ts
+
+src/packages/app-host/src/runtime/installPluginBindings.ts(463,5): error TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:453-473 ---
+    453      // apagado ya está en curso — mismo patrón ya documentado para este
+    454      // binding en permission/src/permissionSetup.ts.
+    455      return gracefulShutdown(code) as Promise<never>
+    456    })
+    457  
+    458    // --- sesión / cwd
+    459    setGetSessionIdFn(() => getSessionId())
+    460    setGetOriginalCwdFn(() => getOriginalCwd())
+    461    setGetCwdFn(() => getCwd())
+    462    setGetInlinePluginsFn(() =>
+    463>     getInlinePlugins() as Record<string, unknown> | undefined,
+    464    )
+    465  
+    466    // --- settings
+    467    setGetSettingsFn(() => getSettings() as any)
+    468    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    469    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    470  
+    471    // --- fs / path (métodos sync + async)
+    472    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    473    const nodeFs = require('node:fs') as typeof import('node:fs')
+  Index signature for type 'string' is missing in type 'string[]'.
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(68,14): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:58-78 ---
+     58        params?: HeadlessStoreParams,
+     59      ) => HostSessionStore<AppState>
+     60    }
+     61  }
+     62  
+     63  export function createRuntimeHandles(
+     64    initialState: AppState = (() => {
+     65      try {
+     66        return getDefaultAppState()
+     67      } catch {
+     68>       return {
+     69          toolPermissionContext: getEmptyToolPermissionContext(),
+     70          mcp: {
+     71            clients: [],
+     72            tools: [],
+     73            commands: [],
+     74            resources: {},
+     75            pluginReconnectKey: 0,
+     76          },
+     77          plugins: {
+     78            enabled: [],
+  Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/openai/streamAdapter.ts:67-87 ---
+     67        const details = (chunk.usage as any).prompt_tokens_details
+     68        if (details?.cached_tokens) {
+     69          cachedTokens = details.cached_tokens
+     70        }
+     71      }
+     72  
+     73      // Emit message_start on first chunk
+     74      if (!started) {
+     75        started = true
+     76  
+     77>       yield {
+     78          type: 'message_start',
+     79          message: {
+     80            id: messageId,
+     81            type: 'message',
+     82            role: 'assistant',
+     83            content: [],
+     84            model,
+     85            stop_reason: null,
+     86            stop_sequence: null,
+     87            usage: {
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details
+
+src/packages/repl/src/queryHelpers.ts(339,43): error TS2352: Conversion of type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/queryHelpers.ts:329-349 ---
+    329          b => b.type === 'tool_use' && 'id' in b && b.id === toolUseID,
+    330        ),
+    331    )
+    332    if (!alreadyPresent) {
+    333      mutableMessages.push(assistantMessage)
+    334      if (persistSession) {
+    335        await recordTranscript(mutableMessages)
+    336      }
+    337    }
+    338  
+    339>   const sdkAssistantMessage: SDKMessage = {
+    340      ...assistantMessage,
+    341      session_id: getSessionId(),
+    342      parent_tool_use_id: null,
+    343    } as SDKMessage
+    344    yield sdkAssistantMessage
+    345  
+    346    // Execute the tool - errors are handled internally by runToolUse
+    347    for await (const update of runTools(
+    348      [finalToolUseBlock],
+    349      [assistantMessage],
+  Type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' is not comparable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.

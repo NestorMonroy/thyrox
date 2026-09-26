@@ -1,0 +1,46 @@
+src/packages/agent/QueryEngine.ts(954,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+  --- código src/packages/agent/QueryEngine.ts:944-964 ---
+    944          case 'assistant': {
+    945            // Capture stop_reason if already set (synthetic messages). For
+    946            // streamed responses, this is null at content_block_stop time;
+    947            // the real value arrives via message_delta (handled below).
+    948            const msg = message as Message
+    949            const stopReason = msg.message?.stop_reason as string | null | undefined
+    950            if (stopReason != null) {
+    951              lastStopReason = stopReason
+    952            }
+    953            this.mutableMessages.push(msg)
+    954>           yield* normalizeMessage(msg)
+    955            break
+    956          }
+    957          case 'progress': {
+    958            const msg = message as Message
+    959            this.mutableMessages.push(msg)
+    960            // Record inline so the dedup loop in the next ask() call sees it
+    961            // as already-recorded. Without this, deferred progress interleaves
+    962            // with already-recorded tool_results in mutableMessages, and the
+    963            // dedup walk freezes startingParentUuid at the wrong message —
+    964            // forking the chain and orphaning the conversation on resume.
+src/packages/agent/QueryEngine.ts(969,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+  --- código src/packages/agent/QueryEngine.ts:959-979 ---
+    959            this.mutableMessages.push(msg)
+    960            // Record inline so the dedup loop in the next ask() call sees it
+    961            // as already-recorded. Without this, deferred progress interleaves
+    962            // with already-recorded tool_results in mutableMessages, and the
+    963            // dedup walk freezes startingParentUuid at the wrong message —
+    964            // forking the chain and orphaning the conversation on resume.
+    965            if (persistSession) {
+    966              messages.push(msg)
+    967              void recordTranscript(messages)
+    968            }
+    969>           yield* normalizeMessage(msg)
+    970            break
+    971          }
+    972          case 'user': {
+    973            const msg = message as Message
+    974            this.mutableMessages.push(msg)
+    975            yield* normalizeMessage(msg)
+    976            break
+    977          }
+    978          case 'stream_event': {
+    979            const event = (message as unknown as { event: Record<string, unknown> }).event

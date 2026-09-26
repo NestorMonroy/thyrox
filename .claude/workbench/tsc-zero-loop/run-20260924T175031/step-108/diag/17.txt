@@ -1,0 +1,162 @@
+src/packages/swarm/src/worktree/index.ts(374,5): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  --- código src/packages/swarm/src/worktree/index.ts:364-384 ---
+    364        { cwd: worktreePath },
+    365      )
+    366      if (coCode !== 0) {
+    367        await tearDown(`Failed to checkout sparse worktree: ${coErr}`)
+    368      }
+    369    }
+    370  
+    371    return {
+    372      worktreePath,
+    373      worktreeBranch,
+    374>     headCommit: baseSha,
+    375      baseBranch,
+    376      existed: false,
+    377    }
+    378  }
+    379  
+    380  /**
+    381   * Copy gitignored files specified in .worktreeinclude from base repo to worktree.
+    382   *
+    383   * Only copies files that are BOTH:
+    384   * 1. Matched by patterns in .worktreeinclude (uses .gitignore syntax)
+  Type 'null' is not assignable to type 'string'.
+src/packages/swarm/src/worktree/index.ts(431,40): error TS7006: Parameter 'e' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:421-441 ---
+    421    }
+    422  
+    423    const entries = gitignored.stdout.trim().split('\n').filter(Boolean)
+    424    const matcher = ignore()
+    425    try {
+    426      matcher.add(includeContent)
+    427    } catch {
+    428      return []
+    429    }
+    430  
+    431>   const collapsedDirs = entries.filter(e => e.endsWith('/'))
+    432    const files = entries.filter(e => !e.endsWith('/') && safelyIgnored(matcher, e))
+    433  
+    434    // Expand collapsed directories only when a pattern can target their contents.
+    435    // expand for `**/` or anchorless patterns -- those match files in tracked dirs
+    436    // (already listed individually) and expanding every collapsed dir for them
+    437    // would defeat the perf win.
+    438    const dirsToExpand = collapsedDirs.filter(dir => {
+    439      if (
+    440        patterns.some(p => {
+    441          const normalized = p.startsWith('/') ? p.slice(1) : p
+src/packages/swarm/src/worktree/index.ts(432,32): error TS7006: Parameter 'e' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:422-442 ---
+    422  
+    423    const entries = gitignored.stdout.trim().split('\n').filter(Boolean)
+    424    const matcher = ignore()
+    425    try {
+    426      matcher.add(includeContent)
+    427    } catch {
+    428      return []
+    429    }
+    430  
+    431    const collapsedDirs = entries.filter(e => e.endsWith('/'))
+    432>   const files = entries.filter(e => !e.endsWith('/') && safelyIgnored(matcher, e))
+    433  
+    434    // Expand collapsed directories only when a pattern can target their contents.
+    435    // expand for `**/` or anchorless patterns -- those match files in tracked dirs
+    436    // (already listed individually) and expanding every collapsed dir for them
+    437    // would defeat the perf win.
+    438    const dirsToExpand = collapsedDirs.filter(dir => {
+    439      if (
+    440        patterns.some(p => {
+    441          const normalized = p.startsWith('/') ? p.slice(1) : p
+    442          // Literal prefix match: pattern starts with the collapsed dir path
+src/packages/swarm/src/worktree/index.ts(438,45): error TS7006: Parameter 'dir' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:428-448 ---
+    428      return []
+    429    }
+    430  
+    431    const collapsedDirs = entries.filter(e => e.endsWith('/'))
+    432    const files = entries.filter(e => !e.endsWith('/') && safelyIgnored(matcher, e))
+    433  
+    434    // Expand collapsed directories only when a pattern can target their contents.
+    435    // expand for `**/` or anchorless patterns -- those match files in tracked dirs
+    436    // (already listed individually) and expanding every collapsed dir for them
+    437    // would defeat the perf win.
+    438>   const dirsToExpand = collapsedDirs.filter(dir => {
+    439      if (
+    440        patterns.some(p => {
+    441          const normalized = p.startsWith('/') ? p.slice(1) : p
+    442          // Literal prefix match: pattern starts with the collapsed dir path
+    443          if (normalized.startsWith(dir)) return true
+    444          // Anchored glob: dir falls under the pattern's literal (non-glob) prefix
+    445          // e.g. `config/**/*.key` has literal prefix `config/` → expand `config/secrets/`
+    446          const globIdx = normalized.search(/[*?[]/)
+    447          if (globIdx > 0) {
+    448            const literalPrefix = normalized.slice(0, globIdx)
+src/packages/swarm/src/worktree/index.ts(771,28): error TS7006: Parameter 'current' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:761-781 ---
+    761        originalHeadCommit: headCommit,
+    762        sessionId,
+    763        tmuxSessionName,
+    764        creationDurationMs,
+    765        usedSparsePaths:
+    766          (getInitialSettings().worktree?.sparsePaths?.length ?? 0) > 0,
+    767      }
+    768    }
+    769  
+    770    // Save to project config for persistence
+    771>   saveCurrentProjectConfig(current => ({
+    772      ...current,
+    773      activeWorktreeSession: currentWorktreeSession ?? undefined,
+    774    }))
+    775  
+    776    return currentWorktreeSession
+    777  }
+    778  
+    779  export async function keepWorktree(): Promise<void> {
+    780    if (!currentWorktreeSession) {
+    781      return
+src/packages/swarm/src/worktree/index.ts(794,30): error TS7006: Parameter 'current' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:784-804 ---
+    784    try {
+    785      const { worktreePath, originalCwd, worktreeBranch } = currentWorktreeSession
+    786  
+    787      // Change back to original directory first
+    788      process.chdir(originalCwd)
+    789  
+    790      // Clear the session but keep the worktree intact
+    791      currentWorktreeSession = null
+    792  
+    793      // Update config
+    794>     saveCurrentProjectConfig(current => ({
+    795        ...current,
+    796        activeWorktreeSession: undefined,
+    797      }))
+    798  
+    799      logForDebugging(
+    800        `Linked worktree preserved at: ${worktreePath}${worktreeBranch ? ` on branch: ${worktreeBranch}` : ''}`,
+    801      )
+    802      logForDebugging(
+    803        `You can continue working there by running: cd ${worktreePath}`,
+    804      )
+src/packages/swarm/src/worktree/index.ts(857,30): error TS7006: Parameter 'current' implicitly has an 'any' type.
+  --- código src/packages/swarm/src/worktree/index.ts:847-867 ---
+    847            level: 'error',
+    848          })
+    849        } else {
+    850          logForDebugging(`Removed linked worktree at: ${worktreePath}`)
+    851          if (usedSparsePaths) await cleanupSparseWorktreeConfig(originalCwd)
+    852        }
+    853      }
+    854  
+    855      currentWorktreeSession = null
+    856  
+    857>     saveCurrentProjectConfig(current => ({
+    858        ...current,
+    859        activeWorktreeSession: undefined,
+    860      }))
+    861  
+    862      // Delete the temporary worktree branch (git-based only)
+    863      if (!hookBased && worktreeBranch) {
+    864        // Wait a bit to ensure git has released all locks
+    865        await sleep(100)
+    866  
+    867        const { code: deleteBranchCode, stderr: deleteBranchError } =

@@ -89,7 +89,7 @@ export function IdeOnboardingDialog({
 
 export function hasIdeOnboardingDialogBeenShown(): boolean {
   const config = getGlobalConfig()
-  const terminal = envDynamic.terminal || 'unknown'
+  const terminal = typeof envDynamic.terminal === 'string' ? envDynamic.terminal : 'unknown'
   return config.hasIdeOnboardingBeenShown?.[terminal] === true
 }
 
@@ -97,7 +97,7 @@ function markDialogAsShown(): void {
   if (hasIdeOnboardingDialogBeenShown()) {
     return
   }
-  const terminal = envDynamic.terminal || 'unknown'
+  const terminal = typeof envDynamic.terminal === 'string' ? envDynamic.terminal : 'unknown'
   saveGlobalConfig(current => ({
     ...current,
     hasIdeOnboardingBeenShown: {

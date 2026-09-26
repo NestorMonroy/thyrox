@@ -1,0 +1,6 @@
+{"batch": 1, "files": 15, "total_before": 365, "total_final": 360, "tsc_runs": 6, "kept": 5}
+{"batch": 2, "files": 46, "total_before": 360, "total_final": 354, "tsc_runs": 2, "kept": 6}
+{"batch": 3, "files": 16, "total_before": 354, "total_final": 345, "tsc_runs": 2, "kept": 6}
+{"batch": 4, "files": 14, "total_before": 345, "total_final": 343, "tsc_runs": 2, "kept": 2}
+{"batches": 4, "files_kept": 19}
+__BG_EXIT__=0

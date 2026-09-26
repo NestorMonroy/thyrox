@@ -1,0 +1,55 @@
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(65,56): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:55-75 ---
+     55    const bg = useSelectedMessageBg()
+     56    // Hoisted to mount-time — per-message component, re-renders on every scroll.
+     57    const isDemoEnv = feature('EXPERIMENTAL_SKILL_SEARCH')
+     58      ?
+     59        useMemo(() => isEnvTruthy(process.env.IS_DEMO), [])
+     60      : false
+     61    // Handle teammate_mailbox BEFORE switch
+     62    if (isAgentSwarmsEnabled() && attachment.type === 'teammate_mailbox') {
+     63      // Filter out idle notifications BEFORE counting - they are hidden in the UI
+     64      // so showing them in the count would be confusing ("2 messages in mailbox:" with nothing shown)
+     65>     const visibleMessages = attachment.messages.filter((msg: TeammateMessage) => {
+     66        if (isShutdownApproved(msg.text)) {
+     67          return false
+     68        }
+     69        try {
+     70          const parsed = jsonParse(msg.text)
+     71          return (
+     72            parsed?.type !== 'idle_notification' &&
+     73            parsed?.type !== 'teammate_terminated'
+     74          )
+     75        } catch {
+  Overload 1 of 2, '(predicate: (value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => value is { ...; }, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(msg: TeammateMessage) => boolean' is not assignable to parameter of type '(value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => value is { ...; }'.
+      Types of parameters 'msg' and 'value' are incompatible.
+        Property 'read' is missing in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type 'TeammateMessage'.
+  Overload 2 of 2, '(predicate: (value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => unknown, thisArg?: any): { ...; }[]', gave the following error.
+    Argument of type '(msg: TeammateMessage) => boolean' is not assignable to parameter of type '(value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => unknown'.
+      Types of parameters 'msg' and 'value' are incompatible.
+        Property 'read' is missing in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type 'TeammateMessage'.
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(199,64): error TS2339: Property 'truncated' does not exist on type 'FileAttachment | AlreadyReadFileAttachment'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:189-209 ---
+    189          return (
+    190            <Line>
+    191              Read <Text bold>{attachment.displayPath}</Text> (unchanged)
+    192            </Line>
+    193          )
+    194        }
+    195        return (
+    196          <Line>
+    197            Read <Text bold>{attachment.displayPath}</Text> (
+    198            {attachment.content.type === 'text'
+    199>             ? `${attachment.content.file.numLines}${attachment.truncated ? '+' : ''} lines`
+    200              : formatFileSize(attachment.content.file.originalSize)}
+    201            )
+    202          </Line>
+    203        )
+    204      case 'compact_file_reference':
+    205        return (
+    206          <Line>
+    207            Referenced file <Text bold>{attachment.displayPath}</Text>
+    208          </Line>
+    209        )
+  Property 'truncated' does not exist on type 'AlreadyReadFileAttachment'.

@@ -1,0 +1,50 @@
+src/packages/cli/src/structuredIO.ts(210,9): error TS2353: Object literal may only specify known properties, and 'content' does not exist in type '{ type: "user"; message: MessageParam; parent_tool_use_id: string | null; isSynthetic?: boolean | undefined; tool_use_result?: unknown; priority?: "next" | "now" | "later" | undefined; timestamp?: string | undefined; uuid?: string | undefined; session_id?: string | undefined; }'.
+  --- código src/packages/cli/src/structuredIO.ts:200-220 ---
+    200  
+    201    /**
+    202     * Queue a user turn to be yielded before the next message from this.input.
+    203     * Works before iteration starts and mid-stream — read() re-checks
+    204     * prependedLines between each yielded message.
+    205     */
+    206    prependUserMessage(content: string): void {
+    207      this.prependedLines.push(
+    208        jsonStringify({
+    209          type: 'user',
+    210>         content,
+    211          uuid: '',
+    212          session_id: '',
+    213          message: { role: 'user', content },
+    214          parent_tool_use_id: null,
+    215        } satisfies SDKUserMessage) + '\n',
+    216      )
+    217    }
+    218  
+    219    private async *read() {
+    220      let content = ''
+src/packages/cli/src/structuredIO.ts(670,7): error TS2322: Type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined) => Promise<HookJSONOutput>' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+  --- código src/packages/cli/src/structuredIO.ts:660-680 ---
+    660          }
+    661          parentSignal.removeEventListener('abort', onParentAbort)
+    662        }
+    663      }
+    664    }
+    665  
+    666    createHookCallback(callbackId: string, timeout?: number): HookCallback {
+    667      return {
+    668        type: 'callback',
+    669        timeout,
+    670>       callback: async (
+    671          input: HookInput,
+    672          toolUseID: string | null,
+    673          abort: AbortSignal | undefined,
+    674        ): Promise<HookJSONOutput> => {
+    675          try {
+    676            const result = await this.sendRequest<HookJSONOutput>(
+    677              {
+    678                subtype: 'hook_callback',
+    679                callback_id: callbackId,
+    680                input,
+  Types of parameters 'input' and 'input' are incompatible.
+    Type 'HookInput' is not assignable to type '({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; })'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd

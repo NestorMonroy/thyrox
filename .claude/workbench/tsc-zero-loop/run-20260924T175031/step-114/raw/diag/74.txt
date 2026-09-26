@@ -1,0 +1,11 @@
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(196,35): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(199,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(o: ArrayLike<unknown> | { [s: string]: unknown; }): unknown[]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'ArrayLike<unknown> | { [s: string]: unknown; }'.
+  Overload 2 of 2, '(o: {}): any[]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type '{}'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(200,31): error TS18046: 'hooks' is of type 'unknown'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(203,15): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(204,16): error TS18046: 'eventCount' is of type 'unknown'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(272,47): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(291,48): error TS2538: Type 'unknown' cannot be used as an index type.

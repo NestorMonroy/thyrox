@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2717,41): error TS7006: Parameter 'submit' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2707-2727 ---
+   2707                })
+   2708  
+   2709                // Start the OAuth flow in the background
+   2710                const oauthPromise = performMCPOAuthFlow(
+   2711                  serverName,
+   2712                  config,
+   2713                  url => resolveAuthUrl!(url),
+   2714                  controller.signal,
+   2715                  {
+   2716                    skipBrowserOpen: true,
+   2717>                   onWaitingForCallback: submit => {
+   2718                      oauthCallbackSubmitters.set(serverName, submit)
+   2719                    },
+   2720                  },
+   2721                )
+   2722  
+   2723                // Wait for the auth URL (or the flow to complete without needing redirect)
+   2724                const authUrl = await Promise.race([
+   2725                  authUrlPromise,
+   2726                  oauthPromise.then(() => null as string | null),
+   2727                ])
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(2813,24): error TS7006: Parameter 'error' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:2803-2823 ---
+   2803                        result.client,
+   2804                      ],
+   2805                      tools: [
+   2806                        ...dynamicMcpState.tools.filter(
+   2807                          t => !t.name?.startsWith(prefix),
+   2808                        ),
+   2809                        ...result.tools,
+   2810                      ],
+   2811                    }
+   2812                  })
+   2813>                 .catch(error => {
+   2814                    logForDebugging(
+   2815                      `MCP OAuth failed for ${serverName}: ${error}`,
+   2816                      { level: 'error' },
+   2817                    )
+   2818                  })
+   2819                  .finally(() => {
+   2820                    // Clean up only if this is still the active flow
+   2821                    if (activeOAuthFlows.get(serverName) === controller) {
+   2822                      activeOAuthFlows.delete(serverName)
+   2823                      oauthCallbackSubmitters.delete(serverName)

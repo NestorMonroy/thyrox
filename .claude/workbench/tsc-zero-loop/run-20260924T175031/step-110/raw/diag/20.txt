@@ -1,0 +1,2 @@
+src/packages/agent/__tests__/stopHookBlockCap.test.ts(143,14): error TS2339: Property 'nextTurnCount' does not exist on type 'StopHookBlockDecision'.
+  Property 'nextTurnCount' does not exist on type '{ kind: "cap_exceeded"; nextBlockingCount: number; }'.

@@ -1,0 +1,3 @@
+src/packages/repl/src/components/Settings/Config.tsx(288,21): error TS2339: Property 'mcpClients' does not exist on type '{ dynamicMcpConfig?: Record<string, unknown> | undefined; ideInstallationStatus: unknown; theme: unknown; }'.
+src/packages/repl/src/components/Settings/Config.tsx(580,28): error TS2345: Argument of type 'number | undefined' is not assignable to parameter of type '"never" | "5m" | "60s" | "10m" | undefined'.
+  Type 'number' is not assignable to type '"never" | "5m" | "60s" | "10m" | undefined'.

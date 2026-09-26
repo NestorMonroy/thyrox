@@ -1,0 +1,26 @@
+src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx(11,3): error TS2322: Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; } | null' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; } | null'.
+  --- código src/packages/repl/src/components/messages/UserToolResultMessage/utils.tsx:1-21 ---
+      1  import type { ToolUseBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
+      2  import { useMemo } from 'react'
+      3  import { findToolByName, type Tool, type Tools } from '@thyrox/tool-registry/Tool.js'
+      4  import type { buildMessageLookups } from '@thyrox/agent/messages.js'
+      5  
+      6  export function useGetToolFromMessages(
+      7    toolUseID: string,
+      8    tools: Tools,
+      9    lookups: ReturnType<typeof buildMessageLookups>,
+     10  ): { tool: Tool; toolUse: ToolUseBlockParam } | null {
+     11>   return useMemo(() => {
+     12      const toolUse = lookups.toolUseByToolUseID.get(toolUseID)
+     13      if (!toolUse) {
+     14        return null
+     15      }
+     16      const tool = findToolByName(tools, toolUse.name)
+     17      if (!tool) {
+     18        return null
+     19      }
+     20      return { tool, toolUse }
+     21    }, [toolUseID, lookups, tools])
+  Type '{ tool: Tool<AnyObject, unknown, unknown>; toolUse: AnyBlock; }' is not assignable to type '{ tool: Tool; toolUse: ToolUseBlockParam; }'.
+    Types of property 'toolUse' are incompatible.
+      Type 'AnyBlock' is missing the following properties from type 'ToolUseBlockParam': id, input, name

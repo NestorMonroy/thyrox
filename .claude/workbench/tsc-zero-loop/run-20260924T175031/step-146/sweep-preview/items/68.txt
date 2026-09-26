@@ -1,0 +1,32 @@
+Patrón: app-state-like-callback-boundary
+Señal del verificador: TS2345.*\(prev: AppStateLike\) => AppStateLike
+Arreglo genérico: Cuando una función de `storage` acepta un `setState` tipado sobre `AppStateLike` (el contrato estructural `{[key: string]: unknown}` de contracts.ts) y el llamador tiene un `setAppState` concreto tipado sobre el `AppState` real, no se pasa el `setAppState` directo: se envuelve en el borde de la llamada — `fn(arg, update => setAppState(prev => update(prev) as AppState))` — porque `AppState` sí es asignable a `AppStateLike` (todo valor cabe en `unknown`) pero no al revés, y el propio contrato declara esa asimetría a propósito para no acoplar `storage` al tipo real de la app.
+Ya aplicado en: src/packages/cli/src/headless/sdk/session/load.ts
+Archivos donde la señal sigue viva: src/packages/repl/src/screens/REPLView.tsx
+
+src/packages/repl/src/screens/REPLView.tsx(1806,41): error TS2345: Argument of type '(updater: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: AppStateLike) => AppStateLike) => void'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:1796-1816 ---
+   1796          // For forks, generate a new plan slug and copy the plan content so the
+   1797          // original and forked sessions don't clobber each other's plan files.
+   1798          // For regular resumes, reuse the original session's plan slug.
+   1799          if (entrypoint === 'fork') {
+   1800            void copyPlanForFork(log, asSessionId(sessionId));
+   1801          } else {
+   1802            void copyPlanForResume(log, asSessionId(sessionId));
+   1803          }
+   1804  
+   1805          // Restore file history and attribution state from the resumed conversation
+   1806>         restoreSessionStateFromLog(log, setAppState);
+   1807          if (log.fileHistorySnapshots) {
+   1808            void copyFileHistoryForResume(log);
+   1809          }
+   1810  
+   1811          // Restore agent setting from the resumed conversation
+   1812          // Always reset to the new session's values (or clear if none),
+   1813          // matching the standaloneAgentContext pattern below
+   1814          const { agentDefinition: restoredAgent } = restoreAgentFromSession(
+   1815            log.agentSetting,
+   1816            initialMainThreadAgentDefinition,
+  Types of parameters 'updater' and 'f' are incompatible.
+    Type 'AppStateLike' is not assignable to type 'AppState'.
+      Type 'AppStateLike' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 26 more.

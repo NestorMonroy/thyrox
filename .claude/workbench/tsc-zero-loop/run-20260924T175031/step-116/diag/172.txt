@@ -1,0 +1,46 @@
+src/packages/repl/src/hooksConfigManager.ts(274,25): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/hooksConfigManager.ts:264-284 ---
+    264      }
+    265    },
+    266    toolNames => toolNames.slice().sort().join(','),
+    267  )
+    268  
+    269  // Group hooks by event and matcher
+    270  export function groupHooksByEventAndMatcher(
+    271    appState: AppState,
+    272    toolNames: string[],
+    273  ): Record<HookEvent, Record<string, IndividualHookConfig[]>> {
+    274>   const grouped: Record<HookEvent, Record<string, IndividualHookConfig[]>> = {
+    275      PreToolUse: {},
+    276      PostToolUse: {},
+    277      PostToolUseFailure: {},
+    278      PermissionDenied: {},
+    279      Notification: {},
+    280      UserPromptSubmit: {},
+    281      SessionStart: {},
+    282      SessionEnd: {},
+    283      Stop: {},
+    284      StopFailure: {},
+src/packages/repl/src/hooksConfigManager.ts(308,32): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/hooksConfigManager.ts:298-318 ---
+    298      WorktreeRemove: {},
+    299      InstructionsLoaded: {},
+    300      CwdChanged: {},
+    301      FileChanged: {},
+    302    }
+    303  
+    304    const metadata = getHookEventMetadata(toolNames)
+    305  
+    306    // Include hooks from settings files
+    307    getAllHooks(appState).forEach(hook => {
+    308>     const eventGroup = grouped[hook.event]
+    309      if (eventGroup) {
+    310        // For events without matchers, use empty string as key
+    311        const matcherKey =
+    312          metadata[hook.event].matcherMetadata !== undefined
+    313            ? hook.matcher || ''
+    314            : ''
+    315        if (!eventGroup[matcherKey]) {
+    316          eventGroup[matcherKey] = []
+    317        }
+    318        eventGroup[matcherKey].push(hook)

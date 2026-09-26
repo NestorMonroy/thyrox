@@ -1,0 +1,25 @@
+src/packages/config/manager.ts(75,5): error TS2322: Type '{} | null' is not assignable to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; } | null'.
+  --- código src/packages/config/manager.ts:65-85 ---
+     65      source: EditableSettingSource = 'userSettings',
+     66    ): { error: Error | null } {
+     67      return updateSettingsForSource(source, { [key]: value } as Partial<SettingsJson> as SettingsJson)
+     68    },
+     69  
+     70    /**
+     71     * Get the raw settings for a specific source layer.
+     72     */
+     73    getForSource(source: SettingSource): SettingsJson | null {
+     74      const result = getSettingsForSource(source)
+     75>     return result?.settings ?? null
+     76    },
+     77  
+     78    /**
+     79     * Get all enabled source layers with their raw settings, ordered low→high priority.
+     80     */
+     81    getSources(): Array<{ source: SettingSource; settings: SettingsJson }> {
+     82      return getSettingsWithSources().sources
+     83    },
+     84  
+     85    /**
+  Type '{}' is not assignable to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }'.
+    Index signature for type 'string' is missing in type '{}'.

@@ -11,10 +11,14 @@ export function MessageModel({
   message,
   isTranscriptMode,
 }: Props): React.ReactNode {
+  if (message.type !== 'assistant') {
+    return null
+  }
+
+  const model = message.message.model
   const shouldShowModel =
     isTranscriptMode &&
-    message.type === 'assistant' &&
-    message.message.model &&
+    typeof model === 'string' &&
     message.message.content.some((c: { type: string }) => c.type === 'text')
 
   if (!shouldShowModel) {
@@ -22,8 +26,8 @@ export function MessageModel({
   }
 
   return (
-    <Box minWidth={stringWidth(message.message.model) + 8}>
-      <Text dimColor>{message.message.model}</Text>
+    <Box minWidth={stringWidth(model) + 8}>
+      <Text dimColor>{model}</Text>
     </Box>
   )
 }

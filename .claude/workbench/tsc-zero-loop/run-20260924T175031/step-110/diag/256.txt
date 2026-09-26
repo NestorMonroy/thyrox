@@ -1,0 +1,24 @@
+src/packages/shell/src/legacy/prefix.ts(251,89): error TS2339: Property 'text' does not exist on type 'ContentBlockParam | ContentBlock'.
+  --- código src/packages/shell/src/legacy/prefix.ts:241-261 ---
+    241      })
+    242  
+    243      // Clear the timeout since the query completed
+    244      clearTimeout(preflightCheckTimeoutId)
+    245      const durationMs = Date.now() - startTime
+    246  
+    247      const prefix =
+    248        typeof response.message.content === 'string'
+    249          ? response.message.content
+    250          : Array.isArray(response.message.content)
+    251>           ? (response.message.content.find((_: { type: string }) => _.type === 'text')?.text ??
+    252              'none')
+    253            : 'none'
+    254  
+    255      if (startsWithApiErrorPrefix(prefix)) {
+    256        logEvent(eventName, {
+    257          success: false,
+    258          error:
+    259            'API error' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    260          durationMs,
+    261        })
+  Property 'text' does not exist on type 'ToolResultBlockParam'.

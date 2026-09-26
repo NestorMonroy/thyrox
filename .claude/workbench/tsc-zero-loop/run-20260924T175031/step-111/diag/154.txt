@@ -1,0 +1,96 @@
+src/packages/provider/src/legacy/api.ts(229,35): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/legacy/api.ts:219-239 ---
+    219      if (envOverride === '1') return 'F:'
+    220      if (
+    221        isFirstPartyAnthropicEndpoint(options.model) &&
+    222        getFeatureValue_CACHED_MAY_BE_STALE('tengu_fgts', false)
+    223      ) {
+    224        return 'F:'
+    225      }
+    226      if (
+    227        getAPIProvider() === 'vertex' &&
+    228        !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
+    229>       modelOptInForEagerStreaming(options.model, 'vertex')
+    230      ) {
+    231        return 'F:'
+    232      }
+    233      if (
+    234        getAPIProvider() === 'bedrock' &&
+    235        !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
+    236        modelOptInForEagerStreaming(options.model, 'bedrock')
+    237      ) {
+    238        return 'F:'
+    239      }
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/provider/src/legacy/api.ts(236,35): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/legacy/api.ts:226-246 ---
+    226      if (
+    227        getAPIProvider() === 'vertex' &&
+    228        !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
+    229        modelOptInForEagerStreaming(options.model, 'vertex')
+    230      ) {
+    231        return 'F:'
+    232      }
+    233      if (
+    234        getAPIProvider() === 'bedrock' &&
+    235        !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
+    236>       modelOptInForEagerStreaming(options.model, 'bedrock')
+    237      ) {
+    238        return 'F:'
+    239      }
+    240      return ''
+    241    })()
+    242    const cacheKey =
+    243      oneMillionPrefix +
+    244      eagerCachePrefix +
+    245      ('inputJSONSchema' in tool && tool.inputJSONSchema
+    246        ? `${tool.name}:${jsonStringify(tool.inputJSONSchema)}`
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/provider/src/legacy/api.ts(322,35): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/legacy/api.ts:312-332 ---
+    312      } else if (envOverride === '1') {
+    313        base.eager_input_streaming = true
+    314      } else if (
+    315        isFirstPartyAnthropicEndpoint(options.model) &&
+    316        getFeatureValue_CACHED_MAY_BE_STALE('tengu_fgts', false)
+    317      ) {
+    318        base.eager_input_streaming = true
+    319      } else if (
+    320        getAPIProvider() === 'vertex' &&
+    321        !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
+    322>       modelOptInForEagerStreaming(options.model, 'vertex')
+    323      ) {
+    324        // ant v2.1.133: per-model opt-in for Vertex
+    325        base.eager_input_streaming = true
+    326      } else if (
+    327        getAPIProvider() === 'bedrock' &&
+    328        !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
+    329        modelOptInForEagerStreaming(options.model, 'bedrock')
+    330      ) {
+    331        // ant v2.1.133: per-model opt-in for Bedrock
+    332        base.eager_input_streaming = true
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/provider/src/legacy/api.ts(329,35): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/provider/src/legacy/api.ts:319-339 ---
+    319      } else if (
+    320        getAPIProvider() === 'vertex' &&
+    321        !readEnv('ANTHROPIC_VERTEX_BASE_URL') &&
+    322        modelOptInForEagerStreaming(options.model, 'vertex')
+    323      ) {
+    324        // ant v2.1.133: per-model opt-in for Vertex
+    325        base.eager_input_streaming = true
+    326      } else if (
+    327        getAPIProvider() === 'bedrock' &&
+    328        !readEnv('ANTHROPIC_BEDROCK_BASE_URL') &&
+    329>       modelOptInForEagerStreaming(options.model, 'bedrock')
+    330      ) {
+    331        // ant v2.1.133: per-model opt-in for Bedrock
+    332        base.eager_input_streaming = true
+    333      }
+    334  
+    335      cache.set(cacheKey, base)
+    336    }
+    337  
+    338    // Per-request overlay: defer_loading and cache_control vary by call
+    339    // (tool search defers different tools per turn; cache markers move).
+  Type 'undefined' is not assignable to type 'string'.

@@ -1,0 +1,4 @@
+src/packages/repl/src/components/WorktreeExitDialog.tsx(77,33): error TS2339: Property 'cache' does not exist on type '() => string'.
+src/packages/repl/src/components/WorktreeExitDialog.tsx(129,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+src/packages/repl/src/components/WorktreeExitDialog.tsx(153,25): error TS2339: Property 'cache' does not exist on type '() => string'.
+src/packages/repl/src/components/WorktreeExitDialog.tsx(172,27): error TS2339: Property 'cache' does not exist on type '() => string'.

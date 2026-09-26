@@ -1,0 +1,24 @@
+src/packages/storage/src/__tests__/sessionStoragePredicates.test.ts(43,27): error TS2352: Conversion of type '{ type: "something_new"; }' to type 'Entry' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/storage/src/__tests__/sessionStoragePredicates.test.ts:33-53 ---
+     33    })
+     34  
+     35    test('grouped_tool_use → false', () => {
+     36      expect(
+     37        isTranscriptMessage({ type: 'grouped_tool_use' } as Entry),
+     38      ).toBe(false)
+     39    })
+     40  
+     41    test('arbitrary unknown type → false', () => {
+     42      expect(
+     43>       isTranscriptMessage({ type: 'something_new' } as Entry),
+     44      ).toBe(false)
+     45    })
+     46  })
+     47  
+     48  describe('isChainParticipant', () => {
+     49    // Determines what messages participate in the parentUuid chain. Progress
+     50    // explicitly excluded (ephemeral UI). Everything else participates.
+     51  
+     52    test('user → true', () => {
+     53      expect(isChainParticipant({ type: 'user' })).toBe(true)
+  Type '{ type: "something_new"; }' is missing the following properties from type 'SpeculationAcceptMessage': timestamp, timeSavedMs

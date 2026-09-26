@@ -1,0 +1,2 @@
+src/packages/repl/src/hooksConfigManager.ts(312,18): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksConfigManager.ts(327,34): error TS2538: Type 'unknown' cannot be used as an index type.

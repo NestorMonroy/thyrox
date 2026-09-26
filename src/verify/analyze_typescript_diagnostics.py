@@ -28,33 +28,90 @@ _MORE = re.compile(r"^\.\.\. (\d+) more \.\.\.$")
 _OPEN, _CLOSE = "<{([", ">})]"
 
 
-def _union_members(text: str) -> list[str] | None:
-    """Los miembros de primer nivel de una unión, o None si no lo es."""
-    members, depth, start = [], 0, 0
-    for i, char in enumerate(text):
-        if char in _OPEN:
+def _is_close(text: str, i: int) -> bool:
+    """Un cierre de agrupación. La flecha ``=>`` no cierra nada."""
+    return text[i] in _CLOSE and not (text[i] == ">" and i > 0 and text[i - 1] == "=")
+
+
+def _split_top(text: str, separator: str) -> list[str]:
+    """``text`` partido por ``separator`` sólo en el nivel 0 de agrupación."""
+    parts, depth, start, i = [], 0, 0, 0
+    while i < len(text):
+        if text[i] in _OPEN:
             depth += 1
-        elif char in _CLOSE:
+        elif _is_close(text, i):
             depth -= 1
-        elif depth == 0 and text.startswith(" | ", i):
-            members.append(text[start:i])
-            start = i + 3
-    members.append(text[start:])
-    return members if len(members) > 1 else None
+        elif depth == 0 and text.startswith(separator, i):
+            parts.append(text[start:i])
+            start = i + len(separator)
+            i = start
+            continue
+        i += 1
+    parts.append(text[start:])
+    return parts
+
+
+def _union_size(members: list[str]) -> int:
+    """Cuántos miembros tiene la unión, contando los que tsc resume en
+    ``... k more ...``: ese número no depende del orden de impresión."""
+    total = 0
+    for member in members:
+        more = _MORE.match(member.strip())
+        total += int(more.group(1)) if more else 1
+    return total
+
+
+def _canonical_groups(text: str) -> str:
+    """El contenido de cada agrupación ``<…> {…} (…) […]``, canónico."""
+    out, i = [], 0
+    while i < len(text):
+        if text[i] in _OPEN:
+            depth, j = 1, i + 1
+            while j < len(text) and depth:
+                if text[j] in _OPEN:
+                    depth += 1
+                elif _is_close(text, j):
+                    depth -= 1
+                j += 1
+            out.append(text[i] + _canonical_fields(text[i + 1:j - 1]) + (text[j - 1] if depth == 0 else ""))
+            i = j
+            continue
+        out.append(text[i])
+        i += 1
+    return "".join(out)
+
+
+def _canonical_value(text: str) -> str:
+    """Una unión, a su tamaño; lo demás, con sus agrupaciones canónicas."""
+    members = _split_top(text, " | ")
+    if len(members) > 1:
+        return f"<unión de {_union_size(members)}>"
+    return _canonical_groups(text)
+
+
+def _canonical_fields(text: str) -> str:
+    """Los campos de una agrupación (``a: X | Y; b: Z`` o ``X | Y, Z``): la
+    unión de cada valor se reduce sin mezclarla con el campo vecino."""
+    fields = []
+    for field in _split_top(text, "; "):
+        items = []
+        for item in _split_top(field, ", "):
+            name_value = _split_top(item, ": ")
+            if len(name_value) > 1:
+                items.append(name_value[0] + ": " + _canonical_value(": ".join(name_value[1:])))
+            else:
+                items.append(_canonical_value(item))
+        fields.append(", ".join(items))
+    return "; ".join(fields)
 
 
 def _stable_type(segment: re.Match[str]) -> str:
     """tsc imprime una unión en el orden en que creó sus tipos, que cambia
     entre programas, y la trunca con `... k more ...`: el mismo diagnóstico
-    sale con otro texto. Lo que no cambia es cuántos miembros tiene."""
-    members = _union_members(segment.group(1))
-    if members is None:
-        return segment.group(0)
-    total = 0
-    for member in members:
-        more = _MORE.match(member)
-        total += int(more.group(1)) if more else 1
-    return f"'<unión de {total}>'"
+    sale con otro texto. Lo que no cambia es cuántos miembros tiene, y eso
+    vale a cualquier profundidad: dentro de `{…}`, de `Record<…>` o de
+    `(…)[]` también (4 pares reales medidos el 2026-09-25)."""
+    return f"'{_canonical_value(segment.group(1))}'"
 
 
 def diagnostic_key(match: re.Match[str]) -> str:
@@ -66,9 +123,17 @@ def diagnostic_key(match: re.Match[str]) -> str:
     )
 
 
+# Un nombre ausente es el mismo diagnóstico con o sin sugerencia: tsc cambia
+# de TS2304 a TS2552 en cuanto otro nombre parecido entra al alcance (paso
+# 141 revirtió una candidata de −20 por eso).
+_SUGGESTED_MISSING = re.compile(r": TS2552: (Cannot find name '[^']+')\. Did you mean '[^']+'\?$")
+
+
 def stable_key(key: str) -> str:
     """La clave para COMPARAR dos pasadas: las uniones, reducidas a su
-    tamaño. Sólo la usa el verificador; las señales leen `diagnostic_key`."""
+    tamaño, y el nombre ausente sin la sugerencia de tsc. Sólo la usa el
+    verificador; las señales leen `diagnostic_key`."""
+    key = _SUGGESTED_MISSING.sub(r": TS2304: \1.", key)
     return _QUOTED.sub(_stable_type, key)
 
 

@@ -1,0 +1,24 @@
+src/packages/agent/__tests__/createProductionDeps.test.ts(165,14): error TS2339: Property 'reason' does not exist on type 'PermissionResult'.
+  --- código src/packages/agent/__tests__/createProductionDeps.test.ts:155-175 ---
+    155        expect(r.allowed).toBe(esperados[i]!)
+    156      }
+    157      // `deny` y `ask` NO son el mismo motivo: colapsarlos perdería la
+    158      // distinción entre «el sistema lo prohíbe» y «el usuario no contestó».
+    159      const deps = createProductionDeps({
+    160        tools: [herramienta('Echo', 'eco')] as never,
+    161        toolUseContext: contexto(),
+    162        canUseTool: (async () => ({ behavior: 'ask' })) as never,
+    163      })
+    164      const r = await deps.permission.canUseTool({ name: 'Echo' } as never, {}, {} as never)
+    165>     expect(r.reason).not.toBe('Permission denied')
+    166    })
+    167  
+    168    test('7. output.emit entrega al emisor que se le dio', () => {
+    169      const visto: unknown[] = []
+    170      const deps = createProductionDeps({
+    171        tools: [],
+    172        toolUseContext: contexto(),
+    173        canUseTool: permitirTodo as never,
+    174        emitFn: e => visto.push(e),
+    175      })
+  Property 'reason' does not exist on type '{ allowed: true; }'.

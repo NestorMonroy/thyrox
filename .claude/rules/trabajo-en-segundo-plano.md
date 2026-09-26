@@ -459,3 +459,35 @@ la regla vive aquí y los consumidores la heredan.
 *Ciega a:* un consumidor que invoque los ensambladores desde un guion sin
 nombrarlos en una regla —el conteo mide la prosa que gobierna, no el uso real—,
 y a `db` y `server`, que no llevan ese archivo.
+
+## Un trabajo vivo se sondea — y lo hace la barrera, no la memoria
+
+> Directiva del ejecutor 2026-09-26, tras dos episodios: un `rg` sin archivo
+> leyó un socket 1 h 19 min, y el paso 160 corrió minutos sin que nadie
+> mirara sus procesos hasta que el ejecutor preguntó —*«puedes implementar
+> una regla o hook con sh para que no te olvides de esto»*—.
+
+`wait-jobs wait` sondea en **cada latido** (30 s por defecto) el árbol de
+cada trabajo vivo con `bin/stdin_probe`, repartido con GNU Parallel, y
+escribe por stderr una línea por proceso más un `AVISO` por cada uno que lee
+stdin de un canal con escritor vivo, o de un socket: si su productor no
+escribe ni cierra, espera para siempre. Una tubería cuyo escritor ya salió
+(cada ítem del pool) da EOF y no se avisa; los escritores los cuenta la
+propia sonda, en su sexta columna.
+A mano, sin esperar:
+
+```bash
+bash bin/wait-jobs probe                                        # todo el ledger
+pgrep -f '[p]atron' | parallel -j8 -k bash bin/stdin_probe {}   # un patrón suelto
+```
+
+**Se sondea el ÁRBOL, no un nombre.** Medido en el paso 160: `pgrep -f
+'[t]sc_proposers'` no vio al proceso que trabajaba —se llama
+`tscProposers.ts`— y sólo quedaron el lazo y su `bash`, dormidos: se leía
+como «nada corre». `wait-jobs` parte del pid registrado y baja por `pgrep
+-P`, así que el nombre no importa. Avisa, no mata: una tubería viva también
+es un canal.
+
+```bash
+bash tests/session/test-wait-jobs-probe.sh
+```

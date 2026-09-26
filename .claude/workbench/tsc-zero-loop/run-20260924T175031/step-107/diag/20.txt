@@ -1,0 +1,97 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tools/src/agent.ts(122,84): error TS18048: 'definicion' is possibly 'undefined'.
+  --- código src/packages/tools/src/agent.ts:112-132 ---
+    112        const definicion = tipo === null ? {} : definiciones[tipo]
+    113        if (tipo !== null && !definicion) {
+    114          const conocidos = Object.keys(definiciones).join(', ')
+    115          return error(`subagent_type desconocido: ${tipo}. Registrados: ${conocidos}`)
+    116        }
+    117        if (enVuelo >= maxConcurrent) {
+    118          return error(`limite de anchura de subagentes alcanzado (${maxConcurrent} a la vez): no se encola, se rechaza — reintenta cuando alguno termine`)
+    119        }
+    120  
+    121        const prompt = String(input.prompt ?? '')
+    122>       const model = (typeof input.model === 'string' ? input.model : undefined) ?? definicion.model ?? opts.defaultModel ?? 'claude-sonnet-5'
+    123        const permitidas = definicion.tools
+    124        const tools = permitidas ? CORE_TOOLS.filter((t) => permitidas.includes(t.name)) : CORE_TOOLS
+    125  
+    126        enVuelo += 1
+    127        // El id de la fila del store: propio del despacho, estable entre 'running'
+    128        // y 'completed'. No es el id de sesion del bucle —ese lo crea runLoop y
+    129        // llega en la fase de cierre, en la columna session_id—.
+    130        const agentId = crypto.randomUUID()
+    131        const startedAt = new Date().toISOString()
+    132        const subagentType = tipo ?? 'general-purpose'
+src/packages/tools/src/agent.ts(123,26): error TS18048: 'definicion' is possibly 'undefined'.
+  --- código src/packages/tools/src/agent.ts:113-133 ---
+    113        if (tipo !== null && !definicion) {
+    114          const conocidos = Object.keys(definiciones).join(', ')
+    115          return error(`subagent_type desconocido: ${tipo}. Registrados: ${conocidos}`)
+    116        }
+    117        if (enVuelo >= maxConcurrent) {
+    118          return error(`limite de anchura de subagentes alcanzado (${maxConcurrent} a la vez): no se encola, se rechaza — reintenta cuando alguno termine`)
+    119        }
+    120  
+    121        const prompt = String(input.prompt ?? '')
+    122        const model = (typeof input.model === 'string' ? input.model : undefined) ?? definicion.model ?? opts.defaultModel ?? 'claude-sonnet-5'
+    123>       const permitidas = definicion.tools
+    124        const tools = permitidas ? CORE_TOOLS.filter((t) => permitidas.includes(t.name)) : CORE_TOOLS
+    125  
+    126        enVuelo += 1
+    127        // El id de la fila del store: propio del despacho, estable entre 'running'
+    128        // y 'completed'. No es el id de sesion del bucle —ese lo crea runLoop y
+    129        // llega en la fase de cierre, en la columna session_id—.
+    130        const agentId = crypto.randomUUID()
+    131        const startedAt = new Date().toISOString()
+    132        const subagentType = tipo ?? 'general-purpose'
+    133        const description = typeof input.description === 'string' ? input.description : undefined
+src/packages/tools/src/agent.ts(155,19): error TS18048: 'definicion' is possibly 'undefined'.
+  --- código src/packages/tools/src/agent.ts:145-165 ---
+    145          status: 'running', startedAt, turns: 0, usage: { ...USAGE_CERO },
+    146        })
+    147        try {
+    148          // El bucle se importa aquí, no al principio del módulo: `loop.ts` ya
+    149          // importa el registro de herramientas, y el registro incluirá a `Agent`
+    150          // en cuanto se cablee. Es el único ciclo real del paquete.
+    151          const { runLoop } = await import('@thyrox/agent/loop')
+    152          const r = await runLoop({
+    153            provider: opts.provider,
+    154            model,
+    155>           system: definicion.systemPrompt ?? SISTEMA_POR_DEFECTO,
+    156            prompt,
+    157            tools,
+    158            cwd: ctx.cwd,
+    159            transcriptDir: opts.transcriptDir,
+    160            maxTurns: definicion.maxTurns ?? 20,
+    161            signal: ctx.abort,
+    162          })
+    163          const cierre = {
+    164            ...carga, session_id: r.sessionId, transcript_path: r.transcriptPath,
+    165            turns: r.turns, stop: r.stop, usd: r.usd,
+src/packages/tools/src/agent.ts(160,21): error TS18048: 'definicion' is possibly 'undefined'.
+  --- código src/packages/tools/src/agent.ts:150-170 ---
+    150          // en cuanto se cablee. Es el único ciclo real del paquete.
+    151          const { runLoop } = await import('@thyrox/agent/loop')
+    152          const r = await runLoop({
+    153            provider: opts.provider,
+    154            model,
+    155            system: definicion.systemPrompt ?? SISTEMA_POR_DEFECTO,
+    156            prompt,
+    157            tools,
+    158            cwd: ctx.cwd,
+    159            transcriptDir: opts.transcriptDir,
+    160>           maxTurns: definicion.maxTurns ?? 20,
+    161            signal: ctx.abort,
+    162          })
+    163          const cierre = {
+    164            ...carga, session_id: r.sessionId, transcript_path: r.transcriptPath,
+    165            turns: r.turns, stop: r.stop, usd: r.usd,
+    166          }
+    167          diario?.log('SubagentStop', cierre)
+    168          await runHooks(opts.hooks ?? {}, 'SubagentStop', cierre)
+    169          grabar({
+    170            agentId, sessionId: r.sessionId, subagentType, model, description,

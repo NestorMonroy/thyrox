@@ -9,7 +9,7 @@ import { clearMemoryFileCaches } from '@thyrox/storage/claudemd.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { findCanonicalGitRoot } from '@thyrox/storage/git.js'
 import { lazySchema } from '../../utils/lazySchema.js'
-import { getPlanSlug, getPlansDirectory } from '@thyrox/storage/plans.js'
+import { getPlanSlug } from '@thyrox/storage/plans.js'
 import { setCwd } from '@thyrox/shell/Shell.js'
 import { saveWorktreeState } from '@thyrox/storage/sessionStorage.js'
 import {
@@ -162,7 +162,6 @@ export const EnterWorktreeTool: Tool<InputSchema, Output> = buildTool({
       // Just clear caches so subsequent reads reflect the new cwd.
       clearSystemPromptSections()
       clearMemoryFileCaches()
-      getPlansDirectory.cache.clear?.()
       logEvent('tengu_worktree_entered_existing', {
         mid_session: true,
       })
@@ -186,7 +185,6 @@ export const EnterWorktreeTool: Tool<InputSchema, Output> = buildTool({
     clearSystemPromptSections()
     // Clear memoized caches that depend on CWD
     clearMemoryFileCaches()
-    getPlansDirectory.cache.clear?.()
 
     logEvent('tengu_worktree_created', {
       mid_session: true,

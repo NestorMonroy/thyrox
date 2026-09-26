@@ -1,0 +1,2 @@
+src/packages/agent/compaction/sessionMemoryCompact.ts(39,3): error TS2305: Module '"./compact.js"' has no exported member 'createPlanAttachmentIfNeeded'.
+src/packages/agent/compaction/sessionMemoryCompact.ts(465,24): error TS2554: Expected 6 arguments, but got 4.

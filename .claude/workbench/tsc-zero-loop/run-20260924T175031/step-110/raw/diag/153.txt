@@ -1,0 +1,2 @@
+src/packages/provider/__tests__/adapters.test.ts(240,22): error TS2352: Conversion of type '() => Promise<Response>' to type 'typeof fetch' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Property 'preconnect' is missing in type '() => Promise<Response>' but required in type 'typeof fetch'.

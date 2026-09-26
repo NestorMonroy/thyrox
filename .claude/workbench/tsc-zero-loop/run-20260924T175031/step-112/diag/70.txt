@@ -1,0 +1,46 @@
+src/packages/app-host/src/runtime/installPluginBindings.ts(476,67): error TS2345: Argument of type 'string' is not assignable to parameter of type '{ encoding: BufferEncoding; }'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:466-486 ---
+    466  
+    467    // --- fs / path (métodos sync + async)
+    468    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    469    const nodeFs = require('node:fs') as typeof import('node:fs')
+    470    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    471    const nodeFsp = require('node:fs/promises') as typeof import('node:fs/promises')
+    472    setFsImplementationFn({
+    473      existsSync: p => getFsImplementation().existsSync(p),
+    474      mkdirSync: (p, o) => getFsImplementation().mkdirSync(p, o),
+    475      writeFileSync: (p, d) => getFsImplementation().writeFileSync(p, d),
+    476>     readFileSync: (p, e) => getFsImplementation().readFileSync(p, e) as string,
+    477      readdirSync: p =>
+    478        nodeFs.readdirSync(p, { withFileTypes: true }) as Array<{
+    479          name: string
+    480          isFile(): boolean
+    481          isDirectory(): boolean
+    482        }>,
+    483      statSync: p => getFsImplementation().statSync(p) as any,
+    484      rmSync: (p, o) => getFsImplementation().rmSync(p, o as any),
+    485      rmdirSync: p => nodeFs.rmdirSync(p),
+    486      renameSync: (o, n) => getFsImplementation().renameSync(o, n),
+src/packages/app-host/src/runtime/installPluginBindings.ts(508,39): error TS2322: Type '{ resolvedPath: string; isSymlink: boolean; isCanonical: boolean; }' is not assignable to type 'string'.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:498-518 ---
+    498        (await nodeFsp.readdir(p, { withFileTypes: true })) as Array<{
+    499          name: string
+    500          isFile(): boolean
+    501          isDirectory(): boolean
+    502        }>,
+    503      stat: async p => (await nodeFsp.stat(p)) as any,
+    504      rm: async (p, o) => nodeFsp.rm(p, o),
+    505      rename: async (o, n) => nodeFsp.rename(o, n),
+    506    })
+    507    setPathExistsFn(p => pathExists(p))
+    508>   setSafeResolvePathFn((base, rel) => safeResolvePath(base, rel) ?? null)
+    509    setWriteFileSyncAndFlushFn((p, d) => writeFileSyncAndFlush(p, d))
+    510    setSanitizePathFn(p => p) // no-op; los archivos de plugin tienen su propio sanitizePath
+    511    setRegisterCleanupFn(fn => registerCleanup(async () => { await fn() }))
+    512  
+    513    // --- git
+    514    setGitExeFn(() => gitExe())
+    515    setGetHeadForDirFn(dir => getHeadForDir(dir))
+    516  
+    517    // --- subproceso
+    518    setExecFileNoThrowFn(execFileNoThrow)

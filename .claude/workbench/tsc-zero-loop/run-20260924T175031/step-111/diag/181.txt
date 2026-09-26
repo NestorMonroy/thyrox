@@ -1,0 +1,19 @@
+src/packages/repl/src/commands/hooks/index.ts(8,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox/src/packages/repl/src/commands/hooks/hooks")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/repl/src/commands/hooks/index.ts:1-11 ---
+      1  import type { Command } from '@thyrox/command-runtime/runtime'
+      2  
+      3  const hooks = {
+      4    type: 'local-jsx',
+      5    name: 'hooks',
+      6    description: 'View hook configurations for tool events',
+      7    immediate: true,
+      8>   load: () => import('./hooks.js'),
+      9  } satisfies Command
+     10  
+     11  export default hooks
+  Type 'typeof import("/home/user/thyrox/src/packages/repl/src/commands/hooks/hooks")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type 'import("/home/user/thyrox/src/packages/agent/command").LocalJSXCommandCall' is not assignable to type 'import("/home/user/thyrox/src/packages/command-runtime/src/types").LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is not assignable to type 'ToolUseContext & { canUseTool?: CanUseToolFn | undefined; setMessages: (updater: (prev: Message[]) => Message[]) => void; options: { ...; }; onChangeAPIKey: () => void; onChangeDynamicMcpConfig?: ((config: Record<...>) => void) | undefined; onInstallIDEExtension?: ((ide: IdeType) => void) | undefined; resume?: ((ses...'.
+            Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

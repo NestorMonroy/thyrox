@@ -40,6 +40,7 @@ import {
 import { isDebugToStdErr, logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
   getAWSRegion,
+  getDefaultVertexRegion,
   getVertexRegionForModel,
   isEnvTruthy,
 } from '@thyrox/config/env/utils'
@@ -59,18 +60,26 @@ const anthropicQueryBinding: NonNullable<
   })) as any
 }
 
+type AnthropicQueryStreamEvent = ReturnType<
+  NonNullable<ProviderHostBindings['anthropic']['queryStream']>
+> extends AsyncGenerator<infer TEvent, void, unknown>
+  ? TEvent
+  : never
+
 const anthropicQueryStreamBinding: NonNullable<
   ProviderHostBindings['anthropic']['queryStream']
 > = async function* (args) {
   const { queryModelWithStreaming } = claudeLegacyRuntime
-  yield* queryModelWithStreaming({
+  for await (const event of queryModelWithStreaming({
     messages: args.messages as any,
     systemPrompt: args.systemPrompt as any,
     thinkingConfig: args.thinkingConfig as any,
     tools: args.tools as any,
     signal: args.signal,
     options: args.options as any,
-  })
+  })) {
+    yield event as AnthropicQueryStreamEvent
+  }
 }
 
 const refreshAndGetAwsCredentialsBinding = Object.assign(
@@ -127,7 +136,8 @@ const bindings: ProviderHostBindings = {
     logForDebugging: (message, options) =>
       logForDebugging(message, options as any),
     getAWSRegion: () => getAWSRegion(),
-    getVertexRegionForModel: model => getVertexRegionForModel(model),
+    getVertexRegionForModel: model =>
+      getVertexRegionForModel(model) ?? getDefaultVertexRegion(),
     isEnvTruthy: value => isEnvTruthy(value as string | boolean),
     query: anthropicQueryBinding,
     queryStream: anthropicQueryStreamBinding,

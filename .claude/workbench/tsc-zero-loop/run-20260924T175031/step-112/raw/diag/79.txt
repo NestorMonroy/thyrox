@@ -1,0 +1,3 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(218,7): error TS2322: Type 'APIProvider' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+  Type '"codex"' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,15): error TS2339: Property 'content' does not exist on type 'unknown'.

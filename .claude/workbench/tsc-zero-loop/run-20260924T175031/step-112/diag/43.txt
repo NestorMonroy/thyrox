@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(454,9): error TS2339: Property 'compactionUsage' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:444-464 ---
+    444      // 3928.js exits the same way.
+    445      if (rapidRefillBreakerTripped) {
+    446        return { reason: 'rapid_refill_breaker' }
+    447      }
+    448  
+    449      if (compactionResult) {
+    450        const {
+    451          preCompactTokenCount,
+    452          postCompactTokenCount,
+    453          truePostCompactTokenCount,
+    454>         compactionUsage,
+    455        } = compactionResult
+    456  
+    457        logEvent('tengu_auto_compact_succeeded', {
+    458          originalMessageCount: messages.length,
+    459          compactedMessageCount:
+    460            compactionResult.summaryMessages.length +
+    461            compactionResult.attachments.length +
+    462            compactionResult.hookResults.length,
+    463          preCompactTokenCount,
+    464          postCompactTokenCount,
+src/packages/agent/query.ts(460,28): error TS2339: Property 'summaryMessages' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:450-470 ---
+    450        const {
+    451          preCompactTokenCount,
+    452          postCompactTokenCount,
+    453          truePostCompactTokenCount,
+    454          compactionUsage,
+    455        } = compactionResult
+    456  
+    457        logEvent('tengu_auto_compact_succeeded', {
+    458          originalMessageCount: messages.length,
+    459          compactedMessageCount:
+    460>           compactionResult.summaryMessages.length +
+    461            compactionResult.attachments.length +
+    462            compactionResult.hookResults.length,
+    463          preCompactTokenCount,
+    464          postCompactTokenCount,
+    465          truePostCompactTokenCount,
+    466          compactionInputTokens: compactionUsage?.input_tokens,
+    467          compactionOutputTokens: compactionUsage?.output_tokens,
+    468          compactionCacheReadTokens:
+    469            compactionUsage?.cache_read_input_tokens ?? 0,
+    470          compactionCacheCreationTokens:

@@ -1,0 +1,2 @@
+src/packages/config/plugin/lspPluginIntegration.ts(6,3): error TS2724: '"./_deps.js"' has no exported member named 'ScopedLspServerConfig'. Did you mean 'ScopedMcpServerConfig'?
+src/packages/config/plugin/lspPluginIntegration.ts(243,22): error TS2698: Spread types may only be created from object types.

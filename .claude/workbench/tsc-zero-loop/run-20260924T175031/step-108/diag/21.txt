@@ -1,0 +1,138 @@
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(76,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:66-86 ---
+     66  	});
+     67  
+     68  	test("returns truecolor or color256 for non-ansi themes", () => {
+     69  		const mode = detectColorMode("monokai");
+     70  		expect(["truecolor", "color256"]).toContain(mode);
+     71  	});
+     72  });
+     73  
+     74  describe("detectLanguage", () => {
+     75  	test("detects language from file extension", () => {
+     76> 		expect(detectLanguage("index.ts")).toBe("ts");
+     77  		expect(detectLanguage("main.py")).toBe("py");
+     78  		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82  		expect(detectLanguage("Makefile")).toBe("makefile");
+     83  		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(77,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:67-87 ---
+     67  
+     68  	test("returns truecolor or color256 for non-ansi themes", () => {
+     69  		const mode = detectColorMode("monokai");
+     70  		expect(["truecolor", "color256"]).toContain(mode);
+     71  	});
+     72  });
+     73  
+     74  describe("detectLanguage", () => {
+     75  	test("detects language from file extension", () => {
+     76  		expect(detectLanguage("index.ts")).toBe("ts");
+     77> 		expect(detectLanguage("main.py")).toBe("py");
+     78  		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82  		expect(detectLanguage("Makefile")).toBe("makefile");
+     83  		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+     87  		expect(detectLanguage("file.xyz123")).toBeNull();
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(78,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:68-88 ---
+     68  	test("returns truecolor or color256 for non-ansi themes", () => {
+     69  		const mode = detectColorMode("monokai");
+     70  		expect(["truecolor", "color256"]).toContain(mode);
+     71  	});
+     72  });
+     73  
+     74  describe("detectLanguage", () => {
+     75  	test("detects language from file extension", () => {
+     76  		expect(detectLanguage("index.ts")).toBe("ts");
+     77  		expect(detectLanguage("main.py")).toBe("py");
+     78> 		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82  		expect(detectLanguage("Makefile")).toBe("makefile");
+     83  		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+     87  		expect(detectLanguage("file.xyz123")).toBeNull();
+     88  	});
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(82,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:72-92 ---
+     72  });
+     73  
+     74  describe("detectLanguage", () => {
+     75  	test("detects language from file extension", () => {
+     76  		expect(detectLanguage("index.ts")).toBe("ts");
+     77  		expect(detectLanguage("main.py")).toBe("py");
+     78  		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82> 		expect(detectLanguage("Makefile")).toBe("makefile");
+     83  		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+     87  		expect(detectLanguage("file.xyz123")).toBeNull();
+     88  	});
+     89  });
+     90  
+     91  describe("tokenize", () => {
+     92  	test("returns array of tokens", () => {
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(83,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:73-93 ---
+     73  
+     74  describe("detectLanguage", () => {
+     75  	test("detects language from file extension", () => {
+     76  		expect(detectLanguage("index.ts")).toBe("ts");
+     77  		expect(detectLanguage("main.py")).toBe("py");
+     78  		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82  		expect(detectLanguage("Makefile")).toBe("makefile");
+     83> 		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+     87  		expect(detectLanguage("file.xyz123")).toBeNull();
+     88  	});
+     89  });
+     90  
+     91  describe("tokenize", () => {
+     92  	test("returns array of tokens", () => {
+     93  		const result = tokenize("hello world");
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(87,10): error TS2554: Expected 2 arguments, but got 1.
+  --- código src/packages/color-diff-napi/src/__tests__/color-diff.test.ts:77-97 ---
+     77  		expect(detectLanguage("main.py")).toBe("py");
+     78  		expect(detectLanguage("style.css")).toBe("css");
+     79  	});
+     80  
+     81  	test("detects language from known filenames", () => {
+     82  		expect(detectLanguage("Makefile")).toBe("makefile");
+     83  		expect(detectLanguage("Dockerfile")).toBe("dockerfile");
+     84  	});
+     85  
+     86  	test("returns null for unknown extensions", () => {
+     87> 		expect(detectLanguage("file.xyz123")).toBeNull();
+     88  	});
+     89  });
+     90  
+     91  describe("tokenize", () => {
+     92  	test("returns array of tokens", () => {
+     93  		const result = tokenize("hello world");
+     94  		expect(Array.isArray(result)).toBe(true);
+     95  		expect(result.length).toBeGreaterThan(0);
+     96  	});
+     97  

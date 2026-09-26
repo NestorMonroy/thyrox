@@ -1,0 +1,5 @@
+src/packages/agent/query.ts(674,15): error TS2322: Type 'unknown' is not assignable to type 'string | undefined'.
+src/packages/agent/query.ts(678,15): error TS2322: Type '((n: { key: string; text: string; priority: string; }) => void) | undefined' is not assignable to type '((notif: unknown) => void) | undefined'.
+  Type '(n: { key: string; text: string; priority: string; }) => void' is not assignable to type '(notif: unknown) => void'.
+    Types of parameters 'n' and 'notif' are incompatible.
+      Type 'unknown' is not assignable to type '{ key: string; text: string; priority: string; }'.

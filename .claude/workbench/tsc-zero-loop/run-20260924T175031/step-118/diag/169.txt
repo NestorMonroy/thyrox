@@ -1,0 +1,23 @@
+src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx(16,15): error TS2344: Type 'unknown' does not satisfy the constraint 'Record<string, unknown>'.
+  --- código src/packages/repl/src/components/agents/new-agent-creation/wizard-steps/ToolsStep.tsx:6-26 ---
+      6  import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+      7  import { ToolSelector } from '../../ToolSelector.js'
+      8  import type { AgentWizardData } from '../types.js'
+      9  
+     10  type Props = {
+     11    tools: Tools
+     12  }
+     13  
+     14  export function ToolsStep({ tools }: Props): ReactNode {
+     15    const { goNext, goBack, updateWizardData, wizardData } =
+     16>     useWizard<AgentWizardData>()
+     17  
+     18    const handleComplete = (selectedTools: string[] | undefined): void => {
+     19      updateWizardData({ selectedTools })
+     20      goNext()
+     21    }
+     22  
+     23    // Pass through undefined to preserve "all tools" semantic
+     24    // ToolSelector will expand it internally for display purposes
+     25    const initialTools = wizardData.selectedTools
+     26  

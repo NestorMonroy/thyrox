@@ -71,7 +71,9 @@ const input: InputPlatform = {
 const screenshot: ScreenshotPlatform = {
   async captureScreen(displayId) {
     const swift = requireComputerUseSwift()
-    return swift.screenshot.captureExcluding([], undefined, undefined, undefined, displayId)
+    // Native size, no downscale — mismo criterio que captureRegion más abajo.
+    const size = swift.display.getSize(displayId)
+    return swift.screenshot.captureExcluding([], 0.75, size.width, size.height, displayId)
   },
 
   async captureRegion(x, y, w, h) {

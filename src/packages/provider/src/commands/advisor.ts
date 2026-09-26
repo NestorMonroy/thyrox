@@ -1,5 +1,4 @@
-import type { Command } from '@thyrox/command-runtime/runtime'
-import type { LocalCommandCall } from '@thyrox/agent/command.js'
+import type { Command, LocalCommandCall } from '@thyrox/agent/command.js'
 import {
   canUserConfigureAdvisor,
   isValidAdvisorModel,

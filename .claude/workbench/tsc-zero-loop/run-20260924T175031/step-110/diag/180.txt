@@ -1,0 +1,18 @@
+src/packages/repl/src/commands/export/index.ts(8,15): error TS2322: Type 'Promise<typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/export/export")>' is not assignable to type 'Promise<LocalJSXCommandModule>'.
+  --- código src/packages/repl/src/commands/export/index.ts:1-11 ---
+      1  import type { Command } from '@thyrox/command-runtime/runtime'
+      2  
+      3  const exportCommand = {
+      4    type: 'local-jsx',
+      5    name: 'export',
+      6    description: 'Export the current conversation to a file or clipboard',
+      7    argumentHint: '[filename]',
+      8>   load: () => import('./export.js'),
+      9  } satisfies Command
+     10  
+     11  export default exportCommand
+  Type 'typeof import("/home/user/thyrox-medicion/src/packages/repl/src/commands/export/export")' is not assignable to type 'LocalJSXCommandModule'.
+    Types of property 'call' are incompatible.
+      Type '(onDone: LocalJSXCommandOnDone, context: ToolUseContext, args: string) => Promise<ReactNode>' is not assignable to type 'LocalJSXCommandCall'.
+        Types of parameters 'context' and 'context' are incompatible.
+          Type 'LocalJSXCommandContext' is missing the following properties from type 'ToolUseContext': abortController, readFileState, getAppState, setAppState, and 5 more.

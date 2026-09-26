@@ -1,0 +1,8 @@
+== sin anular
+test_tsc_routes: 25 aserciones — 25 ok, 0 falla(s)
+== generic_equals
+  FALLA el = del valor por defecto de un genérico no hace iguales dos cuerpos distintos — esperado None, obtenido ['a/confirm.ts', 'b/confirm.ts']
+test_tsc_routes: 25 aserciones — 24 ok, 1 falla(s)
+== discriminant
+  FALLA mismos campos con discriminante distinto no son el mismo tipo — esperado None, obtenido ['a/event.ts', 'b/event.ts']
+test_tsc_routes: 25 aserciones — 24 ok, 1 falla(s)

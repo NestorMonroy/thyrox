@@ -1,0 +1,46 @@
+src/packages/provider/src/vcr.ts(25,10): error TS2724: '"@thyrox/agent/messages.js"' has no exported member named 'normalizeMessagesForAPI'. Did you mean 'normalizeMessages'?
+  --- código src/packages/provider/src/vcr.ts:15-35 ---
+     15    AssistantMessage,
+     16    Message,
+     17    StreamEvent,
+     18    SystemAPIErrorMessage,
+     19    UserMessage,
+     20  } from '@thyrox/agent/messageShapes'
+     21  import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
+     22  import { env } from '@thyrox/config/env'
+     23  import { getClaudeConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+     24  import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
+     25> import { normalizeMessagesForAPI } from '@thyrox/agent/messages.js'
+     26  import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+     27  
+     28  function shouldUseVCR(): boolean {
+     29    if (readEnv('NODE_ENV') === 'test') {
+     30      return true
+     31    }
+     32  
+     33    if (readEnv('USER_TYPE') === 'ant' && isEnvTruthy(readEnv('FORCE_VCR'))) {
+     34      return true
+     35    }
+src/packages/provider/src/vcr.ts(62,24): error TS7006: Parameter '_' implicitly has an 'any' type.
+  --- código src/packages/provider/src/vcr.ts:52-72 ---
+     52          return true
+     53        }
+     54        if (_.isMeta) {
+     55          return false
+     56        }
+     57        return true
+     58      }),
+     59    )
+     60  
+     61    const dehydratedInput = mapMessages(
+     62>     messagesForAPI.map(_ => _.message.content),
+     63      dehydrateValue,
+     64    )
+     65    const filename = join(
+     66      readEnv('CLAUDE_CODE_TEST_FIXTURES_ROOT') ?? getCwd(),
+     67      `fixtures/${dehydratedInput.map(_ => createHash('sha1').update(jsonStringify(_)).digest('hex').slice(0, 6)).join('-')}.json`,
+     68    )
+     69  
+     70    // Fetch cached fixture
+     71    try {
+     72      const cached = jsonParse(

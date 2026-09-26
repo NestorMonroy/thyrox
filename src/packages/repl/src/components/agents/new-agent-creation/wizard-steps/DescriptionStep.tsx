@@ -6,11 +6,10 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import TextInput from '../../../TextInput.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
-import type { AgentWizardData } from '../types.js'
 
 export function DescriptionStep(): ReactNode {
   const { goNext, goBack, updateWizardData, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard()
   const [whenToUse, setWhenToUse] = useState(wizardData.whenToUse || '')
   const [cursorOffset, setCursorOffset] = useState(whenToUse.length)
   const [error, setError] = useState<string | null>(null)

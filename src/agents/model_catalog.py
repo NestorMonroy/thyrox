@@ -154,6 +154,110 @@ def usage_cost_usd(catalog: dict, model_id: str, usage: dict, ttl: str = "1h") -
     ) / 1e6
 
 
+def usage_from_result(usage: dict) -> dict:
+    """El ``usage`` de una salida de ``claude -p`` con las claves del store, y
+    el reparto de la escritura de caché por TTL cuando la salida lo trae."""
+    split = usage.get("cache_creation") or {}
+    return {"input_tokens": usage.get("input_tokens", 0),
+            "cache_creation_tokens": usage.get("cache_creation_input_tokens", 0),
+            "cache_creation_5m": split.get("ephemeral_5m_input_tokens", 0),
+            "cache_creation_1h": split.get("ephemeral_1h_input_tokens", 0),
+            "cache_read_tokens": usage.get("cache_read_input_tokens", 0),
+            "output_tokens": usage.get("output_tokens", 0)}
+
+
+def usage_equivalent_tokens(catalog: dict, model_id: str, usage: dict, *, basis: str | None = None,
+                            unit: str | None = None, cache_ttl: str = "1h") -> float:
+    """Gemelo de ``usageEquivalentTokens`` (``src/packages/agent/models.ts``):
+    el costo en TOKENS equivalentes, con los cocientes del tier. Cada componente
+    pesa su precio y el total se divide por la vara, que es el precio de la
+    entrada del propio tier. ``basis`` toma los precios de otro modelo; ``unit``
+    conserva los propios y cambia sólo la vara; pedir los dos no tiene
+    respuesta única. Un modelo que el catálogo no conoce rehúsa (``KeyError``):
+    no se pondera con el tier de otro."""
+    if basis is not None and unit is not None:
+        raise ValueError("basis y unit son dos varas distintas: pedir las dos a la vez no tiene respuesta única")
+    if cache_ttl not in TTLS:
+        raise ValueError(f"ttl debe ser uno de {TTLS}, no {cache_ttl!r}")
+    price = pricing_of(catalog, basis or model_id)
+    yardstick = price["input"] if unit is None else pricing_of(catalog, unit)["input"]
+    write = price["cache_write_1h"] if cache_ttl == "1h" else price["cache_write_5m"]
+    return (usage.get("input_tokens", 0) * price["input"] + usage.get("cache_creation_tokens", 0) * write
+            + usage.get("cache_read_tokens", 0) * price["cache_read"]
+            + usage.get("output_tokens", 0) * price["output"]) / yardstick
+
+
+def equivalent_tokens(catalog: dict, model_id: str, usage: dict) -> float:
+    """Los tokens equivalentes de un uso que trae la escritura de caché
+    repartida por TTL (``cache_creation_5m``/``_1h``): el gemelo aplicado a
+    cada parte, porque la fórmula es lineal. Sin reparto, toda la escritura va
+    a 5m, como hacía el store. En el tier 3/15 da la fórmula que el store usaba
+    (in 1×, escritura 1.25×/2×, lectura 0.1×, salida 5×); en Fable 5.1 la
+    lectura pesa 0.025× y en Opus 5.5, 0.05×."""
+    write_5m = usage.get("cache_creation_5m", 0)
+    write_1h = usage.get("cache_creation_1h", 0)
+    if not write_5m and not write_1h:
+        write_5m = usage.get("cache_creation_tokens", 0)
+    rest = {**usage, "cache_creation_tokens": 0}
+    return (usage_equivalent_tokens(catalog, model_id, rest)
+            + usage_equivalent_tokens(catalog, model_id, {"cache_creation_tokens": write_5m}, cache_ttl="5m")
+            + usage_equivalent_tokens(catalog, model_id, {"cache_creation_tokens": write_1h}, cache_ttl="1h"))
+
+
+#: La base que se declara cuando el modelo no está en el catálogo: los
+#: cocientes del tier 3/15 aplicados a todo modelo, que el store usaba.
+FIXED_BASIS = "fija-3-15"
+FIXED_WRITE_RATIO = {"5m": 1.25, "1h": 2.0}
+
+
+def fixed_equivalent_tokens(usage: dict) -> float:
+    """La fórmula de pesos fijos (in 1×, lectura 0.1×, salida 5×), con la
+    escritura de caché ponderada por su reparto de TTL medido; sin reparto,
+    a 1.25×."""
+    write_5m = usage.get("cache_creation_5m", 0)
+    write_1h = usage.get("cache_creation_1h", 0)
+    measured = write_5m + write_1h
+    ratio = ((write_5m * FIXED_WRITE_RATIO["5m"] + write_1h * FIXED_WRITE_RATIO["1h"]) / measured
+             if measured else FIXED_WRITE_RATIO["5m"])
+    return (usage.get("input_tokens", 0) + ratio * usage.get("cache_creation_tokens", 0)
+            + 0.1 * usage.get("cache_read_tokens", 0) + 5 * usage.get("output_tokens", 0))
+
+
+def equivalent_tokens_with_basis(catalog: dict | None, model_id: str | None, usage: dict) -> tuple[float, str]:
+    """Los tokens equivalentes y la base con que se ponderaron: el tier del
+    modelo si el catálogo lo conoce; si no, la fórmula fija, declarada como
+    ``FIXED_BASIS`` para que dos bases no se sumen en silencio."""
+    tier = models_by_id(catalog).get(model_id, {}).get("pricing_tier") if catalog and model_id else None
+    if not tier:
+        return fixed_equivalent_tokens(usage), FIXED_BASIS
+    return equivalent_tokens(catalog, model_id, usage), tier
+
+
+#: Por encima de este hueco entre turnos la caché de 5 m caduca; por encima
+#: del segundo, también la de 1 h.
+CACHE_5M_MINUTES = 5
+CACHE_1H_MINUTES = 60
+
+
+def ttl_break_even_expiries(catalog: dict, model_id: str) -> float:
+    """Gemelo de ``ttlBreakEvenExpiries``: cuántas caducidades de la caché de
+    5 m pagan la prima de escribir a 1 h, (1h − 5m) / 5m del tier."""
+    price = pricing_of(catalog, model_id)
+    return (price["cache_write_1h"] - price["cache_write_5m"]) / price["cache_write_5m"]
+
+
+def choose_cache_ttl(catalog: dict, model_id: str, expected_gap_minutes: float) -> tuple[str, str]:
+    """Gemelo de ``chooseCacheTtl``: el TTL que conviene declarar según el
+    mayor hueco esperado entre dos turnos, y el porqué."""
+    break_even = ttl_break_even_expiries(catalog, model_id)
+    if expected_gap_minutes > CACHE_1H_MINUTES:
+        return "5m", "el hueco supera la hora: ninguna caché sobrevive y la prima de 1 h se paga en vano"
+    if expected_gap_minutes > CACHE_5M_MINUTES:
+        return "1h", (f"un hueco de {expected_gap_minutes:g} min caduca la caché de 5 m; "
+                      f"una sola caducidad (≥ {break_even:.2f}) ya paga la prima")
+    return "5m", "turnos seguidos: la caché de 5 m no caduca y la prima de 1 h no compra nada"
+
+
 def effort_cost_index(catalog: dict, model_id: str, level: str) -> float | None:
     """El índice relativo (``high`` = 1) que el registro declara; None si no lo declara."""
     model = models_by_id(catalog).get(model_id) or {}

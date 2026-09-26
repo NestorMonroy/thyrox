@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557,35): error TS7006: Parameter 'serverName' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1547-1567 ---
+   1547                  }
+   1548                  pendingSeeds.clear()
+   1549                },
+   1550                customSystemPrompt: options.systemPrompt,
+   1551                appendSystemPrompt: options.appendSystemPrompt,
+   1552                getAppState,
+   1553                setAppState,
+   1554                abortController,
+   1555                replayUserMessages: options.replayUserMessages,
+   1556                includePartialMessages: options.includePartialMessages,
+   1557>               handleElicitation: (serverName, params, elicitSignal) =>
+   1558                  structuredIO.handleElicitation(
+   1559                    serverName,
+   1560                    params.message,
+   1561                    undefined,
+   1562                    elicitSignal,
+   1563                    params.mode,
+   1564                    params.url,
+   1565                    'elicitationId' in params ? params.elicitationId : undefined,
+   1566                  ),
+   1567                agents: currentAgents,
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1557,47): error TS7006: Parameter 'params' implicitly has an 'any' type.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1547-1567 ---
+   1547                  }
+   1548                  pendingSeeds.clear()
+   1549                },
+   1550                customSystemPrompt: options.systemPrompt,
+   1551                appendSystemPrompt: options.appendSystemPrompt,
+   1552                getAppState,
+   1553                setAppState,
+   1554                abortController,
+   1555                replayUserMessages: options.replayUserMessages,
+   1556                includePartialMessages: options.includePartialMessages,
+   1557>               handleElicitation: (serverName, params, elicitSignal) =>
+   1558                  structuredIO.handleElicitation(
+   1559                    serverName,
+   1560                    params.message,
+   1561                    undefined,
+   1562                    elicitSignal,
+   1563                    params.mode,
+   1564                    params.url,
+   1565                    'elicitationId' in params ? params.elicitationId : undefined,
+   1566                  ),
+   1567                agents: currentAgents,

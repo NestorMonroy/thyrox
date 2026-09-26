@@ -1,0 +1,92 @@
+src/packages/agent/attachments.ts(1941,12): error TS2304: Cannot find name 'memoryFilesToAttachments'.
+  --- código src/packages/agent/attachments.ts:1931-1951 ---
+   1931        const conditionalRules = (
+   1932          await getConditionalRulesForCwdLevelDirectory(
+   1933            dir,
+   1934            filePath,
+   1935            processedPaths,
+   1936          )
+   1937        ).filter(
+   1938          f => !skipProjectLevel || (f.type !== 'Project' && f.type !== 'Local'),
+   1939        )
+   1940        attachments.push(
+   1941>         ...memoryFilesToAttachments(conditionalRules, toolUseContext, filePath),
+   1942        )
+   1943      }
+   1944    } catch (error) {
+   1945      logError(error)
+   1946    }
+   1947  
+   1948    return attachments
+   1949  }
+   1950  async function getOpenedFileFromIDE(
+   1951    ideSelection: IDESelection | null,
+src/packages/agent/attachments.ts(2249,11): error TS2304: Cannot find name 'isThinkingMessage'.
+  --- código src/packages/agent/attachments.ts:2239-2259 ---
+   2239    let lastTaskManagementIndex = -1
+   2240    let lastReminderIndex = -1
+   2241    let assistantTurnsSinceTaskManagement = 0
+   2242    let assistantTurnsSinceReminder = 0
+   2243  
+   2244    // Iterate backwards to find most recent events
+   2245    for (let i = messages.length - 1; i >= 0; i--) {
+   2246      const message = messages[i]
+   2247  
+   2248      if (message?.type === 'assistant') {
+   2249>       if (isThinkingMessage(message)) {
+   2250          // Skip thinking messages
+   2251          continue
+   2252        }
+   2253  
+   2254        // Check for TaskCreate or TaskUpdate usage BEFORE incrementing counter
+   2255        if (
+   2256          lastTaskManagementIndex === -1 &&
+   2257          'message' in message &&
+   2258          Array.isArray(message.message?.content) &&
+   2259          message.message.content.some(
+src/packages/agent/attachments.ts(2321,5): error TS2304: Cannot find name 'getTodoReminderTurnCounts'.
+  --- código src/packages/agent/attachments.ts:2311-2331 ---
+   2311    ) {
+   2312      return []
+   2313    }
+   2314  
+   2315    // Se omite si no hay mensajes.
+   2316    if (!messages || messages.length === 0) {
+   2317      return []
+   2318    }
+   2319  
+   2320    const { turnsSinceLastTodoWrite, turnsSinceLastReminder } =
+   2321>     getTodoReminderTurnCounts(messages)
+   2322  
+   2323    // Comprueba si corresponde mostrar el recordatorio.
+   2324    if (
+   2325      turnsSinceLastTodoWrite >= TODO_REMINDER_CONFIG.TURNS_SINCE_WRITE &&
+   2326      turnsSinceLastReminder >= TODO_REMINDER_CONFIG.TURNS_BETWEEN_REMINDERS
+   2327    ) {
+   2328      const todoKey = toolUseContext.agentId ?? getSessionId()
+   2329      const appState = toolUseContext.getAppState()
+   2330      const todos = appState.todos[todoKey] ?? []
+   2331      return [
+src/packages/agent/attachments.ts(2528,45): error TS2339: Property 'agentType' does not exist on type 'AgentDefinition'.
+  --- código src/packages/agent/attachments.ts:2518-2538 ---
+   2518  
+   2519  function processAgentMentions(
+   2520    input: string,
+   2521    agents: AgentDefinition[],
+   2522  ): Attachment[] {
+   2523    const agentMentions = extractAgentMentions(input)
+   2524    if (agentMentions.length === 0) return []
+   2525  
+   2526    const results = agentMentions.map(mention => {
+   2527      const agentType = mention.replace('agent-', '')
+   2528>     const agentDef = agents.find(def => def.agentType === agentType)
+   2529  
+   2530      if (!agentDef) {
+   2531        logEvent('tengu_at_mention_agent_not_found', {})
+   2532        return null
+   2533      }
+   2534  
+   2535      logEvent('tengu_at_mention_agent_success', {})
+   2536  
+   2537      return {
+   2538        type: 'agent_mention' as const,

@@ -58,7 +58,7 @@
  * nuevo, así que memoizar no ahorraría nada y rompería el aislamiento
  * entre casos.
  */
-import { randomUUID } from 'crypto'
+import { randomUUID, type UUID } from 'crypto'
 import { existsSync, mkdirSync, readFileSync } from 'fs'
 import { copyFile, readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
@@ -507,7 +507,7 @@ export async function persistFileSnapshotIfRemote(): Promise<void> {
     // la llamada revienta con TypeError, capturado por el catch de
     // afuera. Ese es el comportamiento observado y el que se prueba.
     const { recordTranscript } = (await import('./sessionStorage.js')) as {
-      recordTranscript: (messages: unknown[]) => Promise<void>
+      recordTranscript: (messages: unknown[]) => Promise<UUID | null>
     }
     await recordTranscript([message])
   } catch (error) {

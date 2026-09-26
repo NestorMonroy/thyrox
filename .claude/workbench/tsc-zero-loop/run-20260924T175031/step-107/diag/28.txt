@@ -1,0 +1,51 @@
+patron: fresh-object-literal-excess-property-check-against-narrow-param
+senal_del_verificador: TS2353: .*does not exist in type
+fix_generico: Cuando un literal de objeto se pasa DIRECTAMENTE como argumento de una función cuya firma declara un tipo estructural más angosto (p. ej. `{ readonly type: string }`), TypeScript aplica el chequeo de propiedades excedentes sobre ese literal 'fresco', aunque el tipo del parámetro admitiría estructuralmente el objeto con campos extra. La corrección es asignar el literal a una variable ANTES de pasarlo (`const block = {...}; f([block])`): al dejar de ser un literal fresco, el chequeo de excedentes no se aplica y sólo queda la comprobación estructural normal, que sí acepta los campos extra. No cambia el valor en tiempo de ejecución ni exige ensanchar el tipo del parámetro ni castear con `as any`/`as never`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/config/plugin/loadPluginHooks.ts(34,5): error TS2353: Object literal may only specify known properties, and 'PostToolUseFailure' does not exist in type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:24-44 ---
+     24  
+     25  /**
+     26   * Convert plugin hooks configuration to native matchers with plugin context
+     27   */
+     28  function convertPluginHooksToMatchers(
+     29    plugin: LoadedPlugin,
+     30  ): Record<HookEvent, PluginHookMatcher[]> {
+     31    const pluginMatchers: Record<HookEvent, PluginHookMatcher[]> = {
+     32      PreToolUse: [],
+     33      PostToolUse: [],
+     34>     PostToolUseFailure: [],
+     35      PermissionDenied: [],
+     36      Notification: [],
+     37      UserPromptSubmit: [],
+     38      SessionStart: [],
+     39      SessionEnd: [],
+     40      Stop: [],
+     41      StopFailure: [],
+     42      SubagentStart: [],
+     43      SubagentStop: [],
+     44      PreCompact: [],
+src/packages/config/plugin/loadPluginHooks.ts(96,5): error TS2353: Object literal may only specify known properties, and 'PostToolUseFailure' does not exist in type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:86-106 ---
+     86  }
+     87  
+     88  /**
+     89   * Load and register hooks from all enabled plugins
+     90   */
+     91  export const loadPluginHooks = memoize(async (): Promise<void> => {
+     92    const { enabled } = await loadAllPluginsCacheOnly()
+     93    const allPluginHooks: Record<HookEvent, PluginHookMatcher[]> = {
+     94      PreToolUse: [],
+     95      PostToolUse: [],
+     96>     PostToolUseFailure: [],
+     97      PermissionDenied: [],
+     98      Notification: [],
+     99      UserPromptSubmit: [],
+    100      SessionStart: [],
+    101      SessionEnd: [],
+    102      Stop: [],
+    103      StopFailure: [],
+    104      SubagentStart: [],
+    105      SubagentStop: [],
+    106      PreCompact: [],

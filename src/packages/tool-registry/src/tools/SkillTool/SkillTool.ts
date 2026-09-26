@@ -19,6 +19,7 @@ import type {
 } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import type { Command } from '@thyrox/agent/command.js'
+import { parseEffortValue } from '@thyrox/agent/effort.js'
 import type {
   AssistantMessage,
   AttachmentMessage,
@@ -658,7 +659,8 @@ export const SkillTool: Tool<InputSchema, Output, Progress> = buildTool({
     // Extract metadata from the command
     const allowedTools = processedCommand.allowedTools || []
     const model = processedCommand.model
-    const effort = command?.type === 'prompt' ? command.effort : undefined
+    const effort =
+      command?.type === 'prompt' ? parseEffortValue(command.effort) : undefined
 
     const isBuiltIn = builtInCommandNames().has(commandName)
     const isBundled = command?.type === 'prompt' && command.source === 'bundled'

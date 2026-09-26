@@ -11,11 +11,10 @@ import TextInput from '../../../TextInput.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
 import { generateAgent } from '../../generateAgent.js'
-import type { AgentWizardData } from '../types.js'
 
 export function GenerateStep(): ReactNode {
   const { updateWizardData, goBack, goToStep, wizardData } =
-    useWizard<AgentWizardData>()
+    useWizard()
   const [prompt, setPrompt] = useState(wizardData.generationPrompt || '')
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)

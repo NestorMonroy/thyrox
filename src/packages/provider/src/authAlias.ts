@@ -985,7 +985,7 @@ export function saveOAuthTokensIfNeeded(tokens: OAuthTokens): { success: boolean
 
   try {
     const storageData = secureStorage.read() || {}
-    const existingOauth = storageData.claudeAiOauth
+    const existingOauth = storageData.claudeAiOauth as OAuthTokens | undefined
 
     storageData.claudeAiOauth = {
       accessToken: tokens.accessToken,

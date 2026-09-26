@@ -1,0 +1,6 @@
+  FALLA una ruta agotada cede a la siguiente con trabajo — esperado 'modules', obtenido 'deterministic'
+  FALLA y salta las que no tienen trabajo — esperado 'local', obtenido 'deterministic'
+  FALLA todas agotadas no es cero: lo dice — esperado 'exhausted', obtenido 'deterministic'
+  FALLA la CLI acepta --exhausted — esperado (0, True), obtenido (0, False)
+  FALLA todas agotadas rehúsa con exit 2 y lo nombra — esperado (2, True), obtenido (0, False)
+test_tsc_cycle: 54 aserciones — 49 ok, 5 falla(s)

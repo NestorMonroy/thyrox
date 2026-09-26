@@ -133,6 +133,19 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"{delta} --start {repos} --results-dir {resultados}"),
                 cmd(f"{registro} --start"),
             ]}],
+            # Tras compactar, el estado de trabajo (clones sin publicar,
+            # trabajos del ledger sin recoger) vuelve al modelo por aqui y no
+            # por `PostCompact`, cuya salida solo ve el usuario (2.1.281,
+            # `BQe`). La raiz del ledger y el banco los resuelve el hook con
+            # sus constantes (`ledger_root()`, `workbench_dir()`): un literal
+            # aqui seria otra fuente de verdad del hogar.
+            "SessionStart": [{
+                "matcher": "compact",
+                "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
+                              f"{base}/src/hooks/compact_context.py "
+                              + " ".join(f"--root {ruta}" for _, ruta in sorted(reach().items())),
+                              timeout=20)],
+            }],
             "PreModelSwitch": [{"hooks": [
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),
@@ -263,7 +276,7 @@ class BackgroundBackup:
     los trabajos, incluido el que si termino**. El respaldo quedaria rehen de un
     trabajo ajeno que nadie va a revivir.
 
-    Por eso el respaldo corre en su PROPIO ledger —`THYROX_JOBS_DIR` junto a los
+    Por eso el respaldo corre en su PROPIO ledger —`THYROX_SESSION_LEDGER_DIR` junto a los
     respaldos, durable, no en `/tmp`—, de modo que la barrera mida exactamente
     este trabajo. El ledger compartido no se toca: se MIRA con `status` y sus
     clases atascadas se reportan, que es la adaptacion del roster — surfacing
@@ -308,7 +321,7 @@ class BackgroundBackup:
 
         # El ledger propio de este respaldo: durable, junto a lo que respalda.
         mine = destination.parent / "ledger"
-        env = {**_os.environ, "THYROX_JOBS_DIR": str(mine)}
+        env = {**_os.environ, "THYROX_SESSION_LEDGER_DIR": str(mine)}
 
         launch = (
             f'nohup bash -c "cp -p {source} {destination}; echo EXIT=\\$?" '
@@ -643,6 +656,9 @@ def main() -> int:
                         help="instala aunque cambie de valor un campo de la "
                              "clave de la cache de prompt (reescribe el "
                              "contexto entero: usalo entre turnos)")
+    parser.add_argument("--hooks-only", action="store_true",
+                        help="instala solo `hooks`, que no es campo de la clave "
+                             "de la cache: deja `advisorModel` como este")
     args = parser.parse_args()
 
     ruta = live_settings()
@@ -653,8 +669,15 @@ def main() -> int:
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime(
             "%Y%m%dT%H%M%S")
         try:
+            declared = declared_wiring()
+            owned = OWNED_KEYS
+            if args.hooks_only:
+                # Solo lo que no enfria la cache: quien opera decide el
+                # advisor, y cambiarlo a mitad de sesion reescribe el
+                # contexto entero (H-DOCS-1012).
+                declared, owned = {"hooks": declared["hooks"]}, ("hooks",)
             record = install(
-                ruta, declared_wiring(), BackgroundBackup(), stamp,
+                ruta, declared, BackgroundBackup(), stamp, owned=owned,
                 backups=args.backups,
                 allow_cache_key_change=args.allow_cache_key_change)
         except WiringRefused as e:

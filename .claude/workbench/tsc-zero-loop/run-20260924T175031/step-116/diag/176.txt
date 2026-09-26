@@ -1,0 +1,55 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(51,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:41-61 ---
+     41  import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
+     42  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     43  import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+     44  import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+     45  import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
+     46  import type { CommandResultDisplay } from '@thyrox/agent/command.js'
+     47  import { createAbortController } from '@thyrox/agent/abortController.js'
+     48  import { getAgentContext } from '@thyrox/agent/agentContext.js'
+     49  import {
+     50    createAttachmentMessage,
+     51>   getAttachmentMessages,
+     52  } from '@thyrox/agent/attachments.js'
+     53  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     54  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     55  import { AbortError, MalformedCommandError } from '@thyrox/local-observability/errorHelpers.js'
+     56  import { getDisplayPath } from '@thyrox/storage/file.js'
+     57  import {
+     58    extractResultText,
+     59    prepareForkedCommandContext,
+     60  } from '@thyrox/agent/forkedAgent.js'
+     61  import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(269,9): error TS2322: Type 'AssistantMessage | NormalizedUserMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:259-279 ---
+    259    let toolUseCounter = 0
+    260  
+    261    // Helper to create a progress message from an agent message
+    262    const createProgressMessage = (
+    263      message: AssistantMessage | NormalizedUserMessage,
+    264    ): ProgressMessage<AgentProgress> => {
+    265      toolUseCounter++
+    266      return {
+    267        type: 'progress',
+    268        data: {
+    269>         message,
+    270          type: 'agent_progress',
+    271          prompt: skillContent,
+    272          agentId,
+    273        },
+    274        parentToolUseID,
+    275        toolUseID: `${parentToolUseID}-${toolUseCounter}`,
+    276        timestamp: new Date().toISOString(),
+    277        uuid: randomUUID(),
+    278      }
+    279    }
+  Type 'AssistantMessage' is not assignable to type '(MessageBase & { type: "user"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }) | (MessageBase & ... 2 more ... & { ...; })'.
+    Type 'AssistantMessage' is not assignable to type 'MessageBase & { type: "assistant"; message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; }; } & { ...; } & { ...; }'.
+      Type 'AssistantMessage' is not assignable to type '{ message: { [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }; }'.
+        Types of property 'message' are incompatible.
+          Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; } & { ...; }'.
+            Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is not assignable to type '{ content: ContentItem[]; }'.
+              Types of property 'content' are incompatible.
+                Type 'MessageContent | undefined' is not assignable to type 'ContentItem[]'.
+                  Type 'undefined' is not assignable to type 'ContentItem[]'.

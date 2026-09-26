@@ -1,0 +1,5 @@
+0 de 19 archivos pierden llamadas al transpilar
+TESTS
+1 src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+19
+__BG_EXIT__=0

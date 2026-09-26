@@ -82,6 +82,9 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_edit_loop",
     "detect_awk_substr_target",
     "detect_gawk_opportunity",
+    "detect_literal_replacement",
+    "detect_parallel_opportunity",
+    "detect_git_grep_opportunity",
 )
 
 

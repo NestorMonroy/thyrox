@@ -1,0 +1,51 @@
+src/packages/permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:117-137 ---
+    117        opts?: {
+    118          input?: Record<string, unknown>
+    119          permissionPromptStartTimeMs?: number
+    120        },
+    121      ) {
+    122        logPermissionDecision(
+    123          {
+    124            tool,
+    125            input: opts?.input ?? input,
+    126            toolUseContext,
+    127>           messageId,
+    128            toolUseID,
+    129          },
+    130          args,
+    131          opts?.permissionPromptStartTimeMs,
+    132        )
+    133      },
+    134      logCancelled() {
+    135        logEvent('tengu_tool_use_cancelled', {
+    136          messageID:
+    137            messageId as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(174,42): error TS2322: Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+  --- código src/packages/permission/src/toolPermission/PermissionContext.ts:164-184 ---
+    164          : sub
+    165            ? SUBAGENT_REJECT_MESSAGE
+    166            : REJECT_MESSAGE
+    167        const message = sub ? baseMessage : withMemoryCorrectionHint(baseMessage)
+    168        if (isAbort || (!feedback && !contentBlocks?.length && !sub)) {
+    169          logForDebugging(
+    170            `Aborting: tool=${tool.name} isAbort=${isAbort} hasFeedback=${!!feedback} isSubagent=${sub}`,
+    171          )
+    172          toolUseContext.abortController.abort()
+    173        }
+    174>       return { behavior: 'ask', message, contentBlocks }
+    175      },
+    176      ...(feature('BASH_CLASSIFIER')
+    177        ? {
+    178            async tryClassifier(
+    179              pendingClassifierCheck: PendingClassifierCheck | undefined,
+    180              updatedInput: Record<string, unknown> | undefined,
+    181            ): Promise<PermissionDecision | null> {
+    182              if (tool.name !== BASH_TOOL_NAME || !pendingClassifierCheck) {
+    183                return null
+    184              }
+  Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+    Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+      Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+        Index signature for type 'string' is missing in type 'TextBlockParam'.

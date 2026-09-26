@@ -1,0 +1,47 @@
+src/packages/config/plugin/loadPluginHooks.ts(118,25): error TS2345: Argument of type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>' is not assignable to parameter of type 'unknown[]'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:108-128 ---
+    108    // Clear-then-register as an atomic pair. Previously the clear lived in
+    109    // clearPluginHookCache(), which meant any clearAllCaches() call (from
+    110    // /plugins UI, pluginInstallationHelpers, thinkback, etc.) wiped plugin
+    111    // hooks from STATE.registeredHooks and left them wiped until someone
+    112    // happened to call loadPluginHooks() again. SessionStart explicitly awaits
+    113    // loadPluginHooks() before firing so it always re-registered; Stop has no
+    114    // such guard, so plugin Stop hooks silently never fired after any plugin
+    115    // management operation (gh-29767). Doing the clear here makes the swap
+    116    // atomic — old hooks stay valid until this point, new hooks take over.
+    117    clearRegisteredPluginHooks()
+    118>   registerHookCallbacks(allPluginHooks)
+    119  
+    120    const totalHooks = Object.values(allPluginHooks).reduce(
+    121      (sum, matchers) => sum + matchers.reduce((s, m) => s + m.hooks.length, 0),
+    122      0,
+    123    )
+    124    logForDebugging(
+    125      `Registered ${totalHooks} hooks from ${enabled.length} plugins`,
+    126    )
+    127  })
+    128  
+  Type 'Record<"SessionStart" | "UserPromptSubmit" | "PreToolUse" | "PostToolUse" | "Stop" | "SessionEnd" | "PreCompact" | "PostCompact" | "PreModelSwitch" | "PostModelSwitch" | "SubagentStart" | "SubagentStop", PluginHookMatcher[]>' is missing the following properties from type 'unknown[]': length, pop, push, concat, and 35 more.
+src/packages/config/plugin/loadPluginHooks.ts(168,18): error TS18046: 'matchers' is of type 'unknown'.
+  --- código src/packages/config/plugin/loadPluginHooks.ts:158-178 ---
+    158    // pre-await reference would compute survivors from stale data.
+    159    const current = getRegisteredHooks()
+    160    if (!current) return
+    161  
+    162    // Collect plugin hooks whose pluginRoot is still enabled, then swap via
+    163    // the existing clear+register pair (same atomic-pair pattern as
+    164    // loadPluginHooks above). Callback hooks are preserved by
+    165    // clearRegisteredPluginHooks; we only need to re-register survivors.
+    166    const survivors: Partial<Record<HookEvent, PluginHookMatcher[]>> = {}
+    167    for (const [event, matchers] of Object.entries(current)) {
+    168>     const kept = matchers.filter(
+    169        (m: { pluginRoot: string }): m is PluginHookMatcher =>
+    170          'pluginRoot' in m && enabledRoots.has(m.pluginRoot),
+    171      )
+    172      if (kept.length > 0) survivors[event as HookEvent] = kept
+    173    }
+    174  
+    175    clearRegisteredPluginHooks()
+    176    registerHookCallbacks(survivors)
+    177  }
+    178  

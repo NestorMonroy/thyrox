@@ -13,6 +13,7 @@
  * y que su metadata estática tiene la forma esperada.
  */
 import { describe, expect, test } from 'bun:test'
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
 import * as barrel from '../index.js'
 import { StubCommandRuntime } from '../testing/index.js'
 import { isSkillSearchEnabled } from '../skills/featureCheck.js'
@@ -38,6 +39,17 @@ import goalJsxCommand, {
   getGoalConditionMaxLength,
 } from '../commands/goal/index.js'
 import reviewCommand, { ultrareview } from '../commands/review/review.js'
+import type { Command } from '../types.js'
+
+// Angosta el tipo union `Command` a la variante 'local': las tres formas
+// del comando (prompt/local/local-jsx) sólo comparten `CommandBase`, así que
+// `supportsNonInteractive` (propio de `local`) no existe en el tipo ancho.
+function asLocalCommand(cmd: Command) {
+  if (cmd.type !== 'local') {
+    throw new Error(`expected local command, got type "${cmd.type}"`)
+  }
+  return cmd
+}
 
 describe('index.ts — barrel', () => {
   test('re-exporta los símbolos de contracts/host/api/errors', () => {
@@ -160,20 +172,33 @@ describe('metadata estática de comandos', () => {
   })
   test('recap', () => {
     expect(recapCommand.name).toBe('recap')
-    expect(recapCommand.supportsNonInteractive).toBe(false)
+    expect(asLocalCommand(recapCommand).supportsNonInteractive).toBe(false)
   })
   test('goal (local-jsx + local)', () => {
     expect(goalJsxCommand.name).toBe('goal')
     expect(goalJsxCommand.type).toBe('local-jsx')
     expect(goalLocalCommand.name).toBe('goal')
     expect(goalLocalCommand.type).toBe('local')
-    expect(goalLocalCommand.supportsNonInteractive).toBe(true)
+    expect(asLocalCommand(goalLocalCommand).supportsNonInteractive).toBe(true)
   })
   test('review + ultrareview', async () => {
     expect(reviewCommand.name).toBe('review')
     expect(reviewCommand.type).toBe('prompt')
-    const blocks = await (reviewCommand as { getPromptForCommand: (a: string) => Promise<{ type: string; text: string }[]> }).getPromptForCommand('42')
-    expect(blocks[0]?.text).toContain('PR number: 42')
+    if (reviewCommand.type !== 'prompt') {
+      throw new Error('reviewCommand debe ser type "prompt"')
+    }
+    // review.ts declara `getPromptForCommand(args)` sin leer `context`
+    // (review.ts:48) — se recorta aquí a la forma que el runtime realmente
+    // cumple, mismo patrón que `bin/command.ts` para `createMovedToPluginCommand`.
+    type ContextlessPromptCommand = {
+      getPromptForCommand(args: string, context: unknown): Promise<ContentBlockParam[]>
+    }
+    const blocks = await (reviewCommand as ContextlessPromptCommand).getPromptForCommand('42', undefined)
+    const first = blocks[0]
+    if (first?.type !== 'text') {
+      throw new Error('el primer bloque de review debe ser de tipo text')
+    }
+    expect(first.text).toContain('PR number: 42')
     expect(ultrareview.name).toBe('ultrareview')
     expect(ultrareview.type).toBe('local-jsx')
   })

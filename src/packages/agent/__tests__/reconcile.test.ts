@@ -176,7 +176,8 @@ describe('reconcileWorkingTree (T-093)', () => {
     execFileSync('git', ['-C', d, 'config', 'user.name', 't'])
     writeFileSync(join(d, 'a.txt'), 'uno\n')
     execFileSync('git', ['-C', d, 'add', 'a.txt'])
-    execFileSync('git', ['-C', d, 'commit', '-q', '-m', 'seed'])
+    // El commit no hereda la firma global del entorno: la prueba mide el árbol, no la firma.
+    execFileSync('git', ['-C', d, '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'seed'])
     writeFileSync(join(d, 'b.txt'), 'sin commitear\n')
     return d
   }
@@ -189,7 +190,7 @@ describe('reconcileWorkingTree (T-093)', () => {
   test('un repo limpio no está sucio', () => {
     const d = repoConCambio()
     execFileSync('git', ['-C', d, 'add', '-A'])
-    execFileSync('git', ['-C', d, 'commit', '-q', '-m', 'limpio'])
+    execFileSync('git', ['-C', d, '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'limpio'])
     const r = reconcileWorkingTree([{ path: d }])
     expect(r[0]!.dirty).toBe(false)
   })

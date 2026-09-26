@@ -142,7 +142,7 @@ describe('getAdvisorUsage — extract advisor messages from BetaUsage', () => {
     } as never
     const r = getAdvisorUsage(usage)
     expect(r).toHaveLength(2)
-    expect(r.every(it => (it as { type: string }).type === 'advisor_message')).toBe(true)
+    expect(r.every(it => (it as typeof it & { type: string }).type === 'advisor_message')).toBe(true)
   })
 
   test('preserves model field on each result', () => {

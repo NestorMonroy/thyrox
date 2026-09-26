@@ -2258,8 +2258,8 @@ export async function runBridgeHeadless(
     }
   }
 
-  const branch = await getBranchForHeadless()
-  const gitRepoUrl = await getRemoteUrlForHeadless()
+  const branch = (await getBranchForHeadless()) ?? ''
+  const gitRepoUrl = (await getRemoteUrlForHeadless()) ?? null
   const machineName = hostname()
   const bridgeId = randomUUID()
 

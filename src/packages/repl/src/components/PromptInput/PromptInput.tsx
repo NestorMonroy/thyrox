@@ -510,7 +510,7 @@ function PromptInput({
     if (viewedTeammate) {
       return {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
     }
     return toolPermissionContext
@@ -1900,7 +1900,7 @@ function PromptInput({
     if (isAgentSwarmsEnabled() && viewedTeammate && viewingAgentTaskId) {
       const teammateContext: ToolPermissionContext = {
         ...toolPermissionContext,
-        mode: viewedTeammate.permissionMode,
+        mode: viewedTeammate.permissionMode as PermissionMode,
       }
       // Pass undefined for teamContext (unused but kept for API compatibility)
       const nextMode = getNextPermissionMode(teammateContext, undefined)
@@ -3199,8 +3199,12 @@ function getInitialPasteId(messages: Message[]): number {
   for (const message of messages) {
     if (message.type === 'user') {
       // Check image paste IDs
-      if (message.imagePasteIds) {
-        for (const id of message.imagePasteIds) {
+      // `imagePasteIds` no esta declarado en `UserMessage`: llega por la firma de
+      // indice de `MessageBase`, o sea `unknown` (aqui `{}` tras la guarda de
+      // truthiness). Mismo estrechamiento que `agent/messages.ts:1483`.
+      const imagePasteIds = message.imagePasteIds as number[] | undefined
+      if (imagePasteIds) {
+        for (const id of imagePasteIds) {
           if (id > maxId) maxId = id
         }
       }

@@ -1,0 +1,36 @@
+Patrón: optional-chained-method-narrowing-lost-in-closure
+Señal del verificador: TS2532|TS2722
+Arreglo genérico: TypeScript sólo preserva el estrechamiento de un `obj.prop?.metodo` dentro de una función anidada cuando la expresión estrechada es una variable `const` local, no un acceso a propiedad repetido. La corrección es sacar `obj.prop?.metodo` a una `const` antes de la ramificación y referenciar esa constante — nunca `obj.prop!.metodo` — dentro del closure; eso además evita el `!` no garantizado que esta regla prohíbe. Si el parámetro que se le pasa a esa función venía tipado `unknown` (por ejemplo un stand-in de otro paquete) y el contrato exige una forma concreta, se afirma esa forma con un único `as <Tipo>` puntual, no con `as unknown as` ni `as never`.
+Ya aplicado en: src/packages/swarm/src/adapters/createSwarmHostDeps.ts
+Archivos donde la señal sigue viva: src/packages/config/settings/inventory.ts
+
+src/packages/config/settings/inventory.ts(171,18): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }
+src/packages/config/settings/inventory.ts(171,75): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/config/settings/inventory.ts:161-173 ---
+    161    return out
+    162  }
+    163  
+    164  /** Las diferidas que aparecen en un archivo: se avisan, no rompen la carga. */
+    165  export function deferredKeysPresent(data: unknown): { key: string; reason: string }[] {
+    166    if (typeof data !== 'object' || data === null) return []
+    167    return Object.keys(data)
+    168      .filter((k) => DIFERIDAS[k])
+    169      .map((k) => ({
+    170        key: k,
+    171>       reason: `${DIFERIDAS[k].motivo}; todavía no se declara — entraría ${DIFERIDAS[k].condicion}`,
+    172      }))
+    173  }

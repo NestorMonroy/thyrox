@@ -1,0 +1,165 @@
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(196,35): error TS2344: Type 'unknown' does not satisfy the constraint 'string | number | symbol'.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:186-206 ---
+    186    )
+    187  
+    188    const hookEventMetadata = getHookEventMetadata(combinedToolNames)
+    189  
+    190    // Check if hooks are disabled
+    191    const settings = getSettings()
+    192    const hooksDisabled = settings?.disableAllHooks === true
+    193  
+    194    // Count hooks per event for the event-selection view, and the total.
+    195    const { hooksByEvent, totalHooksCount } = useMemo(() => {
+    196>     const byEvent: Partial<Record<HookEvent, number>> = {}
+    197      let total = 0
+    198      for (const [event, matchers] of Object.entries(hooksByEventAndMatcher)) {
+    199        const eventCount = Object.values(matchers).reduce(
+    200          (sum, hooks) => sum + hooks.length,
+    201          0,
+    202        )
+    203        byEvent[event as HookEvent] = eventCount
+    204        total += eventCount
+    205      }
+    206      return { hooksByEvent: byEvent, totalHooksCount: total }
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(199,40): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:189-209 ---
+    189  
+    190    // Check if hooks are disabled
+    191    const settings = getSettings()
+    192    const hooksDisabled = settings?.disableAllHooks === true
+    193  
+    194    // Count hooks per event for the event-selection view, and the total.
+    195    const { hooksByEvent, totalHooksCount } = useMemo(() => {
+    196      const byEvent: Partial<Record<HookEvent, number>> = {}
+    197      let total = 0
+    198      for (const [event, matchers] of Object.entries(hooksByEventAndMatcher)) {
+    199>       const eventCount = Object.values(matchers).reduce(
+    200          (sum, hooks) => sum + hooks.length,
+    201          0,
+    202        )
+    203        byEvent[event as HookEvent] = eventCount
+    204        total += eventCount
+    205      }
+    206      return { hooksByEvent: byEvent, totalHooksCount: total }
+    207    }, [hooksByEventAndMatcher])
+    208  
+    209    // If hooks are disabled, show an informational screen.
+  Overload 1 of 2, '(o: ArrayLike<unknown> | { [s: string]: unknown; }): unknown[]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'ArrayLike<unknown> | { [s: string]: unknown; }'.
+  Overload 2 of 2, '(o: {}): any[]', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type '{}'.
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(200,31): error TS18046: 'hooks' is of type 'unknown'.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:190-210 ---
+    190    // Check if hooks are disabled
+    191    const settings = getSettings()
+    192    const hooksDisabled = settings?.disableAllHooks === true
+    193  
+    194    // Count hooks per event for the event-selection view, and the total.
+    195    const { hooksByEvent, totalHooksCount } = useMemo(() => {
+    196      const byEvent: Partial<Record<HookEvent, number>> = {}
+    197      let total = 0
+    198      for (const [event, matchers] of Object.entries(hooksByEventAndMatcher)) {
+    199        const eventCount = Object.values(matchers).reduce(
+    200>         (sum, hooks) => sum + hooks.length,
+    201          0,
+    202        )
+    203        byEvent[event as HookEvent] = eventCount
+    204        total += eventCount
+    205      }
+    206      return { hooksByEvent: byEvent, totalHooksCount: total }
+    207    }, [hooksByEventAndMatcher])
+    208  
+    209    // If hooks are disabled, show an informational screen.
+    210    // The menu is read-only, so we don't offer a re-enable button —
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(203,15): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:193-213 ---
+    193  
+    194    // Count hooks per event for the event-selection view, and the total.
+    195    const { hooksByEvent, totalHooksCount } = useMemo(() => {
+    196      const byEvent: Partial<Record<HookEvent, number>> = {}
+    197      let total = 0
+    198      for (const [event, matchers] of Object.entries(hooksByEventAndMatcher)) {
+    199        const eventCount = Object.values(matchers).reduce(
+    200          (sum, hooks) => sum + hooks.length,
+    201          0,
+    202        )
+    203>       byEvent[event as HookEvent] = eventCount
+    204        total += eventCount
+    205      }
+    206      return { hooksByEvent: byEvent, totalHooksCount: total }
+    207    }, [hooksByEventAndMatcher])
+    208  
+    209    // If hooks are disabled, show an informational screen.
+    210    // The menu is read-only, so we don't offer a re-enable button —
+    211    // users can edit settings.json or ask Claude instead.
+    212    if (hooksDisabled) {
+    213      return (
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(204,16): error TS18046: 'eventCount' is of type 'unknown'.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:194-214 ---
+    194    // Count hooks per event for the event-selection view, and the total.
+    195    const { hooksByEvent, totalHooksCount } = useMemo(() => {
+    196      const byEvent: Partial<Record<HookEvent, number>> = {}
+    197      let total = 0
+    198      for (const [event, matchers] of Object.entries(hooksByEventAndMatcher)) {
+    199        const eventCount = Object.values(matchers).reduce(
+    200          (sum, hooks) => sum + hooks.length,
+    201          0,
+    202        )
+    203        byEvent[event as HookEvent] = eventCount
+    204>       total += eventCount
+    205      }
+    206      return { hooksByEvent: byEvent, totalHooksCount: total }
+    207    }, [hooksByEventAndMatcher])
+    208  
+    209    // If hooks are disabled, show an informational screen.
+    210    // The menu is read-only, so we don't offer a re-enable button —
+    211    // users can edit settings.json or ask Claude instead.
+    212    if (hooksDisabled) {
+    213      return (
+    214        <Dialog
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(272,47): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:262-282 ---
+    262            }}
+    263            onCancel={handleExit}
+    264          />
+    265        )
+    266      case 'select-matcher':
+    267        return (
+    268          <SelectMatcherMode
+    269            selectedEvent={modeState.event}
+    270            matchersForSelectedEvent={sortedMatchersForSelectedEvent}
+    271            hooksByEventAndMatcher={hooksByEventAndMatcher}
+    272>           eventDescription={hookEventMetadata[modeState.event].description}
+    273            onSelect={matcher => {
+    274              setModeState({
+    275                mode: 'select-hook',
+    276                event: modeState.event,
+    277                matcher,
+    278              })
+    279            }}
+    280            onCancel={() => {
+    281              setModeState({ mode: 'select-event' })
+    282            }}
+src/packages/repl/src/components/hooks/HooksConfigMenu.tsx(291,48): error TS2538: Type 'unknown' cannot be used as an index type.
+  --- código src/packages/repl/src/components/hooks/HooksConfigMenu.tsx:281-301 ---
+    281              setModeState({ mode: 'select-event' })
+    282            }}
+    283          />
+    284        )
+    285      case 'select-hook':
+    286        return (
+    287          <SelectHookMode
+    288            selectedEvent={modeState.event}
+    289            selectedMatcher={modeState.matcher}
+    290            hooksForSelectedMatcher={hooksForSelectedMatcher}
+    291>           hookEventMetadata={hookEventMetadata[modeState.event]}
+    292            onSelect={hook => {
+    293              setModeState({
+    294                mode: 'view-hook',
+    295                event: modeState.event,
+    296                hook,
+    297              })
+    298            }}
+    299            onCancel={() => {
+    300              // Go back to matcher selection or event selection
+    301              if (

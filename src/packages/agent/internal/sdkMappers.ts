@@ -1,47 +1,25 @@
+import type {
+  BetaContentBlock,
+  BetaTextBlock,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  SDKAssistantMessage,
+  SDKCompactBoundaryMessage,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
 import stripAnsi from 'strip-ansi'
+import type { CompactMetadata } from '../messageShapes.js'
 import { NO_CONTENT_MESSAGE } from '../constants/messages.js'
 
 const SYNTHETIC_MODEL = '<synthetic>'
 
-type PreservedSegment = {
-  headUuid: string
-  anchorUuid: string
-  tailUuid: string
-}
+type SDKCompactMetadata = SDKCompactBoundaryMessage['compact_metadata']
 
-type CompactMetadata = {
-  trigger?: unknown
-  preTokens?: unknown
-  preservedSegment?: PreservedSegment
-}
-
-type SDKCompactMetadata = {
-  trigger?: unknown
-  pre_tokens?: unknown
-  preserved_segment?: {
-    head_uuid: string
-    anchor_uuid: string
-    tail_uuid: string
-  }
-}
-
-type SDKAssistantMessage = {
-  type: 'assistant'
-  content: Array<{ type: 'text'; text: string }>
-  message: {
-    id: string
-    model: string
-    role: 'assistant'
-    content: Array<{ type: 'text'; text: string }>
-    stop_reason: 'end_turn'
-    usage: {
-      input_tokens: number
-      output_tokens: number
-    }
-  }
-  parent_tool_use_id: null
-  session_id: string
-  uuid: string
+/**
+ * El mensaje sintético lleva además `content` en la raíz, como el de la
+ * fuente (`ccnmt: messages/mappers.ts`), que el esquema del SDK no declara.
+ */
+type SyntheticSDKAssistantMessage = SDKAssistantMessage & {
+  content: Array<BetaContentBlock>
 }
 
 export function toSDKCompactMetadata(
@@ -69,7 +47,7 @@ export function localCommandOutputToSDKAssistantMessage(
   sessionId: string,
   stdoutTag: string,
   stderrTag: string,
-): SDKAssistantMessage {
+): SyntheticSDKAssistantMessage {
   const cleanContent = stripAnsi(rawContent)
     .replace(
       new RegExp(`<${stdoutTag}>([\\s\\S]*?)</${stdoutTag}>`),
@@ -81,25 +59,45 @@ export function localCommandOutputToSDKAssistantMessage(
     )
     .trim()
 
-  const content = [
+  const content: BetaTextBlock[] = [
     {
-      type: 'text' as const,
+      type: 'text',
       text: cleanContent === '' ? NO_CONTENT_MESSAGE : cleanContent,
+      citations: [],
     },
   ]
 
+  // Los campos anulables en `null` y los contadores en 0, como el mensaje
+  // sintético que 2.1.281 arma para el SDK; `diagnostics` y
+  // `fallback_credit` los exige la versión del SDK de este árbol.
   return {
     type: 'assistant',
     content,
     message: {
       id: `synthetic-${uuid}`,
+      type: 'message',
       model: SYNTHETIC_MODEL,
       role: 'assistant',
       content,
+      container: null,
+      context_management: null,
+      diagnostics: null,
+      stop_details: null,
       stop_reason: 'end_turn',
+      stop_sequence: null,
       usage: {
         input_tokens: 0,
         output_tokens: 0,
+        cache_creation_input_tokens: 0,
+        cache_read_input_tokens: 0,
+        cache_creation: null,
+        fallback_credit: null,
+        inference_geo: null,
+        iterations: null,
+        output_tokens_details: null,
+        server_tool_use: null,
+        service_tier: null,
+        speed: null,
       },
     },
     parent_tool_use_id: null,

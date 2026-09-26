@@ -1,0 +1,2 @@
+src/packages/agent/query.ts(669,25): error TS18046: 'appState.mcp' is of type 'unknown'.
+src/packages/agent/query.ts(670,37): error TS18046: 'appState.mcp' is of type 'unknown'.

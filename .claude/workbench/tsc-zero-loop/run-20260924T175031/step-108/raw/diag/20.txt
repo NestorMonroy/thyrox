@@ -1,0 +1,6 @@
+src/packages/agent/internal/stopHooksCore.ts(391,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/stopHooksCore.ts(417,13): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/packages/agent/internal/stopHooksCore.ts(455,37): error TS2339: Property 'createUserInterruptionMessage' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/stopHooksCore.ts(508,24): error TS2339: Property 'createSystemMessage' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/stopHooksCore.ts(585,3): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/packages/agent/internal/stopHooksCore.ts(651,36): error TS2339: Property 'createUserMessage' does not exist on type 'AgentHostBindings'.

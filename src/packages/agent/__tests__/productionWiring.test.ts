@@ -1,13 +1,15 @@
 import { describe, test, expect, mock } from 'bun:test'
 import { AgentCore } from '../core/AgentCore.js'
 import { createMockDeps } from './fixtures/mockDeps.js'
+import type { CoreMessage } from '../types/messages.js'
 
 describe('AgentCore production wiring', () => {
   test('runs through src/agent production adapters for tools and permissions', async () => {
     const echoTool = {
       name: 'Echo',
-      inputJSONSchema: {
-        type: 'object',
+      description: 'Repite el texto recibido',
+      inputSchema: {
+        type: 'object' as const,
         properties: {
           text: { type: 'string' },
         },
@@ -90,7 +92,7 @@ describe('AgentCore production wiring', () => {
         })),
       },
       compaction: {
-        maybeCompact: mock(async (messages: unknown[]) => ({
+        maybeCompact: mock(async (messages: CoreMessage[]) => ({
           compacted: false,
           messages,
         })),

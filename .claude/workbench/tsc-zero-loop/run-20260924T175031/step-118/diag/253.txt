@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts(165,46): error TS2554: Expected 0 arguments, but got 2.
+  --- código src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts:155-175 ---
+    155    })
+    156  
+    157    test('12. un bloqueante YA completado deja de contarse como bloqueo', async () => {
+    158      // Es la decisión no obvia del útil: sin este filtro, una tarea seguiría
+    159      // reportándose bloqueada por algo que ya terminó, y quien lea la lista
+    160      // no la tomaría.
+    161      const hecha = await crear('la que ya terminó')
+    162      const pendiente = await crear('la que espera', { blockedBy: [hecha] })
+    163      await updateTask(LISTA, hecha, { status: 'completed' })
+    164  
+    165>     const { data } = await TaskListTool.call({}, CTX)
+    166      const fila = data.tasks.find(t => t.id === pendiente)!
+    167      expect(fila.blockedBy).toEqual([])
+    168    })
+    169  
+    170    test('13. sin tareas, el bloque lo dice', () => {
+    171      const bloque = TaskListTool.mapToolResultToToolResultBlockParam(
+    172        { tasks: [] },
+    173        'uso-4',
+    174      )
+    175      expect(bloque.content).toBe('No tasks found')

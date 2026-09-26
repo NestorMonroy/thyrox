@@ -4,6 +4,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { createPermissionRequestMessage } from '../permissions.js'
+import type { PermissionRule } from '../PermissionRule.js'
 
 describe('createPermissionRequestMessage (su)', () => {
   test('sin razón: el aviso genérico', () => {
@@ -19,7 +20,7 @@ describe('createPermissionRequestMessage (su)', () => {
     expect(createPermissionRequestMessage('Bash', { type: 'hook', hookName: 'guard' })).toBe("Hook 'guard' requires approval for this Bash command")
   })
   test('regla, con su fuente', () => {
-    const rule = { source: 'userSettings', ruleBehavior: 'ask', ruleValue: { toolName: 'Bash', ruleContent: 'rm:*' } }
+    const rule: PermissionRule = { source: 'userSettings', ruleBehavior: 'ask', ruleValue: { toolName: 'Bash', ruleContent: 'rm:*' } }
     expect(createPermissionRequestMessage('Bash', { type: 'rule', rule })).toBe(
       "Permission rule 'Bash(rm:*)' from user settings requires approval for this Bash command",
     )

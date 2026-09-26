@@ -215,13 +215,17 @@ export async function exec(
 
   // When onStdout is provided, use pipe mode
   const usePipeMode = !!onStdout
-  const taskId = generateTaskId('b')
+  const taskId = generateTaskId('local_bash')
   const taskOutputDir = ctx.getTaskOutputDir()
   await mkdir(taskOutputDir, { recursive: true })
 
   // Create TaskOutput via injected factory
   const taskOutput: TaskOutputPort = _createTaskOutputFn
-    ? _createTaskOutputFn(taskId, onProgress ?? null, !usePipeMode)
+    ? _createTaskOutputFn(
+        taskId,
+        (onProgress as ((...args: unknown[]) => void) | undefined) ?? null,
+        !usePipeMode,
+      )
     : new StubTaskOutput(taskId)
 
   // In file mode, both stdout and stderr go to the same file fd.

@@ -1,0 +1,187 @@
+Patrón: empty-array-literal-infers-never-breaks-as-cast
+Señal del verificador: TS2352:.*sufficiently overlap
+Arreglo genérico: Un literal `[]` dentro de un objeto que luego se castea con `as T` se infiere como `never[]`, y `never[]` puede no solapar lo suficiente con el tipo de arreglo esperado por `T` para que el `as` sea válido. Se anota el arreglo vacío con su tipo elemento real (`[] as Block[]`, `[] as ContentBlockParam[]`, etc.), tomando el alias de tipo ya existente en el archivo cuando lo hay, en vez de dejar que TS lo infiera como `never[]`.
+Ya aplicado en: src/packages/bridge/src/__tests__/inboundMessages.test.ts
+Archivos donde la señal sigue viva: src/packages/app-host/src/runtime/installPluginBindings.ts, src/packages/app-host/src/runtime/runtimeHandles.ts, src/packages/provider/src/openai/streamAdapter.ts, src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts, src/packages/repl/src/conversationRecovery.tsx, src/packages/repl/src/queryHelpers.ts
+
+src/packages/app-host/src/runtime/installPluginBindings.ts(463,5): error TS2352: Conversion of type 'string[]' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/installPluginBindings.ts:453-473 ---
+    453      // apagado ya está en curso — mismo patrón ya documentado para este
+    454      // binding en permission/src/permissionSetup.ts.
+    455      return gracefulShutdown(code) as Promise<never>
+    456    })
+    457  
+    458    // --- sesión / cwd
+    459    setGetSessionIdFn(() => getSessionId())
+    460    setGetOriginalCwdFn(() => getOriginalCwd())
+    461    setGetCwdFn(() => getCwd())
+    462    setGetInlinePluginsFn(() =>
+    463>     getInlinePlugins() as Record<string, unknown> | undefined,
+    464    )
+    465  
+    466    // --- settings
+    467    setGetSettingsFn(() => getSettings() as any)
+    468    setGetSettingsForSourceFn(source => getSettingsForSource(source as any) as any)
+    469    setIsSettingSourceEnabledFn(source => isSettingSourceEnabled(source as any))
+    470  
+    471    // --- fs / path (métodos sync + async)
+    472    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    473    const nodeFs = require('node:fs') as typeof import('node:fs')
+  Index signature for type 'string' is missing in type 'string[]'.
+
+src/packages/app-host/src/runtime/runtimeHandles.ts(68,14): error TS2352: Conversion of type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' to type 'AppState' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/app-host/src/runtime/runtimeHandles.ts:58-78 ---
+     58        params?: HeadlessStoreParams,
+     59      ) => HostSessionStore<AppState>
+     60    }
+     61  }
+     62  
+     63  export function createRuntimeHandles(
+     64    initialState: AppState = (() => {
+     65      try {
+     66        return getDefaultAppState()
+     67      } catch {
+     68>       return {
+     69          toolPermissionContext: getEmptyToolPermissionContext(),
+     70          mcp: {
+     71            clients: [],
+     72            tools: [],
+     73            commands: [],
+     74            resources: {},
+     75            pluginReconnectKey: 0,
+     76          },
+     77          plugins: {
+     78            enabled: [],
+  Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; mcp: { ...; }; plugins: { ...; }; agentDefinitions: { ...; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.
+
+src/packages/provider/src/openai/streamAdapter.ts(77,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/openai/streamAdapter.ts:67-87 ---
+     67        const details = (chunk.usage as any).prompt_tokens_details
+     68        if (details?.cached_tokens) {
+     69          cachedTokens = details.cached_tokens
+     70        }
+     71      }
+     72  
+     73      // Emit message_start on first chunk
+     74      if (!started) {
+     75        started = true
+     76  
+     77>       yield {
+     78          type: 'message_start',
+     79          message: {
+     80            id: messageId,
+     81            type: 'message',
+     82            role: 'assistant',
+     83            content: [],
+     84            model,
+     85            stop_reason: null,
+     86            stop_sequence: null,
+     87            usage: {
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details
+
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(60,45): error TS2352: Conversion of type '{ statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:50-70 ---
+     50  
+     51  describe('extractDangerousSettings — shell settings (always dangerous)', () => {
+     52    test('apiKeyHelper extracted', () => {
+     53      const result = extractDangerousSettings({
+     54        apiKeyHelper: '/path/to/script.sh',
+     55      } as SettingsJson)
+     56      expect(result.shellSettings.apiKeyHelper).toBe('/path/to/script.sh')
+     57    })
+     58  
+     59    test('statusLine extracted', () => {
+     60>     const result = extractDangerousSettings({
+     61        statusLine: 'echo $USER',
+     62      } as SettingsJson)
+     63      expect(result.shellSettings.statusLine).toBe('echo $USER')
+     64    })
+     65  
+     66    test('all 6 dangerous shell settings extracted', () => {
+     67      const result = extractDangerousSettings({
+     68        apiKeyHelper: 'a',
+     69        awsAuthRefresh: 'b',
+     70        awsCredentialExport: 'c',
+  Types of property 'statusLine' are incompatible.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.
+src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts(67,45): error TS2352: Conversion of type '{ apiKeyHelper: string; awsAuthRefresh: string; awsCredentialExport: string; gcpAuthRefresh: string; otelHeadersHelper: string; statusLine: string; }' to type '{ [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; cacheTtl?: "5m" | ... 1 more ... | undefined; ... 66 more ...; wslInheritsWindowsSettings?: boolean | undefined; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/__tests__/managedSettingsSecurity.test.ts:57-77 ---
+     57    })
+     58  
+     59    test('statusLine extracted', () => {
+     60      const result = extractDangerousSettings({
+     61        statusLine: 'echo $USER',
+     62      } as SettingsJson)
+     63      expect(result.shellSettings.statusLine).toBe('echo $USER')
+     64    })
+     65  
+     66    test('all 6 dangerous shell settings extracted', () => {
+     67>     const result = extractDangerousSettings({
+     68        apiKeyHelper: 'a',
+     69        awsAuthRefresh: 'b',
+     70        awsCredentialExport: 'c',
+     71        gcpAuthRefresh: 'd',
+     72        otelHeadersHelper: 'e',
+     73        statusLine: 'f',
+     74      } as SettingsJson)
+     75      expect(Object.keys(result.shellSettings).sort()).toEqual([
+     76        'apiKeyHelper',
+     77        'awsAuthRefresh',
+  Types of property 'statusLine' are incompatible.
+    Type 'string' is not comparable to type '{ type: "command"; command: string; }'.
+
+src/packages/repl/src/conversationRecovery.tsx(187,30): error TS2352: Conversion of type 'Message[]' to type 'NormalizedMessage[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/conversationRecovery.tsx:177-197 ---
+    177        if (
+    178          msg.type === 'user' &&
+    179          msg.permissionMode !== undefined &&
+    180          !validModes.has(msg.permissionMode as string)
+    181        ) {
+    182          msg.permissionMode = undefined
+    183        }
+    184      }
+    185  
+    186      // Filter out unresolved tool uses and any synthetic messages that follow them
+    187>     const filteredToolUses = filterUnresolvedToolUses(
+    188        migratedMessages,
+    189      ) as NormalizedMessage[]
+    190  
+    191      // Filter out orphaned thinking-only assistant messages that can cause API errors
+    192      // during resume. These occur when streaming yields separate messages per content
+    193      // block and interleaved user messages prevent proper merging by message.id.
+    194      const filteredThinking = filterOrphanedThinkingOnlyMessages(
+    195        filteredToolUses,
+    196      ) as NormalizedMessage[]
+    197  
+  Type 'Message' is not comparable to type 'NormalizedMessage'.
+    Type 'Message' is not comparable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+      Type 'Message' is missing the following properties from type 'MessageBase': type, uuid
+
+src/packages/repl/src/queryHelpers.ts(338,43): error TS2352: Conversion of type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; } | ... 23 more ... | { ...; }' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/repl/src/queryHelpers.ts:328-348 ---
+    328          b => b.type === 'tool_use' && 'id' in b && b.id === toolUseID,
+    329        ),
+    330    )
+    331    if (!alreadyPresent) {
+    332      mutableMessages.push(assistantMessage)
+    333      if (persistSession) {
+    334        await recordTranscript(mutableMessages)
+    335      }
+    336    }
+    337  
+    338>   const sdkAssistantMessage: SDKMessage = {
+    339      ...assistantMessage,
+    340      session_id: getSessionId(),
+    341      parent_tool_use_id: null,
+    342    } as SDKMessage
+    343    yield sdkAssistantMessage
+    344  
+    345    // Execute the tool - errors are handled internally by runToolUse
+    346    for await (const update of runTools(
+    347      [finalToolUseBlock],
+    348      [assistantMessage],
+  Type '{ session_id: SessionId; parent_tool_use_id: null; type: "assistant"; uuid: UUID; isMeta?: boolean; isCompactSummary?: boolean; toolUseResult?: unknown; isVisibleInTranscriptOnly?: boolean; attachment?: { type: string; toolUseID?: string; [key: string]: unknown; }; message: { ...; } & { ...; }; }' is not comparable to type '{ type: "assistant"; message: BetaMessage; parent_tool_use_id: string | null; uuid: string; session_id: string; error?: "unknown" | "max_output_tokens" | "authentication_failed" | ... 10 more ... | undefined; }'.
+    Types of property 'message' are incompatible.
+      Type '{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<string, unknown> | BetaUsage | undefined; } & { ...; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, model, and 4 more.

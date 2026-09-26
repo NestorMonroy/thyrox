@@ -520,6 +520,9 @@ export async function applyPromptToMarkdown(
   }
 
   const { content } = assistantMessage.message
+  if (content === undefined) {
+    return 'No response from model'
+  }
   if (content.length > 0) {
     const contentBlock = content[0]
     if (contentBlock && typeof contentBlock === 'object' && 'text' in contentBlock) {

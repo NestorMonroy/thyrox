@@ -1,0 +1,40 @@
+{
+ "reviewed": [
+  {
+   "pattern": "normalized-message-loses-branch-narrowing",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx"
+   ]
+  },
+  {
+   "pattern": "unknown-command-effort-assigned-to-effort-value",
+   "files": [
+    "src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts"
+   ]
+  },
+  {
+   "pattern": "extraneous-property-in-call-arg-object-literal",
+   "files": [
+    "src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts"
+   ]
+  },
+  {
+   "pattern": "tool-def-render-hook-param-mistyped-as-domain-output",
+   "files": [
+    "src/packages/tool-registry/src/tools/WorkflowTool/WorkflowTool.ts"
+   ]
+  },
+  {
+   "pattern": "incomplete-beta-usage-test-fixture",
+   "files": [
+    "tests/unit/utils/tokens.test.ts"
+   ]
+  },
+  {
+   "pattern": "partial-usage-literal-missing-betausage-fields",
+   "files": [
+    "tests/unit/utils/tokens.test.ts"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+Patrón: missing-declaration-typeof-import-untyped-module
+Señal del verificador: ^[^:]+: TS7016: Could not find a declaration file for module '[^']+'
+Arreglo genérico: Cuando `typeof import('modulo')` dispara TS7016 porque el paquete no trae tipos propios y no se puede instalar `@types/<modulo>` (cambiaria package.json fuera del archivo), declarar en el mismo archivo una interfaz local con la forma minima que el codigo realmente usa (metodos y firmas), y tipar la variable/funcion contra esa interfaz en vez de `typeof import(...)`. Nunca cerrarlo con `any`/`as any`: la interfaz local documenta el contrato real y sigue detectando un mal uso.
+Ya aplicado en: src/packages/updater/src/internal/semverCompat.ts
+Archivos donde la señal sigue viva: tests/agents/save_result.test.ts
+

@@ -1,0 +1,23 @@
+src/packages/storage/src/sessionStorage.ts(94,3): error TS2440: Import declaration conflicts with local declaration of 'SerializedMessage'.
+  --- código src/packages/storage/src/sessionStorage.ts:84-104 ---
+     84  } from '@thyrox/agent/idTypes'
+     85  import type { AttributionSnapshotMessage } from '@thyrox/agent/logsTypes.js'
+     86  import {
+     87    type ContentReplacementEntry,
+     88    type ContextCollapseCommitEntry,
+     89    type ContextCollapseSnapshotEntry,
+     90    type Entry,
+     91    type FileHistorySnapshotMessage,
+     92    type LogOption,
+     93    type PersistedWorktreeSession,
+     94>   type SerializedMessage,
+     95    sortLogs,
+     96    type TranscriptMessage,
+     97  } from '@thyrox/agent/logsTypes.js'
+     98  import type {
+     99    AssistantMessage,
+    100    AttachmentMessage,
+    101    Message,
+    102    SystemCompactBoundaryMessage,
+    103    SystemMessage,
+    104    UserMessage,

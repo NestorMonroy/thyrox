@@ -158,6 +158,17 @@ function stickyPromptText(msg: RenderableMessage): string | null {
   return result
 }
 
+function isTextContentBlock(b: unknown): b is { type: 'text'; text: string } {
+  return (
+    typeof b === 'object' &&
+    b !== null &&
+    'type' in b &&
+    b.type === 'text' &&
+    'text' in b &&
+    typeof b.text === 'string'
+  )
+}
+
 function computeStickyPromptText(msg: RenderableMessage): string | null {
   let raw: string | null = null
   if (msg.type === 'user') {
@@ -175,7 +186,9 @@ function computeStickyPromptText(msg: RenderableMessage): string | null {
     raw =
       typeof p === 'string'
         ? p
-        : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
+        : Array.isArray(p)
+          ? p.flatMap(b => (isTextContentBlock(b) ? [b.text] : [])).join('\n')
+          : ''
   }
   if (raw === null) return null
 
@@ -318,13 +331,16 @@ export function VirtualMessageList({
     [getItemHeight, messages],
   )
   useImperativeHandle(cursorNavRef, (): MessageActionsNav => {
-    const select = (m: NavigableMessage) =>
+    const select = (m: NavigableMessage) => {
+      // isVisible ya excluye 'progress' vía isNavigableMessage — invariante del flujo.
+      if (m.type === 'progress') return
       setCursor?.({
         uuid: m.uuid,
         msgType: m.type,
         expanded: false,
         toolName: toolCallOf(m)?.name,
       })
+    }
     const selIdx = selectedIndex ?? -1
     const scan = (
       from: number,

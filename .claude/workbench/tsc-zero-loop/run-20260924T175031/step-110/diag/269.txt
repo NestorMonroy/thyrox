@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/Tool.ts(152,15): error TS2724: '"@thyrox/permission/permissionTypes"' has no exported member named 'ToolPermissionRulesBySource'. Did you mean 'PermissionRuleSource'?
+  --- código src/packages/tool-registry/src/Tool.ts:142-162 ---
+    142      showSpinner?: boolean
+    143      isLocalJSXCommand?: boolean
+    144      isImmediate?: boolean
+    145      /** Se pone en true para limpiar un comando JSX local (p. ej. desde su callback onDone) */
+    146      clearLocalJSX?: boolean
+    147    } | null,
+    148  ) => void
+    149  
+    150  // Los tipos de permiso de herramienta se importan de una ubicación
+    151  // centralizada para romper ciclos de import.
+    152> import type { ToolPermissionRulesBySource } from '@thyrox/permission/permissionTypes'
+    153  
+    154  // Re-exporta por compatibilidad hacia atrás.
+    155  export type { ToolPermissionRulesBySource }
+    156  
+    157  // Aplica DeepImmutable al tipo importado.
+    158  export type ToolPermissionContext = DeepImmutable<{
+    159    mode: PermissionMode
+    160    additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>
+    161    alwaysAllowRules: ToolPermissionRulesBySource
+    162    alwaysDenyRules: ToolPermissionRulesBySource

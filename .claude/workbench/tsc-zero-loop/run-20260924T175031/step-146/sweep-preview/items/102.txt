@@ -1,0 +1,144 @@
+Patrón: hook-field-absent-from-hookresult-type
+Señal del verificador: TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'
+Arreglo genérico: El tipo HookResult de este árbol (src/packages/agent/hooks.ts) no declara el campo `hook`, a diferencia de la fuente portada donde sí es parte del contrato. Ningún consumidor de HookResult/AggregatedHookResult lee `.hook` en este árbol. Se quita la propiedad `hook,` del literal de retorno donde aparezca este error, sin tocar hooks.ts.
+Ya aplicado en: src/packages/agent/hooks/execAgentHook.ts
+Archivos donde la señal sigue viva: src/packages/agent/hooks.ts
+
+src/packages/agent/hooks.ts(1895,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1885-1905 ---
+   1885    const { signal: abortSignal, cleanup } = createCombinedAbortSignal(signal, {
+   1886      timeoutMs: callbackTimeoutMs,
+   1887    })
+   1888  
+   1889    try {
+   1890      // Check if already aborted
+   1891      if (abortSignal.aborted) {
+   1892        cleanup()
+   1893        return {
+   1894          outcome: 'cancelled',
+   1895>         hook,
+   1896        }
+   1897      }
+   1898  
+   1899      // Execute callback with abort signal
+   1900      const passed = await new Promise<boolean>((resolve, reject) => {
+   1901        // Handle abort signal
+   1902        const onAbort = () => reject(new Error('Function hook cancelled'))
+   1903        abortSignal.addEventListener('abort', onAbort)
+   1904  
+   1905        // Execute callback
+src/packages/agent/hooks.ts(1922,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1912-1932 ---
+   1912            abortSignal.removeEventListener('abort', onAbort)
+   1913            reject(error)
+   1914          })
+   1915      })
+   1916  
+   1917      cleanup()
+   1918  
+   1919      if (passed) {
+   1920        return {
+   1921          outcome: 'success',
+   1922>         hook,
+   1923        }
+   1924      }
+   1925      return {
+   1926        blockingError: {
+   1927          blockingError: hook.errorMessage,
+   1928          command: 'function',
+   1929        },
+   1930        outcome: 'blocking',
+   1931        hook,
+   1932      }
+src/packages/agent/hooks.ts(1931,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1921-1941 ---
+   1921          outcome: 'success',
+   1922          hook,
+   1923        }
+   1924      }
+   1925      return {
+   1926        blockingError: {
+   1927          blockingError: hook.errorMessage,
+   1928          command: 'function',
+   1929        },
+   1930        outcome: 'blocking',
+   1931>       hook,
+   1932      }
+   1933    } catch (error) {
+   1934      cleanup()
+   1935  
+   1936      // Handle cancellation
+   1937      if (
+   1938        error instanceof Error &&
+   1939        (error.message === 'Function hook cancelled' || // V7-EXEMPT: legacy hook abort sentinel
+   1940          error.name === 'AbortError')
+   1941      ) {
+src/packages/agent/hooks.ts(1944,9): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1934-1954 ---
+   1934      cleanup()
+   1935  
+   1936      // Handle cancellation
+   1937      if (
+   1938        error instanceof Error &&
+   1939        (error.message === 'Function hook cancelled' || // V7-EXEMPT: legacy hook abort sentinel
+   1940          error.name === 'AbortError')
+   1941      ) {
+   1942        return {
+   1943          outcome: 'cancelled',
+   1944>         hook,
+   1945        }
+   1946      }
+   1947  
+   1948      // Log for monitoring
+   1949      logError(error)
+   1950      return {
+   1951        message: createAttachmentMessage({
+   1952          type: 'hook_error_during_execution',
+   1953          hookName,
+   1954          toolUseID,
+src/packages/agent/hooks.ts(2000,7): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:1990-2010 ---
+   1990    const json = await hook.callback(
+   1991      hookInput,
+   1992      toolUseID,
+   1993      signal,
+   1994      hookIndex,
+   1995      context,
+   1996    )
+   1997    if (isAsyncHookJSONOutput(json)) {
+   1998      return {
+   1999        outcome: 'success',
+   2000>       hook,
+   2001      }
+   2002    }
+   2003  
+   2004    const processed = processHookJSONOutput({
+   2005      json,
+   2006      command: 'callback',
+   2007      // TODO: si el hook viene de un plugin, usar la ruta completa al plugin para depurar mejor
+   2008      hookName: `${hookEvent}:Callback`,
+   2009      toolUseID,
+   2010      hookEvent,
+src/packages/agent/hooks.ts(2020,5): error TS2353: Object literal may only specify known properties, and 'hook' does not exist in type 'HookResult'.
+  --- código src/packages/agent/hooks.ts:2010-2030 ---
+   2010      hookEvent,
+   2011      expectedHookEvent: hookEvent,
+   2012      // Los callbacks no tienen stdout/stderr/exitCode
+   2013      stdout: undefined,
+   2014      stderr: undefined,
+   2015      exitCode: undefined,
+   2016    })
+   2017    return {
+   2018      ...processed,
+   2019      outcome: 'success',
+   2020>     hook,
+   2021    }
+   2022  }
+   2023  /**
+   2024   * Pone un hook a correr en segundo plano: lo saca del camino bloqueante y
+   2025   * registra su seguimiento en el registro de hooks asíncronos. Devuelve
+   2026   * `false` si el comando ya no estaba en estado `running`.
+   2027   */
+   2028  function executeInBackground({
+   2029    processId,
+   2030    hookId,

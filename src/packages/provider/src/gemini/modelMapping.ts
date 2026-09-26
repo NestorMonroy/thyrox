@@ -10,8 +10,9 @@ function getModelFamily(model: string): 'haiku' | 'sonnet' | 'opus' | null {
 }
 
 export function resolveGeminiModel(anthropicModel: string): string {
-  if (readEnv('GEMINI_MODEL')) {
-    return readEnv('GEMINI_MODEL')
+  const geminiModelEnv = readEnv('GEMINI_MODEL')
+  if (geminiModelEnv) {
+    return geminiModelEnv
   }
 
   // Strip the connection-routing prefix before any further mapping. The

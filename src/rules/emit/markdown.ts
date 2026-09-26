@@ -53,13 +53,14 @@ export function resolveParameters(
 /** Sustituye los marcadores; lanza ante uno que ningún parámetro declara. */
 export function render(body: string, values: Record<string, string>): string {
   return body.replace(PLACEHOLDER, (_match, name: string) => {
-    if (!(name in values)) {
+    const resolved = values[name]
+    if (resolved === undefined) {
       throw new UnresolvedParameterError(
         `El cuerpo usa {{${name}}} y la definicion no lo declara como ` +
           `parametro. NO se emite con el marcador crudo.`,
       )
     }
-    return values[name]
+    return resolved
   })
 }
 

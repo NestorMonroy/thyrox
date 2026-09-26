@@ -1,0 +1,46 @@
+src/packages/agent/query.ts(669,25): error TS18046: 'appState.mcp' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:659-679 ---
+    659                },
+    660                querySource, spawnedBySkill: toolUseContext.options.spawnedBySkill as string | undefined, activeSkill: toolUseContext.options.activeSkill as string | undefined,
+    661                agents: (toolUseContext.options.agentDefinitions as
+    662                  CanonicalToolUseContext['options']['agentDefinitions']).activeAgents,
+    663                allowedAgentTypes: (toolUseContext.options.agentDefinitions as
+    664                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    665                hasAppendSystemPrompt:
+    666                  !!toolUseContext.options.appendSystemPrompt,
+    667                maxOutputTokensOverride,
+    668                fetchOverride: dumpPromptsFetch,
+    669>               mcpTools: appState.mcp.tools,
+    670                hasPendingMcpServers: appState.mcp.clients.some(
+    671  (                c: { type: string }) => c.type === 'pending',
+    672                ),
+    673                queryTracking,
+    674                effortValue: appState.effortValue,
+    675                advisorModel: appState.advisorModel,
+    676                skipCacheWrite,
+    677                agentId: toolUseContext.agentId,
+    678                addNotification: toolUseContext.addNotification,
+    679                ...(params.taskBudget && {
+src/packages/agent/query.ts(670,37): error TS18046: 'appState.mcp' is of type 'unknown'.
+  --- código src/packages/agent/query.ts:660-680 ---
+    660                querySource, spawnedBySkill: toolUseContext.options.spawnedBySkill as string | undefined, activeSkill: toolUseContext.options.activeSkill as string | undefined,
+    661                agents: (toolUseContext.options.agentDefinitions as
+    662                  CanonicalToolUseContext['options']['agentDefinitions']).activeAgents,
+    663                allowedAgentTypes: (toolUseContext.options.agentDefinitions as
+    664                  CanonicalToolUseContext['options']['agentDefinitions']).allowedAgentTypes,
+    665                hasAppendSystemPrompt:
+    666                  !!toolUseContext.options.appendSystemPrompt,
+    667                maxOutputTokensOverride,
+    668                fetchOverride: dumpPromptsFetch,
+    669                mcpTools: appState.mcp.tools,
+    670>               hasPendingMcpServers: appState.mcp.clients.some(
+    671  (                c: { type: string }) => c.type === 'pending',
+    672                ),
+    673                queryTracking,
+    674                effortValue: appState.effortValue,
+    675                advisorModel: appState.advisorModel,
+    676                skipCacheWrite,
+    677                agentId: toolUseContext.agentId,
+    678                addNotification: toolUseContext.addNotification,
+    679                ...(params.taskBudget && {
+    680                  taskBudget: {

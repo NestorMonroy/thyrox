@@ -21,7 +21,7 @@ import { findSection } from '../src/elf.ts'
 import { BUNFS_PREFIX, SECTION_HEADER, deriveVersion, readModuleTable } from '../src/bunfs.ts'
 import { buildGraph, importsOf } from '../src/graph.ts'
 import { corpusVersion, freshness } from '../src/freshness.ts'
-import { writeCorpus } from '../src/corpus.ts'
+import { README, STRINGS, extractStrings, renderReadme, writeCorpus } from '../src/corpus.ts'
 
 const BINARY = '/opt/claude-code/bin/claude'
 const bytes = existsSync(BINARY) ? readFileSync(BINARY) : null
@@ -176,5 +176,43 @@ describe('un directorio NO es un corpus', () => {
       writeFileSync(join(raiz, v, 'MANIFEST.tsv'), 'archivo\tbytes\ttipo\tsha256\n')
     }
     expect(corpusVersion(raiz)).toBe('2.1.258')
+  })
+})
+
+describe('el corpus trae su volcado de cadenas y su README', () => {
+  // Defecto medido en 2.1.282: `extract` escribió bunfs-root y MANIFEST, y el
+  // volcado y el README —que 2.1.281 sí tiene— se hicieron a mano aparte.
+  test('extractStrings da las corridas imprimibles de 4 o más, una por línea', () => {
+    const buf = Buffer.concat([Buffer.from('abc\0'), Buffer.from('defg\x01hij\tklm\n'), Buffer.from([0xff]), Buffer.from('xyzw')])
+    expect(extractStrings(buf)).toBe('defg\nhij\tklm\nxyzw\n')
+  })
+
+  test('coincide con el strings de GNU sobre un ejecutable real', () => {
+    // El proposito: el volcado se cita contra `strings -n 4`; si difiere, las
+    // citas de un corpus y de otro dejan de ser comparables.
+    const sample = '/bin/true'
+    const gnu = Bun.spawnSync(['strings', '-n', '4', sample])
+    expect(gnu.exitCode).toBe(0)
+    expect(extractStrings(readFileSync(sample))).toBe(gnu.stdout.toString())
+  })
+
+  test('writeCorpus con el ejecutable escribe el volcado y un README derivado del MANIFEST', () => {
+    if (!tabla) return
+    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const binary = Buffer.from('cabecera\0unacadena\0')
+    const r = writeCorpus(raiz, '9.9.8', tabla.payload, tabla.table.entries.slice(0, 2), binary)
+    expect(readFileSync(join(r.root, STRINGS), 'utf8')).toBe(extractStrings(binary))
+    const readme = readFileSync(join(r.root, README), 'utf8')
+    expect(readme).toBe(renderReadme('9.9.8', r.files, r.bytes, 2))
+    expect(readme).toContain('claude-code 9.9.8')
+    expect(readme).toContain(`| Archivos en \`bunfs-root/\` | ${r.files} |`)
+    expect(readme).toContain('`claude_strings.txt` — 2 líneas.')
+  })
+
+  test('sin el ejecutable no inventa un volcado', () => {
+    if (!tabla) return
+    const raiz = mkdtempSync(join(tmpdir(), 'corpus-'))
+    const r = writeCorpus(raiz, '9.9.7', tabla.payload, tabla.table.entries.slice(0, 1))
+    expect(existsSync(join(r.root, STRINGS))).toBe(false)
   })
 })

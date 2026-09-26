@@ -1,0 +1,48 @@
+tests/unit/utils/tokens.test.ts(100,35): error TS2345: Argument of type '{ input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }' is not assignable to parameter of type 'BetaUsage'.
+  --- código tests/unit/utils/tokens.test.ts:90-110 ---
+     90  // ─── getTokenCountFromUsage ─────────────────────────────────────────────
+     91  
+     92  describe('getTokenCountFromUsage', () => {
+     93    test('sums all token fields', () => {
+     94      const usage = {
+     95        input_tokens: 100,
+     96        output_tokens: 50,
+     97        cache_creation_input_tokens: 20,
+     98        cache_read_input_tokens: 10,
+     99      }
+    100>     expect(getTokenCountFromUsage(usage)).toBe(180)
+    101    })
+    102  
+    103    test('handles missing cache fields', () => {
+    104      const usage = {
+    105        input_tokens: 100,
+    106        output_tokens: 50,
+    107      }
+    108      expect(getTokenCountFromUsage(usage)).toBe(150)
+    109    })
+    110  
+  Type '{ input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }' is missing the following properties from type 'BetaUsage': cache_creation, fallback_credit, inference_geo, iterations, and 4 more.
+tests/unit/utils/tokens.test.ts(108,35): error TS2345: Argument of type '{ input_tokens: number; output_tokens: number; }' is not assignable to parameter of type 'BetaUsage'.
+  --- código tests/unit/utils/tokens.test.ts:98-118 ---
+     98        cache_read_input_tokens: 10,
+     99      }
+    100      expect(getTokenCountFromUsage(usage)).toBe(180)
+    101    })
+    102  
+    103    test('handles missing cache fields', () => {
+    104      const usage = {
+    105        input_tokens: 100,
+    106        output_tokens: 50,
+    107      }
+    108>     expect(getTokenCountFromUsage(usage)).toBe(150)
+    109    })
+    110  
+    111    test('handles zero values', () => {
+    112      const usage = {
+    113        input_tokens: 0,
+    114        output_tokens: 0,
+    115        cache_creation_input_tokens: 0,
+    116        cache_read_input_tokens: 0,
+    117      }
+    118      expect(getTokenCountFromUsage(usage)).toBe(0)
+  Type '{ input_tokens: number; output_tokens: number; }' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 6 more.

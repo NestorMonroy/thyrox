@@ -1,0 +1,125 @@
+src/packages/provider/src/openai/__tests__/convertMessages.test.ts(25,54): error TS2345: Argument of type '({ type: "user"; uuid: string; message: { role: string; content: string; }; } | { type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; text?: undefined; } | { ...; })[]; }; })[]' is not assignable to parameter of type 'readonly ProviderMessage[]'.
+  --- código src/packages/provider/src/openai/__tests__/convertMessages.test.ts:15-35 ---
+     15          message: {
+     16            role: 'assistant',
+     17            content: [
+     18              { type: 'thinking', thinking: 'Let me think...', signature: 'sig123' },
+     19              { type: 'text', text: 'Hi there!' },
+     20            ],
+     21          },
+     22        },
+     23      ]
+     24  
+     25>     const openaiMessages = anthropicMessagesToOpenAI(messages, [])
+     26      const assistantMsg = openaiMessages.find(m => m.role === 'assistant') as any
+     27  
+     28      expect(assistantMsg).toBeDefined()
+     29      expect(assistantMsg.reasoning_content).toBe('Let me think...')
+     30      expect(assistantMsg.content).toBe('Hi there!')
+     31    })
+     32  
+     33    it('concatenates multiple thinking blocks into single reasoning_content', () => {
+     34      const messages = [
+     35        {
+  Type '{ type: "user"; uuid: string; message: { role: string; content: string; }; } | { type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; text?: undefined; } | { ...; })[]; }; }' is not assignable to type 'ProviderMessage'.
+    Type '{ type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]; }; }' is not assignable to type 'ProviderMessage'.
+      The types of 'message.content' are incompatible between these types.
+        Type '({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ProviderMessageContent | undefined'.
+          Type '({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ContentBlockParam[]'.
+            Type '{ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; }' is not assignable to type 'ContentBlockParam'.
+              Type '{ type: string; thinking: string; signature: string; text?: undefined; }' is not assignable to type 'ContentBlockParam'.
+                Type '{ type: string; thinking: string; signature: string; text?: undefined; }' is not assignable to type 'ThinkingBlockParam'.
+                  Types of property 'type' are incompatible.
+                    Type 'string' is not assignable to type '"thinking"'.
+src/packages/provider/src/openai/__tests__/convertMessages.test.ts(49,54): error TS2345: Argument of type '{ type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]; }; }[]' is not assignable to parameter of type 'readonly ProviderMessage[]'.
+  --- código src/packages/provider/src/openai/__tests__/convertMessages.test.ts:39-59 ---
+     39            role: 'assistant',
+     40            content: [
+     41              { type: 'thinking', thinking: 'Part A. ', signature: 'sig1' },
+     42              { type: 'thinking', thinking: 'Part B.', signature: 'sig2' },
+     43              { type: 'text', text: 'Answer' },
+     44            ],
+     45          },
+     46        },
+     47      ]
+     48  
+     49>     const openaiMessages = anthropicMessagesToOpenAI(messages, [])
+     50      const assistantMsg = openaiMessages.find(m => m.role === 'assistant') as any
+     51  
+     52      expect(assistantMsg.reasoning_content).toBe('Part A. Part B.')
+     53    })
+     54  
+     55    it('does NOT add reasoning_content when there are no thinking blocks', () => {
+     56      const messages = [
+     57        {
+     58          type: 'assistant' as const,
+     59          uuid: 'a1',
+  Type '{ type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]; }; }' is not assignable to type 'ProviderMessage'.
+    The types of 'message.content' are incompatible between these types.
+      Type '({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ProviderMessageContent | undefined'.
+        Type '({ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ContentBlockParam[]'.
+          Type '{ type: string; thinking: string; signature: string; text?: undefined; } | { type: string; text: string; thinking?: undefined; signature?: undefined; }' is not assignable to type 'ContentBlockParam'.
+            Type '{ type: string; thinking: string; signature: string; text?: undefined; }' is not assignable to type 'ContentBlockParam'.
+              Type '{ type: string; thinking: string; signature: string; text?: undefined; }' is not assignable to type 'ThinkingBlockParam'.
+                Types of property 'type' are incompatible.
+                  Type 'string' is not assignable to type '"thinking"'.
+src/packages/provider/src/openai/__tests__/convertMessages.test.ts(67,54): error TS2345: Argument of type '{ type: "assistant"; uuid: string; message: { role: string; content: { type: string; text: string; }[]; }; }[]' is not assignable to parameter of type 'readonly ProviderMessage[]'.
+  --- código src/packages/provider/src/openai/__tests__/convertMessages.test.ts:57-77 ---
+     57        {
+     58          type: 'assistant' as const,
+     59          uuid: 'a1',
+     60          message: {
+     61            role: 'assistant',
+     62            content: [{ type: 'text', text: 'No thinking here' }],
+     63          },
+     64        },
+     65      ]
+     66  
+     67>     const openaiMessages = anthropicMessagesToOpenAI(messages, [])
+     68      const assistantMsg = openaiMessages.find(m => m.role === 'assistant') as any
+     69  
+     70      expect(assistantMsg.reasoning_content).toBeUndefined()
+     71      expect(assistantMsg.content).toBe('No thinking here')
+     72    })
+     73  
+     74    it('includes reasoning_content alongside tool_calls', () => {
+     75      const messages = [
+     76        {
+     77          type: 'assistant' as const,
+  Type '{ type: "assistant"; uuid: string; message: { role: string; content: { type: string; text: string; }[]; }; }' is not assignable to type 'ProviderMessage'.
+    The types of 'message.content' are incompatible between these types.
+      Type '{ type: string; text: string; }[]' is not assignable to type 'ProviderMessageContent | undefined'.
+        Type '{ type: string; text: string; }[]' is not assignable to type 'ContentBlockParam[]'.
+          Type '{ type: string; text: string; }' is not assignable to type 'ContentBlockParam'.
+            Type '{ type: string; text: string; }' is not assignable to type 'TextBlockParam'.
+              Types of property 'type' are incompatible.
+                Type 'string' is not assignable to type '"text"'.
+src/packages/provider/src/openai/__tests__/convertMessages.test.ts(94,54): error TS2345: Argument of type '{ type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; } | { type: string; id: string; name: string; input: { ...; }; thinking?: undefined; signature?: undefined; })[]; }; }[]' is not assignable to parameter of type 'readonly ProviderMessage[]'.
+  --- código src/packages/provider/src/openai/__tests__/convertMessages.test.ts:84-101 ---
+     84                type: 'tool_use',
+     85                id: 'tool_1',
+     86                name: 'bash',
+     87                input: { command: 'ls' },
+     88              },
+     89            ],
+     90          },
+     91        },
+     92      ]
+     93  
+     94>     const openaiMessages = anthropicMessagesToOpenAI(messages, [])
+     95      const assistantMsg = openaiMessages.find(m => m.role === 'assistant') as any
+     96  
+     97      expect(assistantMsg.reasoning_content).toBe('Need to use a tool.')
+     98      expect(assistantMsg.tool_calls).toHaveLength(1)
+     99      expect(assistantMsg.tool_calls[0].function.name).toBe('bash')
+    100    })
+    101  })
+  Type '{ type: "assistant"; uuid: string; message: { role: string; content: ({ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; } | { type: string; id: string; name: string; input: { ...; }; thinking?: undefined; signature?: undefined; })[]; }; }' is not assignable to type 'ProviderMessage'.
+    The types of 'message.content' are incompatible between these types.
+      Type '({ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; } | { type: string; id: string; name: string; input: { command: string; }; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ProviderMessageContent | undefined'.
+        Type '({ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; } | { type: string; id: string; name: string; input: { command: string; }; thinking?: undefined; signature?: undefined; })[]' is not assignable to type 'ContentBlockParam[]'.
+          Type '{ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; } | { type: string; id: string; name: string; input: { command: string; }; thinking?: undefined; signature?: undefined; }' is not assignable to type 'ContentBlockParam'.
+            Type '{ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; }' is not assignable to type 'ContentBlockParam'.
+              Type '{ type: string; thinking: string; signature: string; id?: undefined; name?: undefined; input?: undefined; }' is not assignable to type 'ServerToolUseBlockParam'.
+                Types of property 'id' are incompatible.
+                  Type 'undefined' is not assignable to type 'string'.

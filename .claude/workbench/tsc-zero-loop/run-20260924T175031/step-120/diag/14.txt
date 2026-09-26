@@ -1,0 +1,24 @@
+src/packages/agent/query.ts(508,60): error TS2345: Argument of type '{}' is not assignable to parameter of type 'CompactionResult'.
+  --- código src/packages/agent/query.ts:498-518 ---
+    498        // so the breaker fires on the Nth fast refill, not just N within one
+    499        // hop.
+    500        tracking = {
+    501          compacted: true,
+    502          turnId: deps.uuid(),
+    503          turnCounter: 0,
+    504          consecutiveFailures: 0,
+    505          consecutiveRapidRefills,
+    506        }
+    507  
+    508>       const postCompactMessages = buildPostCompactMessages(compactionResult)
+    509  
+    510        for (const message of postCompactMessages) {
+    511          yield message
+    512        }
+    513  
+    514        // Continue on with the current query call using the post compact messages
+    515        messagesForQuery = postCompactMessages
+    516      } else if (consecutiveFailures !== undefined) {
+    517        // Autocompact failed — propagate failure count so the circuit breaker
+    518        // can stop retrying on the next iteration.
+  Type '{}' is missing the following properties from type 'CompactionResult': boundaryMarker, summaryMessages, attachments, hookResults

@@ -1,0 +1,4 @@
+src/packages/repl/src/processUserInput/processTextPrompt.ts(79,7): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.
+src/packages/repl/src/processUserInput/processTextPrompt.ts(92,5): error TS2322: Type 'InternalPermissionMode | undefined' is not assignable to type 'PermissionMode | undefined'.
+  Type '"auto"' is not assignable to type 'PermissionMode | undefined'.

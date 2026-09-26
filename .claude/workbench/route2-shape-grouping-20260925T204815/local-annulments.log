@@ -1,0 +1,6 @@
+== LOCAL_CONTEXT_LINES = 10
+  FALLA el ítem trae la línea encadenada y el código marcado con '>' — esperado (True, True, True), obtenido (True, True, False)
+test_tsc_cycle: 61 aserciones — 60 ok, 1 falla(s)
+== if file in excluded or not
+  FALLA un ítem por trozo de a lo sumo --size diagnósticos, sin excluidos ni ajenos a src/ — esperado (0, ['src/packages/agent/query.ts', 'src/packages/agent/query.ts']), obtenido (0, ['src/packages/agent/query.ts', 'src/packages/agent/query.ts', 'src/packages/agent/skip.ts'])
+test_tsc_cycle: 61 aserciones — 60 ok, 1 falla(s)

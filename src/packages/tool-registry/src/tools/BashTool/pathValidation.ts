@@ -929,7 +929,7 @@ function validateOutputRedirections(
   compoundCommandHasCd?: boolean,
 ): PermissionResult {
   // A post-cd redirect is path-ambiguous; /dev/null is the safe exception.
-  if (hasUnsafeRedirectWithCd(compoundCommandHasCd, redirections)) {
+  if (hasUnsafeRedirectWithCd(compoundCommandHasCd ?? false, redirections)) {
     return {
       behavior: 'ask',
       message: `Commands that change directories and write via output redirection require explicit approval to ensure paths are evaluated correctly. For security, Claude Code cannot automatically determine the final working directory when 'cd' is used in compound commands.`,

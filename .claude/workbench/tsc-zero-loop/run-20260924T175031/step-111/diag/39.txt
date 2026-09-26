@@ -1,0 +1,73 @@
+src/packages/agent/sessionFileAccessHooks.ts(135,44): error TS2339: Property 'isTeamMemFile' does not exist on type 'typeof import("/home/user/thyrox/src/packages/memory/src/teamMemPaths")'.
+  --- código src/packages/agent/sessionFileAccessHooks.ts:125-145 ---
+    125    toolInput: unknown,
+    126  ): boolean {
+    127    if (getSessionFileTypeFromInput(toolName, toolInput) === 'session_memory') {
+    128      return true
+    129    }
+    130  
+    131    const filePath = getFilePathFromInput(toolName, toolInput)
+    132    if (
+    133      filePath &&
+    134      (isAutoMemFile(filePath) ||
+    135>       (feature('TEAMMEM') && teamMemPaths!.isTeamMemFile(filePath)))
+    136    ) {
+    137      return true
+    138    }
+    139  
+    140    return false
+    141  }
+    142  
+    143  /**
+    144   * PostToolUse callback to log session file access events.
+    145   */
+src/packages/agent/sessionFileAccessHooks.ts(189,55): error TS2339: Property 'isTeamMemFile' does not exist on type 'typeof import("/home/user/thyrox/src/packages/memory/src/teamMemPaths")'.
+  --- código src/packages/agent/sessionFileAccessHooks.ts:179-199 ---
+    179        case FILE_EDIT_TOOL_NAME:
+    180          logEvent('tengu_memdir_file_edit', { ...subagentProps })
+    181          break
+    182        case FILE_WRITE_TOOL_NAME:
+    183          logEvent('tengu_memdir_file_write', { ...subagentProps })
+    184          break
+    185      }
+    186    }
+    187  
+    188    // Team memory access tracking
+    189>   if (feature('TEAMMEM') && filePath && teamMemPaths!.isTeamMemFile(filePath)) {
+    190      logEvent('tengu_team_mem_accessed', {
+    191        tool: input.tool_name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    192        ...subagentProps,
+    193      })
+    194  
+    195      switch (input.tool_name) {
+    196        case FILE_READ_TOOL_NAME:
+    197          logEvent('tengu_team_mem_file_read', { ...subagentProps })
+    198          break
+    199        case FILE_EDIT_TOOL_NAME:
+src/packages/agent/sessionFileAccessHooks.ts(236,5): error TS2322: Type '(input: ({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; }), _t...' is not assignable to type '(input: HookInput, toolUseID: string | null, abort: AbortSignal | undefined, hookIndex?: number | undefined, context?: HookCallbackContext | undefined) => Promise<...>'.
+  --- código src/packages/agent/sessionFileAccessHooks.ts:226-246 ---
+    226    return {}
+    227  }
+    228  
+    229  /**
+    230   * Register session file access tracking hooks.
+    231   * Called during CLI initialization.
+    232   */
+    233  export function registerSessionFileAccessHooks(): void {
+    234    const hook: HookCallback = {
+    235      type: 'callback',
+    236>     callback: handleSessionFileAccess,
+    237      timeout: 1, // Very short timeout - just logging
+    238      internal: true,
+    239    }
+    240  
+    241    registerHookCallbacks({
+    242      PostToolUse: [
+    243        { matcher: FILE_READ_TOOL_NAME, hooks: [hook] },
+    244        { matcher: GREP_TOOL_NAME, hooks: [hook] },
+    245        { matcher: GLOB_TOOL_NAME, hooks: [hook] },
+    246        { matcher: FILE_EDIT_TOOL_NAME, hooks: [hook] },
+  Types of parameters 'input' and 'input' are incompatible.
+    Type 'HookInput' is not assignable to type '({ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "PreToolUse"; tool_name: string; tool_input: unknown; tool_use_id: string; }) | ... 25 more ... | ({ ...; } & { ...; })'.
+      Type 'HookInput' is not assignable to type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; } & { hook_event_name: "InstructionsLoaded"; ... 5 more ...; parent_file_path?: string | undefined; }'.
+        Type 'HookInput' is missing the following properties from type '{ session_id: string; transcript_path: string; cwd: string; permission_mode?: string | undefined; agent_id?: string | undefined; agent_type?: string | undefined; }': session_id, transcript_path, cwd

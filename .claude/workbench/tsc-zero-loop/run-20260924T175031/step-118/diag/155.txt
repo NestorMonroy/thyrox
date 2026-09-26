@@ -1,0 +1,24 @@
+src/packages/repl/src/components/Message.tsx(436,11): error TS2322: Type 'TextBlockParam | ConnectorTextBlock | BetaTextBlock' is not assignable to type 'TextBlockParam'.
+  --- código src/packages/repl/src/components/Message.tsx:426-446 ---
+    426            shouldAnimate={shouldAnimate}
+    427            shouldShowDot={shouldShowDot}
+    428            inProgressToolCallCount={inProgressToolCallCount}
+    429            lookups={lookups}
+    430            isTranscriptMode={isTranscriptMode}
+    431          />
+    432        )
+    433      case 'text':
+    434        return (
+    435          <AssistantTextMessage
+    436>           param={param}
+    437            addMargin={addMargin}
+    438            shouldShowDot={shouldShowDot}
+    439            verbose={verbose}
+    440            width={width}
+    441            onOpenRateLimitOptions={onOpenRateLimitOptions}
+    442          />
+    443        )
+    444      case 'redacted_thinking':
+    445        if (!isTranscriptMode && !verbose) {
+    446          return null
+  Property 'text' is missing in type 'ConnectorTextBlock' but required in type 'TextBlockParam'.

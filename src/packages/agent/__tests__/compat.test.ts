@@ -81,8 +81,10 @@ describe('la instrumentacion existente lee nuestros transcripts (T-034)', () => 
       provider: p, model: 'claude-opus-5', system: 's', prompt: 'x',
       tools: CORE_TOOLS, cwd: d, transcriptDir: d,
     })
-    const salida = Bun.spawnSync(['python3',
-      join(thyroxRoot(), 'src', 'agents', 'model_catalog.py'),
+    // Por el envoltorio de `bin/`, que exporta PYTHONPATH: por la ruta al
+    // fuente, el guion sólo encontraba sus módulos si el llamador ya lo traía.
+    const salida = Bun.spawnSync(['bash',
+      join(thyroxRoot(), 'bin', 'model_catalog'),
       'sesion', '--transcript', r.transcriptPath])
     expect(salida.exitCode).toBe(0)
     const texto_ = salida.stdout.toString()
@@ -112,7 +114,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
 
   test('un gate real se ejecuta por la herramienta Bash y devuelve su salida', async () => {
     const d = dir()
-    const gate = join(REPO, 'src', 'verify', 'check_hallazgo_submodulo.py')
+    const gate = join(REPO, 'bin', 'check_hallazgo_submodulo')
     // El baseline es parametro del CONSUMIDOR (DEC-04): thyrox es el
     // proveedor de este gate y no tiene source/gestion/pm/ propio, asi que
     // sin un baseline declarado el gate rehusa (h-docs-1107) en vez de
@@ -126,7 +128,7 @@ describe('los gates del proyecto corren bajo el harness (T-035)', () => {
     try {
       const p = new RecordedProvider([
         { id: 'm1', model: 'claude-opus-5', stop_reason: 'tool_use', usage: uso,
-          content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `python3 ${JSON.stringify(gate)}` } }] },
+          content: [{ type: 'tool_use', id: 'tu1', name: 'Bash', input: { command: `bash ${JSON.stringify(gate)}` } }] },
         texto('el gate corrio'),
       ])
       const r = await runLoop({

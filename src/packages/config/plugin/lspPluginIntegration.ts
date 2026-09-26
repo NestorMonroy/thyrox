@@ -240,7 +240,10 @@ export function resolvePluginLspEnvironment(
     return expanded
   }
 
-  const resolved = { ...config }
+  // config ya fue validado contra LspServerConfigSchema por el productor;
+  // LspServerConfig es un alias opaco (unknown) a nivel de paquete.
+  const typedConfig = config as z.infer<ReturnType<typeof LspServerConfigSchema>>
+  const resolved = { ...typedConfig }
 
   // Resolve command path
   if (resolved.command) {
@@ -282,6 +285,13 @@ export function resolvePluginLspEnvironment(
 }
 
 /**
+ * Guarda de tipo: comprueba que el valor sea un objeto registro.
+ */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
  * Add plugin scope to LSP server configs
  * This adds a prefix to server names to avoid conflicts between plugins
  */
@@ -292,6 +302,9 @@ export function addPluginScopeToLspServers(
   const scopedServers: Record<string, ScopedLspServerConfig> = {}
 
   for (const [name, config] of Object.entries(servers)) {
+    if (!isRecord(config)) {
+      continue
+    }
     // Add plugin prefix to server name to avoid conflicts
     const scopedName = `plugin:${pluginName}:${name}`
     scopedServers[scopedName] = {

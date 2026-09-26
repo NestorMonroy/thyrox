@@ -1,0 +1,6 @@
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(76,10): error TS2554: Expected 2 arguments, but got 1.
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(77,10): error TS2554: Expected 2 arguments, but got 1.
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(78,10): error TS2554: Expected 2 arguments, but got 1.
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(82,10): error TS2554: Expected 2 arguments, but got 1.
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(83,10): error TS2554: Expected 2 arguments, but got 1.
+src/packages/color-diff-napi/src/__tests__/color-diff.test.ts(87,10): error TS2554: Expected 2 arguments, but got 1.

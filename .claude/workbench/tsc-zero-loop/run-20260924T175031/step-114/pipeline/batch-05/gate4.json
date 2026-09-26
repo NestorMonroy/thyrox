@@ -1,0 +1,70 @@
+{
+ "reviewed": [
+  {
+   "pattern": "indexed-access-on-fixture-array-under-no-unchecked-indexed-access",
+   "files": [
+    "src/packages/provider/__tests__/providerStreaming.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-array-indexed-by-number-under-nouncheckedindexedaccess",
+   "files": [
+    "src/packages/provider/__tests__/providerStreaming.test.ts"
+   ]
+  },
+  {
+   "pattern": "renderable-message-progress-reaches-narrower-prop",
+   "files": [
+    "src/packages/repl/src/components/MessageRow.tsx"
+   ]
+  },
+  {
+   "pattern": "message-base-optional-field-vs-normalized-message-consumer",
+   "files": [
+    "src/packages/repl/src/components/MessageRow.tsx"
+   ]
+  },
+  {
+   "pattern": "renderable-message-union-not-narrowed-before-narrow-helper-call",
+   "files": [
+    "src/packages/repl/src/components/MessageRow.tsx"
+   ]
+  },
+  {
+   "pattern": "non-generic-stub-type-used-as-generic",
+   "files": [
+    "src/packages/repl/src/components/agents/new-agent-creation/CreateAgentWizard.tsx"
+   ]
+  },
+  {
+   "pattern": "grouped-switch-case-narrows-below-callee-param-type",
+   "files": [
+    "src/packages/repl/src/components/messageStaticness.ts"
+   ]
+  },
+  {
+   "pattern": "switch-over-union-missing-literal-causes-ts2366",
+   "files": [
+    "src/packages/repl/src/components/messageStaticness.ts"
+   ]
+  },
+  {
+   "pattern": "hookevent-unknown-como-clave-de-record",
+   "files": [
+    "src/packages/repl/src/hooksConfigManager.ts"
+   ]
+  },
+  {
+   "pattern": "platform-superset-assigned-to-narrower-context-interface",
+   "files": [
+    "src/packages/shell/src/Shell.ts"
+   ]
+  },
+  {
+   "pattern": "unported-settings-helper-called-via-require",
+   "files": [
+    "src/packages/shell/src/sandbox/sandbox-adapter.ts"
+   ]
+  }
+ ]
+}

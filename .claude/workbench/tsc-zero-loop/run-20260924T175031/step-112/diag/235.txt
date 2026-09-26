@@ -1,0 +1,23 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1264,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+  --- código src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx:1254-1274 ---
+   1254          elapsedTimeSeconds: elapsedSeconds,
+   1255          totalLines: lastTotalLines,
+   1256          totalBytes: lastTotalBytes,
+   1257          taskId: shellCommand.taskOutput.taskId,
+   1258          ...(timeout ? { timeoutMs } : undefined),
+   1259        }
+   1260  
+   1261        nextProgressTime = Date.now() + PROGRESS_INTERVAL_MS
+   1262      }
+   1263    } finally {
+   1264>     TaskOutput.stopPolling(shellCommand.taskOutput.taskId)
+   1265      // Ensure cleanup runs on every exit path (success, rejection, abort).
+   1266      // Skip when backgrounded — LocalShellTask owns cleanup for those.
+   1267      // Matches main #21105.
+   1268      if (!backgroundShellId && shellCommand.status !== 'backgrounded') {
+   1269        if (foregroundTaskId) {
+   1270          unregisterForeground(foregroundTaskId, setAppState)
+   1271        }
+   1272        shellCommand.cleanup()
+   1273      }
+   1274    }

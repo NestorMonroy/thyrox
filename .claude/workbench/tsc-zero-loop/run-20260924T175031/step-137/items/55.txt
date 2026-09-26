@@ -1,0 +1,27 @@
+src/packages/repl/src/components/BridgeDialog.tsx(66,5): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/components/BridgeDialog.tsx:56-76 ---
+     56  
+     57    // The URL to display/QR: session URL when connected, connect URL when ready
+     58    const displayUrl = sessionActive ? sessionUrl : connectUrl
+     59  
+     60    // Generate QR code when URL changes or QR is toggled on
+     61    useEffect(() => {
+     62      if (!showQR || !displayUrl) {
+     63        setQrText('')
+     64        return
+     65      }
+     66>     qrToString(displayUrl, {
+     67        type: 'utf8',
+     68        errorCorrectionLevel: 'L',
+     69        small: true,
+     70      })
+     71        .then(setQrText)
+     72        .catch(() => setQrText(''))
+     73    }, [showQR, displayUrl])
+     74  
+     75    useKeybindings(
+     76      {
+  Overload 1 of 3, '(text: string | QRCodeSegment[], callback: (error: Error | null | undefined, string: string) => void): void', gave the following error.
+    Object literal may only specify known properties, and 'type' does not exist in type '(error: Error | null | undefined, string: string) => void'.
+  Overload 2 of 3, '(text: string | QRCodeSegment[], options?: QRCodeToStringOptions | undefined): Promise<string>', gave the following error.
+    Object literal may only specify known properties, and 'small' does not exist in type 'QRCodeToStringOptionsOther'.

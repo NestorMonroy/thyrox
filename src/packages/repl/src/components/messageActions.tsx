@@ -5,6 +5,7 @@ import { Box, Text } from '@anthropic/ink'
 import { useKeybindings } from '@anthropic/ink/keybindings'
 import { logEvent } from '@thyrox/local-observability'
 import type {
+  ContentItem,
   NormalizedUserMessage,
   RenderableMessage,
 } from '@thyrox/agent/messageShapes'
@@ -78,6 +79,9 @@ export function isNavigableMessage(msg: NavigableMessage): boolean {
           // events) are invisible and not navigable.
           return msg.attachment.sentinel !== true
       }
+      return false
+    // El spinner de streaming no tiene estado final que abrir — no navegable.
+    case 'progress':
       return false
   }
 }
@@ -374,19 +378,22 @@ function copyTextOf(msg: NavigableMessage): string {
         .filter(Boolean)
         .join('\n\n')
     case 'system':
-      if ('content' in msg) return msg.content
+      if ('content' in msg) return String(msg.content)
       if ('error' in msg) return String(msg.error)
       return msg.subtype
     case 'attachment': {
       const a = msg.attachment
       if (a.type === 'queued_command') {
-        const p = a.prompt
+        const p = a.prompt as string | ReadonlyArray<ContentItem>
         return typeof p === 'string'
           ? p
           : p.flatMap(b => (b.type === 'text' ? [b.text] : [])).join('\n')
       }
       return `[${a.type}]`
     }
+    // Sin texto propio que copiar — mismo caso que arriba.
+    case 'progress':
+      return ''
   }
 }
 

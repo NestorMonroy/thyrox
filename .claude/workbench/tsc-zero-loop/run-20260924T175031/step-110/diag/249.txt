@@ -1,0 +1,26 @@
+src/packages/repl/src/screens/ResumeConversation.tsx(302,41): error TS2322: Type 'StandaloneAgentContext' is not assignable to type '{ name: string; color?: AgentColorName | undefined; }'.
+  --- código src/packages/repl/src/screens/ResumeConversation.tsx:292-312 ---
+    292            require('@thyrox/agent/coordinatorMode.js') as typeof import('@thyrox/agent/coordinatorMode.js')
+    293          /* eslint-enable @typescript-eslint/no-require-imports */
+    294          saveMode(isCoordinatorMode() ? 'coordinator' : 'normal')
+    295        }
+    296  
+    297        const standaloneAgentContext = computeStandaloneAgentContext(
+    298          result.agentName,
+    299          result.agentColor,
+    300        )
+    301        if (standaloneAgentContext) {
+    302>         setAppState(prev => ({ ...prev, standaloneAgentContext }))
+    303        }
+    304        void updateSessionName(result.agentName)
+    305  
+    306        restoreSessionMetadata(
+    307          forkSession ? { ...result, worktreeSession: undefined } : result,
+    308        )
+    309  
+    310        if (!forkSession) {
+    311          restoreWorktreeForResume(result.worktreeSession)
+    312          if (result.sessionId) {
+  Types of property 'color' are incompatible.
+    Type 'string | undefined' is not assignable to type 'AgentColorName | undefined'.
+      Type 'string' is not assignable to type 'AgentColorName | undefined'.

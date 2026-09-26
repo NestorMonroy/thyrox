@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1164,20): error TS18046: 'config' is of type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1154-1174 ---
+   1154    // Re-diff MCP configs after plugin state changes. Filters to
+   1155    // process-transport-supported types and carries SDK-mode servers through
+   1156    // so applyMcpServerChanges' diff doesn't close their transports.
+   1157    // Nested: needs closure access to sdkMcpConfigs, applyMcpServerChanges,
+   1158    // updateSdkMcp.
+   1159    async function applyPluginMcpDiff(): Promise<void> {
+   1160      const { servers: newConfigs } = await getAllMcpConfigs()
+   1161      const supportedConfigs: Record<string, McpServerConfigForProcessTransport> =
+   1162        {}
+   1163      for (const [name, config] of Object.entries(newConfigs)) {
+   1164>       const type = config.type
+   1165        if (
+   1166          type === undefined ||
+   1167          type === 'stdio' ||
+   1168          type === 'sse' ||
+   1169          type === 'http' ||
+   1170          type === 'sdk'
+   1171        ) {
+   1172          supportedConfigs[name] = config as McpServerConfigForProcessTransport
+   1173        }
+   1174      }
+src/packages/cli/src/headless/sdk/session/run-streaming.ts(1524,15): error TS4104: The type 'Tools' is 'readonly' and cannot be assigned to the mutable type 'Tools'.
+  --- código src/packages/cli/src/headless/sdk/session/run-streaming.ts:1514-1534 ---
+   1514            await runWithWorkload(cmd.workload ?? options.workload, async () => {
+   1515              for await (const message of ask({
+   1516                commands: uniqBy(
+   1517                  [...currentCommands, ...appState.mcp.commands],
+   1518                  'name',
+   1519                ),
+   1520                prompt: input,
+   1521                promptUuid: cmd.uuid,
+   1522                isMeta: cmd.isMeta,
+   1523                cwd: cwd(),
+   1524>               tools: allTools,
+   1525                verbose: options.verbose,
+   1526                mcpClients: allMcpClients,
+   1527                thinkingConfig: options.thinkingConfig,
+   1528                maxTurns: options.maxTurns,
+   1529                maxBudgetUsd: options.maxBudgetUsd,
+   1530                taskBudget: options.taskBudget,
+   1531                canUseTool,
+   1532                userSpecifiedModel: activeUserSpecifiedModel,
+   1533                fallbackModel: options.fallbackModel,
+   1534                jsonSchema: getInitJsonSchema() ?? options.jsonSchema,

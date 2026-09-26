@@ -1,0 +1,9 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/tools/src/agent.ts(122,84): error TS18048: 'definicion' is possibly 'undefined'.
+src/packages/tools/src/agent.ts(123,26): error TS18048: 'definicion' is possibly 'undefined'.
+src/packages/tools/src/agent.ts(155,19): error TS18048: 'definicion' is possibly 'undefined'.
+src/packages/tools/src/agent.ts(160,21): error TS18048: 'definicion' is possibly 'undefined'.

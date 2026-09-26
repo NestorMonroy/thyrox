@@ -1,0 +1,23 @@
+src/packages/app-host/src/launchRepl.tsx(32,24): error TS2322: Type 'HostSessionStore<TState>' is not assignable to type 'AppStateStore'.
+  --- código src/packages/app-host/src/launchRepl.tsx:22-39 ---
+     22    session,
+     23    appProps,
+     24    replProps,
+     25    renderAndRun,
+     26  }: LaunchReplArgs<TState, TStats, TFpsMetrics>): Promise<void> {
+     27    const { App } = await import('@thyrox/repl/components/App.js')
+     28    const { REPL } = await import('@thyrox/repl/screens/REPL.js')
+     29  
+     30    await renderAndRun(
+     31      root,
+     32>     <App {...appProps} store={session.store}>
+     33        <REPL
+     34          {...replProps}
+     35          runtimeGraph={session.runtimeGraph}
+     36        />
+     37      </App>,
+     38    )
+     39  }
+  The types returned by 'getState()' are incompatible between these types.
+    Type 'TState' is not assignable to type 'AppState'.
+      Type 'TState' is not assignable to type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "medium" | "low" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }'.

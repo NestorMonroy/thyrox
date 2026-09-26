@@ -1,0 +1,46 @@
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(207,47): error TS2554: Expected 1 arguments, but got 0.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:197-217 ---
+    197            <Box paddingLeft={2} flexDirection="column">
+    198              <Text color="warning">[ANT-ONLY] Logs:</Text>
+    199              <Text dimColor>
+    200                API calls: {getDisplayPath(getDumpPromptsPath())}
+    201              </Text>
+    202              <Text dimColor>
+    203                Debug logs: {getDisplayPath(getDebugLogPath())}
+    204              </Text>
+    205              {isDetailedProfilingEnabled() && (
+    206                <Text dimColor>
+    207>                 Startup Perf: {getDisplayPath(getStartupPerfLogPath())}
+    208                </Text>
+    209              )}
+    210            </Box>
+    211          )}
+    212          {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    213          {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    214        </>
+    215      )
+    216    }
+    217  
+src/packages/repl/src/components/LogoV2/LogoV2.tsx(221,41): error TS2345: Argument of type 'string' is not assignable to parameter of type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  --- código src/packages/repl/src/components/LogoV2/LogoV2.tsx:211-231 ---
+    211          )}
+    212          {process.env.USER_TYPE === 'ant' && <GateOverridesWarning />}
+    213          {process.env.USER_TYPE === 'ant' && <ExperimentEnrollmentNotice />}
+    214        </>
+    215      )
+    216    }
+    217  
+    218    // Calculate layout and display values
+    219    const layoutMode = getLayoutMode(columns)
+    220  
+    221>   const userTheme = resolveThemeSetting(getGlobalConfig().theme)
+    222    const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
+    223    const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+    224  
+    225    // Early return for compact mode
+    226    if (layoutMode === 'compact') {
+    227      const layoutWidth = 4 // border + padding
+    228      let welcomeMessage = formatWelcomeMessage(username)
+    229      if (stringWidth(welcomeMessage) > columns - layoutWidth) {
+    230        welcomeMessage = formatWelcomeMessage(null)
+    231      }

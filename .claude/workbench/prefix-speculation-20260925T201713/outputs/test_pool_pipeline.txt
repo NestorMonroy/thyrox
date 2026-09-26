@@ -1,0 +1,37 @@
+test_pool_pipeline:
+  ok    los ítems se agrupan por archivo
+  ok    un archivo con un trozo en curso no está listo
+  ok    listo cuando terminan todos sus trozos
+  ok    lo ya tomado no se vuelve a tomar
+  ok    una salida a medio escribir no cuenta como terminada
+  ok    aplica lo seguro y descarta lo que silencia o no encuentra
+  ok    la base es el texto ACTUAL, no HEAD
+  ok    los objetivos son los diagnósticos del archivo
+  ok    sin cambio no hay candidato
+{"batch": 1, "files": 1, "total_before": 2, "total_final": 1, "tsc_runs": 1, "kept": 1}
+  ok    ciclo completo: el lote mide en el worktree y conserva el arreglo
+  ok    y lo conservado vuelve al árbol principal
+  ok    sin tocar lo que ningún lote tomó
+  ok    el candidato toca los archivos que aplican y crea el nuevo
+  ok    un archivo con una edición que falla cae entero, con su motivo
+  ok    el archivo nuevo lleva base ausente
+  ok    los objetivos son los de los archivos tocados y los consumidores declarados
+  ok    la edición del archivo nuevo es su contenido entero
+  ok    una edición que silencia hace caer su archivo
+  ok    crear sobre un archivo existente se rechaza con el motivo del binario
+{"batch": 1, "files": 1, "total_before": 1, "total_final": 0, "tsc_runs": 1, "kept": 2}
+  ok    modo módulo: se conservan los dos archivos del porte
+  ok    y el archivo nuevo llega al árbol principal, directorio incluido
+{"batch": 1, "files": 2, "total_before": 3, "total_final": 2, "tsc_runs": 2, "kept": 1, "worktrees": 2}
+{"batch": 2, "files": 1, "total_before": 2, "total_final": 1, "tsc_runs": 1, "kept": 1, "worktrees": 2}
+  ok    dos worktrees: se conservan a y c, no b
+  ok    y llegan al árbol principal
+  ok    el primer lote midió dos prefijos a la vez
+  ok    los dos worktrees terminan iguales
+  ok    el ledger registra cada decisión
+{"batch": 1, "files": 2, "total_before": 3, "total_final": 2, "tsc_runs": 2, "kept": 1, "worktrees": 2}
+{"batch": 2, "files": 1, "total_before": 2, "total_final": 1, "tsc_runs": 1, "kept": 1, "worktrees": 2}
+  ok    lo medido encima de un rechazo vuelve y se decide después
+  ok    el paso lleva --net cuando el pipeline lo pide
+  ok    y no lo lleva cuando no
+test_pool_pipeline: 29 aserciones — 29 ok, 0 falla(s)

@@ -97,11 +97,11 @@ describe('segmentTextByHighlights', () => {
   // Properties
   test('preserves highlight color property', () => {
     const highlights: TextHighlight[] = [
-      { start: 0, end: 3, color: 'primary' as any, priority: 0 },
+      { start: 0, end: 3, color: 'success', priority: 0 },
     ]
     const segments = segmentTextByHighlights('abc', highlights)
     const highlighted = segments.find(s => s.highlight)
-    expect(highlighted?.highlight?.color).toBe('primary')
+    expect(highlighted?.highlight?.color).toBe('success')
   })
 
   test('preserves highlight priority property', () => {

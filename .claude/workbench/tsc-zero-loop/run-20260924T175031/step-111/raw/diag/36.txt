@@ -1,0 +1,2 @@
+src/packages/agent/loop/context/autocompact.ts(91,27): error TS2345: Argument of type 'Message | undefined' is not assignable to parameter of type 'Message'.
+  Type 'undefined' is not assignable to type 'Message'.

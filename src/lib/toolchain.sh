@@ -180,6 +180,44 @@ function thyrox_toolchain_parallel_home() {
 }
 export -f thyrox_toolchain_parallel_home
 
+# @description Adquiere un binario externo: el contrato comun de todo
+# `require_*` de esta cadena, en un solo sitio. Tres desenlaces:
+#
+#   presente                       -> 0, sin efectos;
+#   ausente y sin opt-in           -> 2, sin conteo;
+#   ausente con opt-in             -> instala y RE-COMPRUEBA el binario; el
+#                                     codigo de salida del instalador no
+#                                     decide (puede instalar en otro prefijo,
+#                                     o el proxy devolver otra cosa).
+#
+# El rechazo no emite conteo: un cero ahi no distinguiria «no hay» de «no
+# pude medir» (sub-patron D de `metrica-decide-la-conclusion.md`).
+# @arg $1 string El binario a resolver.
+# @arg $2 string El NOMBRE de la variable de opt-in (p. ej. THYROX_INSTALL_GAWK).
+# @arg $3 string El comando que lo instala.
+# @arg $4 string Opcional: el paquete que lo trae, para nombrarlo en el rechazo.
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar.
+function thyrox_toolchain_acquire_binary() {
+  local bin="$1" opt_in_var="$2" install_cmd="$3" package="${4:-}"
+  command -v "$bin" >/dev/null 2>&1 && return 0
+  if [[ "${!opt_in_var:-}" != "1" ]]; then
+    echo "thyrox_toolchain: falta '$bin'${package:+ (paquete $package)} y la instalacion es opt-in." >&2
+    echo "                  Reintenta con $opt_in_var=1." >&2
+    echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
+    echo "                  «no hay» de «no pude medir»." >&2
+    return 2
+  fi
+  $install_cmd >&2 2>&1 || true
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
+    echo "                  Se re-comprueba el binario, no se lee su exit." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_acquire_binary
+
 # @description Asegura GNU parallel, idempotente y con la instalacion como
 # opt-in. Adopta el check-then-act de `vvv: provision/provision-helpers.sh:776`
 # (`vvv_is_apt_pkg_installed`): se pregunta por el estado antes de actuar, y
@@ -202,23 +240,8 @@ export -f thyrox_toolchain_parallel_home
 function thyrox_toolchain_require_parallel() {
   local bin="${THYROX_TOOLCHAIN_PARALLEL_BIN:-parallel}"
 
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    if [[ "${THYROX_INSTALL_PARALLEL:-}" != "1" ]]; then
-      echo "thyrox_toolchain: falta '$bin' y la instalacion es opt-in." >&2
-      echo "                  Reintenta con THYROX_INSTALL_PARALLEL=1." >&2
-      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
-      echo "                  «no hay» de «no pude medir»." >&2
-      return 2
-    fi
-    # El codigo de salida del instalador NO decide: puede instalar en otro
-    # interprete, o el proxy puede devolver algo que no es el paquete.
-    $THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD >&2 2>&1 || true
-    if ! command -v "$bin" >/dev/null 2>&1; then
-      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
-      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
-      return 2
-    fi
-  fi
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_PARALLEL \
+    "$THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD" parallel || return 2
 
   # `moreutils` instala otro `/usr/bin/parallel`. La presencia y el nombre
   # coinciden, pero su CLI no implementa `--jobs`, que es el contrato que
@@ -251,6 +274,71 @@ function thyrox_toolchain_require_parallel() {
   return 0
 }
 export -f thyrox_toolchain_require_parallel
+
+# @description El comando que instala el extractor de texto de PDF. Declarado
+# por la misma razon que su hermano de parallel: un control necesita inyectar
+# un instalador que MIENTA para probar que el exito se re-comprueba.
+export THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD="${THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD:-sudo apt-get install -y poppler-utils}"
+
+# @description Asegura `pdftotext` (poppler-utils), el extractor primario de
+# `src/corpus/pdf_to_text.py`. Mismo contrato que
+# `thyrox_toolchain_require_parallel`: instalar es opt-in
+# (`THYROX_INSTALL_PDF_TEXT=1`), el rechazo no emite conteo y el exito se
+# prueba re-comprobando el binario, no leyendo el exit del instalador.
+#
+# `bin/pdf_to_text` es el envoltorio; el extractor es un binario de sistema y
+# por eso no viaja en `bin/`. Esta funcion es lo que lo hace pedible desde el
+# arbol en vez de instalarlo a mano.
+# @noargs
+# @exitcode 0 El binario esta disponible.
+# @exitcode 2 No esta, y no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_pdf_text() {
+  thyrox_toolchain_acquire_binary "${THYROX_TOOLCHAIN_PDFTOTEXT_BIN:-pdftotext}" \
+    THYROX_INSTALL_PDF_TEXT "$THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD" poppler-utils
+}
+export -f thyrox_toolchain_require_pdf_text
+
+# @description El comando que instala GNU Time. Declarado por la misma razon
+# que sus hermanos: un control necesita un instalador que MIENTA.
+export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
+
+# @description La ruta de GNU Time. Absoluta a proposito: `time` es tambien
+# una palabra reservada de bash, y `command -v time` la responde aunque el
+# binario no exista.
+# @noargs
+# @stdout La ruta del binario.
+function thyrox_toolchain_gnu_time_bin() {
+  echo "${THYROX_TOOLCHAIN_TIME_BIN:-/usr/bin/time}"
+}
+export -f thyrox_toolchain_gnu_time_bin
+
+# @description Asegura GNU Time, que da la memoria pico (max RSS) de un
+# comando ademas de su pared y su CPU; el `time` de bash no da memoria. Mismo
+# contrato que `thyrox_toolchain_require_pdf_text` (opt-in con
+# `THYROX_INSTALL_GNU_TIME=1`, rechazo sin conteo, exito re-comprobado) y una
+# identidad como la de parallel: el binario tiene que declararse GNU, porque
+# el formato `-f` que se consume es el suyo.
+# @noargs
+# @exitcode 0 GNU Time esta disponible.
+# @exitcode 2 No esta, no es GNU, o no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_gnu_time() {
+  local bin; bin="$(thyrox_toolchain_gnu_time_bin)"
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_GNU_TIME \
+    "$THYROX_TOOLCHAIN_TIME_INSTALL_CMD" time || return 2
+  # Expandido desde una variable, `time` ya no es la palabra reservada: se
+  # ejecuta como programa, y si no existe la identidad sale vacia.
+  local version
+  version="$("$bin" --version 2>&1)" || version=""
+  # Se busca la marca, no una version: el paquete de Ubuntu imprime
+  # "time (GNU Time) UNKNOWN".
+  if [[ "$version" != *"GNU Time"* ]]; then
+    echo "thyrox_toolchain: '$bin' no es GNU time; su formato -f no es el que se consume." >&2
+    echo "                  Instala el paquete time con THYROX_INSTALL_GNU_TIME=1." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_gnu_time
 
 # @description El binario de `awk` que los guiones de este arbol invocan.
 #
@@ -347,23 +435,8 @@ function thyrox_toolchain_require_gawk() {
   local bin="${THYROX_TOOLCHAIN_AWK_BIN:-awk}"
 
   # Eje 1 — PRESENCIA.
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    if [[ "${THYROX_INSTALL_GAWK:-}" != "1" ]]; then
-      echo "thyrox_toolchain: '$bin' no resuelve y la instalacion es opt-in." >&2
-      echo "                  Reintenta con THYROX_INSTALL_GAWK=1." >&2
-      echo "                  NO se emite conteo: un cero aqui no distinguiria" >&2
-      echo "                  «no hay» de «no pude medir»." >&2
-      return 2
-    fi
-    # El codigo de salida del instalador NO decide: puede instalar en otro
-    # prefijo, o el proxy puede devolver algo que no es el paquete.
-    $THYROX_TOOLCHAIN_GAWK_INSTALL_CMD >&2 2>&1 || true
-    if ! command -v "$bin" >/dev/null 2>&1; then
-      echo "thyrox_toolchain: el instalador termino y '$bin' sigue sin resolver." >&2
-      echo "                  Se re-comprueba el binario, no se lee su exit." >&2
-      return 2
-    fi
-  fi
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_GAWK \
+    "$THYROX_TOOLCHAIN_GAWK_INSTALL_CMD" gawk || return 2
 
   # Eje 2 — CONDUCTA. Es el que la presencia no puede ver.
   if ! thyrox_toolchain_awk_supports_intervals "$bin"; then

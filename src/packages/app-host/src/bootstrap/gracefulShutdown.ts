@@ -536,7 +536,10 @@ export function getPendingShutdownForTesting(): Promise<void> | undefined {
 // Función de apagado ordenado que drena el event loop
 export async function gracefulShutdown(
   exitCode = 0,
-  reason: ExitReason = 'other',
+  // 'fatal' es una razón interna del detector de bucle de excepciones
+  // no atrapadas (línea de abajo) y no forma parte del contrato público
+  // ExitReason del SDK, que sólo cubre razones de sesión interactiva.
+  reason: ExitReason | 'fatal' = 'other',
   options?: {
     getAppState?: () => AppState
     setAppState?: (f: (prev: AppState) => AppState) => void
@@ -635,7 +638,7 @@ export async function gracefulShutdown(
   // Registra el rendimiento de arranque antes de que el apagado de
   // analytics vacíe/cancele timers
   try {
-    profileReport()
+    profileReport({ sessionId: getSessionId() })
   } catch {
     // Ignora errores de profiling durante el apagado
   }

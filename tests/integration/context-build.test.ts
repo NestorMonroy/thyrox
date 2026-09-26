@@ -5,13 +5,24 @@ import {
   getLargeMemoryFiles,
 } from '@thyrox/storage/claudemd.js'
 import { buildEffectiveSystemPrompt } from '@thyrox/provider/systemPrompt.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+
+// Los campos que el contrato exige y que estas pruebas no ejercitan: sin
+// agente del hilo principal, `toolUseContext` no se lee.
+const noAgent = {
+  mainThreadAgentDefinition: undefined,
+  toolUseContext: { options: {} as ToolUseContext['options'] },
+  customSystemPrompt: undefined,
+  appendSystemPrompt: undefined,
+}
 
 // ─── CLAUDE.md Integration with System Prompt ─────────────────────────
 
 describe('Context build: CLAUDE.md + system prompt integration', () => {
   test('buildEffectiveSystemPrompt passes through default prompt', () => {
     const result = buildEffectiveSystemPrompt({
-      defaultSystemPrompt: 'You are Claude.',
+      ...noAgent,
+      defaultSystemPrompt: ['You are Claude.'],
     })
     // Result is an array of strings (may be split differently)
     const joined = Array.from(result).join('')
@@ -20,7 +31,8 @@ describe('Context build: CLAUDE.md + system prompt integration', () => {
 
   test('buildEffectiveSystemPrompt handles empty prompts', () => {
     const result = buildEffectiveSystemPrompt({
-      defaultSystemPrompt: '',
+      ...noAgent,
+      defaultSystemPrompt: [''],
     })
     const joined = Array.from(result).join('')
     expect(joined).toBe('')
@@ -28,7 +40,8 @@ describe('Context build: CLAUDE.md + system prompt integration', () => {
 
   test('buildEffectiveSystemPrompt with overrideSystemPrompt replaces everything', () => {
     const result = buildEffectiveSystemPrompt({
-      defaultSystemPrompt: 'Default',
+      ...noAgent,
+      defaultSystemPrompt: ['Default'],
       overrideSystemPrompt: 'Override',
     })
     const joined = Array.from(result).join('')
@@ -37,7 +50,8 @@ describe('Context build: CLAUDE.md + system prompt integration', () => {
 
   test('buildEffectiveSystemPrompt with customSystemPrompt replaces default', () => {
     const result = buildEffectiveSystemPrompt({
-      defaultSystemPrompt: 'Default',
+      ...noAgent,
+      defaultSystemPrompt: ['Default'],
       customSystemPrompt: 'Custom',
     })
     const joined = Array.from(result).join('')
@@ -46,7 +60,8 @@ describe('Context build: CLAUDE.md + system prompt integration', () => {
 
   test('buildEffectiveSystemPrompt with appendSystemPrompt includes both', () => {
     const result = buildEffectiveSystemPrompt({
-      defaultSystemPrompt: 'Main prompt',
+      ...noAgent,
+      defaultSystemPrompt: ['Main prompt'],
       appendSystemPrompt: 'Appended',
     })
     const joined = Array.from(result).join('')
@@ -94,8 +109,8 @@ describe('Context build: large memory file filtering', () => {
 
   test('getLargeMemoryFiles returns empty when all files are small', () => {
     const files = [
-      { path: '/a/CLAUDE.md', content: 'small' },
-      { path: '/b/CLAUDE.md', content: 'also small' },
+      { path: '/a/CLAUDE.md', type: 'Project' as const, content: 'small' },
+      { path: '/b/CLAUDE.md', type: 'Project' as const, content: 'also small' },
     ]
     expect(getLargeMemoryFiles(files)).toEqual([])
   })

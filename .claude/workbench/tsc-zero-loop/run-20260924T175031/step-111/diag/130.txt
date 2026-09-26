@@ -1,0 +1,23 @@
+src/packages/output/src/render/exportRenderer.tsx(65,13): error TS18048: 'm.message' is possibly 'undefined'.
+  --- código src/packages/output/src/render/exportRenderer.tsx:55-75 ---
+     55      </KeybindingProvider>
+     56    )
+     57  }
+     58  
+     59  // Upper-bound how many NormalizedMessages a Message can produce.
+     60  // normalizeMessages splits one Message with N content blocks into N
+     61  // NormalizedMessages — 1:1 with block count. String content = 1 block.
+     62  // AttachmentMessage etc. have no .message and normalize to ≤1.
+     63  function normalizedUpperBound(m: Message): number {
+     64    if (!('message' in m)) return 1
+     65>   const c = m.message.content
+     66    return Array.isArray(c) ? c.length : 1
+     67  }
+     68  
+     69  /**
+     70   * Streams rendered messages in chunks, ANSI codes preserved. Each chunk is a
+     71   * fresh renderToAnsiString — yoga layout tree + Ink's screen buffer are sized
+     72   * to the tallest CHUNK instead of the full session. Measured (Mar 2026,
+     73   * 538-msg session): −55% plateau RSS vs a single full render. The sink owns
+     74   * the output — write to stdout for `[` dump-to-scrollback, appendFile for `v`.
+     75   *

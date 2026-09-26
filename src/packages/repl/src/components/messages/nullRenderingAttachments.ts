@@ -1,5 +1,4 @@
-import type { Attachment } from '@thyrox/agent/attachments.js'
-import type { Message, NormalizedMessage } from '@thyrox/agent/messageShapes'
+import type { AttachmentMessage, Message, NormalizedMessage } from '@thyrox/agent/messageShapes'
 
 /**
  * Attachment types that AttachmentMessage renders as `null` unconditionally
@@ -44,11 +43,11 @@ const NULL_RENDERING_TYPES = [
   'current_session_memory',
   'compaction_reminder',
   'date_change',
-] as const satisfies readonly Attachment['type'][]
+] as const satisfies readonly AttachmentMessage['attachment']['type'][]
 
 export type NullRenderingAttachmentType = (typeof NULL_RENDERING_TYPES)[number]
 
-const NULL_RENDERING_ATTACHMENT_TYPES: ReadonlySet<Attachment['type']> =
+const NULL_RENDERING_ATTACHMENT_TYPES: ReadonlySet<AttachmentMessage['attachment']['type']> =
   new Set(NULL_RENDERING_TYPES)
 
 /**
@@ -63,6 +62,6 @@ export function isNullRenderingAttachment(
 ): boolean {
   return (
     msg.type === 'attachment' &&
-    NULL_RENDERING_ATTACHMENT_TYPES.has(msg.attachment.type as Attachment['type'])
+    NULL_RENDERING_ATTACHMENT_TYPES.has(msg.attachment.type as AttachmentMessage['attachment']['type'])
   )
 }

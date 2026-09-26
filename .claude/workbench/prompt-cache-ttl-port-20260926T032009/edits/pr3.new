@@ -1,0 +1,8 @@
+# `cerrado`: su nieto lee de una tubería cuyo escritor ya salió — la forma de
+# cada ítem del pool (`{ cat plantilla; printf item; } | claude -p`). Leer da
+# EOF, no espera: avisar ahí es una falsa alarma (medido en el paso 163).
+L3=$(fixture_file)
+nohup bash -c "echo hola | { sleep 1; exec sleep 30; }" </dev/null >"$L3" 2>&1 & P3=$!; disown $P3
+sleep 2
+bash "$GUION" register canal "$L1" "$P1" >/dev/null
+bash "$GUION" register cerrado "$L3" "$P3" >/dev/null

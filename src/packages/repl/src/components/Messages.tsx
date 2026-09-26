@@ -506,7 +506,7 @@ const MessagesImpl = ({
   // streamingToolUses updates on every input_json_delta while normalizedMessages
   // stays stable — precompute the Set so the filter is O(k) not O(n×k) per chunk.
   const normalizedToolUseIDs = useMemo(
-    () => getToolUseIDs(normalizedMessages),
+    () => new Set(normalizedMessages.flatMap(getToolUseIDs)),
     [normalizedMessages],
   )
 
@@ -532,7 +532,10 @@ const MessagesImpl = ({
         // fresh randomUUID → unstable React keys → component remounts →
         // Ink rendering corruption (overlapping text from stale DOM nodes).
         msg.uuid = deriveUUID(streamingToolUse.contentBlock.id as UUID, 0)
-        return normalizeMessages([msg])
+        return normalizeMessages([msg]).filter(
+          (m): m is Exclude<NormalizedMessage, ProgressMessageType> =>
+            m.type !== 'progress',
+        )
       }),
     [streamingToolUsesWithoutInProgress],
   )

@@ -1,0 +1,46 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,24): error TS2339: Property 'meta' does not exist on type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:417-437 ---
+    417    logMCPDebug(serverName, 'Channel notifications registered')
+    418    logEvent('tengu_mcp_channel_enable', { plugin: pluginId })
+    419  
+    420    // Identical enqueue shape to the interactive register block in
+    421    // useManageMCPConnections. drainCommandQueue processes it between turns —
+    422    // channel messages queue at priority 'next' and are seen by the model on
+    423    // the turn after they arrive.
+    424    connection.client.setNotificationHandler(
+    425      ChannelMessageNotificationSchema(),
+    426      async notification => {
+    427>       const { content, meta } = notification.params
+    428        logMCPDebug(
+    429          serverName,
+    430          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    431        )
+    432        logEvent('tengu_mcp_channel_message', {
+    433          content_length: content.length,
+    434          meta_key_count: Object.keys(meta ?? {}).length,
+    435          entry_kind:
+    436            'plugin' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    437          is_dev: false,
+src/packages/cli/src/headless/sdk/control/handlers.ts(503,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:493-513 ---
+    493        ? (`${entry.name}@${entry.marketplace}` as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS)
+    494        : undefined
+    495  
+    496    logMCPDebug(
+    497      connection.name,
+    498      'Channel notifications re-registered after reconnect',
+    499    )
+    500    connection.client.setNotificationHandler(
+    501      ChannelMessageNotificationSchema(),
+    502      async notification => {
+    503>       const { content, meta } = notification.params
+    504        logMCPDebug(
+    505          connection.name,
+    506          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    507        )
+    508        logEvent('tengu_mcp_channel_message', {
+    509          content_length: content.length,
+    510          meta_key_count: Object.keys(meta ?? {}).length,
+    511          entry_kind:
+    512            entry?.kind as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    513          is_dev: entry?.dev ?? false,

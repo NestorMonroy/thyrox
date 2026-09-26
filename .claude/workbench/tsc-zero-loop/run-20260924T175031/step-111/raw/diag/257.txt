@@ -1,0 +1,11 @@
+src/packages/shell/src/Shell.ts(47,7): error TS2345: Argument of type '((lastLines: string, allLines: string, totalLines: number, totalBytes: number, isIncomplete: boolean) => void) | null | undefined' is not assignable to parameter of type 'ProgressCallback | null'.
+  Type 'undefined' is not assignable to type 'ProgressCallback | null'.
+src/packages/shell/src/Shell.ts(62,5): error TS2322: Type '() => Promise<string | null>' is not assignable to type '() => Promise<string>'.
+  Type 'Promise<string | null>' is not assignable to type 'Promise<string>'.
+    Type 'string | null' is not assignable to type 'string'.
+      Type 'null' is not assignable to type 'string'.
+src/packages/shell/src/Shell.ts(64,50): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'Partial<{ network: { allowedDomains: string[]; deniedDomains: string[]; strictAllowlist?: boolean | undefined; allowUnixSockets?: string[] | undefined; allowAllUnixSockets?: boolean | undefined; ... 7 more ...; parentProxy?: { ...; } | undefined; }; ... 12 more ...; windows?: { ...; } | undefined; }> | undefined'.
+  Type 'string' has no properties in common with type 'Partial<{ network: { allowedDomains: string[]; deniedDomains: string[]; strictAllowlist?: boolean | undefined; allowUnixSockets?: string[] | undefined; allowAllUnixSockets?: boolean | undefined; ... 7 more ...; parentProxy?: { ...; } | undefined; }; ... 12 more ...; windows?: { ...; } | undefined; }>'.
+src/packages/shell/src/Shell.ts(70,5): error TS2322: Type '(() => Platform) & { cache?: { clear: () => void; } | undefined; }' is not assignable to type '() => "linux" | "windows" | "macos"'.
+  Type 'Platform' is not assignable to type '"linux" | "windows" | "macos"'.
+    Type '"unknown"' is not assignable to type '"linux" | "windows" | "macos"'.

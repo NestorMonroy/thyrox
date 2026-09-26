@@ -39,6 +39,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (!cmd.userFacingName) {
+      throw new Error('expected userFacingName')
+    }
     expect(cmd.userFacingName()).toBe('visible-name')
   })
 
@@ -52,6 +55,9 @@ describe('createMovedToPluginCommand — shape', () => {
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
     expect(cmd.description).toBe('desc here')
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.progressMessage).toBe('in-progress')
   })
 
@@ -64,6 +70,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.source).toBe('builtin')
   })
 
@@ -76,6 +85,9 @@ describe('createMovedToPluginCommand — shape', () => {
       pluginCommand: 'c',
       getPromptWhileMarketplaceIsPrivate: async () => [],
     })
+    if (cmd.type !== 'prompt') {
+      throw new Error('expected prompt command')
+    }
     expect(cmd.contentLength).toBe(0)
   })
 })
@@ -200,7 +212,7 @@ describe('createMovedToPluginCommand — getPromptForCommand routing', () => {
 
   test('args are passed verbatim to fallback', async () => {
     process.env.USER_TYPE = 'external'
-    const fallback = mock(async () => [{ type: 'text' as const, text: '' }])
+    const fallback = mock(async (_args: string, _context: unknown) => [{ type: 'text' as const, text: '' }])
     const cmd = createMovedToPluginCommand({
       name: 'cmd',
       description: '',

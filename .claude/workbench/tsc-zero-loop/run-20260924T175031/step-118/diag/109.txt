@@ -1,0 +1,23 @@
+src/packages/config/plugin/refresh.ts(183,35): error TS2339: Property 'allAgents' does not exist on type 'unknown[]'.
+  --- código src/packages/config/plugin/refresh.ts:173-193 ---
+    173    }, 0)
+    174  
+    175    logForDebugging(
+    176      `refreshActivePlugins: ${enabled.length} enabled, ${pluginCommands.length} commands, ${agentDefinitions.allAgents.length} agents, ${hook_count} hooks, ${mcp_count} MCP, ${lsp_count} LSP`,
+    177    )
+    178  
+    179    return {
+    180      enabled_count: enabled.length,
+    181      disabled_count: disabled.length,
+    182      command_count: pluginCommands.length,
+    183>     agent_count: agentDefinitions.allAgents.length,
+    184      hook_count,
+    185      mcp_count,
+    186      lsp_count,
+    187      error_count: errors.length + (hook_load_failed ? 1 : 0),
+    188      agentDefinitions,
+    189      pluginCommands,
+    190    }
+    191  }
+    192  
+    193  /**

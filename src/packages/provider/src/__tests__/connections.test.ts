@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import type { ConnectionRecord } from '@thyrox/config'
 import {
   CLAUDE_AI_CONNECTION_ID,
   CODEX_CONNECTION_ID,
   CONSOLE_CONNECTION_ID,
+  type ConnectionRecord,
   composeModelId,
   generateConnectionId,
   getDefaultModelsForProtocol,

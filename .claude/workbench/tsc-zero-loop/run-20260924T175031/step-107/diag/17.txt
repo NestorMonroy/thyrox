@@ -1,0 +1,97 @@
+patron: indexed-access-narrowed-by-loop-bound-not-visible-to-tsc
+senal_del_verificador: TS18048: '\w+' is possibly 'undefined'\.
+fix_generico: Cuando un valor sale de un índice de array/Buffer (`arr[i]`) y `noUncheckedIndexedAccess` lo tipa como `T | undefined` aunque una condición de bucle ya garantice el rango, se agrega una guarda explícita (`if (x === undefined) break`/`continue`/`return`) inmediatamente después de leerlo, en vez de usar `!` — así el flujo que ya lo garantiza queda visible para tsc y el resto del bloque usa el tipo estrecho.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/repl/src/components/MessageSelector.tsx(814,42): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:804-824 ---
+    804        <Box width="100%">
+    805          <Text italic color={color} dimColor={dimColor}>
+    806            (current)
+    807          </Text>
+    808        </Box>
+    809      )
+    810    }
+    811  
+    812    const content = userMessage.message.content
+    813    const lastBlock =
+    814>     typeof content === 'string' ? null : content[content.length - 1]
+    815    const rawMessageText =
+    816      typeof content === 'string'
+    817        ? content.trim()
+    818        : lastBlock && isTextBlock(lastBlock)
+    819          ? lastBlock.text.trim()
+    820          : '(no prompt)'
+    821  
+    822    // Strip display-unfriendly tags (like <ide_opened_file>) before showing in the list
+    823    const messageText = stripDisplayTags(rawMessageText)
+    824  
+src/packages/repl/src/components/MessageSelector.tsx(814,50): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:804-824 ---
+    804        <Box width="100%">
+    805          <Text italic color={color} dimColor={dimColor}>
+    806            (current)
+    807          </Text>
+    808        </Box>
+    809      )
+    810    }
+    811  
+    812    const content = userMessage.message.content
+    813    const lastBlock =
+    814>     typeof content === 'string' ? null : content[content.length - 1]
+    815    const rawMessageText =
+    816      typeof content === 'string'
+    817        ? content.trim()
+    818        : lastBlock && isTextBlock(lastBlock)
+    819          ? lastBlock.text.trim()
+    820          : '(no prompt)'
+    821  
+    822    // Strip display-unfriendly tags (like <ide_opened_file>) before showing in the list
+    823    const messageText = stripDisplayTags(rawMessageText)
+    824  
+src/packages/repl/src/components/MessageSelector.tsx(981,42): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:971-991 ---
+    971    }
+    972    if (message.isMeta) {
+    973      return false
+    974    }
+    975    if (message.isCompactSummary || message.isVisibleInTranscriptOnly) {
+    976      return false
+    977    }
+    978  
+    979    const content = message.message.content
+    980    const lastBlock =
+    981>     typeof content === 'string' ? null : content[content.length - 1]
+    982    const messageText =
+    983      typeof content === 'string'
+    984        ? content.trim()
+    985        : lastBlock && isTextBlock(lastBlock)
+    986          ? lastBlock.text.trim()
+    987          : ''
+    988  
+    989    // Filter out non-user-authored messages (command outputs, task notifications, ticks).
+    990    if (
+    991      messageText.indexOf(`<${LOCAL_COMMAND_STDOUT_TAG}>`) !== -1 ||
+src/packages/repl/src/components/MessageSelector.tsx(981,50): error TS18048: 'content' is possibly 'undefined'.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:971-991 ---
+    971    }
+    972    if (message.isMeta) {
+    973      return false
+    974    }
+    975    if (message.isCompactSummary || message.isVisibleInTranscriptOnly) {
+    976      return false
+    977    }
+    978  
+    979    const content = message.message.content
+    980    const lastBlock =
+    981>     typeof content === 'string' ? null : content[content.length - 1]
+    982    const messageText =
+    983      typeof content === 'string'
+    984        ? content.trim()
+    985        : lastBlock && isTextBlock(lastBlock)
+    986          ? lastBlock.text.trim()
+    987          : ''
+    988  
+    989    // Filter out non-user-authored messages (command outputs, task notifications, ticks).
+    990    if (
+    991      messageText.indexOf(`<${LOCAL_COMMAND_STDOUT_TAG}>`) !== -1 ||

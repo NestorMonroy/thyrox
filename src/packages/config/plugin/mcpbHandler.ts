@@ -669,9 +669,10 @@ export async function checkMcpbChanged(
 
     const cachedTime = new Date(metadata.cachedAt).getTime()
     // Floor to match the ms precision of cachedAt (ISO string). Sub-ms
-    // precision on mtimeMs would make a freshly-cached file appear "newer"
-    // than its own cache timestamp when both happen in the same millisecond.
-    const fileTime = Math.floor(stats.mtimeMs)
+    // precision on mtimeMs sería equivalente a mtime.getTime() y haría
+    // que un archivo recién cacheado pareciera "más nuevo" que su propio
+    // timestamp de caché cuando ambos ocurren en el mismo milisegundo.
+    const fileTime = Math.floor(stats.mtime.getTime())
 
     if (fileTime > cachedTime) {
       logForDebugging(
@@ -839,7 +840,7 @@ export async function loadMcpbFile(
   const unzipped = await unzipFile(Buffer.from(mcpbData))
   // fflate doesn't surface external_attr — parse the central directory so
   // native MCP server binaries keep their exec bit after extraction.
-  const modes = parseZipModes(mcpbData)
+  const modes = parseZipModes(mcpbData) as Record<string, number>
 
   // Check for manifest.json
   const manifestData = unzipped['manifest.json']

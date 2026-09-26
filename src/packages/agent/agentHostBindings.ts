@@ -79,7 +79,7 @@ export function buildAgentHostExtraBindings(): Record<string, unknown> {
       try {
         return require('@thyrox/provider/fastMode.js').getFastModeState(model, fastMode)
       } catch {
-        return null
+        return 'off'
       }
     },
     getInMemoryErrors: () => {
@@ -93,7 +93,7 @@ export function buildAgentHostExtraBindings(): Record<string, unknown> {
       try {
         return require('@thyrox/provider/errors.js').categorizeRetryableAPIError(error)
       } catch {
-        return error
+        return 'unknown'
       }
     },
     microcompactMessages: (...args: unknown[]) => {

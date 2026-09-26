@@ -52,6 +52,7 @@ RAIZ="$(thyrox_root)" || exit 2
 # caso que deja un trabajo colgado bloquearía el turno de quien la corre.
 _ledger_home="$(fixture_dir)"
 export THYROX_JOBS_DIR="$_ledger_home/ledger"
+export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 BG="$RAIZ/src/session/bg.sh"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"

@@ -1,0 +1,118 @@
+{
+ "reviewed": [
+  {
+   "pattern": "ad-hoc-subtype-not-in-system-message-union",
+   "files": [
+    "src/packages/agent/__tests__/compactionSnipProjection.test.ts"
+   ]
+  },
+  {
+   "pattern": "message-fixture-missing-required-base-fields",
+   "files": [
+    "src/packages/agent/__tests__/compactionSnipProjection.test.ts"
+   ]
+  },
+  {
+   "pattern": "fixture-literal-subtype-not-in-discriminated-union",
+   "files": [
+    "src/packages/agent/__tests__/snipProjection.test.ts"
+   ]
+  },
+  {
+   "pattern": "literal-with-wrong-typed-discriminated-field-breaks-as-cast-overlap",
+   "files": [
+    "src/packages/agent/__tests__/toolSearchPure.test.ts"
+   ]
+  },
+  {
+   "pattern": "minimal-context-shape-passed-to-full-appstate-param",
+   "files": [
+    "src/packages/agent/goalStopHook.ts"
+   ]
+  },
+  {
+   "pattern": "host-binding-fuera-del-subconjunto-local-de-host-ts",
+   "files": [
+    "src/packages/agent/internal/fileHistoryCore.ts"
+   ]
+  },
+  {
+   "pattern": "log-event-metadata-optional-string-to-undefined",
+   "files": [
+    "src/packages/agent/internal/loopDynamicCore.ts"
+   ]
+  },
+  {
+   "pattern": "array-index-in-loop-condition-without-narrowing",
+   "files": [
+    "src/packages/agent/loop/context/autocompact.ts"
+   ]
+  },
+  {
+   "pattern": "team-mem-paths-wrong-method-name",
+   "files": [
+    "src/packages/agent/sessionFileAccessHooks.ts"
+   ]
+  },
+  {
+   "pattern": "hook-callback-local-shim-vs-sdk-input-type",
+   "files": [
+    "src/packages/agent/sessionFileAccessHooks.ts"
+   ]
+  },
+  {
+   "pattern": "optional-message-content-iterated-without-array-guard",
+   "files": [
+    "src/packages/agent/sessionTools/analyzeContext.ts"
+   ]
+  },
+  {
+   "pattern": "optional-field-not-narrowed-by-sibling-discriminant",
+   "files": [
+    "src/packages/agent/sessionTools/transcriptSearch.ts"
+   ]
+  },
+  {
+   "pattern": "assertion-narrowing-index-signature-property",
+   "files": [
+    "src/packages/agent/sideQuestion.ts"
+   ]
+  },
+  {
+   "pattern": "optional-field-passed-to-required-param",
+   "files": [
+    "src/packages/agent/workflow/workflowWorktree.ts"
+   ]
+  },
+  {
+   "pattern": "regex-capture-group-possibly-undefined",
+   "files": [
+    "src/packages/app-host/src/__tests__/declaredDependencies.test.ts"
+   ]
+  },
+  {
+   "pattern": "bun-test-todo-requires-fn-argument",
+   "files": [
+    "src/packages/app-host/src/__tests__/declaredDependencies.test.ts"
+   ]
+  },
+  {
+   "pattern": "comparacion-boolean-contra-retorno-void-declarado",
+   "files": [
+    "src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts"
+   ]
+  },
+  {
+   "pattern": "profile-report-missing-required-sessionid",
+   "files": [
+    "src/packages/app-host/src/bootstrap/gracefulShutdown.ts"
+   ]
+  },
+  {
+   "pattern": "optional-git-getter-into-required-config-field",
+   "files": [
+    "src/packages/bridge/src/bridgeMain.ts"
+   ]
+  }
+ ]
+}

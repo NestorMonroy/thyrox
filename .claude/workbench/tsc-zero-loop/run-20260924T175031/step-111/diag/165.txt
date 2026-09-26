@@ -1,0 +1,92 @@
+src/packages/provider/src/referral.ts(117,11): error TS2339: Property 'eligible' does not exist on type '{ timestamp: number; }'.
+  --- código src/packages/provider/src/referral.ts:107-127 ---
+    107  
+    108    if (!cachedEntry) {
+    109      // No cached entry, needs fetch
+    110      return {
+    111        eligible: false,
+    112        needsRefresh: true,
+    113        hasCache: false,
+    114      }
+    115    }
+    116  
+    117>   const { eligible, timestamp } = cachedEntry
+    118    const now = Date.now()
+    119    const needsRefresh = now - timestamp > CACHE_EXPIRATION_MS
+    120  
+    121    return {
+    122      eligible,
+    123      needsRefresh,
+    124      hasCache: true,
+    125    }
+    126  }
+    127  
+src/packages/provider/src/referral.ts(156,23): error TS2339: Property 'referrer_reward' does not exist on type '{ timestamp: number; }'.
+  --- código src/packages/provider/src/referral.ts:146-166 ---
+    146  
+    147  /**
+    148   * Get cached referrer reward info from eligibility cache
+    149   * Returns the reward info if the user is in a v1 campaign, null otherwise
+    150   */
+    151  export function getCachedReferrerReward(): ReferrerRewardInfo | null {
+    152    const orgId = getOauthAccountInfo()?.organizationUuid
+    153    if (!orgId) return null
+    154    const config = getGlobalConfig()
+    155    const cachedEntry = config.passesEligibilityCache?.[orgId]
+    156>   return cachedEntry?.referrer_reward ?? null
+    157  }
+    158  
+    159  /**
+    160   * Get the cached remaining passes count from eligibility cache
+    161   * Returns the number of remaining passes, or null if not available
+    162   */
+    163  export function getCachedRemainingPasses(): number | null {
+    164    const orgId = getOauthAccountInfo()?.organizationUuid
+    165    if (!orgId) return null
+    166    const config = getGlobalConfig()
+src/packages/provider/src/referral.ts(168,23): error TS2339: Property 'remaining_passes' does not exist on type '{ timestamp: number; }'.
+  --- código src/packages/provider/src/referral.ts:158-178 ---
+    158  
+    159  /**
+    160   * Get the cached remaining passes count from eligibility cache
+    161   * Returns the number of remaining passes, or null if not available
+    162   */
+    163  export function getCachedRemainingPasses(): number | null {
+    164    const orgId = getOauthAccountInfo()?.organizationUuid
+    165    if (!orgId) return null
+    166    const config = getGlobalConfig()
+    167    const cachedEntry = config.passesEligibilityCache?.[orgId]
+    168>   return cachedEntry?.remaining_passes ?? null
+    169  }
+    170  
+    171  /**
+    172   * Fetch passes eligibility and store in GlobalConfig
+    173   * Returns the fetched response or null on error
+    174   */
+    175  export async function fetchAndStorePassesEligibility(): Promise<ReferralEligibilityResponse | null> {
+    176    // Return existing promise if fetch is already in progress
+    177    if (fetchInProgress) {
+    178      logForDebugging('Passes: Reusing in-flight eligibility fetch')
+src/packages/provider/src/referral.ts(194,9): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/provider/src/referral.ts:184-204 ---
+    184    if (!orgId) {
+    185      return null
+    186    }
+    187  
+    188    // Store the promise to share with concurrent calls
+    189    fetchInProgress = (async () => {
+    190      try {
+    191        const response = await fetchReferralEligibility()
+    192  
+    193        const cacheEntry = {
+    194>         ...response,
+    195          timestamp: Date.now(),
+    196        }
+    197  
+    198        saveGlobalConfig(current => ({
+    199          ...current,
+    200          passesEligibilityCache: {
+    201            ...current.passesEligibilityCache,
+    202            [orgId]: cacheEntry,
+    203          },
+    204        }))

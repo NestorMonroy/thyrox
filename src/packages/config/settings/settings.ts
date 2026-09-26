@@ -48,7 +48,6 @@
  *   al final (2026-09-24, `Ysr`/`wS` de 2.1.275), acotados a la capa de
  *   archivo: las otras capas de política no existen aquí.
  * - `loadManagedFileSettings`, `getManagedSettingsKeysForLogging`,
- *   `getSandboxBinaryPath`, `getSettingsWithSources`,
  *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
@@ -538,6 +537,24 @@ function declaredInOptInSource(key: string): boolean {
 }
 
 /** ¿Aceptó el usuario el aviso del modo que salta los permisos? (`sU`). */
+/**
+ * `Djn` de 2.1.281: invalida las cachés y devuelve la configuración efectiva
+ * junto con cada fuente que aporta alguna clave, de menor a mayor prioridad.
+ * Sin `getEnabledSettingSources` (no portada) se recorren todas las fuentes.
+ */
+export function getSettingsWithSources(
+  read: (source: SettingSource) => SettingsJson | null = getSettingsForSource,
+  effective: () => SettingsJson = getInitialSettings,
+): { effective: SettingsJson; sources: Array<{ source: SettingSource; settings: SettingsJson }> } {
+  resetSettingsCache()
+  const sources: Array<{ source: SettingSource; settings: SettingsJson }> = []
+  for (const source of SETTING_SOURCES) {
+    const settings = read(source)
+    if (settings && Object.keys(settings).length > 0) sources.push({ source, settings })
+  }
+  return { effective: effective(), sources }
+}
+
 export function hasSkipDangerousModePermissionPrompt(): boolean {
   return declaredInOptInSource('skipDangerousModePermissionPrompt')
 }
@@ -553,6 +570,7 @@ export function hasAutoModeOptIn(): boolean {
 // La superficie que sus consumidores piden y que vive en otro módulo del
 // paquete (medido con src/verify/namedImports.ts).
 export type { SettingsJson } from './types.js'
+export type { AskUserQuestionTimeout } from './askUserQuestionTimeout.js'
 
 
 /**
@@ -625,6 +643,29 @@ export function getAutoModeConfig(
     if (merged[key].length > 0) result[key] = merged[key]
   }
   return Object.keys(result).length > 0 ? result : undefined
+}
+
+type SandboxBinaryReader = (source: string) => { sandbox?: Record<string, unknown> } | null
+
+/**
+ * `Ysn`/`Nvo` de 2.1.281: ruta de `bwrap` o `socat` declarada en
+ * `sandbox.<field>`. El esquema dice que sólo se honra desde user,
+ * managed/policy o `--settings`, así que se leen las fuentes de confianza
+ * —las mismas de `getAutoModeConfig`— con policy por delante, y gana la
+ * primera no nula. Divergencia declarada: el binario recorre `Lu()` (los
+ * niveles de política ya resueltos); aquí se recorren las fuentes, porque
+ * ese resolvedor no está portado.
+ */
+export function getSandboxBinaryPath(
+  field: 'bwrapPath' | 'socatPath',
+  read: SandboxBinaryReader = source =>
+    getSettingsForSource(source as SettingSource) as { sandbox?: Record<string, unknown> } | null,
+): string | undefined {
+  for (const source of [...AUTO_MODE_TRUSTED_SOURCES].reverse()) {
+    const value = read(source)?.sandbox?.[field]
+    if (typeof value === 'string') return value
+  }
+  return undefined
 }
 
 /** Un archivo de settings administrado cuenta si parsea y trae alguna clave. */

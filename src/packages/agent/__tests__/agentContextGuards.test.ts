@@ -22,6 +22,7 @@ import {
   type SubagentContext,
   type TeammateAgentContext,
 } from '../agentContext.js'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '../internalTypes.ts'
 
 const subagent = (
   o: Partial<SubagentContext> = {},
@@ -145,7 +146,9 @@ describe('getSubagentLogName', () => {
     runWithAgentContext(
       subagent({ subagentName: 'Explore', isBuiltIn: true }),
       () => {
-        expect(getSubagentLogName()).toBe('Explore')
+        expect(getSubagentLogName()).toBe(
+          'Explore' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        )
       },
     )
   })
@@ -154,14 +157,18 @@ describe('getSubagentLogName', () => {
     runWithAgentContext(
       subagent({ subagentName: 'my-custom-agent', isBuiltIn: false }),
       () => {
-        expect(getSubagentLogName()).toBe('user-defined')
+        expect(getSubagentLogName()).toBe(
+          'user-defined' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        )
       },
     )
   })
 
   test('isBuiltIn undefined → "user-defined" (default)', () => {
     runWithAgentContext(subagent({ subagentName: 'X' }), () => {
-      expect(getSubagentLogName()).toBe('user-defined')
+      expect(getSubagentLogName()).toBe(
+        'user-defined' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+      )
     })
   })
 

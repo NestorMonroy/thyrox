@@ -1,4 +1,7 @@
-import type { BetaToolUnion } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import type {
+  BetaTool,
+  BetaToolUnion,
+} from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
 import { randomUUID } from 'crypto'
 import type {
   ProviderAssistantMessage,
@@ -58,7 +61,7 @@ export function normalizeContentFromAPI(
   blocks: unknown,
   _tools: ProviderTools,
   _agentId?: string,
-): ProviderMessage['message']['content'] {
+): NonNullable<ProviderMessage['message']>['content'] {
   if (!Array.isArray(blocks)) return []
   return blocks.map(block => {
     if (!block || typeof block !== 'object') return block
@@ -76,7 +79,7 @@ export function normalizeContentFromAPI(
       }
     }
     return typed
-  }) as ProviderMessage['message']['content']
+  }) as NonNullable<ProviderMessage['message']>['content']
 }
 
 export function normalizeMessagesForAPI(
@@ -118,13 +121,13 @@ function getToolDescription(
   return ''
 }
 
-function getToolInputSchema(tool: ProviderTool): Record<string, unknown> {
+function getToolInputSchema(tool: ProviderTool): BetaTool['input_schema'] {
   const candidate =
     'inputJSONSchema' in tool
       ? (tool.inputJSONSchema as unknown)
       : undefined
   if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
-    return candidate as Record<string, unknown>
+    return candidate as BetaTool['input_schema']
   }
 
   return {
@@ -138,7 +141,7 @@ export async function toolToAPISchema(
   options: ProviderToolSchemaOptions,
   _signal?: AbortSignal,
 ): Promise<BetaToolUnion> {
-  const schema: Record<string, unknown> = {
+  const schema: BetaTool = {
     name: tool.name,
     description: await getToolDescription(tool, options),
     input_schema: getToolInputSchema(tool),
@@ -151,7 +154,7 @@ export async function toolToAPISchema(
     schema.cache_control = options.cacheControl
   }
 
-  return schema as BetaToolUnion
+  return schema
 }
 
 export function calculateUSDCost(_model: string, _usage: unknown): number {

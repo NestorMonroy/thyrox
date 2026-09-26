@@ -37,19 +37,18 @@
  * (sólo los consume `yoloClassifier.ts`
  * y `classifierShared.ts`, bloqueados por `@anthropic-ai/sdk`/`zod`, no
  * linkeados en `node_modules` de este paquete sin correr `bun install`, fuera
- * de alcance de este pase), `ToolPermissionRulesBySource`/`ToolPermissionContext`
- * canónicos (cada consumidor de este pase declara su propio tipo local más
- * angosto, igual que ya hace `permissions.ts` — ver su docstring).
+ * de alcance de este pase), `ToolPermissionContext` canónico (cada consumidor
+ * declara su propio tipo local más angosto, igual que ya hace `permissions.ts`
+ * — ver su docstring). `ToolPermissionRulesBySource` SÍ se agrega (2026-09-25):
+ * su consumidor apareció, `tool-registry/src/Tool.ts` la importa de aquí.
  *
- * DIVERGENCIA DECLARADA — `ContentBlockParam`: la fuente tipa los campos
- * `contentBlocks` de `PermissionAllowDecision`/`PermissionAskDecision` con
- * `ContentBlockParam` de `@anthropic-ai/sdk/resources/messages.mjs`, que no
- * está linkeado en `node_modules` de este paquete. Se declara aquí la misma
- * forma estructural mínima que ya usa `@thyrox/agent/messages.ts:516-518`
- * para el mismo problema (discriminante `type` + índice abierto), en vez de
- * arrastrar el SDK entero por un tipo.
+ * `ContentBlockParam` es el del SDK (`@anthropic-ai/sdk/resources/messages.mjs`),
+ * como en la fuente. Antes se declaraba aquí una forma mínima porque el SDK
+ * no resolvía desde este paquete; ya es dependencia suya, y la copia local
+ * no encajaba con los consumidores que pasan esos bloques al SDK.
  */
 
+import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.mjs'
 import { feature } from 'bun:bundle'
 
 /** `permissionTypes.ts:42`. */
@@ -65,6 +64,15 @@ export type PermissionRuleSource =
   | 'cliArg'
   | 'command'
   | 'session'
+
+/**
+ * Las reglas de permiso por su fuente: cada fuente aporta su lista de reglas
+ * serializadas (`Tool(contenido)`). La forma de `ToolPermissionContext` de
+ * `@thyrox/tool-registry/Tool.ts`, que la importa de aquí.
+ */
+export type ToolPermissionRulesBySource = {
+  [T in PermissionRuleSource]?: string[]
+}
 
 /** `permissionTypes.ts:65-68`. */
 export type PermissionRuleValue = {
@@ -247,11 +255,7 @@ export type AdditionalWorkingDirectory = {
 // Decisiones y resultados de permiso — `permissionTypes.ts:142-329`
 // ============================================================================
 
-/** Divergencia declarada arriba — ver el docstring del módulo. */
-export type ContentBlockParam = {
-  type: string
-  [key: string]: unknown
-}
+export type { ContentBlockParam }
 
 /**
  * Forma mínima de un comando para metadata de permiso. `permissionTypes.ts:150-155`.

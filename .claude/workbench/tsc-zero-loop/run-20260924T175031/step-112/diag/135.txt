@@ -1,0 +1,23 @@
+src/packages/provider/src/claudeLegacy.ts(185,72): error TS2355: A function whose declared type is neither 'undefined', 'void', nor 'any' must return a value.
+  --- código src/packages/provider/src/claudeLegacy.ts:175-195 ---
+    175    messages: unknown[]
+    176    systemPrompt: unknown
+    177    thinkingConfig: unknown
+    178    tools: unknown
+    179    signal: AbortSignal
+    180    options: Options
+    181  }): AsyncGenerator<unknown, void> {
+    182    yield* getLegacyRuntime().queryModelWithStreaming(args)
+    183  }
+    184  
+    185> export async function* executeNonStreamingRequest(...args: unknown[]): AsyncGenerator<unknown, unknown> {
+    186    yield* getLegacyRuntime().executeNonStreamingRequest(...args)
+    187  }
+    188  
+    189  export function stripExcessMediaItems(...args: unknown[]): unknown {
+    190    return getLegacyRuntime().stripExcessMediaItems(...args)
+    191  }
+    192  
+    193  export function cleanupStream(stream: Stream<BetaRawMessageStreamEvent>): void {
+    194    return getLegacyRuntime().cleanupStream(stream)
+    195  }

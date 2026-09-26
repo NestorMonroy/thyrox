@@ -1,0 +1,50 @@
+src/packages/mcp-runtime/src/config.ts(1323,7): error TS2322: Type '{ path: string; message: string; mcpErrorMetadata: { scope: "user" | "local" | "project" | "managed" | "enterprise" | "dynamic" | "claudeai"; severity: string; }; file?: string | undefined; }[]' is not assignable to type 'SettingsError[]'.
+  --- código src/packages/mcp-runtime/src/config.ts:1313-1333 ---
+   1313    filePath?: string
+   1314  }): {
+   1315    config: McpJsonConfig | null
+   1316    errors: ValidationError[]
+   1317  } {
+   1318    const { configObject, expandVars, scope, filePath } = params
+   1319    const schemaResult = McpJsonConfigSchema().safeParse(configObject)
+   1320    if (!schemaResult.success) {
+   1321      return {
+   1322        config: null,
+   1323>       errors: schemaResult.error.issues.map(issue => ({
+   1324          ...(filePath && { file: filePath }),
+   1325          path: issue.path.join('.'),
+   1326          message: 'Does not adhere to MCP server configuration schema',
+   1327          mcpErrorMetadata: {
+   1328            scope,
+   1329            severity: 'fatal',
+   1330          },
+   1331        })),
+   1332      }
+   1333    }
+  Type '{ path: string; message: string; mcpErrorMetadata: { scope: "user" | "local" | "project" | "managed" | "enterprise" | "dynamic" | "claudeai"; severity: string; }; file?: string | undefined; }' is not assignable to type 'SettingsError'.
+    Types of property 'file' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/packages/mcp-runtime/src/config.ts(1350,11): error TS2353: Object literal may only specify known properties, and 'suggestion' does not exist in type 'SettingsError'.
+  --- código src/packages/mcp-runtime/src/config.ts:1340-1360 ---
+   1340      let configToCheck = config
+   1341  
+   1342      if (expandVars) {
+   1343        const { expanded, missingVars } = expandEnvVars(config)
+   1344  
+   1345        if (missingVars.length > 0) {
+   1346          errors.push({
+   1347            ...(filePath && { file: filePath }),
+   1348            path: `mcpServers.${name}`,
+   1349            message: `Missing environment variables: ${missingVars.join(', ')}`,
+   1350>           suggestion: `Set the following environment variables: ${missingVars.join(', ')}`,
+   1351            mcpErrorMetadata: {
+   1352              scope,
+   1353              serverName: name,
+   1354              severity: 'warning',
+   1355            },
+   1356          })
+   1357        }
+   1358  
+   1359        configToCheck = expanded
+   1360      }

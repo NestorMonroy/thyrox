@@ -1,0 +1,23 @@
+src/packages/app-host/src/runtime/toolRegistryRuntime.ts(111,42): error TS2345: Argument of type 'string' is not assignable to parameter of type '"Bash" | "Edit" | "Glob" | "Grep" | "Read" | "Write" | "Agent" | "NotebookEdit"'.
+  --- código src/packages/app-host/src/runtime/toolRegistryRuntime.ts:101-121 ---
+    101        ])
+    102        const filtered = allTools.filter(tool => !specialTools.has(tool.name))
+    103        let allowedTools = filterByDeny(filtered)
+    104  
+    105        if (isReplModeEnabled()) {
+    106          const replEnabled = allowedTools.some(tool =>
+    107            toolMatchesName(tool, REPL_TOOL_NAME),
+    108          )
+    109          if (replEnabled) {
+    110            allowedTools = allowedTools.filter(
+    111>             tool => !REPL_ONLY_TOOLS.has(tool.name),
+    112            )
+    113          }
+    114        }
+    115  
+    116        return allowedTools.filter(tool => tool.isEnabled())
+    117      },
+    118      replOnlyToolNames: () => REPL_ONLY_TOOLS,
+    119    })
+    120  
+    121    registryHostBindingsInstalled = true

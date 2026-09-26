@@ -13,10 +13,7 @@ import {
   formatCreditAmount,
   getCachedOrFetchPassesEligibility,
 } from '@thyrox/provider/referral.js'
-import type {
-  ReferralRedemptionsResponse,
-  ReferrerRewardInfo,
-} from '@thyrox/provider/oauth/types.js'
+import type { ReferrerRewardInfo } from '@thyrox/provider/oauth/types.js'
 import { count } from '@thyrox/tool-registry/utils/array.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { Pane } from '@anthropic/ink'
@@ -66,7 +63,11 @@ export function Passes({ onDone }: Props): React.ReactNode {
     async function loadPassesData() {
       try {
         // Check eligibility first (uses cache if available)
-        const eligibilityData = await getCachedOrFetchPassesEligibility()
+        const eligibilityData = (await getCachedOrFetchPassesEligibility()) as {
+          eligible?: boolean
+          referral_code_details?: { referral_link?: string; campaign?: string }
+          referrer_reward?: unknown
+        } | null
 
         if (!eligibilityData || !eligibilityData.eligible) {
           setIsAvailable(false)
@@ -90,9 +91,12 @@ export function Passes({ onDone }: Props): React.ReactNode {
           'claude_code_guest_pass'
 
         // Fetch redemptions data
-        let redemptionsData: ReferralRedemptionsResponse
+        let redemptionsData: { redemptions?: unknown[]; limit?: number }
         try {
-          redemptionsData = await fetchReferralRedemptions(campaign)
+          redemptionsData = (await fetchReferralRedemptions(campaign)) as {
+            redemptions?: unknown[]
+            limit?: number
+          }
         } catch (err) {
           logError(err as Error)
           setIsAvailable(false)

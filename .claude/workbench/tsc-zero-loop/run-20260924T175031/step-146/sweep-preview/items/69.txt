@@ -1,0 +1,32 @@
+Patrón: cast-que-debilita-narrowing-de-union-discriminada
+Señal del verificador: TS2345.*is not assignable to parameter of type.*index: number, array:
+Arreglo genérico: Cuando un valor ya viene de una función que devuelve una unión discriminada (p. ej. `{ eligible: false; errors: T[] }`), y el `if` ya narrowea sobre el discriminante, un `as { ...; errors: Array<{ type: string }> }` sobre ese valor sustituye el tipo real por uno más débil que TS infiere solo. La causa se corrige quitando el cast: el narrowing del `if` ya deja el tipo correcto sin ayuda.
+Ya aplicado en: src/packages/command-runtime/src/commands/review/reviewRemote.ts
+Archivos donde la señal sigue viva: src/packages/repl/src/components/messages/AttachmentMessage.tsx
+
+src/packages/repl/src/components/messages/AttachmentMessage.tsx(85,30): error TS2345: Argument of type '(msg: { text: string; from: string; color: string | undefined; summary: string | undefined; }, idx: number) => React.JSX.Element' is not assignable to parameter of type '(value: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }, index: number, array: { from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }[]) => Element'.
+  --- código src/packages/repl/src/components/messages/AttachmentMessage.tsx:75-95 ---
+     75        } catch {
+     76          return true // Non-JSON messages are visible
+     77        }
+     78      })
+     79  
+     80      if (visibleMessages.length === 0) {
+     81        return null
+     82      }
+     83      return (
+     84        <Box flexDirection="column">
+     85>         {visibleMessages.map((msg: { text: string; from: string; color: string|undefined; summary: string|undefined }, idx: number) => {
+     86            // Try to parse as JSON for task_assignment messages
+     87            let parsedMsg: {
+     88              type?: string
+     89              taskId?: string
+     90              subject?: string
+     91              assignedBy?: string
+     92            } | null = null
+     93            try {
+     94              parsedMsg = jsonParse(msg.text)
+     95            } catch {
+  Types of parameters 'msg' and 'value' are incompatible.
+    Type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' is not assignable to type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.
+      Property 'color' is optional in type '{ from: string; text: string; timestamp: string; color?: string | undefined; summary?: string | undefined; }' but required in type '{ text: string; from: string; color: string | undefined; summary: string | undefined; }'.

@@ -1,0 +1,9 @@
+{"batch": 1, "files": 51, "total_before": 1126, "total_final": 1081, "tsc_runs": 2, "kept": 28}
+{"batch": 2, "files": 34, "total_before": 1081, "total_final": 1068, "tsc_runs": 2, "kept": 8}
+{"batch": 3, "files": 28, "total_before": 1068, "total_final": 1056, "tsc_runs": 4, "kept": 7}
+{"batch": 4, "files": 58, "total_before": 1056, "total_final": 992, "tsc_runs": 2, "kept": 38}
+{"batch": 5, "files": 24, "total_before": 992, "total_final": 986, "tsc_runs": 8, "kept": 4}
+{"batch": 6, "files": 95, "total_before": 986, "total_final": 933, "tsc_runs": 12, "kept": 37}
+{"batch": 7, "files": 22, "total_before": 933, "total_final": 894, "tsc_runs": 2, "kept": 12}
+{"batches": 7, "files_kept": 134}
+__BG_EXIT__=0

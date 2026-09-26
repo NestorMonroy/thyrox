@@ -1,0 +1,17 @@
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/1.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/2.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/3.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/4.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/5.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/6.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/7.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/8.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/9.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/10.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/11.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/12.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/13.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/14.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/15.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/16.txt
+module:src/packages/storage/src/claudemd.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/storage-src-claudemd-ts/items/17.txt

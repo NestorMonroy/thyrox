@@ -1,0 +1,69 @@
+src/packages/provider/src/model/deprecation.ts(36,5): error TS2739: Type '{ firstParty: string; bedrock: string; vertex: string; foundry: string; }' is missing the following properties from type 'Record<APIProvider, string | null>': codex, gemini, openai
+  --- código src/packages/provider/src/model/deprecation.ts:26-46 ---
+     26  }
+     27  
+     28  /**
+     29   * Deprecated models and their retirement dates by provider.
+     30   * Keys are substrings to match in model IDs (case-insensitive).
+     31   * To add a new deprecated model, add an entry to this object.
+     32   */
+     33  const DEPRECATED_MODELS: Record<string, DeprecationEntry> = {
+     34    'claude-3-opus': {
+     35      modelName: 'Claude 3 Opus',
+     36>     retirementDates: {
+     37        firstParty: 'January 5, 2026',
+     38        bedrock: 'January 15, 2026',
+     39        vertex: 'January 5, 2026',
+     40        foundry: 'January 5, 2026',
+     41      },
+     42    },
+     43    'claude-3-7-sonnet': {
+     44      modelName: 'Claude 3.7 Sonnet',
+     45      retirementDates: {
+     46        firstParty: 'February 19, 2026',
+src/packages/provider/src/model/deprecation.ts(45,5): error TS2739: Type '{ firstParty: string; bedrock: string; vertex: string; foundry: string; }' is missing the following properties from type 'Record<APIProvider, string | null>': codex, gemini, openai
+  --- código src/packages/provider/src/model/deprecation.ts:35-55 ---
+     35      modelName: 'Claude 3 Opus',
+     36      retirementDates: {
+     37        firstParty: 'January 5, 2026',
+     38        bedrock: 'January 15, 2026',
+     39        vertex: 'January 5, 2026',
+     40        foundry: 'January 5, 2026',
+     41      },
+     42    },
+     43    'claude-3-7-sonnet': {
+     44      modelName: 'Claude 3.7 Sonnet',
+     45>     retirementDates: {
+     46        firstParty: 'February 19, 2026',
+     47        bedrock: 'April 28, 2026',
+     48        vertex: 'May 11, 2026',
+     49        foundry: 'February 19, 2026',
+     50      },
+     51    },
+     52    'claude-3-5-haiku': {
+     53      modelName: 'Claude 3.5 Haiku',
+     54      retirementDates: {
+     55        firstParty: 'February 19, 2026',
+src/packages/provider/src/model/deprecation.ts(54,5): error TS2739: Type '{ firstParty: string; bedrock: null; vertex: null; foundry: null; }' is missing the following properties from type 'Record<APIProvider, string | null>': codex, gemini, openai
+  --- código src/packages/provider/src/model/deprecation.ts:44-64 ---
+     44      modelName: 'Claude 3.7 Sonnet',
+     45      retirementDates: {
+     46        firstParty: 'February 19, 2026',
+     47        bedrock: 'April 28, 2026',
+     48        vertex: 'May 11, 2026',
+     49        foundry: 'February 19, 2026',
+     50      },
+     51    },
+     52    'claude-3-5-haiku': {
+     53      modelName: 'Claude 3.5 Haiku',
+     54>     retirementDates: {
+     55        firstParty: 'February 19, 2026',
+     56        bedrock: null,
+     57        vertex: null,
+     58        foundry: null,
+     59      },
+     60    },
+     61  }
+     62  
+     63  /**
+     64   * Check if a model is deprecated and get its deprecation info

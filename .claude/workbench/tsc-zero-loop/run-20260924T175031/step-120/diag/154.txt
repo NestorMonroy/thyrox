@@ -1,0 +1,25 @@
+src/packages/repl/src/screens/REPLView.tsx(2387,44): error TS2345: Argument of type '(context: ToolPermissionContext, options?: { preserveMode?: boolean; }) => void' is not assignable to parameter of type 'SetToolPermissionContextFn'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2377-2397 ---
+   2377            });
+   2378            return currentQueue;
+   2379          });
+   2380        }, setToolUseConfirmQueue);
+   2381      },
+   2382      [setAppState, setToolUseConfirmQueue],
+   2383    );
+   2384  
+   2385    // Register the leader's setToolPermissionContext for in-process teammates
+   2386    useEffect(() => {
+   2387>     registerLeaderSetToolPermissionContext(setToolPermissionContext);
+   2388      return () => unregisterLeaderSetToolPermissionContext();
+   2389    }, [setToolPermissionContext]);
+   2390  
+   2391    const canUseTool = useCanUseTool(setToolUseConfirmQueue, setToolPermissionContext);
+   2392  
+   2393    const requestPrompt = useCallback(
+   2394      (title: string, toolInputSummary?: string | null) =>
+   2395        (request: PromptRequest): Promise<PromptResponse> =>
+   2396          new Promise<PromptResponse>((resolve, reject) => {
+   2397            setPromptQueue(prev => [...prev, { request, title, toolInputSummary, resolve, reject }]);
+  Types of parameters 'context' and 'context' are incompatible.
+    Type 'unknown' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.

@@ -1,0 +1,3 @@
+module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/agent-attachments-ts/items/1.txt
+module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/agent-attachments-ts/items/2.txt
+module:src/packages/agent/attachments.ts .claude/workbench/tsc-zero-loop/run-20260924T175031/step-142/agent-attachments-ts/items/3.txt

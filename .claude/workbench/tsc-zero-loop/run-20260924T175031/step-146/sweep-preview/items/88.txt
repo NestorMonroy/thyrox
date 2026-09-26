@@ -1,0 +1,29 @@
+Patrón: renderable-message-switch-missing-progress-case
+Señal del verificador: : TS2366: Function lacks ending return statement and return type does not include 'undefined'\.
+Arreglo genérico: RenderableMessage incluye la variante `{ type: 'progress' }` aunque NAVIGABLE_TYPES (y análogos) sólo listan seis tipos. Un switch sobre `msg.type` que no declara `case 'progress'` deja de ser exhaustivo bajo strictNullChecks y TS marca la función como sin retorno final. Se añade el case explícito con el valor que corresponde a «no accionable / sin texto» (`false`, `''`, etc.), sin tocar los demás casos.
+Ya aplicado en: src/packages/repl/src/components/messageActions.tsx
+Archivos donde la señal sigue viva: src/packages/agent/task/framework.ts
+
+src/packages/agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/agent/task/framework.ts:289-309 ---
+    289    enqueuePendingNotification({
+    290      value: message,
+    291      mode: 'task-notification',
+    292      priority: 'next',
+    293    })
+    294  }
+    295  
+    296  /**
+    297   * Get human-readable status text.
+    298   */
+    299> function getStatusText(status: TaskStatus): string {
+    300    switch (status) {
+    301      case 'completed':
+    302        return 'completed successfully'
+    303      case 'failed':
+    304        return 'failed'
+    305      case 'killed':
+    306        return 'was stopped'
+    307      case 'running':
+    308        return 'is running'
+    309      case 'pending':

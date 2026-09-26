@@ -1,0 +1,6 @@
+src/packages/agent/hooks/AsyncHookRegistry.ts(64,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(66,69): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(103,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(110,5): error TS2322: Type 'unknown' is not assignable to type 'string'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(152,48): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.
+src/packages/agent/hooks/AsyncHookRegistry.ts(153,41): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.

@@ -29,7 +29,7 @@ export function extractRepoCwd<T extends AgentLike | ResolvedAgent>(
   const seenAgentNames = new Set(fleetAgents.map(a => a.name.toLowerCase()))
   const keys = Object.keys(agentMap)
   for (const match of query.matchAll(AT_REF_RE)) {
-    const name = match[1].toLowerCase()
+    const name = (match[1] ?? '').toLowerCase()
     if (seenAgentNames.has(name)) continue
     const key = keys.find(k => k.toLowerCase() === name)
     if (key !== undefined) return agentMap[key]

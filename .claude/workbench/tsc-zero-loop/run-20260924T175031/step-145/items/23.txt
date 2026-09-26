@@ -1,0 +1,69 @@
+src/packages/storage/src/claudemd.ts(744,3): error TS2304: Cannot find name 'nextEagerLoadReason'.
+  --- código src/packages/storage/src/claudemd.ts:734-754 ---
+    734    }
+    735    if (project.hasClaudeMdExternalIncludesApproved || project.hasClaudeMdExternalIncludesWarningShown) return false
+    736    return hasExternalClaudeMdIncludes(await getMemoryFiles(true))
+    737  }
+    738  
+    739  // --- porte por miembros: un ancla por ítem ---
+    740  function consumeNextEagerLoadReason(): InstructionsLoadReason | undefined {
+    741    if (!shouldFireHook) return undefined
+    742    shouldFireHook = false
+    743    const reason = nextEagerLoadReason
+    744>   nextEagerLoadReason = 'session_start'
+    745    return reason
+    746  }
+    747  
+    748  /**
+    749   * Get all memory file paths from both standard discovery and readFileState.
+    750   * Combines:
+    751   * - getMemoryFiles() paths (CWD upward to root)
+    752   * - readFileState paths matching memory patterns (includes child directories)
+    753   */
+    754  export function getAllMemoryFilePaths(
+src/packages/storage/src/claudemd.ts(874,12): error TS2304: Cannot find name 'parseMemoryFileContent'.
+  --- código src/packages/storage/src/claudemd.ts:864-884 ---
+    864   * archivo parseado.
+    865   */
+    866  async function safelyReadMemoryFileAsync(
+    867    filePath: string,
+    868    type: MemoryType,
+    869    includeBasePath?: string,
+    870  ): Promise<{ info: MemoryFileInfo | null; includePaths: string[] }> {
+    871    try {
+    872      const fs = getFsImplementation()
+    873      const rawContent = await fs.readFile(filePath, { encoding: 'utf-8' })
+    874>     return parseMemoryFileContent(rawContent, filePath, type, includeBasePath)
+    875    } catch (error) {
+    876      handleMemoryFileReadError(error, filePath)
+    877      return { info: null, includePaths: [] }
+    878    }
+    879  }
+    880  /**
+    881   * Comprueba si una ruta de CLAUDE.md queda excluida por `claudeMdExcludes`.
+    882   * Sólo aplica a los tipos User, Project y Local; Managed, AutoMem y TeamMem
+    883   * nunca se excluyen.
+    884   *
+src/packages/storage/src/claudemd.ts(916,10): error TS6133: 'parseFrontmatterPaths' is declared but its value is never read.
+  --- código src/packages/storage/src/claudemd.ts:906-926 ---
+    906    }
+    907  
+    908    return safePicomatch(normalizedPath, expandedPatterns, matchOpts)
+    909  }
+    910  
+    911  /**
+    912   * Parses raw content to extract both content and glob patterns from frontmatter
+    913   * @param rawContent Raw file content with frontmatter
+    914   * @returns Object with content and globs (undefined if no paths or match-all pattern)
+    915   */
+    916> function parseFrontmatterPaths(rawContent: string): {
+    917    content: string
+    918    paths?: string[]
+    919  } {
+    920    const { frontmatter, content } = parseFrontmatter(rawContent)
+    921  
+    922    if (!frontmatter.paths) {
+    923      return { content }
+    924    }
+    925  
+    926    const patterns = splitPathInFrontmatter(frontmatter.paths)

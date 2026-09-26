@@ -1,0 +1,24 @@
+src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts(73,16): error TS2339: Property 'source' does not exist on type 'Command'.
+  --- código src/packages/command-runtime/src/__tests__/createMovedToPluginCommand.test.ts:63-83 ---
+     63  
+     64    test('source is "builtin"', () => {
+     65      const cmd = createMovedToPluginCommand({
+     66        name: 'n',
+     67        description: '',
+     68        progressMessage: '',
+     69        pluginName: 'p',
+     70        pluginCommand: 'c',
+     71        getPromptWhileMarketplaceIsPrivate: async () => [],
+     72      })
+     73>     expect(cmd.source).toBe('builtin')
+     74    })
+     75  
+     76    test('contentLength is 0 (dynamic content)', () => {
+     77      const cmd = createMovedToPluginCommand({
+     78        name: 'n',
+     79        description: '',
+     80        progressMessage: '',
+     81        pluginName: 'p',
+     82        pluginCommand: 'c',
+     83        getPromptWhileMarketplaceIsPrivate: async () => [],
+  Property 'source' does not exist on type 'CommandBase & LocalCommand'.

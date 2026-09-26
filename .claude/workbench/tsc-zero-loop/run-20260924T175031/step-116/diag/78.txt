@@ -1,0 +1,22 @@
+src/packages/command-runtime/src/commands/compact/compact.ts(10,3): error TS2305: Module '"@thyrox/agent/compaction/compact.js"' has no exported member 'compactConversation'.
+  --- código src/packages/command-runtime/src/commands/compact/compact.ts:1-20 ---
+      1  import { feature } from 'bun:bundle'
+      2  import chalk from 'chalk'
+      3  import { markPostCompaction } from '@thyrox/app-host/bootstrap/state.js'
+      4  import { getSystemPrompt } from '@thyrox/agent/prompts.js'
+      5  import { getSystemContext, getUserContext } from '@thyrox/provider/context.js'
+      6  import { getShortcutDisplay } from '@thyrox/repl/keybindings/shortcutFormat.js'
+      7  import { notifyCompaction } from '@thyrox/provider/promptCacheBreakDetection.js'
+      8  import {
+      9    type CompactionResult,
+     10>   compactConversation,
+     11    ERROR_MESSAGE_INCOMPLETE_RESPONSE,
+     12    ERROR_MESSAGE_NOT_ENOUGH_MESSAGES,
+     13    ERROR_MESSAGE_USER_ABORT,
+     14    mergeHookInstructions,
+     15  } from '@thyrox/agent/compaction/compact.js'
+     16  import { suppressCompactWarning } from '@thyrox/agent/compaction/compactWarningState.js'
+     17  import { microcompactMessages } from '@thyrox/agent/compaction/microCompact.js'
+     18  import { runPostCompactCleanup } from '@thyrox/agent/compaction/postCompactCleanup.js'
+     19  import { trySessionMemoryCompaction } from '@thyrox/agent/compaction/sessionMemoryCompact.js'
+     20  import { setLastSummarizedMessageId } from '@thyrox/agent/SessionMemory/sessionMemoryUtils.js'

@@ -1,3 +1,19 @@
+import type { Message } from './messageShapes.js'
+import type { SetAppState } from './messageQueueManager.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
+import type {
+  ModelUsage,
+  SDKAssistantMessageError,
+  SDKMessage,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+
+/** `getFastModeState` de `@thyrox/provider/fastMode`: los tres estados del SDK. */
+export type FastModeState = 'off' | 'cooldown' | 'on'
+
+/** Una entrada del registro de errores en memoria. */
+export type InMemoryError = { error: string; timestamp: string }
 import type {
   AgentHookResult,
   AgentMessage,
@@ -46,8 +62,9 @@ export type AgentHostBindings = {
   logEvent?: (event: string, metadata?: Record<string, number | boolean | string>) => void
   logError?: (err: unknown) => void
   logAntError?: (message: string, err: unknown) => void
-  getInMemoryErrors?: () => unknown[]
-  categorizeRetryableAPIError?: (error: unknown) => unknown
+  /** La forma de `local-observability/src/logging/error-log.ts:67`. */
+  getInMemoryErrors?: () => InMemoryError[]
+  categorizeRetryableAPIError?: (error: unknown) => SDKAssistantMessageError
   headlessProfilerCheckpoint?: (name: string) => void
   queryCheckpoint?: (name: string) => void
 
@@ -171,7 +188,7 @@ export type AgentHostBindings = {
   createCacheSafeParams?: (ctx: AgentREPLHookContext) => unknown
   saveCacheSafeParams?: (params: unknown) => void
   registerStructuredOutputEnforcement?: (
-    setAppState: (f: (prev: unknown) => unknown) => void,
+    setAppState: SetAppState,
     sessionId: string,
   ) => void
   getMainLoopModel?: () => string
@@ -181,9 +198,9 @@ export type AgentHostBindings = {
     [key: string]: unknown
   }>
   processUserInput?: (params: unknown) => Promise<{
-    messages: AgentMessage[]
+    messages: Message[]
     shouldQuery: boolean
-    allowedTools: unknown
+    allowedTools?: string[]
     model?: string
     resultText?: string
     [key: string]: unknown
@@ -194,19 +211,19 @@ export type AgentHostBindings = {
     systemContext: Record<string, string>
   }>
   shouldEnableThinkingByDefault?: () => boolean | undefined
-  buildSystemInitMessage?: (params: unknown) => unknown
+  buildSystemInitMessage?: (params: unknown) => SDKMessage
   sdkCompatToolName?: (toolName: string) => string
   handleOrphanedPermission?: (
-    orphanedPermission: unknown,
-    tools: unknown[],
+    orphanedPermission: OrphanedPermission,
+    tools: Tools,
     messages: AgentMessage[],
-    context: unknown,
-  ) => AsyncGenerator<unknown>
+    context: ProcessUserInputContext,
+  ) => AsyncGenerator<SDKMessage>
   isResultSuccessful?: (
     result: AgentMessage | undefined,
     lastStopReason: string | null,
   ) => boolean
-  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<unknown>
+  normalizeMessage?: (message: AgentMessage) => AsyncGenerator<SDKMessage>
   selectableUserMessagesFilter?: (message: AgentMessage) => boolean
   getCoordinatorUserContext?: (
     mcpClients: ReadonlyArray<{ name: string }>,
@@ -216,7 +233,7 @@ export type AgentHostBindings = {
   snipCompactIfNeeded?: (
     messages: AgentMessage[],
     options?: { force?: boolean },
-  ) => { messages: AgentMessage[]; executed: boolean } | undefined
+  ) => { messages: Message[]; executed: boolean } | undefined
 
   // ── Session storage / debug capture ─────────────────────────────────────────
   recordTranscript?: (
@@ -267,8 +284,8 @@ export type AgentHostBindings = {
   }>
   getTotalAPIDuration?: () => number
   getTotalCost?: () => number
-  getModelUsage?: () => Record<string, unknown>
-  getFastModeState?: (model: string, fastMode?: boolean) => unknown
+  getModelUsage?: () => Record<string, ModelUsage>
+  getFastModeState?: (model: string, fastMode?: boolean) => FastModeState
   notifyCommandLifecycle?: (
     uuid: string,
     state: 'started' | 'completed',

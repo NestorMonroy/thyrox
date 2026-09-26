@@ -1,0 +1,55 @@
+patron: string-literal-field-without-as-const-widened-by-spread
+senal_del_verificador: TS2345.*not assignable to parameter of type '(Payload|[A-Za-z]+)'|Type 'string' is not assignable to type '"[a-z]+" \| "[a-z]+"
+fix_generico: Cuando un objeto de prueba fija un campo con un tipo de unión de literales (p. ej. `source?: 'command' | 'sdk' | ...`) y se pasa por `{...base, campo: 'otro-literal'}` en otros tests, el campo base necesita `as const` igual que sus hermanos del mismo objeto; sin él TypeScript lo ensancha a `string` y cualquier spread hereda ese ensanchamiento, rompiendo la asignación al tipo del parámetro.
+
+patron: unguarded-regex-match-group
+senal_del_verificador: TS2345:.*string \| undefined.*not assignable to parameter of type 'string'|TS2322:.*string \| undefined.*not assignable to type 'string'|TS2532: Object is possibly 'undefined'
+fix_generico: Bajo noUncheckedIndexedAccess, todo acceso indexado a un RegExpMatchArray (m[1], brace[1], o una destructuración posicional de un match) se tipa string|undefined aunque el grupo de captura sea obligatorio en el regex. Se añade una guarda explícita —comprobación `=== undefined`/`!== undefined` o un `continue` temprano tras destructurar— antes de usar el valor donde se espera string; nunca una aserción `!` salvo que el flujo inmediato ya lo garantice.
+
+diagnósticos de este archivo que casan alguna de esas señales:
+src/packages/agent/loop/context/systemPrompt.ts(83,43): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/loop/context/systemPrompt.ts:73-93 ---
+     73    return Math.ceil(text.length / 4)
+     74  }
+     75  
+     76  /** El cuerpo y los `paths:` de un archivo de regla, con las dos formas del árbol. */
+     77  export function parseRule(raw: string): { body: string; paths: string[] | null } {
+     78    const fenced = /^```ya?ml\r?\n([\s\S]*?)\r?\n```\r?\n?/.exec(raw)
+     79    const dashed = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
+     80    const match = fenced ?? dashed
+     81    if (!match) return { body: raw, paths: null }
+     82    const body = raw.slice(match[0].length)
+     83>   const line = /^\s*paths:\s*(.+)$/m.exec(match[1])
+     84    if (!line) return { body, paths: null }
+     85    return { body, paths: splitPaths(line[1]) }
+     86  }
+     87  
+     88  /** `paths: a, b` · `paths: ["a", "b"]` · `paths: a` — las tres formas dan la misma lista. */
+     89  function splitPaths(value: string): string[] {
+     90    const trimmed = value.trim().replace(/^\[|\]$/g, '')
+     91    return trimmed
+     92      .split(',')
+     93      .map((p) => p.trim().replace(/^["']|["']$/g, ''))
+src/packages/agent/loop/context/systemPrompt.ts(85,36): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/agent/loop/context/systemPrompt.ts:75-95 ---
+     75  
+     76  /** El cuerpo y los `paths:` de un archivo de regla, con las dos formas del árbol. */
+     77  export function parseRule(raw: string): { body: string; paths: string[] | null } {
+     78    const fenced = /^```ya?ml\r?\n([\s\S]*?)\r?\n```\r?\n?/.exec(raw)
+     79    const dashed = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw)
+     80    const match = fenced ?? dashed
+     81    if (!match) return { body: raw, paths: null }
+     82    const body = raw.slice(match[0].length)
+     83    const line = /^\s*paths:\s*(.+)$/m.exec(match[1])
+     84    if (!line) return { body, paths: null }
+     85>   return { body, paths: splitPaths(line[1]) }
+     86  }
+     87  
+     88  /** `paths: a, b` · `paths: ["a", "b"]` · `paths: a` — las tres formas dan la misma lista. */
+     89  function splitPaths(value: string): string[] {
+     90    const trimmed = value.trim().replace(/^\[|\]$/g, '')
+     91    return trimmed
+     92      .split(',')
+     93      .map((p) => p.trim().replace(/^["']|["']$/g, ''))
+     94      .filter(Boolean)
+     95  }

@@ -87,18 +87,10 @@ export type ExecResult = {
 }
 
 
-export type ShellCommand = {
-  background: (backgroundTaskId: string) => boolean
-  result: Promise<ExecResult>
-  kill: () => void
-  status: 'running' | 'backgrounded' | 'completed' | 'killed'
-  /**
-   * Cleans up stream resources (event listeners).
-   * Should be called after the command completes or is killed to prevent memory leaks.
-   */
-  cleanup: () => void
-  onTimeout?: (
-    callback: (backgroundFn: (taskId: string) => boolean) => void,
-  ) => void
-}
+// El contrato de un comando en ejecución vive en `terminal/ShellCommand.ts`,
+// con `taskOutput` (el `TaskOutput` dueño de stdout/stderr y del progreso).
+// Esta copia lo había perdido, y los 19 consumidores que leen `taskOutput`
+// fallaban contra ella. Se re-exporta sólo el tipo: se borra al compilar y no
+// arrastra las dependencias de ejecución de aquel módulo.
+export type { ShellCommand } from './terminal/ShellCommand.js'
 

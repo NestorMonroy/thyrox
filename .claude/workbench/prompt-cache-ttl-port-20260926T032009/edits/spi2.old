@@ -1,0 +1,5 @@
+def probe(pid: int, proc_root: str = "/proc", ticks_per_second: int | None = None) -> StdinProbe:
+    ticks = ticks_per_second or os.sysconf("SC_CLK_TCK")
+    target = read_stdin_target(pid, proc_root)
+    state, cpu = _state_and_cpu(pid, proc_root, ticks)
+    return StdinProbe(pid, target, _kind(target), state, cpu)

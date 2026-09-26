@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(2016,5): error TS2322: Type 'boolean | undefined' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2006-2026 ---
+   2006    // Permission and interactive dialogs can show even when toolJSX is set,
+   2007    // as long as shouldContinueAnimation is true. This prevents deadlocks when
+   2008    // agents set background hints while waiting for user interaction.
+   2009    const allowDialogsWithAnimation = !toolJSX || toolJSX.shouldContinueAnimation;
+   2010    const focusedInputDialog = getFocusedInputDialog({
+   2011      isExiting,
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016>     allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022      idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+  Type 'undefined' is not assignable to type 'boolean'.
+src/packages/repl/src/screens/REPLView.tsx(2022,5): error TS2322: Type '{ input: string; idleMinutes: number; } | null' is not assignable to type 'boolean'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2012-2032 ---
+   2012      exitFlow,
+   2013      isMessageSelectorVisible,
+   2014      isPromptInputActive,
+   2015      hasSandboxPermissionRequest: Boolean(sandboxPermissionRequestQueue[0]),
+   2016      allowDialogsWithAnimation,
+   2017      hasToolUseConfirm: Boolean(toolUseConfirmQueue[0]),
+   2018      hasPromptQueue: Boolean(promptQueue[0]),
+   2019      hasWorkerSandboxPermission: Boolean(workerSandboxPermissions.queue[0]),
+   2020      hasElicitation: Boolean(elicitation.queue[0]),
+   2021      showingCostDialog,
+   2022>     idleReturnPending,
+   2023      isLoading,
+   2024      ultraplanPendingChoice,
+   2025      ultraplanLaunchPending,
+   2026      showIdeOnboarding,
+   2027      showModelSwitchCallout,
+   2028      showUndercoverCallout,
+   2029      showEffortCallout,
+   2030      showRemoteCallout,
+   2031      lspRecommendation,
+   2032      hintRecommendation,
+  Type 'null' is not assignable to type 'boolean'.

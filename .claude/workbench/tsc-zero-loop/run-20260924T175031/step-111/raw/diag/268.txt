@@ -1,0 +1,3 @@
+src/packages/swarm/src/teammateState.ts(307,13): error TS2322: Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean; }' is not assignable to type 'TaskState'.
+  Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean; }' is not assignable to type 'InProcessTeammateTaskState'.
+    Type '{ onIdleCallbacks: (() => void)[]; type: string; status: string; isIdle?: boolean | undefined; }' is missing the following properties from type 'TaskStateBase': id, description, startTime, outputFile, and 2 more.

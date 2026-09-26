@@ -1,0 +1,47 @@
+src/packages/cli/src/headless/sdk/control/handlers.ts(218,7): error TS2322: Type 'APIProvider' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:208-228 ---
+    208      models: modelInfos,
+    209      account: {
+    210        email: accountInfo?.email,
+    211        organization: accountInfo?.organization,
+    212        subscriptionType: accountInfo?.subscription,
+    213        tokenSource: accountInfo?.tokenSource,
+    214        apiKeySource: accountInfo?.apiKeySource,
+    215        // getAccountInformation() returns undefined under 3P providers, so the
+    216        // other fields are all absent. apiProvider disambiguates "not logged
+    217        // in" (firstParty + tokenSource:none) from "3P, login not applicable".
+    218>       apiProvider: getAPIProvider(),
+    219      },
+    220      pid: process.pid,
+    221    }
+    222  
+    223    if (isFastModeEnabled() && isFastModeAvailable()) {
+    224      const appState = getAppState()
+    225      initResponse.fast_mode_state = getFastModeState(
+    226        options.userSpecifiedModel ?? null,
+    227        appState.fastMode,
+    228      )
+  Type '"codex"' is not assignable to type '"firstParty" | "bedrock" | "vertex" | "foundry" | undefined'.
+src/packages/cli/src/headless/sdk/control/handlers.ts(427,15): error TS2339: Property 'content' does not exist on type 'unknown'.
+  --- código src/packages/cli/src/headless/sdk/control/handlers.ts:417-437 ---
+    417    logMCPDebug(serverName, 'Channel notifications registered')
+    418    logEvent('tengu_mcp_channel_enable', { plugin: pluginId })
+    419  
+    420    // Identical enqueue shape to the interactive register block in
+    421    // useManageMCPConnections. drainCommandQueue processes it between turns —
+    422    // channel messages queue at priority 'next' and are seen by the model on
+    423    // the turn after they arrive.
+    424    connection.client.setNotificationHandler(
+    425      ChannelMessageNotificationSchema(),
+    426      async notification => {
+    427>       const { content, meta } = notification.params
+    428        logMCPDebug(
+    429          serverName,
+    430          `notifications/claude/channel: ${content.slice(0, 80)}`,
+    431        )
+    432        logEvent('tengu_mcp_channel_message', {
+    433          content_length: content.length,
+    434          meta_key_count: Object.keys(meta ?? {}).length,
+    435          entry_kind:
+    436            'plugin' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    437          is_dev: false,

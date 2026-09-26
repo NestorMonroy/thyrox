@@ -1,0 +1,19 @@
+test_pool_pipeline:
+  ok    los ítems se agrupan por archivo
+  ok    un archivo con un trozo en curso no está listo
+  ok    listo cuando terminan todos sus trozos
+  ok    lo ya tomado no se vuelve a tomar
+  ok    una salida a medio escribir no cuenta como terminada
+  ok    aplica lo seguro y descarta lo que silencia o no encuentra
+  ok    la base es el texto ACTUAL, no HEAD
+  ok    los objetivos son los diagnósticos del archivo
+  ok    sin cambio no hay candidato
+fatal: cannot exec '/tmp/code-sign': No such file or directory
+error: 
+fatal: failed to write commit object
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pool_pipeline.py", line 87, in <module>
+    subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *args], cwd=main, check=True)
+  File "/usr/lib/python3.11/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-qm', 'base']' returned non-zero exit status 128.

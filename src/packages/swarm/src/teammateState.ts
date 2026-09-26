@@ -39,6 +39,7 @@ export {
 } from './teammateContextAlias.js'
 
 import { getTeammateContext } from './teammateContextAlias.js'
+import type { InProcessTeammateTaskState } from './tasks/types.js'
 
 /** Reimplementación local mínima de `isEnvTruthy` (ver divergencia arriba). */
 function isEnvTruthy(envVar: string | boolean | undefined): boolean {
@@ -298,7 +299,7 @@ export function waitForTeammatesToBecomeIdle(
     setAppState(prev => {
       const newTasks = { ...prev.tasks }
       for (const taskId of workingTaskIds) {
-        const task = newTasks[taskId] as InProcessTeammateTaskLike | undefined
+        const task = newTasks[taskId] as InProcessTeammateTaskState | undefined
         if (task && task.type === 'in_process_teammate') {
           // Si la tarea ya está idle, invoca onIdle de inmediato.
           if (task.isIdle) {

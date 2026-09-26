@@ -1,0 +1,23 @@
+src/packages/agent/commitAttribution.ts(299,5): error TS2322: Type 'string' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+  --- código src/packages/agent/commitAttribution.ts:289-309 ---
+    289    state: AttributionState,
+    290    messageId: string,
+    291  ): AttributionSnapshotMessage {
+    292    const fileStates: Record<string, FileAttributionState> = {}
+    293    for (const [path, fileState] of state.fileStates) {
+    294      fileStates[path] = fileState
+    295    }
+    296  
+    297    return {
+    298      type: 'attribution-snapshot',
+    299>     messageId,
+    300      surface: state.surface,
+    301      fileStates,
+    302      promptCount: state.promptCount,
+    303      promptCountAtLastCommit: state.promptCountAtLastCommit,
+    304      permissionPromptCount: state.permissionPromptCount,
+    305      permissionPromptCountAtLastCommit: state.permissionPromptCountAtLastCommit,
+    306      escapeCount: state.escapeCount,
+    307      escapeCountAtLastCommit: state.escapeCountAtLastCommit,
+    308    }
+    309  }

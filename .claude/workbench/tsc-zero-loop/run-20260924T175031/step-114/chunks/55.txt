@@ -1,0 +1,7 @@
+src/packages/permission/src/toolPermission/PermissionContext.ts(127,11): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/permission/src/toolPermission/PermissionContext.ts(174,42): error TS2322: Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[] | undefined' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[] | undefined'.
+  Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam[]' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam[]'.
+    Type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam'.
+      Type 'TextBlockParam' is not assignable to type 'ContentBlockParam'.
+        Index signature for type 'string' is missing in type 'TextBlockParam'.

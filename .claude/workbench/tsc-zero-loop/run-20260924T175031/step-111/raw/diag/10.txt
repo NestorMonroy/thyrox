@@ -1,0 +1,53 @@
+src/packages/agent/QueryEngine.ts(317,40): error TS18046: 'tool' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(349,9): error TS18046: 'initialAppState.toolPermissionContext.additionalWorkingDirectories' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(358,9): error TS2345: Argument of type 'MCPServerConnection[]' is not assignable to parameter of type 'readonly { name: string; }[]'.
+  Type 'MCPServerConnection' is not assignable to type '{ name: string; }'.
+    Types of property 'name' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(385,43): error TS2345: Argument of type '(f: (prev: AppState) => AppState) => void' is not assignable to parameter of type '(f: (prev: unknown) => unknown) => void'.
+  Types of parameters 'f' and 'f' are incompatible.
+    Type 'unknown' is not assignable to type 'AppState'.
+src/packages/agent/QueryEngine.ts(445,35): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'AttributionState'.
+src/packages/agent/QueryEngine.ts(462,15): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(538,11): error TS2698: Spread types may only be created from object types.
+src/packages/agent/QueryEngine.ts(599,11): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(622,18): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(623,12): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(624,13): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(631,34): error TS18048: 'msg.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(655,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/agent/QueryEngine.ts(718,13): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type '`${string}-${string}-${string}-${string}-${string}`'.
+  Type 'undefined' is not assignable to type '`${string}-${string}-${string}-${string}-${string}`'.
+src/packages/agent/QueryEngine.ts(743,9): error TS2322: Type 'Tools' is not assignable to type 'RuntimeTool[]'.
+  Type '{ [key: string]: unknown; name: string; aliases?: string[] | undefined; }' is missing the following properties from type 'RuntimeTool': userFacingName, call
+src/packages/agent/QueryEngine.ts(744,9): error TS2322: Type 'ProcessUserInputContext' is not assignable to type 'RuntimeToolUseContext'.
+  Types of property 'options' are incompatible.
+    Property 'mainLoopModel' is missing in type 'Record<string, unknown>' but required in type '{ [key: string]: unknown; mainLoopModel: string; thinkingConfig?: unknown; tools?: unknown; querySource?: string | undefined; agentDefinitions?: { activeAgents: unknown[]; allowedAgentTypes: unknown[]; } | undefined; }'.
+src/packages/agent/QueryEngine.ts(748,11): error TS2322: Type 'SystemPrompt' is not assignable to type 'SystemPrompt[] | undefined'.
+  Type 'readonly string[] & { readonly __brand: "SystemPrompt"; }' is missing the following properties from type 'SystemPrompt[]': pop, push, reverse, shift, and 5 more.
+src/packages/agent/QueryEngine.ts(757,9): error TS2739: Type 'NonNullableUsage' is missing the following properties from type 'Usage': input_tokens, output_tokens
+src/packages/agent/QueryEngine.ts(864,38): error TS2345: Argument of type 'MessageEvent | StreamEvent | ToolStartEvent | ToolProgressEvent | ToolResultEvent | PermissionRequestEvent | RequestStartEvent | SwarmMessageEvent | SwarmIdleEvent | SwarmShutdownEvent' is not assignable to parameter of type '{ [key: string]: unknown; type: string; }'.
+  Type 'MessageEvent' is not assignable to type '{ [key: string]: unknown; type: string; }'.
+    Index signature for type 'string' is missing in type 'MessageEvent'.
+src/packages/agent/QueryEngine.ts(889,74): error TS2339: Property 'tailUuid' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(954,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(969,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(975,18): error TS2322: Type 'unknown' is not assignable to type 'SDKMessage'.
+src/packages/agent/QueryEngine.ts(984,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  Index signature for type 'string' is missing in type 'BetaUsage'.
+src/packages/agent/QueryEngine.ts(985,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  Type 'NonNullableUsage' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 8 more.
+src/packages/agent/QueryEngine.ts(990,13): error TS2322: Type 'BetaUsage' is not assignable to type 'NonNullableUsage'.
+  Index signature for type 'string' is missing in type 'BetaUsage'.
+src/packages/agent/QueryEngine.ts(991,15): error TS2345: Argument of type 'NonNullableUsage' is not assignable to parameter of type 'BetaUsage'.
+  Type 'NonNullableUsage' is missing the following properties from type 'BetaUsage': cache_creation, cache_creation_input_tokens, cache_read_input_tokens, fallback_credit, and 8 more.
+src/packages/agent/QueryEngine.ts(1005,13): error TS2322: Type 'unknown' is not assignable to type 'NonNullableUsage'.
+src/packages/agent/QueryEngine.ts(1270,17): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(1270,42): error TS2339: Property 'type' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1316,42): error TS18046: '_' is of type 'unknown'.
+src/packages/agent/QueryEngine.ts(1335,32): error TS18048: 'result.message' is possibly 'undefined'.
+src/packages/agent/QueryEngine.ts(1337,22): error TS2339: Property 'type' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1338,45): error TS2339: Property 'text' does not exist on type '{}'.
+src/packages/agent/QueryEngine.ts(1340,34): error TS2339: Property 'text' does not exist on type '{}'.

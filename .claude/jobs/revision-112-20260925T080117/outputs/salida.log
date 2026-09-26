@@ -1,0 +1,9 @@
+LLAMADAS PERDIDAS src/packages/agent/compaction/sessionMemoryCompact.ts: annotateBoundaryWithPreservedSegment×1
+LLAMADAS PERDIDAS src/packages/cli/src/structuredIO.ts: hookJSONOutputSchema×1
+LLAMADAS PERDIDAS src/packages/config/plugin/loadPluginCommands.ts: stats.isFile×2
+LLAMADAS PERDIDAS src/packages/repl/src/components/Messages.tsx: getToolUseIDs×1
+LLAMADAS PERDIDAS src/packages/shell/src/sandbox/sandbox-adapter.ts: require×1, getSandboxBinaryPath×1
+5 de 42 archivos pierden llamadas al transpilar
+TESTS
+6
+__BG_EXIT__=0

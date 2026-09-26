@@ -1,0 +1,23 @@
+src/packages/config/global/config.ts(640,5): error TS6133: 'lastReadFileStats' is declared but its value is never read.
+  --- código src/packages/config/global/config.ts:630-650 ---
+    630  
+    631  // Caché de la config global. A diferencia de la fuente, guarda TAMBIÉN el
+    632  // archivo del que salió: con la divergencia de `filePath` una sola ranura sin
+    633  // esa clave serviría la config de otra ruta.
+    634  let globalConfigCache: {
+    635    config: GlobalConfig | null
+    636    mtime: number
+    637    file: string | null
+    638  } = { config: null, mtime: 0, file: null }
+    639  
+    640> let lastReadFileStats: { mtime: number; size: number } | null = null
+    641  let globalConfigWriteCount = 0
+    642  // Guard de reentrada: evita `getConfig → logEvent → getGlobalConfig →
+    643  // getConfig` cuando el archivo está corrupto.
+    644  let insideGetConfig = false
+    645  let configReadingAllowed = false
+    646  
+    647  export function getGlobalConfigWriteCount(): number {
+    648    return globalConfigWriteCount
+    649  }
+    650  

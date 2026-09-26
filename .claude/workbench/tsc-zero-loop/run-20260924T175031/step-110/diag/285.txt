@@ -1,0 +1,56 @@
+src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts(270,50): error TS2345: Argument of type '(cell: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => unknown'.
+  --- código src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts:260-280 ---
+    260      if (!cell_id) {
+    261        if (edit_mode !== 'insert') {
+    262          return {
+    263            result: false,
+    264            message: 'Cell ID must be specified when not inserting a new cell.',
+    265            errorCode: 7,
+    266          }
+    267        }
+    268      } else {
+    269        // First try to find the cell by its actual ID
+    270>       const cellIndex = notebook.cells.findIndex((cell: { id: string }) => cell.id === cell_id)
+    271  
+    272        if (cellIndex === -1) {
+    273          // If not found, try to parse as a numeric index (cell-N format)
+    274          const parsedCellIndex = parseCellId(cell_id)
+    275          if (parsedCellIndex !== undefined) {
+    276            if (!notebook.cells[parsedCellIndex]) {
+    277              return {
+    278                result: false,
+    279                message: `Cell with index ${parsedCellIndex} does not exist in notebook.`,
+    280                errorCode: 7,
+  Types of parameters 'cell' and 'value' are incompatible.
+    Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+      Types of property 'id' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts(355,46): error TS2345: Argument of type '(cell: { id: string; }) => boolean' is not assignable to parameter of type '(value: NotebookCell, index: number, obj: NotebookCell[]) => unknown'.
+  --- código src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts:345-365 ---
+    345              updated_file: '',
+    346            },
+    347          }
+    348        }
+    349  
+    350        let cellIndex
+    351        if (!cell_id) {
+    352          cellIndex = 0 // Default to inserting at the beginning if no cell_id is provided
+    353        } else {
+    354          // First try to find the cell by its actual ID
+    355>         cellIndex = notebook.cells.findIndex((cell: { id: string }) => cell.id === cell_id)
+    356  
+    357          // If not found, try to parse as a numeric index (cell-N format)
+    358          if (cellIndex === -1) {
+    359            const parsedCellIndex = parseCellId(cell_id)
+    360            if (parsedCellIndex !== undefined) {
+    361              cellIndex = parsedCellIndex
+    362            }
+    363          }
+    364  
+    365          if (originalEditMode === 'insert') {
+  Types of parameters 'cell' and 'value' are incompatible.
+    Type 'NotebookCell' is not assignable to type '{ id: string; }'.
+      Types of property 'id' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.

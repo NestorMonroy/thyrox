@@ -31,7 +31,6 @@ import {
   type PromptInputMode,
 } from '../textInputTypes.js'
 import {
-  type AgentMentionAttachment,
   createAttachmentMessage,
   getAttachmentMessages,
 } from '@thyrox/agent/attachments.js'
@@ -557,7 +556,7 @@ async function processUserInputBase(
     const trimmedInput = inputString.trim()
 
     const agentMention = attachmentMessages.find(
-      (m): m is AttachmentMessage<AgentMentionAttachment> =>
+      (m): m is AttachmentMessage =>
         m.attachment.type === 'agent_mention',
     )
 

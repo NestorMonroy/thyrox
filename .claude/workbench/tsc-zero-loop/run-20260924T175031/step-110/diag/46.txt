@@ -1,0 +1,33 @@
+src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts(147,12): error TS2367: This comparison appears to be unintentional because the types 'void' and 'boolean' have no overlap.
+  --- código src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts:137-152 ---
+    137  describe('registerCleanup — return value contract', () => {
+    138    test('unregister fn returns boolean (Set.delete result)', () => {
+    139      // Set.delete returns true if the element was present. Document the
+    140      // return type so callers can know if they double-unregistered.
+    141      const fn = async () => {}
+    142      const unreg = registerCleanup(fn)
+    143      const firstResult = unreg()
+    144      // Set.delete returns boolean. The fn signature says `() => void`
+    145      // but the underlying Set.delete returns true. TypeScript erases
+    146      // the boolean — but at runtime it's there.
+    147>     expect(firstResult === true || firstResult === undefined).toBe(true)
+    148      // Second call returns false (already gone).
+    149      const secondResult = unreg()
+    150      expect(secondResult === false || secondResult === undefined).toBe(true)
+    151    })
+    152  })
+src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts(150,12): error TS2367: This comparison appears to be unintentional because the types 'void' and 'boolean' have no overlap.
+  --- código src/packages/app-host/src/bootstrap/__tests__/cleanupRegistry.test.ts:140-152 ---
+    140      // return type so callers can know if they double-unregistered.
+    141      const fn = async () => {}
+    142      const unreg = registerCleanup(fn)
+    143      const firstResult = unreg()
+    144      // Set.delete returns boolean. The fn signature says `() => void`
+    145      // but the underlying Set.delete returns true. TypeScript erases
+    146      // the boolean — but at runtime it's there.
+    147      expect(firstResult === true || firstResult === undefined).toBe(true)
+    148      // Second call returns false (already gone).
+    149      const secondResult = unreg()
+    150>     expect(secondResult === false || secondResult === undefined).toBe(true)
+    151    })
+    152  })

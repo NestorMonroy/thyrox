@@ -48,8 +48,9 @@ export function getAgentModel(
   toolSpecifiedModel?: ModelAlias,
   permissionMode?: PermissionMode,
 ): string {
-  if (readEnv('CLAUDE_CODE_SUBAGENT_MODEL')) {
-    return parseUserSpecifiedModel(readEnv('CLAUDE_CODE_SUBAGENT_MODEL'))
+  const subagentModelEnv = readEnv('CLAUDE_CODE_SUBAGENT_MODEL')
+  if (subagentModelEnv) {
+    return parseUserSpecifiedModel(subagentModelEnv)
   }
 
   // Unpack the parent model to detect which connection it routes through.

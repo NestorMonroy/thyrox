@@ -1,0 +1,20 @@
+src/packages/shell/src/testing/index.ts(137,3): error TS2741: Property 'taskOutput' is missing in type '{ background: () => boolean; result: Promise<ExecResult>; kill: () => void; status: "completed"; cleanup: () => void; }' but required in type 'ShellCommand'.
+  --- código src/packages/shell/src/testing/index.ts:127-144 ---
+    127      return {}
+    128    }
+    129  }
+    130  
+    131  /**
+    132   * Stub de comando de shell ya completado, con resultado determinista.
+    133   */
+    134  export function createCompletedShellCommand(
+    135    result: ExecResult,
+    136  ): ShellCommand {
+    137>   return {
+    138      background: () => false,
+    139      result: Promise.resolve(result),
+    140      kill: () => {},
+    141      status: 'completed',
+    142      cleanup: () => {},
+    143    }
+    144  }

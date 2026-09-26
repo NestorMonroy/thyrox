@@ -105,7 +105,7 @@ export async function setup(
   // Teammate snapshot — SIMPLE-only gate (no escape hatch, swarm not used in bare)
   if (!isBareMode() && isAgentSwarmsEnabled()) {
     const { captureTeammateModeSnapshot } = await import(
-      '@thyrox/swarm'
+      '@thyrox/swarm/backends/teammateModeSnapshot.js'
     )
     captureTeammateModeSnapshot()
   }
@@ -413,10 +413,10 @@ export async function setup(
     ) {
       // Only await if permission mode is set to bypass
       const [isDocker, hasInternet] = await Promise.all([
-        envDynamic.getIsDocker(),
+        (envDynamic.getIsDocker as () => Promise<boolean>)(),
         env.hasInternetAccess(),
       ])
-      const isBubblewrap = envDynamic.getIsBubblewrapSandbox()
+      const isBubblewrap = (envDynamic.getIsBubblewrapSandbox as () => boolean)()
       const isSandbox = process.env.IS_SANDBOX === '1'
       const isSandboxed = isDocker || isBubblewrap || isSandbox
       if (!isSandboxed || hasInternet) {

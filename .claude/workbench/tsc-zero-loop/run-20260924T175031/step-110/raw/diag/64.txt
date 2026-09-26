@@ -1,0 +1,2 @@
+src/packages/cli/src/entry/main.tsx(42,3): error TS2322: Type '() => string' is not assignable to type '() => "light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.
+  Type 'string' is not assignable to type '"light" | "dark" | "auto" | "light-daltonized" | "dark-daltonized" | "light-ansi" | "dark-ansi"'.

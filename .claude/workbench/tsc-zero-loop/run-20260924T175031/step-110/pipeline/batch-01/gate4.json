@@ -1,0 +1,178 @@
+{
+ "reviewed": [
+  {
+   "pattern": "align-self-stretch-not-in-style-union",
+   "files": [
+    "src/packages/@ant/ink/src/theme/Tree.tsx"
+   ]
+  },
+  {
+   "pattern": "let-null-narrowed-by-closure-assignment",
+   "files": [
+    "src/packages/agent/__tests__/attributionSnapshotHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "campo-de-index-signature-usado-sin-narrow-en-test",
+   "files": [
+    "src/packages/agent/__tests__/createAttachmentMessage.test.ts"
+   ]
+  },
+  {
+   "pattern": "as-never-forces-generic-to-never",
+   "files": [
+    "src/packages/agent/__tests__/createMessageHelpers.test.ts"
+   ]
+  },
+  {
+   "pattern": "discriminated-union-property-access-without-narrowing",
+   "files": [
+    "src/packages/agent/__tests__/createProductionDeps.test.ts"
+   ]
+  },
+  {
+   "pattern": "missing-required-uuid-in-message-literal-cast",
+   "files": [
+    "src/packages/agent/__tests__/extractConversationText.test.ts"
+   ]
+  },
+  {
+   "pattern": "boolean-literal-widened-in-discriminant-union",
+   "files": [
+    "src/packages/agent/__tests__/fixtures/mockDeps.ts"
+   ]
+  },
+  {
+   "pattern": "literal-uuid-no-encaja-template-literal-type",
+   "files": [
+    "src/packages/agent/__tests__/isSyntheticMessage.test.ts"
+   ]
+  },
+  {
+   "pattern": "test-helper-returns-widened-union-instead-of-member",
+   "files": [
+    "src/packages/agent/__tests__/messageQueries.test.ts"
+   ]
+  },
+  {
+   "pattern": "todo-no-estrecha-union-discriminada",
+   "files": [
+    "src/packages/agent/__tests__/stopHookBlockCap.test.ts"
+   ]
+  },
+  {
+   "pattern": "trim-on-string-or-null-return",
+   "files": [
+    "src/packages/agent/background/fleet/generateJobName.ts"
+   ]
+  },
+  {
+   "pattern": "message-id-string-vs-uuid-brand",
+   "files": [
+    "src/packages/agent/commitAttribution.ts"
+   ]
+  },
+  {
+   "pattern": "context-dep-interface-declared-sync-but-impl-async",
+   "files": [
+    "src/packages/agent/createDeps.ts"
+   ]
+  },
+  {
+   "pattern": "hookevent-stub-unknown-from-headless-sdk",
+   "files": [
+    "src/packages/agent/hooks/registerFrontmatterHooks.ts"
+   ]
+  },
+  {
+   "pattern": "trimmed-local-task-state-missing-taskstate-fields",
+   "files": [
+    "src/packages/agent/inProcessTeammateHelpers.ts"
+   ]
+  },
+  {
+   "pattern": "host-binding-not-in-local-agenthostbindings-subset",
+   "files": [
+    "src/packages/agent/internal/queryDeps.ts"
+   ]
+  },
+  {
+   "pattern": "untyped-flatmap-callback-branch-union",
+   "files": [
+    "src/packages/agent/messages.ts"
+   ]
+  },
+  {
+   "pattern": "generic-fallback-literal-not-widened",
+   "files": [
+    "src/packages/agent/messages.ts"
+   ]
+  },
+  {
+   "pattern": "require-stub-wider-than-zod-enum-contract",
+   "files": [
+    "src/packages/agent/sessionStores.ts"
+   ]
+  },
+  {
+   "pattern": "relative-import-missing-parent-dir",
+   "files": [
+    "src/packages/agent/skillSearch/prefetch.ts"
+   ]
+  },
+  {
+   "pattern": "union-literal-record-missing-member",
+   "files": [
+    "src/packages/agent/statusAlias.tsx"
+   ]
+  },
+  {
+   "pattern": "stub-guessed-relative-path-instead-of-real-export",
+   "files": [
+    "src/packages/agent/tasks/MonitorMcpTask/MonitorMcpTask.ts"
+   ]
+  },
+  {
+   "pattern": "map-callback-return-type-not-widened",
+   "files": [
+    "src/packages/agent/workflow/namedWorkflows.ts"
+   ]
+  },
+  {
+   "pattern": "type-predicate-on-destructured-binding",
+   "files": [
+    "src/packages/app-host/src/init.ts"
+   ]
+  },
+  {
+   "pattern": "value-setter-store-vs-updater-setter-hostsessionstore",
+   "files": [
+    "src/packages/app-host/src/runtime/bootstrap.ts"
+   ]
+  },
+  {
+   "pattern": "stale-ts-expect-error-directive",
+   "files": [
+    "src/packages/app-host/src/startup/__tests__/ghAuthStatus.test.ts"
+   ]
+  },
+  {
+   "pattern": "local-command-call-from-wrong-package",
+   "files": [
+    "src/packages/bridge/commands/bridge-kick.ts"
+   ]
+  },
+  {
+   "pattern": "node-builtin-symbol-used-but-not-imported",
+   "files": [
+    "src/packages/bridge/src/internal/pendingCrossPackageDeps.ts"
+   ]
+  },
+  {
+   "pattern": "barrel-omits-symbol-with-own-package-subpath",
+   "files": [
+    "src/packages/cli/src/entry/cli.tsx"
+   ]
+  }
+ ]
+}

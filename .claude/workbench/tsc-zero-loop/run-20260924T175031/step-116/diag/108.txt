@@ -1,0 +1,26 @@
+src/packages/provider/src/gemini/streamAdapter.ts(31,13): error TS2352: Conversion of type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' to type 'BetaRawMessageStreamEvent' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/provider/src/gemini/streamAdapter.ts:21-41 ---
+     21    for await (const chunk of stream) {
+     22      const usage = chunk.usageMetadata
+     23      if (usage) {
+     24        inputTokens = usage.promptTokenCount ?? inputTokens
+     25        outputTokens =
+     26          (usage.candidatesTokenCount ?? 0) + (usage.thoughtsTokenCount ?? 0)
+     27      }
+     28  
+     29      if (!started) {
+     30        started = true
+     31>       yield {
+     32          type: 'message_start',
+     33          message: {
+     34            id: messageId,
+     35            type: 'message',
+     36            role: 'assistant',
+     37            content: [],
+     38            model,
+     39            stop_reason: null,
+     40            stop_sequence: null,
+     41            usage: {
+  Type '{ type: "message_start"; message: { id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }; }' is not comparable to type 'BetaRawMessageStartEvent'.
+    Types of property 'message' are incompatible.
+      Type '{ id: string; type: "message"; role: "assistant"; content: never[]; model: string; stop_reason: null; stop_sequence: null; usage: { input_tokens: number; output_tokens: number; cache_creation_input_tokens: number; cache_read_input_tokens: number; }; }' is missing the following properties from type 'BetaMessage': container, context_management, diagnostics, stop_details

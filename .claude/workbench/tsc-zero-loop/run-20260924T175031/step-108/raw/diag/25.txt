@@ -1,0 +1,10 @@
+src/packages/repl/src/hooksSettings.ts(215,43): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksSettings.ts(216,43): error TS2538: Type 'unknown' cannot be used as an index type.
+src/packages/repl/src/hooksSettings.ts(218,52): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/packages/repl/src/hooksSettings.ts(219,52): error TS7006: Parameter 'h' implicitly has an 'any' type.
+src/packages/repl/src/hooksSettings.ts(228,55): error TS2345: Argument of type '(source: HookSource) => number' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => number'.
+  Types of parameters 'source' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'HookSource'.
+src/packages/repl/src/hooksSettings.ts(229,55): error TS2345: Argument of type '(source: HookSource) => number' is not assignable to parameter of type '(value: unknown, index: number, array: unknown[]) => number'.
+  Types of parameters 'source' and 'value' are incompatible.
+    Type 'unknown' is not assignable to type 'HookSource'.

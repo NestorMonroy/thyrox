@@ -1,0 +1,51 @@
+patron: indexed-access-inside-length-bounded-loop
+senal_del_verificador: TS2532: Object is possibly 'undefined'
+fix_generico: Cuando el índice está acotado por `i < arr.length` en la propia cabecera del bucle, el acceso `arr[i]` es seguro en runtime pero `noUncheckedIndexedAccess` lo tipa `T | undefined`. Si el valor se usa una sola vez con un default razonable (p. ej. una línea vacía se ignora igual), usar `arr[i] ?? '<default>'`; si se usa varias veces en el mismo bloque (comparaciones, propiedades), extraerlo primero a una constante con `arr[i]!` — el `!` está garantizado por la comprobación de límite inmediatamente visible en la cabecera del `for`.
+
+diagnósticos de este archivo que casan la señal:
+src/packages/skills/src/fromDir.ts(37,9): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/skills/src/fromDir.ts:27-47 ---
+     27  /** Detecta el fence del frontmatter y separa meta de cuerpo. */
+     28  function splitFrontmatter(raw: string): { meta: Map<string, string>; body: string } {
+     29    const lines = raw.split('\n')
+     30    const first = (lines[0] ?? '').trimEnd()
+     31    // Dos estilos medidos: `---` y un fence cercado (```yml / ```yaml / ```).
+     32    const close = first === '---' ? '---' : first.startsWith('```') ? '```' : null
+     33    if (close === null) return { meta: new Map(), body: raw }
+     34  
+     35    let end = -1
+     36    for (let i = 1; i < lines.length; i++) {
+     37>     if (lines[i].trimEnd() === close) { end = i; break }
+     38    }
+     39    if (end === -1) return { meta: new Map(), body: raw } // frontmatter sin cerrar
+     40  
+     41    const meta = new Map<string, string>()
+     42    for (let i = 1; i < end; i++) {
+     43      const line = lines[i]
+     44      // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
+     45      const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
+     46      if (m && !/^\s/.test(line)) meta.set(m[1], m[2])
+     47    }
+src/packages/skills/src/fromDir.ts(51,34): error TS2532: Object is possibly 'undefined'.
+  --- código src/packages/skills/src/fromDir.ts:41-61 ---
+     41    const meta = new Map<string, string>()
+     42    for (let i = 1; i < end; i++) {
+     43      const line = lines[i]
+     44      // Sólo claves en columna cero: las anidadas (metadata:) llevan sangría.
+     45      const m = /^([A-Za-z][\w-]*):\s?(.*)$/.exec(line)
+     46      if (m && !/^\s/.test(line)) meta.set(m[1], m[2])
+     47    }
+     48  
+     49    // El cuerpo empieza tras el cierre; se recortan las líneas en blanco iniciales.
+     50    let start = end + 1
+     51>   while (start < lines.length && lines[start].trim() === '') start++
+     52    return { meta, body: lines.slice(start).join('\n') }
+     53  }
+     54  
+     55  /** Quita un par de comillas envolventes si las hay — la descripción va citada o desnuda. */
+     56  function unquote(v: string): string {
+     57    const t = v.trim()
+     58    if (t.length >= 2 && ((t[0] === '"' && t.at(-1) === '"') || (t[0] === "'" && t.at(-1) === "'"))) {
+     59      return t.slice(1, -1)
+     60    }
+     61    return t

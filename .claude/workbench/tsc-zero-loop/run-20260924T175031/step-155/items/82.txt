@@ -1,0 +1,48 @@
+src/packages/repl/src/screens/REPLView.tsx(3295,11): error TS2698: Spread types may only be created from object types.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3285-3305 ---
+   3285              ...updatedToolPermissionContext,
+   3286              mode: 'auto',
+   3287              prePlanMode: undefined,
+   3288            });
+   3289          }
+   3290  
+   3291          return {
+   3292            ...prev,
+   3293            initialMessage: null,
+   3294            toolPermissionContext: updatedToolPermissionContext,
+   3295>           ...(shouldStorePlanForVerification && {
+   3296              pendingPlanVerification: {
+   3297                plan: initialMsg.message.planContent!,
+   3298                verificationStarted: false,
+   3299                verificationCompleted: false,
+   3300              },
+   3301            }),
+   3302          };
+   3303        });
+   3304  
+   3305        // Create file history snapshot for code rewind
+src/packages/repl/src/screens/REPLView.tsx(4000,9): error TS2322: Type '{ mode: {}; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: PermissionMode; }' is not assignable to type '{ mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; alwaysAllowRules: ToolPermissionRulesBySource; ... 7 more ...; prePlanMode?: InternalPermissionMode | undefined; }'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:3990-4010 ---
+   3990          (
+   3991            require('@thyrox/agent/contextCollapse/index.js') as typeof import('@thyrox/agent/contextCollapse/index.js')
+   3992          ).resetContextCollapse();
+   3993          /* eslint-enable @typescript-eslint/no-require-imports */
+   3994        }
+   3995  
+   3996        // Restore state from the message we're rewinding to
+   3997        setAppState(prev => ({
+   3998          ...prev,
+   3999          // Restore permission mode from the message
+   4000>         toolPermissionContext:
+   4001            message.permissionMode && prev.toolPermissionContext.mode !== message.permissionMode
+   4002              ? {
+   4003                  ...prev.toolPermissionContext,
+   4004                  mode: message.permissionMode,
+   4005                }
+   4006              : prev.toolPermissionContext,
+   4007          // Clear stale prompt suggestion from previous conversation state
+   4008          promptSuggestion: {
+   4009            text: null,
+   4010            promptId: null,
+  Types of property 'mode' are incompatible.
+    Type '{}' is not assignable to type 'InternalPermissionMode'.

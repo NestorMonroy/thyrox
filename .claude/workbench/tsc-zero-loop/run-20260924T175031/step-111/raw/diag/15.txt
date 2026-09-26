@@ -1,0 +1,8 @@
+src/packages/agent/__tests__/snipProjection.test.ts(23,29): error TS2352: Conversion of type '{ type: "system"; subtype: "snip_boundary"; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "system"; subtype: "snip_boundary"; }' is not comparable to type 'SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | SystemFileSnapshotMessage | ... 11 more ... | SystemThinkingMessage'.
+    Type '{ type: "system"; subtype: "snip_boundary"; }' is not comparable to type 'SystemThinkingMessage'.
+      Property 'uuid' is missing in type '{ type: "system"; subtype: "snip_boundary"; }' but required in type 'MessageBase'.
+src/packages/agent/__tests__/snipProjection.test.ts(59,29): error TS2352: Conversion of type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' is not comparable to type 'SystemLocalCommandMessage | SystemCompactBoundaryMessage | SystemAPIErrorMessage | SystemFileSnapshotMessage | ... 11 more ... | SystemThinkingMessage'.
+    Type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' is not comparable to type 'SystemThinkingMessage'.
+      Property 'uuid' is missing in type '{ type: "system"; subtype: "SNIP_BOUNDARY"; }' but required in type 'MessageBase'.

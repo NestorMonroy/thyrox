@@ -103,6 +103,7 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | únicos por columna 2, primera ocurrencia | `awk '!arr[$2]++' archivo` |
 | suma / media de una columna | `awk '{s+=$1} END{print s}'` / `awk '{s+=$2} END{print s/NR}'` |
 | reemplazo global | `sed 's/foo/bar/g' archivo` |
+| reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |
 | recortar espacios al inicio/final | `sed 's/^[ \t]*//;s/[ \t]*$//' archivo` |
 | borrar líneas en blanco | `sed '/^$/d' archivo` |
 | líneas compartidas entre dos listados ya ordenados | `comm -12 a b` |
@@ -165,6 +166,27 @@ juicio —el ancla de awk, que el `mv` vuelva a la entrada, la exclusión de
 su gemelo inocente (`python3 tests/hooks/test_detect_gawk_opportunity.py`).
 Avisa, no bloquea.
 
+**Un texto fijo no se reemplaza con regex ni con Python.** `perl -i` y
+`sed -i` leen el texto como regex —`$`, `{` y `.` hay que escaparlos— y, con
+comillas anidadas dentro de un `bash -c` o un `eval`, el comando se rompe
+antes de ejecutarse: el 2026-09-25 un `perl -0 -i -pe 's{LEDGER="\$\{…'` murió
+con «syntax error» y se rehízo con un heredoc de Python, que es la otra forma
+cara. `bin/replace_literal` (`src/lib/replace_literal.sh`) usa gawk con
+`index()` —busca el texto literal— y `ENVIRON[...]` —entrega `OLD`/`NEW`
+intactos, sin procesar sus `\` como haría `-v`—; lee el archivo entero, así
+que `OLD` puede ocupar varias líneas; exige una sola coincidencia salvo
+`--all`, como `Edit`; y vuelca con `cat >`, que conserva inodo y permisos.
+Sale 0, 1 (0 o varias coincidencias, archivo intacto) o 2 (no pudo medir, sin
+conteo). Directiva del ejecutor 2026-09-25.
+
+Su gate es `src/hooks/detect_literal_replacement.py`, detector de
+`pretooluse_dispatch.py`: avisa cuando `perl -i`, `sed -i` o un heredoc de
+Python con `.replace(` y escritura reemplazan un texto fijo. Sus dos mitades de
+juicio —que el comando reescriba un archivo, y que el patrón no use
+construcciones de regex de verdad— se probaron por anulación
+(`python3 tests/hooks/test_detect_literal_replacement.py`;
+`bash tests/lib/test-replace-literal.sh`).
+
 No es la lista completa de POSIX — es la que cubre lo que hasta ahora tentaba
 a abrir Python para una tarea de una línea. Se amplía cuando aparezca un caso
 nuevo, no por completitud.
@@ -200,3 +222,25 @@ Origen: directiva del ejecutor 2026-09-12, tras confirmar que la regla
 llevaba dos meses sin script (ERR-063, 2026-09-09) y que su sucesor citado
 por ordinal (`#287`) había colisionado con otros dos sujetos en el store.
 Sucesor con cita durable: **TASK-THYROX-0016**.
+
+## Buscar y repetir: el índice de git y GNU Parallel
+
+Dos detectores de `pretooluse_dispatch.py` cubren los dos momentos en que el
+catálogo de arriba no bastaba para elegir bien:
+
+- **`detect_git_grep_opportunity`** — una pregunta de presencia va a
+  `git grep` sobre el índice, no a `grep -r` ni a `git log -S`. La medición
+  y el porqué están en `search-the-git-index.md`.
+- **`detect_parallel_opportunity`** — un `for`/`while read`/`xargs` que corre
+  un comando externo por elemento, con iteraciones independientes, va a
+  `parallel -j N -k`. Episodio: un `git log --follow` por archivo sobre 97
+  archivos no terminó en 120 s en serie; con `parallel -j8 -k`, 3 min 38 s.
+  No avisa si el cuerpo escribe el índice de git (un único escritor), si
+  modifica en sitio un archivo que no depende de la variable del bucle (las
+  iteraciones quedan encadenadas), ni sobre un `xargs` sin `-n`/`-L`/`-I`,
+  que ya agrupa todos los argumentos en una sola invocación.
+
+```bash
+python3 tests/hooks/test_detect_git_grep_opportunity.py
+python3 tests/hooks/test_detect_parallel_opportunity.py
+```

@@ -1,0 +1,2 @@
+src/packages/shell/src/execFileNoThrow.ts(131,20): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.
+src/packages/shell/src/execFileNoThrow.ts(131,54): error TS2339: Property 'signal' does not exist on type 'ErrnoException'.

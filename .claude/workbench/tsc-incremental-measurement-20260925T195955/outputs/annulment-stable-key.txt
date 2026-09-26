@@ -1,0 +1,13 @@
+== sin recursion en agrupaciones
+FAIL: test_an_arrow_inside_a_group_does_not_close_it
+FAIL: test_nested_reprints_are_not_new_diagnostics
+FAIL: test_nested_unions_reprinted_in_another_order_are_the_same_key
+FAILED (failures=6)
+== la flecha cuenta como cierre
+OK
+== sin separar campos
+FAIL: test_fields_outside_the_union_still_tell_diagnostics_apart
+FAILED (failures=1)
+== la flecha cuenta como cierre (con el caso nuevo)
+FAIL: test_an_arrow_does_not_collapse_distinct_diagnostics
+FAILED (failures=1)

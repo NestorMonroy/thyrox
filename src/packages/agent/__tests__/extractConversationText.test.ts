@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import type { UUID } from 'node:crypto'
 import { extractConversationText } from '../sessionTitle.js'
 import type { Message } from '../messageShapes.js'
 
@@ -136,6 +137,7 @@ describe('extractConversationText — origin filter', () => {
   test('origin.kind === "human" allowed', () => {
     const human = {
       type: 'user',
+      uuid: '11111111-1111-1111-1111-111111111111' as UUID,
       origin: { kind: 'human' },
       message: { content: 'real' },
     } as Message
@@ -147,11 +149,13 @@ describe('extractConversationText — origin filter', () => {
     // conversation thread for title-generation purposes.
     const agent = {
       type: 'user',
+      uuid: '22222222-2222-2222-2222-222222222222' as UUID,
       origin: { kind: 'agent' },
       message: { content: 'agent output' },
     } as Message
     const channel = {
       type: 'user',
+      uuid: '33333333-3333-3333-3333-333333333333' as UUID,
       origin: { kind: 'channel' },
       message: { content: 'channel notification' },
     } as Message

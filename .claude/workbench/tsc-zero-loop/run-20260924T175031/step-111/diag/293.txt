@@ -1,0 +1,20 @@
+src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts(7,16): error TS7016: Could not find a declaration file for module 'he'. '/home/user/thyrox/node_modules/he/he.js' implicitly has an 'any' type.
+  --- código src/packages/tool-registry/src/tools/WebSearchTool/adapters/bingAdapter.ts:1-17 ---
+      1  /**
+      2   * Bing-based search adapter — fetches Bing search pages and extracts
+      3   * search results using regex pattern matching on raw HTML.
+      4   */
+      5  
+      6  import axios from 'axios'
+      7> import he from 'he'
+      8  import { AbortError } from '@thyrox/local-observability/errorHelpers.js'
+      9  import type { SearchResult, SearchOptions, WebSearchAdapter } from './types.js'
+     10  
+     11  const FETCH_TIMEOUT_MS = 30_000
+     12  
+     13  /**
+     14   * Browser-like headers to avoid Bing's anti-bot JS-rendered response.
+     15   * These mimic Microsoft Edge on macOS to get full HTML search results.
+     16   */
+     17  const BROWSER_HEADERS = {
+  Try `npm i --save-dev @types/he` if it exists or add a new declaration (.d.ts) file containing `declare module 'he';`

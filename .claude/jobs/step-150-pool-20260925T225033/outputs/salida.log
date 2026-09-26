@@ -1,0 +1,11 @@
+-- FALLIDO pattern:jsonparse-unknown-result-accessed-without-narrowing .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/7.txt src/packages/agent/hooks.ts src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts
+-- FALLIDO pattern:spread-of-never-typed-test-double .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/9.txt src/packages/agent/query.ts src/packages/repl/src/screens/REPLView.tsx
+-- FALLIDO pattern:import-de-simbolo-no-portado-a-modulo-fuente .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/32.txt src/packages/agent/sessionTools/analyzeContext.ts src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts
+-- FALLIDO pattern:option-stub-resolves-to-unknown-301 .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/45.txt src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts
+-- FALLIDO pattern:leader-tool-use-confirm-queue-unknown-bridge .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/54.txt src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts
+-- FALLIDO pattern:unknown-attachment-field-needs-local-shape .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/51.txt src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts src/packages/repl/src/commands/color/color.ts
+-- FALLIDO pattern:spread-of-unknown-stub-type .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/68.txt src/packages/agent/query.ts src/packages/repl/src/screens/REPLView.tsx
+-- FALLIDO pattern:unknown-stand-in-missing-local-call-contract .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/84.txt src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts
+-- FALLIDO pattern:settings-passthrough-key-collapses-to-empty-object .claude/workbench/tsc-zero-loop/run-20260924T175031/step-150/items/80.txt src/packages/agent/hooks.ts src/packages/agent/query.ts src/packages/cli/src/headless/sdk/session/run-streaming.ts src/packages/config/plugin/marketplaceManager.ts src/packages/repl/src/components/Message.tsx
+items=84 ok=75 fallidos=9
+__BG_EXIT__=1

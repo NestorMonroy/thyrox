@@ -1,0 +1,2 @@
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1234,15): error TS2741: Property 'taskOutput' is missing in type 'import("/home/user/thyrox/src/packages/shell/src/types").ShellCommand' but required in type 'import("/home/user/thyrox/src/packages/shell/src/terminal/ShellCommand").ShellCommand'.
+src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx(1257,30): error TS2339: Property 'taskOutput' does not exist on type 'ShellCommand'.

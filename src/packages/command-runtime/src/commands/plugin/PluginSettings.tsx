@@ -136,13 +136,22 @@ function getExtraMarketplaceSourceInfo(name: string): {
 
   for (const { source, scope } of sourcesToCheck) {
     const settings = getSettingsForSource(source)
-    if (settings?.extraKnownMarketplaces?.[name]) {
+    // `extraKnownMarketplaces` no está declarado en SettingsSchema (queda
+    // fuera del shape tipado, sólo pasa por el passthrough); se afirma su
+    // forma real de mapa por nombre de mercado.
+    const extraKnownMarketplaces = settings?.extraKnownMarketplaces as
+      | Record<string, unknown>
+      | undefined
+    if (extraKnownMarketplaces?.[name]) {
       editableSources.push({ source, scope })
     }
   }
 
   const policySettings = getSettingsForSource('policySettings')
-  const isInPolicy = Boolean(policySettings?.extraKnownMarketplaces?.[name])
+  const policyExtraKnownMarketplaces = policySettings?.extraKnownMarketplaces as
+    | Record<string, unknown>
+    | undefined
+  const isInPolicy = Boolean(policyExtraKnownMarketplaces?.[name])
 
   return { editableSources, isInPolicy }
 }
@@ -344,9 +353,15 @@ function removeExtraMarketplace(
     const updates: Record<string, unknown> = {}
 
     // Remove from extraKnownMarketplaces
-    if (settings.extraKnownMarketplaces?.[name]) {
+    // `extraKnownMarketplaces` no está declarado en SettingsSchema (queda
+    // fuera del shape tipado, sólo pasa por el passthrough); se afirma su
+    // forma real de mapa por nombre de mercado.
+    const extraKnownMarketplaces = settings.extraKnownMarketplaces as
+      | Record<string, unknown>
+      | undefined
+    if (extraKnownMarketplaces?.[name]) {
       updates.extraKnownMarketplaces = {
-        ...settings.extraKnownMarketplaces,
+        ...extraKnownMarketplaces,
         [name]: undefined,
       }
     }

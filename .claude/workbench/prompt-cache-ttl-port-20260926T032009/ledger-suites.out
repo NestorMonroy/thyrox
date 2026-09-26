@@ -1,0 +1,27 @@
+tests/paths/test_ensure_home.py	exit=0	resultado: 17 de 17 aserciones en verde
+tests/session/test-bg-familia.sh	exit=0	aserciones: 26  ok: 26  fallo: 0
+tests/session/test-bg-grace-window.sh	exit=0	aserciones: 5 de 5 · fallos: 0
+tests/session/test-bg-memfree.sh	exit=0	test-bg-memfree: 8 aserciones — 8 ok, 0 falla(s)
+tests/session/test-bg-name-flag.sh	exit=0	resumen: 8 ok, 0 fallo
+tests/session/test-contrato-de-escotilla.sh	exit=0	6 ok · 0 falla(s)  (alcance medido: 1 escotilla de guion; --no-verify no lo es)
+tests/session/test-jobs-ledger-home.sh	exit=0	3 ok, 0 fallos
+tests/session/test-process-group.sh	exit=0	test-process-group: 15 aserciones — 15 ok, 0 falla(s)
+tests/session/test-run-task-pool-isolation.sh	exit=0	resultado: 11 de 11 aserciones en verde
+tests/session/test-run-task-pool-memfree.sh	exit=0	test-run-task-pool-memfree: 12 aserciones — 12 ok, 0 falla(s)
+tests/session/test-run-task-pool-scope.sh	exit=0	resumen: 8 ok, 0 fallo(s)
+tests/session/test-run-task-pool.sh	exit=0	test-run-task-pool: 23 aserciones — 23 ok, 0 falla(s)
+tests/session/test-wait-jobs-dependency.sh	exit=0	resumen: 16 ok, 0 fallo(s)
+tests/session/test-wait-jobs-probe.sh	exit=0	6 ok, 0 fallos
+tests/session/test-wait-jobs.sh	exit=0	44 ok, 0 fallos
+tests/session/test_adopt_background.py	exit=0	27 ok, 0 fallos
+tests/session/test_background.py	exit=0	21 ok, 0 fallos
+tests/session/test_generate_bin.py	exit=0	118 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+tests/session/test_installed_hooks_resolve.py	exit=0	FAILED (failures=2)
+tests/session/test_job_ledger.py	exit=0	42 ok, 0 fallos
+tests/session/test_job_runs.py	exit=0	resumen: 0 fallo(s)
+tests/session/test_jobs_home.py	exit=0	OK
+tests/session/test_marker_wait.py	exit=0	26 ok, 0 fallos
+tests/session/test_task_pool.py	exit=0	27 ok, 0 fallos
+tests/session/test_user_wiring.py	exit=0	85 ok, 0 fallos
+tests/session/test_write_env.py	exit=0	24 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)
+tests/verify/test-assert-no-writes.sh	exit=0	OK: todas las aserciones pasan (alcance medido: 5 payload(s) de despacho, 11 detector(es) por payload)

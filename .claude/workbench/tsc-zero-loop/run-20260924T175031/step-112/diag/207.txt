@@ -1,0 +1,46 @@
+src/packages/repl/src/screens/REPLView.tsx(2696,17): error TS18046: 'last.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }
+src/packages/repl/src/screens/REPLView.tsx(2696,36): error TS18046: 'newMessage.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/REPLView.tsx:2686-2706 ---
+   2686              // also skips the transcript write.
+   2687              // agent_progress / hook_progress / skill_progress are NOT ephemeral
+   2688              // — each carries distinct state the UI needs (e.g. subagent tool
+   2689              // history). Replacing those leaves the AgentTool UI stuck at
+   2690              // "Initializing…" because it renders the full progress trail.
+   2691              setMessages(oldMessages => {
+   2692                const last = oldMessages.at(-1);
+   2693                if (
+   2694                  last?.type === 'progress' &&
+   2695                  last.parentToolUseID === newMessage.parentToolUseID &&
+   2696>                 last.data.type === newMessage.data.type
+   2697                ) {
+   2698                  const copy = oldMessages.slice();
+   2699                  copy[copy.length - 1] = newMessage;
+   2700                  return copy;
+   2701                }
+   2702                return [...oldMessages, newMessage];
+   2703              });
+   2704            } else {
+   2705              setMessages(oldMessages => [...oldMessages, newMessage]);
+   2706            }

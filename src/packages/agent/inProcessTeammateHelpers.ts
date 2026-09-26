@@ -36,6 +36,8 @@ type InProcessTeammateTaskState = {
   type: 'in_process_teammate'
   id: string
   identity: { agentName: string; teamName: string }
+  status: string
+  awaitingPlanApproval: boolean
 }
 
 /**

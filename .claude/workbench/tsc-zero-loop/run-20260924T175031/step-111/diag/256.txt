@@ -1,0 +1,69 @@
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(24,7): error TS18046: 'm.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts:14-34 ---
+     14   */
+     15  export function deriveStopHookSpinnerSuffix(
+     16    messages: ReadonlyArray<Message>,
+     17    isLoading: boolean,
+     18  ): string | null {
+     19    if (!isLoading) return null
+     20  
+     21    const progressMsgs = messages.filter(
+     22      (m): m is ProgressMessage<HookProgress> =>
+     23        m.type === 'progress' &&
+     24>       m.data.type === 'hook_progress' &&
+     25        (m.data.hookEvent === 'Stop' || m.data.hookEvent === 'SubagentStop'),
+     26    )
+     27    if (progressMsgs.length === 0) return null
+     28  
+     29    const currentToolUseID = progressMsgs.at(-1)?.toolUseID
+     30    if (!currentToolUseID) return null
+     31  
+     32    const hasSummaryForCurrentExecution = messages.some(
+     33      m =>
+     34        m.type === 'system' &&
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,8): error TS18046: 'm.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts:15-35 ---
+     15  export function deriveStopHookSpinnerSuffix(
+     16    messages: ReadonlyArray<Message>,
+     17    isLoading: boolean,
+     18  ): string | null {
+     19    if (!isLoading) return null
+     20  
+     21    const progressMsgs = messages.filter(
+     22      (m): m is ProgressMessage<HookProgress> =>
+     23        m.type === 'progress' &&
+     24        m.data.type === 'hook_progress' &&
+     25>       (m.data.hookEvent === 'Stop' || m.data.hookEvent === 'SubagentStop'),
+     26    )
+     27    if (progressMsgs.length === 0) return null
+     28  
+     29    const currentToolUseID = progressMsgs.at(-1)?.toolUseID
+     30    if (!currentToolUseID) return null
+     31  
+     32    const hasSummaryForCurrentExecution = messages.some(
+     33      m =>
+     34        m.type === 'system' &&
+     35        m.subtype === 'stop_hook_summary' &&
+src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts(25,39): error TS18046: 'm.data' is of type 'unknown'.
+  --- código src/packages/repl/src/screens/repl/stopHookSpinnerSuffix.ts:15-35 ---
+     15  export function deriveStopHookSpinnerSuffix(
+     16    messages: ReadonlyArray<Message>,
+     17    isLoading: boolean,
+     18  ): string | null {
+     19    if (!isLoading) return null
+     20  
+     21    const progressMsgs = messages.filter(
+     22      (m): m is ProgressMessage<HookProgress> =>
+     23        m.type === 'progress' &&
+     24        m.data.type === 'hook_progress' &&
+     25>       (m.data.hookEvent === 'Stop' || m.data.hookEvent === 'SubagentStop'),
+     26    )
+     27    if (progressMsgs.length === 0) return null
+     28  
+     29    const currentToolUseID = progressMsgs.at(-1)?.toolUseID
+     30    if (!currentToolUseID) return null
+     31  
+     32    const hasSummaryForCurrentExecution = messages.some(
+     33      m =>
+     34        m.type === 'system' &&
+     35        m.subtype === 'stop_hook_summary' &&

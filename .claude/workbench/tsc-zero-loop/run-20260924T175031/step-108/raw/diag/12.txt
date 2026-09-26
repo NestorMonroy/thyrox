@@ -1,0 +1,7 @@
+src/packages/agent/internal/fileHistoryCore.ts(60,30): error TS2339: Property 'getIsNonInteractiveSession' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(168,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(315,35): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(730,44): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(952,30): error TS2339: Property 'getClaudeConfigHomeDir' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(1020,39): error TS2339: Property 'recordFileHistorySnapshot' does not exist on type 'AgentHostBindings'.
+src/packages/agent/internal/fileHistoryCore.ts(1093,30): error TS2339: Property 'notifyVscodeFileUpdated' does not exist on type 'AgentHostBindings'.

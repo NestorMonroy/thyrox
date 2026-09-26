@@ -40,6 +40,7 @@ describe('@thyrox/tool-registry integration', () => {
         )
         return filtered.filter(tool => tool.isEnabled())
       },
+      replOnlyToolNames: () => new Set<string>(),
     })
   })
 

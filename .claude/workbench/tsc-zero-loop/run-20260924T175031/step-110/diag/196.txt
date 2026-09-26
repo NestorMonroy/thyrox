@@ -1,0 +1,93 @@
+src/packages/repl/src/components/MessageSelector.tsx(540,50): error TS2769: No overload matches this call.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:530-550 ---
+    530                borderBottom={false}
+    531                borderLeft={true}
+    532                borderLeftDimColor
+    533              >
+    534                <UserMessageOption
+    535                  userMessage={messageToRestore}
+    536                  color="text"
+    537                  isCurrent={false}
+    538                />
+    539                <Text dimColor>
+    540>                 ({formatRelativeTimeAgo(new Date(messageToRestore.timestamp))})
+    541                </Text>
+    542              </Box>
+    543              <RestoreOptionDescription
+    544                selectedRestoreOption={selectedRestoreOption}
+    545                canRestoreCode={!!canRestoreCode}
+    546                diffStatsForRestore={diffStatsForRestore}
+    547              />
+    548              {isRestoring && isSummarizeOption(restoringOption) ? (
+    549                <Box flexDirection="row" gap={1}>
+    550                  <Spinner />
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'unknown' is not assignable to parameter of type 'string | number'.
+src/packages/repl/src/components/MessageSelector.tsx(1027,9): error TS2367: This comparison appears to be unintentional because the types '"assistant" | "grouped_tool_use" | "collapsed_read_search"' and '"user"' have no overlap.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:1017-1037 ---
+   1017    for (let i = fromIndex + 1; i < messages.length; i++) {
+   1018      const msg = messages[i]
+   1019      if (!msg) continue
+   1020  
+   1021      // Skip known non-meaningful message types
+   1022      if (isSyntheticMessage(msg)) continue
+   1023      if (isToolUseResultMessage(msg)) continue
+   1024      if (msg.type === 'progress') continue
+   1025      if (msg.type === 'system') continue
+   1026      if (msg.type === 'attachment') continue
+   1027>     if (msg.type === 'user' && msg.isMeta) continue
+   1028  
+   1029      // Assistant with actual content = meaningful
+   1030      if (msg.type === 'assistant') {
+   1031        const content = msg.message.content
+   1032        if (Array.isArray(content)) {
+   1033          const hasMeaningfulContent = content.some(
+   1034            block =>
+   1035              (block.type === 'text' && block.text.trim()) ||
+   1036              block.type === 'tool_use',
+   1037          )
+src/packages/repl/src/components/MessageSelector.tsx(1027,36): error TS2339: Property 'isMeta' does not exist on type 'never'.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:1017-1037 ---
+   1017    for (let i = fromIndex + 1; i < messages.length; i++) {
+   1018      const msg = messages[i]
+   1019      if (!msg) continue
+   1020  
+   1021      // Skip known non-meaningful message types
+   1022      if (isSyntheticMessage(msg)) continue
+   1023      if (isToolUseResultMessage(msg)) continue
+   1024      if (msg.type === 'progress') continue
+   1025      if (msg.type === 'system') continue
+   1026      if (msg.type === 'attachment') continue
+   1027>     if (msg.type === 'user' && msg.isMeta) continue
+   1028  
+   1029      // Assistant with actual content = meaningful
+   1030      if (msg.type === 'assistant') {
+   1031        const content = msg.message.content
+   1032        if (Array.isArray(content)) {
+   1033          const hasMeaningfulContent = content.some(
+   1034            block =>
+   1035              (block.type === 'text' && block.text.trim()) ||
+   1036              block.type === 'tool_use',
+   1037          )
+src/packages/repl/src/components/MessageSelector.tsx(1044,9): error TS2367: This comparison appears to be unintentional because the types '"grouped_tool_use" | "collapsed_read_search"' and '"user"' have no overlap.
+  --- código src/packages/repl/src/components/MessageSelector.tsx:1034-1051 ---
+   1034            block =>
+   1035              (block.type === 'text' && block.text.trim()) ||
+   1036              block.type === 'tool_use',
+   1037          )
+   1038          if (hasMeaningfulContent) return false
+   1039        }
+   1040        continue
+   1041      }
+   1042  
+   1043      // User messages that aren't synthetic or meta = meaningful
+   1044>     if (msg.type === 'user') {
+   1045        return false
+   1046      }
+   1047  
+   1048      // Other types (e.g., tombstone) are non-meaningful, continue
+   1049    }
+   1050    return true
+   1051  }

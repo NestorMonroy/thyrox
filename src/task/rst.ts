@@ -84,7 +84,9 @@ export function parseRstTasks(texto: string): RstTask[] {
     if (m) {
       cerrar()
       const resto = linea.slice(m[0].length).replace(TRAS_EL_ID, '')
-      actual = { id: m[2], done: m[1] === 'x', line: i + 1, partes: [resto] }
+      const id = m[2]
+      if (id === undefined) return
+      actual = { id, done: m[1] === 'x', line: i + 1, partes: [resto] }
       return
     }
     if (!actual) return
@@ -104,7 +106,8 @@ function dependenciasDe(cuerpo: string, propio: string): string[] {
   const cola = cuerpo.slice(marca.index)
   const vistos = new Set<string>()
   for (const m of cola.matchAll(ID_SUELTO)) {
-    if (m[1] !== propio) vistos.add(m[1])
+    const id = m[1]
+    if (id !== undefined && id !== propio) vistos.add(id)
   }
   return [...vistos]
 }

@@ -3,6 +3,7 @@ import * as React from 'react'
 import { Suspense, use, useMemo } from 'react'
 import { Box, NoSelect, Text } from '@anthropic/ink'
 import type {
+  NotebookCell,
   NotebookCellType,
   NotebookContent,
 } from '@thyrox/tool-registry/notebookTypes'
@@ -84,7 +85,7 @@ function NotebookEditToolDiffInner({
       }
       return ''
     }
-    const cell = notebookData.cells.find((cell: { id: string }) => cell.id === cell_id)
+    const cell = notebookData.cells.find((cell: NotebookCell) => cell.id === cell_id)
     if (!cell) {
       return ''
     }

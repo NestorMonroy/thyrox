@@ -1,0 +1,48 @@
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(90,35): error TS7016: Could not find a declaration file for module 'turndown'. '/home/user/thyrox/node_modules/turndown/lib/turndown.cjs.js' implicitly has an 'any' type.
+  --- código src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:80-100 ---
+     80  export function clearWebFetchCache(): void {
+     81    URL_CACHE.clear()
+     82    DOMAIN_CHECK_CACHE.clear()
+     83  }
+     84  
+     85  // Lazy singleton — defers the turndown → @mixmark-io/domino import (~1.4MB
+     86  // retained heap) until the first HTML fetch, and reuses one instance across
+     87  // calls (construction builds 15 rule objects; .turndown() is stateless).
+     88  // @types/turndown ships only `export =` (no .d.mts), so TS types the import
+     89  // as the class itself while Bun wraps CJS in { default } — hence the cast.
+     90> type TurndownCtor = typeof import('turndown')
+     91  let turndownServicePromise: Promise<InstanceType<TurndownCtor>> | undefined
+     92  function getTurndownService(): Promise<InstanceType<TurndownCtor>> {
+     93    return (turndownServicePromise ??= import('turndown').then(m => {
+     94      const Turndown = (m as unknown as { default: TurndownCtor }).default
+     95      return new Turndown()
+     96    }))
+     97  }
+     98  
+     99  // PSR requested limiting the length of URLs to 250 to lower the potential
+    100  // for a data exfiltration. However, this is too restrictive for some customers'
+  Try `npm i --save-dev @types/turndown` if it exists or add a new declaration (.d.ts) file containing `declare module 'turndown';`
+src/packages/tool-registry/src/tools/WebFetchTool/utils.ts(93,45): error TS7016: Could not find a declaration file for module 'turndown'. '/home/user/thyrox/node_modules/turndown/lib/turndown.cjs.js' implicitly has an 'any' type.
+  --- código src/packages/tool-registry/src/tools/WebFetchTool/utils.ts:83-103 ---
+     83  }
+     84  
+     85  // Lazy singleton — defers the turndown → @mixmark-io/domino import (~1.4MB
+     86  // retained heap) until the first HTML fetch, and reuses one instance across
+     87  // calls (construction builds 15 rule objects; .turndown() is stateless).
+     88  // @types/turndown ships only `export =` (no .d.mts), so TS types the import
+     89  // as the class itself while Bun wraps CJS in { default } — hence the cast.
+     90  type TurndownCtor = typeof import('turndown')
+     91  let turndownServicePromise: Promise<InstanceType<TurndownCtor>> | undefined
+     92  function getTurndownService(): Promise<InstanceType<TurndownCtor>> {
+     93>   return (turndownServicePromise ??= import('turndown').then(m => {
+     94      const Turndown = (m as unknown as { default: TurndownCtor }).default
+     95      return new Turndown()
+     96    }))
+     97  }
+     98  
+     99  // PSR requested limiting the length of URLs to 250 to lower the potential
+    100  // for a data exfiltration. However, this is too restrictive for some customers'
+    101  // legitimate use cases, such as JWT-signed URLs (e.g., cloud service signed URLs)
+    102  // that can be much longer. We already require user approval for each domain,
+    103  // which provides a primary security boundary. In addition, Claude Code has
+  Try `npm i --save-dev @types/turndown` if it exists or add a new declaration (.d.ts) file containing `declare module 'turndown';`

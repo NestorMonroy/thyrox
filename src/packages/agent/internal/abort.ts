@@ -11,6 +11,7 @@ export function createSyntheticToolResults(
 
   for (let i = messages.length - 1; i >= 0; i--) {
     const msg = messages[i]
+    if (msg === undefined) continue
     if (msg.type === 'assistant' && Array.isArray(msg.content)) {
       for (const block of msg.content) {
         if (

@@ -1,0 +1,69 @@
+src/packages/agent/hooks.ts(1726,7): error TS2304: Cannot find name 'logForDiagnosticsNoPII'.
+  --- código src/packages/agent/hooks.ts:1716-1736 ---
+   1716        const errOutput = `Error occurred while executing hook command: ${errorMsg}`
+   1717        return {
+   1718          stdout: '',
+   1719          stderr: errOutput,
+   1720          output: errOutput,
+   1721          status: 1,
+   1722        }
+   1723      }
+   1724    } finally {
+   1725      if (shouldEmitDiag) {
+   1726>       logForDiagnosticsNoPII('info', 'hook_spawn_completed', {
+   1727          hook_event_name: hookEvent,
+   1728          index: hookIndex,
+   1729          duration_ms: Date.now() - diagStartMs,
+   1730          exit_code: diagExitCode,
+   1731          aborted: diagAborted,
+   1732        })
+   1733      }
+   1734      stopProgressInterval()
+   1735      // Limpia recursos de stream salvo que la propiedad se haya transferido
+   1736      // (p. ej. al registro de hooks asíncronos)
+src/packages/agent/hooks.ts(1851,16): error TS6133: 'executeEnvHooks' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1841-1861 ---
+   1841      if (parsed.blockingError) {
+   1842        blockingError = parsed.blockingError
+   1843      }
+   1844      if (parsed.response) {
+   1845        elicitationResultResponse = parsed.response
+   1846      }
+   1847    }
+   1848  
+   1849    return { elicitationResultResponse, blockingError }
+   1850  }
+   1851> async function executeEnvHooks(
+   1852    hookInput: HookInput,
+   1853    timeoutMs: number,
+   1854  ): Promise<{
+   1855    results: HookOutsideReplResult[]
+   1856    watchPaths: string[]
+   1857    systemMessages: string[]
+   1858  }> {
+   1859    const results = await executeHooksOutsideREPL({ hookInput, timeoutMs })
+   1860    if (results.length > 0) {
+   1861      invalidateSessionEnvCache()
+src/packages/agent/hooks.ts(1867,16): error TS6133: 'executeFunctionHook' is declared but its value is never read.
+  --- código src/packages/agent/hooks.ts:1857-1877 ---
+   1857    systemMessages: string[]
+   1858  }> {
+   1859    const results = await executeHooksOutsideREPL({ hookInput, timeoutMs })
+   1860    if (results.length > 0) {
+   1861      invalidateSessionEnvCache()
+   1862    }
+   1863    const watchPaths = results.flatMap((r) => r.watchPaths ?? [])
+   1864    const systemMessages = results.map((r) => r.systemMessage).filter((m): m is string => !!m)
+   1865    return { results, watchPaths, systemMessages }
+   1866  }
+   1867> async function executeFunctionHook({
+   1868    hook,
+   1869    messages,
+   1870    hookName,
+   1871    toolUseID,
+   1872    hookEvent,
+   1873    timeoutMs,
+   1874    signal,
+   1875  }: {
+   1876    hook: FunctionHook
+   1877    messages: Message[]

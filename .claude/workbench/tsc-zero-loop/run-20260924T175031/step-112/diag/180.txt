@@ -1,0 +1,49 @@
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(48,3): error TS2724: '"@thyrox/agent/attachments.js"' has no exported member named 'getAttachmentMessages'. Did you mean 'createAttachmentMessage'?
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:38-58 ---
+     38  import { executeUserPromptExpansionHooks } from '@thyrox/agent/hooks.js'
+     39  import { resetMicrocompactState } from '@thyrox/agent/compaction/microCompact.js'
+     40  import type { Progress as AgentProgress } from '@thyrox/tool-registry/tools/AgentTool/AgentTool.js'
+     41  import { runAgent } from '@thyrox/tool-registry/tools/AgentTool/runAgent.js'
+     42  import { renderToolUseProgressMessage } from '@thyrox/tool-registry/tools/AgentTool/UI.js'
+     43  import type { CommandResultDisplay } from '@thyrox/agent/command.js'
+     44  import { createAbortController } from '@thyrox/agent/abortController.js'
+     45  import { getAgentContext } from '@thyrox/agent/agentContext.js'
+     46  import {
+     47    createAttachmentMessage,
+     48>   getAttachmentMessages,
+     49  } from '@thyrox/agent/attachments.js'
+     50  import { logForDebugging } from '@thyrox/local-observability/debug.js'
+     51  import { isEnvTruthy } from '@thyrox/config/env/utils'
+     52  import { AbortError, MalformedCommandError } from '@thyrox/local-observability/errorHelpers.js'
+     53  import { getDisplayPath } from '@thyrox/storage/file.js'
+     54  import {
+     55    extractResultText,
+     56    prepareForkedCommandContext,
+     57  } from '@thyrox/agent/forkedAgent.js'
+     58  import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+src/packages/repl/src/processUserInput/processSlashCommand.tsx(138,44): error TS2345: Argument of type '{ pluginManifest: { [key: string]: unknown; name?: string | undefined; }; repository: string; }' is not assignable to parameter of type '{ pluginManifest: { name: string; userConfig?: Record<string, { type: "string" | "number" | "boolean" | "file" | "directory"; title: string; description: string; required?: boolean | undefined; ... 4 more ...; max?: number | undefined; }> | undefined; ... 17 more ...; defaultEnabled?: boolean | undefined; }; reposit...'.
+  --- código src/packages/repl/src/processUserInput/processSlashCommand.tsx:128-148 ---
+    128        command.name as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    129      invocation_trigger:
+    130        'user-slash' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+    131      ...(command.pluginInfo && {
+    132        _PROTO_plugin_name: command.pluginInfo.pluginManifest
+    133          .name as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    134        ...(pluginMarketplace && {
+    135          _PROTO_marketplace_name:
+    136            pluginMarketplace as AnalyticsMetadata_I_VERIFIED_THIS_IS_PII_TAGGED,
+    137        }),
+    138>       ...buildPluginCommandTelemetryFields(command.pluginInfo),
+    139      }),
+    140    })
+    141  
+    142    const { skillContent, modifiedGetAppState, baseAgent, promptMessages } =
+    143      await prepareForkedCommandContext(command, args, context)
+    144  
+    145    // Merge skill's effort into the agent definition so runAgent applies it
+    146    const agentDefinition =
+    147      command.effort !== undefined
+    148        ? { ...baseAgent, effort: command.effort }
+  The types of 'pluginManifest.name' are incompatible between these types.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.

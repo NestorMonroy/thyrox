@@ -76,16 +76,39 @@ def run_tsc(root: Path, command: list[str], log: Path) -> list[str]:
     return lines
 
 
-def _apply(root: Path, row: dict) -> dict[str, str] | None:
-    """Aplica una propuesta y devuelve los textos originales, o None si alguna
-    base cambió (en ese caso no escribe nada)."""
-    originals = {}
+# Base de un archivo que la propuesta CREA (un porte de módulo trae módulos
+# nuevos). Como toda base, se comprueba: si el archivo ya existe, no se aplica.
+ABSENT_BASE = "absent"
+
+
+def _write(root: Path, file: str, text: str | None) -> None:
+    """Deja `file` con `text`; `None` es «no existía» y lo borra, porque un
+    archivo vacío seguiría siendo un módulo que tsc compila."""
+    path = root / file
+    if text is None:
+        path.unlink(missing_ok=True)
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
+def _apply(root: Path, row: dict) -> dict[str, str | None] | None:
+    """Aplica una propuesta y devuelve los textos originales (`None` para un
+    archivo que crea), o None si alguna base cambió (entonces no escribe)."""
+    originals: dict[str, str | None] = {}
     for file in row["files"]:
-        text = (root / file).read_text()
+        path = root / file
+        if row["bases"].get(file) == ABSENT_BASE:
+            if path.exists():
+                return None
+            originals[file] = None
+            continue
+        text = path.read_text()
         if _sha(text) != row["bases"].get(file):
             return None
         originals[file] = text
-    for file, text in originals.items():
+    for file, original in originals.items():
+        text = original or ""
         # En empate de posición va primero la edición POSTERIOR, para que quede
         # detrás de la anterior: `inferFromUsage` inserta la anotación y el `)`
         # en el mismo punto (el mismo orden que `tsLanguageService.applyEdits`).
@@ -93,11 +116,13 @@ def _apply(root: Path, row: dict) -> dict[str, str] | None:
         edits = [e for _, e in sorted(indexed, key=lambda pair: (-pair[1]["start"], -pair[0]))]
         for edit in edits:
             text = text[: edit["start"]] + edit["newText"] + text[edit["start"] + edit["length"]:]
-        (root / file).write_text(text)
+        _write(root, file, text)
     return originals
 
 
-def _append(ledger: Path, rows: list[dict]) -> None:
+def _append(ledger: Path, rows: list[dict], setup_id: str | None = None) -> None:
+    # La configuración del paso va en cada fila (L02, self-evolving-agents-2026).
+    rows = [{**row, "setup_id": setup_id} for row in rows] if setup_id else rows
     ledger.parent.mkdir(parents=True, exist_ok=True)
     with ledger.open("a", encoding="utf-8") as handle:
         for row in rows:
@@ -112,10 +137,29 @@ def _queued(residual: Path) -> set[tuple[str, str]]:
     return {(row["proposal_id"], json.dumps(row["bases"], sort_keys=True)) for row in _read_jsonl(residual)}
 
 
+def net_outcome(before_lines: list[str], after_lines: list[str], row: dict) -> tuple[str, list[str]]:
+    """La política neta sobre UNA propuesta: se conserva si bajan sus
+    objetivos y baja el total; lo que destapa EN OTROS ARCHIVOS se registra y
+    no se revierte. Lo nuevo en los archivos que la propuesta edita la tumba:
+    esos son suyos, y un error ahí es la propuesta incompleta, no un contrato
+    destapado. Las dos veces que la neta conservó código roto fue así (pasos
+    087 y 094, intento 1: un nombre sin importar y una propiedad de clase
+    renombrada). Devuelve el veredicto y lo nuevo que dejó."""
+    report = verify_proposals(before_lines, after_lines, [
+        Proposal(row["proposal_id"], row["proposer"], frozenset(row["targets"]), frozenset(row["files"]))])
+    verdict = report.verdicts[0]
+    own = set(row["files"])
+    breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
+    if (not breaks_own and verdict.targets_after < verdict.targets_before
+            and report.total_after < report.total_before):
+        return "accepted-net", report.new_diagnostics
+    return verdict.outcome, verdict.new_diagnostics
+
+
 def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, bench: Path, *,
              seed: int, epsilon: float, alpha0: float, max_batch: int | None,
              before_lines: list[str] | None = None, net: bool = False,
-             accept_partial: bool = False) -> StepReport:
+             accept_partial: bool = False, setup_id: str | None = None) -> StepReport:
     runs = 0
     if before_lines is None:
         before_lines = run_tsc(root, tsc, bench / "before.log")
@@ -144,7 +188,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
              "total_before": total_before, "total_after": None} for r in infrastructure]
     outcomes = {r["proposal_id"]: "infrastructure" for r in infrastructure}
     if not applied:
-        _append(ledger, rows)
+        _append(ledger, rows, setup_id)
         return StepReport("stalled", total_before, total_before, runs, outcomes=outcomes)
 
     after_lines = run_tsc(root, tsc, bench / "batch.log")
@@ -154,20 +198,12 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
         for pid in applied])
     outcomes.update({v.proposal_id: v.outcome for v in report.verdicts})
     # Política neta: sólo con una propuesta por lote, porque el total no se
-    # puede repartir entre varias. Se conserva si bajan sus objetivos y baja el
-    # total; lo que destapa EN OTROS ARCHIVOS se registra y no se revierte.
-    # Lo nuevo en los archivos que la propuesta edita la tumba: esos son suyos,
-    # y un error ahí es la propuesta incompleta, no un contrato destapado. Las
-    # dos veces que la neta conservó código roto fue así (pasos 087 y 094,
-    # intento 1: un nombre sin importar y una propiedad de clase renombrada).
+    # puede repartir entre varias (`net_outcome`).
     net_kept: str | None = None
     if net and len(applied) == 1 and len(report.verdicts) == 1:
-        verdict = report.verdicts[0]
-        own = set(by_id[verdict.proposal_id]["files"])
-        breaks_own = any(d.split(": ", 1)[0] in own for d in verdict.new_diagnostics)
-        if (not breaks_own and verdict.targets_after < verdict.targets_before
-                and report.total_after < report.total_before):
-            net_kept = verdict.proposal_id
+        pid = report.verdicts[0].proposal_id
+        if net_outcome(before_lines, after_lines, by_id[pid])[0] == "accepted-net":
+            net_kept = pid
             outcomes[net_kept] = "accepted-net"
 
     # Parcial conservable: bajan sus objetivos sin llegar a cero. Se trata
@@ -190,14 +226,14 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
     reverted = [pid for pid in applied if outcomes[pid] not in keep]
     for pid in reverted:
         for file, text in applied[pid].items():
-            (root / file).write_text(text)
+            _write(root, file, text)
 
     revealed: dict[str, list[str]] = {}
     counter = {"n": 0}
 
-    def write(pid: str, texts: dict[str, str]) -> None:
+    def write(pid: str, texts: dict[str, str | None]) -> None:
         for file, text in texts.items():
-            (root / file).write_text(text)
+            _write(root, file, text)
 
     def settle(ids: list[str], base_lines: list[str], lines: list[str] | None) -> tuple[list[str], list[str]]:
         """El árbol tiene `ids` aplicados sobre una base limpia; devuelve lo
@@ -282,7 +318,7 @@ def run_step(root: Path, candidates: list[dict], tsc: list[str], ledger: Path, b
                           "new_diagnostics": (report.new_diagnostics if row["proposal_id"] == net_kept
                                               else revealed.get(row["proposal_id"], row["new_diagnostics"]))}
                          for row in ledger_rows(report)]
-    _append(ledger, ledger_out)
+    _append(ledger, ledger_out, setup_id)
     _append(residual, [{"proposal_id": pid, "proposer": by_id[pid]["proposer"], "bases": by_id[pid]["bases"],
                         "targets": by_id[pid]["targets"], "new_diagnostics": new}
                        for pid, new in revealed.items()])
@@ -311,6 +347,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-batch", type=int)
     parser.add_argument("--net", action="store_true",
                         help="política neta: conservar una propuesta si bajan sus objetivos y el total")
+    parser.add_argument("--setup-id", help="configuración del paso (step_setup); va en cada fila")
     parser.add_argument("--accept-partial", action="store_true",
                         help="conservar la parcial que no deja nada nuevo en sus archivos")
     args = parser.parse_args(argv[:split])
@@ -319,7 +356,7 @@ def main(argv: list[str] | None = None) -> int:
         report = run_step(args.root, _read_jsonl(args.candidates), argv[split + 1:], args.ledger,
                           args.bench, seed=args.seed, epsilon=args.epsilon, alpha0=args.alpha0,
                           max_batch=args.max_batch, before_lines=before, net=args.net,
-                          accept_partial=args.accept_partial)
+                          accept_partial=args.accept_partial, setup_id=args.setup_id)
     except (OSError, ValueError, RuntimeError, KeyError, json.JSONDecodeError) as error:
         print(f"tsc_zero_step: SIN MEDIR — {error}", file=sys.stderr)
         return 2

@@ -1,0 +1,23 @@
+src/packages/agent/query.ts(448,9): error TS2339: Property 'preCompactTokenCount' does not exist on type '{}'.
+  --- código src/packages/agent/query.ts:438-458 ---
+    438      // The compactor already logged + emitted telemetry; we don't yield a
+    439      // synthetic message because there's no actionable hint for the user
+    440      // beyond "your context is irrecoverably tight, start fresh". ant
+    441      // 3928.js exits the same way.
+    442      if (rapidRefillBreakerTripped) {
+    443        return { reason: 'rapid_refill_breaker' }
+    444      }
+    445  
+    446      if (compactionResult) {
+    447        const {
+    448>         preCompactTokenCount,
+    449          postCompactTokenCount,
+    450          truePostCompactTokenCount,
+    451          compactionUsage,
+    452        } = compactionResult
+    453  
+    454        logEvent('tengu_auto_compact_succeeded', {
+    455          originalMessageCount: messages.length,
+    456          compactedMessageCount:
+    457            compactionResult.summaryMessages.length +
+    458            compactionResult.attachments.length +

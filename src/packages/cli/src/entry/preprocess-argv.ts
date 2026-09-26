@@ -13,11 +13,26 @@
 
 import { feature } from 'bun:bundle'
 import { gracefulShutdownSync } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
-import type {
-  PendingAssistantChat,
-  PendingConnect,
-  PendingSSH,
-} from './mode-dispatch.js'
+// `PendingConnect`/`PendingAssistantChat`/`PendingSSH` no viven en
+// `./mode-dispatch.js`: la adaptación local de ese módulo es una tabla de
+// siete comandos autocontenidos y no porta el `ModeDispatchContext` de la
+// fuente. Se declaran aquí, con la misma forma que la fuente les da.
+type PendingConnect = {
+  url: string | undefined
+  authToken: string | undefined
+  dangerouslySkipPermissions: boolean
+}
+
+type PendingAssistantChat = { sessionId?: string; discover: boolean }
+
+type PendingSSH = {
+  host: string | undefined
+  cwd: string | undefined
+  permissionMode: string | undefined
+  dangerouslySkipPermissions: boolean
+  local: boolean
+  extraCliArgs: string[]
+}
 
 export type PendingHandles = {
   pendingConnect: PendingConnect | undefined

@@ -1,0 +1,1 @@
+src/packages/permission/src/yoloClassifier.ts(309,27): error TS18048: 'msg.message.content' is possibly 'undefined'.

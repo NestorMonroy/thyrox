@@ -415,7 +415,7 @@ export function renderToolResultMessage(
 
   const finalAssistantMessage = createAssistantMessage({
     content: completionMessage,
-    usage: { ...usage, inference_geo: null, iterations: null, speed: null, output_tokens_details: null },
+    usage: { ...usage, inference_geo: null, iterations: null, speed: null, output_tokens_details: null, fallback_credit: null },
   })
 
   return (
@@ -866,11 +866,17 @@ export function renderGroupedAgentToolUse(
       let taskDescription: string | undefined
       if (isTeammateSpawn && parsedInput.success && parsedInput.data.name) {
         agentType = `@${parsedInput.data.name}`
-        const subagentType = parsedInput.data.subagent_type
+        const subagentType =
+          typeof parsedInput.data.subagent_type === 'string'
+            ? parsedInput.data.subagent_type
+            : undefined
         description = isCustomSubagentType(subagentType)
           ? subagentType
           : undefined
-        taskDescription = parsedInput.data.description
+        taskDescription =
+          typeof parsedInput.data.description === 'string'
+            ? parsedInput.data.description
+            : undefined
         // Use the custom agent definition's color on the type, not the name
         descriptionColor = isCustomSubagentType(subagentType)
           ? (getAgentColor(subagentType) as keyof Theme | undefined)
@@ -879,9 +885,10 @@ export function renderGroupedAgentToolUse(
         agentType = parsedInput.success
           ? userFacingName(parsedInput.data)
           : 'Agent'
-        description = parsedInput.success
-          ? parsedInput.data.description
-          : undefined
+        description =
+          parsedInput.success && typeof parsedInput.data.description === 'string'
+            ? parsedInput.data.description
+            : undefined
         color = parsedInput.success
           ? userFacingNameBackgroundColor(parsedInput.data)
           : undefined
@@ -900,7 +907,10 @@ export function renderGroupedAgentToolUse(
       const isAsync =
         launchedAsAsync || backgroundedMidExecution || isTeammateSpawn
 
-      const name = parsedInput.success ? parsedInput.data.name : undefined
+      const name =
+        parsedInput.success && typeof parsedInput.data.name === 'string'
+          ? parsedInput.data.name
+          : undefined
 
       return {
         id: param.id,

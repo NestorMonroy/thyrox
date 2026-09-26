@@ -1,0 +1,25 @@
+src/packages/repl/src/commands/plan/plan.tsx(56,17): error TS2345: Argument of type '(prev: { toolPermissionContext: ToolPermissionContext; }) => { toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; }' is not assignable to parameter of type '(prev: AppState) => AppState'.
+  --- código src/packages/repl/src/commands/plan/plan.tsx:46-66 ---
+     46    context: LocalJSXCommandContext,
+     47    args: string,
+     48  ): Promise<React.ReactNode> {
+     49    const { getAppState, setAppState } = context
+     50    const appState = getAppState()
+     51    const currentMode = appState.toolPermissionContext.mode
+     52  
+     53    // If not in plan mode, enable it
+     54    if (currentMode !== 'plan') {
+     55      handlePlanModeTransition(currentMode, 'plan')
+     56>     setAppState((prev: { toolPermissionContext: ToolPermissionContext }) => ({
+     57        ...prev,
+     58        toolPermissionContext: applyPermissionUpdate(
+     59          prepareContextForPlanMode(prev.toolPermissionContext),
+     60          { type: 'setMode', mode: 'plan', destination: 'session' },
+     61        ),
+     62      }))
+     63      const description = args.trim()
+     64      if (description && description !== 'open') {
+     65        onDone('Enabled plan mode', { shouldQuery: true })
+     66      } else {
+  Type '{ toolPermissionContext: { mode: PermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: PermissionMode; }; }' is not assignable to type 'AppState'.
+    Type '{ toolPermissionContext: { mode: InternalPermissionMode; additionalWorkingDirectories: Map<string, AdditionalWorkingDirectory>; ... 8 more ...; prePlanMode?: InternalPermissionMode | undefined; }; }' is missing the following properties from type '{ settings: { [x: string]: unknown; $schema?: string | undefined; model?: string | undefined; advisorModel?: string | undefined; effort?: "low" | "medium" | "high" | "xhigh" | "max" | undefined; ... 67 more ...; wslInheritsWindowsSettings?: boolean | undefined; }; ... 30 more ...; showRemoteCallout: boolean; }': settings, verbose, mainLoopModel, mainLoopModelForSession, and 25 more.

@@ -5,6 +5,16 @@
  * boundary / event extraction. SDK-to-SDK shape translation pattern.
  */
 import { feature } from 'bun:bundle'
+import type {
+  PermissionMode,
+  SDKCompactBoundaryMessage,
+  SDKMessage,
+  SDKPermissionDenial,
+  SDKStatus,
+  SDKUserMessageReplay,
+} from '@thyrox/headless-sdk/agentSdkTypes.js'
+import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
+import type { Message, ToolUseSummaryMessage } from './messageShapes.js'
 import { AgentCore } from './core/AgentCore.js'
 import './internal/macroFallback.js'
 import { getGlobalConfig } from '@thyrox/config'
@@ -42,11 +52,10 @@ import {
   fileHistoryEnabled,
   fileHistoryMakeSnapshot,
 } from './fileHistory.js'
-import type { AgentMessage as Message, AgentToolUseContext as ToolUseContext } from './internalTypes.js'
-import {
-  cloneFileStateCache,
-  type FileStateCache,
-} from './internal/fileStateCache.js'
+import type { ToolUseContext } from '@thyrox/tool-registry/Tool.js'
+import type { FileStateCache } from '@thyrox/tool-registry/fileStateCache'
+import type { ProcessUserInputContext } from '@thyrox/repl/processUserInput/processUserInput.js'
+import { cloneFileStateCache } from './internal/fileStateCache.js'
 import {
   createCompactBoundaryMessage,
   flushSessionStorage,
@@ -81,73 +90,23 @@ import {
   getTotalCost,
 } from './internal/sdkRuntime.js'
 import { countToolCalls, SYNTHETIC_MESSAGES } from './internal/messageHelpers.js'
-import { resolveThemeSetting } from './internal/systemTheme.js'
+import { resolveThemeName } from './internal/systemTheme.js'
 import { asSystemPrompt, isBareMode, isEnvTruthy } from './internalUtils.js'
 import {
   localCommandOutputToSDKAssistantMessage,
   toSDKCompactMetadata,
 } from './internal/sdkMappers.js'
 import { readEnv } from '@thyrox/config/env'
+import type { CanUseToolFn } from '@thyrox/repl/hooks/useCanUseTool.js'
+import type { MCPServerConnection } from '@thyrox/mcp-runtime/types.js'
+import type { AppState } from '@thyrox/app-host/state/AppState.js'
+import type { Tools } from '@thyrox/tool-registry/Tool.js'
+import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
+import type { OrphanedPermission } from '@thyrox/repl/textInputTypes.js'
+import type { AttributionState } from './commitAttribution.js'
 
-type PermissionMode = string
-type SDKCompactBoundaryMessage = { type: string; [key: string]: unknown }
-type SDKMessage = { type: string; [key: string]: unknown }
-type SDKPermissionDenial = { [key: string]: unknown }
-type SDKStatus = string
-type SDKUserMessageReplay = { type: string; [key: string]: unknown }
-type NonNullableUsage = { [key: string]: unknown }
-type CanUseToolFn = (...args: unknown[]) => Promise<{
-  behavior: 'allow' | 'deny' | 'ask'
-  updatedInput?: unknown
-}>
-type MCPServerConnection = { name?: string; [key: string]: unknown }
-type AppState = {
-  toolPermissionContext: {
-    mode: string
-    shouldAvoidPermissionPrompts?: boolean
-    [key: string]: unknown
-  }
-  fastMode?: boolean
-  fileHistory: FileHistoryState
-  mcp?: {
-    tools?: unknown[]
-    clients?: Array<{ type?: string; [key: string]: unknown }>
-  }
-  [key: string]: unknown
-}
-type Tools = Array<{ name: string; aliases?: string[]; [key: string]: unknown }>
-type AgentDefinition = { [key: string]: unknown }
-type CompactMetadata = { [key: string]: unknown }
-type SystemCompactBoundaryMessage = Message & { compactMetadata: CompactMetadata }
-type OrphanedPermission = { [key: string]: unknown }
-type AttributionState = { [key: string]: unknown }
-type ProcessUserInputContext = {
-  messages: Message[]
-  setMessages: (fn: (prev: Message[]) => Message[]) => void
-  onChangeAPIKey: () => void
-  handleElicitation?: ToolUseContext['handleElicitation']
-  options: Record<string, unknown>
-  renderedSystemPrompt: unknown
-  getAppState: () => AppState
-  setAppState: (f: (prev: AppState) => AppState) => void
-  abortController: AbortController
-  readFileState: FileStateCache
-  nestedMemoryAttachmentTriggers: Set<string>
-  loadedNestedMemoryPaths: Set<string>
-  dynamicSkillDirTriggers: Set<string>
-  discoveredSkillNames: Set<string>
-  setInProgressToolUseIDs: (ids: string[]) => void
-  setResponseLength: (len: number) => void
-  updateFileHistoryState: (
-    updater: (prev: FileHistoryState) => FileHistoryState,
-  ) => void
-  updateAttributionState: (
-    updater: (prev: AttributionState) => AttributionState,
-  ) => void
-  setSDKStatus?: (status: SDKStatus) => void
-  [key: string]: unknown
-}
-
+/** El mensaje de frontera con su `compactMetadata` estrechado; lo fija el bridge. */
+type SystemCompactBoundaryMessage = ReturnType<typeof createCompactBoundaryMessage>
 const EMPTY_USAGE: NonNullableUsage = {
   input_tokens: 0,
   cache_creation_input_tokens: 0,
@@ -313,7 +272,6 @@ export class QueryEngine {
       // Track denials for SDK reporting
       if (result.behavior !== 'allow') {
         this.permissionDenials.push({
-          type: 'permission_denial',
           tool_name: sdkCompatToolName(tool.name),
           tool_use_id: toolUseID,
           tool_input: input,
@@ -414,7 +372,7 @@ export class QueryEngine {
         customSystemPrompt,
         appendSystemPrompt,
         agentDefinitions: { activeAgents: agents, allAgents: [] },
-        theme: resolveThemeSetting(getGlobalConfig().theme),
+        theme: resolveThemeName(getGlobalConfig().theme),
         maxBudgetUsd,
         taskBudget,
       },
@@ -564,7 +522,7 @@ export class QueryEngine {
         isNonInteractiveSession: true,
         customSystemPrompt,
         appendSystemPrompt,
-        theme: resolveThemeSetting(getGlobalConfig().theme),
+        theme: resolveThemeName(getGlobalConfig().theme),
         agentDefinitions: { activeAgents: agents, allAgents: [] },
         maxBudgetUsd,
         taskBudget,
@@ -596,7 +554,7 @@ export class QueryEngine {
     ])
     headlessProfilerCheckpoint('after_skills_plugins')
 
-    yield buildSystemInitMessage({
+    const systemInitMessage = buildSystemInitMessage({
       tools,
       mcpClients,
       model: mainLoopModel,
@@ -608,6 +566,11 @@ export class QueryEngine {
       plugins: enabledPlugins,
       fastMode: initialAppState.fastMode,
     })
+    // buildSystemInitMessage puede devolver undefined cuando el host binding
+    // no está instalado o falla al cargar (ver internal/headlessRuntime.ts).
+    if (systemInitMessage) {
+      yield systemInitMessage
+    }
 
     // Record when system message is yielded for headless latency tracking
     headlessProfilerCheckpoint('system_message_yielded')
@@ -745,7 +708,10 @@ export class QueryEngine {
         canUseTool: wrappedCanUseTool,
         querySource: 'sdk',
         contextOverrides: {
-          systemPrompt,
+          // Colisión de nombre declarada en createDeps.ts: el SystemPrompt del
+          // provider es el arreglo de cadenas marcado; el de AgentDeps es el
+          // bloque { content }. Se envuelve igual que ContextDepImpl ya lo hace.
+          systemPrompt: [{ content: systemPrompt }],
           userContext,
           systemContext,
         },
@@ -836,7 +802,7 @@ export class QueryEngine {
       }
 
       if (event.type === 'compaction') {
-        this.mutableMessages = fromCoreMessages(event.after)
+        this.mutableMessages = fromCoreMessages(event.after) as Message[]
         messages.splice(0, messages.length, ...this.mutableMessages)
 
         const compactBoundary = createCompactBoundaryMessage(
@@ -1158,7 +1124,7 @@ export class QueryEngine {
           break
         }
         case 'tool_use_summary': {
-          const msg = message as Message & { summary: unknown; precedingToolUseIds: unknown }
+          const msg = message as unknown as ToolUseSummaryMessage
           // Yield tool use summary messages to SDK
           yield {
             type: 'tool_use_summary' as const,
@@ -1265,10 +1231,13 @@ export class QueryEngine {
     // is a type predicate (message is Message), so inside the false branch
     // `result` narrows to never and these accesses don't typecheck.
     const edeResultType = result?.type ?? 'undefined'
+    const edeAssistantMessageContent =
+      result?.type === 'assistant' ? result.message.content : undefined
+    const edeLastContent = Array.isArray(edeAssistantMessageContent)
+      ? last(edeAssistantMessageContent)
+      : undefined
     const edeLastContentType =
-      result?.type === 'assistant'
-        ? (last(result.message.content)?.type ?? 'none')
-        : 'n/a'
+      result?.type === 'assistant' ? (edeLastContent?.type ?? 'none') : 'n/a'
 
     // Flush buffered transcript writes before yielding result.
     // The desktop app kills the CLI process immediately after receiving the
@@ -1320,12 +1289,21 @@ export class QueryEngine {
       return
     }
 
+    // isResultSuccessful() valida la forma del mensaje pero no es un type
+    // predicate, así que tsc no descarta undefined aunque el runtime ya lo
+    // garantice — se hace visible con una guarda explícita.
+    if (result === undefined) {
+      return
+    }
+
     // Extract the text result based on message type
     let textResult = ''
     let isApiError = false
 
     if (result.type === 'assistant') {
-      const lastContent = last(result.message.content)
+      const lastContent = Array.isArray(result.message.content)
+        ? last(result.message.content)
+        : undefined
       if (
         lastContent?.type === 'text' &&
         !SYNTHETIC_MESSAGES.has(lastContent.text)

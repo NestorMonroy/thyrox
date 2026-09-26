@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import {
   buildPluginId,
+  type ExtendedPluginScope,
   isOfficialMarketplaceName,
   parsePluginIdentifier,
   scopeToSettingSource,
@@ -223,7 +224,9 @@ describe('settingSourceToScope — inverse of scopeToSettingSource', () => {
     // Persistence layer must filter this out before writing
     // installed_plugins.json. Documents the existence of this fourth
     // scope value.
-    expect(settingSourceToScope('flagSettings' as never)).toBe('flag')
+    expect(settingSourceToScope('flagSettings' as never) as ExtendedPluginScope).toBe(
+      'flag',
+    )
   })
 })
 

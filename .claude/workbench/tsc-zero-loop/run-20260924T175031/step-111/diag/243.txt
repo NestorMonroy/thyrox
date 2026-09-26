@@ -1,0 +1,24 @@
+src/packages/repl/src/notifier.ts(144,32): error TS7016: Could not find a declaration file for module 'plist'. '/home/user/thyrox/node_modules/plist/index.js' implicitly has an 'any' type.
+  --- código src/packages/repl/src/notifier.ts:134-154 ---
+    134        'com.apple.Terminal',
+    135        '-',
+    136      ])
+    137  
+    138      if (defaultsOutput.code !== 0) {
+    139        return false
+    140      }
+    141  
+    142      // Lazy-load plist (~280KB with xmlbuilder+@xmldom) — only hit on
+    143      // Apple_Terminal with auto-channel, which is a small fraction of users.
+    144>     const plist = await import('plist')
+    145      const parsed = plist.parse(defaultsOutput.stdout) as Record<string, unknown>
+    146      const windowSettings = parsed?.['Window Settings'] as
+    147        | Record<string, unknown>
+    148        | undefined
+    149      const profileSettings = windowSettings?.[currentProfile] as
+    150        | Record<string, unknown>
+    151        | undefined
+    152  
+    153      if (!profileSettings) {
+    154        return false
+  Try `npm i --save-dev @types/plist` if it exists or add a new declaration (.d.ts) file containing `declare module 'plist';`

@@ -190,8 +190,11 @@ describe('createReadRuleSuggestion — Read rule generation', () => {
     // (test machine), backslashes pass through. Documents the platform
     // dependency — test result reflects the test runner's host.
     const result = createReadRuleSuggestion('C:\\Users\\me')
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
     // posix.isAbsolute('C:\\Users\\me') is false → no leading slash added.
-    expect(result?.rules[0]?.ruleContent).toBe('C:\\Users\\me/**')
+    expect(result.rules[0]?.ruleContent).toBe('C:\\Users\\me/**')
   })
 
   test('default destination is "session" if not provided', () => {
@@ -210,9 +213,12 @@ describe('createReadRuleSuggestion — Read rule generation', () => {
     // Documents that the function does NOT normalize trailing slashes.
     // Caller is responsible for already-clean path input.
     const result = createReadRuleSuggestion('/some/path/')
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
     // toPosixPath leaves the trailing slash. Then the absolute check
     // sees /some/path/ as absolute → wrapped as //some/path//**
-    expect(result?.rules[0]?.ruleContent).toBe('//some/path//**')
+    expect(result.rules[0]?.ruleContent).toBe('//some/path//**')
   })
 
   test('rule structure — addRules type, behavior allow, toolName Read', () => {
@@ -220,8 +226,11 @@ describe('createReadRuleSuggestion — Read rule generation', () => {
     // 'ask' (which would surface a permission prompt) get caught.
     const result = createReadRuleSuggestion('/x/y')
     expect(result?.type).toBe('addRules')
-    expect(result?.behavior).toBe('allow')
-    expect(result?.rules[0]?.toolName).toBe('Read')
-    expect(result?.rules.length).toBe(1)
+    if (result?.type !== 'addRules') {
+      throw new Error('expected addRules')
+    }
+    expect(result.behavior).toBe('allow')
+    expect(result.rules[0]?.toolName).toBe('Read')
+    expect(result.rules.length).toBe(1)
   })
 })

@@ -68,7 +68,7 @@ def check(etiqueta, esperado, obtenido):
 #: `PreToolUse` entra el 2026-09-24: los diez detectores de
 #: `pretooluse_dispatch.py` existian y NINGUN cableado los declaraba, asi que el
 #: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
-EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SubagentStart",
+EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SessionStart", "SubagentStart",
                       "SubagentStop", "TaskCompleted", "TaskCreated"]
 
 print("== 1. la declaracion existe y tiene la forma del settings del cliente ==")
@@ -98,6 +98,19 @@ _r0 = _sp0.run(_cmd, shell=True, cwd="/", env=_env0, capture_output=True,
                text=True, input='{"tool_name":"Bash","tool_input":{"command":"ls"}}')
 check("el comando cableado carga todos los detectores sin PYTHONPATH",
       "", _r0.stderr.strip())
+
+# Tras compactar, el estado de trabajo vuelve por `SessionStart` con matcher
+# `compact`: la salida de `PostCompact` sólo la ve el usuario (2.1.281, `BQe`).
+_start = next(iter(w.declared_wiring()["hooks"].get("SessionStart", [])), {})
+check("SessionStart se declara con el matcher de la compactación", "compact",
+      _start.get("matcher"))
+_cmd1 = next((h["command"] for h in _start.get("hooks", [])), "true")
+check("el comando es el hook de restauración del proveedor", True,
+      "src/hooks/compact_context.py" in _cmd1)
+_r1 = _sp0.run(_cmd1, shell=True, cwd="/", env=_env0, capture_output=True, text=True,
+               input='{"hook_event_name":"SessionStart","source":"startup","session_id":"x"}')
+check("el comando cableado corre sin PYTHONPATH y calla fuera de una compactación",
+      ("{}", ""), (_r1.stdout.strip(), _r1.stderr.strip()))
 
 print("== 2. el control VE una ruta que no existe ==")
 falso = {"hooks": {"SubagentStop": [{"hooks": [
@@ -211,6 +224,7 @@ _source = _tmp / "fuente.json"
 _source.write_text('{"marca": "contenido-original"}')
 _target = _tmp / "respaldos" / "fuente.json.SELLO"
 _os2.environ["THYROX_JOBS_DIR"] = str(_tmp / "ledger")
+_os2.environ["THYROX_SESSION_LEDGER_DIR"] = str(_tmp / "ledger")
 w.BackgroundBackup(timeout=30).backup(_source, _target)
 check("el respaldo aterrizo", True, _target.exists())
 check("con el contenido de la fuente", _source.read_text(), _target.read_text())
@@ -234,12 +248,12 @@ _foreign_log = _tmp / "ajeno.log"
 _foreign_log.write_text("")
 _sp2.run([_ledger_sh, "register", "ajeno", str(_foreign_log), str(_stalled.pid)],
          capture_output=True, text=True,
-         env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)})
+         env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)})
 _stalled.send_signal(19)  # SIGSTOP -> estado T
 _time.sleep(0.5)
 
 _classes = _sp2.run([_ledger_sh, "status"], capture_output=True, text=True,
-                   env={**_os2.environ, "THYROX_JOBS_DIR": str(_shared)}).stdout
+                   env={**_os2.environ, "THYROX_SESSION_LEDGER_DIR": str(_shared)}).stdout
 check("el ledger compartido lo clasifica DETENIDO", True, "DETENIDO" in _classes)
 
 _source2 = _tmp / "fuente2.json"
@@ -607,6 +621,26 @@ check("17-bis.6 y 17.2 CAE: el comando roto sale del universo", 0, len(_ciego_ro
 check("17-bis.7 restaurada, vuelve a verlo",
       "/home/thyrox/src/packages/agent/bin/preModelSwitch.ts",
       w._target_of(_REL, cwd="/home/user", bases=_BASES))
+
+
+# Instalar SOLO los hooks: con un settings vivo sin `advisorModel` (decisión de
+# quien opera), `--write` rehúsa por el cambio de la clave de caché y los hooks
+# nuevos nunca llegan. `--hooks-only` fusiona sólo `hooks`, que no es campo de
+# la clave (`createCacheSafeParams`, 2.1.266).
+import tempfile as _tf9  # noqa: E402
+with _tf9.TemporaryDirectory() as _d9:
+    _live9 = Path(_d9) / "settings.local.json"
+    _live9.write_text(_json.dumps({"permissions": {"allow": ["Bash(ls)"]}}))
+    _r9 = _sp0.run([sys.executable, str(HERE / "src/session/user_wiring.py"), "--write",
+                    "--hooks-only", "--backups", _d9],
+                   env={**_os0.environ, w.LIVE_SETTINGS_VAR: str(_live9),
+                        "PYTHONPATH": str(HERE / "src")},
+                   capture_output=True, text=True)
+    _after9 = _json.loads(_live9.read_text())
+    check("--hooks-only instala sin rehusar", 0, _r9.returncode)
+    check("--hooks-only escribe los hooks declarados", True, "SessionStart" in _after9.get("hooks", {}))
+    check("--hooks-only no toca advisorModel", False, "advisorModel" in _after9)
+    check("--hooks-only conserva permissions", {"allow": ["Bash(ls)"]}, _after9.get("permissions"))
 
 print(f"\n{OK} ok, {FALLOS} fallos")
 raise SystemExit(1 if FALLOS else 0)

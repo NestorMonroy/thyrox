@@ -24,6 +24,7 @@ import { lazySchema } from '../internal/lazySchema.ts'
 import { SandboxSettingsSchema } from './schemas/sandbox.ts'
 import { MarketplaceSourceSchema } from './schemas/marketplace.js'
 import { DynamicWorkflowSizeSchema } from './dynamicWorkflowSize.js'
+import { AskUserQuestionTimeoutSchema } from './askUserQuestionTimeout.js'
 
 // Este módulo conserva el subpath público histórico
 // `@thyrox/config/types`; los consumers no deben conocer la ruta interna del
@@ -224,7 +225,7 @@ export const SettingsSchema = lazySchema(() => z
         .optional()
         .describe('Custom file suggestion configuration for @ mentions'),
     dynamicWorkflowSize: DynamicWorkflowSizeSchema,
-    askUserQuestionTimeout: z.number().positive().optional(),
+    askUserQuestionTimeout: AskUserQuestionTimeoutSchema,
     modelType: z.string().optional(),
     availableModels: z.array(z.string()).optional(),
     modelOverrides: z
@@ -348,7 +349,18 @@ export const SettingsSchema = lazySchema(() => z
           'Terminal UI renderer. "fullscreen" uses the alt-screen buffer (like vim) — input box pinned, no scrollback, precise redraws. "default" prints inline so the conversation stays in the terminal scrollback. Equivalent to setting CLAUDE_CODE_NO_FLICKER, but persistent across sessions.',
         ),
     spinnerTipsEnabled: z.boolean().optional(),
-    spinnerVerbs: z.array(z.string()).optional(),
+    // Forma de 2.1.281: `append` añade los verbos a los de fábrica y
+    // `replace` usa sólo los propios. Era `string[]`, que no es lo que el
+    // binario acepta ni lo que `getSpinnerVerbs` lee.
+    spinnerVerbs: z
+      .object({
+        mode: z.enum(['append', 'replace']),
+        verbs: z.array(z.string()),
+      })
+      .optional()
+      .describe(
+        'Customize spinner verbs. mode: "append" adds verbs to defaults, "replace" uses only your verbs.',
+      ),
     spinnerTipsOverride: z
         .object({
           excludeDefault: z.boolean().optional(),
@@ -438,6 +450,19 @@ export type PluginHookMatcher = {
   pluginName: string
   /** Formato `nombrePlugin@nombreMarketplace`. */
   pluginId: string
+}
+
+/**
+ * Un matcher de hook aportado por un skill — `ccnmt: packages/config/
+ * settings/types.ts:1140`. Lo distingue de un matcher de plugin la presencia
+ * de `skillRoot` en vez de `pluginRoot`/`pluginId`; `hooks.ts` los discrimina
+ * por esa clave al ejecutar.
+ */
+export type SkillHookMatcher = {
+  matcher?: string
+  hooks: HookCommand[]
+  skillRoot: string
+  skillName: string
 }
 
 // La superficie que sus consumidores piden y que vive en otro módulo del

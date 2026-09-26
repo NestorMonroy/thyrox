@@ -1,0 +1,29 @@
+Patrón: switch-over-union-missing-literal-causes-ts2366
+Señal del verificador: TS2366: Function lacks ending return statement
+Arreglo genérico: Cuando un `switch` con retorno explícito no-`void`/no-`undefined` narrows sobre una unión discriminada (p. ej. `RenderableMessage['type']`) y omite uno de sus literales, TS2366 aparece bajo `strict` aunque la fuente (con `strict: false`) no lo vea, porque sin `strictNullChecks` el retorno implícito `undefined` se acepta en cualquier tipo. Añadir el `case` que falta con un retorno explícito coherente con el resto de la función, verificando primero si esa variante es alcanzable en tiempo de ejecución (filtrada río arriba, como aquí) para no inventar una conducta nueva.
+Ya aplicado en: src/packages/repl/src/components/messageStaticness.ts
+Archivos donde la señal sigue viva: src/packages/agent/task/framework.ts
+
+src/packages/agent/task/framework.ts(299,45): error TS2366: Function lacks ending return statement and return type does not include 'undefined'.
+  --- código src/packages/agent/task/framework.ts:289-309 ---
+    289    enqueuePendingNotification({
+    290      value: message,
+    291      mode: 'task-notification',
+    292      priority: 'next',
+    293    })
+    294  }
+    295  
+    296  /**
+    297   * Get human-readable status text.
+    298   */
+    299> function getStatusText(status: TaskStatus): string {
+    300    switch (status) {
+    301      case 'completed':
+    302        return 'completed successfully'
+    303      case 'failed':
+    304        return 'failed'
+    305      case 'killed':
+    306        return 'was stopped'
+    307      case 'running':
+    308        return 'is running'
+    309      case 'pending':

@@ -1,0 +1,34 @@
+{
+ "reviewed": [
+  {
+   "pattern": "unknown-stand-in-missing-local-call-contract",
+   "files": [
+    "src/packages/swarm/src/adapters/createSwarmHostDeps.ts"
+   ]
+  },
+  {
+   "pattern": "dynamic-import-of-typeless-js-stub",
+   "files": [
+    "src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts"
+   ]
+  },
+  {
+   "pattern": "tool-call-literal-arity-narrower-than-interface",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts"
+   ]
+  },
+  {
+   "pattern": "call-de-util-sin-argumentos-invocado-con-input-y-ctx",
+   "files": [
+    "src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts"
+   ]
+  },
+  {
+   "pattern": "string-passed-where-options-object-expected",
+   "files": [
+    "tests/integration/message-pipeline.test.ts"
+   ]
+  }
+ ]
+}

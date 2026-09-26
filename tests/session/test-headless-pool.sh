@@ -18,19 +18,33 @@ F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
-modelo=""; persist=si; formato=""
+modelo=""; persist=si; formato=""; verbose=no
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --model) modelo="$2"; shift 2 ;;
     --no-session-persistence) persist=no; shift ;;
     --output-format) formato="$2"; shift 2 ;;
+    --verbose) verbose=si; shift ;;
     *) shift ;;
   esac
 done
 case "$entrada" in *FALLA*) echo "fallo simulado" >&2; exit 1 ;; esac
 case "$entrada" in *LENTO*) sleep 5 ;; esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-jq -cn --arg r "$ultima|modelo=$modelo|persist=$persist|formato=$formato" '{result:$r}'
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}"
+if [[ "$formato" == stream-json ]]; then
+  # Como el ejecutable: stream-json en -p exige --verbose.
+  [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
+  jq -cn '{type:"system",subtype:"init"}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:111,cache_creation_input_tokens:22,cache_creation:{ephemeral_5m_input_tokens:22,ephemeral_1h_input_tokens:0}}}}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:500,cache_creation_input_tokens:3}}}'
+  # `type` no va primero y el stream cierra con una linea truncada: el
+  # ejecutable no garantiza el orden de las claves, y un timeout corta a medias.
+  jq -cn --arg r "$r" '{result:$r,type:"result"}'
+  printf '{"type":"res\n'
+else
+  jq -cn --arg r "$r" '{result:$r}'
+fi
 SH
 chmod +x "$F/claude"
 printf 'Lee y resume.\n' > "$F/prompt.md"
@@ -44,7 +58,9 @@ check "tres items: exit 0" "$CODE" "0"
 check "tres items: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=3 ok=3 fallidos=0"
 check "una salida json por item" "$(ls "$F/out"/*.json 2>/dev/null | wc -l)" "3"
 check "el item llega al final del prompt" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f1 | sort | paste -sd,)" "Item: alfa,Item: beta,Item: gamma"
-check "sin sesion persistida y en json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=json"
+check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=stream-json"
+check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
+check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"
 check "el indice empareja numero e item" "$(gawk -F'\t' '{print $2}' "$F/out/index.tsv" | paste -sd,)" "alfa,beta,gamma"
 
 # 2 — un item que falla: exit 1 y se nombra, los demas siguen contando.
@@ -89,6 +105,68 @@ check "memfree: la cota llega a parallel" "$(grep -c -- '--memfree 1G' "$F/paral
 rm -rf "$F/out"; EXTRA="--memfree mucho" corre alfa
 check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+
+# --cache-ttl: el TTL de la caché llega a cada `claude -p` por
+# CLAUDE_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
+# y un valor fuera de 5m|1h rehúsa sin resumen.
+ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5}' | sort -u | paste -sd,; }
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
+check "cache-ttl 5m: exit 0" "$CODE" "0"
+check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "ttl=5m"
+rm -rf "$F/out"; EXTRA="" CLAUDE_CODE_PROMPT_CACHE_TTL= corre alfa
+check "sin cache-ttl: no se fija" "$(ttl_de)" "ttl=sin"
+rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
+check "cache-ttl ilegible: exit 2" "$CODE" "2"
+check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+
+# El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
+# variable gana a la decisión calculada, y forzar 5m gana a la variable. El
+# ítem la recibe con los dos nombres: `claude -p` lee CLAUDE_CODE_*, y
+# `thyrox -p` —cuando el árbol llegue a 0 errores— leerá THYROX_*.
+thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
+rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "variable sin --cache-ttl: llega con los dos nombres" "$(thx_de)" "ttl=1h|thx=1h"
+check "variable: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(env\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "la variable gana a --cache-ttl" "$(thx_de)" "ttl=1h|thx=1h"
+rm -rf "$F/out"; EXTRA="--cache-ttl 1h" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
+check "forzar 5m gana a la variable y a la opción" "$(thx_de)" "ttl=5m|thx=5m"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa
+check "sólo --cache-ttl: su razón es la opción" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(option\)$/{n++} END{print n+0}')" "1"
+# Activar 1h: la regla 5 de `QCt`, por debajo de la opción y de la variable.
+rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "activar 1h sin opción ni variable: 1h" "$(thx_de)" "ttl=1h|thx=1h"
+check "activar 1h: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "la opción gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+rm -rf "$F/out"; EXTRA="" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "forzar 5m gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
+check "variable ilegible: exit 2" "$CODE" "2"
+check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
+
+# --- la memoria de cada item, con GNU Time --------------------------------------
+# Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
+# corre el comando conservando su codigo, como el real.
+cat > "$F/gnu-time" <<'SH'
+#!/usr/bin/env bash
+[[ "${1:-}" == --version ]] && { echo "time (GNU Time) UNKNOWN"; exit 0; }
+out=""
+while [[ "${1:-}" == -* ]]; do
+  case "$1" in -o) out="$2"; shift 2 ;; -f) shift 2 ;; *) shift ;; esac
+done
+"$@"; rc=$?
+printf "%s\n" "12345 1.50 0.40 0.10" > "$out"
+exit $rc
+SH
+chmod +x "$F/gnu-time"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa FALLA-beta
+check "con GNU time: un .time por item" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "2"
+check "con GNU time: memoria pico, pared, usuario y sistema" "$(cat "$F/out/1.time")" "12345 1.50 0.40 0.10"
+check "con GNU time: el fallo del item sigue siendo fallo" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=1 fallidos=1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
+check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
+check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "1"
 
 echo
 echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"

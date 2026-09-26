@@ -1,0 +1,169 @@
+src/packages/tool-registry/src/services/toolExecution.ts(775,5): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:765-785 ---
+    765    let shouldPreventContinuation = false
+    766    let stopReason: string | undefined
+    767    let hookPermissionResult: PermissionResult | undefined
+    768    const preToolHookInfos: StopHookInfo[] = []
+    769    const preToolHookStart = Date.now()
+    770    for await (const result of runPreToolUseHooks(
+    771      toolUseContext,
+    772      tool,
+    773      processedInput,
+    774      toolUseID,
+    775>     assistantMessage.message.id,
+    776      requestId,
+    777      mcpServerType,
+    778      mcpServerBaseUrl,
+    779    )) {
+    780      switch (result.type) {
+    781        case 'message':
+    782          if (result.message.message.type === 'progress') {
+    783            onToolProgress(result.message.message)
+    784          } else {
+    785            resultingMessages.push(result.message)
+  Type 'undefined' is not assignable to type 'string'.
+src/packages/tool-registry/src/services/toolExecution.ts(1016,27): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1006-1026 ---
+   1006          tool_use_id: toolUseID,
+   1007        },
+   1008      ]
+   1009  
+   1010      // Add image blocks at top level (not inside tool_result, which rejects non-text with is_error)
+   1011      const rejectContentBlocks =
+   1012        permissionDecision.behavior === 'ask'
+   1013          ? permissionDecision.contentBlocks
+   1014          : undefined
+   1015      if (rejectContentBlocks?.length) {
+   1016>       messageContent.push(...rejectContentBlocks)
+   1017      }
+   1018  
+   1019      // Generate sequential imagePasteIds so each image renders with a distinct label
+   1020      let rejectImageIds: number[] | undefined
+   1021      if (rejectContentBlocks?.length) {
+   1022        const imageCount = count(
+   1023          rejectContentBlocks,
+   1024          (b: ContentBlockParam) => b.type === 'image',
+   1025        )
+   1026        if (imageCount > 0) {
+  Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1023,9): error TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1013-1033 ---
+   1013          ? permissionDecision.contentBlocks
+   1014          : undefined
+   1015      if (rejectContentBlocks?.length) {
+   1016        messageContent.push(...rejectContentBlocks)
+   1017      }
+   1018  
+   1019      // Generate sequential imagePasteIds so each image renders with a distinct label
+   1020      let rejectImageIds: number[] | undefined
+   1021      if (rejectContentBlocks?.length) {
+   1022        const imageCount = count(
+   1023>         rejectContentBlocks,
+   1024          (b: ContentBlockParam) => b.type === 'image',
+   1025        )
+   1026        if (imageCount > 0) {
+   1027          const startId = getNextImagePasteId(toolUseContext.messages)
+   1028          rejectImageIds = Array.from(
+   1029            { length: imageCount },
+   1030            (_, i) => startId + i,
+   1031          )
+   1032        }
+   1033      }
+  Type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+    Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1238,29): error TS2559: Type '"tool.output"' has no properties in common with type 'Span'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1228-1248 ---
+   1228        if (tool.name === BASH_TOOL_NAME && 'command' in processedInput) {
+   1229          const bashInput = processedInput as BashToolInput
+   1230          contentAttributes.bash_command = bashInput.command
+   1231          // Also capture output if available
+   1232          if ('output' in result.data) {
+   1233            contentAttributes.output = String(result.data.output)
+   1234          }
+   1235        }
+   1236  
+   1237        if (Object.keys(contentAttributes).length > 0) {
+   1238>         addToolContentEvent('tool.output', contentAttributes)
+   1239        }
+   1240      }
+   1241  
+   1242      // Capture structured output from tool result if present
+   1243      if (typeof result === 'object' && 'structured_output' in result) {
+   1244        // Store the structured output in an attachment message
+   1245        resultingMessages.push({
+   1246          message: createAttachmentMessage({
+   1247            type: 'structured_output',
+   1248            data: result.structured_output,
+src/packages/tool-registry/src/services/toolExecution.ts(1398,28): error TS2345: Argument of type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to parameter of type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1388-1408 ---
+   1388            text: permissionDecision.acceptFeedback,
+   1389          })
+   1390        }
+   1391  
+   1392        // Add content blocks (e.g., pasted images) from the permission decision
+   1393        const allowContentBlocks =
+   1394          'contentBlocks' in permissionDecision
+   1395            ? permissionDecision.contentBlocks
+   1396            : undefined
+   1397        if (allowContentBlocks?.length) {
+   1398>         contentBlocks.push(...allowContentBlocks)
+   1399        }
+   1400  
+   1401        // Generate sequential imagePasteIds so each image renders with a distinct label
+   1402        let allowImageIds: number[] | undefined
+   1403        if (allowContentBlocks?.length) {
+   1404          const imageCount = count(
+   1405            allowContentBlocks,
+   1406            (b: ContentBlockParam) => b.type === 'image',
+   1407          )
+   1408          if (imageCount > 0) {
+  Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1405,11): error TS2345: Argument of type 'ContentBlockParam[]' is not assignable to parameter of type 'readonly ContentBlockParam[]'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1395-1415 ---
+   1395            ? permissionDecision.contentBlocks
+   1396            : undefined
+   1397        if (allowContentBlocks?.length) {
+   1398          contentBlocks.push(...allowContentBlocks)
+   1399        }
+   1400  
+   1401        // Generate sequential imagePasteIds so each image renders with a distinct label
+   1402        let allowImageIds: number[] | undefined
+   1403        if (allowContentBlocks?.length) {
+   1404          const imageCount = count(
+   1405>           allowContentBlocks,
+   1406            (b: ContentBlockParam) => b.type === 'image',
+   1407          )
+   1408          if (imageCount > 0) {
+   1409            const startId = getNextImagePasteId(toolUseContext.messages)
+   1410            allowImageIds = Array.from(
+   1411              { length: imageCount },
+   1412              (_, i) => startId + i,
+   1413            )
+   1414          }
+   1415        }
+  Type 'import("/home/user/thyrox/src/packages/permission/src/permissionTypes").ContentBlockParam' is not assignable to type 'import("/home/user/thyrox/src/packages/tool-registry/node_modules/@anthropic-ai/sdk/resources/messages/messages").ContentBlockParam'.
+    Type 'ContentBlockParam' is missing the following properties from type 'ToolUseBlockParam': id, input, name
+src/packages/tool-registry/src/services/toolExecution.ts(1448,7): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  --- código src/packages/tool-registry/src/services/toolExecution.ts:1438-1458 ---
+   1438      if (!isMcpTool(tool)) {
+   1439        await addToolResult(toolOutput, mappedToolResultBlock)
+   1440      }
+   1441  
+   1442      const postToolHookInfos: StopHookInfo[] = []
+   1443      const postToolHookStart = Date.now()
+   1444      for await (const hookResult of runPostToolUseHooks(
+   1445        toolUseContext,
+   1446        tool,
+   1447        toolUseID,
+   1448>       assistantMessage.message.id,
+   1449        processedInput,
+   1450        toolOutput,
+   1451        requestId,
+   1452        mcpServerType,
+   1453        mcpServerBaseUrl,
+   1454      )) {
+   1455        if ('updatedMCPToolOutput' in hookResult) {
+   1456          if (isMcpTool(tool)) {
+   1457            toolOutput = hookResult.updatedMCPToolOutput
+   1458          }
+  Type 'undefined' is not assignable to type 'string'.

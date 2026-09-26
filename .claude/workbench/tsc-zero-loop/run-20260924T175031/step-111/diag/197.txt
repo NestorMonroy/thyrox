@@ -1,0 +1,76 @@
+src/packages/repl/src/components/Messages.tsx(509,25): error TS2345: Argument of type 'NormalizedMessage[]' is not assignable to parameter of type 'AnyMessage'.
+  --- código src/packages/repl/src/components/Messages.tsx:499-519 ---
+    499            }
+    500          }
+    501        }
+    502      }
+    503      return null
+    504    }, [normalizedMessages])
+    505  
+    506    // streamingToolUses updates on every input_json_delta while normalizedMessages
+    507    // stays stable — precompute the Set so the filter is O(k) not O(n×k) per chunk.
+    508    const normalizedToolUseIDs = useMemo(
+    509>     () => getToolUseIDs(normalizedMessages),
+    510      [normalizedMessages],
+    511    )
+    512  
+    513    const streamingToolUsesWithoutInProgress = useMemo(
+    514      () =>
+    515        streamingToolUses.filter(
+    516          stu =>
+    517            !inProgressToolUseIDs.has(stu.contentBlock.id) &&
+    518            !normalizedToolUseIDs.has(stu.contentBlock.id),
+    519        ),
+  Property 'type' is missing in type 'NormalizedMessage[]' but required in type 'AnyMessage'.
+src/packages/repl/src/components/Messages.tsx(518,33): error TS2339: Property 'has' does not exist on type 'string[]'.
+  --- código src/packages/repl/src/components/Messages.tsx:508-528 ---
+    508    const normalizedToolUseIDs = useMemo(
+    509      () => getToolUseIDs(normalizedMessages),
+    510      [normalizedMessages],
+    511    )
+    512  
+    513    const streamingToolUsesWithoutInProgress = useMemo(
+    514      () =>
+    515        streamingToolUses.filter(
+    516          stu =>
+    517            !inProgressToolUseIDs.has(stu.contentBlock.id) &&
+    518>           !normalizedToolUseIDs.has(stu.contentBlock.id),
+    519        ),
+    520      [streamingToolUses, inProgressToolUseIDs, normalizedToolUseIDs],
+    521    )
+    522  
+    523    const syntheticStreamingToolUseMessages = useMemo(
+    524      () =>
+    525        streamingToolUsesWithoutInProgress.flatMap(streamingToolUse => {
+    526          const msg = createAssistantMessage({
+    527            content: [streamingToolUse.contentBlock],
+    528          })
+src/packages/repl/src/components/Messages.tsx(632,9): error TS2345: Argument of type 'NormalizedMessage[]' is not assignable to parameter of type 'MessageWithoutProgress[]'.
+  --- código src/packages/repl/src/components/Messages.tsx:622-642 ---
+    622  
+    623        const messagesToShow = shouldTruncate
+    624          ? briefFiltered.slice(-MAX_MESSAGES_TO_SHOW_IN_TRANSCRIPT_MODE)
+    625          : briefFiltered
+    626  
+    627        const hasTruncatedMessages =
+    628          shouldTruncate &&
+    629          briefFiltered.length > MAX_MESSAGES_TO_SHOW_IN_TRANSCRIPT_MODE
+    630  
+    631        const { messages: groupedMessages } = applyGrouping(
+    632>         messagesToShow,
+    633          tools,
+    634          verbose,
+    635        )
+    636  
+    637        const collapsed = collapseBackgroundBashNotifications(
+    638          collapseHookSummaries(
+    639            collapseTeammateShutdowns(
+    640              collapseReadSearchGroups(groupedMessages, tools),
+    641            ),
+    642          ),
+  Type 'NormalizedMessage' is not assignable to type 'MessageWithoutProgress'.
+    Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type 'MessageWithoutProgress'.
+      Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type 'MessageBase & { type: "grouped_tool_use" | "collapsed_read_search"; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | un...'.
+        Type 'MessageBase & { type: "progress"; data: unknown; } & { message?: (NonNullable<{ [key: string]: unknown; role?: string | undefined; id?: string | undefined; content?: MessageContent | undefined; usage?: Record<...> | ... 1 more ... | undefined; } | ({ ...; } & { ...; }) | ({ ...; } & { ...; }) | undefined> & { ...; }...' is not assignable to type '{ type: "grouped_tool_use" | "collapsed_read_search"; }'.
+          Types of property 'type' are incompatible.
+            Type '"progress"' is not assignable to type '"grouped_tool_use" | "collapsed_read_search"'.

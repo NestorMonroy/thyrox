@@ -1,0 +1,46 @@
+{
+ "reviewed": [
+  {
+   "pattern": "local-jsx-context-narrow-options-index-signature",
+   "files": [
+    "src/packages/command-runtime/src/commands/context/context.tsx"
+   ]
+  },
+  {
+   "pattern": "state-field-not-in-shared-type",
+   "files": [
+    "src/packages/command-runtime/src/commands/install-github-app/install-github-app.tsx"
+   ]
+  },
+  {
+   "pattern": "plain-css-color-name-as-ink-color",
+   "files": [
+    "src/packages/command-runtime/src/commands/remoteControlServer/remoteControlServer.tsx"
+   ]
+  },
+  {
+   "pattern": "async-generator-return-value-typed-as-undefined",
+   "files": [
+    "src/packages/config/generators.ts"
+   ]
+  },
+  {
+   "pattern": "write-only-module-state-never-read",
+   "files": [
+    "src/packages/config/global/config.ts"
+   ]
+  },
+  {
+   "pattern": "local-command-type-source-mismatch",
+   "files": [
+    "src/packages/config/plugin/commands/reload-plugins/index.ts"
+   ]
+  },
+  {
+   "pattern": "uint8array-passed-where-unzipfile-wants-buffer",
+   "files": [
+    "src/packages/config/plugin/zipCache.ts"
+   ]
+  }
+ ]
+}

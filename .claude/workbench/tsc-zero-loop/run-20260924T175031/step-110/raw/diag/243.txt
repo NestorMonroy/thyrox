@@ -1,0 +1,4 @@
+src/packages/repl/src/hooks/useTextInput.ts(30,7): error TS2322: Type '() => void' is not assignable to type 'InputHandler'.
+  Type 'void' is not assignable to type 'MaybeCursor'.
+src/packages/repl/src/hooks/useTextInput.ts(346,11): error TS2322: Type '() => void' is not assignable to type 'InputHandler'.
+  Type 'void' is not assignable to type 'MaybeCursor'.

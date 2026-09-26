@@ -1,0 +1,1 @@
+src/packages/storage/src/sessionStorage.ts(4663,15): error TS2304: Cannot find name 'MessageContent'.

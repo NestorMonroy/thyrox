@@ -1,0 +1,2 @@
+src/packages/repl/src/components/StatusLine.tsx(347,29): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.
+src/packages/repl/src/components/StatusLine.tsx(389,42): error TS2339: Property 'padding' does not exist on type '{ type: "command"; command: string; }'.

@@ -1,0 +1,27 @@
+src/packages/agent/__tests__/isSyntheticMessage.test.ts(18,3): error TS2352: Conversion of type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' to type 'Message' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  --- código src/packages/agent/__tests__/isSyntheticMessage.test.ts:8-28 ---
+      8   *   - Real user message classified as synthetic: silently dropped
+      9   *     from transcript / attribution
+     10   *   - Synthetic message classified as real: inflates user-prompt
+     11   *     count, leaks into transcript export the user shares
+     12   */
+     13  import { describe, expect, test } from 'bun:test'
+     14  import { isSyntheticMessage, SYNTHETIC_MESSAGES } from '../messages.js'
+     15  import type { Message } from '../messageShapes.js'
+     16  
+     17  const userText = (text: string): Message =>
+     18>   ({
+     19      type: 'user',
+     20      uuid: 'uuid',
+     21      message: {
+     22        role: 'user',
+     23        content: [{ type: 'text', text }],
+     24      },
+     25    }) as Message
+     26  
+     27  describe('isSyntheticMessage — known synthetic markers', () => {
+     28    test('"[Request interrupted by user]" → true', () => {
+  Type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' is not comparable to type 'UserMessage'.
+    Type '{ type: "user"; uuid: "uuid"; message: { role: string; content: { type: "text"; text: string; }[]; }; }' is not comparable to type 'MessageBase'.
+      Types of property 'uuid' are incompatible.
+        Type '"uuid"' is not comparable to type '`${string}-${string}-${string}-${string}-${string}`'.

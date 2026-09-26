@@ -1,0 +1,36 @@
+{
+ "batches": [
+  {
+   "batch": 1,
+   "files": 40,
+   "total_before": 1268,
+   "total_final": 1148,
+   "tsc_runs": 2,
+   "kept": 21
+  }
+ ],
+ "files_kept": [
+  "src/packages/@ant/ink/src/core/ink.tsx",
+  "src/packages/agent/__tests__/messageFactories.test.ts",
+  "src/packages/agent/createDeps.ts",
+  "src/packages/agent/internal/cronTasksCore.ts",
+  "src/packages/agent/internal/stopHooksCore.ts",
+  "src/packages/color-diff-napi/src/__tests__/color-diff.test.ts",
+  "src/packages/mcp-runtime/src/runtimeHostSetup.ts",
+  "src/packages/permission/__tests__/PermissionUpdate.test.ts",
+  "src/packages/permission/src/__tests__/permissionUpdatePure.test.ts",
+  "src/packages/provider/src/__tests__/connections.test.ts",
+  "src/packages/repl/src/components/DiagnosticsDisplay.tsx",
+  "src/packages/repl/src/components/ValidationErrorsList.tsx",
+  "src/packages/repl/src/fileIndex/index.ts",
+  "src/packages/repl/src/hooksSettings.ts",
+  "src/packages/repl/src/screens/agentFleet/__tests__/helpers.test.ts",
+  "src/packages/swarm/src/runtime/inProcessRunner.ts",
+  "src/packages/swarm/src/worktree/index.ts",
+  "src/packages/tool-registry/src/tools/AgentTool/__tests__/builtInAgentSnapshots.test.ts",
+  "src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts",
+  "src/packages/tool-registry/src/tools/WaitForMcpServersTool/__tests__/WaitForMcpServersTool.test.ts",
+  "src/packages/tool-registry/src/tools/__tests__/sleepAndTestingPermission.test.ts"
+ ],
+ "final_log": "/home/user/thyrox/.claude/workbench/tsc-zero-loop/run-20260924T175031/step-108/pipeline/batch-01/final.log"
+}
