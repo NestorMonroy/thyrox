@@ -87,7 +87,8 @@ def error_log():
     # los demas inserts no alcanza a este.
     if str(hooks) not in sys.path:
         sys.path.insert(0, str(hooks))
-    import hook_error_log
+    # vive en el consumidor, fuera del arbol que pyright analiza
+    import hook_error_log  # pyright: ignore[reportMissingImports]
 
     return hook_error_log
 

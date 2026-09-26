@@ -1,3 +1,6 @@
+# Puente sólo para Windows: mss, PIL, comtypes y pywinauto existen donde corre,
+# no en este árbol (Linux). pyright no puede resolverlos aquí.
+# pyright: reportMissingImports=false
 """
 Python Bridge for Windows Computer Use.
 

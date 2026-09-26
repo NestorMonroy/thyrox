@@ -72,7 +72,7 @@ DOCS = reach.root("docs")
 PM = DOCS / "source" / "gestion" / "pm"
 
 
-def anchor(name: str) -> pathlib.Path:
+def anchor(name: str) -> Path:
     """Resuelve un ancla del consumidor por su NOMBRE, no por su iniciativa.
 
     La identidad de un hallazgo es su ID, no la ruta que lo hospeda: una
