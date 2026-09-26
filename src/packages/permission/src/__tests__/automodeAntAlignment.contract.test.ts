@@ -116,7 +116,8 @@ describe('fallback-to-ask paths (ant xaH) — prompt, do not run the classifier'
     // `computeAutoModeFallback` devuelve null cuando sólo hay
     // `sandboxOverride`, para que llegue al clasificador; las tres razones que
     // merecen prompt devuelven una razón.
-    expect(classifierDecision).toMatch(/sandboxOverride alone/)
+    // El comentario de la fuente se tradujo; se ancla a su forma actual.
+    expect(classifierDecision).toMatch(/sandboxOverride por sí solo/)
     expect(classifierDecision).toMatch(/isSandboxOverride/)
     expect(classifierDecision).toMatch(
       /return \{ reason: 'safety_check' \}|reason: 'safety_check'/,

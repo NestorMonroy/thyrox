@@ -237,6 +237,10 @@
       "types": "./dist/model.d.ts",
       "default": "./src/model.ts"
     },
+    "./foundryCapabilities.js": {
+      "types": "./dist/foundryCapabilities.d.ts",
+      "default": "./src/foundryCapabilities.ts"
+    },
     "./model/aliases.js": {
       "types": "./dist/model/aliases.d.ts",
       "default": "./src/model/aliases.ts"

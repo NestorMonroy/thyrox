@@ -45,7 +45,12 @@ type SetAppState = (updater: (prev: AppState) => AppState) => void
  * Helper function for task implementations.
  * Generic to allow type-safe updates for specific task types.
  */
-export function updateTaskState<T extends TaskState>(
+// Las tareas que el estado de la aplicación guarda. `T` se acota a ellas y
+// no al `TaskState` relajado de este archivo: la conversión de un elemento de
+// `prev.tasks` a `T` sólo es válida si `T` es una de esas tareas.
+type AppTaskState = NonNullable<AppState['tasks']>[string]
+
+export function updateTaskState<T extends AppTaskState>(
   taskId: string,
   setAppState: SetAppState,
   updater: (task: T) => T,

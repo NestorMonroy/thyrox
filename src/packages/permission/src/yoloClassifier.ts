@@ -52,6 +52,7 @@ import { extractToolUseBlock, parseClassifierResponse } from './classifierShared
 import { getClaudeTempDir } from './filesystem.js'
 import { readEnv } from '@thyrox/config/env'
 import { buildYoloSystemPrompt } from './yoloSystemPrompt.js'
+import { YOLO_CLASSIFIER_TOOL_NAME } from './yoloClassifierToolName.js'
 // Copia de `ccnmt: packages/permission/src/yoloClassifier.ts` con los
 // comentarios traducidos; el cuerpo es el de la fuente.
 //
@@ -190,7 +191,7 @@ const yoloClassifierResponseSchema = lazySchema(() =>
   }),
 )
 
-export const YOLO_CLASSIFIER_TOOL_NAME = 'classify_result'
+export { YOLO_CLASSIFIER_TOOL_NAME }
 
 const YOLO_CLASSIFIER_TOOL_SCHEMA: BetaToolUnion = {
   type: 'custom',

@@ -44,7 +44,8 @@
 import { isEnvDefinedFalsy, isEnvTruthy } from '@thyrox/config/env/utils.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { getAllModelBetas } from '@thyrox/provider/betas.js'
-import { getCanonicalName } from '@thyrox/provider/model.js'
+import { foundryDeploymentSupports } from '@thyrox/provider/foundryCapabilities.js'
+import { normalizeModelStringForAPI } from '@thyrox/provider/model.js'
 import { getAPIProvider, isFirstPartyAnthropicBaseUrl } from '@thyrox/provider/providers.js'
 import type { ToolPermissionContext, Tools } from '@thyrox/tool-registry/Tool.js'
 import type { AgentDefinition } from '@thyrox/tool-registry/tools/AgentTool/loadAgentsDir.js'
@@ -193,7 +194,7 @@ function meetsFamilyMinimum(
 /** `W8`: en Vertex, los modelos previos a 4.5 rechazan la cabecera beta. */
 function isVertexModelWithoutToolSearch(model: string): boolean {
   if (getAPIProvider() !== 'vertex') return false
-  const canonical = getCanonicalName(model).replace(/[@-]\d{8}$/, '')
+  const canonical = normalizeModelStringForAPI(model).replace(/[@-]\d{8}$/, '')
   if (/^claude-3(-|$)/.test(canonical)) return true
   return (
     /^claude-(opus|sonnet|haiku)-\d/.test(canonical) &&
@@ -202,13 +203,13 @@ function isVertexModelWithoutToolSearch(model: string): boolean {
 }
 
 /**
- * `qpe`: el despliegue de Foundry acepta la capacidad. El binario consulta el
- * cerrojo `foundryDeploymentCapabilities` del host, que se llena cuando una
- * petición recibe un 400 que la nombra; con el mapa vacío responde `true`.
- * pendiente: ese cerrojo no existe en este árbol, así que siempre está vacío.
+ * `CX`: la conexión a los servidores MCP no bloquea el arranque. El binario
+ * lo fija al conectar (`MCP_CONNECTION_NONBLOCKING` distinto de falso) y
+ * antes de conectar responde `false`; este árbol no tiene ese punto de
+ * conexión, así que se lee del entorno en el momento del evento.
  */
-function foundryDeploymentSupports(_model: string, _capability: string): boolean {
-  return true
+function isMcpConnectNonBlocking(): boolean {
+  return !isEnvDefinedFalsy(process.env.MCP_CONNECTION_NONBLOCKING)
 }
 
 /** `iyt`: por qué no se ofrece la búsqueda, o `undefined` si nada lo impide. */
@@ -359,8 +360,7 @@ async function decideAutoToolSearch(
 /**
  * `iPn`: ¿se difieren las herramientas detrás de ToolSearch en esta petición?
  * Primero las razones de `iyt`, luego el modo; cada salida deja su evento
- * `tengu_tool_search_mode_decision`. pendiente: el campo `mcpNonBlocking`
- * del evento (`CX`) no tiene fuente en este árbol y no se emite.
+ * `tengu_tool_search_mode_decision`.
  */
 export async function isToolSearchEnabled(
   model: string,
@@ -382,6 +382,7 @@ export async function isToolSearchEnabled(
       reason,
       checkedModel: model,
       mcpToolCount,
+      mcpNonBlocking: isMcpConnectNonBlocking(),
       userType: 'external',
       ...metrics,
     })

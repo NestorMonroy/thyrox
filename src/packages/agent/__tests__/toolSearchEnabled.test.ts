@@ -4,6 +4,10 @@
  * `Z5n` con sus dos caminos —tokens y, si el conteo no responde, caracteres—.
  */
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test'
+import {
+  recordUnsupportedCapabilities,
+  resetFoundryCapabilities,
+} from '@thyrox/provider/foundryCapabilities.js'
 import { installAgentHostBindings, type AgentHostBindings } from '../host.ts'
 import {
   getAutoToolSearchCharThreshold,
@@ -79,6 +83,17 @@ describe('getToolSearchUnavailableReason (iyt)', () => {
     expect(
       getToolSearchUnavailableReason('claude-sonnet-4-5@20250929', [toolSearch] as never),
     ).toBeUndefined()
+  })
+
+  test('un despliegue de Foundry que rechazó la búsqueda la deja fuera', () => {
+    env({ CLAUDE_CODE_USE_FOUNDRY: '1' })
+    resetFoundryCapabilities()
+    expect(getToolSearchUnavailableReason('claude-sonnet-4-5', [toolSearch] as never)).toBeUndefined()
+    recordUnsupportedCapabilities('claude-sonnet-4-5', ['tool_search'])
+    expect(getToolSearchUnavailableReason('claude-sonnet-4-5', [toolSearch] as never)).toBe(
+      'foundry_deployment_unsupported',
+    )
+    resetFoundryCapabilities()
   })
 
   test('con ToolSearch en la lista no hay razón', () => {
