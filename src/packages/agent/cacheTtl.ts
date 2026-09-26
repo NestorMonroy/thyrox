@@ -28,6 +28,7 @@
  *   gana sobre el derivado: es una decisión declarada, y la derivación existe
  *   para los que no la tomaron.
  */
+import { DEFAULT_TTL_BY_SOURCE } from '@thyrox/provider/cost/cacheRoutes'
 import { chooseCacheTtl } from '@thyrox/provider/cost/policy'
 import type { AgentDefinition, CacheTtl } from './types.ts'
 
@@ -39,27 +40,54 @@ export type ResolvedCacheTtl = {
 }
 
 export function resolveCacheTtl(agent: AgentDefinition): ResolvedCacheTtl {
-  const declarado = agent.experimental?.cacheTtl
-  if (declarado !== undefined) {
-    return { ttl: declarado, why: `TTL declarado en la definición (${declarado})` }
+  return decidedTtl(agent.experimental?.cacheTtl, agent.model, agent.expectedGapMinutes)
+}
+
+/** El origen de una petición: decide el TTL cuando nadie declaró uno. */
+export type RequestSource = keyof typeof DEFAULT_TTL_BY_SOURCE
+
+export type RequestCacheTtlInputs = {
+  readonly declared?: CacheTtl
+  readonly model?: string
+  readonly expectedGapMinutes?: number
+  readonly source: RequestSource
+}
+
+/**
+ * El TTL de UNA petición, que siempre lleva uno: el declarado, el que el
+ * hueco entre turnos justifica o, sin ninguno de los dos, el del origen —la
+ * tabla que el ejecutable aplica (`DEFAULT_TTL_BY_SOURCE`)—. El bucle lo
+ * resuelve una vez y lo usan la petición, el costo del turno y el cambio de
+ * modelo.
+ */
+export function resolveRequestCacheTtl(inputs: RequestCacheTtlInputs): { ttl: CacheTtl; why: string } {
+  const decided = decidedTtl(inputs.declared, inputs.model, inputs.expectedGapMinutes)
+  if (decided.ttl !== undefined) return { ttl: decided.ttl, why: decided.why }
+  const ttl = DEFAULT_TTL_BY_SOURCE[inputs.source]
+  return { ttl, why: `default del origen ${inputs.source} (${ttl}); ${decided.why}` }
+}
+
+/** Los dos primeros pasos, compartidos: lo declarado y lo que el hueco justifica. */
+function decidedTtl(declared: CacheTtl | undefined, model: string | undefined, gap: number | undefined): ResolvedCacheTtl {
+  if (declared !== undefined) {
+    return { ttl: declared, why: `TTL declarado en la definición (${declared})` }
   }
-  const gap = agent.expectedGapMinutes
   if (gap === undefined) {
     return { why: 'sin `expectedGapMinutes`: no hay hueco declarado que costear' }
   }
-  if (agent.model === undefined || agent.model === 'inherit') {
+  if (model === undefined || model === 'inherit') {
     // El modelo lo resuelve la sesión, así que el tier —y con él la prima de
     // la escritura a 1 h— no se conoce al emitir. Es una incógnita del
     // consumidor, no un hueco de este módulo.
     return { why: 'el modelo es `inherit`: sin tier no hay prima que costear' }
   }
   try {
-    const eleccion = chooseCacheTtl(agent.model, gap)
+    const eleccion = chooseCacheTtl(model, gap)
     return { ttl: eleccion.ttl, why: eleccion.why }
   } catch {
     // `pricingOf` lanza ante un id que el catálogo no declara. Se convierte
     // en una negativa con razón en vez de propagarse: emitir un agente no
     // debe reventar porque su modelo no esté en el catálogo vendorizado.
-    return { why: `${agent.model}: sin tier de precio en el catálogo` }
+    return { why: `${model}: sin tier de precio en el catálogo` }
   }
 }

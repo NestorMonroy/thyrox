@@ -26,7 +26,7 @@
  * `resolveCacheTtl` devolviera un TTL ahí, sólo el caso 4 caería.
  */
 import { describe, expect, test } from 'bun:test'
-import { resolveCacheTtl } from '../cacheTtl.ts'
+import { resolveCacheTtl, resolveRequestCacheTtl } from '../cacheTtl.ts'
 import { toMarkdown } from '../emit/markdown.ts'
 import type { AgentDefinition } from '../types.ts'
 
@@ -86,5 +86,30 @@ describe('el emisor consume la derivación', () => {
     // Es el parámetro que alimenta la derivación, no algo que el cliente lea.
     expect(toMarkdown({ ...base, expectedGapMinutes: 30 }, '2026-01-01T00:00:00Z'))
       .not.toContain('expectedGapMinutes')
+  })
+})
+
+describe('resolveRequestCacheTtl — el TTL de UNA petición, siempre decidido', () => {
+  const pedido = { model: 'claude-sonnet-5', source: 'sdk' as const }
+
+  test('5. sin TTL declarado ni hueco, el default del origen: sdk 1h, subagente 5m', () => {
+    expect(resolveRequestCacheTtl(pedido).ttl).toBe('1h')
+    expect(resolveRequestCacheTtl({ ...pedido, source: 'agent:custom' }).ttl).toBe('5m')
+  })
+
+  test('6. un hueco declarado gana sobre el origen: turnos seguidos no pagan la prima de 1h', () => {
+    const r = resolveRequestCacheTtl({ ...pedido, expectedGapMinutes: 2 })
+    expect(r.ttl).toBe('5m')
+    expect(r.why).toContain('turnos seguidos')
+  })
+
+  test('7. el TTL declarado gana sobre el hueco y sobre el origen', () => {
+    expect(resolveRequestCacheTtl({ ...pedido, declared: '5m', expectedGapMinutes: 30 }).ttl).toBe('5m')
+  })
+
+  test('8. un modelo fuera del catálogo no revienta: cae al origen y lo dice', () => {
+    const r = resolveRequestCacheTtl({ ...pedido, model: 'claude-desconocido', expectedGapMinutes: 2 })
+    expect(r.ttl).toBe('1h')
+    expect(r.why).toContain('sdk')
   })
 })
