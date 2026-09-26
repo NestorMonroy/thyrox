@@ -34,6 +34,15 @@ Sin `--site`/`--replace` el patrón es NO mecánico: queda en la memoria y
     bin/tsc_sweep applied --run R --name N archivo...
     bin/tsc_sweep exclude --run R --name N --reason TEXTO archivo...
     bin/tsc_sweep close --run R --name N --reason TEXTO
+    bin/tsc_sweep revert --run R --name N
+    bin/tsc_sweep confidence --run R
+    bin/tsc_sweep evict --run R --reason TEXTO [--min-trials 3] [--max-mean 0.25]
+
+La memoria se gobierna con los cinco mecanismos que pide BALTO
+(self-evolving-agents-2026, lección 7): alcance (`include`/`exclude`),
+versión (`version`, `history`, `revert`), deduplicación (la misma señal con
+el mismo alcance se funde como alias), confianza (`confidence`, medida por
+ejecución real en el ledger) y descarte (`evict`, `close`).
 """
 from __future__ import annotations
 
@@ -49,6 +58,9 @@ from verify.agent_proposal import _minimal_edit
 from verify.analyze_typescript_diagnostics import DIAGNOSTIC, diagnostic_key
 
 PATTERNS = "patterns.jsonl"
+LEDGER = "ledger.jsonl"
+#: Los campos cuyo cambio es una versión nueva del patrón.
+VERSIONED = ("signal", "fix", "site", "replace", "include")
 SUFFIXES = (".ts", ".tsx")
 
 
@@ -76,10 +88,44 @@ def add_pattern(run: Path, pattern: dict) -> dict:
     if mechanical[0]:
         re.compile(pattern["site"], re.M)
     patterns = load_patterns(run)
-    previous = patterns.get(pattern["name"], {})
+    # Deduplicación (BALTO, L07): la misma señal con el mismo alcance bajo
+    # otro nombre es el mismo patrón. Se devuelve el existente, con el nombre
+    # nuevo como alias, para que quien escribe marque ahí lo aplicado.
+    for other in patterns.values():
+        if (other["name"] != pattern["name"] and other.get("status") != "closed"
+                and other["signal"] == pattern["signal"]
+                and (other.get("include") or "") == (pattern.get("include") or "")):
+            other["aliases"] = sorted(set(other.get("aliases", [])) | {pattern["name"]})
+            _save(run, patterns)
+            return other
+    previous = patterns.get(pattern["name"])
     row = {"include": "", "exclude": [], "site": "", "replace": "", **pattern,
-           "applied": previous.get("applied", [])}
+           "applied": previous.get("applied", []) if previous else []}
+    # Versión (L07) y reversión (L09): sobrescribir el contenido guarda el
+    # estado anterior; reescribir lo mismo no crea versión.
+    if previous:
+        row["version"] = previous.get("version", 1)
+        row["history"] = previous.get("history", [])
+        row["aliases"] = previous.get("aliases", [])
+        if any(previous.get(key, "") != row.get(key, "") for key in VERSIONED):
+            row["history"] = [*row["history"], {**{key: previous.get(key, "") for key in VERSIONED},
+                                                "version": row["version"]}]
+            row["version"] += 1
+    else:
+        row["version"] = 1
     patterns[row["name"]] = row
+    _save(run, patterns)
+    return row
+
+
+def revert_pattern(run: Path, name: str) -> dict:
+    """Restaura la versión anterior de un patrón (L09: reversión)."""
+    patterns = load_patterns(run)
+    row = patterns.get(name)
+    if not row or not row.get("history"):
+        raise ValueError(f"el patrón {name!r} no tiene versión anterior que restaurar")
+    *rest, last = row["history"]
+    row.update({key: last.get(key, "") for key in VERSIONED}, version=last["version"], history=rest)
     _save(run, patterns)
     return row
 
@@ -122,6 +168,85 @@ def close_pattern(run: Path, name: str, reason: str) -> dict:
     patterns[name].update(status="closed", closed_reason=reason)
     _save(run, patterns)
     return patterns[name]
+
+
+def merge_duplicates(run: Path, *, reason: str) -> list[str]:
+    """Funde los duplicados que ya existían: misma señal y mismo alcance entre
+    patrones abiertos. Se conserva el primero en la memoria, se le unen
+    `applied` y los nombres como alias, y los demás se CIERRAN con la razón y
+    el nombre del conservado — no se borran, para poder revertir (L09)."""
+    reason = _require_reason(reason)
+    patterns = load_patterns(run)
+    kept: dict[tuple[str, str], dict] = {}
+    merged = []
+    for row in patterns.values():
+        if row.get("status") == "closed":
+            continue
+        key = (row["signal"], row.get("include") or "")
+        if key not in kept:
+            kept[key] = row
+            continue
+        first = kept[key]
+        first["applied"] = sorted(set(first.get("applied", [])) | set(row.get("applied", [])))
+        first["aliases"] = sorted(set(first.get("aliases", [])) | {row["name"], *row.get("aliases", [])})
+        row.update(status="closed", closed_reason=f"duplicado de {first['name']} (misma señal y alcance) — {reason}")
+        merged.append(row["name"])
+    _save(run, patterns)
+    return merged
+
+
+def _pattern_of(proposal_id: str) -> str | None:
+    """El patrón que una propuesta aplicó: `agent:pool:pattern:<nombre>` (la
+    ruta de barrido) o `pattern:<nombre>[:<archivo>]` (la mecánica)."""
+    for prefix in ("agent:pool:pattern:", "pattern:"):
+        if proposal_id.startswith(prefix):
+            return proposal_id[len(prefix):].split(":", 1)[0]
+    return None
+
+
+def pattern_confidence(run: Path) -> dict[str, dict]:
+    """Confianza de cada patrón medida por ejecución real (BALTO, L07): las
+    aplicaciones que el ledger juzgó. Éxito = `accepted*`; fracaso =
+    `rejected*`; el resto (`partial`, `revealed`) es neutro y se reporta
+    aparte. `mean` es la media de Laplace, (a+1)/(a+r+2).
+
+    Ciega a: una aplicación cuyo id no lleve el nombre del patrón."""
+    names = set(load_patterns(run))
+    path = run / LEDGER
+    counts: dict[str, dict] = {}
+    for line in path.read_text().splitlines() if path.exists() else []:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        name = _pattern_of(row.get("proposal_id", ""))
+        if name not in names:
+            continue
+        entry = counts.setdefault(name, {"accepted": 0, "rejected": 0, "neutral": 0})
+        outcome = row.get("outcome", "")
+        key = "accepted" if outcome.startswith("accepted") else "rejected" if outcome.startswith("rejected") \
+            else "neutral"
+        entry[key] += 1
+    for entry in counts.values():
+        entry["mean"] = (entry["accepted"] + 1) / (entry["accepted"] + entry["rejected"] + 2)
+    return counts
+
+
+def evict(run: Path, *, min_trials: int, max_mean: float, reason: str) -> list[str]:
+    """Descarte (L07): cierra, con su razón y sus cifras, los patrones
+    abiertos con al menos `min_trials` aplicaciones juzgadas y confianza no
+    mayor que `max_mean`. Un patrón con pocos intentos queda abierto: no hay
+    evidencia para descartarlo."""
+    reason = _require_reason(reason)
+    patterns = load_patterns(run)
+    evicted = []
+    for name, entry in sorted(pattern_confidence(run).items()):
+        trials = entry["accepted"] + entry["rejected"]
+        if patterns[name].get("status") == "closed" or trials < min_trials or entry["mean"] > max_mean:
+            continue
+        close_pattern(run, name, f"descartado por confianza: {entry['accepted']} de {trials} "
+                                 f"aplicaciones aceptadas (media {entry['mean']:.2f}) — {reason}")
+        evicted.append(name)
+    return evicted
 
 
 #: Umbrales del criterio de amplitud: por debajo, «acepta toda la población de
@@ -261,6 +386,19 @@ def main(argv: list[str] | None = None) -> int:
     broad_p.add_argument("--run", type=Path, required=True)
     broad_p.add_argument("--log", type=Path, required=True)
     broad_p.add_argument("--step", required=True)
+    dup_p = sub.add_parser("merge-duplicates", help="funde los patrones abiertos con la misma señal y alcance")
+    dup_p.add_argument("--run", type=Path, required=True)
+    dup_p.add_argument("--reason", required=True)
+    rev_p = sub.add_parser("revert", help="restaura la versión anterior de un patrón")
+    rev_p.add_argument("--run", type=Path, required=True)
+    rev_p.add_argument("--name", required=True)
+    conf_p = sub.add_parser("confidence", help="aplicaciones juzgadas por patrón, desde el ledger")
+    conf_p.add_argument("--run", type=Path, required=True)
+    ev_p = sub.add_parser("evict", help="cierra los patrones de baja confianza con intentos suficientes")
+    ev_p.add_argument("--run", type=Path, required=True)
+    ev_p.add_argument("--min-trials", type=int, default=3)
+    ev_p.add_argument("--max-mean", type=float, default=0.25)
+    ev_p.add_argument("--reason", required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "add-pattern":
@@ -279,6 +417,22 @@ def main(argv: list[str] | None = None) -> int:
         elif args.command == "exclude":
             print(json.dumps(exclude_files(args.run, args.name, args.files, args.reason),
                              ensure_ascii=False))
+        elif args.command == "merge-duplicates":
+            merged = merge_duplicates(args.run, reason=args.reason)
+            print("\n".join(merged))
+            print(f"merge-duplicates: {len(merged)} cerrado(s) por duplicado")
+        elif args.command == "revert":
+            print(json.dumps(revert_pattern(args.run, args.name), ensure_ascii=False))
+        elif args.command == "confidence":
+            confidence = pattern_confidence(args.run)
+            for name, entry in sorted(confidence.items(), key=lambda item: item[1]["mean"]):
+                print(json.dumps({"name": name, **entry}, ensure_ascii=False))
+            print(f"confidence: {len(confidence)} patrón(es) con aplicaciones juzgadas de "
+                  f"{len(load_patterns(args.run))} en la memoria")
+        elif args.command == "evict":
+            evicted = evict(args.run, min_trials=args.min_trials, max_mean=args.max_mean, reason=args.reason)
+            print("\n".join(evicted))
+            print(f"evict: {len(evicted)} descartado(s)")
         elif args.command == "close-broad":
             closed, evaluated = close_broad(args.run, args.log.read_text().splitlines(), args.step)
             for name, counts in sorted(closed.items()):

@@ -276,13 +276,15 @@ def record_patterns(run: Path, outputs_for_file: dict[str, list[dict]], kept: li
                         extra = {"agent_signal": signal, "signal_origin": "derived-from-key"}
                         signal = fallback
                 try:
-                    tsc_sweep.add_pattern(run, {"name": pattern["patron"],
+                    row = tsc_sweep.add_pattern(run, {"name": pattern["patron"],
                                                 "signal": signal,
                                                 "fix": pattern["fix_generico"], **extra})
                 except (ValueError, re.error) as error:
                     problems.append(f"{file}: {pattern['patron']}: {error}")
                     continue
-                tsc_sweep.mark_applied(run, pattern["patron"], [file])
+                # El nombre que la memoria devuelve: con la señal ya guardada
+                # bajo otro nombre, lo aplicado va al existente (deduplicación).
+                tsc_sweep.mark_applied(run, row["name"], [file])
     return problems
 
 

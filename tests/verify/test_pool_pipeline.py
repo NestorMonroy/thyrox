@@ -196,6 +196,16 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("si el código de la señal no está en el archivo, no se deriva y no entra", False,
                  "code-not-in-file" in pp.tsc_sweep.load_patterns(run_dir))
 
+    twin = {"result": json.dumps({"edits": [{"old": "x", "new": "y"}], "patterns": [
+        {"patron": "missing-name-again", "senal_del_verificador": "TS2304: Cannot find name \x27(\\w+)\x27",
+         "fix_generico": "importar", "edits": [0]}]})}
+    problems = pp.record_patterns(run_dir, {"src/c.ts": [twin]}, ["src/c.ts"],
+                                  keys + ["src/c.ts: TS2304: Cannot find name \x27baz\x27."])
+    memory = pp.tsc_sweep.load_patterns(run_dir)
+    assert_equal("una señal repetida no crea patrón: lo aplicado va al existente, sin problema",
+                 (False, ["src/a.ts", "src/c.ts"], []),
+                 ("missing-name-again" in memory, memory["missing-name"]["applied"], problems))
+
     assert_equal("el apóstrofo de una palabra no es una cita", None,
                  pp.derived_signal([keys[2]], "src/a.ts", "TS2677"))
     assert_equal("sin cita (TS2769 fija su primera línea) no hay señal que derivar", None,
