@@ -123,6 +123,12 @@ case "$(printf '%s' "${THYROX_FORCE_PROMPT_CACHING_5M:-}" | tr '[:upper:]' '[:lo
             *) rehusa "THYROX_CODE_PROMPT_CACHE_TTL va \"5m\" o \"1h\", no: $THYROX_CODE_PROMPT_CACHE_TTL" ;;
         esac ;;
 esac
+# Activar 1h (regla 5 de `QCt`): sólo si nada de arriba decidió.
+if [[ -z "$CACHE_TTL" ]]; then
+    case "$(printf '%s' "${THYROX_ENABLE_PROMPT_CACHING_1H:-}" | tr '[:upper:]' '[:lower:]')" in
+        1|true|yes|on) CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env ;;
+    esac
+fi
 
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."

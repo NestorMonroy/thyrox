@@ -133,6 +133,14 @@ rm -rf "$F/out"; EXTRA="--cache-ttl 1h" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_
 check "forzar 5m gana a la variable y a la opción" "$(thx_de)" "ttl=5m|thx=5m"
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa
 check "sólo --cache-ttl: su razón es la opción" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(option\)$/{n++} END{print n+0}')" "1"
+# Activar 1h: la regla 5 de `QCt`, por debajo de la opción y de la variable.
+rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "activar 1h sin opción ni variable: 1h" "$(thx_de)" "ttl=1h|thx=1h"
+check "activar 1h: el pool nombra la razón" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "la opción gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+rm -rf "$F/out"; EXTRA="" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
+check "forzar 5m gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
 check "variable ilegible: exit 2" "$CODE" "2"
 check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
