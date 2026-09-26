@@ -1,0 +1,18 @@
+118 |     if (!bindings || !ts.isNamedImports(bindings)) continue
+119 |     for (const element of bindings.elements) {
+120 |       if (element.name.text !== name) continue
+121 |       const imported = (element.propertyName ?? element.name).text
+122 |       const target = corpusPath(statement.moduleSpecifier.text)
+123 |       const targetSource = readFileSync(join(root, target), 'utf8')
+                                 ^
+ENOENT: no such file or directory, open '_references/claude-code-bin/2.1.282/bunfs-root/fs/promises'
+    path: "_references/claude-code-bin/2.1.282/bunfs-root/fs/promises",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+      at resolveSymbol (/home/user/thyrox/src/packages/binary/src/symbol.ts:123:28)
+      at /home/user/thyrox/src/packages/binary/bin/binary.ts:124:18
+      at loadAndEvaluateModule (2:1)
+
+Bun v1.3.11 (Linux x64)

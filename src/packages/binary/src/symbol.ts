@@ -29,7 +29,7 @@ import ts from 'typescript'
 
 import { parseSource } from './declaration.ts'
 
-export type SymbolKind = 'function' | 'variable' | 'class' | 'method'
+export type SymbolKind = 'function' | 'variable' | 'class' | 'method' | 'external'
 export type SymbolDefinition = {
   name: string
   kind: SymbolKind
@@ -97,6 +97,11 @@ export function extractSymbol(source: string, name: string): SymbolDefinition[] 
   return found
 }
 
+/** Los chunks del propio ejecutable viven bajo `/$bunfs/root/`. */
+function isCorpusSpecifier(specifier: string): boolean {
+  return specifier.startsWith('/$bunfs/root/')
+}
+
 /** `"/$bunfs/root/chunk-x.js"` → `chunk-x.js`, relativo a la raíz del corpus. */
 function corpusPath(specifier: string): string {
   return specifier.replace(/^\/\$bunfs\/root\//, '')
@@ -119,7 +124,14 @@ export function resolveSymbol(root: string, chunk: string, name: string, depth =
     for (const element of bindings.elements) {
       if (element.name.text !== name) continue
       const imported = (element.propertyName ?? element.name).text
-      const target = corpusPath(statement.moduleSpecifier.text)
+      const specifier = statement.moduleSpecifier.text
+      // Un módulo fuera del corpus (`fs/promises`, `node:path`) no tiene
+      // chunk que leer: la definición es suya y se declara, no se busca.
+      if (!isCorpusSpecifier(specifier)) {
+        return [{ name: imported, kind: 'external', scope: 'top', start: statement.getStart(file),
+                  end: statement.end, text: statement.getText(file), file: specifier }]
+      }
+      const target = corpusPath(specifier)
       const targetSource = readFileSync(join(root, target), 'utf8')
       const local = exportedLocalName(targetSource, imported) ?? imported
       return resolveSymbol(root, target, local, depth + 1)

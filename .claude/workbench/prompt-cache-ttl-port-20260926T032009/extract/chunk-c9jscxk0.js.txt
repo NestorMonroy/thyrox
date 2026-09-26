@@ -1,0 +1,18 @@
+==== EPt: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js function EPt [1947066,1947431)
+function EPt(e,{agentCacheTtlOverride:n,ignoreOverage:r=!1}={}){let s=gt(),g=s&&!r&&wa().isUsingOverage===!0,h=QCt(e,n,g);if(h!==void 0)return h;if(!s||g)return{ttl:"5m",reason:"default"};let b=d1r();if(b===null)b=x("tengu_prompt_cache_1h_config",{allowlist:[...fxe]}).allowlist??[],u1r(b);return pxe(e,b)?{ttl:"1h",reason:"subscriber"}:{ttl:"5m",reason:"default"}}
+==== QCt: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js function QCt [1867161,1867685)
+function QCt(e,n,r=!1){if(a.FORCE_PROMPT_CACHING_5M)return{ttl:"5m",reason:"force_5m_env"};let s=yyo(e),g=s?a.CLAUDE_CODE_PROMPT_CACHE_TTL:a.CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL;if(g!==void 0)return{ttl:g,reason:"env"};let h=Ke(),b=s?h.promptCacheTtl:h.subagentPromptCacheTtl;if(b!==void 0)return{ttl:b,reason:"setting"};if(n!==void 0&&!(n==="1h"&&r))return{ttl:n,reason:"agent_frontmatter"};if(a.ENABLE_PROMPT_CACHING_1H||De()==="bedrock"&&a.ENABLE_PROMPT_CACHING_1H_BEDROCK)return{ttl:"1h",reason:"enable_1h_env"};return}
+==== pxe: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js function pxe [1867061,1867161)
+function pxe(e,n){return e!==void 0&&n.some((r)=>r.endsWith("*")?e.startsWith(r.slice(0,-1)):e===r)}
+==== yyo: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js function yyo [1867027,1867061)
+function yyo(e){return pxe(e,fxe)}
+==== fxe: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js variable fxe [1866964,1867026)
+fxe=["repl_main_thread*","sdk","auto_mode","memdir_relevance"]
+==== FO: 1 definicion(es) de nivel superior
+---- chunk-c9jscxk0.js function FO [1947431,1947475)
+function FO(e,n){return EPt(e,n).ttl==="1h"}
