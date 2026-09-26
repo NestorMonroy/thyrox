@@ -78,5 +78,31 @@ check("con la clave vacía, el vacío viene del origen", "vacio_en_origen",
 check("sin la clave, está ausente", "ausente",
       register_session.type_source({}))
 
+print("== E. equiv_cost con los cocientes del tier del modelo (catálogo 2.1.282) ==")
+import json as _json  # noqa: E402
+import tempfile as _tempfile  # noqa: E402
+
+
+def _usage_of(model: str) -> dict:
+    with _tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "agent-x.jsonl"
+        path.write_text(_json.dumps({"type": "assistant", "message": {
+            "id": "m1", "model": model, "role": "assistant", "content": [{"type": "text", "text": "x"}],
+            "usage": {"input_tokens": 10, "cache_creation_input_tokens": 100, "cache_read_input_tokens": 1000,
+                      "output_tokens": 20}}}) + chr(10))
+        return register_session._extract_usage(str(path))
+
+
+opus = _usage_of("claude-opus-5-5")
+check("Opus 5.5: la lectura de caché pesa 0.05× (10 + 125 + 50 + 100)", 285, opus["equiv_cost"])
+check("y el perfil declara el tier con que se ponderó", "tier_4_20_cache_read_0_20",
+      opus["perfil"].get("equiv_basis"))
+sonnet = _usage_of("claude-sonnet-5")
+check("Sonnet 5 (tier 2/10): mismos cocientes que la fórmula fija (10 + 125 + 100 + 100)", 335,
+      sonnet["equiv_cost"])
+unknown = _usage_of("claude-nuevo-9")
+check("fuera del catálogo: la fórmula fija, declarada como tal", (335, "fija-3-15"),
+      (unknown["equiv_cost"], unknown["perfil"].get("equiv_basis")))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
