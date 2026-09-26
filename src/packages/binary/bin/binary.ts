@@ -73,9 +73,9 @@ if (orden === 'info') {
   console.log(`contenido   ${bytes} B`)
   console.log(`por tipo    ${[...porTipo].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`)
 } else if (orden === 'extract') {
-  const { payload, version, tabla } = abrir(argv)
+  const { bytes, payload, version, tabla } = abrir(argv)
   const raiz = opcion(argv, '--out', CORPUS_DEFECTO)
-  const r = writeCorpus(raiz, version, payload, tabla.entries)
+  const r = writeCorpus(raiz, version, payload, tabla.entries, bytes)
   console.log(`escrito ${r.files} archivo(s), ${r.bytes} B en ${r.root}`)
   console.log(`(alcance medido: ${r.files} de ${tabla.entries.length} entradas de la tabla)`)
 } else if (orden === 'graph') {
