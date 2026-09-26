@@ -426,6 +426,19 @@ with tempfile.TemporaryDirectory() as tmp:
                            "--root", str(root), "--run", str(run)])
     assert_equal("gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa", (2, True, False),
                  (blocked, "GATE 4 BLOQUEADO" in err.getvalue(), (root / "local/items.txt").exists()))
+    # Las instancias en archivos que OTRO paso tiene en vuelo no bloquean: ése
+    # las está resolviendo, y el solape no las toca. Episodio: el solape del
+    # paso 164 rehusó por una instancia en AttachmentMessage.tsx que el 163
+    # tenía en su pool en ese momento.
+    in_flight = root / "en-vuelo.txt"
+    in_flight.write_text("src/b.ts\nsrc/c.ts\n")
+    with contextlib.redirect_stderr(io.StringIO()):
+        overlapped = tc.main(["local", "plan", "--log", str(log), "--bench", str(root / "overlap"),
+                              "--root", str(root), "--run", str(run), "--exclude", str(in_flight)])
+    planned = [line.split()[0] for line in (root / "overlap/items.txt").read_text().splitlines()] \
+        if (root / "overlap/items.txt").exists() else []
+    assert_equal("gate 4 descuenta las instancias en vuelo en otro paso, y no las planea", (0, ["src/d.ts"]),
+                 (overlapped, planned))
     code = tc.main(["sweep", "plan", "--log", str(log), "--bench", str(root / "sweep"), "--root", str(root),
                     "--run", str(run)])
     lines = (root / "sweep/items.txt").read_text().splitlines()

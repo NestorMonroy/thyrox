@@ -1,0 +1,2 @@
+    pending = tsc_reflect.blocking_pending(run, log.splitlines(), [])
+    if pending:

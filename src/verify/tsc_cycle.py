@@ -344,6 +344,11 @@ def plan_local(log_path: Path, bench: Path, root: Path, run: Path, excluded: set
     """El plan de la ruta 3 detrás del gate 4; 2 si no hay nada que proponer."""
     log = log_path.read_text(encoding="utf-8", errors="ignore") if log_path.is_file() else ""
     pending = tsc_reflect.blocking_pending(run, log.splitlines(), [])
+    # Las instancias en archivos que otro paso tiene en vuelo (`excluded`) no
+    # bloquean: ése las resuelve, y este plan no las toca. Sin descontarlas,
+    # el solape (`local overlap`) rehusaba por trabajo que ya estaba en curso.
+    pending = {name: kept for name, found in pending.items()
+               if (kept := {file: n for file, n in found.items() if file not in excluded})}
     if pending:
         # Gate 4 del plan v2.2.0: con instancias vivas de un patrón en memoria,
         # la ruta por archivo no arranca; primero se barre (H-THYROX-186).
