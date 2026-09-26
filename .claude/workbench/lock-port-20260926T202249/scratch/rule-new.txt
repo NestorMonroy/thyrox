@@ -1,0 +1,2 @@
+| reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |
+| …y el texto lleva comillas simples | escribirlo con `cat > old.txt <<'EOF'` y `bash bin/replace_literal --old-file old.txt --new-file new.txt archivo`: el heredoc no interpreta nada, y se quita sólo su salto final. Por variable, un `NEW='…'` con `'pid'` dentro pierde las comillas en el shell antes de llegar al guion (2026-09-26) |

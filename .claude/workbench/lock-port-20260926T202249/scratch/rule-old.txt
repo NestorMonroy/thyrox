@@ -1,0 +1,1 @@
+| reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |

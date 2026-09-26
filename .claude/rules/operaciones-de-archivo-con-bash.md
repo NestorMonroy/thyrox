@@ -104,6 +104,7 @@ Hoy **0 gates** lo invocan fuera de su propia suite
 | suma / media de una columna | `awk '{s+=$1} END{print s}'` / `awk '{s+=$2} END{print s/NR}'` |
 | reemplazo global | `sed 's/foo/bar/g' archivo` |
 | reemplazar un texto FIJO en un archivo (con `$`, `{`, `\`, o varias líneas) | `OLD='<texto>' NEW='<texto>' bash bin/replace_literal [--all] archivo` |
+| …y el texto lleva comillas simples | escribirlo con `cat > old.txt <<'EOF'` y `bash bin/replace_literal --old-file old.txt --new-file new.txt archivo`: el heredoc no interpreta nada, y se quita sólo su salto final. Por variable, un `NEW='…'` con `'pid'` dentro pierde las comillas en el shell antes de llegar al guion (2026-09-26) |
 | recortar espacios al inicio/final | `sed 's/^[ \t]*//;s/[ \t]*$//' archivo` |
 | borrar líneas en blanco | `sed '/^$/d' archivo` |
 | líneas compartidas entre dos listados ya ordenados | `comm -12 a b` |
@@ -157,6 +158,11 @@ en su lugar, con `-v inplace::suffix=.bak` si se quiere copia (en gawk antiguo,
    `\n` en el patrón): gawk lee por registro.
 4. **`-i inplace` en otro awk** — `mawk -i inplace` sale 2 («not an option:
    -i»), y `awk` a secas resuelve a mawk en Debian (`detect_bare_awk`).
+
+**Y una trampa de `-i inplace`, medida el 2026-09-26:** lo que imprime el
+bloque `END` NO va al archivo sino a la salida estándar. Un `END { print "}" }`
+para cerrar un archivo lo deja sin cerrar, sin error. Lo que va al final se
+añade aparte (`printf … >> archivo`).
 
 Su gate es `src/hooks/detect_gawk_opportunity.py`, detector de
 `pretooluse_dispatch.py`, con esos cuatro momentos. Sus seis mitades de

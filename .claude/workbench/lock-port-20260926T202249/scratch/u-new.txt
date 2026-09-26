@@ -1,0 +1,4 @@
+# Uso:  OLD='<texto>' NEW='<texto>' bash src/lib/replace_literal.sh [--all] <archivo>
+#       bash src/lib/replace_literal.sh --old-file F --new-file F [--all] <archivo>
+#       (por archivo: se escribe con un heredoc `<<'EOF'`, que no interpreta
+#       comillas; se quita sólo el salto final que el heredoc añade)

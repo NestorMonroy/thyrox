@@ -2,9 +2,6 @@
 # replace_literal.sh — reemplaza un texto LITERAL en un archivo, con gawk.
 #
 # Uso:  OLD='<texto>' NEW='<texto>' bash src/lib/replace_literal.sh [--all] <archivo>
-#       bash src/lib/replace_literal.sh --old-file F --new-file F [--all] <archivo>
-#       (por archivo: se escribe con un heredoc `<<'EOF'`, que no interpreta
-#       comillas; se quita sólo el salto final que el heredoc añade)
 #
 # Por que existe
 # --------------
@@ -34,10 +31,6 @@
 # Ciega a: la codificacion — gawk compara por caracter segun el locale, asi
 #   que un archivo con bytes invalidos en UTF-8 puede contar distinto; y a que
 #   el texto nuevo sea correcto, que es juicio de quien lo pide.
-# Todo el cuerpo va en `main`, y la llamada termina con `exit` en la MISMA
-# linea: bash lee una funcion entera antes de ejecutarla, asi que un
-# reemplazo que reescriba ESTE archivo no le hace leer la cola desplazada.
-main() {
 set -uo pipefail
 
 replace_all=0
@@ -115,5 +108,3 @@ case "$status" in
         refuse "gawk salio con $status"
         ;;
 esac
-}
-main "$@"; exit $?

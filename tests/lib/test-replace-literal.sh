@@ -80,4 +80,41 @@ printf 'q q q\n' > "$WORK/f11"
 OLD='q' NEW='r' run --all "$WORK/f11" >/dev/null
 thyrox_check "11 publica el conteo con su archivo" 1 "$(gawk '/3 reemplazo/{n++} END{print n+0}' "$WORK/out")"
 
+# Caso 12 — el texto por ARCHIVO: un heredoc con delimitador entre comillas no
+# interpreta nada, asi que las comillas simples y dobles llegan intactas. Por
+# variable, un NEW='...' con 'pid' dentro pierde sus comillas en el shell,
+# antes de que el guion lo reciba (episodio del 2026-09-26).
+printf 'outcome = busy.owner.get(pid)\n' > "$WORK/f12"
+cat > "$WORK/old12" <<'EOF'
+busy.owner.get(pid)
+EOF
+cat > "$WORK/new12" <<'EOF'
+"rehusa:" + str(busy.owner.get('pid'))
+EOF
+thyrox_check "12 --old-file/--new-file reemplazan" 0 "$(run --old-file "$WORK/old12" --new-file "$WORK/new12" "$WORK/f12")"
+thyrox_check "12 las comillas llegan intactas" "outcome = \"rehusa:\" + str(busy.owner.get('pid'))" "$(cat "$WORK/f12")"
+
+# Caso 13 — se quita SOLO el salto final que el heredoc anade: un texto de
+# varias lineas conserva los suyos.
+printf 'a\nb\nc\n' > "$WORK/f13"
+printf 'a\nb\n' > "$WORK/old13"
+printf 'x\n\n' > "$WORK/new13"
+run --old-file "$WORK/old13" --new-file "$WORK/new13" "$WORK/f13" >/dev/null
+thyrox_check "13 el salto interno se conserva, el final del heredoc no" $'x\n\nc' "$(cat "$WORK/f13")"
+
+# Caso 14 — un archivo de texto ausente no es un OLD vacio: rehusa con 2.
+thyrox_check "14 --old-file ausente rehusa con 2" 2 "$(run --old-file "$WORK/no-existe" --new-file "$WORK/new12" "$WORK/f12")"
+
+# Caso 15 — el guion se edita a SI MISMO: bash lee un guion por tramos, y un
+# `cat >` que reescribe el archivo en curso le hace leer la cola desplazada
+# («syntax error near unexpected token», 2026-09-26). Envuelto en `main`,
+# bash lee el cuerpo entero antes de ejecutar.
+cp "$SUBJECT" "$WORK/self.sh"
+printf '%s\n' '# linea anadida al principio' > "$WORK/new15"
+head -1 "$WORK/self.sh" > "$WORK/old15"
+{ cat "$WORK/old15"; cat "$WORK/new15"; } > "$WORK/new15b"
+bash "$WORK/self.sh" --old-file "$WORK/old15" --new-file "$WORK/new15b" "$WORK/self.sh" >/dev/null 2>"$WORK/err15"
+thyrox_check "15 editarse a si mismo sale 0" 0 "$?"
+thyrox_check "15 sin error de sintaxis en la cola" 0 "$(gawk '/syntax error|unexpected/{n++} END{print n+0}' "$WORK/err15")"
+
 thyrox_summary
