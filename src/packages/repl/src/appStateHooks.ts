@@ -75,13 +75,14 @@ export function useAppStateStore(): {
   return mod.useAppStateStore()
 }
 
-export function AppStateProvider(props: {
-  initialState: AppState
-  children: ReactNode
-}): ReactNode {
+// Las props son las del proveedor real (`store`, `onChangeAppState`
+// incluidas): el envoltorio las estrechaba y `App.tsx` no compilaba.
+type HostAppStateProvider = typeof import('@thyrox/app-host/state/AppState.js').AppStateProvider
+
+export function AppStateProvider(props: Parameters<HostAppStateProvider>[0]): ReactNode {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const mod = require('@thyrox/app-host/state/AppState.js') as {
-    AppStateProvider: (p: { initialState: AppState; children: ReactNode }) => ReactNode
+    AppStateProvider: HostAppStateProvider
   }
   return mod.AppStateProvider(props)
 }

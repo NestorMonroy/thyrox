@@ -118,10 +118,19 @@ export type ProviderAgentDefinition = {
 }
 export type ProviderAgentId = string & { readonly __brand: 'AgentId' }
 export type ProviderEffortValue = string | number
+/**
+ * La notificación que el proveedor entrega al anfitrión: la de texto de
+ * `app-host/context/notifications.tsx`, sin sus campos de UI (`fold`,
+ * `color`, `jsx`). Con `priority: string` y un índice abierto, el
+ * callback del anfitrión —que acepta sólo las prioridades que sabe
+ * mostrar— no se podía pasar aquí.
+ */
 export type ProviderNotification = {
   key: string
-  priority: string
-  [key: string]: unknown
+  priority: 'low' | 'medium' | 'high' | 'immediate'
+  text: string
+  timeoutMs?: number
+  invalidates?: string[]
 }
 
 export type ProviderToolSchemaOptions = {

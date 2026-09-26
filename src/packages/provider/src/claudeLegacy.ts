@@ -28,7 +28,7 @@ import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { getProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderHostBindings } from './providerHostSetup.ts'
 import type { ProviderRequestOptions } from './internal/providerTypes.ts'
-import type { ProviderNotification } from './contracts.ts'
+import type { ProviderEffortValue, ProviderNotification } from './contracts.ts'
 import { HostBindingsError } from './errors.ts'
 
 type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[]
@@ -42,7 +42,7 @@ export type Options = ProviderRequestOptions & {
   extraToolSchemas?: BetaToolUnion[]
   querySource: string
   agents: unknown[]
-  effortValue?: string
+  effortValue?: ProviderEffortValue
   mcpTools: unknown
   queryTracking?: unknown
   agentId?: string
