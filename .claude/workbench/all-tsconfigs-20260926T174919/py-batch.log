@@ -1,0 +1,70 @@
+== tests/verify/test_env_contract_keys.py
+....
+----------------------------------------------------------------------
+Ran 4 tests in 23.793s
+
+OK
+EXIT=0
+== tests/roster/test_stdin_probe.py
+  ok    un archivo regular tampoco
+  ok    una terminal se nombra aparte
+  ok    un pid que no está: ilegible, no un stdin vacío
+  ok    la línea es TSV: pid, destino, clase, estado, cpu, escritores
+  ok    una tubería cuenta a quien la tiene para escribir, no a quien sólo la lee
+  ok    una tubería sin escritor vivo: 0, leer da EOF
+  ok    un socket o un no-canal no se miden: ninguno, no cero
+stdin_probe: REHÚSA — los pids son enteros
+  ok    un pid no numérico rehúsa con exit 2
+  ok    con GNU Parallel -k: una línea por pid, en el orden de entrada
+
+test_stdin_probe: 12 aserciones — 12 ok, 0 falla(s)
+EXIT=0
+== tests/lib/test_pyproject_declares_imports.py
+test_pyproject_declares_imports: 4 import(s) de terceros, 0 sin declarar (alcance medido: src/**/*.py fuera de src/packages/@ant)
+EXIT=0
+== tests/paths/test_ensure_home.py
+  ok    workbench_dir resuelto dos veces
+
+== 3. GUARDA: un hogar SIN declarar sigue rehusando, no se inventa ==
+  ok    log_dir sin declaracion sigue rehusando
+
+== 4. un hogar que YA existe se resuelve sin intentar escribir (strace) ==
+  ok    log_dir sobre un hogar existente no escribe
+  ok    cache_dir sobre un hogar existente no escribe
+  ok    jobs_dir sobre un hogar existente no escribe
+  ok    workbench_dir sobre un hogar existente no escribe
+
+resultado: 17 de 17 aserciones en verde
+EXIT=0
+== tests/verify/test_tsc_sweep_breadth.py
+  ok    pasa los umbrales (6 en 6 archivos) y rechaza 1 de 7: discrimina
+  ok    3 instancias en 3 archivos no bastan para decidir: queda abierta
+  ok    con 2 instancias en 1 archivo no se puede decidir: queda abierta
+  ok    un patrón ya cerrado no se vuelve a evaluar
+  ok    publica población y archivos de la decisión
+  ok    close-broad sale 0
+  ok    cierra el patrón que no discrimina
+  ok    y su razón cita el paso y las cifras
+  ok    el que discrimina sigue abierto
+  ok    el gate 4 deja de contar el patrón cerrado
+  ok    close-broad publica cuántos cerró sobre cuántos evaluó
+test_tsc_sweep_breadth: 13 aserciones — 13 ok, 0 falla(s)
+EXIT=0
+== tests/verify/test_pre_commit_hook.py
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 251, in setUp
+    self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+AssertionError: 1 != 0
+
+----------------------------------------------------------------------
+Ran 10 tests in 2.890s
+
+FAILED (failures=10)
+EXIT=0
+== tests/corpus/test_censo_contraparte.py
+REHÚSA — faltan los sujetos del censo: la raíz 'api', /home/user/odoo-tools. Sin ellos el censo no puede medir, y un rojo aquí no diría nada del censo.
+EXIT=0
+DONE

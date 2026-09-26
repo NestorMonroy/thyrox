@@ -1,0 +1,6 @@
+tests/verify/test-pre-commit-docs.sh
+tests/verify/test-script-naming.sh
+tests/verify/test_package_root_resolution.sh
+tests/verify/test-commit-msg-citation.sh
+tests/verify/test-premise-drift.sh
+tests/verify/test-verificar-premisa.sh

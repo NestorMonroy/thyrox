@@ -1,0 +1,27 @@
+Bring the full suite's red files to green
+
+The full run left 22 red or unmeasured files. Each fix follows the
+reference binary or corrects a fixture that had drifted from the code
+it measures:
+
+- The dev launcher relaunches bun with --feature=BG_SESSIONS, since
+  bun:bundle flags only come from bun's own command line; cli.tsx
+  imports main.tsx explicitly, because ./main.jsx resolved to main.ts.
+- Plugin hooks registered in app state now count and run, as the
+  binary's dTt reads pL() after the snapshot; each gets its
+  CLAUDE_PLUGIN_ROOT. The SDK callbacks from the same registry stay out.
+- The bundled-skills root uses MACRO.VERSION like the binary, not an
+  undeclared THYROX_VERSION; the PDF install command is declared.
+- swarm re-exports markMessagesAsReadByPredicate, which it already had.
+- Gemini images without a source are skipped; two provider pins, the
+  bunfs table for 2.1.283 and three package exports follow the code.
+- Seven path-arithmetic sites use reach.thyrox_root().
+- Twenty Spanish identifiers were translated by token; three dict keys
+  that mirror a persisted schema are frozen with it.
+- The pre-commit fixture derives its gate list from the hook (the hand
+  list drifted three times) and carries the cache package.
+- test_package_root_resolution drops the inherited THYROX_ROOT, and the
+  citation suite derives its case from commits that cite a task.
+
+The census still refuses: /home/user/odoo-tools is not in this
+container.

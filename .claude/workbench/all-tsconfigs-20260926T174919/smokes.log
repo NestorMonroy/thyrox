@@ -1,0 +1,91 @@
+bun test v1.3.11 (af24e281)
+
+tests/smoke/swarm-smoke.test.ts:
+64 |     ]
+65 |     for (const name of requiredExports) {
+66 |       expect(
+67 |         typeof (mod as Record<string, unknown>)[name],
+68 |         `swarm.${name} should be a function`,
+69 |       ).toBe('function')
+             ^
+error: swarm.markMessagesAsReadByPredicate should be a function
+
+Expected: "function"
+Received: "undefined"
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/swarm-smoke.test.ts:69:9)
+(fail) smoke:swarm boot > mailbox module loads without error [0.48ms]
+
+tests/smoke/live-fire-smoke.test.ts:
+129 |       const fixtureExists = existsSync(HOOK_FILE)
+130 |       const fixtureMode = fixtureExists
+131 |         ? readdirSync(FIXTURE_ROOT).join(',')
+132 |         : 'missing'
+133 |       const markerDirContents = readdirSync(markerDir).join(',') || '(empty)'
+134 |       throw new Error(
+                      ^
+error: Stop.fired marker not observed after 5s. markerDir=/tmp/thyrox-tests-70phBf/cc-smoke-marker-rdnoUY contents=(empty) hookFile=/home/user/thyrox/tests/smoke/fixtures/fake-plugin/hooks/marker.sh exists=true fixtureRoot=hooks,.claude-plugin stepCount=0
+      at <anonymous> (/home/user/thyrox/tests/smoke/live-fire-smoke.test.ts:134:17)
+(fail) smoke:live-fire — plugin hook command actually spawns > Stop hook spawns marker.sh and we observe the marker file [5006.63ms]
+
+tests/smoke/bg-cycle-smoke.test.ts:
+74 | describe('smoke:bg cycle (detached)', () => {
+75 |   let short: string | undefined
+76 | 
+77 |   test('--bg-detached spawns child + writes meta.json', async () => {
+78 |     const r = await runCli(['--bg-detached', 'echo smoke'], 25_000)
+79 |     expect(r.exitCode).toBe(0)
+                            ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:79:24)
+(fail) smoke:bg cycle (detached) > --bg-detached spawns child + writes meta.json [1310.79ms]
+100 |     expect(meta.status).toBe('running')
+101 |     expect(typeof meta.pid).toBe('number')
+102 |   }, 30_000)
+103 | 
+104 |   test('ps surfaces the new short', async () => {
+105 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:105:19)
+(fail) smoke:bg cycle (detached) > ps surfaces the new short [0.20ms]
+107 |     expect(r.exitCode).toBe(0)
+108 |     expect(r.stdout).toContain(short!)
+109 |   }, 20_000)
+110 | 
+111 |   test('rm removes the job dir', async () => {
+112 |     expect(short).toBeTruthy()
+                        ^
+error: expect(received).toBeTruthy()
+
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:112:19)
+(fail) smoke:bg cycle (detached) > rm removes the job dir [0.61ms]
+141 | describe('smoke:bg argParse', () => {
+142 |   test('isolated home has been used (no leakage to ~/.claude/jobs)', () => {
+143 |     // The actual ~/.claude/jobs/ should not contain our smoke shorts.
+144 |     // We can't assert ABSENCE strictly (user may have other jobs) but
+145 |     // we can confirm our isolated home was where the cycle ran.
+146 |     expect(existsSync(join(ISOLATED_HOME, 'jobs'))).toBe(true)
+                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/tests/smoke/bg-cycle-smoke.test.ts:146:53)
+(fail) smoke:bg argParse > isolated home has been used (no leakage to ~/.claude/jobs) [0.09ms]
+
+ 19 pass
+ 6 fail
+ 50 expect() calls
+Ran 25 tests across 7 files. [9.42s]
+EXIT=1

@@ -1,0 +1,62 @@
+== tests/verify/test-pre-commit-docs.sh
+EXIT=1
+  ok   sin archivos de prosa: exit 0
+  FALLA sin archivos de prosa: no gasta tiempo en gates — esperado [0] obtenido [1]
+  ok   forma vetada nueva: bloquea
+  ok   forma vetada nueva: la nombra
+  ok   sintaxis RST rota: bloquea
+  ok   prosa limpia: pasa
+  ok   el archivo mas citado del repo NO bloquea
+  ok   un .md tambien se mide
+  ok   el bloqueo nombra el escape hatch
+
+8 ok · 1 falla(s)
+== tests/verify/test-script-naming.sh
+EXIT=1
+  ok   el lexico ve el infinitivo: esperar-marcador -> esperar, marcador
+  ok   el lexico ve el infinitivo y el sustantivo: refrescar-tablero
+  ok   el lexico ve los sustantivos llanos: check-hallazgo-sucesor
+  ok   traducidos, los tres pasan el eje de idioma
+  ok   el eje de identificadores ve el simbolo en espanol
+  ok   nombra la funcion
+  ok   y nombra el PARAMETRO: la firma es parte del eje
+  ok   y el eje del NOMBRE de ese mismo archivo pasa
+  ok   traducido, el eje de identificadores pasa
+  ok   sin lexico el eje de identificadores sale con 2
+  ok   y nombra el lexico que le falta
+  ok   el reporte de identificadores declara el alcance
+  FALLA el arbol real no tiene identificadores nuevos en espanol — esperado [0] obtenido [20]
+
+30 ok · 1 falla(s)
+== tests/verify/test_package_root_resolution.sh
+EXIT=1
+  FALLO agent-artifacts resuelve su paquete dentro del árbol
+       esperado: propia
+       obtenido: otra
+  FALLO cli-typecheck resuelve su paquete dentro del árbol
+       esperado: propia
+       obtenido: otra
+  ok   cli-typecheck mide los dos proyectos del paquete
+  ok   cli-typecheck sale 0 sobre el arbol limpio
+  ok   la variable gana sobre la resolución por árbol
+
+test-package-root-resolution: 3 ok, 2 falla
+== tests/verify/test-commit-msg-citation.sh
+EXIT=2
+SIN MEDIR: el store no dio ninguna cita viva de la que derivar el caso
+== tests/verify/test-premise-drift.sh
+EXIT=2
+== sin el clon de la aplicacion: el gate REHUSA
+  ok   exit 2 sin el clon de la aplicacion
+  ok   nombra la raiz que falta
+SIN MEDIR: falta el clon de la aplicacion
+== tests/verify/test-verificar-premisa.sh
+EXIT=2
+== 1. sintaxis ==
+  ok    verificar_premisa.py parsea
+== 2'. sin el clon de la aplicacion: el gate REHUSA ==
+  ok    sale con 2, no con un veredicto
+  ok      … y nombra la raiz que falta
+
+3 ok · 0 fallo(s) · SIN MEDIR: falta el clon de la aplicacion
+DONE

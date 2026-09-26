@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c GIT_LFS_SKIP_SMUDGE=1 git clone -q --depth 1 https://github.com/jcg-admin/kaupamex-api /home/user/kaupamex-api", "started_at": "2026-09-26T18:47:18+00:00"}
