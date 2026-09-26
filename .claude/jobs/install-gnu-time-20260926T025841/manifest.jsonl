@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c source src/lib/toolchain.sh; THYROX_INSTALL_GNU_TIME=1 thyrox_toolchain_require_gnu_time; echo \"require_exit=$?\"; /usr/bin/time --version", "started_at": "2026-09-26T02:58:41+00:00"}

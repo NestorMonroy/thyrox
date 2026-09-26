@@ -298,6 +298,48 @@ function thyrox_toolchain_require_pdf_text() {
 }
 export -f thyrox_toolchain_require_pdf_text
 
+# @description El comando que instala GNU Time. Declarado por la misma razon
+# que sus hermanos: un control necesita un instalador que MIENTA.
+export THYROX_TOOLCHAIN_TIME_INSTALL_CMD="${THYROX_TOOLCHAIN_TIME_INSTALL_CMD:-sudo apt-get install -y time}"
+
+# @description La ruta de GNU Time. Absoluta a proposito: `time` es tambien
+# una palabra reservada de bash, y `command -v time` la responde aunque el
+# binario no exista.
+# @noargs
+# @stdout La ruta del binario.
+function thyrox_toolchain_gnu_time_bin() {
+  echo "${THYROX_TOOLCHAIN_TIME_BIN:-/usr/bin/time}"
+}
+export -f thyrox_toolchain_gnu_time_bin
+
+# @description Asegura GNU Time, que da la memoria pico (max RSS) de un
+# comando ademas de su pared y su CPU; el `time` de bash no da memoria. Mismo
+# contrato que `thyrox_toolchain_require_pdf_text` (opt-in con
+# `THYROX_INSTALL_GNU_TIME=1`, rechazo sin conteo, exito re-comprobado) y una
+# identidad como la de parallel: el binario tiene que declararse GNU, porque
+# el formato `-f` que se consume es el suyo.
+# @noargs
+# @exitcode 0 GNU Time esta disponible.
+# @exitcode 2 No esta, no es GNU, o no se pudo o no se quiso instalar. REHUSA.
+function thyrox_toolchain_require_gnu_time() {
+  local bin; bin="$(thyrox_toolchain_gnu_time_bin)"
+  thyrox_toolchain_acquire_binary "$bin" THYROX_INSTALL_GNU_TIME \
+    "$THYROX_TOOLCHAIN_TIME_INSTALL_CMD" time || return 2
+  # Expandido desde una variable, `time` ya no es la palabra reservada: se
+  # ejecuta como programa, y si no existe la identidad sale vacia.
+  local version
+  version="$("$bin" --version 2>&1)" || version=""
+  # Se busca la marca, no una version: el paquete de Ubuntu imprime
+  # "time (GNU Time) UNKNOWN".
+  if [[ "$version" != *"GNU Time"* ]]; then
+    echo "thyrox_toolchain: '$bin' no es GNU time; su formato -f no es el que se consume." >&2
+    echo "                  Instala el paquete time con THYROX_INSTALL_GNU_TIME=1." >&2
+    return 2
+  fi
+  return 0
+}
+export -f thyrox_toolchain_require_gnu_time
+
 # @description El binario de `awk` que los guiones de este arbol invocan.
 #
 # El eje NO es si gawk esta instalado: es CUAL awk responde. En Debian `awk`
