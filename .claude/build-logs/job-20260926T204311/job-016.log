@@ -1,0 +1,13 @@
+test_counts_one_red_and_one_unmeasured (__main__.RunnerExitTwoTestCase.test_counts_one_red_and_one_unmeasured) ... ok
+test_names_the_refusal_as_unmeasured_not_red (__main__.RunnerExitTwoTestCase.test_names_the_refusal_as_unmeasured_not_red) ... ok
+test_provider_virtualenv_interpreter_is_used_when_present (__main__.RunnerExitTwoTestCase.test_provider_virtualenv_interpreter_is_used_when_present) ... ok
+test_runner_declares_the_tree_it_is_measuring (__main__.RunnerExitTwoTestCase.test_runner_declares_the_tree_it_is_measuring) ... ok
+test_still_names_the_real_red (__main__.RunnerExitTwoTestCase.test_still_names_the_real_red) ... ok
+test_the_refusal_alone_does_not_fail_the_run (__main__.RunnerExitTwoTestCase.test_the_refusal_alone_does_not_fail_the_run)
+Sin el rojo real, un rehuse NO puede hacer fallar la ejecucion. ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.601s
+
+OK
+EXIT=0

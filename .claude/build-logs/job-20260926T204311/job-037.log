@@ -1,0 +1,33 @@
+== 1. sin historial no se inventa nada ==
+  ok    sin TTL
+  ok    sin memfree
+  ok    y dice por qué
+== 2. record agrega una fila con pared y memoria máximas ==
+  ok    una fila
+  ok    mide los dos ítems
+  ok    pared máxima
+  ok    memoria pico máxima
+== 3. el ítem fallido cuenta: se lee su última línea con cifras ==
+  ok    la memoria del ítem fallido entra
+== 4. derive: el TTL sigue las TRES ramas de choose_cache_ttl ==
+  ok    pared 120 s -> 5m
+  ok    pared 600 s -> 1h
+  ok    pared 4000 s -> 5m
+== 5. derive: --memfree es la memoria pico por el margen, en MiB ==
+  ok    266000 KB x 2 -> 520M
+== 6. manda la ÚLTIMA ejecución, no la primera ==
+  ok    la segunda fila decide
+== 7. sin ningún .time medible, record no agrega fila ==
+  ok    sin fila
+== 8. el hogar del historial se deriva de la plantilla, no se elige ==
+  ok    dos plantillas homónimas en rutas distintas no comparten historial
+  ok    y el nombre es legible
+== 9. la reserva de un vecino se SUMA a lo medido, no lo sustituye ==
+  ok    266000 x 2 + 2 GiB -> 2568M
+== 10. sin historial, la reserva sola es la cota, y se dice ==
+  ok    memfree = la reserva
+  ok    sin TTL inventado
+  ok    nombra la reserva
+
+test_pool_history: 20 ok, 0 falla(s)
+EXIT=0
