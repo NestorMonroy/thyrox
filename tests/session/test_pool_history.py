@@ -17,6 +17,8 @@ Contrato:
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -108,6 +110,60 @@ with tempfile.TemporaryDirectory() as raw:
     check("memfree = la reserva", "2048M", decision.memfree)
     check("sin TTL inventado", None, decision.cache_ttl)
     check("nombra la reserva", True, "reserva" in decision.why)
+
+    print("== 12. la VRAM: record guarda el pico de los .gpu, y sin ellos no inventa la clave ==")
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("3000 2500 90 20\n")
+    (out / "2.gpu").write_text("1000 800 40 20\n")
+    h = TMP / "h-vram"
+    row = ph.record(h, out)
+    check("pico de VRAM entre ítems", 3000, row.get("peak_vram_mib"))
+    check("sin .gpu no hay clave: ausente no es cero", False, "peak_vram_mib" in ph.record(TMP / "h-sin-gpu", run_with(["1 1 1 1\n"])))
+
+    print("== 13. la anchura se acota por VRAM: libre / (pico x margen) ==")
+    check("12000 libres / (3000 x 2) -> 2 a la vez", 2, ph.derive(h, MODEL, catalog, margin=2.0, free_vram_mib=12000).width_cap)
+    check("sin VRAM libre medida, sin tope", None, ph.derive(h, MODEL, catalog, margin=2.0).width_cap)
+    check("sin pico de VRAM en el historial, sin tope", None,
+          ph.derive(TMP / "h-sin-gpu", MODEL, catalog, free_vram_mib=12000).width_cap)
+    tight = ph.derive(h, MODEL, catalog, margin=2.0, free_vram_mib=4000)
+    check("si ni uno cabe, el tope es 1 y se dice", (1, True), (tight.width_cap, "no cabe" in tight.why))
+
+    print("== 14. el margen de seguridad se RESTA de lo libre: (14000 - 2000) / 3200 = 3 ==")
+    h = TMP / "h-ejemplo"
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("3200 3000 90 20\n")
+    ph.record(h, out)
+    d = ph.derive(h, MODEL, catalog, margin=1.0, free_vram_mib=14000, vram_reserve_mib=2000)
+    check("tope de VRAM", 3, d.vram_cap)
+
+    print("== 15. anchura efectiva = min(configurada, RAM, VRAM) ==")
+    d = ph.derive(h, MODEL, catalog, margin=1.0, free_vram_mib=14000, vram_reserve_mib=2000,
+                  available_ram_kb=6 * 266000 + 1000)
+    check("tope de RAM: MemAvailable / pico", 6, d.ram_cap)
+    check("el efectivo es el menor de los topes", 3, d.width_cap)
+    check("con configurada 8: min(8, 6, 3) = 3", 3, ph.effective_width(8, d))
+    check("con configurada 2 manda la configurada", 2, ph.effective_width(2, d))
+    check("sin ningún tope, la configurada", 8, ph.effective_width(8, ph.derive(TMP / "vacio", MODEL, catalog)))
+
+    print("== 16. un .gpu con error o ilegible NO entra al pico: sólo lo medido ==")
+    out = run_with(["266000 10 1 0\n"])
+    (out / "1.gpu").write_text("error NVML: fallo\n")
+    (out / "2.gpu").write_text("0 0 0 9\n")
+    row = ph.record(TMP / "h-tres", out)
+    check("el 0 medido es el pico; el error no cuenta", 0, row.get("peak_vram_mib"))
+
+    print("== 17. la VRAM que pide cada ítem para ser admitido: pico x margen ==")
+    check("3200 x 1.0 -> 3200", 3200, ph.derive(TMP / "h-ejemplo", MODEL, catalog, margin=1.0).vram_need_mib)
+    check("sin pico de VRAM, sin admisión", None, ph.derive(TMP / "h-sin-gpu", MODEL, catalog).vram_need_mib)
+
+    print("== 18. la CLI: ttl, memfree, anchura efectiva, VRAM por ítem y porqué ==")
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["derive", str(TMP / "h-ejemplo"), MODEL, "--margin", "1", "--configured-width", "8",
+                 "--free-vram-mib", "14000", "--vram-reserve-mib", "2000"])
+    fields = buffer.getvalue().rstrip("\n").split("\t")
+    check("anchura efectiva y VRAM por ítem", ["3", "3200"], fields[2:4])
 
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)

@@ -52,6 +52,14 @@
 # al lado). Lo declarado —opción o entorno— gana siempre; sin historial no se
 # inventa nada, y la salida lo dice.
 #
+# La VRAM (`gpu_monitor.py`), si hay nvidia-smi (HEADLESS_POOL_NVIDIA_SMI):
+# cada item deja <n>.gpu con su pico, media y uso de GPU, y espera antes de
+# arrancar a que haya VRAM libre para su pico (la admision de --memfree, que
+# Parallel no tiene para la GPU). La anchura con que se lanza es
+# min(configurada, RAM, VRAM): cada tope es (libre - reserva) / (pico x 2),
+# con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
+# declara y no se mide.
+#
 # El prompt de cada item es la plantilla seguida de `Item: <linea>`. Por item
 # escribe `<out>/<n>.stream.jsonl` (una linea por evento de `--output-format
 # stream-json`, con el uso de cada peticion), `<n>.json` (su linea `result`) y
@@ -96,7 +104,7 @@ while [[ $# -gt 0 ]]; do
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
-        -h|--help) sed -n '2,54p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
@@ -148,6 +156,23 @@ HP_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$HP_HERE/../lib/memory.sh"
 pool_history() { PYTHONPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}" python3 "$HP_HERE/pool_history.py" "$@"; }
 HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"
+
+# La VRAM de cada item, si hay GPU (`gpu_monitor.py`). `--memfree` es memoria
+# del SISTEMA; la de la GPU es otro recurso. Con `claude -p` el modelo corre en
+# el servidor y la GPU local no se usa: medirla informa cuando el pool corre
+# trabajo local con CUDA. Sin nvidia-smi se declara, igual que sin GNU Time.
+NVIDIA_SMI_BIN="${HEADLESS_POOL_NVIDIA_SMI:-nvidia-smi}"
+HP_GPU_PY="$HP_HERE/gpu_monitor.py"
+HP_PYPATH="$HP_HERE/..${PYTHONPATH:+:$PYTHONPATH}"
+HP_GPU_INTERVAL="${HEADLESS_POOL_GPU_INTERVAL:-0.5}"
+HP_NVIDIA_SMI=""
+if PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" available --nvidia-smi "$NVIDIA_SMI_BIN" 2>/dev/null; then
+    HP_NVIDIA_SMI="$NVIDIA_SMI_BIN"
+    echo "gpu: se mide la VRAM de cada item con $NVIDIA_SMI_BIN (<n>.gpu)"
+else
+    echo "gpu: sin nvidia-smi ($NVIDIA_SMI_BIN): no se mide la VRAM de los items"
+fi
+export HP_NVIDIA_SMI HP_GPU_PY HP_PYPATH HP_GPU_INTERVAL
 # La memoria de un VECINO que corre junto al pool —el `tsc` del pipeline en
 # `tsc_cycle`—, parámetro del consumidor: se suma a la medida del ítem.
 RESERVE_KB=0
@@ -156,16 +181,38 @@ if [[ -n "${HEADLESS_POOL_MEMFREE_RESERVE:-}" ]]; then
         || rehusa "HEADLESS_POOL_MEMFREE_RESERVE ilegible: '$HEADLESS_POOL_MEMFREE_RESERVE' (ej. 2G, 512M)"
     RESERVE_KB=$(( RESERVE_BYTES / 1024 ))
 fi
-MEMFREE_WHY=option
-if [[ -z "$CACHE_TTL" || -z "$MEMFREE_SPEC" ]]; then
-    if IFS=$'\t' read -r H_TTL H_MEMFREE H_WHY < <(pool_history derive "$HISTORY" "$MODEL" --reserve-kb "$RESERVE_KB"); then
-        [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
-        [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
-        echo "historial: $H_WHY"
-    else
-        echo "historial: no se pudo derivar (sin catálogo de modelos); corre con lo declarado"
-    fi
+# La reserva de VRAM se RESTA de la libre (MiB): lo que queda para lo demás
+# que usa la GPU. Parámetro del consumidor.
+VRAM_RESERVE_MIB="${HEADLESS_POOL_VRAM_RESERVE_MIB:-0}"
+[[ "$VRAM_RESERVE_MIB" =~ ^[0-9]+$ ]] || rehusa "HEADLESS_POOL_VRAM_RESERVE_MIB va en MiB enteros, no: $VRAM_RESERVE_MIB"
+# Lo que se mide ahora para acotar la anchura: la RAM disponible y la VRAM
+# libre. Sin dato, ese tope no existe y se corre con lo demás.
+DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB")
+AVAILABLE_RAM_KB="$(gawk '/^MemAvailable:/{print $2}' "${THYROX_POOL_MEMINFO_PATH:-/proc/meminfo}" 2>/dev/null)"
+[[ -z "$AVAILABLE_RAM_KB" ]] || DERIVE_ARGS+=(--available-ram-kb "$AVAILABLE_RAM_KB")
+if [[ -n "$HP_NVIDIA_SMI" ]]; then
+    FREE_VRAM_MIB="$(PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" free --nvidia-smi "$HP_NVIDIA_SMI" 2>/dev/null)"
+    [[ -z "$FREE_VRAM_MIB" ]] || DERIVE_ARGS+=(--free-vram-mib "$FREE_VRAM_MIB")
 fi
+MEMFREE_WHY=option
+HP_VRAM_NEED=""
+# Se deriva SIEMPRE: el TTL y --memfree sólo si nadie los declaró, pero la
+# anchura efectiva es min(configurada, RAM, VRAM) aunque la anchura se haya
+# configurado — una anchura configurada es un máximo, no una garantía de sitio.
+if IFS=$'\t' read -r H_TTL H_MEMFREE H_WIDTH H_VRAM_NEED H_WHY \
+        < <(pool_history derive "$HISTORY" "$MODEL" "${DERIVE_ARGS[@]}"); then
+    [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
+    [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
+    if [[ "$H_WIDTH" != - && "$H_WIDTH" -lt "$WIDTH" ]]; then
+        echo "anchura: $H_WIDTH (configurada $WIDTH; acotada por lo medido)"
+        WIDTH="$H_WIDTH"
+    fi
+    [[ -z "$HP_NVIDIA_SMI" || "$H_VRAM_NEED" == - ]] || HP_VRAM_NEED="$H_VRAM_NEED"
+    echo "historial: $H_WHY"
+else
+    echo "historial: no se pudo derivar (sin catálogo de modelos); corre con lo declarado"
+fi
+export HP_VRAM_NEED
 
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
@@ -180,6 +227,19 @@ done
 # Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
 _headless_item() {
     local n="$1" item="$2"
+    # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+    # GPU (`parallel` 20231122, líneas 4113-4118: no arranca si no hay sitio).
+    # La VRAM libre cambia mientras los items arrancan: se mira por item, justo
+    # antes de lanzar. La otra mitad de Parallel —matar al más joven cuando lo
+    # libre cae a la mitad, 6847 y 6980-7005— NO se porta: matar un `claude -p`
+    # a mitad de su petición tira los tokens ya pagados.
+    if [[ -n "$HP_VRAM_NEED" ]] && ! PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" wait-free "$HP_VRAM_NEED" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --timeout "$HP_TIMEOUT" --interval "$HP_GPU_INTERVAL"; then
+        echo "admision por VRAM vencida: el item pide $HP_VRAM_NEED MiB y no hubo sitio en ${HP_TIMEOUT}s" \
+            > "$HP_OUT/$n.err"
+        : > "$HP_OUT/$n.json"
+        return 3
+    fi
     { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$HP_WORKDIR" || exit 1
          # Con los dos nombres: `claude -p` lee CLAUDE_CODE_*; `thyrox -p`, THYROX_*.
@@ -196,8 +256,19 @@ _headless_item() {
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             --max-turns "$HP_MAX_TURNS" --no-session-persistence \
             --output-format stream-json --verbose) \
-      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err"
+      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err" &
+    local pid=$! monitor=""
+    # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
+    # muestrea el ARBOL de `pid` (el item y `claude`) mientras vive y deja
+    # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
+    if [[ -n "$HP_NVIDIA_SMI" ]]; then
+        PYTHONPATH="$HP_PYPATH" python3 "$HP_GPU_PY" watch "$pid" "$HP_OUT/$n.gpu" \
+            --nvidia-smi "$HP_NVIDIA_SMI" --interval "$HP_GPU_INTERVAL" &
+        monitor=$!
+    fi
+    wait "$pid"
     local rc=$?
+    [[ -z "$monitor" ]] || wait "$monitor"
     # El .json de siempre es la linea `result` del stream: sus consumidores
     # no cambian. El stream se queda porque es lo unico que trae el uso de
     # cada peticion; `usage.iterations` del result trae solo la ultima.

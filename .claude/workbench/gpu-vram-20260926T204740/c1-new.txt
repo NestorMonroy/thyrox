@@ -1,0 +1,6 @@
+    p_wait = sub.add_parser("wait-free", help="espera a que haya NEED MiB libres; sale 0, o 3 al vencer")
+    p_wait.add_argument("need", type=int)
+    p_wait.add_argument("--nvidia-smi", default="nvidia-smi")
+    p_wait.add_argument("--timeout", type=float, default=600.0)
+    p_wait.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+    p_free = sub.add_parser("free", help="imprime la VRAM libre (MiB) de la GPU con más espacio")

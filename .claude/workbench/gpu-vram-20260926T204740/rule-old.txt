@@ -1,0 +1,4 @@
+`--memfree` es memoria del **sistema**. La VRAM es otro recurso y aquí no se
+mide: `claude -p` es un cliente, el modelo no corre en la GPU local, y en este
+contenedor no hay GPU (`nvidia-smi` ausente, sin `/dev/nvidia*`). Medirla
+tendría sentido sólo si el pool ejecutara trabajo local con CUDA.

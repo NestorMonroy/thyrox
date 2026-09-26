@@ -1,0 +1,6 @@
+    (bench / "outputs/6.gpu").write_text("error NVML: Driver/library version mismatch\n")
+    report = sr.step_report(bench, pipeline)
+    # TRES estados, sin colapsar: el 0 medido cuenta (mediana 3200, no 3950);
+    # lo ilegible y el fallo de nvidia-smi son ERRORES, no medidas ni ausencias.
+    assert_equal("la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores",
+                 {"measured": 3, "errors": 2, "vram_max_mib": 4700, "vram_median_mib": 3200, "util_max_pct": 91},

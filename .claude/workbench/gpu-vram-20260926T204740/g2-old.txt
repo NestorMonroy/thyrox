@@ -1,0 +1,2 @@
+    args = parser.parse_args(argv)
+    if args.order == "available":

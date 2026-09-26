@@ -86,6 +86,21 @@ with tempfile.TemporaryDirectory() as tmp:
     report = sr.step_report(bench, pipeline)
     assert_equal("la memoria pico de los items: máxima, mediana y cuántos se midieron",
                  {"measured": 4, "max": 1200000, "median": 750000}, report["system"]["memory_kb"])
+    # La VRAM, de los `<n>.gpu` que escribe `gpu_monitor`: `pico media uso% muestras`.
+    # Sin ninguno —no hubo nvidia-smi— se declara no medida, igual que la RAM.
+    assert_equal("sin archivos .gpu la VRAM se declara no medida, no cero", {"measured": 0},
+                 report["system"]["gpu"])
+    for n, (peak, util) in ((1, (3200, 80)), (2, (4700, 91)), (3, (0, 0))):
+        (bench / f"outputs/{n}.gpu").write_text(f"{peak} {peak // 2} {util} 12\n")
+    (bench / "outputs/4.gpu").write_text("ilegible\n")
+    report = sr.step_report(bench, pipeline)
+    (bench / "outputs/6.gpu").write_text("error NVML: Driver/library version mismatch\n")
+    report = sr.step_report(bench, pipeline)
+    # TRES estados, sin colapsar: el 0 medido cuenta (mediana 3200, no 3950);
+    # lo ilegible y el fallo de nvidia-smi son ERRORES, no medidas ni ausencias.
+    assert_equal("la VRAM de los items: pico máximo, mediana, uso pico, medidos y errores",
+                 {"measured": 3, "errors": 2, "vram_max_mib": 4700, "vram_median_mib": 3200, "util_max_pct": 91},
+                 report["system"]["gpu"])
     assert_equal("sin modelUsage la base es la fórmula fija, declarada", {"(sin modelo)": "fija-3-15"},
                  report["cost"]["basis"])
 

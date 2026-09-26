@@ -1,0 +1,5 @@
+    p_der.add_argument("--reserve-kb", type=int, default=0)
+    p_der.add_argument("--configured-width", type=int, default=None)
+    p_der.add_argument("--free-vram-mib", type=int, default=None)
+    p_der.add_argument("--vram-reserve-mib", type=int, default=0)
+    p_der.add_argument("--available-ram-kb", type=int, default=None)

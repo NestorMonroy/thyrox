@@ -176,6 +176,58 @@ rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
 check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
 check "sin GNU time: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/sin GNU time/{n++} END{print n+0}')" "1"
 
+# --- la VRAM de cada item, con nvidia-smi ---------------------------------------
+# Un nvidia-smi falso: declara 400 MiB para el proceso del `claude` falso y un
+# uso de 77 %. Anclado a `^bash`: sin ancla casa tambien con el `timeout` y el
+# GNU Time que lo envuelven, que un nvidia-smi real no lista (sonda:
+# `.claude/workbench/gpu-vram-*/probe-pgrep-anchor.out`). Y
+# uso de GPU de 77 %. El item LENTO dura lo bastante para que el monitor lo
+# muestree; el rapido puede terminar antes de la primera muestra.
+cat > "$F/nvidia-smi" <<'SH'
+#!/usr/bin/env bash
+case "$*" in
+  *--query-compute-apps=pid,used_memory*) pgrep -f "^bash $HEADLESS_POOL_CLAUDE -p" | gawk '{print $1 ", 400"}' ;;
+  *--query-gpu=index,utilization.gpu*)    echo "0, 77" ;;
+  *--query-gpu=index,memory.free*)        echo "0, ${FAKE_FREE_VRAM:-100000}" ;;
+  *) exit 9 ;;
+esac
+SH
+chmod +x "$F/nvidia-smi"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre LENTO-alfa
+check "con nvidia-smi: el item deja su .gpu" "$(ls "$F/out"/*.gpu 2>/dev/null | wc -l)" "1"
+check "con nvidia-smi: VRAM pico y uso pico del item" "$(gawk '{print $1, $3}' "$F/out/1.gpu" 2>/dev/null)" "400 77"
+check "con nvidia-smi: lo declara" "$(printf '%s' "$SALIDA" | gawk '/^gpu: se mide la VRAM/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/no-existe" corre alfa
+check "sin nvidia-smi: ningun .gpu" "$(ls "$F/out"/*.gpu 2>/dev/null | wc -l)" "0"
+check "sin nvidia-smi: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/^gpu: sin nvidia-smi/{n++} END{print n+0}')" "1"
+
+# --- la anchura efectiva: min(configurada, RAM, VRAM), y la admision por VRAM ---
+# El historial compartido de estos casos toma su pico de VRAM (400 MiB) de la
+# primera ejecucion; con margen 2 cada item pide 800 MiB.
+HIST="$F/historial-gpu"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre LENTO-alfa
+# La admision va justo despues de la ejecucion LENTA: manda la ULTIMA fila, y un
+# item que no llega a arrancar no deja medida que la reemplace.
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=500 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admision: sin VRAM para su pico el item no arranca" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+# Lo que discrimina no es el mensaje sino el -j que llega a Parallel: un aviso
+# impreso sin aplicar la anchura pasaria la linea de arriba.
+check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"
+unset HIST
+# RAM: MemAvailable 30000 KB y el item pico 12345 KB x 2 -> cabe 1.
+printf 'MemTotal: 100000 kB\nMemAvailable: 30000 kB\n' > "$F/meminfo"
+HIST="$F/historial-ram"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
+rm -rf "$F/out"; EXTRA="--width 4" THYROX_POOL_MEMINFO_PATH="$F/meminfo" HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa beta
+check "RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+check "RAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if ($i == "-j") print $(i+1)}' "$F/parallel.args")" "1"
+unset HIST
+
 # --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --
 # `HIST` es el mismo en los cuatro casos: el primero no tiene historial, los
 # siguientes leen la fila que dejó. La medida del GNU time falso es fija

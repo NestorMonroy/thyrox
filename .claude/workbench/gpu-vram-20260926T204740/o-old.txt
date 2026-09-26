@@ -1,0 +1,6 @@
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
+  "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="--timeout 2" FAKE_FREE_VRAM=500 HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "admision: sin VRAM para su pico el item no arranca" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
+check "admision: la causa queda en su .err" "$(gawk '/admision por VRAM/{n++} END{print n+0}' "$F/out/1.err")" "1"

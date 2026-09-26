@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agents import model_catalog
+from session import gpu_monitor
 from cache.paths import cache_dir
 
 HISTORY_FILE = "runs.jsonl"
@@ -42,6 +43,20 @@ class Decision:
     cache_ttl: str | None
     memfree: str | None
     why: str
+    #: El menor de los topes medidos; ``None`` si no hubo ninguno.
+    width_cap: int | None = None
+    #: Cuántos ítems caben a la vez en la RAM disponible y en la VRAM libre.
+    ram_cap: int | None = None
+    vram_cap: int | None = None
+    #: La VRAM libre que un ítem espera antes de arrancar (pico × margen): la
+    #: admisión que ``--memfree`` hace para la RAM y Parallel no hace para la GPU.
+    vram_need_mib: int | None = None
+
+
+def effective_width(configured: int, decision: Decision) -> int:
+    """La anchura con que se lanza: la configurada, acotada por cada tope
+    medido — ``min(configurada, RAM, VRAM)``."""
+    return min(configured, decision.width_cap) if decision.width_cap else configured
 
 
 #: El hogar de los historiales, parámetro del consumidor. Sin él, bajo el
@@ -78,6 +93,14 @@ def _last_measure(time_file: Path) -> tuple[int, float] | None:
     return None
 
 
+def _gpu_peak(gpu_file: Path) -> int | None:
+    """El pico de VRAM de un ``<n>.gpu`` MEDIDO —el cero incluido—; ``None``
+    si el archivo es un error o está ausente: los tres estados de
+    ``gpu_monitor.read_gpu_file``, sin colapsar."""
+    reading = gpu_monitor.read_gpu_file(gpu_file)
+    return reading.summary.peak_mib if reading.state == "measured" else None
+
+
 def record(history: Path, out_dir: Path) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
     ningún ``.time`` fue medible (no se escribe una fila de ceros).
@@ -94,6 +117,9 @@ def record(history: Path, out_dir: Path) -> dict | None:
         "max_wall_s": max(wall for _, wall in measures),
         "peak_kb": max(kb for kb, _ in measures),
     }
+    vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
+    if vram:
+        row["peak_vram_mib"] = max(vram)
     history = Path(history)
     history.mkdir(parents=True, exist_ok=True)
     with open(history / HISTORY_FILE, "a", encoding="utf-8") as fh:
@@ -115,8 +141,25 @@ def _mebibytes(kb: float) -> str:
     return f"{math.ceil(kb / 1024)}M"
 
 
+def _cap(label: str, unit: str, free: int | None, reserve: int, peak: int | None,
+         margin: float) -> tuple[int | None, str]:
+    """Cuántos ítems caben a la vez: ``(libre − reserva) / (pico × margen)``.
+    La reserva se RESTA de lo libre —lo que queda para el resto del sistema—
+    y el margen multiplica el pico medido. Sin pico o sin libre medido, no hay
+    tope; un pico de 0 (el ítem no usó el recurso) tampoco lo acota."""
+    if not peak or free is None:
+        return None, ""
+    usable = free - reserve
+    fits = int(usable // (peak * margin))
+    if fits < 1:
+        return 1, (f"; {label}: {usable} {unit} utilizables y el ítem pide {peak} × {margin:g}, "
+                   f"no cabe ni uno: anchura 1")
+    return fits, f"; {label}: ({free} − {reserve}) / ({peak} × {margin:g}) -> {fits}"
+
+
 def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MARGIN,
-           reserve_kb: int = 0) -> Decision:
+           reserve_kb: int = 0, free_vram_mib: int | None = None, vram_reserve_mib: int = 0,
+           available_ram_kb: int | None = None) -> Decision:
     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
 
     ``reserve_kb`` es la memoria de un VECINO que corre junto al pool (el
@@ -133,7 +176,12 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
     memfree = _mebibytes(row["peak_kb"] * margin + reserve_kb)
     why = (f"última ejecución: {row['items_measured']} ítems, pared máx {row['max_wall_s']:g} s, "
            f"pico {row['peak_kb']} KB × {margin:g}{reserve_note} -> {memfree}; TTL {ttl}: {ttl_why}")
-    return Decision(ttl, memfree, why)
+    ram_cap, ram_why = _cap("RAM", "KB", available_ram_kb, reserve_kb, row.get("peak_kb"), margin)
+    vram_cap, vram_why = _cap("VRAM", "MiB", free_vram_mib, vram_reserve_mib, row.get("peak_vram_mib"), margin)
+    caps = [c for c in (ram_cap, vram_cap) if c is not None]
+    peak_vram = row.get("peak_vram_mib")
+    need = math.ceil(peak_vram * margin) if peak_vram else None
+    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap, need)
 
 
 def main(argv: list[str]) -> int:
@@ -147,6 +195,10 @@ def main(argv: list[str]) -> int:
     p_der.add_argument("history"); p_der.add_argument("model")
     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
     p_der.add_argument("--reserve-kb", type=int, default=0)
+    p_der.add_argument("--configured-width", type=int, default=None)
+    p_der.add_argument("--free-vram-mib", type=int, default=None)
+    p_der.add_argument("--vram-reserve-mib", type=int, default=0)
+    p_der.add_argument("--available-ram-kb", type=int, default=None)
     args = parser.parse_args(argv)
 
     if args.command == "dir":
@@ -160,10 +212,14 @@ def main(argv: list[str]) -> int:
     if catalog is None:
         print(f"ERROR — sin catálogo de modelos ({reason}); no se deriva nada", file=sys.stderr)
         return 2
-    decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb)
+    decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb,
+                      free_vram_mib=args.free_vram_mib, vram_reserve_mib=args.vram_reserve_mib,
+                      available_ram_kb=args.available_ram_kb)
+    width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
     # seguidos, y un campo vacío corre al siguiente a su lugar.
-    print(f"{decision.cache_ttl or '-'}\t{decision.memfree or '-'}\t{decision.why}")
+    print(f"{decision.cache_ttl or '-'}\t{decision.memfree or '-'}\t{width or '-'}\t"
+          f"{decision.vram_need_mib or '-'}\t{decision.why}")
     return 0
 
 

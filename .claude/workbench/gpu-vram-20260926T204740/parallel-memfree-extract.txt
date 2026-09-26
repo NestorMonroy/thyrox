@@ -1,0 +1,68 @@
+### admision (4105-4122)
+		if($opt::noswap and $sshlogin->swapping()) {
+		    # The server is swapping
+		    next;
+		}
+		if($opt::limit and $sshlogin->limit()) {
+		    # Over limit
+		    next;
+		}
+		if(($opt::memfree or $opt::memsuspend)
+		   and
+		   $sshlogin->memfree() < $Global::memlimit) {
+		    # The server has not enough mem free
+		    ::debug("mem", "Not starting job: not enough mem\n");
+		    next;
+		}
+		if($sshlogin->too_fast_remote_login()) {
+		    # It has been too short since last login
+		    next;
+### bucle (6843-6858)
+    } else {
+	if($opt::timeout) {
+	    $Global::timeoutq->process_timeouts();
+	}
+	if($opt::memfree) {
+	    kill_youngster_if_not_enough_mem($opt::memfree*0.5);
+	}
+	if($opt::memsuspend) {
+	    suspend_young_if_not_enough_mem($opt::memsuspend);
+	}
+	if($opt::limit) {
+	    kill_youngest_if_over_limit();
+	}
+	exit_if_disk_full();
+	if($Global::linebuffer) {
+	    my $something_printed = 0;
+### kill_youngster_if_not_enough_mem (6980-7010)
+    my @sshlogins;
+
+    for my $job (values %Global::running) {
+	if(not $jobs_of{$job->sshlogin()}) {
+	    push @sshlogins, $job->sshlogin();
+	}
+	push @{$jobs_of{$job->sshlogin()}}, $job;
+    }
+    for my $sshlogin (@sshlogins) {
+	for my $job (sort { $b->seq() <=> $a->seq() }
+		     @{$jobs_of{$sshlogin}}) {
+	    if($sshlogin->memfree() < $limit) {
+		::debug("mem","\n",map { $_->seq()." " }
+			(sort { $b->seq() <=> $a->seq() }
+			 @{$jobs_of{$sshlogin}}));
+		::debug("mem","\n", $job->seq(), "killed ",
+			$sshlogin->memfree()," < ",$limit);
+		$job->kill();
+		$sshlogin->memfree_recompute();
+	    } else {
+		last;
+	    }
+	}
+	::debug("mem","Free mem OK? ",
+		$sshlogin->memfree()," > ",$limit);
+    }
+}
+
+
+sub __DEBUGGING__() {}
+

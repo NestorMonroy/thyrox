@@ -95,10 +95,24 @@ pool se lanza con `thyrox-bg` y se recoge con la barrera. Antes vivía sólo en
 `tsc_cycle.py`, que además fijaba `--memfree 3G`: quien llamaba al pool
 directamente quedaba fuera del ciclo sin saberlo.
 
-`--memfree` es memoria del **sistema**. La VRAM es otro recurso y aquí no se
-mide: `claude -p` es un cliente, el modelo no corre en la GPU local, y en este
-contenedor no hay GPU (`nvidia-smi` ausente, sin `/dev/nvidia*`). Medirla
-tendría sentido sólo si el pool ejecutara trabajo local con CUDA.
+`--memfree` es memoria del **sistema**; la VRAM es otro recurso, GNU Time no
+la ve y GNU Parallel no tiene `--memfree` para la GPU. `src/session/gpu_monitor.py`
+la mide por ítem con `nvidia-smi` sobre el árbol de procesos del ítem y deja
+`<n>.gpu` con TRES estados que no se colapsan: una medida (el 0 incluido),
+ausente (sin `nvidia-smi`: no hay archivo) y `error <causa>` (se intentó y
+falló). `step_report` publica la VRAM máxima y mediana, y los errores aparte.
+
+La anchura con que se lanza es `min(configurada, RAM, VRAM)`: cada tope es
+`(libre − reserva) / (pico × margen)`, con la reserva RESTADA de lo libre
+(`HEADLESS_POOL_MEMFREE_RESERVE`, `HEADLESS_POOL_VRAM_RESERVE_MIB`). Y como la
+VRAM libre cambia mientras los ítems arrancan, cada ítem espera antes de
+lanzarse a que haya sitio para su pico: la admisión de `--memfree`
+(`parallel` 20231122, 4113-4118). Su otra mitad —matar al más joven cuando lo
+libre cae a la mitad— no se porta: mataría un `claude -p` a media petición.
+
+Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
+medida, este contenedor no tiene GPU. Las suites usan un `nvidia-smi` falso:
+prueban el mecanismo, no la exactitud de `nvidia-smi` sobre una GPU real.
 
 **El discriminador es distributivo, no numérico.** «Para cada una de las 365
 notas, extrae sus conceptos» es esta forma; «sobre los 22 archivos, decide

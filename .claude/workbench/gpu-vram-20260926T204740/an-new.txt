@@ -1,0 +1,1 @@
+        if len(fields) == 4 and all(f.isdigit() for f in fields) and int(fields[0]) > 0:

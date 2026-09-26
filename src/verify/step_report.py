@@ -32,6 +32,7 @@ import sys
 from pathlib import Path
 
 from agents import model_catalog
+from session import gpu_monitor
 
 #: La etiqueta de una salida que no declara su modelo.
 NO_MODEL = "(sin modelo)"
@@ -91,7 +92,7 @@ def _system(bench: Path, batches: list[dict]) -> dict:
             "full_width_share": round(at_width.get(peak, 0.0) / wall, 4) if wall else 0.0,
             "straggler_ratio": round(max(runtimes) / statistics.median(runtimes), 3) if runtimes else 0.0,
             "failed_items": len(failed), "tsc_runs": sum(b.get("tsc_runs", 0) for b in batches),
-            "memory_kb": _memory(bench)}
+            "memory_kb": _memory(bench), "gpu": _gpu(bench)}
 
 
 def _memory(bench: Path) -> dict:
@@ -112,6 +113,22 @@ def _memory(bench: Path) -> dict:
     if not peaks:
         return {"measured": 0}
     return {"measured": len(peaks), "max": max(peaks), "median": int(statistics.median(peaks))}
+
+
+def _gpu(bench: Path) -> dict:
+    """La VRAM de los ítems, de los ``<n>.gpu`` que ``gpu_monitor`` escribe:
+    ``<pico MiB> <media MiB> <uso pico %> <muestras>``. Sin ninguno —no hubo
+    ``nvidia-smi``— ``measured: 0``: una medida ausente no es un cero. Un ítem
+    que no usó la GPU sí cuenta, con 0 MiB, porque eso SÍ se midió."""
+    readings = [gpu_monitor.read_gpu_file(path) for path in (bench / "outputs").glob("*.gpu")]
+    measured = [r.summary for r in readings if r.state == "measured"]
+    errors = sum(1 for r in readings if r.state == "error")
+    if not measured:
+        return {"measured": 0, **({"errors": errors} if errors else {})}
+    peaks = [s.peak_mib for s in measured]
+    return {"measured": len(measured), "errors": errors, "vram_max_mib": max(peaks),
+            "vram_median_mib": int(statistics.median(peaks)),
+            "util_max_pct": max(s.peak_util_pct for s in measured)}
 
 
 def _first_request(path: Path) -> tuple[int, int] | None:

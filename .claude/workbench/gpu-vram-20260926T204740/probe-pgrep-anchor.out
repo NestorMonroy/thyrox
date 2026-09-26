@@ -1,0 +1,7 @@
+== sin ancla
+6282 timeout 5 /usr/bin/time -q -f %M -o /dev/null timeout 5 .claude/workbench/gpu-vram-20260926T204740/tmp.rmf2C7Cp70/claude -p x
+6284 /usr/bin/time -q -f %M -o /dev/null timeout 5 .claude/workbench/gpu-vram-20260926T204740/tmp.rmf2C7Cp70/claude -p x
+6285 timeout 5 .claude/workbench/gpu-vram-20260926T204740/tmp.rmf2C7Cp70/claude -p x
+6286 bash .claude/workbench/gpu-vram-20260926T204740/tmp.rmf2C7Cp70/claude -p x
+== con ancla ^bash
+6286 bash .claude/workbench/gpu-vram-20260926T204740/tmp.rmf2C7Cp70/claude -p x

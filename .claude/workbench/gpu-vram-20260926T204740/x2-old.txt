@@ -1,0 +1,1 @@
+            Path(out).write_text(f"error {error}\n")

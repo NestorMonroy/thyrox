@@ -1,0 +1,4 @@
+    ram_cap, ram_why = _cap("RAM", "KB", available_ram_kb, reserve_kb, row.get("peak_kb"), margin)
+    vram_cap, vram_why = _cap("VRAM", "MiB", free_vram_mib, vram_reserve_mib, row.get("peak_vram_mib"), margin)
+    caps = [c for c in (ram_cap, vram_cap) if c is not None]
+    return Decision(ttl, memfree, why + ram_why + vram_why, min(caps) if caps else None, ram_cap, vram_cap)

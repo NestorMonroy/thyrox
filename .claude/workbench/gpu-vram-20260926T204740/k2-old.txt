@@ -1,0 +1,1 @@
+check "sin nvidia-smi: lo declara en vez de callar" "$(printf '%s' "$SALIDA" | gawk '/^gpu: sin nvidia-smi/{n++} END{print n+0}')" "1"

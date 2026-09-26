@@ -1,0 +1,3 @@
+    cache_ttl: str | None
+    memfree: str | None
+    why: str

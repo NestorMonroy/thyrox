@@ -1,0 +1,8 @@
+    print("== 7. la VRAM libre: la de la GPU con más espacio, que es donde cabe un ítem ==")
+    free = tmp / "free.csv"
+    os.environ["FAKE_GPU_FREE"] = str(free)
+    free.write_text("0, 6000\n1, 11000\n")
+    check("la mayor entre GPUs, no la suma: un ítem no se reparte", 11000, gm.free_vram_mib(str(smi)))
+    check("sin nvidia-smi, None", None, gm.free_vram_mib(str(tmp / "no-existe")))
+
+    print("== 6. disponible() distingue las dos situaciones ==")
