@@ -1,0 +1,8 @@
+    os.environ["THYROX_ENABLE_PROMPT_CACHING_1H"] = "1"
+    try:
+        _, out_ttl, _ = overlap(previous, "step-202")
+    finally:
+        del os.environ["THYROX_ENABLE_PROMPT_CACHING_1H"]
+    assert_equal("overlap fija el TTL del pool como launch, con el entorno por delante", True,
+                 "--cache-ttl 1h" in out_ttl)
+    assert_equal("overlap también encadena su cierre a su propio pipeline", True,

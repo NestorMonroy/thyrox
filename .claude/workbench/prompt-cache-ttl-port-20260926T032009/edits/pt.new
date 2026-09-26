@@ -1,0 +1,24 @@
+    # El entorno THYROX_* va antes que la cota: la cota es un DEFAULT
+    # derivado, no una declaración — en el orden de `QCt` (2.1.282) forzar
+    # 5m, la variable del origen y activar 1h le ganan. Sin esto,
+    # `THYROX_ENABLE_PROMPT_CACHING_1H=1` no llegaba nunca: el pool recibía
+    # `--cache-ttl 5m` de la cota y la opción ganaba a activar 1h.
+    (previous / "3.json").unlink()
+    enable = {"THYROX_ENABLE_PROMPT_CACHING_1H": "1"}
+    ttl, why = tc.pool_cache_ttl(current, "claude-sonnet-5", env=enable)
+    assert_equal("activar 1h gana a la cota de 4.91 min, y lo dice", ("1h", True), (ttl, "enable_1h_env" in why))
+    assert_equal("la variable del origen gana a activar 1h", "5m",
+                 tc.pool_cache_ttl(current, "claude-sonnet-5",
+                                   env={**enable, "THYROX_CODE_PROMPT_CACHE_TTL": "5m"})[0])
+    assert_equal("forzar 5m gana a todo", "5m",
+                 tc.pool_cache_ttl(current, "claude-sonnet-5",
+                                   env={"THYROX_FORCE_PROMPT_CACHING_5M": "1",
+                                        "THYROX_CODE_PROMPT_CACHE_TTL": "1h"})[0])
+    try:
+        tc.pool_cache_ttl(current, "claude-sonnet-5", env={"THYROX_CODE_PROMPT_CACHE_TTL": "30m"})
+        illegible = "no rehusó"
+    except ValueError as error:
+        illegible = "THYROX_CODE_PROMPT_CACHE_TTL" in str(error)
+    assert_equal("un valor ilegible rehúsa nombrando la variable", True, illegible)
+    assert_equal("sin entorno, la cota decide como antes", "5m", tc.pool_cache_ttl(current, "claude-sonnet-5", env={})[0])
+    alone = Path(tmp) / "solo" / "step-1"

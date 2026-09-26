@@ -1,0 +1,7 @@
+    cache_ttl, ttl_why = pool_cache_ttl(args.bench, args.model)
+    print(f"cache-ttl: {cache_ttl or '(del cliente)'} — {ttl_why}", file=sys.stderr)
+    setup = step_setup_of(args.bench, args.model, args.worktree, "local", cache_ttl=cache_ttl)
+    if not args.dry_run:
+        step_setup.register(args.ledger.parent, setup)
+    pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
+                                     route="local", setup_id=setup["setup_id"], cache_ttl=cache_ttl)

@@ -410,11 +410,13 @@ def cmd_local_overlap(args) -> int:
               file=sys.stderr)
         return 2
     name, previous = args.bench.name, args.after.name
-    setup = step_setup_of(args.bench, args.model, args.worktree, "local")
+    cache_ttl, ttl_why = pool_cache_ttl(args.bench, args.model)
+    print(f"cache-ttl: {cache_ttl or '(del cliente)'} — {ttl_why}", file=sys.stderr)
+    setup = step_setup_of(args.bench, args.model, args.worktree, "local", cache_ttl=cache_ttl)
     if not args.dry_run:
         step_setup.register(args.ledger.parent, setup)
     pool, pipeline = launch_commands(args.bench, args.model, args.worktree, args.ledger, args.seed, args.width,
-                                     route="local", setup_id=setup["setup_id"])
+                                     route="local", setup_id=setup["setup_id"], cache_ttl=cache_ttl)
     run = f"cd {shlex.quote(str(THYROX))} && {shlex.join(pipeline[pipeline.index('--') + 1:])}"
     commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
                 ["bash", "bin/wait-jobs", "register", f"{name}-pipeline", str(args.bench / "pipeline.log"),
@@ -613,10 +615,35 @@ def previous_item_bound(bench: Path) -> float | None:
     return None
 
 
-def pool_cache_ttl(bench: Path, model: str) -> tuple[str | None, str]:
-    """El TTL de la caché de cada `claude -p` del pool y su porqué: el que
-    `choose_cache_ttl` da para la cota del paso anterior. Sin cota, o con un
-    modelo fuera del catálogo, `None`: lo decide el cliente, y se dice."""
+#: El orden de `QCt` (2.1.282) para una petición `-p`, que el ejecutable cuenta
+#: como conversación principal. Porte TS: `src/packages/agent/promptCacheTtl.ts`.
+_TRUTHY = {"1", "true", "yes", "on"}
+
+
+def declared_cache_ttl(env) -> tuple[str | None, str]:
+    """El TTL que el entorno declara, o `None` si no declara ninguno.
+    Un valor que no es 5m ni 1h lanza `ValueError` nombrando la variable."""
+    if env.get("THYROX_FORCE_PROMPT_CACHING_5M", "").strip().lower() in _TRUTHY:
+        return "5m", "force_5m_env: THYROX_FORCE_PROMPT_CACHING_5M"
+    value = env.get("THYROX_CODE_PROMPT_CACHE_TTL", "")
+    if value:
+        if value not in ("5m", "1h"):
+            raise ValueError(f"THYROX_CODE_PROMPT_CACHE_TTL={value}: el TTL es \"5m\" o \"1h\"")
+        return value, "env: THYROX_CODE_PROMPT_CACHE_TTL"
+    if env.get("THYROX_ENABLE_PROMPT_CACHING_1H", "").strip().lower() in _TRUTHY:
+        return "1h", "enable_1h_env: THYROX_ENABLE_PROMPT_CACHING_1H"
+    return None, ""
+
+
+def pool_cache_ttl(bench: Path, model: str, env=None) -> tuple[str | None, str]:
+    """El TTL de la caché de cada `claude -p` del pool y su porqué. Primero lo
+    que el entorno DECLARA (`declared_cache_ttl`); si nada, el que
+    `choose_cache_ttl` da para la cota del paso anterior — un default derivado,
+    no una declaración, así que va por debajo. Sin cota, o con un modelo
+    fuera del catálogo, `None`: lo decide el cliente, y se dice."""
+    declared, why = declared_cache_ttl(os.environ if env is None else env)
+    if declared is not None:
+        return declared, why
     bound = previous_item_bound(bench)
     if bound is None:
         return None, "sin paso anterior medido: el TTL lo decide el cliente"
@@ -829,7 +856,13 @@ def main(argv: list[str] | None = None) -> int:
                    help="una ruta cuyo lazo terminó stalled; repetible")
     p.set_defaults(func=cmd_next)
     args = parser.parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except ValueError as error:
+        # Un TTL ilegible en el entorno (`declared_cache_ttl`) rehúsa sin
+        # lanzar nada, como `headless-pool` con la misma variable.
+        print(f"tsc_cycle: REHÚSA — {error}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
