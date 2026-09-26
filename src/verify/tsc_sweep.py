@@ -374,6 +374,36 @@ def close_broad(run: Path, log_lines: list[str], step: str) -> tuple[dict[str, d
     return broad, evaluated
 
 
+#: Utilidad demostrada: media de Laplace por encima de esto y al menos una
+#: aplicación aceptada. Un patrón sin ejecución juzgada no se protege.
+REHEARSAL_MIN_MEAN = 0.5
+
+
+def rehearse(run: Path, pattern: dict, log_lines: list[str]) -> list[dict]:
+    """Ensayo balanceado (L07): qué patrones útiles pisaría ``pattern``.
+
+    Se ensaya su señal contra las instancias del log que ya reclaman los
+    patrones abiertos con utilidad demostrada. Reclamar las mismas con otro
+    arreglo es un conflicto: el nuevo desplazaría a uno que funciona. Con el
+    mismo arreglo no lo es — es un duplicado, y `add_pattern` lo funde.
+
+    Ciega a: un patrón útil cuyas instancias ya no están en el log (no hay
+    qué ensayar) y a uno cuya utilidad no pasó por el ledger."""
+    confidence = pattern_confidence(run)
+    new_targets = set(_targets(pattern, log_lines))
+    conflicts = []
+    for other in load_patterns(run).values():
+        entry = confidence.get(other["name"], {})
+        useful = entry.get("accepted", 0) >= 1 and entry.get("mean", 0) > REHEARSAL_MIN_MEAN
+        if (other["name"] == pattern["name"] or other.get("status") == "closed" or not useful
+                or other.get("fix") == pattern.get("fix")):
+            continue
+        shared = sorted(new_targets & set(_targets(other, log_lines)))
+        if shared:
+            conflicts.append({"pattern": other["name"], "shared": shared, "mean": round(entry["mean"], 4)})
+    return conflicts
+
+
 def sites(root: Path, pattern: dict) -> list[tuple[str, str]]:
     """(archivo, texto sustituido) de cada archivo seguido donde la regla cambia algo."""
     listed = subprocess.run(["git", "ls-files"], cwd=root, capture_output=True, text=True,
@@ -433,6 +463,9 @@ def main(argv: list[str] | None = None) -> int:
     add_p.add_argument("--replace", default="")
     add_p.add_argument("--include", default="")
     add_p.add_argument("--exclude", nargs="*", default=[])
+    add_p.add_argument("--log", type=Path, help="ensaya la señal contra este log antes de guardar (L07)")
+    add_p.add_argument("--overlap-reason", default="",
+                       help="guarda aunque pise a un patrón útil, y deja la razón en el patrón")
     prop_p = sub.add_parser("propose")
     prop_p.add_argument("--run", type=Path, required=True)
     prop_p.add_argument("--root", type=Path, default=Path("."))
@@ -475,8 +508,20 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         if args.command == "add-pattern":
-            row = add_pattern(args.run, {k: getattr(args, k) for k in
-                                         ("name", "signal", "site", "replace", "fix", "include", "exclude")})
+            new = {k: getattr(args, k) for k in ("name", "signal", "site", "replace", "fix", "include", "exclude")}
+            if args.log:
+                conflicts = rehearse(args.run, new, args.log.read_text(errors="ignore").splitlines())
+                if conflicts and not args.overlap_reason.strip():
+                    for conflict in conflicts:
+                        print(f"tsc_sweep: el ensayo de {args.name!r} pisa a {conflict['pattern']!r} "
+                              f"(media {conflict['mean']}) en {len(conflict['shared'])} instancia(s), "
+                              f"p. ej. {conflict['shared'][0]}", file=sys.stderr)
+                    print("tsc_sweep: no se guarda; acota la señal o declara --overlap-reason", file=sys.stderr)
+                    return 1
+                if conflicts:
+                    new["overlap_accepted"] = {"with": [c["pattern"] for c in conflicts],
+                                               "reason": args.overlap_reason.strip()}
+            row = add_pattern(args.run, new)
             print(json.dumps(row, ensure_ascii=False))
         elif args.command == "propose":
             patterns = load_patterns(args.run)

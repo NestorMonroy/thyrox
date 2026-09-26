@@ -18,6 +18,8 @@ Qué haría fallar a este control:
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -197,6 +199,42 @@ with tempfile.TemporaryDirectory() as tmp:
                  ["action", "activation", "done_when", "inputs", "on_failure"], sorted(card))
     assert_equal("y dice si la acción es mecánica o exige juicio", (False, "^src/", "TS8: t"),
                  (card["action"]["mechanical"], card["inputs"]["include"], card["activation"]))
+
+# --- ensayo balanceado (L07): lo nuevo no pisa lo que ya funciona ------------
+# Antes de guardar un patrón se ensaya su señal contra las instancias del log
+# que ya reclaman los patrones con utilidad demostrada (Laplace > 0.5 y al
+# menos una aceptada). Reclamar las mismas con otro arreglo es un conflicto.
+with tempfile.TemporaryDirectory() as tmp:
+    run = Path(tmp)
+    ts.add_pattern(run, pattern("proven", r"TS2305: .*'foo'", "reexporta foo"))
+    ts.add_pattern(run, pattern("unproven", r"TS2322: ", "anota el tipo"))
+    (run / "ledger.jsonl").write_text("".join(json.dumps({"proposal_id": p, "outcome": o}) + "\n" for p, o in (
+        ("pattern:proven", "accepted"), ("pattern:proven", "accepted"), ("pattern:unproven", "rejected"))))
+    log = ["src/a.ts(1,2): error TS2305: Module 'x' has no exported member 'foo'.",
+           "src/b.ts(3,4): error TS2322: Type 'a' is not assignable to type 'b'.",
+           "src/c.ts(5,6): error TS2305: Module 'y' has no exported member 'bar'."]
+    broad = pattern("broad", r"TS2305: ", "declara el miembro")
+    conflicts = ts.rehearse(run, broad, log)
+    assert_equal("ensayo: la señal ancha pisa las instancias del patrón probado", [("proven", 1)],
+                 [(c["pattern"], len(c["shared"])) for c in conflicts])
+    assert_equal("ensayo: un patrón sin utilidad demostrada no se protege", [],
+                 ts.rehearse(run, pattern("other", r"TS2322: ", "otro arreglo"), log))
+    assert_equal("ensayo: el mismo arreglo no es conflicto (es un duplicado)", [],
+                 ts.rehearse(run, pattern("again", r"TS2305: ", "reexporta foo"), log))
+    assert_equal("ensayo: una señal disjunta no choca", [],
+                 ts.rehearse(run, pattern("bar", r"'bar'", "declara bar"), log))
+    (run / "tsc.log").write_text("\n".join(log) + "\n")
+    base = ["add-pattern", "--run", str(run), "--name", "broad", "--signal", "TS2305: ",
+            "--fix", "declara el miembro", "--log", str(run / "tsc.log")]
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()) as err:
+        refused = ts.main(base)
+    assert_equal("add-pattern con conflicto rehúsa, nombra al pisado y no guarda", (1, True, False),
+                 (refused, "proven" in err.getvalue(), "broad" in ts.load_patterns(run)))
+    with contextlib.redirect_stdout(io.StringIO()):
+        accepted = ts.main([*base, "--overlap-reason", "proven se queda con foo; éste cubre el resto"])
+    row = ts.load_patterns(run).get("broad", {})
+    assert_equal("con razón declarada se guarda, y la razón queda en el patrón", (0, ["proven"]),
+                 (accepted, (row.get("overlap_accepted") or {}).get("with")))
 
 print(f"test_pattern_memory: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
