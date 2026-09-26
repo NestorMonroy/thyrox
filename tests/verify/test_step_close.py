@@ -140,5 +140,15 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("sin informe del pipeline no hay cierre: rehúsa nombrándolo", "rehúsa", outcome)
     assert_equal("y no commitea nada", 1, len(git(repo, "log", "--format=%s").splitlines()))
 
+with tempfile.TemporaryDirectory() as tmp:
+    repo = Path(tmp)
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    try:
+        step_close._git(repo, "commit", "-q", "-m", "x", "--", "no-such-path")
+        outcome = "commiteó"
+    except step_close.GitError as error:
+        outcome = "nombra" if "no-such-path" in str(error) else str(error)
+    assert_equal("un git que falla nombra su stderr: el cierre no calla la causa", "nombra", outcome)
+
 print(f"test_step_close: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
