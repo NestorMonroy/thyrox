@@ -1,0 +1,13 @@
+== tests/verify/test_pattern_memory.py
+test_pattern_memory: 16 aserciones — 16 ok, 0 falla(s)
+== tests/verify/test_pool_pipeline.py
+test_pool_pipeline: 52 aserciones — 52 ok, 0 falla(s)
+== tests/verify/test_tsc_cycle.py
+test_tsc_cycle: 77 aserciones — 77 ok, 0 falla(s)
+== tests/verify/test_tsc_reflect.py
+todas pasan
+== tests/verify/test_tsc_sweep.py
+todas pasan
+== tests/verify/test_tsc_sweep_breadth.py
+test_tsc_sweep_breadth: 13 aserciones — 13 ok, 0 falla(s)
+__BG_EXIT__=0
