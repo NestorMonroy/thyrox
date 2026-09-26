@@ -1,0 +1,7 @@
+                 (code, "thyrox-bg register step-201-pool" in out, "thyrox-bg register step-201-pipeline" in out))
+    close = [line for line in out.splitlines() if "wait-jobs register step-201-close" in line]
+    assert_equal("launch encadena el cierre al pipeline: informe, commit, trinquete y push sin manos",
+                 (1, True, True, True),
+                 (len(close), bool(close) and "--after-ok step-201-pipeline" in close[0],
+                  bool(close) and "step_close.py" in close[0],
+                  bool(close) and f"--run {root / 'run'}" in close[0]))

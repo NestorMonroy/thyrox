@@ -413,7 +413,8 @@ def cmd_local_overlap(args) -> int:
     run = f"cd {shlex.quote(str(THYROX))} && {shlex.join(pipeline[pipeline.index('--') + 1:])}"
     commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
                 ["bash", "bin/wait-jobs", "register", f"{name}-pipeline", str(args.bench / "pipeline.log"),
-                 "--after-ok", f"{previous}-pipeline", "--run", run]]
+                 "--after-ok", f"{previous}-pipeline", "--run", run],
+                close_registration(args.bench, args.ledger.parent)]
     for command in commands:
         print(shlex.join(command))
         if not args.dry_run:
@@ -671,6 +672,17 @@ def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger
              "env", f"PYTHONPATH={THYROX / 'src'}", *pipeline]]
 
 
+def close_registration(bench: Path, run: Path) -> list[str]:
+    """El cierre del paso (`step_close`) declarado con `--after-ok` a su
+    pipeline: no lanza nada ahora; `dispatch` lo corre si el pipeline asienta
+    con 0, y lo cancela nombrándolo si no. Así el informe, el commit, el
+    trinquete y el push no dependen de que alguien se acuerde."""
+    command = (f"cd {shlex.quote(str(THYROX))} && bash bin/step_close --bench {shlex.quote(str(bench))} "
+               f"--run {shlex.quote(str(run))}")
+    return ["bash", "bin/wait-jobs", "register", f"{bench.name}-close", str(bench / "close.log"),
+            "--after-ok", f"{bench.name}-pipeline", "--run", command]
+
+
 def cmd_modules_launch(args) -> int:
     if not (args.bench / "items.txt").is_file():
         print(f"tsc_cycle modules launch: falta {args.bench / 'items.txt'} — corre antes `modules plan`",
@@ -688,6 +700,7 @@ def cmd_modules_launch(args) -> int:
     # `local overlap` tenga predecesor: sin registrar, `dispatch` lo reporta
     # SIN-PREDECESOR y el paso siguiente no mide nunca.
     commands += [["bash", "bin/thyrox-bg", "register", f"{args.bench.name}-{job}"] for job in ("pool", "pipeline")]
+    commands.append(close_registration(args.bench, args.ledger.parent))
     for command in commands:
         print(shlex.join(command))
         if not args.dry_run:

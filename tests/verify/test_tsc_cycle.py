@@ -535,6 +535,9 @@ with tempfile.TemporaryDirectory() as tmp:
                  (1, True, False),
                  (len(edge), bool(edge) and "--after-ok step-200-pipeline" in edge[0],
                   any("thyrox-bg start step-201-pipeline" in line for line in commands)))
+    assert_equal("overlap también encadena su cierre a su propio pipeline", True,
+                 any("wait-jobs register step-201-close" in line and "--after-ok step-201-pipeline" in line
+                     for line in commands))
     assert_equal("el comando de la arista es el pipeline de la ruta 3, con su marcador", (True, True, True),
                  (bool(edge) and "pool_pipeline.py" in edge[0], bool(edge) and "--unit file" in edge[0],
                   bool(edge) and "--marker" not in edge[0]))
@@ -564,6 +567,12 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("launch registra el pool y el pipeline: sin eso una arista no tiene predecesor",
                  (0, True, True),
                  (code, "thyrox-bg register step-201-pool" in out, "thyrox-bg register step-201-pipeline" in out))
+    close = [line for line in out.splitlines() if "wait-jobs register step-201-close" in line]
+    assert_equal("launch encadena el cierre al pipeline: informe, commit, trinquete y push sin manos",
+                 (1, True, True, True),
+                 (len(close), bool(close) and "--after-ok step-201-pipeline" in close[0],
+                  bool(close) and "bash bin/step_close" in close[0],
+                  bool(close) and f"--run {root / 'run'}" in close[0]))
 
 # --- el TTL de caché del pool se decide con lo que midió el paso anterior -----
 # Cada ítem es un `claude -p`: su caché es de 5 m salvo que un hueco entre
