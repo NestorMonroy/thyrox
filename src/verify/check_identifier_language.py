@@ -427,6 +427,8 @@ TECHNICAL_VOCABULARY = frozenset({
     'sep',       # la abreviatura de *separator*; el corpus la lee *septiembre*
     'bie',       # el Banco de Informacion Economica de INEGI, un nombre propio
     'posterior', # el termino bayesiano; se escribe igual en ingles
+    'hunspell',  # el corrector ortografico, un nombre de producto
+                 # (`src/lib/toolchain.sh::thyrox_toolchain_require_hunspell`)
 })
 
 #: Piso de longitud del criterio de corpus. Una palabra de una o dos letras no
