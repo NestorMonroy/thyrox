@@ -1,0 +1,15 @@
+Give VRAM admission its TypeScript face
+
+The admission lived in Python and shell only, so a TS caller had no
+way to reserve in the shared ledger, and one that probed nvidia-smi
+on its own would reopen the check-then-use race the ledger closes.
+
+gpuAdmission.ts does not reimplement the protocol: admitVram and
+releaseVram launch bin/gpu_monitor, as headless-pool does, and map
+its exit code (0 admitted, 3 timeout, anything else an error rather
+than a "not admitted"). The cross-language test races a Python and a
+TS admission of 3000 MiB with 5000 free: exactly one enters. With the
+TS face pointed at a private ledger, only the two cross cases fall.
+
+The background-work rule now says the admission reserves, not just
+checks, and names the three faces.

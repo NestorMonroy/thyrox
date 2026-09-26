@@ -105,10 +105,33 @@ falló). `step_report` publica la VRAM máxima y mediana, y los errores aparte.
 La anchura con que se lanza es `min(configurada, RAM, VRAM)`: cada tope es
 `(libre − reserva) / (pico × margen)`, con la reserva RESTADA de lo libre
 (`HEADLESS_POOL_MEMFREE_RESERVE`, `HEADLESS_POOL_VRAM_RESERVE_MIB`). Y como la
-VRAM libre cambia mientras los ítems arrancan, cada ítem espera antes de
-lanzarse a que haya sitio para su pico: la admisión de `--memfree`
-(`parallel` 20231122, 4113-4118). Su otra mitad —matar al más joven cuando lo
-libre cae a la mitad— no se porta: mataría un `claude -p` a media petición.
+VRAM libre cambia mientras los ítems arrancan, cada ítem pide sitio para su
+pico justo antes de lanzarse: la admisión de `--memfree` (`parallel` 20231122,
+4113-4118). Su otra mitad —matar al más joven cuando lo libre cae a la
+mitad— no se porta: mataría un `claude -p` a media petición.
+
+**Comprobar no basta: la admisión RESERVA.** Con 5000 MiB libres y dos ítems
+de 3000, dos comprobaciones sueltas ven sitio las dos y arrancan los dos —la
+carrera de comprobar-y-usar, reproducida por
+`.claude/workbench/vram-toctou-*/probe-toctou.sh`—. `gpu_monitor admit` mide,
+decide y reserva bajo `shared_lock` en un registro de VRAM comprometida
+(`HEADLESS_POOL_VRAM_LEDGER`, compartido por los pools de una misma base de
+historial): lo admisible es lo libre menos lo que dueños VIVOS reservaron y su
+árbol aún no usa. El ítem suelta con `release` al terminar, y la reserva de
+un dueño muerto deja de contar sola. Es el patrón de
+`atomic_link_if_count_less_than` del semáforo de GNU Parallel (15105-15125):
+bloquear, contar, reservar, soltar el lock.
+
+La implementación es una, en Python, y se usa por su interfaz: el shell con
+`bin/gpu_monitor admit|release` y TypeScript con
+`@thyrox/config: gpuAdmission.ts` (`admitVram`/`releaseVram`), que lanza el
+mismo envoltorio. Su control es la carrera cruzada —Python contra TS sobre el
+mismo registro, entra uno—, y cae si una cara reserva en otro registro.
+
+```bash
+bash tests/session/test-gpu-admission-cli.sh
+(cd src/packages/config && bun test __tests__/gpuAdmission.test.ts)
+```
 
 Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
 medida, este contenedor no tiene GPU. Las suites usan un `nvidia-smi` falso:
