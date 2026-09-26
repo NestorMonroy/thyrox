@@ -1519,9 +1519,40 @@ export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
 }
 
 
-// La superficie que sus consumidores piden y que vive en otro módulo del
-// paquete (medido con src/verify/namedImports.ts).
-export { filterUnresolvedToolUses } from './loop/session/reconcile.js'
+/** Los bloques de un mensaje canónico, o ninguno si su contenido no es una lista. */
+function blocksOf(message: Message): ReadonlyArray<{ type?: string; id?: string; tool_use_id?: string }> {
+  const content = (message as { message?: { content?: unknown } }).message?.content
+  return Array.isArray(content) ? content : []
+}
+
+/**
+ * Retira los `assistant` cuyos `tool_use` quedaron TODOS sin
+ * `tool_result`: el API rechaza un `tool_use` sin par, y un mensaje con al
+ * menos uno resuelto se conserva. Opera sobre el `Message` canónico de
+ * `messageShapes.ts`, normalizado a un bloque por mensaje, así que la unidad
+ * es el mensaje; el bucle propio usa su gemelo de `loop/session/reconcile.ts`,
+ * que opera sobre el `Message` plano y retira bloques. Genérica: devuelve el
+ * tipo que recibe. Sin nada que retirar devuelve la misma lista.
+ *
+ * Reimplementación: la versión de la referencia (`ccnmt: agent/messages.ts`)
+ * no está vendorizada en `_references/`.
+ */
+export function filterUnresolvedToolUses<M extends Message>(messages: M[]): M[] {
+  const resolved = new Set<string>()
+  const used = new Set<string>()
+  for (const message of messages) {
+    for (const block of blocksOf(message)) {
+      if (block.type === 'tool_result' && block.tool_use_id) resolved.add(block.tool_use_id)
+      if (block.type === 'tool_use' && block.id) used.add(block.id)
+    }
+  }
+  if ([...used].every((id) => resolved.has(id))) return messages
+  return messages.filter((message) => {
+    if (message.type !== 'assistant') return true
+    const ids = blocksOf(message).filter((b) => b.type === 'tool_use').map((b) => b.id ?? '')
+    return ids.length === 0 || ids.some((id) => resolved.has(id))
+  })
+}
 
 /**
  * El texto de un mensaje del asistente: sus bloques de texto no vacíos,
