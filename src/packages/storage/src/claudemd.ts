@@ -1503,8 +1503,6 @@ function stripHtmlCommentsFromTokens(tokens: ReturnType<Lexer['lex']>): {
   return { content: result, stripped }
 }
 
-const MEMORY_INSTRUCTION_PROMPT =
-  'Codebase and user instructions are shown below. Be sure to adhere to these instructions. IMPORTANT: These instructions OVERRIDE any default behavior and you MUST follow them exactly as written.'
 
 // File extensions that are allowed for @include directives
 // This prevents binary files (images, PDFs, etc.) from being loaded into memory

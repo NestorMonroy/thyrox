@@ -1,0 +1,2 @@
+{"proposal_id": "dead-declarations:src/packages/storage/src/claudemd.ts", "proposer": "dead-declarations", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 128, "total_after": 126}
+{"proposal_id": "infer-from-usage:src/packages/cli/src/headless/sdk/session/run-streaming.ts", "proposer": "infer-from-usage", "outcome": "accepted", "targets_before": 1, "targets_after": 0, "new_diagnostics": [], "total_before": 128, "total_after": 126}

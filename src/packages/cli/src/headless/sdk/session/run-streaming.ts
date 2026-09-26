@@ -2711,7 +2711,7 @@ export function runHeadlessStreaming(
               const oauthPromise = performMCPOAuthFlow(
                 serverName,
                 config,
-                url => resolveAuthUrl!(url),
+(                url: string) => resolveAuthUrl!(url),
                 controller.signal,
                 {
                   skipBrowserOpen: true,
