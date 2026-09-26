@@ -1,0 +1,38 @@
+PYTHONPATH=src python3 tests/corpus/test_censo_contraparte.py
+PYTHONPATH=src python3 tests/hallazgo/test_finding_id_collision.py
+PYTHONPATH=src python3 tests/hooks/test_detect_agent_dispatch.py
+PYTHONPATH=src python3 tests/hooks/test_detect_bare_awk.py
+PYTHONPATH=src python3 tests/hooks/test_detect_client_background.py
+PYTHONPATH=src python3 tests/hooks/test_detect_foreground_long_command.py
+PYTHONPATH=src python3 tests/hooks/test_detect_self_matching_pgrep.py
+PYTHONPATH=src python3 tests/hooks/test_detect_stdin_reading_interpreter.py
+PYTHONPATH=src python3 tests/hooks/test_detect_temp_home_write.py
+PYTHONPATH=src python3 tests/hooks/test_stop_tests.py
+bash tests/install/test_install.sh
+bash tests/lib/test-reach-pythonpath.sh
+bash tests/lib/test-reach-sh.sh
+PYTHONPATH=src python3 tests/measurement/test_normalizer_magnitude.py
+PYTHONPATH=src python3 tests/measurement/test_rejection_sampling_brief.py
+PYTHONPATH=src python3 tests/meta/test_runner_exit_two.py
+PYTHONPATH=src python3 tests/meta/test_runner_reach.py
+bash tests/repo/test-fixture-leak.sh
+bash tests/session/test-tmpdir-faucet.sh
+PYTHONPATH=src python3 tests/session/test_generate_bin.py
+PYTHONPATH=src python3 tests/session/test_installed_hooks_resolve.py
+PYTHONPATH=src python3 tests/session/test_job_runs.py
+bash tests/verify/test-assert-no-writes.sh
+bash tests/verify/test-run-ts-isolated.sh
+PYTHONPATH=src python3 tests/verify/test_finding_id_unique.py
+bash tests/verify/test_package_root_resolution.sh
+PYTHONPATH=src python3 tests/workbench/test_manifest_jsonl.py
+PYTHONPATH=src python3 tests/verify/test_tree_fingerprint.py
+bash tests/verify/test-run-tree-mutation.sh
+PYTHONPATH=src python3 tests/session/test_shared_lock.py
+bash tests/session/test-shared-lock-cli.sh
+PYTHONPATH=src python3 tests/verify/test_step_setup.py
+PYTHONPATH=src python3 tests/verify/test_step_close.py
+bash tests/lib/test-replace-literal.sh
+bun test src/packages/config/__tests__/sharedLock.test.ts
+bun test src/packages/binary/__tests__/reflow.test.ts
+PYTHONPATH=src python3 tests/session/test_pool_history.py
+bash tests/session/test-headless-pool.sh

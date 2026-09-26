@@ -1,0 +1,5 @@
+añade aparte (`printf … >> archivo`). La causa está en la fuente, no sólo en
+la conducta: `-i inplace` carga `/usr/share/awk/inplace.awk` (gawk 5.2.1)
+ANTES que el programa, y su propio `END` —líneas 64-67— llama a
+`inplace::end()`, que devuelve la salida a stdout. Los `END` corren en el
+orden del texto, así que el del módulo va primero.

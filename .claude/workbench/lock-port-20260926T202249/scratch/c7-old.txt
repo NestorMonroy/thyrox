@@ -1,0 +1,6 @@
+    try:
+        tf.fingerprint(Path(raw) / "src")
+        outside = tf.fingerprint(Path(tempfile.gettempdir()) / "no-es-repo-x")
+        check("rehúsa", "rehúsa", outside)
+    except tf.NotARepository:
+        check("rehúsa", "rehúsa", "rehúsa")

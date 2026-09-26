@@ -162,7 +162,11 @@ en su lugar, con `-v inplace::suffix=.bak` si se quiere copia (en gawk antiguo,
 **Y una trampa de `-i inplace`, medida el 2026-09-26:** lo que imprime el
 bloque `END` NO va al archivo sino a la salida estándar. Un `END { print "}" }`
 para cerrar un archivo lo deja sin cerrar, sin error. Lo que va al final se
-añade aparte (`printf … >> archivo`).
+añade aparte (`printf … >> archivo`). La causa está en la fuente, no sólo en
+la conducta: `-i inplace` carga `/usr/share/awk/inplace.awk` (gawk 5.2.1)
+ANTES que el programa, y su propio `END` —líneas 64-67— llama a
+`inplace::end()`, que devuelve la salida a stdout. Los `END` corren en el
+orden del texto, así que el del módulo va primero.
 
 Su gate es `src/hooks/detect_gawk_opportunity.py`, detector de
 `pretooluse_dispatch.py`, con esos cuatro momentos. Sus seis mitades de
