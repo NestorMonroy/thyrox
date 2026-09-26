@@ -1,0 +1,2 @@
+echo
+printf 'resumen: %d ok, %d fallo(s)\n' "$OK" "$FALLO"

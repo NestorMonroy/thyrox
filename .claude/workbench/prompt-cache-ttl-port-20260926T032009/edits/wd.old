@@ -1,0 +1,8 @@
+    while true; do
+        local settled=0
+        for f in "${jobs[@]}"; do
+            local label; label=$(basename "$f" .job)
+            if [[ -n "${settled_as[$label]:-}" ]]; then
+                (( settled++ )); continue
+            fi
+            [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }

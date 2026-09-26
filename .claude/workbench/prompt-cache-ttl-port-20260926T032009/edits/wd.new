@@ -1,0 +1,17 @@
+    while true; do
+        # La cadena se mueve aquí: un dependiente cuyo predecesor asentó se
+        # lanza (o se cancela) sin que nadie corra `dispatch` a mano. Sus
+        # líneas van a stderr; stdout queda para el veredicto.
+        cmd_dispatch 2>&1 | gawk '/LANZADO|CANCELADO|SIN-PREDECESOR/' >&2
+        local settled=0
+        for f in "${jobs[@]}"; do
+            local label; label=$(basename "$f" .job)
+            if [[ -n "${settled_as[$label]:-}" ]]; then
+                (( settled++ )); continue
+            fi
+            [[ -f "$f" ]] || { settled_as[$label]=OLVIDADO; (( settled++ )); continue; }
+            if grep -q '^cancelled=' "$f"; then
+                settled_as[$label]=CANCELADO; (( settled++ ))
+                echo "asentado: $label -> CANCELADO ($settled de $total)" >&2
+                continue
+            fi
