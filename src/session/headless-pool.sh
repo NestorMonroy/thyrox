@@ -150,7 +150,10 @@ _headless_item() {
                                            THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
          # <n>.time; el codigo de salida es el del item, que time conserva.
-         ${HP_TIME:+"$HP_TIME" -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
+         # `-q`: sin el, GNU Time antepone «Command exited with non-zero status
+         # N» a la medida del item que falla, y un consumidor que lee la
+         # primera palabra (`ai-course-notes: translation_loop.py`) revienta.
+         ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_OUT/$n.time"} \
          timeout "$HP_TIMEOUT" "$HP_CLAUDE" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \

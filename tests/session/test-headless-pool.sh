@@ -151,18 +151,24 @@ check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gaw
 cat > "$F/gnu-time" <<'SH'
 #!/usr/bin/env bash
 [[ "${1:-}" == --version ]] && { echo "time (GNU Time) UNKNOWN"; exit 0; }
-out=""
+out=""; quiet=""
 while [[ "${1:-}" == -* ]]; do
-  case "$1" in -o) out="$2"; shift 2 ;; -f) shift 2 ;; *) shift ;; esac
+  case "$1" in -o) out="$2"; shift 2 ;; -f) shift 2 ;; -q) quiet=1; shift ;; *) shift ;; esac
 done
 "$@"; rc=$?
-printf "%s\n" "12345 1.50 0.40 0.10" > "$out"
+# Como el real: sin `-q`, a la medida de un comando fallido le antepone esta
+# linea, y un lector de la primera palabra la toma por la medida.
+{ [[ $rc -ne 0 && -z "$quiet" ]] && echo "Command exited with non-zero status $rc"
+  printf "%s\n" "12345 1.50 0.40 0.10"; } > "$out"
 exit $rc
 SH
 chmod +x "$F/gnu-time"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa FALLA-beta
 check "con GNU time: un .time por item" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "2"
 check "con GNU time: memoria pico, pared, usuario y sistema" "$(cat "$F/out/1.time")" "12345 1.50 0.40 0.10"
+# El item que FALLA es el que mas importa medir, y un consumidor que copio el
+# lector (`int(campos[0])`) revienta con la linea de «Command exited…».
+check "con GNU time: el .time del item fallido es solo la medida" "$(cat "$F/out/2.time")" "12345 1.50 0.40 0.10"
 check "con GNU time: el fallo del item sigue siendo fallo" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=1 fallidos=1"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/no-existe" corre alfa
 check "sin GNU time: ningun .time" "$(ls "$F/out"/*.time 2>/dev/null | wc -l)" "0"
