@@ -18,19 +18,33 @@ F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
-modelo=""; persist=si; formato=""
+modelo=""; persist=si; formato=""; verbose=no
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --model) modelo="$2"; shift 2 ;;
     --no-session-persistence) persist=no; shift ;;
     --output-format) formato="$2"; shift 2 ;;
+    --verbose) verbose=si; shift ;;
     *) shift ;;
   esac
 done
 case "$entrada" in *FALLA*) echo "fallo simulado" >&2; exit 1 ;; esac
 case "$entrada" in *LENTO*) sleep 5 ;; esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-jq -cn --arg r "$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}" '{result:$r}'
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}"
+if [[ "$formato" == stream-json ]]; then
+  # Como el ejecutable: stream-json en -p exige --verbose.
+  [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
+  jq -cn '{type:"system",subtype:"init"}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:111,cache_creation_input_tokens:22,cache_creation:{ephemeral_5m_input_tokens:22,ephemeral_1h_input_tokens:0}}}}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:500,cache_creation_input_tokens:3}}}'
+  # `type` no va primero y el stream cierra con una linea truncada: el
+  # ejecutable no garantiza el orden de las claves, y un timeout corta a medias.
+  jq -cn --arg r "$r" '{result:$r,type:"result"}'
+  printf '{"type":"res\n'
+else
+  jq -cn --arg r "$r" '{result:$r}'
+fi
 SH
 chmod +x "$F/claude"
 printf 'Lee y resume.\n' > "$F/prompt.md"
@@ -44,7 +58,9 @@ check "tres items: exit 0" "$CODE" "0"
 check "tres items: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=3 ok=3 fallidos=0"
 check "una salida json por item" "$(ls "$F/out"/*.json 2>/dev/null | wc -l)" "3"
 check "el item llega al final del prompt" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f1 | sort | paste -sd,)" "Item: alfa,Item: beta,Item: gamma"
-check "sin sesion persistida y en json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=json"
+check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .result | cut -d'|' -f3,4 | sort -u)" "persist=no|formato=stream-json"
+check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
+check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"
 check "el indice empareja numero e item" "$(gawk -F'\t' '{print $2}' "$F/out/index.tsv" | paste -sd,)" "alfa,beta,gamma"
 
 # 2 — un item que falla: exit 1 y se nombra, los demas siguen contando.

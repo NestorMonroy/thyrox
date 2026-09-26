@@ -1,0 +1,4 @@
+    # Se elige por el campo `type` ya parseado, no por el orden de las claves,
+    # que el ejecutable no garantiza; una linea truncada por timeout se salta.
+    jq -cR 'fromjson? | select(.type == "result")' "$HP_OUT/$n.stream.jsonl" \
+        | tail -1 > "$HP_OUT/$n.json"

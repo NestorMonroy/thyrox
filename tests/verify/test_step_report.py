@@ -95,6 +95,47 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("la base de cada modelo se publica", {"claude-opus-5-5": "tier_4_20_cache_read_0_20"},
                  report["cost"]["basis"])
 
+    # El prefijo compartido se mide en la PRIMERA petición de cada ítem, que
+    # sólo trae el stream (`usage.iterations` del result trae la última). El
+    # ítem que arranca primero dice si el prefijo sobrevivió entre pasos; los
+    # demás, cuánto pesa. Los ítems 1 y 2 arrancan juntos: gana el Seq menor.
+    assert_equal("sin streams el prefijo se declara no medido, no cero", {"measured": 0},
+                 report["cost"]["cache_prefix"])
+
+    def stream(n: int, *requests: tuple[int, int]) -> None:
+        lines = [{"type": "system", "subtype": "init"}]
+        lines += [{"type": "assistant", "message": {"usage": {"cache_read_input_tokens": r,
+                                                             "cache_creation_input_tokens": w}}}
+                  for r, w in requests]
+        (bench / f"outputs/{n}.stream.jsonl").write_text(
+            "".join(json.dumps(line) + "\n" for line in lines) + '{"type":"res\n')
+
+    stream(1, (0, 5000), (5000, 900))
+    report = sr.step_report(bench, pipeline)
+    assert_equal("un solo stream: el primer ítem sí, el tamaño del prefijo no (no se inventa)",
+                 {"measured": 1, "first_item": {"item": 1, "read": 0, "write": 5000}},
+                 report["cost"]["cache_prefix"])
+    stream(2, (4800, 200), (6000, 50))
+    stream(3, (5000, 300))
+    report = sr.step_report(bench, pipeline)
+    assert_equal("el prefijo: primer ítem frío, su tamaño por la lectura de los demás",
+                 {"measured": 3, "first_item": {"item": 1, "read": 0, "write": 5000},
+                  "prefix_tokens": 4900, "first_item_read_share": 0.0, "write_median": 300},
+                 report["cost"]["cache_prefix"])
+
+    # El que arranca primero no es el de Seq menor: el joblog manda.
+    late = Path(tmp) / "late"
+    (late / "outputs").mkdir(parents=True)
+    (late / "outputs/joblog.tsv").write_text(
+        "Seq\tHost\tStarttime\tJobRuntime\tSend\tReceive\tExitval\tSignal\tCommand\n"
+        "1\t:\t1050\t5\t0\t0\t0\t0\tx\n2\t:\t1000\t5\t0\t0\t0\t0\tx\n")
+    for n, request in ((1, (4000, 10)), (2, (0, 4000))):
+        (late / f"outputs/{n}.stream.jsonl").write_text(json.dumps(
+            {"type": "assistant", "message": {"usage": {"cache_read_input_tokens": request[0],
+                                                        "cache_creation_input_tokens": request[1]}}}) + "\n")
+    assert_equal("el primer ítem es el primero en arrancar, no el de Seq menor",
+                 {"item": 2, "read": 0, "write": 4000}, sr._cache_prefix(late)["first_item"])
+
     empty = Path(tmp) / "empty"
     (empty / "outputs").mkdir(parents=True)
     try:

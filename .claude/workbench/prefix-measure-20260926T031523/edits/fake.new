@@ -1,0 +1,11 @@
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}"
+if [[ "$formato" == stream-json ]]; then
+  # Como el ejecutable: stream-json en -p exige --verbose.
+  [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
+  jq -cn '{type:"system",subtype:"init"}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:111,cache_creation_input_tokens:22,cache_creation:{ephemeral_5m_input_tokens:22,ephemeral_1h_input_tokens:0}}}}'
+  jq -cn '{type:"assistant",message:{usage:{cache_read_input_tokens:500,cache_creation_input_tokens:3}}}'
+  jq -cn --arg r "$r" '{type:"result",result:$r}'
+else
+  jq -cn --arg r "$r" '{result:$r}'
+fi

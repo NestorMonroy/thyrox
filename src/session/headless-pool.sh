@@ -45,7 +45,9 @@
 # (`pool_pipeline.py`), la anchura sola no protege a ninguno de los dos.
 #
 # El prompt de cada item es la plantilla seguida de `Item: <linea>`. Por item
-# escribe `<out>/<n>.json` (la salida `--output-format json`) y `<n>.err`;
+# escribe `<out>/<n>.stream.jsonl` (una linea por evento de `--output-format
+# stream-json`, con el uso de cada peticion), `<n>.json` (su linea `result`) y
+# `<n>.err`;
 # `<out>/index.tsv` empareja numero e item, y `<out>/joblog.tsv` es el de
 # GNU Parallel. Publica `-- FALLIDO <item>` por cada fallo y una linea final
 # `items=N ok=K fallidos=F`. Sale 0 si todos terminaron bien, 1 si alguno no.
@@ -131,8 +133,17 @@ _headless_item() {
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             --max-turns "$HP_MAX_TURNS" --no-session-persistence \
-            --output-format json) \
-      > "$HP_OUT/$n.json" 2> "$HP_OUT/$n.err"
+            --output-format stream-json --verbose) \
+      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err"
+    local rc=$?
+    # El .json de siempre es la linea `result` del stream: sus consumidores
+    # no cambian. El stream se queda porque es lo unico que trae el uso de
+    # cada peticion; `usage.iterations` del result trae solo la ultima.
+    # Se elige por el campo `type` ya parseado, no por el orden de las claves,
+    # que el ejecutable no garantiza; una linea truncada por timeout se salta.
+    jq -cR 'fromjson? | select(.type == "result")' "$HP_OUT/$n.stream.jsonl" \
+        | tail -1 > "$HP_OUT/$n.json"
+    return "$rc"
 }
 export -f _headless_item
 export HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"

@@ -1,0 +1,1 @@
+jq -cn --arg r "$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}" '{result:$r}'

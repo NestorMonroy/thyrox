@@ -108,6 +108,48 @@ def _memory(bench: Path) -> dict:
     return {"measured": len(peaks), "max": max(peaks), "median": int(statistics.median(peaks))}
 
 
+def _first_request(path: Path) -> tuple[int, int] | None:
+    """(leídos, escritos) de caché en la primera petición de un ítem: el
+    primer evento ``assistant`` de su ``<n>.stream.jsonl``. Una línea que no
+    es JSON (truncada por un timeout) se salta."""
+    for line in path.read_text(errors="ignore").splitlines():
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        usage = (event.get("message") or {}).get("usage") if event.get("type") == "assistant" else None
+        if usage:
+            return usage.get("cache_read_input_tokens", 0), usage.get("cache_creation_input_tokens", 0)
+    return None
+
+
+def _cache_prefix(bench: Path) -> dict:
+    """El prefijo compartido (sistema, herramientas y plantilla), medido en
+    la primera petición de cada ítem. El ítem que arrancó primero dice si el
+    prefijo sobrevivió al intervalo desde el paso anterior; lo que leen los
+    demás estima su tamaño. Sin streams, ``measured: 0``; con uno solo no
+    hay tamaño que estimar y la clave no se publica."""
+    first = {}
+    for path in (bench / "outputs").glob("*.stream.jsonl"):
+        stem = path.name.split(".")[0]
+        request = _first_request(path) if stem.isdigit() else None
+        if request:
+            first[int(stem)] = request
+    if not first:
+        return {"measured": 0}
+    starts = {seq: start for seq, start, _, _ in _joblog(bench)}
+    opener = min(first, key=lambda seq: (starts.get(seq, float("inf")), seq))
+    read, write = first[opener]
+    report = {"measured": len(first), "first_item": {"item": opener, "read": read, "write": write}}
+    others = [r for seq, (r, _) in first.items() if seq != opener]
+    if others:
+        prefix = int(statistics.median(others))
+        report.update(prefix_tokens=prefix,
+                      first_item_read_share=round(read / prefix, 4) if prefix else None,
+                      write_median=int(statistics.median(w for _, w in first.values())))
+    return report
+
+
 def step_report(bench: Path, pipeline: Path) -> dict:
     batches = [json.loads(p.read_text()) for p in sorted(pipeline.glob("batch-*/report.json"))]
     batches = [b for b in batches if "total_before" in b]
@@ -132,7 +174,7 @@ def step_report(bench: Path, pipeline: Path) -> dict:
                  "acceptance": round(accepted / len(outcomes), 4) if outcomes else 0.0},
         "capability": {"total_before": batches[0]["total_before"], "total_final": batches[-1]["total_final"],
                        "delta": batches[-1]["total_final"] - batches[0]["total_before"]},
-        "cost": {"equiv_tokens": round(equiv, 1), "basis": basis,
+        "cost": {"equiv_tokens": round(equiv, 1), "basis": basis, "cache_prefix": _cache_prefix(bench),
                  "equiv_per_accepted": round(equiv / accepted, 1) if accepted else None},
     }
 

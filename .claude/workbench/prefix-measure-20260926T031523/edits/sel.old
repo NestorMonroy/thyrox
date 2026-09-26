@@ -1,0 +1,2 @@
+    gawk '/^\{"type":"result"/ {last = $0} END {if (last != "") print last}' \
+        "$HP_OUT/$n.stream.jsonl" > "$HP_OUT/$n.json"

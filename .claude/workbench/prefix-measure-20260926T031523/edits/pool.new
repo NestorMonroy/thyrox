@@ -1,0 +1,11 @@
+            --max-turns "$HP_MAX_TURNS" --no-session-persistence \
+            --output-format stream-json --verbose) \
+      > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err"
+    local rc=$?
+    # El .json de siempre es la linea `result` del stream: sus consumidores
+    # no cambian. El stream se queda porque es lo unico que trae el uso de
+    # cada peticion; `usage.iterations` del result trae solo la ultima.
+    gawk '/^\{"type":"result"/ {last = $0} END {if (last != "") print last}' \
+        "$HP_OUT/$n.stream.jsonl" > "$HP_OUT/$n.json"
+    return "$rc"
+}
