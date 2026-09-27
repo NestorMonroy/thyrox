@@ -6,8 +6,8 @@
  * modelo), así que la política de TTL —el hueco entre turnos y el origen de
  * la petición— no llegaba a ninguna petición real.
  *
- * CONTROL DE ANULACIÓN: devolver el literal `'1h'` hace caer los casos 2 y 3,
- * y deja en pie el 1 (el default de `sdk` coincide con el literal).
+ * CONTROL DE ANULACIÓN: devolver el literal `'1h'` hace caer los casos 1b, 2 y 3,
+ * y deja en pie el 1 (el default de `sdk` para un suscriptor coincide con el literal).
  */
 import { describe, expect, test } from 'bun:test'
 import { mkdtempSync } from 'node:fs'
@@ -31,8 +31,14 @@ async function ttlOf(extra: Record<string, unknown>): Promise<unknown> {
 }
 
 describe('runLoop — el TTL de caché de cada petición', () => {
-  test('1. sin nada declarado, el origen por defecto (sdk) pide 1h', async () => {
-    expect(await ttlOf({})).toBe('1h')
+  // `should1hCacheTTL`: el origen `sdk` sólo pide 1 h para una cuenta
+  // elegible. Antes este caso esperaba 1 h sin preguntar por la cuenta.
+  test('1. sin nada declarado, un suscriptor: el origen por defecto (sdk) pide 1h', async () => {
+    expect(await ttlOf({ subscription: { isSubscriber: true, isUsingOverage: false } })).toBe('1h')
+  })
+
+  test('1b. sin nada declarado y sin suscripción: sdk pide 5m', async () => {
+    expect(await ttlOf({ subscription: { isSubscriber: false, isUsingOverage: false } })).toBe('5m')
   })
 
   test('2. un hueco corto entre turnos pide 5m', async () => {

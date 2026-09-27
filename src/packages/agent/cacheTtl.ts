@@ -30,9 +30,11 @@
  */
 import { DEFAULT_TTL_BY_SOURCE } from '@thyrox/provider/cost/cacheRoutes'
 import { chooseCacheTtl } from '@thyrox/provider/cost/policy'
+import { resolveCredential } from '@thyrox/provider/credentials'
 import {
   isMainThreadSource,
   resolveExplicitPromptCacheTtl,
+  resolvePromptCacheTtl,
   type PromptCacheTtlDecision,
   type PromptCacheTtlEnv,
 } from './promptCacheTtl.ts'
@@ -59,12 +61,33 @@ export type RequestCacheTtlInputs = {
   readonly source: RequestSource
   /** Las variables `THYROX_*` del TTL; por defecto, el entorno del proceso. */
   readonly env?: PromptCacheTtlEnv
+  /**
+   * La elegibilidad de `should1hCacheTTL`: suscripción y excedente. Sin
+   * declararla se deduce de la credencial del entorno (`subscriptionOf`).
+   */
+  readonly subscription?: Subscription
+}
+
+/** Lo que `should1hCacheTTL` lee de la cuenta: `gt()` y `isUsingOverage`. */
+export type Subscription = { readonly isSubscriber: boolean; readonly isUsingOverage: boolean }
+
+/**
+ * La suscripción que la credencial del entorno permite afirmar: sólo un token
+ * OAuth es de suscripción; una clave de API, un token de pasarela o ninguna
+ * credencial no lo son. El excedente no se conoce al arrancar —lo traen las
+ * cabeceras de límite de la primera respuesta—, así que empieza en falso, como
+ * en el ejecutable. El descriptor no se lee: basta saber que la credencial es
+ * de esa clase, no su secreto.
+ */
+export function subscriptionOf(env: PromptCacheTtlEnv): Subscription {
+  const credential = resolveCredential(env as Record<string, string | undefined>, () => 'present')
+  return { isSubscriber: credential.kind === 'oauth', isUsingOverage: false }
 }
 
 /**
  * El TTL de UNA petición, que siempre lleva uno: el declarado, el que el
  * hueco entre turnos justifica o, sin ninguno de los dos, el del origen —la
- * tabla que el ejecutable aplica (`DEFAULT_TTL_BY_SOURCE`)—. El bucle lo
+ * decisión de `should1hCacheTTL` para esa cuenta y ese origen—. El bucle lo
  * resuelve una vez y lo usan la petición, el costo del turno y el cambio de
  * modelo.
  */
@@ -79,8 +102,14 @@ export function resolveRequestCacheTtl(inputs: RequestCacheTtlInputs): { ttl: Ca
   }
   const decided = decidedTtl(inputs.declared, inputs.model, inputs.expectedGapMinutes)
   if (decided.ttl !== undefined) return { ttl: decided.ttl, why: decided.why }
-  const ttl = DEFAULT_TTL_BY_SOURCE[inputs.source]
-  return { ttl, why: `default del origen ${inputs.source} (${ttl}); ${decided.why}` }
+  // Nadie declaró: decide `EPt`/`should1hCacheTTL` —1 h sólo para un
+  // suscriptor fuera de excedente y con el origen en la lista—, no la tabla
+  // por origen, que da 1 h a todo `sdk` aunque sea una clave de API.
+  const subscription = inputs.subscription ?? subscriptionOf(inputs.env ?? process.env)
+  const { ttl } = resolvePromptCacheTtl(inputs.source, {}, { env: {}, ...subscription })
+  const account = !subscription.isSubscriber ? 'sin suscripción'
+    : subscription.isUsingOverage ? 'suscripción en excedente' : 'suscriptor'
+  return { ttl, why: `origen ${inputs.source}, ${account} (${ttl}); ${decided.why}` }
 }
 
 /** La variable que decidió, para que la razón la nombre. */

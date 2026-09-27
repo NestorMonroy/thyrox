@@ -41,7 +41,7 @@ import type { Transcript } from './transcript.ts'
 import { registry, toolSpecs } from '@thyrox/tools/registry'
 import type { ContentBlock, HarnessEvent, LoopResult, LoopStop, Message, Provider, Tool, Usage } from './types.ts'
 import { USAGE_CERO } from './types.ts'
-import { resolveRequestCacheTtl, type RequestSource } from '../cacheTtl.ts'
+import { resolveRequestCacheTtl, type RequestSource, type Subscription } from '../cacheTtl.ts'
 
 export type LoopOptions = {
   provider: Provider
@@ -63,6 +63,8 @@ export type LoopOptions = {
   maxTokens?: number
   /** TTL declarado; sin él lo decide `resolveRequestCacheTtl`. */
   cacheTtl?: '5m' | '1h'
+  /** La cuenta que decide `should1hCacheTTL`; sin ella, la de la credencial del entorno. */
+  subscription?: Subscription
   /** El mayor hueco esperado entre dos turnos: por encima de 5 min la caché de 5 m caduca. */
   expectedGapMinutes?: number
   /** Quién pide: `sdk` (el bucle, por defecto) o un subagente, con su TTL propio. */
@@ -184,7 +186,7 @@ export async function* streamLoop(opts: LoopOptions): AsyncGenerator<HarnessEven
   // Una sola decisión de TTL por bucle: la usan la petición y el costo.
   const { ttl: cacheTtl } = resolveRequestCacheTtl({
     declared: opts.cacheTtl, model: opts.model, expectedGapMinutes: opts.expectedGapMinutes,
-    source: opts.requestSource ?? 'sdk',
+    source: opts.requestSource ?? 'sdk', subscription: opts.subscription,
   })
   const herramientas = registry(opts.tools)
   const sesion = openSession({ cwd: opts.cwd, transcriptDir: opts.transcriptDir, resume: opts.resume })

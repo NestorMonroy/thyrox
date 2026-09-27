@@ -15,6 +15,11 @@
       "types": "./dist/anthropicHttp.d.ts",
       "default": "./src/anthropicHttp.ts"
     },
+    "./credentials": {
+      "@thyrox/source": "./src/credentials.ts",
+      "types": "./dist/credentials.d.ts",
+      "default": "./src/credentials.ts"
+    },
     "./recorded": {
       "@thyrox/source": "./src/recorded.ts",
       "types": "./dist/recorded.d.ts",
