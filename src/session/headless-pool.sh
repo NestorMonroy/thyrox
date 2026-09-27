@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # headless-pool.sh — la TERCERA forma de despacho: N lecturas con juicio, una
-# conversacion `claude -p` por item, repartidas con GNU Parallel
+# conversacion `thyrox -p` por item, repartidas con GNU Parallel
 # =============================================================================
 #
 # Por que existe
@@ -15,7 +15,7 @@
 # guion suelto de banco (`notas-ai-course-aplicables-a-thyrox-*/probes/
 # extraer-conceptos.sh`), que corrio bien y que nadie mas podia invocar.
 #
-# Frente a un subagente, cada `claude -p` de aqui:
+# Frente a un subagente, cada `thyrox -p` de aqui:
 #   - no hereda la conversacion del orquestador, solo la plantilla y su item;
 #   - no ocupa la anchura del tool `Agent`, que RECHAZA el lanzamiento N+1
 #     (`model-selection-subagents.md`);
@@ -33,8 +33,8 @@
 # al nieto que corre bajo `timeout`: medido, un proceso que reserva 200 MB bajo
 # `timeout` da 212 680 KB. Sin GNU Time el pool corre igual y lo declara.
 #
-# `--cache-ttl` fija el TTL de la cache de cada `claude -p` con
-# CLAUDE_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
+# `--cache-ttl` fija el TTL de la cache de cada `thyrox -p` con
+# THYROX_CODE_PROMPT_CACHE_TTL (y CLAUDE_CODE_PROMPT_CACHE_TTL para el ejecutor `claude`). Sin la opcion decide el cliente: 1 h en
 # suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
 #
 # `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
@@ -70,12 +70,12 @@
 # GNU Parallel. Publica `-- FALLIDO <item>` por cada fallo y una linea final
 # `items=N ok=K fallidos=F`. Sale 0 si todos terminaron bien, 1 si alguno no.
 #
-# Cada `claude -p` corre con `--no-session-persistence`, `--setting-sources
+# Cada `thyrox -p` corre con `--no-session-persistence`, `--setting-sources
 # project` y sus herramientas acotadas (`--tools`, por defecto `Read`): es una
 # lectura, no un agente con permisos de escritura.
 #
 # Rehusa con exit 2, y SIN la linea de resumen, si falta GNU Parallel, falta
-# `claude`, falta la plantilla, no hay items o el modelo es un alias: un
+# el ejecutor, falta la plantilla, no hay items o el modelo es un alias: un
 # resumen ahi no distinguiria «no hubo fallos» de «no pude despachar».
 #
 # El modelo va por IDENTIFICADOR COMPLETO: un alias resuelve distinto segun el
@@ -124,7 +124,7 @@ case "$MODEL" in
     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
 esac
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
-# El TTL de la caché de cada `claude -p` (CLAUDE_CODE_PROMPT_CACHE_TTL). Sin
+# El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Sin
 # la opción no se fija y decide el cliente: 1 h en suscripción, 5 m con clave.
 case "$CACHE_TTL" in
     ""|5m|1h) ;;
@@ -144,11 +144,22 @@ case "$(printf '%s' "${THYROX_FORCE_PROMPT_CACHING_5M:-}" | tr '[:upper:]' '[:lo
             *) rehusa "THYROX_CODE_PROMPT_CACHE_TTL va \"5m\" o \"1h\", no: $THYROX_CODE_PROMPT_CACHE_TTL" ;;
         esac ;;
 esac
-# Activar 1h (regla 5 de `QCt`): sólo si nada de arriba decidió.
-if [[ -z "$CACHE_TTL" ]]; then
-    case "$(printf '%s' "${THYROX_ENABLE_PROMPT_CACHING_1H:-}" | tr '[:upper:]' '[:lower:]')" in
-        1|true|yes|on) CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env ;;
+# Activar 1h (regla 5 de `QCt`/`SPt`): sólo si nada de arriba decidió. Tiene
+# dos mitades, como en el ejecutable: la variable general, y la de Bedrock
+# cuando el proveedor ES Bedrock. El pool lo sabe por la misma variable con
+# que el proveedor lo elige (`@thyrox/provider: providers.ts`, getAPIProvider).
+env_truthy() {
+    case "$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')" in
+        1|true|yes|on) return 0 ;;
+        *) return 1 ;;
     esac
+}
+if [[ -z "$CACHE_TTL" ]]; then
+    if env_truthy "${THYROX_ENABLE_PROMPT_CACHING_1H:-}" \
+       || { env_truthy "${CLAUDE_CODE_USE_BEDROCK:-}" \
+            && env_truthy "${THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK:-}"; }; then
+        CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env
+    fi
 fi
 
 # El historial de ESTA plantilla (`pool_history.py`): lo que nadie declaró
@@ -166,7 +177,7 @@ pool_history() { bash "$HP_BIN/pool_history" "$@"; }
 HISTORY="$(pool_history dir "$PROMPT")" || rehusa "no se pudo resolver el historial de la plantilla (HEADLESS_POOL_HISTORY_DIR)"
 
 # La VRAM de cada item, si hay GPU (`gpu_monitor.py`). `--memfree` es memoria
-# del SISTEMA; la de la GPU es otro recurso. Con `claude -p` el modelo corre en
+# del SISTEMA; la de la GPU es otro recurso. Con `thyrox -p` el modelo corre en
 # el servidor y la GPU local no se usa: medirla informa cuando el pool corre
 # trabajo local con CUDA. Sin nvidia-smi se declara, igual que sin GNU Time.
 NVIDIA_SMI_BIN="${HEADLESS_POOL_NVIDIA_SMI:-nvidia-smi}"
@@ -269,7 +280,7 @@ _headless_item() {
     # termina; el `release` de abajo suelta la reserva, y si el shell muere
     # antes, su reserva deja de contar sola. La otra mitad de Parallel —matar
     # al más joven cuando lo libre cae a la mitad, 6847 y 6980-7005— NO se
-    # porta: matar un `claude -p` a mitad de su petición tira los tokens ya
+    # porta: matar un `thyrox -p` a mitad de su petición tira los tokens ya
     # pagados.
     local owner="$BASHPID" admit_rc=0
     if [[ -n "$HP_VRAM_NEED" ]]; then
@@ -310,7 +321,7 @@ _headless_item() {
       > "$HP_OUT/$n.stream.jsonl" 2> "$HP_OUT/$n.err" &
     local pid=$! monitor=""
     # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
-    # muestrea el ARBOL de `pid` (el item y `claude`) mientras vive y deja
+    # muestrea el ARBOL de `pid` (el item y el ejecutor) mientras vive y deja
     # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
     if [[ -n "$HP_NVIDIA_SMI" ]]; then
         bash "$HP_GPU" watch "$pid" "$HP_OUT/$n.gpu" \

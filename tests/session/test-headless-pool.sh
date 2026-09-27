@@ -163,6 +163,14 @@ rm -rf "$F/out"; EXTRA="--cache-ttl 5m" THYROX_ENABLE_PROMPT_CACHING_1H=1 corre 
 check "la opción gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
 rm -rf "$F/out"; EXTRA="" THYROX_FORCE_PROMPT_CACHING_5M=1 THYROX_ENABLE_PROMPT_CACHING_1H=1 corre alfa
 check "forzar 5m gana a activar 1h" "$(thx_de)" "ttl=5m|thx=5m"
+# La mitad Bedrock de la regla 5 (`SPt`, 2.1.283): su variable propia sólo
+# decide cuando el proveedor ES Bedrock, y el pool lo lee de la misma variable
+# con que el proveedor lo elige.
+rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 CLAUDE_CODE_USE_BEDROCK=1 corre alfa
+check "activar 1h en Bedrock, con Bedrock: 1h" "$(thx_de)" "ttl=1h|thx=1h"
+check "activar 1h en Bedrock: la razón es la misma regla" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 corre alfa
+check "activar 1h en Bedrock sin Bedrock: no decide" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: /{n++} END{print n+0}')" "0"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
 check "variable ilegible: exit 2" "$CODE" "2"
 check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
