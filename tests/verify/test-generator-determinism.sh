@@ -47,7 +47,7 @@ check() {
   fi
 }
 
-cd "$REPO"
+cd "$REPO" || exit 1
 
 # El SUJETO mide el CONSUMIDOR y esta suite corre desde el PROVEEDOR. Sin
 # declararlo, `reach.consumer_root()` REHUSA —y hace bien: componer un hogar

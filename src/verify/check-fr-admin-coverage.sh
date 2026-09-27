@@ -19,7 +19,7 @@
 #   bash .claude/scripts/gates/check-fr-admin-coverage.sh --quiet  # solo el conteo
 # =============================================================================
 set -uo pipefail
-ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT"
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"; cd "$ROOT" || exit 2
 STRICT=false; QUIET=false
 for a in "$@"; do
   [[ "$a" == "--strict" ]] && STRICT=true

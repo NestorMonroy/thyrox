@@ -213,7 +213,7 @@ printf 'salida\n[exited with code 0]\n' > "$BASE/-tmp-fixture-ajeno/sess-1/tasks
 # El senuelo es el MAS NUEVO: con la heuristica de mtime gana el.
 touch -d '2020-01-01 00:00:00' "$BASE/-home-user/$SESION/tasks"
 
-OUT=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
+OUT=$(RECONCILE_ROSTER='' RECONCILE_ROSTER_BASE="$BASE" \
       CLAUDE_CODE_SESSION_ID="$SESION" bash "$SUT" 2>&1)
 check "elige el roster de SU sesion, no el senuelo mas nuevo" \
       "1" "$(printf '%s\n' "$OUT" | awk '$1=="TOTAL"{print $2}')"
@@ -222,8 +222,8 @@ check "y lo declara: el origen no dice heuristica" \
 
 # Sin el id de sesion, la heuristica sigue siendo el ultimo recurso — y publica
 # cuantos candidatos descarto, para que el lector sepa que fue una conjetura.
-OUT2=$(RECONCILE_ROSTER= RECONCILE_ROSTER_BASE="$BASE" \
-       CLAUDE_CODE_SESSION_ID= bash "$SUT" 2>&1)
+OUT2=$(RECONCILE_ROSTER='' RECONCILE_ROSTER_BASE="$BASE" \
+       CLAUDE_CODE_SESSION_ID='' bash "$SUT" 2>&1)
 check "sin id de sesion cae al senuelo (y es correcto: no hay con que decidir)" \
       "2" "$(printf '%s\n' "$OUT2" | awk '$1=="TOTAL"{print $2}')"
 # `grep -E` con `.` NO casa la `í` de dos bytes bajo la locale C: la primera

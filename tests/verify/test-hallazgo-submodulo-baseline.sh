@@ -17,7 +17,9 @@
 # «no encontre el archivo» (sub-patron D de metrica-decide-la-conclusion.md).
 set -uo pipefail
 
-GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../src/verify" && pwd)/check_hallazgo_submodulo.py"
+# Por el envoltorio de `bin/`, que exporta `PYTHONPATH=src`: el gate importa
+# `verify.check_vocabulario_prosa`, y por la ruta al fuente ese import muere.
+GATE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/bin/check_hallazgo_submodulo"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 FAILURES=0
@@ -39,7 +41,7 @@ echo "test-hallazgo-submodulo-baseline"
 # Es el caso que hoy falla: el gate busca junto a si mismo, en el proveedor.
 case_start
 printf '%s\n' "$RUTA" > "$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --strict 2>&1)"; EXIT=$?
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --strict 2>&1)"; EXIT=$?
 if [ "$EXIT" -eq 0 ]; then
   ok "el baseline del consumidor congela la ruta (exit 0)"
 else
@@ -50,7 +52,7 @@ fi
 case_start
 printf '%s\n' "$RUTA" > "$TMP/declarado.txt"
 OUT="$(cd "$TMP/consumer" && HALLAZGO_SUBMODULO_BASELINE="$TMP/declarado.txt" \
-        python3 "$GATE" --strict 2>&1)"; EXIT=$?
+        bash "$GATE" --strict 2>&1)"; EXIT=$?
 if [ "$EXIT" -eq 0 ]; then
   ok "la variable declarada resuelve el baseline (exit 0)"
 else
@@ -62,7 +64,7 @@ fi
 # mezcla heredado con nuevo. Si volviera a hacerlo, este caso lo detecta.
 case_start
 rm -f "$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --quiet 2>&1)"; EXIT=$?
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --quiet 2>&1)"; EXIT=$?
 if [ "$EXIT" -eq 2 ] && ! printf '%s' "$OUT" | grep -qE '^[0-9]+$'; then
   ok "rehusa sin baseline (exit 2) y no emite conteo"
 else
@@ -71,7 +73,7 @@ fi
 
 # --- Caso 4: --write-baseline escribe en el consumidor, no en el proveedor ---
 case_start
-OUT="$(cd "$TMP/consumer" && python3 "$GATE" --write-baseline 2>&1)"; EXIT=$?
+OUT="$(cd "$TMP/consumer" && bash "$GATE" --write-baseline 2>&1)"; EXIT=$?
 DESTINO="$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
 if [ -f "$DESTINO" ] && grep -qF "$RUTA" "$DESTINO"; then
   ok "--write-baseline aterriza en el consumidor"

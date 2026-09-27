@@ -58,6 +58,7 @@ bash "$GUION" registrar presente /dev/null 0 >/dev/null 2>&1
 salida_out=$(bash "$GUION" olvidar presente 2>/dev/null)
 codigo=$?
 afirmar "sale 0" 0 "$codigo"
+afirmar "y no escribe nada por stdout" "" "$salida_out"
 
 bash "$GUION" registrar presente /dev/null 0 >/dev/null 2>&1
 salida_err=$(bash "$GUION" olvidar presente 2>&1 >/dev/null)

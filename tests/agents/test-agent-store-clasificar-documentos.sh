@@ -97,8 +97,8 @@ A=$(leer source/gestion/pm/docs/iniciativas/x/analisis-uno.rst series)
 B=$(leer source/requisitos/casos-uso/analisis-dos.rst series)
 afirmar "4a mismo tipo, seccion gestion"     "gestion/analisis"   "$A"
 afirmar "4b mismo tipo, seccion requisitos"  "requisitos/analisis" "$B"
-[[ "$A" != "$B" ]]
-afirmar "4c y por tanto son series DISTINTAS" "0" "$?"
+distintas=1; [[ "$A" != "$B" ]] && distintas=0
+afirmar "4c y por tanto son series DISTINTAS" "0" "$distintas"
 
 # --- 5 · las dos mitades quedan legibles por separado -----------------------
 afirmar "5a section"  "gestion"  "$(leer source/gestion/pm/docs/iniciativas/x/analisis-uno.rst section)"

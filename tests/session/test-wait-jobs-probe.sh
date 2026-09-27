@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -uo pipefail
 # Arranque — DOS entradas, ambas de entorno (DEC-04): el VALOR de la raiz
 # y la RUTA a su declaracion. Los dos literales que el ultimo recurso

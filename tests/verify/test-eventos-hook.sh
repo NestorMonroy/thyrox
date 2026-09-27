@@ -41,8 +41,6 @@ afirmar() { # afirmar <descripción> <esperado> <obtenido>
     else FALLO=$((FALLO + 1)); printf '  FALLA %s — esperado [%s] obtenido [%s]\n' "$1" "$2" "$3"; fi
 }
 
-BIN="$(readlink -f "$(command -v claude)")"
-
 # ---------------------------------------------------------------- caso 1
 # Control positivo real: los cinco repos de esta sesión, sin desconocidos.
 python3 "$GATE" --strict >/dev/null 2>&1

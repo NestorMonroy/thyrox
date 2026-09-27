@@ -70,6 +70,7 @@ echo "== caso 1: --force repara la raíz declarada al valor REAL del clon"
 OUT="$(cd "$CLON" && env -u THYROX_ROOT -u THYROX_ENV_FILE bash src/session/write-env.sh --force 2>&1)"
 RC=$?
 check "exit 0" "$RC" "0"
+[ "$RC" = 0 ] || printf '%s\n' "$OUT"
 ROOT_ESCRITO="$(sed -n 's/^THYROX_ROOT=//p' "$CLON/.env" 2>/dev/null)"
 check "THYROX_ROOT queda en el clon real, no en el viejo" "$ROOT_ESCRITO" "$CLON_REAL"
 

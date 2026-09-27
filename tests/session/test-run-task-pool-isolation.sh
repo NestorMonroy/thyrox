@@ -42,7 +42,8 @@ source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
 
 # El ledger se AISLA: sin esto la suite registra en el de la sesion viva.
-export THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+THYROX_JOBS_DIR="$(mktemp -d)/ledger"
+export THYROX_JOBS_DIR
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"
 POOL="$RAIZ/src/session/run-task-pool.sh"
 WAIT_JOBS="$RAIZ/src/session/wait-jobs.sh"

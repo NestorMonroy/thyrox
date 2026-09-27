@@ -41,7 +41,7 @@ for a in "$@"; do
     esac
 done
 
-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit 2
 
 # ---------------------------------------------------------------------------
 # A. Etiquetas de hallazgo duplicadas

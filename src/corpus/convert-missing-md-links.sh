@@ -33,7 +33,6 @@ done
 SEARCH_DIR="${SEARCH_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || echo .)}"
 
 # Colores
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[0;36m'
@@ -59,7 +58,6 @@ while IFS= read -r mdfile; do
     IN_CODE_BLOCK=false
     FILE_CHANGES=0
     TMPFILE=$(mktemp)
-    MODIFIED=false
 
     while IFS= read -r line; do
         lineno="${line%%:*}"
@@ -139,8 +137,6 @@ while IFS= read -r mdfile; do
                     echo -e "  ${CYAN}${rel_path}:${lineno}${NC} ${match} → ${GREEN}${link}${NC}"
                 fi
             done <<< "$matches"
-
-            MODIFIED=true
         fi
 
         echo "$new_content" >> "$TMPFILE"

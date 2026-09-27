@@ -39,7 +39,7 @@ MISSING="thyrox-pdftoppm-que-no-existe-$$"
 
 # Caso 2 — EJE 1, presencia: un binario ausente y sin opt-in REHUSA con exit 2
 # y nombra el binario y la variable de opt-in.
-out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$MISSING" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$MISSING" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *"$MISSING"* && "$out" == *THYROX_INSTALL_POPPLER* ]]; then
   ok "rehusa con exit 2 nombrando el binario ausente y el opt-in"
@@ -61,7 +61,7 @@ else bad "esperaba exit 2 tras re-comprobar; dio $rc: '$out'"; fi
 
 # Caso 5 — EJE 2, conducta: `pdftotext` presente que no extrae el texto.
 printf '#!/bin/sh\nexit 0\n' > "$T/fake-pdftotext"; chmod +x "$T/fake-pdftotext"
-out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$T/fake-pdftotext" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOTEXT_BIN="$T/fake-pdftotext" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *fake-pdftotext* && "$out" != *"no resuelve"* ]]; then
   ok "un pdftotext presente que no extrae el texto rehusa por conducta"
@@ -69,7 +69,7 @@ else bad "esperaba rechazo de conducta de pdftotext; dio $rc: '$out'"; fi
 
 # Caso 6 — `pdftoppm` que sale 0 y no escribe la imagen: el exit no decide.
 printf '#!/bin/sh\nexit 0\n' > "$T/fake-pdftoppm"; chmod +x "$T/fake-pdftoppm"
-out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$T/fake-pdftoppm" THYROX_INSTALL_POPPLER= \
+out="$(THYROX_TOOLCHAIN_PDFTOPPM_BIN="$T/fake-pdftoppm" THYROX_INSTALL_POPPLER='' \
        thyrox_toolchain_require_poppler 2>&1)"; rc=$?
 if [[ $rc -eq 2 && "$out" == *fake-pdftoppm* ]]; then
   ok "un pdftoppm que sale 0 sin escribir la imagen rehusa"

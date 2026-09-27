@@ -148,6 +148,7 @@ if [ -n "$MEMFREE_SPEC" ]; then
     # propio del `.env` seria una segunda fuente de verdad. Se resuelve UNA vez:
     # cada consulta lanza un interprete, y la sonda corre en cada ciclo.
     source "$HERE/../lib/reach.sh"
+    # shellcheck disable=SC2034  # lo lee memory.sh, cargado arriba
     AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
     MEMFREE="$(parse_binary_size "$MEMFREE_SPEC")" || {
         echo "run-task-pool: --memfree ilegible: '$MEMFREE_SPEC' (ej. 1G, 512M, 800m)" >&2; exit 4; }

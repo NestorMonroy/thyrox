@@ -136,8 +136,8 @@ case "$(printf '%s' "${THYROX_FORCE_PROMPT_CACHING_5M:-}" | tr '[:upper:]' '[:lo
     1|true|yes|on) CACHE_TTL=5m; CACHE_TTL_WHY=force_5m_env ;;
     *)
         case "${THYROX_CODE_PROMPT_CACHE_TTL:-}" in
-            "") CACHE_TTL_WHY=option ;;
-            5m|1h) CACHE_TTL="$THYROX_CODE_PROMPT_CACHE_TTL"; CACHE_TTL_WHY=env ;;
+            "") CACHE_TTL_WHY="option" ;;
+            5m|1h) CACHE_TTL="$THYROX_CODE_PROMPT_CACHE_TTL"; CACHE_TTL_WHY="env" ;;
             *) rehusa "THYROX_CODE_PROMPT_CACHE_TTL va \"5m\" o \"1h\", no: $THYROX_CODE_PROMPT_CACHE_TTL" ;;
         esac ;;
 esac
@@ -311,9 +311,11 @@ _headless_item() {
     return "$rc"
 }
 export -f _headless_item
-export HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
-export HP_OUT="$(cd "$OUT" && pwd)" HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT"
-export HP_CLAUDE="$(command -v "$CLAUDE_BIN")" HP_MODEL="$MODEL"
+HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
+HP_OUT="$(cd "$OUT" && pwd)"
+HP_CLAUDE="$(command -v "$CLAUDE_BIN")"
+export HP_PROMPT HP_OUT HP_CLAUDE
+export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 # Qué decidió el TTL, para que el paso lo registre y no haya que deducirlo.
 [[ -z "$CACHE_TTL" ]] || echo "cache-ttl: $CACHE_TTL ($CACHE_TTL_WHY)"
@@ -337,7 +339,7 @@ if [[ -n "$MEMFREE_SPEC" ]]; then
 fi
 
 "$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$OUT/joblog.tsv" \
-    _headless_item {1} {2} :::: "$OUT/index.tsv" >/dev/null 2>&1
+    _headless_item '{1}' '{2}' :::: "$OUT/index.tsv" >/dev/null 2>&1
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
 # numero: no depende del orden en que terminaron.

@@ -118,7 +118,7 @@ KX_TRABAJOS_ARCHIVO_DIR=$(fixture_dir); export KX_TRABAJOS_ARCHIVO_DIR
 LJ=$(fixture_file); echo "EXIT=0" >"$LJ"
 bash "$GUION" registrar demo "$LJ" 99999 >/dev/null
 bash "$GUION" archivar sesion-x >/dev/null
-afirmar "el .tar.gz existe" 0 "$( [ -f "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" ]; echo $? )"
+afirmar "el .tar.gz existe" 0 "$( [ -f "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" ] && echo 0 || echo 1 )"
 afirmar "el archivo trae el .job" "demo" "$(tar -tzf "$KX_TRABAJOS_ARCHIVO_DIR/sesion-x.tar.gz" | grep -oE 'demo' | head -1)"
 afirmar "el ledger vivo se vació de .job" 0 "$(find "$THYROX_JOBS_DIR" -name '*.job' | wc -l | tr -d ' ')"
 bash "$GUION" archivar sesion-x >/dev/null; afirmar "archivar en vacío es no-op (exit 0)" 0 $?

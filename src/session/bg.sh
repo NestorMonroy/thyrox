@@ -320,6 +320,7 @@ cmd_start() {
     if [[ -n "$memfree_spec" ]]; then
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/reach.sh"
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/memory.sh"
+        # shellcheck disable=SC2034  # lo lee memory.sh, cargado arriba
         AWK_BIN="$(thyrox_config_value THYROX_TOOLCHAIN_AWK_BIN awk)"
         memfree="$(parse_binary_size "$memfree_spec")" || {
             echo "bg.sh start: --memfree ilegible: '$memfree_spec' (ej. 4G, 512M)" >&2; exit 2; }

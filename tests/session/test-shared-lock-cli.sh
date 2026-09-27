@@ -44,8 +44,8 @@ check "check lo ve libre al soltar" "$(bash "$LOCK" check "$T/estado")" "libre"
 
 echo "== 3. N shells que leen-modifican-escriben bajo run no pierden cuentas =="
 echo 0 > "$T/contador"
-for w in 1 2 3 4; do
-  ( for i in $(seq 20); do
+for _ in 1 2 3 4; do
+  ( for _ in $(seq 20); do
       bash "$LOCK" run "$T/contador" --retries 400 --min-wait 0.005 --max-wait 0.05 -- \
         bash -c "n=\$(cat '$T/contador'); echo \$((n + 1)) > '$T/contador'"
     done ) &

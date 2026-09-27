@@ -25,7 +25,7 @@ for a in "$@"; do
     esac
 done
 
-cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)"
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit 2
 
 # La regla enumera CUATRO formas de declarar alcance abierto. Tres son de
 # prosa; la cuarta —"un ``Estado:`` distinto de RESUELTO/CORREGIDO"— es

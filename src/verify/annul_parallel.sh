@@ -61,6 +61,6 @@ export MODULE="$root/${module#"$root"/}" TEST="$test_file" ENV_VAR="$env_var" WO
 base="$(env "$env_var=$MODULE" timeout 300 bun test "$test_file" 2>&1 | gawk '/ pass$/{p=$1} / fail$/{f=$1} END{printf "%s pass, %s fail", p+0, f+0}')"
 printf 'base\t%s\t—\n' "$base"
 gawk -F'\t' 'NF>=2{print NR"\t"$1"\t"$2}' "$variants" \
-  | parallel --colsep '\t' --keep-order -j "$(nproc)" run_variant {1} {2} {3} \
+  | parallel --colsep '\t' --keep-order -j "$(nproc)" run_variant '{1}' '{2}' '{3}' \
   | tee "$work/result.tsv"
 if gawk -F'\t' '$2=="NO-CAMBIO"{bad=1} END{exit !bad}' "$work/result.tsv"; then exit 2; fi

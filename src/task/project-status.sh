@@ -29,7 +29,7 @@ echo ""
 
 # 1. Session state — parallel or single agent
 # Estado de agentes activos (paralelo o single)
-if ls "${CONTEXT_DIR}"/now-*.md 2>/dev/null | grep -q .; then
+if compgen -G "${CONTEXT_DIR}/now-*.md" >/dev/null; then
     echo "=== Agentes activos ==="
     for f in "${CONTEXT_DIR}"/now-*.md; do
         agent_id=$(basename "$f" .md | sed 's/now-//')

@@ -20,7 +20,7 @@
 # mecanismo inservible — un test que solo mirara el rechazo no los separa.
 # =============================================================================
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; fallo=0
 _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
@@ -40,6 +40,7 @@ _contiene "nombra la bandera ofensora" "$salida" "--label"
 echo "== 2. un guion simple tambien se rehusa =="
 salida2="$(bash "$BG" start -n -- true 2>&1)"; codigo2=$?
 _es "rehusa con exit 2" "$codigo2" "2"
+_contiene "y nombra la bandera que tomo por nombre" "$salida2" "'-n'"
 
 echo "== 3. el mensaje ENUMERA las banderas que start si admite =="
 # Sin esto el aviso dice que algo esta mal y no como arreglarlo; el episodio

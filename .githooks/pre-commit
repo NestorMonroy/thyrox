@@ -130,6 +130,19 @@ bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_XMODEL"    --strict "${STAGED[@]}" || CODE=1
 
+# Cero hallazgos de ShellCheck, ruff y pyright en los .sh y .py del producto
+# (`src/`, `tests/`) que este commit prepara. Bloquea con hallazgos (exit 1) y
+# también cuando falta un verificador (exit 2): sin él el commit no se midió.
+LINT=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.sh|src/*.py|tests/*.sh|tests/*.py) LINT+=("${f#"$ROOT"/}") ;;
+    esac
+done
+if [[ ${#LINT[@]} -gt 0 ]]; then
+    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
+fi
+
 # Un commit por pathspec de un banco commitea sólo lo que git ya sigue: un
 # archivo nuevo del banco sin `git add -N` se queda fuera EN SILENCIO. Mira
 # sólo los bancos que este commit toca, no los de otro escritor. Bloquea: el

@@ -22,12 +22,13 @@
 # igual. Ese acoplamiento es el punto — es lo que hace del `--list` un
 # instrumento y no una promesa.
 set -uo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/.." || exit 1
 
 # El checkout que contiene este runner es el sujeto. Una variable o un `.env`
 # heredado no puede redirigir la medición hacia otro clon.
 export THYROX_ROOT="$PWD"
-export THYROX_REACH_ROOT="$(dirname "$PWD")"
+THYROX_REACH_ROOT="$(dirname "$PWD")"
+export THYROX_REACH_ROOT
 
 # El lock de Python sólo gobierna si se usa su intérprete. Los fixtures
 # sintéticos del runner no tienen `.venv`, por eso conservan un fallback.

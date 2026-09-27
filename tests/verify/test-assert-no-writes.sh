@@ -18,7 +18,7 @@
 #
 # Uso:  bash tests/verify/test-assert-no-writes.sh
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || exit 1
 
 SUJETO="src/verify/assert_no_writes.sh"
 fallos=0

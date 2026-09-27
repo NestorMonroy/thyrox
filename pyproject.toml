@@ -93,6 +93,12 @@ corpus = ["pdfplumber"]
 #
 #     uv sync --group gpu
 gpu = ["torch"]
+# Los verificadores de la mitad Python y shell (plan de cero errores): pyright
+# y ruff para `.py`, shellcheck para `.sh`. `shellcheck-py` trae el binario
+# oficial de ShellCheck como rueda, así que no depende del apt del contenedor.
+#
+#     uv sync --group lint
+lint = ["pyright", "ruff", "shellcheck-py"]
 
 # pyright mide la mitad Python del producto (`src`, `tests`) con el intérprete
 # del proyecto; `src` va en `extraPaths` porque los módulos se importan por su

@@ -38,7 +38,7 @@ printf '#!/bin/sh\necho "time (GNU Time) UNKNOWN"\n' > "$F/gnu-time"; chmod +x "
 printf '#!/bin/sh\necho "BusyBox v1.36 multi-call binary"\n' > "$F/busybox-time"; chmod +x "$F/busybox-time"
 
 # Caso 2 — ausente y sin opt-in: REHUSA con exit 2.
-out="$(THYROX_TOOLCHAIN_TIME_BIN="$MISSING" THYROX_INSTALL_GNU_TIME= \
+out="$(THYROX_TOOLCHAIN_TIME_BIN="$MISSING" THYROX_INSTALL_GNU_TIME='' \
        thyrox_toolchain_require_gnu_time 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando falta y no hay opt-in"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -51,7 +51,7 @@ else
 fi
 
 # Caso 4 — control positivo: un GNU time presente pasa sin instalar nada.
-if THYROX_TOOLCHAIN_TIME_BIN="$F/gnu-time" THYROX_INSTALL_GNU_TIME= \
+if THYROX_TOOLCHAIN_TIME_BIN="$F/gnu-time" THYROX_INSTALL_GNU_TIME='' \
    thyrox_toolchain_require_gnu_time >/dev/null 2>&1; then
   ok "un GNU time presente pasa sin opt-in"
 else
@@ -80,13 +80,13 @@ else
 fi
 
 # Caso 8 — EL QUE DISCRIMINA: la palabra reservada `time` no cuenta como binario.
-THYROX_TOOLCHAIN_TIME_BIN=time THYROX_INSTALL_GNU_TIME= PATH="$F/empty:/usr/local/nada" \
+THYROX_TOOLCHAIN_TIME_BIN=time THYROX_INSTALL_GNU_TIME='' PATH="$F/empty:/usr/local/nada" \
   thyrox_toolchain_require_gnu_time >/dev/null 2>&1; rc=$?
 if [[ $rc -eq 2 ]]; then ok "la palabra reservada time no se acepta como GNU time"
 else bad "la palabra reservada time paso como binario: exit $rc"; fi
 
 # Caso 9 — un `time` que no es GNU (busybox) no da el formato que se consume.
-THYROX_TOOLCHAIN_TIME_BIN="$F/busybox-time" THYROX_INSTALL_GNU_TIME= \
+THYROX_TOOLCHAIN_TIME_BIN="$F/busybox-time" THYROX_INSTALL_GNU_TIME='' \
   thyrox_toolchain_require_gnu_time >/dev/null 2>&1; rc=$?
 if [[ $rc -eq 2 ]]; then ok "un time que no es GNU rehusa"
 else bad "un time que no es GNU paso: exit $rc"; fi

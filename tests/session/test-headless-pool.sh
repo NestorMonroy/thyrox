@@ -126,7 +126,7 @@ ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5}' | sort 
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
 check "cache-ttl 5m: exit 0" "$CODE" "0"
 check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "ttl=5m"
-rm -rf "$F/out"; EXTRA="" CLAUDE_CODE_PROMPT_CACHE_TTL= corre alfa
+rm -rf "$F/out"; EXTRA="" CLAUDE_CODE_PROMPT_CACHE_TTL='' corre alfa
 check "sin cache-ttl: no se fija" "$(ttl_de)" "ttl=sin"
 rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"

@@ -47,7 +47,7 @@ fi
 MISSING="thyrox-awk-que-no-existe-$$"
 
 # Caso 2 — EJE 1, presencia: ausente y sin opt-in REHUSA con exit 2.
-presence_out="$(THYROX_TOOLCHAIN_AWK_BIN="$MISSING" THYROX_INSTALL_GAWK= \
+presence_out="$(THYROX_TOOLCHAIN_AWK_BIN="$MISSING" THYROX_INSTALL_GAWK='' \
                 thyrox_toolchain_require_gawk 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando el nombre no resuelve"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -89,7 +89,7 @@ fi
 # el de conducta tiene que rehusar igual. Un guard de un solo eje da verde
 # aqui con la maquina rota.
 if command -v mawk >/dev/null 2>&1; then
-  conduct_out="$(THYROX_TOOLCHAIN_AWK_BIN=mawk THYROX_INSTALL_GAWK= \
+  conduct_out="$(THYROX_TOOLCHAIN_AWK_BIN=mawk THYROX_INSTALL_GAWK='' \
                  thyrox_toolchain_require_gawk 2>&1)"; rc=$?
   if [[ $rc -eq 2 ]]; then
     ok "un awk PRESENTE que no compila intervalos rehusa igual"

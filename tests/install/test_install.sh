@@ -186,7 +186,7 @@ check "--check ya instalado -> exit 0" "0" "$RC"
 # La declaración del consumidor y los wrappers son dos productos del mismo
 # instalador. Un bin/ ausente no puede publicar verde sólo porque `.env` esté
 # bien: ése sería comprobar el significante equivocado.
-rm -rf "$TREE/bin"
+rm -rf "${TREE:?}/bin"
 OUT="$(THYROX_ROOT="$TREE" /bin/bash "$INSTALL" --check "$CONSUMER" 2>&1)"; RC=$?
 check "--check con bin/ ausente -> exit 1" "1" "$RC"
 check_contains "--check con bin/ ausente nombra el generador" \
@@ -262,8 +262,8 @@ CONSUMER_HONDO="$(fake_consumer hondo)"
 mkdir -p "$TREE_HONDO/bin"
 cp "$INSTALL" "$TREE_HONDO/bin/install.sh"
 
-SALIDA_HONDO="$(env -u THYROX_ROOT bash "$TREE_HONDO/bin/install.sh" \
-    "$CONSUMER_HONDO" 2>&1)"
+env -u THYROX_ROOT bash "$TREE_HONDO/bin/install.sh" \
+    "$CONSUMER_HONDO" >/dev/null 2>&1
 check "desde un nivel mas hondo, resuelve la raiz igual" 0 "$?"
 check_contains "y el .env del consumidor apunta al arbol" \
     "THYROX_ROOT=$TREE_HONDO" "$(cat "$CONSUMER_HONDO/.env" 2>/dev/null)"

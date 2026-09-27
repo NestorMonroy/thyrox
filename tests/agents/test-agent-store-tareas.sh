@@ -92,8 +92,8 @@ cat > "$TASKS/447.json" <<'EOF'
 {"id":"447","subject":"DECISIÓN: dónde vive el corpus","description":"cuerpo largo",
  "status":"pending","blocks":[],"blockedBy":[]}
 EOF
-salida=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
-         --tasks-dir "$TASKS" --session-id SES1 2>&1)
+python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+         --tasks-dir "$TASKS" --session-id SES1 >/dev/null 2>&1
 afirmar "el snapshot reporta 3 tareas" "3" \
         "$(python3 -c "
 import sqlite3

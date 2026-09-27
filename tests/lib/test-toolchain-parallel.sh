@@ -34,7 +34,7 @@ fi
 AUSENTE="thyrox-binario-que-no-existe-$$"
 
 # Caso 2 — ausente y sin opt-in: REHUSA con exit 2.
-out="$(THYROX_TOOLCHAIN_PARALLEL_BIN="$AUSENTE" THYROX_INSTALL_PARALLEL= \
+out="$(THYROX_TOOLCHAIN_PARALLEL_BIN="$AUSENTE" THYROX_INSTALL_PARALLEL='' \
        thyrox_toolchain_require_parallel 2>&1)"; rc=$?
 if [[ $rc -eq 2 ]]; then ok "rehusa con exit 2 cuando falta y no hay opt-in"
 else bad "esperaba exit 2 sin opt-in, dio $rc"; fi
@@ -64,7 +64,7 @@ else
 fi
 
 # Caso 5 — control positivo: un binario que SI existe pasa sin instalar nada.
-if THYROX_TOOLCHAIN_PARALLEL_BIN=sh THYROX_INSTALL_PARALLEL= \
+if THYROX_TOOLCHAIN_PARALLEL_BIN=sh THYROX_INSTALL_PARALLEL='' \
    thyrox_toolchain_require_parallel >/dev/null 2>&1; then
   ok "un binario presente pasa sin opt-in"
 else
@@ -126,7 +126,7 @@ rm -rf "$CASA"
 # estado del contenedor y no del arbol: se pierde al reciclarlo y no lo ve
 # ningun clon. thyrox es el proveedor, asi que su estado vive bajo el hogar
 # que `THYROX_STATE_DIR` ya declara — no se inventa raiz nueva.
-hogar="$(THYROX_TOOLCHAIN_PARALLEL_BIN=sh thyrox_toolchain_parallel_home 2>/dev/null || echo '')"
+hogar="$(THYROX_TOOLCHAIN_PARALLEL_BIN="sh" thyrox_toolchain_parallel_home 2>/dev/null || echo '')"
 if [[ "$hogar" == "$ROOT/.parallel" ]]; then
   ok "el hogar de la cita es hermano de .venv, no de las reglas"
 else

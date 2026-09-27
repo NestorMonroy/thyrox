@@ -87,7 +87,7 @@ SALIDA="$(cd "$TMP" && git init -q . && git -c user.email=t@t -c user.name=t com
 afirmar "un mutante en staging bloquea" 1 "$CODIGO"
 
 echo "== 7. el arbol vivo esta limpio (control del repo real) =="
-python3 "$GUION" $(git ls-files '*.py' | head -400) >/dev/null 2>&1
+git ls-files -z '*.py' | head -z -n 400 | xargs -0 python3 "$GUION" >/dev/null 2>&1
 afirmar "ningun .py versionado trae un mutante" 0 $?
 
 printf '\n%s de %s aserciones en verde\n' "$OK" "$((OK + KO))"

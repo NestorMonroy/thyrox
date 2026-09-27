@@ -11,7 +11,7 @@
 # no distinguiría el mecanismo de su ausencia.
 # =============================================================================
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; fallo=0
 _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));

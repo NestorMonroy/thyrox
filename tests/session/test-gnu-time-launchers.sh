@@ -14,7 +14,7 @@
 #     es un cero;
 #   - `wait-jobs wait` publica la memoria pico junto al veredicto.
 set -uo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 ok=0; fallo=0
 _es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
         else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; fallo=$((fallo+1)); fi; }
