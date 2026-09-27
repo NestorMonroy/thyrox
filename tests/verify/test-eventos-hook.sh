@@ -127,5 +127,17 @@ else
     afirmar "SIN MEDIR — ningun evento es exclusivo del archivo externo" "si" "si"
 fi
 
+# ---------------------------------------------------------------- caso 9
+# El árbol de trabajo es el DECLARADO (`THYROX_REACH_ROOT`), no `/home/user`
+# escrito en el gate: con el literal, un árbol en otra ruta dejaba su copia
+# viva fuera del alcance y un typo ahí no se veía.
+mkdir -p "$TMP/arbol/.claude"
+printf '{"hooks":{"PreToolUsage":[]}}' > "$TMP/arbol/.claude/settings.local.json"
+SALIDA_ARBOL="$(THYROX_REACH_ROOT="$TMP/arbol" THYROX_REACH_ROOTS=docs HOME="$TMP/sin-home" \
+    python3 "$GATE" --strict 2>&1)"; COD_ARBOL=$?
+afirmar "el árbol declarado entra en el alcance: su typo sale con código 1" "1" "$COD_ARBOL"
+afirmar "y nombra su settings.local.json" "si" \
+    "$(grep -qF "$TMP/arbol/.claude/settings.local.json" <<<"$SALIDA_ARBOL" && echo si || echo no)"
+
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]
