@@ -1,0 +1,11 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.283
+import{gxe,NYn,Fh,g1t,jhn,JGr,Whn,oN,$Yn,QGr,x_e,Cde,FYn,pf,hK,Bo,hxe,Rde,sre,QH,UYn,ZGr,Ua,H6,u9e,To,ph,ce,ff,yxe,fmt,jv,ezr,dBe}from"/$bunfs/root/chunk-zkn0228z.js";import"/$bunfs/root/chunk-19wkka67.js";import"/$bunfs/root/chunk-vq0drrah.js";import"/$bunfs/root/chunk-nvht7ckf.js";import"/$bunfs/root/chunk-8nz62976.js";import"/$bunfs/root/chunk-s1pmhfks.js";import"/$bunfs/root/chunk-4cnes656.js";import"/$bunfs/root/chunk-yqm14hey.js";import"/$bunfs/root/chunk-ern0s5ks.js";import"/$bunfs/root/chunk-vyyazxfq.js";import"/$bunfs/root/chunk-jxwbd5gq.js";import"/$bunfs/root/chunk-2j44ssk9.js";export{ph as NodeFsOperations,g1t as OPAQUE_LINK_TEXT,Fh as UNVERIFIED_ANCESTRY,Cde as entryReachesForeignNetwork,FYn as examineEntryChain,UYn as expandWin32ExistingLongNames,ZGr as expandWin32ExistingLongNamesStrict,pf as findIntermediateUncJunction,hK as findIntermediateUncJunctionAsync,ce as getFsImplementation,H6 as getPathsForNetworkScreen,To as getPathsForPermissionCheck,oN as hasUntouchableRecordSpelling,$Yn as hasUntouchableRecordSpellingAsync,QGr as hasUntouchableRecordSpellingStrict,x_e as hasUntouchableRecordSpellingStrictAsync,Whn as hopCapExhausted,sre as isDuplicatePath,JGr as isNetworkJunction,jhn as isOpaqueLinkText,NYn as isSpelledStrictAncestor,gxe as nonblockingReadFlags,ff as processChdir,yxe as readFileRange,fmt as readHandleUpTo,ezr as readLines,dBe as readLinesReverse,Rde as realpathExaminedSync,QH as resolveDeepestExistingAncestorSync,u9e as resolvedSpellingWalk,Bo as safeResolvePath,jv as tailFile,hxe as vouchedLaunchAncestry,Ua as walkPermissionCheckPaths};

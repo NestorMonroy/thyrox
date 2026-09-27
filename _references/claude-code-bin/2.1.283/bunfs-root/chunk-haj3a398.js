@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.283
+import{wo}from"/$bunfs/root/chunk-nvht7ckf.js";import{f}from"/$bunfs/root/chunk-bnk68ax9.js";import{Rn,nr,vt,x}from"/$bunfs/root/chunk-t6pwageh.js";import{YY}from"/$bunfs/root/chunk-12qgdt23.js";import{uue,JXe,Lre}from"/$bunfs/root/chunk-ytez97dk.js";import{SWt}from"/$bunfs/root/chunk-de3xpxbw.js";import{e}from"/$bunfs/root/chunk-s81ftaa6.js";import{MWe,CSt,boe}from"/$bunfs/root/chunk-x65cq3nm.js";import{o,u,Jo,R}from"/$bunfs/root/chunk-dk5kbfrn.js";function a(){return o().regex(/^\P{Cc}*$/u)}var h=f(()=>Jo("mode",[u({mode:R("one_step")}),u({mode:R("confirm"),title:a().optional(),body:a().optional(),note:a().optional(),send:a().optional(),cancel:a().optional()})]));function vzt(){let i=x("tengu_tidy_lemon",null);if(i===null||i===void 0)return null;let r=h().safeParse(i);return r.success?r.data:null}var g=import.meta.require("/$bunfs/root/chunk-176bzanf.js").ExtraUsageDialog;async function I1e(i,r){let n=YY(i);if(g&&CSt())return e(g,{onDone:n});let t=await boe({openInBrowser:!0},r.credentials);if(t.type==="message")return n(t.value),null;if(t.type==="confirm-admin-request"){if(vt())return n(MWe),null;return e(SWt,{extraUsage:t.extraUsage,flag:vzt(),wouldTakeAnswer:()=>!0,onDone:n})}let l=nr();if(l==="team"||l==="enterprise")return n(t.opened?`Opened ${t.url} in your browser to manage usage credits for your organization.`:`Visit ${t.url} to manage usage credits for your organization.`),null;if(!t.opened)return n(`Visit ${t.url} to manage usage credits.`),null;let s=Rn(),c=s&&{accountUuid:s.accountUuid,organizationUuid:s.organizationUuid},p=wo();return e(Lre,{startingMessage:"Starting new login following /usage-credits. Exit with Ctrl-C to use existing account.",onDone:async(m,E,d)=>{let A=await uue(r,m,{setAppState:d,previousAccount:c,previousGatewayAuth:p});n(...JXe(r,m,A))}})}
+export{vzt,I1e};
