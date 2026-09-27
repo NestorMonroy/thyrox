@@ -43,6 +43,7 @@ fuente que no compila. Confundir las dos cosas es el sub-patron C.
 from __future__ import annotations
 
 import fnmatch
+import hashlib
 import json
 import os
 import re
@@ -833,6 +834,62 @@ def source_packages(root: Path) -> list[Path]:
     return sorted(found)
 
 
+
+
+#: La huella de lo que se compiló, dentro de la salida: viaja y se borra con ella.
+DIGEST_FILE = ".source-digest"
+
+#: Lo que no cambia la declaración: salida, dependencias, pruebas y su proyecto.
+_NOT_INPUT_DIRS = {OUTPUT_DIR, "node_modules", "__tests__"}
+_NOT_INPUT_NAMES = {"tsconfig.test.json", "tsconfig.tests.json"}
+_INPUT_SUFFIXES = {".ts", ".tsx", ".mts", ".cts", ".js", ".mjs", ".json"}
+
+
+def _is_test(name: str) -> bool:
+    return any(name.endswith(s) for s in (".test.ts", ".test.tsx", ".spec.ts", ".spec.tsx"))
+
+
+def source_digest(package_dir: Path) -> str:
+    """sha256 de las entradas del build: ruta relativa y contenido, ordenados.
+
+    *Métrica:* los archivos fuente y de configuración del paquete, sin su
+    salida, sus dependencias ni sus pruebas.
+    *Ciega a:* un cambio en un paquete HERMANO que altere un tipo inferido de
+    esta declaración; la huella es por paquete, y ese caso lo ve el typecheck
+    del consumidor, no esta huella.
+    """
+    package_dir = Path(package_dir)
+    inputs = []
+    # os.walk poda en el sitio y no sigue enlaces: `node_modules` de un paquete
+    # (ink trae el suyo) y los enlaces de workspace no se recorren.
+    for current, dirs, files in os.walk(package_dir):
+        dirs[:] = [d for d in dirs if d not in _NOT_INPUT_DIRS]
+        for name in files:
+            path = Path(current) / name
+            if name in _NOT_INPUT_NAMES or _is_test(name) or path.suffix not in _INPUT_SUFFIXES:
+                continue
+            inputs.append(path)
+    digest = hashlib.sha256()
+    for path in sorted(inputs):
+        rel = path.relative_to(package_dir)
+        digest.update(str(rel).encode() + b"\0" + path.read_bytes() + b"\0")
+    return digest.hexdigest()
+
+
+def write_digest(package_dir: Path) -> None:
+    """Sella ``dist/`` con la huella de la fuente que acaba de compilarse."""
+    out = Path(package_dir) / OUTPUT_DIR
+    out.mkdir(exist_ok=True)
+    (out / DIGEST_FILE).write_text(source_digest(package_dir) + "\n", encoding="utf-8")
+
+
+def is_stale(package_dir: Path) -> bool:
+    """¿El ``dist/`` no corresponde a la fuente? Sin huella, no se sabe: viejo."""
+    stamp = Path(package_dir) / OUTPUT_DIR / DIGEST_FILE
+    if not stamp.is_file():
+        return True
+    return stamp.read_text(encoding="utf-8").strip() != source_digest(package_dir)
+
 def _packages(root: Path):
     yield from source_packages(root)
 
@@ -841,12 +898,29 @@ def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if "-h" in argv or "--help" in argv:
         print((__doc__ or "").strip())
-        print("\nUso:  emit_declarations [--repoint] [--all] [paquete ...]")
+        print("\nUso:  emit_declarations [--repoint] [--all|--stale] [--root R] [paquete ...]")
+        print("      emit_declarations --list-stale [--root R]")
+        print("  --stale emite solo los paquetes cuya huella no coincide con su fuente;")
+        print("  --list-stale los publica uno por linea, sin emitir, para el pool.")
         print("  Sin paquetes exige --all: emitir los 42 recompila el arbol entero")
         print("  y tarda, asi que no puede ser lo que pasa por teclear el nombre")
         print("  del guion sin argumentos.")
         return 0
-    unknown = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all")]
+    root_override = None
+    if "--root" in argv:
+        at = argv.index("--root")
+        if at + 1 >= len(argv):
+            print("emit_declarations: --root necesita una ruta", file=sys.stderr)
+            return 2
+        root_override = Path(argv[at + 1])
+        del argv[at:at + 2]
+    if "--list-stale" in argv:
+        base = root_override or reach.thyrox_root()
+        for package_dir in _packages(base):
+            if is_stale(package_dir):
+                print(package_dir.name)
+        return 0
+    unknown = [a for a in argv if a.startswith("-") and a not in ("--repoint", "--all", "--stale")]
     if unknown:
         print(f"emit_declarations: bandera no reconocida: {' '.join(unknown)}",
               file=sys.stderr)
@@ -860,10 +934,10 @@ def main(argv=None):
               file=sys.stderr)
         return 2
 
-    root = reach.thyrox_root()
+    root = root_override or reach.thyrox_root()
     repoint = "--repoint" in argv
     wanted = [a for a in argv if not a.startswith("-")]
-    if not wanted and "--all" not in argv:
+    if not wanted and "--all" not in argv and "--stale" not in argv:
         print("emit_declarations: nombra el paquete, o pide --all explicitamente.",
               file=sys.stderr)
         print("  Emitir los 42 recompila el arbol entero; que eso sea el caso por",
@@ -872,6 +946,11 @@ def main(argv=None):
               file=sys.stderr)
         return 2
     targets = [p for p in _packages(root) if not wanted or p.name in wanted]
+    if "--stale" in argv:
+        targets = [p for p in targets if is_stale(p)]
+        if not targets:
+            print("emit_declarations: ningun paquete viejo; nada que emitir")
+            return 0
     if not targets:
         print(f"emit_declarations: ningun paquete coincide con {wanted}", file=sys.stderr)
         return 2
@@ -881,6 +960,10 @@ def main(argv=None):
         result = emit_package(package_dir)
         total_errors += result.errors
         print(result.verdict())
+        if result.emitted:
+            # Sellar lo que se compilo: la declaracion corresponde a esta fuente
+            # aunque traiga errores, porque tsc emite conservando las firmas.
+            write_digest(package_dir)
         if repoint and result.emitted:
             repoint_manifest(package_dir)
 
