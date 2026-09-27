@@ -19,7 +19,7 @@ forma del problema:
 | un trabajo | `src/session/bg.sh` | `bin/thyrox-bg` | `start` lo lanza detached con log e id · `wait` bloquea · `status` da `running`/`done:<exit>` |
 | N trabajos con anchura acotada | `src/session/run-task-pool.sh` | `bin/run-task-pool` | una línea = un comando; registra cada uno en el ledger |
 | la barrera de N | `src/session/wait-jobs.sh` | `bin/wait-jobs` | bloquea hasta que **todos** se asienten, con veredicto por trabajo |
-| N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `claude -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
+| N lecturas **con juicio**, una por item | `src/session/headless-pool.sh` | `bin/headless-pool` | una conversación `thyrox -p` por item, repartidas con GNU Parallel; salida y veredicto por item |
 
 Debajo están los primitivos: `background.spawn_detached`, `job_ledger`,
 `marker_wait` y `task_pool`.
@@ -72,14 +72,16 @@ printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
     --out <banco>/outputs/<dir> --model claude-sonnet-5 [--width N] [--timeout S]
 ```
 
-Cada `claude -p` recibe sólo la plantilla y su `Item:`, corre sin sesión
+Cada ítem recibe sólo la plantilla y su `Item:`, corre sin sesión
 persistida, con `--setting-sources project` y herramientas de lectura, y deja
 `<n>.json` en disco antes de que nadie lo resuma. El modelo va por
 identificador completo; un alias rehúsa con exit 2.
 
-**El ítem puede correr sobre el bucle propio**: `HEADLESS_POOL_CLAUDE=bin/cli`
-lanza `thyrox -p`, que acepta la misma línea de comando que el pool compone
-y escribe el mismo `stream-json` (`src/packages/cli/src/entry/print.ts`, con
+**El ítem corre sobre el bucle propio por defecto**: sin declarar nada, el
+pool lanza `thyrox -p` (`bin/cli`); `HEADLESS_POOL_CLAUDE` declara otro
+ejecutor —`claude`, por ejemplo—. `thyrox -p` acepta la misma línea de comando
+que el pool compone y escribe el mismo `stream-json`
+(`src/packages/cli/src/entry/print.ts`, con
 las formas de `system/init` y `result` del binario 2.1.282). Su credencial se
 resuelve con la cadena de `@thyrox/provider: credentials.ts`
 —`ANTHROPIC_AUTH_TOKEN`, `THYROX_CODE_OAUTH_TOKEN` o su descriptor,
@@ -87,8 +89,22 @@ resuelve con la cadena de `@thyrox/provider: credentials.ts`
 anfitrión da a la sesión de `claude` no llega al shell y no se reutiliza
 (`.claude/workbench/binary-host-auth-20260926T223508/`).
 
+Su TTL de caché lo decide la cadena del ejecutable (`EPt`/`should1hCacheTTL`):
+1 h sólo para una cuenta de suscripción fuera de excedente; con una clave de
+API, 5 m. La variable `THYROX_CODE_PROMPT_CACHE_TTL` que el pool fija gana a
+esa decisión.
+
+**Su memoria se calibra sin credencial real**: GNU Time mide el proceso local
+y el modelo corre en el servidor, así que un servidor de loopback basta.
+`bin/pool-calibrate` levanta `bin/provider-anthropic-mock-server`, corre el
+pool N veces contra él con un marcador local como clave —retira del entorno la
+credencial del anfitrión, y el proxy registra la clase que le llegó— y deja
+las filas en el historial de la plantilla. Mide un piso: las respuestas son
+mínimas y no invocan herramientas.
+
 ```bash
 bash tests/session/test-headless-pool-thyrox-p.sh
+bash tests/session/test-pool-calibrate.sh
 ```
 
 Frente al subagente: **no hereda** la conversación del orquestador, **no
@@ -122,7 +138,7 @@ La anchura con que se lanza es `min(configurada, RAM, VRAM)`: cada tope es
 VRAM libre cambia mientras los ítems arrancan, cada ítem pide sitio para su
 pico justo antes de lanzarse: la admisión de `--memfree` (`parallel` 20231122,
 4113-4118). Su otra mitad —matar al más joven cuando lo libre cae a la
-mitad— no se porta: mataría un `claude -p` a media petición.
+mitad— no se porta: mataría un ítem a media petición.
 
 **Comprobar no basta: la admisión RESERVA.** Con 5000 MiB libres y dos ítems
 de 3000, dos comprobaciones sueltas ven sitio las dos y arrancan los dos —la
@@ -166,7 +182,7 @@ en su sitio (H-THYROX-192).
 heredado del contenedor, el `/usr/bin/time` real graba filas de historial y el
 resultado depende de la máquina.
 
-Con `claude -p` el modelo corre en el servidor y la GPU local no se usa;
+Con `thyrox -p` el modelo corre en el servidor y la GPU local no se usa;
 medida, este contenedor no tiene GPU: `bin/hardware-inventory` combina ocho
 señales —PCI `0x10de` y clase `0x03`, `/dev/nvidia*`, `/dev/dri`,
 `/proc/driver/nvidia`, `libcuda`, `libnvidia-ml` y `nvidia-smi -L`— y da
