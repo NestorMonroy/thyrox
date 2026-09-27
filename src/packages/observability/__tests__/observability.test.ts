@@ -16,7 +16,7 @@ import {
   LEGACY_CONSUMER_STORE_DIR, STORE_DIR,
   STORE_FILE, STORE_PATH, STORE_PATH_VAR, recordHarnessSession, storePath,
 } from '../src/store.ts'
-import { CONSUMER_ROOT_VAR, thyroxRoot } from '../../../paths/reach.ts'
+import { CONSUMER_ROOT_VAR, thyroxRoot } from '@thyrox/paths/reach.ts'
 import { costReport, turnCost } from '../src/cost.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 

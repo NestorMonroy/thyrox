@@ -68,6 +68,10 @@
         "zod": "^4.3.6",
       },
     },
+    "src/coordination": {
+      "name": "@thyrox/coordination",
+      "version": "0.1.0",
+    },
     "src/packages/@ant/claude-for-chrome-mcp": {
       "name": "@ant/claude-for-chrome-mcp",
       "version": "1.0.0",
@@ -151,12 +155,15 @@
         "@thyrox/memory": "workspace:*",
         "@thyrox/observability": "workspace:*",
         "@thyrox/output": "workspace:*",
+        "@thyrox/paths": "workspace:*",
         "@thyrox/permission": "workspace:*",
         "@thyrox/provider": "workspace:*",
         "@thyrox/repl": "workspace:*",
         "@thyrox/shell": "workspace:*",
         "@thyrox/storage": "workspace:*",
+        "@thyrox/store": "workspace:*",
         "@thyrox/swarm": "workspace:*",
+        "@thyrox/task": "workspace:*",
         "@thyrox/teleport": "workspace:*",
         "@thyrox/tool-registry": "workspace:*",
         "@thyrox/tools": "workspace:*",
@@ -240,6 +247,7 @@
         "@thyrox/bridge": "workspace:*",
         "@thyrox/command-runtime": "workspace:*",
         "@thyrox/config": "workspace:*",
+        "@thyrox/coordination": "workspace:*",
         "@thyrox/daemon": "workspace:*",
         "@thyrox/headless-sdk": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
@@ -247,6 +255,7 @@
         "@thyrox/memory": "workspace:*",
         "@thyrox/observability": "workspace:*",
         "@thyrox/output": "workspace:*",
+        "@thyrox/paths": "workspace:*",
         "@thyrox/permission": "workspace:*",
         "@thyrox/provider": "workspace:*",
         "@thyrox/repl": "workspace:*",
@@ -256,10 +265,12 @@
         "@thyrox/stdin-napi": "workspace:*",
         "@thyrox/storage": "workspace:*",
         "@thyrox/swarm": "workspace:*",
+        "@thyrox/task": "workspace:*",
         "@thyrox/teleport": "workspace:*",
         "@thyrox/tool-registry": "workspace:*",
         "@thyrox/tools": "workspace:*",
         "@thyrox/updater": "workspace:*",
+        "@thyrox/workbench": "workspace:*",
       },
     },
     "src/packages/color-diff-napi": {
@@ -460,6 +471,8 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/agent": "workspace:*",
+        "@thyrox/paths": "workspace:*",
+        "@thyrox/store": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -646,6 +659,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/agent": "workspace:*",
+        "@thyrox/paths": "workspace:*",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -667,6 +681,7 @@
         "@thyrox/config": "workspace:*",
         "@thyrox/local-observability": "workspace:*",
         "@thyrox/output": "workspace:*",
+        "@thyrox/paths": "workspace:*",
         "@thyrox/permission": "workspace:*",
         "@thyrox/provider": "workspace:*",
         "@thyrox/shell": "workspace:*",
@@ -766,6 +781,8 @@
         "@thyrox/observability": "workspace:*",
         "@thyrox/plan": "workspace:*",
         "@thyrox/skills": "workspace:*",
+        "@thyrox/store": "workspace:*",
+        "@thyrox/task": "workspace:*",
       },
       "devDependencies": {
         "@thyrox/provider": "workspace:*",
@@ -811,6 +828,28 @@
       },
       "devDependencies": {
         "@types/ws": "^8.18.1",
+      },
+    },
+    "src/paths": {
+      "name": "@thyrox/paths",
+      "version": "0.1.0",
+    },
+    "src/store": {
+      "name": "@thyrox/store",
+      "version": "0.1.0",
+    },
+    "src/task": {
+      "name": "@thyrox/task",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/paths": "workspace:*",
+      },
+    },
+    "src/workbench": {
+      "name": "@thyrox/workbench",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/paths": "workspace:*",
       },
     },
   },
@@ -1171,6 +1210,8 @@
 
     "@thyrox/context-compression": ["@thyrox/context-compression@workspace:src/packages/context-compression"],
 
+    "@thyrox/coordination": ["@thyrox/coordination@workspace:src/coordination"],
+
     "@thyrox/daemon": ["@thyrox/daemon@workspace:src/packages/daemon"],
 
     "@thyrox/headless-sdk": ["@thyrox/headless-sdk@workspace:src/packages/headless-sdk"],
@@ -1190,6 +1231,8 @@
     "@thyrox/observability": ["@thyrox/observability@workspace:src/packages/observability"],
 
     "@thyrox/output": ["@thyrox/output@workspace:src/packages/output"],
+
+    "@thyrox/paths": ["@thyrox/paths@workspace:src/paths"],
 
     "@thyrox/permission": ["@thyrox/permission@workspace:src/packages/permission"],
 
@@ -1211,7 +1254,11 @@
 
     "@thyrox/storage": ["@thyrox/storage@workspace:src/packages/storage"],
 
+    "@thyrox/store": ["@thyrox/store@workspace:src/store"],
+
     "@thyrox/swarm": ["@thyrox/swarm@workspace:src/packages/swarm"],
+
+    "@thyrox/task": ["@thyrox/task@workspace:src/task"],
 
     "@thyrox/teleport": ["@thyrox/teleport@workspace:src/packages/teleport"],
 
@@ -1224,6 +1271,8 @@
     "@thyrox/url-handler-napi": ["@thyrox/url-handler-napi@workspace:src/packages/url-handler-napi"],
 
     "@thyrox/voice": ["@thyrox/voice@workspace:src/packages/voice"],
+
+    "@thyrox/workbench": ["@thyrox/workbench@workspace:src/workbench"],
 
     "@types/asciichart": ["@types/asciichart@1.5.8", "", {}, "sha512-8yzgCUybv8/yUfj4WeTh7G+V+AxU7AzwsF2CrkTtARKHdrxE/EiByF2efUMj6qdm87tENucNu6pLs22RWU0H7g=="],
 

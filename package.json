@@ -3,7 +3,12 @@
   "private": true,
   "workspaces": [
     "src/packages/*",
-    "src/packages/@ant/*"
+    "src/packages/@ant/*",
+    "src/paths",
+    "src/store",
+    "src/task",
+    "src/coordination",
+    "src/workbench"
   ],
   "type": "module",
   "license": "UNLICENSED",

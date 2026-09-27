@@ -23,7 +23,7 @@
  */
 
 import { join } from 'node:path'
-import { thyroxRoot } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
 import { fromSkillDir } from './fromDir.ts'
 import type { SkillDefinition } from './registry.ts'
 import type { SkillRegistry } from './registry.ts'

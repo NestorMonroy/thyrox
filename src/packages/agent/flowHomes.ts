@@ -31,7 +31,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { docsRoot, resetDocsRootCache } from '../../paths/docs.ts'
+import { docsRoot, resetDocsRootCache } from '@thyrox/paths/docs.ts'
 import type { AgentDefinition } from './types.ts'
 
 /** Los 14 valores canonicos de `:flow:` con hogar de diseno (DEC-R-01). */

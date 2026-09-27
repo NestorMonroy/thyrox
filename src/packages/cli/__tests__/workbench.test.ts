@@ -57,7 +57,7 @@ import {
   REQUIRED_KEYS, WORKBENCH_FORMS, MANIFEST_FILE_NAME, LEGACY_MANIFEST_FILE_NAME,
   runIdDate, runIdFor, checkWorkbench, scaffoldWorkbench,
   manifestLine, readManifestFile,
-} from '../../../workbench/manifest.ts'
+} from '@thyrox/workbench/manifest.ts'
 
 /**
  * Leer y escribir el manifiesto por el MECANISMO, no con un `JSON.parse` a mano.

@@ -26,7 +26,7 @@
 import { Database } from 'bun:sqlite'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { thyroxRoot } from '../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
 
 export const TASK_STATUSES = ['pending', 'in_progress', 'completed'] as const
 export type TaskStatus = (typeof TASK_STATUSES)[number]

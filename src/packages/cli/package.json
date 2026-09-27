@@ -69,6 +69,10 @@
     "@thyrox/teleport": "workspace:*",
     "@thyrox/tool-registry": "workspace:*",
     "@thyrox/tools": "workspace:*",
-    "@thyrox/updater": "workspace:*"
+    "@thyrox/updater": "workspace:*",
+    "@thyrox/paths": "workspace:*",
+    "@thyrox/task": "workspace:*",
+    "@thyrox/workbench": "workspace:*",
+    "@thyrox/coordination": "workspace:*"
   }
 }

@@ -28,6 +28,8 @@
     "@thyrox/agent": "workspace:*",
     "@thyrox/observability": "workspace:*",
     "@thyrox/plan": "workspace:*",
-    "@thyrox/skills": "workspace:*"
+    "@thyrox/skills": "workspace:*",
+    "@thyrox/task": "workspace:*",
+    "@thyrox/store": "workspace:*"
   }
 }

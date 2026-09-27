@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+fatal: not a git repository (or any of the parent directories): .git
+
+__tests__/toolSearchEnabled.test.ts:
+135 | describe('isToolSearchEnabled (iPn)', () => {
+136 |   test('un modelo sin tool_reference la deshabilita y lo dice', async () => {
+137 |     env({ ENABLE_TOOL_SEARCH: 'true' })
+138 |     debugLines.length = 0
+139 |     expect(await decide('claude-3-haiku', [toolSearch, mcpTool(10)])).toBe(false)
+140 |     expect(debugLines.some(l => l.includes('does not support tool_reference'))).toBe(true)
+                                                                                      ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/agent/__tests__/toolSearchEnabled.test.ts:140:81)
+(fail) isToolSearchEnabled (iPn) > un modelo sin tool_reference la deshabilita y lo dice [1.33ms]
+
+__tests__/portFidelity.test.ts:
+[portFidelity] ausente /home/user/claude-code-nestor-monroy-tools/packages/agent/__tests__ — NO se emite veredicto de fidelidad. Declara CCNMT_ROOT para medir.
+
+ 2647 pass
+ 1 fail
+ 4846 expect() calls
+Ran 2648 tests across 196 files. [21.72s]
+EXIT=1

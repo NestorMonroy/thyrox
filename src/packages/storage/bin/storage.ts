@@ -33,7 +33,7 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
-import { envValue } from '../../../paths/reach.ts'
+import { envValue } from '@thyrox/paths/reach.ts'
 import { CACHE_PATHS, setCwdFn } from '../src/cache-paths.ts'
 import { BackendArtifactStore, FileSessionMetadataStore, FileTranscriptStore, LocalFileStorageBackend } from '../src/index.ts'
 import { check as checkLock } from '../src/lockfile.ts'

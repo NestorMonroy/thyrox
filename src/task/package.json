@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/task",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Esquema, E/S y premisas del registro de tareas.",
+  "exports": {
+    ".": "./index.ts",
+    "./*.ts": "./*.ts"
+  },
+  "dependencies": {
+    "@thyrox/paths": "workspace:*"
+  }
+}

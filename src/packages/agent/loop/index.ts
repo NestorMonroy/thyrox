@@ -22,7 +22,7 @@ import { resumenTablero } from '@thyrox/tools/tasks'
 import { MICROCOMPACT_MIN_FREED_TOKENS, projectMicrocompact } from './context/microcompact.ts'
 import { makeClearedPersister, toolCallIndex } from '@thyrox/observability/clearedResults'
 import { STORE_PATH } from '@thyrox/observability/store'
-import { probeStore } from '../../../store/db.ts'
+import { probeStore } from '@thyrox/store/db.ts'
 import {
   THRASHING_MESSAGE, advanceTurn, contextLevel, markCompacted, rapidRefill,
   type RemoteAutocompactState,

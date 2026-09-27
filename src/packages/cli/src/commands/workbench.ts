@@ -3,7 +3,7 @@
  * de conducta.
  */
 import { join } from 'node:path'
-import { checkWorkbench, scaffoldWorkbench } from '../../../../workbench/manifest.ts'
+import { checkWorkbench, scaffoldWorkbench } from '@thyrox/workbench/manifest.ts'
 import { flag, hasFlag } from '../entry/flags.ts'
 
 export function workbenchCommand(argv: string[], cwd: string): number {

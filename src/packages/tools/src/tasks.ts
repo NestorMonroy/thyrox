@@ -34,10 +34,10 @@
  * único que impide que el tablero acumule estados que nadie sabe leer.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../../../store/db.ts'
+import { openStore } from '@thyrox/store/db.ts'
 import {
   selectCitationId, TABLERO_DDL, TASK_HIGHWATER_DDL, TASK_STATUSES, UPDATE_STATUSES,
-} from '../../../task/schema.ts'
+} from '@thyrox/task/schema.ts'
 import type { Tool, ToolContext, ToolResult } from '@thyrox/agent/loop/types'
 
 export type TaskToolOptions = { dbPath: string; sessionId?: string }

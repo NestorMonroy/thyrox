@@ -52,7 +52,7 @@
  */
 import { join } from 'node:path'
 
-import { ConsumerUnknownError, consumerRoot, envValue, resolveHome } from '../paths/reach.ts'
+import { ConsumerUnknownError, consumerRoot, envValue, resolveHome } from '@thyrox/paths/reach.ts'
 
 /**
  * Los dos segmentos del par, declarables por separado. La mitad Python los
@@ -89,7 +89,7 @@ export const WORKBENCH_DIR_VAR = 'THYROX_WORKBENCH_DIR'
  * el localizador del `.env`, y escribirlo aquí otra vez crearía la segunda
  * fuente de verdad que este módulo existe para no tener.
  */
-export { ENV_FILE_VAR as WORKBENCH_ENV_FILE_VAR } from '../paths/reach.ts'
+export { ENV_FILE_VAR as WORKBENCH_ENV_FILE_VAR } from '@thyrox/paths/reach.ts'
 
 /**
  * Ya no la lanza `workbenchDir`. Se conserva por sus capturadores: retirarla

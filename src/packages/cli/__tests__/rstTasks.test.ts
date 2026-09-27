@@ -11,10 +11,10 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { parseRstTasks } from '../../../task/rst.ts'
+import { parseRstTasks } from '@thyrox/task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import { runCli } from '../src/entry/main.ts'
-import { docsRoot } from '../../../paths/docs.ts'
+import { docsRoot } from '@thyrox/paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */
 // El .rst vive en kaupamex-docs. La aritmetica resolvia a thyrox y el

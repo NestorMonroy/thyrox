@@ -7,8 +7,8 @@
  * cambia es de dónde sale el valor de una bandera — `flag()`, que reconoce
  * además `--x=v`; ver `entry/flags.ts`.
  */
-import { assessAll, type TaskPremise } from '../../../../task/premises.ts'
-import { fsPremiseIo, readPremises } from '../../../../task/io.ts'
+import { assessAll, type TaskPremise } from '@thyrox/task/premises.ts'
+import { fsPremiseIo, readPremises } from '@thyrox/task/io.ts'
 import { flag, hasFlag } from '../entry/flags.ts'
 
 export function checkPremisesCommand(argv: string[], cwd: string): number {

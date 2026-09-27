@@ -13,7 +13,7 @@
  * propio de thyrox — para que el mecanismo sea usable sin configurar nada.
  */
 import { join } from 'node:path'
-import { envValue, thyroxRoot } from '../paths/reach.ts'
+import { envValue, thyroxRoot } from '@thyrox/paths/reach.ts'
 
 export const COMMANDS_DIR_VAR = 'THYROX_COMMANDS_DIR'
 export const COMMANDS_DIR_DEFAULT = join('.claude', 'commands')

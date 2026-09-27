@@ -26,7 +26,7 @@
  * `.rst`, por `build-logs.md`.
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../../../store/db.ts'
+import { openStore } from '@thyrox/store/db.ts'
 import { createHash } from 'node:crypto'
 import type { Message } from '@thyrox/agent/loop/types'
 import { CLEARED_MARKER } from '@thyrox/agent/loop/context/microcompact'

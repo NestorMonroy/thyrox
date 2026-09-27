@@ -17,10 +17,10 @@
  *   promoverse a sí mismo (`niveles-de-retencion.md`).
  */
 import { Database } from 'bun:sqlite'
-import { openStore } from '../../../store/db.ts'
+import { openStore } from '@thyrox/store/db.ts'
 import { join, resolve } from 'node:path'
-import { thyroxRoot } from '../../../paths/reach.ts'
-import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '../../../paths/reach.ts'
+import { thyroxRoot } from '@thyrox/paths/reach.ts'
+import { CONSUMER_ROOT_VAR, consumerRoot, envValue } from '@thyrox/paths/reach.ts'
 import type { Usage } from '@thyrox/agent/loop/types'
 import type { TranscriptShape } from './transcriptShape.ts'
 import { verifyAdoption, readProcStart, type Adoption } from '@thyrox/agent/loop/session/reconcile'

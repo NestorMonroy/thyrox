@@ -5,7 +5,7 @@
  * docstring de `commands/checkPremises.ts` para la forma del reparto.
  */
 import { readFileSync } from 'node:fs'
-import { parseRstTasks } from '../../../../task/rst.ts'
+import { parseRstTasks } from '@thyrox/task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
 import { storePath } from '@thyrox/observability/store'
 import { flag, hasFlag } from '../entry/flags.ts'
