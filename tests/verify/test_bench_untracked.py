@@ -10,7 +10,10 @@ Qué haría fallar a este control:
 - no mirar dentro de subdirectorios del banco (`outputs/`, `step-*/`);
 - mirar bancos que el commit no toca: un banco ajeno a medio escribir
   bloquearía a cualquier escritor;
-- contar como banco una ruta fuera de las raíces de banco.
+- contar como banco una ruta fuera de las raíces de banco;
+- no mirar un banco CITADO por el contenido staged, o leer la cita del árbol
+  de trabajo en vez del índice. Anulado, medido: sin la cita caen los dos
+  casos que la usan; leyendo del árbol de trabajo cae sólo el del índice.
 """
 from __future__ import annotations
 
@@ -88,6 +91,36 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("el CLI sale 1 si algo queda fuera", 1, code)
     code = gate.main(["--repo", str(base), "src/x.py"])
     assert_equal("el CLI sale 0 si nada queda fuera", 0, code)
+
+# Un banco también se toca CITÁNDOLO. Medido en 82417e3d: el commit llevaba
+# cuatro pruebas cuyo encabezado nombra `napi-contracts-20260927T073211`, y
+# ninguno de sus archivos nuevos del banco; como nada del banco estaba staged,
+# el gate publicó «0 banco(s) tocado(s)» y la evidencia citada no viajó.
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    (bench / "sonda.txt").write_text("evidencia\n")
+    (base / "src/x.py").write_text('"""Medido en el banco `bench-a`."""\nx = 2\n')
+    git(base, "add", "src/x.py")
+    assert_equal("un banco citado por un archivo staged se mira aunque nada suyo esté staged",
+                 {".claude/workbench/bench-a": [".claude/workbench/bench-a/sonda.txt"]},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
+    (base / ".claude/workbench/bench-b/a-medio.txt").write_text("otro escritor\n")
+    assert_equal("un banco que nadie cita sigue sin mirarse",
+                 [".claude/workbench/bench-a"],
+                 sorted(gate.untracked_in_benches(base, ["src/x.py"])))
+    git(base, "add", "-N", str(bench / "sonda.txt"))
+    assert_equal("citado y con su archivo en el índice, no queda nada fuera", {},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
+
+with tempfile.TemporaryDirectory() as directory:
+    base = Path(directory)
+    bench = fixture(base)
+    (bench / "sonda.txt").write_text("evidencia\n")
+    (base / "src/x.py").write_text('"""Medido en el banco `bench-a`."""\nx = 3\n')
+    # El índice manda: el contenido staged no cita el banco aunque el disco sí.
+    assert_equal("la cita se lee del índice, no del árbol de trabajo", {},
+                 gate.untracked_in_benches(base, ["src/x.py"]))
 
 print(f"test_bench_untracked: {passed + failed} aserciones — {passed} ok, {failed} falla(s)")
 sys.exit(1 if failed else 0)
