@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/check_package_typecheck --strict --jobs 1 audio-capture-napi image-processor-napi modifiers-napi url-handler-napi plan computer-use-input computer-use-swift computer-use-mcp tools binary finding", "started_at": "2026-09-27T08:03:33+00:00"}
