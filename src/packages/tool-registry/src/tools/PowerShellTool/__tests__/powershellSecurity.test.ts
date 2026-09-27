@@ -1,5 +1,18 @@
-import { mock, describe, expect, test } from "bun:test";
+import { afterAll, mock, describe, expect, test } from "bun:test";
 import type { ParsedCommandElement, ParsedPowerShellCommand } from "@thyrox/shell/powershell/parser.js";
+
+// `mock.module` sobrevive al archivo y `mock.restore()` no lo deshace (medido
+// en Bun 1.3.11, banco `test-isolation-leaks-20260927T080507`): este mock
+// PARCIAL —sin `ARG_GATED_CMDLETS` ni `NEVER_SUGGEST`— rompía a
+// `dangerousCmdlets.test.ts` cuando corría después. Se guarda una COPIA del
+// módulo real antes de mockear y se repone al terminar el archivo.
+// Anulación, medida (`probe-powershell-sets.txt`): sin reponerlo, el archivo
+// siguiente ve los conjuntos del mock (12 y 4 entradas) en vez de los reales
+// (10 y 7); sin precargar el real, ni siquiera resuelve `NEVER_SUGGEST`.
+const realDangerousCmdlets = { ...(await import("@thyrox/shell/powershell/dangerousCmdlets.js")) };
+afterAll(() => {
+  mock.module("@thyrox/shell/powershell/dangerousCmdlets.js", () => realDangerousCmdlets);
+});
 
 // Mock clmTypes to avoid heavy dependency chain
 mock.module("@thyrox/shell/powershell/dangerousCmdlets.js", () => ({
