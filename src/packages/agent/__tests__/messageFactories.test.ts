@@ -9,15 +9,16 @@
  * Wrong UUID generation (or omitted timestamp) makes the chain
  * unparseable on resume.
  */
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
+import { installAgentHostBindings, type AgentHostBindings } from '../host.ts'
 import type { ToolResultBlockParam } from '../internal/messageFactories.js'
 
-// logForDebugging in messageFactories goes through host bindings which
-// aren't installed in test context. Stub the logging module so the
-// boundary-message factory doesn't crash on logForDebugging.
-mock.module('../internal/logging.js', () => ({
-  logForDebugging: () => {},
-}))
+// logForDebugging pasa por los bindings de host, que en un test no están
+// instalados. Se instala uno con `logDebug` vacío en vez de sustituir el
+// módulo de logging: `mock.module` es global al proceso de bun y seguía
+// vigente en los archivos siguientes — toolSearchEnabled.test.ts perdía su
+// línea de depuración y fallaba sólo dentro de la suite.
+installAgentHostBindings({ logDebug: () => {} } as unknown as AgentHostBindings)
 
 const {
   createAssistantAPIErrorMessage,
