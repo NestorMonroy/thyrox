@@ -1,0 +1,6 @@
+workbench-historical	/(".claude\/workbench\/", "HISTORICAL"),/d
+pm-before-source	/("source\/gestion\/pm\/", "HISTORICAL"),/d
+verdict-passes-all	s/return 0 if all(r.kind in PASSING_KINDS for r in refs) else 1/return 0/
+untracked	s/"-F", "--untracked", "-e"/"-F", "-e"/
+user-settings	s/candidates += \[(Path(path), None) for path in user_settings\]/pass/
+probe-strict	s/st_atime > PROBE_ATIME/st_atime >= PROBE_ATIME/

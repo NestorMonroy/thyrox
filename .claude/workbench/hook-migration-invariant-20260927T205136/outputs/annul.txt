@@ -1,0 +1,7 @@
+base	28 pass, 0 fail	—
+workbench-historical	26 pass, 2 fail	.claude/workbench/b/README.md | clases y rutas
+pm-before-source	27 pass, 1 fail	source/gestion/pm/thyrox/hallazgos/h.rst
+verdict-passes-all	26 pass, 2 fail	con una viva, no pasa | una sin clasificar tampoco pasa
+untracked	27 pass, 1 fail	clases y rutas
+user-settings	27 pass, 1 fail	dos rotos
+probe-strict	26 pass, 2 fail	tras sondear, nada cuenta como leído | sólo el leído cuenta
