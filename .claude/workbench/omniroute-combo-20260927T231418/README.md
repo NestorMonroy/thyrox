@@ -55,3 +55,26 @@ su almacén global.
   porque una estrategia desconocida da el mismo orden que el declarado; la
   diferencia es que no debe contar como combo, y eso afirma ahora su caso
   (`outputs/annul-server-combo-gap.out`).
+
+## Lo que no se porta, y cuándo habría que hacerlo
+
+Medido antes de decidirlo: `upstreamForwarder.ts` sólo reenvía a upstreams
+`raw` que hablan Messages de Anthropic, y las salidas en formato OpenAI de
+`/v1/chat/completions` las produce el traductor propio del proxy, no las
+pasa de un tercero.
+
+- **`handlers/responseSanitizer.ts`**: normaliza respuestas de upstreams
+  compatibles con OpenAI (campos fuera del estándar como `x_groq`, etiquetas
+  de razonamiento en el texto, uso y `finish_reason`). El proxy no tiene
+  upstreams de esa clase, así que no hay respuesta ajena que sanear.
+  Condición de reapertura: un upstream que hable chat completions de un
+  tercero.
+- **`services/contextHandoff.ts`**: tiene dos disparos. El de
+  `context-relay` depende del porcentaje de cuota consumido de una cuenta,
+  una telemetría que el proxy no tiene. El universal, al cambiar de modelo,
+  inyecta un resumen de la conversación; aquí el cliente manda la historia
+  entera en cada petición y, si no cabe en la ventana del modelo nuevo, la
+  comprime el gestor de contexto. El resumen no aportaría nada que la
+  petición no traiga ya, y costaría una llamada más al upstream por cada
+  cambio. Condición de reapertura: un cliente que mande sólo el último
+  turno, o una telemetría de cuota por cuenta.
