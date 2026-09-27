@@ -16,7 +16,7 @@ diferencia hay, medida?
   Con `afterAll` reinstalando el `logger` previo ve el no-op
   (`logger-leak-after.txt`).
 - **Bun no ejecuta los archivos en el orden de los argumentos.** Una primera
-  corrida pareció mostrar que el `logger` no se fugaba: la sonda había corrido
+  ejecución pareció mostrar que el `logger` no se fugaba: la sonda había corrido
   antes que el archivo que instalaba. Un control dentro del mismo archivo
   confirmó que la sonda detecta el capturador, y con tres archivos el orden
   observado fue c, b, a.
