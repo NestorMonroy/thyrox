@@ -1,1 +1,3 @@
-def repo_view(block, repo):
+if [[ ${#LINT[@]} -gt 0 ]]; then
+    python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
+fi
