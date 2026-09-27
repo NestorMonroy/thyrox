@@ -6,238 +6,297 @@
   "description": "Porte de @claude-code-how-works/mcp-runtime (ccnmt), TASK #232: runtime cliente/servidor del Model Context Protocol — pool de conexiones, lifecycle, aggregation de herramientas, OAuth y XAA. 36 de 49 modulos portados (medido: 67 .ts + 1 .tsx en src/ + 1 .ts en testing/ de ccnmt, menos tests) — este pase cierra testing/index.ts (InMemoryMcpRuntime, createInMemoryMcpRuntimeBindings): es una hoja sin dependencia de tool-registry (sólo cita McpRuntimeHostBindings, ya portado), a diferencia de los 13 de src/ que siguen bloqueados. Los 13 restantes, todos en src/, estan BLOQUEADOS por una sola causa raiz — el paquete @claude-code-how-works/tool-registry (y su /repl) no existe todavia en este arbol, ni directo ni via su sustituto local: utils.ts, clientRuntime.ts, channelAllowlist.ts, channelNotification.ts, vscodeSdkMcp.ts, xaa.ts, useManageMCPConnections.ts y MCPConnectionManager.tsx lo importan directo; auth.ts (2465 lineas) y config.ts (1604 lineas) dependen transitivamente via ./utils.js; mcpOutputStorage.ts y runtimeHostSetup.ts via ./clientRuntime.js; index.ts (barrel) via ./config.js. Sucesor nombrado: portar @thyrox/tool-registry primero. Ver el hallazgo de esta iniciativa para el detalle modulo a modulo y el defecto sistemico de import-crash que un pase anterior corrigio en 9 archivos.",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./normalization": {
+      "@thyrox/source": "./src/normalization.ts",
       "types": "./dist/src/normalization.d.ts",
       "default": "./src/normalization.ts"
     },
     "./sanitization": {
+      "@thyrox/source": "./src/sanitization.ts",
       "types": "./dist/src/sanitization.d.ts",
       "default": "./src/sanitization.ts"
     },
     "./secureStorageTypes": {
+      "@thyrox/source": "./src/secureStorageTypes.ts",
       "types": "./dist/src/secureStorageTypes.d.ts",
       "default": "./src/secureStorageTypes.ts"
     },
     "./appStateHooks": {
+      "@thyrox/source": "./src/appStateHooks.ts",
       "types": "./dist/src/appStateHooks.d.ts",
       "default": "./src/appStateHooks.ts"
     },
     "./reservedNames": {
+      "@thyrox/source": "./src/reservedNames.ts",
       "types": "./dist/src/reservedNames.d.ts",
       "default": "./src/reservedNames.ts"
     },
     "./envExpansion": {
+      "@thyrox/source": "./src/envExpansion.ts",
       "types": "./dist/src/envExpansion.d.ts",
       "default": "./src/envExpansion.ts"
     },
     "./host": {
+      "@thyrox/source": "./src/host.ts",
       "types": "./dist/src/host.d.ts",
       "default": "./src/host.ts"
     },
     "./api": {
+      "@thyrox/source": "./src/api.ts",
       "types": "./dist/src/api.d.ts",
       "default": "./src/api.ts"
     },
     "./client": {
+      "@thyrox/source": "./src/client.ts",
       "types": "./dist/src/client.d.ts",
       "default": "./src/client.ts"
     },
     "./compat": {
+      "@thyrox/source": "./src/compat.ts",
       "types": "./dist/src/compat.d.ts",
       "default": "./src/compat.ts"
     },
     "./client/authCache": {
+      "@thyrox/source": "./src/client/authCache.ts",
       "types": "./dist/src/client/authCache.d.ts",
       "default": "./src/client/authCache.ts"
     },
     "./client/transport": {
+      "@thyrox/source": "./src/client/transport.ts",
       "types": "./dist/src/client/transport.d.ts",
       "default": "./src/client/transport.ts"
     },
     "./client/discovery": {
+      "@thyrox/source": "./src/client/discovery.ts",
       "types": "./dist/src/client/discovery.d.ts",
       "default": "./src/client/discovery.ts"
     },
     "./client/auth": {
+      "@thyrox/source": "./src/client/auth.ts",
       "types": "./dist/src/client/auth.d.ts",
       "default": "./src/client/auth.ts"
     },
     "./InProcessTransport": {
+      "@thyrox/source": "./src/InProcessTransport.ts",
       "types": "./dist/src/InProcessTransport.d.ts",
       "default": "./src/InProcessTransport.ts"
     },
     "./SdkControlTransport": {
+      "@thyrox/source": "./src/SdkControlTransport.ts",
       "types": "./dist/src/SdkControlTransport.d.ts",
       "default": "./src/SdkControlTransport.ts"
     },
     "./channelPermissions": {
+      "@thyrox/source": "./src/channelPermissions.ts",
       "types": "./dist/src/channelPermissions.d.ts",
       "default": "./src/channelPermissions.ts"
     },
     "./claudeai": {
+      "@thyrox/source": "./src/claudeai.ts",
       "types": "./dist/src/claudeai.d.ts",
       "default": "./src/claudeai.ts"
     },
     "./dateTimeParser": {
+      "@thyrox/source": "./src/dateTimeParser.ts",
       "types": "./dist/src/dateTimeParser.d.ts",
       "default": "./src/dateTimeParser.ts"
     },
     "./elicitationHandler": {
+      "@thyrox/source": "./src/elicitationHandler.ts",
       "types": "./dist/src/elicitationHandler.d.ts",
       "default": "./src/elicitationHandler.ts"
     },
     "./elicitationValidation": {
+      "@thyrox/source": "./src/elicitationValidation.ts",
       "types": "./dist/src/elicitationValidation.d.ts",
       "default": "./src/elicitationValidation.ts"
     },
     "./headersHelper": {
+      "@thyrox/source": "./src/headersHelper.ts",
       "types": "./dist/src/headersHelper.d.ts",
       "default": "./src/headersHelper.ts"
     },
     "./macOsKeychainHelpers": {
+      "@thyrox/source": "./src/macOsKeychainHelpers.ts",
       "types": "./dist/src/macOsKeychainHelpers.d.ts",
       "default": "./src/macOsKeychainHelpers.ts"
     },
     "./mcpConnectionTelemetry": {
+      "@thyrox/source": "./src/mcpConnectionTelemetry.ts",
       "types": "./dist/src/mcpConnectionTelemetry.d.ts",
       "default": "./src/mcpConnectionTelemetry.ts"
     },
     "./mcpInstructionsDelta": {
+      "@thyrox/source": "./src/mcpInstructionsDelta.ts",
       "types": "./dist/src/mcpInstructionsDelta.d.ts",
       "default": "./src/mcpInstructionsDelta.ts"
     },
     "./mcpStringUtils": {
+      "@thyrox/source": "./src/mcpStringUtils.ts",
       "types": "./dist/src/mcpStringUtils.d.ts",
       "default": "./src/mcpStringUtils.ts"
     },
     "./mcpValidation": {
+      "@thyrox/source": "./src/mcpValidation.ts",
       "types": "./dist/src/mcpValidation.d.ts",
       "default": "./src/mcpValidation.ts"
     },
     "./mcpWebSocketTransport": {
+      "@thyrox/source": "./src/mcpWebSocketTransport.ts",
       "types": "./dist/src/mcpWebSocketTransport.d.ts",
       "default": "./src/mcpWebSocketTransport.ts"
     },
     "./oauthPort": {
+      "@thyrox/source": "./src/oauthPort.ts",
       "types": "./dist/src/oauthPort.d.ts",
       "default": "./src/oauthPort.ts"
     },
     "./officialRegistry": {
+      "@thyrox/source": "./src/officialRegistry.ts",
       "types": "./dist/src/officialRegistry.d.ts",
       "default": "./src/officialRegistry.ts"
     },
     "./roots": {
+      "@thyrox/source": "./src/roots.ts",
       "types": "./dist/src/roots.d.ts",
       "default": "./src/roots.ts"
     },
     "./types": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/src/types.d.ts",
       "default": "./src/types.ts"
     },
     "./xaaIdpLogin": {
+      "@thyrox/source": "./src/xaaIdpLogin.ts",
       "types": "./dist/src/xaaIdpLogin.d.ts",
       "default": "./src/xaaIdpLogin.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./MCPConnectionManager.js": {
+      "@thyrox/source": "./src/MCPConnectionManager.tsx",
       "types": "./dist/src/MCPConnectionManager.d.ts",
       "default": "./src/MCPConnectionManager.tsx"
     },
     "./auth.js": {
+      "@thyrox/source": "./src/auth.ts",
       "types": "./dist/src/auth.d.ts",
       "default": "./src/auth.ts"
     },
     "./channelAllowlist.js": {
+      "@thyrox/source": "./src/channelAllowlist.ts",
       "types": "./dist/src/channelAllowlist.d.ts",
       "default": "./src/channelAllowlist.ts"
     },
     "./channelNotification.js": {
+      "@thyrox/source": "./src/channelNotification.ts",
       "types": "./dist/src/channelNotification.d.ts",
       "default": "./src/channelNotification.ts"
     },
     "./channelPermissions.js": {
+      "@thyrox/source": "./src/channelPermissions.ts",
       "types": "./dist/src/channelPermissions.d.ts",
       "default": "./src/channelPermissions.ts"
     },
     "./claudeai.js": {
+      "@thyrox/source": "./src/claudeai.ts",
       "types": "./dist/src/claudeai.d.ts",
       "default": "./src/claudeai.ts"
     },
     "./clientRuntime.js": {
+      "@thyrox/source": "./src/clientRuntime.ts",
       "types": "./dist/src/clientRuntime.d.ts",
       "default": "./src/clientRuntime.ts"
     },
     "./config.js": {
+      "@thyrox/source": "./src/config.ts",
       "types": "./dist/src/config.d.ts",
       "default": "./src/config.ts"
     },
     "./elicitationHandler.js": {
+      "@thyrox/source": "./src/elicitationHandler.ts",
       "types": "./dist/src/elicitationHandler.d.ts",
       "default": "./src/elicitationHandler.ts"
     },
     "./elicitationValidation.js": {
+      "@thyrox/source": "./src/elicitationValidation.ts",
       "types": "./dist/src/elicitationValidation.d.ts",
       "default": "./src/elicitationValidation.ts"
     },
     "./envExpansion.js": {
+      "@thyrox/source": "./src/envExpansion.ts",
       "types": "./dist/src/envExpansion.d.ts",
       "default": "./src/envExpansion.ts"
     },
     "./macOsKeychainHelpers.js": {
+      "@thyrox/source": "./src/macOsKeychainHelpers.ts",
       "types": "./dist/src/macOsKeychainHelpers.d.ts",
       "default": "./src/macOsKeychainHelpers.ts"
     },
     "./mcpOutputStorage.js": {
+      "@thyrox/source": "./src/mcpOutputStorage.ts",
       "types": "./dist/src/mcpOutputStorage.d.ts",
       "default": "./src/mcpOutputStorage.ts"
     },
     "./mcpStringUtils.js": {
+      "@thyrox/source": "./src/mcpStringUtils.ts",
       "types": "./dist/src/mcpStringUtils.d.ts",
       "default": "./src/mcpStringUtils.ts"
     },
     "./mcpValidation.js": {
+      "@thyrox/source": "./src/mcpValidation.ts",
       "types": "./dist/src/mcpValidation.d.ts",
       "default": "./src/mcpValidation.ts"
     },
     "./normalization.js": {
+      "@thyrox/source": "./src/normalization.ts",
       "types": "./dist/src/normalization.d.ts",
       "default": "./src/normalization.ts"
     },
     "./runtimeHostSetup.js": {
+      "@thyrox/source": "./src/runtimeHostSetup.ts",
       "types": "./dist/src/runtimeHostSetup.d.ts",
       "default": "./src/runtimeHostSetup.ts"
     },
     "./sanitization.js": {
+      "@thyrox/source": "./src/sanitization.ts",
       "types": "./dist/src/sanitization.d.ts",
       "default": "./src/sanitization.ts"
     },
     "./types.js": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/src/types.d.ts",
       "default": "./src/types.ts"
     },
     "./utils.js": {
+      "@thyrox/source": "./src/utils.ts",
       "types": "./dist/src/utils.d.ts",
       "default": "./src/utils.ts"
     },
     "./vscodeSdkMcp.js": {
+      "@thyrox/source": "./src/vscodeSdkMcp.ts",
       "types": "./dist/src/vscodeSdkMcp.d.ts",
       "default": "./src/vscodeSdkMcp.ts"
     },
     "./xaaIdpLogin.js": {
+      "@thyrox/source": "./src/xaaIdpLogin.ts",
       "types": "./dist/src/xaaIdpLogin.d.ts",
       "default": "./src/xaaIdpLogin.ts"
     }
@@ -272,5 +331,6 @@
   },
   "devDependencies": {
     "@types/ws": "^8.18.1"
-  }
+  },
+  "types": "./dist/src/index.d.ts"
 }

@@ -8,54 +8,67 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./agentSdkTypes.js": {
+      "@thyrox/source": "./src/agentSdkTypes.ts",
       "types": "./dist/src/agentSdkTypes.d.ts",
       "default": "./src/agentSdkTypes.ts"
     },
     "./controlMessageCompat": {
+      "@thyrox/source": "./src/controlMessageCompat.ts",
       "types": "./dist/src/controlMessageCompat.d.ts",
       "default": "./src/controlMessageCompat.ts"
     },
     "./controlTypes.js": {
+      "@thyrox/source": "./src/controlTypes.ts",
       "types": "./dist/src/controlTypes.d.ts",
       "default": "./src/controlTypes.ts"
     },
     "./sdkMemorySummary.js": {
+      "@thyrox/source": "./src/sdkMemorySummary.ts",
       "types": "./dist/src/sdkMemorySummary.d.ts",
       "default": "./src/sdkMemorySummary.ts"
     },
     "./sdkUtilityTypes.js": {
+      "@thyrox/source": "./src/sdkUtilityTypes.ts",
       "types": "./dist/src/sdkUtilityTypes.d.ts",
       "default": "./src/sdkUtilityTypes.ts"
     },
     "./runtimeTypes.js": {
+      "@thyrox/source": "./src/runtimeTypes.ts",
       "types": "./dist/src/runtimeTypes.d.ts",
       "default": "./src/runtimeTypes.ts"
     },
     "./coreTypes.js": {
+      "@thyrox/source": "./src/coreTypes.ts",
       "types": "./dist/src/coreTypes.d.ts",
       "default": "./src/coreTypes.ts"
     },
     "./coreSchemas.js": {
+      "@thyrox/source": "./src/coreSchemas.ts",
       "types": "./dist/src/coreSchemas.d.ts",
       "default": "./src/coreSchemas.ts"
     },
     "./controlSchemas.js": {
+      "@thyrox/source": "./src/controlSchemas.ts",
       "types": "./dist/src/controlSchemas.d.ts",
       "default": "./src/controlSchemas.ts"
     },
     "./agentSdkTypes": {
+      "@thyrox/source": "./src/agentSdkTypes.ts",
       "types": "./dist/src/agentSdkTypes.d.ts",
       "default": "./src/agentSdkTypes.ts"
     }

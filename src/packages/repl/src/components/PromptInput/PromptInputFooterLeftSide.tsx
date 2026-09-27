@@ -56,6 +56,10 @@ import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { getPlatform } from '@thyrox/config/platform'
 import { PrBadge } from '../PrBadge.js'
 
+// Componente interno de Anthropic que el build de código abierto elimina; aquí
+// sólo se nombra dentro de una rama muerta. Se declara en su único usuario.
+declare function TungstenPill(props?: { key?: string; selected?: boolean }): React.ReactElement | null
+
 // Dead code elimination: conditional import for proactive mode
 /* eslint-disable @typescript-eslint/no-require-imports */
 const proactiveModule =

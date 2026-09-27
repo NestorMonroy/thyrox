@@ -92,6 +92,7 @@ def make_package(root, name, main_dir):
     # ellos no puede fallar por la causa que importa — y no fallo.
     (pkg / "package.json").write_text(json.dumps({
         "name": f"@probe/{name}", "version": "1.0.0", "private": True,
+        "description": "Adaptación — porte con acentos",
         "main": entry, "types": entry,
         "exports": {
             ".": entry,
@@ -248,6 +249,28 @@ def main():
               "./src/index.ts", entry.get("default"))
         check("el types de raiz tambien, para el resolutor que no lee exports",
               "./dist/index.d.ts", manifest.get("types"))
+
+        # Caso 8-cuater — la condicion `source`, PRIMERA. Con `dist/` presente,
+        # la raiz resolvia un paquete a su declaracion y otro a su fuente, y
+        # la misma clase quedaba con dos identidades ("separate declarations
+        # of a private property", 50 errores medidos). La raiz activa
+        # `customConditions: ["source"]` y compila siempre la fuente; un
+        # consumidor sin esa condicion la ignora y ve `types`. El orden de
+        # claves ES la precedencia, asi que se exige que vaya primera.
+        check("la condicion @thyrox/source apunta a la fuente",
+              "./src/index.ts", entry.get("@thyrox/source"))
+        check("y va primera: el orden de claves es la precedencia",
+              "@thyrox/source", next(iter(entry), None))
+        # Con el nombre desnudo `source` la raiz tambien activaba la de
+        # `node_modules/eventsource`, que publica la misma condicion hacia su
+        # `.ts`, y `skipLibCheck` no cubre un `.ts`: un error ajeno medido.
+
+        # Caso 8-quinto — el repunte reescribe el manifiesto entero, y no
+        # debe tocar lo que no repunta. Con `ensure_ascii` por defecto cada
+        # acento de una descripcion salia como `ó`: 7 de 42 manifiestos
+        # reales cambiaban su texto sin que nadie lo pidiera.
+        check("el texto no ASCII sobrevive verbatim al repunte", True,
+              "Adaptación" in (pkg / "package.json").read_text(encoding="utf8"))
 
         # Caso 8-bis — EL QUE DE VERDAD DISCRIMINA. Repuntar SOLO la raiz deja
         # el cambio inerte: los consumidores entran por subpath. Medido sobre
@@ -595,6 +618,21 @@ def main():
                   1, measured.own_errors)
             check(f"[{form}] y el hermano se le atribuye a el",
                   2, measured.sibling_errors)
+
+    # --- los globales de construccion viajan al proyecto de cada paquete ---
+    #
+    # `MACRO` lo inyecta Bun al construir y su declaracion vivia SOLO en
+    # `cli/src/types/global.d.ts`. En la raiz compila porque ese archivo cae en
+    # el mismo programa; en el proyecto de un paquete no, y 26 de los errores
+    # propios medidos (storage, permission, bridge, …) eran `Cannot find name
+    # 'MACRO'`: una dependencia oculta del paquete `cli`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        pkg = make_package(root, "usa-macro", "src")
+        (pkg / "src" / "index.ts").write_text("export const version: string = MACRO.VERSION\n")
+        result = mod.check_package(pkg)
+        check("un paquete que usa MACRO no da error propio", 0, result.own_errors)
+        check("y el conteo total tampoco lo trae", False, "MACRO" in result.output)
 
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0

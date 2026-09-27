@@ -4,6 +4,7 @@
     "target": "ESNext",
     "module": "Preserve",
     "moduleResolution": "bundler",
+    "customConditions": ["@thyrox/source"],
     "types": ["bun"],
     "strict": true,
     "noUncheckedIndexedAccess": true,

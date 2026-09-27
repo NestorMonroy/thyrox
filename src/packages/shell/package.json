@@ -8,246 +8,307 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./process.js": {
+      "@thyrox/source": "./src/process.ts",
       "types": "./dist/process.d.ts",
       "default": "./src/process.ts"
     },
     "./subprocessEnv.js": {
+      "@thyrox/source": "./src/subprocessEnv.ts",
       "types": "./dist/subprocessEnv.d.ts",
       "default": "./src/subprocessEnv.ts"
     },
     "./bash/heredoc.js": {
+      "@thyrox/source": "./src/bash/heredoc.ts",
       "types": "./dist/bash/heredoc.d.ts",
       "default": "./src/bash/heredoc.ts"
     },
     "./bash/registry.js": {
+      "@thyrox/source": "./src/bash/registry.ts",
       "types": "./dist/bash/registry.d.ts",
       "default": "./src/bash/registry.ts"
     },
     "./bash/shellPrefix.js": {
+      "@thyrox/source": "./src/bash/shellPrefix.ts",
       "types": "./dist/bash/shellPrefix.d.ts",
       "default": "./src/bash/shellPrefix.ts"
     },
     "./bash/shellQuote.js": {
+      "@thyrox/source": "./src/bash/shellQuote.ts",
       "types": "./dist/bash/shellQuote.d.ts",
       "default": "./src/bash/shellQuote.ts"
     },
     "./bash/shellQuoting.js": {
+      "@thyrox/source": "./src/bash/shellQuoting.ts",
       "types": "./dist/bash/shellQuoting.d.ts",
       "default": "./src/bash/shellQuoting.ts"
     },
     "./bash/internal.js": {
+      "@thyrox/source": "./src/bash/internal.ts",
       "types": "./dist/bash/internal.d.ts",
       "default": "./src/bash/internal.ts"
     },
     "./bash/unicodeDashes.js": {
+      "@thyrox/source": "./src/bash/unicodeDashes.ts",
       "types": "./dist/bash/unicodeDashes.d.ts",
       "default": "./src/bash/unicodeDashes.ts"
     },
     "./bash/specs/index.js": {
+      "@thyrox/source": "./src/bash/specs/index.ts",
       "types": "./dist/bash/specs/index.d.ts",
       "default": "./src/bash/specs/index.ts"
     },
     "./execFileNoThrow.js": {
+      "@thyrox/source": "./src/execFileNoThrow.ts",
       "types": "./dist/execFileNoThrow.d.ts",
       "default": "./src/execFileNoThrow.ts"
     },
     "./execFileNoThrowPortable.js": {
+      "@thyrox/source": "./src/execFileNoThrowPortable.ts",
       "types": "./dist/execFileNoThrowPortable.d.ts",
       "default": "./src/execFileNoThrowPortable.ts"
     },
     "./genericProcessUtils.js": {
+      "@thyrox/source": "./src/genericProcessUtils.ts",
       "types": "./dist/genericProcessUtils.d.ts",
       "default": "./src/genericProcessUtils.ts"
     },
     "./which.js": {
+      "@thyrox/source": "./src/which.ts",
       "types": "./dist/which.d.ts",
       "default": "./src/which.ts"
     },
     "./errors.js": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./types.js": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/types.d.ts",
       "default": "./src/types.ts"
     },
     "./context.js": {
+      "@thyrox/source": "./src/context.ts",
       "types": "./dist/context.d.ts",
       "default": "./src/context.ts"
     },
     "./findExecutable.js": {
+      "@thyrox/source": "./src/findExecutable.ts",
       "types": "./dist/findExecutable.d.ts",
       "default": "./src/findExecutable.ts"
     },
     "./immediateCommand.js": {
+      "@thyrox/source": "./src/immediateCommand.ts",
       "types": "./dist/immediateCommand.d.ts",
       "default": "./src/immediateCommand.ts"
     },
     "./commandLifecycle.js": {
+      "@thyrox/source": "./src/commandLifecycle.ts",
       "types": "./dist/commandLifecycle.d.ts",
       "default": "./src/commandLifecycle.ts"
     },
     "./taskOutputPort.js": {
+      "@thyrox/source": "./src/taskOutputPort.ts",
       "types": "./dist/taskOutputPort.d.ts",
       "default": "./src/taskOutputPort.ts"
     },
     "./execSyncWrapper.js": {
+      "@thyrox/source": "./src/execSyncWrapper.ts",
       "types": "./dist/execSyncWrapper.d.ts",
       "default": "./src/execSyncWrapper.ts"
     },
     "./sandboxUiUtils.js": {
+      "@thyrox/source": "./src/sandboxUiUtils.ts",
       "types": "./dist/sandboxUiUtils.d.ts",
       "default": "./src/sandboxUiUtils.ts"
     },
     "./sandbox/sandboxRipgrepResolver.js": {
+      "@thyrox/source": "./src/sandbox/sandboxRipgrepResolver.ts",
       "types": "./dist/sandbox/sandboxRipgrepResolver.d.ts",
       "default": "./src/sandbox/sandboxRipgrepResolver.ts"
     },
     "./terminal/iTermBackup.js": {
+      "@thyrox/source": "./src/terminal/iTermBackup.ts",
       "types": "./dist/terminal/iTermBackup.d.ts",
       "default": "./src/terminal/iTermBackup.ts"
     },
     "./terminal/appleTerminalBackup.js": {
+      "@thyrox/source": "./src/terminal/appleTerminalBackup.ts",
       "types": "./dist/terminal/appleTerminalBackup.d.ts",
       "default": "./src/terminal/appleTerminalBackup.ts"
     },
     "./providers/outputLimits.js": {
+      "@thyrox/source": "./src/providers/outputLimits.ts",
       "types": "./dist/providers/outputLimits.d.ts",
       "default": "./src/providers/outputLimits.ts"
     },
     "./providers/resolveDefaultShell.js": {
+      "@thyrox/source": "./src/providers/resolveDefaultShell.ts",
       "types": "./dist/providers/resolveDefaultShell.d.ts",
       "default": "./src/providers/resolveDefaultShell.ts"
     },
     "./providers/shellToolUtils.js": {
+      "@thyrox/source": "./src/providers/shellToolUtils.ts",
       "types": "./dist/providers/shellToolUtils.d.ts",
       "default": "./src/providers/shellToolUtils.ts"
     },
     "./providers/shellProvider.js": {
+      "@thyrox/source": "./src/providers/shellProvider.ts",
       "types": "./dist/providers/shellProvider.d.ts",
       "default": "./src/providers/shellProvider.ts"
     },
     "./providers/powershellDetection.js": {
+      "@thyrox/source": "./src/providers/powershellDetection.ts",
       "types": "./dist/providers/powershellDetection.d.ts",
       "default": "./src/providers/powershellDetection.ts"
     },
     "./providers/powershellProvider.js": {
+      "@thyrox/source": "./src/providers/powershellProvider.ts",
       "types": "./dist/providers/powershellProvider.d.ts",
       "default": "./src/providers/powershellProvider.ts"
     },
     "./legacy/outputLimits.js": {
+      "@thyrox/source": "./src/legacy/outputLimits.ts",
       "types": "./dist/legacy/outputLimits.d.ts",
       "default": "./src/legacy/outputLimits.ts"
     },
     "./legacy/resolveDefaultShell.js": {
+      "@thyrox/source": "./src/legacy/resolveDefaultShell.ts",
       "types": "./dist/legacy/resolveDefaultShell.d.ts",
       "default": "./src/legacy/resolveDefaultShell.ts"
     },
     "./legacy/shellToolUtils.js": {
+      "@thyrox/source": "./src/legacy/shellToolUtils.ts",
       "types": "./dist/legacy/shellToolUtils.d.ts",
       "default": "./src/legacy/shellToolUtils.ts"
     },
     "./legacy/shellProvider.js": {
+      "@thyrox/source": "./src/legacy/shellProvider.ts",
       "types": "./dist/legacy/shellProvider.d.ts",
       "default": "./src/legacy/shellProvider.ts"
     },
     "./legacy/powershellDetection.js": {
+      "@thyrox/source": "./src/legacy/powershellDetection.ts",
       "types": "./dist/legacy/powershellDetection.d.ts",
       "default": "./src/legacy/powershellDetection.ts"
     },
     "./legacy/powershellProvider.js": {
+      "@thyrox/source": "./src/legacy/powershellProvider.ts",
       "types": "./dist/legacy/powershellProvider.d.ts",
       "default": "./src/legacy/powershellProvider.ts"
     },
     "./testing": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./testing.js": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./bash/specs": {
+      "@thyrox/source": "./src/bash/specs/index.ts",
       "types": "./dist/bash/specs/index.d.ts",
       "default": "./src/bash/specs/index.ts"
     },
     "./Shell.js": {
+      "@thyrox/source": "./src/Shell.ts",
       "types": "./dist/Shell.d.ts",
       "default": "./src/Shell.ts"
     },
     "./bash/ParsedCommand.js": {
+      "@thyrox/source": "./src/bash/ParsedCommand.ts",
       "types": "./dist/bash/ParsedCommand.d.ts",
       "default": "./src/bash/ParsedCommand.ts"
     },
     "./bash/ast-alias.js": {
+      "@thyrox/source": "./src/bash/ast-alias.ts",
       "types": "./dist/bash/ast-alias.d.ts",
       "default": "./src/bash/ast-alias.ts"
     },
     "./bash/commands.js": {
+      "@thyrox/source": "./src/bash/commands.ts",
       "types": "./dist/bash/commands.d.ts",
       "default": "./src/bash/commands.ts"
     },
     "./bash/parser.js": {
+      "@thyrox/source": "./src/bash/parser.ts",
       "types": "./dist/bash/parser.d.ts",
       "default": "./src/bash/parser.ts"
     },
     "./bash/prefix.js": {
+      "@thyrox/source": "./src/bash/prefix.ts",
       "types": "./dist/bash/prefix.d.ts",
       "default": "./src/bash/prefix.ts"
     },
     "./bash/shellCompletion.js": {
+      "@thyrox/source": "./src/bash/shellCompletion.ts",
       "types": "./dist/bash/shellCompletion.d.ts",
       "default": "./src/bash/shellCompletion.ts"
     },
     "./bash/treeSitterAnalysis.js": {
+      "@thyrox/source": "./src/bash/treeSitterAnalysis.ts",
       "types": "./dist/bash/treeSitterAnalysis.d.ts",
       "default": "./src/bash/treeSitterAnalysis.ts"
     },
     "./collapseBackgroundBashNotifications.js": {
+      "@thyrox/source": "./src/collapseBackgroundBashNotifications.ts",
       "types": "./dist/collapseBackgroundBashNotifications.d.ts",
       "default": "./src/collapseBackgroundBashNotifications.ts"
     },
     "./legacy/readOnlyCommandValidation.js": {
+      "@thyrox/source": "./src/legacy/readOnlyCommandValidation.ts",
       "types": "./dist/legacy/readOnlyCommandValidation.d.ts",
       "default": "./src/legacy/readOnlyCommandValidation.ts"
     },
     "./powershell/dangerousCmdlets.js": {
+      "@thyrox/source": "./src/powershell/dangerousCmdlets.ts",
       "types": "./dist/powershell/dangerousCmdlets.d.ts",
       "default": "./src/powershell/dangerousCmdlets.ts"
     },
     "./powershell/parser.js": {
+      "@thyrox/source": "./src/powershell/parser.ts",
       "types": "./dist/powershell/parser.d.ts",
       "default": "./src/powershell/parser.ts"
     },
     "./powershell/staticPrefix.js": {
+      "@thyrox/source": "./src/powershell/staticPrefix.ts",
       "types": "./dist/powershell/staticPrefix.d.ts",
       "default": "./src/powershell/staticPrefix.ts"
     },
     "./sandbox.js": {
+      "@thyrox/source": "./src/sandbox.ts",
       "types": "./dist/sandbox.d.ts",
       "default": "./src/sandbox.ts"
     },
     "./sandbox/sandbox-adapter.js": {
+      "@thyrox/source": "./src/sandbox/sandbox-adapter.ts",
       "types": "./dist/sandbox/sandbox-adapter.d.ts",
       "default": "./src/sandbox/sandbox-adapter.ts"
     },
     "./shellCommand.js": {
+      "@thyrox/source": "./src/shellCommand.ts",
       "types": "./dist/shellCommand.d.ts",
       "default": "./src/shellCommand.ts"
     },
     "./shellConfig.js": {
+      "@thyrox/source": "./src/shellConfig.ts",
       "types": "./dist/shellConfig.d.ts",
       "default": "./src/shellConfig.ts"
     },
     "./terminal/ShellCommand.js": {
+      "@thyrox/source": "./src/terminal/ShellCommand.ts",
       "types": "./dist/terminal/ShellCommand.d.ts",
       "default": "./src/terminal/ShellCommand.ts"
     },
     "./terminal/terminalPanel.js": {
+      "@thyrox/source": "./src/terminal/terminalPanel.ts",
       "types": "./dist/terminal/terminalPanel.d.ts",
       "default": "./src/terminal/terminalPanel.ts"
     }

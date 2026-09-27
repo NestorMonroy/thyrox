@@ -42,182 +42,227 @@
   },
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./context/fpsMetrics": {
+      "@thyrox/source": "./src/context/fpsMetrics.tsx",
       "types": "./dist/context/fpsMetrics.d.ts",
       "default": "./src/context/fpsMetrics.tsx"
     },
     "./context/mailbox": {
+      "@thyrox/source": "./src/context/mailbox.tsx",
       "types": "./dist/context/mailbox.d.ts",
       "default": "./src/context/mailbox.tsx"
     },
     "./context/notifications": {
+      "@thyrox/source": "./src/context/notifications.tsx",
       "types": "./dist/context/notifications.d.ts",
       "default": "./src/context/notifications.tsx"
     },
     "./context/stats": {
+      "@thyrox/source": "./src/context/stats.tsx",
       "types": "./dist/context/stats.d.ts",
       "default": "./src/context/stats.tsx"
     },
     "./launchRepl": {
+      "@thyrox/source": "./src/launchRepl.tsx",
       "types": "./dist/launchRepl.d.ts",
       "default": "./src/launchRepl.tsx"
     },
     "./state/AppState": {
+      "@thyrox/source": "./src/state/AppState.tsx",
       "types": "./dist/state/AppState.d.ts",
       "default": "./src/state/AppState.tsx"
     },
     "./cliArgs.js": {
+      "@thyrox/source": "./src/cliArgs.ts",
       "types": "./dist/cliArgs.d.ts",
       "default": "./src/cliArgs.ts"
     },
     "./activityManager.js": {
+      "@thyrox/source": "./src/activityManager.ts",
       "types": "./dist/activityManager.d.ts",
       "default": "./src/activityManager.ts"
     },
     "./state/sessionSelectors.js": {
+      "@thyrox/source": "./src/state/sessionSelectors.ts",
       "types": "./dist/state/sessionSelectors.d.ts",
       "default": "./src/state/sessionSelectors.ts"
     },
     "./state/hostSessionState.js": {
+      "@thyrox/source": "./src/state/hostSessionState.ts",
       "types": "./dist/state/hostSessionState.d.ts",
       "default": "./src/state/hostSessionState.ts"
     },
     "./state/AppStateStore.js": {
+      "@thyrox/source": "./src/state/AppStateStore.ts",
       "types": "./dist/state/AppStateStore.d.ts",
       "default": "./src/state/AppStateStore.ts"
     },
     "./state/store.js": {
+      "@thyrox/source": "./src/state/store.ts",
       "types": "./dist/state/store.d.ts",
       "default": "./src/state/store.ts"
     },
     "./state/AppState.js": {
+      "@thyrox/source": "./src/state/AppState.tsx",
       "types": "./dist/state/AppState.d.ts",
       "default": "./src/state/AppState.tsx"
     },
     "./state/uiSelectors.js": {
+      "@thyrox/source": "./src/state/uiSelectors.ts",
       "types": "./dist/state/uiSelectors.d.ts",
       "default": "./src/state/uiSelectors.ts"
     },
     "./state/pluginSelectors.js": {
+      "@thyrox/source": "./src/state/pluginSelectors.ts",
       "types": "./dist/state/pluginSelectors.d.ts",
       "default": "./src/state/pluginSelectors.ts"
     },
     "./state/teamSelectors.js": {
+      "@thyrox/source": "./src/state/teamSelectors.ts",
       "types": "./dist/state/teamSelectors.d.ts",
       "default": "./src/state/teamSelectors.ts"
     },
     "./state/taskSelectors.js": {
+      "@thyrox/source": "./src/state/taskSelectors.ts",
       "types": "./dist/state/taskSelectors.d.ts",
       "default": "./src/state/taskSelectors.ts"
     },
     "./state/permissionSelectors.js": {
+      "@thyrox/source": "./src/state/permissionSelectors.ts",
       "types": "./dist/state/permissionSelectors.d.ts",
       "default": "./src/state/permissionSelectors.ts"
     },
     "./state/mcpSelectors.js": {
+      "@thyrox/source": "./src/state/mcpSelectors.ts",
       "types": "./dist/state/mcpSelectors.d.ts",
       "default": "./src/state/mcpSelectors.ts"
     },
     "./state/selectors.js": {
+      "@thyrox/source": "./src/state/selectors.ts",
       "types": "./dist/state/selectors.d.ts",
       "default": "./src/state/selectors.ts"
     },
     "./context/fpsMetrics.js": {
+      "@thyrox/source": "./src/context/fpsMetrics.tsx",
       "types": "./dist/context/fpsMetrics.d.ts",
       "default": "./src/context/fpsMetrics.tsx"
     },
     "./context/mailbox.js": {
+      "@thyrox/source": "./src/context/mailbox.tsx",
       "types": "./dist/context/mailbox.d.ts",
       "default": "./src/context/mailbox.tsx"
     },
     "./context/notifications.js": {
+      "@thyrox/source": "./src/context/notifications.tsx",
       "types": "./dist/context/notifications.d.ts",
       "default": "./src/context/notifications.tsx"
     },
     "./context/stats.js": {
+      "@thyrox/source": "./src/context/stats.tsx",
       "types": "./dist/context/stats.d.ts",
       "default": "./src/context/stats.tsx"
     },
     "./launchRepl.js": {
+      "@thyrox/source": "./src/launchRepl.tsx",
       "types": "./dist/launchRepl.d.ts",
       "default": "./src/launchRepl.tsx"
     },
     "./context/QueuedMessageContext.js": {
+      "@thyrox/source": "./src/context/QueuedMessageContext.tsx",
       "types": "./dist/context/QueuedMessageContext.d.ts",
       "default": "./src/context/QueuedMessageContext.tsx"
     },
     "./bootstrap/cleanupRegistry.js": {
+      "@thyrox/source": "./src/bootstrap/cleanupRegistry.ts",
       "types": "./dist/bootstrap/cleanupRegistry.d.ts",
       "default": "./src/bootstrap/cleanupRegistry.ts"
     },
     "./bootstrap/cwd.js": {
+      "@thyrox/source": "./src/bootstrap/cwd.ts",
       "types": "./dist/bootstrap/cwd.d.ts",
       "default": "./src/bootstrap/cwd.ts"
     },
     "./bootstrap/gracefulShutdown.js": {
+      "@thyrox/source": "./src/bootstrap/gracefulShutdown.ts",
       "types": "./dist/bootstrap/gracefulShutdown.d.ts",
       "default": "./src/bootstrap/gracefulShutdown.ts"
     },
     "./bootstrap/state.js": {
+      "@thyrox/source": "./src/bootstrap/state.ts",
       "types": "./dist/bootstrap/state.d.ts",
       "default": "./src/bootstrap/state.ts"
     },
     "./heapDumpService.js": {
+      "@thyrox/source": "./src/heapDumpService.ts",
       "types": "./dist/heapDumpService.d.ts",
       "default": "./src/heapDumpService.ts"
     },
     "./init.js": {
+      "@thyrox/source": "./src/init.ts",
       "types": "./dist/init.d.ts",
       "default": "./src/init.ts"
     },
     "./main/startup/context.js": {
+      "@thyrox/source": "./src/main/startup/context.ts",
       "types": "./dist/main/startup/context.d.ts",
       "default": "./src/main/startup/context.ts"
     },
     "./main/startup/settings.js": {
+      "@thyrox/source": "./src/main/startup/settings.ts",
       "types": "./dist/main/startup/settings.d.ts",
       "default": "./src/main/startup/settings.ts"
     },
     "./providerHostSetup.js": {
+      "@thyrox/source": "./src/providerHostSetup.ts",
       "types": "./dist/providerHostSetup.d.ts",
       "default": "./src/providerHostSetup.ts"
     },
     "./runtime/appStateCompatShim.js": {
+      "@thyrox/source": "./src/runtime/appStateCompatShim.ts",
       "types": "./dist/runtime/appStateCompatShim.d.ts",
       "default": "./src/runtime/appStateCompatShim.ts"
     },
     "./runtime/bootstrap.js": {
+      "@thyrox/source": "./src/runtime/bootstrap.ts",
       "types": "./dist/runtime/bootstrap.d.ts",
       "default": "./src/runtime/bootstrap.ts"
     },
     "./runtime/commandRegistryRuntime.js": {
+      "@thyrox/source": "./src/runtime/commandRegistryRuntime.ts",
       "types": "./dist/runtime/commandRegistryRuntime.d.ts",
       "default": "./src/runtime/commandRegistryRuntime.ts"
     },
     "./runtime/installCommandRuntimeBindings.js": {
+      "@thyrox/source": "./src/runtime/installCommandRuntimeBindings.ts",
       "types": "./dist/runtime/installCommandRuntimeBindings.d.ts",
       "default": "./src/runtime/installCommandRuntimeBindings.ts"
     },
     "./runtime/runtimeHandles.js": {
+      "@thyrox/source": "./src/runtime/runtimeHandles.ts",
       "types": "./dist/runtime/runtimeHandles.d.ts",
       "default": "./src/runtime/runtimeHandles.ts"
     },
     "./startup/ghAuthStatus.js": {
+      "@thyrox/source": "./src/startup/ghAuthStatus.ts",
       "types": "./dist/startup/ghAuthStatus.d.ts",
       "default": "./src/startup/ghAuthStatus.ts"
     },
     "./startup/profilerBase.js": {
+      "@thyrox/source": "./src/startup/profilerBase.ts",
       "types": "./dist/startup/profilerBase.d.ts",
       "default": "./src/startup/profilerBase.ts"
     },
     "./startup/startupProfiler.js": {
+      "@thyrox/source": "./src/startup/startupProfiler.ts",
       "types": "./dist/startup/startupProfiler.d.ts",
       "default": "./src/startup/startupProfiler.ts"
     }

@@ -7,18 +7,22 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./keybindings": {
+      "@thyrox/source": "./src/keybindings/index.ts",
       "types": "./dist/keybindings/index.d.ts",
       "default": "./src/keybindings/index.ts"
     },
     "./search": {
+      "@thyrox/source": "./src/search/index.ts",
       "types": "./dist/search/index.d.ts",
       "default": "./src/search/index.ts"
     },
     "./vim": {
+      "@thyrox/source": "./src/vim/index.ts",
       "types": "./dist/vim/index.d.ts",
       "default": "./src/vim/index.ts"
     }

@@ -8,58 +8,72 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./ide.js": {
+      "@thyrox/source": "./src/ide.ts",
       "types": "./dist/src/ide.d.ts",
       "default": "./src/ide.ts"
     },
     "./hooks/useIDEIntegration": {
+      "@thyrox/source": "./src/hooks/useIDEIntegration.tsx",
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
     "./hooks/useIDEIntegration.js": {
+      "@thyrox/source": "./src/hooks/useIDEIntegration.tsx",
       "types": "./dist/src/hooks/useIDEIntegration.d.ts",
       "default": "./src/hooks/useIDEIntegration.tsx"
     },
     "./hooks/useDiffInIDE.js": {
+      "@thyrox/source": "./src/hooks/useDiffInIDE.ts",
       "types": "./dist/src/hooks/useDiffInIDE.d.ts",
       "default": "./src/hooks/useDiffInIDE.ts"
     },
     "./hooks/useIdeAtMentioned.js": {
+      "@thyrox/source": "./src/hooks/useIdeAtMentioned.ts",
       "types": "./dist/src/hooks/useIdeAtMentioned.d.ts",
       "default": "./src/hooks/useIdeAtMentioned.ts"
     },
     "./hooks/useIdeConnectionStatus.js": {
+      "@thyrox/source": "./src/hooks/useIdeConnectionStatus.ts",
       "types": "./dist/src/hooks/useIdeConnectionStatus.d.ts",
       "default": "./src/hooks/useIdeConnectionStatus.ts"
     },
     "./hooks/useIdeLogging.js": {
+      "@thyrox/source": "./src/hooks/useIdeLogging.ts",
       "types": "./dist/src/hooks/useIdeLogging.d.ts",
       "default": "./src/hooks/useIdeLogging.ts"
     },
     "./hooks/useIdeSelection.js": {
+      "@thyrox/source": "./src/hooks/useIdeSelection.ts",
       "types": "./dist/src/hooks/useIdeSelection.d.ts",
       "default": "./src/hooks/useIdeSelection.ts"
     },
     "./lsp/LSPDiagnosticRegistry.js": {
+      "@thyrox/source": "./src/lsp/LSPDiagnosticRegistry.ts",
       "types": "./dist/src/lsp/LSPDiagnosticRegistry.d.ts",
       "default": "./src/lsp/LSPDiagnosticRegistry.ts"
     },
     "./lsp/manager.js": {
+      "@thyrox/source": "./src/lsp/manager.ts",
       "types": "./dist/src/lsp/manager.d.ts",
       "default": "./src/lsp/manager.ts"
     }

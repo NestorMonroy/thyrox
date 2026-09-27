@@ -8,74 +8,92 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/src/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/src/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/src/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./testing/index.ts"
     },
     "./upstreamproxy/upstreamproxy.js": {
+      "@thyrox/source": "./src/upstreamproxy/upstreamproxy.ts",
       "types": "./dist/src/upstreamproxy/upstreamproxy.d.ts",
       "default": "./src/upstreamproxy/upstreamproxy.ts"
     },
     "./backends/dangerousBackend.js": {
+      "@thyrox/source": "./src/backends/dangerousBackend.ts",
       "types": "./dist/src/backends/dangerousBackend.d.ts",
       "default": "./src/backends/dangerousBackend.ts"
     },
     "./connectHeadless.js": {
+      "@thyrox/source": "./src/connectHeadless.ts",
       "types": "./dist/src/connectHeadless.d.ts",
       "default": "./src/connectHeadless.ts"
     },
     "./createDirectConnectSession.js": {
+      "@thyrox/source": "./src/createDirectConnectSession.ts",
       "types": "./dist/src/createDirectConnectSession.d.ts",
       "default": "./src/createDirectConnectSession.ts"
     },
     "./directConnectManager.js": {
+      "@thyrox/source": "./src/directConnectManager.ts",
       "types": "./dist/src/directConnectManager.d.ts",
       "default": "./src/directConnectManager.ts"
     },
     "./lockfile.js": {
+      "@thyrox/source": "./src/lockfile.ts",
       "types": "./dist/src/lockfile.d.ts",
       "default": "./src/lockfile.ts"
     },
     "./parseConnectUrl.js": {
+      "@thyrox/source": "./src/parseConnectUrl.ts",
       "types": "./dist/src/parseConnectUrl.d.ts",
       "default": "./src/parseConnectUrl.ts"
     },
     "./remote/RemoteSessionManager.js": {
+      "@thyrox/source": "./src/remote/RemoteSessionManager.ts",
       "types": "./dist/src/remote/RemoteSessionManager.d.ts",
       "default": "./src/remote/RemoteSessionManager.ts"
     },
     "./remote/remotePermissionBridge.js": {
+      "@thyrox/source": "./src/remote/remotePermissionBridge.ts",
       "types": "./dist/src/remote/remotePermissionBridge.d.ts",
       "default": "./src/remote/remotePermissionBridge.ts"
     },
     "./remote/sdkMessageAdapter.js": {
+      "@thyrox/source": "./src/remote/sdkMessageAdapter.ts",
       "types": "./dist/src/remote/sdkMessageAdapter.d.ts",
       "default": "./src/remote/sdkMessageAdapter.ts"
     },
     "./server.js": {
+      "@thyrox/source": "./src/server.ts",
       "types": "./dist/src/server.d.ts",
       "default": "./src/server.ts"
     },
     "./serverBanner.js": {
+      "@thyrox/source": "./src/serverBanner.ts",
       "types": "./dist/src/serverBanner.d.ts",
       "default": "./src/serverBanner.ts"
     },
     "./serverLog.js": {
+      "@thyrox/source": "./src/serverLog.ts",
       "types": "./dist/src/serverLog.d.ts",
       "default": "./src/serverLog.ts"
     },
     "./sessionManager.js": {
+      "@thyrox/source": "./src/sessionManager.ts",
       "types": "./dist/src/sessionManager.d.ts",
       "default": "./src/sessionManager.ts"
     }

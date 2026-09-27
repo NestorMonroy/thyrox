@@ -270,12 +270,20 @@ TEST_EXCLUDE = (
 )
 
 
+#: Los globales que Bun inyecta al construir (`MACRO`). Los usan varios
+#: paquetes; su declaracion vive en la raiz y entra al proyecto de cada uno
+#: como archivo explicito. Un `.d.ts` no cuenta para el `rootDir`, asi que no
+#: provoca escape.
+SOURCE_CONDITION = "@thyrox/source"
+BUILD_GLOBALS = Path(__file__).resolve().parents[1] / "types" / "build-globals.d.ts"
+
+
 def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
     project = package_dir / filename
-    project.write_text(json.dumps({"compilerOptions": options,
-                                   "include": include,
-                                   "exclude": list(TEST_EXCLUDE)},
-                                  indent=2) + "\n", encoding="utf8")
+    body = {"compilerOptions": options, "include": include, "exclude": list(TEST_EXCLUDE)}
+    if BUILD_GLOBALS.is_file():
+        body["files"] = [str(BUILD_GLOBALS)]
+    project.write_text(json.dumps(body, indent=2) + "\n", encoding="utf8")
     return project
 
 
@@ -703,7 +711,13 @@ def repoint_manifest(package_dir: Path) -> bool:
         if declaration is None:
             absent.append((subpath, declaration_for(source_entry, root_dir)))
             continue
-        repointed[subpath] = {"types": declaration, "default": source_entry}
+        # La condicion de fuente primero: el orden de claves es la
+        # precedencia. La raiz la activa con `customConditions` y compila la
+        # fuente (una sola identidad por clase); quien no la declara sigue a
+        # `types`. Lleva espacio de nombres porque `source` a secas tambien
+        # lo publican paquetes de `node_modules` hacia su `.ts`.
+        repointed[subpath] = {SOURCE_CONDITION: source_entry, "types": declaration,
+                              "default": source_entry}
 
     # Un `types` que apunta al vacio no falla: tsc cae al `default`, que es
     # fuente, y el repunte queda INERTE sin emitir un byte. El unico sintoma
@@ -723,7 +737,8 @@ def repoint_manifest(package_dir: Path) -> bool:
     root = repointed.get(".")
     if isinstance(root, dict):
         manifest["types"] = root["types"]
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf8")
+    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+                             encoding="utf8")
     return True
 
 

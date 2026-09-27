@@ -6,430 +6,537 @@
   "description": "La interfaz del modelo y sus dos adaptadores: HTTP a Anthropic (SSE) y el grabado que reproduce respuestas. Lo que el bucle LLAMA para obtener un turno.",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./anthropicHttp": {
+      "@thyrox/source": "./src/anthropicHttp.ts",
       "types": "./dist/anthropicHttp.d.ts",
       "default": "./src/anthropicHttp.ts"
     },
     "./recorded": {
+      "@thyrox/source": "./src/recorded.ts",
       "types": "./dist/recorded.d.ts",
       "default": "./src/recorded.ts"
     },
     "./anthropicMockServer": {
+      "@thyrox/source": "./src/anthropicMockServer.ts",
       "types": "./dist/anthropicMockServer.d.ts",
       "default": "./src/anthropicMockServer.ts"
     },
     "./sse": {
+      "@thyrox/source": "./src/sse.ts",
       "types": "./dist/sse.d.ts",
       "default": "./src/sse.ts"
     },
     "./caCerts": {
+      "@thyrox/source": "./src/internal/caCerts.ts",
       "types": "./dist/internal/caCerts.d.ts",
       "default": "./src/internal/caCerts.ts"
     },
     "./gemini": {
+      "@thyrox/source": "./src/gemini/index.ts",
       "types": "./dist/gemini/index.d.ts",
       "default": "./src/gemini/index.ts"
     },
     "./openai": {
+      "@thyrox/source": "./src/openai/index.ts",
       "types": "./dist/openai/index.d.ts",
       "default": "./src/openai/index.ts"
     },
     "./policyLimits": {
+      "@thyrox/source": "./src/policyLimits/index.ts",
       "types": "./dist/policyLimits/index.d.ts",
       "default": "./src/policyLimits/index.ts"
     },
     "./commands/logout/logout.js": {
+      "@thyrox/source": "./src/commands/logout/logout.tsx",
       "types": "./dist/commands/logout/logout.d.ts",
       "default": "./src/commands/logout/logout.tsx"
     },
     "./adminRequests.js": {
+      "@thyrox/source": "./src/adminRequests.ts",
       "types": "./dist/adminRequests.d.ts",
       "default": "./src/adminRequests.ts"
     },
     "./advisor.js": {
+      "@thyrox/source": "./src/advisor.ts",
       "types": "./dist/advisor.d.ts",
       "default": "./src/advisor.ts"
     },
     "./antModels.js": {
+      "@thyrox/source": "./src/antModels.ts",
       "types": "./dist/antModels.d.ts",
       "default": "./src/antModels.ts"
     },
     "./apiLimits.js": {
+      "@thyrox/source": "./src/apiLimits.ts",
       "types": "./dist/apiLimits.d.ts",
       "default": "./src/apiLimits.ts"
     },
     "./authAlias.js": {
+      "@thyrox/source": "./src/authAlias.ts",
       "types": "./dist/authAlias.d.ts",
       "default": "./src/authAlias.ts"
     },
     "./authPortable.js": {
+      "@thyrox/source": "./src/authPortable.ts",
       "types": "./dist/authPortable.d.ts",
       "default": "./src/authPortable.ts"
     },
     "./awsAuthStatusManager.js": {
+      "@thyrox/source": "./src/awsAuthStatusManager.ts",
       "types": "./dist/awsAuthStatusManager.d.ts",
       "default": "./src/awsAuthStatusManager.ts"
     },
     "./betas.js": {
+      "@thyrox/source": "./src/betas.ts",
       "types": "./dist/betas.d.ts",
       "default": "./src/betas.ts"
     },
     "./betasConstants.js": {
+      "@thyrox/source": "./src/betasConstants.ts",
       "types": "./dist/betasConstants.d.ts",
       "default": "./src/betasConstants.ts"
     },
     "./billing.js": {
+      "@thyrox/source": "./src/billing.ts",
       "types": "./dist/billing.d.ts",
       "default": "./src/billing.ts"
     },
     "./caCerts.js": {
+      "@thyrox/source": "./src/caCerts.ts",
       "types": "./dist/caCerts.d.ts",
       "default": "./src/caCerts.ts"
     },
     "./claude.js": {
+      "@thyrox/source": "./src/claude.ts",
       "types": "./dist/claude.d.ts",
       "default": "./src/claude.ts"
     },
     "./claudeAiLimits.js": {
+      "@thyrox/source": "./src/claudeAiLimits.ts",
       "types": "./dist/claudeAiLimits.d.ts",
       "default": "./src/claudeAiLimits.ts"
     },
     "./claudeAiLimitsHook.js": {
+      "@thyrox/source": "./src/claudeAiLimitsHook.ts",
       "types": "./dist/claudeAiLimitsHook.d.ts",
       "default": "./src/claudeAiLimitsHook.ts"
     },
     "./claudeLegacy": {
+      "@thyrox/source": "./src/claudeLegacy.ts",
       "types": "./dist/claudeLegacy.d.ts",
       "default": "./src/claudeLegacy.ts"
     },
     "./claudeLegacyRuntime.js": {
+      "@thyrox/source": "./src/claudeLegacyRuntime.ts",
       "types": "./dist/claudeLegacyRuntime.d.ts",
       "default": "./src/claudeLegacyRuntime.ts"
     },
     "./commands/advisor.js": {
+      "@thyrox/source": "./src/commands/advisor.ts",
       "types": "./dist/commands/advisor.d.ts",
       "default": "./src/commands/advisor.ts"
     },
     "./commands/logout/index.js": {
+      "@thyrox/source": "./src/commands/logout/index.ts",
       "types": "./dist/commands/logout/index.d.ts",
       "default": "./src/commands/logout/index.ts"
     },
     "./commands/provider.js": {
+      "@thyrox/source": "./src/commands/provider.ts",
       "types": "./dist/commands/provider.d.ts",
       "default": "./src/commands/provider.ts"
     },
     "./connections": {
+      "@thyrox/source": "./src/connections.ts",
       "types": "./dist/connections.d.ts",
       "default": "./src/connections.ts"
     },
     "./connections.js": {
+      "@thyrox/source": "./src/connections.ts",
       "types": "./dist/connections.d.ts",
       "default": "./src/connections.ts"
     },
     "./connectorTextTypes": {
+      "@thyrox/source": "./src/connectorTextTypes.ts",
       "types": "./dist/connectorTextTypes.d.ts",
       "default": "./src/connectorTextTypes.ts"
     },
     "./context.js": {
+      "@thyrox/source": "./src/context.ts",
       "types": "./dist/context.d.ts",
       "default": "./src/context.ts"
     },
     "./cost/cacheBreak": {
+      "@thyrox/source": "./src/cost/cacheBreak.ts",
       "types": "./dist/cost/cacheBreak.d.ts",
       "default": "./src/cost/cacheBreak.ts"
     },
     "./cost/cacheRoutes": {
+      "@thyrox/source": "./src/cost/cacheRoutes.ts",
       "types": "./dist/cost/cacheRoutes.d.ts",
       "default": "./src/cost/cacheRoutes.ts"
     },
     "./cost/compaction": {
+      "@thyrox/source": "./src/cost/compaction.ts",
       "types": "./dist/cost/compaction.d.ts",
       "default": "./src/cost/compaction.ts"
     },
     "./cost/crossModelRead": {
+      "@thyrox/source": "./src/cost/crossModelRead.ts",
       "types": "./dist/cost/crossModelRead.d.ts",
       "default": "./src/cost/crossModelRead.ts"
     },
     "./cost/policy": {
+      "@thyrox/source": "./src/cost/policy.ts",
       "types": "./dist/cost/policy.d.ts",
       "default": "./src/cost/policy.ts"
     },
     "./costTracker.js": {
+      "@thyrox/source": "./src/costTracker.ts",
       "types": "./dist/costTracker.d.ts",
       "default": "./src/costTracker.ts"
     },
     "./dumpPrompts.js": {
+      "@thyrox/source": "./src/dumpPrompts.ts",
       "types": "./dist/dumpPrompts.d.ts",
       "default": "./src/dumpPrompts.ts"
     },
     "./errorUtils.js": {
+      "@thyrox/source": "./src/errorUtils.ts",
       "types": "./dist/errorUtils.d.ts",
       "default": "./src/errorUtils.ts"
     },
     "./errors.js": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./extraUsage.js": {
+      "@thyrox/source": "./src/extraUsage.ts",
       "types": "./dist/extraUsage.d.ts",
       "default": "./src/extraUsage.ts"
     },
     "./fastMode.js": {
+      "@thyrox/source": "./src/fastMode.ts",
       "types": "./dist/fastMode.d.ts",
       "default": "./src/fastMode.ts"
     },
     "./fileConstants.js": {
+      "@thyrox/source": "./src/fileConstants.ts",
       "types": "./dist/fileConstants.d.ts",
       "default": "./src/fileConstants.ts"
     },
     "./filesApi.js": {
+      "@thyrox/source": "./src/filesApi.ts",
       "types": "./dist/filesApi.d.ts",
       "default": "./src/filesApi.ts"
     },
     "./fingerprint.js": {
+      "@thyrox/source": "./src/fingerprint.ts",
       "types": "./dist/fingerprint.d.ts",
       "default": "./src/fingerprint.ts"
     },
     "./firstTokenDate.js": {
+      "@thyrox/source": "./src/firstTokenDate.ts",
       "types": "./dist/firstTokenDate.d.ts",
       "default": "./src/firstTokenDate.ts"
     },
     "./gatewayModelDiscovery.js": {
+      "@thyrox/source": "./src/gatewayModelDiscovery.ts",
       "types": "./dist/gatewayModelDiscovery.d.ts",
       "default": "./src/gatewayModelDiscovery.ts"
     },
     "./gemini/convertTools.js": {
+      "@thyrox/source": "./src/gemini/convertTools.ts",
       "types": "./dist/gemini/convertTools.d.ts",
       "default": "./src/gemini/convertTools.ts"
     },
     "./gemini/types.js": {
+      "@thyrox/source": "./src/gemini/types.ts",
       "types": "./dist/gemini/types.d.ts",
       "default": "./src/gemini/types.ts"
     },
     "./grove.js": {
+      "@thyrox/source": "./src/grove.ts",
       "types": "./dist/grove.d.ts",
       "default": "./src/grove.ts"
     },
     "./headlessProfiler.js": {
+      "@thyrox/source": "./src/headlessProfiler.ts",
       "types": "./dist/headlessProfiler.d.ts",
       "default": "./src/headlessProfiler.ts"
     },
     "./http.js": {
+      "@thyrox/source": "./src/http.ts",
       "types": "./dist/http.d.ts",
       "default": "./src/http.ts"
     },
     "./internal/pendingCrossPackageDeps.js": {
+      "@thyrox/source": "./src/internal/pendingCrossPackageDeps.ts",
       "types": "./dist/internal/pendingCrossPackageDeps.d.ts",
       "default": "./src/internal/pendingCrossPackageDeps.ts"
     },
     "./legacy/api.js": {
+      "@thyrox/source": "./src/legacy/api.ts",
       "types": "./dist/legacy/api.d.ts",
       "default": "./src/legacy/api.ts"
     },
     "./logging.js": {
+      "@thyrox/source": "./src/logging.ts",
       "types": "./dist/logging.d.ts",
       "default": "./src/logging.ts"
     },
     "./model.js": {
+      "@thyrox/source": "./src/model.ts",
       "types": "./dist/model.d.ts",
       "default": "./src/model.ts"
     },
     "./foundryCapabilities.js": {
+      "@thyrox/source": "./src/foundryCapabilities.ts",
       "types": "./dist/foundryCapabilities.d.ts",
       "default": "./src/foundryCapabilities.ts"
     },
     "./model/aliases.js": {
+      "@thyrox/source": "./src/model/aliases.ts",
       "types": "./dist/model/aliases.d.ts",
       "default": "./src/model/aliases.ts"
     },
     "./model/antModels.js": {
+      "@thyrox/source": "./src/model/antModels.ts",
       "types": "./dist/model/antModels.d.ts",
       "default": "./src/model/antModels.ts"
     },
     "./model/bedrock.js": {
+      "@thyrox/source": "./src/model/bedrock.ts",
       "types": "./dist/model/bedrock.d.ts",
       "default": "./src/model/bedrock.ts"
     },
     "./model/check1mAccess.js": {
+      "@thyrox/source": "./src/model/check1mAccess.ts",
       "types": "./dist/model/check1mAccess.d.ts",
       "default": "./src/model/check1mAccess.ts"
     },
     "./model/configs.js": {
+      "@thyrox/source": "./src/model/configs.ts",
       "types": "./dist/model/configs.d.ts",
       "default": "./src/model/configs.ts"
     },
     "./model/contextWindowUpgradeCheck.js": {
+      "@thyrox/source": "./src/model/contextWindowUpgradeCheck.ts",
       "types": "./dist/model/contextWindowUpgradeCheck.d.ts",
       "default": "./src/model/contextWindowUpgradeCheck.ts"
     },
     "./model/deprecation.js": {
+      "@thyrox/source": "./src/model/deprecation.ts",
       "types": "./dist/model/deprecation.d.ts",
       "default": "./src/model/deprecation.ts"
     },
     "./model/model.js": {
+      "@thyrox/source": "./src/model/model.ts",
       "types": "./dist/model/model.d.ts",
       "default": "./src/model/model.ts"
     },
     "./model/modelAllowlist.js": {
+      "@thyrox/source": "./src/model/modelAllowlist.ts",
       "types": "./dist/model/modelAllowlist.d.ts",
       "default": "./src/model/modelAllowlist.ts"
     },
     "./model/providers.js": {
+      "@thyrox/source": "./src/model/providers.ts",
       "types": "./dist/model/providers.d.ts",
       "default": "./src/model/providers.ts"
     },
     "./modelAgent.js": {
+      "@thyrox/source": "./src/modelAgent.ts",
       "types": "./dist/modelAgent.d.ts",
       "default": "./src/modelAgent.ts"
     },
     "./modelAliases.js": {
+      "@thyrox/source": "./src/modelAliases.ts",
       "types": "./dist/modelAliases.d.ts",
       "default": "./src/modelAliases.ts"
     },
     "./modelCost.js": {
+      "@thyrox/source": "./src/modelCost.ts",
       "types": "./dist/modelCost.d.ts",
       "default": "./src/modelCost.ts"
     },
     "./modelOptions.js": {
+      "@thyrox/source": "./src/modelOptions.ts",
       "types": "./dist/modelOptions.d.ts",
       "default": "./src/modelOptions.ts"
     },
     "./modelStrings.js": {
+      "@thyrox/source": "./src/modelStrings.ts",
       "types": "./dist/modelStrings.d.ts",
       "default": "./src/modelStrings.ts"
     },
     "./mtls.js": {
+      "@thyrox/source": "./src/mtls.ts",
       "types": "./dist/mtls.d.ts",
       "default": "./src/mtls.ts"
     },
     "./oauth/client.js": {
+      "@thyrox/source": "./src/oauth/client.ts",
       "types": "./dist/oauth/client.d.ts",
       "default": "./src/oauth/client.ts"
     },
     "./oauth/codex-auth.js": {
+      "@thyrox/source": "./src/oauth/codex-auth.ts",
       "types": "./dist/oauth/codex-auth.d.ts",
       "default": "./src/oauth/codex-auth.ts"
     },
     "./oauth/getOauthProfile.js": {
+      "@thyrox/source": "./src/oauth/getOauthProfile.ts",
       "types": "./dist/oauth/getOauthProfile.d.ts",
       "default": "./src/oauth/getOauthProfile.ts"
     },
     "./oauth/index.js": {
+      "@thyrox/source": "./src/oauth/index.ts",
       "types": "./dist/oauth/index.d.ts",
       "default": "./src/oauth/index.ts"
     },
     "./oauth/types.js": {
+      "@thyrox/source": "./src/oauth/types.ts",
       "types": "./dist/oauth/types.d.ts",
       "default": "./src/oauth/types.ts"
     },
     "./oauthConstants": {
+      "@thyrox/source": "./src/oauthConstants.ts",
       "types": "./dist/oauthConstants.d.ts",
       "default": "./src/oauthConstants.ts"
     },
     "./oauthConstants.js": {
+      "@thyrox/source": "./src/oauthConstants.ts",
       "types": "./dist/oauthConstants.d.ts",
       "default": "./src/oauthConstants.ts"
     },
     "./openai/convertTools.js": {
+      "@thyrox/source": "./src/openai/convertTools.ts",
       "types": "./dist/openai/convertTools.d.ts",
       "default": "./src/openai/convertTools.ts"
     },
     "./overageCreditGrant.js": {
+      "@thyrox/source": "./src/overageCreditGrant.ts",
       "types": "./dist/overageCreditGrant.d.ts",
       "default": "./src/overageCreditGrant.ts"
     },
     "./policyLimits/index.js": {
+      "@thyrox/source": "./src/policyLimits/index.ts",
       "types": "./dist/policyLimits/index.d.ts",
       "default": "./src/policyLimits/index.ts"
     },
     "./promptCacheBreakDetection.js": {
+      "@thyrox/source": "./src/promptCacheBreakDetection.ts",
       "types": "./dist/promptCacheBreakDetection.d.ts",
       "default": "./src/promptCacheBreakDetection.ts"
     },
     "./providerHostSetup": {
+      "@thyrox/source": "./src/providerHostSetup.ts",
       "types": "./dist/providerHostSetup.d.ts",
       "default": "./src/providerHostSetup.ts"
     },
     "./providers.js": {
+      "@thyrox/source": "./src/providers.ts",
       "types": "./dist/providers.d.ts",
       "default": "./src/providers.ts"
     },
     "./proxy.js": {
+      "@thyrox/source": "./src/proxy.ts",
       "types": "./dist/proxy.d.ts",
       "default": "./src/proxy.ts"
     },
     "./queryProfiler.js": {
+      "@thyrox/source": "./src/queryProfiler.ts",
       "types": "./dist/queryProfiler.d.ts",
       "default": "./src/queryProfiler.ts"
     },
     "./rateLimitMessages.js": {
+      "@thyrox/source": "./src/rateLimitMessages.ts",
       "types": "./dist/rateLimitMessages.d.ts",
       "default": "./src/rateLimitMessages.ts"
     },
     "./rateLimitMocking.js": {
+      "@thyrox/source": "./src/rateLimitMocking.ts",
       "types": "./dist/rateLimitMocking.d.ts",
       "default": "./src/rateLimitMocking.ts"
     },
     "./referral.js": {
+      "@thyrox/source": "./src/referral.ts",
       "types": "./dist/referral.d.ts",
       "default": "./src/referral.ts"
     },
     "./sessionIngress.js": {
+      "@thyrox/source": "./src/sessionIngress.ts",
       "types": "./dist/sessionIngress.d.ts",
       "default": "./src/sessionIngress.ts"
     },
     "./sessionIngressAuth.js": {
+      "@thyrox/source": "./src/sessionIngressAuth.ts",
       "types": "./dist/sessionIngressAuth.d.ts",
       "default": "./src/sessionIngressAuth.ts"
     },
     "./systemConstants.js": {
+      "@thyrox/source": "./src/systemConstants.ts",
       "types": "./dist/systemConstants.d.ts",
       "default": "./src/systemConstants.ts"
     },
     "./systemPrompt.js": {
+      "@thyrox/source": "./src/systemPrompt.ts",
       "types": "./dist/systemPrompt.d.ts",
       "default": "./src/systemPrompt.ts"
     },
     "./systemPromptSections": {
+      "@thyrox/source": "./src/systemPromptSections.ts",
       "types": "./dist/systemPromptSections.d.ts",
       "default": "./src/systemPromptSections.ts"
     },
     "./systemPromptType.js": {
+      "@thyrox/source": "./src/systemPromptType.ts",
       "types": "./dist/systemPromptType.d.ts",
       "default": "./src/systemPromptType.ts"
     },
     "./thinking.js": {
+      "@thyrox/source": "./src/thinking.ts",
       "types": "./dist/thinking.d.ts",
       "default": "./src/thinking.ts"
     },
     "./ultrareviewQuota.js": {
+      "@thyrox/source": "./src/ultrareviewQuota.ts",
       "types": "./dist/ultrareviewQuota.d.ts",
       "default": "./src/ultrareviewQuota.ts"
     },
     "./usage.js": {
+      "@thyrox/source": "./src/usage.ts",
       "types": "./dist/usage.d.ts",
       "default": "./src/usage.ts"
     },
     "./user.js": {
+      "@thyrox/source": "./src/user.ts",
       "types": "./dist/user.d.ts",
       "default": "./src/user.ts"
     },
     "./userAgent.js": {
+      "@thyrox/source": "./src/userAgent.ts",
       "types": "./dist/userAgent.d.ts",
       "default": "./src/userAgent.ts"
     },
     "./validateModel.js": {
+      "@thyrox/source": "./src/validateModel.ts",
       "types": "./dist/validateModel.d.ts",
       "default": "./src/validateModel.ts"
     },
     "./withRetry.js": {
+      "@thyrox/source": "./src/withRetry.ts",
       "types": "./dist/withRetry.d.ts",
       "default": "./src/withRetry.ts"
     },
     "./workloadContext.js": {
+      "@thyrox/source": "./src/workloadContext.ts",
       "types": "./dist/workloadContext.d.ts",
       "default": "./src/workloadContext.ts"
     }

@@ -7,46 +7,57 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./sentinelApps": {
+      "@thyrox/source": "./src/sentinelApps.ts",
       "types": "./dist/sentinelApps.d.ts",
       "default": "./src/sentinelApps.ts"
     },
     "./types": {
+      "@thyrox/source": "./src/types.ts",
       "types": "./dist/types.d.ts",
       "default": "./src/types.ts"
     },
     "./legacy/mcpServer.js": {
+      "@thyrox/source": "./src/legacy/mcpServer.ts",
       "types": "./dist/legacy/mcpServer.d.ts",
       "default": "./src/legacy/mcpServer.ts"
     },
     "./legacy/common.js": {
+      "@thyrox/source": "./src/legacy/common.ts",
       "types": "./dist/legacy/common.d.ts",
       "default": "./src/legacy/common.ts"
     },
     "./legacy/setup.js": {
+      "@thyrox/source": "./src/legacy/setup.ts",
       "types": "./dist/legacy/setup.d.ts",
       "default": "./src/legacy/setup.ts"
     },
     "./legacy/cleanup.js": {
+      "@thyrox/source": "./src/legacy/cleanup.ts",
       "types": "./dist/legacy/cleanup.d.ts",
       "default": "./src/legacy/cleanup.ts"
     },
     "./legacy/gates.js": {
+      "@thyrox/source": "./src/legacy/gates.ts",
       "types": "./dist/legacy/gates.d.ts",
       "default": "./src/legacy/gates.ts"
     },
     "./legacy/wrapper.js": {
+      "@thyrox/source": "./src/legacy/wrapper.tsx",
       "types": "./dist/legacy/wrapper.d.ts",
       "default": "./src/legacy/wrapper.tsx"
     },
     "./legacy/win32/windowEnum.js": {
+      "@thyrox/source": "./src/legacy/win32/windowEnum.ts",
       "types": "./dist/legacy/win32/windowEnum.d.ts",
       "default": "./src/legacy/win32/windowEnum.ts"
     },
     "./legacy/win32/windowCapture.js": {
+      "@thyrox/source": "./src/legacy/win32/windowCapture.ts",
       "types": "./dist/legacy/win32/windowCapture.d.ts",
       "default": "./src/legacy/win32/windowCapture.ts"
     }

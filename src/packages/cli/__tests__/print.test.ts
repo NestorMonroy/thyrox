@@ -171,7 +171,9 @@ describe('runPrint — de punta a punta con proveedor grabado', () => {
     expect(code).toBe(0)
     const sesiones = readdirSync(td)
     expect(sesiones.length).toBe(1)
-    expect(existsSync(join(td, sesiones[0]))).toBe(true)
+    const [session] = sesiones
+    expect(session).toBeDefined()
+    expect(existsSync(join(td, session as string))).toBe(true)
   })
 
   test('una bandera desconocida sale 2 y lo dice por stderr', async () => {

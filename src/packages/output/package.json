@@ -8,146 +8,182 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "@thyrox/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./contracts": {
+      "@thyrox/source": "./src/contracts.ts",
       "types": "./dist/contracts.d.ts",
       "default": "./src/contracts.ts"
     },
     "./errors": {
+      "@thyrox/source": "./src/errors.ts",
       "types": "./dist/errors.d.ts",
       "default": "./src/errors.ts"
     },
     "./testing": {
+      "@thyrox/source": "./src/testing/index.ts",
       "types": "./dist/testing/index.d.ts",
       "default": "./src/testing/index.ts"
     },
     "./buffers": {
+      "@thyrox/source": "./src/buffers/index.ts",
       "types": "./dist/buffers/index.d.ts",
       "default": "./src/buffers/index.ts"
     },
     "./buffers/buffered-writer.js": {
+      "@thyrox/source": "./src/buffers/buffered-writer.ts",
       "types": "./dist/buffers/buffered-writer.d.ts",
       "default": "./src/buffers/buffered-writer.ts"
     },
     "./buffers/circular-buffer.js": {
+      "@thyrox/source": "./src/buffers/circular-buffer.ts",
       "types": "./dist/buffers/circular-buffer.d.ts",
       "default": "./src/buffers/circular-buffer.ts"
     },
     "./formatters": {
+      "@thyrox/source": "./src/formatters/index.ts",
       "types": "./dist/formatters/index.d.ts",
       "default": "./src/formatters/index.ts"
     },
     "./formatters/format.js": {
+      "@thyrox/source": "./src/formatters/format.ts",
       "types": "./dist/formatters/format.d.ts",
       "default": "./src/formatters/format.ts"
     },
     "./formatters/brief-timestamp.js": {
+      "@thyrox/source": "./src/formatters/brief-timestamp.ts",
       "types": "./dist/formatters/brief-timestamp.d.ts",
       "default": "./src/formatters/brief-timestamp.ts"
     },
     "./capture": {
+      "@thyrox/source": "./src/capture/index.ts",
       "types": "./dist/capture/index.d.ts",
       "default": "./src/capture/index.ts"
     },
     "./capture/ansi-to-svg.js": {
+      "@thyrox/source": "./src/capture/ansi-to-svg.ts",
       "types": "./dist/capture/ansi-to-svg.d.ts",
       "default": "./src/capture/ansi-to-svg.ts"
     },
     "./constants/figures.js": {
+      "@thyrox/source": "./src/constants/figures.ts",
       "types": "./dist/constants/figures.d.ts",
       "default": "./src/constants/figures.ts"
     },
     "./targets/json.js": {
+      "@thyrox/source": "./src/targets/json.ts",
       "types": "./dist/targets/json.d.ts",
       "default": "./src/targets/json.ts"
     },
     "./targets/silent.js": {
+      "@thyrox/source": "./src/targets/silent.ts",
       "types": "./dist/targets/silent.d.ts",
       "default": "./src/targets/silent.ts"
     },
     "./targets/terminal.js": {
+      "@thyrox/source": "./src/targets/terminal.ts",
       "types": "./dist/targets/terminal.d.ts",
       "default": "./src/targets/terminal.ts"
     },
     "./utils/intl.js": {
+      "@thyrox/source": "./src/utils/intl.ts",
       "types": "./dist/utils/intl.d.ts",
       "default": "./src/utils/intl.ts"
     },
     "./utils/stringUtils.js": {
+      "@thyrox/source": "./src/utils/stringUtils.ts",
       "types": "./dist/utils/stringUtils.d.ts",
       "default": "./src/utils/stringUtils.ts"
     },
     "./utils/displayTags.js": {
+      "@thyrox/source": "./src/utils/displayTags.ts",
       "types": "./dist/utils/displayTags.d.ts",
       "default": "./src/utils/displayTags.ts"
     },
     "./utils/cliHighlight.js": {
+      "@thyrox/source": "./src/utils/cliHighlight.ts",
       "types": "./dist/utils/cliHighlight.d.ts",
       "default": "./src/utils/cliHighlight.ts"
     },
     "./setUtils.js": {
+      "@thyrox/source": "./src/setUtils.ts",
       "types": "./dist/setUtils.d.ts",
       "default": "./src/setUtils.ts"
     },
     "./fpsTracker.js": {
+      "@thyrox/source": "./src/fpsTracker.ts",
       "types": "./dist/fpsTracker.d.ts",
       "default": "./src/fpsTracker.ts"
     },
     "./xml.js": {
+      "@thyrox/source": "./src/xml.ts",
       "types": "./dist/xml.d.ts",
       "default": "./src/xml.ts"
     },
     "./render": {
+      "@thyrox/source": "./src/render/index.ts",
       "types": "./dist/render/index.d.ts",
       "default": "./src/render/index.ts"
     },
     "./render/exportRenderer.js": {
+      "@thyrox/source": "./src/render/exportRenderer.tsx",
       "types": "./dist/render/exportRenderer.d.ts",
       "default": "./src/render/exportRenderer.tsx"
     },
     "./constants/figures": {
+      "@thyrox/source": "./src/constants/figures.ts",
       "types": "./dist/constants/figures.d.ts",
       "default": "./src/constants/figures.ts"
     },
     "./formatters/truncate.js": {
+      "@thyrox/source": "./src/formatters/truncate.ts",
       "types": "./dist/formatters/truncate.d.ts",
       "default": "./src/formatters/truncate.ts"
     },
     "./hyperlink.js": {
+      "@thyrox/source": "./src/hyperlink.ts",
       "types": "./dist/hyperlink.d.ts",
       "default": "./src/hyperlink.ts"
     },
     "./markdown.js": {
+      "@thyrox/source": "./src/markdown.ts",
       "types": "./dist/markdown.d.ts",
       "default": "./src/markdown.ts"
     },
     "./modifiers.js": {
+      "@thyrox/source": "./src/modifiers.ts",
       "types": "./dist/modifiers.d.ts",
       "default": "./src/modifiers.ts"
     },
     "./render-options": {
+      "@thyrox/source": "./src/render-options.ts",
       "types": "./dist/render-options.d.ts",
       "default": "./src/render-options.ts"
     },
     "./terminal.js": {
+      "@thyrox/source": "./src/terminal.ts",
       "types": "./dist/terminal.d.ts",
       "default": "./src/terminal.ts"
     },
     "./textHighlighting.js": {
+      "@thyrox/source": "./src/textHighlighting.ts",
       "types": "./dist/textHighlighting.d.ts",
       "default": "./src/textHighlighting.ts"
     },
     "./utils/sliceAnsi.js": {
+      "@thyrox/source": "./src/utils/sliceAnsi.ts",
       "types": "./dist/utils/sliceAnsi.d.ts",
       "default": "./src/utils/sliceAnsi.ts"
     },
     "./utils/stringUtils": {
+      "@thyrox/source": "./src/utils/stringUtils.ts",
       "types": "./dist/utils/stringUtils.d.ts",
       "default": "./src/utils/stringUtils.ts"
     },
     "./xml": {
+      "@thyrox/source": "./src/xml.ts",
       "types": "./dist/xml.d.ts",
       "default": "./src/xml.ts"
     }
