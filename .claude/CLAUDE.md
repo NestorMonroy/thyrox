@@ -51,7 +51,7 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    produce uno — sólo el que corrige algo que alguien podría volver a asumir.
    **Cuando el hallazgo es del consumidor** —un ``H-<PREFIJO>-NNNN`` que vive
    como ``.rst`` en `kaupamex-docs`— el número se acuña con
-   `src/hallazgo/hallazgo_ids.py acunar <PREFIJO>`, nunca a mano con un
+   `src/hallazgo/hallazgo_ids.py mint <PREFIJO>`, nunca a mano con un
    `ls`/`grep` acotado a una sola iniciativa. Ese acotado fue exactamente el
    error que originó este mecanismo: `H-API-1112` documenta el episodio.
 

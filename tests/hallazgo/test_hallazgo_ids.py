@@ -240,5 +240,18 @@ check("un prefijo con no-letras se rehusa", True, _refused_odd)
 # cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
 # control positivo — medido al escribirlas.
 
+# El subcomando se llama `mint`: es el nombre público de la operación, y la
+# regla de identificadores lo quiere en inglés. `acunar` sigue como alias para
+# los guiones y documentos que ya lo invocan; no se reescribe evidencia fechada.
+parser = hallazgo_ids.build_parser()
+check("mint es el subcomando", hallazgo_ids._cmd_mint, parser.parse_args(["mint", "THYROX"]).func)
+check("acunar sigue resolviendo, como alias", hallazgo_ids._cmd_mint,
+      parser.parse_args(["acunar", "THYROX"]).func)
+check("la ayuda anuncia mint", True, "mint" in parser.format_help())
+check("verify es el subcomando", hallazgo_ids._cmd_verify,
+      parser.parse_args(["verify", "H-API-1"]).func)
+check("verificar sigue resolviendo, como alias", hallazgo_ids._cmd_verify,
+      parser.parse_args(["verificar", "H-API-1"]).func)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

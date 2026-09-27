@@ -288,15 +288,17 @@ def build_parser() -> argparse.ArgumentParser:
                      'iniciativa.')
     sub = parser.add_subparsers(dest='comando', required=True)
 
+    # `mint` y `verify` son los nombres públicos; `acunar` y `verificar` quedan
+    # como alias para los guiones y documentos que ya los invocan.
     mint = sub.add_parser(
-        'acunar', help='imprime el next_number H-<PREFIJO>-N libre')
+        'mint', aliases=['acunar'], help='imprime el next_number H-<PREFIJO>-N libre')
     mint.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
     mint.add_argument('--consumer', default='docs',
                          help='el clon a resolver con reach.root (default: docs)')
     mint.set_defaults(func=_cmd_mint)
 
     verify = sub.add_parser(
-        'verificar', help='¿un H-<PREFIJO>-N ya elegido está libre?')
+        'verify', aliases=['verificar'], help='¿un H-<PREFIJO>-N ya elegido está libre?')
     verify.add_argument('id', help='el identificador completo, p. ej. H-API-1112')
     verify.add_argument('--consumer', default='docs')
     verify.set_defaults(func=_cmd_verify)
