@@ -365,6 +365,12 @@ def export_targets(manifest: dict):
             # sus propias declaraciones y le subiria el `rootDir`. Medido:
             # `storage` daba `src` antes del repunte y `.` despues, sin que su
             # codigo cambiara — la emision entera se habria movido.
+            # La condicion de fuente manda: una vez que el build JS repunta
+            # `default` a `dist/*.js`, `default` deja de nombrar el fuente y el
+            # filtro de abajo lo descartaria, dejando el paquete sin entradas.
+            if SOURCE_CONDITION in value:
+                collect(value[SOURCE_CONDITION])
+                return
             if "default" in value:
                 collect(value["default"])
                 return
@@ -769,7 +775,7 @@ def repoint_manifest(package_dir: Path) -> bool:
     repointed = {}
     absent = []
     for subpath, entry in exports.items():
-        source_entry = entry.get("default") if isinstance(entry, dict) else entry
+        source_entry = (entry.get(SOURCE_CONDITION) or entry.get("default")) if isinstance(entry, dict) else entry
         if not isinstance(source_entry, str):
             repointed[subpath] = entry
             continue
@@ -782,8 +788,13 @@ def repoint_manifest(package_dir: Path) -> bool:
         # fuente (una sola identidad por clase); quien no la declara sigue a
         # `types`. Lleva espacio de nombres porque `source` a secas tambien
         # lo publican paquetes de `node_modules` hacia su `.ts`.
+        # Un `default` que ya apunta al `.js` de `dist/` lo puso el build JS
+        # (`build_javascript.py`); reescribirlo al fuente desharia ese repunte
+        # en cada emision de declaraciones.
+        built = entry.get("default") if isinstance(entry, dict) else None
+        keep_built = isinstance(built, str) and built.startswith(f"./{OUTPUT_DIR}/") and built.endswith(".js")
         repointed[subpath] = {SOURCE_CONDITION: source_entry, "types": declaration,
-                              "default": source_entry}
+                              "default": built if keep_built else source_entry}
 
     # Un `types` que apunta al vacio no falla: tsc cae al `default`, que es
     # fuente, y el repunte queda INERTE sin emitir un byte. El unico sintoma
