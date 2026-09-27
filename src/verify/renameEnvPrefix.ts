@@ -18,7 +18,25 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const KEEP = 'thyrox-rename: keep'
-const NAME = /(?<![A-Za-z0-9_])CLAUDE_CODE_([A-Z0-9_]+)/g
+const NAME = /(?<![A-Za-z0-9_])CLAUDE_CODE_([A-Z0-9_]+)(?![A-Za-z0-9_])/g
+
+/**
+ * Constantes CLAUDE_CODE_* que NO son variables de entorno: nombran la
+ * identidad o el protocolo del cliente ajeno y se conservan. La suite exige
+ * que toda constante así declarada en `src/` esté aquí, de modo que una nueva
+ * no pueda quedar renombrada en silencio.
+ */
+export const FOREIGN_CONSTANTS: ReadonlySet<string> = new Set([
+  'CLAUDE_CODE_20250219_BETA_HEADER', // valor 'claude-code-20250219' en anthropic-beta
+  'CLAUDE_CODE_SETTINGS_SCHEMA_URL', // esquema de los settings del cliente ajeno
+  'CLAUDE_CODE_DOCS_MAP_URL', // mapa de su documentación
+  'CLAUDE_CODE_GUIDE_AGENT', // agente guía de ese cliente
+  'CLAUDE_CODE_GUIDE_AGENT_TYPE', // su tipo, 'claude-code-guide'
+])
+
+function renameToken(token: string, rest: string): string {
+  return FOREIGN_CONSTANTS.has(token) ? token : `THYROX_CODE_${rest}`
+}
 
 function lineRenames(lines: string[]): boolean[] {
   return lines.map((line, i) => !line.includes(KEEP) && !(i > 0 && lines[i - 1]!.includes(KEEP)))
@@ -28,14 +46,14 @@ function lineRenames(lines: string[]): boolean[] {
 export function renameEnvPrefix(text: string): string {
   const lines = text.split('\n')
   const eligible = lineRenames(lines)
-  return lines.map((line, i) => (eligible[i] ? line.replace(NAME, 'THYROX_CODE_$1') : line)).join('\n')
+  return lines.map((line, i) => (eligible[i] ? line.replace(NAME, renameToken) : line)).join('\n')
 }
 
 /** Cuántas apariciones cambiaría `renameEnvPrefix`. */
 export function countRenames(text: string): number {
   const lines = text.split('\n')
   const eligible = lineRenames(lines)
-  return lines.reduce((n, line, i) => n + (eligible[i] ? (line.match(NAME)?.length ?? 0) : 0), 0)
+  return lines.reduce((n, line, i) => n + (eligible[i] ? [...line.matchAll(NAME)].filter(m => !FOREIGN_CONSTANTS.has(m[0])).length : 0), 0)
 }
 
 if (import.meta.main) {
