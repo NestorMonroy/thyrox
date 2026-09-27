@@ -16,6 +16,7 @@
  * read-side contracts plus the eligibility predicate.
  */
 import {
+  afterAll,
   afterEach,
   beforeEach,
   describe,
@@ -42,14 +43,27 @@ let mockedAPIProvider: 'firstParty' | 'bedrock' | 'vertex' | 'openai' =
 let mockedIsFirstPartyBaseUrl = false
 let mockedApiKey: string | null = 'test-api-key'
 
+// `mock.module` sobrevive al archivo y `mock.restore()` no lo deshace; además
+// el namespace importado arriba se parchea en su sitio al mockear (medido en
+// Bun 1.3.11, banco `test-isolation-leaks-20260927T080507`). Sin reponer una
+// COPIA tomada antes, el `getAPIProvider` fijo en 'firstParty' seguía vivo en
+// `buildRequestTools.test.ts`, cuyo caso de Foundry recibía los esquemas con
+// `strict`.
+const realProvidersExports = { ...realProviders }
+const realAuthExports = { ...realAuth }
+afterAll(() => {
+  mock.module('../providers.js', () => realProvidersExports)
+  mock.module('../authAlias.js', () => realAuthExports)
+})
+
 mock.module('../providers.js', () => ({
-  ...realProviders,
+  ...realProvidersExports,
   getAPIProvider: () => mockedAPIProvider,
   isFirstPartyAnthropicBaseUrl: () => mockedIsFirstPartyBaseUrl,
 }))
 
 mock.module('../authAlias.js', () => ({
-  ...realAuth,
+  ...realAuthExports,
   getAnthropicApiKey: () => mockedApiKey,
   getAnthropicApiKeyWithSource: () => ({
     key: mockedApiKey,
