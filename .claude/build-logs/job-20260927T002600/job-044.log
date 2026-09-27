@@ -1,0 +1,16 @@
+  ok    un socket es un canal: puede esperar para siempre
+  ok    una tubería también
+  ok    /dev/null no es canal: la lectura termina sola
+  ok    un archivo regular tampoco
+  ok    una terminal se nombra aparte
+  ok    un pid que no está: ilegible, no un stdin vacío
+  ok    la línea es TSV: pid, destino, clase, estado, cpu, escritores
+  ok    una tubería cuenta a quien la tiene para escribir, no a quien sólo la lee
+  ok    una tubería sin escritor vivo: 0, leer da EOF
+  ok    un socket o un no-canal no se miden: ninguno, no cero
+stdin_probe: REHÚSA — los pids son enteros
+  ok    un pid no numérico rehúsa con exit 2
+  ok    con GNU Parallel -k: una línea por pid, en el orden de entrada
+
+test_stdin_probe: 12 aserciones — 12 ok, 0 falla(s)
+EXIT=0

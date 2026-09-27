@@ -1,0 +1,44 @@
+agent: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/docs.ts, ../../paths/reach.ts, ../../store/db.ts
+app-host: emitio pese a 92 errores (3 propio(s))
+audio-capture-napi: OK
+binary: OK
+bridge: emitio pese a 64 errores (3 propio(s))
+cli: NO EMITIO — 7 import(s) salen de su rootDir: ../../coordination/branchIntegration.ts, ../../coordination/claims.ts, ../../coordination/ledger.ts, ../../task/io.ts, ../../task/premises.ts, ../../task/rst.ts, ../../workbench/manifest.ts
+color-diff-napi: OK
+command-runtime: emitio pese a 93 errores (31 propio(s))
+config: emitio pese a 60 errores (1 propio(s))
+context-compression: OK
+daemon: emitio pese a 59 errores (0 propio(s))
+headless-sdk: OK
+ide: emitio pese a 59 errores (0 propio(s))
+image-processor-napi: OK
+local-observability: emitio pese a 60 errores (1 propio(s))
+mcp-runtime: emitio pese a 61 errores (3 propio(s))
+memory: emitio pese a 55 errores (0 propio(s))
+modifiers-napi: OK
+observability: NO EMITIO — 2 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts
+output: emitio pese a 55 errores (0 propio(s))
+permission: emitio pese a 57 errores (2 propio(s))
+plan: OK
+provider: emitio pese a 57 errores (4 propio(s))
+repl: emitio pese a 82 errores (33 propio(s))
+ripgrep-napi: OK
+server: emitio pese a 22 errores (0 propio(s))
+shell: emitio pese a 22 errores (0 propio(s))
+skills: NO EMITIO — 1 import(s) salen de su rootDir: ../../paths/reach.ts
+stdin-napi: OK
+storage: emitio pese a 24 errores (2 propio(s))
+swarm: emitio pese a 20 errores (0 propio(s))
+teleport: emitio pese a 20 errores (0 propio(s))
+tool-registry: emitio pese a 68 errores (48 propio(s))
+tools: NO EMITIO — 3 import(s) salen de su rootDir: ../../paths/reach.ts, ../../store/db.ts, ../../task/schema.ts
+updater: emitio pese a 20 errores (0 propio(s))
+url-handler-napi: OK
+voice: emitio pese a 20 errores (0 propio(s))
+claude-for-chrome-mcp: OK
+computer-use-input: OK
+computer-use-mcp: emitio pese a 20 errores (0 propio(s))
+computer-use-swift: OK
+ink: OK
+
+emit_declarations: 42 paquete(s) medido(s), 1090 error(es) que siguen vivos en su propio paquete

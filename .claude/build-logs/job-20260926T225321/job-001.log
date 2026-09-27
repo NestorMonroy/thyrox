@@ -1,0 +1,23 @@
+== test-agent-store-clasificar-documentos ==
+  ok    1 el modulo compila
+  ok    2 columnas section/series tras conectar
+  ok    3 cuatro documentos sembrados
+  ok    4a mismo tipo, seccion gestion
+  ok    4b mismo tipo, seccion requisitos
+  ok    4c y por tanto son series DISTINTAS
+  ok    5a section
+  ok    5b el tipo sale del nombre, no de la ruta
+  ok    5c hallazgo bajo su seccion
+  ok    6a tipo desconocido -> otro
+  ok    6b y NO queda en NULO
+  ok    7a idempotente
+  ok    7b sin filas duplicadas
+  ok    8 clasificar no borra la fecha
+  ok    9a publica denominador
+  ok    9b publica cuantas series salieron
+  ok    10 el plazo queda NULO (bloqueado por #760)
+  ok    11a reclasificar un arbol intacto no escribe
+  ok    11b un documento nuevo SI se escribe
+
+  19 ok · 0 fallas
+EXIT=0

@@ -1,0 +1,20 @@
+  ok   la forma defectuosa se reporta como pendiente
+  ok   y --check NO escribe
+  ok   aplicar sale 0
+  ok   retira la condición de identidad
+  ok   retira el consejo de poner a Claude como committer
+  ok   retira --reset-author
+  ok   conserva la mitad que SÍ mide (la firma)
+  ok   segunda pasada sale 0
+  ok   y no vuelve a escribir
+  ok   se reporta como ya aplicado
+  ok   una forma desconocida rehúsa con código 2
+  ok   y NO la toca
+  ok   y dice por qué
+  ok   un objetivo ausente sale 0 y se declara
+  ok   y lo nombra como AUSENTE
+  ok   un directorio inexistente rehúsa con 2
+  ok   y NO emite conteo
+
+17 aprobada(s) · 0 fallida(s) (alcance medido: reconcile_user_hooks.py)
+EXIT=0

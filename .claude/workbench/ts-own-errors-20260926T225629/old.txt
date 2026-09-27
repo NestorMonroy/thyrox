@@ -1,0 +1,2 @@
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf8")
+    return True

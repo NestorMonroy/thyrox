@@ -18,3 +18,22 @@
 === Caso 6: una entrada del baseline no bloquea; una nueva si ===
   ok    sin baseline la clave nueva bloquea
   ok    y la nombra
+  ok    congelada, no bloquea
+=== Caso 7: sin lexico REHUSA — no publica un cero ===
+  ok    rehusa con 2
+  ok    NO publica un conteo de manifiestos
+=== Caso 8 (EL DISCRIMINANTE DEL CONGELADO): re-congelar no destruye ===
+  ok    la primera congela la deuda
+  ok    la segunda NO la destruye
+  ok    y tras re-congelar sigue sin bloquear
+=== Caso 9: los DOS nombres, y el .json llega MULTILINEA ===
+  ok    el sujeto heredado es multilinea (si no, el caso no discrimina)
+  ok    mide los DOS runs
+  ok    y ve la clave espanola de CADA forma
+  ok    un run con los DOS nombres cuenta una vez
+  ok    anulada, CAE: el heredado sale del universo
+  ok    anulada, CAE: su clave espanola desaparece
+  ok    anulada, NO cae: el JSONL sigue medido
+  ok    la anulacion se deshizo
+
+28 ok, 0 fallos (alcance medido: 28 aserciones sobre /home/user/thyrox/src/verify/check_manifest_language.py)

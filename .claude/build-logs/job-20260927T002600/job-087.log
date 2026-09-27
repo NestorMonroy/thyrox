@@ -1,0 +1,17 @@
+test_prefix_speculation:
+  ok    los dos del prefijo se conservan
+  ok    y la base siguiente es el log del prefijo largo
+  ok    u2 se decide contra el log de u1, no contra la base
+  ok    lo medido encima de un rechazo vuelve a la cola sin decidir
+  ok    la base siguiente es la del último conservado
+  ok    la mejora de u1 no se le acredita a u2
+  ok    un primero rechazado no conserva nada y deja al resto sin decidir
+  ok    un prefijo no junta dos unidades del mismo archivo
+  ok    ni pasa del número de worktrees
+  ok    el worktree i mide el prefijo u1..ui
+  ok    y cada worktree vuelve a su texto
+  ok    la ronda conserva lo aceptado en TODOS los worktrees
+  ok    y no deja lo rechazado
+  ok    sin GNU Parallel rehúsa en vez de medir en serie a escondidas
+test_prefix_speculation: 14 aserciones — 14 ok, 0 falla(s)
+EXIT=0

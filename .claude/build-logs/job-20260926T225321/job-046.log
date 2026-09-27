@@ -1,0 +1,24 @@
+== caso 1: el árbol limpio pasa, y publica su denominador
+  ok   exit 0
+  ok   publica el alcance medido
+  ok   nombra generadores, no ejecutables
+== caso 2: rehúsa SIN emitir conteo si la raíz de eventos no existe
+   (un 0 ahí no distingue «no hay defectos» de «no pude medir»)
+  ok   exit 2
+  ok   nombra la raíz ausente
+  ok   NO emite conteo
+== caso 3: --strict sobre el árbol limpio sigue en 0
+  ok   exit 0 con --strict
+== caso 4: CONTROL POSITIVO — la forma real que vive en el repo
+  ok   la forma existe en el repo (no es fabricada)
+  ok   exit 1 ante el incumplidor
+  ok   nombra el archivo
+  ok   nombra la forma que lo delata
+== caso 5: el que NO escribe en source/ queda fuera del universo
+   (una sonda que imprime a stdout no rompe la reproducción del artefacto)
+  ok   la sonda no lo hace fallar
+== caso 6: el árbol vendorizado de un tercero queda fuera
+  ok   extraido/ no cuenta como código nuestro
+
+13 ok · 0 falla(s)
+EXIT=0

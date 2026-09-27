@@ -1,0 +1,15 @@
+cd /home/user/thyrox && python3 tests/session/test_gpu_monitor.py
+cd /home/user/thyrox && python3 tests/session/test_gpu_trace.py
+cd /home/user/thyrox && python3 tests/verify/test_step_report.py
+cd /home/user/thyrox && python3 tests/session/test_adopt_background.py
+cd /home/user/thyrox && python3 tests/session/test_background.py
+cd /home/user/thyrox && python3 tests/session/test_pool_history.py
+cd /home/user/thyrox && python3 tests/workbench/test_manifest.py
+cd /home/user/thyrox && python3 tests/verify/test_tsc_cycle.py
+cd /home/user/thyrox && python3 tests/verify/test_tsc_routes.py
+cd /home/user/thyrox && python3 tests/verify/test_tsc_zero_step.py
+cd /home/user/thyrox && bash tests/verify/test-suite-discrimina.sh
+cd /home/user/thyrox && bash tests/verify/test-script-naming.sh
+cd /home/user/thyrox && PYTHONDONTWRITEBYTECODE=1 python3 tests/typescript/test_emit_declarations.py
+cd /home/user/thyrox && bash bin/check_lint_zero
+cd /home/user/thyrox && python3 tests/session/test_transcripts_home.py

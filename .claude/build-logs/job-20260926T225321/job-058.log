@@ -1,0 +1,8 @@
+  ok   el audit no enumera ningun gate registrado
+  ok   el audit invoca al corredor del registro
+  ok   los bloques que ningun gate cubre siguen en el audit
+  ok   el corredor alcanza los gates que el registro declara
+  ok   la delegacion lee una clave que el corredor emite (summary)
+
+test-audit-delegates: 5 ok, 0 falla
+EXIT=0

@@ -1,0 +1,2 @@
+test-gpu-pools-real: REHÚSA — nvidia-smi no responde (nvidia-smi). No se midió nada.
+EXIT=2

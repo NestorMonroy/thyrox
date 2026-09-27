@@ -1,0 +1,1 @@
+local-observability	src/logging/error-log-sink.ts(181,14): error TS2304: Cannot find name 'MACRO'.

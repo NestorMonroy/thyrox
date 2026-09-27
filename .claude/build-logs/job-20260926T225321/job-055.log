@@ -1,0 +1,14 @@
+     WARN  · prueba: SIN MEDIR — el gate rehusó con exit 2 (falta una precondición suya)
+ok   — un gate que rehusa no publica PASS
+ok   — el codigo del gate llega intacto
+     PASS  · sin defectos
+ok   — un 0 medido si publica PASS
+     WARN  · 7 defectos
+ok   — un conteo distinto de 0 publica WARN
+ok   — el conteo llega intacto
+     WARN  · prueba: SIN MEDIR — el gate no emitió conteo (código 1)
+ok   — un gate mudo no publica PASS y cuenta como sin medir
+ok   — ninguna medida de gate usa el idioma ${VAR:-0}
+
+test-veredicto-de-gate: 7 ok, 0 fallo(s) (alcance medido: 7 aserciones)
+EXIT=0

@@ -25,7 +25,7 @@ test_tsc_cycle:
   ok    un especificador relativo se resuelve contra su consumidor: mismo módulo, una unidad
   ok    y reúne a los consumidores de las dos formas de escribirlo
   ok    un import de paquete y uno relativo al mismo archivo son una unidad
-modules plan: 2 módulo(s), 3 consumidor(es) -> /tmp/tmp9o_eg4l4/step/items.txt
+modules plan: 2 módulo(s), 3 consumidor(es) -> /tmp/tmp3la7xkmw/step/items.txt
   ok    plan escribe una línea por módulo
   ok    la línea es unidad, ítem y consumidores
   ok    el ítem lleva los diagnósticos del módulo, y sólo los suyos
@@ -34,11 +34,11 @@ modules plan: 2 módulo(s), 3 consumidor(es) -> /tmp/tmp9o_eg4l4/step/items.txt
   ok    el pool es headless-pool con la plantilla de módulos, sobre items.txt
   ok    el pool no fija --memfree: deriva el ítem y recibe la reserva del tsc vecino
   ok    el pipeline mide en modo módulo las salidas de ese pool
-shared plan: 2 definición(es), 3 diagnóstico(s) -> /tmp/tmp9jmcj_c1/step/items.txt
+shared plan: 2 definición(es), 3 diagnóstico(s) -> /tmp/tmpdrkjxnx4/step/items.txt
   ok    una unidad por definición, de la más citada a la menos
   ok    sus objetivos son los consumidores y las copias
   ok    el ítem nombra las copias y sólo los diagnósticos que la citan
-shared plan: 1 definición(es), 2 diagnóstico(s) -> /tmp/tmp9jmcj_c1/top/items.txt
+shared plan: 1 definición(es), 2 diagnóstico(s) -> /tmp/tmpdrkjxnx4/top/items.txt
   ok    --top toma sólo la cabeza de la cola
   ok    sin causas compartidas, rehúsa
   ok    la ruta 2 usa su plantilla y mide de a una con la política neta
@@ -59,26 +59,26 @@ shared plan: 1 definición(es), 2 diagnóstico(s) -> /tmp/tmp9jmcj_c1/top/items.
   ok    un error que sólo cambió de línea no cuenta como nuevo
   ok    un log que no existe rehúsa, no publica ceros
   ok    la ruta determinista nombra la identidad, el proponente y tsc
-local plan: 2 ítem(s) sobre 1 archivo(s) -> /tmp/tmpsdmak9my/step/items.txt
+local plan: 2 ítem(s) sobre 1 archivo(s) -> /tmp/tmp5cql0czg/step/items.txt
   ok    un ítem por trozo de a lo sumo --size diagnósticos, sin excluidos ni ajenos a src/
   ok    el ítem trae la línea encadenada y el código marcado con '>'
   ok    sin diagnósticos locales, rehúsa sin items.txt
   ok    la ruta 3 usa su plantilla versionada, mide por archivo y sin política neta
   ok    la plantilla de la ruta 3 existe
   ok    gate 4: con instancias vivas de un patrón en memoria, la ruta local rehúsa
-local plan: 1 ítem(s) sobre 1 archivo(s) -> /tmp/tmpr1uzg_38/overlap/items.txt
+local plan: 1 ítem(s) sobre 1 archivo(s) -> /tmp/tmp6ttsoage/overlap/items.txt
   ok    gate 4 descuenta las instancias en vuelo en otro paso, y no las planea
-sweep plan: 1 patrón(es) sobre 2 archivo(s) -> /tmp/tmpr1uzg_38/sweep/items.txt
+sweep plan: 1 patrón(es) sobre 2 archivo(s) -> /tmp/tmp6ttsoage/sweep/items.txt
   ok    un ítem por patrón con sus archivos vivos
   ok    el ítem trae señal, arreglo, dónde ya se aplicó y el código marcado
   ok    sweep plan deja gate4.json con los patrones revisados
   ok    la ruta sweep usa su plantilla y la unidad de varios archivos
   ok    la plantilla del barrido existe
   ok    next manda al barrido antes que a la ruta local
-local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmpr1uzg_38/local2/items.txt
+local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmp6ttsoage/local2/items.txt
   ok    excluidas con razón, la ruta local queda libre
   ok    la confianza por archivo sale del ledger de la ruta por archivo, no de los barridos
-local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmpb1rlu7kt/step/items.txt
+local plan: 3 ítem(s) sobre 3 archivo(s) -> /tmp/tmprvoi902h/step/items.txt
   ok    sin salida posible (0 de 3) el archivo sale de la ruta local
   ok    y queda en deferred.txt con sus cifras y la ruta alternativa
   ok    con pocos intentos se sigue proponiendo, aunque su media esté en el umbral

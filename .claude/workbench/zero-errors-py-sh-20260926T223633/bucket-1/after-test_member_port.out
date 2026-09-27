@@ -21,7 +21,7 @@ test_member_port:
   ok    lo que el destino ya tiene no se porta
   ok    las declaraciones ausentes van en su propio ítem
   ok    un ayudante grande no se absorbe
-member_port plan: 2 ítem(s) -> /tmp/tmpeso4alve/step/items.txt
+member_port plan: 2 ítem(s) -> /tmp/tmp630vxryg/step/items.txt
   ok    plan escribe un ítem por grupo, en el formato de módulo
   ok    el ítem nombra ancla, rangos con JSDoc y los otros miembros que usa
   ok    las declaraciones se listan con su rango, JSDoc incluido
