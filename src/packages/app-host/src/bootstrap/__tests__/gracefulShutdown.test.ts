@@ -1,14 +1,18 @@
 /**
  * El apagado ordenado, ejecutado — no leído como texto.
  *
- * `bootstrap/gracefulShutdown.ts` declaraba este archivo pendiente porque el
- * módulo no se podía importar: seis dependencias de paquete no existían.
- * Medido el 2026-09-27: se importa y expone sus siete símbolos, así que el
- * contrato se prueba ejecutándolo. `gracefulShutdown.behavior.test.ts` sigue
- * fijando la FORMA del código; éste fija la CONDUCTA.
+ * `gracefulShutdown.behavior.test.ts` fija la FORMA del código; éste fija la
+ * CONDUCTA: importa el módulo y lo ejecuta con `process.exit` y
+ * `process.kill` sustituidos por espías que registran y vuelven.
  *
- * `process.exit` se sustituye por un espía que registra el código y vuelve:
- * con `NODE_ENV=test`, `forceExit` admite que el espía vuelva en vez de salir.
+ * `forceExit` es el de producción (2.1.283, `Zmo.forceExit`, extraído con
+ * `bin/binary symbol chunk-csayct82.js Zmo`): si `process.exit` lanza, se
+ * mata con SIGKILL; y si `process.exit` VUELVE —sólo posible con un espía—
+ * lanza `unreachable`. No hay rama por `NODE_ENV`: las pruebas observan la
+ * misma conducta que un proceso real. Por eso cada apagado aquí termina
+ * rechazado con `unreachable`, y la versión síncrona, cuyo manejador de
+ * fallo vuelve a llamar a `forceExit` (igual que el ejecutable), sale dos
+ * veces.
  *
  * Qué haría fallar a este control:
  * - que el apagado no corriera las funciones de limpieza registradas antes
@@ -16,7 +20,10 @@
  *   y 2, porque los dos cuentan la limpieza);
  * - que un segundo apagado concurrente volviera a limpiar o a salir (caso 2);
  * - que `gracefulShutdownSync` no fijara `process.exitCode` antes de volver
- *   (caso 3), que es lo que permite saber que se llamó.
+ *   (caso 3);
+ * - que un `process.exit` que lanza no terminara en SIGKILL, o que uno que
+ *   vuelve pasara en silencio (casos 5 y 6): era la conducta del porte
+ *   anterior bajo `NODE_ENV=test`.
  */
 import { afterEach, beforeAll, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import { installConfigHostBindings } from '@thyrox/config'
@@ -31,7 +38,9 @@ import {
 } from '../gracefulShutdown.js'
 
 let exits: number[] = []
+let kills: Array<[number, string]> = []
 let exitSpy: ReturnType<typeof spyOn>
+let killSpy: ReturnType<typeof spyOn>
 const unregister: Array<() => void> = []
 const previousExitCode = process.exitCode
 
@@ -41,8 +50,13 @@ beforeAll(() => {
 
 beforeEach(() => {
   exits = []
+  kills = []
   exitSpy = spyOn(process, 'exit').mockImplementation(((code?: number) => {
     exits.push(code ?? 0)
+  }) as never)
+  killSpy = spyOn(process, 'kill').mockImplementation(((pid: number, signal: string) => {
+    kills.push([pid, signal])
+    return true
   }) as never)
   resetShutdownState()
 })
@@ -50,6 +64,7 @@ beforeEach(() => {
 afterEach(async () => {
   await getPendingShutdownForTesting()
   exitSpy.mockRestore()
+  killSpy.mockRestore()
   for (const off of unregister.splice(0)) off()
   resetShutdownState()
   process.exitCode = previousExitCode
@@ -60,7 +75,7 @@ describe('gracefulShutdown', () => {
     const order: string[] = []
     unregister.push(registerCleanup(async () => { order.push('cleanup') }))
     exitSpy.mockImplementation(((code?: number) => { order.push(`exit:${code}`); exits.push(code ?? 0) }) as never)
-    await gracefulShutdown(3)
+    await expect(gracefulShutdown(3)).rejects.toThrow('unreachable')
     expect(order).toEqual(['cleanup', 'exit:3'])
     expect(process.exitCode).toBe(3)
   })
@@ -71,7 +86,7 @@ describe('gracefulShutdown', () => {
     const first = gracefulShutdown(0)
     expect(isShuttingDown()).toBe(true)
     await gracefulShutdown(9)
-    await first
+    await expect(first).rejects.toThrow('unreachable')
     expect([cleanups, exits]).toEqual([1, [0]])
   })
 
@@ -79,14 +94,27 @@ describe('gracefulShutdown', () => {
     gracefulShutdownSync(7)
     expect(process.exitCode).toBe(7)
     await getPendingShutdownForTesting()
-    expect(exits).toEqual([7])
+    expect(exits).toEqual([7, 7])
   })
 
   test('4. resetShutdownState deja volver a apagar', async () => {
-    await gracefulShutdown(1)
+    await expect(gracefulShutdown(1)).rejects.toThrow('unreachable')
     resetShutdownState()
     expect(isShuttingDown()).toBe(false)
-    await gracefulShutdown(2)
+    await expect(gracefulShutdown(2)).rejects.toThrow('unreachable')
     expect(exits).toEqual([1, 2])
+  })
+})
+
+describe('forceExit — el mecanismo de producción', () => {
+  test('5. si process.exit lanza, el proceso se mata con SIGKILL', async () => {
+    exitSpy.mockImplementation((() => { throw Object.assign(new Error('write EIO'), { code: 'EIO' }) }) as never)
+    await expect(gracefulShutdown(4)).rejects.toThrow('unreachable')
+    expect(kills).toEqual([[process.pid, 'SIGKILL']])
+  })
+
+  test('6. si process.exit vuelve, forceExit no pasa en silencio', async () => {
+    await expect(gracefulShutdown(5)).rejects.toThrow('unreachable')
+    expect([exits, kills]).toEqual([[5], []])
   })
 })

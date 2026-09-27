@@ -1,0 +1,2 @@
+chunk-csayct82.js ClassDeclaration Sze [85965,86029)
+literal: 1 declaración(es) en 1 de 2138 chunk(s)

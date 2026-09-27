@@ -203,16 +203,17 @@ describe('gracefulShutdown — source pins', () => {
 
   describe('Force exit fallback', () => {
     test('SIGKILL fallback when process.exit() throws EIO', () => {
-      // Pin: dead TTY → process.exit throws → SIGKILL.
+      // Fija: si process.exit lanza, el proceso se mata con SIGKILL.
       expect(source).toMatch(/process\.kill\(process\.pid, 'SIGKILL'\)/)
     })
 
-    test('test mode re-throws (NOT SIGKILL) so test can detect mock', () => {
-      // Pin: NODE_ENV==='test' path. Otherwise tests can't intercept
-      // process.exit mock.
-      expect(source).toMatch(
-        /if \(\(process\.env\.NODE_ENV as string\) === 'test'\) \{\s*\n?\s*throw e/,
-      )
+    test('no environment branch: an exit that returns throws unreachable', () => {
+      // Fija la forma de producción (2.1.283, `Zmo.forceExit`): ni el
+      // SIGKILL ni el error final dependen de NODE_ENV. El porte anterior
+      // re-lanzaba bajo NODE_ENV=test y volvía en silencio: una conducta que
+      // sólo existía en las pruebas.
+      expect(source).not.toMatch(/NODE_ENV/)
+      expect(source).toMatch(/SIGKILL'\)\s*\n\s*\}\s*\n(\s*\/\/[^\n]*\n)*\s*throw new Error\('unreachable'\)/)
     })
   })
 

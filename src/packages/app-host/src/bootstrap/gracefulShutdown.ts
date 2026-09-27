@@ -256,24 +256,16 @@ function forceExit(exitCode: number): never {
   }
   try {
     process.exit(exitCode)
-  } catch (e) {
-    // process.exit() lanzó. En tests, está mockeado para lanzar - se
-    // re-lanza para que el test lo vea. En producción, probablemente es
-    // EIO de una terminal muerta - se usa SIGKILL.
-    if ((process.env.NODE_ENV as string) === 'test') {
-      throw e
-    }
-    // Recae en SIGKILL, que no intenta vaciar nada.
+  } catch {
+    // `process.exit` lanzó: el proceso no pudo salir por la vía normal (por
+    // ejemplo, al vaciar la salida sobre una terminal que ya no existe). Se
+    // mata con SIGKILL, que no intenta vaciar nada. Es la conducta del
+    // ejecutable (2.1.283, `Zmo.forceExit`), sin excepciones por entorno.
     process.kill(process.pid, 'SIGKILL')
   }
-  // En tests, process.exit puede estar mockeado para retornar en vez de
-  // salir. En producción, nunca deberíamos llegar aquí.
-  if ((process.env.NODE_ENV as string) !== 'test') {
-    throw new Error('unreachable')
-  }
-  // Truco de TypeScript: se castea a never ya que sabemos que esto solo
-  // pasa en tests donde el mock retorna en vez de salir
-  return undefined as never
+  // `process.exit` y SIGKILL no vuelven. Llegar aquí significa que alguien
+  // los sustituyó por algo que vuelve, y eso no se deja pasar en silencio.
+  throw new Error('unreachable')
 }
 
 /**
@@ -491,8 +483,9 @@ export function gracefulShutdownSync(
       printResumeHint()
       forceExit(exitCode)
     })
-    // Evita un rechazo no manejado: forceExit re-lanza en modo test, lo
-    // que escaparía del handler .catch() de arriba como un nuevo rechazo.
+    // Evita un rechazo no manejado: si forceExit lanza `unreachable` (una
+    // salida sustituida que volvió), escaparía del .catch() de arriba como
+    // un rechazo nuevo. El ejecutable cierra la cadena igual.
     .catch(() => {})
 }
 
