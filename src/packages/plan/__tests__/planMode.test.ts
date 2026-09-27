@@ -1,9 +1,12 @@
 /**
- * Controles de plan mode (TASK-API-0059).
+ * Controles de plan mode (TASK-API-0059): el contrato del modo, sin las
+ * herramientas que lo envuelven.
  *
  * Fuente del porte: los esquemas de `EnterPlanMode`/`ExitPlanMode` del binario
  * 2.1.261 y los literales `planFilePath` / `planModeInstructions` /
- * `sparse`-`full`. Ver `@thyrox/plan/mode` para lo que el porte NO reproduce.
+ * `sparse`-`full`. Ver `src/mode.ts` para lo que el porte NO reproduce. Las
+ * herramientas `EnterPlanMode`/`ExitPlanMode` se prueban en `@thyrox/tools`
+ * (`__tests__/planTools.test.ts`), que es donde viven.
  *
  * Cada caso declara qué lo haría fallar — un control que no puede fallar es un
  * adorno (sub-patrón D de `metrica-decide-la-conclusion.md`).
@@ -12,17 +15,12 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { PlanMode, planFilePath, planModeInstructions, planModeVerdict, planVariantFor, renderPlan } from '@thyrox/plan/mode'
-import { planTools } from '../src/plan.ts'
-import type { ToolContext } from '@thyrox/agent/loop/types'
+import { PlanMode, planFilePath, planModeInstructions, planModeVerdict, planVariantFor, renderPlan } from '../src/mode.ts'
 
 function raiz(): string {
   return mkdtempSync(join(tmpdir(), 'planmode-'))
 }
 
-function contexto(cwd: string): ToolContext {
-  return { cwd, sessionId: 's1', abort: new AbortController().signal, messages: [] }
-}
 
 describe('la ruta del archivo de plan', () => {
   test('una plansDir relativa se resuelve contra la raíz del proyecto', () => {
@@ -78,28 +76,14 @@ describe('la puerta del modo', () => {
   })
 })
 
-describe('ExitPlanMode lee del archivo, no de un parámetro', () => {
-  test('rehúsa sin archivo y rehúsa con archivo vacío', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    modo.enter()
-    const [, exit] = planTools(modo)
-    expect((await exit!.run({}, contexto(root))).isError).toBe(true)
-    modo.write('   \n  ')
-    expect((await exit!.run({}, contexto(root))).isError).toBe(true)
-    expect(modo.current()).toBe('planning')
-  })
-
-  test('con plan escrito pasa a esperar aprobación y devuelve el texto', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    modo.enter()
-    modo.write('# Plan\n\n1. Medir\n2. Portar\n')
-    const [, exit] = planTools(modo)
-    const r = await exit!.run({}, contexto(root))
-    expect(r.isError).toBe(false)
-    expect(r.content).toContain('2. Portar')
-    expect(modo.current()).toBe('awaitingApproval')
+describe('el estado del modo', () => {
+  test('pedir aprobación fuera del modo rehúsa y no cambia el estado', () => {
+    // Falla si requestApproval saltara directo a awaitingApproval sin modo
+    // activo: una aprobación sin plan en curso abriría la escritura al aprobar.
+    const modo = new PlanMode('s1', { projectRoot: raiz(), plansDir: 'plans' })
+    modo.write('# Plan')
+    expect(modo.requestApproval()).toEqual({ ok: false, reason: 'plan mode no está activo' })
+    expect(modo.current()).toBe('inactive')
   })
 
   test('esperar aprobación NO abre la escritura — sólo aprobar lo hace', () => {
@@ -122,29 +106,6 @@ describe('ExitPlanMode lee del archivo, no de un parámetro', () => {
     modo.requestApproval()
     expect(modo.reject()).toBe('planning')
     expect(modo.active()).toBe(true)
-  })
-})
-
-describe('EnterPlanMode', () => {
-  test('no recibe parámetros y entrega las instrucciones con la ruta', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    const [enter] = planTools(modo)
-    expect(Object.keys(enter!.input_schema.properties ?? {})).toHaveLength(0)
-    const r = await enter!.run({}, contexto(root))
-    expect(r.content).toContain(modo.path)
-    expect(modo.current()).toBe('planning')
-  })
-
-  test('entrar dos veces es idempotente y no pierde el estado de aprobación', async () => {
-    const root = raiz()
-    const modo = new PlanMode('s1', { projectRoot: root, plansDir: 'plans' })
-    const [enter] = planTools(modo)
-    await enter!.run({}, contexto(root))
-    modo.write('# Plan')
-    modo.requestApproval()
-    await enter!.run({}, contexto(root))
-    expect(modo.current()).toBe('awaitingApproval')
   })
 })
 
