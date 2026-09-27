@@ -33,6 +33,7 @@ import { execFile as execFileCb } from 'node:child_process'
 import { promisify } from 'node:util'
 import type { NonNullableUsage } from '@thyrox/headless-sdk/sdkUtilityTypes.js'
 import { toCompatSessionId } from '../sessionIdCompat.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 /**
  * `getOauthConfig` — de `@claude-code-how-works/provider/oauthConstants`.
@@ -715,7 +716,7 @@ export function truncateToWidth(text: string, maxWidth: number): string {
 }
 
 /**
- * `getClaudeConfigHomeDir` — de
+ * `getConfigHomeDir` — de
  * `@claude-code-how-works/config/env/utils`. `@thyrox/config: env/utils.ts`
  * la MENCIONA en su docstring de cabecera pero no la exporta todavía
  * (porte parcial de ese paquete). Reimplementación fiel VERBATIM (pura,
@@ -724,14 +725,7 @@ export function truncateToWidth(text: string, maxWidth: number): string {
  * sea miembro del workspace.
  */
 
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
+export { getConfigHomeDir }
 
 /**
  * `getSessionId` — de `@claude-code-how-works/app-host/bootstrap/state.js`.
@@ -784,11 +778,11 @@ export function jsonParse(
  * `@claude-code-how-works/storage/sessionStoragePortable.js`. Ya existe
  * idéntica en `@thyrox/storage: src/sessionStoragePortable.ts:329`.
  * Reimplementación fiel VERBATIM, compuesta con el
- * `getClaudeConfigHomeDir` de arriba. Se retira cuando `@thyrox/bridge`
+ * `getConfigHomeDir` de arriba. Se retira cuando `@thyrox/bridge`
  * sea miembro del workspace.
  */
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getConfigHomeDir(), 'projects')
 }
 
 /**

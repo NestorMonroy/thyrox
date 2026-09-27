@@ -28,7 +28,7 @@ import {
 import type { ToolUseContext } from '../../Tool.js'
 import { buildTool, type ToolDef } from '../../Tool.js'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { getErrnoCode, isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import {
   addLineNumbers,
@@ -193,7 +193,7 @@ const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
 function detectSessionFileType(
   filePath: string,
 ): 'session_memory' | 'session_transcript' | null {
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getConfigHomeDir()
 
   // Only match files within the Claude config directory
   if (!filePath.startsWith(configDir)) {

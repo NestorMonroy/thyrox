@@ -1,5 +1,4 @@
 import memoize from 'lodash-es/memoize.js'
-import { join } from 'path'
 import {
   getCurrentProjectConfig,
   saveCurrentProjectConfig,
@@ -8,6 +7,7 @@ import { readEnv } from '@thyrox/config/env/utils'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { isDirEmpty } from '@thyrox/storage/file.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
+import { instructionsFileCandidates } from '@thyrox/config/env/instructionFiles.js'
 
 export type Step = {
   key: string
@@ -18,9 +18,8 @@ export type Step = {
 }
 
 export function getSteps(): Step[] {
-  const hasClaudeMd = getFsImplementation().existsSync(
-    join(getCwd(), 'CLAUDE.md'),
-  )
+  const fs = getFsImplementation()
+  const hasClaudeMd = instructionsFileCandidates(getCwd()).some(path => fs.existsSync(path))
   const isWorkspaceDirEmpty = isDirEmpty(getCwd())
 
   return [

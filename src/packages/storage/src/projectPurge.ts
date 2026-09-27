@@ -31,7 +31,7 @@ import { createReadStream } from 'fs'
 import { readdir, readFile, rm, stat, writeFile } from 'fs/promises'
 import { createInterface } from 'readline'
 import { join, resolve as pathResolve, sep as pathSep } from 'path'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import {
   canonicalizePath,
   getProjectsDir,
@@ -53,7 +53,7 @@ function sanitizePathComponent(input: string): string {
 
 function getTasksDir(taskListId: string): string {
   return join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     'tasks',
     sanitizePathComponent(taskListId),
   )
@@ -255,7 +255,7 @@ async function readClaudeJsonProjects(): Promise<{
   projects: Record<string, unknown>
 } | null> {
   const claudeJsonPath = join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     '..',
     '.claude.json',
   )
@@ -275,7 +275,7 @@ async function readClaudeJsonProjects(): Promise<{
 export async function collectProjectPurgeItems(
   projectPath: string,
 ): Promise<PurgePlan> {
-  const home = getClaudeConfigHomeDir()
+  const home = getConfigHomeDir()
   const rawRoot = pathResolve(projectPath)
   const canonicalRoot = await canonicalizePath(rawRoot)
   const projectRoots: ReadonlySet<string> = new Set([rawRoot, canonicalRoot])
@@ -445,7 +445,7 @@ export async function collectProjectPurgeItems(
  * `~/.claude.json#projects`. No worktree / slug-prefix scan needed.
  */
 export async function collectAllProjectsPurgeItems(): Promise<PurgePlan> {
-  const home = getClaudeConfigHomeDir()
+  const home = getConfigHomeDir()
   const items: PurgeItem[] = []
   const warnings: string[] = []
 
@@ -507,7 +507,7 @@ export async function executePurgeItem(item: PurgeItem): Promise<void> {
       await deleteClaudeJsonProjectKey(item.path)
       return
     case 'history-lines': {
-      const home = getClaudeConfigHomeDir()
+      const home = getConfigHomeDir()
       const historyJsonl = join(home, 'history.jsonl')
       await scanHistoryFile(
         item.path === historyJsonl ? item.path : historyJsonl,
@@ -525,7 +525,7 @@ export async function executePurgeItem(item: PurgeItem): Promise<void> {
 
 async function deleteClaudeJsonProjectKey(projectKey: string): Promise<void> {
   const claudeJsonPath = join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     '..',
     '.claude.json',
   )

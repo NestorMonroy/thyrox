@@ -22,7 +22,7 @@
  * archivo no añada NINGÚN gap nuevo de su propia cosecha más que los ya
  * declarados aquí:
  *
- * - `@claude-code-how-works/config/env/utils` → `getClaudeConfigHomeDir`.
+ * - `@claude-code-how-works/config/env/utils` → `getConfigHomeDir`.
  *   `@thyrox/config/env/utils.ts` sólo porta `isEnvTruthy`/`readEnv`/
  *   `getAllEnv` (3 de 17 símbolos de la fuente) — medido:
  *   `grep -c "^export function" src/packages/config/env/utils.ts` → 3.
@@ -74,8 +74,8 @@ setDjb2HashFn(s => requireDjb2Hash()(s))
 function requireClaudeConfigHomeDir(): () => string {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   return (require('@thyrox/config/env/utils.js') as {
-    getClaudeConfigHomeDir: () => string
-  }).getClaudeConfigHomeDir
+    getConfigHomeDir: () => string
+  }).getConfigHomeDir
 }
 
 function requireGlobalClaudeFile(): () => string {

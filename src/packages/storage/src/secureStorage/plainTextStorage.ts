@@ -6,7 +6,7 @@
  *
  * Divergencias declaradas (DEC-04), todas triviales:
  *
- * - `getClaudeConfigHomeDir` (de `@claude-code-how-works/config/env/utils`)
+ * - `getConfigHomeDir` (de `@claude-code-how-works/config/env/utils`)
  *   — se reimplementa localmente, SIN memoización. La fuente la memoiza
  *   (`lodash-es/memoize`, resolver = `process.env.CLAUDE_CONFIG_DIR`)
  *   porque tiene 150+ llamadores de alto tráfico; este porte tiene un solo
@@ -34,15 +34,8 @@ import { homedir } from 'os'
 import { join } from 'path'
 import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
 import type { SecureStorage, SecureStorageData } from './types.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
-/**
- * Sustituto local de
- * `@claude-code-how-works/config/env/utils`'s `getClaudeConfigHomeDir` —
- * misma fórmula, sin memoización (ver docstring del módulo).
- */
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
 
 function jsonParse<T = unknown>(raw: string): T {
   return JSON.parse(raw) as T
@@ -78,7 +71,7 @@ function writeFileSync(
 }
 
 function getStoragePath(): { storageDir: string; storagePath: string } {
-  const storageDir = getClaudeConfigHomeDir()
+  const storageDir = getConfigHomeDir()
   const storageFileName = '.credentials.json'
   return { storageDir, storagePath: join(storageDir, storageFileName) }
 }

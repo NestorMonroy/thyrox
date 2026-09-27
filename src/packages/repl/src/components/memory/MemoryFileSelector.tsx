@@ -1,7 +1,6 @@
 import { feature } from 'bun:bundle'
 import chalk from 'chalk'
 import { mkdir } from 'fs/promises'
-import { join } from 'path'
 import * as React from 'react'
 import { use, useEffect, useState } from 'react'
 import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
@@ -20,12 +19,13 @@ import { logEvent } from '@thyrox/local-observability'
 import { useAppState } from '../../appStateHooks.js'
 import { openPath } from '@thyrox/storage/browser.js'
 import { getMemoryFiles, type MemoryFileInfo } from '@thyrox/storage/claudemd.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getDisplayPath } from '@thyrox/storage/file.js'
 import { formatRelativeTimeAgo } from '@thyrox/output/formatters'
 import { projectIsInGitRepo } from '@thyrox/memory/projectGitInfo'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from '../CustomSelect/index.js'
+import { instructionsFileCandidates, pickInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 interface ExtendedMemoryFileInfo extends MemoryFileInfo {
   isNested?: boolean
@@ -49,8 +49,8 @@ export function MemoryFileSelector({
   const existingMemoryFiles = use(getMemoryFiles())
 
   // Create entries for User and Project CLAUDE.md even if they don't exist
-  const userMemoryPath = join(getClaudeConfigHomeDir(), 'CLAUDE.md')
-  const projectMemoryPath = join(getOriginalCwd(), 'CLAUDE.md')
+  const userMemoryPath = pickInstructionsFile(instructionsFileCandidates(getConfigHomeDir()))
+  const projectMemoryPath = pickInstructionsFile(instructionsFileCandidates(getOriginalCwd()))
 
   // Check if these are already in the existing files
   const hasUserMemory = existingMemoryFiles.some(f => f.path === userMemoryPath)

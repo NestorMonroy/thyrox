@@ -61,6 +61,14 @@ import {
 import { Lexer } from 'marked'
 import { expandPath } from './path.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { CONFIG_DIR_NAMES, getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import {
+  instructionsFileCandidates,
+  isInstructionsFileName,
+  localInstructionsFileCandidates,
+  nestedInstructionsFileCandidates,
+  rulesDirectories,
+} from '@thyrox/config/env/instructionFiles.js'
 
 
 
@@ -201,13 +209,13 @@ export function isMemoryFilePath(filePath: string): boolean {
   if (!filePath) return false
   const name = filePath.split(/[\\/]/).pop() ?? ''
 
-  if (name === 'CLAUDE.md' || name === 'CLAUDE.local.md') {
+  if (isInstructionsFileName(name)) {
     return true
   }
 
   if (
     name.endsWith('.md') &&
-    (filePath.includes('/.claude/rules/') || filePath.includes('\\.claude\\rules\\'))
+    CONFIG_DIR_NAMES.some(dir => filePath.includes(`/${dir}/rules/`) || filePath.includes(`\\${dir}\\rules\\`))
   ) {
     return true
   }
@@ -316,8 +324,8 @@ function loaderConfig(): LoaderConfig {
   }
   return {
     configHome: safe(
-      () => env?.getClaudeConfigHomeDir?.() as string,
-      join(process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')),
+      () => env?.getConfigHomeDir?.() as string,
+      getConfigHomeDir(),
     ),
     managedDir: safe(() => managed?.getManagedFilePath?.() as string, '/etc/claude-code'),
     userEnabled: enabled('userSettings'),
@@ -605,6 +613,37 @@ async function loadRulesDir(
   return files
 }
 
+/**
+ * La ruta de la ranura: el primer candidato que existe, o el primero de la
+ * lista si no existe ninguno (su carga dará vacío, como con un archivo
+ * ausente). Se decide por existencia y no por lo que la carga devuelva: un
+ * archivo propio excluido por `claudeMdExcludes` no debe ceder la ranura al
+ * heredado.
+ */
+async function slotPath(candidates: string[]): Promise<string> {
+  for (const path of candidates) {
+    try {
+      await stat(path)
+      return path
+    } catch {
+      // ausente o ilegible: el siguiente candidato
+    }
+  }
+  return candidates[0]!
+}
+
+/** Las ranuras de proyecto de un directorio: el archivo raíz, el anidado y
+ * las reglas de los dos directorios de configuración. */
+async function loadProjectSlots(dir: string, ctx: WalkContext, external: boolean): Promise<MemoryFileInfo[]> {
+  const files: MemoryFileInfo[] = []
+  files.push(...(await loadMemoryFile(await slotPath(instructionsFileCandidates(dir)), 'Project', ctx, external)))
+  files.push(...(await loadMemoryFile(await slotPath(nestedInstructionsFileCandidates(dir)), 'Project', ctx, external)))
+  for (const rules of rulesDirectories(dir)) {
+    files.push(...(await loadRulesDir(rules, 'Project', ctx, external, false)))
+  }
+  return files
+}
+
 /** `qwo`: todas las capas, en orden de menor a mayor precedencia. */
 async function collectMemoryFiles(forceIncludeExternal: boolean): Promise<MemoryFileInfo[]> {
   const config = loaderConfig()
@@ -613,11 +652,13 @@ async function collectMemoryFiles(forceIncludeExternal: boolean): Promise<Memory
   const external = forceIncludeExternal || config.externalApproved
   const files: MemoryFileInfo[] = []
 
-  files.push(...(await loadMemoryFile(join(config.managedDir, 'CLAUDE.md'), 'Managed', ctx, external)))
-  files.push(...(await loadRulesDir(join(config.managedDir, '.claude', 'rules'), 'Managed', ctx, external, false)))
+  files.push(...(await loadMemoryFile(await slotPath(instructionsFileCandidates(config.managedDir)), 'Managed', ctx, external)))
+  for (const rules of rulesDirectories(config.managedDir)) {
+    files.push(...(await loadRulesDir(rules, 'Managed', ctx, external, false)))
+  }
 
   if (config.userEnabled) {
-    files.push(...(await loadMemoryFile(join(config.configHome, 'CLAUDE.md'), 'User', ctx, true)))
+    files.push(...(await loadMemoryFile(await slotPath(instructionsFileCandidates(config.configHome)), 'User', ctx, true)))
     files.push(...(await loadRulesDir(join(config.configHome, 'rules'), 'User', ctx, true, false)))
   }
 
@@ -629,20 +670,16 @@ async function collectMemoryFiles(forceIncludeExternal: boolean): Promise<Memory
   const projectDirs = (dirs: string[]) => dirs
   for (const dir of projectDirs(chain.reverse())) {
     if (config.projectEnabled) {
-      files.push(...(await loadMemoryFile(join(dir, 'CLAUDE.md'), 'Project', ctx, external)))
-      files.push(...(await loadMemoryFile(join(dir, '.claude', 'CLAUDE.md'), 'Project', ctx, external)))
-      files.push(...(await loadRulesDir(join(dir, '.claude', 'rules'), 'Project', ctx, external, false)))
+      files.push(...(await loadProjectSlots(dir, ctx, external)))
     }
     if (config.localEnabled)
-      files.push(...(await loadMemoryFile(join(dir, 'CLAUDE.local.md'), 'Local', ctx, external)))
+      files.push(...(await loadMemoryFile(await slotPath(localInstructionsFileCandidates(dir)), 'Local', ctx, external)))
   }
 
   for (const dir of config.additionalDirs) {
-    files.push(...(await loadMemoryFile(join(dir, 'CLAUDE.md'), 'Project', ctx, external)))
-    files.push(...(await loadMemoryFile(join(dir, '.claude', 'CLAUDE.md'), 'Project', ctx, external)))
-    files.push(...(await loadRulesDir(join(dir, '.claude', 'rules'), 'Project', ctx, external, false)))
+    files.push(...(await loadProjectSlots(dir, ctx, external)))
     if (config.localEnabled)
-      files.push(...(await loadMemoryFile(join(dir, 'CLAUDE.local.md'), 'Local', ctx, external)))
+      files.push(...(await loadMemoryFile(await slotPath(localInstructionsFileCandidates(dir)), 'Local', ctx, external)))
   }
   return files
 }
@@ -785,14 +822,11 @@ export async function getConditionalRulesForCwdLevelDirectory(
   targetPath: string,
   processedPaths: Set<string>,
 ): Promise<MemoryFileInfo[]> {
-  const rulesDir = join(dir, '.claude', 'rules')
-  return processConditionedMdRules(
-    targetPath,
-    rulesDir,
-    'Project',
-    processedPaths,
-    false,
-  )
+  const result: MemoryFileInfo[] = []
+  for (const rulesDir of rulesDirectories(dir)) {
+    result.push(...(await processConditionedMdRules(targetPath, rulesDir, 'Project', processedPaths, false)))
+  }
+  return result
 }
 /**
  * Reglas condicionales Managed y User que matchean `targetPath`.
@@ -805,15 +839,9 @@ export async function getManagedAndUserConditionalRules(
   const config = loaderConfig()
   const result: MemoryFileInfo[] = []
 
-  result.push(
-    ...(await processConditionedMdRules(
-      targetPath,
-      join(config.managedDir, '.claude', 'rules'),
-      'Managed',
-      processedPaths,
-      false,
-    )),
-  )
+  for (const rulesDir of rulesDirectories(config.managedDir)) {
+    result.push(...(await processConditionedMdRules(targetPath, rulesDir, 'Managed', processedPaths, false)))
+  }
 
   if (config.userEnabled) {
     result.push(
@@ -842,9 +870,9 @@ function handleMemoryFileReadError(error: unknown, filePath: string): void {
       // @thyrox/config depende de este paquete (ver loaderConfig arriba):
       // se resuelve tarde con require, nunca por import estático.
       const env = require('@thyrox/config/env/utils.js') as {
-        getClaudeConfigHomeDir?: () => string
+        getConfigHomeDir?: () => string
       }
-      homeDir = env.getClaudeConfigHomeDir?.() ?? ''
+      homeDir = env.getConfigHomeDir?.() ?? ''
     } catch {
       homeDir = ''
     }
@@ -1290,7 +1318,7 @@ export async function getMemoryFilesForNestedDirectory(
 
   // Procesa los archivos de memoria del proyecto (CLAUDE.md y .claude/CLAUDE.md)
   if (config.projectEnabled) {
-    const projectPath = join(dir, 'CLAUDE.md')
+    const projectPath = await slotPath(instructionsFileCandidates(dir))
     result.push(
       ...(await processMemoryFile(
         projectPath,
@@ -1299,7 +1327,7 @@ export async function getMemoryFilesForNestedDirectory(
         false,
       )),
     )
-    const dotClaudePath = join(dir, '.claude', 'CLAUDE.md')
+    const dotClaudePath = await slotPath(nestedInstructionsFileCandidates(dir))
     result.push(
       ...(await processMemoryFile(
         dotClaudePath,
@@ -1312,37 +1340,29 @@ export async function getMemoryFilesForNestedDirectory(
 
   // Procesa el archivo de memoria local (CLAUDE.local.md)
   if (config.localEnabled) {
-    const localPath = join(dir, 'CLAUDE.local.md')
+    const localPath = await slotPath(localInstructionsFileCandidates(dir))
     result.push(
       ...(await processMemoryFile(localPath, 'Local', processedPaths, false)),
     )
   }
 
-  const rulesDir = join(dir, '.claude', 'rules')
-
-  // Procesa las reglas incondicionales del proyecto en .claude/rules/*.md, que no se cargaron de forma anticipada.
-  // Usa un set de processedPaths separado para no marcar los archivos de reglas condicionales como procesados
+  // Las reglas de los dos directorios de configuración (`.thyrox/rules` y
+  // `.claude/rules`). Las incondicionales, que no se cargaron de forma
+  // anticipada, usan un set de processedPaths separado para no marcar como
+  // procesados los archivos de reglas condicionales.
   const unconditionalProcessedPaths = new Set(processedPaths)
-  result.push(
-    ...(await processMdRules({
-      rulesDir,
-      type: 'Project',
-      processedPaths: unconditionalProcessedPaths,
-      includeExternal: false,
-      conditionalRule: false,
-    })),
-  )
-
-  // Procesa las reglas condicionales del proyecto en .claude/rules/*.md
-  result.push(
-    ...(await processConditionedMdRules(
-      targetPath,
-      rulesDir,
-      'Project',
-      processedPaths,
-      false,
-    )),
-  )
+  for (const rulesDir of rulesDirectories(dir)) {
+    result.push(
+      ...(await processMdRules({
+        rulesDir,
+        type: 'Project',
+        processedPaths: unconditionalProcessedPaths,
+        includeExternal: false,
+        conditionalRule: false,
+      })),
+    )
+    result.push(...(await processConditionedMdRules(targetPath, rulesDir, 'Project', processedPaths, false)))
+  }
 
   // processedPaths se siembra con las rutas incondicionales para los directorios subsiguientes
   for (const path of unconditionalProcessedPaths) {

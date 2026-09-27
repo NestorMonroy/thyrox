@@ -137,6 +137,10 @@ describe('checkReadableInternalPath (hee)', () => {
     expect(checkReadableInternalPath(md, input).behavior).toBe('passthrough')
     expect(checkReadableInternalPath(md, input, undefined, { readBlockFence: true })).toMatchObject({ behavior: 'allow' })
   })
+  test('con la cerca de lectura, el THYROX.md del usuario también se lee', () => {
+    const md = touch(join(home, 'THYROX.md'))
+    expect(checkReadableInternalPath(md, input, undefined, { readBlockFence: true })).toMatchObject({ behavior: 'allow' })
+  })
 })
 
 test('getProfileStoreDenyPaths: una raíz que contiene el cwd del proceso deja sólo configs, credentials y active_config', () => {

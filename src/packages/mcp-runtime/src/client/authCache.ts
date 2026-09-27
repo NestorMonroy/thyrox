@@ -14,7 +14,7 @@
  * `@thyrox/config` declara el subpath `./env/utils`, ese módulo es un
  * PORTE PARCIAL declarado (TASK-DOCS-0200) que sólo trae 3 de los 17
  * símbolos de la fuente — `isEnvTruthy`, `readEnv`, `getAllEnv` — y
- * `getClaudeConfigHomeDir` está explícitamente entre los 14 omitidos.
+ * `getConfigHomeDir` está explícitamente entre los 14 omitidos.
  *
  * CORREGIDO — el especificador original (`@claude-code-how-works/config/
  * env/utils`) ya NO se deja como import estático: la base
@@ -23,21 +23,21 @@
  * MÓDULO ENTERO (`Cannot find module`), no sólo el símbolo — medido con
  * `bun -e "import(...)"` sobre este mismo archivo antes de la corrección.
  * Hoy viene de `@thyrox/config/env/utils`, que ya exporta
- * `getClaudeConfigHomeDir`; el sustituto local que lo cubría se retiró el
+ * `getConfigHomeDir`; el sustituto local que lo cubría se retiró el
  * 2026-09-27 (`check_stand_ins`). Ver H-DOCS-1160 para el episodio que
  * originó la primera mitad de esta corrección.
  */
 import { mkdir, readFile, unlink, writeFile } from "fs/promises";
 import { dirname } from "path";
 import { jsonParse, jsonStringify } from "@thyrox/local-observability/slowOperations.js";
-import { getClaudeConfigHomeDir } from "@thyrox/config/env/utils";
+import { getConfigHomeDir } from "@thyrox/config/env/utils";
 
 const MCP_AUTH_CACHE_TTL_MS = 15 * 60 * 1000;
 
 type McpAuthCacheData = Record<string, { timestamp: number }>;
 
 export function getMcpAuthCachePath(): string {
-	return `${getClaudeConfigHomeDir()}/mcp-needs-auth-cache.json`;
+	return `${getConfigHomeDir()}/mcp-needs-auth-cache.json`;
 }
 
 let authCachePromise: Promise<McpAuthCacheData> | null = null;

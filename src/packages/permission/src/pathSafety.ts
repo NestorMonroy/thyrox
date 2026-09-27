@@ -6,8 +6,8 @@
  *
  * Reimplementación del contrato de 2.1.275, no copia:
  *
- *   `checkPathSafetyForAutoEdit` ≙ `Gge` · `isClaudeSettingsPath` ≙ `HTe` ·
- *   `isClaudeConfigDirectory` ≙ `xu` · `isClaudeCommandSource` ≙ `Cu` ·
+ *   `checkPathSafetyForAutoEdit` ≙ `Gge` · `isSettingsFilePath` ≙ `HTe` ·
+ *   `isConfigDirectory` ≙ `xu` · `isCommandSource` ≙ `Cu` ·
  *   `isSensitivePath` ≙ `Lu` · `isSuspiciousWindowsPath` ≙ `b1` ·
  *   `pathContains` ≙ `Ld` · `isInTrustedNetworkDirectory` ≙ `Oe` ·
  *   `comparableSegment` ≙ `sc` · `comparablePath` ≙ `Ae` (todas en
@@ -36,6 +36,7 @@ import * as nodePath from 'node:path'
 import { getPlatform } from '@thyrox/config/platform.js'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { foldPathCase } from './pathCase.js'
+import { CONFIG_DIR_NAMES, getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 export type TrustedNetworkDirectories = Map<string, readonly string[]>
 
@@ -140,13 +141,8 @@ function getCwdDeferred(): string {
   }
 }
 
-function getClaudeConfigHomeDirDeferred(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(homedir(), '.claude').normalize('NFC')
-  }
+function getConfigHomeDirDeferred(): string {
+  return getConfigHomeDir()
 }
 
 function expandPathDeferred(path: string): string {
@@ -441,9 +437,15 @@ export function isSuspiciousWindowsPath(path: string, trusted?: TrustedNetworkDi
 
 // ---- Archivos de configuración de Claude ----
 
-/** `~/.claude` y el directorio de configuración, sin repetir (≙ `eo`). */
+/** El directorio de configuración, `~/.thyrox` y `~/.claude`, sin repetir
+ * (≙ `eo`, que sólo conoce `~/.claude`). */
 function claudeHomeDirectories(): string[] {
-  return unique([getClaudeConfigHomeDirDeferred(), nodePath.join(homedir(), '.claude')])
+  return unique([getConfigHomeDirDeferred(), ...CONFIG_DIR_NAMES.map(name => nodePath.join(homedir(), name))])
+}
+
+/** Las raíces de configuración de cada proyecto, con los dos nombres. */
+function projectConfigDirectories(): string[] {
+  return projectConfigRoots().flatMap(root => CONFIG_DIR_NAMES.map(name => nodePath.join(root, name)))
 }
 
 /** Las raíces de proyecto donde vive un `.claude` (≙ `Qr`). */
@@ -467,9 +469,13 @@ function knownSettingsFiles(): string[] {
 }
 
 /** ¿Es un archivo de settings de Claude, de cualquier fuente? (≙ `HTe`). */
-export function isClaudeSettingsPath(path: string): boolean {
+export function isSettingsFilePath(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path))
-  if (target.endsWith(`${SEP}.claude${SEP}settings.json`) || target.endsWith(`${SEP}.claude${SEP}settings.local.json`)) {
+  if (
+    CONFIG_DIR_NAMES.some(
+      name => target.endsWith(`${SEP}${name}${SEP}settings.json`) || target.endsWith(`${SEP}${name}${SEP}settings.local.json`),
+    )
+  ) {
     return true
   }
   if (knownSettingsFiles().some(file => comparablePath(file) === target)) return true
@@ -481,7 +487,7 @@ export function isClaudeSettingsPath(path: string): boolean {
   const userNames = USER_SETTINGS_FILE_NAMES.map(comparableSegment)
   const candidates: Array<[string, readonly string[]]> = [
     ...claudeHomeDirectories().map((dir): [string, readonly string[]] => [dir, userNames]),
-    ...projectConfigRoots().map((root): [string, readonly string[]] => [nodePath.join(root, '.claude'), PROJECT_SETTINGS_FILE_NAMES]),
+    ...projectConfigDirectories().map((dir): [string, readonly string[]] => [dir, PROJECT_SETTINGS_FILE_NAMES]),
   ]
   return candidates.some(([dir, names]) => {
     if (!names.includes(name)) return false
@@ -491,13 +497,13 @@ export function isClaudeSettingsPath(path: string): boolean {
 }
 
 /** ¿Es un directorio de configuración de Claude mismo? (≙ `xu`). */
-export function isClaudeConfigDirectory(path: string): boolean {
+export function isConfigDirectory(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path)).replace(/[\\/]+$/, '')
-  if (nodePath.basename(target) === comparableSegment('.claude')) return true
+  if (CONFIG_DIR_NAMES.some(name => nodePath.basename(target) === comparableSegment(name))) return true
   const policyFile = settingsFilePathForSource('policySettings')
   const dirs = unique([
     ...claudeHomeDirectories(),
-    ...projectConfigRoots().map(root => nodePath.join(root, '.claude')),
+    ...projectConfigDirectories(),
     ...(policyFile !== undefined ? [nodePath.dirname(policyFile)] : []),
     ...managedSettingsDirectories(),
   ])
@@ -509,13 +515,13 @@ export function isClaudeConfigDirectory(path: string): boolean {
 }
 
 /** Settings, o un comando, agente o skill del proyecto (≙ `Cu`). */
-export function isClaudeCommandSource(path: string): boolean {
-  if (isClaudeSettingsPath(path)) return true
-  return projectConfigRoots().some(
-    root =>
-      pathContains(path, nodePath.join(root, '.claude', 'commands')) ||
-      pathContains(path, nodePath.join(root, '.claude', 'agents')) ||
-      pathContains(path, nodePath.join(root, '.claude', 'skills')),
+export function isCommandSource(path: string): boolean {
+  if (isSettingsFilePath(path)) return true
+  return projectConfigDirectories().some(
+    dir =>
+      pathContains(path, nodePath.join(dir, 'commands')) ||
+      pathContains(path, nodePath.join(dir, 'agents')) ||
+      pathContains(path, nodePath.join(dir, 'skills')),
   )
 }
 
@@ -628,7 +634,7 @@ export function checkPathSafetyForAutoEdit(
 ): PathSafetyResult {
   const allow = Boolean(allowClaudeConfig || allowClaudeConfigForMode)
   const paths = pathsToCheck ?? getPathsForPermissionCheck(path)
-  const touchesSettings = paths.some(p => isClaudeSettingsPath(p) || isClaudeConfigDirectory(p))
+  const touchesSettings = paths.some(p => isSettingsFilePath(p) || isConfigDirectory(p))
   for (const p of paths) {
     if (isSuspiciousWindowsPath(p, trusted)) {
       return {
@@ -649,7 +655,7 @@ export function checkPathSafetyForAutoEdit(
     }
   }
   for (const p of paths) {
-    if (!allow && isClaudeCommandSource(p)) {
+    if (!allow && isCommandSource(p)) {
       return {
         safe: false,
         message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,

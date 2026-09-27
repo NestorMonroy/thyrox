@@ -9,7 +9,7 @@ import {
 } from '@thyrox/app-host/bootstrap/state.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { errorMessage, isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
 import { isProcessRunning } from '@thyrox/shell/genericProcessUtils.js'
 import { getPlatform } from '@thyrox/config/platform'
@@ -20,7 +20,7 @@ export type SessionKind = 'interactive' | 'bg' | 'daemon' | 'daemon-worker'
 export type SessionStatus = 'busy' | 'idle' | 'waiting'
 
 function getSessionsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'sessions')
+  return join(getConfigHomeDir(), 'sessions')
 }
 
 /**

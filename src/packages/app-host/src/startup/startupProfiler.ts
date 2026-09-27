@@ -24,11 +24,11 @@
 //    hacen por debajo para el caso simple de escribir un reporte de texto.
 // 4. `logForDebugging` (de `.../local-observability/debug.js`) — se recibe
 //    como colaborador inyectable (`DebugSink`), default no-op.
-// 5. `isEnvTruthy`/`getClaudeConfigHomeDir` (de
+// 5. `isEnvTruthy`/`getConfigHomeDir` (de
 //    `@claude-code-how-works/config/env/utils`) se reimplementan
 //    localmente, verbatim de
 //    `ccnmt: packages/config/env/utils.ts:20-27,43-48` — salvo que
-//    `getClaudeConfigHomeDir` pierde el memoize de `lodash-es/memoize`
+//    `getConfigHomeDir` pierde el memoize de `lodash-es/memoize`
 //    (paquete no confirmado en este árbol); a este costo (una
 //    normalización NFC por llamada) no le compensa fabricar un cache.
 //
@@ -42,6 +42,7 @@ import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { mkdirSync, writeFileSync as writeFileSyncNode } from 'node:fs'
 import { formatMs, formatTimelineLine, getPerformance } from './profilerBase.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 function isEnvTruthy(envVar: string | boolean | undefined): boolean {
   if (!envVar) return false
@@ -50,9 +51,6 @@ function isEnvTruthy(envVar: string | boolean | undefined): boolean {
   return ['1', 'true', 'yes', 'on'].includes(normalizedValue)
 }
 
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
 
 export type TelemetrySink = (event: string, metadata: Record<string, unknown>) => void
 export type DebugSink = (message: string) => void
@@ -178,7 +176,7 @@ export function isDetailedProfilingEnabled(): boolean {
 
 /** Divergencia: recibe `sessionId` — ver docstring del módulo, punto 1. */
 export function getStartupPerfLogPath(sessionId: string): string {
-  return join(getClaudeConfigHomeDir(), 'startup-perf', `${sessionId}.txt`)
+  return join(getConfigHomeDir(), 'startup-perf', `${sessionId}.txt`)
 }
 
 /**

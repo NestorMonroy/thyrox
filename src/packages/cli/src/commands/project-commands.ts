@@ -26,7 +26,7 @@ import {
   type PurgeItem,
   type PurgePlan,
 } from '@thyrox/storage/projectPurge.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 
 interface PurgeOptions {
   dryRun?: boolean
@@ -152,7 +152,7 @@ async function runAllProjectsPurge(options: PurgeOptions): Promise<void> {
   const plan = await collectAllProjectsPurgeItems()
   if (plan.items.length === 0) {
     process.stdout.write(
-      `No ${PRODUCT_NAME} project state found under ${getClaudeConfigHomeDir()}.\n`,
+      `No ${PRODUCT_NAME} project state found under ${getConfigHomeDir()}.\n`,
     )
     return
   }
@@ -197,7 +197,7 @@ async function runSingleProjectPurge(
   const plan = await collectProjectPurgeItems(projectPath)
   if (plan.items.length === 0) {
     process.stdout.write(
-      `No ${PRODUCT_NAME} project state found for ${projectPath} under ${getClaudeConfigHomeDir()}.\n`,
+      `No ${PRODUCT_NAME} project state found for ${projectPath} under ${getConfigHomeDir()}.\n`,
     )
     return
   }

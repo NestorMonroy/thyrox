@@ -45,7 +45,7 @@ import { join } from 'path'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { readEnv } from '@thyrox/config/env'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { logEvent } from '@thyrox/local-observability'
 import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/local-observability'
 import { getInitialSettings } from '@thyrox/config/settings'
@@ -329,7 +329,7 @@ function truncateLoopFile(content: string): string {
 /**
  * Ant `$67` — find a loop.md to use. Project-local takes priority over
  * the Claude config home (NOT $HOME — ant explicitly resolves the
- * fallback via `n6()`, i.e. `getClaudeConfigHomeDir()` so users with
+ * fallback via `n6()`, i.e. `getConfigHomeDir()` so users with
  * `CLAUDE_CONFIG_DIR` set get the right base. Returns null if neither
  * path exists or both are empty after trim.
  *
@@ -342,7 +342,7 @@ function truncateLoopFile(content: string): string {
 export function readLoopFile(): { path: string; content: string } | null {
   const candidates = [
     join(getCwd(), '.claude', 'loop.md'),
-    join(getClaudeConfigHomeDir(), 'loop.md'),
+    join(getConfigHomeDir(), 'loop.md'),
   ]
   for (const path of candidates) {
     if (!existsSync(path)) continue

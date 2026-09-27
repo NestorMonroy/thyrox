@@ -100,7 +100,7 @@ import { getManagedFilePath } from './managedPath.js'
  *   enlazado como workspace aquí (ningún paquete de este árbol importa
  *   otro `@thyrox/*` por nombre todavía) — se redeclara localmente con
  *   los mismos cinco valores.
- * - `getClaudeConfigHomeDir` — de `@claude-code-how-works/config/env/utils`.
+ * - `getConfigHomeDir` — de `@claude-code-how-works/config/env/utils`.
  *   Porte fiel salvo la memoización: sin `lodash-es/memoize` disponible
  *   (0 dependencias en el `package.json` de este paquete), se sustituye
  *   por una memoización manual keyed por el propio valor de
@@ -119,7 +119,7 @@ import { getManagedFilePath } from './managedPath.js'
  *   la función realmente lee (`name`, `description`, `whenToUse`).
  *
  * HALLAZGO CORREGIDO EN ESTE PASE (H-COMMAND-RUNTIME-01): la memoización
- * manual de `getClaudeConfigHomeDir` comparaba `cachedHomeDirKey !== key`
+ * manual de `getConfigHomeDir` comparaba `cachedHomeDirKey !== key`
  * contra un `cachedHomeDirKey` inicializado en `undefined`. Con
  * `CLAUDE_CONFIG_DIR` sin declarar (el caso por defecto), `key` TAMBIÉN es
  * `undefined` en la primera llamada, así que la comparación daba `false` —
@@ -132,7 +132,9 @@ import { getManagedFilePath } from './managedPath.js'
  * tarea #223 e invocar `skills-path userSettings skills` sobre el entorno
  * real del contenedor. Fix: un centinela (`SIN_CACHE`) que nunca coincide
  * con una clave real, definida o no — en vez de comparar contra el mismo
- * `undefined` que `key` puede traer.
+ * `undefined` que `key` puede traer. La copia local se retiró después: la
+ * resolución vive en `@thyrox/config/env/configHome`, cuya caché arranca
+ * vacía y no puede confundir la primera llamada con una clave ya vista.
  */
 
 export type SettingSource =
@@ -141,25 +143,6 @@ export type SettingSource =
   | 'localSettings'
   | 'flagSettings'
   | 'policySettings'
-
-// Memoizado, keyed por el propio valor de CLAUDE_CONFIG_DIR — igual que el
-// resolver de `lodash-es/memoize` de la fuente, sin la dependencia.
-// `SIN_CACHE` es el estado «todavía no se llamó»: NUNCA coincide con una
-// clave real, definida o no — ver H-COMMAND-RUNTIME-01 en la cabecera.
-const SIN_CACHE: unique symbol = Symbol('sin-cache-aun')
-let cachedHomeDirKey: string | undefined | typeof SIN_CACHE = SIN_CACHE
-let cachedHomeDir: string | undefined
-
-function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  let dir = cachedHomeDir
-  if (cachedHomeDirKey !== key || dir === undefined) {
-    dir = (key ?? join(homedir(), '.claude')).normalize('NFC')
-    cachedHomeDirKey = key
-    cachedHomeDir = dir
-  }
-  return dir
-}
 
 /**
  * Returns a claude config directory path for a given source.
@@ -172,7 +155,7 @@ export function getSkillsPath(
     case 'policySettings':
       return join(getManagedFilePath(), '.claude', dir)
     case 'userSettings':
-      return join(getClaudeConfigHomeDir(), dir)
+      return join(getConfigHomeDir(), dir)
     case 'projectSettings':
       return `.claude/${dir}`
     case 'plugin':
@@ -841,7 +824,7 @@ export function getSkillDirCommands(cwd: string): Promise<Command[]> {
 }
 
 async function loadSkillDirCommands(cwd: string): Promise<Command[]> {
-  const userSkillsDir = join(getClaudeConfigHomeDir(), 'skills')
+  const userSkillsDir = join(getConfigHomeDir(), 'skills')
   const managedSkillsDir = join(getManagedFilePath(), '.claude', 'skills')
   const projectSkillsDirs = getProjectDirsUpToHome('skills', cwd)
 
@@ -1068,3 +1051,4 @@ export {
   type LoadedSkill,
   type SkillDirectoryLoader,
 } from './dynamicSkills.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'

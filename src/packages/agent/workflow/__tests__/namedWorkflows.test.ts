@@ -8,7 +8,7 @@ import { join } from 'node:path'
 // workflows by name, and resolves by name.
 //
 // We drive the USER directory through a REAL temp filesystem pointed at by the
-// CLAUDE_CONFIG_DIR env var (getClaudeConfigHomeDir reads it, memoized-keyed off
+// CLAUDE_CONFIG_DIR env var (getConfigHomeDir reads it, memoized-keyed off
 // it). NO module mocks — bun's mock.module is global for the whole run and an fs
 // or config stub leaks into unrelated suites (projectPurge etc.). Project-dir
 // and settings-gate paths need shared-module mocks to drive, so they're covered

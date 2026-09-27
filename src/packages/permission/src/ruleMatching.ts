@@ -48,6 +48,7 @@ import type {
   PermissionRule,
   PermissionRuleSource,
 } from './permissionTypes.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 export type FileToolType = 'edit' | 'read'
 
@@ -114,13 +115,8 @@ function getOriginalCwdDeferred(): string {
   }
 }
 
-function getClaudeConfigHomeDirDeferred(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(homedir(), '.claude')
-  }
+function getConfigHomeDirDeferred(): string {
+  return getConfigHomeDir()
 }
 
 function expandPathDeferred(path: string, baseDir?: string): string {
@@ -434,7 +430,7 @@ export function compileRuleMatchers(
           behavior,
           platform(),
           homedir(),
-          getClaudeConfigHomeDirDeferred(),
+          getConfigHomeDirDeferred(),
           process.env.CLAUDE_CODE_EVAL_CONFINED ?? '',
           getOriginalCwdDeferred(),
         ].join('\x00')

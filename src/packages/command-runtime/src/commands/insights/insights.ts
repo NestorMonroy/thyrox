@@ -20,7 +20,7 @@ import {
   LEGACY_AGENT_TOOL_NAME,
 } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
 import type { LogOption } from '@thyrox/agent/logsTypes.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { toError } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { logError } from '@thyrox/local-observability/log.js'
@@ -415,11 +415,11 @@ const LABEL_MAP: Record<string, string> = {
   essential: 'Essential',
 }
 
-// Lazy getters: getClaudeConfigHomeDir() is memoized and reads process.env.
+// Lazy getters: getConfigHomeDir() is memoized and reads process.env.
 // Calling it at module scope would populate the memoize cache before
 // entrypoints can set CLAUDE_CONFIG_DIR, breaking all 150+ other callers.
 function getDataDir(): string {
-  return join(getClaudeConfigHomeDir(), 'usage-data')
+  return join(getConfigHomeDir(), 'usage-data')
 }
 function getFacetsDir(): string {
   return join(getDataDir(), 'facets')
@@ -2807,7 +2807,7 @@ export async function generateUsageReport(options?: {
 
   // Optionally collect data from remote hosts first (ant-only)
   if (readEnv('USER_TYPE') === 'ant' && options?.collectRemote) {
-    const destDir = join(getClaudeConfigHomeDir(), 'projects')
+    const destDir = join(getConfigHomeDir(), 'projects')
     const { hosts, totalCopied } = await collectAllRemoteHostData(destDir)
     remoteStats = { hosts, totalCopied }
   }

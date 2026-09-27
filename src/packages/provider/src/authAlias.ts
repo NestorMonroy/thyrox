@@ -68,6 +68,7 @@ import { memoizeWithTTLAsync, sleep, jsonParse, clearBetasCaches, clearToolSchem
 import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 
 const execFileAsync = promisify(execFile)
@@ -1061,7 +1062,7 @@ let lastCredentialsMtimeMs = 0
 
 async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   try {
-    const { mtimeMs } = await stat(join(getClaudeConfigHomeDirLocal(), '.credentials.json'))
+    const { mtimeMs } = await stat(join(getConfigHomeDir(), '.credentials.json'))
     if (mtimeMs !== lastCredentialsMtimeMs) {
       lastCredentialsMtimeMs = mtimeMs
       clearOAuthTokenCache()
@@ -1072,12 +1073,6 @@ async function invalidateOAuthCacheIfDiskChanged(): Promise<void> {
   }
 }
 
-function getClaudeConfigHomeDirLocal(): string {
-  const override = readEnv('CLAUDE_CONFIG_DIR')
-  if (override) return override
-  const home = process.env.HOME ?? process.env.USERPROFILE ?? '.'
-  return `${home}/.claude`
-}
 
 const pending401Handlers = new Map<string, Promise<boolean>>()
 
@@ -1152,7 +1147,7 @@ let pendingRefreshCheck: Promise<boolean> | null = null
 export async function withOAuthRefreshLock<T>(
   callback: (ctx: { lockedTokens: OAuthTokensView | null; lockAttempts: number }) => Promise<T>,
 ): Promise<T> {
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
   const MAX_RETRIES = 5
   let retryCount = 0
@@ -1228,7 +1223,7 @@ async function checkAndRefreshOAuthTokenIfNeededImpl(retryCount: number, force: 
   }
   if (!force && !isOAuthTokenExpired(freshTokens.expiresAt ?? null)) return false
 
-  const claudeDir = getClaudeConfigHomeDirLocal()
+  const claudeDir = getConfigHomeDir()
   await mkdir(claudeDir, { recursive: true })
 
   let release: (() => Promise<void>) | undefined

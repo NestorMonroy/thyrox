@@ -86,7 +86,7 @@ export type AgentHostBindings = {
   removeSessionCronTasks?: (ids: readonly string[]) => number
 
   // ── Config / environment ─────────────────────────────────────────────────────
-  getClaudeConfigHomeDir?: () => string
+  getConfigHomeDir?: () => string
 
   // ── Process utilities ────────────────────────────────────────────────────────
   isProcessRunning?: (pid: number) => boolean

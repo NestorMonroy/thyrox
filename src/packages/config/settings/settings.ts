@@ -52,10 +52,10 @@
  *   `getUseAutoModeDuringPlan`,
  *   `rawSettingsContainsKey`, el alias `getSettings`: ninguno lo consume
  *   alguno de los 16 módulos de este pase — se omiten sin sustituto.
- * - Caché: `./settingsCache.ts` no existe en `@thyrox/config`. Se sustituye
- *   por tres cachés de módulo equivalentes (`Map` + variable), ámbito local
- *   a este archivo — mismo contrato observable (`resetSettingsCache`
- *   invalida las tres).
+ * - Caché: `./settingsCache.ts`, el módulo de la fuente. Hubo aquí una copia
+ *   local de sus tres cachés con la nota «ausente»; el módulo ya existía, y
+ *   un `resetSettingsCache` importado desde fuera limpiaba otras cachés que
+ *   las que este archivo leía.
  * - `markInternalWrite` (`./internalWrites.ts`, ausente): se omite; una
  *   escritura vía `updateSettingsForSource` puede ser tratada como externa
  *   por un detector de cambios que la consulte. Declarado, no fabricado.
@@ -85,6 +85,15 @@ import { getManagedFilePath } from './managedPath.ts'
 import { SettingsSchema, type Settings as SettingsJson } from './types.ts'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.ts'
 import { feature } from 'bun:bundle'
+import {
+  getCachedParsedFile,
+  getCachedSettingsForSource,
+  getSessionSettingsCache,
+  resetSettingsCache,
+  setCachedParsedFile,
+  setCachedSettingsForSource,
+  setSessionSettingsCache,
+} from './settingsCache.js'
 
 // Excluye 'policySettings' (resolución MDM/remota, no portada) y
 // 'flagSettings' (sólo lectura, viene del flag/SDK) — mismo recorte que la
@@ -135,20 +144,6 @@ function handleFileSystemError(error: unknown, path: string): void {
   }
 }
 
-/** Sustituto local de `./settingsCache.ts` (ausente) — mismo contrato: */
-const parsedFileCache = new Map<
-  string,
-  { settings: SettingsJson | null; errors: SettingsError[] }
->()
-const settingsForSourceCache = new Map<SettingSource, SettingsJson | null>()
-let sessionSettingsCache: { settings: SettingsJson; errors: SettingsError[] } | null = null
-
-function resetSettingsCache(): void {
-  parsedFileCache.clear()
-  settingsForSourceCache.clear()
-  sessionSettingsCache = null
-}
-
 function getManagedSettingsFilePath(): string {
   return join(getConfigHostBindings().getConfigHomeDir?.() ?? '.', 'managed-settings.json')
 }
@@ -191,7 +186,7 @@ export function parseSettingsFile(path: string): {
   settings: SettingsJson | null
   errors: SettingsError[]
 } {
-  const cached = parsedFileCache.get(path)
+  const cached = getCachedParsedFile(path)
   if (cached) {
     return {
       settings: cached.settings ? structuredClone(cached.settings) : null,
@@ -199,7 +194,7 @@ export function parseSettingsFile(path: string): {
     }
   }
   const result = parseSettingsFileUncached(path)
-  parsedFileCache.set(path, result)
+  setCachedParsedFile(path, result)
   return {
     settings: result.settings ? structuredClone(result.settings) : null,
     errors: result.errors,
@@ -300,11 +295,10 @@ function getSettingsForSourceUncached(
 }
 
 export function getSettingsForSource(source: SettingSource): SettingsJson | null {
-  if (settingsForSourceCache.has(source)) {
-    return settingsForSourceCache.get(source) ?? null
-  }
+  const cached = getCachedSettingsForSource(source)
+  if (cached !== undefined) return cached
   const result = getSettingsForSourceUncached(source)
-  settingsForSourceCache.set(source, result)
+  setCachedSettingsForSource(source, result)
   return result
 }
 
@@ -491,12 +485,13 @@ function loadSettingsFromDisk(): { settings: SettingsJson; errors: SettingsError
 }
 
 export function getSettingsWithErrors(): { settings: SettingsJson; errors: SettingsError[] } {
-  if (sessionSettingsCache !== null) {
-    return sessionSettingsCache
+  const cached = getSessionSettingsCache()
+  if (cached !== null) {
+    return cached
   }
   const result = loadSettingsFromDisk()
   tryGetConfigHostBindings().profileCheckpoint?.('loadSettingsFromDisk_end')
-  sessionSettingsCache = result
+  setSessionSettingsCache(result)
   return result
 }
 

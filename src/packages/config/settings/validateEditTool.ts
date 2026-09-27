@@ -26,7 +26,7 @@ export function validateInputForSettingsFileEdit(
 ): SettingsEditValidationFailure | null {
   // Only validate Claude settings files
   const bindings = tryGetConfigHostBindings()
-  if (!bindings.isClaudeSettingsPath?.(filePath)) {
+  if (!bindings.isSettingsFilePath?.(filePath)) {
     return null
   }
 

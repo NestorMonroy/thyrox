@@ -44,6 +44,12 @@
       "@thyrox/config/env/utils": [
         "./env/utils.ts"
       ],
+      "@thyrox/config/env/configHome": [
+        "./env/configHome.ts"
+      ],
+      "@thyrox/config/env/instructionFiles": [
+        "./env/instructionFiles.ts"
+      ],
       "@thyrox/config/remote": [
         "./remote/index.ts"
       ],
@@ -121,6 +127,12 @@
       ],
       "@thyrox/config/env/utils.js": [
         "./env/utils.ts"
+      ],
+      "@thyrox/config/env/configHome.js": [
+        "./env/configHome.ts"
+      ],
+      "@thyrox/config/env/instructionFiles.js": [
+        "./env/instructionFiles.ts"
       ],
       "@thyrox/config/env/validation": [
         "./env/validation.ts"

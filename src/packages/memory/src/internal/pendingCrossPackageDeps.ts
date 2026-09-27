@@ -4,7 +4,7 @@
  * extractMemories,agentMemory,sessionMemoryUtils,sessionMemoryPrompts,
  * memdir/memoryScan}.ts`), vienen de OTROS paquetes del monorepo —
  * `@claude-code-how-works/config` (los subpaths `/feature-flags`,
- * `/settings`, `/env/utils`'s `getClaudeConfigHomeDir`),
+ * `/settings`, `/env/utils`'s `getConfigHomeDir`),
  * `@claude-code-how-works/permission/filesystem`,
  * `@claude-code-how-works/agent/frontmatterParser.js` y
  * `@claude-code-how-works/repl/readFileInRange.js`. Ninguno de esos cinco
@@ -216,27 +216,9 @@ export function clearSettingsForTesting(): void {
   _settingsForSource = {}
 }
 
-// ── getClaudeConfigHomeDir ───────────────────────────────────────────────────
+// ── getConfigHomeDir ───────────────────────────────────────────────────
 
-/**
- * Puerto fiel de `config/env/utils.ts:20` (`getClaudeConfigHomeDir`) —
- * `@thyrox/config/env/utils.ts` sólo porta `isEnvTruthy`/`readEnv`/
- * `getAllEnv`; esta función quedó fuera de ese porte. Memoizado por
- * `CLAUDE_CONFIG_DIR` con la misma llave que la fuente (sin `lodash-es`:
- * un caché de un solo valor con invalidación manual basta).
- */
-let _configHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_configHomeDirCache && _configHomeDirCache.key === key) {
-    return _configHomeDirCache.value
-  }
-  const value = (key ?? join(homedir(), '.claude')).normalize('NFC')
-  _configHomeDirCache = { key, value }
-  return value
-}
+export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ── getSessionMemoryPath ─────────────────────────────────────────────────────
 

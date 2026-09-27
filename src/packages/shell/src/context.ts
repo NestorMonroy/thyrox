@@ -55,7 +55,7 @@ export interface SnapshotContext {
   // ─── CWD ──────────────────────────────────────────────────────
   getCwd(): string
 
-  getClaudeConfigHomeDir(): string
+  getConfigHomeDir(): string
 
   pathExists(path: string): Promise<boolean>
   getFs(): {

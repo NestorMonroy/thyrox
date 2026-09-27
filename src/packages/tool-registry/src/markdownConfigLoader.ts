@@ -10,7 +10,7 @@ import {
 } from '@thyrox/local-observability'
 import { getProjectRoot } from '@thyrox/app-host/bootstrap/state.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { isFsInaccessible } from '@thyrox/local-observability/errorHelpers.js'
 import { normalizePathForComparison } from '@thyrox/storage/file.js'
 import type { FrontmatterData } from '@thyrox/agent/frontmatterParser.js'
@@ -281,7 +281,7 @@ export const loadMarkdownFilesForSubdir = memoize(
     cwd: string,
   ): Promise<MarkdownFile[]> {
     const searchStartTime = Date.now()
-    const userDir = join(getClaudeConfigHomeDir(), subdir)
+    const userDir = join(getConfigHomeDir(), subdir)
     const managedDir = join(getManagedFilePath(), '.claude', subdir)
     const projectDirs = getProjectDirsUpToHome(subdir, cwd)
 

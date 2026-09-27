@@ -9,7 +9,7 @@
  *
  *  - `getSessionId` (`app-host/bootstrap/state.js`) — se importa de
  *    `./sessionPaths.js` (uno de mis 14 módulos), no se reimplementa.
- *  - `getClaudeConfigHomeDir` (`config/env/utils`) — reimplementación
+ *  - `getConfigHomeDir` (`config/env/utils`) — reimplementación
  *    PRIVADA fiel (mismo cuerpo que ya usan `projectPurge.ts` y
  *    `sessionPaths.ts` de este paquete — cada archivo la duplica a
  *    propósito, aislamiento de working tree por tanda).
@@ -31,17 +31,13 @@ import { readEnv } from '@thyrox/config/env/utils'
 import { getPlatform as getPlatformDefault } from '@thyrox/config/platform'
 import { logForDebugging } from './internal/pendingCrossPackageDeps.js'
 import { getSessionId } from './sessionPaths.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 let _getPlatform: typeof getPlatformDefault = getPlatformDefault
 export function setGetPlatformFn(fn: typeof getPlatformDefault): void {
   _getPlatform = fn
 }
 
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize(
-    'NFC',
-  )
-}
 
 function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
@@ -62,7 +58,7 @@ let sessionEnvScript: string | null | undefined
 
 export async function getSessionEnvDirPath(): Promise<string> {
   const sessionEnvDir = join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     'session-env',
     getSessionId(),
   )

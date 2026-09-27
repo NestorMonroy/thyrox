@@ -26,6 +26,7 @@ import { execa } from 'execa'
 import { createConnection } from 'net'
 import * as os from 'os'
 import { basename, join, sep as pathSeparator, resolve } from 'path'
+import { LEGACY_CONFIG_DIR_NAME } from '@thyrox/config/env/configHome.js'
 import type {
   ConnectedMCPServer,
   MCPServerConnection,
@@ -36,7 +37,7 @@ import {
   env,
   envDynamic,
   getAncestorPidsAsync,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   getGlobalConfig,
   getIsScrollDraining,
   isJetBrainsPluginInstalledCached,
@@ -512,7 +513,12 @@ export async function getIdeLockfilesPaths(): Promise<string[]> {
   const { errorMessage, isFsInaccessible } = requireLocalObservabilityErrorHelpers()
   const { getPlatform } = requireConfigPlatform()
 
-  const paths: string[] = [join(getClaudeConfigHomeDir(), 'ide')]
+  const paths: string[] = [join(getConfigHomeDir(), 'ide')]
+  // `rWn` (2.1.283) añade `~/.claude/ide` cuando la raíz se declaró por
+  // variable: es donde escriben las extensiones de editor. Aquí la raíz puede
+  // ser `~/.thyrox` sin variable, así que se decide por la raíz resuelta.
+  const legacyIdeDir = join(os.homedir(), LEGACY_CONFIG_DIR_NAME, 'ide').normalize('NFC')
+  if (paths[0] !== legacyIdeDir) paths.push(legacyIdeDir)
 
   if (getPlatform() !== 'wsl') {
     return paths

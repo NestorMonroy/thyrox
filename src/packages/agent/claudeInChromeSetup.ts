@@ -15,7 +15,7 @@ import { isInBundledMode } from '@thyrox/config/bundledMode'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   isEnvDefinedFalsy,
   isEnvTruthy,
 } from '@thyrox/config/env/utils'
@@ -308,7 +308,7 @@ function registerWindowsNativeHosts(manifestPath: string): void {
  */
 async function createWrapperScript(command: string): Promise<string> {
   const platform = getPlatform()
-  const chromeDir = join(getClaudeConfigHomeDir(), 'chrome')
+  const chromeDir = join(getConfigHomeDir(), 'chrome')
   const wrapperPath =
     platform === 'windows'
       ? join(chromeDir, 'chrome-native-host.bat')

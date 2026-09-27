@@ -54,7 +54,7 @@ export type FileHistoryState = {
 // exacta que la fuente (`contracts.ts`) declara para cada uno.
 type FileHistoryHostBindings = AgentHostBindings & {
   getIsNonInteractiveSession?: () => boolean
-  getClaudeConfigHomeDir?: () => string
+  getConfigHomeDir?: () => string
   recordFileHistorySnapshot?: (
     messageId: string,
     snapshot: FileHistorySnapshot,
@@ -751,7 +751,7 @@ function getBackupFileName(filePath: string, version: number): string {
 }
 
 function resolveBackupPath(backupFileName: string, sessionId?: string): string {
-  const configDir = getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? ''
+  const configDir = getFileHistoryHostBindings().getConfigHomeDir?.() ?? ''
   return join(
     configDir,
     'file-history',
@@ -973,7 +973,7 @@ export async function copyFileHistoryForResume(log: AgentLogOption): Promise<voi
     // All backups share the same directory: {configDir}/file-history/{sessionId}/
     // Create it once upfront instead of once per backup file
     const newBackupDir = join(
-      getFileHistoryHostBindings().getClaudeConfigHomeDir?.() ?? '',
+      getFileHistoryHostBindings().getConfigHomeDir?.() ?? '',
       'file-history',
       sessionId,
     )

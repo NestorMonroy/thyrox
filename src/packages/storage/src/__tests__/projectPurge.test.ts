@@ -6,7 +6,7 @@
  *   - `xd8` → scanHistoryFile
  *
  * Strategy: build an isolated CLAUDE_CONFIG_DIR per-test, point env so
- * `getClaudeConfigHomeDir()` lands inside the tmpdir, populate the
+ * `getConfigHomeDir()` lands inside the tmpdir, populate the
  * canonical layout (projects/, tasks/, debug/, file-history/, .claude.json,
  * history.jsonl), then assert what collectProjectPurgeItems / scanHistoryFile
  * pick up — both shape and per-item kind/reason.
@@ -44,7 +44,7 @@ let origEnv: string | undefined
 beforeEach(() => {
   origEnv = process.env.CLAUDE_CONFIG_DIR
   claudeHome = mkdtempSync(join(tmpdir(), 'ccb-purge-test-'))
-  // getClaudeConfigHomeDir() reads CLAUDE_CONFIG_DIR.
+  // getConfigHomeDir() reads CLAUDE_CONFIG_DIR.
   process.env.CLAUDE_CONFIG_DIR = claudeHome
 })
 

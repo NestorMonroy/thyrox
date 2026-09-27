@@ -18,7 +18,7 @@ import { basename, join } from 'path'
 import { z } from 'zod/v4'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { getBridgeAccessToken, getBridgeBaseUrl } from './bridgeConfig.js'
 
@@ -58,7 +58,7 @@ function sanitizeFileName(name: string): string {
 }
 
 function uploadsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'uploads', getSessionId())
+  return join(getConfigHomeDir(), 'uploads', getSessionId())
 }
 
 /**

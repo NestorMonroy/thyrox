@@ -3,7 +3,7 @@
  * `ccnmt: packages/mcp-runtime/src/macOsKeychainHelpers.ts` — sus 6
  * exportaciones, ninguna omitida.
  *
- * `getClaudeConfigHomeDir` viene de `@thyrox/config/env/utils`. Hasta el
+ * `getConfigHomeDir` viene de `@thyrox/config/env/utils`. Hasta el
  * 2026-09-27 era un sustituto local (`internal/pendingCrossPackageDeps.ts`),
  * escrito cuando ese subpath no lo exportaba; `check_stand_ins` midió que ya
  * lo hacía y el sustituto se retiró.
@@ -32,7 +32,7 @@
 
 import { createHash } from 'crypto'
 import { userInfo } from 'os'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SecureStorageData } from './secureStorageTypes'
 
 function getOauthConfig(): { OAUTH_FILE_SUFFIX: string } {
@@ -52,7 +52,7 @@ export const CREDENTIALS_SERVICE_SUFFIX = '-credentials'
 export function getMacOsKeychainStorageServiceName(
   serviceSuffix: string = '',
 ): string {
-  const configDir = getClaudeConfigHomeDir()
+  const configDir = getConfigHomeDir()
   const isDefaultDir = !process.env.CLAUDE_CONFIG_DIR
 
   // Usa un hash de la ruta del directorio de config para crear un sufijo

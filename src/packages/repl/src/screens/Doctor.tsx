@@ -12,7 +12,7 @@ import { IneffectivePluginDisables } from '../components/IneffectivePluginDisabl
 import { KeybindingWarnings } from '../components/KeybindingWarnings.js'
 import { McpParsingWarnings } from '../components/mcp/McpParsingWarnings.js'
 import { getModelMaxOutputTokens } from '@thyrox/agent/context.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SettingSource } from '@thyrox/config/constants'
 import { getOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
 import type { CommandResultDisplay } from '@thyrox/command-runtime/runtime'
@@ -183,7 +183,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
     void getDoctorDiagnostic().then(setDiagnostic)
 
     void (async () => {
-      const userAgentsDir = join(getClaudeConfigHomeDir(), 'agents')
+      const userAgentsDir = join(getConfigHomeDir(), 'agents')
       const projectAgentsDir = join(getOriginalCwd(), '.claude', 'agents')
 
       const { activeAgents, allAgents, failedFiles } = agentDefinitions

@@ -3,7 +3,7 @@ import { join } from 'path'
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 
@@ -42,7 +42,7 @@ function isComputerUseLock(value: unknown): value is ComputerUseLock {
 }
 
 function getLockPath(): string {
-  return join(getClaudeConfigHomeDir(), LOCK_FILENAME)
+  return join(getConfigHomeDir(), LOCK_FILENAME)
 }
 
 async function readLock(): Promise<ComputerUseLock | undefined> {
@@ -153,7 +153,7 @@ export async function tryAcquireComputerUseLock(): Promise<AcquireResult> {
     acquiredAt: Date.now(),
   }
 
-  await mkdir(getClaudeConfigHomeDir(), { recursive: true })
+  await mkdir(getConfigHomeDir(), { recursive: true })
 
   // Fresh acquisition.
   if (await tryCreateExclusive(lock)) {

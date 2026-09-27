@@ -1,7 +1,7 @@
 import { execa } from 'execa'
 import { readFile, realpath } from 'fs/promises'
 import { homedir } from 'os'
-import { delimiter, join, posix, win32 } from 'path'
+import { basename, delimiter, join, posix, win32 } from 'path'
 import { checkGlobalInstallPermissions } from '@thyrox/updater/autoUpdater.js'
 import { getExternalLauncherPath } from '@thyrox/updater'
 import { isInBundledMode } from '@thyrox/config/bundledMode'
@@ -46,6 +46,7 @@ import {
 } from '@thyrox/shell/shellConfig.js'
 import { jsonParse } from '@thyrox/local-observability/slowOperations.js'
 import { which } from '@thyrox/shell/which.js'
+import { instructionsFileCandidates, pickInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 export type InstallationType =
   | 'npm-global'
@@ -596,13 +597,13 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
     }
   }
 
-  const projectInstructions = join(getCwd(), 'CLAUDE.md')
+  const projectInstructions = pickInstructionsFile(instructionsFileCandidates(getCwd()))
   try {
     const [content, tracked] = await Promise.all([
       readFile(projectInstructions, 'utf8'),
       execFileNoThrowWithCwd(
         'git',
-        ['ls-files', '--error-unmatch', 'CLAUDE.md'],
+        ['ls-files', '--error-unmatch', basename(projectInstructions)],
         { cwd: getCwd() },
       ),
     ])

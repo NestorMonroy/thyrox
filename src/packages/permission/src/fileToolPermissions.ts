@@ -78,6 +78,7 @@ import { isHardLinkedFile, isShadowExperimentOn, recordShadowFired, shouldLogSha
 import { permissionRuleValueFromString } from './permissionRuleParser.js'
 import type { PermissionDecision, PermissionUpdate } from './permissionTypes.js'
 import { allPathsMatchAllowRule, escapeForIgnore, matchingRuleForInput } from './ruleMatching.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 const FILE_READ_TOOL_NAME = 'Read'
 const FILE_EDIT_TOOL_NAME = 'Edit'
@@ -127,12 +128,7 @@ function originalCwd(): string {
 }
 
 function claudeConfigHome(): string {
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return (require('@thyrox/config/env/utils.js') as { getClaudeConfigHomeDir: () => string }).getClaudeConfigHomeDir()
-  } catch {
-    return nodePath.join(require('node:os').homedir(), '.claude').normalize('NFC')
-  }
+  return getConfigHomeDir()
 }
 
 function userHome(): string {

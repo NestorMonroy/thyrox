@@ -18,7 +18,12 @@
  */
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import type { Duty } from './basePrompt.ts'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
+import {
+  instructionsFileCandidates,
+  nestedInstructionsFileCandidates,
+  rulesDirectories,
+} from '@thyrox/config/env/instructionFiles.js'
 import { dedupSections } from '@thyrox/context-compression'
 
 export type Section = { name: string; text: string; tokens: number; conditional: boolean }
@@ -124,14 +129,16 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
     ? [section('base', opts.base)]
     : opts.base.map((d) => section(`base:${d.name}`, d.text))
 
-  const root = readTrimmed(join(opts.root, 'CLAUDE.md'))
-  if (root) rawCandidates.push(section('CLAUDE.md', root))
+  // Cada ranura carga su primer candidato existente: `THYROX.md` y, si no
+  // está, `CLAUDE.md` (`@thyrox/config/env/instructionFiles`).
+  for (const candidates of [instructionsFileCandidates(opts.root), nestedInstructionsFileCandidates(opts.root)]) {
+    const path = candidates.find((p) => existsSync(p))
+    const text = path ? readTrimmed(path) : null
+    if (path && text) rawCandidates.push(section(relative(opts.root, path), text))
+  }
 
-  const level2 = readTrimmed(join(opts.root, '.claude', 'CLAUDE.md'))
-  if (level2) rawCandidates.push(section('.claude/CLAUDE.md', level2))
-
-  const rulesDir = join(opts.root, '.claude', 'rules')
-  if (existsSync(rulesDir)) {
+  for (const rulesDir of rulesDirectories(opts.root)) {
+    if (!existsSync(rulesDir)) continue
     const files = readdirSync(rulesDir).filter((f) => f.endsWith('.md')).sort()
     for (const file of files) {
       const raw = readTrimmed(join(rulesDir, file))
@@ -144,7 +151,7 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
         if (!paths.some((p) => matchesPath(p, opts.targetPath as string))) continue
       }
       if (!body.trim()) continue
-      rawCandidates.push(section(`.claude/rules/${file}`, body.trim(), paths !== null))
+      rawCandidates.push(section(relative(opts.root, join(rulesDir, file)), body.trim(), paths !== null))
     }
   }
 

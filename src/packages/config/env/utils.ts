@@ -6,7 +6,7 @@
  * reimplementación, no copia) declara 18 exports, no 17: una revisión
  * anterior de este docstring enumeraba 17 y omitía `isBareMode` de la
  * lista — la propia cuenta ya arrastraba el porte parcial. Los 18:
- * `getClaudeConfigHomeDir`, `getTeamsDir`, `hasNodeOption`, `isEnvTruthy`,
+ * `getConfigHomeDir`, `getTeamsDir`, `hasNodeOption`, `isEnvTruthy`,
  * `isEnvDefinedFalsy`, `isBareMode`, `parseEnvVars`, `getAWSRegion`,
  * `getDefaultVertexRegion`, `shouldMaintainProjectWorkingDir`,
  * `isRunningOnHomespace`, `setCheckProtectedNamespaceFn`,
@@ -16,13 +16,13 @@
  * Historial de cobertura: `@thyrox/shell`'s `subprocessEnv.ts` consumía tres
  * (`getAllEnv`, `isEnvTruthy`, `readEnv`); el porte de
  * `config/env/git-settings.ts` y `config/env/paths.ts` sumó dos más
- * (`isEnvDefinedFalsy`, `getClaudeConfigHomeDir`) — completados entonces en
+ * (`isEnvDefinedFalsy`, `getConfigHomeDir`) — completados entonces en
  * vez de fabricarlos en el sitio consumidor, siguiendo el mismo criterio que
  * `paths/reach.ts: consumerRoot` («un porte parcial declarado se completa
  * cuando aparece su consumidor» — `porte-completo-no-parcial.md`). Este
  * pase (2026-09-09) cierra los 13 restantes: ninguno tiene dependencia
  * transitiva nueva — todos usan sólo `process.env`/`process.argv` y los
- * cinco ya presentes (`isEnvTruthy`, `getClaudeConfigHomeDir`).
+ * cinco ya presentes (`isEnvTruthy`, `getConfigHomeDir`).
  *
  * Hallazgo, no corregido aquí (fuera del alcance de este archivo):
  * `@thyrox/agent: internalUtils.ts:59,149` y
@@ -38,6 +38,7 @@
 import memoize from 'lodash-es/memoize.js'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
+import { getConfigHomeDir } from './configHome.js'
 
 /** Interpreta un valor de variable de entorno como verdadero/falso, con la
  * misma tolerancia de forma que usa el resto del proyecto: `1`, `true`,
@@ -75,22 +76,13 @@ export function isEnvDefinedFalsy(
   return ['0', 'false', 'no', 'off'].includes(normalized)
 }
 
-/** El directorio de configuración del usuario: `CLAUDE_CONFIG_DIR`, o
- * `~/.claude`. Memoizado — se lee en cientos de sitios y se normaliza a NFC
- * una sola vez; la clave del memo es el propio valor de la variable, así que
- * un test que la cambie ve el nuevo valor sin `cache.clear()` explícito. */
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
+/** El directorio de configuración del usuario; su resolución (nombres
+ * propios de thyrox con respaldo en los heredados) vive en `configHome.ts`. */
+export { getConfigHomeDir } from './configHome.js'
 
 /** El directorio de equipos, anidado bajo el de configuración del usuario. */
 export function getTeamsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'teams')
+  return join(getConfigHomeDir(), 'teams')
 }
 
 /**

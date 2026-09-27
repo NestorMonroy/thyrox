@@ -46,7 +46,7 @@ import { existsSync, readFileSync } from 'fs'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 import {
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   isEnvTruthy,
 } from '@thyrox/config/env/utils'
 import { readEnv } from '@thyrox/config/env'
@@ -85,7 +85,7 @@ export type GatewayModelOption = {
 }
 
 function getCacheDir(): string {
-  return join(getClaudeConfigHomeDir(), 'cache')
+  return join(getConfigHomeDir(), 'cache')
 }
 
 function getCachePath(): string {

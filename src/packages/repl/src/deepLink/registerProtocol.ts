@@ -23,7 +23,7 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { getInitialSettings } from '@thyrox/config/settings'
@@ -313,7 +313,7 @@ export async function ensureDeepLinkProtocolRegistered(): Promise<void> {
   // doesn't generate a failure event on every startup. Marker lives in
   // ~/.claude (per-machine, not synced) rather than ~/.claude.json (can sync).
   const failureMarkerPath = path.join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     '.deep-link-register-failed',
   )
   try {

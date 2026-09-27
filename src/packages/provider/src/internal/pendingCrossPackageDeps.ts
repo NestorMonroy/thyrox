@@ -277,12 +277,12 @@ export function jsonParse(text: string): unknown {
   return JSON.parse(text)
 }
 
-// ── ccnmt: packages/config/env/utils.ts → getClaudeConfigHomeDir ─────────
+// ── ccnmt: packages/config/env/utils.ts → getConfigHomeDir ─────────
 // SUSTITUTO RETIRADO. Su motivo declarado —«no está entre los 3 exports de
 // `@thyrox/config/env/utils`»— dejó de ser cierto. Y la réplica DIVERGÍA
 // del canónico en dos puntos, así que no era inocua: no normalizaba a NFC
 // (dos formas de la misma ruta con acento no comparaban iguales, y una de
 // ellas creaba un directorio que nadie veía) y trataba un override vacío
 // como ausente en vez de honrarlo. Se reexporta el canónico.
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
-export { getClaudeConfigHomeDir }
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
+export { getConfigHomeDir }

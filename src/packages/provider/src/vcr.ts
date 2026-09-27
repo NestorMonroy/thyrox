@@ -20,7 +20,7 @@ import type {
 } from '@thyrox/agent/messageShapes'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { env } from '@thyrox/config/env'
-import { getClaudeConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { normalizeMessagesForAPI } from '@thyrox/agent/messages.js'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
@@ -249,7 +249,7 @@ function dehydrateValue(s: unknown): unknown {
     return s
   }
   const cwd = getCwd()
-  const configHome = getClaudeConfigHomeDir()
+  const configHome = getConfigHomeDir()
   let s1 = s
     .replace(/num_files="\d+"/g, 'num_files="[NUM]"')
     .replace(/duration_ms="\d+"/g, 'duration_ms="[DURATION]"')
@@ -298,7 +298,7 @@ function hydrateValue(s: unknown): unknown {
   return s
     .replaceAll('[NUM]', '1')
     .replaceAll('[DURATION]', '100')
-    .replaceAll('[CONFIG_HOME]', getClaudeConfigHomeDir())
+    .replaceAll('[CONFIG_HOME]', getConfigHomeDir())
     .replaceAll('[CWD]', getCwd())
 }
 

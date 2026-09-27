@@ -39,6 +39,8 @@ import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { getPermissionHostBindings } from './host.js'
 import { SENSITIVE_FILES, automountRoot, comparableSegment, isUncPath } from './pathSafety.js'
 import { foldPathCase, trustedSpellingOf } from './ruleMatching.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { INSTRUCTIONS_FILE_NAMES } from '@thyrox/config/env/instructionFiles.js'
 
 export type SafetyDecisionReason = {
   type: 'safetyCheck'
@@ -172,10 +174,7 @@ function projectRoot(): string {
 }
 
 function claudeConfigHome(): string {
-  return (
-    load<{ getClaudeConfigHomeDir: () => string }>('@thyrox/config/env/utils.js')?.getClaudeConfigHomeDir() ??
-    nodePath.join(homedir(), '.claude').normalize('NFC')
-  )
+  return getConfigHomeDir()
 }
 
 /** La raíz de la memoria remota, o el directorio de configuración (≙ `r2`). */
@@ -713,7 +712,9 @@ export function checkReadableInternalPath(
   const teams = nodePath.join(claudeConfigHome(), 'teams') + SEP
   if (!fenced && isAtOrUnder(file, teams)) return allowed(input, 'Team files are allowed for reading')
   if (options?.readBlockFence && !options.restricted) {
-    if (file === nodePath.join(claudeConfigHome(), 'CLAUDE.md')) return allowed(input, 'The user memory file is allowed for reading')
+    if (INSTRUCTIONS_FILE_NAMES.some(name => file === nodePath.join(claudeConfigHome(), name))) {
+      return allowed(input, 'The user memory file is allowed for reading')
+    }
     for (const kind of ['skills', 'plugins', 'rules', 'agents', 'commands']) {
       if (isAtOrUnder(file, nodePath.join(claudeConfigHome(), kind) + SEP)) {
         return allowed(input, `User ${kind} files are allowed for reading`)

@@ -20,7 +20,7 @@
  *   2. `env.isRunningWithBun()` / `env.isNpmFromWindowsPath()`
  *      (`config/env/paths.ts` + `config/bundledMode.ts`) — ver
  *      `./internal/envCompat.ts`.
- *   3. `getClaudeConfigHomeDir` (`config/env/utils.ts`, porte parcial
+ *   3. `getConfigHomeDir` (`config/env/utils.ts`, porte parcial
  *      declarado que no la incluye) — ver `./internal/envCompat.ts`.
  *   4. `gt`/`gte`/`lt`/`parseVersion` (`config/semver.ts`, ausente) —
  *      ver `./internal/semverCompat.ts`.
@@ -56,7 +56,7 @@ import {
 } from '@thyrox/local-observability'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import {
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   isNpmFromWindowsPath,
   isRunningWithBun,
 } from './internal/envCompat.js'
@@ -387,7 +387,7 @@ const LOCK_TIMEOUT_MS = 5 * 60 * 1000 // timeout de 5 minutos para locks
  * setup de test
  */
 export function getLockFilePath(): string {
-  return join(getClaudeConfigHomeDir(), '.update.lock')
+  return join(getConfigHomeDir(), '.update.lock')
 }
 
 /**
@@ -454,7 +454,7 @@ async function acquireLock(): Promise<boolean> {
         // traga EEXIST internamente, asi que una carrera de creacion de
         // directorio no puede llegar al catch de abajo — solo el
         // EEXIST de writeFile (contencion de lock real) puede.
-        await fs.mkdir(getClaudeConfigHomeDir())
+        await fs.mkdir(getConfigHomeDir())
         await writeFile(lockPath, `${process.pid}`, {
           encoding: 'utf8',
           flag: 'wx',

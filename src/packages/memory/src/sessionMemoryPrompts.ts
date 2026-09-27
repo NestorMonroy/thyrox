@@ -1,6 +1,6 @@
 /**
  * Puerto de `ccnmt: packages/memory/src/sessionMemoryPrompts.ts`, con
- * `getClaudeConfigHomeDir` desde el sustituto local
+ * `getConfigHomeDir` desde el sustituto local
  * `./internal/pendingCrossPackageDeps.js` (no portado todavía en
  * `@thyrox/config/env/utils`).
  */
@@ -8,7 +8,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getMemoryHostBindings } from './host.js'
 // roughTokenCountEstimation se accede vía host binding, abajo.
-import { getClaudeConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
 // getErrnoCode + toError inlineados abajo.
 import { logError } from '@thyrox/local-observability/logging'
 
@@ -113,7 +113,7 @@ REMEMBER: Use the Edit tool in parallel and stop. Do not continue after the edit
  */
 export async function loadSessionMemoryTemplate(): Promise<string> {
   const templatePath = join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     'session-memory',
     'config',
     'template.md',
@@ -139,7 +139,7 @@ export async function loadSessionMemoryTemplate(): Promise<string> {
  */
 export async function loadSessionMemoryPrompt(): Promise<string> {
   const promptPath = join(
-    getClaudeConfigHomeDir(),
+    getConfigHomeDir(),
     'session-memory',
     'config',
     'prompt.md',

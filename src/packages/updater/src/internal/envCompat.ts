@@ -15,7 +15,7 @@
  *     porta la misma detección — ver su docstring), y `findExecutable`
  *     se sustituye por `which()` de `@thyrox/shell/which.js` (misma
  *     idea: resuelve la ruta real del ejecutable).
- *   - `getClaudeConfigHomeDir()` — el `config/env/utils.ts` de este árbol
+ *   - `getConfigHomeDir()` — el `config/env/utils.ts` de este árbol
  *     es un porte PARCIAL DECLARADO que no lo incluye (ver su propio
  *     docstring). Se reimplementa verbatim contra
  *     `ccnmt: packages/config/env/utils.ts`.
@@ -57,11 +57,4 @@ export async function isNpmFromWindowsPath(): Promise<boolean> {
   }
 }
 
-export const getClaudeConfigHomeDir = memoize(
-  (): string => {
-    return (
-      process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')
-    ).normalize('NFC')
-  },
-  () => process.env.CLAUDE_CONFIG_DIR,
-)
+export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'

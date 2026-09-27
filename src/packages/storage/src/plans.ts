@@ -25,7 +25,7 @@
  *    cuyo VALOR es su contrato (`'ExitPlanMode'`), se inlinea verbatim.
  *  - `getCwd` y `logForDebugging` — SÍ se reusan de verdad, importados de
  *    `./internal/pendingCrossPackageDeps.js`.
- *  - `getClaudeConfigHomeDir` (`config/env/utils`) — reimplementación
+ *  - `getConfigHomeDir` (`config/env/utils`) — reimplementación
  *    PRIVADA fiel, mismo cuerpo que ya usan `projectPurge.ts` y
  *    `sessionPaths.ts` de este paquete.
  *  - `isENOENT` (`local-observability/errorHelpers.js`) — fiel, una línea.
@@ -53,7 +53,7 @@
  *
  * `getPlansDirectory` NO se memoiza (la fuente sí, con `lodash-es/
  * memoize.js` sin argumentos) — mismo criterio que YA declara
- * `projectPurge.ts` de este paquete para `getClaudeConfigHomeDir`: cada
+ * `projectPurge.ts` de este paquete para `getConfigHomeDir`: cada
  * test de este pase cambia `CLAUDE_CONFIG_DIR`/settings/cwd a un valor
  * nuevo, así que memoizar no ahorraría nada y rompería el aislamiento
  * entre casos.
@@ -67,6 +67,7 @@ import { logForDebugging, getCwd } from './internal/pendingCrossPackageDeps.js'
 import { logError } from './logging.js'
 import { generateWordSlug } from '@thyrox/tool-registry/words.js'
 import { getSessionId } from './sessionPaths.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 type AgentId = string
 type SessionId = string
@@ -85,11 +86,6 @@ function getPlanSlugCache(): Map<SessionId, string> {
   return _planSlugCache
 }
 
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize(
-    'NFC',
-  )
-}
 
 function isENOENT(e: unknown): boolean {
   return Boolean(
@@ -208,13 +204,13 @@ export function getPlansDirectory(): string {
       logError(
         new Error(`plansDirectory must be within project root: ${settingsDir}`),
       )
-      plansPath = join(getClaudeConfigHomeDir(), 'plans')
+      plansPath = join(getConfigHomeDir(), 'plans')
     } else {
       plansPath = resolved
     }
   } else {
     // Por defecto.
-    plansPath = join(getClaudeConfigHomeDir(), 'plans')
+    plansPath = join(getConfigHomeDir(), 'plans')
   }
 
   // Asegura que el directorio exista (mkdirSync con recursive:true es

@@ -95,7 +95,7 @@ export type ConfigHostBindings = {
   // V7 §11.4 — permission rule parsing bridge (config cannot import permission in Wave 1).
   parsePermissionRule?: (rule: string) => { toolName: string; ruleContent?: string }
   // V7 §11.4 — settings path check bridge.
-  isClaudeSettingsPath?: (filePath: string) => boolean
+  isSettingsFilePath?: (filePath: string) => boolean
   // V7 §11.4 — permission context reconciliation after settings change.
   // Encapsulates syncPermissionRulesFromDisk + overly-broad filtering +
   // bypass-mode check + plan-auto-mode transition.

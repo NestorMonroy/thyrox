@@ -10,7 +10,7 @@ import {
   parseDebugFilter,
   shouldShowDebugMessage,
 } from '@thyrox/repl/diagnostics/debugFilter.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { writeToStderr } from '@thyrox/shell/process.js'
 // Plain JSON.stringify — debug only uses it for newline-escape on single
@@ -233,7 +233,7 @@ export function getDebugLogPath(): string {
   return (
     getDebugFilePath() ??
     process.env.CLAUDE_CODE_DEBUG_LOGS_DIR ??
-    join(getClaudeConfigHomeDir(), 'debug', `${getSessionId()}.txt`)
+    join(getConfigHomeDir(), 'debug', `${getSessionId()}.txt`)
   )
 }
 

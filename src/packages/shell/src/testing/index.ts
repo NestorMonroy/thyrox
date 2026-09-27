@@ -103,7 +103,7 @@ export class StubSnapshotContext implements SnapshotContext {
   getCwd(): string {
     return this.cwd
   }
-  getClaudeConfigHomeDir(): string {
+  getConfigHomeDir(): string {
     return '/tmp/claude'
   }
   async pathExists(_path: string): Promise<boolean> {

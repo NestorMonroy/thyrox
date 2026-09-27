@@ -264,23 +264,7 @@ export function isBareMode(): boolean {
   )
 }
 
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts:20-27`
- * (`getClaudeConfigHomeDir`). Memoizado por `CLAUDE_CONFIG_DIR` — mismo
- * cuerpo que ya usan `@thyrox/memory` y `@thyrox/mcp-runtime` en sus propios
- * `pendingCrossPackageDeps.ts` (mismo origen).
- */
-let _claudeConfigHomeDirCache: { key: string | undefined; value: string } | null =
-  null
-export function getClaudeConfigHomeDir(): string {
-  const key = process.env.CLAUDE_CONFIG_DIR
-  if (_claudeConfigHomeDirCache && _claudeConfigHomeDirCache.key === key) {
-    return _claudeConfigHomeDirCache.value
-  }
-  const value = (key ?? pathJoin(homedir(), '.claude')).normalize('NFC')
-  _claudeConfigHomeDirCache = { key, value }
-  return value
-}
+export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ─────────────────────────────────────────────────────────────────────────
 // 2b. Reimplementación fiel — config/env/paths.ts y config/env/dynamic.ts

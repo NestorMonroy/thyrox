@@ -67,7 +67,9 @@ afterEach(async () => {
   killSpy.mockRestore()
   for (const off of unregister.splice(0)) off()
   resetShutdownState()
-  process.exitCode = previousExitCode
+  // En Bun, asignar `undefined` no borra un código ya fijado (medido:
+  // `exitCode=5; exitCode=undefined` sale 5); sin código previo se vuelve a 0.
+  process.exitCode = previousExitCode ?? 0
 })
 
 describe('gracefulShutdown', () => {

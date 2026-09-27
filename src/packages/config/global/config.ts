@@ -76,6 +76,12 @@ import { AccessError, ParseError as ConfigParseError } from '../errors.js'
 import { getConfigHostBindings, tryGetConfigHostBindings } from '../host.js'
 import { getManagedFilePath } from '../settings/managedPath.js'
 import { feature } from 'bun:bundle'
+import { getConfigHomeDir as resolveUserConfigHomeDir } from '../env/configHome.js'
+import {
+  instructionsFileCandidates,
+  localInstructionsFileCandidates,
+  pickInstructionsFile,
+} from '../env/instructionFiles.js'
 
 // La fuente inlinea estos tipos para no arrastrar el paquete que los define
 // (su comentario: «type-only imports inlined»). Se conserva el criterio.
@@ -123,8 +129,7 @@ function normalizePathForConfigKey(path: string): string {
 
 function getConfigHomeDir(): string {
   return (
-    getConfigHostBindings().getConfigHomeDir?.() ??
-    join(process.env.HOME ?? process.env.USERPROFILE ?? '.', '.claude')
+    getConfigHostBindings().getConfigHomeDir?.() ?? resolveUserConfigHomeDir()
   )
 }
 
@@ -1204,13 +1209,13 @@ export function getMemoryPath(memoryType: MemoryType): string {
 
   switch (memoryType) {
     case 'User':
-      return join(getConfigHomeDir(), 'CLAUDE.md')
+      return pickInstructionsFile(instructionsFileCandidates(getConfigHomeDir()))
     case 'Local':
-      return join(cwd, 'CLAUDE.local.md')
+      return pickInstructionsFile(localInstructionsFileCandidates(cwd))
     case 'Project':
-      return join(cwd, 'CLAUDE.md')
+      return pickInstructionsFile(instructionsFileCandidates(cwd))
     case 'Managed':
-      return join(getManagedFilePath(), 'CLAUDE.md')
+      return pickInstructionsFile(instructionsFileCandidates(getManagedFilePath()))
     case 'AutoMem':
       const cfgBindings = tryGetConfigHostBindings()
       return cfgBindings.getAutoMemEntrypoint?.() ?? ''

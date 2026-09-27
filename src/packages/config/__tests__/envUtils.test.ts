@@ -9,7 +9,7 @@
  * packages/config/env/utils.ts`, 224 líneas, licencia UNLICENSED —
  * reimplementación, no copia). Sin dependencias transitivas nuevas: los 13
  * sólo usan `process.env`/`process.argv` y los cinco ya portados
- * (`isEnvTruthy`, `getClaudeConfigHomeDir`).
+ * (`isEnvTruthy`, `getConfigHomeDir`).
  *
  * `getPermissionHostBindings`-style no aplica aquí — no hay shim de host,
  * son lectores/escritores puros de `process.env`. El riesgo real es la
@@ -21,7 +21,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import {
   deleteEnv,
   getAWSRegion,
-  getClaudeConfigHomeDir,
+  getConfigHomeDir,
   getDefaultVertexRegion,
   getTeamsDir,
   getVertexRegionForModel,
@@ -56,9 +56,9 @@ function withEnv(vars: Record<string, string | undefined>, fn: () => void) {
 }
 
 describe('getTeamsDir', () => {
-  test('anida "teams" bajo getClaudeConfigHomeDir', () => {
+  test('anida "teams" bajo getConfigHomeDir', () => {
     withEnv({ CLAUDE_CONFIG_DIR: '/tmp/config-envutils-teams' }, () => {
-      expect(getTeamsDir()).toBe(`${getClaudeConfigHomeDir()}/teams`)
+      expect(getTeamsDir()).toBe(`${getConfigHomeDir()}/teams`)
       expect(getTeamsDir().endsWith('/teams')).toBe(true)
     })
   })

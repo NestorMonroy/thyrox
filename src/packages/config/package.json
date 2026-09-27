@@ -52,6 +52,16 @@
       "types": "./dist/env/utils.d.ts",
       "default": "./env/utils.ts"
     },
+    "./env/configHome": {
+      "@thyrox/source": "./env/configHome.ts",
+      "types": "./dist/env/configHome.d.ts",
+      "default": "./env/configHome.ts"
+    },
+    "./env/instructionFiles": {
+      "@thyrox/source": "./env/instructionFiles.ts",
+      "types": "./dist/env/instructionFiles.d.ts",
+      "default": "./env/instructionFiles.ts"
+    },
     "./remote": {
       "@thyrox/source": "./remote/index.ts",
       "types": "./dist/remote/index.d.ts",
@@ -181,6 +191,16 @@
       "@thyrox/source": "./env/utils.ts",
       "types": "./dist/env/utils.d.ts",
       "default": "./env/utils.ts"
+    },
+    "./env/configHome.js": {
+      "@thyrox/source": "./env/configHome.ts",
+      "types": "./dist/env/configHome.d.ts",
+      "default": "./env/configHome.ts"
+    },
+    "./env/instructionFiles.js": {
+      "@thyrox/source": "./env/instructionFiles.ts",
+      "types": "./dist/env/instructionFiles.d.ts",
+      "default": "./env/instructionFiles.ts"
     },
     "./env/validation": {
       "@thyrox/source": "./env/validation.ts",

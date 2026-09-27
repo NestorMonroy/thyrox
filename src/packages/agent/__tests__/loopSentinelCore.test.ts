@@ -168,7 +168,7 @@ describe('resetAutonomousLoopDelivered', () => {
 // ─── readLoopFile (ant $67) — el fallback al config home de Claude ────────
 //
 // Fijan el fix CRITICO: el segundo candidato de ant es `~/.claude/loop.md`
-// (via `getClaudeConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
+// (via `getConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
 // implementacion previa de ccb tenia la base equivocada y perdia el archivo
 // en silencio cuando `CLAUDE_CONFIG_DIR` estaba sobreescrito.
 //

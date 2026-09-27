@@ -859,7 +859,7 @@ export function buildPermissionHostExtraBindings(): Record<string, unknown> {
     getOriginalCwd: () => { try { return require('@thyrox/app-host/bootstrap/state.js').getOriginalCwd() } catch { return process.cwd() } },
     getSessionId: () => { try { return require('@thyrox/app-host/bootstrap/state.js').getSessionId() } catch { return 'unknown' } },
     getCwd: () => { try { return require('@thyrox/app-host/bootstrap/cwd.js').getCwd() } catch { return process.cwd() } },
-    getConfigHomeDir: () => { try { return require('@thyrox/config/env/utils').getClaudeConfigHomeDir() } catch { return '' } },
+    getConfigHomeDir: () => { try { return require('@thyrox/config/env/utils').getConfigHomeDir() } catch { return '' } },
     getFsImplementation: () => { try { return require('@thyrox/storage/fsOperations.js').getFsImplementation() } catch { return require('node:fs') } },
     getPathsForPermissionCheck: (...a: unknown[]) => { try { return require('@thyrox/storage/fsOperations.js').getPathsForPermissionCheck(...a) } catch { return [] } },
     containsPathTraversal: (p: string) => { try { return require('@thyrox/storage/path.js').containsPathTraversal(p) } catch { return false } },

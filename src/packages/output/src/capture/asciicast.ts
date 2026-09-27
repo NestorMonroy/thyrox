@@ -3,7 +3,7 @@ import { basename, dirname, join } from 'path'
 
 import { getOriginalCwd, getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
+import { getConfigHomeDir, isEnvTruthy } from '@thyrox/config/env/utils'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
@@ -35,7 +35,7 @@ export function getRecordFilePath(): string | null {
   }
   // Record alongside the transcript.
   // Each launch gets its own file so --continue produces multiple recordings.
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   recordingState.timestamp = Date.now()
   recordingState.filePath = join(
@@ -56,7 +56,7 @@ export function _resetRecordingStateForTesting(): void {
  */
 export function getSessionRecordingPaths(): string[] {
   const sessionId = getSessionId()
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   try {
     // eslint-disable-next-line custom-rules/no-sync-fs -- called during /share before upload, not in hot path
@@ -86,7 +86,7 @@ export async function renameRecordingForSession(): Promise<void> {
   if (!oldPath || recordingState.timestamp === 0) {
     return
   }
-  const projectsDir = join(getClaudeConfigHomeDir(), 'projects')
+  const projectsDir = join(getConfigHomeDir(), 'projects')
   const projectDir = join(projectsDir, sanitizePath(getOriginalCwd()))
   const newPath = join(
     projectDir,

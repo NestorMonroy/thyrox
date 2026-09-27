@@ -436,7 +436,7 @@ export const createAndSaveSnapshot = async (
       // Create unique snapshot path with timestamp and random ID
       const timestamp = Date.now()
       const randomId = Math.random().toString(36).substring(2, 8)
-      const snapshotsDir = join(ctx.getClaudeConfigHomeDir(), 'shell-snapshots')
+      const snapshotsDir = join(ctx.getConfigHomeDir(), 'shell-snapshots')
       ctx.logForDebugging(`Snapshots directory: ${snapshotsDir}`)
       const shellSnapshotPath = join(
         snapshotsDir,
@@ -486,7 +486,7 @@ export const createAndSaveSnapshot = async (
             ctx.logForDebugging(`  - Config file: ${getConfigFile(binShell)}`)
             ctx.logForDebugging(`  - Config file exists: ${configFileExists}`)
             ctx.logForDebugging(`  - Working directory: ${ctx.getCwd()}`)
-            ctx.logForDebugging(`  - Claude home: ${ctx.getClaudeConfigHomeDir()}`)
+            ctx.logForDebugging(`  - Claude home: ${ctx.getConfigHomeDir()}`)
             ctx.logForDebugging(`Full snapshot script:\n${snapshotScript}`)
             if (stdout) {
               ctx.logForDebugging(

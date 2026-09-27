@@ -10,7 +10,9 @@ import { getOriginalCwd, setCwdState, setOriginalCwd } from '@thyrox/app-host/bo
 import {
   checkPathSafetyForAutoEdit,
   comparableSegment,
-  isClaudeSettingsPath,
+  isCommandSource,
+  isConfigDirectory,
+  isSettingsFilePath,
   isSensitivePath,
   isSuspiciousWindowsPath,
   isUncPath,
@@ -88,9 +90,9 @@ describe('checkPathSafetyForAutoEdit (Gge)', () => {
 })
 
 describe('predicados', () => {
-  test('isClaudeSettingsPath reconoce settings.local.json en cualquier .claude', () => {
-    expect(isClaudeSettingsPath(join(base, 'otro', '.claude', 'settings.local.json'))).toBe(true)
-    expect(isClaudeSettingsPath(join(base, 'otro', 'settings.json'))).toBe(false)
+  test('isSettingsFilePath reconoce settings.local.json en cualquier .claude', () => {
+    expect(isSettingsFilePath(join(base, 'otro', '.claude', 'settings.local.json'))).toBe(true)
+    expect(isSettingsFilePath(join(base, 'otro', 'settings.json'))).toBe(false)
   })
   test('isSuspiciousWindowsPath: dispositivos, tres puntos y segmentos con punto final', () => {
     expect(isSuspiciousWindowsPath('/tmp/x/aux.con')).toBe(true)
@@ -107,5 +109,41 @@ describe('predicados', () => {
     expect(isSensitivePath('/net/host/share/x', false)).toBe(true)
     const trusted = new Map([['session', ['/net/host/share']]])
     expect(isSensitivePath('/net/host/share/x', false, trusted)).toBe(false)
+  })
+})
+
+/**
+ * La raíz de configuración migró a `.thyrox` (decisión del ejecutor
+ * 2026-09-27) con respaldo en `.claude`: las dos quedan protegidas igual,
+ * porque un archivo que el cliente lee como configuración es configuración
+ * con cualquiera de los dos nombres.
+ */
+describe('la raíz .thyrox se protege como .claude', () => {
+  test('settings.local.json en cualquier .thyrox es un archivo de settings', () => {
+    expect(isSettingsFilePath(join(base, 'otro', '.thyrox', 'settings.local.json'))).toBe(true)
+  })
+  test('un directorio .thyrox es un directorio de configuración', () => {
+    mkdirSync(join(base, 'otro', '.thyrox'), { recursive: true })
+    expect(isConfigDirectory(join(base, 'otro', '.thyrox'))).toBe(true)
+  })
+  test('THYROX_CONFIG_DIR declara el directorio del usuario', () => {
+    const previous = process.env.THYROX_CONFIG_DIR
+    const dir = join(base, 'cfg-declarado')
+    mkdirSync(dir, { recursive: true })
+    touch('cfg-declarado', 'settings.json')
+    process.env.THYROX_CONFIG_DIR = dir
+    try {
+      expect(isConfigDirectory(dir)).toBe(true)
+      expect(isSettingsFilePath(join(dir, 'settings.json'))).toBe(true)
+    } finally {
+      if (previous === undefined) delete process.env.THYROX_CONFIG_DIR
+      else process.env.THYROX_CONFIG_DIR = previous
+    }
+  })
+  test('comandos, agentes y skills del proyecto bajo .thyrox son fuente de comandos', () => {
+    expect(isCommandSource(join(base, '.thyrox', 'commands', 'x.md'))).toBe(true)
+    expect(isCommandSource(join(base, '.thyrox', 'agents', 'x.md'))).toBe(true)
+    expect(isCommandSource(join(base, '.thyrox', 'skills', 'x', 'SKILL.md'))).toBe(true)
+    expect(isCommandSource(join(base, '.thyrox', 'otro', 'x.md'))).toBe(false)
   })
 })

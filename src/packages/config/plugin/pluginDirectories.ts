@@ -14,7 +14,7 @@ import { readdir, rm, stat } from 'fs/promises'
 import { delimiter, join } from 'path'
 import { getUseCoworkPlugins } from './_deps.js'
 import { logForDebugging } from './_deps.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from '../env/utils.js'
+import { getConfigHomeDir, isEnvTruthy } from '../env/utils.js'
 import { errorMessage, isFsInaccessible } from './_deps.js'
 import { formatFileSize } from '@thyrox/output/formatters'
 import { expandTilde } from './_deps.js'
@@ -59,7 +59,7 @@ export function getPluginsDirectory(): string {
   if (envOverride) {
     return expandTilde(envOverride)
   }
-  return join(getClaudeConfigHomeDir(), getPluginsDirectoryName())
+  return join(getConfigHomeDir(), getPluginsDirectoryName())
 }
 
 /**

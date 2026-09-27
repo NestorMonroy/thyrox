@@ -45,8 +45,8 @@ import { performance as nodePerformance } from 'node:perf_hooks'
  * a `CLAUDE_CONFIG_DIR`. Se reexporta el canónico en vez de mantener una
  * segunda copia que puede divergir sin que nada lo delate.
  */
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
-export { getClaudeConfigHomeDir }
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
+export { getConfigHomeDir }
 
 /**
  * Sustituto de `@claude-code-how-works/config/env/utils.js`'s
@@ -99,10 +99,10 @@ export const TOOL_RESULTS_SUBDIR = 'tool-results'
 /**
  * Sustituto de `@claude-code-how-works/storage/sessionStorage.js`'s
  * `getProjectsDir` — verbatim a `sessionPaths.ts:20-22`
- * (`join(getClaudeConfigHomeDir(), 'projects')`).
+ * (`join(getConfigHomeDir(), 'projects')`).
  */
 export function getProjectsDir(): string {
-  return join(getClaudeConfigHomeDir(), 'projects')
+  return join(getConfigHomeDir(), 'projects')
 }
 
 /**

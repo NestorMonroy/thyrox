@@ -33,7 +33,7 @@
  * dependencia externa para 3-10 lineas cada una):
  *   - `lazySchema` (memoiza la construccion del schema Zod al primer uso;
  *     `tool-registry/utils/lazySchema.ts`, 4 lineas).
- *   - `getClaudeConfigHomeDir` — la fuente la memoiza con `lodash-es`
+ *   - `getConfigHomeDir` — la fuente la memoiza con `lodash-es`
  *     keyed por `CLAUDE_CONFIG_DIR`; aqui se lee el env var en cada
  *     llamada (sin memo: es una optimizacion de performance, no de
  *     comportamiento, y el valor puede cambiar entre tests).
@@ -62,6 +62,7 @@ import { z } from 'zod'
 import { getIsNonInteractiveSession } from '@thyrox/app-host/bootstrap/state.js'
 import { TaskCycleError } from './errors.ts'
 import * as lockfile from '@thyrox/storage/lockfile.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 
 // ---------------------------------------------------------------------------
 // Reimplementaciones locales de utilidades de paquetes hermanos ausentes.
@@ -73,10 +74,6 @@ function lazySchema<T>(factory: () => T): () => T {
   return () => (cached ??= factory())
 }
 
-/** ≙ `config/env/utils.ts::getClaudeConfigHomeDir`, sin la memoizacion de lodash. */
-function getClaudeConfigHomeDir(): string {
-  return (process.env.CLAUDE_CONFIG_DIR ?? join(homedir(), '.claude')).normalize('NFC')
-}
 
 /** ≙ `local-observability/errorHelpers.ts::errorMessage`. */
 function errorMessage(e: unknown): string {
@@ -275,7 +272,7 @@ export function sanitizePathComponent(input: string): string {
 }
 
 export function getTasksDir(taskListId: string): string {
-  return join(getClaudeConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
+  return join(getConfigHomeDir(), 'tasks', sanitizePathComponent(taskListId))
 }
 
 export function getTaskPath(taskListId: string, taskId: string): string {

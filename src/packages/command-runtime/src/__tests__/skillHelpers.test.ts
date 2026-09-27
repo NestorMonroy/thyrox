@@ -17,7 +17,7 @@
  */
 import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test'
 
-// CLAUDE_CONFIG_DIR drives getClaudeConfigHomeDir directly (memoized,
+// CLAUDE_CONFIG_DIR drives getConfigHomeDir directly (memoized,
 // cache-key is the env var itself). Setting the env var avoids mock.module,
 // which is process-wide pollution in bun-test. See
 // feedback_self_audit_before_declaring_done.md.

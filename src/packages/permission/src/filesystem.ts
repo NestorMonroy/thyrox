@@ -20,7 +20,7 @@
  *   binding, abajo) · `matchingRuleForInput` · `getFileReadIgnorePatterns` ·
  *   `normalizePatternsToPath` (reexportadas de `./ruleMatching.ts`, porte del
  *   contrato de 2.1.275 — ver su cabecera) · `checkPathSafetyForAutoEdit`
- *   e `isClaudeSettingsPath` (reexportadas de `./pathSafety.ts`) ·
+ *   e `isSettingsFilePath` (reexportadas de `./pathSafety.ts`) ·
  *   `checkEditableInternalPath` · `checkReadableInternalPath` ·
  *   `getBundledSkillsRoot` (reexportadas de `./internalPaths.ts`) — las
  *   tres, porte del contrato de 2.1.275; ver sus cabeceras
@@ -492,7 +492,7 @@ export function pathInWorkingPath(path: string, workingPath: string): boolean {
 
 // El compilador de reglas de archivo de 2.1.275 vive en su propio módulo;
 // los consumidores lo importan desde aquí, como en la fuente.
-export { checkPathSafetyForAutoEdit, isClaudeSettingsPath } from './pathSafety.js'
+export { checkPathSafetyForAutoEdit, isSettingsFilePath } from './pathSafety.js'
 export {
   checkEditableInternalPath,
   checkReadableInternalPath,

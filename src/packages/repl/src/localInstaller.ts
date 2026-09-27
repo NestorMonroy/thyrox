@@ -5,19 +5,19 @@
 import { access, chmod, writeFile } from 'fs/promises'
 import { join } from 'path'
 import { type ReleaseChannel, saveGlobalConfig } from '@thyrox/config'
-import { getClaudeConfigHomeDir } from '@thyrox/config/env/utils'
+import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 
-// Lazy getters: getClaudeConfigHomeDir() is memoized and reads process.env.
+// Lazy getters: getConfigHomeDir() is memoized and reads process.env.
 // Evaluating at module scope would capture the value before entrypoints like
 // hfi.tsx get a chance to set CLAUDE_CONFIG_DIR in main(), and would also
 // populate the memoize cache with that stale value for all 150+ other callers.
 function getLocalInstallDir(): string {
-  return join(getClaudeConfigHomeDir(), 'local')
+  return join(getConfigHomeDir(), 'local')
 }
 export function getLocalClaudePath(): string {
   return join(getLocalInstallDir(), 'claude')

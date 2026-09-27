@@ -7,7 +7,7 @@ import { fileSuffixForOauthConfig } from '@thyrox/provider/oauthConstants'
 import { findExecutable } from '@thyrox/shell/findExecutable.js'
 import { which } from '@thyrox/shell/which.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
-import { getClaudeConfigHomeDir, isEnvTruthy } from './utils.js'
+import { getConfigHomeDir, isEnvTruthy } from './utils.js'
 
 type Platform = 'win32' | 'darwin' | 'linux'
 
@@ -16,10 +16,10 @@ export const getGlobalClaudeFile = memoize((): string => {
   // Legacy fallback for backwards compatibility
   if (
     getFsImplementation().existsSync(
-      join(getClaudeConfigHomeDir(), '.config.json'),
+      join(getConfigHomeDir(), '.config.json'),
     )
   ) {
-    return join(getClaudeConfigHomeDir(), '.config.json')
+    return join(getConfigHomeDir(), '.config.json')
   }
 
   const filename = `.claude${fileSuffixForOauthConfig()}.json`
