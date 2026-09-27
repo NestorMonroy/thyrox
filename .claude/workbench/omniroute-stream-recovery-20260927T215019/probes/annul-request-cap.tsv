@@ -1,0 +1,5 @@
+usage-verb	s/(?!\[^.\\n\]{0,40}\\b(?:made|sent|used)\\b)//
+min-requests	s/\&\& cap.requests >= 1$/\&\& true/
+min-window	s/\&\& cap.windowMs >= 1_000$/\&\& true/
+max-window	s/\&\& cap.windowMs <= MAX_WINDOW_MS$/\&\& true/
+rpm-form	/const rpm = REQUESTS_PER_MINUTE.exec(text)/s/REQUESTS_PER_MINUTE.exec(text)/null/

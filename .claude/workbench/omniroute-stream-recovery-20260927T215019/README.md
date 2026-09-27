@@ -53,3 +53,24 @@ Con `bin/annul_parallel`, cada suite contra las mismas variantes
   antes de reabrir o de finalizar.
 - Cableado del servidor (`outputs/annul-server-stream.tsv`): discriminan las
   4 de 4.
+
+## Límites de tasa: las dos partes puras
+
+Primera etapa del gestor de límites (`open-sse/services/rateLimitManager/`):
+`headers.ts` → `rateLimitHeaders.ts` y `requestCap.ts` → `requestCap.ts`.
+Oráculo en `proxyRateLimitHeaders.test.ts`:
+- de `ratelimitmanager-headers-split.test.ts`, las secciones 1 y 3; la 2
+  prueba la API del gestor completo, que aún no existe aquí;
+- de `rate-limit-learned-cap-13594.test.ts`, sus casos puros.
+
+Anulaciones (`outputs/annul-rate-limit-headers*.tsv`,
+`outputs/annul-request-cap.tsv`):
+- **Discriminan:** 8 de 9. `lowercase-names` lo hace desde el caso del
+  `Map`, que se añadió porque ninguna prueba de la referencia lo cubría.
+- **No discrimina:** `minutes-not-ms`. Con la expresión anclada, el retroceso
+  lleva siempre `500ms` al grupo de milisegundos, así que el `(?!s)` de la
+  referencia es redundante.
+
+El resto del gestor tiene estado: un limitador por proveedor y credencial,
+con concurrencia, intervalo mínimo y cupo que se repone. La referencia lo
+construye sobre `bottleneck`, así que aquí se reimplementa en nativo.
