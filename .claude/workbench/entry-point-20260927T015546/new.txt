@@ -1,5 +1,25 @@
-import { enableConfigs, getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
-import { installConfigHostBindings } from '@thyrox/config/host.js'
-import { setThemeConfigCallbacks, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
-import { runCli } from './run-cli.ts'
-import { EXIT_USAGE } from '../exitCodes.ts'
+describe('la rama de cwd en la capa cli', () => {
+  test('10. sin cwd: mensaje, linea result pedida y salida 1 — en ese orden', async () => {
+    const events: string[] = []
+    await expect(exitIfCwdUnavailable({
+      getCwd: () => { throw codeError('ENOENT') },
+      writeError: m => { events.push(`stderr:${m.slice(0, 11)}`) },
+      writeResult: async f => { events.push(`result:${f.reason}`) },
+      newSessionId: () => UUID,
+      exit: (code => { events.push(`exit:${code}`); throw new Error('salio') }) as (c: number) => never,
+    })).rejects.toThrow('salio')
+    expect(events).toEqual(['stderr:The current', 'result:cwd_unavailable', 'exit:1'])
+  })
+  test('11. con cwd legible no hace nada', async () => {
+    const events: string[] = []
+    await exitIfCwdUnavailable({ getCwd: () => '/tmp', writeError: m => { events.push(m) },
+      exit: (() => { events.push('exit') }) as unknown as (c: number) => never })
+    expect(events).toEqual([])
+  })
+  test('12. cli.tsx la llama tras --version y ANTES de cargar el perfilador', () => {
+    const src = readFileSync(CLI, 'utf8')
+    const check = src.indexOf('exitIfCwdUnavailable()')
+    expect(check).toBeGreaterThan(src.indexOf("args[0] === '--version'"))
+    expect(check).toBeLessThan(src.indexOf("profileCheckpoint('cli_entry')"))
+  })
+})

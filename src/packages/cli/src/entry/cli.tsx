@@ -79,6 +79,10 @@ async function main(): Promise<void> {
     return
   }
 
+  // El cwd se mide antes que nada, como en la capa `cli` del binario (`rt`):
+  // uno borrado revienta mas adentro con un rastro que no dice que hacer.
+  await (await import('./cwdCheck.ts')).exitIfCwdUnavailable()
+
   // For all other paths, load the startup profiler
   const { profileCheckpoint } = await import('@thyrox/app-host/startup/startupProfiler.js')
   profileCheckpoint('cli_entry')

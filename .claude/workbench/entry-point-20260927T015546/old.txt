@@ -1,6 +1,15 @@
-import type { RuntimeHandles } from '@thyrox/app-host'
-import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
-import { setThemeConfigCallbacks, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
-import { runClaudeCode } from '@thyrox/cli'
-
-import { createRuntimeHandles } from '@thyrox/app-host/runtime/runtimeHandles.js'
+describe('cli.tsx desde un directorio borrado', () => {
+  test('10. sale 1 con el mensaje, y con stream-json pedido deja la linea result', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'cwd-borrado-'))
+    const script = `process.chdir(${JSON.stringify(dir)}); require('fs').rmSync(${JSON.stringify(dir)}, {recursive: true}); process.argv = [process.argv[0], ${JSON.stringify(CLI)}, '-p', '--output-format', 'stream-json']; await import(${JSON.stringify(CLI)})`
+    const r = spawnSync(process.execPath, ['-e', script], {
+      encoding: 'utf8', timeout: 60_000,
+      env: { ...process.env, THYROX_CODE_STARTUP_FAILURE_RESULTS: '1' },
+    })
+    rmSync(dir, { recursive: true, force: true })
+    expect(r.status).toBe(1)
+    expect(r.stderr).toContain('The current directory no longer exists')
+    const line = r.stdout.trim().split('\n').at(-1) ?? ''
+    expect(JSON.parse(line).startup_failure_reason).toBe('cwd_unavailable')
+  })
+})

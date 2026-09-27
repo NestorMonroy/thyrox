@@ -1,0 +1,14 @@
+==== WV: 1 definicion(es) de nivel superior
+---- chunk-mpjg7e0m.js function WV [1844,2107)
+async function WV(r){let e=process.stdout;if(!out()||!Fqn()||e.writableEnded||e.destroyed)return;let t=JSON.stringify(sut({...r,sessionId:d(r.sessionId)}))+`
+`,o=()=>{},s=new Promise((n)=>{o=n});e.once("error",o);try{e.write(t,()=>o())}catch{return}await rt(s,u)}
+==== sut: 1 definicion(es) de nivel superior
+---- chunk-mpjg7e0m.js function sut [1688,1844)
+function sut({sessionId:r,message:e,reason:t,resultIndex:o=0}){return{...ez(r,[e]),...t!==void 0&&{startup_failure_reason:t},...o!==null&&{result_index:o}}}
+==== out: 1 definicion(es) de nivel superior
+---- chunk-mpjg7e0m.js function out [1503,1577)
+function out(){return Oe(process.env.CLAUDE_CODE_STARTUP_FAILURE_RESULTS)}
+==== Fqn: 1 definicion(es) de nivel superior
+---- chunk-mpjg7e0m.js function Fqn [1410,1503)
+function Fqn(r=process.argv.slice(2)){return Yun(r)&&JD("--output-format",r)==="stream-json"}
+symbol: 4 de 4 nombre(s) resueltos
