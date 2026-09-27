@@ -1,0 +1,16 @@
+auth.test.ts
+backgroundShells.test.ts
+cache.test.ts
+claude-extra-usage.test.ts
+dangerousCmdlets.test.ts
+gracefulShutdown.test.ts
+managedSettingsHeadless.int.test.ts
+message-pipeline.test.ts
+messages.test.ts
+officialRegistry.test.ts
+prefix.test.ts
+tokens.test.ts
+toolSearchText.test.tsx
+transcriptSearch.renderFidelity.test.tsx
+validate.test.ts
+webfetch-preapproved-separation.test.ts
