@@ -75,7 +75,7 @@ function writeManifest(dir: string, m: Record<string, unknown>): void {
   writeFileSync(join(dir, MANIFEST_FILE_NAME), manifestLine('declaration', m) + '\n')
 }
 
-const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
+const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
 
 const root = () => mkdtempSync(join(tmpdir(), 'wb-'))
 

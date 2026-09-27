@@ -23,7 +23,7 @@ JSON
 printf 'Extrae el concepto del ítem.\n' > "$F/prompt.md"
 # El «claude» que el pool lanza: thyrox -p con el proveedor grabado. Todo lo
 # demás llega del pool sin tocar.
-printf '#!/usr/bin/env bash\nexec bash "%s/bin/cli-main" "$@" --provider recorded --grabacion "%s/turnos.json"\n' \
+printf '#!/usr/bin/env bash\nexec bash "%s/bin/cli" "$@" --provider recorded --grabacion "%s/turnos.json"\n' \
     "$ROOT" "$F" > "$F/thyrox-p"
 chmod +x "$F/thyrox-p"
 

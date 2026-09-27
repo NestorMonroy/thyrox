@@ -36,7 +36,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const RAIZ_CLI = join(import.meta.dir, '..')
-const ENTRADA = join(RAIZ_CLI, 'src', 'entry', 'main.ts')
+const ENTRADA = join(RAIZ_CLI, 'src', 'entry', 'cli.tsx')
 const RAIZ_HARNESS = join(RAIZ_CLI, '..', 'harness')
 
 const uso = {
@@ -64,11 +64,13 @@ describe('el paquete aloja el dibujo de la CLI', () => {
 })
 
 describe('el paquete aloja el punto de entrada', () => {
-  test('4. el punto de entrada vive en cli/src/entry/main.ts', () => {
-    // Renombrado en #205: se llamaba `bin/harness.ts` por el paquete retirado
-    // en #226/#266. Las dos referencias lo llaman `main` y ninguna tiene
-    // `bin/` — ver el docstring de `cliEntry.test.ts`.
+  test('4. el punto de entrada vive en cli/src/entry/cli.tsx', () => {
+    // El binario tiene dos capas: `bunfs-root/cli` (este) despacha los
+    // caminos rapidos e importa perezosamente `main`. `main.ts` hacia el
+    // trabajo de `cli` bajo el nombre de `main` y chocaba con `main.tsx`
+    // al emitir (TS5056). Banco: .claude/workbench/entry-point-*/README.md.
     expect(existsSync(ENTRADA)).toBe(true)
+    expect(existsSync(join(RAIZ_CLI, 'src', 'entry', 'main.ts'))).toBe(false)
   })
 
   test('5. y YA NO vive en ningun bin/, ni aqui ni en el paquete retirado', () => {

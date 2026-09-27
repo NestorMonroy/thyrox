@@ -13,7 +13,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parseRstTasks } from '@thyrox/task/rst.ts'
 import { taskTools } from '@thyrox/tools/tasks'
-import { runCli } from '../src/entry/main.ts'
+import { runCli } from '../src/entry/run-cli.ts'
 import { docsRoot } from '@thyrox/paths/docs.ts'
 
 /** El archivo de tareas de esta misma iniciativa: control positivo real. */

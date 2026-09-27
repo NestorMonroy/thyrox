@@ -608,7 +608,7 @@ def is_typescript_entrypoint(path: pathlib.Path) -> bool:
     no algo que se invoque. Medir el significante que esta a mano en vez del
     que discrimina es el sub-patron C de `metrica-decide-la-conclusion.md`.
     """
-    if path.suffix != ".ts" or path.parent.name not in TS_ENTRYPOINT_DIRS:
+    if path.suffix not in (".ts", ".tsx") or path.parent.name not in TS_ENTRYPOINT_DIRS:
         return False
     try:
         with path.open(encoding="utf-8", errors="replace") as handle:
@@ -676,7 +676,12 @@ def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Pat
     src = root / "src"
     if not src.is_dir():
         return found
-    for entry in sorted(src.rglob("*.ts")):
+    # `.tsx` tambien: el punto de entrada de `cli` es `entry/cli.tsx`. Y la
+    # salida nunca: un `.d.ts` emitido conserva el shebang de su fuente.
+    candidates = sorted([*src.rglob("*.ts"), *src.rglob("*.tsx")])
+    for entry in candidates:
+        if entry.name.endswith(".d.ts") or "dist" in entry.parts:
+            continue
         # El linker aislado de bun crea un `node_modules` por paquete
         # —30 medidos bajo src/packages—, y `rglob` los recorre. Una
         # dependencia que traiga un `bin/*.ts` con shebang entraria al

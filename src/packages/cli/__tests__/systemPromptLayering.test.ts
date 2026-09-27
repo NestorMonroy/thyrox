@@ -46,7 +46,7 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-const ENTRADA = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
+const ENTRADA = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
 const uso = {
   input_tokens: 1, output_tokens: 1,
   cache_creation_input_tokens: 0, cache_read_input_tokens: 0,

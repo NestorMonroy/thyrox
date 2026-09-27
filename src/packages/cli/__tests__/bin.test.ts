@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { startAnthropicMockServer } from '@thyrox/provider/anthropicMockServer'
 
-const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
+const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
 const uso = { input_tokens: 1, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
 
 describe('src/entry/main.ts (T-009) — un ciclo completo de punta a punta', () => {

@@ -100,7 +100,7 @@ describe('la vía completa: git → selector', () => {
 })
 
 describe('src/entry/main.ts --select-tests', () => {
-  const BIN = join(import.meta.dir, '..', 'src', 'entry', 'main.ts')
+  const BIN = join(import.meta.dir, '..', 'src', 'entry', 'cli.tsx')
   const conSettings = (d: string) => {
     mkdirSync(join(d, '.claude'), { recursive: true })
     writeFileSync(join(d, '.claude', 'settings.json'), JSON.stringify({

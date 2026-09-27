@@ -38,7 +38,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const PKG = join(import.meta.dir, '..')
-const ENTRY = join(PKG, 'src', 'entry', 'main.ts')
+const ENTRY = join(PKG, 'src', 'entry', 'cli.tsx')
 
 /** Los siete comandos autocontenidos que hoy viven inline en el binario. */
 const COMMANDS = [
@@ -83,7 +83,10 @@ describe('la entrada de la CLI (#205)', () => {
     // ccnmt lo declara (medido: 0 de sus paquetes). El `bin: null` de los tres
     // niveles que #252 nombra es fidelidad a la referencia, no omision.
     expect(pkg.bin).toBeUndefined()
-    expect(pkg.exports['./entry/main']).toBe('./src/entry/main.ts')
+    // Como en ccnmt (`packages/cli/package.json`): el punto de entrada NO es
+    // superficie publica. Lo invocan el build y el arranque por ruta
+    // (`build.ts`, `scripts/dev.ts`; aqui `bin/cli`), nunca un import.
+    expect(Object.keys(pkg.exports).filter((k: string) => k.startsWith('./entry/'))).toEqual([])
   })
 
   test('3. ningun modulo del paquete cita el binario retirado', () => {
@@ -101,8 +104,13 @@ describe('la entrada de la CLI (#205)', () => {
   })
 
   test('4. el punto de entrada es delgado: cita el arranque y NINGUNA logica de dominio', () => {
-    const texto = readFileSync(ENTRY, 'utf8')
-    expect(texto).toContain('runCli')
+    // Dos capas, como en el binario: `cli.tsx` despacha y entrega a `main`;
+    // `main.tsx` es la que cita el despachador de thyrox. Ninguna de las dos
+    // puede alojar una costura de dominio.
+    const capaMain = readFileSync(join(PKG, 'src', 'entry', 'main.tsx'), 'utf8')
+    expect(readFileSync(ENTRY, 'utf8')).toContain("import('./main.tsx')")
+    expect(capaMain).toContain('runCli')
+    const texto = readFileSync(ENTRY, 'utf8') + capaMain
     // Las costuras que serian dominio dentro del punto de entrada. Cada una
     // vivia en el binario de 666 lineas; ninguna puede sobrevivir aqui.
     const prohibidas = [

@@ -1015,6 +1015,30 @@ def test_typescript_names_resolve_stem_collisions(base: pathlib.Path) -> None:
     check("dueño y stem iguales se colapsan a uno",
           "shell" in gb.discover_typescript_entrypoints(tree))
 
+    # El punto de entrada de `cli` es un `.tsx` —`entry/cli.tsx`, la capa
+    # `cli` del binario—, y el recorrido solo veia `*.ts`: el entrypoint
+    # existia con su shebang y ningun envoltorio lo ejecutaba. Su nombre se
+    # colapsa igual que `shell`: dueño `cli`, stem `cli`.
+    d = tree / "src/packages/cli/src/entry"
+    d.mkdir(parents=True, exist_ok=True)
+    (d / "cli.tsx").write_text("#!/usr/bin/env bun\n")
+    (d / "main.tsx").write_text("export async function main() {}\n")
+    found = gb.discover_typescript_entrypoints(tree)
+    check("un .tsx con shebang bajo entry/ SI es entrypoint",
+          found.get("cli") == d / "cli.tsx", str(sorted(found)))
+    check("y un .tsx sin shebang no lo es",
+          not any(p.name == "main.tsx" for p in found.values()), str(sorted(found)))
+
+    # La declaracion emitida CONSERVA el shebang y cae bajo `dist/entry/`:
+    # medido al construir los 42 paquetes, el generador propuso `cli.d` como
+    # entrypoint. Un `.d.ts` es salida, nunca algo que se ejecute.
+    dist = tree / "src/packages/cli/dist/entry"
+    dist.mkdir(parents=True, exist_ok=True)
+    (dist / "cli.d.ts").write_text("#!/usr/bin/env bun\nexport {}\n")
+    found = gb.discover_typescript_entrypoints(tree)
+    check("una declaracion .d.ts con shebang NO es entrypoint",
+          not any(p.name.endswith(".d.ts") for p in found.values()), str(sorted(found)))
+
 
 def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
     """Sin bun el envoltorio emite IMPORTANT y NO ejecuta el .ts.

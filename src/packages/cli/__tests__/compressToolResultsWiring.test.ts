@@ -14,7 +14,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runCli } from '../src/entry/main.ts'
+import { runCli } from '../src/entry/run-cli.ts'
 import type { AssistantTurn, ContentBlock } from '@thyrox/agent/loop/types'
 
 const usage = { input_tokens: 10, output_tokens: 5, cache_creation_input_tokens: 0, cache_read_input_tokens: 100 }

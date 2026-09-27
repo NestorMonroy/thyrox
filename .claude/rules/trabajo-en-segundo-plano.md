@@ -77,7 +77,7 @@ persistida, con `--setting-sources project` y herramientas de lectura, y deja
 `<n>.json` en disco antes de que nadie lo resuma. El modelo va por
 identificador completo; un alias rehúsa con exit 2.
 
-**El ítem puede correr sobre el bucle propio**: `HEADLESS_POOL_CLAUDE=bin/cli-main`
+**El ítem puede correr sobre el bucle propio**: `HEADLESS_POOL_CLAUDE=bin/cli`
 lanza `thyrox -p`, que acepta la misma línea de comando que el pool compone
 y escribe el mismo `stream-json` (`src/packages/cli/src/entry/print.ts`, con
 las formas de `system/init` y `result` del binario 2.1.282). Su credencial se

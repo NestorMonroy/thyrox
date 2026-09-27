@@ -47,15 +47,6 @@
       "@thyrox/cli/testing/io": [
         "./src/testing/io.ts"
       ],
-      "@thyrox/cli/entry/main": [
-        "./src/entry/main.ts"
-      ],
-      "@thyrox/cli/entry/detect-mode": [
-        "./src/entry/detect-mode.ts"
-      ],
-      "@thyrox/cli/entry/mode-dispatch": [
-        "./src/entry/mode-dispatch.ts"
-      ],
       "@thyrox/cli/bg/daemonAdapter.js": [
         "./src/bg/daemonAdapter.ts"
       ],
