@@ -21,7 +21,7 @@ Guía de referencia para automatizar la ejecución del ciclo THYROX sin interven
 | `/loop N` | Sesión | REPL activo | Avanzar Phase 10 durante sesión de trabajo |
 | Desktop Scheduled Task | Entre reinicios | Desktop App abierto | Sync diario de estado, documentación nocturna |
 | `/schedule` (Cloud) | Permanente | Plan Team/Enterprise | CI/CD, reporting automático sin máquina local |
-| `claude -p` (headless) | N/A | CLI instalado | GitHub Actions, pipelines |
+| `thyrox -p` (headless) | N/A | CLI instalado | GitHub Actions, pipelines |
 
 ---
 
@@ -138,7 +138,7 @@ Para automatización que no requiere máquina local activa (requiere plan Team/E
 
 ---
 
-## 4. CI/CD con `claude -p` (headless)
+## 4. CI/CD con `thyrox -p` (headless)
 
 Para pipelines de GitHub Actions u otros sistemas CI/CD:
 
@@ -167,7 +167,7 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          claude -p --max-turns 3 \
+          thyrox -p --max-turns 3 \
             "Read .thyrox/context/now.md and all *-task-plan.md files.
              Generate a JSON progress report with:
              - active_wp: nombre del WP activo
@@ -192,7 +192,7 @@ jobs:
 # scripts/validate-thyrox-state.sh
 # Verifica que el estado THYROX es consistente antes de merge
 
-claude -p --max-turns 2 \
+thyrox -p --max-turns 2 \
   "Read .thyrox/context/now.md and check:
    1. Does the active branch match the WP's expected branch?
    2. Are there uncommitted changes in .thyrox/context/?
@@ -203,10 +203,10 @@ claude -p --max-turns 2 \
 
 ---
 
-## 5. Loop externo con `claude -p` — sin ScheduleWakeup
+## 5. Loop externo con `thyrox -p` — sin ScheduleWakeup
 
 Para entornos donde `ScheduleWakeup`/`CronCreate` no están disponibles (no Desktop App),
-la estrategia correcta es un script shell externo que invoca `claude -p` en loop:
+la estrategia correcta es un script shell externo que invoca `thyrox -p` en loop:
 
 ```bash
 # bin/thyrox-loop.sh — ejecutar desde terminal, no desde Claude Code
@@ -219,7 +219,7 @@ Fuente confirmada: claude-howto repo — seccion 10-cli (linea 34) y
 
 ### Eliminación de prompts de herramientas (dentro del loop)
 
-Para que cada iteración de `claude -p` no pida confirmaciones de herramientas,
+Para que cada iteración de `thyrox -p` no pida confirmaciones de herramientas,
 el `settings.json` del proyecto ya tiene `permissions.allow` con `Edit(*)`, `Write(*)`, `Bash(git *)`.
 Con `defaultMode: acceptEdits` + allow list, Phase 10 corre sin interrupciones de permisos.
 
