@@ -50,12 +50,12 @@ check "aislado: el resumen cuenta 2 pass" "$(printf '%s' "$SALIDA" | gawk '/^pas
 # 2 — un fallo real sigue siendo rojo, nombrado.
 SALIDA="$(cd "$F" && printf '%s\n' ./a.test.ts ./b.test.ts ./c.test.ts | bash "$EJECUTOR" 2>&1)"; CODE=$?
 check "un fallo real: exit 1" "$CODE" "1"
-check "un fallo real: nombra el archivo" "$(printf '%s' "$SALIDA" | gawk '/^-- ROJO .*c\.test\.ts$/{n++} END{print n+0}')" "1"
+check "un fallo real: nombra el archivo" "$(printf '%s' "$SALIDA" | gawk '/^-- FAIL .*c\.test\.ts$/{n++} END{print n+0}')" "1"
 
 # 3 — un proceso que aborta tumba SOLO su archivo; los demas se miden.
 SALIDA="$(cd "$F" && printf '%s\n' ./a.test.ts ./b.test.ts ./d.test.ts | bash "$EJECUTOR" 2>&1)"; CODE=$?
 check "un aborto: exit 1" "$CODE" "1"
-check "un aborto: nombra el archivo" "$(printf '%s' "$SALIDA" | gawk '/^-- ROJO .*d\.test\.ts$/{n++} END{print n+0}')" "1"
+check "un aborto: nombra el archivo" "$(printf '%s' "$SALIDA" | gawk '/^-- FAIL .*d\.test\.ts$/{n++} END{print n+0}')" "1"
 check "un aborto: los otros dos siguen contando" "$(printf '%s' "$SALIDA" | gawk '/^pass=/{split($1,a,"="); print a[2]}')" "2"
 
 # 5 — el entorno del corredor, no el del que llama: `tests/run.sh` exporta

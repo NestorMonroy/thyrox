@@ -17,7 +17,8 @@ fixture() {
   local repo="$1"
   mkdir -p "$repo/tests" "$repo/src/verify"
   cp "$RAIZ/tests/run.sh" "$repo/tests/run.sh"
-  cp "$RAIZ/src/verify/__init__.py" "$RAIZ/src/verify/tree_fingerprint.py" "$repo/src/verify/"
+  cp "$RAIZ/src/verify/__init__.py" "$RAIZ/src/verify/tree_fingerprint.py" \
+     "$RAIZ/src/verify/run_suites_isolated.sh" "$repo/src/verify/"
   printf 'exit 0\n' > "$repo/tests/test_ok.sh"
   git -C "$repo" init -q
   git -C "$repo" -c user.name=t -c user.email=t@t -c commit.gpgsign=false add .
