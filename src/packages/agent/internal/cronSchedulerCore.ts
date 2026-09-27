@@ -26,6 +26,7 @@ import {
   releaseSchedulerLock,
   tryAcquireSchedulerLock,
 } from './cronTasksLockCore.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const CHECK_INTERVAL_MS = 1000
 const FILE_STABILITY_MS = 300
@@ -526,7 +527,7 @@ export function createCronScheduler(
 function buildMissedTaskNotification(missed: CronTask[]): string {
   const plural = missed.length > 1
   const header =
-    `The following one-shot scheduled task${plural ? 's were' : ' was'} missed while Claude was not running. ` +
+    `The following one-shot scheduled task${plural ? 's were' : ' was'} missed while ${PRODUCT_NAME} was not running. ` +
     `${plural ? 'They have' : 'It has'} already been removed from .claude/scheduled_tasks.json.\n\n` +
     `Do NOT execute ${plural ? 'these prompts' : 'this prompt'} yet. ` +
     `First use the AskUserQuestion tool to ask whether to run ${plural ? 'each one' : 'it'} now. ` +

@@ -5,6 +5,7 @@ import { readFileRange, tailFile } from '@thyrox/storage/fsOperations.js'
 import { getMaxOutputLength } from '@thyrox/shell/legacy/outputLimits.js'
 import { safeJoinLines } from '@thyrox/output/utils/stringUtils.js'
 import { DiskTaskOutput, getTaskOutputPath } from '@thyrox/storage/task/diskOutput.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const DEFAULT_MAX_MEMORY = 8 * 1024 * 1024 // 8MB
 const POLL_INTERVAL_MS = 1000
@@ -321,7 +322,7 @@ export class TaskOutput {
       logForDebugging(
         `TaskOutput.#readStdoutFromFile: failed to read ${this.path} (${code}): ${err}`,
       )
-      return `<bash output unavailable: output file ${this.path} could not be read (${code}). This usually means another Claude Code process in the same project deleted it during startup cleanup.>`
+      return `<bash output unavailable: output file ${this.path} could not be read (${code}). This usually means another ${PRODUCT_NAME} process in the same project deleted it during startup cleanup.>`
     }
   }
 

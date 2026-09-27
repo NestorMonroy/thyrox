@@ -22,6 +22,7 @@ import {
   jsonStringify,
   writeFileSync,
 } from '@thyrox/local-observability/slowOperations.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Check if PID-based version locking is enabled.
@@ -179,7 +180,7 @@ export function isLockActive(lockFilePath: string): boolean {
   // This helps with PID reuse scenarios
   if (!isClaudeProcess(pid, execPath)) {
     logForDebugging(
-      `Lock PID ${pid} is running but does not appear to be Claude - treating as stale`,
+      `Lock PID ${pid} is running but does not appear to be ${PRODUCT_NAME} - treating as stale`,
     )
     return false
   }

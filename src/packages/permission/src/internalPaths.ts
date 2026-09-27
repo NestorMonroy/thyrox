@@ -41,6 +41,7 @@ import { SENSITIVE_FILES, automountRoot, comparableSegment, isUncPath } from './
 import { foldPathCase, trustedSpellingOf } from './ruleMatching.js'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { INSTRUCTIONS_FILE_NAMES } from '@thyrox/config/env/instructionFiles.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type SafetyDecisionReason = {
   type: 'safetyCheck'
@@ -93,7 +94,7 @@ export const HOST_CREDENTIALS_DENIED: InternalPathDecision = {
 export const SEED_ADMIN_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
-    '~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by Claude Code; it cannot be written directly',
+    `~/.claude/seed-admin holds the private git directories of cloud-session uploads and is managed by ${PRODUCT_NAME}; it cannot be written directly`,
   decisionReason: {
     type: 'safetyCheck',
     reason: 'seed-admin git configuration is a code-execution surface for the upload',
@@ -113,7 +114,7 @@ export const PROFILE_STORE_DENIED: InternalPathDecision = {
 export const SETTINGS_REVIEW_DENIED: InternalPathDecision = {
   behavior: 'deny',
   message:
-    'Staged Claude Code settings changes are the owner’s to review in /settings-review; the review store cannot be written directly',
+    `Staged ${PRODUCT_NAME} settings changes are the owner’s to review in /settings-review; the review store cannot be written directly`,
   decisionReason: {
     type: 'safetyCheck',
     reason: 'settings review store write substitutes a proposal the owner is about to accept',

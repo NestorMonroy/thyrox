@@ -8,6 +8,7 @@ import {
 } from '@thyrox/local-observability'
 import { useSetAppState } from '../appStateHooks.js'
 import { type OptionWithDescription, Select } from '@thyrox/repl/components/CustomSelect/select.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type FeedbackType = 'accept' | 'reject'
 
@@ -35,8 +36,8 @@ type PermissionPromptProps<T extends string> = {
 }
 
 const DEFAULT_PLACEHOLDERS: Record<FeedbackType, string> = {
-  accept: 'tell Claude what to do next',
-  reject: 'tell Claude what to do differently',
+  accept: `tell ${PRODUCT_NAME} what to do next`,
+  reject: `tell ${PRODUCT_NAME} what to do differently`,
 }
 
 /**

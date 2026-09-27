@@ -6,6 +6,7 @@ import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { withResolvers } from '@thyrox/local-observability/utils/withResolvers.js'
 import { isLockHeldLocally, releaseComputerUseLock } from './computerUseLock.js'
 import { unregisterEscHotkey } from './escHotkey.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // cu.apps.unhide is NOT one of the four @MainActor methods wrapped by
 // drainRunLoop's 30s backstop. On abort paths (where the user hit Ctrl+C
@@ -88,7 +89,7 @@ export async function cleanupComputerUseAfterTurn(
 
   if (await releaseComputerUseLock()) {
     ctx.sendOSNotification?.({
-      message: 'Claude is done using your computer',
+      message: `${PRODUCT_NAME} is done using your computer`,
       notificationType: 'computer_use_exit',
     })
   }

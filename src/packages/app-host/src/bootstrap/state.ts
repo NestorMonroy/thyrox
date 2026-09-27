@@ -113,6 +113,7 @@ export {
   getAllowedSettingSources,
   setAllowedSettingSources,
 } from '@thyrox/config/internal/allowedSourcesState.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Un matcher de hook, venga del registro interno o de un plugin. Misma
@@ -434,7 +435,7 @@ export function setMeter(
     description: 'Number of git commits created',
   })
   STATE.costCounter = createCounter('claude_code.cost.usage', {
-    description: 'Cost of the Claude Code session',
+    description: `Cost of the ${PRODUCT_NAME} session`,
     unit: 'USD',
   })
   STATE.tokenCounter = createCounter('claude_code.token.usage', {

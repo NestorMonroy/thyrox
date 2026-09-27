@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export const BROWSER_TOOLS = [
   {
     name: "javascript_tool",
@@ -306,7 +307,7 @@ export const BROWSER_TOOLS = [
             },
             showWatermark: {
               type: "boolean",
-              description: "Show Claude logo watermark (default: true)",
+              description: `Show ${PRODUCT_NAME} logo watermark (default: true)`,
             },
             quality: {
               type: "number",

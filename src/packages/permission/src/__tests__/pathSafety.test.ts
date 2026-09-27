@@ -17,6 +17,7 @@ import {
   isSuspiciousWindowsPath,
   isUncPath,
 } from '../pathSafety.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 let base: string
 let previousCwd: string
@@ -59,12 +60,12 @@ describe('checkPathSafetyForAutoEdit (Gge)', () => {
     expect(r.safe).toBe(false)
     if (r.safe) throw new Error('unreachable')
     expect(r).toMatchObject({ classifierApprovable: true, circuitBreaker: 'claudeSettingsFile' })
-    expect(r.message).toBe(`Claude requested permissions to write to ${file}, but you haven't granted it yet.`)
+    expect(r.message).toBe(`${PRODUCT_NAME} requested permissions to write to ${file}, but you haven't granted it yet.`)
   })
   test('un archivo de shell es sensible', () => {
     const file = touch('.bashrc')
     const r = checkPathSafetyForAutoEdit(file)
-    expect(r).toEqual({ safe: false, message: `Claude requested permissions to edit ${file} which is a sensitive file.`, classifierApprovable: true })
+    expect(r).toEqual({ safe: false, message: `${PRODUCT_NAME} requested permissions to edit ${file} which is a sensitive file.`, classifierApprovable: true })
   })
   test('todo lo que cuelga de .git es sensible', () => {
     expect(checkPathSafetyForAutoEdit(touch('.git', 'config')).safe).toBe(false)

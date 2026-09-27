@@ -17,6 +17,7 @@ import {
 } from '../PermissionPrompt.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
 import { PermissionRuleExplanation } from '../PermissionRuleExplanation.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type SkillOptionValue = 'yes' | 'yes-exact' | 'yes-prefix' | 'no'
 
@@ -231,7 +232,7 @@ export function SkillPermissionRequest(
 
   return (
     <PermissionDialog title={`Use skill "${skill}"?`} workerBadge={workerBadge}>
-      <Text>Claude may use instructions, code, or files from this Skill.</Text>
+      <Text>{PRODUCT_NAME} may use instructions, code, or files from this Skill.</Text>
       <Box flexDirection="column" paddingX={2} paddingY={1}>
         <Text dimColor>{commandObj?.description}</Text>
       </Box>

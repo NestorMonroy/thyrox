@@ -21,6 +21,7 @@ import { instances } from '@anthropic/ink'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
 import { pwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import { logForDebugging } from '@thyrox/local-observability/debug.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const TMUX_SESSION = 'panel'
 
@@ -118,7 +119,7 @@ class TerminalPanel {
       'bind-key', '-n', 'M-j', 'detach-client', ';',
       'set-option', '-g', 'status-style', 'bg=default', ';',
       'set-option', '-g', 'status-left', '', ';',
-      'set-option', '-g', 'status-right', ' Alt+J to return to Claude ', ';',
+      'set-option', '-g', 'status-right', ` Alt+J to return to ${PRODUCT_NAME} `, ';',
       'set-option', '-g', 'status-right-style', 'fg=brightblack',
     ])
 

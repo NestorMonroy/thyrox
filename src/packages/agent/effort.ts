@@ -59,6 +59,7 @@
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { isProSubscriber } from '@thyrox/provider/authAlias.js'
 import { canonicalModelName, MODELS } from './models.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const EFFORT_LEVELS = [
   'none',
@@ -455,7 +456,7 @@ const OPUS_DEFAULT_EFFORT_CONFIG_DEFAULT: OpusDefaultEffortConfig = {
   enabled: true,
   dialogTitle: 'We recommend medium effort for Opus',
   dialogDescription:
-    'Effort determines how long Claude thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed.',
+    `Effort determines how long ${PRODUCT_NAME} thinks for when completing your task. We recommend medium effort for most tasks to balance speed and intelligence and maximize rate limits. Use ultrathink to trigger high effort when needed.`,
 }
 export function getOpusDefaultEffortConfig(): OpusDefaultEffortConfig {
   const config = getFeatureValue_CACHED_MAY_BE_STALE(

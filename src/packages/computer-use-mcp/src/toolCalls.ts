@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * Tool dispatch (host-binding adapter for MCP tool surface; `as any/unknown` casts are by-design type-system bypass for MCP request/response shapes that don't round-trip through TypeScript). Every security decision from plan §2 is enforced HERE, before any executor method is called.
  *
@@ -480,7 +481,7 @@ async function runInputActionGates(
         `"${frontmost.displayName}" is granted at tier "read" — ` +
           `visible in screenshots only, no clicks or typing.` +
           (isBrowser
-            ? " Use the Claude-in-Chrome MCP for browser interaction (tools " +
+            ? ` Use the ${PRODUCT_NAME}-in-Chrome MCP for browser interaction (tools ` +
               "named `mcp__Claude_in_Chrome__*`; load via ToolSearch if " +
               "deferred)."
             : " No interaction is permitted; ask the user to take any " +
@@ -522,7 +523,7 @@ async function runInputActionGates(
     // Keyboard safety net — defocus (prepareForAction step B) should have
     // moved us off. If we're still here, typing would go to our chat box.
     return errorResult(
-      "Claude's own window still has keyboard focus. This should not happen " +
+      `${PRODUCT_NAME}'s own window still has keyboard focus. This should not happen ` +
         "after the pre-action defocus. Click on the target application first.",
       "state_conflict",
     );
@@ -623,7 +624,7 @@ async function runHitTestGate(
     `Click at these coordinates would land on "${target.displayName}", ` +
       `which is granted at tier "read" (screenshots only, no interaction). ` +
       (isBrowser
-        ? "Use the Claude-in-Chrome MCP for browser interaction."
+        ? `Use the ${PRODUCT_NAME}-in-Chrome MCP for browser interaction.`
         : "Ask the user to take any actions in this app themselves.") +
       TIER_ANTI_SUBVERSION,
     "tier_insufficient",
@@ -1256,7 +1257,7 @@ function buildTierGuidanceMessage(tiered: TieredApp[]): string {
         `granted at tier "read" (visible in screenshots only; no clicks or ` +
         `typing). You can read what's on screen but cannot navigate, click, ` +
         `or type into ${readBrowsers.length === 1 ? "it" : "them"}. For browser ` +
-        `interaction, use the Claude-in-Chrome MCP (tools named ` +
+        `interaction, use the ${PRODUCT_NAME}-in-Chrome MCP (tools named ` +
         `\`mcp__Claude_in_Chrome__*\`; load via ToolSearch if deferred).`,
     );
   }
@@ -3057,7 +3058,7 @@ async function handleOpenTerminal(
   }
 
   const agentNames: Record<string, string> = {
-    claude: "Claude Code", codex: "Codex", gemini: "Gemini",
+    claude: `${PRODUCT_NAME}`, codex: "Codex", gemini: "Gemini",
     custom: args.command as string,
   };
 
@@ -4111,8 +4112,8 @@ export async function handleToolCall(
   if (lock) {
     if (lock.holder !== undefined && !lock.isSelf) {
       return errorResult(
-        "Another Claude session is currently using the computer. Wait for " +
-          "the user to acknowledge it is finished (stop button in the Claude " +
+        `Another ${PRODUCT_NAME} session is currently using the computer. Wait for ` +
+          `the user to acknowledge it is finished (stop button in the ${PRODUCT_NAME} ` +
           "window), or find a non-computer-use approach if one is readily " +
           "apparent.",
         "cu_lock_held",

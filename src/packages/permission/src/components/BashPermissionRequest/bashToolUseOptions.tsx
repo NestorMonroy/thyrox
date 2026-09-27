@@ -6,6 +6,7 @@ import type { PermissionUpdate } from '../../PermissionUpdateSchema.js'
 import { shouldShowAlwaysAllowOptions } from '../../permissionsLoader.js'
 import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
 import { generateShellSuggestionsLabel } from '../shellPermissionHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type BashToolUseOption =
   | 'yes'
@@ -79,7 +80,7 @@ export function bashToolUseOptions({
       type: 'input',
       label: 'Yes',
       value: 'yes',
-      placeholder: 'and tell Claude what to do next',
+      placeholder: `and tell ${PRODUCT_NAME} what to do next`,
       onChange: onAcceptFeedbackChange,
       allowEmptySubmitToCancel: true,
     })
@@ -178,7 +179,7 @@ export function bashToolUseOptions({
       type: 'input',
       label: 'No',
       value: 'no',
-      placeholder: 'and tell Claude what to do differently',
+      placeholder: `and tell ${PRODUCT_NAME} what to do differently`,
       onChange: onRejectFeedbackChange,
       allowEmptySubmitToCancel: true,
     })

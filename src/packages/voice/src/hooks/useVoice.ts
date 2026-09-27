@@ -26,6 +26,7 @@ import { getSystemLocaleLanguage } from '@thyrox/output/utils/intl.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { getInitialSettings } from '@thyrox/config/settings'
 import { sleep } from '@thyrox/config/sleep'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ─── Language normalization ─────────────────────────────────────────────
 
@@ -501,7 +502,7 @@ export function useVoice({
           } else if (!hadAudioSignal) {
             // Distinguish silent mic (capture issue) from speech not recognized.
             onErrorRef.current?.(
-              'No audio detected from microphone. Check that the correct input device is selected and that Claude Code has microphone access.',
+              `No audio detected from microphone. Check that the correct input device is selected and that ${PRODUCT_NAME} has microphone access.`,
             )
           } else {
             onErrorRef.current?.('No speech detected.')

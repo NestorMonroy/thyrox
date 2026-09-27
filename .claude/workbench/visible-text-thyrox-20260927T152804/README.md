@@ -60,3 +60,21 @@ atributos JSX (pasan a `{`…`}`).
 Los literales que se comparan (`===`, `endsWith`, …) se revisaron a mano
 (`rest-compared.txt`): los que detectan el archivo de instrucciones se
 cambian por `isInstructionsFileName`, no por el nombre nuevo.
+
+## Lo que la primera pasada sobre el resto rompió, y cómo se evita
+
+La herramienta renombró también los literales que NOMBRAN el archivo heredado
+a propósito: `LEGACY_INSTRUCTIONS_FILE_NAME = 'CLAUDE.md'` pasó a `THYROX.md`
+y el cargador dejó de leer los proyectos sin migrar (cayeron 14 casos de
+storage, 5 de config y 3 del prompt del bucle). También cambió las claves
+remotas de `SYNC_KEYS` y la fase 0 generada de `/init`.
+
+Se restauraron los tres archivos y la herramienta respeta ahora tres señales,
+cada una con su prueba: el nombre de la declaración dice `legacy`; la
+sentencia lleva `// renameProductInText: keep`; el archivo es generado
+(«Generado por» en su cabecera: se corrige el generador, no el archivo).
+
+Pruebas que fijaban el texto viejo se actualizaron al nuevo (meterState,
+createPermissionRequestMessage, pathSafety, cronPromptBuilders,
+messageContractStrings, subscriptionHelpers). El pie de PR perdió el enlace a
+la página del producto ajeno: thyrox no publica una propia.

@@ -116,7 +116,7 @@ export function registerMcpCommands(
 
   mcp
     .command('add-from-claude-desktop')
-    .description('Import MCP servers from Claude Desktop (Mac and WSL only)')
+    .description(`Import MCP servers from ${PRODUCT_NAME} Desktop (Mac and WSL only)`)
     .option('-s, --scope <scope>', 'Configuration scope (local, user, or project)', 'local')
     .action(async (options: { scope?: string }) => {
       const { mcpAddFromDesktopHandler } = await import('../handlers/mcp.js')

@@ -52,6 +52,7 @@ import { safeParseJSON } from '@thyrox/storage/json.js'
 import { sanitizeToolNameForAnalytics } from './eventMetadata.ts'
 import { normalizeToolInput } from '@thyrox/provider/legacy/api.js'
 import { isAdvisorBlock } from '@thyrox/provider/advisor.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Las cuatro familias de etiqueta que se retiran del prompt. Son envoltorios
@@ -306,7 +307,7 @@ export function AUTO_REJECT_MESSAGE(toolName: string): string {
 
 /** Denegacion por modo «don't ask»: la razon es autoexplicativa. */
 export function DONT_ASK_REJECT_MESSAGE(toolName: string): string {
-  return `Permission to use ${toolName} has been denied because Claude Code is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
+  return `Permission to use ${toolName} has been denied because ${PRODUCT_NAME} is running in don't ask mode. ${DENIAL_WORKAROUND_GUIDANCE}`
 }
 
 /** Respuesta cuando el turno no pide contestacion del modelo. */

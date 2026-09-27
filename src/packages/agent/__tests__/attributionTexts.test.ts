@@ -24,7 +24,7 @@ describe('buildAttributionTexts', () => {
     const texts = buildAttributionTexts({}, 'Claude Opus 5')
     expect(texts.commit).toBe('Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>')
     expect(texts.pr).toBe(PR_FOOTER)
-    expect(PR_FOOTER).toBe('\u{1F916} Generated with [Claude Code](https://claude.com/claude-code)')
+    expect(PR_FOOTER).toBe('\u{1F916} Generated with thyrox')
   })
 
   test('settings.attribution sustituye campo por campo', () => {

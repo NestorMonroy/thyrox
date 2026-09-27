@@ -7,12 +7,13 @@ import { isEnvDefinedFalsy } from '@thyrox/config/env/utils'
 import { getAPIProvider } from './providers.js'
 import { getWorkload } from './workloadContext.js'
 import { readEnv } from '@thyrox/config/env/utils'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 declare const MACRO: { VERSION: string }
 
-const DEFAULT_PREFIX = `You are Claude Code, Anthropic's official CLI for Claude.`
-const AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX = `You are Claude Code, Anthropic's official CLI for Claude, running within the Claude Agent SDK.`
-const AGENT_SDK_PREFIX = `You are a Claude agent, built on Anthropic's Claude Agent SDK.`
+const DEFAULT_PREFIX = `You are ${PRODUCT_NAME}, Anthropic's official CLI for ${PRODUCT_NAME}.`
+const AGENT_SDK_CLAUDE_CODE_PRESET_PREFIX = `You are ${PRODUCT_NAME}, Anthropic's official CLI for ${PRODUCT_NAME}, running within the Agent SDK.`
+const AGENT_SDK_PREFIX = `You are a ${PRODUCT_NAME} agent, built on Anthropic's Agent SDK.`
 
 const CLI_SYSPROMPT_PREFIX_VALUES = [
   DEFAULT_PREFIX,

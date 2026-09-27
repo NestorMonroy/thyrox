@@ -15,10 +15,11 @@ import {
   ENTRYPOINT_NAME,
   MAX_ENTRYPOINT_LINES,
 } from './memdir.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const TEAM_MEMORY_SECTION = `## Team memory (\`team/\` subdirectory)
 
-The \`team/\` subdirectory holds memories shared across everyone working in this repo. Other teammates' Claude sessions write here too — treat it differently from your personal files:
+The \`team/\` subdirectory holds memories shared across everyone working in this repo. Other teammates' ${PRODUCT_NAME} sessions write here too — treat it differently from your personal files:
 
 - **Phase 1:** \`ls team/\` and skim it alongside your personal files. A teammate may have already captured something you'd otherwise duplicate.
 - **Phase 3:** Merge near-duplicates *within* \`team/\` the same way you would personal memories. If a personal memory restates a team memory, delete the personal one.
@@ -29,15 +30,15 @@ The \`team/\` subdirectory holds memories shared across everyone working in this
 
 Do not promote personal memories into \`team/\` during a dream — that's a deliberate choice the user makes via \`/remember\`, not something to do reflexively.`
 
-const RECONCILE_CLAUDE_MD_SECTION = `### Reconcile memories against CLAUDE.md
+const RECONCILE_CLAUDE_MD_SECTION = `### Reconcile memories against THYROX.md
 
-Project CLAUDE.md instructions are loaded in your system prompt. For each \`feedback\` or \`project\` memory, check whether it contradicts a CLAUDE.md instruction on the same topic:
+Project THYROX.md instructions are loaded in your system prompt. For each \`feedback\` or \`project\` memory, check whether it contradicts a THYROX.md instruction on the same topic:
 
-- **Memory is stale** — CLAUDE.md and the memory describe different procedures for the same task: CLAUDE.md is the maintained, checked-in source. Delete the memory, or rewrite it to agree if it carries context worth keeping (the *why* is still useful but the *how* is wrong).
-- **CLAUDE.md may be stale** — the memory is clearly dated after CLAUDE.md and explicitly corrects it: do NOT edit CLAUDE.md during a dream. Annotate the memory with "contradicts CLAUDE.md — verify which is current" and list it in your summary so the user can update CLAUDE.md.
-- **Not a conflict** — the memory adds detail CLAUDE.md doesn't cover, or narrows a CLAUDE.md rule with a stated reason. Leave it.
+- **Memory is stale** — THYROX.md and the memory describe different procedures for the same task: THYROX.md is the maintained, checked-in source. Delete the memory, or rewrite it to agree if it carries context worth keeping (the *why* is still useful but the *how* is wrong).
+- **THYROX.md may be stale** — the memory is clearly dated after THYROX.md and explicitly corrects it: do NOT edit THYROX.md during a dream. Annotate the memory with "contradicts THYROX.md — verify which is current" and list it in your summary so the user can update THYROX.md.
+- **Not a conflict** — the memory adds detail THYROX.md doesn't cover, or narrows a THYROX.md rule with a stated reason. Leave it.
 
-A \`feedback\` memory's "Why: the user corrected me" framing is not evidence it's newer than CLAUDE.md — CLAUDE.md may have been updated since.`
+A \`feedback\` memory's "Why: the user corrected me" framing is not evidence it's newer than THYROX.md — THYROX.md may have been updated since.`
 
 export function buildConsolidationPrompt(
   memoryRoot: string,

@@ -1,10 +1,11 @@
 import { feature } from 'bun:bundle'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const DESCRIPTION = 'Send a message to another agent'
 
 export function getPrompt(): string {
   const udsRow = feature('UDS_INBOX')
-    ? `\n| \`"uds:/path/to.sock"\` | Local Claude session's socket (same machine; use \`ListPeers\`) |
+    ? `\n| \`"uds:/path/to.sock"\` | Local ${PRODUCT_NAME} session's socket (same machine; use \`ListPeers\`) |
 | \`"bridge:session_..."\` | Remote Control peer session (cross-machine; use \`ListPeers\`) |`
     : ''
   const udsSection = feature('UDS_INBOX')

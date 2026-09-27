@@ -17,6 +17,7 @@ import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { env } from '@thyrox/config/env/paths'
 import { isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { readEnv } from '@thyrox/config/env/utils'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const CHROME_EXTENSION_URL = 'https://claude.ai/chrome'
 const CHROME_PERMISSIONS_URL = 'https://clau.de/chrome/permissions'
@@ -141,28 +142,28 @@ function ClaudeInChromeMenu({
 
   return (
     <Dialog
-      title="Claude in Chrome (Beta)"
+      title={`${PRODUCT_NAME} in Chrome (Beta)`}
       onCancel={() => onDone()}
       color="chromeYellow"
     >
       <Box flexDirection="column" gap={1}>
         <Text>
-          Claude in Chrome works with the Chrome extension to let you control
-          your browser directly from Claude Code. Navigate websites, fill forms,
+          {PRODUCT_NAME} in Chrome works with the Chrome extension to let you control
+          your browser directly from {PRODUCT_NAME}. Navigate websites, fill forms,
           capture screenshots, record GIFs, and debug with console logs and
           network requests.
         </Text>
 
         {isWSL && (
           <Text color="error">
-            Claude in Chrome is not supported in WSL at this time.
+            {PRODUCT_NAME} in Chrome is not supported in WSL at this time.
           </Text>
         )}
 
 
         {process.env.USER_TYPE !== 'ant' && !isClaudeAISubscriber && (
           <Text color="error">
-            Claude in Chrome requires a claude.ai subscription.
+            {PRODUCT_NAME} in Chrome requires a claude.ai subscription.
           </Text>
         )}
 
@@ -211,7 +212,7 @@ function ClaudeInChromeMenu({
             <Text dimColor>
               Site-level permissions are inherited from the Chrome extension.
               Manage permissions in the Chrome extension settings to control
-              which sites Claude can browse, click, and type on.
+              which sites {PRODUCT_NAME} can browse, click, and type on.
             </Text>
           </>
         )}

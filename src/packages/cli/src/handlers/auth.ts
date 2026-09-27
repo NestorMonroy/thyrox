@@ -50,6 +50,7 @@ import {
   buildAccountProperties,
   buildAPIProviderProperties,
 } from '@thyrox/agent/statusAlias.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Shared post-token-acquisition logic. Saves tokens, fetches profile/roles,
@@ -58,7 +59,7 @@ import {
 function completeHeadlessClaudeAccountLogin(): void {
   saveConnection({
     id: CLAUDE_AI_CONNECTION_ID,
-    name: 'Claude Account',
+    name: `${PRODUCT_NAME} Account`,
     protocol: 'anthropic',
     endpoint: 'https://api.anthropic.com',
     auth: { type: 'oauth', source: 'claude-ai' },

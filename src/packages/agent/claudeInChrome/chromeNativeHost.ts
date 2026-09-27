@@ -23,6 +23,7 @@ import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { jsonParse, jsonStringify } from '@thyrox/local-observability/slowOperations.js'
 import { getSecureSocketPath, getSocketDir } from './common.js'
 import { readEnv } from '@thyrox/config/env/utils'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const VERSION = '1.0.0'
 const MAX_MESSAGE_SIZE = 1024 * 1024 // 1MB - Max message size that can be sent to Chrome
@@ -36,14 +37,14 @@ function log(message: string, ...args: unknown[]): void {
   if (LOG_FILE) {
     const timestamp = new Date().toISOString()
     const formattedArgs = args.length > 0 ? ' ' + jsonStringify(args) : ''
-    const logLine = `[${timestamp}] [Claude Chrome Native Host] ${message}${formattedArgs}\n`
+    const logLine = `[${timestamp}] [${PRODUCT_NAME} Chrome Native Host] ${message}${formattedArgs}\n`
     // Fire-and-forget: logging is best-effort and callers (including event
     // handlers) don't await
     void appendFile(LOG_FILE, logLine).catch(() => {
       // Ignore file write errors
     })
   }
-  console.error(`[Claude Chrome Native Host] ${message}`, ...args)
+  console.error(`[${PRODUCT_NAME} Chrome Native Host] ${message}`, ...args)
 }
 /**
  * Send a message to stdout (Chrome native messaging protocol)

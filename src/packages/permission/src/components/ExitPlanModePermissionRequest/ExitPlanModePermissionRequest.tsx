@@ -102,6 +102,7 @@ import type { PastedContent } from '@thyrox/config'
 import type { ImageDimensions } from '@thyrox/storage/imageResizer.js'
 import { maybeResizeAndDownsampleImageBlock } from '@thyrox/storage/imageResizer.js'
 import { cacheImagePath, storeImage } from '@thyrox/tool-registry/imageStore.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type ResponseValue =
   | 'yes-bypass-permissions'
@@ -860,7 +861,7 @@ export function ExitPlanModePermissionRequest({
         workerBadge={workerBadge}
       >
         <Box flexDirection="column" paddingX={1} marginTop={1}>
-          <Text>Claude wants to exit plan mode</Text>
+          <Text>{PRODUCT_NAME} wants to exit plan mode</Text>
           <Box marginTop={1}>
             <Select
               options={[
@@ -902,7 +903,7 @@ export function ExitPlanModePermissionRequest({
       >
         <Box flexDirection="column" marginTop={1}>
           <Box paddingX={1} flexDirection="column">
-            <Text>Here is Claude&apos;s plan:</Text>
+            <Text>Here is {PRODUCT_NAME}&apos;s plan:</Text>
           </Box>
           <Box
             borderColor="subtle"
@@ -937,7 +938,7 @@ export function ExitPlanModePermissionRequest({
             {!useStickyFooter && (
               <>
                 <Text dimColor>
-                  Claude has written up a plan and is ready to execute. Would
+                  {PRODUCT_NAME} has written up a plan and is ready to execute. Would
                   you like to proceed?
                 </Text>
                 <Box marginTop={1}>
@@ -1041,7 +1042,7 @@ export function buildPlanApprovalOptions({
 
   if (showUltraplan) {
     options.push({
-      label: 'No, refine with Ultraplan on Claude Code on the web',
+      label: `No, refine with Ultraplan on ${PRODUCT_NAME} on the web`,
       value: 'ultraplan',
     })
   }
@@ -1050,7 +1051,7 @@ export function buildPlanApprovalOptions({
     type: 'input',
     label: 'No, keep planning',
     value: 'no',
-    placeholder: 'Tell Claude what to change',
+    placeholder: `Tell ${PRODUCT_NAME} what to change`,
     description: 'shift+tab to approve with this feedback',
     onChange: onFeedbackChange,
   })

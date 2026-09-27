@@ -2,6 +2,7 @@ import { spawn, type ChildProcess } from 'child_process'
 import { resolve } from 'path'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { logEvent } from '@thyrox/local-observability'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Exit code used by workers for permanent (non-retryable) failures.
@@ -228,7 +229,7 @@ async function bgDaemonStop(): Promise<void> {
 
 function printHelp(): void {
   console.log(`
-Claude Code Daemon — persistent background supervisor
+${PRODUCT_NAME} Daemon — persistent background supervisor
 
 USAGE
   claude daemon [subcommand] [options]

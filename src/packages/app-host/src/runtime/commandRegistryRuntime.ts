@@ -195,7 +195,7 @@ import stats from '@thyrox/repl/commands/stats/index.js'
 const usageReport: Command = {
   type: 'prompt',
   name: 'insights',
-  description: 'Generate a report analyzing your Claude Code sessions',
+  description: `Generate a report analyzing your ${PRODUCT_NAME} sessions`,
   contentLength: 0,
   progressMessage: 'analyzing your sessions',
   source: 'builtin',
@@ -224,6 +224,7 @@ export type {
   PromptCommand,
   ResumeEntrypoint,
 } from '@thyrox/agent/command.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export { getCommandName, isCommandEnabled } from '@thyrox/agent/command.js'
 
 // Commands that get eliminated from the external build

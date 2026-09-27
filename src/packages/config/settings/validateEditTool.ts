@@ -1,5 +1,6 @@
 import { tryGetConfigHostBindings } from '../host.js'
 import { validateSettingsFileContent } from './validation.js'
+import { PRODUCT_NAME } from '../product.js'
 
 // V7 §11.4 — config defines its own validation contract instead of importing
 // the tool-registry type (Wave 1 leaf cannot depend on a Domain Core package).
@@ -45,7 +46,7 @@ export function validateInputForSettingsFileEdit(
   if (!afterValidation.isValid) {
     return {
       result: false,
-      message: `Claude Code settings.json validation failed after edit:\n${afterValidation.error}\n\nFull schema:\n${afterValidation.fullSchema}\nIMPORTANT: Do not update the env unless explicitly instructed to do so.`,
+      message: `${PRODUCT_NAME} settings.json validation failed after edit:\n${afterValidation.error}\n\nFull schema:\n${afterValidation.fullSchema}\nIMPORTANT: Do not update the env unless explicitly instructed to do so.`,
       errorCode: 10,
     }
   }

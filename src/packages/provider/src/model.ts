@@ -44,6 +44,7 @@ import {
   getSettingsAvailableModels,
 } from './internal/modelSupport.ts'
 import { isFastModeEnabled } from './internal/pendingCrossPackageDeps.ts'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type ModelShortName = string
 export type ModelName = string
@@ -381,8 +382,8 @@ export function renderModelName(model: ModelName): string {
 /** Nombre de autor seguro para display público (ej. trailers de commit). */
 export function getPublicModelName(model: ModelName): string {
   const publicName = getPublicModelDisplayName(model)
-  if (publicName) return `Claude ${publicName}`
-  return `Claude (${model})`
+  if (publicName) return `${PRODUCT_NAME} ${publicName}`
+  return `${PRODUCT_NAME} (${model})`
 }
 
 /** Resuelve un alias o nombre de modelo dado por el usuario a un nombre completo. */
@@ -491,10 +492,10 @@ export function getMarketingNameForModel(modelId: string): string | undefined {
   if (canonical.includes('claude-sonnet-4-6')) return has1m ? 'Sonnet 4.6 (with 1M context)' : 'Sonnet 4.6'
   if (canonical.includes('claude-sonnet-4-5')) return has1m ? 'Sonnet 4.5 (with 1M context)' : 'Sonnet 4.5'
   if (canonical.includes('claude-sonnet-4')) return has1m ? 'Sonnet 4 (with 1M context)' : 'Sonnet 4'
-  if (canonical.includes('claude-3-7-sonnet')) return 'Claude 3.7 Sonnet'
-  if (canonical.includes('claude-3-5-sonnet')) return 'Claude 3.5 Sonnet'
+  if (canonical.includes('claude-3-7-sonnet')) return '3.7 Sonnet'
+  if (canonical.includes('claude-3-5-sonnet')) return '3.5 Sonnet'
   if (canonical.includes('claude-haiku-4-5')) return 'Haiku 4.5'
-  if (canonical.includes('claude-3-5-haiku')) return 'Claude 3.5 Haiku'
+  if (canonical.includes('claude-3-5-haiku')) return '3.5 Haiku'
 
   return undefined
 }

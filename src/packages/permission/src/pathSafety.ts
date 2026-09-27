@@ -37,6 +37,7 @@ import { getPlatform } from '@thyrox/config/platform.js'
 import { getPathsForPermissionCheck } from '@thyrox/storage/fsOperations.js'
 import { foldPathCase } from './pathCase.js'
 import { CONFIG_DIR_NAMES, getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type TrustedNetworkDirectories = Map<string, readonly string[]>
 
@@ -639,7 +640,7 @@ export function checkPathSafetyForAutoEdit(
     if (isSuspiciousWindowsPath(p, trusted)) {
       return {
         safe: false,
-        message: `Claude requested permissions to write to ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
         classifierApprovable: false,
         circuitBreaker: 'suspiciousWindowsPath',
         ...(touchesSettings && { also: ['claudeSettingsFile'] as ['claudeSettingsFile'] }),
@@ -649,7 +650,7 @@ export function checkPathSafetyForAutoEdit(
   if (touchesSettings) {
     return {
       safe: false,
-      message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+      message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
       classifierApprovable: true,
       circuitBreaker: 'claudeSettingsFile',
     }
@@ -658,7 +659,7 @@ export function checkPathSafetyForAutoEdit(
     if (!allow && isCommandSource(p)) {
       return {
         safe: false,
-        message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
         classifierApprovable: true,
       }
     }
@@ -667,7 +668,7 @@ export function checkPathSafetyForAutoEdit(
     if (isSensitivePath(p, allow, trusted)) {
       return {
         safe: false,
-        message: `Claude requested permissions to edit ${path} which is a sensitive file.`,
+        message: `${PRODUCT_NAME} requested permissions to edit ${path} which is a sensitive file.`,
         classifierApprovable: true,
       }
     }

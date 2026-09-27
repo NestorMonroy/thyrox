@@ -34,6 +34,7 @@ import { createHash } from 'crypto'
 import { userInfo } from 'os'
 import { getConfigHomeDir } from '@thyrox/config/env/utils'
 import type { SecureStorageData } from './secureStorageTypes'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getOauthConfig(): { OAUTH_FILE_SUFFIX: string } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -61,7 +62,7 @@ export function getMacOsKeychainStorageServiceName(
   const dirHash = isDefaultDir
     ? ''
     : `-${createHash('sha256').update(configDir).digest('hex').substring(0, 8)}`
-  return `Claude Code${getOauthConfig().OAUTH_FILE_SUFFIX}${serviceSuffix}${dirHash}`
+  return `${PRODUCT_NAME}${getOauthConfig().OAUTH_FILE_SUFFIX}${serviceSuffix}${dirHash}`
 }
 
 export function getUsername(): string {

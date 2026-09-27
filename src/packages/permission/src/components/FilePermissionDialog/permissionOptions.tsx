@@ -11,6 +11,7 @@ import {
   pathInAllowedWorkingPath,
 } from '../../filesystem.js'
 import type { OptionWithDescription } from '@thyrox/repl/components/CustomSelect/select.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * Copia de `ccnmt: packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx`
  * con los comentarios traducidos; el cuerpo es el de la fuente.
@@ -101,7 +102,7 @@ export function getFilePermissionOptions({
       type: 'input',
       label: 'Yes',
       value: 'yes',
-      placeholder: 'and tell Claude what to do next',
+      placeholder: `and tell ${PRODUCT_NAME} what to do next`,
       onChange: onAcceptFeedbackChange,
       allowEmptySubmitToCancel: true,
       option: { type: 'accept-once' },
@@ -131,7 +132,7 @@ export function getFilePermissionOptions({
   // persistidas.
   if ((inClaudeFolder || inGlobalClaudeFolder) && operationType !== 'read') {
     options.push({
-      label: 'Yes, and allow Claude to edit its own settings for this session',
+      label: `Yes, and allow ${PRODUCT_NAME} to edit its own settings for this session`,
       value: 'yes-claude-folder',
       option: {
         type: 'accept-session',
@@ -189,7 +190,7 @@ export function getFilePermissionOptions({
       type: 'input',
       label: 'No',
       value: 'no',
-      placeholder: 'and tell Claude what to do differently',
+      placeholder: `and tell ${PRODUCT_NAME} what to do differently`,
       onChange: onRejectFeedbackChange,
       allowEmptySubmitToCancel: true,
       option: { type: 'reject' },

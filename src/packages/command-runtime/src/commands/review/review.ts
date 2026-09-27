@@ -8,6 +8,7 @@
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/messages.js'
 import type { Command } from '../../runtime.js'
 import { isUltrareviewEnabled } from './ultrareviewEnabled.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Legal pide el nombre explícito de la superficie más un link a la doc
 // visible antes de que el usuario dispare, así que la descripción lleva
@@ -56,7 +57,7 @@ const review: Command = {
 const ultrareview: Command = {
   type: 'local-jsx',
   name: 'ultrareview',
-  description: `~10–20 min · Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${CCR_TERMS_URL}`,
+  description: `~10–20 min · Finds and verifies bugs in your branch. Runs in ${PRODUCT_NAME} on the web. See ${CCR_TERMS_URL}`,
   isEnabled: () => isUltrareviewEnabled(),
   load: () => import('./ultrareviewCommand.js'),
 }

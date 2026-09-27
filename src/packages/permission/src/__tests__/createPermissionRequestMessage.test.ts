@@ -5,10 +5,11 @@
 import { describe, expect, test } from 'bun:test'
 import { createPermissionRequestMessage } from '../permissions.js'
 import type { PermissionRule } from '../PermissionRule.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 describe('createPermissionRequestMessage (su)', () => {
   test('sin razón: el aviso genérico', () => {
-    expect(createPermissionRequestMessage('Bash')).toBe("Claude requested permissions to use Bash, but you haven't granted it yet.")
+    expect(createPermissionRequestMessage('Bash')).toBe(`${PRODUCT_NAME} requested permissions to use Bash, but you haven't granted it yet.`)
   })
   test('clasificador', () => {
     expect(createPermissionRequestMessage('Bash', { type: 'classifier', classifier: 'yolo', reason: 'writes outside' })).toBe(

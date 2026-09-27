@@ -391,7 +391,7 @@ export async function isToolSearchEnabled(
   switch (reason) {
     case 'model_unsupported':
       logForDebugging(
-        `Tool search disabled for model '${model}': model does not support tool_reference blocks. This feature is available on Claude Sonnet 4+, Opus 4+, Haiku 4.5+, and newer models.`,
+        `Tool search disabled for model '${model}': model does not support tool_reference blocks. This feature is available on Sonnet 4+, Opus 4+, Haiku 4.5+, and newer models.`,
       )
       record(false, 'standard', reason)
       return false

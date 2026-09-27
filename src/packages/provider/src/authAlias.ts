@@ -69,6 +69,7 @@ import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
 const execFileAsync = promisify(execFile)
@@ -1416,15 +1417,15 @@ export function getRateLimitTier(): string | null {
 export function getSubscriptionName(): string {
   switch (getSubscriptionType()) {
     case 'enterprise':
-      return 'Claude Enterprise'
+      return `${PRODUCT_NAME} Enterprise`
     case 'team':
-      return 'Claude Team'
+      return `${PRODUCT_NAME} Team`
     case 'max':
-      return 'Claude Max'
+      return `${PRODUCT_NAME} Max`
     case 'pro':
-      return 'Claude Pro'
+      return `${PRODUCT_NAME} Pro`
     default:
-      return 'Claude API'
+      return 'Anthropic API'
   }
 }
 

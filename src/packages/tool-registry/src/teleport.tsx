@@ -66,6 +66,7 @@ import {
 } from '@thyrox/teleport/api.js'
 import { fetchEnvironments } from '@thyrox/teleport/environments.js'
 import { createAndUploadGitBundle } from '@thyrox/teleport/gitBundle.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type TeleportResult = {
   messages: Message[]
@@ -558,7 +559,7 @@ export async function teleportResumeCodeSession(
           'no_access_token' as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
       })
       throw new Error(
-        'Claude Code web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.',
+        `${PRODUCT_NAME} web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.`,
       )
     }
 
@@ -816,7 +817,7 @@ export async function teleportFromSessionsAPI(
       })
       throw new TeleportOperationError(
         `${sessionId} not found.`,
-        `${sessionId} not found.\n${chalk.dim('Run /status in Claude Code to check your account.')}`,
+        `${sessionId} not found.\n${chalk.dim(`Run /status in ${PRODUCT_NAME} to check your account.`)}`,
       )
     }
 

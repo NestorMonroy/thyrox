@@ -5,7 +5,7 @@
  * `PRODUCT_NAME`, que el archivo importa si hace falta.
  */
 import { describe, expect, test } from 'bun:test'
-import { renameProductInSource } from '../../src/verify/renameProductInText'
+import { renameProductInComments, renameProductInSource } from '../../src/verify/renameProductInText'
 
 const IMPORT = "import { PRODUCT_NAME } from '@thyrox/config/product'"
 const OLD = ['Cl', 'aude'].join('')
@@ -73,13 +73,56 @@ describe('renameProductInSource', () => {
     expect(run(`const a = '${OLD} 3.7 Sonnet'\n`).text).toContain("'3.7 Sonnet'")
   })
 
+  test('la familia de modelos del proveedor se nombra por el proveedor', () => {
+    const r = run(`const a = 'The most recent ${OLD} model family is ${OLD} 4.X; use the latest ${OLD} models'\n`)
+    expect(r.text).toContain("'The most recent Anthropic model family is Anthropic 4.X; use the latest Anthropic models'")
+  })
+
   test('un dominio no se rebautiza', () => {
     const src = `const a = 'the ${OLD}.ai marketplace'\n`
     expect(run(src).text).toBe(src)
   })
 
+  test('una declaración cuyo nombre dice legacy conserva su literal', () => {
+    const src = `export const LEGACY_FILE = '${OLD.toUpperCase()}.md'\nconst a = { legacyName: '${OLD}' }\n`
+    expect(run(src).text).toBe(src)
+  })
+
+  test('una declaración marcada para conservar no cambia', () => {
+    const src = `// renameProductInText: keep\nexport const KEYS = { A: '~/.x/${OLD.toUpperCase()}.md', B: '${OLD}' }\nconst c = '${OLD}'\n`
+    const r = run(src)
+    expect(r.text).toContain(`// renameProductInText: keep\nexport const KEYS = { A: '~/.x/${OLD.toUpperCase()}.md', B: '${OLD}' }\n`)
+    expect(r.edits).toHaveLength(1)
+  })
+
   test('un especificador de módulo no se toca', () => {
     const src = `import x from './${OLD}Thing'\n`
     expect(run(src).text).toBe(src)
+  })
+})
+
+describe('renameProductInComments', () => {
+  const runC = (text: string) => renameProductInComments('x.ts', text)
+
+  test('los comentarios de línea y de bloque dicen thyrox', () => {
+    const r = runC(`// so ${OLD} can respond\n/** ${OLD} Code on the host */\nconst a = '${OLD}'\n`)
+    expect(r.text).toBe(`// so thyrox can respond\n/** thyrox on the host */\nconst a = '${OLD}'\n`)
+  })
+
+  test('las cadenas y los identificadores no se tocan', () => {
+    const src = `const is${OLD}Ready = "${OLD}"\n`
+    expect(runC(src).text).toBe(src)
+  })
+
+  test('dominios, aplicaciones y modelos siguen las reglas de las cadenas', () => {
+    const r = runC(`// ${OLD}.ai users, the ${OLD}.app bundle, ${OLD} 4+ models\n`)
+    expect(r.text).toBe(`// ${OLD}.ai users, the ${OLD}.app bundle, Anthropic 4+ models\n`)
+  })
+
+  test('una mención con versión del ejecutable se deja para revisarla a mano', () => {
+    const src = `// ported from ${OLD} Code 2.1.283\n`
+    const r = runC(src)
+    expect(r.text).toBe(src)
+    expect(r.pending).toEqual([1])
   })
 })

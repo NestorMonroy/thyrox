@@ -22,6 +22,7 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
 import { DEFAULT_CRON_JITTER_CONFIG } from '@thyrox/agent/scheduler'
 import { CRON_CREATE_TOOL_NAME, CRON_DELETE_TOOL_NAME, CRON_LIST_TOOL_NAME } from '@thyrox/tool-registry/tools/ScheduleCronTool/prompt.js'
 import { registerBundledSkill } from '../bundledSkills.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const DREAM_PROMPT_PREFIX = `# Dream: Memory Consolidation (manual run)
 
@@ -109,7 +110,7 @@ export function registerDreamSkill(): void {
     description:
       'Reflective memory consolidation — review recent activity, synthesize learnings into typed memory files, and prune stale entries.',
     whenToUse:
-      'When the user wants Claude to reflect on and consolidate its memories, organize topic files, prune stale entries, or schedule nightly consolidation. Trigger phrases: "dream", "learn", "dream nightly", "consolidate memories", "learn from your experiences", "organize your memories".',
+      `When the user wants ${PRODUCT_NAME} to reflect on and consolidate its memories, organize topic files, prune stale entries, or schedule nightly consolidation. Trigger phrases: "dream", "learn", "dream nightly", "consolidate memories", "learn from your experiences", "organize your memories".`,
     argumentHint: '[nightly]',
     userInvocable: true,
     isEnabled: () => {

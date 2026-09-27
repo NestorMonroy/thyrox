@@ -58,6 +58,7 @@ export type SettingsSyncUploadResult = {
 /**
  * Keys used for sync entries
  */
+// renameProductInText: keep — claves del almacén remoto; cambiarlas pierde lo sincronizado.
 export const SYNC_KEYS = {
   USER_SETTINGS: '~/.claude/settings.json',
   USER_MEMORY: '~/.claude/CLAUDE.md',

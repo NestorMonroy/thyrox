@@ -1,6 +1,7 @@
 import { Box, Text } from '@anthropic/ink'
 import { LiveModeCycler } from '../LiveModeCycler.js'
 import type { Lesson } from './types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const lesson: Lesson = {
   id: 'modes',
@@ -10,7 +11,7 @@ export const lesson: Lesson = {
     <Box flexDirection="column" gap={1}>
       <Text>
         Press <Text underline>shift+tab</Text> to cycle permission modes. Each
-        mode changes how much Claude asks before acting:
+        mode changes how much {PRODUCT_NAME} asks before acting:
       </Text>
       <LiveModeCycler />
       <Box flexDirection="column" paddingLeft={2}>
@@ -24,14 +25,14 @@ export const lesson: Lesson = {
           <Text color="planMode">plan</Text> — research and propose, never touch files
         </Text>
         <Text>
-          <Text color="warning">auto</Text> — Claude decides what is safe
+          <Text color="warning">auto</Text> — {PRODUCT_NAME} decides what is safe
         </Text>
       </Box>
       <Text dimColor>
         Use <Text color="planMode">plan</Text> for big refactors you want to
         review first. Use <Text color="warning">auto</Text> for long unattended
         tasks. Run <Text color="suggestion">/permissions</Text> to pre-allow
-        specific commands so Claude stops asking about them.
+        specific commands so {PRODUCT_NAME} stops asking about them.
       </Text>
     </Box>
   ),

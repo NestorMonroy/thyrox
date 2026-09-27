@@ -1471,8 +1471,8 @@ Every message you send is to the user. Worker results and system notifications a
 
 - **${
 src/packages/agent/messages.ts:309 [plantilla] } has been denied because Claude Code is running in don't ask mode. ${  =>  } has been denied because ${PRODUCT_NAME} is running in don't ask mode. ${
-src/packages/agent/prompts.ts:277 [plantilla] `The most recent Claude model family is Claude 4.X. Model IDs — Opus 4.8: '${  =>  `The most recent ${PRODUCT_NAME} model family is ${PRODUCT_NAME} 4.X. Model IDs — Opus 4.8: '${
-src/packages/agent/prompts.ts:277 [plantilla] }'. When building AI applications, default to the latest and most capable Claude models.`  =>  }'. When building AI applications, default to the latest and most capable ${PRODUCT_NAME} models.`
+src/packages/agent/prompts.ts:277 [plantilla] `The most recent Claude model family is Claude 4.X. Model IDs — Opus 4.8: '${  =>  `The most recent Anthropic model family is Anthropic 4.X. Model IDs — Opus 4.8: '${
+src/packages/agent/prompts.ts:277 [plantilla] }'. When building AI applications, default to the latest and most capable Claude models.`  =>  }'. When building AI applications, default to the latest and most capable Anthropic models.`
 src/packages/agent/prompts.ts:280 [plantilla] `Claude Code is available as a CLI in the terminal, desktop app (Mac/Windows), web app (claude.ai/code), and IDE extensions (VS Code, JetBrains).`  =>  `${PRODUCT_NAME} is available as a CLI in the terminal, desktop app (Mac/Windows), web app (claude.ai/code), and IDE extensions (VS Code, JetBrains).`
 src/packages/agent/prompts.ts:283 [plantilla] `Fast mode for Claude Code uses Claude ${  =>  `Fast mode for ${PRODUCT_NAME} uses ${PRODUCT_NAME} ${
 src/packages/agent/prompts.ts:316 [cadena] 'CLAUDE.md or configuration.'  =>  'THYROX.md or configuration.'

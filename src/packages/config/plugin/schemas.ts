@@ -2,6 +2,7 @@ import { z } from 'zod/v4'
 import { HooksSchema } from '../settings/schemas/hooks.js'
 import { McpServerConfigSchema } from './_deps.js'
 import { lazySchema } from '../internal/lazySchema.js'
+import { PRODUCT_NAME } from '../product.js'
 
 /**
  * First-layer defense against official marketplace impersonation.
@@ -241,7 +242,7 @@ const MarketplaceNameSchema = lazySchema(() =>
     )
     .refine(name => !isBlockedOfficialName(name), {
       message:
-        'Marketplace name impersonates an official Anthropic/Claude marketplace',
+        `Marketplace name impersonates an official Anthropic/${PRODUCT_NAME} marketplace`,
     })
     .refine(name => name.toLowerCase() !== 'inline', {
       message:

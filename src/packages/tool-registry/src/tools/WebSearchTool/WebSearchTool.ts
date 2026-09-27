@@ -60,6 +60,7 @@ export type Output = z.infer<OutputSchema>
 export type { WebSearchProgress } from '../../progressTypes.js'
 
 import type { WebSearchProgress } from '../../progressTypes.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const WebSearchTool = buildTool({
   name: WEB_SEARCH_TOOL_NAME,
@@ -67,7 +68,7 @@ export const WebSearchTool = buildTool({
   maxResultSizeChars: 100_000,
   shouldDefer: true,
   async description(input) {
-    return `Claude wants to search the web for: ${input.query}`
+    return `${PRODUCT_NAME} wants to search the web for: ${input.query}`
   },
   userFacingName() {
     return 'Web Search'

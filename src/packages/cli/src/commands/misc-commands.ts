@@ -66,9 +66,9 @@ export function registerMiscCommands(program: ParentCommand): void {
     .option('--sso', 'Force SSO login flow')
     .option(
       '--console',
-      'Use Anthropic Console (API usage billing) instead of Claude subscription',
+      `Use Anthropic Console (API usage billing) instead of ${PRODUCT_NAME} subscription`,
     )
-    .option('--claudeai', 'Use Claude subscription (default)')
+    .option('--claudeai', `Use ${PRODUCT_NAME} subscription (default)`)
     .action(
       async ({
         email,
@@ -287,7 +287,7 @@ export function registerMiscCommands(program: ParentCommand): void {
   // claude setup-token
   program
     .command('setup-token')
-    .description('Set up a long-lived authentication token (requires Claude subscription)')
+    .description(`Set up a long-lived authentication token (requires ${PRODUCT_NAME} subscription)`)
     .action(async () => {
       const [{ setupTokenHandler }, { createRoot }] = await Promise.all([
         import('../handlers/util.js'),
@@ -409,7 +409,7 @@ export function registerMiscCommands(program: ParentCommand): void {
     program
       .command('up')
       .description(
-        '[ANT-ONLY] Initialize or upgrade the local dev environment using the "# claude up" section of the nearest CLAUDE.md',
+        '[ANT-ONLY] Initialize or upgrade the local dev environment using the "# claude up" section of the nearest THYROX.md',
       )
       .action(async () => {
         const { up } = await import('../up.js')

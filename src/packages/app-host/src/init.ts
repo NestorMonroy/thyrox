@@ -111,6 +111,7 @@ import {
 import { configureGlobalAgents } from '@thyrox/provider/proxy.js'
 import { setShellIfWindows, findGitBashPath } from '@thyrox/storage/windowsPaths.js'
 import { initSentry } from '@thyrox/local-observability/sentry.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // initialize1PEventLogging se importa dinámicamente para diferir sdk-logs/resources de OpenTelemetry
 
@@ -325,7 +326,7 @@ export const init = memoize(async (): Promise<void> => {
     if (getPlatform() === 'windows' && !findGitBashPath()) {
       if (!isPowerShellToolEnabled()) {
         process.stderr.write(
-          'Claude Code on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (CLAUDE_CODE_USE_POWERSHELL_TOOL=0).\n' +
+          `${PRODUCT_NAME} on Windows requires a shell tool. Git Bash was not found and the PowerShell tool is disabled (CLAUDE_CODE_USE_POWERSHELL_TOOL=0).\n` +
             '  - Install Git for Windows: https://git-scm.com/downloads/win, or\n' +
             '  - Remove CLAUDE_CODE_USE_POWERSHELL_TOOL from your environment or settings.\n',
         )
@@ -334,7 +335,7 @@ export const init = memoize(async (): Promise<void> => {
       }
       if ((await getCachedPowerShellPath()) === null) {
         process.stderr.write(
-          'Claude Code on Windows requires either Git for Windows (for bash) or PowerShell. Install one of:\n' +
+          `${PRODUCT_NAME} on Windows requires either Git for Windows (for bash) or PowerShell. Install one of:\n` +
             '  - Git for Windows: https://git-scm.com/downloads/win\n' +
             '  - PowerShell 7: https://aka.ms/powershell\n' +
             'Or set CLAUDE_CODE_GIT_BASH_PATH to your bash.exe location.\n',

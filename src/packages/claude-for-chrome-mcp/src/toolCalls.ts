@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 
 import { SocketConnectionError } from "./mcpSocketClient.js";
@@ -321,7 +322,7 @@ async function handleSwitchBrowser(
       content: [
         {
           type: "text",
-          text: "No other browsers available to switch to. Open Chrome with the Claude extension in another browser to switch.",
+          text: `No other browsers available to switch to. Open Chrome with the ${PRODUCT_NAME} extension in another browser to switch.`,
         },
       ],
       isError: true,
@@ -340,7 +341,7 @@ async function handleSwitchBrowser(
     content: [
       {
         type: "text",
-        text: "No browser responded within the timeout. Make sure Chrome is open with the Claude extension installed, then try again.",
+        text: `No browser responded within the timeout. Make sure Chrome is open with the ${PRODUCT_NAME} extension installed, then try again.`,
       },
     ],
     isError: true,

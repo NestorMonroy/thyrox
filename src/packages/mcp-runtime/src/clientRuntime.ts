@@ -253,6 +253,7 @@ function getMcpToolTimeoutMs(): number {
 }
 
 import { isClaudeInChromeMCPServer } from '@thyrox/agent/claudeInChromeCommon.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
 /* eslint-disable @typescript-eslint/no-require-imports */
@@ -712,7 +713,7 @@ export const connectToServer = memoize(
       const client = new Client(
         {
           name: 'claude-code',
-          title: 'Claude Code',
+          title: `${PRODUCT_NAME}`,
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,
@@ -3126,7 +3127,7 @@ export async function setupSdkMcpClients(
       const client = new Client(
         {
           name: 'claude-code',
-          title: 'Claude Code',
+          title: `${PRODUCT_NAME}`,
           version: MACRO.VERSION ?? 'unknown',
           description: "Anthropic's agentic coding tool",
           websiteUrl: PRODUCT_URL,

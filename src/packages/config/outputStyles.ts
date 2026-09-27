@@ -16,6 +16,7 @@ import {
 } from './plugin/loadPluginOutputStyles.js'
 import type { SettingSource } from './settings/constants.js'
 import { getSettings } from './settings/settings.js'
+import { PRODUCT_NAME } from './product.js'
 
 export type OutputStyleConfig = {
   name: string
@@ -90,7 +91,7 @@ export const OUTPUT_STYLE_CONFIG: OutputStyles = {
     name: 'Proactive',
     source: 'built-in',
     description:
-      'Claude executes immediately, minimizes interruptions, and prefers action over planning',
+      `${PRODUCT_NAME} executes immediately, minimizes interruptions, and prefers action over planning`,
     keepCodingInstructions: true,
     prompt: `You are an interactive CLI tool that helps users with software engineering tasks. You should work proactively and autonomously, executing immediately and minimizing interruptions.
 
@@ -103,7 +104,7 @@ ${PROACTIVE_FEATURE_PROMPT}`,
     name: 'Explanatory',
     source: 'built-in',
     description:
-      'Claude explains its implementation choices and codebase patterns',
+      `${PRODUCT_NAME} explains its implementation choices and codebase patterns`,
     keepCodingInstructions: true,
     prompt: `You are an interactive CLI tool that helps users with software engineering tasks. In addition to software engineering tasks, you should surface educational insights about the codebase when they teach something non-obvious.
 
@@ -119,7 +120,7 @@ ${EXPLANATORY_FEATURE_PROMPT}`,
     name: 'Learning',
     source: 'built-in',
     description:
-      'Claude pauses and asks you to write small pieces of code for hands-on practice',
+      `${PRODUCT_NAME} pauses and asks you to write small pieces of code for hands-on practice`,
     keepCodingInstructions: true,
     prompt: `You are an interactive CLI tool that helps users with software engineering tasks. In addition to software engineering tasks, you should help users learn more about the codebase through hands-on practice and educational insights.
 

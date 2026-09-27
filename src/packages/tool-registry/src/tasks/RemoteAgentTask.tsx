@@ -54,6 +54,7 @@ import {
 } from '../teleport.js'
 import type { TodoList } from '../todo/types.js'
 import type { UltraplanPhase } from '@thyrox/repl/ultraplan/ccrSession.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type RemoteAgentTaskState = TaskStateBase & {
   type: 'remote_agent'
@@ -208,7 +209,7 @@ export function formatPreconditionError(
     case 'no_git_remote':
       return 'Background tasks require a GitHub remote. Add one with `git remote add origin REPO_URL`.'
     case 'github_app_not_installed':
-      return 'The Claude GitHub app must be installed on this repository first.\nhttps://github.com/apps/claude/installations/new'
+      return `The ${PRODUCT_NAME} GitHub app must be installed on this repository first.\nhttps://github.com/apps/claude/installations/new`
     case 'policy_blocked':
       return "Remote sessions are disabled by your organization's policy. Contact your organization admin to enable them."
   }

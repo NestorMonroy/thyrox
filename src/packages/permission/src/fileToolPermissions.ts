@@ -79,6 +79,7 @@ import { permissionRuleValueFromString } from './permissionRuleParser.js'
 import type { PermissionDecision, PermissionUpdate } from './permissionTypes.js'
 import { allPathsMatchAllowRule, escapeForIgnore, matchingRuleForInput } from './ruleMatching.js'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const FILE_READ_TOOL_NAME = 'Read'
 const FILE_EDIT_TOOL_NAME = 'Edit'
@@ -387,13 +388,13 @@ export function checkNetworkPathRead(
   const automount = (p: string) =>
     (automountRoot(p) !== null || isAutomountMapRoot(p)) && !isInTrustedNetworkDirectory(p, trusted)
   const automountMessage = (p: string) =>
-    `Claude requested permissions to read from ${p}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`
+    `${PRODUCT_NAME} requested permissions to read from ${p}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`
   const AUTOMOUNT_REASON = 'Automount -hosts path detected (defense-in-depth check)'
   const kernelResolved = (p: string) => isKernelResolvedPath(p) && !isInTrustedNetworkDirectory(p, trusted)
   const kernelResolvedTail =
     'which is under /.vol, /.file, /.nofollow or /.resolve (paths the macOS kernel redirects) and could reach a network mount, triggering a DNS lookup and mount to a remote host.'
   const KERNEL_RESOLVED_REASON = 'Kernel-resolved path prefix (/.vol etc.) detected (defense-in-depth check)'
-  const kernelResolvedMessage = `Claude requested permissions to read from ${path}, ${kernelResolvedTail}`
+  const kernelResolvedMessage = `${PRODUCT_NAME} requested permissions to read from ${path}, ${kernelResolvedTail}`
   // La superficie `/Network` (`XT`) es constante `false` en la build de Linux.
   if (automount(path)) return ask(automountMessage(path), AUTOMOUNT_REASON)
   if (kernelResolved(path)) return ask(kernelResolvedMessage, KERNEL_RESOLVED_REASON)
@@ -401,7 +402,7 @@ export function checkNetworkPathRead(
   for (const p of paths) {
     if (isUncPath(p) && !isLocalWslUncPath(p) && !isInTrustedNetworkDirectory(p, trusted)) {
       return ask(
-        `Claude requested permissions to read from ${path}, which appears to be a UNC path that could access network resources.`,
+        `${PRODUCT_NAME} requested permissions to read from ${path}, which appears to be a UNC path that could access network resources.`,
         'UNC path detected (defense-in-depth check)',
       )
     }
@@ -412,19 +413,19 @@ export function checkNetworkPathRead(
     const pattern = input.pattern
     if (typeof pattern === 'string' && isUncPath(pattern) && !isLocalWslUncPath(pattern) && !isInTrustedNetworkDirectory(pattern, trusted)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, which appears to be a UNC pattern that could access network resources.`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, which appears to be a UNC pattern that could access network resources.`,
         'UNC glob pattern detected (defense-in-depth check)',
       )
     }
     if (typeof pattern === 'string' && automount(pattern)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, which is under the /net automount map and could trigger a DNS lookup and NFS mount to a remote host.`,
         'Automount -hosts glob pattern detected (defense-in-depth check)',
       )
     }
     if (typeof pattern === 'string' && kernelResolved(pattern)) {
       return ask(
-        `Claude requested permissions to glob ${pattern}, ${kernelResolvedTail}`,
+        `${PRODUCT_NAME} requested permissions to glob ${pattern}, ${kernelResolvedTail}`,
         'Kernel-resolved path prefix (/.vol etc.) glob pattern detected (defense-in-depth check)',
       )
     }
@@ -432,7 +433,7 @@ export function checkNetworkPathRead(
   for (const p of paths) {
     if (isSuspiciousWindowsPath(p, trusted)) {
       return ask(
-        `Claude requested permissions to read from ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
+        `${PRODUCT_NAME} requested permissions to read from ${path}, which contains a suspicious Windows path pattern that requires manual approval.`,
         'Path contains suspicious Windows-specific patterns (alternate data streams, short names, long path prefixes, or three or more consecutive dots) that require manual verification',
       )
     }
@@ -449,7 +450,7 @@ export function checkReadPermissionForTool(
 ): PermissionDecision {
   const path = pathOf(tool, input)
   if (path === undefined) {
-    return { behavior: 'ask', message: `Claude requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+    return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
   }
   const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
   let expanded: string | undefined
@@ -499,7 +500,7 @@ export function checkReadPermissionForTool(
     if (rule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to read from ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to read from ${path}, but you haven't granted it yet.`,
         decisionReason: { type: 'rule', rule },
       }
     }
@@ -547,7 +548,7 @@ export function checkReadPermissionForTool(
 
   return {
     behavior: 'ask',
-    message: `Claude requested permissions to read from ${path}, but you haven't granted it yet.`,
+    message: `${PRODUCT_NAME} requested permissions to read from ${path}, but you haven't granted it yet.`,
     suggestions: generateSuggestions(path, 'read', context, paths),
     decisionReason: { type: 'workingDir', reason: 'Path is outside allowed working directories' },
   }
@@ -562,7 +563,7 @@ export function checkWritePermissionForTool(
 ): PermissionDecision {
   const path = pathOf(tool, input)
   if (path === undefined) {
-    return { behavior: 'ask', message: `Claude requested permissions to use ${tool.name}, but you haven't granted it yet.` }
+    return { behavior: 'ask', message: `${PRODUCT_NAME} requested permissions to use ${tool.name}, but you haven't granted it yet.` }
   }
   const paths = precomputedPathsToCheck ?? getPathsForPermissionCheck(path)
 
@@ -618,7 +619,7 @@ export function checkWritePermissionForTool(
     if (rule) {
       return {
         behavior: 'ask',
-        message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+        message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
         decisionReason: { type: 'rule', rule },
       }
     }
@@ -685,7 +686,7 @@ export function checkWritePermissionForTool(
 
   return {
     behavior: 'ask',
-    message: `Claude requested permissions to write to ${path}, but you haven't granted it yet.`,
+    message: `${PRODUCT_NAME} requested permissions to write to ${path}, but you haven't granted it yet.`,
     suggestions: generateSuggestions(path, 'write', context, paths),
     decisionReason: inWorkingDir ? undefined : { type: 'workingDir', reason: 'Path is outside allowed working directories' },
   }

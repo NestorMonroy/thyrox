@@ -34,6 +34,7 @@ import {
   SDKUserMessageSchema,
   SlashCommandSchema,
 } from './coreSchemas.ts'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // External Type Placeholders
@@ -601,7 +602,7 @@ export const SDKControlClaudeAuthenticateRequestSchema = lazySchema(() =>
       subtype: z.literal('claude_authenticate'),
       loginWithClaudeAi: z.boolean().optional(),
     })
-    .describe('Starts the Claude account login flow.'),
+    .describe(`Starts the ${PRODUCT_NAME} account login flow.`),
 )
 
 export const SDKControlClaudeOAuthCallbackRequestSchema = lazySchema(() =>
@@ -611,13 +612,13 @@ export const SDKControlClaudeOAuthCallbackRequestSchema = lazySchema(() =>
       authorizationCode: z.string(),
       state: z.string(),
     })
-    .describe('Delivers the authorization code of the Claude login flow.'),
+    .describe(`Delivers the authorization code of the ${PRODUCT_NAME} login flow.`),
 )
 
 export const SDKControlClaudeOAuthWaitForCompletionRequestSchema = lazySchema(() =>
   z
     .object({ subtype: z.literal('claude_oauth_wait_for_completion') })
-    .describe('Waits until the Claude login flow completes.'),
+    .describe(`Waits until the ${PRODUCT_NAME} login flow completes.`),
 )
 
 export const SDKControlGenerateSessionTitleRequestSchema = lazySchema(() =>

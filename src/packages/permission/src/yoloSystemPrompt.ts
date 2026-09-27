@@ -7,6 +7,7 @@ import { getGitEmail } from '@thyrox/provider/user.js'
 import { getBashPromptAllowDescriptions, getBashPromptDenyDescriptions } from './bashClassifier.js'
 import { getDenyRules } from './permissions.js'
 import { permissionRuleValueToString } from './permissionRuleParser.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // Auto-mode classifier SYSTEM PROMPT assembly (ant v2.1.150 Dp5/UZ7/q36/pM_/H36
@@ -382,7 +383,7 @@ export async function buildYoloSystemPrompt(
   // the model rewrite that record, even when a custom hard_deny list replaces
   // the template defaults.
   const transcriptIntegrityRule =
-    'Session Transcript Integrity: Never create, edit, truncate, replace, move, or delete Claude Code session transcript files (including .jsonl files under the Claude projects/session directories).'
+    `Session Transcript Integrity: Never create, edit, truncate, replace, move, or delete ${PRODUCT_NAME} session transcript files (including .jsonl files under the ${PRODUCT_NAME} projects/session directories).`
 
   // Each `<foo_to_replace>...</foo_to_replace>` tag wraps that section's
   // defaults. A non-empty user list REPLACES the defaults; a user list

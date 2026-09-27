@@ -10,6 +10,7 @@ import { isPlanModeInterviewPhaseEnabled } from '../../planModeV2.js'
 import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import { PermissionDialog } from '../PermissionDialog.js'
 import type { PermissionRequestProps } from '../PermissionRequest.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function EnterPlanModePermissionRequest({
   toolUseConfirm,
@@ -48,12 +49,12 @@ export function EnterPlanModePermissionRequest({
     >
       <Box flexDirection="column" marginTop={1} paddingX={1}>
         <Text>
-          Claude wants to enter plan mode to explore and design an
+          {PRODUCT_NAME} wants to enter plan mode to explore and design an
           implementation approach.
         </Text>
 
         <Box marginTop={1} flexDirection="column">
-          <Text dimColor>In plan mode, Claude will:</Text>
+          <Text dimColor>In plan mode, {PRODUCT_NAME} will:</Text>
           <Text dimColor> · Explore the codebase thoroughly</Text>
           <Text dimColor> · Identify existing patterns</Text>
           <Text dimColor> · Design an implementation strategy</Text>

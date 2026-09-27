@@ -45,6 +45,7 @@ import { PermissionRuleInput } from './PermissionRuleInput.js'
 import { RecentDenialsTab } from './RecentDenialsTab.js'
 import { RemoveWorkspaceDirectory } from './RemoveWorkspaceDirectory.js'
 import { WorkspaceTab } from './WorkspaceTab.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type TabType = 'recent' | 'allow' | 'ask' | 'deny' | 'workspace'
 
@@ -232,9 +233,9 @@ function PermissionRulesTab({
       <Text>
         {
           {
-            allow: "Claude Code won't ask before using allowed tools.",
-            ask: 'Claude Code will always ask for confirmation before using these tools.',
-            deny: 'Claude Code will always reject requests to use denied tools.',
+            allow: `${PRODUCT_NAME} won't ask before using allowed tools.`,
+            ask: `${PRODUCT_NAME} will always ask for confirmation before using these tools.`,
+            deny: `${PRODUCT_NAME} will always reject requests to use denied tools.`,
           }[tab]
         }
       </Text>
@@ -760,7 +761,7 @@ export function PermissionRuleList({
           <Tab id="workspace" title="Workspace">
             <Box flexDirection="column">
               <Text>
-                Claude Code can read files in the workspace, and make edits when
+                {PRODUCT_NAME} can read files in the workspace, and make edits when
                 auto-accept edits is on.
               </Text>
               <WorkspaceTab

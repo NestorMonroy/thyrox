@@ -19,6 +19,7 @@ import type {
   BetaMessage,
   BetaRawMessageStreamEvent,
 } from '@anthropic-ai/sdk/resources/beta/messages/messages.mjs'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ============================================================================
 // Usage & Model Types
@@ -81,7 +82,7 @@ export const ThinkingAdaptiveSchema = lazySchema(() =>
     .object({
       type: z.literal('adaptive'),
     })
-    .describe('Claude decides when and how much to think (Opus 4.7/4.6+).'),
+    .describe(`${PRODUCT_NAME} decides when and how much to think (Opus 4.7/4.6+).`),
 )
 
 export const ThinkingEnabledSchema = lazySchema(() =>
@@ -109,7 +110,7 @@ export const ThinkingConfigSchema = lazySchema(() =>
       ThinkingDisabledSchema(),
     ])
     .describe(
-      "Controls Claude's thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.",
+      `Controls ${PRODUCT_NAME}'s thinking/reasoning behavior. When set, takes precedence over the deprecated maxThinkingTokens.`,
     ),
 )
 
@@ -1074,7 +1075,7 @@ export const ModelInfoSchema = lazySchema(() =>
         .boolean()
         .optional()
         .describe(
-          'Whether this model supports adaptive thinking (Claude decides when and how much to think)',
+          `Whether this model supports adaptive thinking (${PRODUCT_NAME} decides when and how much to think)`,
         ),
       supportsFastMode: z
         .boolean()

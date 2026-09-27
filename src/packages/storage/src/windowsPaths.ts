@@ -6,6 +6,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { execSync } from '@thyrox/shell/execSyncWrapper.js'
 import { memoizeWithLRU } from '@thyrox/config/memoize.js'
 import { getPlatform } from '@thyrox/config/platform'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Check if a file or directory exists on Windows using the dir command
@@ -115,7 +116,7 @@ export const findGitBashPath = memoize((): string | null => {
       return process.env.CLAUDE_CODE_GIT_BASH_PATH
     }
     console.error(
-      `Claude Code was unable to find CLAUDE_CODE_GIT_BASH_PATH path "${process.env.CLAUDE_CODE_GIT_BASH_PATH}"`,
+      `${PRODUCT_NAME} was unable to find CLAUDE_CODE_GIT_BASH_PATH path "${process.env.CLAUDE_CODE_GIT_BASH_PATH}"`,
     )
     return null
   }

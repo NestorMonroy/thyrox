@@ -17,6 +17,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { execFileNoThrow, execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
 import { which } from '@thyrox/shell/which.js'
 import type { ChromiumBrowser } from './claudeInChromeSetupPortable.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export const CLAUDE_IN_CHROME_MCP_SERVER_NAME = 'claude-in-chrome'
 
@@ -206,7 +207,7 @@ export async function detectAvailableBrowser(): Promise<ChromiumBrowser | null> 
       found = await isDirectory(join(windowsAppData(spec), ...spec.windows.dataPath))
     }
     if (found) {
-      logForDebugging(`[Claude in Chrome] Detected browser: ${spec.name}`)
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Detected browser: ${spec.name}`)
       return browser
     }
   }
@@ -268,12 +269,12 @@ async function resolveWindowsAppPath(exe: string): Promise<string | null> {
     if (result.code !== 0) continue
     const raw = parseRegDefaultValue(result.stdout)
     if (!raw) {
-      logForDebugging(`[Claude in Chrome] ${hive} App Paths value for ${exe} had no parseable string default; skipping`)
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] ${hive} App Paths value for ${exe} had no parseable string default; skipping`)
       continue
     }
     const candidate = expandWindowsEnv(raw)
     if (!/^(?:[a-zA-Z]:[\\/]|\\\\)/.test(candidate)) {
-      logForDebugging(`[Claude in Chrome] Skipping ${hive} App Paths candidate for ${exe}: not a fully qualified path`)
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Skipping ${hive} App Paths candidate for ${exe}: not a fully qualified path`)
       continue
     }
     try {
@@ -281,23 +282,23 @@ async function resolveWindowsAppPath(exe: string): Promise<string | null> {
       pending.catch(() => {})
       const info = await withTimeout(pending, APP_PATH_STAT_TIMEOUT_MS)
       if (info === undefined) {
-        logForDebugging(`[Claude in Chrome] Skipping ${hive} App Paths candidate for ${exe}: existence check exceeded ${APP_PATH_STAT_TIMEOUT_MS}ms`)
+        logForDebugging(`[${PRODUCT_NAME} in Chrome] Skipping ${hive} App Paths candidate for ${exe}: existence check exceeded ${APP_PATH_STAT_TIMEOUT_MS}ms`)
         continue
       }
       if (!info.isDirectory()) {
-        logForDebugging(`[Claude in Chrome] Resolved ${exe} via ${hive} App Paths`)
+        logForDebugging(`[${PRODUCT_NAME} in Chrome] Resolved ${exe} via ${hive} App Paths`)
         return candidate
       }
-      logForDebugging(`[Claude in Chrome] Skipping ${hive} App Paths candidate for ${exe}: resolves to a directory`)
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Skipping ${hive} App Paths candidate for ${exe}: resolves to a directory`)
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code
       const storePrefix = windowsAppsPrefix()
       // Un alias de la Tienda existe aunque `lstat` falle con un código raro.
       if (storePrefix !== undefined && win32.normalize(candidate).toLowerCase().startsWith(storePrefix) && code !== 'ENOENT' && code !== 'ENOTDIR') {
-        logForDebugging(`[Claude in Chrome] Resolved ${exe} via ${hive} App Paths (stat-odd: ${code ?? String(error)})`)
+        logForDebugging(`[${PRODUCT_NAME} in Chrome] Resolved ${exe} via ${hive} App Paths (stat-odd: ${code ?? String(error)})`)
         return candidate
       }
-      logForDebugging(`[Claude in Chrome] Skipping ${hive} App Paths candidate for ${exe}: ${code ?? String(error)}`)
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Skipping ${hive} App Paths candidate for ${exe}: ${code ?? String(error)}`)
     }
   }
   return null
@@ -310,13 +311,13 @@ function launchDetached(file: string, args: string[]): Promise<boolean> {
     try {
       child = spawn(file, args, { cwd: dirname(file), detached: true, stdio: 'ignore', windowsHide: false })
     } catch (error) {
-      logForDebugging(`[Claude in Chrome] Detached launch of ${file} failed: ${String(error)}`, { level: 'error' })
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Detached launch of ${file} failed: ${String(error)}`, { level: 'error' })
       resolve(false)
       return
     }
     child.once('spawn', () => resolve(true))
     child.once('error', error => {
-      logForDebugging(`[Claude in Chrome] Detached launch of ${file} failed: ${error.message}`, { level: 'error' })
+      logForDebugging(`[${PRODUCT_NAME} in Chrome] Detached launch of ${file} failed: ${error.message}`, { level: 'error' })
       resolve(false)
     })
     child.unref()
@@ -329,7 +330,7 @@ export async function openInChrome(url: string): Promise<boolean> {
   const platform = getPlatform()
   const browser = await detectAvailableBrowser()
   if (!browser) {
-    logForDebugging('[Claude in Chrome] No compatible browser found')
+    logForDebugging(`[${PRODUCT_NAME} in Chrome] No compatible browser found`)
     return false
   }
   const spec = CHROMIUM_BROWSERS[browser]

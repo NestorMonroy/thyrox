@@ -57,6 +57,7 @@ import {
   logForDiagnosticsNoPII,
   waitForPolicyLimitsToLoad,
 } from './internal/pendingCrossPackageDeps.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Ant `ZJ8`
 const TRUSTED_DEVICE_GATE = 'tengu_sessions_elevated_auth_enforcement'
@@ -89,7 +90,7 @@ export const PROACTIVE_ENROLLMENT_DISABLED_MESSAGE =
 
 // Mensaje `U$5` de ant, caso no-deshabilitado
 export const TRUSTED_DEVICE_UNENROLLED_MESSAGE =
-  'Your organization requires Trusted Devices for Remote Control, but this device is not enrolled. Please run `/login` in Claude Code to enroll this device.'
+  `Your organization requires Trusted Devices for Remote Control, but this device is not enrolled. Please run \`/login\` in ${PRODUCT_NAME} to enroll this device.`
 
 /**
  * Ant `U$H` — lector del kill-switch. Se usa tanto para omitir el
@@ -306,7 +307,7 @@ export async function enrollTrustedDevice(): Promise<void> {
         device_id?: string
       }>(
         `${baseUrl}/api/auth/trusted_devices`,
-        { display_name: `Claude Code on ${hostname()} · ${process.platform}` },
+        { display_name: `${PRODUCT_NAME} on ${hostname()} · ${process.platform}` },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

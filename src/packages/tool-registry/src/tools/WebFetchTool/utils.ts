@@ -16,11 +16,12 @@ import { getSettings } from '@thyrox/config/settings'
 import { asSystemPrompt } from '@thyrox/provider/systemPromptType.js'
 import { isPreapprovedHost } from './preapproved.js'
 import { makeSecondaryModelPrompt } from './prompt.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Custom error classes for domain blocking
 class DomainBlockedError extends Error {
   constructor(domain: string) {
-    super(`Claude Code is unable to fetch from ${domain}`)
+    super(`${PRODUCT_NAME} is unable to fetch from ${domain}`)
     this.name = 'DomainBlockedError'
   }
 }

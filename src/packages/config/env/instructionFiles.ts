@@ -11,7 +11,7 @@
  * ranura: sus archivos son distintos entre sí y se cargan los de ambos.
  */
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { CONFIG_DIR_NAME, CONFIG_DIR_NAMES, LEGACY_CONFIG_DIR_NAME } from './configHome.js'
 
 export const INSTRUCTIONS_FILE_NAME = 'THYROX.md'
@@ -67,4 +67,10 @@ export function pickInstructionsFile(
   exists: (path: string) => boolean = existsSync,
 ): string {
   return candidates.find(exists) ?? candidates[0]!
+}
+
+/** ¿La ruta es el archivo de instrucciones de un proyecto (`THYROX.md` o el
+ * heredado `CLAUDE.md`)? El local no cuenta: es personal, no del proyecto. */
+export function isProjectInstructionsFile(path: string): boolean {
+  return (INSTRUCTIONS_FILE_NAMES as readonly string[]).includes(basename(path))
 }

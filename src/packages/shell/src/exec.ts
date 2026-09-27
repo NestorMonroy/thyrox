@@ -24,6 +24,7 @@ import {
 } from './shellCommand.js'
 import { createProviderResolver } from './shellDiscovery.js'
 import { ExecError } from './errors.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 
 const DEFAULT_TIMEOUT = 30 * 60 * 1000 // 30 minutes
@@ -166,7 +167,7 @@ export async function exec(
       cwd = fallback
     } catch {
       return createFailedCommand(
-        `Working directory "${cwd}" no longer exists. Please restart Claude from an existing directory.`,
+        `Working directory "${cwd}" no longer exists. Please restart ${PRODUCT_NAME} from an existing directory.`,
       )
     }
   }

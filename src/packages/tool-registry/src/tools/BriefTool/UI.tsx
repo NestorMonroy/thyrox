@@ -8,6 +8,7 @@ import { getDisplayPath } from '@thyrox/storage/file.js'
 import { formatFileSize } from '@thyrox/output/formatters'
 import { formatBriefTimestamp } from '@thyrox/output/formatters'
 import type { Output } from './BriefTool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function renderToolUseMessage(): React.ReactNode {
   return ''
@@ -50,7 +51,7 @@ export function renderToolResultMessage(
     return (
       <Box flexDirection="column" marginTop={1} paddingLeft={2}>
         <Box flexDirection="row">
-          <Text color="briefLabelClaude">Claude</Text>
+          <Text color="briefLabelClaude">{PRODUCT_NAME}</Text>
           {ts ? <Text dimColor> {ts}</Text> : null}
         </Box>
         <Box flexDirection="column">

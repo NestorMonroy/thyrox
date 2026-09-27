@@ -11,6 +11,7 @@ import { lazySchema } from '@thyrox/tool-registry/utils/lazySchema.js'
 import { logError } from '@thyrox/local-observability/logging'
 import { sleep } from '@thyrox/config/sleep'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Retry configuration for teleport API requests
 const TELEPORT_RETRY_DELAYS = [2000, 4000, 8000, 16000] // 4 retries with exponential backoff
@@ -185,7 +186,7 @@ export async function prepareApiRequest(): Promise<{
   const accessToken = getClaudeAIOAuthTokens()?.accessToken
   if (accessToken === undefined) {
     throw new Error(
-      'Claude Code web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.',
+      `${PRODUCT_NAME} web sessions require authentication with a Claude.ai account. API key authentication is not sufficient. Please run /login to authenticate, or check your authentication status with /status.`,
     )
   }
 

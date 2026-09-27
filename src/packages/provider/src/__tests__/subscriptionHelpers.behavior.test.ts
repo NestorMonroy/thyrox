@@ -24,15 +24,15 @@ describe('subscription helpers (ant No/QQ_/etc parity)', () => {
     expect(fnSlice).toMatch(/return oauthTokens\.rateLimitTier\s*\?\?\s*null/)
   })
 
-  test('getSubscriptionName: full switch covers enterprise/team/max/pro + Claude API default', () => {
+  test('getSubscriptionName: full switch covers enterprise/team/max/pro + Anthropic API default', () => {
     const fnStart = authAliasSource.indexOf('export function getSubscriptionName')
     const fnSlice = authAliasSource.slice(fnStart, fnStart + 600)
     // Exact strings — these literals are shown to the user in /status
-    expect(fnSlice).toMatch(/case 'enterprise':\s*\n?\s*return 'Claude Enterprise'/)
-    expect(fnSlice).toMatch(/case 'team':\s*\n?\s*return 'Claude Team'/)
-    expect(fnSlice).toMatch(/case 'max':\s*\n?\s*return 'Claude Max'/)
-    expect(fnSlice).toMatch(/case 'pro':\s*\n?\s*return 'Claude Pro'/)
-    expect(fnSlice).toMatch(/default:\s*\n?\s*return 'Claude API'/)
+    expect(fnSlice).toMatch(/case 'enterprise':\s*\n?\s*return `\$\{PRODUCT_NAME\} Enterprise`/)
+    expect(fnSlice).toMatch(/case 'team':\s*\n?\s*return `\$\{PRODUCT_NAME\} Team`/)
+    expect(fnSlice).toMatch(/case 'max':\s*\n?\s*return `\$\{PRODUCT_NAME\} Max`/)
+    expect(fnSlice).toMatch(/case 'pro':\s*\n?\s*return `\$\{PRODUCT_NAME\} Pro`/)
+    expect(fnSlice).toMatch(/default:\s*\n?\s*return 'Anthropic API'/)
   })
 
   test('isMaxSubscriber: strict === comparison against subscriptionType', () => {

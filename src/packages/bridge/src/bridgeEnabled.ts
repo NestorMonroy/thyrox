@@ -19,6 +19,7 @@ import {
   isEnvTruthy,
   lt,
 } from './internal/pendingCrossPackageDeps.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /**
  * Chequeo en runtime del entitlement de modo bridge.
@@ -183,7 +184,7 @@ export function checkBridgeMinVersion(): string | null {
       minVersion: string
     }>('tengu_bridge_min_version', { minVersion: '0.0.0' })
     if (config.minVersion && lt(getMacroVersion(), config.minVersion)) {
-      return `Your version of Claude Code (${getMacroVersion()}) is too old for Remote Control.\nVersion ${config.minVersion} or higher is required. Run \`claude update\` to update.`
+      return `Your version of ${PRODUCT_NAME} (${getMacroVersion()}) is too old for Remote Control.\nVersion ${config.minVersion} or higher is required. Run \`claude update\` to update.`
     }
   }
   return null

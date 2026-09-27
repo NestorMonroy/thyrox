@@ -6,6 +6,7 @@ import { renderToolResultMessage as renderDefaultMCPToolResultMessage } from '@t
 import type { MCPToolResult } from '@thyrox/mcp-runtime/mcpValidation.js'
 import { truncateToWidth } from '@thyrox/output/formatters'
 import { trackClaudeInChromeTabId } from './common.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type { Tool } from '@modelcontextprotocol/sdk/types.js'
 
@@ -292,7 +293,7 @@ export function getClaudeInChromeMCPToolOverrides(toolName: string): {
     userFacingName(_input?: Record<string, unknown>) {
       // Trim the _mcp postfix that show up in some of the tool names
       const displayName = toolName.replace(/_mcp$/, '')
-      return `Claude in Chrome[${displayName}]`
+      return `${PRODUCT_NAME} in Chrome[${displayName}]`
     },
     renderToolUseMessage(
       input: Record<string, unknown>,

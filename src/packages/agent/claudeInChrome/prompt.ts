@@ -1,4 +1,5 @@
-export const BASE_CHROME_PROMPT = `# Claude in Chrome browser automation
+import { PRODUCT_NAME } from '@thyrox/config/product'
+export const BASE_CHROME_PROMPT = `# ${PRODUCT_NAME} in Chrome browser automation
 
 You have access to browser automation tools (mcp__claude-in-chrome__*) for interacting with web pages in Chrome. Follow these guidelines for effective browser automation.
 

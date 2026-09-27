@@ -1,4 +1,4 @@
-import { dirname, sep } from 'path'
+import { dirname } from 'path'
 import { logEvent } from '@thyrox/local-observability'
 import { z } from 'zod/v4'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
@@ -52,6 +52,7 @@ import {
   renderToolUseRejectedMessage,
   userFacingName,
 } from './UI.js'
+import { isProjectInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 const inputSchema = lazySchema(() =>
   z.strictObject({
@@ -336,8 +337,8 @@ export const FileWriteTool = buildTool({
       limit: undefined,
     })
 
-    // Log when writing to CLAUDE.md
-    if (fullFilePath.endsWith(`${sep}CLAUDE.md`)) {
+    // Registra la escritura del archivo de instrucciones del proyecto.
+    if (isProjectInstructionsFile(fullFilePath)) {
       logEvent('tengu_write_claudemd', {})
     }
 

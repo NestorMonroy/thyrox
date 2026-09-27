@@ -7,6 +7,7 @@ import * as os from 'os'
 import { join } from 'path'
 import type { SnapshotContext } from '../context.js'
 import { quote } from './shellQuote.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const LITERAL_BACKSLASH = '\\'
 const SNAPSHOT_CREATION_TIMEOUT = 10000 // 10 seconds
@@ -429,7 +430,7 @@ export const createAndSaveSnapshot = async (
 
       if (!configFileExists) {
         ctx.logForDebugging(
-          `Shell config file not found: ${configFile}, creating snapshot with Claude Code defaults only`,
+          `Shell config file not found: ${configFile}, creating snapshot with ${PRODUCT_NAME} defaults only`,
         )
       }
 
@@ -486,7 +487,7 @@ export const createAndSaveSnapshot = async (
             ctx.logForDebugging(`  - Config file: ${getConfigFile(binShell)}`)
             ctx.logForDebugging(`  - Config file exists: ${configFileExists}`)
             ctx.logForDebugging(`  - Working directory: ${ctx.getCwd()}`)
-            ctx.logForDebugging(`  - Claude home: ${ctx.getConfigHomeDir()}`)
+            ctx.logForDebugging(`  - ${PRODUCT_NAME} home: ${ctx.getConfigHomeDir()}`)
             ctx.logForDebugging(`Full snapshot script:\n${snapshotScript}`)
             if (stdout) {
               ctx.logForDebugging(

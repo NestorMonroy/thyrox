@@ -405,7 +405,7 @@ export async function mcpAddFromDesktopHandler(options: {
 
     if (Object.keys(servers).length === 0) {
       cliOk(
-        'No MCP servers found in Claude Desktop configuration or configuration file does not exist.',
+        `No MCP servers found in ${PRODUCT_NAME} Desktop configuration or configuration file does not exist.`,
       )
     }
 

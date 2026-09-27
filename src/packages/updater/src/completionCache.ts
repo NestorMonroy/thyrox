@@ -10,6 +10,7 @@ import { isENOENT } from '@thyrox/local-observability/errorHelpers.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { logError } from '@thyrox/local-observability/logging'
 import type { ThemeName } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const EOL = '\n'
 
@@ -123,7 +124,7 @@ export async function setupShellCompletion(theme: ThemeName): Promise<string> {
     await mkdir(configDir, { recursive: true })
 
     const separator = existing && !existing.endsWith('\n') ? '\n' : ''
-    const content = `${existing}${separator}\n# Claude Code shell completions\n${shell.completionLine}\n`
+    const content = `${existing}${separator}\n# ${PRODUCT_NAME} shell completions\n${shell.completionLine}\n`
     await writeFile(shell.rcFile, content, { encoding: 'utf-8' })
 
     return `${EOL}${color('success', theme)(`Installed ${shell.name} shell completions`)}${EOL}${chalk.dim(`Added to ${formatPathLink(shell.rcFile)}`)}${EOL}${chalk.dim(`Run: source ${shell.rcFile}`)}${EOL}`

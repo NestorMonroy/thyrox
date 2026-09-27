@@ -55,6 +55,7 @@ import {
   logEvent,
 } from '@thyrox/local-observability'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // ---- Constantes de nombre de herramienta — fieles a
 // `ccnmt: packages/tool-registry/src/**`, inlineadas (ver docstring). ----
@@ -197,7 +198,7 @@ export function getCoordinatorSystemPrompt(): string {
     ? 'Workers have access to Bash, Read, and Edit tools, plus MCP tools from configured MCP servers.'
     : 'Workers have access to standard tools, MCP tools from configured MCP servers, and project skills via the Skill tool. Delegate skill invocations (e.g. /commit, /verify) to workers.'
 
-  return `You are Claude Code, an AI assistant that orchestrates software engineering tasks across multiple workers.
+  return `You are ${PRODUCT_NAME}, an AI assistant that orchestrates software engineering tasks across multiple workers.
 
 ## 1. Your Role
 

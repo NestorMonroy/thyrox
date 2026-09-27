@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * Porte de OmniRoute `src/lib/providers/claudeExtraUsage.ts` (MIT),
  * superficie completa -- los 8 exports (2 constantes + 6 funciones), ninguno
@@ -51,7 +52,7 @@ const SESSION_RESET_WINDOW_KEYS = ['session (5h)', 'session', 'five_hour']
 
 export const CLAUDE_EXTRA_USAGE_ERROR_SOURCE = 'extra_usage'
 export const CLAUDE_EXTRA_USAGE_ERROR_MESSAGE =
-  'Claude extra usage was detected and blocked by this connection policy.'
+  `${PRODUCT_NAME} extra usage was detected and blocked by this connection policy.`
 
 function asRecord(value: unknown): JsonRecord {
   return value && typeof value === 'object' && !Array.isArray(value) ? (value as JsonRecord) : {}

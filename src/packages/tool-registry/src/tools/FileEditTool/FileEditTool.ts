@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, sep } from 'path'
+import { dirname, isAbsolute } from 'path'
 import { logEvent } from '@thyrox/local-observability'
 import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { diagnosticTracker } from '../../diagnosticTracking.js'
@@ -75,6 +75,7 @@ import {
   getPatchForEdit,
   preserveQuoteStyle,
 } from './utils.js'
+import { isProjectInstructionsFile } from '@thyrox/config/env/instructionFiles.js'
 
 // V8/Bun string length limit is ~2^30 characters (~1 billion). For typical
 // ASCII/Latin-1 files, 1 byte on disk = 1 character, so 1 GiB in stat bytes
@@ -525,7 +526,7 @@ export const FileEditTool = buildTool({
     })
 
     // 7. Log events
-    if (absoluteFilePath.endsWith(`${sep}CLAUDE.md`)) {
+    if (isProjectInstructionsFile(absoluteFilePath)) {
       logEvent('tengu_write_claudemd', {})
     }
     countLinesChanged(patch)

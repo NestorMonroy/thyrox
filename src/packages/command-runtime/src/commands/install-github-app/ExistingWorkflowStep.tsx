@@ -1,5 +1,6 @@
 import { Select } from '@thyrox/repl/components/CustomSelect/index.js'
 import { Box, Text } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 interface ExistingWorkflowStepProps {
   repoName: string
@@ -42,7 +43,7 @@ export function ExistingWorkflowStep({
 
       <Box flexDirection="column" marginBottom={1}>
         <Text>
-          A Claude workflow file already exists at{' '}
+          A {PRODUCT_NAME} workflow file already exists at{' '}
           <Text color="claude">.github/workflows/claude.yml</Text>
         </Text>
         <Text dimColor>What would you like to do?</Text>

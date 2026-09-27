@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 // Characterization tests for Slice A (Telemetry).
 // Locks the current behavior of meter/counter state living in src/bootstrap/state.ts
 // so the upcoming migration to @thyrox/local-observability/meterState is
@@ -148,7 +149,7 @@ describe("meterState — counter snapshot (setMeter factory calls)", () => {
       },
       {
         name: "claude_code.cost.usage",
-        options: { description: "Cost of the Claude Code session", unit: "USD" },
+        options: { description: `Cost of the ${PRODUCT_NAME} session`, unit: "USD" },
       },
       {
         name: "claude_code.token.usage",

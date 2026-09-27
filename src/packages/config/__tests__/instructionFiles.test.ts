@@ -7,6 +7,7 @@ import { join } from 'node:path'
 import {
   instructionsFileCandidates,
   isInstructionsFileName,
+  isProjectInstructionsFile,
   localInstructionsFileCandidates,
   nestedInstructionsFileCandidates,
   pickInstructionsFile,
@@ -24,6 +25,13 @@ describe('candidatos por ranura', () => {
       join('/r', '.claude', 'CLAUDE.md'),
     ])
     expect(rulesDirectories('/r')).toEqual([join('/r', '.thyrox', 'rules'), join('/r', '.claude', 'rules')])
+  })
+
+  test('isProjectInstructionsFile reconoce el archivo del proyecto por su nombre, propio o heredado', () => {
+    expect(isProjectInstructionsFile(join('/r', 'THYROX.md'))).toBe(true)
+    expect(isProjectInstructionsFile(join('/r', 'sub', 'CLAUDE.md'))).toBe(true)
+    expect(isProjectInstructionsFile(join('/r', 'THYROX.local.md'))).toBe(false)
+    expect(isProjectInstructionsFile(join('/r', 'NOTES.md'))).toBe(false)
   })
 
   test('isInstructionsFileName reconoce los cuatro nombres y nada más', () => {

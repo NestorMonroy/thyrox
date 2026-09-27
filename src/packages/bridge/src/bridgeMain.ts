@@ -2087,10 +2087,10 @@ ${serverOptions}
 DESCRIPTION
   Remote Control allows you to control sessions on your local device from
   claude.ai/code (https://claude.ai/code). Run this command in the
-  directory you want to work in, then connect from the Claude app or web.
+  directory you want to work in, then connect from the ${PRODUCT_NAME} app or web.
 ${serverDescription}
 NOTES
-  - You must be logged in with a Claude account that has a subscription
+  - You must be logged in with a ${PRODUCT_NAME} account that has a subscription
   - Run \`claude\` first in the directory to accept the workspace trust dialog
 ${serverNote}`
   console.log(help)
@@ -2367,6 +2367,7 @@ export async function runBridgeHeadless(
  * bridgeMain() está bloqueado).
  */
 import { getBridgeBaseUrl as _getBridgeBaseUrl } from './bridgeConfig.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getBridgeBaseUrlForHeadless(): string {
   return _getBridgeBaseUrl()

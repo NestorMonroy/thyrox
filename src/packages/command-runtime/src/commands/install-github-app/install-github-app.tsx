@@ -27,6 +27,7 @@ import { SuccessStep } from './SuccessStep.js'
 import { setupGitHubActions } from './setupGitHubActions.js'
 import type { State, Warning, Workflow } from './types.js'
 import { WarningsStep } from './WarningsStep.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const INITIAL_STATE: State = {
   step: 'check-gh',
@@ -206,7 +207,7 @@ function InstallGitHubApp(props: {
           setState(prev => ({
             ...prev,
             step: 'error',
-            error: 'A Claude workflow file already exists in this repository.',
+            error: `A ${PRODUCT_NAME} workflow file already exists in this repository.`,
             errorReason: 'Workflow file conflict',
             errorInstructions: [
               'The file .github/workflows/claude.yml already exists',

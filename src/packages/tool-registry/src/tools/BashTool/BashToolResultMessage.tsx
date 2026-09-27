@@ -6,6 +6,7 @@ import { OutputLine } from '@thyrox/repl/components/shell/OutputLine.js'
 import { ShellTimeDisplay } from '@thyrox/repl/components/shell/ShellTimeDisplay.js'
 import { Box, Text } from '@anthropic/ink'
 import type { Out as BashOut } from './BashTool.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   content: Omit<BashOut, 'interrupted'>
@@ -88,7 +89,7 @@ export default function BashToolResultMessage({
   if (isImage) {
     return (
       <MessageResponse height={1}>
-        <Text dimColor>[Image data detected and sent to Claude]</Text>
+        <Text dimColor>[Image data detected and sent to {PRODUCT_NAME}]</Text>
       </MessageResponse>
     )
   }

@@ -29,9 +29,12 @@
 import { getInitialSettings } from '@thyrox/config/settings'
 import { getMainLoopModel, getPublicModelDisplayName } from '@thyrox/provider/model.js'
 import { calculateCommitAttribution, getAttributionRepoRoot, isInternalModelRepoCached, sanitizeModelName } from './commitAttribution.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** El pie de PR por defecto (`h_n` sin el sufijo de superficie, que va tras bandera). */
-export const PR_FOOTER = '\u{1F916} Generated with [Claude Code](https://claude.com/claude-code)'
+// Sin enlace: el del ejecutable apunta a la página del producto ajeno, y
+// thyrox no publica una propia.
+export const PR_FOOTER = `\u{1F916} Generated with ${PRODUCT_NAME}`
 
 export type AttributionTexts = { commit: string; pr: string }
 
@@ -43,8 +46,8 @@ export type AttributionSettings = {
 
 /** El nombre del modelo en la línea `Co-Authored-By`. */
 export function attributionModelName(model: string): string {
-  if (model.includes('claude-fable-')) return 'Claude'
-  return getPublicModelDisplayName(model) ?? 'Claude Code'
+  if (model.includes('claude-fable-')) return `${PRODUCT_NAME}`
+  return getPublicModelDisplayName(model) ?? `${PRODUCT_NAME}`
 }
 
 /** Los textos de atribución para unos settings y un nombre de modelo ya resuelto. */

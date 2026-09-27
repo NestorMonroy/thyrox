@@ -62,6 +62,7 @@ import { whichSync } from '@thyrox/shell/which.js'
 import { findGitRoot } from './findGitRoot.js'
 import { getFsImplementation } from './fsOperations.js'
 import { memoize, memoizeWithLRU } from './internal/pendingCrossPackageDeps.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // `findGitRoot` vive en su propio archivo para romper el ciclo
 // gitFilesystem ↔ git. Se re-exporta aquí para que sus consumidores no
@@ -377,7 +378,7 @@ export const getWorktreeCount = async (): Promise<number> => {
 export const stashToCleanState = async (message?: string): Promise<boolean> => {
   try {
     const stashMessage =
-      message || `Claude Code auto-stash - ${new Date().toISOString()}`
+      message || `${PRODUCT_NAME} auto-stash - ${new Date().toISOString()}`
 
     const { untracked } = await getFileStatus()
 

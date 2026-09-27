@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '@thyrox/config/product'
 /**
  * MCP server factory + session-context binder.
  *
@@ -44,7 +45,7 @@ import type {
 import { DEFAULT_GRANT_FLAGS } from "./types.js";
 
 const DEFAULT_LOCK_HELD_MESSAGE =
-  "Another Claude session is currently using the computer. Wait for that " +
+  `Another ${PRODUCT_NAME} session is currently using the computer. Wait for that ` +
   "session to finish, or find a non-computer-use approach.";
 
 /**
