@@ -13,6 +13,9 @@
  *   symbol <chunk> <nombre>... [--root R]
  *                        definiciones completas de cada nombre, por arbol
  *                        sintactico, siguiendo import/export entre chunks
+ *   references <chunk> <nombre> [--root R]
+ *                        usos del símbolo en su chunk y en los que lo
+ *                        importan, con el miembro que cada uso llama
  *   literal <texto> [--root R]
  *                        declaraciones que contienen el literal, con su
  *                        chunk y su nombre: lo que se pasa luego a symbol
@@ -28,7 +31,7 @@ import { buildGraph } from '../src/graph.ts'
 import { writeCorpus } from '../src/corpus.ts'
 import { corpusVersion, freshness } from '../src/freshness.ts'
 import { reflow } from '../src/reflow.ts'
-import { resolveSymbol } from '../src/symbol.ts'
+import { resolveSymbol, scanReferences } from '../src/symbol.ts'
 import { scanLiteral } from '../src/declaration.ts'
 
 const DEFAULT_BINARY = '/opt/claude-code/bin/claude'
@@ -157,6 +160,20 @@ if (command === 'info') {
   for (const d of scan.sites) console.log(`${d.file} ${d.kind} ${d.binding ?? '-'} [${d.start},${d.end})`)
   console.error(`literal: ${scan.sites.length} declaración(es) en ${scan.chunksWithLiteral} de ${scan.chunks} chunk(s)`)
   process.exit(scan.sites.length > 0 ? 0 : 1)
+} else if (command === 'references') {
+  // La dirección que `symbol` no recorre: de la definición a sus usos, con el
+  // miembro que cada uso llama. Es el flujo de un mecanismo, no sus literales.
+  const latest = corpusVersion(DEFAULT_CORPUS)
+  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  const [chunk, name] = argv.slice(1)
+  if (!chunk || !name || name.startsWith('--')) guard('uso: references <chunk> <nombre> [--root R]')
+  if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+  const scan = scanReferences(root, chunk, name)
+  for (const r of scan.references) console.log(`${r.file} ${r.kind} ${r.binding ?? '-'} ${r.member ? '.' + r.member : '-'} @${r.start}`)
+  const files = new Set(scan.references.map(r => r.file)).size
+  console.error(`references: ${scan.references.length} uso(s) de ${name} en ${files} chunk(s), exportado como ${scan.exportedAs.join(', ') || '(no se exporta)'} (alcance medido: ${scan.chunks} chunk(s))`)
+  process.exit(scan.references.length > 0 ? 0 : 1)
 } else {
-  guard(`subcomando desconocido: ${command}. Use info | extract | graph | freshness | reflow | symbol | literal`)
+  guard(`subcomando desconocido: ${command}. Use info | extract | graph | freshness | reflow | symbol | literal | references`)
 }

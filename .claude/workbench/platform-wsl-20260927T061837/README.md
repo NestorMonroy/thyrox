@@ -39,3 +39,22 @@ en este árbol.
 `rename_identifiers.ts` es el renombrador por nodo del AST con que se tradujo
 `bin/binary.ts`; su promoción a `bin/` es la tarea del gate de identificadores
 TypeScript.
+
+## Flujo, no literal (bin/binary references)
+
+`references chunk-fmsbxtrp.js p` → 5 usos, todos en su propio chunk: los
+cinco envoltorios de módulo (`pBo`→`.prime`, `O`→`.getPlatform`,
+`c9e`→`.getWslVersion`, `$hn`→`.getLinuxDistroInfo`, `fBo`→`.getMacOSMajorVersion`).
+`p()` es el único detector `S` del proceso; lee `/proc/version` UNA vez
+(`kernelString`, ya en minúsculas) para getPlatform y getWslVersion.
+
+`references … pBo` → 1 uso: `init()` (`chunk-g8dwzm36.js` `A`) lo corre en
+`Promise.all([NRe(),Mne(),pBo(),UUo()])`. `prime()` lee `/proc/version` de
+forma asíncrona y anula `platform` y `wslVersion`: la lectura síncrona queda
+de respaldo para quien pregunte antes del arranque.
+
+`references … c9e` → 4 usos: el recurso de telemetría (`st`, `wsl.version`
+sólo si la plataforma es wsl) y el entorno de diagnóstico (`wD`, `CCe`).
+`references … O` → 753 usos en 139 chunks.
+
+Salidas: `references-*.txt`, `symbol-*.js`.
