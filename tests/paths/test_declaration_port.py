@@ -147,6 +147,9 @@ class ProviderLayer(unittest.TestCase):
             "THYROX_CAPA_DIR=hogar-propio-del-proveedor\n")
         self.consumer = base / "acme-docs"
         self.consumer.mkdir()
+        # Un multi-repo `acme-`: con un solo `acme-docs` no hay prefijo que
+        # medir y el nombre corto es el nombre entero (H-THYROX-176).
+        (base / "acme-api").mkdir()
         (self.consumer / ".env").write_text("THYROX_COMPARTIDA_DOCS=del-consumidor\n")
         self._keys = ("THYROX_CAPA_DOCS", "THYROX_COMPARTIDA_DOCS", "THYROX_CAPA_API",
                       "THYROX_CAPA_DIR", "THYROX_ENV_FILE")

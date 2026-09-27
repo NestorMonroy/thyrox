@@ -31,6 +31,9 @@ beforeEach(() => {
     'THYROX_CAPA_DIR=hogar-propio-del-proveedor\n')
   consumer = join(base, 'acme-docs')
   mkdirSync(consumer)
+  // Un multi-repo `acme-`: con un solo `acme-docs` no hay prefijo que medir
+  // y el nombre corto es el nombre entero (H-THYROX-176).
+  mkdirSync(join(base, 'acme-api'))
   writeFileSync(join(consumer, '.env'), 'THYROX_COMPARTIDA_DOCS=del-consumidor\n')
   saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]]))
   for (const k of KEYS) delete process.env[k]

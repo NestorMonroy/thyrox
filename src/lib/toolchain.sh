@@ -39,6 +39,28 @@ _THYROX_TOOLCHAIN_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=/dev/null
 source "$_THYROX_TOOLCHAIN_HERE/reach.sh"
 
+# @description Exporta las claves `THYROX_TOOLCHAIN_*` y `THYROX_INSTALL_*` que
+# la cadena de `.env` declara y el proceso no fija. Las lecturas de este
+# archivo son `${CLAVE:-default}` y sólo veían el proceso: un consumidor que
+# declaraba `THYROX_INSTALL_TEXLIVE=1` en su `.env` no era oído (H-THYROX-178).
+# Un solo proceso para toda la familia, y la precedencia la decide `env_value`.
+#
+# Una clave FIJADA en el proceso, aunque vacía, no se pisa: vacía es como una
+# prueba pide el default.
+thyrox_toolchain_load_declared() {
+  local line key
+  # `|| [[ -n "$line" ]]`: el delegado imprime sin salto final, y sin esta
+  # guarda `read` descarta la última clave.
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == *=* ]] || continue
+    key="${line%%=*}"
+    [[ "$key" =~ ^THYROX_(TOOLCHAIN|INSTALL)_[A-Z0-9_]+$ ]] || continue
+    [[ -n "${!key+x}" ]] && continue
+    export "$key=${line#*=}"
+  done < <(_thyrox_delegate --prefixed THYROX_TOOLCHAIN_ THYROX_INSTALL_ 2>/dev/null)
+}
+thyrox_toolchain_load_declared
+
 # @description Ruta del interprete dentro de un entorno declarado, relativa a
 # su raiz. Se declara una vez: escribirla en cada funcion seria la segunda
 # fuente de verdad que `calibration-verified-numbers.md` prohibe para una cifra

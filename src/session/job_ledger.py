@@ -198,10 +198,14 @@ def ledger_root(start: Path | None = None) -> Path:
     compactación lo copió. Ahora las dos piezas preguntan aquí. Se resuelve en
     una función y no en una constante de módulo para no fijarla al importar.
     """
-    from paths.reach import env_value, resolve_home, thyrox_root  # noqa: PLC0415 — evita el ciclo de import
+    from paths.reach import env_value, invoking_consumer, resolve_home, thyrox_root  # noqa: PLC0415 — evita el ciclo de import
     from workbench.paths import state_dir  # noqa: PLC0415
 
-    base = thyrox_root(start)
+    # Invocado desde un clon consumidor, el ledger vive en él: componer sobre
+    # `thyrox_root()` hacía que `wait-jobs`, `run-task-pool` y
+    # `thyrox-bg register` lanzados desde otro clon escribieran en thyrox
+    # (H-THYROX-179).
+    base = (invoking_consumer() if start is None else None) or thyrox_root(start)
     declared = env_value(LEDGER_DIR_VAR, start)
     if declared:
         return resolve_home(declared, base)

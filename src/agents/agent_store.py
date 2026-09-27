@@ -106,6 +106,7 @@ SCRIPT_PATH = Path(__file__).resolve()
 # sitio, y que ningun ``.env`` podia redirigir. Ver H-DOCS-1074.
 
 from paths import reach_roots  # noqa: E402
+from paths.reach import per_clone_base  # noqa: E402
 
 # La capa por defecto de una fila de `tasks` se IMPORTA de su dueno canonico y
 # no se copia: `task_ids` declara el vocabulario de capas y su valor de
@@ -452,7 +453,8 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
     1. ``--claude-dir`` — la ruta, sin resolver nada. Es lo que usa una prueba
        para no contaminar el store real.
     2. ``--repo`` — el clon consumidor, para leer o escribir su telemetría
-       heredada a propósito (lo que hace ``backfill``).
+       heredada a propósito (lo que hace ``backfill``). Un nombre del roster
+       (``docs``) o la RUTA del clon, que no exige el prefijo.
     3. **nada** — el HOGAR: ``thyrox/agent-results/``.
 
     El peldaño 3 es nuevo (2026-09-07) y sustituye a un rehúse. La razón del
@@ -478,6 +480,15 @@ def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
 
     if getattr(args, "repo", None) is None:
         return agents_paths.agent_store_path(create=create).parent
+
+    # Una RUTA nombra el clon por sí misma, lleve o no el prefijo del
+    # multi-repo: el roster sólo compone `<prefijo><repo>`, y un consumidor
+    # sin prefijo no tenía forma de nombrarse (H-THYROX-177).
+    if os.sep in args.repo or args.repo.startswith("."):
+        here = Path(args.repo).expanduser()
+        if not here.is_dir():
+            raise FileNotFoundError(f"{here} no existe — declarado en --repo")
+        return per_clone_base(here) / ".claude" / "agent-results"
 
     repos = valid_repos()
     if args.repo not in repos:
@@ -3476,8 +3487,8 @@ def add_target_args(p: argparse.ArgumentParser) -> None:
     p.add_argument(
         "--repo",
         default=None,
-        help="consumidor objetivo. SIN declarar, el store es el HOGAR de thyrox; "
-        "declararlo apunta al store heredado de ese clon",
+        help="consumidor objetivo: un nombre del roster o la ruta del clon. SIN "
+        "declarar, el store es el HOGAR de thyrox; declararlo apunta al store de ese clon",
     )
     p.add_argument(
         "--claude-dir",

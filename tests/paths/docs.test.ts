@@ -68,6 +68,8 @@ describe('docsRoot — la raiz se descubre, no se escribe', () => {
     try {
       delete process.env.KAUPAMEX_DOCS_ROOT
       process.env.THYROX_REACH_ROOT = '/arbol'
+      // Árbol inexistente: el roster no se puede derivar y se declara.
+      process.env.THYROX_REACH_ROOTS = 'docs'
       resetDocsRootCache()
       expect(docsRoot()).toBe('/arbol/kaupamex-docs')
     } finally {

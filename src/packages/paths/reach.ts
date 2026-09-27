@@ -174,6 +174,16 @@ export class EnvFileDeclarations implements ForReadingDeclarations {
   }
 }
 
+/** Adaptador conducido: un `.env` ya localizado, sin ascenso. */
+export class FixedEnvFileDeclarations implements ForReadingDeclarations {
+  constructor(private readonly path: string) {}
+
+  declared(name: string): string | null {
+    if (!existsSync(this.path) || !statSync(this.path).isFile()) return null
+    return readEnvFile(this.path)[name] || null
+  }
+}
+
 /**
  * Adaptador conducido que compone otros en orden de precedencia.
  *
@@ -241,11 +251,54 @@ export function cloneTopOf(start: string): string {
   }
 }
 
-/** `kaupamex-docs` -> `DOCS`; sin guion no hay sufijo. */
+/** El nombre sin el prefijo del multi-repo si lo lleva; el prefijo es opcional. */
+function shortName(root: string): string {
+  const name = basename(root)
+  // Se quita el prefijo que el clon LLEVA: el declarado vale para su
+  // multi-repo, no para un clon de otro que viva en el mismo árbol; el
+  // derivado se mide contra los hermanos del clon. Lo declarado se lee sin
+  // `start`, que consultaría la familia por clon y volvería a pedir este nombre.
+  for (const prefix of [envValue(CLONE_PREFIX_VAR), deriveClonePrefix(root)]) {
+    if (prefix && name.startsWith(prefix) && name.length > prefix.length) return name.slice(prefix.length)
+  }
+  return name
+}
+
+/**
+ * La raíz del clon que contiene `start`, o `null` fuera de uno: el primer
+ * nivel cuyo nombre lleva el prefijo —sin exigir `.git`— y, si ninguno lo
+ * lleva, la raíz git. Gemela de `clone_root_of` (H-THYROX-176).
+ */
+export function cloneRootOf(start: string): string | null {
+  const here = resolve(start)
+  let prefix: string | null = null
+  try {
+    prefix = clonePrefix()
+  } catch {
+    prefix = null
+  }
+  if (prefix) {
+    for (const level of levelsUpward(here)) {
+      const name = basename(level)
+      if (name.startsWith(prefix) && name.length > prefix.length) return level
+    }
+  }
+  const top = cloneTopOf(here)
+  return existsSync(join(top, '.git')) ? top : null
+}
+
+/** `kaupamex-docs` -> `docs`; `ai-course-notes` -> `ai-course-notes`. */
+export function cloneShortName(start: string): string | null {
+  const root = cloneRootOf(start)
+  return root === null ? null : shortName(root)
+}
+
+/**
+ * `kaupamex-docs` -> `DOCS`; `ai-course-notes` -> `AI_COURSE_NOTES`: el nombre
+ * corto entero. Tomaba sólo lo que sigue al último guion (H-THYROX-176).
+ */
 export function cloneSuffixOf(start: string): string | null {
-  const name = basename(cloneTopOf(start))
-  const i = name.lastIndexOf('-')
-  return i < 0 ? null : name.slice(i + 1).toUpperCase().replace(/-/g, '_') || null
+  return shortName(cloneTopOf(start)).toUpperCase().replace(/-/g, '_') || null
 }
 
 /**
@@ -261,15 +314,42 @@ export function productionDeclarations(start?: string): ForReadingDeclarations {
   // Un `THYROX_ENV_FILE` declarado dice QUÉ archivo gobierna: sumarle otro
   // desmentiría la declaración.
   if (process.env[ENV_FILE_VAR]) return new FirstOfDeclarations(new ProcessEnvironment(), specific)
+  const specificPath = envFilePath(start)
+  const layers: ForReadingDeclarations[] = [new ProcessEnvironment()]
+  // Sin `start` el ascenso parte del módulo, dentro del proveedor: desde un
+  // clon consumidor se leía el `.env` de thyrox y no el suyo (H-THYROX-178).
+  // La capa del consumidor va ANTES, sin sustituir: su `.env` puede no
+  // declarar claves que el proveedor sí (`THYROX_COMMIT_AUTHOR`).
+  const consumer = start === undefined ? consumerEnvFile() : null
+  if (consumer !== null && (specificPath === null || resolve(consumer) !== resolve(specificPath))) {
+    layers.push(new FixedEnvFileDeclarations(consumer))
+  }
+  layers.push(specific)
   const general = new ProviderEnvFileDeclarations(start)
   // El mismo archivo no se lee como dos capas: desde dentro del proveedor la
   // específica YA es la general.
-  const specificPath = envFilePath(start)
   const generalPath = general.path()
-  if (generalPath === null || (specificPath !== null && resolve(specificPath) === resolve(generalPath))) {
-    return new FirstOfDeclarations(new ProcessEnvironment(), specific)
+  if (generalPath !== null && (specificPath === null || resolve(specificPath) !== resolve(generalPath))) {
+    layers.push(general)
   }
-  return new FirstOfDeclarations(new ProcessEnvironment(), specific, general)
+  return new FirstOfDeclarations(...layers)
+}
+
+/**
+ * El `.env` del clon consumidor desde el que se invoca, o `null`. Es
+ * consumidor el work tree git que contiene `cwd` si no es el del proveedor;
+ * fuera de un clon —el cwd de los hooks es `/home/user`— o dentro de thyrox no
+ * hay capa. Gemela de `consumer_env_file`.
+ */
+export function consumerEnvFile(cwd: string = process.cwd()): string | null {
+  const top = cloneTopOf(cwd)
+  if (!existsSync(join(top, '.git'))) return null
+  // Un clon con el marcador del proveedor ES un proveedor, esté donde esté
+  // este módulo. Sin entorno: `thyroxRoot()` lee `envValue`, que vuelve a
+  // pedir esta capa.
+  if (existsSync(join(top, THYROX_MARKER))) return null
+  const candidate = join(top, ENV_FILE_NAME)
+  return existsSync(candidate) && statSync(candidate).isFile() ? candidate : null
 }
 
 /**
@@ -370,21 +450,100 @@ export function agentArtifacts(dir: string = agentsDir()): string[] {
   return readdirSync(dir).filter((f) => f.endsWith('.md')).sort()
 }
 
-/**
- * Las raíces DECLARADAS del alcance, en el orden de `reach.py`.
- *
- * `thyrox` no está aquí a propósito: es el PROVEEDOR, y su raíz la resuelve
- * `thyroxRoot()` por su propio marcador. Estas cinco son los consumidores.
- */
-export const REACH_ROOTS = ['api', 'db', 'docs', 'server', 'ui'] as const
-export type ReachRoot = typeof REACH_ROOTS[number]
+/** La clave que declara el roster, separado por comas. */
+export const REACH_ROOTS_VAR = 'THYROX_REACH_ROOTS'
 
 /**
- * El prefijo del nombre de clon. Vive aquí y no repetido en cada consumidor
- * porque el rename `e-comerce-*` -> `kaupamex-*` (DEC-KX-06) ya demostró que
- * cambia.
+ * Las raíces derivadas del árbol: los hermanos que llevan el prefijo, sin él
+ * y en orden. Gemela de `derive_reach_roots`. Sin prefijo devuelve `[]` y
+ * quien llama decide: un roster inventado compone rutas que no existen.
  */
-export const CLONE_PREFIX = 'kaupamex-'
+export function deriveReachRoots(start?: string): string[] {
+  const prefix = envValue(CLONE_PREFIX_VAR, start) || deriveClonePrefix(start)
+  if (!prefix) return []
+  const parent = clonesParent(start)
+  if (!existsSync(parent)) return []
+  return readdirSync(parent)
+    .filter((n) => n.startsWith(prefix) && n !== prefix && statSync(join(parent, n)).isDirectory())
+    .map((n) => n.slice(prefix.length))
+    .sort()
+}
+
+/**
+ * El roster: lo declarado, luego el entorno, luego lo derivado. Estaba fijado
+ * —`['api','db','docs','server','ui']`— y ese literal ataba la mitad
+ * TypeScript al multi-repo kaupamex (H-THYROX-177). `thyrox` no entra: es el
+ * PROVEEDOR, y su raíz la resuelve `thyroxRoot()`.
+ */
+export function reachRoots(start?: string, declared?: string): string[] {
+  const value = declared ?? envValue(REACH_ROOTS_VAR, start)
+  if (value) return value.split(',').map((n) => n.trim()).filter(Boolean)
+  const derived = deriveReachRoots(start)
+  if (derived.length > 0) return derived
+  throw new ReachRootError(
+    `no pude derivar las raíces de trabajo del árbol, y ${REACH_ROOTS_VAR} no está declarada.`,
+  )
+}
+
+/** La clave que declara el prefijo de los clones del multi-repo. */
+export const CLONE_PREFIX_VAR = 'THYROX_CLONE_PREFIX'
+
+/**
+ * El directorio donde viven los clones hermanos, para DERIVAR el prefijo:
+ * la raíz declarada del árbol o, sin ella, el padre del proveedor. No usa
+ * `treeRoot`, cuyo ascenso depende de los nombres que aquí se derivan.
+ */
+function clonesParent(start?: string): string {
+  // Quien pasa `start` apunta a un clon concreto: sus hermanos son los suyos
+  // (paridad con `_clones_parent`).
+  if (start) return dirname(resolve(start))
+  for (const v of TREE_ROOT_VARS) {
+    const declared = envValue(v, start)
+    if (declared) return declared
+  }
+  return dirname(thyroxRoot(start))
+}
+
+/**
+ * El prefijo común de los hermanos del proveedor, o `null`: el `<algo>-` que
+ * comparten AL MENOS DOS. Estaba fijado —`'kaupamex-'`— y ese literal ataba
+ * el proveedor a un multi-repo concreto; la mitad Python ya lo derivaba
+ * (`derive_clone_prefix`).
+ */
+export function deriveClonePrefix(start?: string): string | null {
+  let parent: string
+  try {
+    parent = clonesParent(start)
+  } catch {
+    return null
+  }
+  if (!existsSync(parent)) return null
+  const counts = new Map<string, number>()
+  for (const name of readdirSync(parent)) {
+    if (!name.includes('-') || !statSync(join(parent, name)).isDirectory()) continue
+    const prefix = `${name.split('-', 1)[0]}-`
+    counts.set(prefix, (counts.get(prefix) ?? 0) + 1)
+  }
+  let best: string | null = null
+  let times = 0
+  for (const [prefix, n] of counts) if (n > times) [best, times] = [prefix, n]
+  return times >= 2 ? best : null
+}
+
+/**
+ * El prefijo: lo declarado en `THYROX_CLONE_PREFIX`, si no el derivado. Sin
+ * ninguno rehúsa nombrando la variable: un default volvería a atar el
+ * proveedor a un multi-repo concreto.
+ */
+export function clonePrefix(start?: string): string {
+  const declared = envValue(CLONE_PREFIX_VAR, start)
+  if (declared) return declared
+  const derived = deriveClonePrefix(start)
+  if (derived) return derived
+  throw new ReachRootError(
+    `no pude derivar el prefijo de clon del árbol, y ${CLONE_PREFIX_VAR} no está declarada.`,
+  )
+}
 
 /**
  * Las grafías del árbol, EN ORDEN. Gana la primera declarada.
@@ -399,17 +558,18 @@ export const EXTRA_ROOTS_VARS = ['THYROX_EXTRA_REACH_ROOTS', 'KAUPAMEX_EXTRA_ROO
 
 /** El nombre largo del clon: `api` -> `kaupamex-api`. */
 export function cloneName(repo: string): string {
-  if (!(REACH_ROOTS as readonly string[]).includes(repo)) {
+  const roster = reachRoots()
+  if (!roster.includes(repo)) {
     throw new ReachRootError(
-      `raíz desconocida: ${JSON.stringify(repo)}. Las declaradas son ${REACH_ROOTS.join(', ')}.`,
+      `raíz desconocida: ${JSON.stringify(repo)}. Las declaradas son ${roster.join(', ')}.`,
     )
   }
-  return `${CLONE_PREFIX}${repo}`
+  return `${clonePrefix()}${repo}`
 }
 
 /** Los nombres largos de las raíces declaradas, en su orden. */
 export function cloneNames(): string[] {
-  return REACH_ROOTS.map(cloneName)
+  return reachRoots().map(cloneName)
 }
 
 /**
@@ -469,7 +629,7 @@ export function root(repo: string, start?: string): string {
 
 /** Sólo las DECLARADAS, sin el tramo extra — la vista hermana de `reach()`. */
 export function roots(start?: string): Record<string, string> {
-  return Object.fromEntries(REACH_ROOTS.map((r) => [r, root(r, start)]))
+  return Object.fromEntries(reachRoots(start).map((r) => [r, root(r, start)]))
 }
 
 /**

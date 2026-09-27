@@ -17,7 +17,7 @@
  * dejó atrás dos rutas codificadas y el control byte a byte llevaba semanas
  * en rojo apuntando a un directorio inexistente.
  */
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -129,6 +129,10 @@ describe('agentsDir — el hogar es un parámetro, no un literal', () => {
  * cuando aparece su consumidor, no se deja con la nota.
  */
 describe('el tramo del árbol de clones — completa el porte parcial', () => {
+  // El roster se DERIVA de los hermanos (H-THYROX-177); estos casos componen
+  // rutas contra un árbol que no existe, así que declaran el suyo.
+  beforeEach(() => { process.env.THYROX_REACH_ROOTS = 'api,db,docs,server,ui' })
+
   test('cloneName antepone el prefijo; una raíz desconocida se rechaza', () => {
     expect(cloneName('docs')).toBe('kaupamex-docs')
     expect(() => cloneName('inventada')).toThrow(/raíz desconocida/)

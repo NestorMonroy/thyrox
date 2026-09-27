@@ -23,8 +23,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 
 PASS = 0
 FAIL = 0
@@ -51,7 +53,6 @@ os.environ["THYROX_REACH_ROOT"] = str(base)
 os.environ["THYROX_WORKBENCH_AI_COURSE_NOTES"] = "banco-propio"
 os.environ["THYROX_WORKBENCH_DOCS"] = "banco-docs"
 
-from paths import reach  # noqa: E402
 from workbench import paths as wb  # noqa: E402
 
 print("\n1. El nombre corto del clon, con y sin prefijo")
