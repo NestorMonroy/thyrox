@@ -539,6 +539,30 @@ def declared_identifiers(tree):
                 if (isinstance(key, ast.Constant) and isinstance(key.value, str)
                         and key.value.isidentifier()):
                     yield key.value, key.lineno
+        elif _is_subparser_call(node):
+            yield from _subcommand_names(node)
+
+
+def _is_subparser_call(node) -> bool:
+    """``<subparsers>.add_parser('nombre', …)``: la declaración de un subcomando."""
+    return (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)
+            and node.func.attr == 'add_parser' and bool(node.args)
+            and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str))
+
+
+def _subcommand_names(node):
+    """El nombre de un subcomando y sus alias, con su línea.
+
+    Un subcomando es el nombre público de una operación —el mismo papel que el
+    de una función—, pero llega a ``add_parser`` como cadena y el recorrido de
+    nombres declarados no lo veía: ``hallazgo_ids.py acunar`` tenía su
+    manejador en inglés (``_cmd_mint``) y el nombre expuesto en español."""
+    yield node.args[0].value, node.lineno
+    for keyword in node.keywords:
+        if keyword.arg == 'aliases' and isinstance(keyword.value, (ast.List, ast.Tuple)):
+            for alias in keyword.value.elts:
+                if isinstance(alias, ast.Constant) and isinstance(alias.value, str):
+                    yield alias.value, alias.lineno
 
 
 def load_baseline(start: pathlib.Path | None = None) -> set[str]:
@@ -608,6 +632,17 @@ def main():
         return refused
 
     findings, measured = scan(collect(args.paths, start), canon_keys(start))
+
+    # Recorrer las raíces y no encontrar ningún .py no es un verde: con
+    # `IDENTIFIER_LANGUAGE_ROOTS=src,tests` (el separador es `:`) el gate
+    # publicaba «OK … (0 archivos medidos)». Una lista explícita sin .py sí es
+    # legítima —el commit no toca Python— y no llega aquí.
+    if not args.paths and measured == 0:
+        print(f'ERROR — ningún .py bajo las raíces {":".join(roots(start))} '
+              f'({ROOTS_VAR}, separadas por «:»). NO se emite un veredicto: un 0 '
+              'aquí no distinguiría «no hay español» de «no medí nada».',
+              file=sys.stderr)
+        return 2
 
     if args.write_baseline:
         lines = sorted({f'{path}::{name}' for path, name, _, _ in findings})
