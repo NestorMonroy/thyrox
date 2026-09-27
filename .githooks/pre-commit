@@ -147,7 +147,7 @@ if [[ ${#LINT[@]} -gt 0 ]]; then
     python3 "$GATES/check_lint_zero.py" --root "$ROOT" "${LINT[@]}" || CODE=1
 fi
 
-# El idioma de los identificadores, sobre los .py staged de src/ y tests/.
+# El idioma de los identificadores, sobre los .py y .ts staged de src/ y tests/.
 # El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
 # 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
 # deuda heredada está congelada en el baseline que declara el .env; uno nuevo
@@ -155,6 +155,14 @@ fi
 IDENTIFIERS=()
 for f in "${LINT[@]}"; do
     [[ "$f" == *.py ]] && IDENTIFIERS+=("$f")
+done
+# Y los .ts staged de src/ y tests/: el AST lo recorre el compilador del árbol
+# (`ts_declared_identifiers.ts`) y el léxico es el mismo. Sin `bun` rehúsa con
+# exit 2, que también bloquea.
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.ts|src/*.tsx|src/*.mts|tests/*.ts) [[ -f "$f" ]] && IDENTIFIERS+=("${f#"$ROOT"/}") ;;
+    esac
 done
 if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
     (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1

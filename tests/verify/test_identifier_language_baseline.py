@@ -51,9 +51,12 @@ def entorno_limpio():
     codigo.
     """
     env = dict(os.environ)
-    for var in ('IDENTIFIER_LANGUAGE_BASELINE', 'IDENTIFIER_LANGUAGE_ROOTS',
-                'THYROX_ENV_FILE'):
+    for var in ('IDENTIFIER_LANGUAGE_BASELINE', 'IDENTIFIER_LANGUAGE_ROOTS'):
         env.pop(var, None)
+    # Quitar la variable no basta: el `.env` de thyrox declara su propio
+    # baseline y se encuentra por ascenso. Declarado sin archivo detrás, el
+    # mecanismo no lee ningún `.env`.
+    env['THYROX_ENV_FILE'] = str(ROOT / '.env.absent-for-test')
     return env
 
 
