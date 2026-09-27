@@ -1,0 +1,6 @@
+import type { RuntimeHandles } from '@thyrox/app-host'
+import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
+import { setThemeConfigCallbacks, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
+import { runClaudeCode } from '@thyrox/cli'
+
+import { createRuntimeHandles } from '@thyrox/app-host/runtime/runtimeHandles.js'
