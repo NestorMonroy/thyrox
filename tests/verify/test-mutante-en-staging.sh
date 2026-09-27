@@ -87,7 +87,11 @@ SALIDA="$(cd "$TMP" && git init -q . && git -c user.email=t@t -c user.name=t com
 afirmar "un mutante en staging bloquea" 1 "$CODIGO"
 
 echo "== 7. el arbol vivo esta limpio (control del repo real) =="
-git ls-files -z '*.py' | head -z -n 400 | xargs -0 python3 "$GUION" >/dev/null 2>&1
+# El productor va en una sustitucion de proceso y no en el pipeline: con
+# `pipefail`, `head` cierra la tuberia antes de que `git ls-files` termine
+# y su SIGPIPE (141) pasaba por el veredicto del gate en cuanto el arbol
+# tuvo mas .py que el bufer de la tuberia.
+xargs -0 python3 "$GUION" >/dev/null 2>&1 < <(git ls-files -z '*.py' | head -z -n 400)
 afirmar "ningun .py versionado trae un mutante" 0 $?
 
 printf '\n%s de %s aserciones en verde\n' "$OK" "$((OK + KO))"
