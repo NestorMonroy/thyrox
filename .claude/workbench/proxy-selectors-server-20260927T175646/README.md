@@ -96,6 +96,10 @@ apariciones nuevas, con las 196 pruebas del proxy en verde.
 - `/v1/models` porta `Ih`/`qv`. El orden (`opus46`, `sonnet45`, `haiku45` y
   el resto de `Ij` invertido) se resolvió en `chunk-t6pwageh.js`: en el
   extracto reflujado el nombre minificado `ace` colisiona con otro símbolo.
-- Anulaciones: las cinco reglas tumban cada una su caso. El atajo de
-  «upstream anthropic» no discriminaba hasta añadir un upstream anthropic
-  con lista propia: sin lista, la regla general ya lo cubría.
+- Anulaciones: las cinco reglas tumban cada una su caso. El upstream
+  anthropic ya existía y ya se probaba (cinco de los seis casos lo usaban);
+  lo que faltaba era un **caso de prueba**: un upstream anthropic que declara
+  su propia lista `models`. Sin esa lista, la regla general (`Nv` sin lista
+  sirve todo) daba el mismo resultado que el atajo «anthropic anuncia todo»,
+  así que retirar el atajo no cambiaba nada. Con la lista, sólo el atajo
+  explica que se anuncien las cuatro familias.
