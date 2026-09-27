@@ -1,0 +1,14 @@
+base	44 pass, 0 fail	—
+deactivated	43 pass, 1 fail	checkFallbackError marks deactivated accounts as permanent auth failures
+credits-gate	43 pass, 1 fail	checkFallbackError keeps API-key 429 exhausted-credit text on the resilience cooldown path
+daily-quota	41 pass, 3 fail	checkFallbackError locks model until tomorrow for non-429 daily quota exhaustion | #6638: checkFallbackError routes API-key 429 'daily quota' text as quota_exhausted | checkFallbackError preserves OAuth 429 daily quota semantics
+header-hint	42 pass, 2 fail	checkFallbackError honors Retry-After header for rate limits | checkFallbackError honors x-ratelimit-reset for transient 5xx errors
+route-403	42 pass, 2 fail	route-restriction 403 does NOT cool down the connection | case-insensitive match on the route-restriction phrase
+apikey-403	43 pass, 1 fail	un 403 de clave de API enfría con retroceso y culpa a la credencial
+text-rule	42 pass, 2 fail	#6638: checkFallbackError classifies API-key 429 explicit quota text as quota_exhausted | checkFallbackError classifies hour quota errors correctly
+bad-credential-guard	43 pass, 1 fail	un 400 que culpa a la credencial no pasa por acceso al modelo aunque nombre el modelo
+structured-code	43 pass, 1 fail	checkFallbackError still honors structured model_not_found even with credential-like text
+supervisor-hint	42 pass, 2 fail	G-02: X-Omni-Fallback-Hint connection_cooldown on 503 returns 5s cooldown + skipProviderBreaker | G-02: X-Omni-Fallback-Hint connection_cooldown header lookup is case-insensitive (lowercase header key)
+oauth-profile	42 pass, 2 fail	checkFallbackError preserves OAuth 429 exhausted-credit semantics | checkFallbackError classifies hour quota errors correctly
+backoff-increment	42 pass, 2 fail	checkFallbackError: backward compatible without model param | checkFallbackError: transient errors now apply exponential backoff
+model-retired	42 pass, 2 fail	checkFallbackError locks a deprecated Gemini model for 24h, not a short backoff | checkFallbackError locks an end-of-life model (410) for 24h too

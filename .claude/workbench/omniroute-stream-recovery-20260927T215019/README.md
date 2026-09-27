@@ -105,3 +105,28 @@ Dos variantes (`drop-queue` y `retire-on-429`) dejan una promesa sin
 resolver. `bun test` no las cortaba con su propio plazo, así que el corredor
 giraba hasta el límite de 300 s de `annul_parallel`. De ahí el plazo
 configurable del mecanismo, en su propio commit.
+
+## Enfriamiento por credencial: `checkFallbackError`
+
+- `accountCooldown.ts`: el núcleo de `checkFallbackError` de la referencia
+  (`accountFallback.ts` con sus módulos de reglas, pistas de reintento y
+  acceso al modelo). La categoría del proveedor la da `traitsOf`, y sin
+  rasgos cuenta como clave de API. No se portan los módulos propios de un
+  proveedor: sus textos caen en las reglas generales (cabecera del módulo).
+- Casos de `account-fallback-service.test.ts`, `rate-limit-enhanced.test.ts`,
+  `gemini-deprecated-model-lockout.test.ts` y
+  `account-fallback-route-restriction-403.test.ts`
+  (`proxyAccountCooldown.test.ts`), más dos propios.
+
+Anulaciones: 13 de 13 (`probes/annul-account-cooldown.tsv`). En la primera
+pasada cinco no discriminaban:
+- `route-403`, `model-retired` y `backoff-increment`: sus casos estaban en
+  otros archivos de la referencia, y se portaron.
+- `apikey-403`: ningún caso de la referencia separa el 403 de clave de API
+  del 403 por estado.
+- `bad-credential-guard`: el texto del caso de la referencia («Invalid API
+  key provided for model gpt-4o») no casa con ningún patrón de acceso al
+  modelo, así que la guarda nunca decide ahí.
+
+Para estas dos últimas se añadieron casos propios: un 403 genérico con clave
+de API, y un 400 que casa a la vez con credencial y con acceso al modelo.

@@ -1,0 +1,13 @@
+deactivated	s/if (isAccountDeactivated(errorStr, options.bannedSignals)) {/if (false) {/
+credits-gate	s/if (useQuotaSignal \&\& isCreditsExhausted(errorStr)) {/if (isCreditsExhausted(errorStr)) {/
+daily-quota	s/if (useQuotaSignal \&\& isDailyQuotaExhausted(errorStr)) {/if (false) {/
+header-hint	s/const resetAt = resetFromHeaders(headers)$/const resetAt = null as number | null/
+route-403	s/errorStr.toLowerCase().includes('not authorized for this route')/false/
+apikey-403	s/if (status === HTTP.FORBIDDEN \&\& provider \&\& categoryOf(provider, options) === 'apikey'/if (false/
+text-rule	s/: matchErrorRuleByText(errorStr) ?? matchErrorRuleByStatus(status)/: matchErrorRuleByStatus(status)/
+bad-credential-guard	s/const modelAccessText = !badCredential \&\& /const modelAccessText = /
+structured-code	s/MODEL_ACCESS_DENIED_CODES.has(code) || //
+supervisor-hint	s/=== 'connection_cooldown'/=== 'never'/
+oauth-profile	s/=== 'oauth' ? 'oauth' : 'apikey'/=== 'never' ? 'oauth' : 'apikey'/
+backoff-increment	s/newBackoffLevel: Math.min(backoffLevel + 1, maxBackoffSteps)/newBackoffLevel: backoffLevel/
+model-retired	s/if ((status === HTTP.NOT_FOUND || status === HTTP.GONE) \&\& MODEL_PERMANENTLY/if (false \&\& MODEL_PERMANENTLY/
