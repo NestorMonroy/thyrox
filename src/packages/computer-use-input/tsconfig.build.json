@@ -17,7 +17,7 @@
     "rootDir": "src",
     "outDir": "dist",
     "paths": {
-      "@ant/claude-for-chrome-mcp": [
+      "@ant/computer-use-input": [
         "./src/index.ts"
       ]
     }
@@ -33,6 +33,6 @@
     "**/*.spec.tsx"
   ],
   "files": [
-    "../../../types/build-globals.d.ts"
+    "../../types/build-globals.d.ts"
   ]
 }

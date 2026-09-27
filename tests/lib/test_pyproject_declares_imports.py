@@ -10,8 +10,9 @@ Cuenta como declarado un paquete de ``[project.dependencies]`` o de
 cualquier grupo de ``[dependency-groups]`` (los opcionales van en grupo).
 
 Excluidos, con su razón:
-- ``src/packages/@ant/``: código vendorizado de otra lengua de trabajo (el
-  puente win32 de computer-use), no la mitad Python de thyrox;
+- ``src/packages/computer-use-mcp/src/legacy/win32/``: código vendorizado de
+  otra lengua de trabajo (el puente win32 de computer-use), no la mitad
+  Python de thyrox;
 - ``hook_error_log``: módulo del consumidor que ``drain_spool.py`` recibe
   por ``sys.path`` y rehúsa con mensaje propio si falta.
 
@@ -31,7 +32,7 @@ from paths import reach  # noqa: E402
 
 ROOT = reach.thyrox_root()
 SRC = ROOT / "src"
-VENDORED = SRC / "packages" / "@ant"
+VENDORED = SRC / "packages" / "computer-use-mcp" / "src" / "legacy" / "win32"
 INJECTED = {"hook_error_log"}
 #: Nombre de import → nombre de distribución, cuando difieren.
 DISTRIBUTION = {"spacy_lookups_data": "spacy-lookups-data", "PIL": "pillow"}

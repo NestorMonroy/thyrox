@@ -36,8 +36,9 @@
  * árbol con dos premisas, las dos falsas al medirlas:
  *
  *   — «no es miembro del workspace». El `package.json` de la RAÍZ —que es el
- *     manifiesto que bun lee— declara `src/packages/*` y `src/packages/@ant/*`.
- *     Lo son, y por el manifiesto autoritativo.
+ *     manifiesto que bun lee— declaraba `src/packages/*` y `src/packages/@ant/*`.
+ *     Lo eran, y por el manifiesto autoritativo. Desde 2026-09-27 los cinco
+ *     viven en `src/packages/<n>` y el primer glob basta (ver caso 3).
  *   — el conjunto se componía del `package.json` INTERIOR (`src/packages/`),
  *     cuya lista son nombres PLANOS (`agent`, `computer-use-mcp`). Contra un
  *     `rel` de `@ant/computer-use-mcp` da `false` siempre. No era un control
@@ -146,9 +147,14 @@ describe('identidad del paquete', () => {
    * que `bun.lock` indexaba los diez como workspaces distintos y era fiel: el
    * defecto estaba en el arbol, no en el manifiesto.
    *
-   * Cual de las dos copias es la fiel lo decide la FUENTE, no el board: ccnmt
-   * pone los cinco en `packages/@ant/<n>` y ninguno en la ruta plana, y su
-   * `@ant/ink` declara `"name": "@anthropic/ink"` con 772 importadores.
+   * Cual de las dos copias es la fiel lo decidio la FUENTE, no el board: ccnmt
+   * pone los cinco en `packages/@ant/<n>`, y su `@ant/ink` declara
+   * `"name": "@anthropic/ink"` con 772 importadores. Lo que se conserva de la
+   * fuente es el NOMBRE, no el directorio: por directiva del ejecutor
+   * 2026-09-27 los cinco viven en `src/packages/<n>` con sus nombres de la
+   * fuente intactos, y la raiz declara un solo glob. El directorio anidado
+   * obligaba a un segundo glob y quedaba fuera del manifiesto de
+   * `src/packages/`, cuya lista es de nombres planos.
    *
    * Metrica: basename del directorio de cada workspace.
    * Ciega a: dos copias con basename distinto (`ink` contra `ink-legacy`), que

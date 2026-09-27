@@ -42,6 +42,6 @@
     "**/*.spec.tsx"
   ],
   "files": [
-    "../../../types/build-globals.d.ts"
+    "../../types/build-globals.d.ts"
   ]
 }
