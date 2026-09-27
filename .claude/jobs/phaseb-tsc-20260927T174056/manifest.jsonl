@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd /home/user/thyrox && bunx tsc --noEmit -p tsconfig.json > /home/user/thyrox/.claude/workbench/env-rename-phase-b-20260927T173715/outputs/tsc.log 2>&1", "started_at": "2026-09-27T17:40:56+00:00"}

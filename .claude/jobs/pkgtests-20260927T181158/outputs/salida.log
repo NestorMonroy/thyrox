@@ -1,0 +1,65 @@
+run-task-pool: 9 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260927T181159
+  job-20260927T181159/job-001 pid 10722   cd /home/user/thyrox/src/packages/bridge && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-bridge.log 2>&1
+  job-20260927T181159/job-002 pid 10761   cd /home/user/thyrox/src/packages/mcp-runtime && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-mcp-runtime.log 2>&1
+  job-20260927T181159/job-003 pid 10817   cd /home/user/thyrox/src/packages/cli && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-cli.log 2>&1
+  job-20260927T181159/job-004 pid 10853   cd /home/user/thyrox/src/packages/repl && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-repl.log 2>&1
+  job-20260927T181159/job-005 pid 11040   cd /home/user/thyrox/src/packages/tool-registry && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-tool-registry.log 2>&1
+  job-20260927T181159/job-006 pid 11072   cd /home/user/thyrox/src/packages/agent && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-agent.log 2>&1
+  job-20260927T181159/job-007 pid 13606   cd /home/user/thyrox/src/packages/provider && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-provider.log 2>&1
+  job-20260927T181159/job-008 pid 16373   cd /home/user/thyrox/src/packages/memory && timeout 900 bun test </dev/null > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/pkg-memory.log 2>&1
+  job-20260927T181159/job-009 pid 17152   cd /home/user/thyrox && timeout 900 bunx tsc --noEmit -p tsconfig.json > /home/user/thyrox/.claude/workbench/proxy-selectors-server-20260927T175646/outputs/tsc.log 2>&1
+run-task-pool: lanzados 9 de 9; esperando en PRIMER PLANO (timeout 1000s)
+asentado: job-20260927T181159_job-001 -> OK (2 de 10)
+asentado: job-20260927T181159_job-002 -> OK (3 de 10)
+asentado: job-20260927T181159_job-004 -> OK (4 de 10)
+asentado: job-20260927T181159_job-005 -> OK (5 de 10)
+asentado: job-20260927T181159_job-007 -> OK (6 de 10)
+asentado: job-20260927T181159_job-008 -> OK (7 de 10)
+asentado: job-20260927T181159_job-006 -> OK (6 de 10)
+esperando: 8 de 10 asentados, 30s; vivos: job-20260927T181159_job-003 job-20260927T181159_job-009
+sonda job-20260927T181159_job-003: 10817 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-003: 10823 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-003: 10824 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-003: 10825 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-003: 10826 bun stdin=devnull(/dev/null) escritores=- estado=S cpu=2.43s
+sonda job-20260927T181159_job-003: 20481 ? stdin=unreadable(-) escritores=- estado=- cpu=-s
+sonda job-20260927T181159_job-009: 17152 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-009: 17157 time stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-009: 17159 bash stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-009: 17161 timeout stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-009: 17166 bunx stdin=devnull(/dev/null) escritores=- estado=S cpu=0.00s
+sonda job-20260927T181159_job-009: 17169 node stdin=devnull(/dev/null) escritores=- estado=R cpu=43.50s
+asentado: job-20260927T181159_job-003 -> OK (4 de 10)
+asentado: job-20260927T181159_job-009 -> OK (10 de 10)
+== 10 trabajos asentados ==
+OLVIDADO job-20260927T181159
+       | (vacío — no emitió nada)
+OK     job-20260927T181159_job-001 exit=0
+       | EXIT=0
+       memoria pico: 132168 KB (129 MB) · pared 0.78s
+OK     job-20260927T181159_job-002 exit=0
+       | EXIT=0
+       memoria pico: 222208 KB (217 MB) · pared 1.70s
+OK     job-20260927T181159_job-003 exit=0
+       | EXIT=0
+       memoria pico: 251940 KB (246 MB) · pared 66.48s
+OK     job-20260927T181159_job-004 exit=0
+       | EXIT=0
+       memoria pico: 216740 KB (212 MB) · pared 1.59s
+OK     job-20260927T181159_job-005 exit=0
+       | EXIT=0
+       memoria pico: 255408 KB (249 MB) · pared 7.98s
+OK     job-20260927T181159_job-006 exit=0
+       | EXIT=0
+       memoria pico: 258728 KB (253 MB) · pared 18.58s
+OK     job-20260927T181159_job-007 exit=0
+       | EXIT=0
+       memoria pico: 273956 KB (268 MB) · pared 5.13s
+OK     job-20260927T181159_job-008 exit=0
+       | EXIT=0
+       memoria pico: 87772 KB (86 MB) · pared 0.26s
+OK     job-20260927T181159_job-009 exit=2
+       | EXIT=2
+       memoria pico: 2396352 KB (2340 MB) · pared 51.00s
+salida distinta de 0: 1 (job-20260927T181159_job-009)
+__BG_EXIT__=0
