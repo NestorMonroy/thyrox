@@ -7,6 +7,9 @@
  * Requires: xrandr, scrot, xdotool, wmctrl (optional)
  */
 
+import { readFileSync, unlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type {
   AppInfo, AppsAPI, DisplayAPI, DisplayGeometry, InstalledApp,
   PrepareDisplayResult, RunningApp, ScreenshotAPI, ScreenshotResult,
@@ -241,38 +244,40 @@ export const apps: AppsAPI = {
 // ScreenshotAPI
 // ---------------------------------------------------------------------------
 
-const SCREENSHOT_PATH = '/tmp/cu-screenshot.png'
+let captureCount = 0
+
+/**
+ * Captura con `scrot` en un archivo propio bajo `tmpdir()` y lo devuelve en
+ * base64; el archivo se borra al leerlo. Es la forma del backend de macOS
+ * (`darwin.ts`, `captureAndResizeToBase64`): una ruta fija en `/tmp`
+ * ignoraba TMPDIR, la compartían dos capturas simultáneas, y si `scrot`
+ * fallaba se devolvía la captura ANTERIOR que seguía en disco.
+ */
+async function captureToBase64(scrotArgs: string[]): Promise<string | null> {
+  const path = join(tmpdir(), `cu-screenshot-${process.pid}-${Date.now()}-${captureCount++}.png`)
+  try {
+    await runAsync(['scrot', ...scrotArgs, '-o', path])
+    return Buffer.from(readFileSync(path)).toString('base64')
+  } catch {
+    return null
+  } finally {
+    try { unlinkSync(path) } catch { /* no llegó a escribirse */ }
+  }
+}
 
 export const screenshot: ScreenshotAPI = {
   async captureExcluding(_allowedBundleIds, _quality, _targetW, _targetH, _displayId): Promise<ScreenshotResult> {
-    try {
-      await runAsync(['scrot', '-o', SCREENSHOT_PATH])
-
-      // Read the file as base64
-      const file = Bun.file(SCREENSHOT_PATH)
-      const buffer = await file.arrayBuffer()
-      const base64 = Buffer.from(buffer).toString('base64')
-
-      // Get dimensions from display info
-      const size = display.getSize(_displayId)
-      return { base64, width: size.width, height: size.height }
-    } catch {
-      return { base64: '', width: 0, height: 0 }
-    }
+    const base64 = await captureToBase64([])
+    if (base64 === null) return { base64: '', width: 0, height: 0 }
+    // Get dimensions from display info
+    const size = display.getSize(_displayId)
+    return { base64, width: size.width, height: size.height }
   },
 
   async captureRegion(_allowedBundleIds, x, y, w, h, _outW, _outH, _quality, _displayId): Promise<ScreenshotResult> {
-    try {
-      // scrot -a x,y,w,h captures a specific region
-      await runAsync(['scrot', '-a', `${x},${y},${w},${h}`, '-o', SCREENSHOT_PATH])
-
-      const file = Bun.file(SCREENSHOT_PATH)
-      const buffer = await file.arrayBuffer()
-      const base64 = Buffer.from(buffer).toString('base64')
-
-      return { base64, width: w, height: h }
-    } catch {
-      return { base64: '', width: 0, height: 0 }
-    }
+    // scrot -a x,y,w,h captures a specific region
+    const base64 = await captureToBase64(['-a', `${x},${y},${w},${h}`])
+    if (base64 === null) return { base64: '', width: 0, height: 0 }
+    return { base64, width: w, height: h }
   },
 }
