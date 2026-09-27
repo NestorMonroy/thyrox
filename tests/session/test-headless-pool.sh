@@ -104,7 +104,7 @@ SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" 
 check "sin ejecutor: exit 2" "$CODE" "2"
 # El pool sólo corre `thyrox -p`: el nombre que permitía declarar `claude`
 # como ejecutor rehúsa entero y nombra el que lo reemplaza.
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "HEADLESS_POOL_CLAUDE retirada: exit 2" "$CODE" "2"
 check "HEADLESS_POOL_CLAUDE retirada: nombra HEADLESS_POOL_RUNNER" \
   "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /HEADLESS_POOL_RUNNER/{n++} END{print n+0}')" "1"
