@@ -1,4 +1,4 @@
-"""Gate: los githooks están activos en los cinco clones.
+"""Gate: los githooks están activos en el proveedor y en cada clon del roster.
 
 Cierra la tarea #21, y con ella la causa de raíz de :ref:`h-api-858`.
 
@@ -32,6 +32,18 @@ bit de ejecución de los archivos de ese directorio.
 un hook que exista y siempre salga 0; y a ``--no-verify``, que sigue siendo
 invisible en el árbol.
 
+Qué clones, y por qué dos cifras
+================================
+
+**Corregido 2026-09-27.** El gate recorría cinco nombres fijos con el prefijo
+``kaupamex-`` escrito en el código, y no medía al proveedor. Ahora el roster es
+el de ``paths.reach`` —declarado en ``THYROX_REACH_ROOTS`` o derivado de los
+hermanos— más el proveedor; sin roster rehúsa con exit 2 y sin cifra.
+
+Y publicaba «4 clones con los hooks inactivos» cuando incumplían 3: sumaba a
+los inactivos un clon que no existe en el árbol. Un clon AUSENTE no tiene los
+hooks inactivos, no está; se cuenta aparte y no bloquea ``--strict``.
+
 Uso::
 
     python3 check_githooks_activos.py            # reporte
@@ -44,18 +56,23 @@ import pathlib
 import subprocess
 import sys
 
-#: Los cinco clones hermanos. El superproyecto está ausente por decisión
-#: (`gitlink-bump-gate.md`), así que el árbol son estos y no un padre.
-ARBOL = pathlib.Path(os.environ.get('KAUPAMEX_ARBOL', '/home/user'))
-CLONES = ('api', 'db', 'docs', 'server', 'ui')
+from paths import reach  # noqa: E402
 
 #: Lo que `scripts/install-hooks.sh` fija en todos ellos.
 ESPERADO = '.githooks'
 
 
-def estado(clon):
+def roster(provider):
+    """(nombre, raíz) del proveedor y de cada clon del roster.
+
+    Lanza ``reach.ReachRootError`` si no hay roster: quien llama rehúsa."""
+    clones = [(reach.clone_name(r), reach.root(r)) for r in reach.reach_roots()]
+    return [(pathlib.Path(provider).name, pathlib.Path(provider))] + clones
+
+
+def estado(raiz):
     """(veredicto, detalle) para un clon. Nunca inventa un verde."""
-    raiz = ARBOL / f'kaupamex-{clon}'
+    raiz = pathlib.Path(raiz)
     if not (raiz / '.git').exists():
         return 'AUSENTE', 'no es un clon de git en este árbol'
 
@@ -81,21 +98,31 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--quiet', action='store_true', help='sólo el conteo')
     ap.add_argument('--strict', action='store_true', help='exit 1 si falta')
+    ap.add_argument('--provider', default=None,
+                    help='raíz del proveedor (por defecto, la de paths.reach)')
     args = ap.parse_args()
 
-    filas = [(c, *estado(c)) for c in CLONES]
-    malos = [f for f in filas if f[1] != 'OK']
+    try:
+        clones = roster(args.provider or reach.thyrox_root())
+    except reach.ReachRootError as error:
+        print(f'check-githooks-activos: REHÚSA — {error} NO se emite un conteo.',
+              file=sys.stderr)
+        return 2
+    filas = [(nombre, *estado(raiz)) for nombre, raiz in clones]
+    ausentes = [f for f in filas if f[1] == 'AUSENTE']
+    inactivos = [f for f in filas if f[1] not in ('OK', 'AUSENTE')]
 
     if args.quiet:
-        print(len(malos))
+        print(len(inactivos))
     else:
-        for clon, veredicto, detalle in filas:
+        for nombre, veredicto, detalle in filas:
             marca = 'OK  ' if veredicto == 'OK' else f'{veredicto:<9}'
-            print(f'  {marca} kaupamex-{clon:<7} {detalle}')
-        print(f'check-githooks-activos: {len(malos)} clon(es) con los hooks '
-              f'inactivos (alcance medido: {len(filas)} de {len(CLONES)} '
-              f'declarados)')
-    return 1 if (args.strict and malos) else 0
+            print(f'  {marca} {nombre:<18} {detalle}')
+        print(f'check-githooks-activos: {len(inactivos)} clon(es) con los hooks '
+              f'inactivos, {len(ausentes)} ausente(s) (alcance medido: '
+              f'{len(filas) - len(ausentes)} presente(s) de {len(filas)}, el '
+              f'proveedor incluido)')
+    return 1 if (args.strict and inactivos) else 0
 
 
 if __name__ == '__main__':
