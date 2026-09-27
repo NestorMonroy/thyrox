@@ -84,3 +84,18 @@ Los traductores nombran el formato de cable por su API —`Messages`
 y no por el producto: `check_product_word` rechaza «Claude» en el código de
 thyrox (decisión del ejecutor 2026-09-27), y el renombre por token dejó 0
 apariciones nuevas, con las 196 pruebas del proxy en verde.
+
+## `/v1/models` y el catálogo de familias
+
+- El catálogo de thyrox (`model/configs.ts`) tenía 13 familias; el
+  ejecutable 2.1.283 declara 18 en `CATALOG_ID_TO_KEY`. Faltaban `sonnet5`,
+  `opus5`, `opus55`, `fable5` y `fable51`: una lista de modelos construida
+  sobre él habría omitido justo los más nuevos. Se añadieron con los ids de
+  su `provider_ids`. Consumidores (suites de provider, agent, cli y repl):
+  0 fallos; tsc sin errores nuevos.
+- `/v1/models` porta `Ih`/`qv`. El orden (`opus46`, `sonnet45`, `haiku45` y
+  el resto de `Ij` invertido) se resolvió en `chunk-t6pwageh.js`: en el
+  extracto reflujado el nombre minificado `ace` colisiona con otro símbolo.
+- Anulaciones: las cinco reglas tumban cada una su caso. El atajo de
+  «upstream anthropic» no discriminaba hasta añadir un upstream anthropic
+  con lista propia: sin lista, la regla general ya lo cubría.

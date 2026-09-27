@@ -23,8 +23,8 @@
  *   administradas, la prueba de carga— no se porta: el proxy local no tiene
  *   usuarios ni almacén. Los límites de gasto ya existen sueltos
  *   (`./spendLimits.ts`) para cuando haya a quién aplicárselos.
- * - `/v1/models` (`qv`) y `/v1/chat/completions`: pendiente: el primero con
- *   el catálogo de modelos; el segundo con los traductores (tarea #76).
+ * - `/v1/models` (`qv`) vive en `./modelsList.ts`; `/v1/chat/completions`,
+ *   que la pasarela no sirve, en `./chatCompletions.ts`.
  * - `Mv` (upstream `raw`) está en `./upstreamForwarder.ts`; `jv` (cliente
  *   de proveedor por SDK, con su renovación de credencial ante 401/403)
  *   queda pendiente hasta que haya un upstream de nube que servir.
@@ -35,6 +35,7 @@ import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
 import type { CredentialSelector, ProxyCredential } from './credentialSelectors.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
+import { modelsResponse } from './modelsList.ts'
 import { type GatewayRoutingConfig, type GatewayUpstream, resolveUpstreamModel } from './upstreamRouting.ts'
 
 /** `fj`: las rutas de inferencia. */
@@ -214,6 +215,9 @@ async function route(config: ProxyServerConfig, request: Request, requestId: str
   if (access.error) return errorResponse(httpStatusOf(access.error), 'authentication_error', access.error.message, requestId)
   if (request.method === 'POST' && (INFERENCE_PATHS as readonly string[]).includes(pathname)) {
     return forwardAcrossUpstreams(config, request, pathname, requestId)
+  }
+  if (request.method === 'GET' && pathname === '/v1/models') {
+    return modelsResponse(config.routing.models, config.routing.upstreams, config.routing.auto_include_builtin_models)
   }
   if (request.method === 'POST' && pathname === CHAT_COMPLETIONS_PATH) {
     const body = await readJsonObject(request, requestId)

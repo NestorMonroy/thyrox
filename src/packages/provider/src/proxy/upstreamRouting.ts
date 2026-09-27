@@ -14,7 +14,13 @@ export type CatalogFamily = Record<string, string | null | undefined>
 export type ModelCatalog = Record<string, CatalogFamily>
 
 export type GatewayUpstream = { name: string; provider: string; models?: string[] }
-export type GatewayModelEntry = { id: string; upstream_model: Record<string, string | undefined> }
+export type GatewayModelEntry = {
+  id: string
+  upstream_model: Record<string, string | undefined>
+  /** Lo que `/v1/models` muestra como `display_name`; por defecto, el id. */
+  label?: string
+  description?: string
+}
 export type GatewayRoutingConfig = {
   upstreams: GatewayUpstream[]
   models: GatewayModelEntry[]
