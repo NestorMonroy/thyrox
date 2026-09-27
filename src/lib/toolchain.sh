@@ -1230,11 +1230,15 @@ function thyrox_toolchain_python_package_declared() {
     in_arr {
       line = $0
       while (match(line, /"[^"]+"/)) {
-        spec = substr(line, RSTART + 1, RLENGTH - 2)
+        # La posicion de la cadena se guarda ANTES del `match` del nombre,
+        # que sobrescribe RSTART/RLENGTH: avanzar con los del nombre volvia a
+        # casar la misma cadena y el bucle no terminaba.
+        at = RSTART; width = RLENGTH
+        spec = substr(line, at + 1, width - 2)
         # El nombre es el prefijo hasta el primer caracter que no le
         # pertenece: un marcador, un extra o un especificador de version.
         if (match(spec, /^[A-Za-z0-9._-]+/)) print substr(spec, RSTART, RLENGTH)
-        line = substr(line, RSTART + RLENGTH)
+        line = substr(line, at + width)
       }
       if ($0 ~ /\]/) in_arr = 0
     }

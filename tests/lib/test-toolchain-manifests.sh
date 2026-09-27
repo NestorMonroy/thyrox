@@ -174,4 +174,25 @@ else
   bad "esperaba exit 2 sin manifiesto, dio $declared_rc"
 fi
 
+# Caso 12 — un array de VARIOS elementos en una sola línea. El `match` interior
+# sobrescribía `RSTART`/`RLENGTH`, y el avance tomaba la posición del nombre
+# y no la de la cadena citada: la misma cadena volvía a casar y el `awk`
+# giraba para siempre. Lo destapó `lint = ["pyright", "ruff", "shellcheck-py"]`
+# (`eb9e3ae9`): `tests/run.sh`, sin tope por suite, quedó colgado aquí.
+# `timeout` convierte el cuelgue en exit 124 en vez de una espera infinita.
+oneline="$(mktemp -d "${TMPDIR:-/tmp}/manifiesto-una-linea-XXXXXX")"
+printf '[project]\ndependencies = ["alfa>=1", "beta"]\n\n[dependency-groups]\nlint = ["gamma", "delta-x", "epsilon"]\n' \
+  > "$oneline/pyproject.toml"
+for pkg in alfa beta gamma delta_x epsilon; do
+  THYROX_ROOT="$oneline" timeout 10 bash -c \
+    'source "$0" 2>/dev/null; thyrox_toolchain_python_package_declared "$1"' "$SUBJECT" "$pkg"
+  rc=$?
+  if [[ $rc -eq 0 ]]; then
+    ok "array de una línea: ve $pkg"
+  else
+    bad "array de una línea: $pkg dio $rc (124 = el awk no terminó)"
+  fi
+done
+rm -rf "$oneline"
+
 thyrox_summary
