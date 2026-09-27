@@ -23,6 +23,7 @@ import { readFileSync } from 'node:fs'
 export const OAUTH_BETA = 'oauth-2025-04-20'
 
 export type CredentialSource =
+  | 'proxy'
   | 'ANTHROPIC_AUTH_TOKEN'
   | 'THYROX_CODE_OAUTH_TOKEN'
   | 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR'
@@ -59,8 +60,37 @@ function tokenFromDescriptor(env: Env, readFd: ReadFd): { secret?: string; error
   }
 }
 
-/** El orden de `jc()` para el token y, al final, la llave de `Qf()`. */
+/**
+ * El marcador que ocupa el lugar de la credencial en un túnel por socket
+ * (`nRe` de 2.1.283). Quien lo lleva no tiene la credencial: la pone el proxy
+ * que escucha en el socket.
+ */
+export const SSH_PLACEHOLDER = 'ssh-placeholder'
+
+/**
+ * El socket del túnel, o `undefined` si no lo hay (`i1` de 2.1.283): hace
+ * falta `ANTHROPIC_UNIX_SOCKET`, ningún `ANTHROPIC_AUTH_TOKEN`, y exactamente
+ * una de las dos credenciales igual al marcador. Una credencial real no activa
+ * el túnel: viajaría por un socket que no la necesita.
+ */
+export function tunnelSocket(env: Env = process.env): string | undefined {
+  const socket = env.ANTHROPIC_UNIX_SOCKET?.trim()
+  if (!socket || env.ANTHROPIC_AUTH_TOKEN) return undefined
+  const oauth = env.THYROX_CODE_OAUTH_TOKEN
+  const apiKey = env.ANTHROPIC_API_KEY
+  const onlyOauthMarker = oauth === SSH_PLACEHOLDER && !apiKey
+  const onlyApiKeyMarker = apiKey === SSH_PLACEHOLDER && !oauth
+  return onlyOauthMarker || onlyApiKeyMarker ? socket : undefined
+}
+
+/**
+ * El orden de `jc()` para el token y, al final, la llave de `Qf()`. En
+ * túnel la fuente es `proxy` y no hay secreto: la credencial la pone quien
+ * escucha en el socket (`dt`/`at` de 2.1.283).
+ */
 export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc): Credential {
+  const tunnel = tunnelSocket(env)
+  if (tunnel) return { source: 'proxy', unixSocket: tunnel }
   const unixSocket = env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined
   const base = unixSocket ? { unixSocket } : {}
   const authToken = env.ANTHROPIC_AUTH_TOKEN?.trim()
