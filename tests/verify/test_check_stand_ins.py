@@ -129,5 +129,25 @@ rc, out = check_stand_ins.run([str(empty)])
 check("sin sustitutos rehúsa con 2", 2, rc)
 check("y sin conteo", False, "símbolo(s)" in out)
 
+print("\n4. Un homónimo DECLARADO no es un sustituto: mismo nombre, otro símbolo")
+# El gate compara nombres; un tipo con el mismo nombre y otra forma no se
+# retira importando el «original», porque cambiaría el significado. Se
+# declara junto al símbolo, con su razón, y el gate lo publica aparte.
+src = tree()
+stand_in = src / "packages" / "mcp" / "src" / "internal" / "pendingCrossPackageDeps.ts"
+text = stand_in.read_text(encoding="utf-8")
+stand_in.write_text(
+    text.replace("export type Shape", "// homonym Shape: la forma del SDK, no la del hermano\nexport type Shape")
+        .replace("export const getHome", "// homonym getHome:\nexport const getHome"),
+    encoding="utf-8")
+found = {s.symbol for s in check_stand_ins.shadowed(src)}
+check("el homónimo declarado con razón sale de los importables", False, "Shape" in found)
+check("una declaración sin razón no cuenta: sigue siendo importable", True, "getHome" in found)
+check("lo demás sigue igual", True, "isEnvDefinedFalsy" in found)
+homonyms = {(h.symbol, h.reason) for h in check_stand_ins.homonyms(src)}
+check("el homónimo se publica con su razón", {("Shape", "la forma del SDK, no la del hermano")}, homonyms)
+rc, out = check_stand_ins.run([str(src)])
+check("la salida lo cuenta aparte", True, "1 homónimo(s) declarado(s)" in out)
+
 print(f"\ntest_check_stand_ins: {PASS} ok, {FAIL} falla(s)")
 sys.exit(1 if FAIL else 0)

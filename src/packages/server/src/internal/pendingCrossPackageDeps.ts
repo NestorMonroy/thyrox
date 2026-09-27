@@ -123,26 +123,16 @@ export function requireAgentMessages(): {
 
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-// ---------------------------------------------------------------------
-// 2a. Reimplementación fiel — tool-registry/utils/lazySchema.js: mismo
-// patrón "memoiza el resultado de un factory de schema zod" que ya se usó
-// en `@thyrox/ide` y `@thyrox/headless-sdk` (el paquete `tool-registry` no
-// existe en este árbol).
-// ---------------------------------------------------------------------
-
-export function lazySchema<T>(factory: () => T): () => T {
-  let cached: T | undefined
-  return () => (cached ??= factory())
-}
 
 // ---------------------------------------------------------------------
-// 2b. Reimplementación fiel recortada — `agent/messagesMappers.ts`
+// 2. Reimplementación fiel recortada — `agent/messagesMappers.ts`
 // (ccnmt: packages/agent/messages/mappers.ts:100-116). Sólo se porta
 // `fromSDKCompactMetadata`, que es lo único que `remote/sdkMessageAdapter.ts`
 // consume; `toSDKCompactMetadata`/`toSDKMessages` no tienen consumidor en
 // este paquete y no se portan (Rule 2: declarado, no silencioso).
 // ---------------------------------------------------------------------
 
+// homonym CompactMetadata: la forma del mapper del SDK (preservedSegment, campos opcionales); la de `@thyrox/agent/loop/transcript` es la del transcript (trigger cerrado, postTokens, cumulativeDroppedTokens)
 export type CompactMetadata = {
   trigger?: string
   preTokens?: number

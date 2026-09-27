@@ -20,9 +20,15 @@ medir, y entonces no publica conteo.
 Uso:
     check_stand_ins [src]
 
+Un homónimo —mismo nombre, otro símbolo— no se retira importando el
+«original»: cambiaría el significado. Se declara junto al símbolo en el
+sustituto, con su razón (``// homonym <Símbolo>: <razón>``); el gate lo deja
+fuera de los importables y lo publica aparte. Una declaración sin razón no
+cuenta: callaría al gate sin un juicio escrito.
+
 *Métrica:* coincidencia de NOMBRE entre lo que el sustituto exporta y lo que
 exporta un archivo público de otro paquete.
-*Ciega a:* que los dos cuerpos hagan lo mismo —un homónimo con otra firma
+*Ciega a:* que los dos cuerpos hagan lo mismo —un homónimo no declarado
 cuenta igual, y retirarlo exige compararlos—, y a un original que exista con
 otro nombre.
 """
@@ -52,6 +58,19 @@ _LISTED = re.compile(r"^export\s+(?:type\s+)?\{([^}]*)\}", re.MULTILINE)
 
 
 _SPECIFIERS = re.compile(r"""(?:from|import)\s*\(?\s*['"]([^'"]+)['"]""")
+_HOMONYM = re.compile(r"^\s*//\s*homonym\s+([A-Za-z_$][\w$]*)\s*:[ \t]*(\S[^\n]*)?$", re.MULTILINE)
+
+
+@dataclass(frozen=True)
+class Homonym:
+    stand_in: Path
+    symbol: str
+    reason: str
+
+
+def declared_homonyms(text: str) -> dict[str, str]:
+    """Los homónimos declarados CON razón; sin ella no cuentan."""
+    return {m.group(1): m.group(2).strip() for m in _HOMONYM.finditer(text) if m.group(2)}
 
 
 @dataclass(frozen=True)
@@ -207,7 +226,9 @@ def shadowed(src: Path) -> list[Shadowed]:
     for stand_in in stand_ins(src):
         owners = [p for p in packages if stand_in.is_relative_to(p)]
         owner = max(owners, key=lambda p: len(p.parts)) if owners else None
-        for symbol in sorted(exported_names(stand_in.read_text(encoding="utf-8"))):
+        text = stand_in.read_text(encoding="utf-8")
+        declared = declared_homonyms(text)
+        for symbol in sorted(exported_names(text) - declared.keys()):
             candidates = [
                 Shadowed(stand_in, symbol, specifier, tuple(
                     m.relative_to(src).as_posix()
@@ -221,6 +242,13 @@ def shadowed(src: Path) -> list[Shadowed]:
     return found
 
 
+def homonyms(src: Path) -> list[Homonym]:
+    """Los homónimos declarados en cada sustituto, con su razón."""
+    return [Homonym(stand_in, symbol, reason)
+            for stand_in in stand_ins(Path(src).resolve())
+            for symbol, reason in sorted(declared_homonyms(stand_in.read_text(encoding="utf-8")).items())]
+
+
 def run(argv: list[str]) -> tuple[int, str]:
     src = Path(argv[0] if argv else "src").resolve()
     files = stand_ins(src) if src.is_dir() else []
@@ -231,7 +259,11 @@ def run(argv: list[str]) -> tuple[int, str]:
     lines = [f"  {s.stand_in.relative_to(src.parent)}: {s.symbol} -> {s.specifier}"
              + (f"  (ciclo: {' -> '.join(s.cycle)})" if s.cycle else "")
              for s in found]
-    lines.append(f"check_stand_ins: {len(found)} símbolo(s) con original exportado "
+    declared = homonyms(src)
+    lines += [f"  {h.stand_in.relative_to(src.parent)}: {h.symbol} es homónimo — {h.reason}"
+              for h in declared]
+    lines.append(f"check_stand_ins: {len(found)} símbolo(s) con original exportado, "
+                 f"{len(declared)} homónimo(s) declarado(s) "
                  f"(alcance medido: {symbols} símbolo(s) en {len(files)} archivo(s))")
     return (1 if found else 0), "\n".join(lines)
 
