@@ -44,13 +44,15 @@ import { compactMessagesBody } from './context/compactRequest.ts'
 import type { ContextWindowOf } from './context/contextManager.ts'
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
+import { type ComboRouter, isComboStrategy } from './combo/comboRouter.ts'
+import type { OrderableTarget } from './targetSorters.ts'
 import type { CredentialCooldown } from './resilience/credentialCooldown.ts'
 import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
 import type { RateLimitManager } from './resilience/rateLimitManager.ts'
 import { createRecoverableStream } from './resilience/streamRecovery.ts'
 import { callerScope } from './session/identity.ts'
 import { METADATA_KEYS } from './session/info.ts'
-import { type GatewayRoutingConfig, type GatewayUpstream, resolveUpstreamModel } from './upstreamRouting.ts'
+import { type GatewayRoutingConfig, type GatewayUpstream, modelEntryFor, resolveUpstreamModel } from './upstreamRouting.ts'
 
 /** `fj`: las rutas de inferencia. */
 export const INFERENCE_PATHS = ['/v1/messages', '/v1/messages/count_tokens'] as const
@@ -110,6 +112,12 @@ export type ProxyServerConfig = {
    * sin él quedan el entorno y las pistas por nombre.
    */
   contextCompaction?: { contextWindowOf?: ContextWindowOf }
+  /**
+   * Los combos (`./combo/comboRouter.ts`): la entrada de modelo que declara
+   * `strategy` prueba sus upstreams en el orden de esa estrategia, y cada
+   * desenlace queda en las métricas del combo.
+   */
+  combos?: ComboRouter
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -186,8 +194,14 @@ async function forwardBody(
   let unauthorized: Response | undefined
   let notFound: Response | undefined
   const discard = (r: Response | undefined) => void r?.body?.cancel().catch(() => {})
+  const combo = await comboPlan(config, model)
+  const startedAt = performance.now()
+  let attempts = 0
+  let lastTried: GatewayUpstream | undefined
+  const settle = (served: GatewayUpstream | undefined, success: boolean) =>
+    combo?.record(served, success, performance.now() - startedAt, attempts)
 
-  for (const upstream of config.routing.upstreams) {
+  for (const upstream of combo?.upstreams ?? config.routing.upstreams) {
     if (request.signal.aborted) break
     const resolved = resolveUpstreamModel(model, upstream, config.routing.models, config.routing.auto_include_builtin_models)
     if (!resolved.ok) {
@@ -195,6 +209,8 @@ async function forwardBody(
       continue
     }
     attempted = true
+    attempts += 1
+    lastTried = upstream
     // Por upstream, una metadata propia: la afinidad escribe en ella su espacio de nombres.
     const selection = { headers: request.headers, payload: source.payload, sourceFormat: source.sourceFormat, metadata: { ...enriched.optionsMetadata } }
     const report = (success: boolean, skipCooldown = false) =>
@@ -242,6 +258,7 @@ async function forwardBody(
         continue
       }
       for (const kept of [notImplemented, rateLimited, unauthorized, notFound]) discard(kept)
+      settle(upstream, response.status < 400)
       return recoverable(config, forwarded, response)
     } catch (error) {
       // Un cierre del cliente no es culpa de la credencial.
@@ -255,11 +272,45 @@ async function forwardBody(
     return errorResponse(499, 'api_error', 'client closed request', requestId)
   }
   if (!attempted) return errorResponse(400, 'invalid_request_error', reasons.join('; '), requestId)
+  settle(lastTried, false)
   if (rateLimited) { for (const r of [notImplemented, unauthorized, notFound]) discard(r); return rateLimited }
   if (unauthorized) { for (const r of [notImplemented, notFound]) discard(r); return unauthorized }
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
   return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
+}
+
+type ComboPlan = {
+  upstreams: GatewayUpstream[]
+  record: (served: GatewayUpstream | undefined, success: boolean, latencyMs: number, attempts: number) => void
+}
+
+/**
+ * Si la entrada del modelo declara una estrategia de combo, los upstreams que
+ * sirven el modelo en el orden de esa estrategia, seguidos de los que no (que
+ * sólo aportan su motivo de rechazo), y cómo registrar el desenlace.
+ */
+async function comboPlan(config: ProxyServerConfig, model: string): Promise<ComboPlan | undefined> {
+  const router = config.combos
+  const entry = router && modelEntryFor(model, config.routing.models)
+  const strategy = entry?.strategy
+  if (!router || !entry || !isComboStrategy(strategy)) return undefined
+  const byName = new Map<string, GatewayUpstream>()
+  const targets: OrderableTarget[] = []
+  for (const upstream of config.routing.upstreams) {
+    const resolved = resolveUpstreamModel(model, upstream, config.routing.models, config.routing.auto_include_builtin_models)
+    if (!resolved.ok) continue
+    byName.set(upstream.name, upstream)
+    targets.push({ executionKey: upstream.name, modelStr: resolved.model, provider: upstream.provider, weight: entry.weights?.[upstream.name] ?? 0 })
+  }
+  const ordered = await router.order(strategy, entry.id, targets)
+  return {
+    upstreams: [...ordered.map(t => byName.get(t.executionKey)!), ...config.routing.upstreams.filter(u => !byName.has(u.name))],
+    record: (served, success, latencyMs, attempts) =>
+      router.recordOutcome(strategy, entry.id, targets, targets.find(t => t.executionKey === served?.name) ?? null, {
+        success, latencyMs, fallbackCount: Math.max(0, attempts - 1),
+      }),
+  }
 }
 
 /** El cuerpo para un upstream: comprimido para la ventana de su modelo, salvo el conteo de tokens, que mide el cuerpo tal como es. */

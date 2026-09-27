@@ -20,6 +20,10 @@ export type GatewayModelEntry = {
   /** Lo que `/v1/models` muestra como `display_name`; por defecto, el id. */
   label?: string
   description?: string
+  /** El orden en que se prueban sus upstreams (`./combo/comboRouter.ts`); sin declarar, el de `upstreams`. */
+  strategy?: string
+  /** El peso de cada upstream, por nombre, para la estrategia `weighted`. */
+  weights?: Record<string, number>
 }
 export type GatewayRoutingConfig = {
   upstreams: GatewayUpstream[]

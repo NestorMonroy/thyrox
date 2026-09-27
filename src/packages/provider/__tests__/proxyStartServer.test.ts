@@ -295,6 +295,45 @@ describe('startProxyServer: compresión previa del contexto', () => {
   })
 })
 
+describe('startProxyServer: combos', () => {
+  function namedUpstream(name: string, hits: string[]) {
+    const server = Bun.serve({ port: 0, hostname: '127.0.0.1', fetch: () => { hits.push(name); return Response.json({ type: 'message' }) } })
+    stops.push(() => server.stop(true))
+    return `http://127.0.0.1:${server.port}`
+  }
+  const twoUpstreams = (hits: string[], strategy?: string) => ({
+    ...config('http://127.0.0.1:1'),
+    routing: {
+      upstreams: [{ name: 'a', provider: 'anthropic' }, { name: 'b', provider: 'anthropic' }],
+      models: [{ id: 'local-model', upstream_model: { a: 'm-a', b: 'm-b' }, ...(strategy && { strategy }) }],
+      auto_include_builtin_models: false,
+    },
+    endpoints: { a: { baseUrl: namedUpstream('a', hits) }, b: { baseUrl: namedUpstream('b', hits) } },
+    credentials: { a: [{ id: 'ka', attributes: { api_key: 'sk-a' } }], b: [{ id: 'kb', attributes: { api_key: 'sk-b' } }] },
+  })
+  const send = (url: string) => fetch(`${url}/v1/messages`, {
+    method: 'POST',
+    headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'local-model', messages: [] }),
+  }).then(r => r.text())
+
+  test('la estrategia declarada en la entrada del modelo rige el orden de los upstreams', async () => {
+    const hits: string[] = []
+    const proxy = startProxyServer(twoUpstreams(hits, 'round-robin'))
+    stops.push(() => proxy.stop())
+    for (let i = 0; i < 3; i++) await send(proxy.url)
+    expect(hits).toEqual(['a', 'b', 'a'])
+  })
+
+  test('el lote pegajoso del round-robin se declara en combos', async () => {
+    const hits: string[] = []
+    const proxy = startProxyServer({ ...twoUpstreams(hits, 'round-robin'), combos: { stickyRoundRobinLimit: 2 } })
+    stops.push(() => proxy.stop())
+    for (let i = 0; i < 4; i++) await send(proxy.url)
+    expect(hits).toEqual(['a', 'a', 'b', 'b'])
+  })
+})
+
 describe('startProxyServer sin claves locales', () => {
   test('rehúsa arrancar abierto: las credenciales del upstream quedarían al alcance de cualquier proceso', () => {
     expect(() => startProxyServer({ ...config('http://127.0.0.1:1'), accessKeys: [] })).toThrow(/clave/)

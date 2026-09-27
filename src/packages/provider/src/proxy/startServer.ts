@@ -28,6 +28,7 @@ import {
   WeightedRoundRobinSelector,
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
+import { ComboRouter } from './combo/comboRouter.ts'
 import { CredentialCooldown } from './resilience/credentialCooldown.ts'
 import type { ProviderTraits } from './resilience/errorClassifier.ts'
 import { RateLimitManager, type RateLimitQueueSettings } from './resilience/rateLimitManager.ts'
@@ -70,6 +71,12 @@ export type ProxyStartConfig = {
    * en las pistas por nombre. Sin declarar, apagada.
    */
   contextCompaction?: { windows?: Record<string, number> }
+  /**
+   * Los combos: la estrategia la declara cada entrada de `routing.models`.
+   * Aquí sólo el lote del round-robin, cuántos aciertos seguidos sirve un
+   * upstream antes de rotar (1 por defecto).
+   */
+  combos?: { stickyRoundRobinLimit?: number }
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -131,6 +138,10 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
       ? undefined
       : new CredentialCooldown({ traitsOf: provider => config.providerTraits?.[provider], bannedSignals: config.cooldown?.bannedSignals }),
     contextCompaction: config.contextCompaction && { contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model] },
+    combos: new ComboRouter({
+      contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model],
+      stickyRoundRobinLimit: config.combos?.stickyRoundRobinLimit,
+    }),
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,
