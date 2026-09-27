@@ -1,0 +1,86 @@
+/**
+ * Arranque del proxy local: une el control de acceso (`./access.ts`), el
+ * enrutamiento y la conmutación (`./server.ts`), el selector de
+ * credenciales (`./credentialSelectors.ts`) y el reenvío HTTP propio
+ * (`./upstreamForwarder.ts`) en un `Bun.serve`.
+ *
+ * Sólo escucha en loopback, y la razón es de thyrox: el proxy lleva las
+ * credenciales de sus upstreams, y escuchar fuera de la máquina las
+ * prestaría a la red. Nada de este módulo carga, invoca ni necesita Mensajes
+ * Code ni su ejecutable: `isLoopbackListenHost` es código propio
+ * (`./netGuards.ts`). La pasarela del ejecutable 2.1.283 (`$_`) se leyó como
+ * referencia de diseño, igual que CLIProxyAPI; ninguna de las dos está
+ * instalada ni hace falta. Divergencias respecto de esa referencia:
+ * - La pasarela acepta otro host si declara `public_url`; el proxy local
+ *   no tiene público al que servir, así que no hay excepción.
+ * - La pasarela valida las `base_url` al cargar su configuración; aquí se
+ *   validan al arrancar y otra vez en cada reenvío.
+ * - Sin claves locales la pasarela sirve abierta (`AccessManager` vacío);
+ *   el proxy local rehúsa: lleva las credenciales de sus upstreams, y
+ *   abierto las prestaría a cualquier proceso de la máquina.
+ */
+import { AccessManager, createConfigApiKeyProvider } from './access.ts'
+import {
+  type CredentialSelector,
+  FillFirstSelector,
+  type ProxyCredential,
+  RoundRobinSelector,
+  WeightedRoundRobinSelector,
+} from './credentialSelectors.ts'
+import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
+import { createProxyHandler } from './server.ts'
+import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
+import type { GatewayRoutingConfig } from './upstreamRouting.ts'
+
+export type SelectorName = 'fill-first' | 'round-robin' | 'weighted-round-robin'
+
+export type ProxyStartConfig = {
+  host: string
+  port: number
+  accessKeys: readonly string[]
+  routing: GatewayRoutingConfig
+  endpoints: Record<string, RawUpstreamEndpoint | undefined>
+  credentials: Record<string, ProxyCredential[] | undefined>
+  selector: SelectorName
+  version: string
+  firstByteTimeoutMs?: number
+  env?: Record<string, string | undefined>
+}
+
+export type RunningProxy = { url: string; stop: () => void }
+
+const SELECTORS: Record<SelectorName, () => CredentialSelector> = {
+  'fill-first': () => new FillFirstSelector(),
+  'round-robin': () => new RoundRobinSelector(),
+  'weighted-round-robin': () => new WeightedRoundRobinSelector(),
+}
+
+export function startProxyServer(config: ProxyStartConfig): RunningProxy {
+  if (!isLoopbackListenHost(config.host)) {
+    throw new Error(`el proxy local sólo escucha en loopback; "${config.host}" no lo es`)
+  }
+  const keyProvider = createConfigApiKeyProvider(config.accessKeys)
+  if (keyProvider === null) throw new Error('el proxy local exige al menos una clave de acceso')
+  for (const upstream of config.routing.upstreams) {
+    const endpoint = config.endpoints[upstream.name]
+    if (!endpoint) throw new Error(`el upstream "${upstream.name}" no declara endpoint`)
+    if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
+      throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
+    }
+  }
+  const handler = createProxyHandler({
+    access: new AccessManager([keyProvider]),
+    routing: config.routing,
+    credentials: config.credentials,
+    selector: SELECTORS[config.selector](),
+    forward: createHttpForwarder({
+      upstreams: config.endpoints,
+      version: config.version,
+      firstByteTimeoutMs: config.firstByteTimeoutMs,
+      env: config.env,
+    }),
+  })
+  const server = Bun.serve({ hostname: config.host, port: config.port, fetch: handler })
+  const shownHost = config.host.includes(':') && !config.host.startsWith('[') ? `[${config.host}]` : config.host
+  return { url: `http://${shownHost}:${server.port}`, stop: () => server.stop(true) }
+}

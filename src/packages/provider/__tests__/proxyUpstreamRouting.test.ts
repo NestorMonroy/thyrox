@@ -104,9 +104,10 @@ describe('resolveUpstreamModel (so)', () => {
   })
   test('el modo público oculta los nombres internos', () => {
     const u = { ...anthropic, models: ['claude-haiku-4-5'] }
-    expect(resolveUpstreamModel('claude-sonnet-5', u, [], true, true, catalog).error).toBe(
-      'model claude-sonnet-5 is not available on this upstream',
-    )
+    expect(resolveUpstreamModel('claude-sonnet-5', u, [], true, true, catalog)).toMatchObject({
+      ok: false,
+      error: 'model claude-sonnet-5 is not available on this upstream',
+    })
   })
 })
 

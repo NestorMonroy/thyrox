@@ -67,6 +67,7 @@
     "./packages/provider/src/gemini": "./src/packages/provider/src/gemini/index.ts",
     "./packages/provider/src/openai": "./src/packages/provider/src/openai/index.ts",
     "./packages/provider/src/policyLimits": "./src/packages/provider/src/policyLimits/index.ts",
+    "./packages/provider/src/proxy/translators": "./src/packages/provider/src/proxy/translators/index.ts",
     "./packages/server/src": "./src/packages/server/src/index.ts",
     "./packages/server/testing": "./src/packages/server/testing/index.ts",
     "./packages/shell/src": "./src/packages/shell/src/index.ts",
