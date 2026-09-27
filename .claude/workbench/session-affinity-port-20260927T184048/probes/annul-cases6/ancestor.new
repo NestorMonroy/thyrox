@@ -1,0 +1,1 @@
+    if (leaves.length < 1) return undefined

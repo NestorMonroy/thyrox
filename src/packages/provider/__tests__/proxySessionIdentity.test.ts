@@ -190,6 +190,12 @@ describe('normalizeToCanonicalUuid', () => {
 // El hash de `deriveId` es el sha256 de estos bytes: un byte distinto parte
 // la afinidad entre thyrox y cualquier proxy que derive con la referencia.
 describe('goMarshal', () => {
+  test('un mapa sale como lo reescribe json.Unmarshal+Marshal de Go', () => {
+    // Salida de Go 1.26 sobre la misma entrada (outputs/lcp-expected.jsonl del banco session-affinity-port).
+    const decoded = JSON.parse('{"\\ud83d\\ude00":1,"\\uffff":2,"b\\bf\\f":"\\ud800x","-0":-0,"n":-0.0}')
+    expect(goMarshal(decoded)).toBe('{"-0":-0,"b\\bf\\f":"\ufffdx","n":-0,"\uffff":2,"\u{1f600}":1}')
+  })
+
   const sha = (text: string) => createHash('sha256').update(text, 'utf8').digest('hex')
   const part = (kind: string, value: string, mime = '') =>
     goStruct([

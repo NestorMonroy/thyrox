@@ -1,0 +1,1 @@
+  if (allFinite(decoded)) raw = toBytes(goMarshal(decoded))

@@ -1,0 +1,1 @@
+      if (parts.length >= MAX_CANONICAL_PARTS_PER_TURN) {

@@ -1,0 +1,1 @@
+    if (normalized.role !== 'system' || !p.sampled) writeField(hash, p.digest)

@@ -1,0 +1,4 @@
+(fail) goMarshal > un mapa sale como lo reescribe json.Unmarshal+Marshal de Go [0.47ms]
+(fail) comparador LCP: diferencial contra Go > línea 20 (turns) [3.39ms]
+ 1037 pass
+ 2 fail

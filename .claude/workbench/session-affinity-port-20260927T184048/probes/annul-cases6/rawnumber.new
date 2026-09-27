@@ -1,0 +1,2 @@
+    const raw = toBytes(String(JSON.parse(value.raw)))
+    return [part({ kind: 'value', value: raw, originalSize: raw.length })]

@@ -1,0 +1,1 @@
+export const toBytes = (text: string) => text

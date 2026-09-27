@@ -161,3 +161,72 @@ Comprobación del paquete (`probes/phase4-checks.txt`, por `run-task-pool`):
 Pendiente declarado en la cabecera del módulo: `pickLCP` y la mitad LCP de
 `onResult`/`lookupAffinity` (tarea #90), y el clasificador que decide
 `skipCooldown` (tarea #91).
+
+## Fase 5a y 5b: turnos canónicos y comparador LCP (`lcp.go`)
+
+`src/proxy/session/rawJson.ts` (semántica de gjson: `Raw`, primera clave,
+`ForEach`/`Array()`), `canonicalTurns.ts` (`ExtractCanonicalTurns` a
+`FastTurnFingerprint` y `EnvironmentDigest`) y `lcpMatcher.ts`
+(`MerklePrefixMatcher`).
+
+**La prueba es diferencial contra el paquete de Go sin tocar.**
+`probes/lcpgo` importa `sdk/cliproxy/session` con un `replace` a
+`_references/cliproxyapi` (sus dependencias bajan a la caché de módulos de
+Go, fuera del árbol; `_references/` queda sin cambios) y reproduce un guion
+JSON por línea con un reloj virtual. `probes/lcp-script.ts` genera el guion:
+casos de extracción a mano, los escenarios de `lcp_test.go` y
+`lcp_lookup_test.go` que la aleatoriedad no alcanzaba (ambigüedad de
+compactación, linaje de compactaciones consecutivas, guarda de generación,
+consulta con dos credenciales) y 24 sesiones al azar con semilla fija
+(extensiones, bifurcaciones, compactaciones, cambios de sistema, saltos de
+reloj, retiros por generación, límites estrechos). Guion y salida de Go se
+copian a `__tests__/fixtures/`; `proxyLcpDifferential.test.ts` compara las
+1047 líneas, una prueba por línea.
+
+Los valores se guardan como cadenas de bytes (un carácter por byte): con eso
+las longitudes, los cortes de 12 KiB que parten un carácter, las expresiones
+(`\s` de Go es `[\t\n\f\r ]`; `(?i)k` casa U+212A) y el orden coinciden con
+los de `string` en Go. `goMarshal` corrigió tres diferencias con Go que el
+diferencial destapó: el orden de claves es por bytes UTF-8, un sustituto
+suelto sale como U+FFFD y `-0` conserva el signo (prueba con la salida de Go
+en `proxySessionIdentity.test.ts`).
+
+| Anulación (`probes/annul-cases6/`, corre `probes/annul-run6.sh`) | Caen |
+|---|---|
+| longitud en caracteres, no en bytes | 3 |
+| centro de la muestra desplazado | 3 |
+| sin quitar `<think>` | 1 |
+| sin enmascarar fechas y UUID del sistema | 113 |
+| `trim()` de JavaScript sobre bytes | 1 |
+| sin ordenar llamadas a herramienta | 1 |
+| tope de partes al doble en la lista | 1 |
+| sin descartar razonamiento | 2 |
+| sin reserializar el JSON | 6 |
+| digest de sistema muestreado en la huella | 1 |
+| sin inferir Responses por `instructions` | 1 |
+| número reserializado en vez de crudo | 1 |
+| última clave repetida en vez de la primera | 1 |
+| `ForEach` de un escalar vacío | 2 |
+| sin bifurcaciones | 101 |
+| sin compactaciones | 229 |
+| varias hojas de linaje aceptadas | 2 |
+| sin guarda de generación | 3 |
+| éxito tardío pisa la revinculación | 35 |
+| desalojo sólo por grupos | 45 |
+| sin preferir la trayectoria más larga | 20 |
+| grupos caducados siguen casando | 68 |
+| consulta sin ordenar credenciales | 1 |
+| prefijo mínimo 1 | 103 |
+| `String()` de un decimal sin formato `f` | 1 |
+| `(?i)k` sin U+212A | 1 |
+| `ToLower` de U+0130 con `toLowerCase` | 1 |
+| `TrimSpace` de rol con `trim()` | 1 |
+| claves por unidades UTF-16 | 2 |
+| sustituto suelto sin U+FFFD | 2 |
+| `-0` sin signo | 2 |
+
+Los recuentos de la tabla son de la última corrida de cada caso; los que se
+añadieron escenarios después se volvieron a correr (`rerun*.txt`).
+
+Pendiente de la fase 5c: `pickLCP` y la mitad LCP de `onResult` y
+`lookupAffinity` en el selector, y el `caller_scope` en el servidor.

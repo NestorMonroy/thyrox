@@ -1,0 +1,1 @@
+  if (rawGet(root, 'instructions') !== undefined) return 'openai-response'
