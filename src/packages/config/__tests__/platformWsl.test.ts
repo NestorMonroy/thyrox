@@ -13,7 +13,7 @@
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { getFsImplementation, setFsImplementation } from '@thyrox/storage/fsOperations.js'
-import { getPlatform } from '../platform.ts'
+import { getPlatform, resetPlatformDetectorForTesting } from '../platform.ts'
 
 const realPlatform = Object.getOwnPropertyDescriptor(process, 'platform')!
 const realFs = getFsImplementation()
@@ -32,7 +32,7 @@ function onLinuxWith(procVersion: string, env: Partial<Record<(typeof WSL_VARIAB
       path === '/proc/version' ? procVersion : (realFs.readFileSync as (p: string, o?: unknown) => string)(path, options)
     ) as typeof realFs.readFileSync,
   })
-  getPlatform.cache.clear()
+  resetPlatformDetectorForTesting()
 }
 
 afterEach(() => {
@@ -42,7 +42,7 @@ afterEach(() => {
   }
   Object.defineProperty(process, 'platform', realPlatform)
   setFsImplementation(realFs)
-  getPlatform.cache.clear()
+  resetPlatformDetectorForTesting()
 })
 
 describe('getPlatform — WSL frente a Linux, como la fuente', () => {

@@ -89,7 +89,7 @@ import { detectCurrentRepository } from '@thyrox/storage/detectRepository.js'
 import { logForDiagnosticsNoPII } from '@thyrox/local-observability/logging'
 import { initJetBrainsDetection } from '@thyrox/config/env/dynamic'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getPlatform } from '@thyrox/config/platform'
+import { getPlatform, primePlatform } from '@thyrox/config/platform'
 import { getCachedPowerShellPath, isPowerShellToolEnabled } from '@thyrox/shell'
 import { ConfigParseError } from '@thyrox/local-observability/errorHelpers.js'
 // showInvalidConfigDialog se importa dinámicamente en la ruta de error para no cargar React durante init
@@ -128,6 +128,11 @@ export const init = memoize(async (): Promise<void> => {
       duration_ms: Date.now() - configsStart,
     })
     profileCheckpoint('init_configs_enabled')
+
+    // Ceba el detector de plataforma: lee `/proc/version` de forma asíncrona
+    // antes de que nadie pregunte. 2.1.283 lo espera en el mismo punto, junto
+    // a los certificados de CA y mTLS (`init`, `Promise.all([...,pBo(),...])`).
+    await primePlatform()
 
     // Aplica sólo variables de entorno seguras antes del diálogo de confianza.
     // Las variables de entorno completas se aplican después de establecer la confianza.
