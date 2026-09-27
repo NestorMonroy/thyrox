@@ -1,0 +1,28 @@
+  ok    1 reemplaza un literal con $, { y .
+  ok    1 el contenido queda exacto
+  ok    2 la barra invertida de NEW no se procesa
+  ok    3 un OLD multilinea se reemplaza
+  ok    4 sin coincidencia sale 1
+  ok    4 el archivo queda intacto
+  ok    4 nombra las 0 coincidencias
+  ok    5 dos coincidencias sin --all salen 1
+  ok    5 y no tocan el archivo
+  ok    5 con --all sale 0
+  ok    5 con --all reemplaza las dos
+  ok    6 conserva los permisos
+  ok    6 conserva el inodo
+  ok    7 OLD vacio rehusa con exit 2
+  ok    7 y no publica conteo
+  ok    8 archivo ausente rehusa con exit 2
+  ok    9 sin salto final, sigue sin el
+  ok    10 sin temporales huerfanos
+  ok    11 publica el conteo con su archivo
+  ok    12 --old-file/--new-file reemplazan
+  ok    12 las comillas llegan intactas
+  ok    13 el salto interno se conserva, el final del heredoc no
+  ok    14 --old-file ausente rehusa con 2
+  ok    15 editarse a si mismo sale 0
+  ok    15 sin error de sintaxis en la cola
+
+25 casos: 25 ok, 0 fallos
+EXIT=0
