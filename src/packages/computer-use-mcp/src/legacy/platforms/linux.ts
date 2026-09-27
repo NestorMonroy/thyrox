@@ -11,6 +11,9 @@
  * so we pipe through ImageMagick `convert` to produce JPEG.
  */
 
+import { readFileSync, unlinkSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import type { Platform } from './index.js'
 import type {
   InputPlatform,
@@ -150,57 +153,82 @@ const input: InputPlatform = {
 // Screenshot — scrot → JPEG conversion
 // ---------------------------------------------------------------------------
 
-const SCREENSHOT_TMP = '/tmp/cu-screenshot-tmp.png'
-const SCREENSHOT_JPG = '/tmp/cu-screenshot.jpg'
+let captureCount = 0
+
+/**
+ * Un archivo propio por captura, bajo `tmpdir()`: la forma del backend de macOS
+ * (`computer-use-swift/src/backends/darwin.ts`). Las rutas fijas en `/tmp`
+ * ignoraban TMPDIR, las compartían dos capturas, y una conversión fallida
+ * devolvía el JPEG anterior.
+ */
+function capturePath(extension: string): string {
+  return join(tmpdir(), `cu-screenshot-${process.pid}-${Date.now()}-${captureCount++}.${extension}`)
+}
+
+function removeQuietly(...paths: string[]): void {
+  for (const path of paths) {
+    try { unlinkSync(path) } catch { /* no llegó a escribirse */ }
+  }
+}
+
+function base64Of(path: string): string {
+  return Buffer.from(readFileSync(path)).toString('base64')
+}
 
 async function pngToJpegBase64(pngPath: string, width: number, height: number): Promise<ScreenshotResult> {
-  // Try ImageMagick convert first
-  if (commandExists('convert')) {
-    await runAsync(['convert', pngPath, '-quality', '75', SCREENSHOT_JPG])
-    const file = Bun.file(SCREENSHOT_JPG)
-    const buffer = await file.arrayBuffer()
-    return { base64: Buffer.from(buffer).toString('base64'), width, height }
-  }
+  const jpgPath = capturePath('jpg')
+  try {
+    // Try ImageMagick convert first
+    if (commandExists('convert')) {
+      await runAsync(['convert', pngPath, '-quality', '75', jpgPath])
+      return { base64: base64Of(jpgPath), width, height }
+    }
 
-  // Fallback: ffmpeg
-  if (commandExists('ffmpeg')) {
-    await runAsync(['ffmpeg', '-y', '-i', pngPath, '-q:v', '5', SCREENSHOT_JPG])
-    const file = Bun.file(SCREENSHOT_JPG)
-    const buffer = await file.arrayBuffer()
-    return { base64: Buffer.from(buffer).toString('base64'), width, height }
-  }
+    // Fallback: ffmpeg
+    if (commandExists('ffmpeg')) {
+      await runAsync(['ffmpeg', '-y', '-i', pngPath, '-q:v', '5', jpgPath])
+      return { base64: base64Of(jpgPath), width, height }
+    }
 
-  // Last resort: return PNG base64 (caller should be aware)
-  const file = Bun.file(pngPath)
-  const buffer = await file.arrayBuffer()
-  return { base64: Buffer.from(buffer).toString('base64'), width, height }
+    // Last resort: return PNG base64 (caller should be aware)
+    return { base64: base64Of(pngPath), width, height }
+  } finally {
+    removeQuietly(jpgPath)
+  }
 }
 
 const screenshot: ScreenshotPlatform = {
   async captureScreen(displayId) {
+    const pngPath = capturePath('png')
     try {
-      await runAsync(['scrot', '-o', SCREENSHOT_TMP])
+      await runAsync(['scrot', '-o', pngPath])
       const size = display.getSize(displayId)
-      return pngToJpegBase64(SCREENSHOT_TMP, size.width, size.height)
+      // `await`: sin él, un rechazo de la conversión escapa de este `catch`.
+      return await pngToJpegBase64(pngPath, size.width, size.height)
     } catch {
       return { base64: '', width: 0, height: 0 }
+    } finally {
+      removeQuietly(pngPath)
     }
   },
 
   async captureRegion(x, y, w, h) {
+    const pngPath = capturePath('png')
     try {
-      await runAsync(['scrot', '-a', `${x},${y},${w},${h}`, '-o', SCREENSHOT_TMP])
-      return pngToJpegBase64(SCREENSHOT_TMP, w, h)
+      await runAsync(['scrot', '-a', `${x},${y},${w},${h}`, '-o', pngPath])
+      return await pngToJpegBase64(pngPath, w, h)
     } catch {
       return { base64: '', width: w, height: h }
+    } finally {
+      removeQuietly(pngPath)
     }
   },
 
   async captureWindow(hwnd) {
+    const jpgPath = capturePath('jpg')
     try {
       // Use xdotool to get window geometry, then import (ImageMagick) to capture
       if (commandExists('import')) {
-        const jpgPath = '/tmp/cu-window-capture.jpg'
         await runAsync(['import', '-window', hwnd, '-quality', '75', jpgPath])
 
         // Get dimensions from xdotool
@@ -210,13 +238,13 @@ const screenshot: ScreenshotPlatform = {
         const width = wMatch ? Number(wMatch[1]) : 0
         const height = hMatch ? Number(hMatch[1]) : 0
 
-        const file = Bun.file(jpgPath)
-        const buffer = await file.arrayBuffer()
-        return { base64: Buffer.from(buffer).toString('base64'), width, height }
+        return { base64: base64Of(jpgPath), width, height }
       }
       return null
     } catch {
       return null
+    } finally {
+      removeQuietly(jpgPath)
     }
   },
 }
