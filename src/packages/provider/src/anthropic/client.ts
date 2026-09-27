@@ -4,7 +4,9 @@
  * type-system bypass for SDK-version compatibility shims.
  */
 import Anthropic, { type ClientOptions } from '@anthropic-ai/sdk'
+import { getAgentContext } from '@thyrox/agent/agentContext.js'
 import { getAnthropicAuthProvider } from '../auth.js'
+import { type AgentIdentity, agentIdentityHeaders } from './agentIdentityHeaders.ts'
 import { getProviderHostBindings } from '../host.js'
 import { getProviderNetworkLayer } from '../network.js'
 import { getClientPlatform } from '../systemConstants.js'
@@ -71,6 +73,7 @@ export async function getAnthropicClient({
   fetchOverride,
   source,
   signal: _signal,
+  agentContext,
 }: {
   apiKey?: string
   maxRetries: number
@@ -78,6 +81,8 @@ export async function getAnthropicClient({
   fetchOverride?: ClientOptions['fetch']
   source?: string
   signal?: AbortSignal
+  /** Quién hace la petición; por defecto, el contexto de agente en curso. */
+  agentContext?: AgentIdentity
 }): Promise<Anthropic> {
   const authProvider = getAnthropicAuthProvider()
   const networkLayer = getProviderNetworkLayer()
@@ -111,6 +116,7 @@ export async function getAnthropicClient({
       : {}),
     // SDK consumers can identify their app/library for backend analytics
     ...(clientApp ? { 'x-client-app': clientApp } : {}),
+    ...agentIdentityHeaders(agentContext ?? getAgentContext()),
   }
 
   // Log API client configuration for HFI debugging

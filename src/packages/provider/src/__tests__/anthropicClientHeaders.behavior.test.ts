@@ -56,6 +56,10 @@ describe('anthropic/client.ts headers (ant bx 1984.js parity)', () => {
     )
   })
 
+  test('un subagente se identifica con agentIdentityHeaders, y por defecto con el contexto en curso', () => {
+    expect(source).toMatch(/\.\.\.agentIdentityHeaders\(agentContext \?\? getAgentContext\(\)\)/)
+  })
+
   test('SDK x-client-app header only set when THYROX_AGENT_SDK_CLIENT_APP env is present', () => {
     expect(source).toMatch(/THYROX_AGENT_SDK_CLIENT_APP/)
     expect(source).toMatch(
