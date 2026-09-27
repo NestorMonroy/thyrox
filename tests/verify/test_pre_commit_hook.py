@@ -39,8 +39,12 @@ HOOK_GATES = tuple(sorted(set(re.findall(r'\$GATES/([\w.-]+)', HOOK.read_text())
 
 
 def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
+    # Los verificadores de lint son del proveedor (`check_lint_zero.py`): el
+    # repo sintético no tiene `.venv`, y sin esta variable el gate rehusaba
+    # con exit 2 en el commit semilla y los doce casos caían en setUp.
     env = {**os.environ, 'GIT_AUTHOR_NAME': 't', 'GIT_AUTHOR_EMAIL': 't@t',
-           'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t'}
+           'GIT_COMMITTER_NAME': 't', 'GIT_COMMITTER_EMAIL': 't@t',
+           'THYROX_LINT_BIN_DIR': str(THYROX / '.venv' / 'bin')}
     return subprocess.run(['git', '-C', str(repo), *args],
                           capture_output=True, text=True, env=env)
 
@@ -68,7 +72,12 @@ class PreCommitHook(unittest.TestCase):
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
         git(self.repo, 'add', '-A')
-        self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+        # La semilla monta el fixture y no es lo que se prueba: sin
+        # `--no-verify` le pasaban todos los gates del hook, y el lint medía la
+        # copia parcial de `src/` (`declarations.py` importa `rules`, que no
+        # viaja). Los casos commitean después, con el hook activo.
+        seed = git(self.repo, 'commit', '-q', '--no-verify', '-m', 'seed')
+        self.assertEqual(seed.returncode, 0, seed.stdout + seed.stderr)
 
     def test_identity_that_differs_from_the_declared_one_blocks(self):
         """El fixture commitea como `t <t@t>`; el `.env` declara otra identidad."""
@@ -178,6 +187,40 @@ class PreCommitHook(unittest.TestCase):
         self.assertIn('verde falso', result.stderr)
         self.assertIn(PACKAGE_GATES[0], result.stderr)
 
+    def test_a_relative_import_into_a_sibling_package_blocks(self):
+        """Un paquete se entra por su `exports`, no por el `src/` del vecino.
+
+        `package_boundary.py` existía con su suite y nadie lo corría: ningún
+        flujo lo invocaba. Que lo haría fallar: que el hook no lo llame, o que
+        lo llame sin `--strict` y el cruce pase con exit 0.
+        """
+        for name in ('a', 'b'):
+            pkg = self.repo / 'src' / 'pk' / name
+            pkg.mkdir(parents=True)
+            (pkg / 'package.json').write_text(
+                '{"name": "@p/%s", "exports": {".": "./index.ts"}}\n' % name)
+        (self.repo / 'src' / 'pk' / 'a' / 'index.ts').write_text('export const a = 1\n')
+        (self.repo / 'src' / 'pk' / 'b' / 'index.ts').write_text(
+            "import { a } from '../a/index.ts'\nexport const b = a\n")
+        git(self.repo, 'add', 'src/pk')
+        result = git(self.repo, 'commit', '-q', '-m', 'cruce relativo')
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn('../a/index.ts', result.stdout + result.stderr)
+
+    def test_a_named_import_between_packages_passes(self):
+        """El control: el mismo acoplamiento por el nombre del paquete no es cruce."""
+        for name in ('a', 'b'):
+            pkg = self.repo / 'src' / 'pk' / name
+            pkg.mkdir(parents=True)
+            (pkg / 'package.json').write_text(
+                '{"name": "@p/%s", "exports": {".": "./index.ts"}}\n' % name)
+        (self.repo / 'src' / 'pk' / 'a' / 'index.ts').write_text('export const a = 1\n')
+        (self.repo / 'src' / 'pk' / 'b' / 'index.ts').write_text(
+            "import { a } from '@p/a'\nexport const b = a\n")
+        git(self.repo, 'add', 'src/pk')
+        result = git(self.repo, 'commit', '-q', '-m', 'por nombre')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_el_clon_real_lo_tiene_activado(self):
         """`core.hooksPath` no se versiona: se comprueba que este clon lo fijo."""
         configured = git(THYROX, 'config', 'core.hooksPath').stdout.strip()
@@ -247,7 +290,12 @@ class PreCommitReconcilesBoard(unittest.TestCase):
         git(self.repo, 'init', '-q')
         git(self.repo, 'config', 'core.hooksPath', '.githooks')
         git(self.repo, 'add', '-A')
-        self.assertEqual(git(self.repo, 'commit', '-q', '-m', 'seed').returncode, 0)
+        # La semilla monta el fixture y no es lo que se prueba: sin
+        # `--no-verify` le pasaban todos los gates del hook, y el lint medía la
+        # copia parcial de `src/` (`declarations.py` importa `rules`, que no
+        # viaja). Los casos commitean después, con el hook activo.
+        seed = git(self.repo, 'commit', '-q', '--no-verify', '-m', 'seed')
+        self.assertEqual(seed.returncode, 0, seed.stdout + seed.stderr)
 
     def _row_of_commit(self, ref='HEAD'):
         """La fila tal como quedo DENTRO del commit, no en el disco."""

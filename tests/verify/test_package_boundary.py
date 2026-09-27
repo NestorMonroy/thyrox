@@ -209,6 +209,31 @@ with tempfile.TemporaryDirectory() as tmp:
     check("control — sin package.json vecino, ya no es cruce de paquete",
           0, len(package_boundary.scan(root).crossings))
 
+print("\n8. Los paquetes anidados se miden: la raíz es src/, no src/packages")
+# Medido 2026-09-27 sobre thyrox: con `src` como raíz el gate veía 6 paquetes
+# —los hijos directos— y trataba al agregador `src/packages` como UNO solo que
+# contenía 37: un cruce entre dos de ellos salía «interno», y los cinco sueltos
+# (`src/paths`, …) no se medían entre sí. Un paquete es el `package.json` que
+# declara `exports`, y el archivo pertenece al más profundo que lo contiene.
+with tempfile.TemporaryDirectory() as tmp:
+    src = pathlib.Path(tmp) / "src"
+    for rel in ("packages/agent", "packages/@ant/ink", "paths"):
+        write(src / rel / "package.json", json.dumps({"name": rel, "exports": {".": "./index.ts"}}))
+    write(src / "packages" / "package.json", json.dumps({"name": "agregador", "workspaces": ["agent"]}))
+    write(src / "packages" / "agent" / "node_modules" / "dep" / "package.json",
+          json.dumps({"name": "dep", "exports": {".": "./x.js"}}))
+    ink = write(src / "packages" / "@ant" / "ink" / "a.ts", "import { x } from '../../agent/index.ts'\n")
+    write(src / "paths" / "b.ts", "import { y } from '../packages/agent/index.ts'\n")
+    found = sorted(package_boundary.packages(src))
+    check("descubre los anidados y los sueltos, no el agregador ni node_modules",
+          ["packages/@ant/ink", "packages/agent", "paths"], found)
+    check("un archivo pertenece al paquete más profundo", "packages/@ant/ink",
+          package_boundary.package_of(ink, src))
+    check("el cruce entre hermanos bajo el agregador se ve", "cruza-paquete",
+          package_boundary.classify(ink, "../../agent/index.ts", src))
+    check("y el del suelto al anidado también: dos cruces", 2,
+          len(package_boundary.scan(src).crossings))
+
 print("\n7. Rehúsa nombrando cuando la raíz no es una raíz de paquetes")
 with tempfile.TemporaryDirectory() as tmp:
     base = pathlib.Path(tmp)
