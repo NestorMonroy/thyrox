@@ -121,10 +121,14 @@ esac
 # eso duplicaria aqui el criterio que ya vive en el gate, y las dos copias
 # divergirian. Con la lista vacia el gate mide TODO, que es mas estricto y no
 # menos: un `--allow-empty` paga el emisor y el compilador.
+#
+# El filtro incluye R: un renombre prepara su ruta de destino (la que
+# `--name-only` imprime). Sin R, un commit hecho sólo de `git mv` llegaba con
+# la lista vacía y los gates que se disparan por ruta no corrían (4357a89f).
 STAGED=()
 while IFS= read -r line; do
     [[ -n "$line" ]] && STAGED+=("$ROOT/$line")
-done < <(git diff --cached --name-only --diff-filter=ACM 2>/dev/null || true)
+done < <(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
 
 bash "$GATE_AGENTS"    --strict "${STAGED[@]}" || CODE=1
 bash "$GATE_TYPECHECK" --strict "${STAGED[@]}" || CODE=1
