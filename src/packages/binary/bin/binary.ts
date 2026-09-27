@@ -13,6 +13,9 @@
  *   symbol <chunk> <nombre>... [--root R]
  *                        definiciones completas de cada nombre, por arbol
  *                        sintactico, siguiendo import/export entre chunks
+ *   literal <texto> [--root R]
+ *                        declaraciones que contienen el literal, con su
+ *                        chunk y su nombre: lo que se pasa luego a symbol
  *
  * Toda salida lleva su denominador. Un conteo sin el no es un resultado: con
  * el alcance oculto, un instrumento ciego y uno correcto publican la misma
@@ -26,120 +29,134 @@ import { writeCorpus } from '../src/corpus.ts'
 import { corpusVersion, freshness } from '../src/freshness.ts'
 import { reflow } from '../src/reflow.ts'
 import { resolveSymbol } from '../src/symbol.ts'
+import { scanLiteral } from '../src/declaration.ts'
 
-const BINARIO_DEFECTO = '/opt/claude-code/bin/claude'
-const CORPUS_DEFECTO = '_references/claude-code-bin'
+const DEFAULT_BINARY = '/opt/claude-code/bin/claude'
+const DEFAULT_CORPUS = '_references/claude-code-bin'
 const EXIT_GUARD = 2
 
 /** Muere con 2 y SIN emitir cifra: un 0 aqui seria un verde falso. */
-function guard(mensaje: string): never {
-  console.error(`ERROR — ${mensaje}. NO se emite un conteo.`)
+function guard(message: string): never {
+  console.error(`ERROR — ${message}. NO se emite un conteo.`)
   process.exit(EXIT_GUARD)
 }
 
-function opcion(argv: string[], nombre: string, defecto: string): string {
-  const i = argv.indexOf(nombre)
-  const valor = argv[i + 1]
-  return i >= 0 && valor ? valor : defecto
+function option(argv: string[], name: string, fallback: string): string {
+  const i = argv.indexOf(name)
+  const value = argv[i + 1]
+  return i >= 0 && value ? value : fallback
 }
 
-function abrir(argv: string[]) {
-  const ruta = opcion(argv, '--bin', BINARIO_DEFECTO)
-  if (!existsSync(ruta)) guard(`no existe el ejecutable ${ruta}`)
-  const bytes = readFileSync(ruta)
-  const seccion = findSection(bytes, '.bun')
-  if (seccion === null) guard(`${ruta} no declara una seccion .bun`)
-  const payload = bytes.subarray(seccion.offset + SECTION_HEADER, seccion.offset + seccion.size)
-  const version = deriveVersion(bytes.subarray(seccion.offset, seccion.offset + seccion.size))
+function open(argv: string[]) {
+  const binaryPath = option(argv, '--bin', DEFAULT_BINARY)
+  if (!existsSync(binaryPath)) guard(`no existe el ejecutable ${binaryPath}`)
+  const bytes = readFileSync(binaryPath)
+  const section = findSection(bytes, '.bun')
+  if (section === null) guard(`${binaryPath} no declara una seccion .bun`)
+  const payload = bytes.subarray(section.offset + SECTION_HEADER, section.offset + section.size)
+  const version = deriveVersion(bytes.subarray(section.offset, section.offset + section.size))
   if (version === null) guard('el payload no declara su version')
-  const tabla = readModuleTable(payload)
-  if (tabla === null) guard('no se pudo derivar la forma de la tabla de modulos')
-  return { ruta, bytes, seccion, payload, version, tabla }
+  const table = readModuleTable(payload)
+  if (table === null) guard('no se pudo derivar la forma de la tabla de modulos')
+  return { binaryPath, bytes, section, payload, version, table }
 }
 
 const argv = process.argv.slice(2)
-const orden = argv[0] ?? 'info'
+const command = argv[0] ?? 'info'
 
-if (orden === 'info') {
-  const { ruta, seccion, version, tabla } = abrir(argv)
-  const porTipo = new Map<string, number>()
-  for (const e of tabla.entries) {
+if (command === 'info') {
+  const { binaryPath, section, version, table } = open(argv)
+  const byKind = new Map<string, number>()
+  for (const e of table.entries) {
     const ext = e.name.match(/\.[a-z0-9]+$/i)?.[0] ?? '(sin)'
-    porTipo.set(ext, (porTipo.get(ext) ?? 0) + 1)
+    byKind.set(ext, (byKind.get(ext) ?? 0) + 1)
   }
-  const bytes = tabla.entries.reduce((n, e) => n + e.length, 0)
-  console.log(`ejecutable  ${ruta}`)
+  const bytes = table.entries.reduce((n, e) => n + e.length, 0)
+  console.log(`ejecutable  ${binaryPath}`)
   console.log(`version     ${version}   (declarada por el payload, no por --version)`)
-  console.log(`seccion     .bun en ${seccion.offset}, ${seccion.size} B`)
-  console.log(`tabla       ${tabla.entries.length} entradas, paso ${tabla.stride}, ${tabla.tableLength} B`)
+  console.log(`seccion     .bun en ${section.offset}, ${section.size} B`)
+  console.log(`tabla       ${table.entries.length} entradas, paso ${table.stride}, ${table.tableLength} B`)
   console.log(`contenido   ${bytes} B`)
-  console.log(`por tipo    ${[...porTipo].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`)
-} else if (orden === 'extract') {
-  const { bytes, payload, version, tabla } = abrir(argv)
-  const raiz = opcion(argv, '--out', CORPUS_DEFECTO)
-  const r = writeCorpus(raiz, version, payload, tabla.entries, bytes)
+  console.log(`por tipo    ${[...byKind].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ')}`)
+} else if (command === 'extract') {
+  const { bytes, payload, version, table } = open(argv)
+  const root = option(argv, '--out', DEFAULT_CORPUS)
+  const r = writeCorpus(root, version, payload, table.entries, bytes)
   console.log(`escrito ${r.files} archivo(s), ${r.bytes} B en ${r.root}`)
-  console.log(`(alcance medido: ${r.files} de ${tabla.entries.length} entradas de la tabla)`)
-} else if (orden === 'graph') {
-  const { payload, tabla, version } = abrir(argv)
-  const g = buildGraph(payload, tabla.entries)
+  console.log(`(alcance medido: ${r.files} de ${table.entries.length} entradas de la tabla)`)
+} else if (command === 'graph') {
+  const { payload, table, version } = open(argv)
+  const g = buildGraph(payload, table.entries)
   if (argv.includes('--json')) {
     console.log(JSON.stringify({ version, nodes: Object.fromEntries(g.nodes), edges: g.edges }, null, 2))
   } else {
-    const entrada = new Map<string, number>()
-    for (const [, ds] of g.nodes) for (const d of ds) entrada.set(d, (entrada.get(d) ?? 0) + 1)
+    const entry = new Map<string, number>()
+    for (const [, ds] of g.nodes) for (const d of ds) entry.set(d, (entry.get(d) ?? 0) + 1)
     console.log(`version ${version}: ${g.nodes.size} nodos, ${g.edges} aristas, ${g.dangling.length} destinos colgantes`)
-    console.log(`(alcance medido: ${g.nodes.size} de ${tabla.entries.length} entradas — solo los .js declaran imports)`)
+    console.log(`(alcance medido: ${g.nodes.size} de ${table.entries.length} entradas — solo los .js declaran imports)`)
     console.log('mas importados:')
-    for (const [n, d] of [...entrada].sort((a, b) => b[1] - a[1]).slice(0, 10)) console.log(`  ${String(d).padStart(4)}  ${n}`)
+    for (const [n, d] of [...entry].sort((a, b) => b[1] - a[1]).slice(0, 10)) console.log(`  ${String(d).padStart(4)}  ${n}`)
   }
-} else if (orden === 'freshness') {
-  const { version } = abrir(argv)
-  const f = freshness(opcion(argv, '--root', CORPUS_DEFECTO), version)
+} else if (command === 'freshness') {
+  const { version } = open(argv)
+  const f = freshness(option(argv, '--root', DEFAULT_CORPUS), version)
   console.log(f.reason)
   process.exit(f.stale ? 1 : 0)
-} else if (orden === 'reflow') {
-  const nombre = argv[1]
-  if (!nombre || nombre.startsWith('--')) guard('falta el nombre del modulo (ej. chunk-vw215j9f.js)')
+} else if (command === 'reflow') {
+  const name = argv[1]
+  if (!name || name.startsWith('--')) guard('falta el nombre del modulo (ej. chunk-vw215j9f.js)')
   // Con `--root`, el módulo sale del corpus versionado —como en `symbol`—;
   // sin él, del ejecutable vivo, cuyos chunks llevan otros nombres.
-  const raiz = opcion(argv, '--root', '')
+  const root = option(argv, '--root', '')
   let src: string
-  if (raiz) {
-    if (!existsSync(`${raiz}/${nombre}`)) guard(`no existe ${raiz}/${nombre}`)
-    src = readFileSync(`${raiz}/${nombre}`, 'utf8')
+  if (root) {
+    if (!existsSync(`${root}/${name}`)) guard(`no existe ${root}/${name}`)
+    src = readFileSync(`${root}/${name}`, 'utf8')
   } else {
-    const { payload, tabla } = abrir(argv)
-    const e = tabla.entries.find(x => x.name === BUNFS_PREFIX + nombre || x.name.endsWith('/' + nombre))
-    if (!e) guard(`la tabla no declara el modulo ${nombre}`)
+    const { payload, table } = open(argv)
+    const e = table.entries.find(x => x.name === BUNFS_PREFIX + name || x.name.endsWith('/' + name))
+    if (!e) guard(`la tabla no declara el modulo ${name}`)
     src = payload.subarray(e.offset, e.offset + e.length).toString('utf8')
   }
-  const salida = reflow(src)
-  const destino = opcion(argv, '--out', '')
-  const linea = (s: string) => s.split('\n')
-  console.error(`${nombre}: ${linea(src).length} -> ${linea(salida).length} lineas; ancho medio ${Math.round(src.length / linea(src).length)} -> ${Math.round(salida.length / linea(salida).length)}`)
-  if (destino) writeFileSync(destino, salida)
-  else process.stdout.write(salida)
-} else if (orden === 'symbol') {
+  const output = reflow(src)
+  const destination = option(argv, '--out', '')
+  const lines = (s: string) => s.split('\n')
+  console.error(`${name}: ${lines(src).length} -> ${lines(output).length} lineas; ancho medio ${Math.round(src.length / lines(src).length)} -> ${Math.round(output.length / lines(output).length)}`)
+  if (destination) writeFileSync(destination, output)
+  else process.stdout.write(output)
+} else if (command === 'symbol') {
   // Sin `--root`, la build más reciente del corpus: un literal fijo dejaba de
   // ser la última en cuanto se extraía otra.
-  const ultima = corpusVersion(CORPUS_DEFECTO)
-  if (!argv.includes('--root') && ultima === null) guard(`sin builds en ${CORPUS_DEFECTO}; use --root`)
-  const raiz = opcion(argv, '--root', `${CORPUS_DEFECTO}/${ultima}/bunfs-root`)
-  const [chunk, ...resto] = argv.slice(1)
-  const nombres = resto.filter((x, i) => !x.startsWith('--') && resto[i - 1] !== '--root')
-  if (!chunk || nombres.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')
-  if (!existsSync(`${raiz}/${chunk}`)) guard(`no existe ${raiz}/${chunk}`)
-  let ausentes = 0
-  for (const nombre of nombres) {
-    const defs = resolveSymbol(raiz, chunk, nombre)
-    if (defs.length === 0) ausentes++
-    const alcance = defs.length > 0 && defs.every(d => d.kind === 'method') ? 'de método de clase' : 'de nivel superior'
-    console.log(`==== ${nombre}: ${defs.length} definicion(es) ${alcance}`)
+  const latest = corpusVersion(DEFAULT_CORPUS)
+  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  const [chunk, ...rest] = argv.slice(1)
+  const names = rest.filter((x, i) => !x.startsWith('--') && rest[i - 1] !== '--root')
+  if (!chunk || names.length === 0) guard('uso: symbol <chunk> <nombre>... [--root R]')
+  if (!existsSync(`${root}/${chunk}`)) guard(`no existe ${root}/${chunk}`)
+  let missing = 0
+  for (const name of names) {
+    const defs = resolveSymbol(root, chunk, name)
+    if (defs.length === 0) missing++
+    const scope = defs.length > 0 && defs.every(d => d.kind === 'method') ? 'de método de clase' : 'de nivel superior'
+    console.log(`==== ${name}: ${defs.length} definicion(es) ${scope}`)
     for (const d of defs) console.log(`---- ${d.file} ${d.kind} ${d.name} [${d.start},${d.end})\n${d.text}`)
   }
-  console.error(`symbol: ${nombres.length - ausentes} de ${nombres.length} nombre(s) resueltos`)
-  process.exit(ausentes > 0 ? 1 : 0)
+  console.error(`symbol: ${names.length - missing} de ${names.length} nombre(s) resueltos`)
+  process.exit(missing > 0 ? 1 : 0)
+} else if (command === 'literal') {
+  // La pregunta con la que empieza una extracción: qué declaraciones llevan
+  // este literal. Su salida alimenta a `symbol <chunk> <nombre>`.
+  const latest = corpusVersion(DEFAULT_CORPUS)
+  if (!argv.includes('--root') && latest === null) guard(`sin builds en ${DEFAULT_CORPUS}; use --root`)
+  const root = option(argv, '--root', `${DEFAULT_CORPUS}/${latest}/bunfs-root`)
+  const literal = argv[1]
+  if (!literal || literal.startsWith('--')) guard('uso: literal <texto> [--root R]')
+  if (!existsSync(root)) guard(`no existe ${root}`)
+  const scan = scanLiteral(root, literal)
+  for (const d of scan.sites) console.log(`${d.file} ${d.kind} ${d.binding ?? '-'} [${d.start},${d.end})`)
+  console.error(`literal: ${scan.sites.length} declaración(es) en ${scan.chunksWithLiteral} de ${scan.chunks} chunk(s)`)
+  process.exit(scan.sites.length > 0 ? 0 : 1)
 } else {
-  guard(`subcomando desconocido: ${orden}. Use info | extract | graph | freshness | reflow | symbol`)
+  guard(`subcomando desconocido: ${command}. Use info | extract | graph | freshness | reflow | symbol | literal`)
 }
