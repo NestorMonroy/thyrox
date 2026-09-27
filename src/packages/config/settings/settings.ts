@@ -25,12 +25,13 @@
  * NO portados — bloqueado, declarado por nombre:
  *
  * - Resolución de `policySettings` (remote > MDM/plist/HKLM >
- *   managed-settings.json > HKCU): depende de `../remote/syncCacheState.js`
- *   (`getRemoteManagedSettingsSyncFromCache`), `./mdm/settings.js`
- *   (`getHkcuSettings`, `getMdmSettings`) y `./managedPath.js` +
- *   `loadManagedFileSettings` — ninguno existe en `@thyrox/config`.
- *   `getSettingsForSource('policySettings')` devuelve `null`, el mismo
- *   valor que la fuente cuando las cuatro capas están vacías.
+ *   managed-settings.json > HKCU). Sus tres dependencias YA existen en
+ *   `@thyrox/config` —`../remote/syncCacheState.js`, `./mdm/settings.js` y
+ *   `./managedPath.js` (medido 2026-09-27)—; lo que falta es la composición
+ *   misma, que en 2.1.283 es `UP` (con `Qq` para la capa remota y `Os` para
+ *   MDM), extraída en `.claude/workbench/policy-settings-port-*`. Hasta
+ *   portarla, `getSettingsForSource('policySettings')` devuelve `null`, el
+ *   mismo valor que la fuente cuando las capas están vacías.
  * - Capa de plugin settings (`getPluginSettingsBase`, `plugin/*` como base
  *   de menor precedencia): no portada. `loadSettingsFromDisk` arranca el
  *   merge desde `{}` en vez de la base de plugins.

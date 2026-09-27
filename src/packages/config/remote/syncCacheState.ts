@@ -84,22 +84,26 @@ export function getRemoteManagedSettingsSyncFromCache(): SettingsJson | null {
   const cachedSettings = loadSettings()
   if (cachedSettings) {
     sessionCache = cachedSettings
-    // Remote settings just became available for the first time. Any merged
-    // getSettings() result cached before this moment is missing
-    // the policySettings layer (the `eligible !== true` guard above returned
-    // null). Flush so the next merged read re-merges with this layer visible.
+    // Los ajustes remotos acaban de estar disponibles por primera vez. Todo
+    // resultado fusionado de getSettings() cacheado antes de este momento
+    // carece de la capa policySettings (la guarda `eligible !== true` de
+    // arriba devolvía null). Se vacía para que la siguiente lectura fusionada
+    // vuelva a fusionar con esta capa visible.
     //
-    // Fires at most once: subsequent calls hit `if (sessionCache)` above.
-    // When called from loadSettingsFromDisk() (settings.ts:546), the merged
-    // cache is still null (setSessionSettingsCache runs at :732 after
-    // loadSettingsFromDisk returns) — no-op. The async-fetch arm (index.ts
-    // setSessionCache + notifyChange) already handles its own reset.
+    // Ocurre como mucho una vez: las llamadas siguientes salen por
+    // `if (sessionCache)`. Llamada desde loadSettingsFromDisk(), el caché
+    // fusionado todavía es null (setSessionSettingsCache corre después de que
+    // loadSettingsFromDisk vuelve): no hace nada. La rama de descarga
+    // asíncrona (setSessionCache + notifyChange en index.ts) ya hace su propio
+    // vaciado.
     //
-    // gh-23085: isBridgeEnabled() at main.tsx Commander-definition time
-    // (before preAction → init() → isRemoteManagedSettingsEligible()) reached
-    // getSettings() at auth.ts:115. The try/catch in bridgeEnabled
-    // swallowed the later getGlobalConfig() throw, but the merged settings
-    // cache was already poisoned. See managedSettingsHeadless.int.test.ts.
+    // gh-23085: isBridgeEnabled(), evaluado al definir los comandos de
+    // Commander (antes de preAction → init() → isRemoteManagedSettingsEligible()),
+    // llegaba a getSettings() desde auth. El try/catch de bridgeEnabled se
+    // tragaba el fallo posterior de getGlobalConfig(), pero el caché fusionado
+    // ya estaba envenenado. La mitad unitaria del control es
+    // `__tests__/remoteSettingsFirstHitFlush.test.ts`; la de integración
+    // headless espera a que se porte la composición de policySettings.
     resetSettingsCache()
     return cachedSettings
   }
