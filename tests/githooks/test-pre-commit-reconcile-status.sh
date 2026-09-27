@@ -18,7 +18,7 @@ cp "$HERE/.githooks/pre-commit" .githooks/pre-commit
 for gate in check-agent-artifacts.sh check-cli-typecheck.sh check-cross-model-read.sh; do
     printf '#!/usr/bin/env bash\nexit 0\n' > "src/verify/$gate"
 done
-for gate in check_provider_evidence.py check_bench_untracked.py check_cache_layout.py check_single_workspace_root.py commit_identity.py check_lint_zero.py check_identifier_language.py; do
+for gate in check_provider_evidence.py check_bench_untracked.py check_cache_layout.py check_single_workspace_root.py check_product_word.py commit_identity.py check_lint_zero.py check_identifier_language.py; do
     printf 'import sys\nsys.exit(0)\n' > "src/verify/$gate"
 done
 printf 'import sys\nsys.exit(2)\n' > src/task/board_sync.py

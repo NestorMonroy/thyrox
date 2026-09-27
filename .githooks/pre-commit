@@ -195,6 +195,13 @@ python3 "$GATES/check_cache_layout.py" --root "$ROOT" --staged --strict || CODE=
 # y una admitida exige su razon en el allowlist, no un --no-verify.
 python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
 
+# «Claude» donde el producto se llama thyrox (tarea #67). Trinquete: la deuda
+# heredada está congelada por archivo en `product_word_baseline.tsv`, y un
+# archivo que crece o uno nuevo con la palabra bloquea. Los servicios ajenos
+# (claude.ai, Claude in Chrome, Claude Desktop, el consentimiento de
+# Anthropic) no cuentan; su lista y su razón están en el gate.
+python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
+
 # La identidad del commit, contra la que el repositorio declara
 # (`THYROX_COMMIT_AUTHOR`, `THYROX_COMMIT_COMMITTER`). El entorno remoto
 # inyecta la suya en cada sesion, y `git.md` era hasta ahora la unica defensa.
