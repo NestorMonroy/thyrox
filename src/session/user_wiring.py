@@ -94,7 +94,7 @@ def declared_wiring(root: Path | None = None,
     base = Path(root) if root else Path(thyrox_root())
     # El literal `kaupamex-docs` sortea al localizador, que existe justamente
     # para derivar el prefijo del clon (`reach.derive_clone_prefix`). Es dominio
-    # del producto dentro del proveedor y su barrido es la tarea #249; aqui
+    # del producto dentro del proveedor y su barrido es TASK-THYROX-0261; aqui
     # queda como DEFAULT porque `install()` corre sin argumentos, y lo gana
     # cualquier `consumer=` que el consumidor declare.
     consumer = Path(consumer) if consumer else base.parent / "kaupamex-docs"
