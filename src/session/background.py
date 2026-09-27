@@ -137,7 +137,7 @@ def log_dir(start: str | Path | None = None) -> Path:
     `.env` del PROVEEDOR, donde la clave del consumidor no esta ni debe estar.
     """
     from paths.reach import (  # noqa: PLC0415 — evita el ciclo de import
-        resolve_home, root as repo_root,
+        resolve_home, per_clone_base,
     )
     from workbench import paths as wb_paths  # noqa: PLC0415
 
@@ -153,7 +153,7 @@ def log_dir(start: str | Path | None = None) -> Path:
             # `resolve_home` porque como SEGMENTO relativo la clave dice «en
             # cada clon, este subdirectorio»; devuelta cruda resolveria contra
             # el CWD, que es el defecto home-by-cwd de #284/#286.
-            return resolve_home(per_clone, repo_root(repo))
+            return resolve_home(per_clone, per_clone_base(anchor))
 
     declared = env_value(LOG_DIR_VAR, anchor)
     if declared:

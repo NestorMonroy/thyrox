@@ -401,22 +401,83 @@ def clone_top_of(start: Path) -> Path:
     return next((level for level in (here, *here.parents) if (level / ".git").exists()), here)
 
 
-def clone_suffix_of(start: Path | None) -> str | None:
-    """El sufijo de la familia por clon del repositorio que contiene ``start``.
+def _short_name(name: str) -> str:
+    """El nombre corto de un clon: sin el prefijo del multi-repo si lo lleva.
 
-    ``kaupamex-docs`` -> ``DOCS``: lo que sigue al último guion, en mayúsculas,
-    que es como ``workbench_home_name`` compone la clave. Se busca el ``.git``
-    y no el ``.env`` porque en un clon nuevo el ``.env`` del consumidor no
-    existe, que es justo el caso que la capa del proveedor cubre. Sin guion en
-    el nombre no hay sufijo, y sin sufijo no hay capa: mejor medir de menos que
-    inventar una familia.
+    El prefijo es OPCIONAL: un consumidor que no pertenece a ningún multi-repo
+    —``ai-course-notes``— se nombra entero. Antes sólo contaba un clon con el
+    prefijo derivado, y cualquier otro quedaba sin clave por clon, sin aviso
+    (H-THYROX-176).
+    """
+    try:
+        prefix = clone_prefix()
+    except KeyError:
+        return name
+    return name[len(prefix):] if name.startswith(prefix) and len(name) > len(prefix) else name
+
+
+def clone_root_of(start: str | Path | None) -> Path | None:
+    """La raíz del clon que contiene ``start``, o ``None`` fuera de uno.
+
+    Dos criterios, en orden:
+
+    1. el primer nivel, al ascender, cuyo nombre lleva el prefijo del
+       multi-repo —sin exigir ``.git``, como siempre: un árbol sintético de
+       prueba no lo tiene—;
+    2. si ninguno lo lleva, la raíz git: un consumidor sin prefijo
+       (``ai-course-notes``) también es un clon (H-THYROX-176).
+
+    Es la base contra la que se resuelve una clave por clon relativa: antes se
+    COMPONÍA ``<prefijo><nombre>``, una ruta que no existe para un clon sin
+    prefijo.
     """
     if start is None:
         return None
-    name = clone_top_of(start).name
-    if "-" not in name:
+    here = Path(start).resolve()
+    try:
+        prefix = clone_prefix()
+    except KeyError:
+        prefix = None
+    if prefix:
+        for level in (here, *here.parents):
+            if level.name.startswith(prefix) and len(level.name) > len(prefix):
+                return level
+    top = clone_top_of(here)
+    return top if (top / ".git").exists() else None
+
+
+def per_clone_base(start: str | Path | None) -> Path:
+    """La base contra la que se resuelve una clave por clon relativa: la raíz
+    del clon que contiene ``start``, o ``start`` mismo fuera de uno."""
+    here = Path(start or Path.cwd())
+    return clone_root_of(here) or here.resolve()
+
+
+def clone_short_name(start: str | Path | None) -> str | None:
+    """El nombre corto del clon que contiene ``start``, o ``None`` fuera de uno.
+
+    ``kaupamex-docs`` -> ``docs``; ``ai-course-notes`` -> ``ai-course-notes``.
+    """
+    root = clone_root_of(start)
+    return _short_name(root.name) if root is not None else None
+
+
+def clone_suffix_of(start: Path | None) -> str | None:
+    """El sufijo de la familia por clon del repositorio que contiene ``start``.
+
+    ``kaupamex-docs`` -> ``DOCS``; ``ai-course-notes`` -> ``AI_COURSE_NOTES``:
+    el nombre corto entero, en mayúsculas y con ``_`` por ``-``, que es como
+    ``workbench_home_name`` compone la clave. Tomaba sólo lo que sigue al
+    último guion, y para un nombre de varias palabras la clave leída y la
+    declarada no coincidían (H-THYROX-176). Se busca el ``.git`` y no el
+    ``.env`` porque en un clon nuevo el ``.env`` del consumidor no existe, que
+    es justo el caso que la capa del proveedor cubre; en un árbol sintético sin
+    ``.git`` la raíz es ``start`` mismo.
+    """
+    if start is None:
         return None
-    return name.rsplit("-", 1)[1].upper().replace("-", "_") or None
+    name = _short_name(clone_top_of(start).name)
+    return name.upper().replace("-", "_") or None
 
 
 def production_declarations(start: Path | None = None,
