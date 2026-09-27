@@ -7,7 +7,10 @@
  * Matching is canonicalized: every modifier alias the Rust executor accepts
  * collapses to one canonical name. Without this, `command+q` / `meta+q` /
  * `cmd+alt+escape` bypass the gate — see keyBlocklist.test.ts for the three
- * bypass forms and the Rust parity check that catches future alias drift.
+ * bypass forms and the executor parity check that catches future alias drift.
+ * Upstream the executor was Rust (enigo_wrap.rs); in this tree the keys are
+ * pressed by the TypeScript executors of computer-use-input and legacy/, and
+ * the parity check reads their MODIFIER_KEYS.
  */
 
 /**
@@ -43,6 +46,11 @@ const CANONICAL_MODIFIER: Readonly<Record<string, string>> = {
   // both Force Quit.
   alt: "alt",
   option: "alt",
+  // Los ejecutores de este árbol (`computer-use-input` y `legacy/`) aceptan
+  // también el Alt izquierdo y el derecho; sin ellos, `lalt+f4` pasaba el gate
+  // y se pulsaba Alt+F4.
+  lalt: "alt",
+  ralt: "alt",
 };
 
 /** Sort order for canonicals. ctrl < alt < shift < meta. */
