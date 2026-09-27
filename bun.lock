@@ -355,12 +355,23 @@
         "@thyrox/agent": "workspace:*",
       },
     },
+    "src/packages/finding": {
+      "name": "@thyrox/finding",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/observability": "workspace:*",
+        "@thyrox/paths": "workspace:*",
+        "@thyrox/store": "workspace:*",
+      },
+    },
     "src/packages/headless-sdk": {
       "name": "@thyrox/headless-sdk",
       "version": "0.1.0",
       "dependencies": {
         "@anthropic-ai/sdk": "^0.124.0",
         "@modelcontextprotocol/sdk": "^1.0.0",
+        "@thyrox/config": "workspace:*",
+        "@thyrox/local-observability": "workspace:*",
         "zod": "^4.3.6",
       },
     },
@@ -1213,6 +1224,8 @@
     "@thyrox/coordination": ["@thyrox/coordination@workspace:src/packages/coordination"],
 
     "@thyrox/daemon": ["@thyrox/daemon@workspace:src/packages/daemon"],
+
+    "@thyrox/finding": ["@thyrox/finding@workspace:src/packages/finding"],
 
     "@thyrox/headless-sdk": ["@thyrox/headless-sdk@workspace:src/packages/headless-sdk"],
 
