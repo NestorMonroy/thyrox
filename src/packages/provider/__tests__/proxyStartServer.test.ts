@@ -10,7 +10,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 const { createSelector, startProxyServer } = (await import(
   process.env.PROXY_START_SERVER_MODULE ?? '../src/proxy/startServer.ts'
 )) as typeof import('../src/proxy/startServer.ts')
-import { FillFirstSelector, WeightedRoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
+import { FillFirstSelector, type ProxyCredential, WeightedRoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
 import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
 import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 
@@ -89,6 +89,8 @@ describe('startProxyServer', () => {
         credentials: { up: ['k1', 'k2', 'k3'].map(id => ({ id, attributes: { api_key: `sk-${id}` } })) },
         sessionAffinity: {},
         providerTraits,
+        // Mide sólo la afinidad: la regla «request not allowed» enfriaría la credencial 5 s.
+        cooldown: false,
       })
       stops.push(() => proxy.stop())
       for (let i = 0; i < 3; i++) {
@@ -196,6 +198,55 @@ describe('startProxyServer', () => {
 
   test('rehúsa arrancar si un upstream enrutado no declara endpoint', () => {
     expect(() => startProxyServer({ ...config('http://127.0.0.1:1'), endpoints: {} })).toThrow(/"up"/)
+  })
+})
+
+describe('startProxyServer: enfriamiento por credencial', () => {
+  function keyedUpstream(fail: (key: string | null) => Response | null) {
+    const keys: (string | null)[] = []
+    const server = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      fetch(request) {
+        const key = request.headers.get('x-api-key')
+        keys.push(key)
+        return fail(key) ?? Response.json({ type: 'message' })
+      },
+    })
+    stops.push(() => server.stop(true))
+    return { baseUrl: `http://127.0.0.1:${server.port}`, keys }
+  }
+  const twoKeys = (): { up: ProxyCredential[] } => ({ up: [{ id: 'k1', attributes: { api_key: 'sk-1' } }, { id: 'k2', attributes: { api_key: 'sk-2' } }] })
+  const send = (url: string) => fetch(`${url}/v1/messages`, {
+    method: 'POST',
+    headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'local-model', messages: [] }),
+  }).then(r => r.status)
+
+  test('por defecto, la credencial que falla queda apartada para la petición siguiente', async () => {
+    const upstream = keyedUpstream(key => (key === 'sk-1' ? new Response('Rate limit hit', { status: 429 }) : null))
+    const proxy = startProxyServer({ ...config(upstream.baseUrl), selector: 'fill-first', credentials: twoKeys() })
+    stops.push(() => proxy.stop())
+    expect([await send(proxy.url), await send(proxy.url)]).toEqual([429, 200])
+    expect(upstream.keys).toEqual(['sk-1', 'sk-2'])
+  })
+
+  test('cooldown: false lo apaga', async () => {
+    const upstream = keyedUpstream(key => (key === 'sk-1' ? new Response('Rate limit hit', { status: 429 }) : null))
+    const proxy = startProxyServer({ ...config(upstream.baseUrl), selector: 'fill-first', credentials: twoKeys(), cooldown: false })
+    stops.push(() => proxy.stop())
+    await send(proxy.url)
+    await send(proxy.url)
+    expect(upstream.keys).toEqual(['sk-1', 'sk-1'])
+  })
+
+  test('las señales de baja del operador llegan a la decisión', async () => {
+    const upstream = keyedUpstream(() => new Response('cuenta vetada por el operador', { status: 401 }))
+    const credentials = twoKeys()
+    const proxy = startProxyServer({ ...config(upstream.baseUrl), selector: 'fill-first', credentials, cooldown: { bannedSignals: ['cuenta vetada'] } })
+    stops.push(() => proxy.stop())
+    await send(proxy.url)
+    expect(credentials.up[0]!.nextRetryAfter!.getTime() - Date.now()).toBeGreaterThan(300 * 24 * 60 * 60 * 1000)
   })
 })
 

@@ -130,3 +130,33 @@ pasada cinco no discriminaban:
 
 Para estas dos últimas se añadieron casos propios: un 403 genérico con clave
 de API, y un 400 que casa a la vez con credencial y con acceso al modelo.
+
+## Enfriamiento escrito en la credencial, y su cableado
+
+- `credentialCooldown.ts`: el camino común de `markAccountUnavailable` y
+  `clearAccountError`. Tras un fallo escribe `unavailable` y
+  `nextRetryAfter` en la credencial, que el selector ya respeta; un modelo
+  retirado (`not_found`) se bloquea sólo en `modelStates`. Tiene la guarda
+  contra el enfriamiento duplicado, la de baja definitiva (que ni un acierto
+  levanta) y la del 400 de modelo que el proveedor no sirve
+  (`isProviderModelUnsupported400`, ahora en `accountCooldown.ts`). Las
+  divergencias están en la cabecera: sin base de datos ni exclusión mutua, y
+  sin bloqueos por modelo, por familia o por IP de salida propios de un
+  proveedor.
+- `server.ts`: tras cada respuesta, un acierto limpia y un fallo marca, con
+  el cuerpo del 4xx ya leído y sin leer el de un 5xx. Un reenvío que lanza
+  no marca, porque no hay respuesta del upstream que juzgar.
+- `startServer.ts`: encendido por defecto, como en la referencia;
+  `cooldown: false` lo apaga y `bannedSignals` suma señales de baja. La
+  prueba de afinidad ante un 403 lo apaga para medir sólo la afinidad: con
+  él encendido, la regla «request not allowed» enfría la credencial 5 s.
+
+Anulaciones:
+- la capa, 10 de 10 (`zero-cooldown` desde su caso propio del 401);
+- `isProviderModelUnsupported400`, 3 de 3;
+- el servidor, 3 de 3;
+- `startServer`, 2 de 2.
+
+De paso se corrigieron dos errores de tipos del `tsconfig.test.json`: los
+literales de estado de `proxySessionAffinityLcp.test.ts` y el tipo de las
+credenciales de la prueba nueva.

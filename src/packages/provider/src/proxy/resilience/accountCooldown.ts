@@ -545,3 +545,27 @@ export function checkFallbackError(
   const transient = profile?.baseCooldownMs ?? COOLDOWN_MS.transient
   return { shouldFallback: true, cooldownMs: transient, baseCooldownMs: transient, reason: RateLimitReason.UNKNOWN }
 }
+
+// Los patrones de acceso al modelo que no son ambiguos: los de permiso o acceso
+// pueden ser un hueco de la cuenta (plan gratuito contra de pago), no del proveedor.
+const PROVIDER_MODEL_UNSUPPORTED = [
+  /\binvalid model\b/i,
+  /\bmodel.*not.*(?:available|found|supported|accessible)\b/i,
+  /\bmodel.*(?:does not exist|doesn't exist)\b/i,
+  /\bmodel\b[\s\S]{0,80}?\b(?:does\s+not\s+support|doesn't\s+support|unsupported)\b/i,
+  /\b(?:does\s+not\s+support|doesn't\s+support|unsupported)\b[\s\S]{0,80}?\bmodel\b/i,
+  /\bunsupported\s+model\b/i,
+  /\bplease select a different model\b/i,
+  /\bunknown\s+provider\s+for\s+model\b/i,
+]
+
+/**
+ * Si un 400 dice que el PROVEEDOR no sirve el modelo. Todas sus credenciales
+ * comparten el catálogo, así que enfriar ésta y probar otra gasta una llamada.
+ * Una credencial mala no cuenta aunque el texto nombre el modelo.
+ */
+export function isProviderModelUnsupported400(status: number, errorText: string): boolean {
+  if (status !== HTTP.BAD_REQUEST) return false
+  if (AUTH_CREDENTIAL_ERROR.some(p => p.test(errorText))) return false
+  return PROVIDER_MODEL_UNSUPPORTED.some(p => p.test(errorText))
+}

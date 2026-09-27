@@ -11,3 +11,6 @@ supervisor-hint	s/=== 'connection_cooldown'/=== 'never'/
 oauth-profile	s/=== 'oauth' ? 'oauth' : 'apikey'/=== 'never' ? 'oauth' : 'apikey'/
 backoff-increment	s/newBackoffLevel: Math.min(backoffLevel + 1, maxBackoffSteps)/newBackoffLevel: backoffLevel/
 model-retired	s/if ((status === HTTP.NOT_FOUND || status === HTTP.GONE) \&\& MODEL_PERMANENTLY/if (false \&\& MODEL_PERMANENTLY/
+unsupported-status	s/  if (status !== HTTP.BAD_REQUEST) return false$/  void 0/
+unsupported-credential	s/  if (AUTH_CREDENTIAL_ERROR.some(p => p.test(errorText))) return false$/  void 0/
+unsupported-narrow	s/^  \/\\bunsupported\\s+model\\b\/i,$/  \/\\b(?:access|permission)[\\s\\S]{0,60}?\\bmodel\\b\/i,\n  \/\\bunsupported\\s+model\\b\/i,/

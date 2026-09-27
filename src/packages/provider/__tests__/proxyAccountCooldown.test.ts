@@ -14,7 +14,7 @@ import type { ProviderProfile } from '../src/proxy/resilience/accountCooldown.ts
 const M = (await import(
   process.env.ACCOUNT_COOLDOWN_MODULE ?? '../src/proxy/resilience/accountCooldown.ts'
 )) as typeof import('../src/proxy/resilience/accountCooldown.ts')
-const { RateLimitReason, COOLDOWN_MS, isDailyQuotaExhausted, getMsUntilTomorrow, classifyErrorText, parseRetryFromErrorText } = M
+const { RateLimitReason, COOLDOWN_MS, isDailyQuotaExhausted, getMsUntilTomorrow, classifyErrorText, parseRetryFromErrorText, isProviderModelUnsupported400 } = M
 
 const TRAITS: Record<string, ProviderTraits> = { codex: { authType: 'oauth' }, openai: { authType: 'apikey' } }
 const checkFallbackError = (...args: Parameters<typeof M.checkFallbackError>) => {
@@ -562,4 +562,26 @@ test('un 403 de clave de API enfría con retroceso y culpa a la credencial', () 
 test('un 400 que culpa a la credencial no pasa por acceso al modelo aunque nombre el modelo', () => {
   const result = checkFallbackError(400, 'Invalid API key: access denied for model gpt-4o')
   assert.deepEqual(result, { shouldFallback: false, cooldownMs: 0, reason: RateLimitReason.UNKNOWN })
+})
+
+// Casos de `tests/unit/cliproxyapi-unknown-provider-400-12800.test.ts`: el 400 del proveedor que no sirve el modelo.
+test("isProviderModelUnsupported400 recognizes CLIProxyAPI 'unknown provider for model X'", () => {
+  assert.equal(isProviderModelUnsupported400(400, 'unknown provider for model Qwen/Qwen3.6-27B-TEE'), true)
+})
+
+test('isProviderModelUnsupported400 does not match a genuine auth/credential error', () => {
+  assert.equal(isProviderModelUnsupported400(400, 'invalid api key for model Qwen/Qwen3.6-27B-TEE'), false)
+})
+
+// Casos propios: el estado, y un texto que casa a la vez con credencial y con modelo.
+test('isProviderModelUnsupported400 sólo mira un 400', () => {
+  assert.equal(isProviderModelUnsupported400(404, 'unknown provider for model Qwen/Qwen3.6-27B-TEE'), false)
+})
+
+test('isProviderModelUnsupported400 deja pasar una credencial mala aunque el texto diga que el modelo no existe', () => {
+  assert.equal(isProviderModelUnsupported400(400, 'Invalid API key: model gpt-x does not exist'), false)
+})
+
+test('isProviderModelUnsupported400 no cuenta el permiso de acceso, que puede ser de la cuenta', () => {
+  assert.equal(isProviderModelUnsupported400(400, 'You do not have permission to access this model'), false)
 })

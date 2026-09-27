@@ -210,8 +210,8 @@ describe('SessionAffinitySelector: LCP', () => {
 })
 
 describe('SessionAffinitySelector: lookupAffinity sobre LCP', () => {
-  const bound = (authId: string) => ({ authId, status: 'bound' })
-  const unbound = { authId: '', status: 'unbound' }
+  const bound = (authId: string) => ({ authId, status: 'bound' as const })
+  const unbound = { authId: '', status: 'unbound' as const }
 
   test('por id publicado, por hash sin prefijo, y sin refrescar mientras crece', () => {
     const selector = new SessionAffinitySelector({ cleanup: false })

@@ -1,0 +1,2 @@
+always-off	s/    cooldown: config.cooldown === false$/    cooldown: true/
+no-banned	s/, bannedSignals: config.cooldown?.bannedSignals })/ })/

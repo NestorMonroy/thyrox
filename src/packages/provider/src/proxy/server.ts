@@ -42,6 +42,7 @@ import type { CredentialSelector, ProxyCredential } from './credentialSelectors.
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
+import type { CredentialCooldown } from './resilience/credentialCooldown.ts'
 import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
 import type { RateLimitManager } from './resilience/rateLimitManager.ts'
 import { createRecoverableStream } from './resilience/streamRecovery.ts'
@@ -96,6 +97,11 @@ export type ProxyServerConfig = {
    * Qué credenciales protege lo decide quien lo construye.
    */
   rateLimit?: RateLimitManager
+  /**
+   * El enfriamiento por credencial (`./resilience/credentialCooldown.ts`): un
+   * fallo la aparta del selector mientras dura, y un acierto la devuelve.
+   */
+  cooldown?: CredentialCooldown
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -216,6 +222,8 @@ async function forwardBody(
       const blamed = errorText !== null
         && blamesRequest(response.status, errorText, upstream.provider, { traitsOf: config.providerTraits })
       report(response.status < 400, blamed)
+      if (response.status < 400) config.cooldown?.clear(credential)
+      else config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
       if (fallsOver(response.status)) {
         reasons.push(`${response.status} ${response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }

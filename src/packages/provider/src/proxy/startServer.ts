@@ -28,6 +28,7 @@ import {
   WeightedRoundRobinSelector,
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
+import { CredentialCooldown } from './resilience/credentialCooldown.ts'
 import type { ProviderTraits } from './resilience/errorClassifier.ts'
 import { RateLimitManager, type RateLimitQueueSettings } from './resilience/rateLimitManager.ts'
 import { createProxyHandler, type ProxyServerConfig } from './server.ts'
@@ -57,6 +58,12 @@ export type ProxyStartConfig = {
    * Sin declarar, apagados.
    */
   rateLimit?: RateLimitQueueSettings
+  /**
+   * El enfriamiento por credencial tras un fallo, encendido por defecto como
+   * en OmniRoute. `bannedSignals` añade textos de baja definitiva a los de
+   * fábrica; `false` lo apaga.
+   */
+  cooldown?: false | { bannedSignals?: readonly string[] }
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -114,6 +121,9 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     providerTraits: provider => config.providerTraits?.[provider],
     streamRecovery: config.streamRecovery,
     rateLimit: config.rateLimit && protectApiKeyCredentials(new RateLimitManager(config.rateLimit), config),
+    cooldown: config.cooldown === false
+      ? undefined
+      : new CredentialCooldown({ traitsOf: provider => config.providerTraits?.[provider], bannedSignals: config.cooldown?.bannedSignals }),
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,
