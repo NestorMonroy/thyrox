@@ -1,0 +1,18 @@
+base	15 pass, 0 fail	—
+byte-cap	15 pass, 0 fail	—
+abort-not-retryable	15 pass, 0 fail	—
+undici-family	15 pass, 0 fail	—
+responses-completed-marker	15 pass, 0 fail	—
+toolcalls-not-terminal	10 pass, 5 fail	scanOpenAiSseText: terminal vs in-flight tool call > complete tool_calls + finish_reason + [DONE] → terminal true, inFlight false | scanOpenAiSseText: terminal vs in-flight tool call > complete tool_calls WITHOUT [DONE] → terminal false, inFlight false (the actual fix) | stream recovery does not duplicate an in-flight tool call > truncation right after a completed tool call → continuation attempted (the real 91% gain) | stream recovery does not duplicate an in-flight tool call > naive removal of the tool-call guard would duplicate a partial tool call | STREAM_RECOVERY_TOOLCALL_ORDER_FIX off keeps the release behavior > resumes after a coalesced finished call and after a finished call followed by a partial one
+overlap-trim	14 pass, 1 fail	STREAM_RECOVERY_TOOLCALL_ORDER_FIX on makes continuation tool-call safe > still resumes a plain-text truncation
+restart-reject	15 pass, 0 fail	—
+inflight-gate	14 pass, 1 fail	STREAM_RECOVERY_TOOLCALL_ORDER_FIX off keeps the release behavior > stays latched when the call and its finish arrive in separate batches
+empty-stop-needs-reasoning	15 pass, 0 fail	—
+order-fix-gate	13 pass, 2 fail	STREAM_RECOVERY_TOOLCALL_ORDER_FIX on makes continuation tool-call safe > never resumes a finished call followed by a partial call in the same batch | STREAM_RECOVERY_TOOLCALL_ORDER_FIX on makes continuation tool-call safe > never resumes a turn that already finished with finish_reason tool_calls
+reopen-discard	15 pass, 0 fail	—
+cancel-no-reopen	15 pass, 0 fail	—
+watchdog-ignored	15 pass, 0 fail	—
+empty-prefill-appends	15 pass, 0 fail	—
+responses-envelope	15 pass, 0 fail	—
+finalize-once	15 pass, 0 fail	—
+terminal-marker-preserves	15 pass, 0 fail	—

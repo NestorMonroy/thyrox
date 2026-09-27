@@ -29,7 +29,7 @@ import {
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
 import type { ProviderTraits } from './resilience/errorClassifier.ts'
-import { createProxyHandler } from './server.ts'
+import { createProxyHandler, type ProxyServerConfig } from './server.ts'
 import { SessionAffinitySelector } from './session/affinitySelector.ts'
 import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
 import type { GatewayRoutingConfig } from './upstreamRouting.ts'
@@ -48,6 +48,8 @@ export type ProxyStartConfig = {
   sessionAffinity?: SessionAffinityOptions
   /** Por nombre de proveedor, lo que el clasificador de errores necesita saber de él. */
   providerTraits?: Record<string, ProviderTraits | undefined>
+  /** Reabrir un SSE que se corta antes del primer byte; sin declarar, apagada. */
+  streamRecovery?: ProxyServerConfig['streamRecovery']
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -94,6 +96,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     credentials: config.credentials,
     selector: createSelector(config.selector, config.sessionAffinity),
     providerTraits: provider => config.providerTraits?.[provider],
+    streamRecovery: config.streamRecovery,
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,

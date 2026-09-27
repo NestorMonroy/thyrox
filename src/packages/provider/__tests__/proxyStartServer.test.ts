@@ -107,6 +107,42 @@ describe('startProxyServer', () => {
     expect(released[2]).not.toBe(released[0])
   })
 
+  test('con streamRecovery, un SSE real que se corta antes del primer byte se reabre', async () => {
+    const enc = new TextEncoder()
+    const whole = 'event: message_start\ndata: {}\n\nevent: message_stop\ndata: {}\n\n'
+    let calls = 0
+    const server = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      fetch() {
+        calls += 1
+        const cut = calls === 1
+        const body = new ReadableStream<Uint8Array>({
+          start(controller) {
+            if (cut) {
+              controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+              controller.error(new Error('cortado'))
+              return
+            }
+            controller.enqueue(enc.encode(whole))
+            controller.close()
+          },
+        })
+        return new Response(body, { headers: { 'content-type': 'text/event-stream' } })
+      },
+    })
+    stops.push(() => server.stop(true))
+    const proxy = startProxyServer({ ...config(`http://127.0.0.1:${server.port}`), streamRecovery: { enabled: true } })
+    stops.push(() => proxy.stop())
+    const response = await fetch(`${proxy.url}/v1/messages`, {
+      method: 'POST',
+      headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ model: 'local-model', stream: true, messages: [] }),
+    })
+    expect(await response.text()).toBe(whole)
+    expect(calls).toBe(2)
+  })
+
   test('sin la clave local no llega nada al upstream', async () => {
     const upstream = provider()
     const proxy = startProxyServer(config(upstream.baseUrl))

@@ -43,6 +43,7 @@ import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
 import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
+import { createRecoverableStream } from './resilience/streamRecovery.ts'
 import { callerScope } from './session/identity.ts'
 import { METADATA_KEYS } from './session/info.ts'
 import { type GatewayRoutingConfig, type GatewayUpstream, resolveUpstreamModel } from './upstreamRouting.ts'
@@ -83,6 +84,12 @@ export type ProxyServerConfig = {
   forward: (request: ForwardRequest) => Promise<Response>
   /** Los rasgos de cada proveedor que el clasificador de errores necesita. */
   providerTraits?: (provider: string) => ProviderTraits | undefined
+  /**
+   * Reabrir un SSE que se corta antes de que el cliente reciba un byte
+   * (`./resilience/streamRecovery.ts`). Apagada por defecto: retener la
+   * ventana de apertura suma hasta `HOLDBACK_MS` al primer token.
+   */
+  streamRecovery?: { enabled: boolean; maxEarlyRetries?: number }
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -180,7 +187,7 @@ async function forwardBody(
       continue
     }
     try {
-      const response = await config.forward({
+      const forwarded: ForwardRequest = {
         upstream,
         upstreamModel: resolved.model,
         credential,
@@ -189,7 +196,8 @@ async function forwardBody(
         body: resolved.model === model ? body : { ...body, model: resolved.model },
         headers: request.headers,
         signal: request.signal,
-      })
+      }
+      const response = await config.forward(forwarded)
       // Un 4xx puede culpar a la petición y no a la credencial; lo decide el
       // clasificador sobre una copia del cuerpo, que el cliente recibe entero.
       const blamed = response.status >= 400 && response.status < 500
@@ -205,7 +213,7 @@ async function forwardBody(
         continue
       }
       for (const kept of [notImplemented, rateLimited, unauthorized, notFound]) discard(kept)
-      return response
+      return recoverable(config, forwarded, response)
     } catch (error) {
       // Un cierre del cliente no es culpa de la credencial.
       report(false, request.signal.aborted)
@@ -223,6 +231,25 @@ async function forwardBody(
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
   return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
+}
+
+/**
+ * La respuesta con su SSE envuelto para reabrirse ante un corte temprano,
+ * contra el mismo upstream y la misma credencial. Una reapertura que no da
+ * 2xx cuenta como fallida y su cuerpo se descarta.
+ */
+function recoverable(config: ProxyServerConfig, forwarded: ForwardRequest, response: Response): Response {
+  const options = config.streamRecovery
+  const isSse = response.headers.get('content-type')?.includes('text/event-stream') ?? false
+  if (!options?.enabled || !isSse || !response.body) return response
+  const reopen = async () => {
+    const next = await config.forward(forwarded)
+    if (next.ok && next.body) return next.body
+    void next.body?.cancel().catch(() => {})
+    return null
+  }
+  const body = createRecoverableStream(response.body, reopen, { finalize: () => {}, maxEarlyRetries: options.maxEarlyRetries })
+  return new Response(body, { status: response.status, statusText: response.statusText, headers: response.headers })
 }
 
 /** El `fetch` del servidor: id de petición, cabeceras de seguridad, acceso y reenvío. */
