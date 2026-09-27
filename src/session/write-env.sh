@@ -74,13 +74,17 @@ OWNED=(THYROX_ROOT THYROX_REACH_ROOT THYROX_LOCATOR THYROX_LIB_REACH
 # segunda entrada de la DEC-04 en una nota que caduca, y el fallo era silencioso:
 # el `.env` seguia siendo valido, sólo que sin la declaracion.
 #
+# Se conserva toda clave declarada, no sólo las `THYROX_*`: un gate lee la
+# suya con su nombre (`IDENTIFIER_LANGUAGE_BASELINE`) y perderla lo devolvía a
+# rehusar en silencio.
+#
 # Se lee ANTES del `>`, que trunca. Las claves propias NO se conservan: se
 # regeneran, que es para lo que existe `--force`.
 PRESERVED=""
 if [[ -f "$DEST" ]]; then
     PRESERVED="$(awk -v owned="${OWNED[*]}" '
         BEGIN { split(owned, o, " "); for (i in o) mine[o[i]] = 1 }
-        /^THYROX_[A-Z0-9_]*=/ {
+        /^[A-Z][A-Z0-9_]*=/ {
             k = substr($0, 1, index($0, "=") - 1)
             if (!(k in mine)) print
         }' "$DEST")"

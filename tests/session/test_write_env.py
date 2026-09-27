@@ -165,6 +165,7 @@ def main() -> int:
             "THYROX_ROOT=/raiz/rancia\n"
             "THYROX_JOBS_API=/home/user/kaupamex-api/scripts/evidence\n"
             "THYROX_JOBS_DOCS=/home/user/kaupamex-docs/.claude/jobs\n"
+            "IDENTIFIER_LANGUAGE_BASELINE=/ruta/al/baseline.txt\n"
             "# un comentario del ejecutor\n"
         )
         r = run("--out", str(mixto), "--force")
@@ -178,6 +179,13 @@ def main() -> int:
         check("conserva la de docs tambien",
               tras.get("THYROX_JOBS_DOCS")
               == "/home/user/kaupamex-docs/.claude/jobs")
+        # Una clave de gate sin el prefijo `THYROX_` es tan del ejecutor como
+        # las de arriba: el gate de idioma lee `IDENTIFIER_LANGUAGE_BASELINE`,
+        # y perderla en un `--force` lo devolvia a rehusar sin que nadie viera
+        # por que.
+        check("conserva una clave declarada sin el prefijo THYROX_",
+              tras.get("IDENTIFIER_LANGUAGE_BASELINE") == "/ruta/al/baseline.txt",
+              f"dio {tras.get('IDENTIFIER_LANGUAGE_BASELINE')!r}")
         check("y REGENERA la suya: el valor rancio no sobrevive",
               tras.get("THYROX_ROOT") == str(ROOT),
               f"dio {tras.get('THYROX_ROOT')!r}, esperaba {str(ROOT)!r}")
