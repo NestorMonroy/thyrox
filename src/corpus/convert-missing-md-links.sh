@@ -95,7 +95,7 @@ while IFS= read -r mdfile; do
         new_content="$content"
 
         # Find backtick-wrapped .md references
-        if echo "$content" | grep -qoP '`[^`]*\.md`'; then
+        if grep -qoP '`[^`]*\.md`' <<<"$content"; then
             matches=$(echo "$content" | grep -oP '`[^`]*\.md`' || true)
 
             while IFS= read -r match; do
@@ -116,10 +116,10 @@ while IFS= read -r mdfile; do
                 [ ! -f "$resolved_path" ] && [ ! -f "${SEARCH_DIR}/${ref}" ] && continue
 
                 # Skip if already part of a markdown link
-                if echo "$new_content" | grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)"; then
+                if grep -qP "\]\([^)]*${ref//\//\\/}[^)]*\)" <<<"$new_content"; then
                     continue
                 fi
-                if echo "$new_content" | grep -qP "\[${match//\//\\/}\]\("; then
+                if grep -qP "\[${match//\//\\/}\]\(" <<<"$new_content"; then
                     continue
                 fi
 

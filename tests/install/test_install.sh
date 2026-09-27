@@ -32,7 +32,7 @@ check() {
 
 check_contains() {
     local label="$1" needle="$2" haystack="$3"
-    if printf '%s' "$haystack" | grep -qF -- "$needle"; then
+    if grep -qF -- "$needle" <<<"$haystack"; then
         PASS=$((PASS + 1))
         printf '  ok   %s\n' "$label"
     else

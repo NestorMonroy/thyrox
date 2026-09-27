@@ -33,7 +33,7 @@ check_expectation() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [OK] $description"
         TOTAL_PASS=$((TOTAL_PASS + 1))
         return 0
@@ -49,7 +49,7 @@ check_negative() {
     local pattern="$2"
     local description="$3"
 
-    if echo "$result" | grep -qi "$pattern"; then
+    if grep -qi "$pattern" <<<"$result"; then
         echo "    [ERROR] $description (found when shouldn't)"
         TOTAL_FAIL=$((TOTAL_FAIL + 1))
         return 1

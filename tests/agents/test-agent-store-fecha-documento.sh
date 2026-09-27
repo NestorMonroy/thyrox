@@ -177,9 +177,9 @@ afirmar "10b sin filas duplicadas"               "6"              "$FILAS"
 
 # --- 11 · denominador junto al conteo ---------------------------------------
 SALIDA=$(python3 "$STORE" fechar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" --dry-run 2>&1)
-echo "$SALIDA" | grep -q "alcance medido"
+grep -q "alcance medido" <<<"$SALIDA"
 afirmar "11a --dry-run publica denominador"      "0" "$?"
-echo "$SALIDA" | grep -qi "sin ninguna cota"
+grep -qi "sin ninguna cota" <<<"$SALIDA"
 afirmar "11b --dry-run nombra los sin cota"      "0" "$?"
 
 # --- 12 · --dry-run no escribe ----------------------------------------------

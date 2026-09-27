@@ -78,7 +78,7 @@ bash -n "$SCRIPT"; afirmar "agent-cost.sh parsea" 0 $?
 echo "== 2. agent_id inexistente: error claro, exit 1 =="
 salida=$(bash "$SCRIPT" no-existe-abc123 2>&1); ec=$?
 afirmar "exit 1 sin transcript" "1" "$ec"
-echo "$salida" | grep -q "No se encontró transcript" \
+grep -q "No se encontró transcript" <<<"$salida" \
     && afirmar "mensaje de error nombra la causa" "si" "si" \
     || afirmar "mensaje de error nombra la causa" "si" "no"
 

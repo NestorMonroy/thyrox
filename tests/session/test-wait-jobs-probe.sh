@@ -34,7 +34,7 @@ afirmar() {  # afirmar <descripción> <esperado> <obtenido>
     if [[ "$2" == "$3" ]]; then OK=$((OK+1)); echo "  ok    $1"
     else FALLO=$((FALLO+1)); echo "  FALLA $1 — esperado '$2', obtenido '$3'"; fi
 }
-contiene_texto() { printf '%s\n' "$1" | grep -Eq -- "$2" && echo si || echo no; }
+contiene_texto() { grep -Eq -- "$2" <<<"$1" && echo si || echo no; }
 
 THYROX_JOBS_DIR=$(fixture_dir); export THYROX_JOBS_DIR
 export THYROX_SESSION_LEDGER_DIR="$THYROX_JOBS_DIR"

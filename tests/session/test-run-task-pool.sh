@@ -46,7 +46,7 @@ T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
 # ANTES de interrogarla. Es el mismo defecto que la suite existe para atrapar:
 # un control que falla por su instrumento, no por su sujeto.
 contiene() { # contiene <texto> <patron> -> si|no
-    printf '%s' "$1" | grep -qE "$2" && echo si || echo no
+    grep -qE "$2" <<<"$1" && echo si || echo no
 }
 
 af() { # af <descripcion> <esperado> <obtenido>

@@ -54,7 +54,7 @@ FASES_COMPLETADAS=()
 if [ -f "$ROADMAP" ]; then
     while IFS= read -r line; do
         # Líneas del tipo: ## FASE N: descripción (fecha)
-        if echo "$line" | grep -qE "^## FASE [0-9]+:"; then
+        if grep -qE "^## FASE [0-9]+:" <<<"$line"; then
             FASES_COMPLETADAS+=("$line")
         fi
     done < "$ROADMAP"

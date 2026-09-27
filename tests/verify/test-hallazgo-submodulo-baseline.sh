@@ -65,7 +65,7 @@ fi
 case_start
 rm -f "$TMP/consumer/.claude/baselines/hallazgo_submodulo_baseline.txt"
 OUT="$(cd "$TMP/consumer" && bash "$GATE" --quiet 2>&1)"; EXIT=$?
-if [ "$EXIT" -eq 2 ] && ! printf '%s' "$OUT" | grep -qE '^[0-9]+$'; then
+if [ "$EXIT" -eq 2 ] && ! grep -qE '^[0-9]+$' <<<"$OUT"; then
   ok "rehusa sin baseline (exit 2) y no emite conteo"
 else
   fail "rehuso sin baseline" "exit=$EXIT, salida='$OUT' — un conteo aqui no separa heredado de nuevo"

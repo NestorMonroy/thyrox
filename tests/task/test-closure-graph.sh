@@ -61,12 +61,12 @@ python3 "$SCRIPT" --help >/dev/null 2>&1 || fallo "no responde --help"
 caso "extrae la arista en las seis formas de declarar sucesor"
 SALIDA=$(python3 "$SCRIPT" --corpus "$FIXTURES/formas" --no-git --json 2>&1)
 for id in 101 102 103 104 105 106; do
-  echo "$SALIDA" | grep -q "\"#$id\"" || fallo "no vio el sucesor #$id"
+  grep -q "\"#$id\"" <<<"$SALIDA" || fallo "no vio el sucesor #$id"
 done
 
 # --- el control positivo: una forma que NO es un sucesor no entra ----------
 caso "no confunde una cita de tarea con una declaracion de sucesor"
-echo "$SALIDA" | grep -q '"#999"' && fallo "tomo por sucesor una cita suelta (#999)"
+grep -q '"#999"' <<<"$SALIDA" && fallo "tomo por sucesor una cita suelta (#999)"
 
 # --- F-2: el ranking publica su denominador --------------------------------
 caso "el ranking publica cuantos nodos midio"

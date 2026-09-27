@@ -129,9 +129,9 @@ afirmar "8 clasificar no borra la fecha" "1" "$NOVACIO"
 
 # --- 9 · denominador + series publicadas ------------------------------------
 SALIDA=$(python3 "$STORE" clasificar-documentos --claude-dir "$CLAUDE_DIR" --repo-docs "$REPO" --dry-run 2>&1)
-echo "$SALIDA" | grep -q "alcance medido"
+grep -q "alcance medido" <<<"$SALIDA"
 afirmar "9a publica denominador" "0" "$?"
-echo "$SALIDA" | grep -qE "[0-9]+ serie"
+grep -qE "[0-9]+ serie" <<<"$SALIDA"
 afirmar "9b publica cuantas series salieron" "0" "$?"
 
 # --- 10 · el plazo NO se inventa: queda NULO y bloqueado por #760 -----------
