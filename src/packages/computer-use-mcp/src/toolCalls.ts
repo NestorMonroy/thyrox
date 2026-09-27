@@ -45,7 +45,7 @@ import type {
 } from "./executor.js";
 import { isSystemKeyCombo } from "./keyBlocklist.js";
 import { validateClickTarget } from "./pixelCompare.js";
-import { SENTINEL_BUNDLE_IDS } from "./sentinelApps.js";
+import { getSentinelCategory } from "./sentinelApps.js";
 import type {
   AppGrant,
   ComputerUseHostAdapter,
@@ -822,7 +822,9 @@ function resolveRequestedApps(
     return {
       requestedName: requested,
       resolved,
-      isSentinel: bundleId ? SENTINEL_BUNDLE_IDS.has(bundleId) : false,
+      // La categoría completa, como en 2.1.283 (`LB`): la unión de los
+      // conjuntos de macOS no ve la rama de Windows.
+      isSentinel: bundleId ? getSentinelCategory(bundleId) !== null : false,
       alreadyGranted: bundleId ? alreadyGrantedBundleIds.has(bundleId) : false,
       proposedTier: getDefaultTierForApp(
         bundleIdCandidate,
