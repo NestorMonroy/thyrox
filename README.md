@@ -318,7 +318,7 @@ episodio en que un `ls`/`grep` a mano se acotó a una sola iniciativa cuando
 el espacio de nombres es global a la capa.
 
 ```bash
-bash bin/hallazgo_ids mint DOCS              # el siguiente libre
+bash bin/hallazgo_ids propose-id DOCS        # propone el siguiente (no lo reserva)
 bash bin/hallazgo_ids verify H-DOCS-1268     # ¿ya existe?
 
 bash bin/agent_store agregar-hallazgo \

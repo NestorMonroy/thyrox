@@ -240,14 +240,29 @@ check("un prefijo con no-letras se rehusa", True, _refused_odd)
 # cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
 # control positivo — medido al escribirlas.
 
-# El subcomando se llama `mint`: es el nombre público de la operación, y la
-# regla de identificadores lo quiere en inglés. `acunar` sigue como alias para
-# los guiones y documentos que ya lo invocan; no se reescribe evidencia fechada.
+# El subcomando se llama `propose-id`: calcula el mayor número usado más uno y
+# lo imprime, pero NO lo reserva. «Acuñar», «mint» y «emitir» prometen una
+# asignación que no ocurre hasta que alguien escribe la fila o el .rst — el
+# hueco de H-THYROX-26. `mint` y `acunar` siguen como alias para los guiones y
+# documentos que ya los invocan; no se reescribe evidencia fechada.
+import contextlib as _contextlib  # noqa: E402  -- sólo para leer la ayuda
+import io as _io  # noqa: E402
 parser = hallazgo_ids.build_parser()
-check("mint es el subcomando", hallazgo_ids._cmd_mint, parser.parse_args(["mint", "THYROX"]).func)
-check("acunar sigue resolviendo, como alias", hallazgo_ids._cmd_mint,
+check("propose-id es el subcomando", hallazgo_ids._cmd_propose_id,
+      parser.parse_args(["propose-id", "THYROX"]).func)
+check("mint sigue resolviendo, como alias", hallazgo_ids._cmd_propose_id,
+      parser.parse_args(["mint", "THYROX"]).func)
+check("acunar sigue resolviendo, como alias", hallazgo_ids._cmd_propose_id,
       parser.parse_args(["acunar", "THYROX"]).func)
-check("la ayuda anuncia mint", True, "mint" in parser.format_help())
+check("la ayuda anuncia propose-id", True, "propose-id" in parser.format_help())
+help_buffer = _io.StringIO()
+with _contextlib.redirect_stdout(help_buffer):
+    try:
+        parser.parse_args(["propose-id", "--help"])
+    except SystemExit:
+        pass
+subcommand_help = help_buffer.getvalue()
+check("y dice que no reserva el número", True, "no lo reserva" in subcommand_help)
 check("verify es el subcomando", hallazgo_ids._cmd_verify,
       parser.parse_args(["verify", "H-API-1"]).func)
 check("verificar sigue resolviendo, como alias", hallazgo_ids._cmd_verify,

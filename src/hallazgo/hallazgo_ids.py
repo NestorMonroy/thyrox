@@ -266,7 +266,7 @@ def is_free(source_root: Path, full_id: str,
     return number not in used
 
 
-def _cmd_mint(args: argparse.Namespace) -> int:
+def _cmd_propose_id(args: argparse.Namespace) -> int:
     root = docs_root(args.consumer)
     print(next_id(root, args.prefix))   # default: árbol + store
     return 0
@@ -288,14 +288,21 @@ def build_parser() -> argparse.ArgumentParser:
                      'iniciativa.')
     sub = parser.add_subparsers(dest='comando', required=True)
 
-    # `mint` y `verify` son los nombres públicos; `acunar` y `verificar` quedan
-    # como alias para los guiones y documentos que ya los invocan.
-    mint = sub.add_parser(
-        'mint', aliases=['acunar'], help='imprime el next_number H-<PREFIJO>-N libre')
-    mint.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
-    mint.add_argument('--consumer', default='docs',
+    # `propose-id` y `verify` son los nombres públicos; `mint`, `acunar` y
+    # `verificar` quedan como alias para los guiones y documentos que ya los
+    # invocan. «Proponer» y no «acuñar» ni «emitir»: el número NO se reserva,
+    # y un nombre que prometa la asignación invita a saltarse el registro que
+    # sí la hace (H-THYROX-26).
+    propose = sub.add_parser(
+        'propose-id', aliases=['mint', 'acunar'],
+        help='propone H-<PREFIJO>-N para un hallazgo nuevo',
+        description='Propone H-<PREFIJO>-N: el mayor número usado en los .rst y en '
+                    'el store, más uno. Es una propuesta: no lo reserva. Queda '
+                    'asignado cuando se escribe su fila o su .rst.')
+    propose.add_argument('prefix', help='API, DOCS, THYROX, UI, DB, SERVER…')
+    propose.add_argument('--consumer', default='docs',
                          help='el clon a resolver con reach.root (default: docs)')
-    mint.set_defaults(func=_cmd_mint)
+    propose.set_defaults(func=_cmd_propose_id)
 
     verify = sub.add_parser(
         'verify', aliases=['verificar'], help='¿un H-<PREFIJO>-N ya elegido está libre?')

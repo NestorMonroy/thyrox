@@ -50,8 +50,9 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
    entre sesiones (`agent_store.py buscar-hallazgos`). No todo trabajo
    produce uno — sólo el que corrige algo que alguien podría volver a asumir.
    **Cuando el hallazgo es del consumidor** —un ``H-<PREFIJO>-NNNN`` que vive
-   como ``.rst`` en `kaupamex-docs`— el número se acuña con
-   `src/hallazgo/hallazgo_ids.py mint <PREFIJO>`, nunca a mano con un
+   como ``.rst`` en `kaupamex-docs`— el número lo propone
+   `bin/hallazgo_ids propose-id <PREFIJO>` (el mayor usado más uno, **sin
+   reservarlo**: queda asignado al registrar su fila), nunca a mano con un
    `ls`/`grep` acotado a una sola iniciativa. Ese acotado fue exactamente el
    error que originó este mecanismo: `H-API-1112` documenta el episodio.
 
@@ -66,7 +67,7 @@ si describe cómo funciona una pieza, va en la cabecera de la pieza.
      etiqueta ``:ref:`` y su fila en el índice de la iniciativa;
    - **la fila es su índice de búsqueda** entre sesiones, y no lo sustituye;
    - **la ventana entre registrar la fila y escribir el archivo es legítima
-     mientras dura.** Por eso el acuñador consulta las dos fuentes por
+     mientras dura.** Por eso `propose-id` consulta las dos fuentes por
      defecto: un número libre en los ``.rst`` puede estar ocupado por una
      fila escrita hace un minuto. Congelada, esa ventana es deuda, y quien la
      mide es `src/verify/check_finding_id_unique.py`.
