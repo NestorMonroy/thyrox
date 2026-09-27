@@ -27,11 +27,12 @@ import os
 import re
 import sys
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agents import model_catalog
-from session import gpu_monitor
 from cache.paths import cache_dir
+from session import gpu_monitor
 
 HISTORY_FILE = "runs.jsonl"
 DEFAULT_MARGIN = 2.0
@@ -103,8 +104,26 @@ def _gpu_peak(gpu_file: Path) -> int | None:
     return reading.summary.peak_mib if reading.summary is not None else None
 
 
+#: El formato de ``recorded_at``: UTC con segundos, comparable como texto.
+RECORDED_AT_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def template_digest(prompt_path: Path) -> str:
+    """La huella del CONTENIDO de la plantilla: la ruta es el significante y
+    no dice si la plantilla que se lanza hoy es la que se midió."""
+    return hashlib.sha256(Path(prompt_path).read_bytes()).hexdigest()
+
+
+def _nearest_rank(values: list[int], fraction: float) -> int:
+    """Percentil por rango cercano: siempre un valor MEDIDO, nunca una
+    interpolación que ningún ítem alcanzó."""
+    ordered = sorted(values)
+    return ordered[max(math.ceil(fraction * len(ordered)), 1) - 1]
+
+
 def record(history: Path, out_dir: Path, runner: str | None = None,
-           item_model: str | None = None) -> dict | None:
+           item_model: str | None = None, template_digest: str | None = None,
+           now: datetime | None = None) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
     ningún ``.time`` fue medible (no se escribe una fila de ceros).
 
@@ -120,7 +139,14 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
         "max_wall_s": max(wall for _, wall in measures),
         "min_wall_s": min(wall for _, wall in measures),
         "peak_kb": max(kb for kb, _ in measures),
+        # La distribución, no sólo el pico: separa «un ítem pesado» de «todos
+        # pesados», que el máximo solo no distingue.
+        "median_kb": _nearest_rank([kb for kb, _ in measures], 0.5),
+        "p90_kb": _nearest_rank([kb for kb, _ in measures], 0.9),
+        "recorded_at": (now or datetime.now(UTC)).strftime(RECORDED_AT_FORMAT),
     }
+    if template_digest:
+        row["template_digest"] = template_digest
     # El binario que corrió los ítems: la cota que deriva esta fila es SUYA.
     # `claude -p` y `thyrox -p` son procesos distintos, y medir uno no dice
     # nada del otro.
@@ -133,6 +159,8 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
     vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
     if vram:
         row["peak_vram_mib"] = max(vram)
+        row["median_vram_mib"] = _nearest_rank(vram, 0.5)
+        row["p90_vram_mib"] = _nearest_rank(vram, 0.9)
     # La cobertura de la medida de VRAM: los ítems con `.time` cuyo `.gpu` del
     # mismo número es una MEDIDA. Sin ella un pico 0 no distingue «ningún ítem
     # usó GPU» de «a la mitad no se les midió» (H-THYROX-192).
@@ -193,13 +221,40 @@ def _cap(label: str, unit: str, free: int | None, reserve: int, peak: int | None
 MIN_GPU_SAMPLES = 2
 
 
-def vram_calibration(row: dict | None, gpu_interval_s: float) -> tuple[bool, str]:
+def _age_s(row: dict, now: datetime | None) -> float | None:
+    """Segundos desde que se registró la fila; ``None`` si no lleva fecha."""
+    stamp = row.get("recorded_at")
+    if not stamp:
+        return None
+    recorded = datetime.strptime(stamp, RECORDED_AT_FORMAT).replace(tzinfo=UTC)
+    return ((now or datetime.now(UTC)) - recorded).total_seconds()
+
+
+def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1,
+                     template_digest: str | None = None, max_age_s: float | None = None,
+                     now: datetime | None = None) -> tuple[bool, str]:
     """¿Describe el historial la VRAM de los ítems que se van a lanzar? Sólo
     si la última ejecución midió la VRAM de TODOS sus ítems y cada uno duró lo
     bastante para ser visto. Un 0 medido es una medida; como predicción sólo
-    vale con esa cobertura (H-THYROX-192)."""
+    vale con esa cobertura (H-THYROX-192).
+
+    Y sólo si es representativa de lo que se lanza: al menos ``min_items``
+    ítems medidos —los que irán a la vez—, la misma plantilla por su huella de
+    contenido, y no más vieja que ``max_age_s``. Cada límite se aplica sólo si
+    se declara."""
     if row is None:
         return False, "sin ejecución previa de esta plantilla"
+    if row.get("items_measured", 0) < min_items:
+        return False, (f"{row.get('items_measured', 0)} ítems medidos para lanzar {min_items} "
+                       f"a la vez: no representa su dispersión")
+    if template_digest and row.get("template_digest") != template_digest:
+        return False, "la plantilla cambió desde esa ejecución (o la fila no lleva su huella)"
+    if max_age_s is not None:
+        age = _age_s(row, now)
+        if age is None:
+            return False, "la fila no lleva fecha y hay un límite de edad declarado"
+        if age > max_age_s:
+            return False, f"la fila tiene {age:.0f} s, más que el límite de {max_age_s:.0f} s"
     if "peak_vram_mib" not in row:
         return False, "la última ejecución no midió VRAM"
     if "items_gpu_measured" not in row or "min_wall_s" not in row:
@@ -232,13 +287,15 @@ def vram_request(row: dict | None, calibrated: bool, margin: float, floor_mib: i
 
 
 def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib: int, margin: float,
-                   floor_mib: int, gpu_interval_s: float) -> tuple[int | None, int | None, str]:
+                   floor_mib: int, gpu_interval_s: float,
+                   representativeness: dict) -> tuple[int | None, int | None, str]:
     """(tope, pedido, porqué) de VRAM. Sin GPU medida, lo de siempre: el pico
-    del historial, sin tope ni política."""
+    del historial, sin tope ni política. ``representativeness`` son los
+    límites de ``vram_calibration`` (ítems mínimos, plantilla, edad)."""
     if free_vram_mib is None:
         peak = (row or {}).get("peak_vram_mib")
         return None, (math.ceil(peak * margin) if peak else None), ""
-    calibrated, why_cal = vram_calibration(row, gpu_interval_s)
+    calibrated, why_cal = vram_calibration(row, gpu_interval_s, **representativeness)
     need, why_need = vram_request(row, calibrated, margin, floor_mib, max(free_vram_mib - vram_reserve_mib, 0))
     if calibrated:
         # Mismo invariante que en ``vram_request``: calibrado implica fila.
@@ -255,7 +312,9 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
            reserve_kb: int = 0, free_vram_mib: int | None = None, vram_reserve_mib: int = 0,
            available_ram_kb: int | None = None, vram_floor_mib: int = 0,
            gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None,
-           item_model: str | None = None) -> Decision:
+           item_model: str | None = None, min_items: int = 1,
+           template_digest: str | None = None, max_age_s: float | None = None,
+           now: datetime | None = None) -> Decision:
     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
 
     Con ``runner``, sólo cuentan las ejecuciones de ese binario: sin ninguna,
@@ -267,7 +326,9 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
     reserve_note = f" + reserva {reserve_kb} KB" if reserve_kb else ""
     row = _last_row(history, runner, item_model)
     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
-                                              vram_floor_mib, gpu_interval_s)
+                                              vram_floor_mib, gpu_interval_s,
+                                              {"min_items": min_items, "template_digest": template_digest,
+                                               "max_age_s": max_age_s, "now": now})
     if row is None:
         others = len(_rows(history))
         missing = "sin ejecución previa de esta plantilla"
@@ -301,6 +362,7 @@ def main(argv: list[str]) -> int:
     p_rec.add_argument("history"); p_rec.add_argument("out_dir")
     p_rec.add_argument("--runner", default=None, help="el binario que corrió los ítems")
     p_rec.add_argument("--item-model", default=None, help="el modelo que corrió los ítems")
+    p_rec.add_argument("--template", default=None, help="la plantilla: se guarda su huella")
     p_der = sub.add_parser("derive", help="imprime TTL, memfree y porqué, separados por tabulador")
     p_der.add_argument("history"); p_der.add_argument("model")
     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
@@ -313,6 +375,12 @@ def main(argv: list[str]) -> int:
     p_der.add_argument("--vram-floor-mib", type=int, default=0)
     p_der.add_argument("--runner", default=None, help="sólo filas de este binario")
     p_der.add_argument("--item-model", default=None, help="sólo filas de este modelo")
+    p_der.add_argument("--template", default=None,
+                       help="calibrado sólo si la fila lleva la huella de esta plantilla")
+    p_der.add_argument("--min-items", type=int, default=1,
+                       help="calibrado sólo con al menos estos ítems medidos")
+    p_der.add_argument("--max-age-hours", type=float, default=None,
+                       help="calibrado sólo si la fila no es más vieja")
     args = parser.parse_args(argv)
 
     if args.command == "dir":
@@ -320,7 +388,8 @@ def main(argv: list[str]) -> int:
         return 0
     if args.command == "record":
         row = record(Path(args.history), Path(args.out_dir), runner=args.runner,
-                     item_model=args.item_model)
+                     item_model=args.item_model,
+                     template_digest=template_digest(Path(args.template)) if args.template else None)
         print(json.dumps(row) if row else "historial: ningún .time medible, sin fila")
         return 0
     catalog, reason = model_catalog.try_catalog()
@@ -331,7 +400,9 @@ def main(argv: list[str]) -> int:
                       free_vram_mib=args.free_vram_mib, vram_reserve_mib=args.vram_reserve_mib,
                       available_ram_kb=args.available_ram_kb, vram_floor_mib=args.vram_floor_mib,
                       gpu_interval_s=args.gpu_interval, runner=args.runner,
-                      item_model=args.item_model)
+                      item_model=args.item_model, min_items=args.min_items,
+                      template_digest=template_digest(Path(args.template)) if args.template else None,
+                      max_age_s=args.max_age_hours * 3600 if args.max_age_hours is not None else None)
     width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
     # seguidos, y un campo vacío corre al siguiente a su lugar.

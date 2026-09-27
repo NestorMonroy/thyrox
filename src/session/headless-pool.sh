@@ -87,7 +87,10 @@
 set -uo pipefail
 
 PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
-CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-claude}"
+# El ejecutor de cada ítem: `thyrox -p` (`bin/cli`) salvo que se declare otro.
+# `HEADLESS_POOL_CLAUDE` conserva su nombre por compatibilidad con quien ya lo
+# declara; su valor ya no es `claude` por defecto.
+CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""
@@ -113,7 +116,7 @@ done
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
-command -v "$CLAUDE_BIN" >/dev/null 2>&1 || rehusa "falta \`claude\` ($CLAUDE_BIN)."
+command -v "$CLAUDE_BIN" >/dev/null 2>&1 || rehusa "falta el ejecutor de los ítems ($CLAUDE_BIN)."
 [[ -n "$PROMPT" && -f "$PROMPT" ]] || rehusa "la plantilla de prompt no existe: ${PROMPT:-(sin --prompt)}"
 [[ -n "$OUT" ]] || rehusa "falta --out"
 case "$MODEL" in
@@ -199,13 +202,28 @@ VRAM_RESERVE_MIB="${HEADLESS_POOL_VRAM_RESERVE_MIB:-0}"
 # esté calibrado. Sin piso, un historial sin calibrar pide la GPU entera.
 VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
 [[ "$VRAM_FLOOR_MIB" =~ ^[0-9]+$ ]] || rehusa "HEADLESS_POOL_VRAM_MIN_MIB va en MiB enteros, no: $VRAM_FLOOR_MIB"
+# Los ítems se leen antes de derivar: cuántos van a la vez —min(anchura,
+# ítems)— es cuántos tiene que haber medido la fila para representarlos.
+mapfile -t ITEMS < <(gawk 'NF')
+[[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
+MIN_ITEMS=$(( ${#ITEMS[@]} < WIDTH ? ${#ITEMS[@]} : WIDTH ))
 DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
+             # Representativa de lo que se lanza: la misma plantilla por su
+             # contenido y al menos tantos ítems medidos como van a la vez.
+             --template "$PROMPT" --min-items "$MIN_ITEMS"
              --gpu-interval "$HP_GPU_INTERVAL" --vram-floor-mib "$VRAM_FLOOR_MIB"
              # La cota es del binario que corre los ítems: una fila medida con
              # `claude -p` no fija la de `thyrox -p` (#48), y al revés.
              --runner "$CLAUDE_BIN"
              # Y del modelo: la misma plantilla con otro modelo es otra carga.
              --item-model "$MODEL")
+# La edad máxima de la fila, parámetro del consumidor: sin declarar, la edad no
+# cuenta.
+if [[ -n "${HEADLESS_POOL_HISTORY_MAX_AGE_HOURS:-}" ]]; then
+    [[ "$HEADLESS_POOL_HISTORY_MAX_AGE_HOURS" =~ ^[0-9]+([.][0-9]+)?$ ]] \
+        || rehusa "HEADLESS_POOL_HISTORY_MAX_AGE_HOURS va en horas, no: $HEADLESS_POOL_HISTORY_MAX_AGE_HOURS"
+    DERIVE_ARGS+=(--max-age-hours "$HEADLESS_POOL_HISTORY_MAX_AGE_HOURS")
+fi
 AVAILABLE_RAM_KB="$(gawk '/^MemAvailable:/{print $2}' "${THYROX_POOL_MEMINFO_PATH:-/proc/meminfo}" 2>/dev/null)"
 [[ -z "$AVAILABLE_RAM_KB" ]] || DERIVE_ARGS+=(--available-ram-kb "$AVAILABLE_RAM_KB")
 if [[ -n "$HP_NVIDIA_SMI" ]]; then
@@ -231,9 +249,6 @@ else
     echo "historial: no se pudo derivar (sin catálogo de modelos); corre con lo declarado"
 fi
 export HP_VRAM_NEED
-
-mapfile -t ITEMS < <(gawk 'NF')
-[[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
 
 mkdir -p "$OUT"
 : > "$OUT/index.tsv"
@@ -358,6 +373,6 @@ gawk -F'\t' '
 STATUS=$?
 # La medida de esta ejecución alimenta a la siguiente. Sin GNU Time no hay
 # `.time` y `record` no escribe fila: una medida ausente no es un cero.
-[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$CLAUDE_BIN" --item-model "$MODEL" >/dev/null
+[[ -z "$HP_TIME" ]] || pool_history record "$HISTORY" "$OUT" --runner "$CLAUDE_BIN" --item-model "$MODEL" --template "$PROMPT" >/dev/null
 [[ -n "$HP_TIME" ]] || echo "memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)"
 exit $STATUS

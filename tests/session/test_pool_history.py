@@ -22,11 +22,12 @@ import io
 import json
 import sys
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
-from agents import model_catalog  # noqa: E402
-from session import pool_history as ph  # noqa: E402
+from agents import model_catalog
+from session import pool_history as ph
 
 OK = FAILED = 0
 MODEL = "claude-sonnet-5"
@@ -293,6 +294,82 @@ with tempfile.TemporaryDirectory() as raw:
                  "--item-model", "claude-opus-5"])
     check("la CLI recibe --item-model en las dos órdenes", "-",
           buffer.getvalue().splitlines()[-1].split("\t")[1])
+
+    print("== 25. la fila guarda la distribución, la plantilla y la fecha ==")
+    # Sólo el pico no deja calcular un percentil ni separar «un ítem pesado» de
+    # «todos pesados»; sin huella de plantilla ni fecha no se sabe si la fila
+    # describe a la plantilla de hoy.
+    out = run_with([f"{kb} 10 1 0\n" for kb in (100000, 200000, 300000, 400000, 500000,
+                                                600000, 700000, 800000, 900000, 1000000)])
+    for n, mib in enumerate((100, 200, 300, 400, 500, 600, 700, 800, 900, 1000), start=1):
+        (out / f"{n}.gpu").write_text(f"{mib} {mib} 50 20\n")
+    when = datetime(2026, 9, 27, 6, 0, 0, tzinfo=UTC)
+    row = ph.record(TMP / "h-dist", out, template_digest="abc123", now=when)
+    assert row is not None
+    check("mediana de RAM por ítem (rango cercano)", 500000, row.get("median_kb"))
+    check("p90 de RAM por ítem", 900000, row.get("p90_kb"))
+    check("el pico sigue siendo el máximo", 1000000, row.get("peak_kb"))
+    check("mediana de VRAM", 500, row.get("median_vram_mib"))
+    check("p90 de VRAM", 900, row.get("p90_vram_mib"))
+    check("la huella de la plantilla", "abc123", row.get("template_digest"))
+    check("la fecha, en UTC", "2026-09-27T06:00:00Z", row.get("recorded_at"))
+    prompt = TMP / "plantilla.md"
+    prompt.write_text("Item: {}\n")
+    check("la huella es del CONTENIDO: estable", ph.template_digest(prompt), ph.template_digest(prompt))
+    other = TMP / "otra.md"
+    other.write_text("Item: {} con otra instrucción\n")
+    check("... y cambia si el contenido cambia", False,
+          ph.template_digest(prompt) == ph.template_digest(other))
+
+    print("== 26. calibrado exige ítems suficientes, la misma plantilla y una fila reciente ==")
+    base = {**full, "items_measured": 4, "items_gpu_measured": 4, "template_digest": "abc123",
+            "recorded_at": "2026-09-27T06:00:00Z"}
+    now = datetime(2026, 9, 27, 8, 0, 0, tzinfo=UTC)
+    def cal(row, **kw):
+        return ph.vram_calibration(row, gpu_interval_s=0.5, now=now, **kw)
+    check("con todo en regla: calibrado", True,
+          cal(base, min_items=4, template_digest="abc123", max_age_s=3 * 3600)[0])
+    few = cal(base, min_items=8)
+    check("4 ítems medidos para lanzar 8 a la vez: no representa su dispersión", (False, True),
+          (few[0], "4" in few[1] and "8" in few[1]))
+    changed = cal(base, template_digest="zzz999")
+    check("la plantilla cambió desde esa ejecución", (False, True), (changed[0], "plantilla" in changed[1]))
+    unmarked = cal({k: v for k, v in base.items() if k != "template_digest"}, template_digest="abc123")
+    check("una fila sin huella no describe a la plantilla de hoy", False, unmarked[0])
+    old = cal(base, max_age_s=3600)
+    check("una fila de hace 2 h con límite de 1 h: vieja", (False, True), (old[0], "límite" in old[1]))
+    undated = cal({k: v for k, v in base.items() if k != "recorded_at"}, max_age_s=3600)
+    check("una fila sin fecha no pasa un límite declarado", False, undated[0])
+    check("sin límite declarado, la edad no cuenta", True, cal(base)[0])
+    d = ph.derive(history_with("h-vieja", {**base, "max_wall_s": 3.0, "peak_kb": 1, "peak_vram_mib": 3200}),
+                  MODEL, catalog, margin=2.0, free_vram_mib=14000, vram_reserve_mib=2000,
+                  gpu_interval_s=0.5, min_items=8, now=now)
+    check("derive con pocos ítems: pide la GPU entera, de a uno", (12000, 1), (d.vram_need_mib, d.width_cap))
+
+    print("== 27. la CLI recibe la plantilla, los ítems mínimos y la edad máxima ==")
+    history_cli = TMP / "h-cli-cal"
+    out = run_with(["300000 10 1 0\n", "300000 10 1 0\n"])
+    for n in (1, 2):
+        (out / f"{n}.gpu").write_text("3000 2500 90 20\n")
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["record", str(history_cli), str(out), "--template", str(prompt)])
+    stored = json.loads((history_cli / ph.HISTORY_FILE).read_text().splitlines()[-1])
+    check("record --template guarda la huella", ph.template_digest(prompt), stored.get("template_digest"))
+    check("... y la fecha", True, bool(stored.get("recorded_at")))
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["derive", str(history_cli), MODEL, "--margin", "1", "--free-vram-mib", "14000",
+                 "--gpu-interval", "0.5", "--template", str(other), "--min-items", "2",
+                 "--max-age-hours", "24"])
+    check("derive --template con OTRA plantilla: la GPU entera", "14000",
+          buffer.getvalue().split("\t")[3])
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["derive", str(history_cli), MODEL, "--margin", "1", "--free-vram-mib", "14000",
+                 "--gpu-interval", "0.5", "--template", str(prompt), "--min-items", "2",
+                 "--max-age-hours", "24"])
+    check("... con la MISMA plantilla: el pico medido", "3000", buffer.getvalue().split("\t")[3])
 
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)

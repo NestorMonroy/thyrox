@@ -104,6 +104,15 @@ SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=/no/existe/claude bash "$POOL" 
 check "sin claude: exit 2" "$CODE" "2"
 SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
+# Sin ejecutor declarado, el ítem corre con `thyrox -p` (`bin/cli`), no con
+# `claude -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
+# binario se lanzaría, sin lanzarlo.
+printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_CLAUDE" > "%s/runner.txt"\n' "$F" > "$F/parallel-runner"
+chmod +x "$F/parallel-runner"
+rm -rf "$F/out" "$F/runner.txt"
+printf 'alfa\n' | env -u HEADLESS_POOL_CLAUDE HEADLESS_POOL_PARALLEL="$F/parallel-runner" HEADLESS_POOL_TIME="$F/no-existe" \
+  HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 >/dev/null 2>&1
+check "sin ejecutor declarado: thyrox -p (bin/cli)" "$(cat "$F/runner.txt" 2>/dev/null)" "$RAIZ/bin/cli"
 
 # --memfree: la cota llega a GNU Parallel, y una ilegible rehusa sin resumen.
 cat > "$F/parallel" <<'SH'
@@ -249,7 +258,9 @@ rm -rf "$F/out"; EXTRA="--timeout 2" HEADLESS_POOL_VRAM_LEDGER=/proc/no-se-puede
 check "admisión con error: el ítem falla" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=0 fallidos=1"
 check "admisión con error: el .err dice que falló, no que venció" \
   "$(gawk '/la admision por VRAM fallo \(exit [0-9]+\)/{a++} /admision por VRAM vencida/{b++} END{print a+0, b+0}' "$F/out/1.err")" "1 0"
-rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/gnu-time" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+# Un solo ítem: la fila midió uno, así que está calibrada para lanzar uno (con
+# dos, la dispersión de uno no los representa y pediría la GPU entera).
+rm -rf "$F/out"; EXTRA="--width 4" FAKE_FREE_VRAM=1000 HEADLESS_POOL_PARALLEL="$F/parallel" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
 check "VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4" \
   "$(printf '%s' "$SALIDA" | gawk '/^anchura: 1 \(configurada 4/{n++} END{print n+0}')" "1"
 # Lo que discrimina no es el mensaje sino el -j que llega a Parallel: un aviso
@@ -260,6 +271,17 @@ check "VRAM: Parallel se lanza con -j 1" "$(gawk '{for (i = 1; i < NF; i++) if (
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
 check "reserva: los items admitidos arrancan" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
 check "reserva: el registro queda vacio al terminar" "$(jq -r 'length' "$HIST/vram-reservations.json" 2>/dev/null)" "0"
+# La última fila midió UN ítem; lanzar dos a la vez con ella es extrapolar su
+# dispersión. Calibrado exige min(anchura, ítems) medidos.
+rm -rf "$F/out"; EXTRA="--width 4" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa beta
+check "calibrado exige tantos ítems medidos como van a la vez" \
+  "$(printf '%s' "$SALIDA" | gawk 'index($0, "1 ítems medidos para lanzar 2"){n++} END{print n+0}')" "1"
+# Una edad máxima declarada deja fuera una fila más vieja: con 0 h, cualquiera.
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_HISTORY_MAX_AGE_HOURS=0 HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_NVIDIA_SMI="$F/nvidia-smi" corre alfa
+check "la edad máxima declarada deja fuera la fila" \
+  "$(printf '%s' "$SALIDA" | gawk '/^historial:.*límite/{n++} END{print n+0}')" "1"
+rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_HISTORY_MAX_AGE_HOURS=muchas corre alfa
+check "edad máxima ilegible: exit 2" "$CODE" "2"
 # --- dos pools DISTINTOS a la vez, sobre una GPU simulada con estado ---------
 # Integración, no componente: dos `headless-pool` —dos GNU Parallel, cada uno
 # con su -j— comparten la base del historial y por tanto el registro. GPU de
@@ -340,6 +362,9 @@ check "la fila nombra el binario que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_CLAUDE"
 check "la fila nombra el modelo que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .item_model)" "claude-sonnet-5"
+check "la fila lleva la huella del CONTENIDO de la plantilla" \
+  "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .template_digest)" \
+  "$(sha256sum "$F/prompt.md" | gawk '{print $1}')"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=5m|thx=5m"
 check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
