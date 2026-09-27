@@ -247,6 +247,140 @@ function usesIn(file: ts.SourceFile, fileName: string, locals: ReadonlySet<strin
   return found
 }
 
+/** La expresión sin `await` ni paréntesis: `(await f(o))` es `f(o)`. */
+function unwrap(node: ts.Expression): ts.Expression {
+  let current = node
+  while (ts.isAwaitExpression(current) || ts.isParenthesizedExpression(current)) current = current.expression
+  return current
+}
+
+/** El último término de una lista con comas: `return a(),b,r` devuelve `r`. */
+function lastOfComma(node: ts.Expression): ts.Expression {
+  let current = unwrap(node)
+  while (ts.isBinaryExpression(current) && current.operatorToken.kind === ts.SyntaxKind.CommaToken) {
+    current = unwrap(current.right)
+  }
+  return current
+}
+
+function isDynamicImportOf(node: ts.Expression, specifier: string): boolean {
+  const call = unwrap(node)
+  if (!ts.isCallExpression(call) || call.expression.kind !== ts.SyntaxKind.ImportKeyword) return false
+  const argument = call.arguments[0]
+  return argument !== undefined && ts.isStringLiteralLike(argument) && argument.text === specifier
+}
+
+/** La función o el archivo que delimita el alcance de una declaración. */
+function scopeOf(node: ts.Node): ts.Node {
+  let current = node.parent
+  while (current && !ts.isFunctionLike(current) && !ts.isSourceFile(current)) current = current.parent
+  return current ?? node.getSourceFile()
+}
+
+function within(node: ts.Node, scope: ts.Node): boolean {
+  for (let current: ts.Node | undefined = node; current; current = current.parent) {
+    if (current === scope) return true
+  }
+  return false
+}
+
+type ScopedName = { name: string; scope: ts.Node }
+
+function visible(names: readonly ScopedName[], node: ts.Identifier): boolean {
+  return names.some(n => n.name === node.text && within(node, n.scope))
+}
+
+/**
+ * Los usos de un módulo que llega como NAMESPACE, no por nombre: el consumidor
+ * accede a `ns.<export>`. Tres formas, las tres medidas en 2.1.283:
+ *
+ * 1. `import*as ns from DEF`, o `ns=await import(DEF)` ligado a una variable;
+ * 2. un cargador: la función cuyo `return` entrega ese namespace (también
+ *    como último término de una lista con comas), llamada como
+ *    `(await load(e)).<export>`;
+ * 3. una variable ligada al resultado del cargador: `i=await load(e); i.<export>`.
+ *
+ * Cada nombre vale sólo dentro de la función que lo declara: en código
+ * minificado `i` o `r` se repiten entre funciones con valores distintos.
+ */
+function namespaceUsesIn(file: ts.SourceFile, fileName: string, specifier: string,
+                         exported: ReadonlySet<string>): SymbolReference[] {
+  const namespaces: ScopedName[] = []
+  for (const statement of file.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue
+    const bindings = statement.importClause?.namedBindings
+    if (statement.moduleSpecifier.text === specifier && bindings && ts.isNamespaceImport(bindings)) {
+      namespaces.push({ name: bindings.name.text, scope: file })
+    }
+  }
+  const collectNamespaces = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer
+        && isDynamicImportOf(node.initializer, specifier)) {
+      namespaces.push({ name: node.name.text, scope: scopeOf(node) })
+    }
+    ts.forEachChild(node, collectNamespaces)
+  }
+  collectNamespaces(file)
+
+  const loaders = new Set<string>()
+  for (const statement of file.statements) {
+    if (!ts.isFunctionDeclaration(statement) || !statement.name) continue
+    let returnsNamespace = false
+    const visit = (node: ts.Node): void => {
+      if (ts.isReturnStatement(node) && node.expression) {
+        const returned = lastOfComma(node.expression)
+        if (ts.isIdentifier(returned) && visible(namespaces, returned)) returnsNamespace = true
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(statement)
+    if (returnsNamespace) loaders.add(statement.name.text)
+  }
+  const isLoaderCall = (node: ts.Expression): boolean => {
+    const call = unwrap(node)
+    return ts.isCallExpression(call) && ts.isIdentifier(call.expression) && loaders.has(call.expression.text)
+  }
+
+  const bound: ScopedName[] = []
+  const collectBound = (node: ts.Node): void => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer
+        && isLoaderCall(node.initializer)) {
+      bound.push({ name: node.name.text, scope: scopeOf(node) })
+    }
+    ts.forEachChild(node, collectBound)
+  }
+  collectBound(file)
+
+  const found: SymbolReference[] = []
+  const visit = (node: ts.Node): void => {
+    if (ts.isPropertyAccessExpression(node) && exported.has(node.name.text)) {
+      const target = unwrap(node.expression)
+      const isNamespace = ts.isIdentifier(target)
+        ? visible(namespaces, target) || visible(bound, target)
+        : isLoaderCall(target)
+      if (isNamespace) {
+        const statement = topLevelStatement(node)
+        found.push({ file: fileName, start: node.getStart(file), kind: ts.SyntaxKind[statement.kind],
+                     binding: bindingOfStatement(statement), member: memberAfter(node) })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return found
+}
+
+/** `x.m` o `x().m` sobre el uso: el miembro que se accede a continuación. */
+function memberAfter(node: ts.Expression): string | null {
+  const parent = node.parent
+  if (ts.isPropertyAccessExpression(parent) && parent.expression === node) return parent.name.text
+  if (ts.isCallExpression(parent) && parent.expression === node) {
+    const outer = parent.parent
+    if (ts.isPropertyAccessExpression(outer) && outer.expression === parent) return outer.name.text
+  }
+  return null
+}
+
 /** Los usos de `name` vistos desde su chunk y en todo chunk que lo importa. */
 export type ReferenceScan = { references: SymbolReference[]; exportedAs: string[]; chunks: number }
 
@@ -267,6 +401,7 @@ export function scanReferences(root: string, chunk: string, name: string): Refer
     const file = parseSource(text)
     const locals = localNamesImported(file, specifier, new Set(exportedAs))
     if (locals.length > 0) references.push(...usesIn(file, fileName, new Set(locals)))
+    references.push(...namespaceUsesIn(file, fileName, specifier, new Set(exportedAs)))
   }
   return { references, exportedAs, chunks: chunks.length }
 }

@@ -15,7 +15,9 @@
  *                        sintactico, siguiendo import/export entre chunks
  *   references <chunk> <nombre> [--root R]
  *                        usos del símbolo en su chunk y en los que lo
- *                        importan, con el miembro que cada uso llama
+ *                        importan —por nombre o como namespace: import*as,
+ *                        import() y el cargador que lo devuelve—, con el
+ *                        miembro que cada uso llama
  *   literal <texto> [--root R]
  *                        declaraciones que contienen el literal, con su
  *                        chunk y su nombre: lo que se pasa luego a symbol
