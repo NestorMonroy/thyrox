@@ -83,6 +83,18 @@ function utcNow(): string {
   return new Date().toISOString().slice(0, 19)
 }
 
+/** `<alias>: <ruta>` al principio: la ruta ya dice de qué árbol es. */
+const DECLARED_ALIAS = /^[a-z0-9][a-z0-9-]*: /
+
+/**
+ * La ruta con el alias de su árbol. Si la fila ya lo declara, se respeta: un
+ * hallazgo de la capa `thyrox` puede citar un archivo de `kaupamex-docs`.
+ */
+function qualifiedSource(record: FindingRecord): string {
+  const source = record.sourceRef ?? ''
+  return DECLARED_ALIAS.test(source) ? source : `${record.submodule}: ${source}`
+}
+
 /** El documento con la plantilla B de `hallazgos-documentacion-obligatoria.md`. */
 export function renderFinding(record: FindingRecord, options: RenderOptions): string {
   const createdAt = options.createdAt ?? utcNow()
@@ -103,7 +115,7 @@ export function renderFinding(record: FindingRecord, options: RenderOptions): st
     `- **Severidad:** ${record.severity ?? 'SIN DECLARAR'}`,
     `- **Fecha:** ${createdAt}`,
   ]
-  if (record.sourceRef) lines.push(`- **Archivo:** \`\`${record.submodule}: ${record.sourceRef}\`\``)
+  if (record.sourceRef) lines.push(`- **Archivo:** \`\`${qualifiedSource(record)}\`\``)
   lines.push(
     `- **Descripcion:** ${record.content}`,
     `- **Estado:** ${options.resolvedIn ? `RESUELTO en \`\`${options.resolvedIn}\`\`` : 'DOCUMENTADO (sin fix inmediato)'}`,

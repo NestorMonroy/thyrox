@@ -84,6 +84,18 @@ describe('la fila y el archivo', () => {
     expect(text).toContain('DOCUMENTADO (sin fix inmediato)')
   })
 
+  // Medido 2026-09-27: 30 de 208 filas H-THYROX ya traen su alias —20
+  // `thyrox:` y 10 `kaupamex-docs:`— y el render anteponía la capa sin mirar:
+  // `thyrox: thyrox: src/…` en las primeras y un alias falso en las segundas.
+  test('9. una ruta que ya declara su alias no recibe otro', () => {
+    const base = readFindingRecord(storeFile, 'H-THYROX-9')!
+    const own = renderFinding({ ...base, sourceRef: 'thyrox: src/packages/binary/src/symbol.ts' }, {})
+    expect(own).toContain('``thyrox: src/packages/binary/src/symbol.ts``')
+    expect(own).not.toContain('thyrox: thyrox:')
+    const other = renderFinding({ ...base, sourceRef: 'kaupamex-docs: source/index.rst' }, {})
+    expect(other).toContain('``kaupamex-docs: source/index.rst``')
+  })
+
   test('3. un identificador que el store no tiene no es una fila', () => {
     expect(readFindingRecord(storeFile, 'H-THYROX-404')).toBeNull()
   })
