@@ -40,6 +40,12 @@ writeFileSync(join(outside, 'destino.md'), 'DESTINO')
 symlinkSync(join(outside, 'destino.md'), join(sub, 'enlace-sale.md'))
 writeFileSync(join(outside, 'externo.md'), 'EXTERNO')
 mkdirSync(join(sub, 'excluido'))
+// Lo que este archivo cambia del PROCESO se restaura al terminar: bun corre
+// todos los archivos del paquete en un solo proceso, y el siguiente heredaba
+// un cwd ya borrado — `git.test.ts` guardaba como «original» un directorio
+// inexistente y sus 14 casos caían al volver a él.
+const cwdBefore = process.cwd()
+const configDirBefore = process.env.CLAUDE_CONFIG_DIR
 process.env.CLAUDE_CONFIG_DIR = home
 process.chdir(sub)
 
@@ -50,7 +56,12 @@ const { setOriginalCwd } = await import('@thyrox/app-host/bootstrap/state.js')
 setOriginalCwd(sub)
 const { getMemoryFiles, resetGetMemoryFilesCache, clearMemoryFileCaches, getClaudeMds } = await import('../claudemd.ts')
 
-afterAll(() => rmSync(base, { recursive: true, force: true }))
+afterAll(() => {
+  process.chdir(cwdBefore)
+  if (configDirBefore === undefined) delete process.env.CLAUDE_CONFIG_DIR
+  else process.env.CLAUDE_CONFIG_DIR = configDirBefore
+  rmSync(base, { recursive: true, force: true })
+})
 beforeEach(() => clearMemoryFileCaches())
 
 // El árbol temporal vive dentro de thyrox: al subir desde el cwd también
