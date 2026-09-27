@@ -5,10 +5,19 @@
   "type": "module",
   "description": "Esquema, E/S y premisas del registro de tareas.",
   "exports": {
-    ".": "./index.ts",
-    "./*.ts": "./*.ts"
+    ".": {
+      "@thyrox/source": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./index.ts"
+    },
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
   },
   "dependencies": {
     "@thyrox/paths": "workspace:*"
-  }
+  },
+  "types": "./dist/index.d.ts"
 }

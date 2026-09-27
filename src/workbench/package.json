@@ -5,7 +5,11 @@
   "type": "module",
   "description": "Manifiesto y rutas del banco de evidencia.",
   "exports": {
-    "./*.ts": "./*.ts"
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
   },
   "dependencies": {
     "@thyrox/paths": "workspace:*"

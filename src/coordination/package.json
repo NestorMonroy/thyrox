@@ -5,6 +5,10 @@
   "type": "module",
   "description": "Reclamos, ledger e integración de ramas entre sesiones.",
   "exports": {
-    "./*.ts": "./*.ts"
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
   }
 }

@@ -724,6 +724,30 @@ def main():
               (pkg / "dist" / "top.d.ts").is_file())
         check("y el repunte ya no lo rehusa", True, mod.repoint_manifest(pkg))
 
+    # --- los paquetes salen del árbol de fuente, no de un glob ni de workspaces ---
+    #
+    # Medido 2026-09-27: `_packages` buscaba sólo `src/packages/*` y los cinco
+    # paquetes de fuera (`src/paths`, `src/store`, `src/task`,
+    # `src/coordination`, `src/workbench`) nunca se emitían ni recibían sus
+    # proyectos. Tampoco se toma de `workspaces`: los proyectos por paquete
+    # existen para retirarlo. Criterio: `package.json` bajo `src/` con `exports`.
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        def write_manifest(rel, body):
+            (root / rel).mkdir(parents=True, exist_ok=True)
+            (root / rel / "package.json").write_text(json.dumps(body))
+        write_manifest("src/packages/dentro", {"name": "@p/dentro", "exports": {".": "./i.ts"}})
+        write_manifest("src/suelto", {"name": "@p/suelto", "exports": {".": "./i.ts"}})
+        write_manifest("src/packages", {"name": "@p/agregador", "workspaces": ["dentro"]})
+        write_manifest("src/suelto/node_modules/dep", {"name": "dep", "exports": {".": "./x.js"}})
+        (root / "package.json").write_text(json.dumps({"name": "r", "workspaces": []}))
+        found = [p.relative_to(root).as_posix() for p in mod._packages(root)]
+        check("el paquete fuera de src/packages se descubre", True, "src/suelto" in found)
+        check("aunque workspaces no lo liste", True, "src/packages/dentro" in found)
+        check("el agregador sin exports no es paquete", False, "src/packages" in found)
+        check("ni lo que cuelga de node_modules", False,
+              any("node_modules" in p for p in found))
+
     print(f"\ntest_emit_declarations: {ok_count} ok, {fail_count} falla")
     return 1 if fail_count else 0
 

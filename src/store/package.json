@@ -5,6 +5,10 @@
   "type": "module",
   "description": "Conexión a la base SQLite del proveedor.",
   "exports": {
-    "./*.ts": "./*.ts"
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
   }
 }

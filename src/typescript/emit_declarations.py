@@ -807,10 +807,34 @@ def repoint_manifest(package_dir: Path) -> bool:
     return True
 
 
+SOURCE_ROOT = "src"
+_PRUNED_DIRS = frozenset({"node_modules", OUTPUT_DIR, ".git", "__pycache__"})
+
+
+def source_packages(root: Path) -> list[Path]:
+    """Los paquetes del árbol de fuente: todo `package.json` bajo `src/` que
+    declara `exports`, en orden estable.
+
+    Es la única lista de paquetes, y la comparten el emisor y
+    `check_exports_types`. No sale de `workspaces`: cada paquete se construye
+    con su `tsconfig.build.json`, y esos proyectos existen para que
+    `workspaces` deje de ser necesario. Un paquete sin `exports` no tiene
+    frontera pública que emitir; el único medido así es el agregador
+    `src/packages/package.json`.
+    """
+    found: list[Path] = []
+    for directory, subdirs, files in os.walk(root / SOURCE_ROOT):
+        subdirs[:] = [d for d in subdirs if d not in _PRUNED_DIRS]
+        if "package.json" not in files:
+            continue
+        manifest = json.loads((Path(directory) / "package.json").read_text(encoding="utf8"))
+        if "exports" in manifest:
+            found.append(Path(directory))
+    return sorted(found)
+
+
 def _packages(root: Path):
-    for pattern in ("src/packages/*/package.json", "src/packages/@ant/*/package.json"):
-        for manifest in sorted(root.glob(pattern)):
-            yield manifest.parent
+    yield from source_packages(root)
 
 
 def main(argv=None):
