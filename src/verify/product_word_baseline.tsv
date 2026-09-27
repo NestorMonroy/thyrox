@@ -20,8 +20,10 @@ src/packages/agent/claudeInChromeCommon.ts	3
 src/packages/agent/claudeInChromeSetup.ts	3
 src/packages/agent/commitAttribution.ts	5
 src/packages/agent/compaction/postCompactCleanup.ts	1
+src/packages/agent/constants/product.ts	1
 src/packages/agent/internal/cronSchedulerCore.ts	1
 src/packages/agent/messages/mappers.ts	3
+src/packages/agent/sdkControlSchemas.ts	3
 src/packages/agent/statusAlias.tsx	4
 src/packages/agent/tasks.ts	1
 src/packages/agent/workflow/namedWorkflows.ts	2
