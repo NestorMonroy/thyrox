@@ -1,0 +1,3 @@
+no-compaction	s/  if (!config.contextCompaction || path !== '\/v1\/messages') return body/  return body/
+count-tokens-too	s/  if (!config.contextCompaction || path !== '\/v1\/messages') return body/  if (!config.contextCompaction) return body/
+same-window	s/  return compactMessagesBody(body, { provider, model, contextWindowOf/  return compactMessagesBody(body, { provider, model: 'mx-small', contextWindowOf/

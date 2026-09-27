@@ -1,0 +1,5 @@
+tools-reserve	s/  const toolsReserve = Array.isArray(body.tools) ? estimateTokens(body.tools) : 0/  const toolsReserve = 0/
+ratio	s/export const PROACTIVE_COMPRESSION_RATIO = 0.7/export const PROACTIVE_COMPRESSION_RATIO = 0.8/
+ratio-applied	s/ \* PROACTIVE_COMPRESSION_RATIO))/))/
+system-inline	s/  const inline = hasSystem ? \[{ role: 'system', content: body.system }, ...messages\] : messages/  const inline = messages/
+system-out	s/  if (lead?.role !== 'system') return/  if (true) return/

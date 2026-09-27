@@ -250,6 +250,51 @@ describe('startProxyServer: enfriamiento por credencial', () => {
   })
 })
 
+describe('startProxyServer: compresión previa del contexto', () => {
+  function countingUpstream() {
+    const counts: number[] = []
+    const server = Bun.serve({
+      port: 0,
+      hostname: '127.0.0.1',
+      async fetch(request) {
+        counts.push(((await request.json()) as { messages: unknown[] }).messages.length)
+        return Response.json({ type: 'message' })
+      },
+    })
+    stops.push(() => server.stop(true))
+    return { baseUrl: `http://127.0.0.1:${server.port}`, counts }
+  }
+  const longConversation = Array.from({ length: 120 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: `${i} ${'z'.repeat(400)}` }))
+  const send = (url: string) => fetch(`${url}/v1/messages`, {
+    method: 'POST',
+    headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ model: 'local-model', messages: longConversation }),
+  }).then(r => r.text())
+
+  test('con la ventana declarada del modelo de upstream, una conversación larga llega recortada', async () => {
+    const upstream = countingUpstream()
+    const proxy = startProxyServer({ ...config(upstream.baseUrl), contextCompaction: { windows: { 'real-model': 4000 } } })
+    stops.push(() => proxy.stop())
+    await send(proxy.url)
+    expect(upstream.counts[0]).toBeLessThan(120)
+  })
+
+  test('sin declarar, la conversación llega entera aunque el entorno fije una ventana pequeña', async () => {
+    const saved = process.env.THYROX_CONTEXT_LENGTH_DEFAULT
+    process.env.THYROX_CONTEXT_LENGTH_DEFAULT = '4000'
+    try {
+      const upstream = countingUpstream()
+      const proxy = startProxyServer(config(upstream.baseUrl))
+      stops.push(() => proxy.stop())
+      await send(proxy.url)
+      expect(upstream.counts[0]).toBe(120)
+    } finally {
+      if (saved === undefined) delete process.env.THYROX_CONTEXT_LENGTH_DEFAULT
+      else process.env.THYROX_CONTEXT_LENGTH_DEFAULT = saved
+    }
+  })
+})
+
 describe('startProxyServer sin claves locales', () => {
   test('rehúsa arrancar abierto: las credenciales del upstream quedarían al alcance de cualquier proceso', () => {
     expect(() => startProxyServer({ ...config('http://127.0.0.1:1'), accessKeys: [] })).toThrow(/clave/)

@@ -64,6 +64,12 @@ export type ProxyStartConfig = {
    * fábrica; `false` lo apaga.
    */
   cooldown?: false | { bannedSignals?: readonly string[] }
+  /**
+   * La compresión previa del contexto: la ventana, en tokens, de cada modelo de
+   * upstream que se conozca. Un modelo sin ventana declarada cae en el entorno y
+   * en las pistas por nombre. Sin declarar, apagada.
+   */
+  contextCompaction?: { windows?: Record<string, number> }
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -124,6 +130,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     cooldown: config.cooldown === false
       ? undefined
       : new CredentialCooldown({ traitsOf: provider => config.providerTraits?.[provider], bannedSignals: config.cooldown?.bannedSignals }),
+    contextCompaction: config.contextCompaction && { contextWindowOf: (_provider, model) => config.contextCompaction?.windows?.[model] },
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,

@@ -1,0 +1,30 @@
+base	5 pass, 0 fail	—
+trim-tools	5 pass, 0 fail	—
+prune-images	5 pass, 0 fail	—
+compress-thinking	5 pass, 0 fail	—
+thinking-keep-last	5 pass, 0 fail	—
+purify	5 pass, 0 fail	—
+purify-repair	5 pass, 0 fail	—
+notice-merge	5 pass, 0 fail	—
+notice-bytes	5 pass, 0 fail	—
+image-budget	3 pass, 2 fail	#10840: a base64 document is never measured as raw prompt text | #10840: every wire shape of the same document agrees
+document-budget	3 pass, 2 fail	#10840: a base64 document is never measured as raw prompt text | #10840: every wire shape of the same document agrees
+openai-image	4 pass, 1 fail	#10840: document detection stays separate from image detection
+claude-image	5 pass, 0 fail	—
+gemini-image	3 pass, 2 fail	#10840: a base64 document is never measured as raw prompt text | #10840: every wire shape of the same document agrees
+responses-placeholder	5 pass, 0 fail	—
+prune-target-stop	5 pass, 0 fail	—
+pairs-keep-last	5 pass, 0 fail	—
+pairs-orphan-result	5 pass, 0 fail	—
+pairs-empty-assistant	5 pass, 0 fail	—
+adjacency	5 pass, 0 fail	—
+strip-trailing	5 pass, 0 fail	—
+mistral	5 pass, 0 fail	—
+env-provider	0 pass, 1 fail	—
+env-default	5 pass, 0 fail	—
+env-reserve	5 pass, 0 fail	—
+env-keep	5 pass, 0 fail	—
+keep-zero	5 pass, 0 fail	—
+injected	5 pass, 0 fail	—
+name-hints	5 pass, 0 fail	—
+reserve-scale	5 pass, 0 fail	—

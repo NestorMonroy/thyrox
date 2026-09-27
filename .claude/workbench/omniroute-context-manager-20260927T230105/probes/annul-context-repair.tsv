@@ -1,0 +1,7 @@
+thinking-keep-last	s/if (message.role !== 'assistant' || i === last || /if (message.role !== 'assistant' || /
+purify-repair	s/  const result = repairToolPairs(\[...system, ...rest.slice(-keep)\])/  const result = [...system, ...rest.slice(-keep)]/
+notice-bytes	s/earlier messages removed to fit context window\]'/earlier messages removed\]'/
+prune-target-stop	s/    if (options.targetTokens != null \&\& estimateTokens(next) <= options.targetTokens) break/    void 0/
+pairs-keep-last	s/message.role === 'assistant' \&\& i !== messages.length - 1 ? /message.role === 'assistant' ? /
+pairs-orphan-result	s/    if (message.role === 'tool' \&\& message.tool_call_id \&\& !callIds.has(String(message.tool_call_id))) continue/    void 0/
+pairs-empty-assistant	s/    if (message.role === 'assistant' \&\& !hasBody(message)) continue/    void 0/

@@ -40,6 +40,8 @@ import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
 import type { CredentialSelector, ProxyCredential } from './credentialSelectors.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
+import { compactMessagesBody } from './context/compactRequest.ts'
+import type { ContextWindowOf } from './context/contextManager.ts'
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
 import type { CredentialCooldown } from './resilience/credentialCooldown.ts'
@@ -102,6 +104,12 @@ export type ProxyServerConfig = {
    * fallo la aparta del selector mientras dura, y un acierto la devuelve.
    */
   cooldown?: CredentialCooldown
+  /**
+   * La compresión previa del contexto (`./context/compactRequest.ts`), por
+   * upstream y con la ventana de su modelo. `contextWindowOf` da esa ventana;
+   * sin él quedan el entorno y las pistas por nombre.
+   */
+  contextCompaction?: { contextWindowOf?: ContextWindowOf }
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -205,7 +213,7 @@ async function forwardBody(
         credential,
         path,
         search: new URL(request.url).search,
-        body: resolved.model === model ? body : { ...body, model: resolved.model },
+        body: upstreamBody(config, path, upstream.provider, resolved.model, resolved.model === model ? body : { ...body, model: resolved.model }),
         headers: request.headers,
         signal: request.signal,
       }
@@ -252,6 +260,12 @@ async function forwardBody(
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
   return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
+}
+
+/** El cuerpo para un upstream: comprimido para la ventana de su modelo, salvo el conteo de tokens, que mide el cuerpo tal como es. */
+function upstreamBody(config: ProxyServerConfig, path: string, provider: string, model: string, body: Record<string, unknown>): Record<string, unknown> {
+  if (!config.contextCompaction || path !== '/v1/messages') return body
+  return compactMessagesBody(body, { provider, model, contextWindowOf: config.contextCompaction.contextWindowOf }).body
 }
 
 /**
