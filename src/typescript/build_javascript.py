@@ -65,7 +65,12 @@ def expand_entries(package_dir: Path, entries: list) -> list:
             if "/*" in entry and entry.endswith(SOURCE_SUFFIXES) else str(package_dir / entry.lstrip("./"))
         for path in sorted(glob.glob(pattern, recursive=True)):
             rel = "./" + os.path.relpath(path, package_dir)
-            if rel.endswith(SOURCE_SUFFIXES) and not any(m in "/" + rel for m in TEST_MARKERS):
+            # El `*` de `exports` casa cualquier subcadena, barras incluidas, y
+            # por eso se expande recursivo; pero `dist/` es SALIDA, un `.d.ts`
+            # es una declaración y `node_modules/` no es del paquete.
+            if (rel.endswith(SOURCE_SUFFIXES) and not rel.endswith(".d.ts")
+                    and not rel.startswith((f"./{OUTPUT_DIR}/", "./node_modules/"))
+                    and not any(m in "/" + rel for m in TEST_MARKERS)):
                 out.append(rel)
     return sorted(set(out))
 

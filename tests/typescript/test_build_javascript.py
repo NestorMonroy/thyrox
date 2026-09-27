@@ -87,6 +87,20 @@ def main() -> int:
     check("toma @thyrox/source y la cadena llana; nunca dist", ["./a.ts", "./index.ts"],
           mod.source_entries(manifest))
 
+    print("expand_entries")
+    with tempfile.TemporaryDirectory(prefix="build-js-wild-") as tmp:
+        wild = Path(tmp)
+        (wild / "dist").mkdir()
+        (wild / "dist" / "index.d.ts").write_text("export {}\n", encoding="utf8")
+        (wild / "dist" / "old.js").write_text("export {}\n", encoding="utf8")
+        (wild / "dist" / "stale.ts").write_text("export {}\n", encoding="utf8")
+        (wild / "__tests__").mkdir()
+        (wild / "__tests__" / "a.test.ts").write_text("export {}\n", encoding="utf8")
+        (wild / "io.ts").write_text("export {}\n", encoding="utf8")
+        (wild / "types.d.ts").write_text("export {}\n", encoding="utf8")
+        check("un comodín en la raíz no recoge dist/, declaraciones ni pruebas", ["./io.ts"],
+              mod.expand_entries(wild, ["./*.ts"]))
+
     print("build_command")
     cmd = mod.build_command(["./index.ts"])
     check("splitting y dependencias externas", True,
