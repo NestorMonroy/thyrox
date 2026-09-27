@@ -1,0 +1,1 @@
+src/packages/agent	src/packages/agent/__tests__,src/packages/agent/background/fleet/__tests__,src/packages/agent/sessionTools/__tests__,src/packages/agent/workflow/__tests__	bun test src/packages/agent/__tests__ src/packages/agent/background/fleet/__tests__ src/packages/agent/sessionTools/__tests__ src/packages/agent/workflow/__tests__	0	2654	PASS
