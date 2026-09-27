@@ -42,3 +42,42 @@ de línea. Se escribe como ` `.
 
 *Métrica:* igualdad de bytes contra `encoding/json` de Go 1.x del contenedor.
 *Ciega a:* claves de mapa no-ASCII y números (el struct sólo lleva cadenas).
+
+## Fase 2: `info.go` (`ExtractSessionInfo`) y `Enrich`
+
+`src/proxy/session/info.ts` y `enrich.ts`, escritos primero en `drafts/`
+mientras el pool corría sus suites (su huella del árbol cubre `src/`).
+Pruebas: `__tests__/proxySessionInfo.test.ts` (`info_test.go` e
+`info_duplicate_test.go`) y `__tests__/proxySessionEnrich.test.ts` (los
+casos de `Enrich` de `identity_test.go`). `TestDeprecatedInMemorySessionTreeStoreCompatibility`
+es de `tree_compat.go` y va con la caché de sesiones (fase 3).
+
+Los nombres de cabecera de clientes ajenos van en minúscula, en una sola
+lista (`SESSION_HEADERS`), y se buscan sin distinguir mayúsculas: la forma de
+OmniRoute.
+
+Anulaciones (`probes/annul-cases2/`, salida en `outputs/annul2/`):
+
+| Anulación | Caen |
+|---|---|
+| sin padre candidato del cuerpo | 16 |
+| cabeceras sensibles a mayúsculas | 14 |
+| sin la rama de bifurcación de Codex | 3 |
+| sin el `user_id` de Messages antes de las cabeceras genéricas | 4 |
+| decodificador UTF-8 no estricto al acotar | 1 |
+| `Enrich` sin la rama de sesión explícita | 13 |
+| `Enrich` sin la rama de sesión de ejecución | 3 |
+
+El caso «cabecera de sesión con cuerpo que no es JSON» sobrevive a la
+anulación de la sesión explícita: sin JSON no hay contenido que derivar, así
+que el resultado vacío coincide por otra vía.
+
+Episodio: `test.each` con filas más cortas que los parámetros de la función
+hace que bun tome el parámetro sobrante por la retrollamada `done` y espere
+5 s; las filas se rellenan hasta su longitud.
+
+Divergencias declaradas en `info.ts`: con claves duplicadas `JSON.parse`
+conserva la última y gjson la primera que responda; `Headers` une valores
+repetidos y `http.Header` los recorre (con un objeto de listas se conserva la
+conducta de la referencia). En `enrich.ts`, la metadata de petición y la de
+opciones se mantienen separadas como en la referencia.

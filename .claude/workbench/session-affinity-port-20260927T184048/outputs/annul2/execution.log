@@ -1,0 +1,5 @@
+(fail) enrich: una sesión explícita no se deriva > sesión de ejecución en las opciones [1.04ms]
+(fail) enrich: una sesión explícita no se deriva > sesión de ejecución en la petición [0.23ms]
+(fail) enrich: resultados > la sesión explícita gana a la de ejecución, que se conserva [0.27ms]
+ 29 pass
+ 3 fail

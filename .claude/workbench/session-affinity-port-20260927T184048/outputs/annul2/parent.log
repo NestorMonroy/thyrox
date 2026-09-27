@@ -1,0 +1,18 @@
+(fail) extractSessionInfo: todos los clientes > bifurcación sólo en el cuerpo, con thread_id [1.04ms]
+(fail) extractSessionInfo: todos los clientes > bifurcación en metadata anidada [0.48ms]
+(fail) extractSessionInfo: todos los clientes > cuerpo con agent_id, padre y ámbito del llamador [0.28ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > genérica [0.17ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > Codex [0.07ms]
+(fail) extractSessionInfo: padre del cuerpo con sesión en cabecera > Messages [0.11ms]
+(fail) extractSessionInfo: reglas > user_id anidado de Messages con padre y agente; cabecera más padre del cuerpo [0.38ms]
+(fail) extractSessionInfo: reglas > jerarquía de Gemini y de Antigravity [0.22ms]
+(fail) extractSessionInfo: reglas > petición anidada de Antigravity [0.20ms]
+(fail) extractSessionInfo: reglas > hilo y conversación, en cabecera y en cuerpo [0.22ms]
+(fail) extractSessionInfo: reglas > prompt_cache_key, clientreq y sesión de ejecución [0.31ms]
+(fail) extractSessionInfo: arneses > tareas de Roo Code y Cline, en cabecera y en cuerpo [0.29ms]
+(fail) extractSessionInfo: arneses > parent_id y parentID de OpenCode [0.25ms]
+(fail) extractSessionInfo: arneses > forkSource y previousSessionId de OpenClaw [0.22ms]
+(fail) extractSessionInfo: arneses > Hermes, OpenHands y pi [0.20ms]
+(fail) claves duplicadas en el metadata > padre con sesión en cabecera [0.10ms]
+ 20 pass
+ 16 fail
