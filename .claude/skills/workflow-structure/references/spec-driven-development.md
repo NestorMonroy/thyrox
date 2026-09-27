@@ -198,7 +198,7 @@ Usar cuando:
 
 **Cuándo usar**: Al iniciar análisis de requisitos
 
-**Ubicación**: [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
+**Ubicación**: `source/normativa/estandares/plantillas/tpl-fr.rst` (del consumidor)
 
 ---
 
@@ -216,7 +216,7 @@ Usar cuando:
 
 **Cuándo usar**: Al estructurar implementación técnica
 
-**Ubicación**: [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
+**Ubicación**: `source/normativa/estandares/plantillas/tpl-fr.rst` (del consumidor)
 
 ---
 
@@ -263,7 +263,7 @@ Usar cuando:
 
 **Cuándo usar**: Después de aprobación de design
 
-**Ubicación**: [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
+**Ubicación**: `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst` (del consumidor)
 
 ---
 
@@ -274,7 +274,7 @@ Usar cuando:
 **Objetivo**: Documento claro de qué se necesita
 
 **Pasos**:
-1. Usar [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
+1. Usar `source/normativa/estandares/plantillas/tpl-fr.rst` (del consumidor)
 2. Completar:
    - Contexto y problema
    - Objetivos claros
@@ -313,7 +313,7 @@ Usar cuando:
 
 **Pasos**:
 1. Basarse en design aprobado
-2. Usar [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
+2. Usar `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst` (del consumidor)
 3. Completar:
    - Desglosar en tareas atómicas (15-30 tasks típicamente)
    - Cada task con descripción, archivos, comandos exactos
@@ -640,10 +640,10 @@ A: No. Es inversión:
 
 - THYROX SKILL.md - PHASE 4: STRUCTURE
 - Templates en `/assets/`:
-  - [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
-  - [source/normativa/estandares/plantillas/tpl-fr.rst](source/normativa/estandares/plantillas/tpl-fr.rst)
+  - `source/normativa/estandares/plantillas/tpl-fr.rst` (del consumidor)
+  - `source/normativa/estandares/plantillas/tpl-fr.rst` (del consumidor)
   - [design.md.template](../assets/design.md.template)
-  - [source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst](source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst)
+  - `source/normativa/estandares/plantillas/tpl-iniciativa-tareas.rst` (del consumidor)
 - commit-helper.md - Para commits documentados por tarea
 - incremental-correction.md - Para corregir 100+ issues
 

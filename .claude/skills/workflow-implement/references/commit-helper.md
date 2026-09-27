@@ -335,7 +335,7 @@ git commit -m "random changes"
 ## Ver También
 
 - `assets/` - Plantillas de commits para casos específicos
-- [conventions](../../../references/conventions.md) - Convenciones generales del proyecto
+- [conventions](../../../../_references/conventions.md) - Convenciones generales del proyecto
 - ROADMAP.md - Plan de proyecto para referenciar en commits
 
 ---

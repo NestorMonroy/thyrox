@@ -357,13 +357,13 @@ Tareas con `irreversibility: irreversible` en su descripción nunca se ejecutan 
 
 ### Contexto del subagente en loop
 
-Las tareas del loop corren en un subagente aislado. El Edit tool funciona en ese contexto sin bloquear la conversación principal. Ver [subagent-patterns](../../../references/subagent-patterns.md) para detalles.
+Las tareas del loop corren en un subagente aislado. El Edit tool funciona en ese contexto sin bloquear la conversación principal. Ver [subagent-patterns](../../../../_references/subagent-patterns.md) para detalles.
 
 ---
 
 ## Referencias
 
-- [scheduled-tasks](../../../references/scheduled-tasks.md) — `/loop`, CronCreate, Desktop App, Cloud Routines, `claude -p`
-- [advanced-features](../../../references/advanced-features.md) — Auto Mode, Planning Mode
+- [scheduled-tasks](../../../../_references/scheduled-tasks.md) — `/loop`, CronCreate, Desktop App, Cloud Routines, `claude -p`
+- [advanced-features](../../../../_references/advanced-features.md) — Auto Mode, Planning Mode
 - [commit-convention](commit-convention.md) — Formato de commits para tareas del loop
 - [workflow-execute/SKILL.md](../SKILL.md) — Reglas de Phase 10 EXECUTE
