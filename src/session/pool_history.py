@@ -103,7 +103,7 @@ def _gpu_peak(gpu_file: Path) -> int | None:
     return reading.summary.peak_mib if reading.summary is not None else None
 
 
-def record(history: Path, out_dir: Path) -> dict | None:
+def record(history: Path, out_dir: Path, runner: str | None = None) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
     ningún ``.time`` fue medible (no se escribe una fila de ceros).
 
@@ -120,6 +120,11 @@ def record(history: Path, out_dir: Path) -> dict | None:
         "min_wall_s": min(wall for _, wall in measures),
         "peak_kb": max(kb for kb, _ in measures),
     }
+    # El binario que corrió los ítems: la cota que deriva esta fila es SUYA.
+    # `claude -p` y `thyrox -p` son procesos distintos, y medir uno no dice
+    # nada del otro.
+    if runner:
+        row["runner"] = runner
     vram = [p for p in (_gpu_peak(g) for g in Path(out_dir).glob("*.gpu")) if p is not None]
     if vram:
         row["peak_vram_mib"] = max(vram)
@@ -136,12 +141,20 @@ def record(history: Path, out_dir: Path) -> dict | None:
     return row
 
 
-def _last_row(history: Path) -> dict | None:
+def _rows(history: Path) -> list[dict]:
     path = Path(history) / HISTORY_FILE
     if not path.is_file():
-        return None
-    rows = [line for line in path.read_text().splitlines() if line.strip()]
-    return json.loads(rows[-1]) if rows else None
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
+def _last_row(history: Path, runner: str | None = None) -> dict | None:
+    """La última fila; con ``runner``, la última DE ese binario. Una fila de
+    otro binario, o sin binario registrado, no describe al declarado."""
+    rows = _rows(history)
+    if runner:
+        rows = [r for r in rows if r.get("runner") == runner]
+    return rows[-1] if rows else None
 
 
 def _mebibytes(kb: float) -> str:
@@ -232,22 +245,31 @@ def _vram_decision(row: dict | None, free_vram_mib: int | None, vram_reserve_mib
 def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MARGIN,
            reserve_kb: int = 0, free_vram_mib: int | None = None, vram_reserve_mib: int = 0,
            available_ram_kb: int | None = None, vram_floor_mib: int = 0,
-           gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S) -> Decision:
+           gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None) -> Decision:
     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
+
+    Con ``runner``, sólo cuentan las ejecuciones de ese binario: sin ninguna,
+    no se deriva nada aunque haya filas de otro.
 
     ``reserve_kb`` es la memoria de un VECINO que corre junto al pool (el
     ``tsc`` del pipeline, en ``tsc_cycle``): se suma a lo medido del ítem,
     porque la admisión de Parallel tiene que dejar sitio a los dos."""
     reserve_note = f" + reserva {reserve_kb} KB" if reserve_kb else ""
-    row = _last_row(history)
+    row = _last_row(history, runner)
     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
                                               vram_floor_mib, gpu_interval_s)
     if row is None:
+        others = len(_rows(history))
+        missing = "sin ejecución previa de esta plantilla"
+        if runner:
+            missing = f"sin ejecución previa de {runner} en esta plantilla"
+            if others:
+                missing += f" ({others} fila(s) de otro binario o sin binario registrado)"
         if reserve_kb:
             return Decision(None, _mebibytes(reserve_kb),
-                            f"sin ejecución previa de esta plantilla: la cota es sólo la reserva {reserve_kb} KB"
+                            f"{missing}: la cota es sólo la reserva {reserve_kb} KB"
                             + vram_why, vram_cap, None, vram_cap, need)
-        return Decision(None, None, "sin ejecución previa de esta plantilla: nada que derivar" + vram_why,
+        return Decision(None, None, f"{missing}: nada que derivar" + vram_why,
                         vram_cap, None, vram_cap, need)
     ttl, ttl_why = model_catalog.choose_cache_ttl(catalog, model, row["max_wall_s"] / 60)
     memfree = _mebibytes(row["peak_kb"] * margin + reserve_kb)
@@ -265,6 +287,7 @@ def main(argv: list[str]) -> int:
     p_dir.add_argument("prompt")
     p_rec = sub.add_parser("record", help="agrega la fila de una ejecución")
     p_rec.add_argument("history"); p_rec.add_argument("out_dir")
+    p_rec.add_argument("--runner", default=None, help="el binario que corrió los ítems")
     p_der = sub.add_parser("derive", help="imprime TTL, memfree y porqué, separados por tabulador")
     p_der.add_argument("history"); p_der.add_argument("model")
     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
@@ -275,13 +298,14 @@ def main(argv: list[str]) -> int:
     p_der.add_argument("--available-ram-kb", type=int, default=None)
     p_der.add_argument("--gpu-interval", type=float, default=DEFAULT_GPU_INTERVAL_S)
     p_der.add_argument("--vram-floor-mib", type=int, default=0)
+    p_der.add_argument("--runner", default=None, help="sólo filas de este binario")
     args = parser.parse_args(argv)
 
     if args.command == "dir":
         print(history_dir(history_base(), Path(args.prompt)))
         return 0
     if args.command == "record":
-        row = record(Path(args.history), Path(args.out_dir))
+        row = record(Path(args.history), Path(args.out_dir), runner=args.runner)
         print(json.dumps(row) if row else "historial: ningún .time medible, sin fila")
         return 0
     catalog, reason = model_catalog.try_catalog()
@@ -291,7 +315,7 @@ def main(argv: list[str]) -> int:
     decision = derive(Path(args.history), args.model, catalog, args.margin, args.reserve_kb,
                       free_vram_mib=args.free_vram_mib, vram_reserve_mib=args.vram_reserve_mib,
                       available_ram_kb=args.available_ram_kb, vram_floor_mib=args.vram_floor_mib,
-                      gpu_interval_s=args.gpu_interval)
+                      gpu_interval_s=args.gpu_interval, runner=args.runner)
     width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
     # seguidos, y un campo vacío corre al siguiente a su lugar.

@@ -243,5 +243,30 @@ with tempfile.TemporaryDirectory() as raw:
                  "--vram-floor-mib", "0"])
     check("anchura 1 y la GPU entera", ["1", "12000"], buffer.getvalue().split("\t")[2:4])
 
+    print("== 23. la cota es del BINARIO que corrió: claude -p no mide thyrox -p ==")
+    # `headless-pool` corre sus ítems con `thyrox -p` (`HEADLESS_POOL_CLAUDE=bin/cli`)
+    # desde la #48. Una fila medida con `claude -p` es OTRO proceso: aplicarla
+    # a `thyrox -p` daría una cota medida sobre algo que ya no corre.
+    h = TMP / "h-runner"
+    row = ph.record(h, run_with(["300000 10 1 0\n"]), runner="bin/cli")
+    check("record guarda el binario", "bin/cli", row["runner"] if row else None)
+    ph.record(h, run_with(["900000 10 1 0\n"]), runner="claude")
+    check("derive usa la última fila DE SU binario, no la última a secas", "586M",
+          ph.derive(h, MODEL, catalog, margin=2.0, runner="bin/cli").memfree)
+    check("... y la del otro binario sigue siendo suya", "1758M",
+          ph.derive(h, MODEL, catalog, margin=2.0, runner="claude").memfree)
+    legacy = history_with("h-legacy", {"items_measured": 1, "min_wall_s": 5.0,
+                                       "max_wall_s": 5.0, "peak_kb": 250000})
+    d = ph.derive(legacy, MODEL, catalog, margin=2.0, runner="bin/cli")
+    check("una fila sin binario no se aplica a uno declarado", (None, None), (d.memfree, d.cache_ttl))
+    check("... y dice por qué", True, "bin/cli" in d.why)
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        ph.main(["record", str(TMP / "h-cli-runner"), str(run_with(["400000 10 1 0\n"])),
+                 "--runner", "bin/cli"])
+        ph.main(["derive", str(TMP / "h-cli-runner"), MODEL, "--margin", "2", "--runner", "bin/cli"])
+    check("la CLI recibe --runner en las dos órdenes", "782M",
+          buffer.getvalue().splitlines()[-1].split("\t")[1])
+
 print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
 raise SystemExit(1 if FAILED else 0)
