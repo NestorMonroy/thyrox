@@ -8,6 +8,7 @@ import { openBrowser } from '@thyrox/storage/browser.js'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { gracefulShutdown } from '@thyrox/app-host/bootstrap/gracefulShutdown.js'
 import { flushSessionStorage } from '@thyrox/storage/sessionStorage.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const DESKTOP_DOCS_URL = 'https://clau.de/desktop'
 
@@ -69,14 +70,14 @@ export function DesktopHandoff({ onDone }: Props): React.ReactNode {
       const installStatus = await getDesktopInstallStatus()
 
       if (installStatus.status === 'not-installed') {
-        setDownloadMessage('Claude Desktop is not installed.')
+        setDownloadMessage(`${PRODUCT_NAME} Desktop is not installed.`)
         setState('prompt-download')
         return
       }
 
       if (installStatus.status === 'version-too-old') {
         setDownloadMessage(
-          `Claude Desktop needs to be updated (found v${installStatus.version}, need v1.1.2396+).`,
+          `${PRODUCT_NAME} Desktop needs to be updated (found v${installStatus.version}, need v1.1.2396+).`,
         )
         setState('prompt-download')
         return
@@ -91,7 +92,7 @@ export function DesktopHandoff({ onDone }: Props): React.ReactNode {
       const result = await openCurrentSessionInDesktop()
 
       if (!result.success) {
-        setError(result.error ?? 'Failed to open Claude Desktop')
+        setError(result.error ?? `Failed to open ${PRODUCT_NAME} Desktop`)
         setState('error')
         return
       }
@@ -102,7 +103,7 @@ export function DesktopHandoff({ onDone }: Props): React.ReactNode {
       // Give the user a moment to see the success message
       setTimeout(
         async (onDone: Props['onDone']) => {
-          onDone('Session transferred to Claude Desktop', { display: 'system' })
+          onDone(`Session transferred to ${PRODUCT_NAME} Desktop`, { display: 'system' })
           await gracefulShutdown(0, 'other')
         },
         500,
@@ -138,10 +139,10 @@ export function DesktopHandoff({ onDone }: Props): React.ReactNode {
     Exclude<DesktopHandoffState, 'error' | 'prompt-download'>,
     string
   > = {
-    checking: 'Checking for Claude Desktop…',
+    checking: `Checking for ${PRODUCT_NAME} Desktop…`,
     flushing: 'Saving session…',
-    opening: 'Opening Claude Desktop…',
-    success: 'Opening in Claude Desktop…',
+    opening: `Opening ${PRODUCT_NAME} Desktop…`,
+    success: `Opening in ${PRODUCT_NAME} Desktop…`,
   }
 
   return <LoadingState message={messages[state]} />

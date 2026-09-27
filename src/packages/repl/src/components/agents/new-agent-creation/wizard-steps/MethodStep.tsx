@@ -4,13 +4,14 @@ import { ConfigurableShortcutHint } from '../../../ConfigurableShortcutHint.js'
 import { Select } from '../../../CustomSelect/select.js'
 import { useWizard } from '../../../wizard/index.js'
 import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export function MethodStep(): ReactNode {
   const { goNext, goBack, updateWizardData, goToStep } = useWizard()
 
   const methodOptions = [
     {
-      label: 'Generate with Claude (recommended)',
+      label: `Generate with ${PRODUCT_NAME} (recommended)`,
       value: 'generate',
     },
     {

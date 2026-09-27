@@ -43,3 +43,20 @@ que los nombra sólo aparece con la bandera `tengu_import`, apagada por defecto.
 - Anulación: el generador sin su mapa rehúsa («quedó el nombre del producto»);
   con el mapa sin `${RFe}` en `lWo`, cae el caso de `tengu_import` (medido al
   escribirlo: la rama referenciaba un `RFe` inexistente).
+
+## El resto del texto visible: `src/verify/renameProductInText.ts`
+
+Una herramienta sobre el AST de TypeScript que sólo edita literales de cadena,
+plantillas y texto JSX (nunca identificadores ni comentarios) y lleva el
+nombre a `PRODUCT_NAME`. Suite: `tests/verify/renameProductInText.test.ts`.
+Anulación del resguardo de guiones: cae exactamente su caso.
+
+Casos que el mapa resuelve aparte, cada uno con su prueba: nombres de modelo
+(se queda la familia y su versión), la API y el SDK del proveedor, dominios
+(`….ai`, `….com` no cambian), identificadores de protocolo (`X-Session`), y
+atributos JSX (pasan a `{`…`}`).
+
+`repl-dry-run.txt` y `rest-dry-run.txt` son la simulación previa a escribir.
+Los literales que se comparan (`===`, `endsWith`, …) se revisaron a mano
+(`rest-compared.txt`): los que detectan el archivo de instrucciones se
+cambian por `isInstructionsFileName`, no por el nombre nuevo.

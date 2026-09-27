@@ -4,6 +4,7 @@ import { Text } from '@anthropic/ink'
 import { logEvent } from '@thyrox/local-observability'
 import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { useStartupNotification } from './useStartupNotification.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const MAX_SHOW_COUNT = 3
 
@@ -28,7 +29,7 @@ export function useCanSwitchToExistingSubscription(): void {
       key: 'switch-to-subscription',
       jsx: (
         <Text color="suggestion">
-          Use your existing Claude {subscriptionType} plan with Claude Code
+          Use your existing {PRODUCT_NAME} {subscriptionType} plan with {PRODUCT_NAME}
           <Text color="text" dimColor>
             {' '}
             · /login to activate

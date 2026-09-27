@@ -7,6 +7,7 @@ import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import { Select } from '../CustomSelect/select.js'
 import { DesktopHandoff } from '../DesktopHandoff.js'
 import { PermissionDialog } from '@thyrox/permission/components/PermissionDialog.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type DesktopUpsellConfig = {
   enable_shortcut_tip: boolean
@@ -83,17 +84,17 @@ export function DesktopUpsellStartup({ onDone }: Props): React.ReactNode {
   }
 
   const options = [
-    { label: 'Open in Claude Code Desktop', value: 'try' as const },
+    { label: `Open in ${PRODUCT_NAME} Desktop`, value: 'try' as const },
     { label: 'Not now', value: 'not-now' as const },
     { label: "Don't ask again", value: 'never' as const },
   ]
 
   return (
-    <PermissionDialog title="Try Claude Code Desktop">
+    <PermissionDialog title={`Try ${PRODUCT_NAME} Desktop`}>
       <Box flexDirection="column" paddingX={2} paddingY={1}>
         <Box marginBottom={1}>
           <Text>
-            Same Claude Code with visual diffs, live app preview, parallel
+            Same {PRODUCT_NAME} with visual diffs, live app preview, parallel
             sessions, and more.
           </Text>
         </Box>

@@ -31,6 +31,7 @@ import { Spinner } from './Spinner.js'
 import { TagTabs } from './TagTabs.js'
 import TextInput from './TextInput.js'
 import { type TreeNode, TreeSelect } from './ui/TreeSelect.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type AgenticSearchState =
   | { status: 'idle' }
@@ -1098,7 +1099,7 @@ export function LogSelector({
         agenticSearchState.results.length > 0 && (
           <Box paddingLeft={1} marginBottom={1} flexShrink={0}>
             <Text dimColor italic>
-              Claude found these results:
+              {PRODUCT_NAME} found these results:
             </Text>
           </Box>
         )}
@@ -1141,7 +1142,7 @@ export function LogSelector({
                 color={isAgenticSearchOptionFocused ? 'suggestion' : undefined}
                 bold={isAgenticSearchOptionFocused}
               >
-                Search deeply using Claude →
+                Search deeply using {PRODUCT_NAME} →
               </Text>
             </Box>
             <Box height={1} />
@@ -1257,7 +1258,7 @@ export function LogSelector({
         ) : agenticSearchState.status === 'searching' ? (
           <Text dimColor>
             <Byline>
-              <Text>Searching with Claude…</Text>
+              <Text>Searching with {PRODUCT_NAME}…</Text>
               <ConfigurableShortcutHint
                 action="confirm:no"
                 context="Confirmation"

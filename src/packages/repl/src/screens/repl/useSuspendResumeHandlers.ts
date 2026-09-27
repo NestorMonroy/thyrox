@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type EventEmitterLike = {
   on(event: string, handler: () => void): void
@@ -20,7 +21,7 @@ export function useSuspendResumeHandlers(
   useEffect(() => {
     const handleSuspend = () => {
       process.stdout.write(
-        `\nClaude Code has been suspended. Run \`fg\` to bring Claude Code back.\nNote: ctrl + z now suspends Claude Code, ctrl + _ undoes input.\n`,
+        `\nClaude Code has been suspended. Run \`fg\` to bring ${PRODUCT_NAME} back.\nNote: ctrl + z now suspends ${PRODUCT_NAME}, ctrl + _ undoes input.\n`,
       )
     }
 

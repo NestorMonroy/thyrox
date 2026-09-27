@@ -13,6 +13,7 @@ import {
 import { getAgentModelDisplay } from '@thyrox/provider/modelAgent.js'
 import { Markdown } from '../Markdown.js'
 import { getActualRelativeAgentFilePath } from './agentFileUtils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   agent: AgentDefinition
@@ -73,7 +74,7 @@ export function AgentDetail({ agent, tools, onBack }: Props): React.ReactNode {
 
       <Box flexDirection="column">
         <Text>
-          <Text bold>Description</Text> (tells Claude when to use this agent):
+          <Text bold>Description</Text> (tells {PRODUCT_NAME} when to use this agent):
         </Text>
         <Box marginLeft={2}>
           <Text>{agent.whenToUse}</Text>

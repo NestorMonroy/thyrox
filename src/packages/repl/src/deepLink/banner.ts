@@ -61,7 +61,7 @@ export function buildDeepLinkBanner(info: DeepLinkBannerInfo): string {
       !info.lastFetch ||
       Date.now() - info.lastFetch.getTime() > STALE_FETCH_WARN_MS
     lines.push(
-      `Resolved ${info.repo} from local clones · last fetched ${age}${stale ? ' — CLAUDE.md may be stale' : ''}`,
+      `Resolved ${info.repo} from local clones · last fetched ${age}${stale ? ' — THYROX.md may be stale' : ''}`,
     )
   }
   if (info.prefillLength) {

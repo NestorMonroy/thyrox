@@ -9,6 +9,7 @@ import {
   extractDangerousSettings,
   formatDangerousSettingsList,
 } from './utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   settings: SettingsJson
@@ -69,7 +70,7 @@ export function ManagedSettingsSecurityDialog({
         <Select
           options={[
             { label: 'Yes, I trust these settings', value: 'accept' },
-            { label: 'No, exit Claude Code', value: 'exit' },
+            { label: `No, exit ${PRODUCT_NAME}`, value: 'exit' },
           ]}
           onChange={value => onChange(value as 'accept' | 'exit')}
           onCancel={() => onChange('exit')}

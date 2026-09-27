@@ -13,6 +13,7 @@ import { Box, Link, Text, Tab, Tabs, Pane } from '@anthropic/ink'
 import { useKeybinding } from '@anthropic/ink/keybindings'
 import { Commands } from './Commands.js'
 import { General } from './General.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onClose: (
@@ -108,7 +109,7 @@ export function HelpV2({ onClose, commands }: Props): React.ReactNode {
           title={
             process.env.USER_TYPE === 'ant'
               ? '/help'
-              : `Claude Code v${MACRO.VERSION}`
+              : `${PRODUCT_NAME} v${MACRO.VERSION}`
           }
           color="professionalBlue"
           defaultTab="general"

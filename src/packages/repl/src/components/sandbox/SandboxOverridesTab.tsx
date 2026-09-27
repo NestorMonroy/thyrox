@@ -3,6 +3,7 @@ import { Box, color, Link, Text, useTheme, useTabHeaderFocus } from '@anthropic/
 import type { CommandResultDisplay } from '@thyrox/agent/command.js'
 import { SandboxManager } from '@thyrox/shell/sandbox.js'
 import { Select } from '../CustomSelect/select.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onComplete: (
@@ -115,7 +116,7 @@ function OverridesSelect({
           <Text bold dimColor>
             Allow unsandboxed fallback:
           </Text>{' '}
-          When a command fails due to sandbox restrictions, Claude can retry
+          When a command fails due to sandbox restrictions, {PRODUCT_NAME} can retry
           with dangerouslyDisableSandbox to run outside the sandbox (falling
           back to default permissions).
         </Text>

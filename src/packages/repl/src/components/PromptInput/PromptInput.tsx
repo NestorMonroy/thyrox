@@ -220,6 +220,7 @@ import { usePromptInputPlaceholder } from './usePromptInputPlaceholder.js'
 import { useShowFastIconHint } from './useShowFastIconHint.js'
 import { useSwarmBanner } from './useSwarmBanner.js'
 import { isNonSpacePrintable, isVimModeEnabled } from './utils.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   debug: boolean
@@ -1075,7 +1076,7 @@ function PromptInput({
     if (feature('ULTRAPLAN') && ultraplanTriggers.length) {
       addNotification({
         key: 'ultraplan-active',
-        text: 'This prompt will launch an ultraplan session in Claude Code on the web',
+        text: `This prompt will launch an ultraplan session in ${PRODUCT_NAME} on the web`,
         priority: 'immediate',
         timeoutMs: 5000,
       })
@@ -1088,7 +1089,7 @@ function PromptInput({
     if (isUltrareviewEnabled() && ultrareviewTriggers.length) {
       addNotification({
         key: 'ultrareview-active',
-        text: 'Run /ultrareview after Claude finishes to review these changes in the cloud',
+        text: `Run /ultrareview after ${PRODUCT_NAME} finishes to review these changes in the cloud`,
         priority: 'immediate',
         timeoutMs: 5000,
       })
@@ -1099,7 +1100,7 @@ function PromptInput({
     if (ultraworkTriggers.length) {
       addNotification({
         key: 'ultrawork-active',
-        text: 'This prompt will steer Claude into autonomous workflow mode',
+        text: `This prompt will steer ${PRODUCT_NAME} into autonomous workflow mode`,
         priority: 'immediate',
         timeoutMs: 5000,
       })

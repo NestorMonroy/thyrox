@@ -44,6 +44,7 @@ import {
   transitionPermissionMode,
 } from '@thyrox/permission/permissionSetup'
 import { getLeaderToolUseConfirmQueue } from '@thyrox/swarm'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 /** How long after a failure before replBridgeEnabled is auto-cleared (stops retries). */
 const BRIDGE_FAILURE_DISMISS_MS = 10_000
@@ -736,7 +737,7 @@ export function useReplBridge(
               createBridgeStatusMessage(
                 url,
                 upgradeNudge
-                  ? 'Please upgrade to the latest version of the Claude mobile app to see your Remote Control sessions.'
+                  ? `Please upgrade to the latest version of the ${PRODUCT_NAME} mobile app to see your Remote Control sessions.`
                   : undefined,
               ),
             ])

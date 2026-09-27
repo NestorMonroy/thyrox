@@ -9,13 +9,14 @@ import { getErrnoCode } from '@thyrox/local-observability/errorHelpers.js'
 import { safeParseJSON } from '@thyrox/storage/json.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import { getPlatform, SUPPORTED_PLATFORMS } from '@thyrox/config/platform'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export async function getClaudeDesktopConfigPath(): Promise<string> {
   const platform = getPlatform()
 
   if (!SUPPORTED_PLATFORMS.includes(platform)) {
     throw new Error(
-      `Unsupported platform: ${platform} - Claude Desktop integration only works on macOS and WSL.`,
+      `Unsupported platform: ${platform} - ${PRODUCT_NAME} Desktop integration only works on macOS and WSL.`,
     )
   }
 
@@ -24,7 +25,7 @@ export async function getClaudeDesktopConfigPath(): Promise<string> {
       homedir(),
       'Library',
       'Application Support',
-      'Claude',
+      `${PRODUCT_NAME}`,
       'claude_desktop_config.json',
     )
   }
@@ -37,7 +38,7 @@ export async function getClaudeDesktopConfigPath(): Promise<string> {
   if (windowsHome) {
     // Remove drive letter and convert to WSL path format
     const wslPath = windowsHome.replace(/^[A-Z]:/, '')
-    const configPath = `/mnt/c${wslPath}/AppData/Roaming/Claude/claude_desktop_config.json`
+    const configPath = `/mnt/c${wslPath}/AppData/Roaming/${PRODUCT_NAME}/claude_desktop_config.json`
 
     // Check if the file exists
     try {
@@ -72,7 +73,7 @@ export async function getClaudeDesktopConfigPath(): Promise<string> {
           user.name,
           'AppData',
           'Roaming',
-          'Claude',
+          `${PRODUCT_NAME}`,
           'claude_desktop_config.json',
         )
 
@@ -91,7 +92,7 @@ export async function getClaudeDesktopConfigPath(): Promise<string> {
   }
 
   throw new Error(
-    'Could not find Claude Desktop config file in Windows. Make sure Claude Desktop is installed on Windows.',
+    `Could not find ${PRODUCT_NAME} Desktop config file in Windows. Make sure ${PRODUCT_NAME} Desktop is installed on Windows.`,
   )
 }
 
@@ -100,7 +101,7 @@ export async function readClaudeDesktopMcpServers(): Promise<
 > {
   if (!SUPPORTED_PLATFORMS.includes(getPlatform())) {
     throw new Error(
-      'Unsupported platform - Claude Desktop integration only works on macOS and WSL.',
+      `Unsupported platform - ${PRODUCT_NAME} Desktop integration only works on macOS and WSL.`,
     )
   }
   try {

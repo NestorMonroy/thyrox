@@ -18,6 +18,7 @@ import {
   getSyntaxTheme,
 } from './StructuredDiff/colorDiff.js'
 import { StructuredDiff } from './StructuredDiff.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export type ThemePickerProps = {
   onThemeSelect: (setting: ThemeSetting) => void
@@ -167,7 +168,7 @@ export function ThemePicker({
               lines: [
                 ' function greet() {',
                 '-  console.log("Hello, World!");',
-                '+  console.log("Hello, Claude!");',
+                `+  console.log("Hello, ${PRODUCT_NAME}!");`,
                 ' }',
               ],
             }}

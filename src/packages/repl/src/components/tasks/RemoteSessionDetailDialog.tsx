@@ -31,6 +31,7 @@ import {
   formatReviewStageCounts,
   RemoteSessionProgress,
 } from './RemoteSessionProgress.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   session: DeepImmutable<RemoteAgentTaskState>
@@ -50,7 +51,7 @@ type Props = {
 function formatToolUseSummary(name: string, input: unknown): string {
   // plan_ready phase is only reached via ExitPlanMode tool
   if (name === EXIT_PLAN_MODE_V2_TOOL_NAME) {
-    return 'Review the plan in Claude Code on the web'
+    return `Review the plan in ${PRODUCT_NAME} on the web`
   }
   if (!input || typeof input !== 'object') return name
   // AskUserQuestion: show the question text as a CTA, not the tool name.
@@ -160,7 +161,7 @@ function UltraplanSessionDetail({
       >
         <Box flexDirection="column" gap={1}>
           <Text dimColor>
-            This will terminate the Claude Code on the web session.
+            This will terminate the {PRODUCT_NAME} on the web session.
           </Text>
           <Select
             options={[
@@ -216,7 +217,7 @@ function UltraplanSessionDetail({
         <Select
           options={[
             {
-              label: 'Review in Claude Code on the web',
+              label: `Review in ${PRODUCT_NAME} on the web`,
               value: 'open' as const,
             },
             ...(onKill && running
@@ -380,11 +381,11 @@ function ReviewSessionDetail({
 
   const options: { label: string; value: MenuAction }[] = completed
     ? [
-        { label: 'Open in Claude Code on the web', value: 'open' },
+        { label: `Open in ${PRODUCT_NAME} on the web`, value: 'open' },
         { label: 'Dismiss', value: 'dismiss' },
       ]
     : [
-        { label: 'Open in Claude Code on the web', value: 'open' },
+        { label: `Open in ${PRODUCT_NAME} on the web`, value: 'open' },
         ...(onKill && running
           ? [{ label: 'Stop ultrareview', value: 'stop' as const }]
           : []),

@@ -6,6 +6,7 @@ import {
 } from '@thyrox/agent/claudeInChromeSetup.js'
 import { isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { useStartupNotification } from './notifs/useStartupNotification.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function getChromeFlag(): boolean | undefined {
   if (process.argv.includes('--chrome')) {
@@ -28,7 +29,7 @@ export function useChromeExtensionNotification(): void {
         key: 'chrome-requires-subscription',
         jsx: (
           <Text color="error">
-            Claude in Chrome requires a claude.ai subscription
+            {PRODUCT_NAME} in Chrome requires a claude.ai subscription
           </Text>
         ),
         priority: 'immediate',
@@ -56,7 +57,7 @@ export function useChromeExtensionNotification(): void {
       // (not explicitly enabled with --chrome or disabled with --no-chrome)
       return {
         key: 'claude-in-chrome-default-enabled',
-        text: `Claude in Chrome enabled · /chrome`,
+        text: `${PRODUCT_NAME} in Chrome enabled · /chrome`,
         priority: 'low',
       }
     }

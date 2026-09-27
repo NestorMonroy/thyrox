@@ -20,6 +20,7 @@
 
 import type React from 'react'
 import { Box, Text } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 export interface FleetBannerProps {
   /** Display version (e.g. "v26.5.43" — caller passes "v" + MACRO.VERSION). */
@@ -47,7 +48,7 @@ export function FleetBanner({
   return (
     <Box flexDirection="column">
       <Text>
-        <Text bold>Claude Code</Text>
+        <Text bold>{PRODUCT_NAME}</Text>
         {' '}
         <Text dimColor>{versionLabel}</Text>
       </Text>

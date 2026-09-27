@@ -11,6 +11,7 @@ import {
   type IndividualHookConfig,
 } from '../../hooksSettings.js'
 import { Dialog } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   selectedHook: IndividualHookConfig
@@ -74,7 +75,7 @@ export function ViewHookMode({
           )}
         <Text dimColor>
           To modify or remove this hook, edit settings.json directly or ask
-          Claude to help.
+          {PRODUCT_NAME} to help.
         </Text>
       </Box>
     </Dialog>

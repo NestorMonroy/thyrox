@@ -7,6 +7,7 @@ import { logForDebugging } from '@thyrox/local-observability/debug.js'
 import { execFileNoThrow } from '@thyrox/shell/execFileNoThrow.js'
 import { pathExists } from '@thyrox/storage/file.js'
 import { gte as semverGte } from '@thyrox/config/semver'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const MIN_DESKTOP_VERSION = '1.1.2396'
 
@@ -57,7 +58,7 @@ async function isDesktopInstalled(): Promise<boolean> {
 
   if (platform === 'darwin') {
     // Check for Claude.app in /Applications
-    return pathExists('/Applications/Claude.app')
+    return pathExists(`/Applications/${PRODUCT_NAME}.app`)
   } else if (platform === 'linux') {
     // Check if xdg-mime can find a handler for claude://
     // Note: xdg-mime returns exit code 0 even with no handler, so check stdout too
@@ -92,7 +93,7 @@ async function getDesktopVersion(): Promise<string | null> {
   if (platform === 'darwin') {
     const { code, stdout } = await execFileNoThrow('defaults', [
       'read',
-      '/Applications/Claude.app/Contents/Info.plist',
+      `/Applications/${PRODUCT_NAME}.app/Contents/Info.plist`,
       'CFBundleShortVersionString',
     ])
     if (code !== 0) {
@@ -216,7 +217,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
     return {
       success: false,
       error:
-        'Claude Desktop is not installed. Install it from https://claude.ai/download',
+        `${PRODUCT_NAME} Desktop is not installed. Install it from https://claude.ai/download`,
     }
   }
 
@@ -227,7 +228,7 @@ export async function openCurrentSessionInDesktop(): Promise<{
   if (!opened) {
     return {
       success: false,
-      error: 'Failed to open Claude Desktop. Please try opening it manually.',
+      error: `Failed to open ${PRODUCT_NAME} Desktop. Please try opening it manually.`,
       deepLinkUrl,
     }
   }

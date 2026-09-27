@@ -30,6 +30,7 @@ import {
 import { resolveThemeSetting } from '../systemTheme.js'
 import { getTheme, themeColorToAnsi, THEME_SETTINGS, type ThemeSetting } from '@anthropic/ink'
 import { Spinner } from './Spinner.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 function isThemeSetting(value: string): value is ThemeSetting {
   return (THEME_SETTINGS as readonly string[]).includes(value)
@@ -96,7 +97,7 @@ export function Stats({ onClose }: Props): React.ReactNode {
       fallback={
         <Box marginTop={1}>
           <Spinner />
-          <Text> Loading your Claude Code stats…</Text>
+          <Text> Loading your {PRODUCT_NAME} stats…</Text>
         </Box>
       }
     >
@@ -209,7 +210,7 @@ function StatsContent({
     return (
       <Box marginTop={1}>
         <Text color="warning">
-          No stats available yet. Start using Claude Code!
+          No stats available yet. Start using {PRODUCT_NAME}!
         </Text>
       </Box>
     )

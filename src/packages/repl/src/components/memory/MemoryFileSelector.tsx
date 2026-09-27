@@ -128,13 +128,13 @@ export function MemoryFileSelector({
     const isGit = projectIsInGitRepo(getOriginalCwd())
 
     if (file.type === 'User' && !file.isNested) {
-      description = 'Saved in ~/.claude/CLAUDE.md'
+      description = 'Saved in ~/.claude/THYROX.md'
     } else if (
       file.type === 'Project' &&
       !file.isNested &&
       file.path === projectMemoryPath
     ) {
-      description = `${isGit ? 'Checked in at' : 'Saved in'} ./CLAUDE.md`
+      description = `${isGit ? 'Checked in at' : 'Saved in'} ./THYROX.md`
     } else if (file.parent) {
       // For imported files (with @-import)
       description = '@-imported'

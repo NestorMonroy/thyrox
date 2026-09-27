@@ -58,6 +58,7 @@ import {
   TASK_MAX_OUTPUT_UPPER_LIMIT,
 } from '@thyrox/tool-registry/task/outputFormatting.js'
 import { getXDGStateHome } from '@thyrox/storage/xdg.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onDone: (
@@ -240,7 +241,7 @@ export function Doctor({ onDone }: Props): React.ReactNode {
   }, [toolPermissionContext, tools, agentDefinitions])
 
   const handleDismiss = useCallback(() => {
-    onDone('Claude Code diagnostics dismissed', { display: 'system' })
+    onDone(`${PRODUCT_NAME} diagnostics dismissed`, { display: 'system' })
   }, [onDone])
 
   // Handle dismiss via keybindings (Enter, Escape, or Ctrl+C)

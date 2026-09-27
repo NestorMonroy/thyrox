@@ -43,6 +43,7 @@ import {
 import { TeammateSpinnerTree } from './Spinner/TeammateSpinnerTree.js'
 import { useAnimationFrame } from '@anthropic/ink'
 import { getGlobalConfig } from '@thyrox/config'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export type { SpinnerMode } from './Spinner/types.js'
 
 const DEFAULT_CHARACTERS = getDefaultCharacters()
@@ -327,7 +328,7 @@ function SpinnerWithVerbInner({
     : showClearTip && !nextTask
       ? 'Use /clear to start fresh when switching topics and free up context'
       : showBtwTip && !nextTask
-        ? "Use /btw to ask a quick side question without interrupting Claude's current work"
+        ? `Use /btw to ask a quick side question without interrupting ${PRODUCT_NAME}'s current work`
         : spinnerTip
 
   // Budget text (ant-only) — shown above the tip line

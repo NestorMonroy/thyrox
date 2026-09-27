@@ -50,6 +50,7 @@ import {
   handleReconnectError,
   handleReconnectResult,
 } from './utils/reconnectHelpers.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   server: SSEServerInfo | HTTPServerInfo | ClaudeAIServerInfo
@@ -141,11 +142,11 @@ export function MCPRemoteServerMenu({
         onComplete?.(`Authentication successful. Connected to ${server.name}.`)
       } else if (result.client.type === 'needs-auth') {
         onComplete?.(
-          'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+          `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`,
         )
       } else {
         onComplete?.(
-          'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+          `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`,
         )
       }
     } catch (err) {
@@ -391,13 +392,13 @@ export function MCPRemoteServerMenu({
           onComplete?.(message)
         } else if (result.client.type === 'needs-auth') {
           onComplete?.(
-            'Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.',
+            `Authentication successful, but server still requires authentication. You may need to manually restart ${PRODUCT_NAME}.`,
           )
         } else {
           // result.client.type === 'failed'
           logMCPDebug(server.name, `Reconnection failed after authentication`)
           onComplete?.(
-            'Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.',
+            `Authentication successful, but server reconnection failed. You may need to manually restart ${PRODUCT_NAME} for the changes to take effect.`,
           )
         }
       }

@@ -67,6 +67,7 @@ import { useAppState } from '../../appStateHooks.js'
 import { getEffortSuffix } from '@thyrox/agent/effort.js'
 import { useMainLoopModel } from '../../hooks/useMainLoopModel.js'
 import { renderModelSetting } from '@thyrox/provider/model.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const LEFT_PANEL_MAX_WIDTH = 50
 
@@ -178,7 +179,7 @@ export function LogoV2(): React.ReactNode {
             </Text>
             <Text dimColor>
               {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-                ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
+                ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
                 : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
             </Text>
           </Box>
@@ -225,8 +226,8 @@ export function LogoV2(): React.ReactNode {
 
   const rawTheme = getGlobalConfig().theme
   const userTheme = resolveThemeSetting(isThemeSetting(rawTheme) ? rawTheme : 'dark')
-  const borderTitle = ` ${color('claude', userTheme)('Claude Code')} ${color('inactive', userTheme)(`v${version}`)} `
-  const compactBorderTitle = color('claude', userTheme)(' Claude Code ')
+  const borderTitle = ` ${color('claude', userTheme)(`${PRODUCT_NAME}`)} ${color('inactive', userTheme)(`v${version}`)} `
+  const compactBorderTitle = color('claude', userTheme)(` ${PRODUCT_NAME} `)
 
   // Early return for compact mode
   if (layoutMode === 'compact') {
@@ -389,7 +390,7 @@ export function LogoV2(): React.ReactNode {
           </Text>
           <Text dimColor>
             {process.env.CLAUDE_CODE_TMUX_PREFIX_CONFLICTS
-              ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - Claude uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
+              ? `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} ${process.env.CLAUDE_CODE_TMUX_PREFIX} d (press prefix twice - ${PRODUCT_NAME} uses ${process.env.CLAUDE_CODE_TMUX_PREFIX})`
               : `Detach: ${process.env.CLAUDE_CODE_TMUX_PREFIX} d`}
           </Text>
         </Box>

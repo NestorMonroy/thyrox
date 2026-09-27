@@ -13,6 +13,7 @@ import { WizardDialogLayout } from '../../../wizard/WizardDialogLayout.js'
 import { getNewRelativeAgentFilePath } from '../../agentFileUtils.js'
 import { validateAgent } from '../../validateAgent.js'
 import type { AgentWizardData } from '../types.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   tools: Tools
@@ -107,7 +108,7 @@ export function ConfirmStep({
 
         <Box marginTop={1}>
           <Text>
-            <Text bold>Description</Text> (tells Claude when to use this agent):
+            <Text bold>Description</Text> (tells {PRODUCT_NAME} when to use this agent):
           </Text>
         </Box>
         <Box marginLeft={2} marginTop={1}>

@@ -29,6 +29,7 @@ import {
   getTerminalIdeType,
 } from '@thyrox/ide/ide.js'
 import { isJetBrainsPluginInstalledCachedSync } from '@thyrox/agent/jetbrains.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Types
 type StatusNoticeType = 'warning' | 'info'
@@ -94,7 +95,7 @@ const claudeAiSubscriberExternalTokenNotice: StatusNoticeDefinition = {
       <Box flexDirection="row" marginTop={1}>
         <Text color="warning">{figures.warning}</Text>
         <Text color="warning">
-          Auth conflict: Using {authTokenInfo.source} instead of Claude account
+          Auth conflict: Using {authTokenInfo.source} instead of {PRODUCT_NAME} account
           subscription token. Either unset {authTokenInfo.source}, or run
           `claude /logout`.
         </Text>

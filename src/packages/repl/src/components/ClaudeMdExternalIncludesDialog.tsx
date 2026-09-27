@@ -4,6 +4,7 @@ import { Box, Dialog, Link, Text } from '@anthropic/ink'
 import type { ExternalClaudeMdInclude } from '@thyrox/storage/claudemd.js'
 import { saveCurrentProjectConfig } from '@thyrox/config'
 import { Select } from './CustomSelect/index.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   onDone(): void
@@ -51,14 +52,14 @@ export function ClaudeMdExternalIncludesDialog({
 
   return (
     <Dialog
-      title="Allow external CLAUDE.md file imports?"
+      title="Allow external THYROX.md file imports?"
       color="warning"
       onCancel={handleEscape}
       hideBorder={!isStandaloneDialog}
       hideInputGuide={!isStandaloneDialog}
     >
       <Text>
-        This project&apos;s CLAUDE.md imports files outside the current working
+        This project&apos;s THYROX.md imports files outside the current working
         directory. Never allow this for third-party repositories.
       </Text>
 
@@ -75,7 +76,7 @@ export function ClaudeMdExternalIncludesDialog({
       )}
 
       <Text dimColor>
-        Important: Only use Claude Code with files you trust. Accessing
+        Important: Only use {PRODUCT_NAME} with files you trust. Accessing
         untrusted files may pose security risks{' '}
         <Link url="https://code.claude.com/docs/en/security" />{' '}
       </Text>

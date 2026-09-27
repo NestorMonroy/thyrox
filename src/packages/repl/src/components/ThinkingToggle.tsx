@@ -6,6 +6,7 @@ import { useKeybinding } from '@anthropic/ink/keybindings'
 import { ConfigurableShortcutHint } from './ConfigurableShortcutHint.js'
 import { Select } from './CustomSelect/index.js'
 import { Byline, KeyboardShortcutHint, Pane } from '@anthropic/ink'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   currentValue: boolean
@@ -29,12 +30,12 @@ export function ThinkingToggle({
     {
       value: 'true',
       label: 'Enabled',
-      description: 'Claude will think before responding',
+      description: `${PRODUCT_NAME} will think before responding`,
     },
     {
       value: 'false',
       label: 'Disabled',
-      description: 'Claude will respond without extended thinking',
+      description: `${PRODUCT_NAME} will respond without extended thinking`,
     },
   ]
 

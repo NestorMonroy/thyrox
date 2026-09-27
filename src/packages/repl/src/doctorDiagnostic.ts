@@ -620,13 +620,13 @@ export async function getDoctorDiagnostic(): Promise<DiagnosticInfo> {
     ) {
       warnings.push({
         issue:
-          'Checked-in CLAUDE.md contains substantial instructions that appear derivable from the repository',
+          `Checked-in ${basename(projectInstructions)} contains substantial instructions that appear derivable from the repository`,
         fix:
           'Trim commands, directory listings, and facts visible in package manifests or source; keep only durable constraints and non-obvious decisions.',
       })
     }
   } catch {
-    // Missing/unreadable CLAUDE.md is not a health failure.
+    // Un archivo de instrucciones ausente o ilegible no es un fallo de salud.
   }
 
   // Get ripgrep status and configuration

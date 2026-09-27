@@ -3,10 +3,11 @@ import { logEvent } from '@thyrox/local-observability'
 import { Box, Dialog, Link, Text } from '@anthropic/ink'
 import { updateSettingsForSource } from '@thyrox/config/settings'
 import { Select } from './CustomSelect/index.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // NOTE: This copy is legally reviewed — do not modify without Legal team approval.
 export const AUTO_MODE_DESCRIPTION =
-  "Auto mode lets Claude handle permission prompts automatically — Claude checks each tool call for risky actions and prompt injection before executing. Actions Claude identifies as safe are executed, while actions Claude identifies as risky are blocked and Claude may try a different approach. Ideal for long-running tasks. Sessions are slightly more expensive. Claude can make mistakes that allow harmful commands to run, it's recommended to only use in isolated environments. Shift+Tab to change mode."
+  `Auto mode lets ${PRODUCT_NAME} handle permission prompts automatically — ${PRODUCT_NAME} checks each tool call for risky actions and prompt injection before executing. Actions ${PRODUCT_NAME} identifies as safe are executed, while actions ${PRODUCT_NAME} identifies as risky are blocked and ${PRODUCT_NAME} may try a different approach. Ideal for long-running tasks. Sessions are slightly more expensive. ${PRODUCT_NAME} can make mistakes that allow harmful commands to run, it's recommended to only use in isolated environments. Shift+Tab to change mode.`
 
 type Props = {
   onAccept(): void

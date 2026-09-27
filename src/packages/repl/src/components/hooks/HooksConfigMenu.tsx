@@ -36,6 +36,7 @@ import { SelectEventMode } from './SelectEventMode.js'
 import { SelectHookMode } from './SelectHookMode.js'
 import { SelectMatcherMode } from './SelectMatcherMode.js'
 import { ViewHookMode } from './ViewHookMode.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type Props = {
   toolNames: string[]
@@ -237,7 +238,7 @@ export function HooksConfigMenu({ toolNames, onExit }: Props): React.ReactNode {
           {!disabledByPolicy && (
             <Text dimColor>
               To re-enable hooks, remove &quot;disableAllHooks&quot; from
-              settings.json or ask Claude.
+              settings.json or ask {PRODUCT_NAME}.
             </Text>
           )}
         </Box>

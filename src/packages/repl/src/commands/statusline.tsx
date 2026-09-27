@@ -1,10 +1,11 @@
 import type { ContentBlockParam } from '@anthropic-ai/sdk/resources/index.mjs'
 import type { Command } from '@thyrox/command-runtime/runtime'
 import { AGENT_TOOL_NAME } from '@thyrox/tool-registry/tools/AgentTool/constants.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 const statusline = {
   type: 'prompt',
-  description: "Set up Claude Code's status line UI",
+  description: `Set up ${PRODUCT_NAME}'s status line UI`,
   contentLength: 0, // Dynamic content
   aliases: [],
   name: 'statusline',

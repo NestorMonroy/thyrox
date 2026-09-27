@@ -11,6 +11,7 @@ import { execFileNoThrowWithCwd } from '@thyrox/shell/execFileNoThrow.js'
 import { getFsImplementation } from '@thyrox/storage/fsOperations.js'
 import { logError } from '@thyrox/local-observability/log.js'
 import { jsonStringify } from '@thyrox/local-observability/slowOperations.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 // Lazy getters: getConfigHomeDir() is memoized and reads process.env.
 // Evaluating at module scope would capture the value before entrypoints like
@@ -118,7 +119,7 @@ export async function installOrUpdateClaudePackage(
 
     if (result.code !== 0) {
       const error = new Error(
-        `Failed to install Claude CLI package: ${result.stderr}`,
+        `Failed to install ${PRODUCT_NAME} CLI package: ${result.stderr}`,
       )
       logError(error)
       return result.code === 190 ? 'in_progress' : 'install_failed'

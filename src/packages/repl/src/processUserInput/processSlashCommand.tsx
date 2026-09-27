@@ -732,7 +732,7 @@ async function getMessagesForSlashCommand(
           }),
         }),
         createUserMessage({
-          content: `This skill can only be invoked by Claude, not directly by users. Ask Claude to use the "${commandName}" skill for you.`,
+          content: `This skill can only be invoked by ${PRODUCT_NAME}, not directly by users. Ask ${PRODUCT_NAME} to use the "${commandName}" skill for you.`,
         }),
       ],
       shouldQuery: false,
@@ -1105,6 +1105,7 @@ function formatCommandInput(command: CommandBase, args: string): string {
 // be imported separately from the re-export so it's also visible to local
 // callers within this file.
 import { formatSkillLoadingMetadata } from '@thyrox/command-runtime/xml.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 export { formatSkillLoadingMetadata }
 
 /**

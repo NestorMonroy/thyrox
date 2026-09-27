@@ -6,6 +6,7 @@ import { getGlobalConfig, saveGlobalConfig } from '@thyrox/config'
 import type { OptionWithDescription } from './CustomSelect/select.js'
 import { Select } from './CustomSelect/select.js'
 import { PermissionDialog } from '@thyrox/permission/components/PermissionDialog.js'
+import { PRODUCT_NAME } from '@thyrox/config/product'
 
 type RemoteCalloutSelection = 'enable' | 'dismiss'
 
@@ -52,7 +53,7 @@ export function RemoteCallout({ onDone }: Props): React.ReactNode {
         <Box marginBottom={1} flexDirection="column">
           <Text>
             Remote Control lets you access this CLI session from the web
-            (claude.ai/code) or the Claude app, so you can pick up where you
+            (claude.ai/code) or the {PRODUCT_NAME} app, so you can pick up where you
             left off on any device.
           </Text>
           <Text> </Text>
