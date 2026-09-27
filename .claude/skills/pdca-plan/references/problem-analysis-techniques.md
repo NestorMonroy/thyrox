@@ -105,7 +105,7 @@ Síntoma: [Problem Statement]
 | **Cuándo** | ¿Desde cuándo? ¿En qué condiciones? | ¿Cuándo no ocurre? |
 | **Magnitud** | ¿Cuánto / cuántos / con qué frecuencia? | ¿Qué no está siendo afectado? |
 
-**Regla de oro:** La columna IS NOT es igual de importante que IS. Las diferencias entre "donde sí ocurre" y "donde no ocurre" frecuentemente revelan la causa.
+**Criterio rector:** La columna IS NOT es igual de importante que IS. Las diferencias entre "donde sí ocurre" y "donde no ocurre" frecuentemente revelan la causa.
 
 ---
 

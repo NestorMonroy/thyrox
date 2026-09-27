@@ -31,7 +31,7 @@ Documentar QUÉ debe hacer el sistema, en dos niveles: requisitos generales y es
 |-----|-------------|-------------|
 | R-1 | User Registration | Sistema permite a usuarios crear cuenta con email y contraseña |
 | R-2 | Product Browsing | Sistema permite buscar y navegar catálogo de productos |
-| R-3 | Shopping Cart | Sistema permite agregar/remover productos a carrito |
+| R-3 | Shopping Cart | Sistema permite agregar/retirar productos a carrito |
 
 ---
 

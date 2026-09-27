@@ -92,7 +92,7 @@ Copyright © 2020
  
 Copyright 2020. Todos los derechos reservados. El Consorcio Internacional de la Comunidad de Medición de 
 Software (COSMIC). Se concede permiso para copiar todo o parte de este material siempre que las copias no se 
-realicen o distribuyan con fines comerciales y que se cite el título de la publicación, su número de v ersión y su 
+realicen o distribuyan con fines comerciales y que se cite el título de la publicación, su número de versión y su 
 fecha y se notifique que la copia se realiza con permiso de Consorcio Internacional de Medición de Software Común 
 (COSMIC). Copiar lo contrario requiere un permiso específico.
 

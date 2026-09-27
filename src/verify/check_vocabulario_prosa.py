@@ -630,6 +630,37 @@ def block_spans(text):
     return tramos
 
 
+MARKDOWN_FENCE = re.compile(r'^\s*(```|~~~)')
+MARKDOWN_CODE_SPAN = re.compile(r'`[^`\n]+`')
+
+
+def markdown_spans(text):
+    """Los tramos de cita verbatim de un Markdown: bloque cercado y tramo de código.
+
+    Son el equivalente de ``literal_spans`` y ``block_spans`` para las reglas
+    ``.md`` del corpus: lo que va entre cercas (```` ``` ```` o ``~~~``) o entre
+    comillas invertidas se **cita**. Un diagrama de Mermaid con ``\\n`` en sus
+    etiquetas —``Context\\nMisión``— se leía como la palabra «nmisión».
+
+    *Ciega a:* un bloque sangrado sin cerca y a una cerca sin cerrar, que se
+    extiende hasta el final del archivo, como en el renderizado.
+    """
+    tramos = [m.span() for m in MARKDOWN_CODE_SPAN.finditer(text)]
+    offset = 0
+    opened = None
+    for line in text.splitlines(keepends=True):
+        if MARKDOWN_FENCE.match(line):
+            if opened is None:
+                opened = offset
+            else:
+                tramos.append((opened, offset + len(line)))
+                opened = None
+        offset += len(line)
+    if opened is not None:
+        tramos.append((opened, offset))
+    return tramos
+
+
 def scan(files, lexicon, forbidden, root):
     """Devuelve {clave: (apariciones, primer archivo)} de los DOS ejes.
 
@@ -654,6 +685,8 @@ def scan(files, lexicon, forbidden, root):
         # un sustantivo inventado. Una palabra dentro de un bloque literal
         # esta TRANSCRITA, no escrita — el mismo argumento en los dos ejes.
         tramos = literal_spans(text) + block_spans(text)
+        if path.suffix == '.md':
+            tramos += markdown_spans(text)
         for m in WORD.finditer(text):
             if any(a <= m.start() and m.end() <= b for a, b in tramos):
                 continue
@@ -716,7 +749,7 @@ def main(argv=None):
         baseline_path.parent.mkdir(parents=True, exist_ok=True)
         baseline_path.write_text(
             '# Vocabulario congelado — prospectivo, se paga al tocar.\n'
-            '# Regenerar: python3 .claude/scripts/gates/check_vocabulario_prosa.py --write-baseline\n'
+            '# Regenerar: python3 <thyrox>/src/verify/check_vocabulario_prosa.py --write-baseline\n'
             '#\n'
             '# Conviven los DOS ejes: una palabra suelta es un inventado (veredicto\n'
             '# global) y una clave `<ruta>::<forma>` es una forma vetada en ESE\n'

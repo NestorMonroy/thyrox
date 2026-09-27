@@ -50,7 +50,7 @@ R-2: Product Browsing
      → Sistema permite buscar y navegar catálogo de productos
 
 R-3: Shopping Cart
-     → Sistema permite agregar/remover productos a carrito
+     → Sistema permite agregar/retirar productos a carrito
 ```
 
 ---

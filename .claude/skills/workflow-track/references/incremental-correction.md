@@ -89,7 +89,7 @@ Use esta metodología cuando necesite:
    → SÍ: Manual SIEMPRE
    → NO: Evaluar cuidadosamente
 
-**Regla de oro**: **Si dudas entre manual y script → MANUAL**
+**Criterio rector**: **Si dudas entre manual y script → MANUAL**
 
 **Regla de realidad**: Scripts "rápidos" sin protecciones SIEMPRE terminan en desastre.
 
@@ -415,7 +415,7 @@ cp .claude/skills/workflow-track/assets/final-report.md.template ./REPORTE_final
 
 ### Para execution-log.md
 
-- **Actualizar frecuentemente**: Después de cada lote, no al final del día
+- **Actualizar frecuentemente**: Después de cada lote, no al cierre de la jornada
 - **Documentar problemas**: Especialmente los inesperados
 - **Registrar decisiones**: Por qué se tomó X decisión vs Y
 - **Commits frecuentes**: Un commit por lote, no todo junto al final

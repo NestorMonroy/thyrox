@@ -25,7 +25,7 @@ declara su lenguaje y la razón de su elección.
 
 | Dominio | Lenguaje | Por qué |
 |---|---|---|
-| `src/paths/` | Python | sus consumidores son los gates, que se invocan con `python3` pelado. Y no puede depender de una librería de terceros: `python-dotenv` no está instalado en ningún intérprete alcanzable, así que una dependencia ahí convertiría a cada consumidor en un rehúse por precondición ausente. |
+| `src/paths/` | Python | sus consumidores son los gates, que se invocan con `python3` pelado. Y no puede depender de una biblioteca de terceros: `python-dotenv` no está instalado en ningún intérprete alcanzable, así que una dependencia ahí convertiría a cada consumidor en un rehúse por precondición ausente. |
 | `src/workbench/` | TypeScript | porta un mecanismo que ya existía en TS; reescribirlo en otro lenguaje crearía la segunda fuente de verdad que `calibration-verified-numbers.md` prohíbe. |
 | `src/coordination/` | TypeScript | su único consumidor es `claims.ts`, que ya es TS. Un módulo en otro lenguaje no podría importarse desde ahí, así que la ubicación seguiría declarada dos veces — que es el defecto que este módulo cierra. |
 
@@ -77,7 +77,7 @@ vía antes de que la clase tuviera nombre.
 La clase se declara **en el docstring del puerto**, junto a su procedencia: quien
 lo lea tiene que poder saber por qué no hay test sin ir a buscar el criterio.
 
-## Correr las suites
+## Ejecutar las suites
 
 ```bash
 bash tests/run.sh          # las dos mitades, con su conteo por separado

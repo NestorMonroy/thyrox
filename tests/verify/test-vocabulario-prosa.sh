@@ -27,7 +27,8 @@ if [[ -z "$_thyrox_root" ]]; then
 fi
 source "$_thyrox_root/${THYROX_LIB_REACH:-src/lib/reach.sh}"
 RAIZ="$(thyrox_root)" || exit 2
-GATE="$RAIZ/src/verify/check_vocabulario_prosa.py"
+# Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
+GATE="${VOCAB_GATE_MODULE:-$RAIZ/src/verify/check_vocabulario_prosa.py}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
@@ -357,6 +358,31 @@ TXT
 afirmar "una forma sin flecha sigue casando" "1" \
     "$(VOCAB_GATE_FORBIDDEN="$TMP/vetadas-sin-flecha.txt" python3 "$GATE" \
         --quiet --no-baseline "$TMP/sin-flecha.rst" 2>/dev/null)"
+
+# --------------------------------------------------- caso del MARKDOWN
+# El corpus por defecto incluye `.claude/rules/**.md`, y en Markdown la cita
+# verbatim es el bloque cercado y el tramo de una comilla invertida, no el
+# ``literal`` ni el `::` de RST. El positivo es real y del árbol: la etiqueta
+# de Mermaid de `.claude/skills/sp-context/SKILL.md`, cuyo `\n` el gate leía
+# como la palabra «nmisión».
+cat > "$TMP/cercado.md" <<'MD'
+```mermaid
+    CTX[Context\nMisión + Stakeholders]:::active
+```
+MD
+afirmar "un bloque cercado de Markdown es cita, no prosa" "0" \
+    "$(python3 "$GATE" --quiet --no-baseline "$TMP/cercado.md" 2>/dev/null)"
+printf 'CTX[Context\\nMisión + Stakeholders]\n' > "$TMP/sin-cerco.md"
+afirmar "la misma línea fuera del cerco sí se mide" "1" \
+    "$(python3 "$GATE" --quiet --no-baseline "$TMP/sin-cerco.md" 2>/dev/null)"
+printf 'El cliché `regla de oro` se cita, no se usa.\n' > "$TMP/tramo.md"
+afirmar "una comilla invertida en Markdown es mención" "0" \
+    "$(VOCAB_GATE_FORBIDDEN="$TMP/vetadas-sin-flecha.txt" python3 "$GATE" \
+        --quiet --no-baseline "$TMP/tramo.md" 2>/dev/null)"
+printf 'El cliché `regla de oro` se cita, no se usa.\n' > "$TMP/tramo.rst"
+afirmar "en RST la comilla invertida simple no es literal" "1" \
+    "$(VOCAB_GATE_FORBIDDEN="$TMP/vetadas-sin-flecha.txt" python3 "$GATE" \
+        --quiet --no-baseline "$TMP/tramo.rst" 2>/dev/null)"
 
 printf '\n%d ok · %d falla(s)\n' "$OK" "$FALLO"
 [[ "$FALLO" -eq 0 ]]

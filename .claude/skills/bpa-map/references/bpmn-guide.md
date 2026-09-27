@@ -150,7 +150,7 @@ Los gateways representan puntos de bifurcación o convergencia del flujo.
 | Herramienta | Tipo | Ideal para |
 |-------------|------|-----------|
 | **Miro / Mural** | Colaborativo online | Sesiones de mapeo en tiempo real con equipo |
-| **draw.io (diagrams.net)** | Desktop / web, gratuito | Diagramas BPMN formales con librería nativa |
+| **draw.io (diagrams.net)** | Desktop / web, gratuito | Diagramas BPMN formales con biblioteca nativa |
 | **BPMN.io (bpmn.io)** | Web, open source | BPMN 2.0 puro, exporta a XML estándar |
 | **Lucidchart** | Web, pago | Integración con Confluence/Google Docs |
 | **Pizarrón físico** | Presencial | Primera sesión de mapeo — mayor velocidad de iteración |

@@ -160,6 +160,21 @@ if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
     (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
 fi
 
+# El vocabulario de la prosa del propio proveedor: reglas, skills, README y
+# CLAUDE.md staged. El gate medía sólo a los consumidores; la deuda heredada
+# del proveedor —términos de dominio como `idempotencia` o la «corrida» de un
+# diseño de experimentos— está congelada en `.claude/baselines/`. Sin léxico
+# rehúsa con exit 2, y eso también bloquea: el commit no se midió.
+PROSE=()
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        .claude/rules/*.md|.claude/skills/*.md|README.md|.claude/CLAUDE.md) [[ -f "$f" ]] && PROSE+=("$f") ;;
+    esac
+done
+if [[ ${#PROSE[@]} -gt 0 ]]; then
+    (cd "$ROOT" && python3 "$GATES/check_vocabulario_prosa.py" --strict --quiet "${PROSE[@]}") || CODE=1
+fi
+
 # Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate
 # existía con su suite y ningún flujo lo corría. Mide `src/` entero —todo
 # `package.json` con `exports`, anidado o suelto— porque un cruce lo forman dos

@@ -95,7 +95,7 @@ Usar cuando:
 8. **¿Necesitas tracking de progreso en múltiples sesiones?**
    → Sí, spec-driven (tasks estructuradas)
 
-**Regla de oro**: **>2 horas O complejo → spec-driven**
+**Criterio rector**: **>2 horas O complejo → spec-driven**
 
 ---
 

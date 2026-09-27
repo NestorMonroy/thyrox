@@ -65,7 +65,7 @@ Score = Σ(PASS × 1.0 + PARTIAL × 0.5) / Σ(total items - SKIP) × 100
 ```markdown
 - T-007: README.md — 9 fixes aplicados
   Evidencia: README.md existe, 6/9 fixes verificables en git diff
-  Gaps: Fix B-4 (comandos removidos) no aparece en diff — posible merge
+  Gaps: Fix B-4 (comandos retirados) no aparece en diff — posible merge
   Veredicto: ⚠️ PARTIAL — 6/9 fixes verificados
 ```
 
@@ -176,7 +176,7 @@ T-NNN marcado `[x]` que no tiene evidencia real.
 
 ---
 
-## Prioritización del action plan
+## Priorización del action plan
 
 Ordenar correcciones por impacto y urgencia:
 

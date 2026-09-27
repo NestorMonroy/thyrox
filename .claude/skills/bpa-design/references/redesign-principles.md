@@ -22,7 +22,7 @@ Los 4 principios de rediseño de proceso: Eliminate, Simplify, Integrate, Automa
 ## Principio 1 — ELIMINATE
 
 ### Definición
-Remover completamente una actividad del proceso porque no agrega valor (NVA) y no existe restricción que la obligue a estar.
+Retirar completamente una actividad del proceso porque no agrega valor (NVA) y no existe restricción que la obligue a estar.
 
 ### Cuándo aplicar
 - Actividad clasificada como NVA en bpa:analyze

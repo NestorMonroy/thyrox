@@ -1,6 +1,6 @@
 ```yml
 name: python-mcp
-description: "Skill de tecnología para implementar MCP servers en Python y usar EvoAgentX como librería interna. Usar cuando se trabaje en registry/mcp/*.py, registry/bootstrap.py, o cualquier código Python del meta-framework THYROX. Invocar durante Phase 7 DESIGN/SPECIFY para especificar contratos de tools MCP, durante Phase 10 EXECUTE para implementar servers y el adapter layer, y durante Phase 11 TRACK/EVALUATE para verificar seguridad y correctitud."
+description: "Skill de tecnología para implementar MCP servers en Python y usar EvoAgentX como biblioteca interna. Usar cuando se trabaje en registry/mcp/*.py, registry/bootstrap.py, o cualquier código Python del meta-framework THYROX. Invocar durante Phase 7 DESIGN/SPECIFY para especificar contratos de tools MCP, durante Phase 10 EXECUTE para implementar servers y el adapter layer, y durante Phase 11 TRACK/EVALUATE para verificar seguridad y correctitud."
 layer: backend
 framework: python-mcp
 project: thyrox
@@ -20,7 +20,7 @@ Guía fase-por-fase para implementar MCP servers y código Python del meta-frame
 
 ## Stage 3: DIAGNOSE — Qué investigar antes de tocar Python
 
-- ¿El código es un MCP server (expone tools) o una librería interna (importada por otros)?
+- ¿El código es un MCP server (expone tools) o una biblioteca interna (importada por otros)?
 - ¿Qué EvoAgentX APIs se necesitan? Verificar en `_evoagentx_adapter.py` si ya existe el método
 - ¿El código modifica el índice FAISS? → Verificar thread-safety y persistencia
 - ¿Ejecuta subprocesos? → Identificar comandos, timeouts, y patrones peligrosos a bloquear

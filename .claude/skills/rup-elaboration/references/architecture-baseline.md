@@ -164,7 +164,7 @@ Crear ADR para:
 
 NO crear ADR para:
 - Decisiones de naming de variables o funciones
-- Elección de librería para parseo de JSON
+- Elección de biblioteca para parseo de JSON
 - Formato interno de logs (excepto en sistemas con compliance)
 
 ---
