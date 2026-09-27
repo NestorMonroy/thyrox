@@ -42,6 +42,7 @@ import type { CredentialSelector, ProxyCredential } from './credentialSelectors.
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { modelsResponse } from './modelsList.ts'
 import { enrich } from './session/enrich.ts'
+import { blamesRequest, type ProviderTraits } from './resilience/errorClassifier.ts'
 import { callerScope } from './session/identity.ts'
 import { METADATA_KEYS } from './session/info.ts'
 import { type GatewayRoutingConfig, type GatewayUpstream, resolveUpstreamModel } from './upstreamRouting.ts'
@@ -80,6 +81,8 @@ export type ProxyServerConfig = {
   credentials: Record<string, ProxyCredential[] | undefined>
   selector: CredentialSelector
   forward: (request: ForwardRequest) => Promise<Response>
+  /** Los rasgos de cada proveedor que el clasificador de errores necesita. */
+  providerTraits?: (provider: string) => ProviderTraits | undefined
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
@@ -90,15 +93,6 @@ export function errorResponse(status: number, type: string, message: string, req
   )
 }
 
-/**
- * Si una respuesta que no conmuta culpa a la petición y no a la credencial:
- * un 4xx de contenido deja la vinculación de sesión en su sitio. El
- * clasificador completo es del conductor (`shouldSkipCredentialCooldown`).
- * pendiente: sustituirlo por el clasificador de errores (tarea #91).
- */
-function isRequestScoped(status: number): boolean {
-  return status >= 400 && status < 500 && !fallsOver(status)
-}
 
 /** Estados que hacen pasar al siguiente upstream (`Bv`). */
 function fallsOver(status: number): boolean {
@@ -196,7 +190,11 @@ async function forwardBody(
         headers: request.headers,
         signal: request.signal,
       })
-      report(response.status < 400, isRequestScoped(response.status))
+      // Un 4xx puede culpar a la petición y no a la credencial; lo decide el
+      // clasificador sobre una copia del cuerpo, que el cliente recibe entero.
+      const blamed = response.status >= 400 && response.status < 500
+        && blamesRequest(response.status, await response.clone().text(), upstream.provider, { traitsOf: config.providerTraits })
+      report(response.status < 400, blamed)
       if (fallsOver(response.status)) {
         reasons.push(`${response.status} ${response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }

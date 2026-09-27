@@ -28,6 +28,7 @@ import {
   WeightedRoundRobinSelector,
 } from './credentialSelectors.ts'
 import { isLoopbackListenHost, isSafeUpstreamUrl } from './netGuards.ts'
+import type { ProviderTraits } from './resilience/errorClassifier.ts'
 import { createProxyHandler } from './server.ts'
 import { SessionAffinitySelector } from './session/affinitySelector.ts'
 import { createHttpForwarder, type RawUpstreamEndpoint } from './upstreamForwarder.ts'
@@ -45,6 +46,8 @@ export type ProxyStartConfig = {
   selector: SelectorName
   /** La afinidad por sesión (`routing.session-affinity`); sin declarar, apagada. */
   sessionAffinity?: SessionAffinityOptions
+  /** Por nombre de proveedor, lo que el clasificador de errores necesita saber de él. */
+  providerTraits?: Record<string, ProviderTraits | undefined>
   version: string
   firstByteTimeoutMs?: number
   env?: Record<string, string | undefined>
@@ -90,6 +93,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
     routing: config.routing,
     credentials: config.credentials,
     selector: createSelector(config.selector, config.sessionAffinity),
+    providerTraits: provider => config.providerTraits?.[provider],
     forward: createHttpForwarder({
       upstreams: config.endpoints,
       version: config.version,

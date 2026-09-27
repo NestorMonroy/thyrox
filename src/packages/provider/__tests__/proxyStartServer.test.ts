@@ -6,7 +6,10 @@
  * upstreams no salen de la máquina); nada aquí necesita thyrox.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { createSelector, startProxyServer } from '../src/proxy/startServer.ts'
+// Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
+const { createSelector, startProxyServer } = (await import(
+  process.env.PROXY_START_SERVER_MODULE ?? '../src/proxy/startServer.ts'
+)) as typeof import('../src/proxy/startServer.ts')
 import { FillFirstSelector, WeightedRoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
 import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
 import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
@@ -65,6 +68,43 @@ describe('startProxyServer', () => {
     expect(await response.json()).toEqual({ type: 'message', model: 'real-model' })
     expect(upstream.keys).toEqual(['sk-upstream'])
     expect(response.headers.get('x-request-id')).toBeTruthy()
+  })
+
+  test('los rasgos del proveedor deciden si un 403 conserva la sesión', async () => {
+    const keysAfterRefusal = async (providerTraits?: Record<string, { authType: 'oauth' }>) => {
+      const replies = [200, 403, 200]
+      const keys: (string | null)[] = []
+      const server = Bun.serve({
+        port: 0,
+        hostname: '127.0.0.1',
+        fetch(request) {
+          keys.push(request.headers.get('x-api-key'))
+          const status = replies.shift() ?? 200
+          return status === 200 ? Response.json({ type: 'message' }) : new Response('Request not allowed', { status })
+        },
+      })
+      stops.push(() => server.stop(true))
+      const proxy = startProxyServer({
+        ...config(`http://127.0.0.1:${server.port}`),
+        credentials: { up: ['k1', 'k2', 'k3'].map(id => ({ id, attributes: { api_key: `sk-${id}` } })) },
+        sessionAffinity: {},
+        providerTraits,
+      })
+      stops.push(() => proxy.stop())
+      for (let i = 0; i < 3; i++) {
+        const response = await fetch(`${proxy.url}/v1/messages`, {
+          method: 'POST',
+          headers: { 'x-api-key': KEY, 'content-type': 'application/json', 'x-session-id': 's1' },
+          body: JSON.stringify({ model: 'local-model', messages: [] }),
+        })
+        await response.text()
+      }
+      return keys
+    }
+    const kept = await keysAfterRefusal({ anthropic: { authType: 'oauth' } })
+    expect(kept[2]).toBe(kept[0])
+    const released = await keysAfterRefusal()
+    expect(released[2]).not.toBe(released[0])
   })
 
   test('sin la clave local no llega nada al upstream', async () => {

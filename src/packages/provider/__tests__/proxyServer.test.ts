@@ -9,7 +9,12 @@ import { describe, expect, test } from 'bun:test'
 import { AccessManager, createConfigApiKeyProvider } from '../src/proxy/access.ts'
 import { FillFirstSelector, type ProxyCredential, RoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
 import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
-import { createProxyHandler, SECURITY_HEADERS, type ForwardRequest } from '../src/proxy/server.ts'
+import type { ProviderTraits } from '../src/proxy/resilience/errorClassifier.ts'
+import type { ForwardRequest } from '../src/proxy/server.ts'
+// Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
+const { createProxyHandler, SECURITY_HEADERS } = (await import(
+  process.env.PROXY_SERVER_MODULE ?? '../src/proxy/server.ts'
+)) as typeof import('../src/proxy/server.ts')
 
 const KEY = 'sk-local-test'
 const routing = {
@@ -199,6 +204,70 @@ describe('afinidad de sesión en el reenvío', () => {
     status = 429
     await handler(post({ model: 'mx' }, session('s1')))
     expect(selector.lookupAffinity('anthropic', 'mx-b', 'header:s1')).toEqual({ authId: '', status: 'unbound' })
+  })
+
+  describe('el cuerpo del error decide de quién es la culpa', () => {
+    const bodyHandler = (reply: () => { status: number; body: string }, selector: SessionAffinitySelector, providerTraits?: (provider: string) => ProviderTraits | undefined) =>
+      createProxyHandler({
+        access: new AccessManager([createConfigApiKeyProvider([KEY])!]),
+        routing: single,
+        credentials: { b: [{ id: 'b1' }, { id: 'b2' }] },
+        selector,
+        providerTraits,
+        forward: async () => {
+          const { status, body } = reply()
+          return new Response(body, { status })
+        },
+      })
+    const bindingAfter = async (status: number, body: string, providerTraits?: (provider: string) => ProviderTraits | undefined) => {
+      const selector = new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false })
+      let reply = { status: 200, body: '{}' }
+      const handler = bodyHandler(() => reply, selector, providerTraits)
+      await handler(post({ model: 'mx' }, session('s1')))
+      reply = { status, body }
+      const response = await handler(post({ model: 'mx' }, session('s1')))
+      await response.text()
+      return selector.lookupAffinity('anthropic', 'mx-b', 'header:s1').status
+    }
+
+    test('un 400 de cuota agotada culpa a la credencial', async () => {
+      expect(await bindingAfter(400, '{"error":{"message":"insufficient_quota"}}')).toBe('unbound')
+    })
+
+    test('un 404 de un recurso de la petición la conserva', async () => {
+      expect(await bindingAfter(404, '{"error":{"message":"Response resp_1 was not found"}}')).toBe('bound')
+      expect(await bindingAfter(404, '{"error":{"message":"model not found"}}')).toBe('unbound')
+    })
+
+    test('un 403 de huella de Cloudflare la conserva', async () => {
+      expect(await bindingAfter(403, '{"error_code":1010,"error_name":"browser_signature_banned"}')).toBe('bound')
+    })
+
+    test('los rasgos del proveedor llegan al clasificador', async () => {
+      const oauth = () => ({ authType: 'oauth' as const })
+      expect(await bindingAfter(403, 'Request not allowed', oauth)).toBe('bound')
+      expect(await bindingAfter(403, 'Request not allowed')).toBe('unbound')
+    })
+
+    test('un 5xx no se lee: un stream que no termina no retiene la conmutación', async () => {
+      const selector = new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false })
+      const handler = createProxyHandler({
+        access: new AccessManager([createConfigApiKeyProvider([KEY])!]),
+        routing: single,
+        credentials: { b: [{ id: 'b1' }] },
+        selector,
+        forward: async () => new Response(new ReadableStream({ start() {} }), { status: 503 }),
+      })
+      const response = await handler(post({ model: 'mx' }))
+      expect(response.status).toBe(502)
+    }, 2000)
+
+    test('el cliente sigue recibiendo el cuerpo del error entero', async () => {
+      const selector = new SessionAffinitySelector({ fallback: new RoundRobinSelector(), cleanup: false })
+      const response = await bodyHandler(() => ({ status: 400, body: 'prompt too large for context window' }), selector)(post({ model: 'mx' }))
+      expect(response.status).toBe(400)
+      expect(await response.text()).toBe('prompt too large for context window')
+    })
   })
 })
 

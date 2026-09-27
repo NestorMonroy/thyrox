@@ -98,3 +98,14 @@ Anulaciones, con `bin/annul_parallel` sobre
    variante sola no lo reproduce. La causa, inferida y no medida, es que
    `worktree add`/`remove` chocan con el candado de otro ítem. Se reintentan,
    y el pool barre al terminar; el barrido tiene su propio caso determinista.
+
+## El clasificador en el servidor
+
+`server.ts` decide el `skipCooldown` con `blamesRequest` sobre una copia del
+cuerpo de un 4xx, y el cliente recibe el cuerpo entero. Un 5xx no se lee: culpa
+siempre al proveedor, y su cuerpo puede ser un stream que no termina.
+`startProxyServer` entrega los rasgos de cada proveedor por su nombre
+(`providerTraits`).
+
+Anulaciones: `outputs/annul-server-classifier.tsv` (5 de 5) y
+`outputs/annul-start-server.tsv` (1 de 1).

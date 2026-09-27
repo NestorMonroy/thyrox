@@ -1,0 +1,2 @@
+base	9 pass, 0 fail	—
+notraits	8 pass, 1 fail	startProxyServer > los rasgos del proveedor deciden si un 403 conserva la sesión
