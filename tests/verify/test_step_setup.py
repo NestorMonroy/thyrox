@@ -22,6 +22,7 @@ import tempfile
 import time
 from pathlib import Path
 
+from paths import reach
 from verify import step_setup as ss
 
 passed = failed = 0
@@ -133,7 +134,7 @@ for n in range(30):
 with tempfile.TemporaryDirectory() as raw:
     run, scaffold = Path(raw), Path(raw) / "prompt.md"
     scaffold.write_text("plantilla")
-    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")}
+    env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
     go = run / "go"
     workers = [subprocess.Popen([sys.executable, "-c", REGISTER_WORKER, str(run), str(scaffold), str(go)], env=env)
                for _ in range(8)]

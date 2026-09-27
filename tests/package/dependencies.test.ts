@@ -111,7 +111,13 @@ function llamadas(texto: string): string[] {
 
 function especificadoresExternos(texto: string): string[] {
   const fuera: string[] = []
-  const estaticos = [...texto.matchAll(DESDE)].map((m) => m[1] as string)
+  // `DESDE` puede cruzar líneas —un import multilínea lo necesita—, así que
+  // desde un `export` sin comillas llegaba al `from "…"` de un comentario
+  // posterior (`repl/…/OverageCreditUpsell.tsx`: «Copy from "OC & Bulk
+  // Overages copy" doc»). Una línea que EMPIEZA con `//`, `/*` o `*` nunca es
+  // parte de un import real, y se retira antes de buscar.
+  const sinComentarios = texto.replace(/^\s*(?:\/\/|\/\*|\*).*$/gm, '')
+  const estaticos = [...sinComentarios.matchAll(DESDE)].map((m) => m[1] as string)
   for (const lista of [estaticos, llamadas(texto)]) {
     for (const spec of lista) {
       if (!spec || spec.startsWith('.') || spec.startsWith('/')) continue
@@ -226,6 +232,26 @@ describe('el detector discrimina — control positivo y negativo', () => {
     const dir = fixture("function f() { return require('otro-paquete-inexistente') }\n")
     const { noResuelven } = clasificar(dir, new Set())
     expect([...noResuelven]).toEqual(['otro-paquete-inexistente'])
+  })
+
+  test('NEGATIVO: un «from "x"» dentro de un comentario no es un import', () => {
+    // El caso real: `repl/src/components/LogoV2/OverageCreditUpsell.tsx`. El
+    // patrón estático cruzaba líneas desde un `export` sin comillas hasta el
+    // `from "…"` de un comentario posterior.
+    const dir = fixture(
+      'export const a = 1\n' +
+      '// Copy from "OC & Bulk Overages copy" doc\n' +
+      'export function b() {}\n' +
+      '/**\n * Copy from "otro documento" doc\n */\n' +
+      'export const c = 2\n')
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual([])
+  })
+
+  test('POSITIVO: un import multilínea que no resuelve sigue apareciendo', () => {
+    const dir = fixture("import {\n  a,\n  b,\n} from 'paquete-multilinea-inexistente'\n")
+    const { noResuelven } = clasificar(dir, new Set())
+    expect([...noResuelven]).toEqual(['paquete-multilinea-inexistente'])
   })
 
   test('NEGATIVO: sólo builtins no produce ningún hallazgo', () => {

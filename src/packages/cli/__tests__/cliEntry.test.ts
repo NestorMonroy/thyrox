@@ -142,6 +142,16 @@ describe('la entrada de la CLI (#205)', () => {
     expect(detectMode(['--overlap'])).toEqual(detectMode(['--overlap']))
   })
 
+  test('5b. --help pedido es ayuda, no error de uso; sin argumentos si lo es', async () => {
+    // `claude --help` sale 0, y el smoke portado de la referencia lo exige
+    // (`tests/smoke/headless-smoke.test.ts`). Pedir la ayuda explicitamente
+    // no es un uso incorrecto: sin `--prompt` el 2 corresponde a la llamada
+    // vacia, no a la que pregunta por la ayuda.
+    const { detectMode } = await import('../src/entry/detect-mode.ts')
+    expect(detectMode(['--help'])).toEqual({ kind: 'help', usage: false })
+    expect(detectMode([])).toEqual({ kind: 'help', usage: true })
+  })
+
   test('6. cada comando autocontenido vive en su propio modulo', () => {
     const faltan = COMMANDS.filter(c => !existsSync(join(PKG, 'src', 'commands', `${c}.ts`)))
     expect(faltan).toEqual([])

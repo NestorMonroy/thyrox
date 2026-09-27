@@ -78,7 +78,8 @@ export function detectMode(argv: string[]): Mode {
   if (argv.includes('-p') || hasFlag(argv, 'print')) return { kind: 'print' }
 
   const pide = hasFlag(argv, 'prompt') || hasFlag(argv, 'chat')
-  if (hasFlag(argv, 'help')) return { kind: 'help', usage: !pide }
+  // Pedir la ayuda no es un uso incorrecto: sale 0, como `claude --help`.
+  if (hasFlag(argv, 'help')) return { kind: 'help', usage: false }
   if (!pide) return { kind: 'help', usage: true }
   return { kind: 'loop' }
 }

@@ -15,7 +15,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+from paths import reach
+
+ROOT = reach.thyrox_root()
 GATE = ROOT / "src" / "verify" / "check_lint_zero.py"
 PASSED = 0
 FAILED = 0

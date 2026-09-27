@@ -171,4 +171,10 @@ CHECKS: list[Check] = [
           'I-001 — DISCOVER antes de planificar'),
     Check('workflow-refutacion', 'Paquete', 'thyrox', 'check-workflow-refutacion.sh',
           ':ref:`h-docs-101` — un workflow declara su fase de refutación y aborta'),
+    Check('exports-types', 'Paquete', 'codigo', 'check_exports_types.py',
+          'cada entrada `types` de `exports` existe y cada paquete declara sus dos proyectos'),
+    Check('lint-zero', 'Paquete', 'codigo', 'check_lint_zero.py',
+          'shellcheck, ruff y pyright en cero sobre el árbol'),
+    Check('stand-ins', 'Paquete', 'codigo', 'check_stand_ins.py',
+          'un sustituto importable sin ciclo se retira por su original'),
 ]

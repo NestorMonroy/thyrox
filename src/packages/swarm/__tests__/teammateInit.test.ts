@@ -100,6 +100,26 @@ function buzon(agente: string): string {
   return join(raiz, 'teams', 'eq', 'inboxes', `${agente}.json`)
 }
 
+/**
+ * El estado `isActive` del compañero, sondeado hasta que deja de ser `true` o
+ * vence el tope. El manejador de parada escribe en segundo plano (`void
+ * setMemberActive`): un `Bun.sleep(20)` fijo no alcanzaba bajo la carga de la
+ * suite en paralelo, y una prueba que no esperaba dejaba la escritura corriendo
+ * después de desinstalar el runtime.
+ */
+async function esperarOcioso(nombre: string, topeMs = 5000): Promise<boolean | undefined> {
+  const archivo = join(raiz, 'teams', 'eq', 'config.json')
+  const limite = Date.now() + topeMs
+  let activo: boolean | undefined
+  do {
+    activo = JSON.parse(readFileSync(archivo, 'utf-8'))
+      .members.find((x: { name: string }) => x.name === nombre)?.isActive
+    if (activo === false) return activo
+    await Bun.sleep(10)
+  } while (Date.now() < limite)
+  return activo
+}
+
 beforeEach(async () => {
   raiz = mkdtempSync('/dev/shm/tminit-')
   hooks = []
@@ -250,6 +270,7 @@ describe('el manejador de parada', () => {
     expect(ms[0].from).toBe('ana')
     expect(ms[0].color).toBe('red')
     expect(JSON.parse(ms[0].text).type).toBe('idle_notification')
+    await esperarOcioso('ana')
   })
 
   test('9. si el líder no está en el roster, cae al nombre reservado', async () => {
@@ -265,16 +286,13 @@ describe('el manejador de parada', () => {
     // Sin el respaldo, el aviso iría a un buzón llamado `undefined` y el líder
     // no se enteraría nunca de que su compañero terminó.
     expect(JSON.parse(readFileSync(buzon('team-lead'), 'utf-8')).length).toBe(1)
+    await esperarOcioso('ana')
   })
 
   test('10. marca al compañero como ocioso en el archivo del equipo', async () => {
     const manejador = await registrar()
     await manejador([], undefined)
-    await Bun.sleep(20)
-    const f = JSON.parse(
-      readFileSync(join(raiz, 'teams', 'eq', 'config.json'), 'utf-8'),
-    )
-    expect(f.members.find((x: any) => x.name === 'ana').isActive).toBe(false)
+    expect(await esperarOcioso('ana')).toBe(false)
   })
 
   test('11. el manejador NO bloquea la parada', async () => {
@@ -282,5 +300,8 @@ describe('el manejador de parada', () => {
     // Devolver falso dejaría al compañero sin poder terminar: el aviso es
     // cortesía hacia el líder, no una condición para apagarse.
     expect(await manejador([], undefined)).toBe(true)
+    // La escritura sigue en segundo plano: se espera antes de terminar para
+    // que no corra después de que `afterEach` desinstale el runtime.
+    await esperarOcioso('ana')
   })
 })

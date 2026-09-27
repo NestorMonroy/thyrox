@@ -93,6 +93,7 @@
     "./rules": "./src/rules/index.ts",
     "./skills": "./src/skills/index.ts",
     "./task": "./src/packages/task/index.ts",
+    "./packages/task": "./src/packages/task/index.ts",
     "./workbench/manifest": "./src/packages/workbench/manifest.ts",
     "./*": "./src/*.ts",
     "./packages/@ant/claude-for-chrome-mcp/src": "./src/packages/@ant/claude-for-chrome-mcp/src/index.ts",

@@ -281,7 +281,7 @@ TEST_EXCLUDE = (
 #: como archivo explicito. Un `.d.ts` no cuenta para el `rootDir`, asi que no
 #: provoca escape.
 SOURCE_CONDITION = "@thyrox/source"
-BUILD_GLOBALS = Path(__file__).resolve().parents[1] / "types" / "build-globals.d.ts"
+BUILD_GLOBALS = reach.thyrox_root() / "src" / "types" / "build-globals.d.ts"
 
 
 def self_paths(package_dir: Path) -> dict:

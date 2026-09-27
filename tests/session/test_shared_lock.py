@@ -25,6 +25,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
 from session import shared_lock as sl  # noqa: E402
 
 OK = FAILED = 0
@@ -77,7 +78,7 @@ for _ in range(int(sys.argv[3])):
         target.write_text(str(n + 1))
 """
 
-SRC = str(Path(__file__).resolve().parents[2] / "src")
+SRC = str(reach.thyrox_root() / "src")
 
 with tempfile.TemporaryDirectory() as raw:
     tmp = Path(raw)

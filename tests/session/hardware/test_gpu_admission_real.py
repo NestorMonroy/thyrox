@@ -26,8 +26,10 @@ import tempfile
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 from session import gpu_monitor as gm  # noqa: E402
 from session import gpu_trace as gt  # noqa: E402
 

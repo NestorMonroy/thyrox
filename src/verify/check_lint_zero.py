@@ -30,6 +30,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from paths import reach
+
 RUFF_RULES = "E9,F63,F7,F82,F401,F811,F841"
 SCOPE_DIRS = ("src", "tests")
 
@@ -51,7 +53,7 @@ class MissingTool(Exception):
 
 # Los verificadores son del proveedor (su `.venv`), no del árbol medido: un
 # consumidor o un árbol sintético no tienen por qué traer el grupo `lint`.
-PROVIDER_BIN = Path(__file__).resolve().parents[2] / ".venv" / "bin"
+PROVIDER_BIN = reach.thyrox_root() / ".venv" / "bin"
 
 
 def tool(name: str) -> str:
@@ -110,7 +112,7 @@ def report(name: str, findings: list[Finding], measured: int) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[2])
+    parser.add_argument("--root", type=Path, default=reach.thyrox_root())
     parser.add_argument("files", nargs="*")
     args = parser.parse_args(argv)
     root = args.root

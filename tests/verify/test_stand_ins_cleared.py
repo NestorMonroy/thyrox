@@ -18,8 +18,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from paths import reach  # noqa: E402
+
+ROOT = reach.thyrox_root()
 
 from verify.check_stand_ins import shadowed  # noqa: E402
 

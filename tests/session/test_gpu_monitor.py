@@ -25,6 +25,7 @@ import tempfile
 import time
 from pathlib import Path
 
+from paths import reach
 from session import gpu_monitor as gm
 
 OK = FAILED = 0
@@ -187,7 +188,7 @@ with tempfile.TemporaryDirectory() as raw:
              f"ok = gm.admit(3000, Path({str(ledger)!r}), owner_pid=int(sys.argv[1]), nvidia_smi={str(smi)!r},"
              f" timeout_s=0.8, interval_s=0.1)\n"
              f"print('admitido' if ok else 'esperó')\n")
-    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")}
+    env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
     holders = [subprocess.Popen(["sleep", "5"]) for _ in range(2)]
     racers = [subprocess.Popen([sys.executable, "-c", racer, str(h.pid)], stdout=subprocess.PIPE, text=True, env=env)
               for h in holders]

@@ -17,6 +17,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from paths import reach
 from session import shared_lock
 from verify import step_close
 
@@ -144,7 +145,7 @@ with sl.held(sys.argv[1], run_id="otro-cierre", stale_s=60):
 """
 with tempfile.TemporaryDirectory() as tmp:
     repo, run, bench = fixture(Path(tmp))
-    env = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")}
+    env = {**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")}
     holder = subprocess.Popen([sys.executable, "-c", HOLDER, str(step_close.commit_lock_target(repo))],
                               stdout=subprocess.PIPE, text=True, env=env)
     assert holder.stdout is not None  # se pidió stdout=PIPE arriba
