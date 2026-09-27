@@ -18,7 +18,7 @@ no se pudo leer; no es un stdin vacío).
 La sexta columna son los escritores de una tubería: cuántos OTROS procesos
 la tienen abierta para escribir (``fdinfo``, modo de acceso). Sin ninguno,
 leer da EOF —cada ítem del pool: ``{ cat plantilla; printf item; } |
-claude -p``—; con uno vivo que no escribe, espera para siempre (``sleep |
+thyrox -p``—; con uno vivo que no escribe, espera para siempre (``sleep |
 cat``). ``-`` si no es tubería.
 
 Ciega a: el otro extremo de un socket, que no se ve en ``/proc/<pid>/fd``

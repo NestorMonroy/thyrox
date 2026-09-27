@@ -3,7 +3,7 @@
 
 Escrita ANTES del guion (TDD, directiva del ejecutor 2026-09-02). Lo que fija:
 
-1. **La sonda nunca hereda la sesión.** Un ``claude -p`` hijo en este
+1. **La sonda nunca hereda la sesión.** Un ``thyrox -p`` hijo en este
    contenedor toma ``CLAUDE_CODE_SESSION_ID`` del entorno y escribe con el
    id de la sesión madre (medido: el transcript del hijo apareció bajo
    ``-home-user-probe-empty/168b0fdf….jsonl``). Cada comando lleva

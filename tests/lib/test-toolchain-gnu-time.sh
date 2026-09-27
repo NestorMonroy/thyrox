@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test-toolchain-gnu-time.sh — contrato de la adquisicion de GNU Time.
 #
-# Para que se quiere: la memoria pico (max RSS) de cada `claude -p` del pool y
+# Para que se quiere: la memoria pico (max RSS) de cada `thyrox -p` del pool y
 # de cada `tsc`. El `time` de bash da pared y CPU, no memoria, y el pool lanza
 # con `--memfree 3G` sin medida detras.
 #

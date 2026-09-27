@@ -84,7 +84,7 @@ MANY_ITEMS = re.compile(
 HEADLESS_POOL_NOTICE = (
     "GATE DE DESPACHO — tercera forma. Este despacho pide juicio sobre N items "
     "independientes. Un subagente lo haria con el contexto del orquestador y "
-    "ocupando su anchura; una conversacion `claude -p` por item no hereda "
+    "ocupando su anchura; una conversacion `thyrox -p` por item no hereda "
     "nada y queda en disco por item. `.claude/rules/trabajo-en-segundo-plano.md`: "
     "`printf '%s\\n' <items> | bash bin/headless-pool --prompt <plantilla> "
     "--out <dir> --model <claude-…>`, reparte con GNU Parallel. Si los items no "
@@ -132,7 +132,7 @@ def detect(payload: dict) -> str | None:
     if needs_judgment(text):
         # La tercera forma: juicio en cada item, pero N items independientes.
         # Eso no pide un agente con el contexto del orquestador: pide una
-        # conversacion `claude -p` por item (`bin/headless-pool`).
+        # conversacion `thyrox -p` por item (`bin/headless-pool`).
         if MANY_ITEMS.search(text):
             return HEADLESS_POOL_NOTICE
         return None

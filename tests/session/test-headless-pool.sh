@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Suite de src/session/headless-pool.sh — la tercera forma de despacho: N
-# lecturas con juicio, una conversacion `claude -p` por item, repartidas con
+# lecturas con juicio, una conversacion `thyrox -p` por item, repartidas con
 # GNU Parallel. No es un subagente (no hereda el piso del orquestador ni ocupa
 # su anchura) y no es un proceso determinista (cada item exige un modelo).
 #
@@ -105,7 +105,7 @@ check "sin claude: exit 2" "$CODE" "2"
 SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
 # Sin ejecutor declarado, el ítem corre con `thyrox -p` (`bin/cli`), no con
-# `claude -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
+# `thyrox -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
 # binario se lanzaría, sin lanzarlo.
 printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_CLAUDE" > "%s/runner.txt"\n' "$F" > "$F/parallel-runner"
 chmod +x "$F/parallel-runner"
@@ -128,7 +128,7 @@ rm -rf "$F/out"; EXTRA="--memfree mucho" corre alfa
 check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
-# --cache-ttl: el TTL de la caché llega a cada `claude -p` por
+# --cache-ttl: el TTL de la caché llega a cada `thyrox -p` por
 # CLAUDE_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
 # y un valor fuera de 5m|1h rehúsa sin resumen.
 ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5}' | sort -u | paste -sd,; }
@@ -143,7 +143,7 @@ check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items
 
 # El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
 # variable gana a la decisión calculada, y forzar 5m gana a la variable. El
-# ítem la recibe con los dos nombres: `claude -p` lee CLAUDE_CODE_*, y
+# ítem la recibe con los dos nombres: `thyrox -p` lee CLAUDE_CODE_*, y
 # `thyrox -p` —cuando el árbol llegue a 0 errores— leerá THYROX_*.
 thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
@@ -409,7 +409,7 @@ rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_MEMFREE_RESERVE=1G HEADLESS_POOL_TIME="$
 check "la reserva del vecino se suma a lo medido" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 1049M \(history\)/{n++} END{print n+0}')" "1"
 check "una plantilla, un solo historial" "$(find "$HIST" -name runs.jsonl | wc -l)" "1"
 unset HIST
-# La cota es del binario: una fila medida con OTRO (`claude -p` frente a
+# La cota es del binario: una fila medida con OTRO (`thyrox -p` frente a
 # `thyrox -p`, #48) no fija la de este, aunque sea la última.
 HIST="$F/historial-otro-binario"
 HIST_DIR="$(HEADLESS_POOL_HISTORY_DIR="$HIST" bash "$RAIZ/bin/pool_history" dir "$F/prompt.md")"

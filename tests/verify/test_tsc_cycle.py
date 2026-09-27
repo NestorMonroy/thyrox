@@ -152,7 +152,7 @@ with tempfile.TemporaryDirectory() as tmp:
 # --- modules: el módulo como unidad, de punta a punta -------------------------
 # `plan` deriva las unidades del log: un «el módulo X no exporta Y» (TS2305,
 # TS2724) es un porte pendiente de X, y quien lo emite es su consumidor.
-# `launch` corre el pool (GNU Parallel, `claude -p` por módulo) y el pipeline
+# `launch` corre el pool (GNU Parallel, `thyrox -p` por módulo) y el pipeline
 # que mide por lotes, los dos con `thyrox-bg`: ningún subagente.
 
 MISSING_LOG = """src/packages/a/x.ts(3,10): error TS2305: Module '"@thyrox/agent/attachments.js"' has no exported member 'foo'.
@@ -368,7 +368,7 @@ assert_equal("la ruta determinista nombra la identidad, el proponente y tsc", (T
 # --- local: la ruta 3 versionada ------------------------------------------
 # Vivía como guion de banco (step-120/build_items.py + plantilla.md): corría y
 # nadie más podía invocarlo. Un ítem por archivo y trozo de diagnósticos, con
-# el código que los rodea, para que el `claude -p` no gaste turnos leyendo.
+# el código que los rodea, para que el `thyrox -p` no gaste turnos leyendo.
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     source = root / "src/packages/agent/query.ts"
@@ -614,7 +614,7 @@ with tempfile.TemporaryDirectory() as tmp:
                   bool(close) and f"--run {root / 'run'}" in close[0]))
 
 # --- el TTL de caché del pool se decide con lo que midió el paso anterior -----
-# Cada ítem es un `claude -p`: su caché es de 5 m salvo que un hueco entre
+# Cada ítem es un `thyrox -p`: su caché es de 5 m salvo que un hueco entre
 # turnos la haga caducar, y ningún hueco dentro de un ítem supera la duración
 # del ítem. El ítem más largo del paso anterior es la cota que decide.
 with tempfile.TemporaryDirectory() as tmp:

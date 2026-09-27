@@ -81,7 +81,7 @@ with tempfile.TemporaryDirectory() as tmp:
           "101\tsocket:[1452327]\tchannel\tS\t0.10\t-", probe(101).tsv())
     # Lo que separa la espera eterna del EOF: si alguien más tiene la tubería
     # abierta para escribir. Sin escritor, leer da EOF (cada ítem del pool:
-    # `{ cat plantilla; printf item; } | claude -p`); con uno vivo que no
+    # `{ cat plantilla; printf item; } | thyrox -p`); con uno vivo que no
     # escribe, espera para siempre (`sleep | cat`).
     check("una tubería cuenta a quien la tiene para escribir, no a quien sólo la lee", 1, probe(102).writers)
     check("una tubería sin escritor vivo: 0, leer da EOF", 0, probe(106).writers)

@@ -13,7 +13,7 @@ por proceso.
 
 Sin ``nvidia-smi`` no escribe nada —una medida ausente no es un cero—, y un
 árbol que no usó la GPU escribe ceros, que sí son una medida. ``headless-pool``
-lo lanza por ítem sólo si ``available()``; con ``claude -p`` el modelo corre
+lo lanza por ítem sólo si ``available()``; con ``thyrox -p`` el modelo corre
 en el servidor y la GPU local no se usa, así que medirla sólo informa cuando
 el pool corre trabajo local con CUDA.
 

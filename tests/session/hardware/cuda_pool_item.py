@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Un ítem de ``headless-pool`` que usa la GPU de verdad, en lugar de
-``claude -p``: lee el prompt por stdin, espera ``CUDA_ITEM_DELAY`` s (el
+``thyrox -p``: lee el prompt por stdin, espera ``CUDA_ITEM_DELAY`` s (el
 arranque antes de asignar, la ventana de la carrera), asigna
 ``CUDA_ITEM_MIB`` MiB, los sostiene ``CUDA_ITEM_HOLD`` s y responde con la
 línea ``result`` de stream-json que el pool espera. Anota su arranque y su fin

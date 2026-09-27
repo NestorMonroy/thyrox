@@ -13,7 +13,7 @@ Qué haría fallar a este control:
   sólo puede tocar los tiers donde la fórmula era falsa);
 - un peso que no salga del precio del modelo (lectura 0.025× en Fable 5.1);
 - un modelo que el catálogo no conoce y que se pondere igual en silencio;
-- leer el `usage` de `claude -p` con otras claves que las del store.
+- leer el `usage` de `thyrox -p` con otras claves que las del store.
 """
 from __future__ import annotations
 
@@ -73,7 +73,7 @@ except KeyError:
     refused = True
 check("KeyError", True, refused)
 
-print("== 5. el usage de claude -p se lee con sus claves ==")
+print("== 5. el usage de thyrox -p se lee con sus claves ==")
 result_usage = {"input_tokens": 10, "cache_creation_input_tokens": 100, "cache_read_input_tokens": 1000,
                 "output_tokens": 20, "cache_creation": {"ephemeral_5m_input_tokens": 40,
                                                         "ephemeral_1h_input_tokens": 60}}

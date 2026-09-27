@@ -154,7 +154,7 @@ def usage_cost_usd(catalog: dict, model_id: str, usage: dict, ttl: str = "1h") -
 
 
 def usage_from_result(usage: dict) -> dict:
-    """El ``usage`` de una salida de ``claude -p`` con las claves del store, y
+    """El ``usage`` de una salida de ``thyrox -p`` con las claves del store, y
     el reparto de la escritura de caché por TTL cuando la salida lo trae."""
     split = usage.get("cache_creation") or {}
     return {"input_tokens": usage.get("input_tokens", 0),

@@ -266,7 +266,7 @@ def cmd_shared_plan(args) -> int:
 
 # Ruta 3: el ítem es un archivo y un trozo de sus diagnósticos, con el código
 # que los rodea. Antes vivía como guion de banco (step-120/build_items.py): el
-# contexto en el ítem evita que el `claude -p` gaste turnos leyendo, lo que en
+# contexto en el ítem evita que el `thyrox -p` gaste turnos leyendo, lo que en
 # el paso 114 dejó sin salida 19 de 29 ítems.
 LOCAL_CONTEXT_LINES = 10
 LOCAL_HEAD = re.compile(r"^(?P<file>[^\s(]+)\((?P<line>\d+),(?P<col>\d+)\): error TS\d+:")
@@ -603,7 +603,7 @@ def _step_number(bench: Path) -> int | None:
 def previous_item_bound(bench: Path) -> float | None:
     """La duración, en minutos, del ítem más largo del paso anterior medido.
 
-    Ningún hueco entre dos turnos de un `claude -p` supera la duración de su
+    Ningún hueco entre dos turnos de un `thyrox -p` supera la duración de su
     ítem, así que el más largo acota el hueco que decide el TTL. `None` si no
     hay paso anterior con salidas: sin medición no se inventa una cota."""
     current = _step_number(bench)
@@ -646,7 +646,7 @@ def declared_cache_ttl(env) -> tuple[str | None, str]:
 
 
 def pool_cache_ttl(bench: Path, model: str, env=None) -> tuple[str | None, str]:
-    """El TTL de la caché de cada `claude -p` del pool y su porqué. Primero lo
+    """El TTL de la caché de cada `thyrox -p` del pool y su porqué. Primero lo
     que el entorno DECLARA (`declared_cache_ttl`); si nada, el que
     `choose_cache_ttl` da para la cota del paso anterior — un default derivado,
     no una declaración, así que va por debajo. Sin cota, o con un modelo
@@ -689,7 +689,7 @@ TSC_MEMORY_RESERVE = "2G"
 def launch_commands(bench: Path, model: str, worktree: Path | list[Path], ledger: Path, seed: int,
                     width: int = 8, route: str = "modules", setup_id: str | None = None,
                     cache_ttl: str | None = None) -> list[list[str]]:
-    """Los dos trabajos del paso: el pool (juicio, un `claude -p` por módulo,
+    """Los dos trabajos del paso: el pool (juicio, un `thyrox -p` por módulo,
     repartido por GNU Parallel) y el pipeline (aplica y mide por lotes en
     `worktree` mientras el pool sigue). Ninguno es un subagente."""
     items, outputs = bench / "items.txt", bench / "outputs"
@@ -774,7 +774,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--file", required=True)
     p.add_argument("--lesson", required=True)
     p.set_defaults(func=cmd_reject)
-    modules = sub.add_parser("modules", help="el módulo como unidad: pool de claude -p y pipeline de medición")
+    modules = sub.add_parser("modules", help="el módulo como unidad: pool de thyrox -p y pipeline de medición")
     msub = modules.add_subparsers(dest="modules_command", required=True)
     p = msub.add_parser("plan", help="deriva un ítem por módulo con exportaciones ausentes")
     p.add_argument("--log", type=Path, required=True)

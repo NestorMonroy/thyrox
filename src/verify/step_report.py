@@ -39,7 +39,7 @@ NO_MODEL = "(sin modelo)"
 
 
 def _item_costs(result: dict, catalog: dict | None) -> list[tuple[str, float, str]]:
-    """(modelo, tokens equivalentes, base) de una salida de ``claude -p``.
+    """(modelo, tokens equivalentes, base) de una salida de ``thyrox -p``.
     Con un solo modelo se usa ``usage``, que trae el reparto de la escritura
     por TTL; con varios, el ``modelUsage`` de cada uno, sin ese reparto."""
     models = result.get("modelUsage") or {}
@@ -102,7 +102,7 @@ def _memory(bench: Path) -> dict:
 
     Se lee la ÚLTIMA línea con cifras, no la primera palabra del archivo: sin
     ``-q``, GNU Time antepone ``Command exited with non-zero status N`` a la
-    medida de un ítem que falló, y ése —un ``claude -p`` que agotó su plazo—
+    medida de un ítem que falló, y ése —un ``thyrox -p`` que agotó su plazo—
     suele ser el más pesado."""
     peaks = []
     for path in (bench / "outputs").glob("*.time"):

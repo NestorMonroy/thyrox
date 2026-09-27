@@ -3,7 +3,7 @@
 
 `.claude/cache/` es el material reconstruible que existe para no rehacer
 trabajo (`cache/paths.py`): sondas, listas de símbolos, logs de antes y
-después de una medición. Se versiona para que cualquier `claude -p`, con el
+después de una medición. Se versiona para que cualquier `thyrox -p`, con el
 modelo que sea, retome sin rehacerlo: la caché de prompt es por modelo y no
 sobrevive a un cambio, el disco sí.
 

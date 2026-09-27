@@ -44,7 +44,7 @@ nohup bash -c "sleep 30 | cat" </dev/null >"$L1" 2>&1 & P1=$!; disown $P1
 # `limpio`: todo su árbol con stdin en /dev/null.
 nohup bash -c "sleep 30" </dev/null >"$L2" 2>&1 & P2=$!; disown $P2
 # `cerrado`: su nieto lee de una tubería cuyo escritor ya salió — la forma de
-# cada ítem del pool (`{ cat plantilla; printf item; } | claude -p`). Leer da
+# cada ítem del pool (`{ cat plantilla; printf item; } | thyrox -p`). Leer da
 # EOF, no espera: avisar ahí es una falsa alarma (medido en el paso 163).
 L3=$(fixture_file)
 nohup bash -c "echo hola | { sleep 1; exec sleep 30; }" </dev/null >"$L3" 2>&1 & P3=$!; disown $P3

@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory() as tmp:
     (bench / "outputs/4.time").write_text("no es una medida\n")
     # El item que FALLO: sin `-q`, GNU Time antepone esta linea (bytes reales de
     # `/usr/bin/time -f ... -o f bash -c "exit 7"`). Es el que mas importa medir
-    # —un `claude -p` que agota su plazo suele ser el mas pesado— y leer solo la
+    # —un `thyrox -p` que agota su plazo suele ser el mas pesado— y leer solo la
     # primera palabra lo descartaba como ilegible.
     (bench / "outputs/5.time").write_text(
         "Command exited with non-zero status 124\n1200000 600.00 50.00 4.00\n")

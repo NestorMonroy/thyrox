@@ -130,7 +130,7 @@ async function* stdinLines(): AsyncGenerator<string> {
  * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
  * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado.
  *
- * `toolAllow` acota las herramientas por nombre (el `--tools` de `claude -p`);
+ * `toolAllow` acota las herramientas por nombre (el `--tools` de `thyrox -p`);
  * `null` deja todas.
  */
 export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
