@@ -42,3 +42,16 @@ describe('getSteps', () => {
     expect(instructionsStep('heredado', ['CLAUDE.md'])).toBe(true)
   })
 })
+
+describe('textos del onboarding', () => {
+  test('nombran el producto y el archivo propios', () => {
+    const dir = join(base, 'textos')
+    mkdirSync(dir, { recursive: true })
+    setCwdState(dir)
+    const texts = getSteps().map(s => s.text)
+    expect(texts).toEqual([
+      'Ask thyrox to create a new app or clone a repository',
+      'Run /init to create a THYROX.md file with instructions for thyrox',
+    ])
+  })
+})
