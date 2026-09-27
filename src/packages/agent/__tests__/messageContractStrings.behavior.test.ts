@@ -17,7 +17,7 @@ import {
 } from '../messages.ts'
 
 /**
- * Pin the EXACT wire format of protocol strings between Claude Code and
+ * Pin the EXACT wire format of protocol strings between thyrox and
  * the model. Three classes of constants here:
  *
  *  1. Interrupt/cancel: the model sees these as user-role messages and

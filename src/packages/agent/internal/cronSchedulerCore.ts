@@ -174,7 +174,7 @@ export function createCronScheduler(
 
     // Only surface missed tasks on initial load. Chokidar-triggered
     // reloads leave overdue tasks to check() (which anchors from createdAt
-    // and fires immediately). This avoids a misleading "missed while Claude
+    // and fires immediately). This avoids a misleading "missed while thyrox
     // was not running" prompt for tasks that became overdue mid-session.
     //
     // Recurring tasks are NOT surfaced or deleted — check() handles them
@@ -330,7 +330,7 @@ export function createCronScheduler(
     }
 
     // File-backed tasks: only when we own the scheduler lock. The lock
-    // exists to stop two Claude sessions in the same cwd from double-firing
+    // exists to stop two thyrox sessions in the same cwd from double-firing
     // the same on-disk task.
     if (isOwner) {
       for (const t of tasks) process(t, false)

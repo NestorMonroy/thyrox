@@ -1,6 +1,6 @@
 /**
  * La credencial con que `thyrox` habla con el modelo, portada de la cadena de
- * Claude Code 2.1.282: `jc()` y `Qf()` (chunk-wbbthbh9) eligen la fuente,
+ * El ejecutable 2.1.282: `jc()` y `Qf()` (chunk-wbbthbh9) eligen la fuente,
  * `y()`/`KI()` (chunk-qd0gs1zk) leen el token de un descriptor, y
  * `FNe()`/`Gct()` (chunk-t6d3nxvc) retiran las credenciales del entorno de
  * los hijos cuando el anfitrión administra el proveedor. Extractos y

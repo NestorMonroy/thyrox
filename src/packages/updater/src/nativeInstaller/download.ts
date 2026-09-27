@@ -1,7 +1,7 @@
 /**
  * Funcionalidad de descarga para el instalador nativo
  *
- * Maneja la descarga de binarios de Claude desde varias fuentes:
+ * Maneja la descarga de binarios de thyrox desde varias fuentes:
  * - Paquetes NPM de Artifactory (ant-internal)
  * - Bucket GCS
  * - GitHub Releases (ruta por defecto de ccb)

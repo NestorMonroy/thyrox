@@ -66,7 +66,7 @@ export type PromptCacheTtlEnv = Readonly<Record<string, string | undefined>>
 export type PromptCacheTtlContext = {
   env: PromptCacheTtlEnv
   settings?: { promptCacheTtl?: CacheTtl; subagentPromptCacheTtl?: CacheTtl }
-  /** `gt()`: suscripción de Claude, no clave de API ni nube. */
+  /** `gt()`: suscripción de thyrox, no clave de API ni nube. */
   isSubscriber: boolean
   /** `wa().isUsingOverage`: la suscripción está en excedente. */
   isUsingOverage: boolean

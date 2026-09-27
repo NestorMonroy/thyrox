@@ -109,7 +109,7 @@ export function OAuthFlowStep({
           timersRef.current.add(timer)
         },
         {
-          loginWithClaudeAi: true, // Always use Claude AI for subscription tokens
+          loginWithClaudeAi: true, // Always use thyrox AI for subscription tokens
           inferenceOnly: true,
           expiresIn: LONG_LIVED_OAUTH_TOKEN_TTL_SECONDS,
         },

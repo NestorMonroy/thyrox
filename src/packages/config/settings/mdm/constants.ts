@@ -11,11 +11,11 @@
 import { homedir, userInfo } from 'node:os'
 import { join } from 'node:path'
 
-/** Dominio de preferencia de macOS para perfiles MDM de Claude Code. */
+/** Dominio de preferencia de macOS para perfiles MDM de thyrox. */
 const MACOS_PREFERENCE_DOMAIN = 'com.anthropic.claudecode'
 
 /**
- * Rutas de registro de Windows para políticas MDM de Claude Code.
+ * Rutas de registro de Windows para políticas MDM de thyrox.
  *
  * Estas claves viven bajo SOFTWARE\Policies, que está en la lista de
  * claves compartidas WOW64 — tanto procesos de 32-bit como de 64-bit ven

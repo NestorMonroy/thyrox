@@ -578,7 +578,7 @@ export function createCliExecutor(opts: {
       //      keyCode 0 ('a'), so a CJK greeting can end up typed as "aa".
       //   2. ASCII with an active CJK IME: letters enter IME composition mode,
       //      and a subsequent space is consumed as "select candidate" instead
-      //      of inserting a space (for example, a CJK sentence plus "Claude Code"
+      //      of inserting a space (for example, a CJK sentence plus "thyrox"
       //      can lose the expected space before "Code").
       // Clipboard paste bypasses the IME pipeline entirely for both cases.
       // On other platforms there is no IME-vs-keystroke conflict, so only

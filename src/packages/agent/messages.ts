@@ -4621,7 +4621,7 @@ export function stripAdvisorBlocks(
  * assistant cuya conexión de origen difiere de `currentConnectionId`. La
  * API de Anthropic ata las firmas de los bloques de thinking al contexto
  * de autenticación (API key + organización) que las produjo — cambiar a
- * otra conexión (Claude Account ↔ proxy Anthropic Compatible ↔ cualquier
+ * otra conexión (thyrox Account ↔ proxy Anthropic Compatible ↔ cualquier
  * otro proveedor) hace que las firmas persistidas ya no encajen y la API
  * rechaza con `messages.N.content.K: Invalid signature in thinking block`.
  *

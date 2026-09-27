@@ -365,7 +365,7 @@ class ContextDepImpl {
       return await this.pipeline().getUserContext()
     } catch (e) {
       // Un fallo al construir el contexto no debe tumbar el bucle, pero
-      // tampoco puede ser invisible: un CLAUDE.md ausente o un git que falla
+      // tampoco puede ser invisible: un THYROX.md ausente o un git que falla
       // cambian la conducta del prompt en silencio.
       logError(e)
       return {}

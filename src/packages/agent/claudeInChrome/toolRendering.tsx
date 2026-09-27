@@ -159,9 +159,9 @@ function renderChromeToolUseMessage(
 }
 
 /**
- * Renders a clickable "View Tab" link for Claude in Chrome MCP tools.
+ * Renders a clickable "View Tab" link for thyrox in Chrome MCP tools.
  * Returns null if:
- * - The tool is not a Claude in Chrome MCP tool
+ * - The tool is not a thyrox in Chrome MCP tool
  * - The input doesn't have a valid tabId
  * - Hyperlinks are not supported
  */
@@ -273,7 +273,7 @@ export function renderChromeToolResultMessage(
 }
 
 /**
- * Returns tool method overrides for Claude in Chrome MCP tools. Use this to customize
+ * Returns tool method overrides for thyrox in Chrome MCP tools. Use this to customize
  * rendering for chrome tools in a single spread operation.
  */
 export function getClaudeInChromeMCPToolOverrides(toolName: string): {

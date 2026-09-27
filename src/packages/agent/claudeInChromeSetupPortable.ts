@@ -37,7 +37,7 @@ type Logger = (message: string) => void
 
 
 /**
- * Detects if the Claude in Chrome extension is installed by checking the Extensions
+ * Detects if the thyrox in Chrome extension is installed by checking the Extensions
  * directory across all supported Chromium-based browsers and their profiles.
  *
  * This is a portable version that can be used by both TUI and VS Code extension.

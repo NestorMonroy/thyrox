@@ -220,7 +220,7 @@ export async function showSetupScreens(
 
   // ccb does not show a workspace-trust dialog: the operator owns this machine
   // and is the sole trust principal (see checkHasTrustDialogAccepted, which is
-  // unconditionally true). We still run the CLAUDE.md external-includes and
+  // unconditionally true). We still run the THYROX.md external-includes and
   // mcp.json approval flows below — those are content-level reviews, not the
   // folder-trust boundary. Skip everything in claubbit.
   if (!isEnvTruthy(process.env.CLAUBBIT)) {
@@ -298,7 +298,7 @@ export async function showSetupScreens(
 
   // Check for custom API key
   // On homespace, ANTHROPIC_API_KEY is preserved in process.env for child
-  // processes but ignored by Claude Code itself (see auth.ts).
+  // processes but ignored by thyrox itself (see auth.ts).
   if (process.env.ANTHROPIC_API_KEY && !isRunningOnHomespace()) {
     const customApiKeyTruncated = normalizeApiKeyForConfig(
       process.env.ANTHROPIC_API_KEY,
@@ -410,7 +410,7 @@ export async function showSetupScreens(
     }
   }
 
-  // Show Chrome onboarding for first-time Claude in Chrome users
+  // Show Chrome onboarding for first-time thyrox in Chrome users
   if (
     claudeInChrome &&
     !getGlobalConfig().hasCompletedClaudeInChromeOnboarding

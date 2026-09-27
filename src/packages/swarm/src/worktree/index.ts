@@ -1178,7 +1178,7 @@ export async function hasWorktreeChanges(
 
 /**
  * Fast-path handler for --worktree --tmux.
- * Creates the worktree and execs into tmux running Claude inside.
+ * Creates the worktree and execs into tmux running thyrox inside.
  * This is called early in cli.tsx before loading the full CLI.
  */
 export async function execIntoTmuxWorktree(args: string[]): Promise<{
@@ -1341,8 +1341,8 @@ export async function execIntoTmuxWorktree(args: string[]): Promise<{
     }
   }
 
-  // Check if tmux prefix conflicts with Claude keybindings
-  // Claude binds: ctrl+b (task:background), ctrl+c, ctrl+d, ctrl+t, ctrl+o, ctrl+r, ctrl+s, ctrl+g, ctrl+e
+  // Check if tmux prefix conflicts with thyrox keybindings
+  // thyrox binds: ctrl+b (task:background), ctrl+c, ctrl+d, ctrl+t, ctrl+o, ctrl+r, ctrl+s, ctrl+g, ctrl+e
   const claudeBindings = [
     'C-b',
     'C-c',
@@ -1356,7 +1356,7 @@ export async function execIntoTmuxWorktree(args: string[]): Promise<{
   ]
   const prefixConflicts = claudeBindings.includes(tmuxPrefix)
 
-  // Set env vars for the inner Claude to display tmux info in welcome message
+  // Set env vars for the inner thyrox to display tmux info in welcome message
   const tmuxEnv = {
     ...process.env,
     CLAUDE_CODE_TMUX_SESSION: tmuxSessionName,
@@ -1399,7 +1399,7 @@ export async function execIntoTmuxWorktree(args: string[]): Promise<{
   const shouldSetupDevPanes = isAnt && isClaudeCliInternal && !sessionExists
 
   if (shouldSetupDevPanes) {
-    // Create detached session with Claude in first pane
+    // Create detached session with thyrox in first pane
     spawnSync(
       'tmux',
       [
@@ -1438,7 +1438,7 @@ export async function execIntoTmuxWorktree(args: string[]): Promise<{
       cwd: worktreeDir,
     })
 
-    // Select the first pane (Claude)
+    // Select the first pane (thyrox)
     spawnSync('tmux', ['select-pane', '-t', `${tmuxSessionName}:0.0`], {
       cwd: worktreeDir,
     })

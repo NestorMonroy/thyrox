@@ -1,6 +1,6 @@
 /**
  * Puerto de `ccnmt: packages/local-observability/src/aggregates/stats.ts`
- * (1061 líneas fuente). Agrega estadísticas de uso de Claude Code a
+ * (1061 líneas fuente). Agrega estadísticas de uso de thyrox a
  * través de todas las sesiones — la más citada de las 6 subpaths de
  * `aggregates/` en el censo de futuros consumidores (`stats.js`: 1 línea
  * directa, pero `DailyActivity`/`SessionStats` los consumen `heatmap.ts`
@@ -618,7 +618,7 @@ function cacheToStats(
 }
 
 /**
- * Agrega stats de todas las sesiones de Claude Code en todos los
+ * Agrega stats de todas las sesiones de thyrox en todos los
  * proyectos. Usa una caché en disco para evitar reprocesar datos
  * históricos.
  */

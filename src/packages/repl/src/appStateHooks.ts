@@ -5,7 +5,7 @@ import type { Context, ReactNode } from 'react'
 // ESTRECHADO 2026-09-19 (TASK-THYROX-0203), no portado verbatim.
 //
 // La referencia declara los dos como `unknown`
-// (`ccnmt: packages/repl/src/appStateHooks.ts:5-6`). Su propio CLAUDE.md:274
+// (`ccnmt: packages/repl/src/appStateHooks.ts:5-6`). Su propio THYROX.md:274
 // fija el umbral que decide cuando eso se estrecha: un shim `unknown` solo
 // rinde sobre consumidores de patron ACCESS (`x.campo`), y a partir de tres
 // sitios vale estrecharlo. Medido aqui: 340 TS18046 de la forma

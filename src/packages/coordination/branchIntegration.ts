@@ -32,7 +32,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { combineGates, driverAwareFileOverlapGate } from './claims.ts'
 
-/** Committer esperado (``git-author-identity.md``): jamás Claude, siempre jcg-admin. */
+/** Committer esperado (``git-author-identity.md``): jamás thyrox, siempre jcg-admin. */
 export const EXPECTED_COMMITTER_NAME = 'jcg-admin'
 export const EXPECTED_COMMITTER_EMAIL = '169318663+jcg-admin@users.noreply.github.com'
 

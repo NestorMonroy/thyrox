@@ -9,7 +9,7 @@
  *   PR; `settings.attribution` sustituye cada campo por separado, y
  *   `includeCoAuthoredBy: false` deja los dos vacíos.
  * - `getEnhancedPRAttribution` (`UMo`): el pie enriquecido con el porcentaje
- *   de caracteres de Claude, los prompts desde la última compactación y las
+ *   de caracteres de thyrox, los prompts desde la última compactación y las
  *   lecturas de memoria —`F (87% 3-shotted by <modelo>, 1 memory recalled)`—;
  *   sin datos, el pie tal cual. Un dato que falla cuenta como ausente: la
  *   atribución nunca rompe el comando que la pide.
@@ -20,8 +20,8 @@
  *   agrega la línea `Claude-Session:` de una sesión remota. Esa línea no se
  *   compone aquí: exige el constructor de URL de sesión remota, que este árbol
  *   no tiene. Sucesor: TASK-THYROX-0250.
- * - El nombre del modelo usa el nombre público cuando se conoce, `Claude` para
- *   la familia fable y `Claude Code` en otro caso: es la forma de `OMo` sin
+ * - El nombre del modelo usa el nombre público cuando se conoce, `thyrox` para
+ *   la familia fable y `thyrox` en otro caso: es la forma de `OMo` sin
  *   las ramas de proveedores de terceros.
  * - `settings.attribution.pr` gana aunque sea la cadena vacía, igual que en el
  *   binario (`!== void 0`).
@@ -144,7 +144,7 @@ export type EnhancedAttributionDeps = {
   model: () => string
 }
 
-/** El porcentaje de Claude sobre los archivos que la sesión tocó (`LMo`). */
+/** El porcentaje de thyrox sobre los archivos que la sesión tocó (`LMo`). */
 async function sessionClaudePercent(appState: { attribution?: unknown }): Promise<number | null> {
   const state = appState.attribution as { fileStates?: Map<string, unknown> | Record<string, unknown> } | undefined
   if (!state?.fileStates) return null

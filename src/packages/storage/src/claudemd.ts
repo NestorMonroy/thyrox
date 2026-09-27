@@ -2,7 +2,7 @@
  * Porte PARCIAL, declarado, de `ccnmt: packages/storage/src/claudemd.ts`
  * (48 248 bytes fuente).
  *
- * La fuente descubre y carga jerarquías completas de CLAUDE.md (Managed →
+ * La fuente descubre y carga jerarquías completas de THYROX.md (Managed →
  * User → Project → Local, con directivas `@include`, frontmatter `paths:`
  * y truncado de `MEMORY.md`) y expone ~20 símbolos. Los tests de este pase
  * (`claudemd.behavior.test.ts`, `claudemdHelpers.test.ts`) ejercitan **7**:
@@ -202,7 +202,7 @@ export function stripHtmlComments(content: string): {
 }
 
 /**
- * Check if a file path is a memory file (CLAUDE.md, CLAUDE.local.md, or
+ * Check if a file path is a memory file (THYROX.md, THYROX.local.md, or
  * .claude/rules/*.md).
  */
 export function isMemoryFilePath(filePath: string): boolean {
@@ -251,7 +251,7 @@ export function filterInjectedMemoryFiles(
 }
 
 // ---------------------------------------------------------------------------
-// Cargador de la jerarquía de CLAUDE.md — porte de 2.1.275 (2026-09-24):
+// Cargador de la jerarquía de THYROX.md — porte de 2.1.275 (2026-09-24):
 // `ob`/`qwo` (orden de capas y memoización), `hF` (un archivo y sus
 // `@include`), `AEe` (directorio de reglas), `x7e`/`Gtn` (lectura y
 // análisis), `Iwo` (`paths:` del frontmatter), `Hwo` (rutas `@`) y `Qtn`
@@ -688,7 +688,7 @@ async function collectMemoryFiles(forceIncludeExternal: boolean): Promise<Memory
 const memoryFilesCache = new Map<string, Promise<MemoryFileInfo[]>>()
 let lastResetReason: string | undefined
 
-/** La jerarquía de CLAUDE.md que aplica a la raíz de la sesión. */
+/** La jerarquía de THYROX.md que aplica a la raíz de la sesión. */
 export function getMemoryFiles(forceIncludeExternal = false): Promise<MemoryFileInfo[]> {
   const key = String(forceIncludeExternal)
   let cached = memoryFilesCache.get(key)
@@ -742,7 +742,7 @@ export function getClaudeMds(files: MemoryFileInfo[]): string {
 // Inclusiones externas — contrato de 2.1.275 (`Eut`, `yqn`, `KOr`), no copia.
 // ---------------------------------------------------------------------------
 
-/** Un CLAUDE.md incluido con `@include` desde fuera de la raíz de la sesión. */
+/** Un THYROX.md incluido con `@include` desde fuera de la raíz de la sesión. */
 export type ExternalClaudeMdInclude = { path: string; parent: string }
 
 /**
@@ -906,7 +906,7 @@ async function safelyReadMemoryFileAsync(
   }
 }
 /**
- * Comprueba si una ruta de CLAUDE.md queda excluida por `claudeMdExcludes`.
+ * Comprueba si una ruta de THYROX.md queda excluida por `claudeMdExcludes`.
  * Sólo aplica a los tipos User, Project y Local; Managed, AutoMem y TeamMem
  * nunca se excluyen.
  *
@@ -1300,7 +1300,7 @@ function extractIncludePathsFromTokens(
 }
 /**
  * Obtiene los archivos de memoria de un único directorio anidado (entre el
- * CWD y el destino). Carga CLAUDE.md, reglas incondicionales y reglas
+ * CWD y el destino). Carga THYROX.md, reglas incondicionales y reglas
  * condicionales de ese directorio.
  *
  * @param dir El directorio a procesar
@@ -1316,7 +1316,7 @@ export async function getMemoryFilesForNestedDirectory(
   const config = loaderConfig()
   const result: MemoryFileInfo[] = []
 
-  // Procesa los archivos de memoria del proyecto (CLAUDE.md y .claude/CLAUDE.md)
+  // Procesa los archivos de memoria del proyecto (THYROX.md y .claude/THYROX.md)
   if (config.projectEnabled) {
     const projectPath = await slotPath(instructionsFileCandidates(dir))
     result.push(
@@ -1338,7 +1338,7 @@ export async function getMemoryFilesForNestedDirectory(
     )
   }
 
-  // Procesa el archivo de memoria local (CLAUDE.local.md)
+  // Procesa el archivo de memoria local (THYROX.local.md)
   if (config.localEnabled) {
     const localPath = await slotPath(localInstructionsFileCandidates(dir))
     result.push(

@@ -202,7 +202,7 @@ export const SettingsSchema = lazySchema(() => z
     disableAllHooks: z.boolean().optional(),
     // El cliente las declara para PONER el remolque de autoría; aquí existen
     // para poder apagarlo, que es lo que `git-author-identity.md` manda:
-    // ni `Co-Authored-By: Claude …` ni `Claude-Session:` en ningún mensaje.
+    // ni `Co-Authored-By: thyrox …` ni `Claude-Session:` en ningún mensaje.
     // Por eso `includeCoAuthoredBy` sólo admite `false`: aceptar `true`
     // permitiría escribir en un archivo lo que la regla prohíbe.
     includeCoAuthoredBy: z.literal(false).optional(),

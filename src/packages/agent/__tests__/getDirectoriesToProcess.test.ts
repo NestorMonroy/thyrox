@@ -1,6 +1,6 @@
 /**
  * Tests for getDirectoriesToProcess — pure path-walker that decides
- * which directories' CLAUDE.md / .claude/rules/*.md files get loaded.
+ * which directories' THYROX.md / .claude/rules/*.md files get loaded.
  *
  * Wrong walk = wrong memory files in the system prompt. Edge cases:
  *   - target outside cwd → no nested dirs

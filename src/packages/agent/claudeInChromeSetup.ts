@@ -86,7 +86,7 @@ export function shouldAutoEnableClaudeInChrome(): boolean {
 }
 
 /**
- * Setup Claude in Chrome MCP server and tools
+ * Setup thyrox in Chrome MCP server and tools
  *
  * @returns MCP config and allowed tools, or throws an error if platform is unsupported
  */
@@ -385,7 +385,7 @@ function isChromeExtensionInstalled_CACHED_MAY_BE_STALE(): boolean {
 }
 
 /**
- * Detects if the Claude in Chrome extension is installed by checking the Extensions
+ * Detects if the thyrox in Chrome extension is installed by checking the Extensions
  * directory across all supported Chromium-based browsers and their profiles.
  *
  * @returns Object with isInstalled boolean and the browser where the extension was found

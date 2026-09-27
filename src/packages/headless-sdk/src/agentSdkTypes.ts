@@ -6,7 +6,7 @@
  * no una dependencia cruzada. `@modelcontextprotocol/sdk` es un paquete npm
  * genuino, declarado como dependencia real de este paquete.)
  *
- * Main entrypoint for Claude Code Agent SDK types.
+ * Main entrypoint for thyrox Agent SDK types.
  *
  * This file re-exports the public SDK API from:
  * - sdk/coreTypes.ts - Common serializable types (messages, configs)

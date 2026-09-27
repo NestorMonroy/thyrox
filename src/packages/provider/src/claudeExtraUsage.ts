@@ -79,7 +79,7 @@ export function isClaudeExtraUsageBlockEnabled(
   return asRecord(providerSpecificData).blockExtraUsage !== false
 }
 
-/** True solo cuando el operador activo explicitamente el uso extra en esta conexion Claude. */
+/** True solo cuando el operador activo explicitamente el uso extra en esta conexion thyrox. */
 export function isClaudeExtraUsageAllowed(
   provider: string | null | undefined,
   providerSpecificData: unknown,

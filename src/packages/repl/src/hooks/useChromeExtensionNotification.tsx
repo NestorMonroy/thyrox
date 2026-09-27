@@ -23,7 +23,7 @@ export function useChromeExtensionNotification(): void {
     const chromeFlag = getChromeFlag()
     if (!shouldEnableClaudeInChrome(chromeFlag)) return null
 
-    // Claude in Chrome is only supported for claude.ai subscribers (unless user is ant)
+    // thyrox in Chrome is only supported for claude.ai subscribers (unless user is ant)
     if (process.env.USER_TYPE !== 'ant' && !isClaudeAISubscriber()) {
       return {
         key: 'chrome-requires-subscription',

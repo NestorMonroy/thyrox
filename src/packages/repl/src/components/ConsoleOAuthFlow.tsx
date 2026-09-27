@@ -119,7 +119,7 @@ export function ConsoleOAuthFlow({
   const [cursorOffset, setCursorOffset] = useState(0)
   const [oauthService] = useState(() => new OAuthService())
   const [loginWithClaudeAi, setLoginWithClaudeAi] = useState(() => {
-    // Use Claude AI auth for setup-token mode to support user:inference scope
+    // Use thyrox AI auth for setup-token mode to support user:inference scope
     return mode === 'setup-token' || forceLoginMethod === 'claudeai'
   })
   const [loginWithCodex, setLoginWithCodex] = useState(false)
@@ -391,7 +391,7 @@ export function ConsoleOAuthFlow({
       // Dynamic /models needs impersonating openai/codex Rust CLI version
       // space and returns tier-filtered varying lists. Routing is per-model
       // via the connection record — do NOT set CLAUDE_CODE_USE_OPENAI here
-      // (would clobber Claude Account requests with the OpenAI adapter).
+      // (would clobber thyrox Account requests with the OpenAI adapter).
       upsertProtocolConnection(
         'codex',
         'ChatGPT Codex',

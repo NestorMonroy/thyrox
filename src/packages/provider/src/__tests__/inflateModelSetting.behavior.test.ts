@@ -7,7 +7,7 @@ import { resolve } from 'path'
  * Source-level pin for the inflateModelSetting 6-rule resolution cascade.
  *
  * This function bridges settings.json (bare wire ids, schema-shared with
- * official Claude Code) and ccb's internal packed `<connId>:<modelId>`
+ * official thyrox) and ccb's internal packed `<connId>:<modelId>`
  * form. Critical because:
  *   - Settings round-trip: official CLI writes bare → ccb reads bare → must
  *     pack for routing → ccb writes back bare for settings.json compat.

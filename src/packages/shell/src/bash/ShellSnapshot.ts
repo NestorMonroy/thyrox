@@ -256,7 +256,7 @@ function getUserSnapshotContent(configFile: string): string {
 }
 
 /**
- * Generates Claude Code specific snapshot content
+ * Generates thyrox specific snapshot content
  * This content is always included regardless of user configuration
  */
 async function getClaudeCodeSnapshotContent(
@@ -312,7 +312,7 @@ RIPGREP_FUNC_END
   // For ant-native builds, shadow find/grep with bfs/ugrep embedded in the bun
   // binary. Unlike rg (which only activates if system rg is absent), we always
   // shadow find/grep since bfs/ugrep are drop-in replacements and we want
-  // consistent fast behavior in Claude's shell.
+  // consistent fast behavior in thyrox's shell.
   const findGrepIntegration = createFindGrepShellIntegration(ctx)
   if (findGrepIntegration !== null) {
     content += `
@@ -346,7 +346,7 @@ async function getSnapshotScript(
   const configFile = getConfigFile(shellPath)
   const isZsh = configFile.endsWith('.zshrc')
 
-  // Generate the user content and Claude Code content
+  // Generate the user content and thyrox content
   const userContent = configFileExists
     ? getUserSnapshotContent(configFile)
     : !isZsh
@@ -384,7 +384,7 @@ async function getSnapshotScript(
 /**
  * Creates and saves the shell environment snapshot by loading the user's shell configuration
  *
- * This function is a critical part of Claude CLI's shell integration strategy. It:
+ * This function is a critical part of thyrox CLI's shell integration strategy. It:
  *
  * 1. Identifies the user's shell config file (.zshrc, .bashrc, etc.)
  * 2. Creates a temporary script that sources this configuration file
@@ -396,7 +396,7 @@ async function getSnapshotScript(
  * The snapshot is saved to a temporary file that can be sourced by subsequent shell
  * commands, ensuring they run with the user's expected environment, aliases, and functions.
  *
- * This approach allows Claude CLI to execute commands as if they were run in the user's
+ * This approach allows thyrox CLI to execute commands as if they were run in the user's
  * interactive shell, while avoiding the overhead of creating a new login shell for each command.
  * It handles both Bash and Zsh shells with their different syntax for functions, options, and aliases.
  *

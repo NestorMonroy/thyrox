@@ -91,7 +91,7 @@ export async function ensureLocalPackageEnvironment(): Promise<boolean> {
 }
 
 /**
- * Install or update Claude CLI package in the local directory
+ * Install or update thyrox CLI package in the local directory
  * @param channel - Release channel to use (latest or stable)
  * @param specificVersion - Optional specific version to install (overrides channel)
  */

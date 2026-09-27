@@ -1,5 +1,5 @@
 /**
- * Nombre del servidor MCP de "Claude in Chrome" + seguimiento de pestañas —
+ * Nombre del servidor MCP de "thyrox in Chrome" + seguimiento de pestañas —
  * porte de `ccnmt: packages/agent/claudeInChromeCommon.ts`.
  *
  * La detección de navegador, las rutas de mensajería nativa, los sockets

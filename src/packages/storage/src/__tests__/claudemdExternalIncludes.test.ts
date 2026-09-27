@@ -1,5 +1,5 @@
 /**
- * Inclusiones externas de CLAUDE.md (2.1.275: `Eut`, `yqn`). La raíz de la
+ * Inclusiones externas de THYROX.md (2.1.275: `Eut`, `yqn`). La raíz de la
  * sesión se fija con el estado de arranque; lo externo se mide contra ella.
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'

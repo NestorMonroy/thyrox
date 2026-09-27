@@ -294,7 +294,7 @@ export async function toolToAPISchema(
     // Without FGTS, the API buffers entire tool input parameters before sending
     // input_json_delta events, causing multi-minute hangs on large tool inputs.
     // Gated to direct api.anthropic.com: proxies (LiteLLM etc.) and Bedrock/Vertex
-    // with Claude 4.5 reject this field with 400. See GH#32742, PR #21729.
+    // with Anthropic 4.5 reject this field with 400. See GH#32742, PR #21729.
     //
     // The model-aware `isFirstPartyAnthropicEndpoint(options.model)` check is
     // load-bearing: connection-routed Anthropic-compat proxies leave
@@ -725,7 +725,7 @@ export function normalizeToolInput<T extends Tool>(
       // Replace \\; with \; (commonly needed for find -exec commands)
       normalizedCommand = normalizedCommand.replace(/\\\\;/g, '\\;')
 
-      // Logging for commands that are only echoing a string. This is to help us understand how often  Claude talks via bash
+      // Logging for commands that are only echoing a string. This is to help us understand how often  thyrox talks via bash
       if (/^echo\s+["']?[^|&;><]*["']?$/i.test(normalizedCommand.trim())) {
         logEvent('tengu_bash_tool_simple_echo', {})
       }

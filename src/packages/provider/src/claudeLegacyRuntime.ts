@@ -1048,7 +1048,7 @@ export async function queryHaiku({
 type QueryWithModelOptions = Omit<Options, 'getToolPermissionContext'>
 
 /**
- * Consulta un modelo específico a través de la infraestructura de Claude
+ * Consulta un modelo específico a través de la infraestructura de thyrox
  * Code —autenticación, betas y cabeceras propias— a diferencia de una
  * llamada directa a la API.
  */

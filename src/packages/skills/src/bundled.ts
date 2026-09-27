@@ -15,7 +15,7 @@
  * `metrica-decide-la-conclusion.md`).
  *
  * Esta migración es ADITIVA. Los `.claude/skills/<name>/SKILL.md` NO se borran:
- * esta sesión corre sobre el Claude Code real, que los lee de disco. Que un
+ * esta sesión corre sobre el thyrox real, que los lee de disco. Que un
  * skill migrado deje de existir como archivo suelto es el modelo de entrega
  * eventual del harness (T-069) — decisión del ejecutor, pendiente en el
  * `progreso`. `fromSkillDir` los lee del mismo disco, así que ambos sustratos

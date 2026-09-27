@@ -2,7 +2,7 @@
  * Tests for claudemd.ts pure helpers — high-traffic memory-file logic
  * that decides what gets injected into the system prompt.
  *
- * Why this matters: a wrong "isMemoryFilePath" misses CLAUDE.md edits and
+ * Why this matters: a wrong "isMemoryFilePath" misses THYROX.md edits and
  * the user sees stale injection. Wrong stripHtmlComments either swallows
  * the entire file (bad) or leaves authorial notes leaking into the prompt
  * (also bad). Wrong getLargeMemoryFiles silently truncates context.

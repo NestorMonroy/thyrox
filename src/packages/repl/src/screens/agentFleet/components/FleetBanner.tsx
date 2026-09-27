@@ -4,7 +4,7 @@
  * Source: ant 5092.js:3240-3260.
  *
  *   ┌─────────────────────────────────────────────┐
- *   │ Claude Code v2.1.143                        │  line 1 — bold "Claude Code" + dim version
+ *   │ thyrox v2.1.143                        │  line 1 — bold "thyrox" + dim version
  *   │ Opus 4.7 · ~/code/vpn/learn                 │  line 2 — dim model · cwd
  *   │ 0 awaiting input · 10 working · 2 completed │  line 3 — dim 3-count triplet
  *   └─────────────────────────────────────────────┘

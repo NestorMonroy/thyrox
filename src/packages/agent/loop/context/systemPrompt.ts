@@ -12,7 +12,7 @@
  * 1. **Una regla con `paths:` es condicional.** La doc del cliente lo dice al
  *    revés y por eso importa: *"Rules without a `paths` field are loaded
  *    unconditionally"* — declarar `paths:` es lo que la saca del piso.
- * 2. **El orden importa para la caché.** Lo estable va primero (base, CLAUDE.md)
+ * 2. **El orden importa para la caché.** Lo estable va primero (base, THYROX.md)
  *    y lo variable después: la clave de caché es un prefijo, así que una sección
  *    que cambia arriba invalida todo lo de abajo.
  */
@@ -29,7 +29,7 @@ import { dedupSections } from '@thyrox/context-compression'
 export type Section = { name: string; text: string; tokens: number; conditional: boolean }
 
 export type AssembleOptions = {
-  /** Raíz del proyecto: de ahí cuelgan `CLAUDE.md` y `.claude/`. */
+  /** Raíz del proyecto: de ahí cuelgan `THYROX.md` y `.claude/`. */
   root: string
   /**
    * El prompt propio del harness. Nunca se descarta.
@@ -130,7 +130,7 @@ export function assembleSystemPrompt(opts: AssembleOptions): Assembled {
     : opts.base.map((d) => section(`base:${d.name}`, d.text))
 
   // Cada ranura carga su primer candidato existente: `THYROX.md` y, si no
-  // está, `CLAUDE.md` (`@thyrox/config/env/instructionFiles`).
+  // está, `THYROX.md` (`@thyrox/config/env/instructionFiles`).
   for (const candidates of [instructionsFileCandidates(opts.root), nestedInstructionsFileCandidates(opts.root)]) {
     const path = candidates.find((p) => existsSync(p))
     const text = path ? readTrimmed(path) : null

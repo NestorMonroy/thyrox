@@ -259,10 +259,10 @@ export type ToolUseContext = {
   }) => void
   nestedMemoryAttachmentTriggers?: Set<string>
   /**
-   * Rutas de CLAUDE.md ya inyectadas como adjuntos nested_memory en esta
+   * Rutas de THYROX.md ya inyectadas como adjuntos nested_memory en esta
    * sesión. Deduplica para memoryFilesToAttachments — readFileState es un
    * LRU que desaloja entradas en sesiones ocupadas, así que su chequeo
-   * .has() solo puede re-inyectar el mismo CLAUDE.md docenas de veces.
+   * .has() solo puede re-inyectar el mismo THYROX.md docenas de veces.
    */
   loadedNestedMemoryPaths?: Set<string>
   dynamicSkillDirTriggers?: Set<string>
@@ -516,7 +516,7 @@ export type Tool<
   /**
    * Tamaño máximo en caracteres para el resultado de la herramienta antes
    * de persistirlo a disco. Cuando se excede, el resultado se guarda en un
-   * archivo y Claude recibe una vista previa con la ruta del archivo en
+   * archivo y thyrox recibe una vista previa con la ruta del archivo en
    * vez del contenido completo.
    *
    * Se fija a Infinity para herramientas cuya salida nunca debe

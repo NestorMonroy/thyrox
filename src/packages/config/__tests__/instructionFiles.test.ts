@@ -1,6 +1,6 @@
 /**
  * Los nombres del archivo de instrucciones: el propio (`THYROX.md`) con el
- * heredado (`CLAUDE.md`) de respaldo, ranura por ranura.
+ * heredado (`THYROX.md`) de respaldo, ranura por ranura.
  */
 import { describe, expect, test } from 'bun:test'
 import { join } from 'node:path'

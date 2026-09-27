@@ -222,7 +222,7 @@ export function LogSelector({
   // Agentic search state
   const [agenticSearchState, setAgenticSearchState] =
     React.useState<AgenticSearchState>({ status: 'idle' })
-  // Track if the "Search deeply using Claude" option is focused
+  // Track if the "Search deeply using thyrox" option is focused
   const [isAgenticSearchOptionFocused, setIsAgenticSearchOptionFocused] =
     React.useState(false)
   // AbortController for cancelling agentic search

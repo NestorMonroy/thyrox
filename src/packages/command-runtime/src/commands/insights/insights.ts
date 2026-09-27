@@ -1057,7 +1057,7 @@ RESPOND WITH ONLY A VALID JSON OBJECT matching this schema:
 }
 
 /**
- * Detects multi-clauding (using multiple Claude sessions concurrently).
+ * Detects multi-clauding (using multiple thyrox sessions concurrently).
  * Uses a sliding window to find the pattern: session1 -> session2 -> session1
  * within a 30-minute window.
  */
@@ -2996,7 +2996,7 @@ export async function generateUsageReport(options?: {
   const aggregated = aggregateData(substantiveSessions, substantiveFacets)
   aggregated.total_sessions_scanned = totalSessionsScanned
 
-  // Generate parallel insights from Claude (6 sections)
+  // Generate parallel insights from thyrox (6 sections)
   const insights = await generateParallelInsights(aggregated, facets)
 
   // Generate HTML report
@@ -3153,7 +3153,7 @@ ${remoteInfo}
 
 Your full shareable insights report is ready: ${reportUrl}${uploadHint}`
 
-    // Return prompt for Claude to respond to
+    // Return prompt for thyrox to respond to
     return [
       {
         type: 'text',

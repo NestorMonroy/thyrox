@@ -343,7 +343,7 @@ export const FileEditTool = buildTool({
       }
     }
 
-    // Additional validation for Claude settings files
+    // Additional validation for thyrox settings files
     const settingsValidationResult = validateInputForSettingsFileEdit(
       fullFilePath,
       file,

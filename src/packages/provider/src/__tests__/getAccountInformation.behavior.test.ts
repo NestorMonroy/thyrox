@@ -9,7 +9,7 @@ import { resolve } from 'path'
  * Used by /status (account-information display). The decision tree must
  * preserve ant's exact branching because each field gates downstream UI:
  *  - tokenSource ⇒ "Logged in via {ENV_VAR}"
- *  - subscription ⇒ "Claude Pro/Max/etc."
+ *  - subscription ⇒ "thyrox Pro/Max/etc."
  *  - apiKeySource ⇒ separate "API key: {source}" line
  *  - organization ⇒ org name display (only meaningful for /login flows)
  *  - email ⇒ account email

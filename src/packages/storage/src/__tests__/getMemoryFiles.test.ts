@@ -1,5 +1,5 @@
 /**
- * El cargador de CLAUDE.md de 2.1.275 (`ob`/`qwo`, `hF`, `AEe`, `x7e`/`Gtn`,
+ * El cargador de THYROX.md de 2.1.275 (`ob`/`qwo`, `hF`, `AEe`, `x7e`/`Gtn`,
  * `Iwo`, `Hwo`, `Qtn` en `chunk-q2gh92k2.js`), medido sobre un árbol
  * temporal: usuario, proyecto hacia arriba desde el cwd, reglas, locales,
  * `@include`, `paths:` y `claudeMdExcludes`.
@@ -65,7 +65,7 @@ afterAll(() => {
 beforeEach(() => clearMemoryFileCaches())
 
 // El árbol temporal vive dentro de thyrox: al subir desde el cwd también
-// aparecen sus CLAUDE.md, así que se mide sólo lo que cuelga de `base`.
+// aparecen sus THYROX.md, así que se mide sólo lo que cuelga de `base`.
 const ours = async (force = false) => (await getMemoryFiles(force)).filter(f => f.path.startsWith(base) || f.path.startsWith(home))
 const contents = async (force = false) => (await ours(force)).map(f => f.content.trim())
 
@@ -96,7 +96,7 @@ describe('getMemoryFiles', () => {
     expect(files.some(f => f.content === 'NO-DEBE-CARGAR')).toBe(false)
   })
   test('un @include fuera de la raíz de la sesión sólo con la inclusión externa', async () => {
-    // Medido en 2.1.275 (`f5` contra `ye()`): el hermano de un CLAUDE.md
+    // Medido en 2.1.275 (`f5` contra `ye()`): el hermano de un THYROX.md
     // superior también queda fuera si no cuelga de la raíz de la sesión.
     expect(await contents()).not.toContain('EXTERNO')
     expect(await contents()).not.toContain('HERMANO')

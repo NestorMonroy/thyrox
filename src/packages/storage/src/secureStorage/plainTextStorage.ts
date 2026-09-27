@@ -2,7 +2,7 @@
  * Puerto de `ccnmt: packages/storage/src/secureStorage/plainTextStorage.ts`
  * (2369 bytes fuente, 1 símbolo exportado — porte completo). Fallback de
  * `SecureStorage` que guarda credenciales en texto plano bajo el directorio
- * de config de Claude, con permisos `0o600`.
+ * de config de thyrox, con permisos `0o600`.
  *
  * Divergencias declaradas (DEC-04), todas triviales:
  *

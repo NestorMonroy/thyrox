@@ -1,6 +1,6 @@
 /**
  * Porte de `ccnmt: packages/provider/src/oauth/client.ts` — cliente OAuth
- * para los flujos de autenticación con los servicios de Claude. Sus 14
+ * para los flujos de autenticación con los servicios de thyrox. Sus 14
  * exportaciones, ninguna omitida.
  *
  * `./types.js` → `internal/oauthTypes.ts` (ver su cabecera: incluso en la

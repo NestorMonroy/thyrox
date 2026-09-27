@@ -248,7 +248,7 @@ export function isScratchpadEnabled(): boolean {
 }
 
 /**
- * Nombre del directorio temporal de Claude, específico por usuario.
+ * Nombre del directorio temporal de thyrox, específico por usuario.
  * En Unix: `claude-{uid}` (evita conflictos de permisos multi-usuario).
  * En Windows: `claude` (`tmpdir()` ya es por usuario).
  */
@@ -261,7 +261,7 @@ export function getClaudeTempDirName(): string {
 }
 
 /**
- * Ruta del directorio temporal de Claude, con symlinks resueltos.
+ * Ruta del directorio temporal de thyrox, con symlinks resueltos.
  * Usa `CLAUDE_CODE_TMPDIR` si está definida; si no, `/tmp` en Unix o
  * `tmpdir()` en Windows.
  */

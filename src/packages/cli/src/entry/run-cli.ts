@@ -75,7 +75,7 @@ function installProcessHandlers(): void {
   })
 }
 /**
- * Top-level orchestrator for Claude Code CLI startup.
+ * Top-level orchestrator for thyrox CLI startup.
  * Called from `main()` in src/main.tsx after module-load side effects.
  */
 export async function runClaudeCode(runtimeHandles: RuntimeHandles): Promise<void> {

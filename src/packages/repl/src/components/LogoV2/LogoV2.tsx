@@ -146,7 +146,7 @@ export function LogoV2(): React.ReactNode {
   } = getLogoDisplayData()
   // Prefer AppState.agent (set from --agent CLI flag) over settings
   const agentName = agent ?? agentNameFromSettings
-  // -20 to account for the max length of subscription name " · Claude Enterprise".
+  // -20 to account for the max length of subscription name " · thyrox Enterprise".
   const effortSuffix = getEffortSuffix(model, effortValue)
   const modelDisplayName = truncate(
     fullModelDisplayName + effortSuffix,

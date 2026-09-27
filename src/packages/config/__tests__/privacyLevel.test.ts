@@ -1,6 +1,6 @@
 /**
  * Tests for privacy-level helpers — controls how much nonessential
- * network traffic Claude Code generates. The resolved level is the
+ * network traffic thyrox generates. The resolved level is the
  * MOST RESTRICTIVE signal from env vars; a regression that flips
  * the priority either leaks telemetry users opted out of OR blocks
  * traffic users wanted enabled.

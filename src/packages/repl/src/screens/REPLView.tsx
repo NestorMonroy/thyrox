@@ -511,7 +511,7 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
 // function identity each render, which would break composedOnScroll's memo.
 const HISTORY_STUB = { maybeLoadOlder: (_: ScrollBoxHandle) => {} };
 // Window after a user-initiated scroll during which type-into-empty does NOT
-// repin to bottom. Josh Rosen's workflow: Claude emits long output → scroll
+// repin to bottom. Josh Rosen's workflow: thyrox emits long output → scroll
 // up to read the start → start typing → before this fix, snapped to bottom.
 // https://anthropic.slack.com/archives/C07VBSHV7EV/p1773545449871739
 const RECENT_SCROLL_REPIN_WINDOW_MS = 3000;
@@ -683,7 +683,7 @@ export function REPL({
 
   // Note: standaloneAgentContext is initialized in main.tsx (via initialState) or
   // ResumeConversation.tsx (via setAppState before rendering REPL) to avoid
-  // useEffect-based state initialization on mount (per CLAUDE.md guidelines)
+  // useEffect-based state initialization on mount (per THYROX.md guidelines)
 
   // Local state for commands (hot-reloadable; see useCommandReload triggers)
   const [localCommands, setLocalCommands] = useState(initialCommands);
@@ -1013,7 +1013,7 @@ export function REPL({
   } | null>(null);
 
   // Track local JSX commands separately so tools can't overwrite them.
-  // This enables "immediate" commands (like /btw) to persist while Claude is processing.
+  // This enables "immediate" commands (like /btw) to persist while thyrox is processing.
   const localJSXCommandRef = useRef<{
     jsx: React.ReactNode | null;
     shouldHidePromptInput: boolean;
@@ -1123,7 +1123,7 @@ export function REPL({
   // here because onQueryImpl reads them (background session description,
   // haiku title extraction gate).
 
-  // Prevent macOS from sleeping while Claude is working
+  // Prevent macOS from sleeping while thyrox is working
   useEffect(() => {
     if (isLoading && !isWaitingForApproval && !isShowingLocalJSXCommand) {
       startPreventSleep();
@@ -1982,13 +1982,13 @@ export function REPL({
   // before onQuery builds its own context, and discovery on turn N must
   // still attribute a SkillTool call on turn N+k. Cleared in clearConversation.
   const discoveredSkillNamesRef = useRef(new Set<string>());
-  // Session-level dedup for nested_memory CLAUDE.md attachments.
-  // readFileState is a 100-entry LRU; once it evicts a CLAUDE.md path,
+  // Session-level dedup for nested_memory THYROX.md attachments.
+  // readFileState is a 100-entry LRU; once it evicts a THYROX.md path,
   // the next discovery cycle re-injects it. Cleared in clearConversation.
   const loadedNestedMemoryPathsRef = useRef(new Set<string>());
 
   // Helper to restore read file state from messages (used for resume flows)
-  // This allows Claude to edit files that were read in previous sessions
+  // This allows thyrox to edit files that were read in previous sessions
   const restoreReadFileState = useCallback((messages: MessageType[], cwd: string) => {
     const extracted = extractReadFilesFromMessages(messages, cwd, READ_FILE_STATE_CACHE_SIZE);
     readFileState.current = mergeFileStateCaches(readFileState.current, extracted);
@@ -2801,7 +2801,7 @@ export function REPL({
         }
       }
 
-      // Mark onboarding as complete when any user message is sent to Claude
+      // Mark onboarding as complete when any user message is sent to thyrox
       void maybeMarkProjectOnboardingComplete();
 
       // Extract a session title from the first real user message. One-shot
@@ -2810,7 +2810,7 @@ export function REPL({
       // which was broken by SessionStart hook messages (prepended via
       // useDeferredHookMessages) and attachment messages (appended by
       // processTextPrompt) — both pushed length past 1 on turn one, so the
-      // title silently fell through to the "Claude Code" default.
+      // title silently fell through to the "thyrox" default.
       if (!titleDisabled && !sessionTitle && !agentTitle && !haikuTitleAttemptedRef.current) {
         const firstUserMessage = newMessages.find(m => m.type === 'user' && !m.isMeta);
         const text = firstUserMessage?.type === 'user' ? getContentText(firstUserMessage.message.content ?? '') : null;
@@ -3399,7 +3399,7 @@ export function REPL({
       }
 
       // Handle immediate commands - these bypass the queue and execute right away
-      // even while Claude is processing. Commands opt-in via `immediate: true`.
+      // even while thyrox is processing. Commands opt-in via `immediate: true`.
       // Commands triggered via keybindings are always treated as immediate.
       if (!speculationAccept && input.trim().startsWith('/')) {
         // Expand [Pasted text #N] refs so immediate commands (e.g. /btw) receive
@@ -4130,7 +4130,7 @@ export function REPL({
     // bottom right corner of the screen if the API key is invalid.
     void reverify();
 
-    // Populate readFileState with CLAUDE.md files at startup
+    // Populate readFileState with THYROX.md files at startup
     const memoryFiles = await getMemoryFiles();
     if (memoryFiles.length > 0) {
       const fileList = memoryFiles
@@ -4263,7 +4263,7 @@ export function REPL({
     }
   }, [submitCount]);
 
-  // Idle-prompt watcher: fire "Claude is waiting for your input" after
+  // Idle-prompt watcher: fire "thyrox is waiting for your input" after
   // messageIdleNotifThresholdMs of inactivity following a query completion.
   // Banner-policy gate (KAIROS push toggles, channel selection) lives in
   // notifier.ts:sendNotification → shouldFireBanner('idle_prompt') — the
@@ -4272,7 +4272,7 @@ export function REPL({
   // resplit/5031.js and avoids missing the fire window if a user toggles
   // settings between query-end and idle-threshold.
   useEffect(() => {
-    // Don't set up notification if Claude is busy
+    // Don't set up notification if thyrox is busy
     if (isLoading) return;
 
     // Only enable notifications after the first new interaction in this session
@@ -4288,7 +4288,7 @@ export function REPL({
         const lastUserInteraction = getLastInteractionTime();
 
         if (lastUserInteraction > lastQueryCompletionTime) {
-          // User has interacted since Claude finished - they're not idle, don't notify
+          // User has interacted since thyrox finished - they're not idle, don't notify
           return;
         }
 

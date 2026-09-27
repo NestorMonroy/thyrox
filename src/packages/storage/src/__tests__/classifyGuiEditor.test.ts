@@ -5,7 +5,7 @@
  * Wrong classification = either:
  *   - Terminal editor classified as GUI: Ink stays mounted, vim
  *     fights for the TTY → corrupted display
- *   - GUI editor classified as terminal: Claude Code waits for
+ *   - GUI editor classified as terminal: thyrox waits for
  *     the GUI editor to exit, blocking the REPL forever
  *
  * The basename + substring match is intentionally loose so

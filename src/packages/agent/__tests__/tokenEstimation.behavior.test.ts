@@ -16,9 +16,9 @@ import {
  * Sobrestimar → truncado agresivo, se descarta contenido útil.
  *
  * El manejo de CJK importa porque los caracteres chinos/japoneses/coreanos
- * tokenizan aproximadamente 1.5 tokens cada uno en el tokenizer de Claude,
+ * tokenizan aproximadamente 1.5 tokens cada uno en el tokenizer de thyrox,
  * contra ~0.25 para ASCII. Sin estimación consciente de CJK, los
- * CLAUDE.md densos en chino subestimarían por ~6× y dispararían errores
+ * THYROX.md densos en chino subestimarían por ~6× y dispararían errores
  * de límite de contexto impredeciblemente.
  */
 describe('Token-count estimation heuristics', () => {

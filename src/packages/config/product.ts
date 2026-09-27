@@ -29,7 +29,7 @@ export const PRODUCT_NAME = 'thyrox'
 
 export const PRODUCT_URL = 'https://claude.com/claude-code'
 
-// URLs de sesión de Claude Code Remote.
+// URLs de sesión de thyrox Remote.
 export const CLAUDE_AI_BASE_URL = 'https://claude.ai'
 export const CLAUDE_AI_STAGING_BASE_URL = 'https://claude-ai.staging.ant.dev'
 export const CLAUDE_AI_LOCAL_BASE_URL = 'http://localhost:4000'
@@ -64,7 +64,7 @@ export function isRemoteSessionLocal(
 }
 
 /**
- * Obtiene la URL base de Claude AI según el entorno.
+ * Obtiene la URL base de thyrox AI según el entorno.
  */
 export function getClaudeAiBaseUrl(
   sessionId?: string,

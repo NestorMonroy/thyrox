@@ -314,7 +314,7 @@ function handleInteractivePermission(
   // competir la respuesta contra la local, la del bridge, la del hook y la
   // del clasificador. El «yes abc123» entrante lo intercepta el manejador de
   // notificaciones (`useManageMCPConnections.ts`) ANTES de encolarlo, así que
-  // nunca le llega a Claude como un turno de conversación.
+  // nunca le llega a thyrox como un turno de conversación.
   //
   // A diferencia del bloque del bridge, éste sí sigue guardando por
   // `requiresUserInteraction` — las respuestas de canal son un sí o un no

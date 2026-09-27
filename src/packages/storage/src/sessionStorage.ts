@@ -45,7 +45,7 @@ import { feature } from 'bun:bundle'
 import type { UUID } from 'crypto'
 import type { Dirent } from 'fs'
 // Sync fs primitives for readFileTailSync — separate from fs/promises
-// imports above. Named (not wildcard) per CLAUDE.md style; no collisions
+// imports above. Named (not wildcard) per THYROX.md style; no collisions
 // with the async-suffixed names.
 import { closeSync, fstatSync, openSync, readSync } from 'fs'
 import {

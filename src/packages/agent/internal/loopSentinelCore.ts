@@ -328,7 +328,7 @@ function truncateLoopFile(content: string): string {
 
 /**
  * Ant `$67` — find a loop.md to use. Project-local takes priority over
- * the Claude config home (NOT $HOME — ant explicitly resolves the
+ * the thyrox config home (NOT $HOME — ant explicitly resolves the
  * fallback via `n6()`, i.e. `getConfigHomeDir()` so users with
  * `CLAUDE_CONFIG_DIR` set get the right base. Returns null if neither
  * path exists or both are empty after trim.
@@ -337,7 +337,7 @@ function truncateLoopFile(content: string): string {
  * `~/loop.md`. The prior ccb impl used `homedir()` which would
  * silently miss the file for anyone with `CLAUDE_CONFIG_DIR` set, and
  * also write to / read from a different path than the rest of the
- * Claude state tree.
+ * thyrox state tree.
  */
 export function readLoopFile(): { path: string; content: string } | null {
   const candidates = [

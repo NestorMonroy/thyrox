@@ -15,7 +15,7 @@
  * binding), así que no hay pérdida de fidelidad: el shim de la fuente ya
  * era opaco.
  *
- * Estos helpers identifican si esta instancia de Claude Code corre como
+ * Estos helpers identifican si esta instancia de thyrox corre como
  * un teammate lanzado dentro de un swarm. Los teammates reciben su
  * identidad vía argumentos CLI (--agent-id, --team-name, etc.), que se
  * guardan en `dynamicTeamContext`.

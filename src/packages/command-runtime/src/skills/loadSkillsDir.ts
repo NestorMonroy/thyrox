@@ -263,7 +263,7 @@ function parseHooksFromFrontmatter(
 }
 
 /**
- * Parse paths frontmatter from a skill, using the same format as CLAUDE.md rules.
+ * Parse paths frontmatter from a skill, using the same format as THYROX.md rules.
  * Returns undefined if no paths are specified or if all patterns are match-all.
  */
 export function parseSkillPaths(frontmatter: FrontmatterData): string[] | undefined {

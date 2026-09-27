@@ -1838,7 +1838,7 @@ export function getAdditionalDirectoriesForClaudeMd(): string[] {
   return STATE.additionalDirectoriesForClaudeMd
 }
 
-/** Notifica a los suscriptores: el cargador de CLAUDE.md depende de esto. */
+/** Notifica a los suscriptores: el cargador de THYROX.md depende de esto. */
 export function setAdditionalDirectoriesForClaudeMd(
   directories: string[],
 ): void {

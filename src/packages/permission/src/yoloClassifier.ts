@@ -419,12 +419,12 @@ export function buildTranscriptForClassifier(
 }
 
 /**
- * Construye el mensaje de prefijo de CLAUDE.md para el clasificador. Devuelve
- * null cuando CLAUDE.md está deshabilitado o vacío. El contenido va envuelto en
+ * Construye el mensaje de prefijo de THYROX.md para el clasificador. Devuelve
+ * null cuando THYROX.md está deshabilitado o vacío. El contenido va envuelto en
  * un delimitador que le dice al clasificador que esto es configuración aportada
  * por el usuario: las acciones que aquí se describen reflejan intención del
  * usuario. Se fija cache_control porque el contenido es estático por sesión, lo
- * que hace del prefijo sistema + CLAUDE.md un prefijo de caché estable entre
+ * que hace del prefijo sistema + THYROX.md un prefijo de caché estable entre
  * llamadas al clasificador.
  *
  * Lee de la caché de bootstrap/state.ts — la puebla context.ts — en vez de
@@ -432,7 +432,7 @@ export function buildTranscriptForClassifier(
  * permissions → yoloClassifier es un ciclo. context.ts ya condiciona por
  * CLAUDE_CODE_DISABLE_CLAUDE_MDS y normaliza '' a null antes de cachear. Si la
  * caché está sin poblar — en tests, o en un punto de entrada que nunca llama a
- * getUserContext — el clasificador procede sin CLAUDE.md, igual que antes del
+ * getUserContext — el clasificador procede sin THYROX.md, igual que antes del
  * PR.
  */
 function buildClaudeMdMessage(): Anthropic.MessageParam | null {
@@ -443,7 +443,7 @@ function buildClaudeMdMessage(): Anthropic.MessageParam | null {
     content: [
       {
         type: 'text',
-        // `Ap5` de ant (3149.js): acota el poder autorizador de CLAUDE.md a la
+        // `Ap5` de ant (3149.js): acota el poder autorizador de THYROX.md a la
         // acción ESPECÍFICA bajo revisión; un genérico "be autonomous / I trust
         // you"
         // el aliento genérico NO debe bajar el umbral de bloqueo. La redacción
@@ -1016,7 +1016,7 @@ export async function classifyYoloAction(
   // El cache_control se coloca en el bloque de acción. En el clasificador de
   // dos etapas, la etapa 2 comparte con la 1 el mismo prefijo de transcript más
   // acción: el punto de corte de aquí le garantiza a la etapa 2 un acierto de
-  // caché sobre el prefijo completo. Presupuesto: sistema (1) + CLAUDE.md (0–1)
+  // caché sobre el prefijo completo. Presupuesto: sistema (1) + THYROX.md (0–1)
   // + acción (1) = 2–3, por debajo del límite del API de 4 bloques
   // cache_control.
   userContentBlocks.push({

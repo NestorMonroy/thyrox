@@ -2,7 +2,7 @@
  * Search adapter factory — provider-aware routing.
  *
  * Anthropic-native providers (firstParty / Bedrock / Vertex on
- * Claude-4 / Foundry) get ant's original `web_search_20250305`
+ * thyrox-4 / Foundry) get ant's original `web_search_20250305`
  * server-tool path via ApiSearchAdapter — which lets the model
  * iterate up to 8 search refinements per call.
  *

@@ -3,7 +3,7 @@
  * restricted tier instead of `"full"`:
  *
  *   - **browser** → `"read"` tier — visible in screenshots, NO interaction.
- *     The model can read an already-open page but must use the Claude-in-Chrome
+ *     The model can read an already-open page but must use the thyrox-in-Chrome
  *     MCP for navigation/clicking/typing.
  *   - **terminal** → `"click"` tier — visible + clickable, NO typing. The
  *     model can click a Run button or scroll test output in an IDE, but can't

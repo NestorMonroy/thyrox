@@ -366,7 +366,7 @@ export function hasMcpDiscoveryButNoToken(
 /**
  * Revokes a single token on the OAuth server.
  *
- * Per RFC 7009, public clients (like Claude Code) should authenticate by including
+ * Per RFC 7009, public clients (like thyrox) should authenticate by including
  * client_id in the request body, NOT via an Authorization header. The Bearer token
  * in an Authorization header is meant for resource owner authentication, not client
  * authentication.
@@ -1746,7 +1746,7 @@ export class ClaudeAuthProvider implements OAuthClientProvider {
    * both fire the full 4-request XAA chain and race on storage.update().
    * Unlike inc-4829 the id_token is not single-use so both access_tokens
    * stay valid (wasted round-trips + keychain write race, not brickage),
-   * but this is the shape CLAUDE.md flags under "Token/auth caching across
+   * but this is the shape THYROX.md flags under "Token/auth caching across
    * process boundaries". Mirror refreshAuthorization()'s lockfile pattern.
    */
   private async xaaRefresh(): Promise<OAuthTokens | undefined> {

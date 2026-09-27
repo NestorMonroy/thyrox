@@ -1,13 +1,13 @@
 /**
  * Los textos que la cli muestra al usuario nombran al programa que corre:
- * thyrox, vía `PRODUCT_NAME`. Los portados del binario decían «Claude Code»
+ * thyrox, vía `PRODUCT_NAME`. Los portados del binario decían «thyrox»
  * porque allí ése es el producto (TASK-THYROX-0258, sucesor de H-THYROX-195).
  *
- * Sin excepciones, tampoco `install`: thyrox no es Claude Code, y con otro
- * provider instalar las releases de Claude Code instala un programa que el
+ * Sin excepciones, tampoco `install`: thyrox no es thyrox, y con otro
+ * provider instalar las releases de thyrox instala un programa que el
  * usuario no corre (directiva del ejecutor 2026-09-27).
  *
- * *Métrica:* literales «Claude Code» en código de `src/` (sin comentarios).
+ * *Métrica:* literales «thyrox» en código de `src/` (sin comentarios).
  * *Ciega a:* el nombre compuesto en tiempo de ejecución desde otra cadena, y
  * a los textos de otros paquetes que la cli muestra (repl, command-runtime).
  */

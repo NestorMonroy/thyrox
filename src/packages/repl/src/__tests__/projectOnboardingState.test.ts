@@ -1,7 +1,7 @@
 /**
  * El paso de onboarding que pide un archivo de instrucciones se da por
  * cumplido con cualquiera de los dos nombres de la ranura: `THYROX.md` o el
- * heredado `CLAUDE.md` (decisión del ejecutor 2026-09-27).
+ * heredado `THYROX.md` (decisión del ejecutor 2026-09-27).
  */
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'

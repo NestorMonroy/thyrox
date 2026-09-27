@@ -154,7 +154,7 @@ export function isFirstPartyAnthropicEndpoint(modelId?: string): boolean {
 /**
  * Predicado puro: ¿(provider, model) soporta la herramienta server-side
  * `web_search_20250305` de Anthropic? firstParty/Bedrock/Foundry siempre;
- * Vertex sólo en modelos Claude serie 4.
+ * Vertex sólo en modelos thyrox serie 4.
  */
 export function isAnthropicServerWebSearchCapable(provider: APIProvider, modelId?: string): boolean {
   switch (provider) {

@@ -32,8 +32,8 @@
  * sólo reenviar contenido. Los servidores se suscriben declarando
  * capabilities.experimental['claude/channel/permission'].
  *
- * La pregunta de Kenneth "¿esto le permitiría a Claude auto-aprobarse?": la
- * parte que aprueba es el humano vía el canal, no Claude. Pero la frontera
+ * La pregunta de Kenneth "¿esto le permitiría a thyrox auto-aprobarse?": la
+ * parte que aprueba es el humano vía el canal, no thyrox. Pero la frontera
  * de confianza no es la terminal — es la allowlist (tengu_harbor_ledger). Un
  * servidor de canal comprometido PUEDE fabricar "yes <id>" sin que el humano
  * vea el prompt. Riesgo aceptado: un canal comprometido ya tiene turnos
@@ -227,7 +227,7 @@ export function filterPermissionRelayClients<
 
 /**
  * Factory del objeto de callbacks. El Map de pendientes queda cerrado por
- * closure — NO a nivel de módulo (según src/CLAUDE.md de ccnmt), NO en
+ * closure — NO a nivel de módulo (según src/THYROX.md de ccnmt), NO en
  * AppState (funciones-en-estado causa problemas con igualdad/serialización).
  * Mismo patrón de vida que `replBridgePermissionCallbacks`: se construye una
  * vez por sesión dentro de un hook de React, referencia estable guardada en

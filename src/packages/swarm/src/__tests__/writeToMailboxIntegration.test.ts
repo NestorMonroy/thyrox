@@ -6,7 +6,7 @@
  *
  * The swarm runtime uses a strict installSwarmAppRuntime() check —
  * every binding must be present or the call throws on first use. We
- * inline the binding map per CLAUDE.md ("mock 模式必須內聯在測試
+ * inline the binding map per THYROX.md ("mock 模式必須內聯在測試
  * 文件中"); only the keys this integration actually touches are
  * given functional bodies, the rest throw if reached so unintended
  * code paths surface immediately instead of fooling the test.

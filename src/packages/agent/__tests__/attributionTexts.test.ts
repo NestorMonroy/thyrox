@@ -4,7 +4,7 @@
  * `buildAttributionTexts` es `MMo`: pie de PR y `Co-Authored-By` por defecto,
  * el override de `settings.attribution` campo por campo, y el vacío cuando
  * `includeCoAuthoredBy` es `false`. `getEnhancedPRAttribution` es `UMo`: el
- * pie enriquecido con el porcentaje de Claude, los prompts desde la última
+ * pie enriquecido con el porcentaje de thyrox, los prompts desde la última
  * compactación y las memorias leídas.
  */
 import { describe, expect, test } from 'bun:test'

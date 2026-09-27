@@ -21,7 +21,7 @@
  * consumidores fuera de su propia suite, y la CLI arma su prompt en
  * `entry/runLoop.ts:145` con `flag(argv,'system') ?? '<una frase fija>'`.
  * O sea: el mecanismo está construido y probado, y el punto de entrada real
- * no lo llama. Un `CLAUDE.md` del proyecto no llegaba nunca al modelo, y una
+ * no lo llama. Un `THYROX.md` del proyecto no llegaba nunca al modelo, y una
  * regla con `paths:` tampoco — ni la que casa ni la que no. La separación
  * existía en un módulo que nadie usaba.
  *
@@ -53,7 +53,7 @@ const uso = {
 }
 
 /**
- * Un árbol con su CLAUDE.md y dos reglas: una del piso y dos condicionales
+ * Un árbol con su THYROX.md y dos reglas: una del piso y dos condicionales
  * que se excluyen entre sí. Las dos condicionales son lo que discrimina —
  * con una sola, «se cargó» y «se cargan todas» dan el mismo resultado.
  */

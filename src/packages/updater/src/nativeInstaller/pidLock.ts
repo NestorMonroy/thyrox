@@ -1,7 +1,7 @@
 /**
  * PID-Based Version Locking
  *
- * This module provides PID-based locking for running Claude Code versions.
+ * This module provides PID-based locking for running thyrox versions.
  * Unlike mtime-based locking (which can hold locks for 30 days after a crash),
  * PID-based locking can immediately detect when a process is no longer running.
  *
@@ -96,7 +96,7 @@ export function isProcessRunning(pid: number): boolean {
 }
 
 /**
- * Validate that a running process is actually a Claude process
+ * Validate that a running process is actually a thyrox process
  * This helps mitigate PID reuse issues
  */
 function isClaudeProcess(pid: number, expectedExecPath: string): boolean {
@@ -176,7 +176,7 @@ export function isLockActive(lockFilePath: string): boolean {
     return false
   }
 
-  // Secondary validation: is it actually a Claude process?
+  // Secondary validation: is it actually a thyrox process?
   // This helps with PID reuse scenarios
   if (!isClaudeProcess(pid, execPath)) {
     logForDebugging(
@@ -245,7 +245,7 @@ export async function tryAcquireLock(
 
   // Check if there's an existing active lock (including by our own process)
   // Use isLockActive for consistency with cleanup - it checks both PID running AND
-  // validates it's actually a Claude process (to handle PID reuse scenarios)
+  // validates it's actually a thyrox process (to handle PID reuse scenarios)
   if (isLockActive(lockFilePath)) {
     const existingContent = readLockContent(lockFilePath)
     logForDebugging(

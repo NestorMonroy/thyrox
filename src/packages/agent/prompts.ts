@@ -169,7 +169,7 @@ export function prependBullets(items: Array<string | string[]>): string[] {
   )
 }
 
-/** Los tres ids de la familia Claude 4.X mas reciente que el bullet de fast-mode nombra. */
+/** Los tres ids de la familia Anthropic 4.X mas reciente que el bullet de fast-mode nombra. */
 const CLAUDE_4_5_OR_4_6_MODEL_IDS = {
   opus: 'claude-opus-4-8',
   sonnet: 'claude-sonnet-4-6',

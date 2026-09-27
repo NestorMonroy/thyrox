@@ -25,7 +25,7 @@ import {
 import { getManagedFilePath } from '@thyrox/config/managedPath'
 import { isRestrictedToPluginOnly } from '@thyrox/config/pluginOnlyPolicy'
 
-// Claude configuration directory names
+// thyrox configuration directory names
 export const CLAUDE_CONFIG_DIRECTORIES = [
   'commands',
   'agents',

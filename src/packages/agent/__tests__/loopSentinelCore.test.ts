@@ -165,7 +165,7 @@ describe('resetAutonomousLoopDelivered', () => {
   })
 })
 
-// ─── readLoopFile (ant $67) — el fallback al config home de Claude ────────
+// ─── readLoopFile (ant $67) — el fallback al config home de thyrox ────────
 //
 // Fijan el fix CRITICO: el segundo candidato de ant es `~/.claude/loop.md`
 // (via `getConfigHomeDir()`), NO `~/loop.md` (via `homedir()`). La
@@ -226,7 +226,7 @@ describe('readLoopFile (ant $67) — fallback al config home de Claude', () => {
 
   test('cae a ~/.claude/loop.md (NO a ~/loop.md)', () => {
     // El pin del fix critico: la base del segundo candidato es el config
-    // home de Claude —que `CLAUDE_CONFIG_DIR` sobreescribe al temporal de
+    // home de thyrox —que `CLAUDE_CONFIG_DIR` sobreescribe al temporal de
     // la prueba—, no `os.homedir()`.
     writeFileSync(join(homeDir, 'loop.md'), 'fallback content', 'utf8')
     const got = readLoopFile()

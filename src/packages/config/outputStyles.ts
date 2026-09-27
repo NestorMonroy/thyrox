@@ -84,7 +84,7 @@ const PROACTIVE_FEATURE_PROMPT = `The user chose continuous, autonomous executio
 export const OUTPUT_STYLE_CONFIG: OutputStyles = {
   [DEFAULT_OUTPUT_STYLE_NAME]: null,
   // ant v2.1.139 4096.js MYH.Proactive — 4th built-in output style. When the
-  // user sets `outputStyle: "Proactive"` Claude flips from default lazy mode
+  // user sets `outputStyle: "Proactive"` thyrox flips from default lazy mode
   // to autonomous-execution mode. keepCodingInstructions stays true so
   // tool-use safety + coding rules from the default prompt still apply.
   Proactive: {

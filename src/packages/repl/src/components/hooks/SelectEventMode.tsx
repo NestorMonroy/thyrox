@@ -4,7 +4,7 @@
  *
  * The /hooks menu is read-only: selecting an event lets you browse its
  * configured hooks but not modify them. To add or change hooks, users should
- * edit settings.json directly or ask Claude.
+ * edit settings.json directly or ask thyrox.
  */
 
 import figures from 'figures'

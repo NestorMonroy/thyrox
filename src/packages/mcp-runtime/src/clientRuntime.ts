@@ -255,7 +255,7 @@ function getMcpToolTimeoutMs(): number {
 import { isClaudeInChromeMCPServer } from '@thyrox/agent/claudeInChromeCommon.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
-// Lazy: toolRendering.tsx pulls React/ink; only needed when Claude-in-Chrome MCP server is connected
+// Lazy: toolRendering.tsx pulls React/ink; only needed when thyrox-in-Chrome MCP server is connected
 /* eslint-disable @typescript-eslint/no-require-imports */
 const claudeInChromeToolRendering =
   (): typeof import('@thyrox/agent/claudeInChrome/toolRendering.js') =>

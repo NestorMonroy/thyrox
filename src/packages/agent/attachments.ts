@@ -5,7 +5,7 @@
  *
  * La fuente es el orquestador completo de "system-reminder" attachments:
  * memorias relevantes, recordatorios de plan-mode/auto-mode, TODO
- * reminders, selección de líneas en el IDE, archivos anidados CLAUDE.md
+ * reminders, selección de líneas en el IDE, archivos anidados THYROX.md
  * por directorio, etc. Este puerto sólo trae los símbolos que sus tests
  * ejercitan hasta ahora — dos ejes independientes, sin cruce entre sí:
  *
@@ -15,7 +15,7 @@
  *     valores literales SON su contrato (gobiernan cadencia real de
  *     re-inyección), se reproducen verbatim.
  *  2. `getDirectoriesToProcess` — el recorrido puro de directorios que
- *     decide qué `CLAUDE.md`/`.claude/rules/*.md` se cargan por archivo
+ *     decide qué `THYROX.md`/`.claude/rules/*.md` se cargan por archivo
  *     tocado. Reimplementado (no copiado) a partir del algoritmo de la
  *     fuente: mismo comportamiento observable, escrito de cero.
  *
@@ -639,12 +639,12 @@ export const VERIFY_PLAN_REMINDER_CONFIG = {
 } as const
 
 /**
- * Directorios a recorrer para cargar memoria anidada (CLAUDE.md +
+ * Directorios a recorrer para cargar memoria anidada (THYROX.md +
  * `.claude/rules/*.md`) al tocar `targetPath` desde `originalCwd`.
  *
  * Devuelve dos listas, ambas ordenadas de padre a hijo:
  *  - `nestedDirs`: directorios ENTRE `originalCwd` y el directorio de
- *    `targetPath` (se procesan para CLAUDE.md + TODAS las reglas).
+ *    `targetPath` (se procesan para THYROX.md + TODAS las reglas).
  *  - `cwdLevelDirs`: directorios desde la raíz del filesystem hasta
  *    `originalCwd` (se procesan sólo para reglas condicionales).
  *
@@ -1928,7 +1928,7 @@ async function getNestedMemoryAttachmentsForFile(
     )
 
     // Fase 3: procesar directorios anidados (CWD → destino)
-    // Cada directorio aporta: CLAUDE.md + reglas incondicionales + reglas condicionales
+    // Cada directorio aporta: THYROX.md + reglas incondicionales + reglas condicionales
     for (const dir of nestedDirs) {
       const memoryFiles = (
         await getMemoryFilesForNestedDirectory(dir, filePath, processedPaths)
@@ -2768,7 +2768,7 @@ export function startRelevantMemoryPrefetch(
 
 // --- porte por miembros: un ancla por ítem ---
 /**
- * Processes paths that need nested memory attachments and checks for nested CLAUDE.md files
+ * Processes paths that need nested memory attachments and checks for nested THYROX.md files
  * Uses nestedMemoryAttachmentTriggers field from ToolUseContext
  */
 async function getNestedMemoryAttachments(
@@ -3471,7 +3471,7 @@ export function memoryFilesToAttachments(
   for (const memoryFile of memoryFiles) {
     // Dedup: loadedNestedMemoryPaths is a non-evicting Set; readFileState
     // is a 100-entry LRU that drops entries in busy sessions, so relying
-    // on it alone re-injects the same CLAUDE.md on every eviction cycle.
+    // on it alone re-injects the same THYROX.md on every eviction cycle.
     if (toolUseContext.loadedNestedMemoryPaths?.has(memoryFile.path)) {
       continue
     }

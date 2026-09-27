@@ -1,7 +1,7 @@
 /**
  * Los nombres del archivo de instrucciones y de sus directorios. El
- * ejecutable 2.1.283 los fija como `CLAUDE.md`, `CLAUDE.local.md`,
- * `.claude/CLAUDE.md` y `.claude/rules`; thyrox los migra a sus nombres
+ * ejecutable 2.1.283 los fija como `THYROX.md`, `THYROX.local.md`,
+ * `.claude/THYROX.md` y `.claude/rules`; thyrox los migra a sus nombres
  * propios (decisión del ejecutor 2026-09-27) y conserva los heredados como
  * respaldo de lectura.
  *
@@ -25,17 +25,17 @@ export const LOCAL_INSTRUCTIONS_FILE_NAMES = [
   LEGACY_LOCAL_INSTRUCTIONS_FILE_NAME,
 ] as const
 
-/** `<dir>/THYROX.md`, luego `<dir>/CLAUDE.md`. */
+/** `<dir>/THYROX.md`, luego `<dir>/THYROX.md`. */
 export function instructionsFileCandidates(dir: string): string[] {
   return INSTRUCTIONS_FILE_NAMES.map(name => join(dir, name))
 }
 
-/** `<dir>/THYROX.local.md`, luego `<dir>/CLAUDE.local.md`. */
+/** `<dir>/THYROX.local.md`, luego `<dir>/THYROX.local.md`. */
 export function localInstructionsFileCandidates(dir: string): string[] {
   return LOCAL_INSTRUCTIONS_FILE_NAMES.map(name => join(dir, name))
 }
 
-/** `<dir>/.thyrox/THYROX.md`, luego `<dir>/.claude/CLAUDE.md`: cada nombre
+/** `<dir>/.thyrox/THYROX.md`, luego `<dir>/.claude/THYROX.md`: cada nombre
  * de directorio con su archivo, sin cruzarlos. */
 export function nestedInstructionsFileCandidates(dir: string): string[] {
   return [
@@ -70,7 +70,7 @@ export function pickInstructionsFile(
 }
 
 /** ¿La ruta es el archivo de instrucciones de un proyecto (`THYROX.md` o el
- * heredado `CLAUDE.md`)? El local no cuenta: es personal, no del proyecto. */
+ * heredado `THYROX.md`)? El local no cuenta: es personal, no del proyecto. */
 export function isProjectInstructionsFile(path: string): boolean {
   return (INSTRUCTIONS_FILE_NAMES as readonly string[]).includes(basename(path))
 }

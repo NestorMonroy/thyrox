@@ -153,7 +153,7 @@ function vertexModelSupportsWebSearch(model: string): boolean {
   )
 }
 
-// Context management is supported on Claude 4+ models
+// Context management is supported on Anthropic 4+ models
 export function modelSupportsContextManagement(model: string): boolean {
   const canonical = getCanonicalName(model)
   const provider = getAPIProvider()
@@ -191,7 +191,7 @@ export function modelSupportsStructuredOutputs(model: string): boolean {
 
 // @[MODEL LAUNCH]: Add the new model if it supports auto mode.
 // ccb: relaxed for fork — auto mode is gated only on (a) the build flag and
-// (b) excluding legacy Claude models that lack the tool-use behavior the
+// (b) excluding legacy Anthropic models that lack the tool-use behavior the
 // classifier relies on. All providers (firstParty, bedrock, vertex, openai,
 // gemini, etc.) are allowed; users who pick a 3P provider accept that
 // classifier quality may vary.
@@ -216,7 +216,7 @@ export function modelSupportsAutoMode(model: string): boolean {
 
 /**
  * Get the correct tool search beta header for the current API provider.
- * - Claude API / Foundry: advanced-tool-use-2025-11-20
+ * - Anthropic API / Foundry: advanced-tool-use-2025-11-20
  * - Vertex AI / Bedrock: tool-search-tool-2025-10-19
  */
 export function getToolSearchBetaHeader(): string {

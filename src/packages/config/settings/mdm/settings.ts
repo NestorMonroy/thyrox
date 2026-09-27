@@ -8,7 +8,7 @@
  * un agente anterior) — se llama `.safeParse` directamente, sin los
  * paréntesis de invocación. Mismo comportamiento observable.
  *
- * Lectura de settings managed MDM (Mobile Device Management) para Claude
+ * Lectura de settings managed MDM (Mobile Device Management) para thyrox
  * Code, desde la configuración MDM a nivel de SO:
  * - macOS: dominio de preferencia `com.anthropic.claudecode`
  *   (perfiles MDM sólo en /Library/Managed Preferences/ — no en

@@ -7,7 +7,7 @@
 //
 // Differences vs the prior ccb body: phase 1 references per-session log
 // layout (`logs/YYYY/MM/DD/<id>-<title>.md`); phase 2 sources are
-// re-prioritised; team-memory and CLAUDE.md-reconcile sections appended
+// re-prioritised; team-memory and THYROX.md-reconcile sections appended
 // when applicable.
 
 import {

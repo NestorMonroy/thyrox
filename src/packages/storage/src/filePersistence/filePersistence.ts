@@ -375,7 +375,7 @@ export async function executeFilePersistence(
  * Requires: feature flag ON, valid environment kind, session access token,
  * and CLAUDE_CODE_REMOTE_SESSION_ID.
  * This ensures only public-api/sessions users trigger file persistence,
- * not normal Claude Code CLI users.
+ * not normal thyrox CLI users.
  *
  * Divergencia: `feature('FILE_PERSISTENCE')` se omite (constante `false`,
  * ver docstring del módulo) — esta función SIEMPRE devuelve `false` aquí.

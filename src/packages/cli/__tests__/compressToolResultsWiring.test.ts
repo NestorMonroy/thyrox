@@ -66,7 +66,7 @@ async function run(flags: string[]): Promise<string> {
   const transcriptDir = join(d, 'transcripts')
 
   // `--cwd d` aísla el prompt de sistema del árbol real: sin esto, el
-  // system prompt embebe el CLAUDE.md/reglas de ESTA sesión, que no aporta
+  // system prompt embebe el THYROX.md/reglas de ESTA sesión, que no aporta
   // nada al control y sólo alarga el transcript a comparar.
   //
   // `--grabacion` es el nombre real de la bandera ya declarada en

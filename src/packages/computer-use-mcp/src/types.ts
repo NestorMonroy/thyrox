@@ -23,7 +23,7 @@ export interface Logger {
  *
  *   - `"read"` — visible in screenshots, NO interaction (no clicks, no typing).
  *     Browsers land here: the model can read a page that's already open, but
- *     must use the Claude-in-Chrome MCP for any navigation/clicking. Trading
+ *     must use the thyrox-in-Chrome MCP for any navigation/clicking. Trading
  *     platforms land here too (no CiC alternative — the model asks the user).
  *   - `"click"` — visible + plain left-click, scroll. NO typing/keys,
  *     NO right/middle-click, NO modifier-clicks, NO drag-drop (all text-
@@ -152,7 +152,7 @@ export interface CuPermissionRequest {
   /** What the model asked for. User can toggle independently of apps. */
   requestedFlags: Partial<CuGrantFlags>;
   /**
-   * For the "On Windows, Claude can see all apps..." footnote. Taken from
+   * For the "On Windows, thyrox can see all apps..." footnote. Taken from
    * `executor.capabilities.screenshotFiltering` so the renderer doesn't
    * need to know about platforms.
    */
@@ -171,7 +171,7 @@ export interface CuPermissionRequest {
   };
   /**
    * Apps with windows on the CU display that aren't in the requested
-   * allowlist. These will be hidden the first time Claude takes an action.
+   * allowlist. These will be hidden the first time thyrox takes an action.
    * Computed at request_access time — may be slightly stale by the time the
    * user clicks Allow, but it's a preview, not a contract. Absent when
    * empty so the renderer can skip the section cleanly.
@@ -179,7 +179,7 @@ export interface CuPermissionRequest {
   willHide?: Array<{ bundleId: string; displayName: string }>;
   /**
    * `chicagoAutoUnhide` app preference at request time. The renderer picks
-   * between "...then restored when Claude is done" and "...will be hidden"
+   * between "...then restored when thyrox is done" and "...will be hidden"
    * copy. Absent when `willHide` is absent (same condition).
    */
   autoUnhideEnabled?: boolean;

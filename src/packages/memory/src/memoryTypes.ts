@@ -3,7 +3,7 @@
  *
  * Memories are constrained to four types capturing context NOT derivable
  * from the current project state. Code patterns, architecture, git history,
- * and file structure are derivable (via grep/git/CLAUDE.md) and should NOT
+ * and file structure are derivable (via grep/git/THYROX.md) and should NOT
  * be saved as memories.
  *
  * The two TYPES_SECTION_* exports below are intentionally duplicated rather
@@ -205,7 +205,7 @@ export const MEMORY_DRIFT_CAVEAT =
  * `## When to access memories` section. Includes MEMORY_DRIFT_CAVEAT.
  *
  * H6 (branch-pollution evals #22856, case 5 1/3 on capy): the "ignore" bullet
- * is the delta. Failure mode: user says "ignore memory about X" → Claude reads
+ * is the delta. Failure mode: user says "ignore memory about X" → thyrox reads
  * code correctly but adds "not Y as noted in memory" — treats "ignore" as
  * "acknowledge then override" rather than "don't reference at all." The bullet
  * names that anti-pattern explicitly.

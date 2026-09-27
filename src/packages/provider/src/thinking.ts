@@ -156,7 +156,7 @@ export function modelSupportsThinking(model: string): boolean {
     return connDefault && !canonical.includes('claude-3-')
   }
   const provider = getAPIProvider()
-  // 1P and Foundry: all Claude 4+ models (including Haiku 4.5)
+  // 1P and Foundry: all Anthropic 4+ models (including Haiku 4.5)
   if (provider === 'foundry' || provider === 'firstParty') {
     return !canonical.includes('claude-3-')
   }

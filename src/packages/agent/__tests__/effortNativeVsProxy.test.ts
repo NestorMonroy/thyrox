@@ -7,7 +7,7 @@
  * anthropic: la asimetría que vive en el fondo de
  * `modelSupportsMaxEffort` / `modelSupportsXhighEffort`.
  *
- * Contexto — la receta oficial de Claude Code de DeepSeek fija
+ * Contexto — la receta oficial de thyrox de DeepSeek fija
  *   ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
  *   ANTHROPIC_MODEL=deepseek-v4-pro[1m]
  *   CLAUDE_CODE_EFFORT_LEVEL=max

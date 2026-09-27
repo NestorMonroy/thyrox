@@ -25,7 +25,7 @@ export function validateInputForSettingsFileEdit(
   originalContent: string,
   getUpdatedContent: () => string,
 ): SettingsEditValidationFailure | null {
-  // Only validate Claude settings files
+  // Only validate thyrox settings files
   const bindings = tryGetConfigHostBindings()
   if (!bindings.isSettingsFilePath?.(filePath)) {
     return null

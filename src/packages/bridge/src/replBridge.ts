@@ -237,7 +237,7 @@ export type BridgeCoreParams = {
    * auto-gate de esa función es un throw defensivo, no una guarda
    * amable, y su orden de efectos secundarios es setAutoModeActive(true)
    * y luego throw, lo que corrompe el invariante de 3 vías documentado en
-   * src/CLAUDE.md si el callback deja escapar el throw aquí.
+   * src/THYROX.md si el callback deja escapar el throw aquí.
    */
   onSetPermissionMode?: (
     mode: PermissionMode,

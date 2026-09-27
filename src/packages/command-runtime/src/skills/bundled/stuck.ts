@@ -1,7 +1,7 @@
 import { registerBundledSkill } from '../bundledSkills.js'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 
-// Prompt text contains `ps` commands as instructions for Claude to run,
+// Prompt text contains `ps` commands as instructions for thyrox to run,
 // not commands this file executes.
 // eslint-disable-next-line custom-rules/no-direct-ps-commands
 const STUCK_PROMPT = `# /stuck — diagnose frozen/slow ${PRODUCT_NAME} sessions

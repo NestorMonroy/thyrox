@@ -52,7 +52,7 @@ export type ModelSetting = ModelName | ModelAlias | null
 
 /**
  * Modelo rápido/pequeño para clasificadores en background. Sólo devuelve un
- * id Haiku de Claude cuando Haiku es GENUINAMENTE alcanzable; si no, cae al
+ * id Haiku de thyrox cuando Haiku es GENUINAMENTE alcanzable; si no, cae al
  * modelo del bucle principal.
  */
 export function getSmallFastModel(): ModelName {

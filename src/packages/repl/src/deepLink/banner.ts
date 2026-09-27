@@ -9,7 +9,7 @@
  *
  * The user must press Enter to submit; this banner primes them to read the
  * prompt (which may use homoglyphs or padding to hide instructions) and
- * notice which directory — and therefore which CLAUDE.md — was loaded.
+ * notice which directory — and therefore which THYROX.md — was loaded.
  */
 
 import { stat } from 'fs/promises'
@@ -43,13 +43,13 @@ export type DeepLinkBannerInfo = {
 /**
  * Build the multi-line warning banner for a deep-link-originated session.
  *
- * Always shows the working directory so the user can see which CLAUDE.md
+ * Always shows the working directory so the user can see which THYROX.md
  * will load. When the link pre-filled a prompt, adds a second line prompting
  * the user to review it — the prompt itself is visible in the input box.
  *
  * When the cwd was resolved from a ?repo= slug, also shows the slug and the
  * clone's last-fetch age so the user knows which local clone was selected
- * and whether its CLAUDE.md may be stale relative to upstream.
+ * and whether its THYROX.md may be stale relative to upstream.
  */
 export function buildDeepLinkBanner(info: DeepLinkBannerInfo): string {
   const lines = [

@@ -493,7 +493,7 @@ export function oneShotJitteredNextCronRunMs(
  * Una tarea está "perdida" cuando su próxima corrida agendada (calculada
  * desde createdAt) está en el pasado. Se muestra al usuario al arrancar.
  * Funciona tanto para one-shots como para recurrentes — una tarea
- * recurrente cuya ventana pasó mientras Claude estaba caído sigue estando
+ * recurrente cuya ventana pasó mientras thyrox estaba caído sigue estando
  * "perdida".
  */
 export function findMissedTasks(tasks: CronTask[], nowMs: number): CronTask[] {

@@ -1977,14 +1977,14 @@ function executeInBackground({
 }
 /**
  * Ejecuta los hooks InstructionsLoaded cuando se carga un archivo de
- * instrucciones (CLAUDE.md o .claude/rules/*.md) en el contexto.
+ * instrucciones (THYROX.md o .claude/rules/*.md) en el contexto.
  * Fire-and-forget — sólo para observabilidad/auditoría, no soporta bloqueo.
  *
  * Sitios de despacho:
  * - Carga eager al inicio de sesión (getMemoryFiles en claudemd.ts)
  * - Recarga eager tras compactación (caché de getMemoryFiles limpiada por
  *   runPostCompactCleanup; la siguiente llamada reporta load_reason: 'compact')
- * - Carga lazy cuando Claude toca un archivo que dispara un CLAUDE.md anidado
+ * - Carga lazy cuando thyrox toca un archivo que dispara un THYROX.md anidado
  *   o reglas condicionales con frontmatter paths: (memoryFilesToAttachments en
  *   attachments.ts)
  */

@@ -51,7 +51,7 @@ import { sanitizePath } from '../sessionStoragePortable.js'
 // SEGURIDAD: O_NOFOLLOW evita seguir symlinks al abrir archivos de salida
 // de tarea. Sin esto, un atacante dentro del sandbox podría crear
 // symlinks en el directorio de tareas apuntando a archivos arbitrarios,
-// causando que Claude Code en el host escriba en esos archivos.
+// causando que thyrox en el host escriba en esos archivos.
 // O_NOFOLLOW no está disponible en Windows, pero el vector de ataque del
 // sandbox es sólo-Unix.
 const O_NOFOLLOW = fsConstants.O_NOFOLLOW ?? 0

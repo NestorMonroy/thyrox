@@ -1,6 +1,6 @@
 /**
  * La guarda de seguridad de una escritura automática: ¿es este archivo algo
- * que una edición sin preguntar no debe tocar? Settings de Claude, carpetas
+ * que una edición sin preguntar no debe tocar? Settings de thyrox, carpetas
  * de configuración de herramientas, archivos de arranque de shell y rutas
  * que en Windows o en red no significan lo que parecen.
  *
@@ -436,7 +436,7 @@ export function isSuspiciousWindowsPath(path: string, trusted?: TrustedNetworkDi
   return false
 }
 
-// ---- Archivos de configuración de Claude ----
+// ---- Archivos de configuración de thyrox ----
 
 /** El directorio de configuración, `~/.thyrox` y `~/.claude`, sin repetir
  * (≙ `eo`, que sólo conoce `~/.claude`). */
@@ -469,7 +469,7 @@ function knownSettingsFiles(): string[] {
   return files
 }
 
-/** ¿Es un archivo de settings de Claude, de cualquier fuente? (≙ `HTe`). */
+/** ¿Es un archivo de settings de thyrox, de cualquier fuente? (≙ `HTe`). */
 export function isSettingsFilePath(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path))
   if (
@@ -497,7 +497,7 @@ export function isSettingsFilePath(path: string): boolean {
   })
 }
 
-/** ¿Es un directorio de configuración de Claude mismo? (≙ `xu`). */
+/** ¿Es un directorio de configuración de thyrox mismo? (≙ `xu`). */
 export function isConfigDirectory(path: string): boolean {
   const target = comparablePath(expandPathDeferred(path)).replace(/[\\/]+$/, '')
   if (CONFIG_DIR_NAMES.some(name => nodePath.basename(target) === comparableSegment(name))) return true

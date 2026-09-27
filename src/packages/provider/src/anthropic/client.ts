@@ -37,10 +37,10 @@ import { readEnv } from '@thyrox/config/env'
  *
  * Vertex AI:
  * - Model-specific region variables (highest priority):
- *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for Claude 3.5 Haiku model
- *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Claude Haiku 4.5 model
- *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for Claude 3.5 Sonnet model
- *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for Claude 3.7 Sonnet model
+ *   - VERTEX_REGION_CLAUDE_3_5_HAIKU: Region for 3.5 Haiku model
+ *   - VERTEX_REGION_CLAUDE_HAIKU_4_5: Region for Haiku 4.5 model
+ *   - VERTEX_REGION_CLAUDE_3_5_SONNET: Region for 3.5 Sonnet model
+ *   - VERTEX_REGION_CLAUDE_3_7_SONNET: Region for 3.7 Sonnet model
  * - CLOUD_ML_REGION: Optional. The default GCP region to use for all models
  *   If specific model region not specified above
  * - ANTHROPIC_VERTEX_PROJECT_ID: Required. Your GCP project ID
@@ -319,7 +319,7 @@ export async function getAnthropicClient({
 
   // V7 §11.6 — when an Anthropic Compatible connection matches the
   // requested model, override apiKey + baseURL with the connection's
-  // values. This keeps Claude Account OAuth (api.anthropic.com + OAuth
+  // values. This keeps thyrox Account OAuth (api.anthropic.com + OAuth
   // token) and Anthropic Compatible (user-supplied URL + api_key) from
   // colliding through global ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN.
   // Resolution is per-call: each query consults the connection registry

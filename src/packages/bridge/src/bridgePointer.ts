@@ -85,7 +85,7 @@ export async function writeBridgePointer(
 /**
  * Lee el puntero y su edad (ms desde la última escritura). Opera
  * directo y maneja errores — sin chequeo de existencia (regla TOCTOU de
- * CLAUDE.md). Devuelve null ante cualquier fallo: archivo faltante, JSON
+ * THYROX.md). Devuelve null ante cualquier fallo: archivo faltante, JSON
  * corrupto, desajuste de schema, u obsoleto (mtime > 4h). Los punteros
  * obsoletos/inválidos se eliminan para que no sigan re-preguntando
  * después de que el backend ya recolectó el entorno.

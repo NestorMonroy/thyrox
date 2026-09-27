@@ -9,7 +9,7 @@ import { PRODUCT_NAME } from '@thyrox/config/product'
  *   Reusable by both the MCP CallTool handler here AND Cowork's
  *   `InternalServerDefinition.handleToolCall` (which doesn't go through MCP).
  *   This replaces the duplicated wrapper closures in apps/desktop/…/serverDef.ts
- *   and the Claude Code CLI's CU host wrapper — both did the same thing: build `ComputerUseOverrides`
+ *   and the thyrox CLI's CU host wrapper — both did the same thing: build `ComputerUseOverrides`
  *   fresh from getters, call `handleToolCall`, stash screenshot, merge permissions.
  *
  *   `createComputerUseMcpServer` — the Server object. When `context` is provided,

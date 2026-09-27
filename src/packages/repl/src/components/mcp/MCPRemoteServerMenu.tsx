@@ -211,7 +211,7 @@ export function MCPRemoteServerMenu({
     },
   )
 
-  // Escape to cancel Claude AI authentication
+  // Escape to cancel thyrox AI authentication
   useKeybinding(
     'confirm:no',
     () => {
@@ -224,7 +224,7 @@ export function MCPRemoteServerMenu({
     },
   )
 
-  // Escape to cancel Claude AI clear auth
+  // Escape to cancel thyrox AI clear auth
   useKeybinding(
     'confirm:no',
     () => {

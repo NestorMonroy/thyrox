@@ -38,7 +38,7 @@ import { root as reachRoot } from './reach.ts'
  * Cinco son capas del **producto** kaupamex; `thyrox` es su **proveedor** de
  * metodologia, alojado aqui por ADR-THYROX-001 (decision del ejecutor
  * 2026-09-05). El nombre del tipo conserva `Submodule` porque es el vocabulario
- * del arbol —la clave `submodulos:` de `.claude/CLAUDE.md`— y renombrarlo tiene
+ * del arbol —la clave `submodulos:` de `.claude/THYROX.md`— y renombrarlo tiene
  * su propio radio: tarea #169. Ninguna de las seis es un submodulo de git desde
  * que el superproyecto quedo ausente por decision (2026-08-07).
  */

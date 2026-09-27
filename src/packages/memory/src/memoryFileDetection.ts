@@ -176,10 +176,10 @@ function isAgentMemFile(filePath: string): boolean {
 }
 
 /**
- * Verifica si un archivo es un archivo de memoria gestionado por Claude
+ * Verifica si un archivo es un archivo de memoria gestionado por thyrox
  * (NO archivos de instrucciones gestionados por el usuario). Incluye:
  * auto-memoria (memdir), memoria de agente, memoria/transcripts de sesión.
- * Excluye: CLAUDE.md, CLAUDE.local.md, .claude/rules/*.md (gestionados por
+ * Excluye: THYROX.md, THYROX.local.md, .claude/rules/*.md (gestionados por
  * el usuario).
  *
  * Usar esto para la lógica de colapsar/badge donde los archivos
@@ -336,7 +336,7 @@ export function isShellCommandTargetingMemory(command: string): boolean {
 }
 
 // Verifica si un glob/patrón apunta solo a archivos de memoria
-// auto-gestionada. Excluye CLAUDE.md, CLAUDE.local.md, .claude/rules/
+// auto-gestionada. Excluye THYROX.md, THYROX.local.md, .claude/rules/
 // (gestionados por el usuario). Se usa para la lógica de badge de
 // colapso, donde los archivos gestionados por el usuario no deben
 // contarse como operaciones de "memoria".
