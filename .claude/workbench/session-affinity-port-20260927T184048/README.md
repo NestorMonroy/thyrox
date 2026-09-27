@@ -81,3 +81,29 @@ conserva la última y gjson la primera que responda; `Headers` une valores
 repetidos y `http.Header` los recorre (con un objeto de listas se conserva la
 conducta de la referencia). En `enrich.ts`, la metadata de petición y la de
 opciones se mantienen separadas como en la referencia.
+
+## Fase 3: `session_cache.go`
+
+`src/proxy/session/sessionCache.ts`; prueba `__tests__/proxySessionCache.test.ts`
+(los seis casos de `session_cache_test.go` más caducidad, alias y
+compactación con el reloj inyectado). La prueba se corrió primero sin la
+implementación (módulo ausente) y después en verde.
+
+Divergencias declaradas en la cabecera del módulo: sin candados (un solo
+hilo; la prueba concurrente intercala los ocho escritores), reloj inyectable,
+y limpieza periódica con temporizador `unref`. Los casos de receptor nulo de
+Go no tienen equivalente: un método de TypeScript no se llama sobre `null`.
+
+`tree_compat.go` (`InMemorySessionTreeStore`) no se porta: la referencia lo
+marca *Deprecated* y lo conserva como stub de migración para los usuarios de
+su SDK («Session tree management has moved to Home»); thyrox no tiene esos
+consumidores, y la jerarquía que el stub guardaba viaja en `SessionInfo`
+(`parentSessionId`, `agentName`, `isFork`, `nodeKind`).
+
+| Anulación (`probes/annul-cases3/`) | Caen |
+|---|---|
+| sin desalojo por capacidad | 4 |
+| `getAndRefresh` sin refrescar | 1 |
+| mover a otra credencial sin conservar alias | 1 |
+| retirar un alias sin quitarlo de los supervivientes | 2 |
+| sin límite de una clave de caché de prompt | 1 |
