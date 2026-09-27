@@ -248,3 +248,35 @@ describe('readFileRange / tailFile (exportadas directas)', () => {
     expect(result.bytesTotal).toBe(10)
   })
 })
+
+// `_clearOutputsForTest` es la barrera que `task/diskOutput.ts` pide llamar
+// en afterEach ANTES de borrar el directorio. Su contrato fino: espera hasta
+// que el conjunto de operaciones pendientes se ESTABILICE, porque una que se
+// asienta puede engendrar otra —la rama de respaldo de
+// `initTaskOutputAsSymlink` llama a `initTaskOutput`—. Esperar una sola
+// instantánea dejaría la segunda viva y escribiendo en un directorio que el
+// teardown ya borró (ENOENT asíncrono tras el teardown).
+//
+// Anulado, medido tres veces cada uno: esperar una sola instantánea tumba
+// el primer caso; no cancelar lo encolado, el segundo. El ejemplo de la
+// fuente (la rama de respaldo del symlink) NO discrimina: su `return
+// initTaskOutput(...)` hace que la promesa externa adopte la interna, y una
+// sola instantánea ya la espera.
+describe('_clearOutputsForTest — la barrera del teardown', () => {
+  test('espera también la operación que nace cuando otra se asienta', async () => {
+    // La reacción corre al asentarse `initTaskOutput` y ANTES de que la
+    // barrera vuelva a mirar: apendar ahí registra un vaciado nuevo que no
+    // estaba en la primera instantánea del conjunto pendiente.
+    void initTaskOutput('primera-1').then(() => appendTaskOutput('segunda-1', 'tardía'))
+    await _clearOutputsForTest()
+    expect(await Bun.file(getTaskOutputPath('segunda-1')).text()).toBe('tardía')
+  })
+
+  test('descarta la salida encolada y olvida la tarea', async () => {
+    appendTaskOutput('encolada-1', 'no debe llegar')
+    await _clearOutputsForTest()
+    appendTaskOutput('encolada-1', 'nueva')
+    await flushTaskOutput('encolada-1')
+    expect(await getTaskOutput('encolada-1')).not.toContain('no debe llegar')
+  })
+})

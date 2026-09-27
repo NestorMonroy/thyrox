@@ -408,10 +408,10 @@ const outputs = new Map<string, DiskTaskOutput>()
 
 /**
  * Helper de test — cancela escrituras pendientes, espera operaciones en
- * vuelo, limpia el mapa. backgroundShells.test.ts y otros tests de tarea
- * lanzan shells reales que escriben a través de este módulo sin limpieza
- * en afterEach; sus entradas se filtran a diskOutput.test.ts en el mismo
- * shard.
+ * vuelo, limpia el mapa. Los tests de tarea que lanzan shells reales
+ * escriben a través de este módulo; sin esta barrera en afterEach sus
+ * entradas se filtran a los archivos siguientes del mismo proceso. Su
+ * control es `__tests__/diskOutput.test.ts` (« la barrera del teardown »).
  *
  * Espera todas las promesas rastreadas hasta que el conjunto se
  * estabilice — una promesa que se asienta puede engendrar otra
