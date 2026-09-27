@@ -1,2 +1,1 @@
-los seis repos, y su escritor más común era ``echo`` con **202**, la clase que
-midió 0 de 20 inversiones. Ver ``counterfactual_naive_scope.py`` del banco.
+def repo_view(block, repo):

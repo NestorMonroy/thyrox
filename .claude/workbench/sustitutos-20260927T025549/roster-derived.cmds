@@ -1,0 +1,12 @@
+PYTHONPATH=src timeout 600 python3 tests/hooks/test_task_lifecycle.py
+timeout 600 bash tests/install/test_install.sh
+timeout 600 bash tests/lib/test-reach-pythonpath.sh
+PYTHONPATH=src timeout 600 python3 tests/paths/test_deferred_names_not_used_bare.py
+timeout 600 bash tests/session/test-arranque-de-clon.sh
+timeout 600 bash tests/session/test-jobs-ledger-home.sh
+timeout 600 bash tests/session/test-sincronizar-settings-local.sh
+PYTHONPATH=src timeout 600 python3 tests/session/test_installed_hooks_resolve.py
+PYTHONPATH=src timeout 600 python3 tests/session/test_user_wiring.py
+timeout 600 bash tests/verify/test-eventos-hook.sh
+timeout 600 bash tests/verify/test-githooks-activos.sh
+timeout 600 bash tests/verify/test-hook-script-token.sh

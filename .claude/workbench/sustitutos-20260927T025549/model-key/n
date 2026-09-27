@@ -1,3 +1,1 @@
-los seis repos, y su escritor más común era ``echo`` con **202** — la clase que
-se creyó inocua por el 0/20 que no se reprodujo, y que hoy es alcance de
-``check_unsized_writer_pipe.py``. Ver ``counterfactual_naive_scope.py`` del banco.
+def repo_view(block, repo, consumer_root=REPO_ROOT, session_root=REPO_ROOT.parent):
