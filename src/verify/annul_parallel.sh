@@ -21,6 +21,10 @@
 #               ejecuciones de dos modulos distintos no se mezclen en un solo
 #               directorio
 #
+# THYROX_ANNUL_TEST_TIMEOUT: segundos por ejecución de la prueba (300 por
+# defecto). Una variante que la cuelga se corta ahí y se publica como
+# «agotó el plazo».
+#
 # Sale 2 si falta algo o si una variante no cambia el modulo: una expresion
 # que no casa produce una copia identica, y su verde se leeria como «el
 # control no discrimina» cuando en realidad no se anulo nada.
@@ -29,6 +33,9 @@ set -euo pipefail
 module="${1:?falta MODULE}"; test_file="${2:?falta TEST}"
 env_var="${3:?falta ENV_VAR}"; variants="${4:?falta VARIANTS}"
 name="${5:-$(basename "${module%.*}")}"
+# Una variante puede colgar la prueba (una promesa que ya nunca se resuelve):
+# se corta en este plazo y cuenta como fallo.
+limit="${THYROX_ANNUL_TEST_TIMEOUT:-300}"
 for f in "$module" "$test_file" "$variants"; do
   [[ -f "$f" ]] || { echo "annul_parallel: REHUSA — no existe $f" >&2; exit 2; }
 done
@@ -47,12 +54,12 @@ trap 'rm -rf "$work"; rmdir "${work%/*}" "${work%/*/*}" 2>/dev/null || true' EXI
 run_test() {
   local module="$1" out status=0
   case "$TEST" in
-    *.py) out="$(env "$ENV_VAR=$module" timeout 300 python3 "$TEST" 2>&1)" || status=$? ;;
-    *.sh) out="$(env "$ENV_VAR=$module" timeout 300 bash "$TEST" 2>&1)" || status=$? ;;
-    *) out="$(env "$ENV_VAR=$module" timeout 300 bun test "$TEST" 2>&1)" || status=$? ;;
+    *.py) out="$(env "$ENV_VAR=$module" timeout "$LIMIT" python3 "$TEST" 2>&1)" || status=$? ;;
+    *.sh) out="$(env "$ENV_VAR=$module" timeout "$LIMIT" bash "$TEST" 2>&1)" || status=$? ;;
+    *) out="$(env "$ENV_VAR=$module" timeout "$LIMIT" bun test "$TEST" 2>&1)" || status=$? ;;
   esac
   # Una salida con error sin fallos nombrados es una prueba que abortó: un fallo.
-  printf '%s\n' "$out" | gawk -v runner="${TEST##*.}" -v status="$status" '
+  printf '%s\n' "$out" | gawk -v runner="${TEST##*.}" -v status="$status" -v limit="$LIMIT" '
     runner ~ /^(py|sh)$/ && /^[[:space:]]*ok[[:space:]]/ { p++ }
     runner ~ /^(py|sh)$/ && /^[[:space:]]*FALLA[[:space:]]/ {
       f++; line = $0; sub(/^[[:space:]]*FALLA[[:space:]]+/, "", line); sub(/:.*$/, "", line)
@@ -65,7 +72,8 @@ run_test() {
     runner !~ /^(py|sh)$/ && (/ pass$/ || /^ *[0-9]+ pass/) { p = $1 }
     runner !~ /^(py|sh)$/ && / fail$/ { f = $1 }
     END {
-      if (status != 0 && f + 0 == 0 && names == "") { f = 1; names = "abortó (exit " status ")" }
+      if (status == 124) { f = 1; names = "agotó el plazo (" limit " s)" }
+      else if (status != 0 && f + 0 == 0 && names == "") { f = 1; names = "abortó (exit " status ")" }
       printf "%s pass, %s fail\t%s\n", p + 0, f + 0, (names == "" ? "—" : names)
     }'
 }
@@ -106,7 +114,7 @@ run_variant() {
   printf '%s\t%s\n' "$label" "$(PYTHONDONTWRITEBYTECODE=1 run_test "$copy")"
 }
 export -f run_test shadow_tree run_variant
-export ROOT="$root" MODULE="$root/${module#"$root"/}" TEST="$test_file" ENV_VAR="$env_var" WORK="$work"
+export LIMIT="$limit" ROOT="$root" MODULE="$root/${module#"$root"/}" TEST="$test_file" ENV_VAR="$env_var" WORK="$work"
 
 printf 'base\t%s\n' "$(run_test "$MODULE" | cut -f1)"$'\t—'
 gawk -F'\t' 'NF>=2{print NR"\t"$1"\t"$2}' "$variants" \

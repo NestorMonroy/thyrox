@@ -118,5 +118,14 @@ out="$(cd "$RAIZ" && bash "$SUJETO" "$FIX/sh/bin/mod.sh" "$FIX/sh/test_mod.sh" A
 printf '%s\n' "$out" | sed 's/^/    /'
 check "la variante de shell cae SOLO en double" 'grep -qxF "double	1 pass, 1 fail	double" <<< "$out"'
 
+echo "caso 6 — una variante que cuelga la prueba se corta en THYROX_ANNUL_TEST_TIMEOUT y cuenta como fallo"
+printf 'hang\ts/^def shift(x):/import time; time.sleep(60)\\ndef shift(x):/\n' > "$FIX/py/hang.tsv"
+t0=$SECONDS
+out="$(cd "$RAIZ" && THYROX_ANNUL_TEST_TIMEOUT=2 bash "$SUJETO" "$FIX/py/mod.py" "$FIX/py/test_mod.py" ANNUL_FIXTURE_MODULE "$FIX/py/hang.tsv" annul-fixture-py 2>&1)"
+elapsed=$((SECONDS - t0))
+printf '%s\n' "$out" | sed 's/^/    /'
+check "el cuelgue cuenta como fallo y dice el plazo" 'grep -qxF "hang	0 pass, 1 fail	agotó el plazo (2 s)" <<< "$out"'
+check "no espera el plazo por defecto" "[[ $elapsed -lt 30 ]]"
+
 echo "test-annul-parallel: $total aserciones — $((total - fallos)) ok, $fallos falla(s)"
 [[ $fallos -eq 0 ]]
