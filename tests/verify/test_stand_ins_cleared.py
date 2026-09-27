@@ -30,6 +30,7 @@ CLEARED = (
     "app-host",
     "server",
     "headless-sdk",
+    "storage",
 )
 
 

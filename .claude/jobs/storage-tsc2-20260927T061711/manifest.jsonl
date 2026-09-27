@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/storage && bunx tsc -p tsconfig.test.json --noEmit 2>&1 | grep -E 'error TS' | head -20", "started_at": "2026-09-27T06:17:11+00:00"}

@@ -17,23 +17,19 @@
  *    (`local-observability/errorHelpers.js`) — fieles, tres líneas cada
  *    una.
  *
- * `logForDebugging` y `readEnv` SÍ se reusan de verdad: se importan de
- * `./internal/pendingCrossPackageDeps.js`, sustitutos ya presentes en
- * este paquete — no se duplican. `getPlatform` de ese mismo shim SÍ se
- * reusa como valor por defecto, pero envuelto en un DI local
- * (`setGetPlatformFn`) — el shim lee `process.platform` sin setter, y sin
- * uno no hay forma de ejercitar en test la rama Windows de
- * `getSessionEnvironmentScript` (el contenedor de esta tarea corre
- * Linux).
+ * `readEnv` y `getPlatform` se importan de los originales de
+ * `@thyrox/config` (`env/utils` y `platform`, este último con la detección
+ * de WSL de la fuente); `logForDebugging`, del sustituto local.
+ * `getPlatform` se envuelve en una inyección de dependencias local
+ * (`setGetPlatformFn`): sin ella no hay forma de ejercitar en test la rama
+ * Windows de `getSessionEnvironmentScript` en un contenedor Linux.
  */
 import { mkdir, readdir, readFile, writeFile } from 'fs/promises'
 import { homedir } from 'os'
 import { join } from 'path'
-import {
-  getPlatform as getPlatformDefault,
-  logForDebugging,
-  readEnv,
-} from './internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getPlatform as getPlatformDefault } from '@thyrox/config/platform'
+import { logForDebugging } from './internal/pendingCrossPackageDeps.js'
 import { getSessionId } from './sessionPaths.js'
 
 let _getPlatform: typeof getPlatformDefault = getPlatformDefault

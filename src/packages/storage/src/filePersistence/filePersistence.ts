@@ -40,12 +40,13 @@
  *    TODOS los archivos como fallidos con un mensaje explícito — un
  *    porte fiel no puede simular una subida real sin la Files API, y un
  *    default que "silenciosamente tuviera éxito" falsearía el resultado.
- * 5. `getCwd`/`readEnv` — reusan `../internal/pendingCrossPackageDeps.js`
- *    (ya establecidas para todo el paquete).
+ * 5. `getCwd` reusa `../internal/pendingCrossPackageDeps.js`; `readEnv` se
+ *    importa del original, `@thyrox/config/env/utils`.
  */
 
 import { join, relative } from 'path'
-import { getCwd, readEnv } from '../internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
+import { getCwd } from '../internal/pendingCrossPackageDeps.js'
 import {
   findModifiedFiles,
   getEnvironmentKind,

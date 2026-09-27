@@ -33,11 +33,10 @@
  *    aislamiento de paquete; se reimplementa fiel a esa fuente real
  *    (`1`/`true`/`yes`/`on`, sin distinguir mayúsculas).
  *
- * `readEnv` SÍ se reusa de verdad: se importa de
- * `./internal/pendingCrossPackageDeps.js`, sustituto ya presente en este
- * paquete.
+ * `readEnv` SÍ se reusa de verdad: se importa del original,
+ * `@thyrox/config/env/utils`.
  */
-import { readEnv } from './internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 // ---------------------------------------------------------------------------
 // Sustitutos — ver docstring del archivo.

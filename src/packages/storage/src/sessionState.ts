@@ -20,10 +20,10 @@
  *    criterio que `sessionActivity.ts`); se reimplementa fiel a esa
  *    fuente.
  *
- * `readEnv` SÍ se reusa de verdad: se importa de
- * `./internal/pendingCrossPackageDeps.js`.
+ * `readEnv` SÍ se reusa de verdad: se importa del original,
+ * `@thyrox/config/env/utils`.
  */
-import { readEnv } from './internal/pendingCrossPackageDeps.js'
+import { readEnv } from '@thyrox/config/env/utils'
 
 export type SessionState = 'idle' | 'running' | 'requires_action'
 

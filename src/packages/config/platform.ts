@@ -41,6 +41,11 @@ export const getPlatform = memoize((): Platform => {
     }
 
     if (process.platform === 'linux') {
+      // Las variables que WSL exporta deciden antes que `/proc/version`,
+      // como en 2.1.283 (`chunk-fmsbxtrp.js`, clase `S`, `getPlatform`).
+      if (process.env.WSL_DISTRO_NAME || process.env.WSL_INTEROP) {
+        return 'wsl'
+      }
       // Comprueba si corre en WSL (Windows Subsystem for Linux).
       try {
         const procVersion = requireStorageFsOperations()

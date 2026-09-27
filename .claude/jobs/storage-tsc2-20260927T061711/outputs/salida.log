@@ -1,0 +1,4 @@
+src/sessionEnvironment.ts(33,3): error TS2305: Module '"./internal/pendingCrossPackageDeps.js"' has no exported member 'getPlatform'.
+src/sessionEnvironment.ts(35,3): error TS2305: Module '"./internal/pendingCrossPackageDeps.js"' has no exported member 'readEnv'.
+src/sessionState.ts(26,10): error TS2305: Module '"./internal/pendingCrossPackageDeps.js"' has no exported member 'readEnv'.
+__BG_EXIT__=0
