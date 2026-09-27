@@ -100,7 +100,7 @@ for p in "${payloads[@]}"; do
   i=$((i + 1))
   printf '%s' "$p" > "$T/payload.$i.json"
   salida="$(bash "$SUJETO" -- /bin/sh -c \
-      "python3 src/hooks/pretooluse_dispatch.py < $T/payload.$i.json" 2>&1)"
+      "python3 src/hooks/tool_use_preflight.py < $T/payload.$i.json" 2>&1)"
   codigo=$?
   afirmar "$(veredicto $codigo 0)" "payload $i: el despacho de los 11 no escribe"
   case "$salida" in *'subject_exit=0'*) afirmar ok "payload $i: el despacho salio 0" ;;

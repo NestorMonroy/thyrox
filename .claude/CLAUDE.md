@@ -88,7 +88,7 @@ sólo leía el flujo de arriba no tenía cómo saber que existían.
 
 **El paso 4 tiene gate, y no es sólo prosa esta vez.**
 `src/hooks/detect_ephemeral_citation.py` (séptimo detector de
-`pretooluse_dispatch.py`) avisa cuando un `git commit` o un archivo de
+`tool_use_preflight.py`) avisa cuando un `git commit` o un archivo de
 `.claude/workbench/`/`.claude/jobs/` cita `board #N`/`T-N` sin una cita
 durable en el mismo texto — el defecto exacto del episodio de arriba, esta
 vez detectable antes de que aterrice. Avisa, no bloquea, por la misma razón

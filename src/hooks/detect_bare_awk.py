@@ -20,7 +20,7 @@ palabra dentro de un ``echo`` o como argumento de ``grep`` no cuenta.
 Ciega a: un ``awk`` invocado desde un guion o por ``xargs awk``. Mide la línea
 que se escribe, no lo que ejecutan sus programas.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

@@ -67,7 +67,7 @@ def check(etiqueta, esperado, obtenido):
 #: `task_id` y `task_subject` (medido en `_references/claude-code-bin/2.1.266`).
 #:
 #: `PreToolUse` entra el 2026-09-24: los diez detectores de
-#: `pretooluse_dispatch.py` existian y NINGUN cableado los declaraba, asi que el
+#: `tool_use_preflight.py` existian y NINGUN cableado los declaraba, asi que el
 #: aviso de comando largo en primer plano no podia dispararse en ninguna sesion.
 EVENTS_DECLARED = ["PreModelSwitch", "PreToolUse", "SessionStart", "SubagentStart",
                       "SubagentStop", "TaskCompleted", "TaskCreated"]
@@ -85,8 +85,8 @@ check("el matcher cubre Bash y Agent, los dos despachos que se miden",
       True, {"Bash", "Agent"} <= _matcher)
 check("el matcher cubre la escritura y la lectura de archivos",
       True, {"Write", "Edit", "Read"} <= _matcher)
-check("el comando es el despachador del proveedor", True,
-      any(h["command"].endswith("src/hooks/pretooluse_dispatch.py")
+check("el comando es el preflight del proveedor", True,
+      any(h["command"].endswith("src/hooks/tool_use_preflight.py")
           for h in _pre.get("hooks", [])))
 
 # El comando cableado corre desde el cwd de la sesion y sin el PYTHONPATH del

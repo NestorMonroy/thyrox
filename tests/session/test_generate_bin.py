@@ -189,7 +189,7 @@ def test_python_wrapper_falls_back_to_system_interpreter(
     El defecto que este caso existe para no repetir lo midio una sesion de
     relevo sobre un contenedor recien clonado: ``.venv`` no se versiona, asi
     que el clon nace sin el, y los 184 envoltorios ``.py`` rehusaban. Con
-    ``pretooluse_dispatch`` cableado como hook ``PreToolUse`` sobre ``Bash``,
+    ``tool_use_preflight`` cableado como hook ``PreToolUse`` sobre ``Bash``,
     ``Agent`` y ``Write|Edit|MultiEdit``, ese rehuse dejo la sesion entera sin
     poder ejecutar ni escribir — incluido el ``uv sync`` que el propio aviso
     prescribe como remedio.

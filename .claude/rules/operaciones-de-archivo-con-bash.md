@@ -124,7 +124,7 @@ modifica y se vuelve a montar la línea (primera forma de la fila de arriba).
 Directiva del ejecutor 2026-09-25.
 
 Su gate es `src/hooks/detect_awk_substr_target.py`, detector de
-`pretooluse_dispatch.py`: avisa cuando un comando que invoca awk pasa
+`tool_use_preflight.py`: avisa cuando un comando que invoca awk pasa
 `substr()` como tercer argumento de `gsub`/`sub`. Sus cuatro mitades de juicio
 —el ancla de awk, la exclusión del método `.sub`, y saltar cadenas y literales
 `/regex/` al separar argumentos— se probaron por anulación: retirada cada una
@@ -171,7 +171,7 @@ ANTES que el programa, y su propio `END` —líneas 64-67— llama a
 orden del texto, así que el del módulo va primero.
 
 Su gate es `src/hooks/detect_gawk_opportunity.py`, detector de
-`pretooluse_dispatch.py`, con esos cuatro momentos. Sus seis mitades de
+`tool_use_preflight.py`, con esos cuatro momentos. Sus seis mitades de
 juicio —el ancla de awk, que el `mv` vuelva a la entrada, la exclusión de
 `gensub`, exigir escritura, el descuento multilínea y la exclusión de gawk en
 `-i inplace`— se probaron por anulación: retirada cada una cae exactamente
@@ -192,7 +192,7 @@ Sale 0, 1 (0 o varias coincidencias, archivo intacto) o 2 (no pudo medir, sin
 conteo). Directiva del ejecutor 2026-09-25.
 
 Su gate es `src/hooks/detect_literal_replacement.py`, detector de
-`pretooluse_dispatch.py`: avisa cuando `perl -i`, `sed -i` o un heredoc de
+`tool_use_preflight.py`: avisa cuando `perl -i`, `sed -i` o un heredoc de
 Python con `.replace(` y escritura reemplazan un texto fijo. Sus dos mitades de
 juicio —que el comando reescriba un archivo, y que el patrón no use
 construcciones de regex de verdad— se probaron por anulación
@@ -206,7 +206,7 @@ nuevo, no por completitud.
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_dedicated_tool_usage.py`, sexto detector de
-`pretooluse_dispatch.py`. Dispara sobre `Write`/`Edit`/`Read` cuando el
+`tool_use_preflight.py`. Dispara sobre `Write`/`Edit`/`Read` cuando el
 `file_path` no es binario/medio y el contenido no colisiona con el
 delimitador de heredoc, y sugiere el equivalente Bash exacto.
 
@@ -237,7 +237,7 @@ Sucesor con cita durable: **TASK-THYROX-0016**.
 
 ## Buscar y repetir: el índice de git y GNU Parallel
 
-Dos detectores de `pretooluse_dispatch.py` cubren los dos momentos en que el
+Dos detectores de `tool_use_preflight.py` cubren los dos momentos en que el
 catálogo de arriba no bastaba para elegir bien:
 
 - **`detect_git_grep_opportunity`** — una pregunta de presencia va a

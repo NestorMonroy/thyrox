@@ -1,0 +1,1 @@
+python3 tests/session/test_user_wiring.py > .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_session_test_user_wiring_py.log 2>&1; echo EXIT=$? >> .claude/workbench/tool-use-preflight-rename-20260927T204422/outputs/tests_session_test_user_wiring_py.log

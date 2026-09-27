@@ -45,7 +45,7 @@ reescribía el mismo archivo en cada vuelta, una lista de tres expresiones
 escribe), y a si las iteraciones son de verdad independientes —un cuerpo que
 lee lo que escribió la iteración anterior no se distingue de uno que no—.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

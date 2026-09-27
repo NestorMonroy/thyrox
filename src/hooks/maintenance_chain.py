@@ -48,7 +48,7 @@ Por qué la cadena vacía rehúsa
 
 Cero pasos ejecutados y cero pasos declarados publican la misma cifra. Rehusar
 es lo único que los separa — mismo criterio que el registro vacío de
-``pretooluse_dispatch``.
+``tool_use_preflight``.
 """
 from __future__ import annotations
 

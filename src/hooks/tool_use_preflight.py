@@ -1,42 +1,36 @@
-"""Un proceso para todos los detectores de ``PreToolUse``.
+"""El preflight de cada ``tool_use``: lo que se evalúa antes de ejecutarlo.
 
-Adaptación de ``kaupamex-docs: .claude/hooks/despachar_pretooluse.py`` (140
-líneas). Cada hook de ``PreToolUse`` es un ``fork`` + ``exec`` por cada
-``Write`` o ``Edit``; con N detectores se paga N veces. El despachador los
-invoca **en proceso** y compone una sola salida.
+El cliente lo invoca en el evento ``PreToolUse`` con la llamada pendiente.
+Cada detector registrado la evalúa por su cuenta —un aviso, o una decisión
+``ask``/``deny`` cuando el daño llegaría antes que el aviso— y el preflight
+devuelve una sola respuesta de hook con todo lo que dijeron. Por dentro es un
+Scatter-Gather: la llamada va a todos los detectores y sus respuestas se
+agregan; el nombre dice el papel, no ese mecanismo (``clean-code.md``,
+«Nombres»).
 
-La forma de esa salida no es preferencia: sale de medir el ejecutable
-(``h-docs-451``, 9 de 9 mecanismos presentes en 2.1.246).
+La forma de la respuesta sale de medir el ejecutable (``h-docs-451``, 9 de 9
+mecanismos presentes en 2.1.246):
 
 1. **El cliente funde y NO atribuye.** ``foldSettingsHooks`` concatena los
    ``additionalContexts`` de N hooks, el renderizador los une dentro de UN
    ``<system-reminder>`` y lo etiqueta con el **evento**, nunca con el script.
-   La atribución la pone el despachador porque nadie más va a ponerla.
-2. **El tope es POR HOOK y ANTES de concatenar** (``WBr = 10 000``).
-   Consolidados lo **comparten**: ése es el precio real de la mudanza, y por eso
-   hay presupuesto por detector. Sin él, el primero que se desborde deja mudos
-   a los demás.
-3. **Un contenido vacío no aporta elemento** — de ahí el cortocircuito.
+   Por eso cada bloque lleva el nombre de su detector.
+2. **El tope es POR HOOK y ANTES de concatenar** (``WBr = 10 000``). Los
+   detectores lo comparten, así que cada uno tiene su cuota: sin ella, el
+   primero que se desborde deja mudos a los demás.
+3. **Un contenido vacío no aporta elemento**: de ahí el cortocircuito.
 
-Lo que este porte CORRIGE de su fuente
-----------------------------------------
+Qué pasa cuando algo falla, en sus dos capas:
 
-La fuente construía su registro de forma tolerante —``except Exception:
-continue``— y dejaba la lista vacía si ninguno cargaba. Con lista vacía
-devolvía ``{}`` y salía 0: indistinguible de «ningún detector tenía nada que
-avisar». Un hook que sale verde sin medir nada es el sub-patrón D de
-``metrica-decide-la-conclusion.md`` con el propio mecanismo como sujeto, y
-:ref:`h-docs-1080` lo nombró al clasificar el archivo.
-
-Aquí las dos situaciones se separan, porque son distintas:
-
-- **un detector roto se sigue aislando** — su excepción no viaja al contexto ni
-  tumba a sus compañeros. Consolidar no puede convertir un fallo aislado en uno
-  total, y ése era el acierto de la fuente;
-- **cero detectores cargados REHÚSA** con ``EmptyRegistryError``, porque no hay
-  con qué medir;
-- **una carga parcial sigue adelante y lo declara**: ``build_registry`` devuelve
-  también los que faltaron, para que la merma sea visible en vez de silenciosa.
+- **como biblioteca**, ``preflight`` con cero detectores lanza
+  ``EmptyRegistryError``: no hay con qué evaluar, y un ``{}`` se leería como
+  «ninguno tuvo nada que avisar»;
+- **como hook**, ``main`` convierte esa excepción en un aviso por stderr, imprime
+  ``{}`` y sale 0: la herramienta se ejecuta. El preflight falla abierto;
+- **un detector roto se aísla**: su excepción no llega al contexto ni tumba a
+  los demás;
+- **una carga parcial sigue y lo declara**: ``build_registry`` devuelve también
+  los que faltaron.
 """
 from __future__ import annotations
 
@@ -158,7 +152,7 @@ def _truncate(text: str, quota: int) -> str:
 _DECISION_RANK = {"ask": 1, "deny": 2}
 
 
-def dispatch(payload: dict, detectors: Iterable[Detector]) -> dict:
+def preflight(payload: dict, detectors: Iterable[Detector]) -> dict:
     """El JSON a imprimir: un solo bloque con lo que cada detector aporte.
 
     Devuelve ``{}`` cuando ninguno tiene nada que decir — el caso común y el
@@ -216,12 +210,11 @@ def main(stdin_text: str | None = None,
          detectors: Iterable[Detector] | None = None,
          directory: Path | None = None,
          names: Sequence[str] | None = None) -> int:
-    """Punto de entrada del hook. NUNCA rompe el flujo: imprime y sale 0.
+    """Punto de entrada del hook: imprime la respuesta y sale 0, siempre.
 
-    Que el despachador no bloquee no contradice el ``EmptyRegistryError``: la
-    excepción es para quien lo consume como biblioteca —que puede decidir— y
-    aquí se convierte en un aviso por stderr. Lo que no se hace es imprimir un
-    ``{}`` alegre sin dejar rastro de que no se midió nada.
+    Falla abierto: el ``EmptyRegistryError`` de la biblioteca se convierte aquí
+    en un aviso por stderr y un ``{}``, y la herramienta se ejecuta. El aviso
+    deja rastro de que no se evaluó nada.
     """
     text = stdin_text if stdin_text is not None else _read_stdin()
     try:
@@ -239,14 +232,14 @@ def main(stdin_text: str | None = None,
         names = DETECTOR_NAMES if not names else names
         detectors, missing = build_registry(directory, names)
         if missing:
-            print(f"pretooluse_dispatch: no cargaron {len(missing)} de "
+            print(f"tool_use_preflight: no cargaron {len(missing)} de "
                   f"{len(names)} detectores: {', '.join(missing)}", file=sys.stderr)
 
     try:
-        print(json.dumps(dispatch(payload, detectors), ensure_ascii=False))
+        print(json.dumps(preflight(payload, detectors), ensure_ascii=False))
     except EmptyRegistryError as err:
         print("{}")
-        print(f"pretooluse_dispatch: {err}", file=sys.stderr)
+        print(f"tool_use_preflight: {err}", file=sys.stderr)
     except Exception:
         print("{}")
     return 0

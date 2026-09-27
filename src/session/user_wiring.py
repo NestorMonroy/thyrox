@@ -150,22 +150,17 @@ def declared_wiring(root: Path | None = None,
                 cmd(f"bun run {base}/src/packages/agent/bin/preModelSwitch.ts",
                     timeout=10),
             ]}],
-            # Los diez detectores de `pretooluse_dispatch.py` —comando largo en
-            # primer plano, despacho a agente de trabajo determinista, recorrido
-            # sin cota, herramienta dedicada donde bastaba Bash…— existian y
-            # este cableado NO los declaraba: ninguna sesion podia dispararlos.
-            # Medido 2026-09-24 con los dos en la mano: `declared_wiring()` sin
-            # `PreToolUse`, y el aviso de comando largo nunca salio en una
-            # sesion que corrio un typecheck de cinco minutos en primer plano.
-            # El matcher nombra las herramientas que algun detector mide; el
-            # despachador descarta en proceso lo que no le toca.
+            # El preflight de cada `tool_use`: sin esta entrada, ningun
+            # detector de `tool_use_preflight.py` puede dispararse en una
+            # sesion. El matcher nombra las herramientas que algun detector
+            # mide; el preflight descarta en proceso lo que no le toca.
             "PreToolUse": [{
                 "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
                 # El PYTHONPATH va en el comando: el hook corre desde el cwd de
                 # la sesion y sin el entorno del corredor, y sin el cuatro de
                 # los diecisiete detectores no cargaban (su suite lo mide).
                 "hooks": [cmd(f"PYTHONPATH={base}/src python3 "
-                              f"{base}/src/hooks/pretooluse_dispatch.py",
+                              f"{base}/src/hooks/tool_use_preflight.py",
                               timeout=10)],
             }],
             "SubagentStop": [{"hooks": [

@@ -223,7 +223,7 @@ def test_the_notice_names_the_mechanism_and_the_floor():
 
 def test_the_dispatcher_registry_declares_this_detector():
     _spec_d = importlib.util.spec_from_file_location(
-        "_disp", thyrox_root(_HERE.parent) / "src/hooks/pretooluse_dispatch.py")
+        "_disp", thyrox_root(_HERE.parent) / "src/hooks/tool_use_preflight.py")
     assert _spec_d is not None and _spec_d.loader is not None
     disp = importlib.util.module_from_spec(_spec_d)
     sys.modules["_disp"] = disp

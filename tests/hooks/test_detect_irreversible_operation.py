@@ -2,7 +2,7 @@
 
 Origen: propuesta 3 de ``ai-course-notes`` (banco
 ``notas-ai-course-aplicables-a-thyrox-*``, informes G3 y G5): entre los
-detectores de ``pretooluse_dispatch`` ninguno miraba una operación cuyo daño
+detectores de ``tool_use_preflight`` ninguno miraba una operación cuyo daño
 no se revierte. Medido al abrirla: ``rg 'rm -rf|DROP TABLE|push --force'
 src/hooks/*.py`` daba 0.
 

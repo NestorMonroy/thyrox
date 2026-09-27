@@ -24,7 +24,7 @@ Ciega a: un programa awk en un archivo ``.awk`` o invocado desde un guion
 (mide la línea que se escribe), y a un programa entre comillas dobles de shell
 con sus comillas internas escapadas.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

@@ -170,10 +170,10 @@ def test_the_path_anchor_reuses_detect_finding_layer_pattern():
 
 def test_the_dispatcher_registers_it():
     sys.path.insert(0, str(_MODULE.parent))
-    import pretooluse_dispatch as dispatch
+    import tool_use_preflight as preflight_hook
 
-    assert "detect_topic_duplication" in dispatch.DETECTOR_NAMES
-    registry, missing = dispatch.build_registry(_MODULE.parent, dispatch.DETECTOR_NAMES)
+    assert "detect_topic_duplication" in preflight_hook.DETECTOR_NAMES
+    registry, missing = preflight_hook.build_registry(_MODULE.parent, preflight_hook.DETECTOR_NAMES)
     assert not missing, missing
     assert any(name == "detect_topic_duplication" for name, _ in registry)
 

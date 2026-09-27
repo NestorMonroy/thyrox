@@ -30,7 +30,7 @@ cuenta como texto: escaparlo es pedir el literal.
 Ciega a: un programa perl/sed leído de un archivo (``-f``), una sustitución
 dentro de una variable de shell, y un Python que escriba por otra vía.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

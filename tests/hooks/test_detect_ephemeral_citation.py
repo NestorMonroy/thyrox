@@ -102,10 +102,10 @@ def test_stays_silent_on_non_commit_bash_commands():
 
 def test_the_dispatcher_registers_it():
     sys.path.insert(0, str(_MODULE.parent))
-    import pretooluse_dispatch as dispatch
+    import tool_use_preflight as preflight_hook
 
-    assert "detect_ephemeral_citation" in dispatch.DETECTOR_NAMES
-    registry, missing = dispatch.build_registry(_MODULE.parent, dispatch.DETECTOR_NAMES)
+    assert "detect_ephemeral_citation" in preflight_hook.DETECTOR_NAMES
+    registry, missing = preflight_hook.build_registry(_MODULE.parent, preflight_hook.DETECTOR_NAMES)
     assert not missing, missing
     assert any(name == "detect_ephemeral_citation" for name, _ in registry)
 

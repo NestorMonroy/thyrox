@@ -19,7 +19,7 @@ Calla cuando el comando ya viaja por ``thyrox-bg``, que registra el trabajo.
 Ciega a: un trabajo desprendido a mano con ``nohup … &`` en primer plano, que
 es el eje de ``detect_foreground_long_command``.
 
-Avisa, no bloquea, como sus hermanos de ``pretooluse_dispatch``.
+Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
 """
 from __future__ import annotations
 

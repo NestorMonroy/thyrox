@@ -1,6 +1,6 @@
 """shell_text — lo que un comando de shell escribe como texto y no ejecuta.
 
-Tres detectores de ``pretooluse_dispatch`` descartaban los cuerpos de
+Tres detectores de ``tool_use_preflight`` descartaban los cuerpos de
 heredoc, cada uno con su copia, y las copias no eran equivalentes: la de
 ``detect_irreversible_operation`` eliminaba además el resto de la línea del
 ``<<MARCA``, así que en ``cat <<EOF && git reset --hard`` el ``reset`` salía

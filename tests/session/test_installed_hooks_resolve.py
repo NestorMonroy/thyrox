@@ -62,7 +62,7 @@ CONSUMER = reach.root("docs")
 #: que la cifra caduca cuando el productor crece, y ya caduco una vez:
 #: `thyrox@6531f327` añadio el ciclo de vida de la tarjeta a las 23:53 y este
 #: conjunto quedo en los tres de las 12:54 del mismo dia.
-#: Caducó otra vez con `PreToolUse` (los detectores de `pretooluse_dispatch`,
+#: Caducó otra vez con `PreToolUse` (los detectores de `tool_use_preflight`,
 #: 2026-09-24) y `SessionStart` (el contexto tras compactar, `965a9eed`): la
 #: suite quedó roja dos días sin que nadie la corriera.
 EXPECTED_EVENTS = {"SubagentStart", "PreModelSwitch", "SubagentStop",
@@ -136,7 +136,7 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
         {"type": "command", "command": f"python3 {h}/task_lifecycle.py"},
     ]}],
     "PreToolUse": [{"matcher": "Bash|Agent|Write|Edit|MultiEdit|Read", "hooks": [
-        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/pretooluse_dispatch.py"},
+        {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/tool_use_preflight.py"},
     ]}],
     "SessionStart": [{"matcher": "compact", "hooks": [
         {"type": "command", "command": f"PYTHONPATH={h} python3 {h}/compact_context.py"},
@@ -149,7 +149,7 @@ TOPOLOGIA_CONTRARIA = """datos["hooks"] = {
 #: `THYROX_DIR` y existe en el arbol del proveedor: no necesita stub.
 CONTRARY_TARGETS = ("medir_delta_subagente.py", "register_agent_session.py",
                     "save-agent-result.mjs", "task_lifecycle.py",
-                    "pretooluse_dispatch.py", "compact_context.py")
+                    "tool_use_preflight.py", "compact_context.py")
 
 
 def stub_home(home: Path) -> Path:

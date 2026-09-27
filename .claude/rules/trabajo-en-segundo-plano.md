@@ -8,7 +8,7 @@ con la barrera.
 > 2026-09-24: *«si un comando tarda más de 10 s en ejecución, lo tienes que
 > mandar a 2do plano»*. Medido en la misma sesión: el aviso no podía salir en
 > ninguna, porque `declared_wiring()` no declaraba `PreToolUse` y los diez
-> detectores de `pretooluse_dispatch.py` quedaban sin cablear. Ya lo declara
+> detectores de `tool_use_preflight.py` quedaban sin cablear. Ya lo declara
 > (`tests/session/test_user_wiring.py`, caso 1b).
 
 El mecanismo ya está construido en este árbol y tiene tres piezas, una por
@@ -435,7 +435,7 @@ marcador.
 ## El gate — porque una regla sin script es prosa
 
 `src/hooks/detect_foreground_long_command.py`, cuarto detector de
-`pretooluse_dispatch`. Dispara sobre `Bash` y avisa cuando el comando invoca una
+`tool_use_preflight`. Dispara sobre `Bash` y avisa cuando el comando invoca una
 familia larga —suite, build, gate de corpus, migración— **en posición de
 comando** y no viaja ya por un ensamblador ni por un `nohup` propio.
 
@@ -465,7 +465,7 @@ veían el tool `Agent`, y el matcher de `PreToolUse` del consumidor sólo cubrí
 `Write|Edit|MultiEdit` y `Bash`.
 
 `src/hooks/detect_agent_dispatch.py`, quinto detector de
-`pretooluse_dispatch`, dispara sobre `Agent` cuando el prompt (o su
+`tool_use_preflight`, dispara sobre `Agent` cuando el prompt (o su
 descripción) invoca una **familia determinista** —suite, gate, build, censo o
 barrido, búsqueda mecánica, migración— **y** no nombra ningún verbo de juicio.
 
@@ -532,7 +532,7 @@ ningún hook cargue.
 ### El gate
 
 `src/hooks/detect_unbounded_traversal.py`, décimo detector de
-`pretooluse_dispatch`. **Mide dos familias, y sus condiciones NO son las
+`tool_use_preflight`. **Mide dos familias, y sus condiciones NO son las
 mismas** — h-thyrox-29 las separó midiendo, después de que el detector las
 tratara como una sola bajo el rótulo «sin cota» (el sub-patrón A de
 `metrica-decide-la-conclusion.md`, con este gate como sujeto).

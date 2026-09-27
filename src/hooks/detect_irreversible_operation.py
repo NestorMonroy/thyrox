@@ -2,7 +2,7 @@
 
 Origen: propuesta 3 del banco ``notas-ai-course-aplicables-a-thyrox-*``
 (informes G3 y G5 de ``ai-course-notes``). Medido al abrirla: ninguno de los
-diecisiete detectores de ``pretooluse_dispatch`` miraba ``rm -rf``,
+diecisiete detectores de ``tool_use_preflight`` miraba ``rm -rf``,
 ``git reset --hard``, ``push --force`` ni ``DROP``/``TRUNCATE``.
 
 Es el primero que **pide confirmación** (``ask``) en vez de sólo avisar. Sus

@@ -50,7 +50,7 @@ tiempo.
 ## El gate
 
 `src/hooks/detect_git_grep_opportunity.py`, detector de
-`pretooluse_dispatch.py`. Momentos que reconoce, cada uno con su forma
+`tool_use_preflight.py`. Momentos que reconoce, cada uno con su forma
 alternativa en el aviso:
 
 1. `grep -r`/`-R` sobre una ruta dentro de un work tree de git → `rg` o
