@@ -125,16 +125,10 @@ async function* stdinLines(): AsyncGenerator<string> {
  * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
  * la regla cambie.
  */
-/**
- * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
- * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
- * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado.
- *
- * `toolAllow` acota las herramientas por nombre (el `--tools` de `claude -p`);
- * `null` deja todas.
- */
-export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
-                          toolAllow: readonly string[] | null = null) {
+export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
+  const chat = hasFlag(argv, 'chat')
+  const prompt = flag(argv, 'prompt')
+  const style = outputStyleOf(argv)
   const conf = settingsFor(argv, cwd)
   // `--connection <id>` es opcional: sin él, ningún ajuste por conexión
   // aplica y el comportamiento es idéntico al de antes de este cambio. Se
@@ -160,7 +154,7 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
   // que las herramientas escribieron (DEC-TASK-01).
   const taskStore = flag(argv, 'store') ?? STORE_PATH
   const taskSession = flag(argv, 'session') ?? flag(argv, 'resume') ?? 'harness'
-  const allTools = [
+  const tools = [
     ...CORE_TOOLS,
     ...taskTools({ dbPath: taskStore, sessionId: taskSession }),
     agentTool({
@@ -174,7 +168,6 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
     }),
     skillTool(buildSkillRegistry()),
   ]
-  const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools
   const shared = {
     provider,
     model: modelo,
@@ -201,14 +194,6 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
         connectionContext.compressToolResults === true,
     },
   }
-  return { shared, modelo }
-}
-
-export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
-  const chat = hasFlag(argv, 'chat')
-  const prompt = flag(argv, 'prompt')
-  const style = outputStyleOf(argv)
-  const { shared, modelo } = loopSetup(argv, cwd, transcriptDir)
 
   /** Un turno completo: dibuja su flujo y devuelve su resultado. */
   const runTurn = async (texto: string, resume: string | undefined) => {

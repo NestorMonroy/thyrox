@@ -27,6 +27,7 @@ import { projectSlug } from '@thyrox/agent/loop/session'
 import { getCwd } from '@thyrox/app-host/bootstrap/cwd.js'
 import type { RuntimeHandles } from '@thyrox/app-host'
 import { runLoop } from './runLoop.ts'
+import { needsStdin, runPrint } from './print.ts'
 import { detectMode, type Mode, type ModeKind } from './detect-mode.ts'
 import { flag } from './flags.ts'
 import type { PendingHandles } from './preprocess-argv.ts'
@@ -59,6 +60,8 @@ export const HANDLERS: Record<ModeKind, Handler> = {
     return mode.usage ? EXIT_USAGE : EXIT_OK
   },
   loop: ({ argv, cwd, transcriptDir }) => runLoop(argv, cwd, transcriptDir),
+  print: async ({ argv, cwd, transcriptDir }) =>
+    runPrint(argv, cwd, transcriptDir, needsStdin(argv) ? await Bun.stdin.text() : null),
 }
 
 /** Corre el manejador del modo. */

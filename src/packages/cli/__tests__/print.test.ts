@@ -1,0 +1,183 @@
+/**
+ * `thyrox -p`: el contrato de `claude -p` que `headless-pool` usa, traducido
+ * al despacho nativo. Las formas de las líneas `system/init` y `result`
+ * salen del binario 2.1.282 (`S5` y el constructor de `init`), extraídas en
+ * `.claude/workbench/print-mode-20260926T225709/`.
+ */
+import { describe, expect, test } from 'bun:test'
+import { existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { parsePrintArgs, runPrint, streamJsonLines } from '../src/entry/print.ts'
+import { detectMode } from '../src/entry/detect-mode.ts'
+
+const uso = (n: number) => ({ input_tokens: n, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 10 * n })
+const texto = (t: string, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'end_turn', content: [{ type: 'text', text: t }], usage: uso(n) })
+const usa = (name: string, input: Record<string, unknown>, n = 1) => ({ id: `m${n}`, model: 'claude-sonnet-5', stop_reason: 'tool_use', content: [{ type: 'tool_use', id: `tu${n}`, name, input }], usage: uso(n) })
+
+function grabacion(turnos: unknown[]): string {
+  const d = mkdtempSync(join(tmpdir(), 'print-rec-'))
+  const f = join(d, 'turnos.json')
+  writeFileSync(f, JSON.stringify(turnos))
+  return f
+}
+
+async function capturar(fn: () => Promise<number>): Promise<{ code: number; out: string; err: string }> {
+  let out = ''
+  let err = ''
+  const w = process.stdout.write.bind(process.stdout)
+  const e = process.stderr.write.bind(process.stderr)
+  process.stdout.write = ((s: string) => { out += s; return true }) as typeof process.stdout.write
+  process.stderr.write = ((s: string) => { err += s; return true }) as typeof process.stderr.write
+  try {
+    const code = await fn()
+    return { code, out, err }
+  } finally {
+    process.stdout.write = w
+    process.stderr.write = e
+  }
+}
+
+describe('detectMode — -p y --print eligen el modo print', () => {
+  test('-p', () => expect(detectMode(['-p', 'hola']).kind).toBe('print'))
+  test('--print sin prompt (llega por stdin)', () => expect(detectMode(['--print']).kind).toBe('print'))
+  test('sin -p sigue siendo el bucle', () => expect(detectMode(['--prompt', 'x']).kind).toBe('loop'))
+})
+
+describe('parsePrintArgs — la traducción del contrato de claude -p', () => {
+  test('el prompt posicional gana a stdin', () => {
+    expect(parsePrintArgs(['-p', 'hola'], 'de stdin').prompt).toBe('hola')
+  })
+
+  test('sin posicional el prompt es stdin', () => {
+    expect(parsePrintArgs(['-p', '--model', 'claude-sonnet-5'], 'de stdin\n').prompt).toBe('de stdin\n')
+  })
+
+  test('las banderas del pool se traducen', () => {
+    const a = parsePrintArgs(['-p', '--model', 'claude-sonnet-5', '--setting-sources', 'project',
+      '--tools', 'Read', '--allowedTools', 'Read', '--max-turns', '3', '--no-session-persistence',
+      '--output-format', 'stream-json', '--verbose'], 'x')
+    expect(a.model).toBe('claude-sonnet-5')
+    expect(a.maxTurns).toBe(3)
+    expect(a.tools).toEqual(['Read'])
+    expect(a.persist).toBe(false)
+    expect(a.outputFormat).toBe('stream-json')
+    expect(a.loopArgv).toContain('--settings-source')
+    expect(a.loopArgv[a.loopArgv.indexOf('--settings-source') + 1]).toBe('project')
+  })
+
+  test('--tools acepta la lista por comas o espacios', () => {
+    expect(parsePrintArgs(['-p', 'x', '--tools', 'Read,Grep Bash'], null).tools).toEqual(['Read', 'Grep', 'Bash'])
+  })
+
+  test('--tools y --allowedTools se intersecan', () => {
+    expect(parsePrintArgs(['-p', 'x', '--tools', 'Read,Bash', '--allowedTools', 'Read'], null).tools).toEqual(['Read'])
+  })
+
+  test('el proveedor por defecto es http; --provider lo cambia', () => {
+    expect(parsePrintArgs(['-p', 'x'], null).loopArgv).toEqual(expect.arrayContaining(['--provider', 'http']))
+    const r = parsePrintArgs(['-p', 'x', '--provider', 'recorded', '--grabacion', 'g.json'], null)
+    expect(r.loopArgv).toEqual(expect.arrayContaining(['--provider', 'recorded', '--grabacion', 'g.json']))
+  })
+
+  test('una bandera desconocida se rehúsa nombrándola', () => {
+    expect(() => parsePrintArgs(['-p', 'x', '--permission-mode', 'plan'], null)).toThrow(/--permission-mode/)
+  })
+
+  test('sin prompt ni stdin se rehúsa', () => {
+    expect(() => parsePrintArgs(['-p'], null)).toThrow(/prompt/)
+  })
+
+  test('un formato de salida desconocido se rehúsa', () => {
+    expect(() => parsePrintArgs(['-p', 'x', '--output-format', 'xml'], null)).toThrow(/output-format/)
+  })
+})
+
+describe('streamJsonLines — las formas del binario', () => {
+  const transcript = [
+    { type: 'user', message: { role: 'user', content: [{ type: 'text', text: 'hola' }] } },
+    { type: 'assistant', message: { id: 'm1', model: 'claude-sonnet-5', role: 'assistant', content: [{ type: 'text', text: 'ok' }], usage: uso(1) } },
+  ]
+  const result = { stop: 'end_turn' as const, turns: 1, lastText: 'ok', usage: uso(1), sessionId: 's1', transcriptPath: '/t', usd: 0.5 }
+  const lines = streamJsonLines({ transcript, result, model: 'claude-sonnet-5', tools: ['Read'], cwd: '/w', startedAt: 0, now: 12 })
+
+  test('abre con system/init', () => {
+    expect(lines[0]).toMatchObject({ type: 'system', subtype: 'init', cwd: '/w', session_id: 's1', tools: ['Read'], model: 'claude-sonnet-5' })
+  })
+
+  test('cada petición es una línea assistant con su usage', () => {
+    const a = lines.filter((l) => l.type === 'assistant')
+    expect(a).toHaveLength(1)
+    expect(a[0]).toMatchObject({ type: 'assistant', session_id: 's1', parent_tool_use_id: null })
+    expect((a[0] as { message: { usage: unknown } }).message.usage).toEqual(uso(1))
+  })
+
+  test('cierra con result de éxito, con los campos de S5', () => {
+    expect(lines.at(-1)).toMatchObject({ type: 'result', subtype: 'success', is_error: false, num_turns: 1,
+      result: 'ok', session_id: 's1', total_cost_usd: 0.5, usage: uso(1), duration_ms: 12, stop_reason: 'end_turn' })
+  })
+
+  test('max_turns da error_max_turns y is_error', () => {
+    const r = streamJsonLines({ transcript, result: { ...result, stop: 'max_turns' }, model: 'm', tools: [], cwd: '/w', startedAt: 0, now: 1 })
+    expect(r.at(-1)).toMatchObject({ type: 'result', subtype: 'error_max_turns', is_error: true })
+  })
+
+  test('otra parada da error_during_execution', () => {
+    const r = streamJsonLines({ transcript, result: { ...result, stop: 'refusal' }, model: 'm', tools: [], cwd: '/w', startedAt: 0, now: 1 })
+    expect(r.at(-1)).toMatchObject({ subtype: 'error_during_execution', is_error: true })
+  })
+})
+
+describe('runPrint — de punta a punta con proveedor grabado', () => {
+  test('stream-json: init, una assistant por petición y result; herramientas filtradas', async () => {
+    const g = grabacion([usa('Read', { file_path: '/etc/hostname' }, 1), texto('listo', 2)])
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    const { code, out } = await capturar(() => runPrint(['-p', 'lee algo', '--provider', 'recorded', '--grabacion', g,
+      '--tools', 'Read', '--output-format', 'stream-json', '--max-turns', '5'], process.cwd(), td, null))
+    const lines = out.trim().split('\n').map((l) => JSON.parse(l))
+    expect(code).toBe(0)
+    expect(lines[0]).toMatchObject({ type: 'system', subtype: 'init', tools: ['Read'] })
+    expect(lines.filter((l) => l.type === 'assistant')).toHaveLength(2)
+    expect(lines.at(-1)).toMatchObject({ type: 'result', subtype: 'success', result: 'listo', num_turns: 2 })
+  })
+
+  test('--no-session-persistence no deja transcript', async () => {
+    const g = grabacion([texto('hecho')])
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    const { code } = await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g,
+      '--no-session-persistence', '--output-format', 'json'], process.cwd(), td, null))
+    expect(code).toBe(0)
+    expect(readdirSync(td)).toEqual([])
+  })
+
+  test('sin --no-session-persistence el transcript queda', async () => {
+    const g = grabacion([texto('hecho')])
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
+    expect(readdirSync(td).length).toBeGreaterThan(0)
+  })
+
+  test('text: imprime sólo el resultado', async () => {
+    const g = grabacion([texto('la respuesta')])
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    const { out } = await capturar(() => runPrint(['-p', 'x', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, null))
+    expect(out).toBe('la respuesta\n')
+  })
+
+  test('el prompt por stdin llega al modelo', async () => {
+    const g = grabacion([texto('ok')])
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    const { code } = await capturar(() => runPrint(['-p', '--provider', 'recorded', '--grabacion', g], process.cwd(), td, 'desde stdin'))
+    expect(code).toBe(0)
+    const sesiones = readdirSync(td)
+    expect(sesiones.length).toBe(1)
+    expect(existsSync(join(td, sesiones[0]))).toBe(true)
+  })
+
+  test('una bandera desconocida sale 2 y lo dice por stderr', async () => {
+    const td = mkdtempSync(join(tmpdir(), 'print-td-'))
+    const { code, err } = await capturar(() => runPrint(['-p', 'x', '--bogus'], process.cwd(), td, null))
+    expect(code).toBe(2)
+    expect(err).toContain('--bogus')
+  })
+})

@@ -38,6 +38,7 @@ export const MODE_KINDS = [
   'sessions',
   'help',
   'loop',
+  'print',
 ] as const
 
 export type ModeKind = (typeof MODE_KINDS)[number]
@@ -72,6 +73,9 @@ export function detectMode(argv: string[]): Mode {
   }
   if (hasFlag(argv, 'config-origin')) return { kind: 'configOrigin' }
   if (hasFlag(argv, 'sessions')) return { kind: 'sessions' }
+  // `claude -p`: el prompt llega posicional o por stdin, así que no pasa por
+  // la regla de `--prompt` de abajo.
+  if (argv.includes('-p') || hasFlag(argv, 'print')) return { kind: 'print' }
 
   const pide = hasFlag(argv, 'prompt') || hasFlag(argv, 'chat')
   if (hasFlag(argv, 'help')) return { kind: 'help', usage: !pide }
