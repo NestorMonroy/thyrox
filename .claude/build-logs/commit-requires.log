@@ -1,0 +1,18 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 3 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 3 archivo(s) pedido(s))
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 22801 especificador(es) en 3979 archivo(s) de 48 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 151 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 56300 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1556 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+WARN commit-msg: 1 linea(s) exceden 72 columnas
+  linea 6: 73 columnas — required ./internal/adapters.ts, which does not exist; getPr…
+  La medida es COLUMNAS de terminal, no bytes. Un `awk` la
+  sobre-reporta en toda linea con acentos o em-dash, y la causa
+  es el LOCALE, no la implementacion: aqui LANG y LC_ALL estan
+  sin declarar, asi que gawk tambien cuenta octetos. Medido:
+  `aei` acentuada da 6 en gawk y en mawk; con LC_ALL=C.UTF-8
+  gawk da 3 y mawk sigue en 6.
