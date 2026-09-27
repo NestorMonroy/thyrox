@@ -72,6 +72,7 @@ TASK_IDS_PATH = SRC / "task_ids.py"
 
 sys.path.insert(0, str(SRC))
 _spec = importlib.util.spec_from_file_location("board_sync", MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
 bs = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(bs)
 
@@ -191,7 +192,7 @@ check(TASK_IDS_PATH.read_text().count("/root/.claude/tasks") == 1,
       "1f: el literal del board aparece UNA sola vez en task_ids.py")
 _linea = [l for l in TASK_IDS_PATH.read_text().splitlines()
           if "/root/.claude/tasks" in l]
-check(_linea and _linea[0].startswith("BOARD_ROOT_DEFAULT"),
+check(bool(_linea) and _linea[0].startswith("BOARD_ROOT_DEFAULT"),
       "1f-bis: y esa unica vez es la CONSTANTE, no una ruta en linea")
 
 # 1g es el control que discrimina el pago del literal. Los casos 1c/1d miden

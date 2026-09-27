@@ -61,12 +61,26 @@ def notes_of(archive, slide):
     return None
 
 
+def _slide_number(name: str) -> int:
+    """Extrae N de ``slideN.xml`` — el nombre ya viene filtrado por ``SLIDE``."""
+    match = SLIDE.match(name)
+    assert match is not None
+    return int(match.group(1))
+
+
+def _notes_number(name: str) -> int:
+    """Extrae M de ``notesSlideM.xml`` — el nombre ya viene filtrado por ``NOTES``."""
+    match = NOTES.match(name)
+    assert match is not None
+    return int(match.group(1))
+
+
 def dump(path):
     archive = zipfile.ZipFile(path)
     slides = sorted(
         (n for n in archive.namelist() if SLIDE.match(n)),
-        key=lambda n: int(SLIDE.match(n).group(1)))
-    notes = {int(NOTES.match(n).group(1)): paragraphs(archive, n)
+        key=_slide_number)
+    notes = {_notes_number(n): paragraphs(archive, n)
              for n in archive.namelist() if NOTES.match(n)}
 
     lines = []

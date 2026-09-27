@@ -61,6 +61,7 @@ assert (DOCS_ROOT / "source" / "gestion" / "pm").is_dir(), (
 PM_ROOT = DOCS_ROOT / "source" / "gestion" / "pm"
 
 _spec = importlib.util.spec_from_file_location("agent_store", HERE.parent / "agents" / "agent_store.py")
+assert _spec is not None and _spec.loader is not None
 agent_store = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(agent_store)
 
@@ -205,6 +206,8 @@ def main() -> int:
             if args.dry_run:
                 print(f"{datos['finding_id']}  {datos['submodule']:8s}  {datos['initiative']}")
             else:
+                # No es dry-run: `conn` se construyo con `agent_store.connect(...)`.
+                assert conn is not None
                 conn.execute(
                     """
                     INSERT INTO findings_history

@@ -1,0 +1,18 @@
+  ok   recien añadido, el gitlink coincide
+  ok   la coincidencia sale 0
+  ok   el submodulo avanzado produce DIVERGENCIA
+  ok   la divergencia sale 1
+  ok   nombra el tip que el gitlink deberia llevar
+  ok   nombra el hash que el gitlink lleva hoy
+  ok   con el arbol del padre realineado, el gate ve coincidencia
+  ok   el clon hermano avanzado tambien es DIVERGENCIA
+  ok   la referencia declarada es la que se cita
+  ok   la referencia coincide y aun asi hay DIVERGENCIA
+  ok   porque el arbol del padre es el que diverge
+  ok   una referencia que no es clon es AUSENTE, no verde
+  ok   sin superproyecto el veredicto es AUSENTE, no verde
+  ok   la ausencia sale 2, ni 0 ni 1
+  ok   la ausencia NO se declara publicada
+  ok   la ausencia nombra su razon
+
+16 aprobada(s) · 0 fallida(s) (alcance medido: gitlink_bump.py)

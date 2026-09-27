@@ -1,0 +1,27 @@
+1. Los tres desenlaces se separan
+  ok    cierra con texto -> entregó
+  ok    cierra con tool_use -> cortado
+  ok    sin mensaje assistant -> indecidible
+
+2. El `attachment` de cierre NO decide — es lo que apila el cliente
+  ok    texto seguido de attachment sigue siendo entregó
+  ok    tool_use seguido de attachment sigue siendo cortado
+
+3. El pensamiento no cuenta como entrega ni la impide
+  ok    texto + thinking -> entregó
+  ok    sólo thinking -> indecidible
+
+4. Rehúsa antes que adivinar
+  ok    línea ilegible sola -> indecidible
+  ok    transcript vacío -> indecidible
+4. Un error de API NO es una entrega
+  FALLA error 429 al cierre -> api_error, no entregó
+          esperado: 'api_error'
+          real:     'delivered'
+  FALLA error de API seguido de attachment sigue siendo api_error
+          esperado: 'api_error'
+          real:     'delivered'
+  ok    api_error es uno de los desenlaces declarados
+  ok    un texto sin la marca sigue siendo entregó
+
+resultado: 11 de 13 aserciones en verde

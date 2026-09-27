@@ -122,6 +122,7 @@ with tempfile.TemporaryDirectory() as tmp:
           out_dir / "errores-hooks.md", error_log.log_path())
 
     result = error_log.run_and_log("prueba", FAILING_CMD)
+    assert result is not None
     check("devuelve el CompletedProcess aunque falle", 3, result.returncode)
     log_text = (out_dir / "errores-hooks.md").read_text(encoding="utf-8")
     check("el nombre del hook queda registrado", True, "prueba" in log_text)
@@ -155,6 +156,7 @@ with contextlib.redirect_stderr(warned):
     result = error_log.run_and_log("sin-parametro", FAILING_CMD)
 seen_after = {p for p in THYROX_ROOT.rglob("errores-hooks.md")}
 check("no aparece ningún rastro en el árbol de THYROX", seen_before, seen_after)
+assert result is not None
 check("el comando corrió igual — el hook no se rompe", 3, result.returncode)
 check("avisa nombrando la variable ausente",
       True, "THYROX_RESULTS_DIR" in warned.getvalue())

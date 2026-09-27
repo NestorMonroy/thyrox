@@ -1,0 +1,178 @@
+F401 [*] `re` imported but unused
+  --> src/docs/scaffold_initiative.py:43:8
+   |
+41 | import argparse
+42 | import pathlib
+43 | import re
+   |        ^^
+44 | import sys
+45 | from datetime import datetime, timezone
+   |
+help: Remove unused import: `re`
+
+F401 [*] `pathlib` imported but unused
+  --> src/hooks/detect_finding_layer.py:18:8
+   |
+16 | """
+17 |
+18 | import pathlib
+   |        ^^^^^^^
+19 | import re
+   |
+help: Remove unused import: `pathlib`
+
+F401 [*] `pathlib` imported but unused
+  --> src/hooks/detect_rst_validation.py:26:8
+   |
+24 | """
+25 |
+26 | import pathlib
+   |        ^^^^^^^
+27 | import re
+   |
+help: Remove unused import: `pathlib`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> src/hooks/maintenance_chain.py:60:21
+   |
+58 | import sys
+59 | from dataclasses import dataclass, field
+60 | from pathlib import Path
+   |                     ^^^^
+61 |
+62 | # El módulo se importa como ``hooks.maintenance_chain`` (con ``src`` en la ruta)
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> src/hooks/stop_pending_work.py:27:21
+   |
+25 | import json
+26 | import sys
+27 | from pathlib import Path
+   |                     ^^^^
+28 |
+29 | # El módulo se importa como ``hooks.stop_pending_work`` (con ``src`` en la
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `sys` imported but unused
+  --> src/repo/gitlink_bump.py:63:8
+   |
+61 | import enum
+62 | import pathlib
+63 | import sys
+   |        ^^^
+64 |
+65 | import clone
+   |
+help: Remove unused import: `sys`
+
+F401 [*] `os` imported but unused
+  --> tests/verify/test_annulment_control.py:13:8
+   |
+12 | import json
+13 | import os
+   |        ^^
+14 | import subprocess
+15 | import sys
+   |
+help: Remove unused import: `os`
+
+F401 [*] `pathlib.Path` imported but unused
+ --> tests/verify/test_bun_linker.py:3:21
+  |
+1 | #!/usr/bin/env python3
+2 | """The root install must reproduce the TypeScript workspace topology."""
+3 | from pathlib import Path
+  |                     ^^^^
+4 | import tomllib
+5 | from paths import reach  # noqa: E402
+  |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `shutil` imported but unused
+  --> tests/verify/test_doc_citations.py:22:8
+   |
+20 | import importlib.util
+21 | import os
+22 | import shutil
+   |        ^^^^^^
+23 | import subprocess
+24 | import sys
+   |
+help: Remove unused import: `shutil`
+
+F401 [*] `os` imported but unused
+  --> tests/verify/test_pathspec_commit.py:12:8
+   |
+10 | from __future__ import annotations
+11 |
+12 | import os
+   |        ^^
+13 | import pathlib
+14 | import subprocess
+   |
+help: Remove unused import: `os`
+
+F401 [*] `shutil` imported but unused
+  --> tests/verify/test_pool_pipeline.py:19:8
+   |
+17 | import os
+18 | import re
+19 | import shutil
+   |        ^^^^^^
+20 | import subprocess
+21 | import sys
+   |
+help: Remove unused import: `shutil`
+
+F401 [*] `sys` imported but unused
+  --> tests/verify/test_tree_fingerprint.py:20:8
+   |
+19 | import subprocess
+20 | import sys
+   |        ^^^
+21 | import tempfile
+22 | from pathlib import Path
+   |
+help: Remove unused import: `sys`
+
+F841 Local variable `root_mem` is assigned to but never used
+   --> tests/verify/test_tsc_reflect.py:147:15
+    |
+145 |         # patrón cuya señal casa con SUS objetivos — no basta con 4 campos.
+146 |         print("uncovered_by_memory")
+147 |         mem = root_mem = run / "gate"
+    |               ^^^^^^^^
+148 |         mem.mkdir()
+149 |         step = mem / "step-009"
+    |
+help: Remove assignment to unused variable `root_mem`
+
+F401 [*] `random` imported but unused
+  --> tests/verify/test_tsc_schedule.py:15:8
+   |
+13 | from __future__ import annotations
+14 |
+15 | import random
+   |        ^^^^^^
+16 | import sys
+17 | from pathlib import Path
+   |
+help: Remove unused import: `random`
+
+F401 [*] `json` imported but unused
+  --> tests/verify/test_tsc_sweep_breadth.py:17:8
+   |
+15 | from __future__ import annotations
+16 |
+17 | import json
+   |        ^^^^
+18 | import subprocess
+19 | import sys
+   |
+help: Remove unused import: `json`
+
+Found 15 errors.
+[*] 14 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

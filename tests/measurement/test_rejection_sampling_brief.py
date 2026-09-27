@@ -117,11 +117,20 @@ class NumpyUniformSource:
         return float(numpy.random.rand())
 
 
+def _sample_index(rng) -> int:
+    """``sample(..., trace=False)`` — anotado: la fuente no lo esta y su
+    inferencia por sitio de llamada no siempre reduce a ``int`` solo.
+    """
+    result = sample(DRAFT, TARGET, rng=rng)
+    assert isinstance(result, int)
+    return result
+
+
 def ours_on_numpy_stream():
     numpy.random.seed(SEED)
     counts = [0] * OUTCOMES
     for _ in range(SAMPLES):
-        counts[sample(DRAFT, TARGET, rng=NumpyUniformSource)] += 1
+        counts[_sample_index(NumpyUniformSource)] += 1
     return counts
 
 

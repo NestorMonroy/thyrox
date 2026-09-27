@@ -1,0 +1,17 @@
+tests/lib/test_compressibility.py EXIT=0
+tests/task/test_board_sync.py EXIT=0
+tests/task/test_census_open_tasks.py EXIT=0
+tests/task/test_task_ids.py EXIT=0
+tests/task/test_vecinos_de_tarea.py EXIT=0
+tests/verify/test_agent_proposal.py EXIT=0
+tests/verify/test_analyze_typescript_diagnostics.py EXIT=0
+tests/verify/test_annulment_control.py EXIT=0
+tests/verify/test_batch_verification.py EXIT=0
+tests/verify/test_check_absence_claim.py EXIT=0
+tests/verify/test_check_cache_layout.py EXIT=0
+tests/verify/test_class_header.py EXIT=0
+tests/verify/test_commit_identity.py EXIT=0
+tests/verify/test_counterpart_body.py EXIT=0
+tests/verify/test_gitattributes.py EXIT=0
+tests/verify/test_hook_script_token.py EXIT=0
+tests/verify/test_identifier_language.py EXIT=0

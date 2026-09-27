@@ -571,7 +571,7 @@ _declaration_for = declaration_for
 
 
 def _declaration_exists(package_dir: Path, candidate: str,
-                        source_entry: str = None) -> bool:
+                        source_entry: str | None = None) -> bool:
     """Si la declaracion que `candidate` nombra existe de verdad en el disco.
 
     Un `candidate` con comodin no se puede probar con `exists()`: se expande
@@ -736,7 +736,7 @@ def _packages(root: Path):
 def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if "-h" in argv or "--help" in argv:
-        print(__doc__.strip())
+        print((__doc__ or "").strip())
         print("\nUso:  emit_declarations [--repoint] [--all] [paquete ...]")
         print("  Sin paquetes exige --all: emitir los 42 recompila el arbol entero")
         print("  y tarda, asi que no puede ser lo que pasa por teclear el nombre")

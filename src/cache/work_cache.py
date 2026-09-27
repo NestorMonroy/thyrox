@@ -63,7 +63,7 @@ import hashlib
 import json
 import pathlib
 import stat
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import Callable, Iterable, Mapping
 
 #: Version del formato del indice — ``yt=10`` en la fuente. Viaja en el sello

@@ -244,7 +244,7 @@ def extract(source, dest, *, only: list[str] | None = None) -> list[pathlib.Path
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="el archivo comprimido")
     parser.add_argument("--list", action="store_true",
                         help="lista los miembros y no extrae nada")

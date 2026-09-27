@@ -44,7 +44,6 @@ os.environ.setdefault(
 
 
 import importlib.util
-import pathlib
 import sys
 
 # El SUT vive un nivel arriba (``.claude/scripts/``), hermano de este
@@ -52,8 +51,8 @@ import sys
 # ``test_vecinos_de_tarea.py``.
 HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location("agent_store", HERE / "agents" / "agent_store.py")
+assert spec is not None and spec.loader is not None
 store = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
 spec.loader.exec_module(store)
 
 PASS = 0

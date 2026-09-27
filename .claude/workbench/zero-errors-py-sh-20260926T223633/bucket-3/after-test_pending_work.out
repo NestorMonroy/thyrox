@@ -1,0 +1,35 @@
+== 1. un repo limpio no aparece en el barrido ==
+  ok    cero pendientes
+== 2. las cuatro cuentas se miden por separado ==
+  ok    los tres aparecen
+  ok    sucio cuenta 1 sin commitear
+  ok    stage cuenta 1 en stage
+  ok    suelto cuenta 1 sin añadir
+  ok    y ninguno tiene commits por delante
+== 3. DISCRIMINA: lo IGNORADO no cuenta como trabajo sin publicar ==
+  ok    un archivo ignorado NO aparece
+== 4. DISCRIMINA: cuenta los ARCHIVOS de un directorio nuevo, no el dir ==
+  ok    cuenta 3, no 1
+== 5. sin upstream, `ahead` es 0 y NO revienta ==
+  ok    mide lo demás sin caerse
+  ok    y ahead queda en 0
+== 6. con upstream, los commits locales por delante se cuentan ==
+  ok    un commit por delante
+  ok    y el árbol queda limpio
+== 7. un directorio que NO es repo se salta, no revienta ==
+  ok    sólo el repo real aparece
+== 8. CONTROL: la lista de raíces VACÍA rehúsa, no dice «nada pendiente» ==
+  ok    rehúsa sin raíces
+== 9. el render usa las etiquetas del CONSUMIDOR, y las exige ==
+  ok    una línea por repo
+  ok    con la etiqueta inyectada
+  ok    omite las cuentas en cero
+  ok    y compone las que sí
+  ok    el otro repo trae la suya
+  ok    una etiqueta ausente rehúsa
+== 10. `engine` es lo que `stop_gate.Gate` consume ==
+  ok    limpio devuelve (0, '')
+  ok    con trabajo devuelve código 1
+  ok    y nombra sólo al repo con trabajo
+
+23 ok, 0 fallos

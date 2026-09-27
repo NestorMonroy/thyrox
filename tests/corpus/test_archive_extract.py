@@ -18,7 +18,6 @@ del destino.
 
 import os
 import pathlib
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -125,7 +124,10 @@ class TestProbeByConduct(unittest.TestCase):
             try:
                 self.assertIsNone(archive_extract.sevenz_bin())
             finally:
-                os.environ["PATH"] = previous
+                if previous is None:
+                    os.environ.pop("PATH", None)
+                else:
+                    os.environ["PATH"] = previous
 
     def test_11_without_an_extractor_it_REFUSES_and_returns_no_empty_list(self):
         """Una lista vacia se lee como «el archivo no traia nada». Un cero
@@ -139,7 +141,10 @@ class TestProbeByConduct(unittest.TestCase):
                 with self.assertRaises(archive_extract.ExtractorMissing):
                     archive_extract.members(f)
             finally:
-                os.environ["PATH"] = previous
+                if previous is None:
+                    os.environ.pop("PATH", None)
+                else:
+                    os.environ["PATH"] = previous
 
 
 class TestRealWalk(unittest.TestCase):
@@ -209,7 +214,10 @@ class TestZipAndTarWithoutBinary(unittest.TestCase):
                 self.assertEqual(archive_extract.members(arch), ["a/b.txt"])
                 archive_extract.extract(arch, dest)
             finally:
-                os.environ["PATH"] = previous
+                if previous is None:
+                    os.environ.pop("PATH", None)
+                else:
+                    os.environ["PATH"] = previous
             self.assertEqual((dest / "a" / "b.txt").read_text(encoding="utf-8"),
                              "contenido")
 

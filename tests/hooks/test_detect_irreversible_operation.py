@@ -85,6 +85,7 @@ def test_ignores_tools_other_than_bash():
 
 def test_the_notice_names_what_it_would_destroy():
     result = _bash("git reset --hard HEAD~1")
+    assert result is not None
     assert "git reset --hard" in result["notice"]
 
 

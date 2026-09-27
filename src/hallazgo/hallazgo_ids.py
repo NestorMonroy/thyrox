@@ -106,11 +106,11 @@ RESOLVE_STORE = _StoreSentinel('RESOLVE_STORE')
 NO_STORE = _StoreSentinel('NO_STORE')
 
 
-def _resolved_store(store_path):
+def _resolved_store(store_path: 'Path | _StoreSentinel | None') -> 'Path | None':
     """La ruta del store, o ``None`` si el caller declaró el opt-out."""
-    if store_path is RESOLVE_STORE:
-        return reach.agent_store_path()
-    if store_path is NO_STORE or store_path is None:
+    if isinstance(store_path, _StoreSentinel):
+        if store_path is RESOLVE_STORE:
+            return reach.agent_store_path()
         return None
     return store_path
 

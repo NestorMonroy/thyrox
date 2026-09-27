@@ -175,7 +175,8 @@ def sheets(source) -> list[tuple[str, str]]:
     sheets = []
     root = ET.fromstring(file_path.read(WORKBOOK))
     for sheet_name_value in root.iter(SML + "sheet"):
-        path = targets.get(sheet_name_value.get(REL + "id"))
+        rel_id = sheet_name_value.get(REL + "id")
+        path = targets.get(rel_id) if rel_id is not None else None
         if path is None:
             continue
         sheets.append((sheet_name_value.get("name", ""), path))
@@ -249,7 +250,7 @@ def to_tsv(row_list: list[list[str]]) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="el .xlsx de origen")
     parser.add_argument("salida", nargs="?", help="el .tsv de destino")
     parser.add_argument("--sheet", help="el nombre visible de una hoja")

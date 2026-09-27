@@ -45,6 +45,7 @@ from paths import reach  # noqa: E402
 HERE = reach.thyrox_root()
 spec = importlib.util.spec_from_file_location(
     "register_session", HERE / "src" / "agents" / "register_session.py")
+assert spec is not None and spec.loader is not None
 reg = importlib.util.module_from_spec(spec)
 sys.modules["register_session"] = reg
 spec.loader.exec_module(reg)

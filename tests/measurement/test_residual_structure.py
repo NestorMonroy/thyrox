@@ -16,7 +16,6 @@ Lo que tiene que poder fallar:
 """
 from __future__ import annotations
 
-import math
 import pathlib
 import random
 import sys

@@ -43,8 +43,8 @@ from paths import reach  # noqa: E402
 # ``tests/``, directorio hermano del código — no co-localizado.
 HERE = reach.thyrox_root() / "src"
 spec = importlib.util.spec_from_file_location("clf", HERE / "agents" / "classify_agents.py")
+assert spec is not None and spec.loader is not None
 clf = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
 spec.loader.exec_module(clf)
 
 PASS = 0

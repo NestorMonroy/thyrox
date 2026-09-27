@@ -1,0 +1,17 @@
+  ok   un solo byte repetido da H0 = 0
+  ok   256 valores equiprobables dan H0 = 8
+  ok   la razon de gzip sale de comprimir, no de H0
+  ok   y zlib bate por mucho lo que lograria un codificador sin memoria
+  ok   la output NO dice «cota inferior»
+  ok   la output NO dice «lower bound»
+  ok   la output SI declara «sin memoria»
+  ok   y publica la razon de gzip medida
+  ok   medir el sample coincide con medir sus bytes
+  ok   y el sample se etiqueta con su ruta
+  ok   stdin es una puerta de entrada, no solo las rutas
+  ok   y admite twice rutas en una invocacion
+  ok   el nivel de gzip cambia el resultado medido
+  ok   un sample missing rehusa con 2
+  ok   y la rehusa NO emite entropia
+
+15 aprobada(s) · 0 fallida(s) (alcance medido: compressibility.py)

@@ -1,0 +1,120 @@
+F401 [*] `importlib.util` imported but unused
+  --> src/paths/reach_roots.py:39:8
+   |
+37 | from __future__ import annotations
+38 |
+39 | import importlib.util
+   |        ^^^^^^^^^^^^^^
+40 | import os
+41 | import sys
+   |
+help: Remove unused import: `importlib.util`
+
+F841 Local variable `src` is assigned to but never used
+  --> src/paths/reach_roots.py:93:5
+   |
+91 |     """
+92 |     path = _owner_path()
+93 |     src = str(path.parent.parent)          # …/thyrox/src
+   |     ^^^
+94 |     from paths import reach                # noqa: PLC0415 — la ruta se compone arriba
+95 |     return reach
+   |
+help: Remove assignment to unused variable `src`
+
+F401 [*] `subprocess` imported but unused
+  --> tests/corpus/test_archive_build_corpus.py:47:8
+   |
+45 | import pathlib
+46 | import shutil
+47 | import subprocess
+   |        ^^^^^^^^^^
+48 | import sys
+49 | import tempfile
+   |
+help: Remove unused import: `subprocess`
+
+F401 [*] `shutil` imported but unused
+  --> tests/corpus/test_archive_extract.py:21:8
+   |
+19 | import os
+20 | import pathlib
+21 | import shutil
+   |        ^^^^^^
+22 | import subprocess
+23 | import sys
+   |
+help: Remove unused import: `shutil`
+
+F401 [*] `os` imported but unused
+  --> tests/corpus/test_list_corpus_builds.py:13:8
+   |
+11 | from __future__ import annotations
+12 |
+13 | import os
+   |        ^^
+14 | import subprocess
+15 | import sys
+   |
+help: Remove unused import: `os`
+
+F401 [*] `pathlib` imported but unused
+  --> tests/hooks/test_detect_code_language.py:17:8
+   |
+16 | import importlib.util
+17 | import pathlib
+   |        ^^^^^^^
+18 | import sys
+19 | from pathlib import Path
+   |
+help: Remove unused import: `pathlib`
+
+F401 [*] `pathlib` imported but unused
+  --> tests/hooks/test_detect_dedicated_tool_usage.py:11:8
+   |
+10 | import importlib.util
+11 | import pathlib
+   |        ^^^^^^^
+12 | import sys
+13 | from pathlib import Path
+   |
+help: Remove unused import: `pathlib`
+
+F401 [*] `io` imported but unused
+  --> tests/hooks/test_flow_selection.py:24:8
+   |
+22 | from __future__ import annotations
+23 |
+24 | import io
+   |        ^^
+25 | import json
+26 | import subprocess
+   |
+help: Remove unused import: `io`
+
+F401 [*] `contextlib.redirect_stderr` imported but unused
+  --> tests/hooks/test_flow_selection.py:28:24
+   |
+26 | import subprocess
+27 | import sys
+28 | from contextlib import redirect_stderr
+   |                        ^^^^^^^^^^^^^^^
+29 | from pathlib import Path
+30 | from tempfile import TemporaryDirectory
+   |
+help: Remove unused import: `contextlib.redirect_stderr`
+
+F401 [*] `os` imported but unused
+  --> tests/hooks/test_stop_gate.py:28:8
+   |
+26 | import io
+27 | import json
+28 | import os
+   |        ^^
+29 | import stat
+30 | import subprocess
+   |
+help: Remove unused import: `os`
+
+Found 10 errors.
+[*] 9 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

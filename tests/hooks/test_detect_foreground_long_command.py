@@ -19,6 +19,7 @@ from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_foreground_long_command.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 

@@ -32,6 +32,7 @@ from paths import reach  # noqa: E402
 _MODULE = reach.thyrox_root() / "src/hooks/detect_topic_duplication.py"
 sys.path.insert(0, str(_MODULE.parents[1]))  # para que su propio import de "hooks.*" resuelva
 _spec = importlib.util.spec_from_file_location("_gate_dup", _MODULE)
+assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 

@@ -25,8 +25,6 @@ otra cosa; quien lo confunda comete el sub-patron C con este mecanismo como
 sujeto. Y ciego al coste de recompilar los 42, que no se midio.
 """
 import json
-import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path

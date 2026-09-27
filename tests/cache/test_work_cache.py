@@ -107,6 +107,7 @@ if work_cache is None:
 
 def stats_of(root):
     """El resultado de barrido que `gt` recibe de `An`, con stat real."""
+    assert work_cache is not None  # el guard de arriba ya salio si faltaba
     out = []
     for p in sorted(root.rglob("*.txt")):
         st = p.stat()

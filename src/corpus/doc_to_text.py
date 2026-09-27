@@ -205,7 +205,7 @@ def blocks(source) -> list[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("entrada", help="el .doc de origen")
     parser.add_argument("gathered", nargs="?", help="el .txt de destino")
     args = parser.parse_args(argv)

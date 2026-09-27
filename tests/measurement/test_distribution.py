@@ -27,7 +27,6 @@ conteo de pesos y la conversion, que no dependen de ella.
 """
 from __future__ import annotations
 
-import math
 import pathlib
 import sys
 

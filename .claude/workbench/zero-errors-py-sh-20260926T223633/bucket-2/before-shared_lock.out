@@ -1,0 +1,43 @@
+== 1. adquirir crea el lock con su dueño; soltar lo retira (De, it) ==
+  ok    el lock es <archivo>.lock (ne)
+  ok    el dueño declara pid, host, run y step
+  ok    check() lo ve tomado (Pt)
+  ok    el directorio del lock queda vacío (compatible con rmdir)
+  ok    el dueño es <archivo>.lock.owner.json
+  ok    al soltar no queda lock
+  ok    ni su dueño
+  ok    check() lo ve libre
+== 2. un lock fresco de otro es ELOCKED y nombra a su dueño (De) ==
+  ok    ELOCKED
+  ok    nombra el pid del dueño
+== 3. reintentos: espera a que el dueño suelte (ze) ==
+  ok    lo tomó tras soltarlo el otro
+== 4. huérfano con dueño muerto: se recupera (rt, nt) ==
+  ok    el dueño nuevo es este proceso
+== 5. huérfano con dueño VIVO en este host: NO se roba ==
+  ok    rehúsa con ELOCKED
+  ok    dice que el dueño vive sin latido
+  ok    adjunta la sonda de stdin del dueño
+  ok    el lock ajeno sigue ahí
+== 6. huérfano de OTRO host: no se puede sondear, se recupera por latido ==
+  ok    recuperado
+== 7. el latido mantiene fresca la mtime (pe) ==
+  ok    la mtime tiene menos de un intervalo
+  ok    y por eso sigue sin ser huérfano
+== 8. si otro le quita el lock, queda comprometido y soltar avisa (Fe, vm) ==
+shared_lock: /tmp/tmp1tsl8vh5/setups.jsonl: lock comprometido (ECOMPROMISED)
+  ok    comprometido
+shared_lock: /tmp/tmp1tsl8vh5/setups.jsonl: lock was no longer held at release (ERELEASED); the locked section may have run without exclusivity
+  ok    soltar avisa que no hubo exclusividad
+== 9. N procesos leen-modifican-escriben sin perder cuentas ==
+  ok    los seis terminan bien
+  ok    150 incrementos, 150 en el archivo
+== 10. un dueño de OTRO lock (robado por quien no escribe dueño) no se atribuye ==
+  ok    el dueño cuyo inodo no es el del lock se ignora
+  ok    force_remove retira también el dueño
+== 11. escritura atómica: tmp + rename, sin restos ==
+  ok    contenido nuevo
+  ok    sin temporales
+
+test_shared_lock: 27 ok, 0 falla(s)
+exit=0

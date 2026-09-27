@@ -101,6 +101,7 @@ check("acotado y sin acotar NO coinciden",
 
 print("=== 7. el aviso NOMBRA el remedio ===")
 text = duw.detect({"tool_name": "Bash", "tool_input": {"command": WITHOUT_BOUND}})
+assert text is not None
 check("nombra la marca de salida", True, "exited with code" in text)
 check("y un mecanismo del arbol", True,
       "wait-jobs" in text or "marker_wait" in text)

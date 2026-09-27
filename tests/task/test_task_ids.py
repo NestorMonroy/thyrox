@@ -49,6 +49,7 @@ MODULE_PATH = reach.thyrox_root() / "src" / "task" / "task_ids.py"
 SUT = MODULE_PATH
 
 _spec = importlib.util.spec_from_file_location("task_ids", MODULE_PATH)
+assert _spec is not None and _spec.loader is not None
 kx = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(kx)
 
@@ -63,7 +64,9 @@ def check(condition: bool, label: str) -> None:
         failures.append(label)
 
 
-def entry(session: str, task_id, layer=None, subject: str = "") -> kx.TaskRef:
+def entry(session: str, task_id, layer=None, subject: str = ""):
+    # `kx` es un modulo cargado por import dinamico: pyright no puede resolver
+    # `kx.TaskRef` como tipo, asi que aqui no se anota el retorno.
     return kx.TaskRef(session_id=session, task_id=str(task_id),
                       layer=layer, subject=subject)
 
@@ -384,7 +387,7 @@ rows3 = con.execute("SELECT task_id, citation_id, submodule FROM tasks "
 con.close()
 check(len(rows3) == 1 and rows3[0][1] is not None and rows3[0][1].startswith("TASK-THYROX-"),
       "10f: la fila sin cita que dejó el snapshot recibe su cita, sin duplicarse")
-check(rows3 and rows3[0][2] == "thyrox",
+check(bool(rows3) and rows3[0][2] == "thyrox",
       "10g: y la capa declarada sustituye al «gen» que no sabía")
 check(len(acunadas3) == 1 and acunadas3[0][1] == "1",
       "10h: el informe la cuenta como acuñada en su ordinal existente")

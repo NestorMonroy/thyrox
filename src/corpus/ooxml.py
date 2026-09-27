@@ -89,11 +89,12 @@ def relationships(file_path: zipfile.ZipFile, part: str) -> dict[str, str]:
     output: dict[str, str] = {}
     for rel in ET.fromstring(file_path.read(path)):
         target = rel.get("Target", "")
-        if not target or rel.get("TargetMode") == "External":
+        rel_id = rel.get("Id")
+        if not target or not rel_id or rel.get("TargetMode") == "External":
             continue
         if target.startswith("/"):
-            output[rel.get("Id")] = target[1:]
+            output[rel_id] = target[1:]
         else:
-            output[rel.get("Id")] = posixpath.normpath(
+            output[rel_id] = posixpath.normpath(
                 posixpath.join(base, target))
     return output

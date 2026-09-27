@@ -195,7 +195,8 @@ def _cmp_key():
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    _doc_lines = (__doc__ or "").splitlines()
+    parser = argparse.ArgumentParser(description=_doc_lines[0] if _doc_lines else None)
     parser.add_argument("root", type=Path, help="la raíz de paquetes")
     parser.add_argument("--scan", type=Path, nargs="+", help="raíces de consumidores (por defecto, la raíz)")
     parser.add_argument("--write", action="store_true", help="escribe los manifiestos")

@@ -1,0 +1,15 @@
+test_check_cache_layout:
+  ok    un archivo suelto en la raíz no tiene carpeta
+  ok    una carpeta con README cumple
+  ok    una carpeta sin README no dice qué es
+  ok    el índice de work_cache lo escribe su mecanismo
+  ok    las copias de annul_parallel también
+  ok    el README de otra carpeta no cubre ésta
+  ok    el hogar sale de THYROX_CACHE_DIR, no del literal
+  ok    reporta la deuda con su denominador y sale 0 sin --strict
+  ok    con --staged, un commit que no toca el cache no se bloquea
+  ok    con --staged, un archivo suelto nuevo se bloquea y se nombra
+  ok    con --staged, lo nuevo dentro de una carpeta con README pasa
+  ok    un árbol que no es repositorio rehúsa, sin cifra
+test_check_cache_layout: 12 aserciones — 12 ok, 0 falla(s)
+exit=0

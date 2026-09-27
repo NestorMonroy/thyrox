@@ -1,0 +1,45 @@
+test_ack_unknown_id_exits_1 (__main__.CliTest.test_ack_unknown_id_exits_1) ... ok
+test_missing_directory_exits_2_without_verdict (__main__.CliTest.test_missing_directory_exits_2_without_verdict) ... ok
+test_post_pending_ack_round_trip (__main__.CliTest.test_post_pending_ack_round_trip) ... ok
+test_post_refuses_an_authority_flag (__main__.CliTest.test_post_refuses_an_authority_flag) ... ok
+test_wait_exits_3_on_timeout (__main__.CliTest.test_wait_exits_3_on_timeout) ... ok
+test_env_file_declaration_is_read (__main__.DirectoryResolutionTest.test_env_file_declaration_is_read) ... ok
+test_environment_variable_is_read (__main__.DirectoryResolutionTest.test_environment_variable_is_read) ... ok
+test_explicit_directory_wins (__main__.DirectoryResolutionTest.test_explicit_directory_wins) ... ok
+test_refuses_a_directory_that_does_not_exist (__main__.DirectoryResolutionTest.test_refuses_a_directory_that_does_not_exist) ... ok
+test_refuses_without_any_declaration (__main__.DirectoryResolutionTest.test_refuses_without_any_declaration) ... ok
+test_boundary_is_redrawn_until_absent_from_body (__main__.EnvelopeTest.test_boundary_is_redrawn_until_absent_from_body)
+La frontera nunca aparece en el cuerpo: se sortea hasta que no. ... ok
+test_forged_closing_with_another_boundary_stays_in_body (__main__.EnvelopeTest.test_forged_closing_with_another_boundary_stays_in_body) ... ok
+test_literal_closing_tag_in_body_does_not_close_envelope (__main__.EnvelopeTest.test_literal_closing_tag_in_body_does_not_close_envelope)
+El caso de la referencia: `</teammate-message>` en el cuerpo. ... ok
+test_nested_opening_tag_stays_in_body (__main__.EnvelopeTest.test_nested_opening_tag_stays_in_body) ... ok
+test_render_carries_authority_none_and_the_notice (__main__.EnvelopeTest.test_render_carries_authority_none_and_the_notice)
+El aviso viaja con el lote que el modelo lee, una sola vez. ... ok
+test_render_many_and_parse_many (__main__.EnvelopeTest.test_render_many_and_parse_many) ... ok
+test_render_refuses_authority_other_than_none (__main__.EnvelopeTest.test_render_refuses_authority_other_than_none) ... ok
+test_render_round_trips_through_parse (__main__.EnvelopeTest.test_render_round_trips_through_parse) ... ok
+test_acknowledge_is_idempotent (__main__.InboxTest.test_acknowledge_is_idempotent) ... ok
+test_acknowledge_removes_from_pending_and_is_durable (__main__.InboxTest.test_acknowledge_removes_from_pending_and_is_durable) ... ok
+test_acknowledge_unknown_id_raises (__main__.InboxTest.test_acknowledge_unknown_id_raises) ... ok
+test_concurrent_writers_leave_no_torn_lines (__main__.InboxTest.test_concurrent_writers_leave_no_torn_lines)
+Cuatro procesos, cincuenta mensajes cada uno, un solo archivo. ... ok
+test_distinct_request_ids_are_not_deduplicated (__main__.InboxTest.test_distinct_request_ids_are_not_deduplicated) ... ok
+test_hand_appended_authority_grant_is_rejected_not_delivered (__main__.InboxTest.test_hand_appended_authority_grant_is_rejected_not_delivered)
+Un registro que reclame autoridad no es un mensaje: se rechaza. ... ok
+test_identity_is_validated (__main__.InboxTest.test_identity_is_validated) ... ok
+test_peers_lists_the_inboxes_present (__main__.InboxTest.test_peers_lists_the_inboxes_present) ... ok
+test_post_has_no_authority_parameter (__main__.InboxTest.test_post_has_no_authority_parameter) ... ok
+test_post_then_pending_delivers_to_the_recipient_only (__main__.InboxTest.test_post_then_pending_delivers_to_the_recipient_only) ... ok
+test_reading_does_not_acknowledge (__main__.InboxTest.test_reading_does_not_acknowledge)
+Leer no tiene efecto: dos lecturas ven el mismo pendiente. ... ok
+test_request_id_deduplicates (__main__.InboxTest.test_request_id_deduplicates) ... ok
+test_torn_last_line_is_tolerated_and_reported (__main__.InboxTest.test_torn_last_line_is_tolerated_and_reported) ... ok
+test_wait_returns_when_a_message_arrives (__main__.InboxTest.test_wait_returns_when_a_message_arrives) ... ok
+test_wait_times_out_with_nothing_pending (__main__.InboxTest.test_wait_times_out_with_nothing_pending) ... ok
+
+----------------------------------------------------------------------
+Ran 33 tests in 0.763s
+
+OK
+exit=0

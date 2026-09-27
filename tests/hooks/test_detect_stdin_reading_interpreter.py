@@ -26,13 +26,15 @@ from __future__ import annotations
 import importlib.util
 import pathlib
 import sys
+from typing import Any
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "src"))
 from paths import reach  # noqa: E402
 
 _MODULE = reach.thyrox_root() / "src/hooks/detect_stdin_reading_interpreter.py"
 _spec = importlib.util.spec_from_file_location("_gate", _MODULE)
-gate = importlib.util.module_from_spec(_spec)
+assert _spec is not None and _spec.loader is not None
+gate: Any = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
 #: El tramo del comando del episodio, verbatim. NO es un incumplidor fabricado:

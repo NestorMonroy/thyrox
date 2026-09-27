@@ -1,0 +1,20 @@
+=== Caso 1: el corpus esta, o el gate no puede medir ===
+  ok    el lexico carga
+=== Caso 2: la clave anidada se ve (EL QUE EXIGE RECURSION) ===
+  ok    la clave anidada entra al universo
+  ok    y se marca como espanol
+=== Caso 3: el filtro descarta lo que no puede ser un nombre ===
+  ok    NO ve el nombre de archivo
+  ok    NO ve la frase con parentesis
+  ok    SI ve la clave espanola
+  ok    SI ve la clave inglesa (no filtra por idioma aqui)
+=== Caso 4: las cinco claves obligatorias son inglesas ===
+  ok    ninguna de las obligatorias cae
+=== Caso 5: el gate mide manifiestos de verdad (control positivo) ===
+  ok    el universo no esta vacio
+  ok    el consumidor tiene al menos un run real
+  ok    y encuentra la clave espanola inyectada en un run real
+  ok    lo congelado no vuelve a reportarse
+=== Caso 6: una entrada del baseline no bloquea; una nueva si ===
+  ok    sin baseline la clave nueva bloquea
+  ok    y la nombra

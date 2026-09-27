@@ -111,7 +111,11 @@ print("== 9. un detector puede PEDIR CONFIRMACION, no solo avisar ==")
 # ocurrio. Su veredicto viaja como `permissionDecision`; los avisos de los
 # demas no se pierden.
 asks = ("pide", lambda payload: {"notice": "irreversible", "decision": "ask"})
-out = dispatch.dispatch({}, detectors=[asks, says("avisa", "aviso")])
+# pyright no ve que `dispatch()` acepta un detector que devuelva dict (rama
+# `isinstance(notice, dict)` de la propia función): el alias `Detector` que
+# declara está más angosto que su comportamiento real, y ese archivo no
+# está en esta lista para corregirlo aquí.
+out = dispatch.dispatch({}, detectors=[asks, says("avisa", "aviso")])  # pyright: ignore[reportArgumentType]
 hso = out.get("hookSpecificOutput", {})
 check("emite la decision", "ask", hso.get("permissionDecision"))
 check("con su razon", True, "irreversible" in hso.get("permissionDecisionReason", ""))
@@ -120,7 +124,7 @@ out = dispatch.dispatch({}, detectors=[says("avisa", "aviso")])
 check("sin quien la pida, no hay decision", None,
       out["hookSpecificOutput"].get("permissionDecision"))
 denies = ("niega", lambda payload: {"notice": "no", "decision": "deny"})
-out = dispatch.dispatch({}, detectors=[asks, denies])
+out = dispatch.dispatch({}, detectors=[asks, denies])  # pyright: ignore[reportArgumentType] — mismo motivo que arriba
 check("entre ask y deny gana la mas fuerte", "deny",
       out.get("hookSpecificOutput", {}).get("permissionDecision"))
 check("el detector irreversible esta en la lista", True,
