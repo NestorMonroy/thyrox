@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages && bun install 2>&1 | tail -3 && cd finding && bunx tsc -p tsconfig.test.json --noEmit 2>&1 | grep -v node_modules | head -20; echo tsc=$?; bun test 2>&1 | tail -3; cd ../../.. && bash bin/check_package_typecheck finding 2>&1 | tail -3", "started_at": "2026-09-27T06:43:57+00:00"}

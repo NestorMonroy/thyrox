@@ -1,0 +1,25 @@
+{
+  "name": "@thyrox/finding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Registro de hallazgos: su fila del store, su .rst y su entrada en el índice de la iniciativa.",
+  "exports": {
+    ".": {
+      "@thyrox/source": "./index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./index.ts"
+    },
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/observability": "workspace:*",
+    "@thyrox/paths": "workspace:*",
+    "@thyrox/store": "workspace:*"
+  },
+  "types": "./dist/index.d.ts"
+}
