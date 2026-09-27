@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import type { ParentCommand } from './parentCommand.js'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
@@ -110,7 +111,7 @@ export function registerMiscCommands(program: ParentCommand): void {
   const pluginCmd = program
     .command('plugin')
     .alias('plugins')
-    .description('Manage Claude Code plugins')
+    .description(`Manage ${PRODUCT_NAME} plugins`)
     .configureHelp(createSortedHelpConfig())
 
   pluginCmd
@@ -142,7 +143,7 @@ export function registerMiscCommands(program: ParentCommand): void {
   // Marketplace subcommands
   const marketplaceCmd = pluginCmd
     .command('marketplace')
-    .description('Manage Claude Code marketplaces')
+    .description(`Manage ${PRODUCT_NAME} marketplaces`)
     .configureHelp(createSortedHelpConfig())
 
   marketplaceCmd
@@ -448,7 +449,7 @@ export function registerMiscCommands(program: ParentCommand): void {
   program
     .command('install [target]')
     .description(
-      'Install Claude Code native build. Use [target] to specify version (stable, latest, or specific version)',
+      `Install ${PRODUCT_NAME} native build. Use [target] to specify version (stable, latest, or specific version)`,
     )
     .option('--force', 'Force installation even if already installed')
     .action(async (target: string | undefined, options: { force?: boolean }) => {

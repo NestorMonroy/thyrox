@@ -3,6 +3,7 @@
  * critique user-written rules. Dynamically imported when `claude auto-mode ...` runs.
  */
 
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import {
   getMainLoopModel,
@@ -50,9 +51,9 @@ export function autoModeConfigHandler(): void {
 }
 
 const CRITIQUE_SYSTEM_PROMPT =
-  'You are an expert reviewer of auto mode classifier rules for Claude Code.\n' +
+  `You are an expert reviewer of auto mode classifier rules for ${PRODUCT_NAME}.\n` +
   '\n' +
-  'Claude Code has an "auto mode" that uses an AI classifier to decide whether ' +
+  `${PRODUCT_NAME} has an "auto mode" that uses an AI classifier to decide whether ` +
   'tool calls should be auto-approved or require user confirmation. Users can ' +
   'write custom rules in four categories:\n' +
   '\n' +

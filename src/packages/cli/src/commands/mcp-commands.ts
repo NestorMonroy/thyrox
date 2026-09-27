@@ -1,3 +1,4 @@
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import type { ParentCommand } from './parentCommand.js'
 import { feature } from 'bun:bundle'
 import { isXaaEnabled } from '@thyrox/mcp-runtime'
@@ -39,7 +40,7 @@ export function registerMcpCommands(
 
   mcp
     .command('serve')
-    .description('Start the Claude Code MCP server')
+    .description(`Start the ${PRODUCT_NAME} MCP server`)
     .option('-d, --debug', 'Enable debug mode', () => true)
     .option('--verbose', 'Override verbose mode setting from config', () => true)
     .action(
@@ -136,7 +137,7 @@ export function registerMcpCommands(
   if (feature('DIRECT_CONNECT')) {
     program
       .command('server')
-      .description('Start a Claude Code session server')
+      .description(`Start a ${PRODUCT_NAME} session server`)
       .option('--port <number>', 'HTTP port', '0')
       .option('--host <string>', 'Bind address', '0.0.0.0')
       .option('--auth-token <token>', 'Bearer token for auth')
@@ -238,7 +239,7 @@ export function registerMcpCommands(
     program
       .command('ssh <host> [dir]')
       .description(
-        'Run Claude Code on a remote host over SSH. Deploys the binary and ' +
+        `Run ${PRODUCT_NAME} on a remote host over SSH. Deploys the binary and ` +
           'tunnels API auth back through your local machine — no remote setup needed.',
       )
       .option('--permission-mode <mode>', 'Permission mode for the remote session')
@@ -257,7 +258,7 @@ export function registerMcpCommands(
         // rewrite predicate didn't match.
         process.stderr.write(
           'Usage: claude ssh <user@host | ssh-config-alias> [dir]\n\n' +
-            'Runs Claude Code on a remote Linux host. You don\'t need to install\n' +
+            `Runs ${PRODUCT_NAME} on a remote Linux host. You don\'t need to install\n` +
             'anything on the remote or run `claude auth login` there — the binary is\n' +
             'deployed over SSH and API auth tunnels back through your local machine.\n',
         )
@@ -271,7 +272,7 @@ export function registerMcpCommands(
   if (feature('DIRECT_CONNECT')) {
     program
       .command('open <cc-url>')
-      .description('Connect to a Claude Code server (internal — use cc:// URLs)')
+      .description(`Connect to a ${PRODUCT_NAME} server (internal — use cc:// URLs)`)
       .option('-p, --print [prompt]', 'Print mode (headless)')
       .option('--output-format <format>', 'Output format: text, json, stream-json', 'text')
       .action(

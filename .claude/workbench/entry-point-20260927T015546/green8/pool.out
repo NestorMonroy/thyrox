@@ -1,0 +1,20 @@
+run-task-pool: 3 trabajo(s), anchura 2, logs en /home/user/thyrox/.claude/build-logs/job-20260927T022628
+  job-20260927T022628/job-001 pid 7720    cd src/packages/cli && bun test > ../../../.claude/workbench/entry-point-20260927T015546/green8/bun-cli.out 2>&1; echo EXIT=$? >> ../../../.claude/workbench/entry-point-20260927T015546/green8/bun-cli.out
+  job-20260927T022628/job-002 pid 7751    npx tsc --noEmit -p tsconfig.json > .claude/workbench/entry-point-20260927T015546/green8/root-tsc.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green8/root-tsc.out
+  job-20260927T022628/job-003 pid 9638    bash bin/check-cli-typecheck > .claude/workbench/entry-point-20260927T015546/green8/cli-typecheck.out 2>&1; echo EXIT=$? >> .claude/workbench/entry-point-20260927T015546/green8/cli-typecheck.out
+run-task-pool: lanzados 3 de 3; esperando en PRIMER PLANO (timeout 1800s)
+asentado: job-20260927T022628_job-002 -> OK (2 de 4)
+asentado: job-20260927T022628_job-001 -> OK (2 de 4)
+asentado: job-20260927T022628_job-003 -> OK (4 de 4)
+== 4 trabajos asentados ==
+OLVIDADO job-20260927T022628
+       | (vacío — no emitió nada)
+OK     job-20260927T022628_job-001
+       | EXIT=0
+       memoria pico: 246040 KB (240 MB) · pared 54.78s
+OK     job-20260927T022628_job-002
+       | EXIT=0
+       memoria pico: 2380448 KB (2325 MB) · pared 46.12s
+OK     job-20260927T022628_job-003
+       | EXIT=0
+       memoria pico: 817196 KB (798 MB) · pared 14.58s

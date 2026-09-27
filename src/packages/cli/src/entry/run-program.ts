@@ -11,6 +11,7 @@
  *  - the parseAsync + post-parse profiler report
  */
 
+import { PRODUCT_NAME } from './productName.ts'
 import { Option } from '@commander-js/extra-typings'
 import { feature } from 'bun:bundle'
 import type { RuntimeHandles } from '@thyrox/app-host'
@@ -384,7 +385,7 @@ export async function runCliProgram(
         },
       )
     })
-    .version(`${MACRO.VERSION} (Claude Code)`, '-v, --version', 'Output the version number')
+    .version(`${MACRO.VERSION} (${PRODUCT_NAME})`, '-v, --version', 'Output the version number')
 
   attachSecondaryOptions(program)
 

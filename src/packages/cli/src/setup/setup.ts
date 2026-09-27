@@ -1,5 +1,6 @@
 /* eslint-disable custom-rules/no-process-exit */
 
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import { feature } from 'bun:bundle'
 import chalk from 'chalk'
 import {
@@ -73,7 +74,7 @@ export async function setup(
   if (!nodeVersion || parseInt(nodeVersion, 10) < 18) {
     console.error(
       chalk.bold.red(
-        'Error: Claude Code requires Node.js version 18 or higher.',
+        `Error: ${PRODUCT_NAME} requires Node.js version 18 or higher.`,
       ),
     )
     process.exit(1)

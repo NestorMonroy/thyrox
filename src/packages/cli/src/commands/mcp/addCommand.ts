@@ -3,6 +3,7 @@
  *
  * Extracted from main.tsx to enable direct testing.
  */
+import { PRODUCT_NAME } from '../../entry/productName.ts'
 import { type Command, Option } from '@commander-js/extra-typings'
 import { cliError, cliOk } from '../../exit.js'
 import {
@@ -34,7 +35,7 @@ export function registerMcpAddCommand(mcp: Command): void {
   mcp
     .command('add <name> <commandOrUrl> [args...]')
     .description(
-      'Add an MCP server to Claude Code.\n\n' +
+      `Add an MCP server to ${PRODUCT_NAME}.\n\n` +
         'Examples:\n' +
         '  # Add HTTP server:\n' +
         '  claude mcp add --transport http sentry https://mcp.sentry.dev/mcp\n\n' +

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { PRODUCT_NAME } from './productName.ts'
 import { feature } from 'bun:bundle'
 
 // Runtime fallback for MACRO.* when not injected by build/dev defines.
@@ -75,7 +76,7 @@ async function main(): Promise<void> {
     (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')
   ) {
     // MACRO.VERSION is inlined at build time
-    console.log(`${MACRO.VERSION} (Claude Code)`)
+    console.log(`${MACRO.VERSION} (${PRODUCT_NAME})`)
     return
   }
 

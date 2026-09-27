@@ -3,6 +3,7 @@
  * These are dynamically imported only when the corresponding `claude mcp *` command runs.
  */
 
+import { PRODUCT_NAME } from '../entry/productName.ts'
 import { stat } from 'fs/promises'
 import pMap from 'p-map'
 import { cwd } from 'process'
@@ -438,6 +439,6 @@ export async function mcpResetChoicesHandler(): Promise<void> {
   }))
   cliOk(
     'All project-scoped (.mcp.json) server approvals and rejections have been reset.\n' +
-      'You will be prompted for approval next time you start Claude Code.',
+      `You will be prompted for approval next time you start ${PRODUCT_NAME}.`,
   )
 }

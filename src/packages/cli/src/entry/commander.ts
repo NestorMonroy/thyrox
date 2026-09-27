@@ -7,6 +7,7 @@
  * Moved from src/main.tsx per V7 Phase 4 cut-B.
  */
 
+import { PRODUCT_NAME } from './productName.ts'
 import {
   Command as CommanderCommand,
   InvalidArgumentError,
@@ -45,7 +46,7 @@ export function createMainProgram() {
     .enablePositionalOptions()
     .name('claude')
     .description(
-      `Claude Code - starts an interactive session by default, use -p/--print for non-interactive output`,
+      `${PRODUCT_NAME} - starts an interactive session by default, use -p/--print for non-interactive output`,
     )
     .argument('[prompt]', 'Your prompt', String)
     // Subcommands inherit helpOption via commander's copyInheritedSettings —
