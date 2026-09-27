@@ -89,7 +89,7 @@ function requireLogout(): {
   performLogout: (opts: { clearOnboarding: boolean }) => Promise<void>
 } {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('./commands/logout/logout.ts')
+  return require('./commands/logout/logout.tsx')
 }
 
 // ── Discriminación de endpoint ──────────────────────────────────────────
