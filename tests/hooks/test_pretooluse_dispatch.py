@@ -151,6 +151,13 @@ pickaxe_out = dispatch.dispatch(
     detectors=registry)
 check("el despacho real avisa del pickaxe", True,
       "GIT GREP" in json.dumps(pickaxe_out, ensure_ascii=False))
+
+check("detect_history_comment esta en la lista", True, "detect_history_comment" in dispatch.DETECTOR_NAMES)
+history_out = dispatch.dispatch(
+    {"tool_name": "Write", "tool_input": {"file_path": "a.ts", "content": "// Corregido 2026-09-27\n"}},
+    detectors=registry)
+check("el despacho real avisa del historial en un comentario", True,
+      "HISTORIAL EN COMENTARIO" in json.dumps(history_out, ensure_ascii=False))
 loop_out = dispatch.dispatch(
     {"tool_name": "Bash",
      "tool_input": {"command": "git ls-files | while read f; do git log --follow -1 -- $f; done"}},

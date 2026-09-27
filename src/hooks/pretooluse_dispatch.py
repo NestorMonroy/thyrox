@@ -85,6 +85,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_literal_replacement",
     "detect_parallel_opportunity",
     "detect_git_grep_opportunity",
+    "detect_history_comment",
 )
 
 

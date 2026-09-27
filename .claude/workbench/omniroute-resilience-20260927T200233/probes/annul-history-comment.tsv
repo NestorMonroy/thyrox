@@ -1,0 +1,15 @@
+date	s/re.compile(r"\\b20\\d{2}-\\d{2}-\\d{2}\\b"),/re.compile(r"NUNCA-FECHA"),/
+logbook	s/re.compile(r"^(corregid|añadid|mudad|retirad|reescrit|actualizad)\[oa\]s?\\b", re.IGNORECASE),//
+before	s/re.compile(r"\\bantes (vivía|era|estaba|decía|tenía|usaba|hacía|daba|leía|iba)\\b", re.IGNORECASE),//
+previous	s/re.compile(r"\\bla (versión|redacción) anterior\\b", re.IGNORECASE),//
+round	s/re.compile(r"\\b(iter|ronda|round) \\d+\\b", re.IGNORECASE),//
+episode	s/re.compile(r"\\bepisodios?\\b", re.IGNORECASE),//
+findingid	s/re.compile(r"\\b(H-\[A-Z\]+-\\d+|ERR-\\d+)\\b"),//
+commentonly	s/        elif stripped.startswith("\/\/"):/        elif True:/
+pyquote	s/        if python and stripped\[:3\] in/        if False and stripped[:3] in/
+docclose	s/            if quote in stripped:/            if False:/
+suffixfilter	s/        return _LANGUAGE_BY_SUFFIX.get(suffix)/        return _LANGUAGE_BY_SUFFIX.get(suffix, "shell")/
+shebanglang	s/    if not first.startswith("#!"):/    if False:/
+editdiff	s/if c not in existing\]/]/
+heredoctarget	s/            if target:/            if True:/
+blockcomment	s/        if in_block or stripped.startswith("\/\*"):/        if in_block:/

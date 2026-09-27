@@ -1,0 +1,6 @@
+base	6 pass, 0 fail	—
+anchor	5 pass, 1 fail	la variante cae SOLO en double
+siblings	4 pass, 2 fail	la variante de Python cae SOLO en double | el aborto cuenta como fallo y lo nombra
+pyrunner	3 pass, 3 fail	la base de Python pasa entera | la variante de Python cae SOLO en double | el aborto cuenta como fallo y lo nombra
+fallanames	5 pass, 1 fail	la variante de Python cae SOLO en double
+abort	5 pass, 1 fail	el aborto cuenta como fallo y lo nombra
