@@ -14,9 +14,12 @@ esa palabra en tres usos que no son el mismo:
 - **un texto de Anthropic sobre su modelo** —el consentimiento de uso de datos
   («help improve Claude»)—: cambiarlo alteraría lo que el usuario acepta.
 
-El gate cuenta sólo la primera clase, por archivo versionado, y congela la
-deuda en un baseline: una aparición nueva, o un archivo que crece, falla con
-``--strict``. Las otras dos se declaran en ``EXTERNAL_NAMES`` con su razón.
+Decisión del ejecutor (2026-09-27): las TRES se renombran — todo texto dice
+thyrox, también el que nombra una oferta o un servicio de Anthropic. El gate
+cuenta toda aparición, por archivo versionado, y congela la deuda en un
+baseline: una aparición nueva, o un archivo que crece, falla con
+``--strict``. ``EXTERNAL_NAMES`` queda vacía y sirve para declarar, con su
+razón, una excepción que se decida después.
 
 Salidas: 0 sin deuda nueva · 1 con deuda nueva · 2 no pudo medir.
 
@@ -38,20 +41,19 @@ BASELINE = pathlib.Path(__file__).with_name("product_word_baseline.tsv")
 
 MEASURED_EXTENSIONS = (".ts", ".tsx", ".js", ".mjs", ".py", ".sh")
 
-#: Nombres ajenos que contienen «Claude» y se quedan, cada uno con su razón.
-EXTERNAL_NAMES: tuple[tuple[str, str], ...] = (
-    (r"Claude\.ai|Claude ?A[Ii](?![a-z])", "la cuenta y el servicio de claude.ai"),
-    (r"Claude ?[Ii]n ?Chrome", "la extensión Claude in Chrome"),
-    (r"Claude ?Desktop", "la aplicación Claude Desktop"),
-    (r"improve Claude", "el consentimiento de uso de datos de Anthropic sobre su modelo"),
-)
-_EXTERNAL = re.compile("|".join(f"(?:{pattern})" for pattern, _ in EXTERNAL_NAMES))
+#: Nombres ajenos que contienen «Claude» y se quedarían, cada uno con su razón.
+#: VACÍA por decisión del ejecutor (2026-09-27): todo texto visible dice
+#: thyrox, también el que nombra una oferta o un servicio de Anthropic
+#: (claude.ai, Claude in Chrome, Claude Desktop, planes, referidos). El
+#: mecanismo se conserva para declarar, con su razón, una excepción futura.
+EXTERNAL_NAMES: tuple[tuple[str, str], ...] = ()
+_EXTERNAL = re.compile("|".join(f"(?:{pattern})" for pattern, _ in EXTERNAL_NAMES)) if EXTERNAL_NAMES else None
 _WORD = re.compile("Claude")
 
 
 def product_occurrences(text: str) -> int:
     """Las apariciones de «Claude» que no caen dentro de un nombre ajeno."""
-    external = [match.span() for match in _EXTERNAL.finditer(text)]
+    external = [match.span() for match in _EXTERNAL.finditer(text)] if _EXTERNAL else []
     return sum(
         1 for match in _WORD.finditer(text)
         if not any(start <= match.start() < end for start, end in external)

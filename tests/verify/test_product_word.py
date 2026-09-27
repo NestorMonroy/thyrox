@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
 """Control de `src/verify/check_product_word.py`.
 
-El producto se llama thyrox; «Claude» sólo se queda donde nombra un servicio
-AJENO que el código llama por su nombre (la cuenta de claude.ai, Claude in
-Chrome, Claude Desktop, el consentimiento de uso de datos de Anthropic). El
-gate cuenta las apariciones que NO son de esa clase, por archivo, y congela la
-deuda para que sólo pueda bajar.
+El producto se llama thyrox, y por decisión del ejecutor (2026-09-27) también
+lo dice el texto que nombra una oferta o un servicio de Anthropic. El gate
+cuenta cada aparición de «Claude», por archivo, y congela la deuda para que
+sólo pueda bajar.
 
 Qué haría fallar a este control:
-- contar como producto un servicio ajeno (una línea real de `repl/src` con
-  `isClaudeAISubscriber` daría 1 en vez de 0);
+- dejar fuera un nombre de servicio de Anthropic (una línea real de
+  `repl/src` con `isClaudeAISubscriber` daría 0 en vez de 1);
 - no contar la voz del agente (la línea real «What should Claude do
   instead?» daría 0);
 - aceptar una aparición nueva en un archivo que el baseline ya lista con
   menos, o en un archivo que no lista;
 - publicar un cero sin poder medir (raíz inexistente: exit 2).
 
-Anulada la exclusión de nombres ajenos, medido: caen 7 — los cinco casos de
-línea con un nombre ajeno y los dos del repositorio sintético, cuyo archivo
-de muestra también lleva `isClaudeAISubscriber`.
+Con la lista de nombres ajenos anterior (claude.ai, Claude in Chrome, Claude
+Desktop, el consentimiento) caen exactamente los cinco casos que la decisión
+del 2026-09-27 cambió: es el estado rojo previo a vaciarla.
 """
 from __future__ import annotations
 
@@ -49,18 +48,20 @@ assert_equal("la voz del agente cuenta",
              1, gate.product_occurrences("<Text dimColor>· What should Claude do instead?</Text>"))
 assert_equal("el nombre del producto cuenta",
              1, gate.product_occurrences(" * Install or update Claude CLI package in the local directory"))
-assert_equal("la cuenta de claude.ai no cuenta",
-             0, gate.product_occurrences("  if (!isClaudeAISubscriber()) return null"))
-assert_equal("Claude in Chrome no cuenta",
-             0, gate.product_occurrences("import { ClaudeInChromeOnboarding } from './ClaudeInChromeOnboarding.js'"))
-assert_equal("Claude Desktop no cuenta",
-             0, gate.product_occurrences("        setError(result.error ?? 'Failed to open Claude Desktop')"))
-assert_equal("el consentimiento de Anthropic no cuenta",
-             0, gate.product_occurrences("            <Text bold>You can help improve Claude </Text>"))
+# Decisión del ejecutor 2026-09-27: todo texto dice thyrox, también el que
+# nombra una oferta o un servicio de Anthropic. Ya no hay nombres ajenos.
+assert_equal("la cuenta de claude.ai también cuenta",
+             1, gate.product_occurrences("  if (!isClaudeAISubscriber()) return null"))
+assert_equal("Claude in Chrome también cuenta",
+             2, gate.product_occurrences("import { ClaudeInChromeOnboarding } from './ClaudeInChromeOnboarding.js'"))
+assert_equal("Claude Desktop también cuenta",
+             1, gate.product_occurrences("        setError(result.error ?? 'Failed to open Claude Desktop')"))
+assert_equal("el texto de consentimiento también cuenta",
+             1, gate.product_occurrences("            <Text bold>You can help improve Claude </Text>"))
 assert_equal("un identificador del producto cuenta",
              1, gate.product_occurrences("const dir = getClaudeConfigHomeDir()"))
-assert_equal("dos apariciones en una línea, una ajena",
-             1, gate.product_occurrences("Claude asks claude.ai via loginWithClaudeAi"))
+assert_equal("dos apariciones en una línea cuentan las dos",
+             2, gate.product_occurrences("Claude asks claude.ai via loginWithClaudeAi"))
 
 
 def git(repo: Path, *args: str) -> None:
@@ -71,7 +72,7 @@ with tempfile.TemporaryDirectory() as directory:
     base = Path(directory)
     git(base, "init", "-q")
     (base / "src").mkdir()
-    (base / "src/a.ts").write_text("// Claude does it\nisClaudeAISubscriber()\n")
+    (base / "src/a.ts").write_text("// Claude does it\nconst ok = true\n")
     (base / "src/b.ts").write_text("const x = 1\n")
     git(base, "add", ".")
     measured = gate.measure(base, "src")
