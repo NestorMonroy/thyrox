@@ -27,6 +27,7 @@ from verify.check_stand_ins import shadowed  # noqa: E402
 
 CLEARED = (
     "mcp-runtime",
+    "app-host",
 )
 
 

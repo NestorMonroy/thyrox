@@ -15,13 +15,9 @@
  * hermano SÍ está portado y SÍ exporta ambos símbolos
  * (`@thyrox/swarm: src/index.ts:105,107`, reexportados desde
  * `tasks/types.ts`). El TIPO se importa directo (type-only, se borra al
- * transpilar — no exige que `@thyrox/swarm` esté enlazado). La FUNCIÓN
- * `isInProcessTeammateTask` NO: `@thyrox/swarm` no está declarado como
- * dependencia de `@thyrox/app-host` (sin symlink en
- * `node_modules/@thyrox/swarm`; verificado con `require.resolve`), así
- * que un import de valor rompería la carga del módulo. Se usa el
- * sustituto local de `internal/pendingCrossPackageDeps.ts` — ver ese
- * archivo para la divergencia exacta y la condición de retiro.
+ * transpilar). La FUNCIÓN `isInProcessTeammateTask` también se importa del
+ * original: el sustituto local se retiró cuando `@thyrox/swarm` quedó
+ * enlazado (ver la nota de 2026-09-24 abajo).
  */
 import type { LocalAgentTaskState } from '@thyrox/agent/localAgentTask.js'
 import type { InProcessTeammateTaskState } from '@thyrox/swarm'

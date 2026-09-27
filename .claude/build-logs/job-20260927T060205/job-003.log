@@ -1,0 +1,8 @@
+  ok    1. el .env del consumidor llega
+  ok    2. el proceso gana
+  ok    3. una clave fijada vacía se respeta
+  ok    4. otro prefijo no se carga
+  ok    5. fuera de un clon y sellado, no hay clave
+
+5 casos: 5 ok, 0 fallos
+EXIT=0

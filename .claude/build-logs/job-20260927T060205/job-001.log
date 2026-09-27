@@ -1,0 +1,17 @@
+
+1. El nombre corto del clon, con y sin prefijo
+  ok    con prefijo: kaupamex-docs -> docs
+  ok    sin prefijo: el nombre entero
+  ok    fuera de todo clon: None
+  ok    repo_of usa el mismo nombre
+
+2. El sufijo de la clave por clon es el nombre entero, no el último tramo
+  ok    ai-course-notes -> AI_COURSE_NOTES
+  ok    kaupamex-docs -> DOCS
+
+3. La clave por clon gobierna, y resuelve contra la raíz real del clon
+  ok    ai-course-notes usa THYROX_WORKBENCH_AI_COURSE_NOTES
+  ok    kaupamex-docs sigue usando THYROX_WORKBENCH_DOCS
+
+test_unprefixed_clone: 8 ok, 0 falla(s)
+EXIT=0
