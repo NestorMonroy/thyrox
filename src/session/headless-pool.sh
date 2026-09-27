@@ -26,7 +26,16 @@
 #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
+#                    [--credential-proxy]
 #                    < items (uno por linea)
+#
+# `--credential-proxy` lanza el proxy de credencial
+# (`bin/provider-credential-proxy`, o HEADLESS_POOL_CREDENTIAL_PROXY) con la
+# credencial del entorno del pool, y cada item recibe sólo
+# ANTHROPIC_UNIX_SOCKET y el marcador `ssh-placeholder` como
+# ANTHROPIC_API_KEY: ningún item ve el secreto. Es el túnel por socket del
+# ejecutable (`i1` de 2.1.283). Si el proxy no arranca, el pool rehúsa con
+# exit 2 sin lanzar items; al terminar, el pool lo detiene.
 #
 # Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
 # con "memoria-pico-KB pared-s usuario-s sistema-s". La memoria pico incluye
@@ -93,7 +102,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 CLAUDE_BIN="${HEADLESS_POOL_CLAUDE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../bin" && pwd)/cli}"
 PROMPT=""; OUT=""; MODEL=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""
+TIMEOUT=600; TOOLS="Read"; MAX_TURNS=12; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -109,6 +118,7 @@ while [[ $# -gt 0 ]]; do
         --cwd) WORKDIR="${2:-}"; shift 2 ;;
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
+        --credential-proxy) CREDENTIAL_PROXY=1; shift ;;
         -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -262,6 +272,29 @@ fi
 export HP_VRAM_NEED
 
 mkdir -p "$OUT"
+
+# El proxy de credencial: lo lanza el pool con SU entorno, y los items sólo
+# reciben la ruta del socket. Se espera su anuncio (`socket=<ruta>`) antes de
+# lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no se lanza
+# nada.
+HP_PROXY_SOCKET=""
+if [[ -n "$CREDENTIAL_PROXY" ]]; then
+    proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-${THYROX_ROOT:-$(cd "$(dirname "$0")/../.." && pwd)}/bin/provider-credential-proxy}"
+    proxy_socket="$OUT/.credential-proxy.sock"
+    proxy_log="$OUT/.credential-proxy.log"
+    "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &
+    proxy_pid=$!
+    trap 'kill "$proxy_pid" 2>/dev/null; wait "$proxy_pid" 2>/dev/null' EXIT
+    for _ in $(seq 1 100); do
+        grep -q '^socket=' "$proxy_log" 2>/dev/null && break
+        kill -0 "$proxy_pid" 2>/dev/null || break
+        sleep 0.1
+    done
+    grep -q '^socket=' "$proxy_log" 2>/dev/null \
+        || rehusa "el proxy de credencial no arrancó ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
+    HP_PROXY_SOCKET="$proxy_socket"
+fi
+export HP_PROXY_SOCKET
 : > "$OUT/index.tsv"
 for i in "${!ITEMS[@]}"; do
     printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$OUT/index.tsv"
@@ -307,6 +340,13 @@ _headless_item() {
          # Con los dos nombres: `claude -p` lee CLAUDE_CODE_*; `thyrox -p`, THYROX_*.
          [[ -z "$HP_CACHE_TTL" ]] || export CLAUDE_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL" \
                                            THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+         # Con proxy, el item recibe el socket y el marcador; la credencial
+         # real se retira de su entorno por todas sus vías.
+         if [[ -n "$HP_PROXY_SOCKET" ]]; then
+             unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
+                   CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+             export ANTHROPIC_UNIX_SOCKET="$HP_PROXY_SOCKET" ANTHROPIC_API_KEY=ssh-placeholder
+         fi
          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
          # <n>.time; el codigo de salida es el del item, que time conserva.
          # `-q`: sin el, GNU Time antepone «Command exited with non-zero status

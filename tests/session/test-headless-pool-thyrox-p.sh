@@ -41,5 +41,25 @@ check "las herramientas del pool llegan acotadas" "$(head -1 "$F/out/1.stream.js
 check "una línea assistant por petición, con su uso" "$(cat "$F/out"/*.stream.jsonl | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}')" "2x500"
 [[ $FAIL -eq 0 ]] || printf '%s\n' "$SALIDA" | tail -20
 
+# --- extremo a extremo por el túnel: pool → proxy real → servicio de loopback ---
+# `thyrox -p` con su proveedor HTTP real. La credencial del pool es un marcador
+# local que nunca sale del loopback; el servicio registra la CLASE de
+# credencial que le llegó, no su valor.
+"$ROOT/bin/provider-anthropic-mock-server" --requests-log "$F/requests.log" > "$F/mock.out" 2>&1 &
+MOCK_PID=$!
+for _ in $(seq 1 100); do grep -q '^url=' "$F/mock.out" 2>/dev/null && break; sleep 0.1; done
+MOCK_URL="$(sed -n 's/^url=//p' "$F/mock.out")"
+SALIDA_PROXY="$(printf 'alfa\n' | env -u ANTHROPIC_AUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
+    ANTHROPIC_BASE_URL="$MOCK_URL" ANTHROPIC_API_KEY=local-loopback-marker \
+    HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$F/hist-proxy" \
+    bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-proxy" --model claude-sonnet-5 --width 1 --credential-proxy 2>&1)"; CODE_PROXY=$?
+kill "$MOCK_PID" 2>/dev/null; wait "$MOCK_PID" 2>/dev/null
+check "por el túnel: el pool sale 0" "$CODE_PROXY" "0"
+check "por el túnel: el ítem termina bien" "$(printf '%s' "$SALIDA_PROXY" | gawk '/^items=/{print}')" "items=1 ok=1 fallidos=0"
+check "por el túnel: el servicio recibe la llave que puso el proxy" \
+    "$(gawk '/\/v1\/messages/{print $4}' "$F/requests.log" | sort -u)" "auth=x-api-key"
+check "por el túnel: el socket no queda al terminar" "$([[ -S "$F/out-proxy/.credential-proxy.sock" ]] && echo queda || echo retirado)" "retirado"
+[[ $FAIL -eq 0 ]] || { printf '%s\n' "$SALIDA_PROXY" | tail -20; cat "$F/out-proxy"/*.err 2>/dev/null | tail -20; }
+
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool con thyrox -p)"
 [[ $FAIL -eq 0 ]]

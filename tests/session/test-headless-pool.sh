@@ -38,7 +38,7 @@ case "$entrada" in *RAMPA*)
   echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
 esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}"
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}"
 if [[ "$formato" == stream-json ]]; then
   # Como el ejecutable: stream-json en -p exige --verbose.
   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
@@ -174,6 +174,29 @@ check "activar 1h en Bedrock sin Bedrock: no decide" "$(printf '%s' "$SALIDA" | 
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
 check "variable ilegible: exit 2" "$CODE" "2"
 check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
+
+# --- el proxy de credencial: los items ven un socket y el marcador, nunca la credencial ---
+# El proxy falso anuncia su socket, anota la credencial que recibió y su pid,
+# y espera a que lo maten. Los items leen lo que el pool les dejó en el entorno.
+cat > "$F/credential-proxy" <<'SH'
+#!/usr/bin/env bash
+while [[ $# -gt 0 ]]; do case "$1" in --socket) sock="$2"; shift 2 ;; *) shift ;; esac; done
+printf '%s|%s\n' "${ANTHROPIC_API_KEY:-sin}" "$$" > "$(dirname "$sock")/../proxy-saw"
+echo "socket=$sock"
+exec sleep 300
+SH
+chmod +x "$F/credential-proxy"
+printf '#!/usr/bin/env bash\necho "sin credencial" >&2\nexit 2\n' > "$F/credential-proxy-refuses"
+chmod +x "$F/credential-proxy-refuses"
+cred_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $7"|"$8"|"$9}' | sort -u | paste -sd,; }
+rm -rf "$F/out" "$F/proxy-saw"; EXTRA="--credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy" corre alfa beta
+check "con proxy: el item ve el socket y el marcador, sin credencial" "$(cred_de)" "sock=$F/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin"
+check "con proxy: la credencial la recibe el proxy" "$(cut -d'|' -f1 "$F/proxy-saw" 2>/dev/null)" "sk-user"
+check "con proxy: al terminar el pool el proxy ya no vive" "$(kill -0 "$(cut -d'|' -f2 "$F/proxy-saw" 2>/dev/null)" 2>/dev/null && echo vive || echo muerto)" "muerto"
+rm -rf "$F/out"; EXTRA="--credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy-refuses" corre alfa
+check "proxy que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy de credencial/{p++} END{print n+0, (p>0)}')" "2 0 1"
+rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user corre alfa
+check "sin --credential-proxy el item conserva su entorno" "$(cred_de)" "sock=sin|key=sk-user|auth=sin"
 
 # --- la memoria de cada item, con GNU Time --------------------------------------
 # Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
